@@ -3,7 +3,7 @@ import { useI18n } from "vue-i18n";
 export default defineAppConfig({
   shadcnDocs: {
     site: {
-      name: "Inspira UI",
+      name: "Reborn UI",
       description: "Build beautiful websites using Vue & Nuxt.",
     },
     theme: {
