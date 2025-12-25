@@ -1,0 +1,16 @@
+{
+  "name": "neon-border",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as NeonBorder } from \"./NeonBorder.vue\";\r\n"
+    },
+    {
+      "path": "NeonBorder.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"\r\n      cn(\r\n        'relative inline-block h-10 w-full max-w-sm overflow-hidden rounded-lg p-px z-10',\r\n        props.class,\r\n      )\r\n    \"\r\n    :style=\"{\r\n      '--neon-border-duration': durationInSeconds,\r\n    }\"\r\n  >\r\n    <div\r\n      :class=\"\r\n        cn('neon-border-one rounded-lg', animationType != 'none' ? 'animate-neon-border' : '')\r\n      \"\r\n    ></div>\r\n    <div\r\n      :class=\"\r\n        cn('neon-border-two rounded-lg', animationType != 'none' ? 'animate-neon-border' : '')\r\n      \"\r\n    ></div>\r\n    <slot> </slot>\r\n  </div>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { cn } from \"@/lib/utils\";\r\nimport type { HTMLAttributes } from \"vue\";\r\n\r\ninterface Props {\r\n  color1?: string;\r\n  color2?: string;\r\n  animationType?: \"none\" | \"half\" | \"full\";\r\n  duration?: number;\r\n  class?: HTMLAttributes[\"class\"];\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  color1: \"#0496ff\",\r\n  color2: \"#ff0a54\",\r\n  duration: 6,\r\n  animationType: \"half\",\r\n});\r\n\r\nconst durationInSeconds = computed(() => `${props.duration}s`);\r\nconst animWidth = computed(() => `${getWidth(props.animationType)}%`);\r\nconst colorType1 = computed(() => props.color1);\r\nconst colorType2 = computed(() => props.color2);\r\n\r\nfunction getWidth(animationType: \"none\" | \"half\" | \"full\") {\r\n  switch (animationType) {\r\n    case \"none\":\r\n      return 12;\r\n    case \"half\":\r\n      return 50;\r\n    case \"full\":\r\n      return 100;\r\n  }\r\n}\r\n</script>\r\n\r\n<style scoped>\r\n.neon-border-container {\r\n  position: relative;\r\n  display: inline-block;\r\n  padding: 2rem;\r\n}\r\n\r\n.neon-border-one {\r\n  position: absolute;\r\n  overflow: hidden;\r\n  width: 100%;\r\n  height: 100%;\r\n  filter: blur(1px) drop-shadow(0 0 12px v-bind(colorType1));\r\n  z-index: -1;\r\n  inset: 0;\r\n}\r\n\r\n.neon-border-one::before {\r\n  content: \"\";\r\n  position: absolute;\r\n  overflow: hidden;\r\n  top: 0;\r\n  left: 0;\r\n  width: v-bind(animWidth);\r\n  height: 100%;\r\n  background: linear-gradient(\r\n    135deg,\r\n    v-bind(colorType1),\r\n    v-bind(colorType1),\r\n    transparent,\r\n    transparent\r\n  );\r\n}\r\n\r\n.neon-border-two {\r\n  position: absolute;\r\n  overflow: hidden;\r\n  width: 100%;\r\n  height: 100%;\r\n  filter: blur(1px) drop-shadow(0 0 12px v-bind(colorType2));\r\n  z-index: -1;\r\n  inset: 0;\r\n}\r\n.neon-border-two::before {\r\n  content: \"\";\r\n  position: absolute;\r\n  bottom: 0%;\r\n  right: 0%;\r\n  overflow: hidden;\r\n  width: v-bind(animWidth);\r\n  height: 100%;\r\n  background: linear-gradient(\r\n    135deg,\r\n    transparent,\r\n    transparent,\r\n    v-bind(colorType2),\r\n    v-bind(colorType2)\r\n  );\r\n}\r\n</style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "6df301eefef2410eac03a73a42919afb4c3249b3"
+}

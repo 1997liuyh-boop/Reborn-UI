@@ -6,6 +6,15 @@ export default {
   prefix: '',
   content: [
     './content/**/*',
+      "./components/**/*.{vue,js,ts}",
+    "./layouts/**/*.{vue,js,ts}",
+    "./pages/**/*.{vue,js,ts}",
+    "./plugins/**/*.{js,ts}",
+    "./app.vue",
+    "./error.vue",
+    "./content/**/*.{md,yml,yaml,json}",
+    "./components/**/*.{vue,js,ts}",
+    "./composables/**/*.{js,ts}",
   ],
   theme: {
     container: {

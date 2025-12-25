@@ -1,0 +1,24 @@
+{
+  "name": "ripple",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as Ripple } from \"./Ripple.vue\";\r\n"
+    },
+    {
+      "path": "Ripple.vue",
+      "content": "<template>\r\n  <div class=\"absolute inset-0\">\r\n    <RippleCircle\r\n      v-for=\"index in numberOfCircles\"\r\n      :key=\"index\"\r\n      :opacity=\"baseCircleOpacity - index * circleOpacityDowngradeRatio\"\r\n      :size=\"baseCircleSize + index * spaceBetweenCircle\"\r\n      :animation-delay=\"index * waveSpeed\"\r\n      :border-style=\"index === numberOfCircles - 1 ? 'dashed' : 'solid'\"\r\n      :class=\"circleClass\"\r\n    />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\ninterface Props {\r\n  baseCircleSize?: number;\r\n  baseCircleOpacity?: number;\r\n  spaceBetweenCircle?: number;\r\n  circleOpacityDowngradeRatio?: number;\r\n  circleClass?: string;\r\n  waveSpeed?: number;\r\n  numberOfCircles?: number;\r\n}\r\n\r\nwithDefaults(defineProps<Props>(), {\r\n  baseCircleSize: 210,\r\n  baseCircleOpacity: 0.24,\r\n  circleOpacityDowngradeRatio: 0.03,\r\n  waveSpeed: 80,\r\n  spaceBetweenCircle: 70,\r\n  numberOfCircles: 7,\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "RippleCircle.vue",
+      "content": "<template>\r\n  <div :class=\"cn('absolute shadow-xl', 'animate-ripple-circle', props.class)\" />\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\n\r\ninterface Props {\r\n  size?: number;\r\n  class?: string;\r\n  opacity?: number;\r\n  animationDelay?: number;\r\n  borderStyle?: string;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  size: 210,\r\n  opacity: 0.24,\r\n});\r\n</script>\r\n\r\n<style scoped>\r\n.animate-ripple-circle {\r\n  animation: ripple-effect var(--duration, 2s) ease-in-out calc(var(--i, 0) * 0.2s) infinite;\r\n  border-width: 1px;\r\n  top: 50%;\r\n  left: 50%;\r\n  width: v-bind('props.size + \"px\"');\r\n  height: v-bind('props.size + \"px\"');\r\n  animation-delay: v-bind('props.animationDelay + \"ms\"');\r\n  opacity: v-bind(\"props.opacity\");\r\n  transform: translate(-50%, -50%) scale(1);\r\n  border-style: v-bind(\"props.borderStyle\");\r\n}\r\n\r\n@keyframes ripple-effect {\r\n  0%,\r\n  100% {\r\n    transform: translate(-50%, -50%) scale(1);\r\n  }\r\n\r\n  50% {\r\n    transform: translate(-50%, -50%) scale(0.9);\r\n  }\r\n}\r\n</style>\r\n"
+    },
+    {
+      "path": "RippleContainer.vue",
+      "content": "<template>\r\n  <div class=\"relative\">\r\n    <slot />\r\n    <Ripple />\r\n  </div>\r\n</template>\r\n"
+    }
+  ],
+  "fileCount": 4,
+  "contentHash": "c543641c11a497804ce0f6e787b1adc58e0e2afc"
+}

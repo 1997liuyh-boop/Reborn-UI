@@ -1,0 +1,18 @@
+{
+  "name": "liquid-background",
+  "dependencies": [
+    "ogl"
+  ],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as LiquidBackground } from \"./LiquidBackground.vue\";\r\n"
+    },
+    {
+      "path": "LiquidBackground.vue",
+      "content": "<template>\r\n  <div\r\n    ref=\"ctnDom\"\r\n    :class=\"cn('block size-full', props?.class)\"\r\n  ></div>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { onMounted, onUnmounted, ref, type HTMLAttributes } from \"vue\";\r\nimport { Renderer, Program, Mesh, Color, Triangle, type OGLRenderingContext } from \"ogl\";\r\nimport { cn } from \"@/lib/utils\";\r\n\r\nconst props = defineProps<{ class?: HTMLAttributes[\"class\"] }>();\r\n\r\nconst ctnDom = ref<HTMLDivElement | null>(null);\r\n\r\nlet animateId: number;\r\nlet renderer: Renderer;\r\nlet gl: OGLRenderingContext;\r\nlet mesh: Mesh;\r\n\r\n// Vertex Shader\r\nconst vert = `\r\n  attribute vec2 uv;\r\n  attribute vec2 position;\r\n  \r\n  varying vec2 vUv;\r\n  \r\n  void main() {\r\n      vUv = uv;\r\n      gl_Position = vec4(position, 0, 1);\r\n  }\r\n  `;\r\n\r\n// Fragment Shader\r\nconst frag = `\r\n  precision highp float;\r\n  \r\n  uniform float uTime;\r\n  uniform vec3 uColor;\r\n  uniform vec3 uResolution;\r\n  \r\n  varying vec2 vUv;\r\n  \r\n  void main() {\r\n      float mr = min(uResolution.x, uResolution.y);\r\n      vec2 uv = (vUv.xy * 2.0 - 1.0) * uResolution.xy / mr;\r\n  \r\n      float d = -uTime * 1.2;\r\n      float a = 0.0;\r\n      for (float i = 0.0; i < 8.0; ++i) {\r\n          a += cos(i - d - a * uv.x);\r\n          d += sin(uv.y * i + a);\r\n      }\r\n      d += uTime * 1.0;\r\n      vec3 col = vec3(cos(uv * vec2(d, a)) * 0.6 + 0.4, cos(a + d) * 0.5 + 0.5);\r\n      col = cos(col * cos(vec3(d, a, 2.5)) * 0.5 + 0.5);\r\n      gl_FragColor = vec4(col, 1.0);\r\n  }\r\n  `;\r\n\r\nfunction resize() {\r\n  if (!ctnDom.value) return;\r\n  const scale = 1;\r\n  renderer.setSize(ctnDom.value.offsetWidth * scale, ctnDom.value.offsetHeight * scale);\r\n  if (mesh) {\r\n    mesh.program.uniforms.uResolution.value = [\r\n      gl.canvas.width,\r\n      gl.canvas.height,\r\n      gl.canvas.width / gl.canvas.height,\r\n    ];\r\n  }\r\n}\r\n\r\nfunction update(t: number) {\r\n  animateId = requestAnimationFrame(update);\r\n  if (mesh) {\r\n    mesh.program.uniforms.uTime.value = t * 0.001;\r\n    renderer.render({ scene: mesh });\r\n  }\r\n}\r\n\r\nonMounted(() => {\r\n  if (!ctnDom.value) return;\r\n\r\n  renderer = new Renderer();\r\n  gl = renderer.gl;\r\n  gl.clearColor(1, 1, 1, 1);\r\n\r\n  window.addEventListener(\"resize\", resize, false);\r\n  resize();\r\n\r\n  const geometry = new Triangle(gl);\r\n\r\n  const program = new Program(gl, {\r\n    vertex: vert,\r\n    fragment: frag,\r\n    uniforms: {\r\n      uTime: { value: 0 },\r\n      uColor: { value: new Color(0.3, 0.2, 0.5) },\r\n      uResolution: {\r\n        value: [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height],\r\n      },\r\n    },\r\n  });\r\n\r\n  mesh = new Mesh(gl, { geometry, program });\r\n  animateId = requestAnimationFrame(update);\r\n\r\n  ctnDom.value.appendChild(gl.canvas);\r\n});\r\n\r\nonUnmounted(() => {\r\n  cancelAnimationFrame(animateId);\r\n  window.removeEventListener(\"resize\", resize);\r\n  if (ctnDom.value && gl?.canvas) {\r\n    ctnDom.value.removeChild(gl.canvas);\r\n  }\r\n  gl?.getExtension(\"WEBGL_lose_context\")?.loseContext();\r\n});\r\n</script>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "bcd98ec4b41f738e43cb7ab2d0fbc0542f8edc72"
+}

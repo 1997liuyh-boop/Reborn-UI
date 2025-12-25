@@ -1,0 +1,19 @@
+{
+  "name": "hyper-text",
+  "dependencies": [
+    "@vueuse/core",
+    "motion-v"
+  ],
+  "files": [
+    {
+      "path": "HyperText.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"cn('flex scale-100 cursor-default overflow-hidden py-2', $props.class)\"\r\n    @mouseenter=\"triggerAnimation\"\r\n  >\r\n    <div class=\"flex\">\r\n      <Motion\r\n        v-for=\"(letter, i) in displayText\"\r\n        :key=\"i\"\r\n        as=\"span\"\r\n        :class=\"cn(letter === ' ' ? 'w-3' : '', $props.class)\"\r\n        class=\"inline-block font-mono\"\r\n        :initial=\"{ opacity: 0, y: -10 }\"\r\n        :animate=\"{ opacity: 1, y: 0 }\"\r\n        :delay=\"i * (duration / (text.length * 10))\"\r\n      >\r\n        {{ letter.toUpperCase() }}\r\n      </Motion>\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { ref, computed, watch, type HTMLAttributes } from \"vue\";\r\nimport { useIntervalFn } from \"@vueuse/core\";\r\nimport { cn } from \"@/lib/utils\";\r\nimport { Motion } from \"motion-v\";\r\n\r\nconst props = withDefaults(\r\n  defineProps<{\r\n    class?: HTMLAttributes[\"class\"];\r\n    text: string;\r\n    duration?: number;\r\n    animateOnLoad: boolean;\r\n  }>(),\r\n  {\r\n    duration: 800,\r\n  },\r\n);\r\n\r\nconst alphabets = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\r\nconst displayText = ref(props.text.split(\"\"));\r\nconst iterations = ref(0);\r\n\r\nfunction getRandomLetter() {\r\n  return alphabets[Math.floor(Math.random() * alphabets.length)];\r\n}\r\nfunction triggerAnimation() {\r\n  iterations.value = 0;\r\n  startAnimation();\r\n}\r\n\r\nconst { pause, resume } = useIntervalFn(\r\n  () => {\r\n    if (iterations.value < props.text.length) {\r\n      displayText.value = displayText.value.map((l, i) =>\r\n        l === \" \" ? l : i <= iterations.value ? props.text[i] : getRandomLetter(),\r\n      );\r\n      iterations.value += 0.1;\r\n    } else {\r\n      pause();\r\n    }\r\n  },\r\n  computed(() => props.duration / (props.text.length * 10)),\r\n);\r\n\r\nfunction startAnimation() {\r\n  pause();\r\n  resume();\r\n}\r\n\r\nwatch(\r\n  () => props.text,\r\n  (newText) => {\r\n    displayText.value = newText.split(\"\");\r\n    triggerAnimation();\r\n  },\r\n);\r\n\r\nif (props.animateOnLoad) {\r\n  triggerAnimation();\r\n}\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as HyperText } from \"./HyperText.vue\";\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "32b41dfca073ba08ef9de303b84566048875e70e"
+}

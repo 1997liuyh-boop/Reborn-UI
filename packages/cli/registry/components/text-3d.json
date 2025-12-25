@@ -1,0 +1,16 @@
+{
+  "name": "text-3d",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as Text3d } from \"./Text3d.vue\";\r\n"
+    },
+    {
+      "path": "Text3d.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"\r\n      cn('text-3d flex items-center justify-center', animate ? 'animate-text-3d' : '', props.class)\r\n    \"\r\n  >\r\n    <slot></slot>\r\n  </div>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { computed, type HTMLAttributes } from \"vue\";\r\nimport { cn } from \"@/lib/utils\";\r\n\r\ninterface Props {\r\n  textColor?: string;\r\n  letterSpacing?: number;\r\n  strokeColor?: string;\r\n  shadowColor?: string;\r\n  strokeSize?: number;\r\n  shadow1Size?: number;\r\n  shadow2Size?: number;\r\n  class?: HTMLAttributes[\"class\"];\r\n  animate?: boolean;\r\n  animationDuration?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  textColor: \"white\",\r\n  letterSpacing: -0.1,\r\n  strokeColor: \"black\",\r\n  shadowColor: \"yellow\",\r\n  strokeSize: 20,\r\n  shadow1Size: 7,\r\n  shadow2Size: 10,\r\n  animate: true,\r\n  animationDuration: 1500,\r\n});\r\n\r\nconst letterSpacingInCh = computed(() => {\r\n  return `${props.letterSpacing}ch`;\r\n});\r\n\r\nconst strokeSizeInPx = computed(() => {\r\n  return `${props.strokeSize}px`;\r\n});\r\n\r\nconst shadow1SizeInPx = computed(() => {\r\n  return `${props.shadow1Size}px`;\r\n});\r\n\r\nconst shadow2SizeInPx = computed(() => {\r\n  return `${props.shadow2Size}px`;\r\n});\r\n\r\nconst animationDurationInMs = computed(() => {\r\n  return `${props.animationDuration}ms`;\r\n});\r\n</script>\r\n\r\n<style scoped>\r\n.text-3d {\r\n  paint-order: stroke fill;\r\n  letter-spacing: v-bind(letterSpacingInCh);\r\n  -webkit-text-stroke: v-bind(strokeSizeInPx) v-bind(strokeColor);\r\n  text-shadow:\r\n    v-bind(shadow1SizeInPx) v-bind(shadow1SizeInPx) 0px v-bind(strokeColor),\r\n    v-bind(shadow2SizeInPx) v-bind(shadow2SizeInPx) 0px v-bind(shadowColor);\r\n  color: v-bind(textColor);\r\n}\r\n\r\n.animate-text-3d {\r\n  animation: wiggle v-bind(animationDurationInMs) ease-in-out infinite alternate;\r\n  animation-timing-function: ease-in-out;\r\n  transform-origin: center;\r\n}\r\n\r\n@keyframes wiggle {\r\n  0% {\r\n    transform: rotate(0deg);\r\n  }\r\n  12% {\r\n    transform: rotate(5deg);\r\n  }\r\n  25% {\r\n    transform: rotate(-5deg);\r\n  }\r\n  38% {\r\n    transform: rotate(3deg);\r\n  }\r\n  50% {\r\n    transform: rotate(0deg);\r\n  }\r\n  100% {\r\n    transform: rotate(0deg);\r\n  }\r\n}\r\n</style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "00947c81493e935a9edc96dfa271aaba8ec40795"
+}

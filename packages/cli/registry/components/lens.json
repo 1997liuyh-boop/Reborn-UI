@@ -1,0 +1,18 @@
+{
+  "name": "lens",
+  "dependencies": [
+    "motion-v"
+  ],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as Lens } from \"./Lens.vue\";\r\n"
+    },
+    {
+      "path": "Lens.vue",
+      "content": "<template>\r\n  <div\r\n    ref=\"containerRef\"\r\n    class=\"relative z-20 overflow-hidden rounded-lg\"\r\n    @mouseenter=\"setIsHovering(true)\"\r\n    @mouseleave=\"setIsHovering(false)\"\r\n    @mousemove=\"handleMouseMove\"\r\n  >\r\n    <slot />\r\n\r\n    <div v-if=\"props.isStatic || isHovering\">\r\n      <Motion\r\n        :initial=\"{ opacity: 0, scale: 0.58 }\"\r\n        :animate=\"{\r\n          opacity: 1,\r\n          scale: 1,\r\n        }\"\r\n        :transition=\"{ duration: 0.3, ease: 'easeOut' }\"\r\n        :leave=\"{ opacity: 0, scale: 0.8 }\"\r\n        class=\"absolute inset-0 overflow-hidden\"\r\n        :style=\"{\r\n          maskImage: `radial-gradient(${maskPosition}, black 100%, transparent 100%)`,\r\n          WebkitMaskImage: `radial-gradient(${maskPosition}, black 100%, transparent 100%)`,\r\n          transformOrigin,\r\n        }\"\r\n      >\r\n        <div\r\n          class=\"absolute inset-0\"\r\n          :style=\"{ transform: `scale(${props.zoomFactor})`, transformOrigin }\"\r\n        >\r\n          <slot />\r\n        </div>\r\n      </Motion>\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { Motion } from \"motion-v\";\r\nimport { ref, computed, watchEffect } from \"vue\";\r\n\r\ninterface LensProps {\r\n  zoomFactor?: number;\r\n  lensSize?: number;\r\n  position?: {\r\n    x: number;\r\n    y: number;\r\n  };\r\n  isStatic?: boolean;\r\n  hovering?: boolean;\r\n}\r\n\r\nconst props = withDefaults(defineProps<LensProps>(), {\r\n  zoomFactor: 1.5,\r\n  lensSize: 170,\r\n  isStatic: false,\r\n  hovering: undefined,\r\n  position: () => ({ x: 200, y: 150 }),\r\n});\r\n\r\nconst emit = defineEmits<{\r\n  (e: \"hover-update\", value: boolean): void;\r\n}>();\r\n\r\nconst containerRef = ref<HTMLElement | null>(null);\r\nconst localIsHovering = ref(false);\r\nconst mousePosition = ref({ x: 100, y: 100 });\r\n\r\nconst isHovering = computed(() => props.hovering ?? localIsHovering.value);\r\n\r\nfunction setIsHovering(hover: boolean) {\r\n  localIsHovering.value = hover;\r\n  emit(\"hover-update\", hover);\r\n}\r\n\r\nfunction handleMouseMove(e: MouseEvent) {\r\n  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();\r\n  mousePosition.value = {\r\n    x: e.clientX - rect.left,\r\n    y: e.clientY - rect.top,\r\n  };\r\n}\r\n\r\nconst maskPosition = computed(() => {\r\n  const pos = props.isStatic ? props.position : mousePosition.value;\r\n  return `circle ${props.lensSize! / 2}px at ${pos.x}px ${pos.y}px`;\r\n});\r\n\r\nconst transformOrigin = computed(() => {\r\n  const pos = props.isStatic ? props.position : mousePosition.value;\r\n  return `${pos.x}px ${pos.y}px`;\r\n});\r\n\r\nwatchEffect(() => {\r\n  setIsHovering(false);\r\n});\r\n</script>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "4e808dc7e731a6c23bdb5d3357b3be67ddd78984"
+}

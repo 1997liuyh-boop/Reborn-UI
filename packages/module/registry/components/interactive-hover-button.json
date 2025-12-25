@@ -1,0 +1,16 @@
+{
+  "name": "interactive-hover-button",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as InteractiveHoverButton } from \"./InteractiveHoverButton.vue\";\r\n"
+    },
+    {
+      "path": "InteractiveHoverButton.vue",
+      "content": "<template>\r\n  <button\r\n    ref=\"buttonRef\"\r\n    :class=\"\r\n      cn(\r\n        'group relative w-auto cursor-pointer overflow-hidden rounded-full border bg-background p-2 px-6 text-center font-semibold',\r\n        props.class,\r\n      )\r\n    \"\r\n  >\r\n    <div class=\"flex items-center gap-2\">\r\n      <div\r\n        class=\"size-2 scale-100 rounded-lg bg-primary transition-all duration-300 group-hover:scale-[100.8]\"\r\n      ></div>\r\n      <span\r\n        class=\"inline-block whitespace-nowrap transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0\"\r\n      >\r\n        {{ text }}\r\n      </span>\r\n    </div>\r\n\r\n    <div\r\n      class=\"absolute top-0 z-10 flex size-full translate-x-12 items-center justify-center gap-2 text-primary-foreground opacity-0 transition-all duration-300 group-hover:-translate-x-5 group-hover:opacity-100\"\r\n    >\r\n      <span class=\"whitespace-nowrap\">{{ text }}</span>\r\n      <svg\r\n        xmlns=\"http://www.w3.org/2000/svg\"\r\n        width=\"24\"\r\n        height=\"24\"\r\n        viewBox=\"0 0 24 24\"\r\n        fill=\"none\"\r\n        stroke=\"currentColor\"\r\n        stroke-width=\"2\"\r\n        stroke-linecap=\"round\"\r\n        stroke-linejoin=\"round\"\r\n        class=\"lucide lucide-arrow-right\"\r\n      >\r\n        <path d=\"M5 12h14\" />\r\n        <path d=\"m12 5 7 7-7 7\" />\r\n      </svg>\r\n    </div>\r\n  </button>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { cn } from \"@/lib/utils\";\r\nimport { ref } from \"vue\";\r\n\r\ninterface Props {\r\n  text?: string;\r\n  class?: string;\r\n}\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  text: \"Button\",\r\n});\r\n\r\nconst buttonRef = ref<HTMLButtonElement>();\r\n</script>\r\n\r\n<style></style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "a9ea908d3a459e8989019e7dac0b3d2d6a5c988f"
+}

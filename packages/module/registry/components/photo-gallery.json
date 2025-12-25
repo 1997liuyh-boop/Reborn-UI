@@ -1,0 +1,16 @@
+{
+  "name": "photo-gallery",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as PhotoGallery } from \"./PhotoGallery.vue\";\r\n"
+    },
+    {
+      "path": "PhotoGallery.vue",
+      "content": "<template>\r\n  <div\r\n    class=\"gallery\"\r\n    :class=\"cn('mb-[var(--size)] grid grid-cols-6 gap-1', props.containerClass)\"\r\n  >\r\n    <img\r\n      v-for=\"(image, index) in props.items\"\r\n      :key=\"index\"\r\n      :src=\"image.src\"\r\n      :alt=\"`image+${index}`\"\r\n      class=\"gallery-img\"\r\n      :class=\"\r\n        cn(\r\n          'size-[calc(var(--size)*2)] rounded object-cover transition-[clip-path,filter] duration-75',\r\n          props.class,\r\n        )\r\n      \"\r\n    />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\n\r\ninterface Props {\r\n  containerClass?: string;\r\n  class?: string;\r\n  items: {\r\n    src: string;\r\n  }[];\r\n}\r\nconst props = defineProps<Props>();\r\n</script>\r\n\r\n<style scoped>\r\n.gallery {\r\n  --size: 100px;\r\n  grid-auto-rows: var(--size);\r\n\r\n  &:has(:hover) img:not(:hover),\r\n  &:has(:focus) img:not(:focus) {\r\n    filter: brightness(0.5) contrast(0.5);\r\n  }\r\n\r\n  img {\r\n    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);\r\n    grid-column: auto / span 2;\r\n\r\n    &:nth-child(5n-1) {\r\n      grid-column: 2 / span 2;\r\n    }\r\n\r\n    &:hover,\r\n    &:focus {\r\n      clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0);\r\n      z-index: 1;\r\n      transition:\r\n        clip-path 0.25s,\r\n        filter 0.25s;\r\n      filter: saturate(150%);\r\n    }\r\n\r\n    &:focus {\r\n      outline: 10px dashed black;\r\n      outline-offset: -5px;\r\n    }\r\n  }\r\n}\r\n</style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "2f50dacd9eed88162bb5d468efc7893775700f67"
+}

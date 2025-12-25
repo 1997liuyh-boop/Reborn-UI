@@ -1,0 +1,32 @@
+{
+  "name": "dock",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "Dock.vue",
+      "content": "<template>\r\n  <div\r\n    ref=\"dockRef\"\r\n    :class=\"\r\n      cn(\r\n        'supports-backdrop-blur:bg-white/10 supports-backdrop-blur:dark:bg-black/10 mx-auto mt-8 flex h-[58px] w-max rounded-2xl border p-2 backdrop-blur-md transition-all gap-4',\r\n        orientation === 'vertical' && 'flex-col w-[58px] h-max',\r\n        props.class,\r\n        dockClass,\r\n      )\r\n    \"\r\n    @mousemove=\"onMouseMove\"\r\n    @mouseleave=\"onMouseLeave\"\r\n  >\r\n    <slot />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { ref, computed, provide, type HTMLAttributes } from \"vue\";\r\nimport { cn } from \"@/lib/utils\";\r\nimport type { DataOrientation, Direction } from \"./types\";\r\nimport {\r\n  MOUSE_X_INJECTION_KEY,\r\n  MOUSE_Y_INJECTION_KEY,\r\n  MAGNIFICATION_INJECTION_KEY,\r\n  DISTANCE_INJECTION_KEY,\r\n  ORIENTATION_INJECTION_KEY,\r\n} from \"./injectionKeys\";\r\n\r\ninterface DockProps {\r\n  class?: HTMLAttributes[\"class\"];\r\n  magnification?: number;\r\n  distance?: number;\r\n  direction?: Direction;\r\n  orientation?: DataOrientation;\r\n}\r\n\r\nconst props = withDefaults(defineProps<DockProps>(), {\r\n  magnification: 60,\r\n  distance: 140,\r\n  direction: \"middle\",\r\n  orientation: \"horizontal\",\r\n});\r\n\r\nconst dockRef = ref<HTMLElement | null>(null);\r\nconst mouseX = ref(Infinity);\r\nconst mouseY = ref(Infinity);\r\nconst magnification = computed(() => props.magnification);\r\nconst distance = computed(() => props.distance);\r\n\r\nconst dockClass = computed(() => ({\r\n  \"items-start\": props.direction === \"top\",\r\n  \"items-center\": props.direction === \"middle\",\r\n  \"items-end\": props.direction === \"bottom\",\r\n}));\r\n\r\nfunction onMouseMove(e: MouseEvent) {\r\n  requestAnimationFrame(() => {\r\n    mouseX.value = e.pageX;\r\n    mouseY.value = e.pageY;\r\n  });\r\n}\r\n\r\nfunction onMouseLeave() {\r\n  requestAnimationFrame(() => {\r\n    mouseX.value = Infinity;\r\n    mouseY.value = Infinity;\r\n  });\r\n}\r\nprovide(MOUSE_X_INJECTION_KEY, mouseX);\r\nprovide(MOUSE_Y_INJECTION_KEY, mouseY);\r\nprovide(ORIENTATION_INJECTION_KEY, props.orientation);\r\nprovide(MAGNIFICATION_INJECTION_KEY, magnification);\r\nprovide(DISTANCE_INJECTION_KEY, distance);\r\n</script>\r\n"
+    },
+    {
+      "path": "DockIcon.vue",
+      "content": "<template>\r\n  <div\r\n    ref=\"iconRef\"\r\n    class=\"flex aspect-square cursor-pointer items-center justify-center rounded-full transition-all duration-200 ease-out\"\r\n    :style=\"{\r\n      width: `${iconWidth}px`,\r\n      height: `${iconWidth}px`,\r\n    }\"\r\n    :hovered=\"{\r\n      marginLeft: margin,\r\n      marginRight: margin,\r\n    }\"\r\n  >\r\n    <slot />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { ref, inject, computed } from \"vue\";\r\nimport {\r\n  MOUSE_X_INJECTION_KEY,\r\n  MOUSE_Y_INJECTION_KEY,\r\n  MAGNIFICATION_INJECTION_KEY,\r\n  DISTANCE_INJECTION_KEY,\r\n  ORIENTATION_INJECTION_KEY,\r\n} from \"./injectionKeys\";\r\n\r\nconst iconRef = ref<HTMLDivElement | null>(null);\r\n\r\nconst mouseX = inject(MOUSE_X_INJECTION_KEY, ref(Infinity));\r\nconst mouseY = inject(MOUSE_Y_INJECTION_KEY, ref(Infinity));\r\nconst distance = inject(DISTANCE_INJECTION_KEY);\r\nconst orientation = inject(ORIENTATION_INJECTION_KEY, \"vertical\");\r\nconst magnification = inject(MAGNIFICATION_INJECTION_KEY);\r\nconst isVertical = computed(() => orientation === \"vertical\");\r\n\r\nconst margin = ref(0);\r\n\r\nfunction calculateDistance(val: number) {\r\n  if (isVertical.value) {\r\n    const bounds = iconRef.value?.getBoundingClientRect() || {\r\n      y: 0,\r\n      height: 0,\r\n    };\r\n    return val - bounds.y - bounds.height / 2;\r\n  }\r\n  const bounds = iconRef.value?.getBoundingClientRect() || { x: 0, width: 0 };\r\n  return val - bounds.x - bounds.width / 2;\r\n}\r\n\r\nconst iconWidth = computed(() => {\r\n  const distanceCalc = isVertical.value\r\n    ? calculateDistance(mouseY.value)\r\n    : calculateDistance(mouseX.value);\r\n  if (!distance?.value || !magnification?.value) return 40;\r\n  if (Math.abs(distanceCalc) < distance?.value) {\r\n    return (1 - Math.abs(distanceCalc) / distance?.value) * magnification?.value + 40;\r\n  }\r\n\r\n  return 40;\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "DockSeparator.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"\r\n      cn('relative block bg-secondary', orientation === 'vertical' ? 'w-4/5 h-0.5' : 'h-4/5 w-0.5')\r\n    \"\r\n  ></div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { ORIENTATION_INJECTION_KEY } from \"./injectionKeys\";\r\nimport { cn } from \"~/lib/utils\";\r\n\r\nconst orientation = inject(ORIENTATION_INJECTION_KEY, \"vertical\");\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as Dock } from \"./Dock.vue\";\r\nexport { default as DockIcon } from \"./DockIcon.vue\";\r\nexport { default as DockSeparator } from \"./DockSeparator.vue\";\r\n"
+    },
+    {
+      "path": "injectionKeys.ts",
+      "content": "import type { Ref, InjectionKey, ComputedRef } from \"vue\";\r\nimport type { DataOrientation } from \"./types\";\r\n\r\nexport const MOUSE_X_INJECTION_KEY = Symbol(\"mouse-x\") as InjectionKey<Ref<number>>;\r\nexport const MOUSE_Y_INJECTION_KEY = Symbol(\"mouse-y\") as InjectionKey<Ref<number>>;\r\n\r\nexport const MAGNIFICATION_INJECTION_KEY = Symbol(\"magnification\") as InjectionKey<\r\n  ComputedRef<number>\r\n>;\r\n\r\nexport const DISTANCE_INJECTION_KEY = Symbol(\"distance\") as InjectionKey<ComputedRef<number>>;\r\n\r\nexport const ORIENTATION_INJECTION_KEY = Symbol(\"orientation\") as InjectionKey<DataOrientation>;\r\n"
+    },
+    {
+      "path": "types.ts",
+      "content": "export type DataOrientation = \"vertical\" | \"horizontal\";\r\nexport type Direction = \"top\" | \"middle\" | \"bottom\";\r\n"
+    }
+  ],
+  "fileCount": 6,
+  "contentHash": "347c358234456aed6af263cebaf8ead5179c3428"
+}

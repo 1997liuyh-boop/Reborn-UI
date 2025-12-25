@@ -1,0 +1,40 @@
+{
+  "name": "reborn-ui",
+  "version": "0.1.1",
+  "type": "module",
+  "bin": {
+    "reborn-ui": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "registry",
+    "templates",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "cli": "tsx src/index.ts",
+    "build": "tsup",
+    "dev": "tsx src/index.ts",
+    "clean": "rimraf dist",
+    "prepare": "tsup",
+    "registry:build": "tsx src/index.ts build --root ../..",
+    "prepack": "npm run build && npm run registry:build",
+    "prepublishOnly": "npm run build && npm run registry:build"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "execa": "^9.6.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/prompts": "^2.4.9",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "componentsDir": "components",
+  "libDir": "lib",
+  "composablesDir": "composables",
+  "registry": "reborn-ui-registry"
+}

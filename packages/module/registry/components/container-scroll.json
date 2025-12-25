@@ -1,0 +1,26 @@
+{
+  "name": "container-scroll",
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "files": [
+    {
+      "path": "ContainerScroll.vue",
+      "content": "<template>\r\n  <div\r\n    ref=\"containerRef\"\r\n    class=\"relative flex h-[60rem] items-center justify-center p-2 md:h-[80rem] md:p-20\"\r\n  >\r\n    <div\r\n      class=\"relative w-full py-10 md:py-40\"\r\n      style=\"perspective: 1000px\"\r\n    >\r\n      <ContainerScrollTitle :translate=\"translateY\">\r\n        <slot name=\"title\"></slot>\r\n      </ContainerScrollTitle>\r\n      <ContainerScrollCard\r\n        :rotate=\"rotate\"\r\n        :scale=\"scale\"\r\n      >\r\n        <slot name=\"card\" />\r\n      </ContainerScrollCard>\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { useWindowSize, useScroll, useElementBounding } from \"@vueuse/core\";\r\nimport { ref, onMounted, onUnmounted, computed } from \"vue\";\r\n\r\nconst containerRef = ref(null);\r\nconst isMobile = ref(false);\r\n\r\nfunction updateIsMobile() {\r\n  isMobile.value = window.innerWidth <= 768;\r\n}\r\n\r\nonMounted(() => {\r\n  updateIsMobile();\r\n  window.addEventListener(\"resize\", updateIsMobile);\r\n});\r\n\r\nonUnmounted(() => {\r\n  window.removeEventListener(\"resize\", updateIsMobile);\r\n});\r\n\r\nconst { height } = useWindowSize();\r\nconst { y: scrollY } = useScroll(window);\r\nconst { bottom } = useElementBounding(containerRef);\r\n\r\nconst scrollYProgress = computed(() => {\r\n  if (!bottom.value) return 0;\r\n  return 1 - Math.max(0, bottom.value - scrollY.value) / height.value;\r\n});\r\n\r\nconst scaleDimensions = computed(() => (isMobile.value ? [0.7, 0.9] : [1.05, 1]));\r\n\r\nconst rotate = computed(() => 20 * (1 - scrollYProgress.value));\r\nconst scale = computed(() => {\r\n  const [start, end] = scaleDimensions.value;\r\n  return start + (end - start) * scrollYProgress.value;\r\n});\r\nconst translateY = computed(() => -100 * scrollYProgress.value);\r\n</script>\r\n"
+    },
+    {
+      "path": "ContainerScrollCard.vue",
+      "content": "<template>\r\n  <div\r\n    :style=\"{\r\n      transform: `rotateX(${rotate}deg) scale(${scale})`,\r\n      boxShadow:\r\n        '0 0 #0000004d, 0 9px 20px #0000004a, 0 37px 37px #00000042, 0 84px 50px #00000026, 0 149px 60px #0000000a, 0 233px 65px #00000003',\r\n    }\"\r\n    class=\"mx-auto -mt-12 h-[30rem] w-full max-w-5xl rounded-[30px] border-4 border-[#6C6C6C] bg-[#222222] p-2 shadow-2xl md:h-[40rem] md:p-6\"\r\n  >\r\n    <div\r\n      class=\"size-full overflow-hidden rounded-2xl bg-gray-100 md:rounded-2xl md:p-4 dark:bg-zinc-900\"\r\n    >\r\n      <slot></slot>\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\ndefineProps({\r\n  rotate: Number,\r\n  scale: Number,\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "ContainerScrollTitle.vue",
+      "content": "<template>\r\n  <div\r\n    :style=\"{ transform: `translateY(${translate}px)` }\"\r\n    class=\"mx-auto max-w-5xl text-center\"\r\n  >\r\n    <slot></slot>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\ndefineProps({\r\n  translate: Number,\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as ContainerScroll } from \"./ContainerScroll.vue\";\r\nexport { default as ContainerScrollCard } from \"./ContainerScrollCard.vue\";\r\nexport { default as ContainerScrollTitle } from \"./ContainerScrollTitle.vue\";\r\n"
+    }
+  ],
+  "fileCount": 4,
+  "contentHash": "740ae97fa27853565e7fa7c3a88e9cbff80c3710"
+}

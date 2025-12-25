@@ -1,0 +1,24 @@
+{
+  "name": "card-3d",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "CardBody.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"cn('h-96 w-96', $props.class)\"\r\n    style=\"transform-style: preserve-3d\"\r\n  >\r\n    <slot />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\n\r\ndefineProps({\r\n  class: String,\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "CardContainer.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"['flex items-center justify-center p-2', containerClass]\"\r\n    style=\"perspective: 1000px\"\r\n  >\r\n    <div\r\n      ref=\"containerRef\"\r\n      :class=\"[\r\n        'relative flex items-center justify-center transition-all duration-200 ease-linear',\r\n        $props.class,\r\n      ]\"\r\n      style=\"transform-style: preserve-3d\"\r\n      @mouseenter=\"handleMouseEnter\"\r\n      @mousemove=\"handleMouseMove\"\r\n      @mouseleave=\"handleMouseLeave\"\r\n    >\r\n      <slot />\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { useMouseState } from \"@/composables/useMouseState\";\r\nimport { provide, ref } from \"vue\";\r\n\r\ndefineProps({\r\n  class: String,\r\n  containerClass: String,\r\n});\r\n\r\nconst containerRef = ref<HTMLElement | null>(null);\r\n\r\nconst mouseState = useMouseState(); // Use the composable\r\nprovide(\"use3DCardMouseState\", mouseState);\r\n\r\nfunction handleMouseMove(e: MouseEvent) {\r\n  if (!containerRef.value) return;\r\n  const { left, top, width, height } = containerRef.value.getBoundingClientRect();\r\n  const x = (e.clientX - left - width / 2) / 25;\r\n  const y = (e.clientY - top - height / 2) / 25;\r\n  containerRef.value.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;\r\n}\r\n\r\nfunction handleMouseEnter() {\r\n  mouseState.setMouseEntered(true);\r\n}\r\n\r\nfunction handleMouseLeave() {\r\n  if (!containerRef.value) return;\r\n\r\n  mouseState.setMouseEntered(false);\r\n  containerRef.value.style.transform = `rotateY(0deg) rotateX(0deg)`;\r\n}\r\n</script>\r\n"
+    },
+    {
+      "path": "CardItem.vue",
+      "content": "<template>\r\n  <component\r\n    :is=\"as\"\r\n    ref=\"refElement\"\r\n    :class=\"cn('w-fit transition duration-500 ease-in-out', $props.class)\"\r\n  >\r\n    <slot />\r\n  </component>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { useMouseState } from \"@/composables/useMouseState\";\r\nimport { cn } from \"@/lib/utils\";\r\nimport { inject, ref, watch, type Ref } from \"vue\";\r\n\r\nconst props = defineProps({\r\n  as: { type: String, default: \"div\" },\r\n  class: String,\r\n  translateX: { type: [Number, String], default: 0 },\r\n  translateY: { type: [Number, String], default: 0 },\r\n  translateZ: { type: [Number, String], default: 0 },\r\n  rotateX: { type: [Number, String], default: 0 },\r\n  rotateY: { type: [Number, String], default: 0 },\r\n  rotateZ: { type: [Number, String], default: 0 },\r\n});\r\n\r\nconst refElement = ref<HTMLElement | null>(null);\r\n\r\nconst mouseState = inject(\"use3DCardMouseState\") as ReturnType<typeof useMouseState>;\r\n\r\nfunction handleAnimation(isMouseEntered: Readonly<Ref<boolean, boolean>>) {\r\n  if (!refElement.value) return;\r\n\r\n  if (isMouseEntered) {\r\n    refElement.value.style.transform = `translateX(${props.translateX}px) translateY(${props.translateY}px) translateZ(${props.translateZ}px) rotateX(${props.rotateX}deg) rotateY(${props.rotateY}deg) rotateZ(${props.rotateZ}deg)`;\r\n  } else {\r\n    refElement.value.style.transform = `translateX(0px) translateY(0px) translateZ(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;\r\n  }\r\n}\r\n\r\nwatch(mouseState.isMouseEntered, handleAnimation, { immediate: true });\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as CardContainer } from \"./CardContainer.vue\";\r\nexport { default as CardBody } from \"./CardBody.vue\";\r\nexport { default as CardItem } from \"./CardItem.vue\";\r\n"
+    }
+  ],
+  "fileCount": 4,
+  "contentHash": "bb5ac373a9fea8165151bea0f2919f216d1133a8"
+}

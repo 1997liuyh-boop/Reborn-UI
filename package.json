@@ -7,11 +7,21 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "registry:build": "pnpm -C packages/cli cli build --root ../.. --out packages/cli/registry/registry.json --also-out packages/module/registry/registry.json",
+    "cli:init": "pnpm -C packages/cli cli init",
+    "cli:add": "pnpm -C packages/cli cli add"
   },
   "dependencies": {
+    "@splinetool/runtime": "^1.12.28",
+    "autoprefixer": "^10.4.23",
+    "clsx": "^2.1.1",
+    "highlight.js": "^11.11.1",
     "nuxt": "^3.20.2",
-    "shadcn-docs-nuxt": "^1.1.8",
+    "postcss": "^8.5.6",
+    "shadcn-docs-nuxt": "^1.1.2",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.18",
     "vue": "^3.5.25",
     "vue-router": "^4.6.4"
   }

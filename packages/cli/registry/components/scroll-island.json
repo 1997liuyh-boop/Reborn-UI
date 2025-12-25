@@ -1,0 +1,20 @@
+{
+  "name": "scroll-island",
+  "dependencies": [
+    "@number-flow/vue",
+    "@vueuse/core",
+    "motion-v"
+  ],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as ScrollIsland } from \"./ScrollIsland.vue\";\r\n"
+    },
+    {
+      "path": "ScrollIsland.vue",
+      "content": "<template>\r\n  <MotionConfig\r\n    :transition=\"{\r\n      duration: 0.7,\r\n      type: 'spring',\r\n      bounce: 0.5,\r\n    }\"\r\n  >\r\n    <div\r\n      :class=\"\r\n        cn(\r\n          'fixed left-1/2 top-12 z-[999] -translate-x-1/2 bg-primary/90 backdrop-blur-lg border-radius',\r\n          $props.class,\r\n        )\r\n      \"\r\n      @click=\"() => (open = !open)\"\r\n    >\r\n      <motion.div\r\n        id=\"motion-id\"\r\n        layout\r\n        :initial=\"{\r\n          height: props.height,\r\n          width: 0,\r\n        }\"\r\n        :animate=\"{\r\n          height: open && isSlotAvailable ? 'auto' : props.height,\r\n          width: open && isSlotAvailable ? 320 : 260,\r\n        }\"\r\n        class=\"bg-natural-900 relative cursor-pointer overflow-hidden text-secondary\"\r\n      >\r\n        <header class=\"gray- flex h-11 cursor-pointer items-center gap-2 px-4\">\r\n          <AnimatedCircularProgressBar\r\n            :value=\"scrollPercentage * 100\"\r\n            :min=\"0\"\r\n            :max=\"100\"\r\n            :circle-stroke-width=\"10\"\r\n            class=\"w-6\"\r\n            :show-percentage=\"false\"\r\n            :duration=\"0.3\"\r\n            :gauge-secondary-color=\"isDark ? '#6b728055' : '#6b728099'\"\r\n            :gauge-primary-color=\"isDark ? 'black' : 'white'\"\r\n          />\r\n          <h1 class=\"grow text-center font-bold\">{{ title }}</h1>\r\n          <NumberFlow\r\n            :value=\"scrollPercentage\"\r\n            :format=\"{ style: 'percent' }\"\r\n            locales=\"en-US\"\r\n          />\r\n        </header>\r\n        <motion.div\r\n          v-if=\"isSlotAvailable\"\r\n          class=\"mb-2 flex h-full max-h-60 flex-col gap-1 overflow-y-auto px-4 text-sm\"\r\n        >\r\n          <slot />\r\n        </motion.div>\r\n      </motion.div>\r\n    </div>\r\n  </MotionConfig>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { cn } from \"@/lib/utils\";\r\nimport NumberFlow from \"@number-flow/vue\";\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { motion, MotionConfig } from \"motion-v\";\r\nimport { computed, onMounted, onUnmounted, ref, useSlots } from \"vue\";\r\n\r\ninterface Props {\r\n  class?: string;\r\n  title?: string;\r\n  height?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  class: \"\",\r\n  title: \"Progress\",\r\n  height: 44,\r\n});\r\n\r\nconst open = ref(false);\r\nconst slots = useSlots();\r\n\r\nconst scrollPercentage = ref(0);\r\n\r\nconst isDark = computed(() => useColorMode().value == \"dark\");\r\nconst isSlotAvailable = computed(() => !!slots.default);\r\nconst borderRadius = computed(() => `${props.height / 2}px`);\r\n\r\nonMounted(() => {\r\n  if (window === undefined) return;\r\n\r\n  window.addEventListener(\"scroll\", updatePageScroll);\r\n  updatePageScroll();\r\n});\r\n\r\nfunction updatePageScroll() {\r\n  scrollPercentage.value = window.scrollY / (document.body.scrollHeight - window.innerHeight);\r\n}\r\n\r\nonUnmounted(() => {\r\n  window.removeEventListener(\"scroll\", updatePageScroll);\r\n});\r\n</script>\r\n\r\n<style scoped>\r\n.border-radius {\r\n  border-radius: v-bind(borderRadius);\r\n}\r\n</style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "4f97735aff0c3428314b1ddc395fd39156e512d1"
+}
