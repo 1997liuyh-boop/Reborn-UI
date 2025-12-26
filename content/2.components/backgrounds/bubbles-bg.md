@@ -3,7 +3,30 @@ title: 泡泡背景
 description: An animated background with floating bubbles.
 ---
 
-::ComponentLoader{label="预览" componentName="BubblesBgDemo2" type="examples" id="backgrounds"}
+::ComponentLoader{label="预览" componentName="bg-bubbles" type="examples" id="backgrounds"}
+---
+prettier: true
+props:
+  class: h-96 w-full
+  blur: 4
+slots:
+  default: |
+
+    <div class="flex size-full flex-col items-center justify-center">
+        <span
+            class="font-heading text-6xl font-bold text-background opacity-80 backdrop-blur-md"
+        >
+            Hello
+        </span>
+    </div>
+---
+
+:div{class="flex size-full flex-col items-center justify-center"}[
+    
+  :span{class="font-heading text-6xl font-bold text-background opacity-80 backdrop-blur-md"}[Hello]
+]
+
+
 ::
 
 ::alert{type="info"}
@@ -47,7 +70,7 @@ yarn add --dev @types/three
 
 复制并粘贴以下代码：
 
-::CodeViewer{filename="BubblesBg.vue" language="vue" componentName="BubblesBg" type="ui" id="bg-bubbles"}  
+::CodeViewer{filename="BubblesBg.vue" language="vue" componentName="bg-bubbles" type="ui" id="bg-bubbles"}  
 ::
 ::
 
@@ -55,7 +78,12 @@ yarn add --dev @types/three
 
 Without Blur or overlay
 
-::ComponentLoader{label="预览" componentName="BubblesBgDemo" type="examples" id="backgrounds"}
+::ComponentLoader{label="预览" componentName="bg-bubbles" type="examples" id="backgrounds"}
+---
+prettier: true
+props:
+  class: h-96 w-full
+---
 ::
 
 ## API

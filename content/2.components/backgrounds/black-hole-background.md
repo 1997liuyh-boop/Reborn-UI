@@ -3,7 +3,13 @@ title: 黑洞背景
 description: A mesmerizing, canvas-driven background effect that simulates a warped “black-hole” tunnel with animated discs, radial lines, and particles.
 ---
 
-::ComponentLoader{label="预览" componentName="BlackHoleBackgroundDemo" type="examples" id="bg-black-hole"}
+::ComponentLoader{label="预览" type="examples" id="bg-black-hole"}
+---
+prettier: true
+class: relative h-96 w-full
+props:
+  class: absolute inset-0 flex items-center justify-center rounded-xl
+---
 ::
 
 ## API
@@ -25,7 +31,7 @@ description: A mesmerizing, canvas-driven background effect that simulates a war
 
 复制并粘贴以下代码：
 
-::CodeViewer{filename="BlackHoleBackground.vue" language="vue" componentName="BlackHoleBackground" type="ui" id="bg-black-hole"}
+::CodeViewer{filename="BlackHoleBackground.vue" language="vue"  type="ui" id="bg-black-hole"}
 ::
 
 ## 功能特性

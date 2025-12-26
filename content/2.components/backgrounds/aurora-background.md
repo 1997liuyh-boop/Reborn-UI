@@ -3,7 +3,18 @@ title: 极光背景
 description: 为您的网站提供一个微妙的极光或南极光背景。
 ---
 
-::ComponentLoader{label="预览" componentName="AuroraBackgroundDemo" type="examples" id="aurora-background"}
+::ComponentLoader{label="预览" id="aurora-background"}
+---
+slots:
+  default: |
+
+    <div class="flex items-center justify-center text-6xl text-gray-300">
+      极光背景
+    </div>
+---
+
+:div{class="flex items-center justify-center text-6xl text-gray-300"}[极光背景]
+
 ::
 
 ## API
