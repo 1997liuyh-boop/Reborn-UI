@@ -31,7 +31,7 @@ props:
 
 复制并粘贴以下代码：
 
-::CodeViewer{filename="BlackHoleBackground.vue" language="vue"  type="ui" id="bg-black-hole"}
+::CodeViewer{filename="BlackHoleBackground.vue" language="vue"  type="ui" componentName="BlackHoleBackground" id="bg-black-hole"}
 ::
 
 ## 功能特性

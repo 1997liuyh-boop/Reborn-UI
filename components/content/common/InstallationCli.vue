@@ -12,24 +12,22 @@ interface Props {
 
 const { componentId } = defineProps<Props>();
 
-const url = `https://registry.inspira-ui.com/${componentId}.json`;
-
 const commands = `
 ::code-group
 \`\`\`bash [npm]
-npx shadcn-vue@latest add "${url}"
+npx reborn-ui@latest add ${componentId}
 \`\`\`
 
 \`\`\`bash [pnpm]
-pnpm dlx shadcn-vue@latest add "${url}"
+pnpm dlx reborn-ui@latest add ${componentId}
 \`\`\`
 
 \`\`\`bash [bun]
-bunx shadcn-vue@latest add "${url}"
+bunx reborn-ui@latest add ${componentId}
 \`\`\`
 
 \`\`\`bash [yarn]
-yarn dlx shadcn-vue@latest add "${url}"
+yarn dlx reborn-ui@latest add ${componentId}
 \`\`\`
 ::
 `;

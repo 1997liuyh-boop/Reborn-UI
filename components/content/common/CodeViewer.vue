@@ -38,7 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // Create a map of all possible components using import.meta.glob
-const rawComponents = import.meta.glob(`../inspira/**/*.{vue,ts,js,d.ts}`, {
+const rawComponents = import.meta.glob(`../reborn/**/*.{vue,ts,js,d.ts}`, {
   query: "?raw",
   import: "default",
 });
@@ -46,7 +46,7 @@ const rawComponents = import.meta.glob(`../inspira/**/*.{vue,ts,js,d.ts}`, {
 // Compute the component path based on props
 const componentPath = computed(
   () =>
-    `../inspira/${props.type}/${props.id ? props.id + "/" : ""}${props.componentName}.${props.extension}`,
+    `../reborn/${props.id ? props.id + "/" : ""}${props.componentName}.${props.extension}`,
 );
 
 // Load and process the component code on mount

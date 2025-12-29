@@ -5,12 +5,14 @@ description: 为您的网站提供一个微妙的极光或南极光背景。
 
 ::ComponentLoader{label="预览" id="aurora-background"}
 ---
+prettier: true
 slots:
   default: |
 
     <div class="flex items-center justify-center text-6xl text-gray-300">
       极光背景
     </div>
+
 ---
 
 :div{class="flex items-center justify-center text-6xl text-gray-300"}[极光背景]
@@ -58,7 +60,7 @@ Add following entry to inline theme in your `main.css` file.
 
 复制并粘贴以下代码：
 
-::CodeViewer{filename="AuroraBackground.vue" language="vue" componentName="AuroraBackground" type="ui" id="aurora-background"}
+::CodeViewer{filename="AuroraBackground.vue" language="vue" componentName="AuroraBackground" id="aurora-background"}
 ::
 
 ## 功能特性
