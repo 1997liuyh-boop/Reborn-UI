@@ -1,5 +1,3 @@
-import { useI18n } from "vue-i18n";
-
 export default defineAppConfig({
   shadcnDocs: {
     site: {
@@ -135,11 +133,6 @@ export default defineAppConfig({
       enable: true,
       title: '目录',
       enableInHomepage: false,
-      carbonAds: {
-        enable: true,
-        code: "CW7DEK37",
-        placement: "inspira-uicom",
-      },
       links: [
         {
           title: 'GitHub 收藏',
