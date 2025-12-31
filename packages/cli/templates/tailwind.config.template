@@ -1,0 +1,117 @@
+import type { Config } from 'tailwindcss'
+import animate from 'tailwindcss-animate';
+
+export default <Config>{
+  content: [resolve("./**/*.{uvue,vue}"), "!**/node_modules/**", "!**/dist/**"],
+  darkMode: "class",
+  theme: {
+    extend: {
+      // 1. 字体家族配置
+      fontFamily: {
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"PingFang SC"',
+          '"Microsoft YaHei"',
+          '"Noto Sans SC"',
+          'Roboto',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+      },
+      // 2. 颜色规范 (包含品牌色与中性色)
+      colors: {
+        red: {
+          1: '#FFEBEE',
+          2: '#FFE0E4',
+          3: '#FFB1BC',
+          4: '#FF8B9B',
+          5: '#FF6675',
+          6: '#FF3D58',
+          7: '#D92946',
+          8: '#B31938',
+          9: '#8C0D2A',
+          10: '#660821',
+        },
+        orange: {
+          1: '#FFF6E7',
+          2: '#FFE9C9',
+          3: '#FFD5A0',
+          4: '#FFC370',
+          5: '#FFB03B',
+          6: '#FF9711',
+          7: '#BF7C2A',
+          8: '#995C1A',
+          9: '#733D0E',
+          10: '#522601',
+        },
+        green: {
+          1: '#F1FAF8',
+          2: '#E7F6F3',
+          3: '#A2DFCF',
+          4: '#5FCFAD',
+          5: '#3AC29E',
+          6: '#16AE88',
+          7: '#0B876C',
+          8: '#036150',
+          9: '#003B32',
+          10: '#001412',
+        },
+        blue: {
+          1: '#ECF9FF',
+          2: '#DFF4FF',
+          3: '#9ED6F5',
+          4: '#61CCFF',
+          5: '#35B6F2',
+          6: '#0D99E5',
+          7: '#0277BF',
+          8: '#005999',
+          9: '#003F73',
+          10: '#00284D',
+        },
+        gray: {
+          1: '#FFFFFF',
+          2: '#F5F5F5',
+          3: '#EEEEEE',
+          4: '#CCCCCC',
+          5: '#AAAAAA',
+          6: '#999999',
+          7: '#666666',
+          8: '#333333',
+        },
+      },
+      // 3. 字号规范
+      fontSize: {
+        '3xs': '20px', // 辅助文字 (sub-sm)
+        '2xs': '22px', // 辅助文字 (sub-md)
+        'xs': '24px', // 辅助文字 (sub-lg)
+        'sm': '26px', // 正文 (main-sm)
+        'base': '28px', // 正文 (main)
+        'lg': '30px', // 标题 (title-sub)
+        'xl': '32px', // 标题 (title-primary)
+        '2xl': '36px', // 标题 (title-lg)
+        '3xl': '40px', // 标题 (title-xl)
+        '4xl': '48px', // 标题 (title-2xl)
+        '5xl': '52px', // 标题 (title-3xl)
+      },
+      // 4. 行高规范
+      lineHeight: {
+        tight: '1.3', // 紧凑
+        normal: '1.5', // 常规 (默认)
+        relaxed: '1.7', // 宽松
+        none: '1.0', // 无行高
+      },
+      // 5. 圆角规范
+      borderRadius: {
+        'xs': '4px',
+        'sm': '6px',
+        'md': '8px',
+        'lg': '12px',
+        'xl': '16px', // 常规
+        '2xl': '24px',
+      },
+    },
+  },
+  plugins: [animate],
+}

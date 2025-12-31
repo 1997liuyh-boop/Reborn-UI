@@ -11,7 +11,7 @@ import {
   readPackageJson,
 } from "../utils/pm.js";
 import { DEFAULT_CONFIG_PATH, defaultConfig, loadConfigCompat } from "../utils/registry.js";
-import { copyTemplateSubdir } from "../utils/templates.js";
+import { copyTemplateSubdir, getTemplatesRootDir } from "../utils/templates.js";
 
 function looksLikeNuxtProject(cwd: string) {
   return Promise.all([
@@ -25,13 +25,7 @@ function isTailwindConfig(content: string) {
   return content.includes("tailwind") || content.includes("content:");
 }
 
-function makeDefaultTailwindConfig(params: {
-  contentGlobs: string[];
-}) {
-  const { contentGlobs } = params;
-  const globs = contentGlobs.map((g) => `    "${g}",`).join("\n");
-  return `/** @type {import('tailwindcss').Config} */\nexport default {\n  darkMode: ['class'],\n  content: [\n${globs}\n  ],\n  theme: {\n    extend: {\n      colors: {\n        border: 'hsl(var(--border))',\n        input: 'hsl(var(--input))',\n        ring: 'hsl(var(--ring))',\n        background: 'hsl(var(--background))',\n        foreground: 'hsl(var(--foreground))',\n        primary: {\n          DEFAULT: 'hsl(var(--primary))',\n          foreground: 'hsl(var(--primary-foreground))',\n        },\n        secondary: {\n          DEFAULT: 'hsl(var(--secondary))',\n          foreground: 'hsl(var(--secondary-foreground))',\n        },\n        destructive: {\n          DEFAULT: 'hsl(var(--destructive))',\n          foreground: 'hsl(var(--destructive-foreground))',\n        },\n        muted: {\n          DEFAULT: 'hsl(var(--muted))',\n          foreground: 'hsl(var(--muted-foreground))',\n        },\n        accent: {\n          DEFAULT: 'hsl(var(--accent))',\n          foreground: 'hsl(var(--accent-foreground))',\n        },\n        popover: {\n          DEFAULT: 'hsl(var(--popover))',\n          foreground: 'hsl(var(--popover-foreground))',\n        },\n        card: {\n          DEFAULT: 'hsl(var(--card))',\n          foreground: 'hsl(var(--card-foreground))',\n        },\n      },\n      borderRadius: {\n        xl: 'calc(var(--radius) + 4px)',\n        lg: 'var(--radius)',\n        md: 'calc(var(--radius) - 2px)',\n        sm: 'calc(var(--radius) - 4px)',\n      },\n    },\n  },\n  plugins: [],\n};\n`;
-}
+// function makeDefaultTailwindConfig removed in favor of template file
 
 function patchTailwindContentArray(existing: string, wantedGlobs: string[]) {
   // 尽量保守：只在发现 content: [ ... ] 时往里补缺失项
@@ -282,7 +276,7 @@ export function initCommand() {
           await writeTextFile(cssAbs, defaultCssVariables());
         }
 
-        // tailwind.config.js：存在则补 content；不存在则生成
+        // tailwind.config.ts：存在则补 content；不存在则生成
         const contentGlobs = [
           "./components/**/*.{vue,js,ts}",
           "./layouts/**/*.{vue,js,ts}",
@@ -294,7 +288,7 @@ export function initCommand() {
           `./${cfg.componentsDir}/**/*.{vue,js,ts}`,
           `./${cfg.composablesDir}/**/*.{js,ts}`,
         ];
-        const twPath = path.join(cwd, "tailwind.config.js");
+        const twPath = path.join(cwd, "tailwind.config.ts");
         if (await pathExists(twPath)) {
           const rawTw = await fs.readFile(twPath, "utf8");
           if (isTailwindConfig(rawTw)) {
@@ -304,10 +298,10 @@ export function initCommand() {
             }
           }
         } else {
-          await writeTextFile(
-            twPath,
-            makeDefaultTailwindConfig({ contentGlobs }),
-          );
+          const templatePath = path.join(getTemplatesRootDir(), "tailwind.config.template");
+          let templateContent = await fs.readFile(templatePath, "utf8");
+          // <%- contentGlobs %> removed from template, no replacement needed
+          await writeTextFile(twPath, templateContent);
         }
 
         // Nuxt：把 CSS 文件加入 nuxt.config.ts（尽量自动化）
@@ -363,7 +357,7 @@ export function initCommand() {
         await writeTextFile(cssAbs, defaultCssVariables());
       }
 
-      // tailwind.config.js：存在则补 content；不存在则生成
+      // tailwind.config.ts：存在则补 content；不存在则生成
       const contentGlobs = [
         "./components/**/*.{vue,js,ts}",
         "./layouts/**/*.{vue,js,ts}",
@@ -375,13 +369,16 @@ export function initCommand() {
         `./${cfg.componentsDir}/**/*.{vue,js,ts}`,
         `./${cfg.composablesDir}/**/*.{js,ts}`,
       ];
-      const twPath = path.join(cwd, "tailwind.config.js");
+      const twPath = path.join(cwd, "tailwind.config.ts");
       if (await pathExists(twPath)) {
         const rawTw = await fs.readFile(twPath, "utf8");
         const patched = patchTailwindContentArray(rawTw, contentGlobs);
         if (patched && patched !== rawTw) await fs.writeFile(twPath, patched, "utf8");
       } else {
-        await writeTextFile(twPath, makeDefaultTailwindConfig({ contentGlobs }));
+        const templatePath = path.join(getTemplatesRootDir(), "tailwind.config.template");
+        let templateContent = await fs.readFile(templatePath, "utf8");
+        // <%- contentGlobs %> removed from template, no replacement needed
+        await writeTextFile(twPath, templateContent);
       }
 
       await patchNuxtConfigAddCss({ cwd, cssPath: `~/${cssRel}` });
