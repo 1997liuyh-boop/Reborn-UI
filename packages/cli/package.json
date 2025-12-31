@@ -1,6 +1,6 @@
 {
   "name": "reborn-ui",
-  "version": "0.1.2",
+  "version": "0.1.63",
   "description": "A CLI for Reborn UI",
   "author": "1997liuyh-boop",
   "license": "MIT",
@@ -32,11 +32,17 @@
     "prepublishOnly": "npm run build && npm run registry:build"
   },
   "dependencies": {
+    "chalk": "^5.6.2",
+    "cli-progress": "^3.12.0",
     "commander": "^14.0.0",
     "execa": "^9.6.0",
+    "figlet": "^1.9.4",
+    "ora": "^9.0.0",
     "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
+    "@types/figlet": "^1.7.0",
     "@types/node": "^22.10.7",
     "@types/prompts": "^2.4.9",
     "rimraf": "^6.0.1",

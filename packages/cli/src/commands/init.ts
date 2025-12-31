@@ -4,14 +4,10 @@ import { Command } from "commander";
 import prompts from "prompts";
 import type { CliConfig, PackageManager } from "../types.js";
 import { ensureDir, listFilesRecursive, pathExists, writeJsonFile, writeTextFile } from "../utils/fs.js";
-import {
-  detectPackageManager,
-  getMissingDeps,
-  installDeps,
-  readPackageJson,
-} from "../utils/pm.js";
+import { detectPackageManager, readPackageJson } from "../utils/pm.js";
 import { DEFAULT_CONFIG_PATH, defaultConfig, loadConfigCompat } from "../utils/registry.js";
-import { copyTemplateSubdir, getTemplatesRootDir } from "../utils/templates.js";
+import { copyTemplateSubdir } from "../utils/templates.js";
+import { gradientText, showLogo, typewriter } from "../utils/ui.js";
 
 function looksLikeNuxtProject(cwd: string) {
   return Promise.all([
@@ -21,65 +17,16 @@ function looksLikeNuxtProject(cwd: string) {
   ]).then((arr) => arr.some(Boolean));
 }
 
-function isTailwindConfig(content: string) {
-  return content.includes("tailwind") || content.includes("content:");
-}
 
 // function makeDefaultTailwindConfig removed in favor of template file
 
-function patchTailwindContentArray(existing: string, wantedGlobs: string[]) {
-  // 尽量保守：只在发现 content: [ ... ] 时往里补缺失项
-  const m = existing.match(/content\s*:\s*\[([\s\S]*?)\]/m);
-  if (!m) return null;
-  const inner = m[1] ?? "";
 
-  const missing = wantedGlobs.filter((g) => !inner.includes(g));
-  if (!missing.length) return existing;
 
-  const insertion = missing.map((g) => `    "${g}",`).join("\n");
-  const replaced = existing.replace(
-    /content\s*:\s*\[([\s\S]*?)\]/m,
-    (full) => {
-      // 在 ] 前插入
-      return full.replace(/\]\s*$/, `${insertion}\n  ]`);
-    },
-  );
-  return replaced;
-}
-
-function defaultCssVariables() {
-  return `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n@layer base {\n  :root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n\n    --primary: 222.2 47.4% 11.2%;\n    --primary-foreground: 210 40% 98%;\n\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 222.2 84% 4.9%;\n\n    --radius: 0.5rem;\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n\n    --primary: 210 40% 98%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 212.7 26.8% 83.9%;\n  }\n}\n`;
-}
 
 function cnUtilsTs(params: { importPath?: string }) {
   // importPath 预留：如果用户想从别处导入 clsx/twMerge
   void params;
   return `import { type ClassValue, clsx } from "clsx";\nimport { twMerge } from "tailwind-merge";\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n`;
-}
-
-async function patchNuxtConfigAddCss(params: { cwd: string; cssPath: string }) {
-  const { cwd, cssPath } = params;
-  const nuxtConfigPath = path.join(cwd, "nuxt.config.ts");
-  if (!(await pathExists(nuxtConfigPath))) return false;
-  const raw = await fs.readFile(nuxtConfigPath, "utf8");
-  if (raw.includes(cssPath)) return true;
-
-  // 1) 已有 css: [] -> 补进去
-  if (raw.match(/\bcss\s*:\s*\[/)) {
-    const patched = raw.replace(/\bcss\s*:\s*\[/, `css: ["${cssPath}", `);
-    await fs.writeFile(nuxtConfigPath, patched, "utf8");
-    return true;
-  }
-
-  // 2) 没有 css 字段：在 defineNuxtConfig({ 后插入
-  const m = raw.match(/defineNuxtConfig\(\s*\{\s*/);
-  if (!m) return false;
-  const patched = raw.replace(
-    /defineNuxtConfig\(\s*\{\s*/,
-    (s) => `${s}\n  css: ["${cssPath}"],\n`,
-  );
-  await fs.writeFile(nuxtConfigPath, patched, "utf8");
-  return true;
 }
 
 async function rewriteAliasInDir(params: {
@@ -105,7 +52,7 @@ async function rewriteAliasInDir(params: {
 
 export function initCommand() {
   const cmd = new Command("init")
-    .description("初始化新项目：安装依赖、生成 lib/utils.ts、配置 tailwind 与 CSS 变量，并写入 components.json")
+    .description("初始化新项目")
     .option("--cwd <path>", "目标项目目录", process.cwd())
     .option("--pm <pm>", "包管理器：pnpm|npm|yarn|bun")
     .option("--yes", "跳过交互，使用默认值", false)
@@ -199,24 +146,6 @@ export function initCommand() {
               message: "基于项目根目录的“映射”的符号是？（aliasSymbol）",
               initial: cfg.aliasSymbol ?? "@",
             },
-            {
-              type: "text",
-              name: "registry",
-              message: "registry（包名或路径）",
-              initial: cfg.registry,
-            },
-            {
-              type: "confirm",
-              name: "installBaseDeps",
-              message: `安装基础依赖（clsx、tailwind-merge、tailwindcss 等）？`,
-              initial: true,
-            },
-            {
-              type: nuxt ? "confirm" : null,
-              name: "installDocs",
-              message: `检测到 Nuxt：若缺失则安装 shadcn-docs-nuxt？`,
-              initial: true,
-            },
           ],
           {
             onCancel: () => {
@@ -229,20 +158,10 @@ export function initCommand() {
         cfg.libDir = res.libDir ?? cfg.libDir;
         cfg.composablesDir = res.composablesDir ?? cfg.composablesDir;
         cfg.aliasSymbol = res.aliasSymbol ?? cfg.aliasSymbol;
-        cfg.registry = res.registry ?? cfg.registry;
 
         // 写配置
         const cfgPath = path.join(cwd, opts.config);
         await writeJsonFile(cfgPath, cfg);
-
-        const pkg = await readPackageJson(cwd);
-        const wantDeps: string[] = [];
-        if (res.installBaseDeps)
-          wantDeps.push("clsx", "tailwind-merge", "tailwindcss", "postcss", "autoprefixer");
-        if (res.installDocs) wantDeps.push("shadcn-docs-nuxt");
-        const missing = getMissingDeps(pkg, wantDeps);
-        // tailwind 相关更适合 devDependencies，但为简化：统一装到 dependencies（pnpm add）
-        await installDeps({ cwd, pm, deps: missing });
 
         // 复制模板：lib/ + composables/
         await copyTemplateSubdir({
@@ -269,61 +188,19 @@ export function initCommand() {
         const libUtilsPath = path.join(cwd, cfg.libDir, "utils.ts");
         if (!(await pathExists(libUtilsPath))) await writeTextFile(libUtilsPath, cnUtilsTs({}));
 
-        // 写 CSS 变量文件
-        const cssRel = "assets/css/reborn-ui.css";
-        const cssAbs = path.join(cwd, cssRel);
-        if (!(await pathExists(cssAbs))) {
-          await writeTextFile(cssAbs, defaultCssVariables());
-        }
+        console.log(`已写入配置：${path.relative(process.cwd(), cfgPath)}；并生成 cn/utils（pm=${pm}）`);
+        console.log("请按照 https://tw.icebreaker.top/docs/quick-start/v4/uni-app-vite 指引进行项目配置初始化");
 
-        // tailwind.config.ts：存在则补 content；不存在则生成
-        const contentGlobs = [
-          "./components/**/*.{vue,js,ts}",
-          "./layouts/**/*.{vue,js,ts}",
-          "./pages/**/*.{vue,js,ts}",
-          "./plugins/**/*.{js,ts}",
-          "./app.vue",
-          "./error.vue",
-          "./content/**/*.{md,yml,yaml,json}",
-          `./${cfg.componentsDir}/**/*.{vue,js,ts}`,
-          `./${cfg.composablesDir}/**/*.{js,ts}`,
-        ];
-        const twPath = path.join(cwd, "tailwind.config.ts");
-        if (await pathExists(twPath)) {
-          const rawTw = await fs.readFile(twPath, "utf8");
-          if (isTailwindConfig(rawTw)) {
-            const patched = patchTailwindContentArray(rawTw, contentGlobs);
-            if (patched && patched !== rawTw) {
-              await fs.writeFile(twPath, patched, "utf8");
-            }
-          }
-        } else {
-          const templatePath = path.join(getTemplatesRootDir(), "tailwind.config.template");
-          let templateContent = await fs.readFile(templatePath, "utf8");
-          // <%- contentGlobs %> removed from template, no replacement needed
-          await writeTextFile(twPath, templateContent);
-        }
-
-        // Nuxt：把 CSS 文件加入 nuxt.config.ts（尽量自动化）
-        await patchNuxtConfigAddCss({ cwd, cssPath: `~/${cssRel}` });
-
-        // eslint-disable-next-line no-console
-        console.log(
-          `已写入配置：${path.relative(process.cwd(), cfgPath)}；并生成 cn/utils、tailwind 配置与 CSS 变量（pm=${pm}）`,
-        );
+        console.log("");
+        await showLogo();
+        await typewriter(gradientText("感谢使用 Reborn UI ! ✨"), 20);
         return;
       }
 
-      // --yes：直接写默认配置并安装基础依赖（缺失则补）
+      // --yes：直接写默认配置
       const cfgPath = path.join(cwd, opts.config);
       await ensureDir(path.dirname(cfgPath));
       await fs.writeFile(cfgPath, JSON.stringify(cfg, null, 2) + "\n", "utf8");
-
-      const pkg = await readPackageJson(cwd);
-      const wantDeps = ["clsx", "tailwind-merge", "tailwindcss", "postcss", "autoprefixer"];
-      if (await looksLikeNuxtProject(cwd)) wantDeps.push("shadcn-docs-nuxt");
-      const missing = getMissingDeps(pkg, wantDeps);
-      await installDeps({ cwd, pm, deps: missing });
 
       // 复制模板：lib/ + composables/
       await copyTemplateSubdir({
@@ -350,43 +227,13 @@ export function initCommand() {
       const libUtilsPath = path.join(cwd, cfg.libDir, "utils.ts");
       if (!(await pathExists(libUtilsPath))) await writeTextFile(libUtilsPath, cnUtilsTs({}));
 
-      // 写 CSS 变量文件
-      const cssRel = "assets/css/reborn-ui.css";
-      const cssAbs = path.join(cwd, cssRel);
-      if (!(await pathExists(cssAbs))) {
-        await writeTextFile(cssAbs, defaultCssVariables());
-      }
-
-      // tailwind.config.ts：存在则补 content；不存在则生成
-      const contentGlobs = [
-        "./components/**/*.{vue,js,ts}",
-        "./layouts/**/*.{vue,js,ts}",
-        "./pages/**/*.{vue,js,ts}",
-        "./plugins/**/*.{js,ts}",
-        "./app.vue",
-        "./error.vue",
-        "./content/**/*.{md,yml,yaml,json}",
-        `./${cfg.componentsDir}/**/*.{vue,js,ts}`,
-        `./${cfg.composablesDir}/**/*.{js,ts}`,
-      ];
-      const twPath = path.join(cwd, "tailwind.config.ts");
-      if (await pathExists(twPath)) {
-        const rawTw = await fs.readFile(twPath, "utf8");
-        const patched = patchTailwindContentArray(rawTw, contentGlobs);
-        if (patched && patched !== rawTw) await fs.writeFile(twPath, patched, "utf8");
-      } else {
-        const templatePath = path.join(getTemplatesRootDir(), "tailwind.config.template");
-        let templateContent = await fs.readFile(templatePath, "utf8");
-        // <%- contentGlobs %> removed from template, no replacement needed
-        await writeTextFile(twPath, templateContent);
-      }
-
-      await patchNuxtConfigAddCss({ cwd, cssPath: `~/${cssRel}` });
-
       // eslint-disable-next-line no-console
-      console.log(
-        `已初始化：${path.relative(process.cwd(), cfgPath)}；并生成 cn/utils、tailwind 配置与 CSS 变量（pm=${pm}）`,
-      );
+      console.log(`已初始化：${path.relative(process.cwd(), cfgPath)}；并生成 cn/utils（pm=${pm}）`);
+      console.log("请按照 https://tw.icebreaker.top/docs/quick-start/v4/uni-app-vite 指引进行项目配置初始化");
+
+      console.log("");
+      await showLogo();
+      await typewriter(gradientText("感谢使用 Reborn UI ! ✨"), 2);
     });
 
   return cmd;

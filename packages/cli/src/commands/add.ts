@@ -5,11 +5,12 @@ import type { PackageManager, RegistryComponent } from "../types.js";
 import { ensureDir, pathExists, writeTextFile } from "../utils/fs.js";
 import {
   detectPackageManager,
-  getMissingDeps,
-  installDeps,
   readPackageJson,
 } from "../utils/pm.js";
 import { defaultConfig, loadConfigCompat, loadRegistry } from "../utils/registry.js";
+import cliProgress from "cli-progress";
+import chalk from "chalk";
+import { successLog } from "../utils/ui.js";
 
 function rewriteImports(params: {
   content: string;
@@ -29,16 +30,23 @@ async function writeComponentFiles(params: {
   aliasSymbol: string;
   component: RegistryComponent;
   overwrite?: boolean;
+  onProgress?: () => void;
 }) {
-  const { cwd, componentsDir, aliasSymbol, component, overwrite } = params;
+  const { cwd, componentsDir, aliasSymbol, component, overwrite, onProgress } = params;
   const baseDir = path.join(cwd, componentsDir, component.name);
   await ensureDir(baseDir);
 
   for (const f of component.files) {
     const target = path.join(baseDir, ...f.path.split("/"));
-    if (!overwrite && (await pathExists(target))) continue;
+    if (!overwrite && (await pathExists(target))) {
+      onProgress?.();
+      continue;
+    }
     const nextContent = rewriteImports({ content: f.content, aliasSymbol });
     await writeTextFile(target, nextContent);
+    onProgress?.();
+    // 增加一个极小的延迟，让进度条看起来在“跑”
+    await new Promise(r => setTimeout(r, 10));
   }
 
   return baseDir;
@@ -98,34 +106,45 @@ export function addCommand() {
         targets = res.selected ?? [];
       }
 
-      const pkg = await readPackageJson(cwd);
-      const allDeps = new Set<string>();
+      const totalFiles = targets.reduce((acc, name) => {
+        const c = registry.components.find((x) => x.name === name);
+        return acc + (c?.files.length ?? 0);
+      }, 0);
+
+      const bar = new cliProgress.SingleBar({
+        format: '正在写入文件 |' + chalk.cyan('{bar}') + '| {percentage}% || {value}/{total} 文件',
+        barCompleteChar: '\u2588',
+        barIncompleteChar: '\u2591',
+        hideCursor: true
+      });
+
+      bar.start(totalFiles, 0);
 
       for (const name of targets) {
         const c = registry.components.find((x) => x.name === name);
-        if (!c) throw new Error(`registry 中不存在该组件：${name}`);
+        if (!c) {
+          bar.stop();
+          throw new Error(`registry 中不存在该组件：${name}`);
+        }
 
-        const outDir = await writeComponentFiles({
+        await writeComponentFiles({
           cwd,
           componentsDir: cfg.componentsDir,
           aliasSymbol: cfg.aliasSymbol ?? "@",
           component: c,
           overwrite: opts.overwrite,
+          onProgress: () => bar.increment()
         });
+      }
+      bar.stop();
 
-        // eslint-disable-next-line no-console
-        console.log(`已写入组件：${name} -> ${path.relative(cwd, outDir)}`);
-
-        for (const dep of c.dependencies) allDeps.add(dep);
+      console.log("");
+      for (const name of targets) {
+        successLog(`组件 ${chalk.bold(name)} 已成功添加到项目`);
       }
 
-      const missing = getMissingDeps(pkg, [...allDeps]);
-      await installDeps({ cwd, pm, deps: missing });
-
       // eslint-disable-next-line no-console
-      console.log(
-        `完成：添加 ${targets.length} 个组件；补装依赖 ${missing.length} 个（pm=${pm}）`,
-      );
+      console.log(`\n${chalk.bold.green('DONE')} 已完成 ${targets.length} 个组件的添加（pm=${pm}）`);
     });
 
   return cmd;
