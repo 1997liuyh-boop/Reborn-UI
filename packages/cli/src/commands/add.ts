@@ -31,12 +31,20 @@ async function writeComponentFiles(params: {
   component: RegistryComponent;
   overwrite?: boolean;
   onProgress?: () => void;
+  platform: "web" | "uniapp";
 }) {
-  const { cwd, componentsDir, aliasSymbol, component, overwrite, onProgress } = params;
+  const { cwd, componentsDir, aliasSymbol, component, overwrite, onProgress, platform } = params;
   const baseDir = path.join(cwd, componentsDir, component.name);
   await ensureDir(baseDir);
 
   for (const f of component.files) {
+    // 过滤逻辑：
+    // 1. 如果 f.target 存在且不等于 platform，跳过
+    // 2. 如果 f.target 不存在，视为通用文件，不跳过
+    if (f.target && f.target !== platform) {
+      continue;
+    }
+
     const target = path.join(baseDir, ...f.path.split("/"));
     if (!overwrite && (await pathExists(target))) {
       onProgress?.();
@@ -106,6 +114,22 @@ export function addCommand() {
         targets = res.selected ?? [];
       }
 
+      // 询问平台 (Web / UniApp)
+      const { platform } = await prompts({
+        type: "select",
+        name: "platform",
+        message: "选择目标平台",
+        choices: [
+          { title: "Web (默认)", value: "web" },
+          { title: "UniApp", value: "uniapp" },
+        ],
+        initial: 0,
+      });
+
+      if (!platform) {
+        throw new Error("已取消");
+      }
+
       const totalFiles = targets.reduce((acc, name) => {
         const c = registry.components.find((x) => x.name === name);
         return acc + (c?.files.length ?? 0);
@@ -133,7 +157,8 @@ export function addCommand() {
           aliasSymbol: cfg.aliasSymbol ?? "@",
           component: c,
           overwrite: opts.overwrite,
-          onProgress: () => bar.increment()
+          onProgress: () => bar.increment(),
+          platform,
         });
       }
       bar.stop();

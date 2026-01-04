@@ -19,9 +19,11 @@ function isAllowedFile(filePath: string) {
   ].includes(ext);
 }
 
+import { transformToUniapp } from "../utils/transformers.js";
+
 function findWorkspaceRoot(startDir: string) {
   let current = path.resolve(startDir);
-  for (;;) {
+  for (; ;) {
     const marker = path.join(current, "pnpm-workspace.yaml");
     if (fssync.existsSync(marker)) return current;
     const parent = path.dirname(current);
@@ -77,6 +79,7 @@ export function buildCommand() {
           isAllowedFile,
         );
 
+
         const files: RegistryComponent["files"] = [];
         const depSet = new Set<string>();
 
@@ -86,10 +89,29 @@ export function buildCommand() {
             .split(path.sep)
             .join("/");
           const content = await fs.readFile(absFile, "utf8");
-          files.push({ path: rel, content });
+
+          const ext = path.extname(absFile).toLowerCase();
+
+          // 1. Web 版本（原样）
+          // 如果是 .vue，明确标记 target="web"
+          // 如果是其他文件（.ts/.js），默认不标记（表示通用），或者也可以标记 web。
+          // 策略：.vue 必须要分 web/uniapp；.ts/.js 视情况，这里先默认通用（不标记 target），
+          // 除非你需要 uniapp 特有的 js。
+          // 简化起见：.vue 文件生成两份，一份 target=web，一份 target=uniapp
+          // 其他文件生成一份，无 target（通用）。
+
+          if (ext === ".vue") {
+            files.push({ path: rel, content, target: "web" });
+            files.push({
+              path: rel,
+              content: transformToUniapp(content),
+              target: "uniapp",
+            });
+          } else {
+            files.push({ path: rel, content });
+          }
 
           // 只从代码文件里抽依赖
-          const ext = path.extname(absFile).toLowerCase();
           if (ext === ".ts" || ext === ".js" || ext === ".vue") {
             for (const dep of extractNpmDependenciesFromText(content)) {
               depSet.add(dep);

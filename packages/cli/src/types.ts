@@ -30,6 +30,7 @@ export interface RegistryComponent {
   files: Array<{
     path: string; // relative to component root
     content: string;
+    target?: "web" | "uniapp";
   }>;
 }
 
