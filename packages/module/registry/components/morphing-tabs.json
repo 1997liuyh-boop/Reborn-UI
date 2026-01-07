@@ -1,0 +1,16 @@
+{
+  "name": "morphing-tabs",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as MorphingTabs } from \"./MorphingTabs.vue\";\r\n"
+    },
+    {
+      "path": "MorphingTabs.vue",
+      "content": "<template>\r\n  <div\r\n    v-if=\"props.tabs.length\"\r\n    :class=\"cn('relative', props.class)\"\r\n    style=\"filter: url(&quot;#exclusionTabsGoo&quot;)\"\r\n  >\r\n    <button\r\n      v-for=\"tab in props.tabs\"\r\n      :key=\"tab\"\r\n      :class=\"cn('px-4 py-2 bg-primary text-background transition-all duration-500')\"\r\n      :style=\"{\r\n        margin: `0 ${activeTab === tab ? props.margin : 0}px`,\r\n      }\"\r\n      @click=\"emit('update:activeTab', tab)\"\r\n    >\r\n      {{ tab }}\r\n    </button>\r\n\r\n    <div class=\"absolute w-full\">\r\n      <svg\r\n        xmlns=\"http://www.w3.org/2000/svg\"\r\n        version=\"1.1\"\r\n      >\r\n        <defs>\r\n          <filter\r\n            id=\"exclusionTabsGoo\"\r\n            x=\"-50%\"\r\n            y=\"-50%\"\r\n            width=\"200%\"\r\n            height=\"200%\"\r\n            color-interpolation-filters=\"sRGB\"\r\n          >\r\n            <feGaussianBlur\r\n              in=\"SourceGraphic\"\r\n              :stdDeviation=\"blurStdDeviation\"\r\n              result=\"blur\"\r\n            ></feGaussianBlur>\r\n            <feColorMatrix\r\n              in=\"blur\"\r\n              type=\"matrix\"\r\n              values=\"\r\n              1 0 0 0 0  \r\n              0 1 0 0 0  \r\n              0 0 1 0 0  \r\n              0 0 0 36 -12\"\r\n              result=\"goo\"\r\n            ></feColorMatrix>\r\n            <feComposite\r\n              in=\"SourceGraphic\"\r\n              in2=\"goo\"\r\n              operator=\"atop\"\r\n            ></feComposite>\r\n          </filter>\r\n        </defs>\r\n      </svg>\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { cn } from \"@/lib/utils\";\r\n\r\ninterface Props {\r\n  tabs: string[];\r\n  activeTab: string;\r\n  margin?: number;\r\n  class?: string;\r\n  blurStdDeviation?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  margin: 20,\r\n  blurStdDeviation: 6,\r\n});\r\nconst emit = defineEmits<{\r\n  (e: \"update:activeTab\", tab: string): void;\r\n}>();\r\n</script>\r\n\r\n<style></style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "43155d1ca7a7c256ca8a6cd1ad66dded7771e214"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "confetti",
+  "dependencies": [
+    "canvas-confetti"
+  ],
+  "files": [
+    {
+      "path": "Confetti.vue",
+      "content": "<template>\r\n  <div>\r\n    <canvas\r\n      ref=\"canvasRef\"\r\n      :class=\"$props.class\"\r\n    ></canvas>\r\n    <slot />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport {\r\n  create,\r\n  type GlobalOptions as ConfettiGlobalOptions,\r\n  type Options as ConfettiOptions,\r\n  type CreateTypes as ConfettiInstance,\r\n} from \"canvas-confetti\";\r\nimport { ref, onMounted, onUnmounted, provide } from \"vue\";\r\n\r\ntype Api = {\r\n  fire: (options?: ConfettiOptions) => void;\r\n};\r\n\r\ntype ConfettiProps = {\r\n  options?: ConfettiOptions;\r\n  globalOptions?: ConfettiGlobalOptions;\r\n  manualstart?: boolean;\r\n  class?: string;\r\n};\r\n\r\nconst props = defineProps<ConfettiProps>();\r\n\r\nconst instanceRef = ref<ConfettiInstance | null>(null);\r\nconst canvasRef = ref<HTMLCanvasElement | null>(null);\r\n\r\n// Confetti API\r\nfunction fire(opts: ConfettiOptions = {}) {\r\n  instanceRef.value?.({ ...props.options, ...opts });\r\n}\r\n\r\nconst api: Api = { fire };\r\n\r\nprovide(\"ConfettiContext\", api);\r\n\r\n// Initialize confetti when mounted\r\nonMounted(() => {\r\n  if (canvasRef.value) {\r\n    instanceRef.value = create(canvasRef.value, {\r\n      ...props.globalOptions,\r\n      resize: true,\r\n    });\r\n\r\n    if (!props.manualstart) {\r\n      fire();\r\n    }\r\n  }\r\n});\r\n\r\n// Cleanup when unmounted\r\nonUnmounted(() => {\r\n  if (instanceRef.value) {\r\n    instanceRef.value.reset();\r\n    instanceRef.value = null;\r\n  }\r\n});\r\n\r\ndefineExpose({\r\n  fire,\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "ConfettiButton.vue",
+      "content": "<template>\r\n  <button @click=\"handleClick\">\r\n    <slot />\r\n  </button>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport confetti from \"canvas-confetti\";\r\nimport type { Options as ConfettiOptions } from \"canvas-confetti\";\r\nimport { inject } from \"vue\";\r\n\r\ntype ConfettiButtonProps = {\r\n  options?: ConfettiOptions & { canvas?: HTMLCanvasElement };\r\n};\r\n\r\nconst props = defineProps<ConfettiButtonProps>();\r\nconst confettiContext = inject<{ fire: (opts?: ConfettiOptions) => void }>(\"ConfettiContext\");\r\n\r\n// Handle click event\r\nfunction handleClick(event: MouseEvent) {\r\n  const target = event.target as HTMLElement;\r\n  const rect = target.getBoundingClientRect();\r\n  const x = rect.left + rect.width / 2;\r\n  const y = rect.top + rect.height / 2;\r\n\r\n  confetti({\r\n    ...props.options,\r\n    origin: {\r\n      x: x / window.innerWidth,\r\n      y: y / window.innerHeight,\r\n    },\r\n  });\r\n\r\n  if (confettiContext) {\r\n    confettiContext.fire({ ...props.options });\r\n  }\r\n}\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as Confetti } from \"./Confetti.vue\";\r\nexport { default as ConfettiButton } from \"./ConfettiButton.vue\";\r\n"
+    }
+  ],
+  "fileCount": 3,
+  "contentHash": "f98587a12f63487887f44a2717863ce2d8e100d8"
+}

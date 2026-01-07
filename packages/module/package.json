@@ -1,0 +1,13 @@
+{
+  "name": "reborn-ui-registry",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "registry"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
+
+

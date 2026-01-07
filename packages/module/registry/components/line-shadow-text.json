@@ -1,0 +1,16 @@
+{
+  "name": "line-shadow-text",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as LineShadowText } from \"./LineShadowText.vue\";\r\n"
+    },
+    {
+      "path": "LineShadowText.vue",
+      "content": "<template>\r\n  <component\r\n    :is=\"as\"\r\n    class=\"shadow-color\"\r\n    :class=\"\r\n      cn(\r\n        'relative z-0 inline-flex',\r\n        'after:absolute after:left-[0.04em] after:top-[0.04em] after:-z-10',\r\n        'after:bg-[linear-gradient(45deg,transparent_45%,var(--shadow-color)_45%,var(--shadow-color)_55%,transparent_0)]',\r\n        'after:bg-[length:0.06em_0.06em] after:bg-clip-text after:text-transparent',\r\n        'after:content-[attr(data-text)]',\r\n        'animate-line-shadow',\r\n        props.class,\r\n      )\r\n    \"\r\n    :data-text=\"content\"\r\n  >\r\n    <slot />\r\n  </component>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\nimport { useSlots, type VNode } from \"vue\";\r\n\r\ninterface LineShadowTextProps {\r\n  shadowColor?: string;\r\n  as?: keyof HTMLElement;\r\n  class?: string;\r\n}\r\n\r\nconst props = withDefaults(defineProps<LineShadowTextProps>(), {\r\n  shadowColor: \"black\",\r\n  as: \"span\" as keyof HTMLElement,\r\n});\r\n\r\nconst slots = useSlots() as Record<string, () => VNode[]>;\r\nconst children = slots?.default ? slots.default()[0]?.children : null;\r\n\r\nconst content = typeof children === \"string\" ? children : null;\r\n\r\nif (!content) {\r\n  throw new Error(\"LineShadowText only accepts string content\");\r\n}\r\n</script>\r\n\r\n<style scoped>\r\n.shadow-color {\r\n  --shadow-color: v-bind(props.shadowColor);\r\n}\r\n\r\n.animate-line-shadow::after {\r\n  animation: line-shadow 15s linear infinite;\r\n}\r\n\r\n@keyframes line-shadow {\r\n  0% {\r\n    background-position: 0 0;\r\n  }\r\n  100% {\r\n    background-position: 100% -100%;\r\n  }\r\n}\r\n</style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "153d96053f66a1fc8fcc01f17e80e6a33f772162"
+}

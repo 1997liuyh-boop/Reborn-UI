@@ -1,0 +1,96 @@
+@theme {
+  /* ===== Red ===== */
+  --color-red-1: #FFEBEE;
+  --color-red-2: #FFE0E4;
+  --color-red-3: #FFB1BC;
+  --color-red-4: #FF8B9B;
+  --color-red-5: #FF6675;
+  --color-red-6: #FF3D58;
+  --color-red-7: #D92946;
+  --color-red-8: #B31938;
+  --color-red-9: #8C0D2A;
+  --color-red-10: #660821;
+
+  /* ===== Orange ===== */
+  --color-orange-1: #FFF6E7;
+  --color-orange-2: #FFE9C9;
+  --color-orange-3: #FFD5A0;
+  --color-orange-4: #FFC370;
+  --color-orange-5: #FFB03B;
+  --color-orange-6: #FF9711;
+  --color-orange-7: #BF7C2A;
+  --color-orange-8: #995C1A;
+  --color-orange-9: #733D0E;
+  --color-orange-10: #522601;
+
+  /* ===== Green ===== */
+  --color-green-1: #F1FAF8;
+  --color-green-2: #E7F6F3;
+  --color-green-3: #A2DFCF;
+  --color-green-4: #5FCFAD;
+  --color-green-5: #3AC29E;
+  --color-green-6: #16AE88;
+  --color-green-7: #0B876C;
+  --color-green-8: #036150;
+  --color-green-9: #003B32;
+  --color-green-10: #001412;
+
+  /* ===== Blue ===== */
+  --color-blue-1: #ECF9FF;
+  --color-blue-2: #DFF4FF;
+  --color-blue-3: #9ED6F5;
+  --color-blue-4: #61CCFF;
+  --color-blue-5: #35B6F2;
+  --color-blue-6: #0D99E5;
+  --color-blue-7: #0277BF;
+  --color-blue-8: #005999;
+  --color-blue-9: #003F73;
+  --color-blue-10: #00284D;
+
+  /* ===== Gray ===== */
+  --color-gray-1: #FFFFFF;
+  --color-gray-2: #F5F5F5;
+  --color-gray-3: #EEEEEE;
+  --color-gray-4: #CCCCCC;
+  --color-gray-5: #AAAAAA;
+  --color-gray-6: #999999;
+  --color-gray-7: #666666;
+  --color-gray-8: #333333;
+
+  /* ===== Radius ===== */
+  --radius-ui-2xs: 4px;
+  --radius-ui-xs: 6px;
+  --radius-ui-sm: 8px;
+  --radius-ui-md: 12px;
+  --radius-ui-base: 16px;
+  --radius-ui-lg: 24px;
+
+   /* Font family */
+  --font-sans:
+    -apple-system,
+    BlinkMacSystemFont,
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Noto Sans SC",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  /* 辅助文字 (20px - 24px) */
+  --text-size-20: 20px;
+  --text-size-22: 22px;
+  --text-size-24: 24px;
+
+  /* 正文 (26px - 28px) */
+  --text-size-26: 26px;
+  --text-size-28: 28px;
+
+  /* 标题 (30px - 52px) */
+  --text-size-30: 30px;
+  --text-size-32: 32px;
+  --text-size-36: 36px;
+  --text-size-40: 40px;
+  --text-size-48: 48px;
+  --text-size-52: 52px;
+}

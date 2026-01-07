@@ -1,0 +1,16 @@
+{
+  "name": "video-text",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as VideoText } from \"./VideoText.vue\";\r\n"
+    },
+    {
+      "path": "VideoText.vue",
+      "content": "<template>\r\n  <div\r\n    class=\"relative size-full\"\r\n    :class=\"props.class\"\r\n  >\r\n    <div\r\n      class=\"absolute inset-0 flex items-center justify-center\"\r\n      :style=\"{\r\n        maskImage: dataUrlMask,\r\n        WebkitMaskImage: dataUrlMask,\r\n        WebkitMaskSize: 'contain',\r\n        maskRepeat: 'no-repeat',\r\n        WebkitMaskRepeat: 'no-repeat',\r\n        maskPosition: 'center',\r\n        WebkitMaskPosition: 'center',\r\n      }\"\r\n    >\r\n      <video\r\n        class=\"size-full object-cover\"\r\n        :autoplay=\"autoPlay\"\r\n        :muted=\"muted\"\r\n        :loop=\"loop\"\r\n        :preload=\"preload\"\r\n      >\r\n        <source :src=\"src\" />\r\n        Your browser does not support the video tag.\r\n      </video>\r\n    </div>\r\n    <span class=\"sr-only\">{{ content }}</span>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { onMounted, onUnmounted, ref, watch, computed } from \"vue\";\r\n\r\ninterface Props {\r\n  src: string;\r\n  class?: string;\r\n  autoPlay?: boolean;\r\n  muted?: boolean;\r\n  loop?: boolean;\r\n  preload?: \"auto\" | \"metadata\" | \"none\";\r\n  fontSize?: string | number;\r\n  fontWeight?: string | number;\r\n  textAnchor?: string;\r\n  dominantBaseline?: string;\r\n  fontFamily?: string;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  class: \"\",\r\n  autoPlay: true,\r\n  muted: true,\r\n  loop: true,\r\n  preload: \"auto\",\r\n  fontSize: 20,\r\n  fontWeight: \"bold\",\r\n  textAnchor: \"middle\",\r\n  dominantBaseline: \"middle\",\r\n  fontFamily: \"sans-serif\",\r\n});\r\n\r\nconst defaultSlot = useSlots().default;\r\n\r\nconst content = computed(\r\n  () =>\r\n    defaultSlot?.()\r\n      .map((vnode) => vnode.children)\r\n      .join(\"\") ?? \"\",\r\n);\r\n\r\nconst svgMask = ref(\"\");\r\n\r\nconst dataUrlMask = computed(\r\n  () => `url(\"data:image/svg+xml,${encodeURIComponent(svgMask.value)}\")`,\r\n);\r\n\r\nfunction updateSvgMask() {\r\n  const responsiveFontSize =\r\n    typeof props.fontSize === \"number\" ? `${props.fontSize}vw` : props.fontSize;\r\n  svgMask.value = `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><text x='50%' y='50%' font-size='${responsiveFontSize}' font-weight='${props.fontWeight}' text-anchor='${props.textAnchor}' dominant-baseline='${props.dominantBaseline}' font-family='${props.fontFamily}'>${content.value}</text></svg>`;\r\n}\r\n\r\nwatch(content, updateSvgMask);\r\n\r\nwatch(\r\n  () => [\r\n    props.fontSize,\r\n    props.fontWeight,\r\n    props.textAnchor,\r\n    props.dominantBaseline,\r\n    props.fontFamily,\r\n  ],\r\n  updateSvgMask,\r\n);\r\n\r\nonMounted(() => {\r\n  updateSvgMask();\r\n  window.addEventListener(\"resize\", updateSvgMask);\r\n});\r\n\r\nonUnmounted(() => {\r\n  window.removeEventListener(\"resize\", updateSvgMask);\r\n});\r\n</script>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "843615dc73bd1e2dc84859e6dd11fdea1b04bce6"
+}

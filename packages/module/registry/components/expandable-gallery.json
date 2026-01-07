@@ -1,0 +1,16 @@
+{
+  "name": "expandable-gallery",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "ExpandableGallery.vue",
+      "content": "<template>\r\n  <div :class=\"cn('flex h-96 w-full gap-2', props.class)\">\r\n    <div\r\n      v-for=\"image in images\"\r\n      :key=\"image\"\r\n      class=\"relative flex h-full flex-1 cursor-pointer overflow-hidden rounded-xl transition-all duration-500 ease-in-out hover:flex-[3]\"\r\n    >\r\n      <img\r\n        class=\"relative h-full object-cover\"\r\n        :src=\"image\"\r\n        :alt=\"image\"\r\n      />\r\n    </div>\r\n  </div>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport type { HTMLAttributes } from \"vue\";\r\nimport { cn } from \"@/lib/utils\";\r\n\r\ninterface Props {\r\n  images: string[];\r\n  class?: HTMLAttributes[\"class\"];\r\n}\r\n\r\nconst props = defineProps<Props>();\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as ExpandableGallery } from \"./ExpandableGallery.vue\";\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "c3a3a7a359c36414e013b4f92111c6877edc6ffd"
+}

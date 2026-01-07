@@ -1,0 +1,16 @@
+{
+  "name": "card-spotlight",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "CardSpotlight.vue",
+      "content": "<template>\r\n  <div\r\n    :class=\"[\r\n      'group relative flex size-full overflow-hidden rounded-xl border bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',\r\n      $props.class,\r\n    ]\"\r\n    @mousemove=\"handleMouseMove\"\r\n    @mouseleave=\"handleMouseLeave\"\r\n  >\r\n    <div :class=\"cn('relative z-10', props.slotClass)\">\r\n      <slot></slot>\r\n    </div>\r\n    <div\r\n      class=\"pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100\"\r\n      :style=\"{\r\n        background: backgroundStyle,\r\n        opacity: gradientOpacity,\r\n      }\"\r\n    ></div>\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { ref, computed, onMounted, type HTMLAttributes } from \"vue\";\r\nimport { cn } from \"@/lib/utils\";\r\n\r\nconst props = withDefaults(\r\n  defineProps<{\r\n    class?: HTMLAttributes[\"class\"];\r\n    slotClass?: HTMLAttributes[\"class\"];\r\n    gradientSize?: number;\r\n    gradientColor?: string;\r\n    gradientOpacity?: number;\r\n  }>(),\r\n  {\r\n    class: \"\",\r\n    slotClass: \"\",\r\n    gradientSize: 200,\r\n    gradientColor: \"#262626\",\r\n    gradientOpacity: 0.8,\r\n  },\r\n);\r\n\r\nconst mouseX = ref(-props.gradientSize * 10);\r\nconst mouseY = ref(-props.gradientSize * 10);\r\n\r\nfunction handleMouseMove(e: MouseEvent) {\r\n  const target = e.currentTarget as HTMLElement;\r\n  const rect = target.getBoundingClientRect();\r\n  mouseX.value = e.clientX - rect.left;\r\n  mouseY.value = e.clientY - rect.top;\r\n}\r\n\r\nfunction handleMouseLeave() {\r\n  mouseX.value = -props.gradientSize * 10;\r\n  mouseY.value = -props.gradientSize * 10;\r\n}\r\n\r\nonMounted(() => {\r\n  mouseX.value = -props.gradientSize * 10;\r\n  mouseY.value = -props.gradientSize * 10;\r\n});\r\n\r\nconst backgroundStyle = computed(() => {\r\n  return `radial-gradient(\r\n    circle at ${mouseX.value}px ${mouseY.value}px,\r\n    ${props.gradientColor} 0%,\r\n    rgba(0, 0, 0, 0) 70%\r\n  )`;\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as CardSpotlight } from \"./CardSpotlight.vue\";\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "e9950d3bb933da8766f84a56869ae33662ad02e1"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "flip-card",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "FlipCard.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { computed } from \"vue\";\r\n\r\ninterface FlipCardProps {\r\n  rotate?: \"x\" | \"y\";\r\n  class?: string;\r\n}\r\n\r\nconst props = withDefaults(defineProps<FlipCardProps>(), {\r\n  rotate: \"y\",\r\n});\r\nconst rotationClass = {\r\n  x: [\"group-hover:[transform:rotateX(180deg)]\", \"[transform:rotateX(180deg)]\"],\r\n  y: [\"group-hover:[transform:rotateY(180deg)]\", \"[transform:rotateY(180deg)]\"],\r\n};\r\n\r\nconst rotation = computed(() => rotationClass[props.rotate]);\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"group h-72 w-56 [perspective:1000px]\"\r\n    :class=\"[props.class]\"\r\n  >\r\n    <div\r\n      class=\"relative h-full rounded-2xl transition-all duration-500 [transform-style:preserve-3d]\"\r\n      :class=\"[rotation[0]]\"\r\n    >\r\n      <!-- Front -->\r\n      <div\r\n        class=\"absolute size-full overflow-hidden rounded-2xl border [backface-visibility:hidden]\"\r\n      >\r\n        <slot />\r\n      </div>\r\n\r\n      <!-- Back -->\r\n      <div\r\n        class=\"absolute h-full w-full overflow-hidden rounded-2xl border bg-black/80 p-4 text-slate-200 [backface-visibility:hidden]\"\r\n        :class=\"[rotation[1]]\"\r\n      >\r\n        <slot name=\"back\" />\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "target": "web"
+    },
+    {
+      "path": "FlipCard.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { computed } from \"vue\";\r\n\r\ninterface FlipCardProps {\r\n  rotate?: \"x\" | \"y\";\r\n  class?: string;\r\n}\r\n\r\nconst props = withDefaults(defineProps<FlipCardProps>(), {\r\n  rotate: \"y\",\r\n});\r\nconst rotationClass = {\r\n  x: [\"group-hover:[transform:rotateX(180deg)]\", \"[transform:rotateX(180deg)]\"],\r\n  y: [\"group-hover:[transform:rotateY(180deg)]\", \"[transform:rotateY(180deg)]\"],\r\n};\r\n\r\nconst rotation = computed(() => rotationClass[props.rotate]);\r\n</script>\r\n\r\n<template>\r\n  <view\r\n    class=\"group h-72 w-56 [perspective:1000px]\"\r\n    :class=\"[props.class]\"\r\n  >\r\n    <view\r\n      class=\"relative h-full rounded-2xl transition-all duration-500 [transform-style:preserve-3d]\"\r\n      :class=\"[rotation[0]]\"\r\n    >\r\n      <!-- Front -->\r\n      <view\r\n        class=\"absolute size-full overflow-hidden rounded-2xl border [backface-visibility:hidden]\"\r\n      >\r\n        <slot />\r\n      </view>\r\n\r\n      <!-- Back -->\r\n      <view\r\n        class=\"absolute h-full w-full overflow-hidden rounded-2xl border bg-black/80 p-4 text-slate-200 [backface-visibility:hidden]\"\r\n        :class=\"[rotation[1]]\"\r\n      >\r\n        <slot name=\"back\" />\r\n      </view>\r\n    </view>\r\n  </view>\r\n</template>\r\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as FlipCard } from \"./FlipCard.vue\";\r\n"
+    }
+  ],
+  "fileCount": 3,
+  "contentHash": "9d26fd64b5a9c3f24b0b040a84d7669fb618c6bf"
+}

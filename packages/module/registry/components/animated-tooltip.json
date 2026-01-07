@@ -1,0 +1,18 @@
+{
+  "name": "animated-tooltip",
+  "dependencies": [
+    "motion-v"
+  ],
+  "files": [
+    {
+      "path": "AnimatedTooltip.vue",
+      "content": "<template>\r\n  <div\r\n    v-for=\"item in items\"\r\n    :key=\"item.id\"\r\n    class=\"group relative -mr-4\"\r\n    @mouseenter=\"(e) => handleMouseEnter(e, item.id)\"\r\n    @mouseleave=\"hoveredIndex = null\"\r\n    @mousemove=\"handleMouseMove\"\r\n  >\r\n    <!-- Tooltip -->\r\n    <Motion\r\n      v-if=\"hoveredIndex === item.id\"\r\n      :initial=\"{\r\n        opacity: 0,\r\n        y: 20,\r\n        scale: 0.6,\r\n      }\"\r\n      :animate=\"{\r\n        opacity: 1,\r\n        y: 0,\r\n        scale: 1,\r\n      }\"\r\n      :transition=\"{\r\n        type: 'spring',\r\n        stiffness: 260,\r\n        damping: 10,\r\n      }\"\r\n      :exit=\"{\r\n        opacity: 0,\r\n        y: 20,\r\n        scale: 0.6,\r\n      }\"\r\n      :style=\"{\r\n        translateX: `${translation}px`,\r\n        rotate: `${rotation}deg`,\r\n      }\"\r\n      class=\"absolute left-1/2 -top-16 z-50 flex -translate-x-1/2 flex-col items-center justify-center whitespace-nowrap rounded-md bg-black px-4 py-2 text-xs shadow-xl\"\r\n    >\r\n      <div\r\n        class=\"absolute right-1/2 translate-x-1/2 -bottom-px z-30 h-px w-2/5 me-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent\"\r\n      />\r\n      <div\r\n        class=\"absolute left-1/2 -translate-x-1/2 -bottom-px z-30 h-px w-2/5 ms-1 bg-gradient-to-r from-transparent via-sky-500 to-transparent\"\r\n      />\r\n      <div class=\"relative z-30 text-base font-bold text-white\">\r\n        {{ item.name }}\r\n      </div>\r\n      <div class=\"text-xs text-white\">{{ item.designation }}</div>\r\n    </Motion>\r\n\r\n    <!-- Avatar Image -->\r\n    <img\r\n      :src=\"item.image\"\r\n      :alt=\"item.name\"\r\n      class=\"relative !m-0 size-14 rounded-full border-2 border-white object-cover object-top !p-0 transition duration-500 group-hover:z-30 group-hover:scale-105\"\r\n    />\r\n  </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { computed, ref } from \"vue\";\r\nimport { Motion } from \"motion-v\";\r\n\r\ninterface Item {\r\n  id: number;\r\n  name: string;\r\n  designation: string;\r\n  image: string;\r\n}\r\n\r\ndefineProps<{\r\n  items: Item[];\r\n}>();\r\n\r\nconst hoveredIndex = ref<number | null>(null);\r\nconst mouseX = ref<number>(0);\r\n\r\n// Calculate rotation and translation based on mouse position\r\nconst rotation = computed<number>(() => {\r\n  const x = mouseX.value;\r\n  return (x / 100) * 50;\r\n});\r\n\r\nconst translation = computed<number>(() => {\r\n  const x = mouseX.value;\r\n  return (x / 100) * 50;\r\n});\r\n\r\n// Handle initial mouse position and hover\r\nfunction handleMouseEnter(event: MouseEvent, itemId: number) {\r\n  hoveredIndex.value = itemId;\r\n  // Calculate initial position immediately\r\n  const rect = (event.target as HTMLElement)?.getBoundingClientRect();\r\n  const halfWidth = rect.width / 2;\r\n  mouseX.value = event.clientX - rect.left - halfWidth;\r\n}\r\n\r\n// Handle mouse movement\r\nfunction handleMouseMove(event: MouseEvent) {\r\n  const rect = (event.target as HTMLElement)?.getBoundingClientRect();\r\n  const halfWidth = rect.width / 2;\r\n  mouseX.value = event.clientX - rect.left - halfWidth;\r\n}\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as AnimatedTooltip } from \"./AnimatedTooltip.vue\";\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "ddacc08a121e54bdc3aea7c291182fe69614b89e"
+}

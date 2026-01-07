@@ -1,0 +1,16 @@
+{
+  "name": "glow-border",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "GlowBorder.vue",
+      "content": "<template>\r\n  <div\r\n    :style=\"styles\"\r\n    :class=\"\r\n      cn(\r\n        'pointer-events-none absolute inset-0 size-full rounded-[inherit] will-change-[background-position] motion-safe:animate-glow',\r\n        props.class,\r\n      )\r\n    \"\r\n  ></div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\nimport { computed, type HTMLAttributes } from \"vue\";\r\n\r\ninterface Props {\r\n  borderRadius?: number;\r\n  color?: string | Array<string>;\r\n  borderWidth?: number;\r\n  duration?: number;\r\n  class?: HTMLAttributes[\"class\"];\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  borderRadius: 10,\r\n  color: \"#FFF\",\r\n  borderWidth: 2,\r\n  duration: 10,\r\n});\r\n\r\nconst styles = computed(() => {\r\n  return {\r\n    \"--border-radius\": `${props.borderRadius}px`,\r\n    \"--border-width\": `${props.borderWidth}px`,\r\n    \"--duration\": `${props.duration}s`,\r\n    backgroundImage: `radial-gradient(transparent,transparent, ${\r\n      Array.isArray(props.color) ? props.color.join(\",\") : props.color\r\n    },transparent,transparent)`,\r\n    backgroundSize: \"300% 300%\",\r\n    mask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,\r\n    WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,\r\n    WebkitMaskComposite: \"xor\",\r\n    maskComposite: \"exclude\",\r\n    padding: \"var(--border-width)\",\r\n    borderRadius: \"var(--border-radius)\",\r\n  };\r\n});\r\n</script>\r\n"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as GlowBorder } from \"./GlowBorder.vue\";\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "39d26df8462dc61b81be5a851c7f44b810ffb8f3"
+}

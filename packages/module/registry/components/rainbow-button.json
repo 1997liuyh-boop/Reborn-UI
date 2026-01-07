@@ -1,0 +1,16 @@
+{
+  "name": "rainbow-button",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as RainbowButton } from \"./RainbowButton.vue\";\r\n"
+    },
+    {
+      "path": "RainbowButton.vue",
+      "content": "<template>\r\n  <component\r\n    :is=\"is\"\r\n    :class=\"\r\n      cn(\r\n        'rainbow-button',\r\n        'group relative inline-flex h-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-[length:200%] px-8 py-2 font-medium text-primary-foreground transition-colors [background-clip:padding-box,border-box,border-box] [background-origin:border-box] [border:calc(0.08*1rem)_solid_transparent] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',\r\n        'before:absolute before:bottom-[-20%] before:left-1/2 before:z-0 before:h-1/5 before:w-3/5 before:-translate-x-1/2 before:bg-[linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))] before:bg-[length:200%] before:[filter:blur(calc(0.8*1rem))]',\r\n        'bg-[linear-gradient(#121213,#121213),linear-gradient(#121213_50%,rgba(18,18,19,0.6)_80%,rgba(18,18,19,0)),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))]',\r\n        'dark:bg-[linear-gradient(#fff,#fff),linear-gradient(#fff_50%,rgba(255,255,255,0.6)_80%,rgba(0,0,0,0)),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))]',\r\n        props.class,\r\n      )\r\n    \"\r\n  >\r\n    <slot />\r\n  </component>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport { cn } from \"@/lib/utils\";\r\nimport { computed } from \"vue\";\r\n\r\ninterface RainbowButtonProps {\r\n  class?: string;\r\n  is?: string;\r\n  speed?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<RainbowButtonProps>(), {\r\n  speed: 2,\r\n  is: \"button\",\r\n});\r\n\r\nconst speedInSeconds = computed(() => `${props.speed}s`);\r\n</script>\r\n\r\n<style scoped>\r\n.rainbow-button {\r\n  --color-1: hsl(0 100% 63%);\r\n  --color-2: hsl(270 100% 63%);\r\n  --color-3: hsl(210 100% 63%);\r\n  --color-4: hsl(195 100% 63%);\r\n  --color-5: hsl(90 100% 63%);\r\n  --speed: v-bind(speedInSeconds);\r\n  animation: rainbow var(--speed) infinite linear;\r\n}\r\n\r\n.rainbow-button:before {\r\n  animation: rainbow var(--speed) infinite linear;\r\n}\r\n\r\n@keyframes rainbow {\r\n  0% {\r\n    background-position: 0;\r\n  }\r\n  100% {\r\n    background-position: 200%;\r\n  }\r\n}\r\n</style>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "7db4596cc2c3ddd0001d54ed5669ec54190e3a12"
+}

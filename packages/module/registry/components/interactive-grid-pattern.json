@@ -1,0 +1,16 @@
+{
+  "name": "interactive-grid-pattern",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as InteractiveGridPattern } from \"./InteractiveGridPattern.vue\";\r\n"
+    },
+    {
+      "path": "InteractiveGridPattern.vue",
+      "content": "<template>\r\n  <svg\r\n    :width=\"gridWidth\"\r\n    :height=\"gridHeight\"\r\n    :class=\"svgClass\"\r\n  >\r\n    <rect\r\n      v-for=\"(_, index) in totalSquares\"\r\n      :key=\"index\"\r\n      :x=\"getX(index)\"\r\n      :y=\"getY(index)\"\r\n      :width=\"width\"\r\n      :height=\"height\"\r\n      :class=\"getRectClass(index)\"\r\n      @mouseenter=\"handleMouseEnter(index)\"\r\n      @mouseleave=\"handleMouseLeave\"\r\n    />\r\n  </svg>\r\n</template>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { cn } from \"@/lib/utils\";\r\nimport { ref, computed, type HTMLAttributes } from \"vue\";\r\n\r\ninterface InteractiveGridPatternProps {\r\n  className?: HTMLAttributes[\"class\"];\r\n  squaresClassName?: HTMLAttributes[\"class\"];\r\n  width?: number;\r\n  height?: number;\r\n  squares?: [number, number];\r\n}\r\n\r\nconst props = withDefaults(defineProps<InteractiveGridPatternProps>(), {\r\n  width: 40,\r\n  height: 40,\r\n  squares: () => [24, 24],\r\n});\r\n\r\nconst horizontal = computed(() => props.squares[0]);\r\nconst vertical = computed(() => props.squares[1]);\r\n\r\nconst totalSquares = computed(() => horizontal.value * vertical.value);\r\n\r\nconst hoveredSquare = ref<number | null>(null);\r\n\r\nconst gridWidth = computed(() => props.width * horizontal.value);\r\nconst gridHeight = computed(() => props.height * vertical.value);\r\n\r\nfunction getX(index: number) {\r\n  return (index % horizontal.value) * props.width;\r\n}\r\n\r\nfunction getY(index: number) {\r\n  return Math.floor(index / horizontal.value) * props.height;\r\n}\r\n\r\nconst svgClass = computed(() =>\r\n  cn(\"absolute inset-0 h-full w-full border border-gray-400/30\", props.className),\r\n);\r\n\r\nfunction getRectClass(index: number) {\r\n  return cn(\r\n    \"stroke-gray-400/30 transition-all duration-100 ease-in-out [&:not(:hover)]:duration-1000\",\r\n    hoveredSquare.value === index ? \"fill-gray-300/30\" : \"fill-transparent\",\r\n    props.squaresClassName,\r\n  );\r\n}\r\n\r\nfunction handleMouseEnter(index: number) {\r\n  hoveredSquare.value = index;\r\n}\r\n\r\nfunction handleMouseLeave() {\r\n  hoveredSquare.value = null;\r\n}\r\n</script>\r\n"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "dd52fd46d8f7fcde503f7a7d1df7d46f12532fa3"
+}
