@@ -1,6 +1,7 @@
 @import "@nuxt/ui";
 @import "tailwindcss";
 
+@import "../theme/typography.css";
 @import "../theme/base.css";
 
 @theme static {

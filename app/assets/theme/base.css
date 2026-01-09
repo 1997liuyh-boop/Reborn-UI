@@ -65,7 +65,7 @@
   --radius-ui-base: 16px;
   --radius-ui-lg: 24px;
 
-   /* Font family */
+  /* Font family */
   --font-sans:
     -apple-system,
     BlinkMacSystemFont,
@@ -76,21 +76,19 @@
     Helvetica,
     Arial,
     sans-serif;
-
-  /* 辅助文字 (20px - 24px) */
-  --text-size-20: 20px;
-  --text-size-22: 22px;
-  --text-size-24: 24px;
-
-  /* 正文 (26px - 28px) */
-  --text-size-26: 26px;
-  --text-size-28: 28px;
-
-  /* 标题 (30px - 52px) */
-  --text-size-30: 30px;
-  --text-size-32: 32px;
-  --text-size-36: 36px;
-  --text-size-40: 40px;
-  --text-size-48: 48px;
-  --text-size-52: 52px;
+    
+  /* Semantic Colors */
+  --color-primary: var(--color-blue-6);
+  --color-secondary: var(--color-gray-8);
+  --color-success: var(--color-green-6);
+  --color-info: var(--color-blue-4);
+  --color-warning: var(--color-orange-6);
+  --color-error: var(--color-red-6);
+  --color-neutral: var(--color-gray-6);
+  
+  --color-inverted: #ffffff;
+  --color-default: var(--color-gray-8);
+  --color-elevated: var(--color-gray-2);
+  --color-accented: var(--color-gray-4);
 }
+

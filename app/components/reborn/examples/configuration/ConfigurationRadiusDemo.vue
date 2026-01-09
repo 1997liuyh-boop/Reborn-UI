@@ -20,7 +20,8 @@ const radiusList = [
                 </div>
                 <div class="relative h-[220px] flex-1 overflow-hidden dark:bg-zinc-950">
                     <div v-for="(radius, index) in radiusList" :key="radius.variable"
-                        :class="['absolute border-l-2 border-t-2 border-gray-3', radius.variable]" :style="{
+                        :class="['absolute border-l-2 border-t-2 border-gray-4 dark:border-gray-7', radius.variable]"
+                        :style="{
                             top: `${index * 30 + 20}px`,
                             left: `${index * 30 + 20}px`,
                             width: '100%',  // Extend to right
@@ -30,7 +31,7 @@ const radiusList = [
                             {{ radius.value }}
                         </div>
                         <div
-                            :class="['absolute -top-[2px] -left-[2px] w-7 h-7 border-l-2 border-t-2 border-gray-7 z-10', radius.variable]">
+                            :class="['absolute -top-[2px] -left-[2px] w-7 h-7 border-l-2 border-t-2 border-gray-7 dark:border-gray-4 z-10', radius.variable]">
                         </div>
                     </div>
                 </div>

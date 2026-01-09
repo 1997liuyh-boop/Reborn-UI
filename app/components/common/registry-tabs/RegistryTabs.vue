@@ -5,28 +5,27 @@ interface Props {
 
 const { componentId } = defineProps<Props>();
 
-const command = `shadcn-vue@latest add "https://registry.reborn-ui.com/${componentId}.json"`;
 
 const items = ref([
   {
     label: "pnpm",
     icon: "vscode-icons:file-type-pnpm",
-    command: `pnpm dlx ${command}`,
+    command: `pnpm dlx reborn-ui@latest add ${componentId}`,
   },
   {
     label: "npm",
     icon: "devicon:npm",
-    command: `npx ${command}`,
+    command: `npx reborn-ui@latest add ${componentId}`,
   },
   {
     label: "yarn",
     icon: "vscode-icons:file-type-yarn",
-    command: `yarn dlx ${command}`,
+    command: `yarn dlx reborn-ui@latest add ${componentId}`,
   },
   {
     label: "bun",
     icon: "devicon:bun",
-    command: `bunx ${command}`,
+    command: `bunx reborn-ui@latest add ${componentId}`,
   },
 ]);
 

@@ -49,10 +49,7 @@ const animationDurationInMs = computed(() => {
 </script>
 
 <template>
-  <div
-    class="text-3d flex items-center justify-center"
-    :class="[animate ? 'animate-text-3d' : '', props.class]"
-  >
+  <div class="text-3d flex items-center justify-center" :class="[animate ? 'animate-text-3d' : '', props.class]">
     <slot />
   </div>
 </template>
@@ -78,18 +75,23 @@ const animationDurationInMs = computed(() => {
   0% {
     transform: rotate(0deg);
   }
+
   12% {
     transform: rotate(5deg);
   }
+
   25% {
     transform: rotate(-5deg);
   }
+
   38% {
     transform: rotate(3deg);
   }
+
   50% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(0deg);
   }
