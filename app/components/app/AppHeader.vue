@@ -36,10 +36,14 @@ const links = computed(() =>
       <UContentSearchButton class="lg:hidden" />
 
       <ClientOnly>
+        <AppThemePicker />
         <UColorModeButton />
 
         <template #fallback>
-          <div class="h-8 w-8 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+            <div class="h-8 w-8 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+          </div>
         </template>
       </ClientOnly>
 

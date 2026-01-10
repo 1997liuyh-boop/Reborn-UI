@@ -90,11 +90,13 @@ function onClick() {
 
           <!-- Vertical Group -->
           <div class="flex">
-            <RebornButton color="info" variant="soft" class="h-auto flex-col gap-1 py-3 w-20">
+            <RebornButton color="info" variant="solid" class="h-auto flex-col gap-1 py-3 w-20">
               <Icon name="lucide:heart" size="18" />
               <span class="text-xs">收藏</span>
             </RebornButton>
-            <RebornButton color="error" variant="outline" class="h-auto flex-col gap-1 py-3 w-20">
+            <RebornButton color="error" variant="solid
+            
+            " class="h-auto flex-col gap-1 py-3 w-20">
               <Icon name="lucide:trash" size="18" />
               <span class="text-xs">删除</span>
             </RebornButton>
