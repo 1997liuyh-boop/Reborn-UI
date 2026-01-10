@@ -30,7 +30,8 @@ export default {
     "leadingIcon": "shrink-0",
     "leadingAvatar": "shrink-0",
     "leadingAvatarSize": "",
-    "trailingIcon": "shrink-0"
+    "trailingIcon": "shrink-0",
+    "closeButton": "ms-1 inline-flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-current"
   },
   "variants": {
     "fieldGroup": {
