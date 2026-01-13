@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <title>Reborn UI 符号（卡片版·白色）</title>
-  <desc>以UI卡片为载体的循环箭头符号，白色，透明背景。</desc>
-  <!-- UI Card container -->
-  <rect x="48" y="48" width="160" height="160" rx="24" ry="24" fill="none" stroke="#FFFFFF" stroke-width="12"/>
-  <!-- Circular arrow inside card -->
-  <circle cx="128" cy="128" r="52" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Arrowhead -->
-  <polygon points="168,98 154,108 160,92" fill="#FFFFFF" stroke="none"/>
-  <!-- Inner dot -->
-  <circle cx="128" cy="128" r="8" fill="#FFFFFF" stroke="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="160" viewBox="0 0 512 160" role="img" aria-labelledby="title desc">
+  <title id="title">reborn-ui logo roundel (white)</title>
+  <desc id="desc">Circular roundel with rb monogram and a rebirth arc.</desc>
+
+  <!-- Roundel -->
+  <g transform="translate(24,24)">
+    <circle cx="56" cy="56" r="52" fill="none" stroke="#fff" stroke-width="10"/>
+    <!-- Rebirth arc -->
+    <path d="M 30 40
+             A 34 34 0 0 1 86 36"
+          fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <!-- Arrow head -->
+    <path d="M 92 38 L 98 22 L 82 28" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- rb monogram -->
+    <text x="56" y="78"
+          text-anchor="middle"
+          fill="#fff"
+          font-family="ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+          font-size="52"
+          font-weight="800"
+          letter-spacing="-2">rb</text>
+  </g>
+
+  <!-- Compact wordmark -->
+  <text x="164" y="92"
+        fill="#fff"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-size="58"
+        font-weight="780"
+        letter-spacing="-1">
+    reborn
+  </text>
+  <text x="328" y="92"
+        fill="#fff"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+        font-size="58"
+        font-weight="780"
+        letter-spacing="-1"
+        opacity="0.75">
+    -ui
+  </text>
 </svg>
