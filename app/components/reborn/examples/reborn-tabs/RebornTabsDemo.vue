@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { TabsRoot, TabsList, TabsTrigger, TabsContent } from "~/components/reborn/ui/reborn-tabs"
-import { tabsVariants, tabsSizes, tabsOrientations } from "~/components/reborn/ui/reborn-tabs/reborn-tabs.config"
-import type { TabsProps } from "~/components/reborn/ui/reborn-tabs/TabsRoot.vue"
+import { TabsRoot, TabsList, TabsTrigger, TabsContent } from "~/components/reborn/ui/reborn-tabs";
+import { tabsTypes, tabsVariants, tabsSizes, tabsOrientations } from "~/components/reborn/ui/reborn-tabs/reborn-tabs.config";
+import type { TabsProps } from "~/components/reborn/ui/reborn-tabs/TabsRoot.vue";
 
-const variants = ref([...tabsVariants])
-const variant = ref<TabsProps["variant"]>('line')
+const types = ref([...tabsTypes]);
+const type = ref<TabsProps["type"]>("line");
+const variants = ref([...tabsVariants]);
+const variant = ref<TabsProps["variant"]>("primary");
 const sizes = ref([...tabsSizes])
 const size = ref<TabsProps["size"]>('md')
 const orientations = ref([...tabsOrientations])
@@ -12,15 +14,14 @@ const orientation = ref<TabsProps["orientation"]>('horizontal')
 
 const sticky = ref(false)
 const shrink = ref(false)
-const shrinkDir = ref<TabsProps['shrinkDir']>('start')
 const activationMode = ref<TabsProps['activationMode']>('automatic')
+const scrollspy = ref(false)
 
-const modelValue = ref('account')
+const activeIndex = ref(0)
 const manyTabs = Array.from({ length: 20 }, (_, i) => `Tab ${i + 1}`)
-const manyTabsValue = ref('Tab 1')
-const customIndicatorValue = ref('home')
+const customIndicatorIndex = ref(0)
 
-function onTabClick(val: string | number, e: MouseEvent) {
+function onTabClick(val: number, e: MouseEvent) {
     console.log('Tab Clicked:', val, e)
     // Minimal toast or log effect
 }
@@ -29,6 +30,11 @@ function onTabClick(val: string | number, e: MouseEvent) {
 <template>
     <div class="space-y-6">
         <div class="flex gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-500">类型</span>
+                <USelect v-model="type!" :items="types" class="w-32" />
+            </div>
+
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-500">风格</span>
                 <USelect v-model="variant!" :items="variants" class="w-32" />
@@ -47,11 +53,12 @@ function onTabClick(val: string | number, e: MouseEvent) {
             <div class="flex items-center gap-2">
                 <UCheckbox v-model="sticky" label="Sticky" />
                 <UCheckbox v-model="shrink" label="Shrink" />
+                <UCheckbox v-model="scrollspy" label="Scrollspy" />
             </div>
 
             <div class="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
             <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500">Value: {{ modelValue }}</span>
+                <span class="text-sm font-medium text-gray-500">Active: {{ activeIndex }}</span>
             </div>
         </div>
 
@@ -63,17 +70,26 @@ function onTabClick(val: string | number, e: MouseEvent) {
                     <div class="h-12"></div>
                 </div>
 
-                <TabsRoot v-model="manyTabsValue" :variant="variant" :size="size" :orientation="orientation"
-                    :sticky="sticky" :shrink="shrink" :shrinkDir="shrinkDir" :activationMode="activationMode"
-                    @click-tab="onTabClick">
+                <TabsRoot
+                    v-model:active="activeIndex"
+                    :type="type"
+                    :variant="variant"
+                    :size="size"
+                    :orientation="orientation"
+                    :sticky="sticky"
+                    :shrink="shrink"
+                    :scrollspy="scrollspy"
+                    :activationMode="activationMode"
+                    @click-tab="onTabClick"
+                >
                     <TabsList>
-                        <TabsTrigger v-for="tab in manyTabs" :key="tab" :value="tab">
+                        <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
                             {{ tab }}
                         </TabsTrigger>
                     </TabsList>
 
                     <!-- Wrapper styles should be handled by component config now -->
-                    <TabsContent v-for="tab in manyTabs" :key="tab" :value="tab">
+                    <TabsContent v-for="(tab, index) in manyTabs" :key="tab" :index="index">
                         <div class="min-h-[500px]">
                             <h3 class="text-lg font-medium">{{ tab }} Content</h3>
                             <p class="text-gray-500 mt-2">
@@ -90,11 +106,11 @@ function onTabClick(val: string | number, e: MouseEvent) {
         <div class="space-y-4">
             <h3 class="text-lg font-semibold">自定义指示器 Demo</h3>
             <div class="border rounded-lg dark:border-gray-800 bg-background p-4">
-                <TabsRoot v-model="customIndicatorValue" variant="line">
+                <TabsRoot v-model:active="customIndicatorIndex" type="line">
                     <TabsList>
-                        <TabsTrigger value="home">首页</TabsTrigger>
-                        <TabsTrigger value="products">产品</TabsTrigger>
-                        <TabsTrigger value="about">关于</TabsTrigger>
+                        <TabsTrigger :index="0">首页</TabsTrigger>
+                        <TabsTrigger :index="1">产品</TabsTrigger>
+                        <TabsTrigger :index="2">关于</TabsTrigger>
 
                         <!-- Custom indicator slot -->
                         <template #indicator="{ style }">
@@ -105,13 +121,13 @@ function onTabClick(val: string | number, e: MouseEvent) {
                         </template>
                     </TabsList>
 
-                    <TabsContent value="home">
+                    <TabsContent :index="0">
                         <div class="p-4">首页内容</div>
                     </TabsContent>
-                    <TabsContent value="products">
+                    <TabsContent :index="1">
                         <div class="p-4">产品列表</div>
                     </TabsContent>
-                    <TabsContent value="about">
+                    <TabsContent :index="2">
                         <div class="p-4">关于我们</div>
                     </TabsContent>
                 </TabsRoot>
@@ -120,23 +136,24 @@ function onTabClick(val: string | number, e: MouseEvent) {
 
         <!-- Standard Preview -->
         <!-- <div class="flex flex-col gap-4 border rounded-lg min-h-[300px] dark:border-gray-800">
-            <TabsRoot v-model="modelValue" :variant="variant" :size="size" :orientation="orientation" :shrink="shrink">
+            <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size"
+                :orientation="orientation" :shrink="shrink">
                 <TabsList>
-                    <TabsTrigger value="account" @click="onTabClick('account', $event)">Account</TabsTrigger>
-                    <TabsTrigger value="password">Password</TabsTrigger>
-                    <TabsTrigger value="settings">Settings</TabsTrigger>
-                    <TabsTrigger value="billing" disabled>Billing</TabsTrigger>
+                    <TabsTrigger :index="0" @click="onTabClick(0, $event)">Account</TabsTrigger>
+                    <TabsTrigger :index="1">Password</TabsTrigger>
+                    <TabsTrigger :index="2">Settings</TabsTrigger>
+                    <TabsTrigger :index="3" disabled>Billing</TabsTrigger>
                 </TabsList>
-                <TabsContent value="account">
+                <TabsContent :index="0">
                     <div class="p-4 border rounded-md mt-2">Account Info</div>
                 </TabsContent>
-                <TabsContent value="password">
+                <TabsContent :index="1">
                     <div class="p-4 border rounded-md mt-2">Change Password</div>
                 </TabsContent>
-                <TabsContent value="settings">
+                <TabsContent :index="2">
                     <div class="p-4 border rounded-md mt-2">User Settings</div>
                 </TabsContent>
-                <TabsContent value="billing">
+                <TabsContent :index="3">
                     <div class="p-4 border rounded-md mt-2">Billing Details</div>
                 </TabsContent>
             </TabsRoot>

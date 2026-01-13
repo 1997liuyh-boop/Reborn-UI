@@ -1,19 +1,64 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue'
+import { inject, computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { useIntersectionObserver } from "@vueuse/core";
+import { cn } from "~/lib/utils";
 
 const props = defineProps<{
-    value: string | number
+    index?: number
     class?: any
-}>()
+}>();
 
-const context = inject('TabsContext') as any
+const context = inject("TabsContext") as any;
+const localIndex = ref<number>(context.registerContent(props.index));
+const contentRef = ref<HTMLElement | null>(null);
 
-const isActive = computed(() => context.modelValue.value === props.value)
+const isActive = computed(() => context.activeIndex.value === localIndex.value);
+const isScrollspy = computed(() => context.scrollspy.value);
+const stopObserver = ref<null | (() => void)>(null);
+
+watch(
+    isScrollspy,
+    async (enabled) => {
+        if (!enabled) {
+            stopObserver.value?.();
+            stopObserver.value = null;
+            return;
+        }
+
+        await nextTick();
+        if (!contentRef.value) return;
+
+        const { stop } = useIntersectionObserver(
+            contentRef,
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    context.setActiveIndex(localIndex.value);
+                }
+            },
+            {
+                threshold: 0.6
+            }
+        );
+
+        stopObserver.value = stop;
+    },
+    { immediate: true }
+);
+
+onBeforeUnmount(() => {
+    stopObserver.value?.();
+});
 </script>
 
 <template>
-    <div v-if="isActive" role="tabpanel" :data-state="isActive ? 'active' : 'inactive'"
-        :class="context.ui.value.content({ class: props.class })">
+    <div
+        ref="contentRef"
+        v-show="isScrollspy || isActive"
+        role="tabpanel"
+        :data-state="isActive ? 'active' : 'inactive'"
+        :data-index="localIndex"
+        :class="context.ui.value.content({ class: cn(props.class, context.uiOverrides.value?.content) })"
+    >
         <slot></slot>
     </div>
 </template>
