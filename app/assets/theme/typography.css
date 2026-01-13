@@ -24,6 +24,11 @@
     --button-base-height: 64px;
     --button-sm-height: 56px;
     --button-xs-height: 48px;
+
+    /* 输入框高度设置 */
+    --input-lg-height: 96px;
+    --input-md-height: 90px;
+    --input-sm-height: 80px;
   }
   
   @media (min-width: 768px) {
@@ -47,6 +52,10 @@
       --button-base-height: 32px;
       --button-sm-height: 28px;
       --button-xs-height: 24px;
+
+      --input-lg-height: 48px;
+      --input-md-height: 45px;
+      --input-sm-height: 40px;
     }
   }
 }
