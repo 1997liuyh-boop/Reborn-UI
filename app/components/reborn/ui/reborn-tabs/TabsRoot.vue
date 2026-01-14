@@ -101,6 +101,72 @@ function registerContent(index?: number) {
     return value;
 }
 
+const contentRefs = ref<Record<number, HTMLElement | null>>({});
+
+function registerContentRef(index: number, el: HTMLElement | null) {
+    contentRefs.value[index] = el;
+}
+
+function unregisterContentRef(index: number) {
+    if (contentRefs.value[index]) {
+        delete contentRefs.value[index];
+    }
+}
+
+
+
+function getScrollParent(node: HTMLElement | null): HTMLElement | Window {
+    if (typeof window === 'undefined' || !node) return { scrollTo: () => { } } as any;
+    let parent = node.parentElement;
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+        const overflowY = style.overflowY;
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+            return parent;
+        }
+        parent = parent.parentElement;
+    }
+    return window;
+}
+
+function scrollToContent(index: number) {
+    if (typeof window === 'undefined') return;
+    const el = contentRefs.value[index];
+    if (!el) return;
+
+    const scrollParent = getScrollParent(el);
+
+    // Manual calculation:
+    const elRect = el.getBoundingClientRect();
+    let currentScrollTop = 0;
+    let parentRectTop = 0;
+
+    if (scrollParent === window) {
+        currentScrollTop = window.scrollY;
+        parentRectTop = 0;
+    } else {
+        const p = scrollParent as HTMLElement;
+        currentScrollTop = p.scrollTop;
+        if (p.getBoundingClientRect) {
+            parentRectTop = p.getBoundingClientRect().top;
+        }
+    }
+
+    // Target position relative to the scroll parent's top
+    const relativeTop = elRect.top - parentRectTop + currentScrollTop;
+
+    // Read scroll-margin-top from element style (defined in config)
+    const style = window.getComputedStyle(el);
+    const scrollMarginTop = parseFloat(style.scrollMarginTop) || 0;
+
+    const target = relativeTop - scrollMarginTop;
+
+    scrollParent.scrollTo({
+        top: target,
+        behavior: 'smooth'
+    });
+}
+
 const direction = ref<'next' | 'prev'>('next');
 
 function setActiveIndex(value: number) {
@@ -130,9 +196,13 @@ provide('TabsContext', {
     swipeable,
     contentCounter,
     activationMode: toRef(props, "activationMode"),
+    sticky,
     scrollspy,
     registerTrigger,
     registerContent,
+    registerContentRef,
+    unregisterContentRef,
+    scrollToContent,
     setActiveIndex,
     onTabClick,
     ui,

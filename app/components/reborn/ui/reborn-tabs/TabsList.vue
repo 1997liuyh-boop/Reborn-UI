@@ -115,6 +115,7 @@ onMounted(async () => {
 
 <template>
     <div ref="listRef" role="tablist"
+        :data-sticky-tabs="context.sticky.value || context.scrollspy.value ? 'true' : undefined"
         :class="context.ui.value.list({ class: cn(props.class, context.uiOverrides.value?.list) })"
         :style="indicatorStyle">
         <slot></slot>

@@ -114,8 +114,21 @@ watch(
     { immediate: true }
 );
 
+watch(contentRef, (el) => {
+    if (localIndex.value !== undefined) {
+        if (el) {
+            context.registerContentRef(localIndex.value, el);
+        } else {
+            context.unregisterContentRef(localIndex.value);
+        }
+    }
+}, { immediate: true });
+
 onBeforeUnmount(() => {
     stopObserver.value?.();
+    if (localIndex.value !== undefined) {
+        context.unregisterContentRef(localIndex.value);
+    }
 });
 </script>
 

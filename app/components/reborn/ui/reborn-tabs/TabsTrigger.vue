@@ -16,7 +16,14 @@ const isActive = computed(() => context.activeIndex.value === localIndex.value);
 function handleClick(event: MouseEvent) {
     if (props.disabled) return;
 
-    context.setActiveIndex(localIndex.value);
+    if (context.scrollspy.value) {
+        context.scrollToContent(localIndex.value);
+        // We still set active index, but scroll handling might trigger intersection observer
+        // which sets active index again. That's fine.
+        context.setActiveIndex(localIndex.value);
+    } else {
+        context.setActiveIndex(localIndex.value);
+    }
     context.onTabClick(localIndex.value, event);
 
     // native scrollIntoView causes page to jump, handled in TabsList instead

@@ -16,7 +16,7 @@ export default {
     trailingBadge: "flex items-center rounded-full bg-gray-2 px-2 py-0.5 text-24 text-gray-7",
     trailingBadgeSize: "text-24",
     content:
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 scroll-mt-24",
     indicator:
       "absolute bottom-0 left-0 h-1.5 w-0 rounded-full transition-all duration-300 ease-in-out z-0 opacity-90 -translate-y-1",
   },
@@ -37,7 +37,7 @@ export default {
       primary: {
         trigger: "data-[state=active]:text-primary",
         indicator:
-          "bg-[linear-gradient(90deg,var(--color-red-6),var(--color-orange-6),var(--color-blue-6),var(--color-green-6))] bg-[length:200%]",
+          "bg-[linear-gradient(90deg,var(--color-red-6),var(--color-red-3),var(--color-blue-1),var(--color-orange-1))] bg-[length:200%]",
       },
       info: {
         trigger: "data-[state=active]:text-info",
@@ -115,7 +115,7 @@ export default {
       orientation: "horizontal" as (typeof tabsOrientations)[number],
       scrollspy: true,
       class: {
-        root: "block h-full overflow-y-auto relative",
+        root: "block h-auto overflow-visible relative",
         list: "sticky top-0 z-10 bg-background shadow-sm",
         content: "h-auto block",
       },
@@ -124,7 +124,7 @@ export default {
       orientation: "vertical" as (typeof tabsOrientations)[number],
       scrollspy: true,
       class: {
-        root: "flex flex-row items-start gap-0 relative w-full",
+        root: "flex flex-row items-start gap-0 relative w-full overflow-visible",
         list: "sticky top-0 z-10 w-auto border-r border-gray-2 shrink-0 max-h-screen overflow-y-auto",
         content: "flex-1 min-w-0 w-full",
       },
