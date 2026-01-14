@@ -71,7 +71,8 @@ const ui = computed(() => b({
     size: size.value,
     orientation: orientation.value,
     sticky: sticky.value,
-    shrink: shrink.value
+    shrink: shrink.value,
+    scrollspy: scrollspy.value
 }));
 
 const triggerCounter = ref(0);

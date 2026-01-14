@@ -29,7 +29,7 @@ function onTabClick(val: number, e: MouseEvent) {
 
 <template>
     <div class="space-y-6">
-        <div class="flex gap-2">
+        <div class="grid grid-cols-4 gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-500">类型</span>
                 <USelect v-model="type!" :items="types" class="w-32" />
@@ -70,18 +70,9 @@ function onTabClick(val: number, e: MouseEvent) {
                     <div class="h-12"></div>
                 </div>
 
-                <TabsRoot
-                    v-model:active="activeIndex"
-                    :type="type"
-                    :variant="variant"
-                    :size="size"
-                    :orientation="orientation"
-                    :sticky="sticky"
-                    :shrink="shrink"
-                    :scrollspy="scrollspy"
-                    :activationMode="activationMode"
-                    @click-tab="onTabClick"
-                >
+                <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size"
+                    :orientation="orientation" :sticky="sticky" :shrink="shrink" :scrollspy="scrollspy"
+                    :activationMode="activationMode" @click-tab="onTabClick">
                     <TabsList>
                         <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
                             {{ tab }}

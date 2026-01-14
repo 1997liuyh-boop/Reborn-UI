@@ -61,12 +61,36 @@ function scrollToActiveTab() {
     if (!activeTab) return;
 
     const isHorizontal = context.orientation.value === "horizontal";
+    const container = listRef.value;
 
-    // Simple centering logic
     if (isHorizontal) {
-        activeTab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        // horizontal
+        const containerWidth = container.clientWidth;
+        const scrollLeft = container.scrollLeft;
+        const tabLeft = activeTab.offsetLeft;
+        const tabWidth = activeTab.offsetWidth;
+
+        // Calculate target scroll position to center the tab
+        const targetScrollLeft = tabLeft - (containerWidth / 2) + (tabWidth / 2);
+
+        container.scrollTo({
+            left: targetScrollLeft,
+            behavior: "smooth"
+        });
     } else {
-        activeTab.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        // vertical
+        const containerHeight = container.clientHeight;
+        const scrollTop = container.scrollTop;
+        const tabTop = activeTab.offsetTop;
+        const tabHeight = activeTab.offsetHeight;
+
+        // Calculate target scroll position to center the tab
+        const targetScrollTop = tabTop - (containerHeight / 2) + (tabHeight / 2);
+
+        container.scrollTo({
+            top: targetScrollTop,
+            behavior: "smooth"
+        });
     }
 }
 
@@ -90,22 +114,14 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div
-        ref="listRef"
-        role="tablist"
+    <div ref="listRef" role="tablist"
         :class="context.ui.value.list({ class: cn(props.class, context.uiOverrides.value?.list) })"
-        :style="indicatorStyle"
-    >
+        :style="indicatorStyle">
         <slot></slot>
-        <slot
-            name="indicator"
-            :style="indicatorStyle"
-            :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })"
-        >
-            <span
-                :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })"
-                aria-hidden="true"
-            ></span>
+        <slot name="indicator" :style="indicatorStyle"
+            :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })">
+            <span :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })"
+                aria-hidden="true"></span>
         </slot>
     </div>
 </template>

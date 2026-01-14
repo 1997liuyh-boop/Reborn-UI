@@ -36,7 +36,8 @@ watch(
                 }
             },
             {
-                threshold: 0.6
+                threshold: [0.1, 0.5],
+                rootMargin: "-20% 0px -50% 0px"
             }
         );
 
@@ -51,14 +52,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div
-        ref="contentRef"
-        v-show="isScrollspy || isActive"
-        role="tabpanel"
-        :data-state="isActive ? 'active' : 'inactive'"
-        :data-index="localIndex"
-        :class="context.ui.value.content({ class: cn(props.class, context.uiOverrides.value?.content) })"
-    >
+    <div ref="contentRef" v-show="isScrollspy || isActive" role="tabpanel"
+        :data-state="isActive ? 'active' : 'inactive'" :data-index="localIndex"
+        :class="context.ui.value.content({ class: cn(props.class, context.uiOverrides.value?.content) })">
         <slot></slot>
     </div>
 </template>

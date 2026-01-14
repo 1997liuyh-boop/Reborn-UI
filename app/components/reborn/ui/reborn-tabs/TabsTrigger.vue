@@ -19,16 +19,7 @@ function handleClick(event: MouseEvent) {
     context.setActiveIndex(localIndex.value);
     context.onTabClick(localIndex.value, event);
 
-    const target = event.target as HTMLElement;
-    // Ensure we are scrolling the button itself
-    const button = target.closest("button");
-    if (button) {
-        button.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-            inline: "center",
-        });
-    }
+    // native scrollIntoView causes page to jump, handled in TabsList instead
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -43,45 +34,28 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-    <button
-        type="button"
-        role="tab"
-        :aria-selected="isActive"
-        :tabindex="isActive ? 0 : -1"
-        :disabled="props.disabled"
-        :data-state="isActive ? 'active' : 'inactive'"
-        :data-orientation="context.orientation.value"
+    <button type="button" role="tab" :aria-selected="isActive" :tabindex="isActive ? 0 : -1" :disabled="props.disabled"
+        :data-state="isActive ? 'active' : 'inactive'" :data-orientation="context.orientation.value"
         :data-index="localIndex"
         :class="context.ui.value.trigger({ class: cn(props.class, context.uiOverrides.value?.trigger) })"
-        @click="handleClick"
-        @keydown="handleKeydown"
-    >
-        <span
-            v-if="$slots['leading-icon']"
-            :class="context.ui.value.leadingIcon({ class: context.uiOverrides.value?.leadingIcon })"
-        >
+        @click="handleClick" @keydown="handleKeydown">
+        <span v-if="$slots['leading-icon']"
+            :class="context.ui.value.leadingIcon({ class: context.uiOverrides.value?.leadingIcon })">
             <slot name="leading-icon"></slot>
         </span>
-        <span
-            v-if="$slots['leading-avatar']"
-            :class="context.ui.value.leadingAvatar({ class: context.uiOverrides.value?.leadingAvatar })"
-        >
+        <span v-if="$slots['leading-avatar']"
+            :class="context.ui.value.leadingAvatar({ class: context.uiOverrides.value?.leadingAvatar })">
             <span :class="context.ui.value.leadingAvatarSize({ class: context.uiOverrides.value?.leadingAvatarSize })">
                 <slot name="leading-avatar"></slot>
             </span>
         </span>
-        <span
-            data-tab-label
-            :class="context.ui.value.label({ class: context.uiOverrides.value?.label })"
-        >
+        <span data-tab-label :class="context.ui.value.label({ class: context.uiOverrides.value?.label })">
             <slot name="label">
                 <slot></slot>
             </slot>
         </span>
-        <span
-            v-if="$slots['trailing-badge']"
-            :class="context.ui.value.trailingBadge({ class: context.uiOverrides.value?.trailingBadge })"
-        >
+        <span v-if="$slots['trailing-badge']"
+            :class="context.ui.value.trailingBadge({ class: context.uiOverrides.value?.trailingBadge })">
             <span :class="context.ui.value.trailingBadgeSize({ class: context.uiOverrides.value?.trailingBadgeSize })">
                 <slot name="trailing-badge"></slot>
             </span>
