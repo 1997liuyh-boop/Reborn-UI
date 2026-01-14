@@ -14,6 +14,7 @@ const orientation = ref<TabsProps["orientation"]>('horizontal')
 
 const sticky = ref(false)
 const shrink = ref(false)
+const swipeable = ref(false)
 const activationMode = ref<TabsProps['activationMode']>('automatic')
 const scrollspy = ref(false)
 
@@ -54,6 +55,7 @@ function onTabClick(val: number, e: MouseEvent) {
                 <UCheckbox v-model="sticky" label="Sticky" />
                 <UCheckbox v-model="shrink" label="Shrink" />
                 <UCheckbox v-model="scrollspy" label="Scrollspy" />
+                <UCheckbox v-model="swipeable" label="Swipeable" />
             </div>
 
             <div class="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
@@ -63,8 +65,8 @@ function onTabClick(val: number, e: MouseEvent) {
         </div>
 
         <!-- Scrollable/Sticky Example Area -->
-        <div class="h-[400px] max-w-3xl mx-auto  min-w-0 overflow-hidden bg-white rounded-lg">
-            <div class="h-full w-full min-w-0 flex flex-col">
+        <div class="h-[400px] max-w-3xl mx-auto  min-w-0 overflow-hidden overflow-y-scroll bg-white rounded-lg">
+            <div>
                 <div class="p-4" v-if="sticky">
                     <p class="mb-4 text-sm text-gray-500">Scroll down to see sticky header behavior.</p>
                     <div class="h-12"></div>
@@ -72,8 +74,8 @@ function onTabClick(val: number, e: MouseEvent) {
 
                 <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size"
                     :orientation="orientation" :sticky="sticky" :shrink="shrink" :scrollspy="scrollspy"
-                    :activationMode="activationMode" @click-tab="onTabClick">
-                    <TabsList>
+                    :swipeable="swipeable" :activationMode="activationMode" @click-tab="onTabClick">
+                    <TabsList class="bg-white z-1">
                         <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
                             {{ tab }}
                         </TabsTrigger>

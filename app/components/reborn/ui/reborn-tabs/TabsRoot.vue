@@ -14,6 +14,7 @@ export interface TabsProps {
     size?: typeof tabsSizes[number]
     orientation?: typeof tabsOrientations[number]
     sticky?: boolean
+    swipeable?: boolean
     shrink?: boolean
     scrollspy?: boolean
     activationMode?: "automatic" | "manual"
@@ -40,6 +41,7 @@ const props = withDefaults(defineProps<TabsProps>(), {
     size: "md",
     orientation: "horizontal",
     sticky: false,
+    swipeable: false,
     shrink: false,
     scrollspy: false,
     activationMode: "automatic"
@@ -61,6 +63,7 @@ const variant = toRef(props, "variant");
 const size = toRef(props, "size");
 const orientation = toRef(props, "orientation");
 const sticky = toRef(props, "sticky");
+const swipeable = toRef(props, "swipeable");
 const shrink = toRef(props, "shrink");
 const scrollspy = toRef(props, "scrollspy");
 const uiOverrides = computed(() => props.ui ?? {});
@@ -98,7 +101,15 @@ function registerContent(index?: number) {
     return value;
 }
 
+const direction = ref<'next' | 'prev'>('next');
+
 function setActiveIndex(value: number) {
+    const currentDefault = activeIndex.value ?? 0;
+    if (value > currentDefault) {
+        direction.value = 'next';
+    } else if (value < currentDefault) {
+        direction.value = 'prev';
+    }
     activeIndex.value = value;
 }
 
@@ -116,6 +127,8 @@ provide('TabsContext', {
     variant,
     size,
     orientation,
+    swipeable,
+    contentCounter,
     activationMode: toRef(props, "activationMode"),
     scrollspy,
     registerTrigger,
@@ -123,7 +136,8 @@ provide('TabsContext', {
     setActiveIndex,
     onTabClick,
     ui,
-    uiOverrides
+    uiOverrides,
+    direction // Provide direction to context
 });
 
 defineExpose({

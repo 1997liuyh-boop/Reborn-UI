@@ -58,7 +58,7 @@ export default {
     },
     orientation: {
       horizontal: {
-        root: "flex-col w-full h-full min-w-0 max-w-full",
+        root: "flex-col w-full h-full min-w-0 max-w-full relative overflow-hidden",
         list: "flex-row w-full min-w-0 max-w-full overflow-x-auto overflow-y-hidden shrink-0",
         trigger: "shrink-0",
         indicator:
@@ -66,7 +66,7 @@ export default {
         content: "flex-1 w-full min-h-0 overflow-y-auto",
       },
       vertical: {
-        root: "flex-row items-start gap-4 h-full [&>*:not([role=tablist])]:flex-1 [&>*:not([role=tablist])]:w-full [&>*:not([role=tablist])]:h-full",
+        root: "flex-row items-start gap-4 h-full [&>*:not([role=tablist])]:flex-1 [&>*:not([role=tablist])]:w-full [&>*:not([role=tablist])]:h-full relative overflow-hidden",
         list: "flex-col w-auto h-full overflow-y-auto overflow-x-hidden border-b-0 border-r border-gray-2",
         trigger: "flex-initial w-full justify-start border-b-0 border-r-0 rounded-none",
         indicator: "hidden",
@@ -93,7 +93,9 @@ export default {
     },
     sticky: {
       true: {
+        root: "h-auto block overflow-visible",
         list: "sticky top-0 z-40 bg-background/95 backdrop-blur",
+        content: "h-auto block overflow-visible",
       },
     },
     shrink: {

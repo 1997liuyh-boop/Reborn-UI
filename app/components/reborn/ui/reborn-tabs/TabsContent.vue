@@ -12,9 +12,76 @@ const context = inject("TabsContext") as any;
 const localIndex = ref<number>(context.registerContent(props.index));
 const contentRef = ref<HTMLElement | null>(null);
 
+// Direction logic:
+// Horizontal: Next -> Slide Left (Enter from Right)
+// Vertical: Next -> Slide Up (Enter from Bottom)
+
+const transitionName = computed(() => {
+    if (isScrollspy.value) return undefined;
+
+    const isVertical = context.orientation.value === 'vertical';
+    const dir = context.direction.value;
+
+    if (isVertical) {
+        return dir === 'next' ? 'tabs-slide-up' : 'tabs-slide-down';
+    }
+    return dir === 'next' ? 'tabs-slide-left' : 'tabs-slide-right';
+});
+
+// Fix overflow flashing by ensuring the parent container clips content.
+// Ideally, this should be on the TabsRoot, but we can try to enforce it here or suggest it.
+// Since we can't easily change the parent, we'll try to rely on the global config change for overflow.
+// However, ensuring the leaving element is absolute is key.
+
+
 const isActive = computed(() => context.activeIndex.value === localIndex.value);
 const isScrollspy = computed(() => context.scrollspy.value);
 const stopObserver = ref<null | (() => void)>(null);
+
+import { usePointerSwipe } from "@vueuse/core";
+
+const { distanceX, distanceY } = usePointerSwipe(contentRef, {
+    disableTextSelect: true,
+    onSwipeEnd(e: PointerEvent, direction) {
+        if (!context.swipeable.value) return;
+
+        console.log('Swipe Debug:', { direction, dx: distanceX.value, dy: distanceY.value });
+
+        const isHorizontal = context.orientation.value === 'horizontal';
+        const isVertical = context.orientation.value === 'vertical';
+        const maxIndex = context.contentCounter.value;
+        const currentIndex = context.activeIndex.value;
+
+        // Define threshold for swipe (e.g., 50px)
+        const threshold = 50;
+
+        if (isHorizontal) {
+            if (direction === 'left' && Math.abs(distanceX.value) > threshold) {
+                // Swiping Left -> Next Tab
+                if (currentIndex < maxIndex - 1) {
+                    context.setActiveIndex(currentIndex + 1);
+                }
+            } else if (direction === 'right' && Math.abs(distanceX.value) > threshold) {
+                // Swiping Right -> Prev Tab
+                if (currentIndex > 0) {
+                    context.setActiveIndex(currentIndex - 1);
+                }
+            }
+        } else if (isVertical) {
+            if (direction === 'up' && Math.abs(distanceY.value) > threshold) {
+                // Swiping Up -> Next Tab
+                if (currentIndex < maxIndex - 1) {
+                    context.setActiveIndex(currentIndex + 1);
+                }
+            } else if (direction === 'down' && Math.abs(distanceY.value) > threshold) {
+                // Swiping Down -> Prev Tab
+                if (currentIndex > 0) {
+                    context.setActiveIndex(currentIndex - 1);
+                }
+            }
+        }
+    },
+});
 
 watch(
     isScrollspy,
@@ -30,8 +97,9 @@ watch(
 
         const { stop } = useIntersectionObserver(
             contentRef,
-            ([entry]) => {
-                if (entry.isIntersecting) {
+            (entries) => {
+                const entry = entries[0];
+                if (entry?.isIntersecting) {
                     context.setActiveIndex(localIndex.value);
                 }
             },
