@@ -58,8 +58,8 @@ const description = page.value.seo?.description || page.value.description;
 useSeoMeta({
     title: isLandingPage.value ? "Reborn UI" : title,
     ogTitle: isLandingPage.value ? "Reborn UI" : title,
-    description: isLandingPage.value ? "Build beautiful website using Vue & Nuxt." : description,
-    ogDescription: isLandingPage.value ? "Build beautiful website using Vue & Nuxt." : description,
+    description: isLandingPage.value ? "Be yourself" : description,
+    ogDescription: isLandingPage.value ? "Be yourself" : description,
 });
 
 const headline = ref(findPageHeadline(navigation?.value, page.value?.path));

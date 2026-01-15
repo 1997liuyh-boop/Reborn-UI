@@ -1,56 +1,12 @@
 ---
 seo:
-  title: Build beautifull website using Vue & Nuxt.
-  description: Ship fast, flexible, and SEO-optimized documentation with beautiful
-    design out of the box. Docus brings together the best of the Nuxt ecosystem.
-    Powered by Nuxt UI.
+  title: 使用 Vue & Nuxt 构建精美网站
+  description: 开箱即用的精美设计，助您快速发布灵活且 SEO 优化的文档。Docus 汇聚了 Nuxt 生态系统的精华。由 Nuxt UI 驱动。
 ---
 
-::u-page-hero
-#title
-Build beautiful website using Vue
-
-#description
-Inspira UI is a collection of reusable, animated components powered by [TailwindCSS](https://tailwindcss.com/), [motion-v](https://motion.dev/docs/vue), [gsap](https://gsap.com/) & [threejs](https://threejs.org/) — crafted to help you ship faster and better.
-
-Whether you're starting a new project or refining a current one, this is the place to begin.
-
+::u-page-section{title="使用 Vue 构建精美网站" description="Reborn UI 是一个由 TailwindCSS、motion-v、gsap 和 threejs 驱动的可复用动画组件集合 —— 旨在帮助您更快更好地构建产品。无论您是开启新项目还是优化现有项目，这里都是最佳起点。" :features='[{"title":"快速开始","description":"从安装、配置到使用指南，开启您的旅程。","icon":"lucide:rocket","to":"/getting-started"},{"title":"安装","description":"探索安装 Reborn UI 的不同方式 —— CLI、手动导入或复制粘贴。","icon":"lucide:play","to":"/getting-started/installation"},{"title":"组件","description":"浏览完整组件列表，每个组件都配备清晰的文档和精美的预览。","icon":"lucide:box","to":"/components"}]'}
 ::
 
-## Quick Links
-
-::card-group
-::card{ icon="lucide:rocket" title="Getting Started" description="Kick off your journey with installation, setup, and usage guides." to="/getting-started"}
+::warning
+**uni-app 兼容性支持**：我们正在积极适配 uni-app 代码，目前正处于测试阶段。我们将很快推出一套可行且可靠的解决方案，致力于让开发体验变得更好。
 ::
-::card{ icon="lucide:play" title="Installation" description="Explore different ways to install Inspira UI — via CLI, manual import, or copy-paste." to="/getting-started/installation"}
-::
-::card{ icon="lucide:box" title="Components" description="Browse the full list of components, each with clear documentation and beautiful previews." to="/components"}
-::
-::card{ icon="lucide:blocks" title="Blocks" description="Discover ready-made layout blocks you can mix and match to build complete sections and pages." to="/blocks"}
-::
-::
-
-## Join the community
-
-We're building this together. Come say hi, share feedback, or contribute!
-
-- [**Discord**](https://discord.gg/Xbh5DwJRc9) – Chat with the community and get help
-- [**X (Formely Twitter)**](https://x.com/rahulv_dev) – Follow for updates and sneak peeks
-- [**Bluesky**](http://bsky.app/profile/inspira-ui.com) – For indie and alt-web conversations
-- [**GitHub**](https://github.com/unovue/inspira-ui) – Star the repo to support us! ★
-
-## Support Us
-
-Help us grow and keep Inspira UI thriving 💜 by [**becoming a sponsor**](https://github.com/sponsors/rahul-vashishtha).
-
-## Repo Stats
-
-![Repo Stats](https://repobeats.axiom.co/api/embed/da99e5e9c8ddaaff68b7f57b56ae21d5e0ea2ed2.svg "Repobeats analytics image")
-
-## Thanks to all the contributors 🙏
-
-[![Contributors](https://contrib.rocks/image?repo=unovue/inspira-ui)](https://github.com/unovue/inspira-ui/graphs/contributors)
-
----
-
-Made with ♥ by [Rahul Vashishtha](https://rahulv.dev) and the Vue community.
