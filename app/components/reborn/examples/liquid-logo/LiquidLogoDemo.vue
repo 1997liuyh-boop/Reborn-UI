@@ -1,9 +1,0 @@
-<script lang="ts" setup>
-const imageUrl = "https://cdn.reborn-ui.com/images/apple-logo.svg";
-</script>
-
-<template>
-  <div class="flex h-96 w-full items-center justify-center">
-    <LiquidLogo :image-url="imageUrl" />
-  </div>
-</template>

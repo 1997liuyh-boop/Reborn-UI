@@ -11,9 +11,10 @@ const handleClose = () => {
         <!-- New Control Section -->
         <div class="flex items-center gap-2 border-b border-gray-200 pb-4 dark:border-gray-800">
             <span class="text-sm text-gray-500">外部控制:</span>
-            <Button size="xs" :disabled="showBadge" @click="showBadge = true" variant="soft">
+            <RebornButton color="warning" variant="solid" :disabled="showBadge" @click="showBadge = true"
+                class="px-6 w-32">
                 {{ showBadge ? '显示中' : '点击还原' }}
-            </Button>
+            </RebornButton>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
