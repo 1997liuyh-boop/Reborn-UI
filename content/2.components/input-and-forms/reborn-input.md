@@ -1,8 +1,9 @@
 ---
-title: 输入框
+title: 基础输入框
 description: 具有圆角胶囊样式与多尺寸状态的输入组件。
 category: 表单与输入
 tags: [css, tailwind, input]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="RebornInputDemo.vue" config="RebornInputConfig" componentId="reborn-input" :componentFiles='["RebornInput.vue", "reborn-input.config.ts"]'}

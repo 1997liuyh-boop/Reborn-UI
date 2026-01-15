@@ -5,11 +5,11 @@ export { size as inputSizes };
 export default {
   slots: {
     wrapper:
-      "relative inline-flex w-full items-center gap-3 rounded-full bg-gray-2 text-gray-8 transition-colors ring-1 ring-transparent focus-within:bg-white focus-within:ring-gray-8/20 data-[filled=true]:bg-white data-[disabled=true]:bg-gray-3 data-[disabled=true]:text-gray-5",
+      "relative inline-flex w-full items-center gap-3 rounded-full bg-gray-2 text-gray-8 transition-colors ring-1 ring-transparent focus-within:bg-white focus-within:ring-gray-8/20 data-[filled=true]:bg-white data-[disabled=true]:bg-gray-3 data-[disabled=true]:text-gray-5 dark:bg-gray-800 dark:text-gray-200 dark:focus-within:bg-gray-900 dark:focus-within:ring-gray-200/20 dark:data-[filled=true]:bg-gray-900 dark:data-[disabled=true]:bg-gray-800 dark:data-[disabled=true]:text-gray-500",
     input:
-      "min-w-0 flex-1 bg-transparent text-gray-8 placeholder:text-gray-5 outline-none disabled:cursor-not-allowed",
-    leading: "inline-flex items-center text-gray-6",
-    trailing: "inline-flex items-center text-gray-6",
+      "min-w-0 flex-1 bg-transparent text-gray-8 placeholder:text-gray-5 outline-none disabled:cursor-not-allowed dark:text-gray-200 dark:placeholder:text-gray-500",
+    leading: "inline-flex items-center text-gray-6 dark:text-gray-400",
+    trailing: "inline-flex items-center text-gray-6 dark:text-gray-400",
   },
   variants: {
     fieldGroup: {

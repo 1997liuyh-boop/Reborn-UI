@@ -8,9 +8,9 @@ export default {
     wrapper: "inline-flex items-center gap-3 cursor-pointer select-none",
     input: "peer sr-only",
     control:
-      "flex items-center justify-center rounded-md border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed peer-disabled:bg-gray-2 peer-disabled:border-gray-3",
-    icon: "size-3 opacity-0 scale-75 transition-all peer-checked:opacity-100 peer-checked:scale-100",
-    label: "text-gray-8",
+      "flex items-center justify-center rounded-md border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed peer-disabled:bg-gray-2 peer-disabled:border-gray-3 peer-checked:[&>*]:opacity-100 peer-checked:[&>*]:scale-100",
+    icon: "size-4 opacity-0 scale-75 transition-all",
+    label: "text-gray-8 dark:text-gray-2",
   },
   variants: {
     size: {

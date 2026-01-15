@@ -3,6 +3,7 @@ title: 多选框
 description: 适用于单选或组合选择的多选框组件。
 category: 表单与输入
 tags: [css, tailwind, checkbox]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="RebornCheckboxDemo.vue" config="RebornCheckboxConfig" componentId="reborn-checkbox" :componentFiles='["RebornCheckbox.vue", "reborn-checkbox.config.ts"]'}

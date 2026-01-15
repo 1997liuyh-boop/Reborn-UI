@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs, watch } from "vue";
+import type { ClassValue } from "clsx";
+import { cn } from "~/lib/utils";
 import theme, { checkboxColors, checkboxSizes } from "./reborn-checkbox.config";
 import { tv } from "~/lib/tv";
 
@@ -20,6 +22,13 @@ export interface CheckboxProps {
   size?: typeof checkboxSizes[number];
   color?: typeof checkboxColors[number];
   class?: any;
+  ui?: Partial<{
+    wrapper: ClassValue;
+    input: ClassValue;
+    control: ClassValue;
+    icon: ClassValue;
+    label: ClassValue;
+  }>;
 }
 
 const props = withDefaults(defineProps<CheckboxProps>(), {
@@ -46,12 +55,22 @@ const isChecked = computed(() => {
   return Boolean(currentValue.value);
 });
 
-const ui = computed(() =>
-  b({
+const uiOverrides = computed(() => props.ui || {});
+
+const ui = computed(() => {
+  const styles = b({
     size: props.size,
     color: props.color,
-  }),
-);
+  });
+
+  return {
+    wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
+    input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
+    control: (opts?: { class?: any }) => styles.control({ class: cn(opts?.class, uiOverrides.value.control) }),
+    icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
+    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
+  };
+});
 
 const inputAttrs = computed(() => {
   const { class: _class, ...rest } = attrs;
@@ -95,18 +114,13 @@ watch(
 
 <template>
   <label :class="ui.wrapper({ class: props.class })" :data-disabled="props.disabled">
-    <input
-      v-bind="inputAttrs"
-      type="checkbox"
-      :value="optionValue"
-      :checked="isChecked"
-      :disabled="props.disabled"
-      :class="ui.input()"
-      @change="handleChange"
-    />
+    <input v-bind="inputAttrs" type="checkbox" :value="optionValue" :checked="isChecked" :disabled="props.disabled"
+      :class="ui.input()" @change="handleChange" />
 
     <span :class="ui.control()">
-      <Icon name="lucide:check" :class="ui.icon()" />
+      <slot name="icon" :checked="isChecked">
+        <Icon name="lucide:check" :class="ui.icon()" />
+      </slot>
     </span>
 
     <span v-if="props.label || $slots.default" :class="ui.label()">

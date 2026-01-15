@@ -3,6 +3,7 @@ title: 开关
 description: 用于控制开关状态的切换组件。
 category: 表单与输入
 tags: [css, tailwind, switch]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="RebornSwitchDemo.vue" config="RebornSwitchConfig" componentId="reborn-switch" :componentFiles='["RebornSwitch.vue", "reborn-switch.config.ts"]'}

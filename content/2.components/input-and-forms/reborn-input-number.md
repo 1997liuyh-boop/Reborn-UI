@@ -3,6 +3,7 @@ title: 数字输入框
 description: 带有增减按钮的数字输入组件。
 category: 表单与输入
 tags: [css, tailwind, input-number]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="RebornInputNumberDemo.vue" config="RebornInputNumberConfig" componentId="reborn-input-number" :componentFiles='["RebornInputNumber.vue", "reborn-input-number.config.ts"]'}
@@ -22,6 +23,17 @@ tags: [css, tailwind, input-number]
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 聚焦与按钮强调色。 |
 | `class` | `string` | `""` | 额外样式类。 |
+| `ui` | `object` | `{}` | UI 定制对象，支持 `wrapper`, `button`, `input`, `divider`, `icon`。详见下表。 |
+
+### UI Prop Keys
+
+| Key | 描述 |
+| --- | --- |
+| `wrapper` | 最外层容器，控制背景、边框、圆角等。 |
+| `button` | 加减按钮容器，可控制宽度、内边距、悬停背景等。 |
+| `input` | 中间输入框，控制文字样式。 |
+| `divider` | 分割线。 |
+| `icon` | 加减图标，控制大小 (e.g. `size-5`) 或颜色。 |
 
 ## CSS Variables
 

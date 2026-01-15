@@ -3,6 +3,7 @@ title: 按钮
 description: 显示按钮或看起来像按钮的组件。
 category: 按钮
 tags: [css, tailwind, button]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]' dependencies="class-variance-authority"}
