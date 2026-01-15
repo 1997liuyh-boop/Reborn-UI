@@ -3,6 +3,7 @@ title: iPhone 模型
 description: iPhone 的 SVG 设备模型。
 category: 设备模型
 tags: [css, tailwind, device-mockup, magic-ui]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="iPhone15ProMockupDemo.vue" config="iPhone15ProMockupConfig" componentId="iphone-mockup" :componentFiles='["iPhone15ProMockup.vue"]'}

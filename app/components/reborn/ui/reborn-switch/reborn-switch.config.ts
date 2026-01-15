@@ -1,0 +1,62 @@
+const size = ["sm", "md", "lg"] as const;
+const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
+
+export { size as switchSizes, color as switchColors };
+
+export default {
+  slots: {
+    wrapper: "inline-flex items-center gap-3 cursor-pointer select-none",
+    input: "peer sr-only",
+    track:
+      "relative inline-flex items-center rounded-full bg-gray-3 transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed peer-disabled:bg-gray-2 data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
+    thumb:
+      "absolute left-0.5 top-0.5 flex items-center justify-center rounded-full bg-white shadow transition-transform duration-200",
+    label: "text-gray-8 dark:text-gray-1",
+  },
+  variants: {
+    size: {
+      sm: {
+        track: "h-5 w-9 peer-checked:[&>span]:translate-x-4",
+        thumb: "size-4",
+        label: "text-[length:var(--text-size-24)]",
+      },
+      md: {
+        track: "h-6 w-11 peer-checked:[&>span]:translate-x-5",
+        thumb: "size-5",
+        label: "text-[length:var(--text-size-26)]",
+      },
+      lg: {
+        track: "h-7 w-14 peer-checked:[&>span]:translate-x-7",
+        thumb: "size-6",
+        label: "text-[length:var(--text-size-28)]",
+      },
+    },
+    color: {
+      primary: {
+        track: "peer-checked:bg-primary",
+      },
+      secondary: {
+        track: "peer-checked:bg-secondary",
+      },
+      success: {
+        track: "peer-checked:bg-success",
+      },
+      info: {
+        track: "peer-checked:bg-info",
+      },
+      warning: {
+        track: "peer-checked:bg-warning",
+      },
+      error: {
+        track: "peer-checked:bg-error",
+      },
+      neutral: {
+        track: "peer-checked:bg-neutral",
+      },
+    },
+  },
+  defaultVariants: {
+    size: "md" as (typeof size)[number],
+    color: "primary" as (typeof color)[number],
+  },
+};

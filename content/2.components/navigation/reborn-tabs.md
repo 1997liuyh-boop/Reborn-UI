@@ -3,6 +3,7 @@ title: 标签页 Tabs
 description: 用于在不同的内容区域之间切换。
 category: 导航
 tags: [css, tailwind, tabs]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="RebornTabsDemo.vue" config="RebornTabsConfig" componentId="reborn-tabs" :componentFiles='["TabsRoot.vue", "TabsList.vue", "TabsTrigger.vue", "TabsContent.vue", "reborn-tabs.config.ts"]'}

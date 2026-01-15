@@ -3,6 +3,7 @@ title: Safari 模型
 description: Safari 浏览器的 SVG 模型。
 category: 设备模型
 tags: [css, tailwind, device-mockup, magic-ui]
+badge: New
 ---
 
 ::ComponentViewer{demoFile="SafariMockupDemo.vue" config="SafariMockupConfig" componentId="safari-mockup" :componentFiles='["SafariMockup.vue"]'}
