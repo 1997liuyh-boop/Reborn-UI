@@ -65,25 +65,28 @@ function onTabClick(val: number, e: MouseEvent) {
         </div>
 
         <!-- Scrollable/Sticky Example Area -->
-        <div class="h-[400px] max-w-3xl mx-auto  min-w-0 overflow-hidden overflow-y-scroll bg-white rounded-lg">
-            <div>
-                <div class="p-4" v-if="sticky">
-                    <p class="mb-4 text-sm text-gray-500">Scroll down to see sticky header behavior.</p>
-                    <div class="h-12"></div>
-                </div>
+        <!-- Scrollable/Sticky Example Area -->
+        <div
+            class="h-[500px] max-w-3xl mx-auto min-w-0 overflow-hidden bg-white rounded-lg flex flex-col border border-gray-200 dark:border-gray-800 shadow-sm">
+            <div class="p-4 flex-none border-b border-gray-100 dark:border-gray-800" v-if="sticky">
+                <p class="text-sm text-gray-500">Scroll down to see sticky header behavior.</p>
+            </div>
 
-                <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size"
-                    :orientation="orientation" :sticky="sticky" :shrink="shrink" :scrollspy="scrollspy"
-                    :swipeable="swipeable" :activationMode="activationMode" @click-tab="onTabClick">
-                    <TabsList class="bg-white z-1">
-                        <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
-                            {{ tab }}
-                        </TabsTrigger>
-                    </TabsList>
+            <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size"
+                :orientation="orientation" :sticky="sticky" :shrink="shrink" :scrollspy="scrollspy"
+                :swipeable="swipeable" :activationMode="activationMode" @click-tab="onTabClick"
+                class="flex-1 h-full min-h-0">
+                <TabsList class="bg-white z-10">
+                    <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
+                        {{ tab }}
+                    </TabsTrigger>
+                </TabsList>
 
-                    <!-- Wrapper styles should be handled by component config now -->
+                <!-- Content Wrapper for Independent Scrolling -->
+                <div
+                    class="flex-1 h-full min-h-0 overflow-y-auto relative scroll-smooth bg-gray-50 dark:bg-gray-900/50">
                     <TabsContent v-for="(tab, index) in manyTabs" :key="tab" :index="index">
-                        <div class="min-h-[500px]">
+                        <div class="min-h-[500px] p-6">
                             <h3 class="text-lg font-medium">{{ tab }} Content</h3>
                             <p class="text-gray-500 mt-2">
                                 Currently showing content for {{ tab }}.
@@ -91,8 +94,8 @@ function onTabClick(val: number, e: MouseEvent) {
                             </p>
                         </div>
                     </TabsContent>
-                </TabsRoot>
-            </div>
+                </div>
+            </TabsRoot>
         </div>
 
         <!-- Custom Indicator Demo -->

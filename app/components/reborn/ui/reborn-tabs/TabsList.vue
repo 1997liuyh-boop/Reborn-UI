@@ -45,7 +45,7 @@ function updateIndicator() {
             opacity: 1
         };
     } else {
-        const top = tabRect.top - listRect.top + listRef.value.scrollTop;
+        const top = textRect.top - listRect.top + listRef.value.scrollTop
         indicatorStyle.value = {
             '--radix-tabs-indicator-position': `${top}px`,
             '--radix-tabs-indicator-height': `${tabRect.height}px`,
@@ -63,32 +63,29 @@ function scrollToActiveTab() {
     const isHorizontal = context.orientation.value === "horizontal";
     const container = listRef.value;
 
-    if (isHorizontal) {
-        // horizontal
-        const containerWidth = container.clientWidth;
-        const scrollLeft = container.scrollLeft;
-        const tabLeft = activeTab.offsetLeft;
-        const tabWidth = activeTab.offsetWidth;
+    const listRect = listRef.value.getBoundingClientRect();
+    const tabRect = activeTab.getBoundingClientRect();
 
-        // Calculate target scroll position to center the tab
-        const targetScrollLeft = tabLeft - (containerWidth / 2) + (tabWidth / 2);
+    if (isHorizontal) {
+        // Horizontal: Calculate target scrollLeft to center the tab
+        // relativeLeft = distance from left edge of container visible area
+        const relativeLeft = tabRect.left - listRect.left;
+        const centerOffset = (listRect.width - tabRect.width) / 2;
+        const diff = relativeLeft - centerOffset;
 
         container.scrollTo({
-            left: targetScrollLeft,
+            left: container.scrollLeft + diff,
             behavior: "smooth"
         });
     } else {
-        // vertical
-        const containerHeight = container.clientHeight;
-        const scrollTop = container.scrollTop;
-        const tabTop = activeTab.offsetTop;
-        const tabHeight = activeTab.offsetHeight;
-
-        // Calculate target scroll position to center the tab
-        const targetScrollTop = tabTop - (containerHeight / 2) + (tabHeight / 2);
+        // Vertical: Calculate target scrollTop to center the tab
+        // relativeTop = distance from top edge of container visible area
+        const relativeTop = tabRect.top - listRect.top;
+        const centerOffset = (listRect.height - tabRect.height) / 2;
+        const diff = relativeTop - centerOffset;
 
         container.scrollTo({
-            top: targetScrollTop,
+            top: container.scrollTop + diff,
             behavior: "smooth"
         });
     }
@@ -107,6 +104,7 @@ useResizeObserver(listRef, () => {
 
 onMounted(async () => {
     await nextTick();
+    scrollToActiveTab();
     updateIndicator();
     // Initial scroll might not be needed if default is handled, but good to ensure
 });

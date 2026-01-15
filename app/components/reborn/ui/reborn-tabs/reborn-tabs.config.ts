@@ -124,8 +124,8 @@ export default {
       orientation: "vertical" as (typeof tabsOrientations)[number],
       scrollspy: true,
       class: {
-        root: "flex flex-row items-start gap-0 relative w-full overflow-visible",
-        list: "sticky top-0 z-10 w-auto border-r border-gray-2 shrink-0 max-h-screen overflow-y-auto",
+        root: "flex flex-row items-start gap-0 h-full min-h-0 overflow-hidden",
+        list: "h-full min-h-0 overflow-y-auto overflow-x-hidden border-r border-gray-2 shrink-0 w-auto",
         content: "flex-1 min-w-0 w-full",
       },
     },

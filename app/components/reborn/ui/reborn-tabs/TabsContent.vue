@@ -83,6 +83,21 @@ const { distanceX, distanceY } = usePointerSwipe(contentRef, {
     },
 });
 
+// Helper to find scroll parent
+function getScrollParent(node: HTMLElement | null): HTMLElement | Document | null {
+    if (typeof window === 'undefined' || !node) return null;
+    let parent = node.parentElement;
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+        const overflowY = style.overflowY;
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+            return parent;
+        }
+        parent = parent.parentElement;
+    }
+    return document; // Use document/viewport if no scroll parent
+}
+
 watch(
     isScrollspy,
     async (enabled) => {
@@ -95,6 +110,9 @@ watch(
         await nextTick();
         if (!contentRef.value) return;
 
+        // Find the scroll container (the wrapper div)
+        const scrollParent = getScrollParent(contentRef.value);
+
         const { stop } = useIntersectionObserver(
             contentRef,
             (entries) => {
@@ -104,8 +122,9 @@ watch(
                 }
             },
             {
-                threshold: [0.1, 0.5],
-                rootMargin: "-20% 0px -50% 0px"
+                root: scrollParent === document ? null : scrollParent as HTMLElement,
+                threshold: [0, 0.1, 0.2, 1], // Better threshold as requested
+                rootMargin: "-40% 0px -55% 0px" // Adjusted margin as requested
             }
         );
 
