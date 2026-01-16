@@ -80,7 +80,7 @@ export default defineNuxtConfig({
     publicAssets: [
       {
         baseURL: "/uni-render",
-        dir: resolve("./uniapp-project/dist/build/h5"),
+        dir: resolve("../uniapp-project/dist/build/h5"),
         maxAge: 60 * 60 * 24 * 7,
       },
     ],
