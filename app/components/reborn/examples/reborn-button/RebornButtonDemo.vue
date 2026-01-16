@@ -29,17 +29,17 @@ function onClick() {
 
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">颜色</span>
-        <USelect v-model="color!" :items="colors" class="w-32" />
+        <USelect v-model="color" :items="colors" class="w-32" />
       </div>
 
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">风格</span>
-        <USelect v-model="variant!" :items="variants" class="w-32" />
+        <USelect v-model="variant" :items="variants" class="w-32" />
       </div>
 
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">大小</span>
-        <USelect v-model="size!" :items="sizes" class="w-24" />
+        <USelect v-model="size" :items="sizes" class="w-24" />
       </div>
 
       <div class="h-8 w-px bg-gray-200 dark:bg-gray-800 hidden md:block"></div>

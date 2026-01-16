@@ -33,22 +33,22 @@ function onTabClick(val: number, e: MouseEvent) {
         <div class="grid grid-cols-4 gap-2">
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-500">类型</span>
-                <USelect v-model="type!" :items="types" class="w-32" />
+                <USelect v-model="type" :items="types" class="w-32" />
             </div>
 
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-500">风格</span>
-                <USelect v-model="variant!" :items="variants" class="w-32" />
+                <USelect v-model="variant" :items="variants" class="w-32" />
             </div>
 
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-500">大小</span>
-                <USelect v-model="size!" :items="sizes" class="w-24" />
+                <USelect v-model="size" :items="sizes" class="w-24" />
             </div>
 
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-500">方向</span>
-                <USelect v-model="orientation!" :items="orientations" class="w-32" />
+                <USelect v-model="orientation" :items="orientations" class="w-32" />
             </div>
 
             <div class="flex items-center gap-2">

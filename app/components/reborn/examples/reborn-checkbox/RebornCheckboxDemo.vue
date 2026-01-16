@@ -40,12 +40,12 @@ const plans = [
     <div class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800">
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">尺寸</span>
-        <USelect v-model="size!" :items="sizes" class="w-28" />
+        <USelect v-model="size" :items="sizes" class="w-28" />
       </div>
 
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">配色</span>
-        <USelect v-model="color!" :items="colors" class="w-32" />
+        <USelect v-model="color" :items="colors" class="w-32" />
       </div>
     </div>
 
