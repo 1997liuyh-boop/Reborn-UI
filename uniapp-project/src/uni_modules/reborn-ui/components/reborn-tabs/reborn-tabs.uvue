@@ -1,0 +1,221 @@
+<template>
+  <view
+    class="rb-tabs"
+    :class="[
+      {
+        'rb-tabs--line': showLine,
+        'rb-tabs--slider': showSlider,
+        'rb-tabs--fill': fill,
+        'rb-tabs--disabled': disabled,
+      },
+      pt.className,
+    ]"
+    :style="{ height: parseRpx(height) }"
+  >
+    <scroll-view
+      class="rb-tabs__scrollbar"
+      scroll-with-animation
+      scroll-x
+      :scroll-into-view="activeId"
+      :show-scrollbar="false"
+    >
+      <view class="rb-tabs__inner">
+        <view
+          v-for="(item, index) in list"
+          :key="item.value ?? index"
+          :id="`rb-tab-${index}`"
+          class="rb-tabs__item"
+          :class="[pt.item?.className, { 'is-active': item.isActive, 'is-disabled': item.disabled }]"
+          :style="{ padding: `0 ${parseRpx(gutter)}` }"
+          @tap="change(index)"
+        >
+          <slot name="item" :item="item" :active="item.isActive">
+            <text
+              class="rb-tabs__item-label"
+              :class="[pt.text?.className]"
+              :style="getTextStyle(item)"
+            >
+              {{ item.label }}
+            </text>
+          </slot>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, watch, type PropType } from "vue";
+
+type TabsItem = {
+  label: string;
+  value: string | number;
+  disabled?: boolean;
+};
+
+type RenderItem = TabsItem & {
+  isActive: boolean;
+  disabled: boolean;
+};
+
+const props = defineProps({
+  pt: {
+    type: Object,
+    default: () => ({}),
+  },
+  modelValue: {
+    type: [String, Number] as PropType<string | number>,
+    default: "",
+  },
+  height: {
+    type: [String, Number] as PropType<string | number>,
+    default: 80,
+  },
+  list: {
+    type: Array as PropType<TabsItem[]>,
+    default: () => [],
+  },
+  fill: {
+    type: Boolean,
+    default: false,
+  },
+  gutter: {
+    type: Number,
+    default: 30,
+  },
+  color: {
+    type: String,
+    default: "",
+  },
+  unColor: {
+    type: String,
+    default: "",
+  },
+  showLine: {
+    type: Boolean,
+    default: true,
+  },
+  showSlider: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const emit = defineEmits(["update:modelValue", "change"]);
+
+const pt = computed(() => props.pt ?? {});
+const active = ref(props.modelValue);
+
+const list = computed<RenderItem[]>(() =>
+  props.list.map((item) => ({
+    ...item,
+    disabled: item.disabled ?? false,
+    isActive: item.value === active.value,
+  })),
+);
+
+const parseRpx = (val: number | string) => (typeof val === "number" ? `${val}rpx` : val);
+
+const activeId = computed(() => {
+  const index = list.value.findIndex((item) => item.isActive);
+  if (index === -1) return "";
+  return `rb-tab-${index}`;
+});
+
+function change(index: number) {
+  if (props.disabled) return;
+  const { value, disabled } = list.value[index];
+  if (disabled) return;
+  active.value = value;
+  emit("update:modelValue", value);
+  emit("change", value);
+}
+
+function getTextStyle(item: RenderItem) {
+  const color = item.isActive ? props.color : props.unColor;
+  return color ? { color } : {};
+}
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    active.value = val;
+  },
+  { immediate: true },
+);
+</script>
+
+<style scoped>
+.rb-tabs {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.rb-tabs__scrollbar {
+  width: 100%;
+  height: 100%;
+}
+
+.rb-tabs__inner {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.rb-tabs__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 26rpx;
+  color: var(--color-gray-6);
+  position: relative;
+}
+
+.rb-tabs__item-label {
+  transition: color 0.2s ease;
+}
+
+.rb-tabs__item.is-active {
+  color: var(--color-primary);
+}
+
+.rb-tabs--line .rb-tabs__item.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: 6rpx;
+  left: 50%;
+  width: 32rpx;
+  height: 4rpx;
+  border-radius: 9999rpx;
+  background-color: var(--color-primary);
+  transform: translateX(-50%);
+}
+
+.rb-tabs--slider .rb-tabs__item.is-active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-radius: 16rpx;
+}
+
+.rb-tabs--fill .rb-tabs__inner {
+  width: 100%;
+}
+
+.rb-tabs--fill .rb-tabs__item {
+  flex: 1;
+}
+
+.rb-tabs--disabled {
+  opacity: 0.6;
+}
+
+.rb-tabs__item.is-disabled {
+  opacity: 0.4;
+}
+</style>

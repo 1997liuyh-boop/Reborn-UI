@@ -1,0 +1,249 @@
+<template>
+  <view
+    class="rb-input-number"
+    :class="[{ 'rb-input-number--disabled': isDisabled }, pt.className]"
+    :style="{ height: parseRpx(size) }"
+  >
+    <view
+      class="rb-input-number__op rb-input-number__op--minus"
+      :class="[{ 'is-disabled': !isMinus }, pt.op?.className, pt.op?.minus?.className]"
+      :style="{ height: parseRpx(size), width: parseRpx(size) }"
+      @touchstart="onMinus"
+      @touchend="stopLongPress"
+      @touchcancel="stopLongPress"
+    >
+      <text class="rb-input-number__op-text">-</text>
+    </view>
+
+    <view class="rb-input-number__value">
+      <input
+        class="rb-input-number__input"
+        :class="pt.value?.className"
+        :type="inputType"
+        :disabled="isDisabled"
+        :readonly="inputable === false"
+        :placeholder="placeholder"
+        :value="`${value}`"
+        @blur="onBlur"
+      />
+    </view>
+
+    <view
+      class="rb-input-number__op rb-input-number__op--plus"
+      :class="[{ 'is-disabled': !isPlus }, pt.op?.className, pt.op?.plus?.className]"
+      :style="{ height: parseRpx(size), width: parseRpx(size) }"
+      @touchstart="onPlus"
+      @touchend="stopLongPress"
+      @touchcancel="stopLongPress"
+    >
+      <text class="rb-input-number__op-text">+</text>
+    </view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed, nextTick, ref, watch, type PropType } from "vue";
+
+defineOptions({
+  name: "reborn-input-number",
+});
+
+const props = defineProps({
+  modelValue: {
+    type: Number,
+    default: 0,
+  },
+  pt: {
+    type: Object,
+    default: () => ({}),
+  },
+  placeholder: {
+    type: String,
+    default: "",
+  },
+  step: {
+    type: Number,
+    default: 1,
+  },
+  max: {
+    type: Number,
+    default: 100,
+  },
+  min: {
+    type: Number,
+    default: 0,
+  },
+  inputType: {
+    type: String as PropType<"digit" | "number">,
+    default: "number",
+  },
+  inputable: {
+    type: Boolean,
+    default: true,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  size: {
+    type: [Number, String] as PropType<number | string>,
+    default: 50,
+  },
+});
+
+const emit = defineEmits(["update:modelValue", "change"]);
+
+const pt = computed(() => props.pt ?? {});
+const value = ref(props.modelValue);
+const isDisabled = computed(() => props.disabled);
+
+const isPlus = computed(() => !isDisabled.value && value.value < props.max);
+const isMinus = computed(() => !isDisabled.value && value.value > props.min);
+
+let longPressTimer: ReturnType<typeof setInterval> | null = null;
+
+const parseRpx = (val: number | string) => (typeof val === "number" ? `${val}rpx` : val);
+
+function update() {
+  nextTick(() => {
+    let nextValue = value.value;
+
+    if (nextValue < props.min) {
+      nextValue = props.min;
+    }
+
+    if (nextValue > props.max) {
+      nextValue = props.max;
+    }
+
+    if (props.min > props.max) {
+      nextValue = props.max;
+    }
+
+    if (props.inputType === "digit") {
+      nextValue = parseFloat(nextValue.toFixed(2));
+    }
+
+    value.value = nextValue;
+
+    if (nextValue !== props.modelValue) {
+      emit("update:modelValue", nextValue);
+      emit("change", nextValue);
+    }
+  });
+}
+
+function startLongPress(callback: () => void) {
+  stopLongPress();
+  callback();
+  longPressTimer = setInterval(callback, 200);
+}
+
+function stopLongPress() {
+  if (longPressTimer) {
+    clearInterval(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+function onPlus() {
+  if (isDisabled.value || !isPlus.value) return;
+  startLongPress(() => {
+    if (!isPlus.value) return;
+    const delta = props.max - value.value;
+    value.value += delta > props.step ? props.step : delta;
+    update();
+  });
+}
+
+function onMinus() {
+  if (isDisabled.value || !isMinus.value) return;
+  startLongPress(() => {
+    if (!isMinus.value) return;
+    const delta = value.value - props.min;
+    value.value -= delta > props.step ? props.step : delta;
+    update();
+  });
+}
+
+function onBlur(e: UniInputBlurEvent) {
+  if (e.detail.value === "") {
+    value.value = 0;
+  } else {
+    value.value = parseFloat(e.detail.value);
+  }
+  update();
+}
+
+watch(
+  () => props.modelValue,
+  (val: number) => {
+    value.value = val;
+    update();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.max,
+  () => {
+    update();
+  },
+);
+
+watch(
+  () => props.min,
+  () => {
+    update();
+  },
+);
+</script>
+
+<style scoped>
+.rb-input-number {
+  display: flex;
+  align-items: center;
+}
+
+.rb-input-number__op {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  background-color: var(--color-gray-2);
+  color: var(--color-gray-8);
+}
+
+.rb-input-number__op--plus {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.rb-input-number__op-text {
+  font-size: 28rpx;
+}
+
+.rb-input-number__value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0 16rpx;
+}
+
+.rb-input-number__input {
+  width: 160rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: var(--color-gray-8);
+  height: 100%;
+}
+
+.rb-input-number--disabled {
+  opacity: 0.5;
+}
+
+.rb-input-number__op.is-disabled {
+  opacity: 0.5;
+}
+</style>

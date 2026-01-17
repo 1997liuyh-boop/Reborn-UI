@@ -1,0 +1,471 @@
+<template>
+  <view
+    class="rb-button"
+    :class="[
+      sizeClass,
+      typeClass,
+      {
+        'rb-button--text': text,
+        'rb-button--border': border,
+        'rb-button--rounded': rounded,
+        'rb-button--icon': isIcon,
+        'rb-button--loading': loading,
+        'rb-button--disabled': isDisabled,
+        'rb-button--hover': isHover,
+      },
+      hoverClass && isHover ? hoverClass : '',
+      pt.className,
+    ]"
+    :style="buttonStyle"
+    @tap.stop="onTap"
+  >
+    <button
+      class="rb-button__clicker"
+      :disabled="isDisabled"
+      :hover-class="hoverClass"
+      :hover-stop-propagation="hoverStopPropagation"
+      :hover-start-time="hoverStartTime"
+      :hover-stay-time="hoverStayTime"
+      :form-type="formType"
+      :open-type="openType"
+      :lang="lang"
+      :session-from="sessionFrom"
+      :send-message-title="sendMessageTitle"
+      :send-message-path="sendMessagePath"
+      :send-message-img="sendMessageImg"
+      :show-message-card="showMessageCard"
+      :app-parameter="appParameter"
+      :group-id="groupId"
+      :guild-id="guildId"
+      :public-id="publicId"
+      :phone-number-no-quota-toast="phoneNumberNoQuotaToast"
+      :createliveactivity="createliveactivity"
+      @getuserinfo="onGetUserInfo"
+      @contact="onContact"
+      @getphonenumber="onGetPhoneNumber"
+      @error="onError"
+      @opensetting="onOpenSetting"
+      @launchapp="onLaunchApp"
+      @chooseavatar="onChooseAvatar"
+      @chooseaddress="onChooseAddress"
+      @chooseinvoicetitle="onChooseInvoiceTitle"
+      @addgroupapp="onAddGroupApp"
+      @subscribe="onSubscribe"
+      @login="onLogin"
+      @getrealtimephonenumber="onGetRealtimePhoneNumber"
+      @agreeprivacyauthorization="onAgreePrivacyAuthorization"
+      @touchstart="onTouchStart"
+      @touchend="onTouchEnd"
+      @touchcancel="onTouchCancel"
+    ></button>
+
+    <view v-if="loading && !disabled" class="rb-button__spinner"></view>
+
+    <slot name="icon">
+      <text v-if="icon" class="rb-button__icon">{{ icon }}</text>
+    </slot>
+
+    <template v-if="!isIcon">
+      <text class="rb-button__label">
+        <slot></slot>
+      </text>
+      <slot name="content"></slot>
+    </template>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, useSlots, type PropType } from "vue";
+
+defineOptions({
+  name: "reborn-button",
+});
+
+const props = defineProps({
+  pt: {
+    type: Object,
+    default: () => ({}),
+  },
+  type: {
+    type: String as PropType<
+      "primary" | "success" | "warn" | "error" | "info" | "light" | "dark" | "neutral"
+    >,
+    default: "primary",
+  },
+  color: {
+    type: String,
+    default: "",
+  },
+  icon: {
+    type: String,
+    default: "",
+  },
+  text: {
+    type: Boolean,
+    default: false,
+  },
+  rounded: {
+    type: Boolean,
+    default: false,
+  },
+  border: {
+    type: Boolean,
+    default: false,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  size: {
+    type: String as PropType<"small" | "normal" | "large">,
+    default: "normal",
+  },
+  hoverClass: {
+    type: String,
+    default: "",
+  },
+  hoverStopPropagation: {
+    type: Boolean,
+    default: false,
+  },
+  hoverStartTime: {
+    type: Number,
+    default: 20,
+  },
+  hoverStayTime: {
+    type: Number,
+    default: 70,
+  },
+  formType: {
+    type: String as PropType<"submit" | "reset">,
+    default: "",
+  },
+  openType: {
+    type: String,
+    default: "",
+  },
+  lang: {
+    type: String as PropType<"en" | "zh_CN" | "zh_TW">,
+    default: "zh_CN",
+  },
+  sessionFrom: {
+    type: String,
+    default: "",
+  },
+  sendMessageTitle: {
+    type: String,
+    default: "",
+  },
+  sendMessagePath: {
+    type: String,
+    default: "",
+  },
+  sendMessageImg: {
+    type: String,
+    default: "",
+  },
+  showMessageCard: {
+    type: Boolean,
+    default: false,
+  },
+  appParameter: {
+    type: String,
+    default: "",
+  },
+  groupId: {
+    type: String,
+    default: "",
+  },
+  guildId: {
+    type: String,
+    default: "",
+  },
+  publicId: {
+    type: String,
+    default: "",
+  },
+  phoneNumberNoQuotaToast: {
+    type: Boolean,
+    default: false,
+  },
+  createliveactivity: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const emit = defineEmits([
+  "click",
+  "tap",
+  "getuserinfo",
+  "contact",
+  "getphonenumber",
+  "error",
+  "opensetting",
+  "launchapp",
+  "chooseavatar",
+  "chooseaddress",
+  "chooseinvoicetitle",
+  "addgroupapp",
+  "subscribe",
+  "login",
+  "getrealtimephonenumber",
+  "agreeprivacyauthorization",
+]);
+
+const slots = useSlots();
+const pt = computed(() => props.pt ?? {});
+const isDisabled = computed(() => props.disabled || props.loading);
+const isIcon = computed(() => !slots.default && !slots.content);
+
+const sizeClass = computed(() => {
+  switch (props.size) {
+    case "small":
+      return "rb-button--small";
+    case "large":
+      return "rb-button--large";
+    default:
+      return "rb-button--normal";
+  }
+});
+
+const typeClass = computed(() => `rb-button--${props.type}`);
+
+const buttonStyle = computed(() => {
+  if (!props.color) return {};
+
+  if (props.text || props.border) {
+    return {
+      color: props.color,
+      borderColor: props.color,
+    };
+  }
+
+  return {
+    backgroundColor: props.color,
+    borderColor: props.color,
+    color: \"#ffffff\",
+  };
+});
+
+function onTap(e: UniPointerEvent) {
+  if (isDisabled.value) return;
+  emit("click", e);
+  emit("tap", e);
+}
+
+function onGetUserInfo(e: UniEvent) {
+  emit("getuserinfo", e);
+}
+
+function onContact(e: UniEvent) {
+  emit("contact", e);
+}
+
+function onGetPhoneNumber(e: UniEvent) {
+  emit("getphonenumber", e);
+}
+
+function onError(e: UniEvent) {
+  emit("error", e);
+}
+
+function onOpenSetting(e: UniEvent) {
+  emit("opensetting", e);
+}
+
+function onLaunchApp(e: UniEvent) {
+  emit("launchapp", e);
+}
+
+function onChooseAvatar(e: UniEvent) {
+  emit("chooseavatar", e);
+}
+
+function onChooseAddress(e: UniEvent) {
+  emit("chooseaddress", e);
+}
+
+function onChooseInvoiceTitle(e: UniEvent) {
+  emit("chooseinvoicetitle", e);
+}
+
+function onAddGroupApp(e: UniEvent) {
+  emit("addgroupapp", e);
+}
+
+function onSubscribe(e: UniEvent) {
+  emit("subscribe", e);
+}
+
+function onLogin(e: UniEvent) {
+  emit("login", e);
+}
+
+function onGetRealtimePhoneNumber(e: UniEvent) {
+  emit("getrealtimephonenumber", e);
+}
+
+function onAgreePrivacyAuthorization(e: UniEvent) {
+  emit("agreeprivacyauthorization", e);
+}
+
+const isHover = ref(false);
+
+function onTouchStart() {
+  if (!isDisabled.value) {
+    isHover.value = true;
+  }
+}
+
+function onTouchEnd() {
+  isHover.value = false;
+}
+
+function onTouchCancel() {
+  isHover.value = false;
+}
+</script>
+
+<style scoped>
+.rb-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  position: relative;
+  border-radius: 16rpx;
+  font-weight: 500;
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  border-width: 2rpx;
+  border-style: solid;
+  border-color: transparent;
+  overflow: hidden;
+}
+
+.rb-button__clicker {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  z-index: 2;
+}
+
+.rb-button__label {
+  line-height: 1.4;
+}
+
+.rb-button__icon {
+  font-size: 26rpx;
+}
+
+.rb-button__spinner {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 9999rpx;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  border-top-color: rgba(255, 255, 255, 0.9);
+  animation: rb-spin 0.8s linear infinite;
+}
+
+.rb-button--small {
+  height: 64rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+}
+
+.rb-button--normal {
+  height: 72rpx;
+  padding: 0 32rpx;
+  font-size: 28rpx;
+}
+
+.rb-button--large {
+  height: 84rpx;
+  padding: 0 40rpx;
+  font-size: 30rpx;
+}
+
+.rb-button--rounded {
+  border-radius: 9999rpx;
+}
+
+.rb-button--icon {
+  padding: 0 24rpx;
+}
+
+.rb-button--text {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.rb-button--border {
+  background-color: transparent;
+  border-color: currentColor;
+}
+
+.rb-button--primary {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.rb-button--success {
+  background-color: var(--color-success);
+  color: #fff;
+}
+
+.rb-button--warn {
+  background-color: var(--color-warning);
+  color: #fff;
+}
+
+.rb-button--error {
+  background-color: var(--color-error);
+  color: #fff;
+}
+
+.rb-button--info {
+  background-color: var(--color-info);
+  color: #fff;
+}
+
+.rb-button--light {
+  background-color: #ffffff;
+  color: var(--color-gray-8);
+  border-color: var(--color-gray-4);
+}
+
+.rb-button--dark {
+  background-color: #1f2937;
+  color: #ffffff;
+}
+
+.rb-button--neutral {
+  background-color: var(--color-neutral);
+  color: #fff;
+}
+
+.rb-button--loading {
+  opacity: 0.7;
+}
+
+.rb-button--disabled {
+  opacity: 0.5;
+}
+
+.rb-button--hover {
+  opacity: 0.85;
+}
+
+@keyframes rb-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

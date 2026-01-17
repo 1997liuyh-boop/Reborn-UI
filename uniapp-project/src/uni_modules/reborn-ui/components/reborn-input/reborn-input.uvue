@@ -1,0 +1,345 @@
+<template>
+  <view
+    class="rb-input"
+    :class="[
+      {
+        'rb-input--border': border,
+        'rb-input--focus': isFocus,
+        'rb-input--disabled': isDisabled,
+        'rb-input--error': isError,
+      },
+      pt.className,
+    ]"
+  >
+    <slot name="prepend"></slot>
+
+    <view v-if="prefixIcon" class="rb-input__icon">
+      <text class="rb-input__icon-text">{{ prefixIcon }}</text>
+    </view>
+
+    <!-- @vue-ignore -->
+    <input
+      class="rb-input__inner"
+      :class="[
+        {
+          'is-disabled': isDisabled,
+          'is-exceed': isExceed,
+        },
+        pt.inner?.className,
+      ]"
+      :style="inputStyle"
+      :value="value"
+      :disabled="readonly ?? isDisabled"
+      :type="type"
+      :password="isPassword"
+      :focus="isFocusing"
+      :placeholder="placeholder"
+      :placeholder-class="placeholderClass"
+      :placeholder-style="placeholderStyle"
+      :maxlength="maxlength"
+      :cursor-spacing="cursorSpacing"
+      :confirm-type="confirmType"
+      :confirm-hold="confirmHold"
+      :adjust-position="adjustPosition"
+      :hold-keyboard="holdKeyboard"
+      @input="onInput"
+      @focus="onFocus"
+      @blur="onBlur"
+      @confirm="onConfirm"
+      @keyboardheightchange="onKeyboardheightchange"
+    />
+
+    <view v-if="suffixIcon" class="rb-input__icon">
+      <text class="rb-input__icon-text">{{ suffixIcon }}</text>
+    </view>
+
+    <view v-if="showClear" class="rb-input__icon" @tap="clear">
+      <text class="rb-input__icon-text">×</text>
+    </view>
+
+    <view v-if="password" class="rb-input__icon" @tap="togglePassword">
+      <text class="rb-input__icon-text">{{ isPassword ? '👁' : '🙈' }}</text>
+    </view>
+
+    <slot name="append"></slot>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed, nextTick, ref, watch, type PropType } from "vue";
+
+defineOptions({
+  name: "reborn-input",
+});
+
+const props = defineProps({
+  pt: {
+    type: Object,
+    default: () => ({}),
+  },
+  modelValue: {
+    type: String,
+    default: "",
+  },
+  type: {
+    type: String as PropType<
+      "text" | "number" | "idcard" | "digit" | "tel" | "safe-password" | "nickname"
+    >,
+    default: "text",
+  },
+  prefixIcon: {
+    type: String,
+    default: "",
+  },
+  suffixIcon: {
+    type: String,
+    default: "",
+  },
+  password: {
+    type: Boolean,
+    default: false,
+  },
+  autofocus: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  error: {
+    type: Boolean,
+    default: false,
+  },
+  readonly: {
+    type: Boolean,
+    default: null,
+  },
+  placeholder: {
+    type: String,
+    default: "请输入",
+  },
+  placeholderClass: {
+    type: String,
+    default: "rb-input__placeholder",
+  },
+  placeholderStyle: {
+    type: String,
+    default: "",
+  },
+  border: {
+    type: Boolean,
+    default: true,
+  },
+  clearable: {
+    type: Boolean,
+    default: false,
+  },
+  cursorSpacing: {
+    type: Number,
+    default: 5,
+  },
+  confirmHold: {
+    type: Boolean,
+    default: false,
+  },
+  confirmType: {
+    type: String as PropType<"done" | "go" | "next" | "search" | "send">,
+    default: "done",
+  },
+  adjustPosition: {
+    type: Boolean,
+    default: true,
+  },
+  maxlength: {
+    type: Number,
+    default: 140,
+  },
+  holdKeyboard: {
+    type: Boolean,
+    default: false,
+  },
+  precision: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const emit = defineEmits([
+  "update:modelValue",
+  "input",
+  "change",
+  "focus",
+  "blur",
+  "confirm",
+  "clear",
+  "keyboardheightchange",
+]);
+
+const pt = computed(() => props.pt ?? {});
+const isDisabled = computed(() => props.disabled);
+const isError = computed(() => props.error);
+
+const inputStyle = computed(() => {
+  const style: Record<string, string> = {};
+  return style;
+});
+
+const value = ref("" as string);
+const isFocus = ref(props.autofocus);
+const isFocusing = ref(props.autofocus);
+const showClear = computed(() => props.clearable && value.value !== "");
+const isPassword = ref(props.password);
+
+const isExceed = computed(() => {
+  if (props.type === "digit" && props.precision >= 0 && value.value !== "") {
+    const parts = value.value.split(".");
+    return parts.length > 1 && parts[1].length > props.precision;
+  }
+  return false;
+});
+
+function togglePassword() {
+  isPassword.value = !isPassword.value;
+}
+
+function onFocus(e: UniInputFocusEvent) {
+  isFocus.value = true;
+  emit("focus", e);
+}
+
+function onBlur(e: UniInputBlurEvent) {
+  emit("blur", e);
+
+  if (props.type === "digit" && props.precision > 0 && value.value !== "") {
+    const numValue = parseFloat(value.value);
+    if (!Number.isNaN(numValue)) {
+      const formattedValue = numValue.toFixed(props.precision);
+      value.value = formattedValue;
+      emit("update:modelValue", formattedValue);
+      emit("change", formattedValue);
+    }
+  }
+
+  setTimeout(() => {
+    isFocus.value = false;
+  }, 0);
+}
+
+function onInput(e: UniInputEvent) {
+  const nextValue = e.detail.value;
+  const currentValue = value.value;
+
+  value.value = nextValue;
+
+  emit("update:modelValue", nextValue);
+  emit("input", e);
+
+  if (nextValue !== currentValue) {
+    emit("change", nextValue);
+  }
+}
+
+function onConfirm(e: UniInputConfirmEvent) {
+  emit("confirm", e);
+}
+
+function onKeyboardheightchange(e: UniInputKeyboardHeightChangeEvent) {
+  emit("keyboardheightchange", e);
+}
+
+function focus() {
+  setTimeout(() => {
+    isFocusing.value = false;
+
+    nextTick(() => {
+      isFocusing.value = true;
+    });
+  }, 0);
+}
+
+function clear() {
+  value.value = "";
+
+  emit("update:modelValue", "");
+  emit("change", "");
+  emit("clear");
+
+  // #ifdef H5
+  focus();
+  // #endif
+}
+
+watch(
+  () => props.modelValue,
+  (val: string) => {
+    value.value = val;
+  },
+  {
+    immediate: true,
+  },
+);
+
+defineExpose({
+  isFocus,
+  focus,
+  clear,
+});
+</script>
+
+<style scoped>
+.rb-input {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  height: 72rpx;
+  padding: 0 24rpx;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.rb-input__inner {
+  flex: 1;
+  height: 100%;
+  font-size: 28rpx;
+  color: var(--color-gray-8);
+}
+
+.rb-input__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-left: 16rpx;
+}
+
+.rb-input__icon-text {
+  font-size: 26rpx;
+  color: var(--color-gray-6);
+}
+
+.rb-input--border {
+  border: 2rpx solid var(--color-gray-3);
+}
+
+.rb-input--focus.rb-input--border {
+  border-color: var(--color-primary);
+}
+
+.rb-input--disabled {
+  background-color: var(--color-gray-2);
+  opacity: 0.7;
+}
+
+.rb-input--error {
+  border-color: var(--color-error);
+}
+
+.rb-input__placeholder {
+  color: var(--color-gray-5);
+}
+
+.rb-input__inner.is-exceed {
+  color: var(--color-error);
+}
+</style>
