@@ -1,43 +1,41 @@
 <template>
-  <view class="page">
-    <view class="header">
-      <view class="title">UniApp 组件预览</view>
-      <view class="subtitle">该页面由 Nuxt 通过 Nitro 托管。</view>
+  <view class="content">
+    <image class="logo" src="/static/logo.png" />
+    <view class="text-area">
+      <text class="title">{{ title }}</text>
     </view>
-    <PreviewCard
-      title="Reborn UI + UniApp"
-      description="这是一个在 Nuxt 里通过 iframe 显示的 UniApp 组件。"
-      tag="Preview"
-    />
   </view>
 </template>
 
-<script setup>
-import PreviewCard from "@/components/PreviewCard.vue";
+<script setup lang="ts">
+import { ref } from 'vue'
+const title = ref('Hello')
 </script>
 
-<style scoped>
-.page {
-  padding: 32rpx;
+<style>
+.content {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  align-items: center;
+  justify-content: center;
 }
 
-.header {
+.logo {
+  height: 200rpx;
+  width: 200rpx;
+  margin-top: 200rpx;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 50rpx;
+}
+
+.text-area {
   display: flex;
-  flex-direction: column;
-  gap: 8rpx;
+  justify-content: center;
 }
 
 .title {
   font-size: 36rpx;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.subtitle {
-  font-size: 24rpx;
-  color: #64748b;
+  color: #8f8f94;
 }
 </style>
