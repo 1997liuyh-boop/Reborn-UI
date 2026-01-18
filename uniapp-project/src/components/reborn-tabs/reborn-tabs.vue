@@ -1,182 +1,279 @@
+<script setup lang="ts">
+import { computed, ref, watch, onMounted, getCurrentInstance, nextTick, type PropType } from "vue";
+import { tv } from '@/lib/tv';
+import { cn } from '@/lib/utils';
+import theme, { tabsOrientations, tabsSizes, tabsTypes, tabsVariants } from "./reborn-tabs.config";
+
+defineOptions({
+  name: "reborn-tabs",
+  inheritAttrs: false,
+});
+
+const b = tv(theme);
+
+export interface TabsItem {
+  label: string;
+  value: string | number;
+  disabled?: boolean;
+}
+
+export interface TabsProps {
+  modelValue?: string | number;
+  list?: TabsItem[];
+  type?: typeof tabsTypes[number];
+  size?: typeof tabsSizes[number];
+  variant?: typeof tabsVariants[number];
+  orientation?: typeof tabsOrientations[number];
+  fill?: boolean;
+  disabled?: boolean;
+  class?: any;
+}
+
+const props = withDefaults(defineProps<TabsProps>(), {
+  list: () => [],
+  type: "line",
+  size: "md",
+  variant: "primary",
+  orientation: "horizontal",
+  fill: false,
+  disabled: false,
+});
+
+const emit = defineEmits(["update:modelValue", "change"]);
+const { proxy } = getCurrentInstance()!;
+
+const active = ref(props.modelValue);
+const itemRects = ref<any[]>([]);
+const tabRect = ref<any>({ left: 0, top: 0, width: 0, height: 0 });
+const indicatorStyle = ref({});
+const scrollLeft = ref(0);
+const scrollTop = ref(0);
+
+const ui = computed(() => {
+  const styles = b({
+    type: props.type,
+    size: props.size,
+    variant: props.variant,
+    orientation: props.orientation,
+    fill: props.fill
+  });
+
+  return {
+    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class) }),
+    list: (opts?: { class?: any }) => styles.list({ class: cn(opts?.class) }),
+    item: (opts?: { class?: any }) => styles.item({ class: cn(opts?.class) }),
+    text: (opts?: { class?: any }) => styles.text({ class: cn(opts?.class) }),
+    indicator: (opts?: { class?: any }) => styles.indicator({ class: cn(opts?.class) }),
+    content: (opts?: { class?: any }) => styles.content({ class: cn(opts?.class) }),
+    scroll: (opts?: { class?: any }) => styles.scroll({ class: cn(opts?.class) }),
+  };
+});
+
+// Update logic extracted from cl-tabs
+function getRects() {
+  uni.createSelectorQuery()
+    .in(proxy)
+    .selectAll(".rb-tabs__item")
+    .boundingClientRect((res) => {
+      if (Array.isArray(res)) {
+        itemRects.value = res;
+        updateIndicator();
+      }
+    })
+    .exec();
+}
+
+function updateContainerRect() {
+  uni.createSelectorQuery()
+    .in(proxy)
+    .select(".rb-tabs__list") // Measure the scroll container/list
+    .boundingClientRect((res) => {
+      if (res) {
+        tabRect.value = res;
+        getRects();
+      }
+    })
+    .exec();
+}
+
+function updateIndicator() {
+  if (itemRects.value.length === 0) return;
+
+  const index = props.list.findIndex(item => item.value === active.value);
+  if (index === -1) return;
+
+  const item = itemRects.value[index];
+  const container = tabRect.value;
+
+  // Relative position
+  // Since item.left is relative to viewport usually in SelectorQuery unless customized?
+  // Actually SelectorQuery returns viewport relative coordinates.
+  // So relative left = item.left - container.left + scrollLeft of container (if separate).
+  // But here we might just need relative position in the flex container.
+  // If container is relative, indicator is absolute.
+  // We need 'left' relative to container.
+
+  // In cl-tabs logic: x = item.left - tabLeft ... 
+
+  let left = item.left - container.left;
+  let top = item.top - container.top;
+
+  // Update scroll position to center the item
+  if (props.orientation === 'horizontal') {
+    // Center: left - (containerWidth/2) + (itemWidth/2)
+    // Add current scrollLeft to calculate target scroll position?
+    // Actually scroll-view :scroll-left expects absolute scroll value.
+    // We know item.left is viewport relative. 
+    // We probably need to track scroll state or just approximate.
+    // Actually if we use scroll-into-view it's easier.
+    // But for indicator we need pixel values.
+
+    // Wait, cl-tabs sets `scrollLeft.value`.
+    // x = item.left - (tabWidth - itemWidth) / 2 - tabLeft.
+    // But item.left changes as we scroll? 
+    // Only if we re-measure?
+    // SelectorQuery returns current position.
+
+    // For indicator:
+    // logic: `transform: translateX(...)`
+    // We need the offset from the start of the list content.
+    // Because the indicator is inside the scrolling container? 
+    // cl-tabs puts indicator INSIDE scroll-view -> view -> inner.
+    // Yes, if indicator is inside the scrollable content, it moves with it.
+    // So we just need its position relative to the first item (left=0).
+    // Since `item.left` is screen relative, `item.left - container.left` gives visual offset.
+    // But if container is scrolled, visual offset is smaller than actual offset from content start.
+    // BUT `cl-tabs` re-calculates on mount/update. 
+
+    // Let's assume the indicator is inside `rb-tabs__list`.
+    // If sticky or scrollable, `left` style should be `(item.left - items[0].left)`.
+
+    if (itemRects.value.length > 0) {
+      const firstItem = itemRects.value[0];
+      // If we scroll, firstItem.left changes. 
+      // Ideally we want relative to the list container's content origin.
+      // If index=0, left=0.
+      // If index=1, left = item1.width.
+
+      // Simplest way: sum widths of previous items + gutters?
+      // Or use `offsetLeft` if available (not in uni-app v2 easily).
+
+      // Let's use the difference from the first item, assuming first item is at 0 (or padding).
+      // But if scrolled, first item might be off screen (negative relative to container).
+
+      // cl-tabs logic:
+      // sliderLeft = item.left - tabLeft. 
+      // This assumes `sliderLeft` is relative to `tabLeft`.
+      // AND the slider is inside a container that DOES NOT SCROLL itself but is transformed? 
+      // In cl-tabs: `scroll-view` > `view class="cl-tabs__inner"` > `slider`.
+      // If `cl-tabs__inner` is the scroll content, then `slider` moves with items.
+      // Then `sliderLeft` should be relative to `cl-tabs__inner` start.
+
+      // To get absolute offset in scroll view:
+      // Can we use `item.dataset` or just index?
+      // Actually, `item.left - container.left` gives visual position.
+      // If we add `currentScrollLeft`, we get absolute position.
+      // But we don't always know `currentScrollLeft` accurately without listening to scroll events constantly.
+
+      // Alternative: `cl-tabs` uses `item.left - tabLeft`. 
+      // This implies `slider` is fixed relative to SCREEN/Container?
+      // No, `slider` has `transform: translateX(...)`.
+      // If `slider` is sibling of items, and parent scrolls, `slider` scrolls too.
+      // If we set `left: 100px` on slider, it stays at 100px from parent start.
+      // So if parent scrolls, slider moves with content. Correct.
+      // So we need `100px` to be the distance from Start of Content.
+
+      // How to get Distance from Start of Content using Rects?
+      // `item.left` (screen) - `firstItem.left` (screen) + `padding`.
+      // This works regardless of scroll position!
+      // `dist = item.left - firstItem.left`. 
+      // (plus whatever initial offset/padding the list has).
+
+      const offset = item.left - itemRects.value[0].left;
+      // Add initial padding if any? standard config has no left padding on list, but items might have padding.
+
+      if (props.type === 'line' || props.type === 'segment') {
+        indicatorStyle.value = {
+          width: `${item.width}px`,
+          height: props.type === 'line' ? '2px' : '100%',
+          transform: `translateX(${offset}px)`
+        };
+      }
+
+      // Scroll Line centering
+      // Target scroll left:
+      // visual center of item should be at visual center of container.
+      // itemCenter = item.left + item.width/2.
+      // containerCenter = container.left + container.width/2.
+      // delta = itemCenter - containerCenter.
+      // newScrollLeft = currentScrollLeft + delta.
+      // But we don't have currentScrollLeft easily.
+      // However, `scroll-into-view` handles this!
+      // I will use `scroll-into-view` with an ID, much easier/performant.
+    }
+  }
+}
+
+function onChange(index: number) {
+  const item = props.list[index];
+  if (item.disabled || props.disabled) return;
+
+  active.value = item.value;
+  emit("update:modelValue", item.value);
+  emit("change", item.value);
+
+  // Defer update to allow render
+  nextTick(() => {
+    updateIndicator();
+  });
+}
+
+watch(() => props.modelValue, (val) => {
+  active.value = val;
+  nextTick(updateIndicator);
+});
+
+watch(() => props.list, () => {
+  nextTick(() => {
+    updateContainerRect();
+  });
+}, { deep: true });
+
+onMounted(() => {
+  // wait for render
+  setTimeout(() => {
+    updateContainerRect();
+  }, 100);
+});
+
+// Expose refresh for parent to call if needed (e.g. if tabs shown after being hidden)
+defineExpose({
+  refresh: updateContainerRect
+});
+
+</script>
+
 <template>
-  <view :class="rootClass" :style="{ height: parseRpx(height) }">
-    <scroll-view
-      :class="scrollClass"
-      scroll-with-animation
-      scroll-x
-      :scroll-into-view="activeId"
-      :show-scrollbar="false"
-    >
-      <view :class="innerClass">
-        <view
-          v-for="(item, index) in list"
-          :key="item.value ?? index"
-          :id="`rb-tab-${index}`"
-          :class="itemClass(item)"
-          :style="{ padding: `0 ${parseRpx(gutter)}` }"
-          @tap="change(index)"
-        >
-          <slot name="item" :item="item" :active="item.isActive">
-            <text :class="textClass(item)" :style="getTextStyle(item)">
-              {{ item.label }}
-            </text>
-          </slot>
-          <view v-if="showLine && item.isActive" :class="lineClass"></view>
+  <view :class="ui.root({ class: props.class })">
+    <scroll-view :class="ui.list()" scroll-x scroll-with-animation :scroll-into-view="`tab-item-${active}`"
+      :show-scrollbar="false" class="rb-tabs__list">
+      <view v-for="(item, index) in props.list" :key="item.value" :id="`tab-item-${item.value}`"
+        :class="ui.item({ class: 'rb-tabs__item' })" :data-state="active === item.value ? 'active' : 'inactive'"
+        @tap="onChange(index)">
+        <view :class="ui.text()" :data-state="active === item.value ? 'active' : 'inactive'">
+          {{ item.label }}
         </view>
       </view>
+
+      <!-- Indicator -->
+      <view v-if="props.type !== 'card'" :class="ui.indicator()" :style="indicatorStyle" />
     </scroll-view>
   </view>
 </template>
 
-<script setup lang="ts">
-import { computed, ref, watch, type PropType } from "vue";
-import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
-
-type TabsItem = {
-  label: string;
-  value: string | number;
-  disabled?: boolean;
-};
-
-type RenderItem = TabsItem & {
-  isActive: boolean;
-  disabled: boolean;
-};
-
-type PassThrough = {
-  className?: ClassValue;
-  scroll?: { className?: ClassValue };
-  inner?: { className?: ClassValue };
-  item?: { className?: ClassValue };
-  text?: { className?: ClassValue };
-  line?: { className?: ClassValue };
-};
-
-const props = defineProps({
-  pt: {
-    type: Object as PropType<PassThrough>,
-    default: () => ({}),
-  },
-  modelValue: {
-    type: [String, Number] as PropType<string | number>,
-    default: "",
-  },
-  height: {
-    type: [String, Number] as PropType<string | number>,
-    default: 80,
-  },
-  list: {
-    type: Array as PropType<TabsItem[]>,
-    default: () => [],
-  },
-  fill: {
-    type: Boolean,
-    default: false,
-  },
-  gutter: {
-    type: Number,
-    default: 30,
-  },
-  color: {
-    type: String,
-    default: "",
-  },
-  unColor: {
-    type: String,
-    default: "",
-  },
-  showLine: {
-    type: Boolean,
-    default: true,
-  },
-  showSlider: {
-    type: Boolean,
-    default: false,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const emit = defineEmits(["update:modelValue", "change"]);
-
-const pt = computed(() => parsePt<PassThrough>(props.pt));
-const active = ref(props.modelValue);
-
-const list = computed<RenderItem[]>(() =>
-  props.list.map((item) => ({
-    ...item,
-    disabled: item.disabled ?? false,
-    isActive: item.value === active.value,
-  })),
-);
-
-const parseRpx = (val: number | string) => (typeof val === "number" ? `${val}rpx` : val);
-
-const activeId = computed(() => {
-  const index = list.value.findIndex((item) => item.isActive);
-  if (index === -1) return "";
-  return `rb-tab-${index}`;
-});
-
-const rootClass = computed(() =>
-  parseClass(
-    "flex items-center w-full",
-    props.disabled && "opacity-60",
-    pt.value.className,
-  ),
-);
-
-const scrollClass = computed(() => parseClass("w-full h-full", pt.value.scroll?.className));
-
-const innerClass = computed(() =>
-  parseClass("flex items-center h-full", props.fill && "w-full", pt.value.inner?.className),
-);
-
-const itemClass = (item: RenderItem) =>
-  parseClass(
-    "flex items-center justify-center h-full text-[26rpx] text-[var(--color-gray-6)] relative",
-    item.isActive && "text-[var(--color-primary)]",
-    props.showSlider && item.isActive && "bg-[var(--color-primary)] text-white rounded-[16rpx]",
-    props.fill && "flex-1",
-    item.disabled && "opacity-40",
-    pt.value.item?.className,
-  );
-
-const textClass = (item: RenderItem) =>
-  parseClass(
-    "transition-colors duration-200",
-    props.showSlider && item.isActive && "text-white",
-    pt.value.text?.className,
-  );
-
-const lineClass = computed(() =>
-  parseClass(
-    "absolute bottom-[6rpx] left-1/2 h-[4rpx] w-[32rpx] -translate-x-1/2 rounded-full bg-[var(--color-primary)]",
-    pt.value.line?.className,
-  ),
-);
-
-function change(index: number) {
-  if (props.disabled) return;
-  const { value, disabled } = list.value[index];
-  if (disabled) return;
-  active.value = value;
-  emit("update:modelValue", value);
-  emit("change", value);
+<style scoped>
+/* Ensure scroll view content container behaves correctly for flex items */
+:deep(.uni-scroll-view-content) {
+  display: flex;
 }
-
-function getTextStyle(item: RenderItem) {
-  const color = item.isActive ? props.color : props.unColor;
-  return color ? { color } : {};
-}
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    active.value = val;
-  },
-  { immediate: true },
-);
-</script>
+</style>

@@ -1,123 +1,100 @@
+<script setup lang="ts">
+import { computed, useAttrs, useSlots, ref } from 'vue'
+import { tv } from '@/lib/tv'
+import { cn } from '@/lib/utils'
+import theme, { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config'
+
+defineOptions({
+  name: 'reborn-badge',
+  inheritAttrs: false,
+})
+
+const b = tv(theme)
+
+export interface BadgeProps {
+  label?: string | number
+  color?: typeof badgeColors[number]
+  variant?: typeof badgeVariants[number]
+  size?: typeof badgeSizes[number]
+  icon?: string
+  square?: boolean
+  closable?: boolean
+  closeIcon?: string
+  class?: any
+}
+
+const props = withDefaults(defineProps<BadgeProps>(), {
+  color: 'primary',
+  variant: 'solid',
+  size: 'md',
+  closeIcon: 'i-mdi-close-circle', // Standard icon name, change if using SVG/Lucide
+})
+
+const emit = defineEmits(['close', 'click'])
+
+const attrs = useAttrs()
+const slots = useSlots()
+const isClosing = ref(false)
+
+const ui = computed(() => {
+  const styles = b({
+    color: props.color,
+    variant: props.variant,
+    size: props.size,
+    square: props.square || (!props.label && !props.icon && !slots.default),
+  })
+
+  return {
+    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class) }),
+    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class) }),
+    leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class) }),
+    trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(opts?.class) }),
+    closeButton: (opts?: { class?: any }) => styles.closeButton({ class: cn(opts?.class) }),
+    closeIcon: (opts?: { class?: any }) => styles.closeIcon({ class: cn(opts?.class) }),
+  }
+})
+
+const onClick = (e: any) => {
+  emit('click', e)
+}
+
+const handleClose = (e: any) => {
+  // Only stop propagation if we are handling close
+  // In UniApp we might default stop
+  // e.stopPropagation() // Standard Vue
+  isClosing.value = true
+  setTimeout(() => {
+    emit('close', e)
+    // Optional: reset isClosing if the component is not destroyed (e.g. parent doesn't hide it)
+    // But usually it is hidden. If not, it stays invisible.
+    // Let's reset it just in case? No, if we reset, it pops back in.
+    // If the parent doesn't hide it, it stays invisible (closing state).
+  }, 200)
+}
+</script>
+
 <template>
-  <view v-if="!isHidden" :class="rootClass">
-    <view v-if="hasIconSlot" :class="iconWrapperClass">
-      <slot name="icon"></slot>
+  <view
+    :class="ui.base({ class: cn(props.class, 'transition-all duration-200 ease-in-out', isClosing && 'opacity-0 scale-90') })"
+    @tap="onClick">
+    <slot name="leading">
+      <view v-if="props.icon" :class="cn('mr-1', props.icon, ui.leadingIcon())"></view>
+    </slot>
+
+    <slot>
+      <text v-if="props.label" :class="ui.label()">{{ props.label }}</text>
+    </slot>
+
+    <slot name="trailing"></slot>
+
+    <view v-if="props.closable" @tap.stop="handleClose" :class="ui.closeButton()">
+      <slot name="close">
+        <!-- Using simple text x or check if icon component exists -->
+        <!-- <text>×</text> -->
+        <view :class="cn(props.closeIcon, ui.closeIcon())" /> <!-- Assuming icon class -->
+      </slot>
     </view>
-    <text v-else-if="icon" :class="iconClass">{{ icon }}</text>
-
-    <text :class="textClass">
-      <slot></slot>
-    </text>
-
-    <text v-if="closable" :class="closeClass" @tap.stop="close">×</text>
   </view>
 </template>
 
-<script setup lang="ts">
-import { computed, ref, useSlots, type PropType } from "vue";
-import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
-
-type PassThrough = {
-  className?: ClassValue;
-  iconWrapper?: { className?: ClassValue };
-  icon?: { className?: ClassValue };
-  text?: { className?: ClassValue };
-  close?: { className?: ClassValue };
-};
-
-defineOptions({
-  name: "reborn-badge",
-});
-
-const props = defineProps({
-  pt: {
-    type: Object as PropType<PassThrough>,
-    default: () => ({}),
-  },
-  type: {
-    type: String as PropType<"primary" | "success" | "warn" | "error" | "info" | "neutral">,
-    default: "primary",
-  },
-  icon: {
-    type: String,
-    default: "",
-  },
-  rounded: {
-    type: Boolean,
-    default: false,
-  },
-  closable: {
-    type: Boolean,
-    default: false,
-  },
-  plain: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const emit = defineEmits(["close"]);
-
-const isHidden = ref(false);
-const slots = useSlots();
-const pt = computed(() => parsePt<PassThrough>(props.pt));
-const hasIconSlot = computed(() => Boolean(slots.icon));
-
-const typeClass = computed(() => {
-  switch (props.type) {
-    case "success":
-      return props.plain
-        ? "text-[var(--color-success)] border-current"
-        : "bg-[var(--color-success)]";
-    case "warn":
-      return props.plain
-        ? "text-[var(--color-warning)] border-current"
-        : "bg-[var(--color-warning)]";
-    case "error":
-      return props.plain
-        ? "text-[var(--color-error)] border-current"
-        : "bg-[var(--color-error)]";
-    case "info":
-      return props.plain
-        ? "text-[var(--color-info)] border-current"
-        : "bg-[var(--color-info)]";
-    case "neutral":
-      return props.plain
-        ? "text-[var(--color-neutral)] border-current"
-        : "bg-[var(--color-neutral)]";
-    default:
-      return props.plain
-        ? "text-[var(--color-primary)] border-current"
-        : "bg-[var(--color-primary)]";
-  }
-});
-
-const rootClass = computed(() =>
-  parseClass(
-    "inline-flex items-center gap-[8rpx] px-[20rpx] py-[8rpx] rounded-[12rpx] text-[24rpx] leading-[1.2] text-white border-[2rpx] border-transparent",
-    props.rounded && "rounded-full",
-    props.plain && "bg-transparent",
-    typeClass.value,
-    pt.value.className,
-  ),
-);
-
-const iconWrapperClass = computed(() =>
-  parseClass("flex items-center", pt.value.iconWrapper?.className),
-);
-
-const iconClass = computed(() => parseClass("text-[22rpx]", pt.value.icon?.className));
-
-const textClass = computed(() =>
-  parseClass("font-medium", pt.value.text?.className),
-);
-
-const closeClass = computed(() =>
-  parseClass("text-[24rpx] leading-none", pt.value.close?.className),
-);
-
-function close() {
-  isHidden.value = true;
-  emit("close");
-}
-</script>
+<style scoped></style>

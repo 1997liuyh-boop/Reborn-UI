@@ -1,0 +1,143 @@
+/* Copy from web-project/app/assets/theme/base.css */
+@layer base {
+  :root {
+    /* ===== Red ===== */
+    --color-red-1: #ffebee;
+    --color-red-2: #ffe0e4;
+    --color-red-3: #ffb1bc;
+    --color-red-4: #ff8b9b;
+    --color-red-5: #ff6675;
+    --color-red-6: #ff3d58;
+    --color-red-7: #d92946;
+    --color-red-8: #b31938;
+    --color-red-9: #8c0d2a;
+    --color-red-10: #660821;
+  
+    /* ===== Orange ===== */
+    --color-orange-1: #fff6e7;
+    --color-orange-2: #ffe9c9;
+    --color-orange-3: #ffd5a0;
+    --color-orange-4: #ffc370;
+    --color-orange-5: #ffb03b;
+    --color-orange-6: #ff9711;
+    --color-orange-7: #bf7c2a;
+    --color-orange-8: #995c1a;
+    --color-orange-9: #733d0e;
+    --color-orange-10: #522601;
+  
+    /* ===== Green ===== */
+    --color-green-1: #f1faf8;
+    --color-green-2: #e7f6f3;
+    --color-green-3: #a2dfcf;
+    --color-green-4: #5fcfad;
+    --color-green-5: #3ac29e;
+    --color-green-6: #16ae88;
+    --color-green-7: #0b876c;
+    --color-green-8: #036150;
+    --color-green-9: #003b32;
+    --color-green-10: #001412;
+  
+    /* ===== Blue ===== */
+    --color-blue-1: #ecf9ff;
+    --color-blue-2: #dff4ff;
+    --color-blue-3: #9ed6f5;
+    --color-blue-4: #61ccff;
+    --color-blue-5: #35b6f2;
+    --color-blue-6: #0d99e5;
+    --color-blue-7: #0277bf;
+    --color-blue-8: #005999;
+    --color-blue-9: #003f73;
+    --color-blue-10: #00284d;
+  
+    /* ===== Gray ===== */
+    --color-gray-1: #ffffff;
+    --color-gray-2: #f5f5f5;
+    --color-gray-3: #eeeeee;
+    --color-gray-4: #cccccc;
+    --color-gray-5: #aaaaaa;
+    --color-gray-6: #999999;
+    --color-gray-7: #666666;
+    --color-gray-8: #333333;
+  
+    /* ===== Radius ===== */
+    --radius-ui-2xs: 4rpx;
+    --radius-ui-xs: 6rpx;
+    --radius-ui-sm: 8rpx;
+    --radius-ui-md: 12rpx;
+    --radius-ui-base: 16rpx;
+    --radius-ui-lg: 24rpx;
+  
+    /* Font family */
+    --font-sans:
+      -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Roboto,
+      Helvetica, Arial, sans-serif;
+  
+    /* Semantic Colors */
+    --color-primary: var(--color-red-6);
+    --color-secondary: var(--color-gray-8);
+    --color-success: var(--color-green-6);
+    --color-info: var(--color-blue-6);
+    --color-warning: var(--color-orange-6);
+    --color-error: var(--color-red-6);
+    --color-neutral: var(--color-gray-6);
+  
+    --color-inverted: #ffffff;
+    --color-default: var(--color-gray-8);
+    --color-elevated: var(--color-gray-2);
+    --color-accented: var(--color-gray-4);
+
+    /* Shadcn compatibility mappings needed for components */
+    --background: var(--color-gray-2);
+    --foreground: var(--color-gray-8);
+    
+    --primary: var(--color-red-6);
+    --primary-foreground: var(--color-inverted);
+    
+    --secondary: var(--color-gray-8);
+    --secondary-foreground: var(--color-inverted);
+    
+    --destructive: var(--color-red-6);
+    --destructive-foreground: var(--color-inverted);
+    
+    --muted: var(--color-gray-3);
+    --muted-foreground: var(--color-gray-6);
+    
+    --accent: var(--color-accented);
+    --accent-foreground: var(--color-gray-8);
+    
+    --popover: var(--color-gray-1);
+    --popover-foreground: var(--color-gray-8);
+    
+    --card: var(--color-gray-1);
+    --card-foreground: var(--color-gray-8);
+    
+    --success: var(--color-green-6);
+    --success-foreground: var(--color-inverted);
+    
+    --warning: var(--color-orange-6);
+    --warning-foreground: var(--color-inverted);
+    
+    --error: var(--color-red-6);
+    --error-foreground: var(--color-inverted);
+    
+    --info: var(--color-blue-6);
+    --info-foreground: var(--color-inverted);
+    
+    --neutral: var(--color-gray-6);
+    --neutral-foreground: var(--color-inverted);
+
+    --border: var(--color-gray-4);
+    --input: var(--color-gray-4);
+    --ring: var(--color-red-6);
+
+    --radius: var(--radius-ui-md);
+    
+    /* Button Heights from typography.css */
+    --button-2xl-height: 96rpx;
+    --button-xl-height: 86rpx;
+    --button-lg-height: 76rpx;
+    --button-base-height: 64rpx;
+    --button-sm-height: 56rpx;
+    --button-xs-height: 48rpx;
+  }
+}

@@ -1,164 +1,46 @@
-<template>
-  <view :class="rootClass">
-    <view v-if="$slots.prepend" :class="prependClass">
-      <slot name="prepend"></slot>
-    </view>
-
-    <view v-if="prefixIcon" :class="iconClass">
-      <text :class="iconTextClass">{{ prefixIcon }}</text>
-    </view>
-
-    <!-- @vue-ignore -->
-    <input
-      :class="innerClass"
-      :style="inputStyle"
-      :value="value"
-      :disabled="readonly ?? isDisabled"
-      :type="type"
-      :password="isPassword"
-      :focus="isFocusing"
-      :placeholder="placeholder"
-      :placeholder-class="placeholderClass"
-      :placeholder-style="placeholderStyle"
-      :maxlength="maxlength"
-      :cursor-spacing="cursorSpacing"
-      :confirm-type="confirmType"
-      :confirm-hold="confirmHold"
-      :adjust-position="adjustPosition"
-      :hold-keyboard="holdKeyboard"
-      @input="onInput"
-      @focus="onFocus"
-      @blur="onBlur"
-      @confirm="onConfirm"
-      @keyboardheightchange="onKeyboardheightchange"
-    />
-
-    <view v-if="suffixIcon" :class="iconClass">
-      <text :class="iconTextClass">{{ suffixIcon }}</text>
-    </view>
-
-    <view v-if="showClear" :class="iconClass" @tap="clear">
-      <text :class="iconTextClass">×</text>
-    </view>
-
-    <view v-if="password" :class="iconClass" @tap="togglePassword">
-      <text :class="iconTextClass">{{ isPassword ? '👁' : '🙈' }}</text>
-    </view>
-
-    <view v-if="$slots.append" :class="appendClass">
-      <slot name="append"></slot>
-    </view>
-  </view>
-</template>
-
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, type PropType } from "vue";
-import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
-
-type PassThrough = {
-  className?: ClassValue;
-  inner?: { className?: ClassValue };
-  icon?: { className?: ClassValue };
-  iconText?: { className?: ClassValue };
-  prepend?: { className?: ClassValue };
-  append?: { className?: ClassValue };
-};
+import { computed, ref, useAttrs, watch } from "vue";
+import { tv } from '@/lib/tv';
+import { cn } from '@/lib/utils';
+import theme, { inputSizes, inputVariants } from "./reborn-input.config";
 
 defineOptions({
   name: "reborn-input",
+  inheritAttrs: false,
 });
 
-const props = defineProps({
-  pt: {
-    type: Object as PropType<PassThrough>,
-    default: () => ({}),
-  },
-  modelValue: {
-    type: String,
-    default: "",
-  },
-  type: {
-    type: String as PropType<
-      "text" | "number" | "idcard" | "digit" | "tel" | "safe-password" | "nickname"
-    >,
-    default: "text",
-  },
-  prefixIcon: {
-    type: String,
-    default: "",
-  },
-  suffixIcon: {
-    type: String,
-    default: "",
-  },
-  password: {
-    type: Boolean,
-    default: false,
-  },
-  autofocus: {
-    type: Boolean,
-    default: false,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  error: {
-    type: Boolean,
-    default: false,
-  },
-  readonly: {
-    type: Boolean,
-    default: null,
-  },
-  placeholder: {
-    type: String,
-    default: "请输入",
-  },
-  placeholderClass: {
-    type: String,
-    default: "text-[var(--color-gray-5)]",
-  },
-  placeholderStyle: {
-    type: String,
-    default: "",
-  },
-  border: {
-    type: Boolean,
-    default: true,
-  },
-  clearable: {
-    type: Boolean,
-    default: false,
-  },
-  cursorSpacing: {
-    type: Number,
-    default: 5,
-  },
-  confirmHold: {
-    type: Boolean,
-    default: false,
-  },
-  confirmType: {
-    type: String as PropType<"done" | "go" | "next" | "search" | "send">,
-    default: "done",
-  },
-  adjustPosition: {
-    type: Boolean,
-    default: true,
-  },
-  maxlength: {
-    type: Number,
-    default: 140,
-  },
-  holdKeyboard: {
-    type: Boolean,
-    default: false,
-  },
-  precision: {
-    type: Number,
-    default: 0,
-  },
+const b = tv(theme);
+
+export interface InputProps {
+  modelValue?: string | number;
+  type?: string;
+  password?: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+  readonly?: boolean;
+  clearable?: boolean;
+  prefixIcon?: string;
+  suffixIcon?: string;
+  size?: typeof inputSizes[number];
+  variant?: typeof inputVariants[number];
+  error?: boolean;
+  maxlength?: number;
+  confirmType?: string;
+  class?: any;
+}
+
+const props = withDefaults(defineProps<InputProps>(), {
+  modelValue: "",
+  type: "text",
+  placeholder: "",
+  disabled: false,
+  readonly: false,
+  clearable: false,
+  size: "md",
+  variant: "outline",
+  error: false,
+  maxlength: 140,
+  confirmType: "done",
 });
 
 const emit = defineEmits([
@@ -169,148 +51,118 @@ const emit = defineEmits([
   "blur",
   "confirm",
   "clear",
-  "keyboardheightchange",
 ]);
 
-const pt = computed(() => parsePt<PassThrough>(props.pt));
-const isDisabled = computed(() => props.disabled);
-const isError = computed(() => props.error);
+const attrs = useAttrs();
+const isFocus = ref(false);
+const showPassword = ref(false);
 
-const inputStyle = computed(() => {
-  const style: Record<string, string> = {};
-  return style;
-});
+const localValue = ref(props.modelValue);
 
-const value = ref("" as string);
-const isFocus = ref(props.autofocus);
-const isFocusing = ref(props.autofocus);
-const showClear = computed(() => props.clearable && value.value !== "");
-const isPassword = ref(props.password);
-
-const isExceed = computed(() => {
-  if (props.type === "digit" && props.precision >= 0 && value.value !== "") {
-    const parts = value.value.split(".");
-    return parts.length > 1 && parts[1].length > props.precision;
+const inputValue = computed({
+  get: () => props.modelValue,
+  set: (val) => {
+    emit("update:modelValue", val);
+    localValue.value = val;
   }
-  return false;
 });
 
-const rootClass = computed(() =>
-  parseClass(
-    "flex items-center bg-white rounded-[16rpx] h-[72rpx] px-[24rpx] transition-[border-color,background-color] duration-200",
-    props.border && "border-[2rpx] border-solid border-[var(--color-gray-3)]",
-    isFocus.value && props.border && "border-[var(--color-primary)]",
-    isDisabled.value && "bg-[var(--color-gray-2)] opacity-70",
-    isError.value && "border-[var(--color-error)]",
-    pt.value.className,
-  ),
-);
+const isPasswordVisible = computed(() => {
+  if (!props.password) return false;
+  return showPassword.value;
+});
 
-const innerClass = computed(() =>
-  parseClass(
-    "flex-1 h-full text-[28rpx] text-[var(--color-gray-8)]",
-    isDisabled.value && "opacity-70",
-    isExceed.value && "text-[var(--color-error)]",
-    pt.value.inner?.className,
-  ),
-);
+const inputType = computed(() => {
+  if (props.password) {
+    return showPassword.value ? "text" : "password";
+  }
+  return props.type;
+});
 
-const iconClass = computed(() =>
-  parseClass("flex items-center justify-center h-full pl-[16rpx]", pt.value.icon?.className),
-);
+const ui = computed(() => {
+  const styles = b({
+    size: props.size,
+    variant: props.variant,
+    error: props.error
+  });
 
-const iconTextClass = computed(() =>
-  parseClass("text-[26rpx] text-[var(--color-gray-6)]", pt.value.iconText?.className),
-);
+  return {
+    wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class) }),
+    input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class) }),
+    leading: (opts?: { class?: any }) => styles.leading({ class: cn(opts?.class) }),
+    trailing: (opts?: { class?: any }) => styles.trailing({ class: cn(opts?.class) }),
+    icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class) }),
+  };
+});
 
-const prependClass = computed(() => parseClass("mr-[12rpx]", pt.value.prepend?.className));
+// Event Handlers
+const onInput = (e: any) => {
+  const val = e.detail.value;
+  emit("update:modelValue", val);
+  emit("input", val);
+};
 
-const appendClass = computed(() => parseClass("ml-[12rpx]", pt.value.append?.className));
-
-function togglePassword() {
-  isPassword.value = !isPassword.value;
-}
-
-function onFocus(e: UniInputFocusEvent) {
+const onFocus = (e: any) => {
   isFocus.value = true;
   emit("focus", e);
-}
+};
 
-function onBlur(e: UniInputBlurEvent) {
+const onBlur = (e: any) => {
+  isFocus.value = false;
   emit("blur", e);
+};
 
-  if (props.type === "digit" && props.precision > 0 && value.value !== "") {
-    const numValue = parseFloat(value.value);
-    if (!Number.isNaN(numValue)) {
-      const formattedValue = numValue.toFixed(props.precision);
-      value.value = formattedValue;
-      emit("update:modelValue", formattedValue);
-      emit("change", formattedValue);
-    }
-  }
-
-  setTimeout(() => {
-    isFocus.value = false;
-  }, 0);
-}
-
-function onInput(e: UniInputEvent) {
-  const nextValue = e.detail.value;
-  const currentValue = value.value;
-
-  value.value = nextValue;
-
-  emit("update:modelValue", nextValue);
-  emit("input", e);
-
-  if (nextValue !== currentValue) {
-    emit("change", nextValue);
-  }
-}
-
-function onConfirm(e: UniInputConfirmEvent) {
+const onConfirm = (e: any) => {
   emit("confirm", e);
-}
+};
 
-function onKeyboardheightchange(e: UniInputKeyboardHeightChangeEvent) {
-  emit("keyboardheightchange", e);
-}
-
-function focus() {
-  setTimeout(() => {
-    isFocusing.value = false;
-
-    nextTick(() => {
-      isFocusing.value = true;
-    });
-  }, 0);
-}
-
-function clear() {
-  value.value = "";
-
+const onClear = () => {
   emit("update:modelValue", "");
-  emit("change", "");
   emit("clear");
+};
 
-  // #ifdef H5
-  focus();
-  // #endif
-}
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
 
-watch(
-  () => props.modelValue,
-  (val: string) => {
-    value.value = val;
-  },
-  {
-    immediate: true,
-  },
-);
-
-defineExpose({
-  isFocus,
-  focus,
-  clear,
-});
 </script>
+
+<template>
+  <view :class="ui.wrapper({ class: props.class })">
+    <!-- Prefix Icon / Slot -->
+    <view v-if="props.prefixIcon || $slots.prefix" :class="ui.leading()">
+      <slot name="prefix">
+        <!-- Assuming a generic icon component or icon font class is used. 
+                  Since cl-icon is not guaranteed, we use a simple text or view for now, 
+                  or user can pass specific icon components via slot. 
+                  If prefixIcon string is passed, we assume it's a class or name for library. 
+                  We'll use a placeholder view with class. -->
+        <view v-if="props.prefixIcon" :class="props.prefixIcon" />
+      </slot>
+    </view>
+
+    <input :class="ui.input()" :value="inputValue" :type="inputType" :password="props.password && !showPassword"
+      :placeholder="props.placeholder" :disabled="props.disabled" :maxlength="props.maxlength"
+      :confirm-type="props.confirmType" placeholder-class="text-muted-foreground opacity-50" @input="onInput"
+      @focus="onFocus" @blur="onBlur" @confirm="onConfirm" />
+
+    <!-- Suffix Actions: Clear, Password Toggle, Suffix Icon -->
+    <view v-if="props.clearable && inputValue && !props.disabled" :class="ui.trailing()" @tap.stop="onClear">
+      <view class="i-lucide-x-circle w-4 h-4 cursor-pointer" />
+      <!-- Using standard icon class convention from unocss/tailwind if available, or text -->
+    </view>
+
+    <view v-if="props.password" :class="ui.trailing()" @tap.stop="togglePassword">
+      <view :class="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" class="w-4 h-4 cursor-pointer" />
+    </view>
+
+    <view v-if="props.suffixIcon || $slots.suffix" :class="ui.trailing()">
+      <slot name="suffix">
+        <view v-if="props.suffixIcon" :class="props.suffixIcon" />
+      </slot>
+    </view>
+
+  </view>
+</template>
+
+<style scoped></style>

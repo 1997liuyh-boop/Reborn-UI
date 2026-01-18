@@ -1,240 +1,160 @@
-<template>
-  <view :class="rootClass" :style="{ height: parseRpx(size) }">
-    <view
-      :class="minusClass"
-      :style="{ height: parseRpx(size), width: parseRpx(size) }"
-      @touchstart="onMinus"
-      @touchend="stopLongPress"
-      @touchcancel="stopLongPress"
-    >
-      <text :class="opTextClass">-</text>
-    </view>
-
-    <view :class="valueClass">
-      <input
-        :class="inputClass"
-        :type="inputType"
-        :disabled="isDisabled"
-        :readonly="inputable === false"
-        :placeholder="placeholder"
-        :value="`${value}`"
-        @blur="onBlur"
-      />
-    </view>
-
-    <view
-      :class="plusClass"
-      :style="{ height: parseRpx(size), width: parseRpx(size) }"
-      @touchstart="onPlus"
-      @touchend="stopLongPress"
-      @touchcancel="stopLongPress"
-    >
-      <text :class="opTextClass">+</text>
-    </view>
-  </view>
-</template>
-
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, type PropType } from "vue";
-import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
-
-type PassThrough = {
-  className?: ClassValue;
-  op?: { className?: ClassValue; plus?: { className?: ClassValue }; minus?: { className?: ClassValue } };
-  value?: { className?: ClassValue };
-  input?: { className?: ClassValue };
-  text?: { className?: ClassValue };
-};
+import { computed, ref, useAttrs, watch } from "vue";
+import { tv } from '@/lib/tv';
+import { cn } from '@/lib/utils';
+import theme, { inputNumberColors, inputNumberSizes } from "./reborn-input-number.config";
 
 defineOptions({
   name: "reborn-input-number",
+  inheritAttrs: false,
 });
 
-const props = defineProps({
-  modelValue: {
-    type: Number,
-    default: 0,
-  },
-  pt: {
-    type: Object as PropType<PassThrough>,
-    default: () => ({}),
-  },
-  placeholder: {
-    type: String,
-    default: "",
-  },
-  step: {
-    type: Number,
-    default: 1,
-  },
-  max: {
-    type: Number,
-    default: 100,
-  },
-  min: {
-    type: Number,
-    default: 0,
-  },
-  inputType: {
-    type: String as PropType<"digit" | "number">,
-    default: "number",
-  },
-  inputable: {
-    type: Boolean,
-    default: true,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  size: {
-    type: [Number, String] as PropType<number | string>,
-    default: 50,
-  },
+const b = tv(theme);
+
+export interface InputNumberProps {
+  modelValue?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  disabled?: boolean;
+  size?: typeof inputNumberSizes[number];
+  color?: typeof inputNumberColors[number];
+  class?: any;
+}
+
+const props = withDefaults(defineProps<InputNumberProps>(), {
+  min: 0,
+  max: 100,
+  step: 1,
+  disabled: false,
+  size: "md",
+  color: "primary",
 });
 
-const emit = defineEmits(["update:modelValue", "change"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "change"
+]);
 
-const pt = computed(() => parsePt<PassThrough>(props.pt));
-const value = ref(props.modelValue);
-const isDisabled = computed(() => props.disabled);
+const attrs = useAttrs();
 
-const isPlus = computed(() => !isDisabled.value && value.value < props.max);
-const isMinus = computed(() => !isDisabled.value && value.value > props.min);
+const localValue = ref(props.modelValue ?? props.min ?? 0);
+const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
 
-let longPressTimer: ReturnType<typeof setInterval> | null = null;
-
-const parseRpx = (val: number | string) => (typeof val === "number" ? `${val}rpx` : val);
-
-const rootClass = computed(() =>
-  parseClass("flex items-center", isDisabled.value && "opacity-50", pt.value.className),
-);
-
-const opBaseClass = "flex items-center justify-center rounded-[12rpx] bg-[var(--color-gray-2)] text-[var(--color-gray-8)]";
-
-const minusClass = computed(() =>
-  parseClass(
-    opBaseClass,
-    !isMinus.value && "opacity-50",
-    pt.value.op?.className,
-    pt.value.op?.minus?.className,
-  ),
-);
-
-const plusClass = computed(() =>
-  parseClass(
-    opBaseClass,
-    "bg-[var(--color-primary)] text-white",
-    !isPlus.value && "opacity-50",
-    pt.value.op?.className,
-    pt.value.op?.plus?.className,
-  ),
-);
-
-const opTextClass = computed(() => parseClass("text-[28rpx]", pt.value.text?.className));
-
-const valueClass = computed(() =>
-  parseClass("flex items-center justify-center h-full mx-[16rpx]", pt.value.value?.className),
-);
-
-const inputClass = computed(() =>
-  parseClass(
-    "w-[160rpx] text-center text-[28rpx] text-[var(--color-gray-8)] h-full",
-    pt.value.input?.className,
-  ),
-);
-
-function update() {
-  nextTick(() => {
-    let nextValue = value.value;
-
-    if (nextValue < props.min) {
-      nextValue = props.min;
-    }
-
-    if (nextValue > props.max) {
-      nextValue = props.max;
-    }
-
-    if (props.min > props.max) {
-      nextValue = props.max;
-    }
-
-    if (props.inputType === "digit") {
-      nextValue = parseFloat(nextValue.toFixed(2));
-    }
-
-    value.value = nextValue;
-
-    if (nextValue !== props.modelValue) {
-      emit("update:modelValue", nextValue);
-      emit("change", nextValue);
-    }
+const ui = computed(() => {
+  const styles = b({
+    size: props.size,
+    color: props.color
   });
-}
 
-function startLongPress(callback: () => void) {
-  stopLongPress();
-  callback();
-  longPressTimer = setInterval(callback, 200);
-}
+  return {
+    wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class) }),
+    button: (opts?: { class?: any }) => styles.button({ class: cn(opts?.class) }),
+    input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class) }),
+    divider: (opts?: { class?: any }) => styles.divider({ class: cn(opts?.class) }),
+  };
+});
 
-function stopLongPress() {
-  if (longPressTimer) {
-    clearInterval(longPressTimer);
-    longPressTimer = null;
+const isDecrementDisabled = computed(() =>
+  props.disabled || currentValue.value <= props.min
+);
+
+const isIncrementDisabled = computed(() =>
+  props.disabled || currentValue.value >= props.max
+);
+
+function updateValue(val: number) {
+  let nextValue = val;
+
+  if (nextValue < props.min) nextValue = props.min;
+  if (nextValue > props.max) nextValue = props.max;
+
+  // Handle step precision if needed (not implementing full float precision yet)
+
+  if (props.modelValue === undefined) {
+    localValue.value = nextValue;
+  }
+
+  if (nextValue !== currentValue.value) {
+    emit("update:modelValue", nextValue);
+    emit("change", nextValue);
   }
 }
 
-function onPlus() {
-  if (isDisabled.value || !isPlus.value) return;
-  startLongPress(() => {
-    if (!isPlus.value) return;
-    const delta = props.max - value.value;
-    value.value += delta > props.step ? props.step : delta;
-    update();
-  });
+function onInput(e: any) {
+  let val = Number(e.detail.value);
+  if (isNaN(val)) return;
+  updateValue(val);
 }
 
-function onMinus() {
-  if (isDisabled.value || !isMinus.value) return;
-  startLongPress(() => {
-    if (!isMinus.value) return;
-    const delta = value.value - props.min;
-    value.value -= delta > props.step ? props.step : delta;
-    update();
-  });
+function decrease() {
+  if (isDecrementDisabled.value) return;
+  updateValue(currentValue.value - props.step);
 }
 
-function onBlur(e: UniInputBlurEvent) {
-  if (e.detail.value === "") {
-    value.value = 0;
-  } else {
-    value.value = parseFloat(e.detail.value);
+function increase() {
+  if (isIncrementDisabled.value) return;
+  updateValue(currentValue.value + props.step);
+}
+
+// Long press logic
+let timer: any = null;
+
+function startDecrease() {
+  if (isDecrementDisabled.value) return;
+  decrease();
+  timer = setInterval(() => {
+    decrease();
+  }, 150);
+}
+
+function startIncrease() {
+  if (isIncrementDisabled.value) return;
+  increase();
+  timer = setInterval(() => {
+    increase();
+  }, 150);
+}
+
+function stop() {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
   }
-  update();
 }
 
 watch(
   () => props.modelValue,
-  (val: number) => {
-    value.value = val;
-    update();
-  },
-  { immediate: true },
-);
-
-watch(
-  () => props.max,
-  () => {
-    update();
-  },
-);
-
-watch(
-  () => props.min,
-  () => {
-    update();
+  (val) => {
+    if (val !== undefined) {
+      localValue.value = val;
+    }
   },
 );
 </script>
+
+<template>
+  <view :class="ui.wrapper({ class: props.class })" :data-disabled="props.disabled">
+    <view :class="ui.button()" @touchstart="startDecrease" @touchend="stop" @touchcancel="stop" @tap="decrease">
+      <slot name="decrement">
+        <!-- Assuming generic icon class or text -->
+        <text class="text-lg">-</text>
+      </slot>
+    </view>
+
+    <view :class="ui.divider()" />
+
+    <input type="number" :value="currentValue" :disabled="props.disabled" :class="ui.input()" @input="onInput"
+      @blur="stop" />
+
+    <view :class="ui.divider()" />
+
+    <view :class="ui.button()" @touchstart="startIncrease" @touchend="stop" @touchcancel="stop" @tap="increase">
+      <slot name="increment">
+        <text class="text-lg">+</text>
+      </slot>
+    </view>
+  </view>
+</template>
+
+<style scoped></style>
