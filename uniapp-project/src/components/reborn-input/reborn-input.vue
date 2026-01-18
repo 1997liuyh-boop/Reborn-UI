@@ -1,32 +1,16 @@
 <template>
-  <view
-    class="rb-input"
-    :class="[
-      {
-        'rb-input--border': border,
-        'rb-input--focus': isFocus,
-        'rb-input--disabled': isDisabled,
-        'rb-input--error': isError,
-      },
-      pt.className,
-    ]"
-  >
-    <slot name="prepend"></slot>
+  <view :class="rootClass">
+    <view v-if="$slots.prepend" :class="prependClass">
+      <slot name="prepend"></slot>
+    </view>
 
-    <view v-if="prefixIcon" class="rb-input__icon">
-      <text class="rb-input__icon-text">{{ prefixIcon }}</text>
+    <view v-if="prefixIcon" :class="iconClass">
+      <text :class="iconTextClass">{{ prefixIcon }}</text>
     </view>
 
     <!-- @vue-ignore -->
     <input
-      class="rb-input__inner"
-      :class="[
-        {
-          'is-disabled': isDisabled,
-          'is-exceed': isExceed,
-        },
-        pt.inner?.className,
-      ]"
+      :class="innerClass"
       :style="inputStyle"
       :value="value"
       :disabled="readonly ?? isDisabled"
@@ -49,24 +33,36 @@
       @keyboardheightchange="onKeyboardheightchange"
     />
 
-    <view v-if="suffixIcon" class="rb-input__icon">
-      <text class="rb-input__icon-text">{{ suffixIcon }}</text>
+    <view v-if="suffixIcon" :class="iconClass">
+      <text :class="iconTextClass">{{ suffixIcon }}</text>
     </view>
 
-    <view v-if="showClear" class="rb-input__icon" @tap="clear">
-      <text class="rb-input__icon-text">×</text>
+    <view v-if="showClear" :class="iconClass" @tap="clear">
+      <text :class="iconTextClass">×</text>
     </view>
 
-    <view v-if="password" class="rb-input__icon" @tap="togglePassword">
-      <text class="rb-input__icon-text">{{ isPassword ? '👁' : '🙈' }}</text>
+    <view v-if="password" :class="iconClass" @tap="togglePassword">
+      <text :class="iconTextClass">{{ isPassword ? '👁' : '🙈' }}</text>
     </view>
 
-    <slot name="append"></slot>
+    <view v-if="$slots.append" :class="appendClass">
+      <slot name="append"></slot>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch, type PropType } from "vue";
+import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
+
+type PassThrough = {
+  className?: ClassValue;
+  inner?: { className?: ClassValue };
+  icon?: { className?: ClassValue };
+  iconText?: { className?: ClassValue };
+  prepend?: { className?: ClassValue };
+  append?: { className?: ClassValue };
+};
 
 defineOptions({
   name: "reborn-input",
@@ -74,7 +70,7 @@ defineOptions({
 
 const props = defineProps({
   pt: {
-    type: Object,
+    type: Object as PropType<PassThrough>,
     default: () => ({}),
   },
   modelValue: {
@@ -121,7 +117,7 @@ const props = defineProps({
   },
   placeholderClass: {
     type: String,
-    default: "rb-input__placeholder",
+    default: "text-[var(--color-gray-5)]",
   },
   placeholderStyle: {
     type: String,
@@ -176,7 +172,7 @@ const emit = defineEmits([
   "keyboardheightchange",
 ]);
 
-const pt = computed(() => props.pt ?? {});
+const pt = computed(() => parsePt<PassThrough>(props.pt));
 const isDisabled = computed(() => props.disabled);
 const isError = computed(() => props.error);
 
@@ -198,6 +194,38 @@ const isExceed = computed(() => {
   }
   return false;
 });
+
+const rootClass = computed(() =>
+  parseClass(
+    "flex items-center bg-white rounded-[16rpx] h-[72rpx] px-[24rpx] transition-[border-color,background-color] duration-200",
+    props.border && "border-[2rpx] border-solid border-[var(--color-gray-3)]",
+    isFocus.value && props.border && "border-[var(--color-primary)]",
+    isDisabled.value && "bg-[var(--color-gray-2)] opacity-70",
+    isError.value && "border-[var(--color-error)]",
+    pt.value.className,
+  ),
+);
+
+const innerClass = computed(() =>
+  parseClass(
+    "flex-1 h-full text-[28rpx] text-[var(--color-gray-8)]",
+    isDisabled.value && "opacity-70",
+    isExceed.value && "text-[var(--color-error)]",
+    pt.value.inner?.className,
+  ),
+);
+
+const iconClass = computed(() =>
+  parseClass("flex items-center justify-center h-full pl-[16rpx]", pt.value.icon?.className),
+);
+
+const iconTextClass = computed(() =>
+  parseClass("text-[26rpx] text-[var(--color-gray-6)]", pt.value.iconText?.className),
+);
+
+const prependClass = computed(() => parseClass("mr-[12rpx]", pt.value.prepend?.className));
+
+const appendClass = computed(() => parseClass("ml-[12rpx]", pt.value.append?.className));
 
 function togglePassword() {
   isPassword.value = !isPassword.value;
@@ -286,60 +314,3 @@ defineExpose({
   clear,
 });
 </script>
-
-<style scoped>
-.rb-input {
-  display: flex;
-  align-items: center;
-  background-color: #ffffff;
-  border-radius: 16rpx;
-  height: 72rpx;
-  padding: 0 24rpx;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.rb-input__inner {
-  flex: 1;
-  height: 100%;
-  font-size: 28rpx;
-  color: var(--color-gray-8);
-}
-
-.rb-input__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding-left: 16rpx;
-}
-
-.rb-input__icon-text {
-  font-size: 26rpx;
-  color: var(--color-gray-6);
-}
-
-.rb-input--border {
-  border: 2rpx solid var(--color-gray-3);
-}
-
-.rb-input--focus.rb-input--border {
-  border-color: var(--color-primary);
-}
-
-.rb-input--disabled {
-  background-color: var(--color-gray-2);
-  opacity: 0.7;
-}
-
-.rb-input--error {
-  border-color: var(--color-error);
-}
-
-.rb-input__placeholder {
-  color: var(--color-gray-5);
-}
-
-.rb-input__inner.is-exceed {
-  color: var(--color-error);
-}
-</style>

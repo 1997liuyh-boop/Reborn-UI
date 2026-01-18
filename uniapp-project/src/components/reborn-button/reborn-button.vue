@@ -1,26 +1,7 @@
 <template>
-  <view
-    class="rb-button"
-    :class="[
-      sizeClass,
-      typeClass,
-      {
-        'rb-button--text': text,
-        'rb-button--border': border,
-        'rb-button--rounded': rounded,
-        'rb-button--icon': isIcon,
-        'rb-button--loading': loading,
-        'rb-button--disabled': isDisabled,
-        'rb-button--hover': isHover,
-      },
-      hoverClass && isHover ? hoverClass : '',
-      pt.className,
-    ]"
-    :style="buttonStyle"
-    @tap.stop="onTap"
-  >
+  <view :class="rootClass" :style="buttonStyle" @tap.stop="onTap">
     <button
-      class="rb-button__clicker"
+      :class="clickerClass"
       :disabled="isDisabled"
       :hover-class="hoverClass"
       :hover-stop-propagation="hoverStopPropagation"
@@ -59,23 +40,37 @@
       @touchcancel="onTouchCancel"
     ></button>
 
-    <view v-if="loading && !disabled" class="rb-button__spinner"></view>
+    <view v-if="loading && !disabled" :class="spinnerClass"></view>
 
-    <slot name="icon">
-      <text v-if="icon" class="rb-button__icon">{{ icon }}</text>
-    </slot>
+    <view v-if="hasIconSlot" :class="iconWrapperClass">
+      <slot name="icon"></slot>
+    </view>
+    <text v-else-if="icon" :class="iconClass">{{ icon }}</text>
 
-    <template v-if="!isIcon">
-      <text class="rb-button__label">
+    <view v-if="!isIcon" :class="contentClass">
+      <text :class="labelClass">
         <slot></slot>
       </text>
-      <slot name="content"></slot>
-    </template>
+      <view v-if="$slots.content" :class="contentSlotClass">
+        <slot name="content"></slot>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, useSlots, type PropType } from "vue";
+import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
+
+type PassThrough = {
+  className?: ClassValue;
+  clicker?: { className?: ClassValue };
+  spinner?: { className?: ClassValue };
+  iconWrapper?: { className?: ClassValue };
+  icon?: { className?: ClassValue };
+  label?: { className?: ClassValue };
+  content?: { className?: ClassValue };
+};
 
 defineOptions({
   name: "reborn-button",
@@ -83,7 +78,7 @@ defineOptions({
 
 const props = defineProps({
   pt: {
-    type: Object,
+    type: Object as PropType<PassThrough>,
     default: () => ({}),
   },
   type: {
@@ -218,22 +213,87 @@ const emit = defineEmits([
 ]);
 
 const slots = useSlots();
-const pt = computed(() => props.pt ?? {});
+const pt = computed(() => parsePt<PassThrough>(props.pt));
 const isDisabled = computed(() => props.disabled || props.loading);
 const isIcon = computed(() => !slots.default && !slots.content);
+const hasIconSlot = computed(() => Boolean(slots.icon));
 
 const sizeClass = computed(() => {
   switch (props.size) {
     case "small":
-      return "rb-button--small";
+      return "h-[64rpx] px-[24rpx] text-[24rpx]";
     case "large":
-      return "rb-button--large";
+      return "h-[84rpx] px-[40rpx] text-[30rpx]";
     default:
-      return "rb-button--normal";
+      return "h-[72rpx] px-[32rpx] text-[28rpx]";
   }
 });
 
-const typeClass = computed(() => `rb-button--${props.type}`);
+const typeClass = computed(() => {
+  switch (props.type) {
+    case "success":
+      return "bg-[var(--color-success)] text-white";
+    case "warn":
+      return "bg-[var(--color-warning)] text-white";
+    case "error":
+      return "bg-[var(--color-error)] text-white";
+    case "info":
+      return "bg-[var(--color-info)] text-white";
+    case "light":
+      return "bg-white text-[var(--color-gray-8)] border-[var(--color-gray-4)]";
+    case "dark":
+      return "bg-[#1f2937] text-white";
+    case "neutral":
+      return "bg-[var(--color-neutral)] text-white";
+    default:
+      return "bg-[var(--color-primary)] text-white";
+  }
+});
+
+const rootClass = computed(() =>
+  parseClass(
+    "inline-flex items-center justify-center gap-[12rpx] relative rounded-[16rpx] font-medium transition-[background-color,border-color,opacity] duration-200 border-[2rpx] border-solid border-transparent overflow-hidden",
+    sizeClass.value,
+    typeClass.value,
+    props.rounded && "rounded-full",
+    isIcon.value && "px-[24rpx]",
+    props.text && "bg-transparent border-transparent",
+    props.border && "bg-transparent border-current",
+    props.loading && "opacity-70",
+    isDisabled.value && "opacity-50",
+    isHover.value && "opacity-[0.85]",
+    pt.value.className,
+  ),
+);
+
+const clickerClass = computed(() =>
+  parseClass("absolute inset-0 opacity-0 z-[2]", pt.value.clicker?.className),
+);
+
+const spinnerClass = computed(() =>
+  parseClass(
+    "h-[28rpx] w-[28rpx] rounded-full border-[4rpx] border-solid border-white/30 border-t-white/90 animate-spin",
+    pt.value.spinner?.className,
+  ),
+);
+
+const iconWrapperClass = computed(() =>
+  parseClass("flex items-center", pt.value.iconWrapper?.className),
+);
+
+const iconClass = computed(() =>
+  parseClass("text-[26rpx]", pt.value.icon?.className),
+);
+
+const labelClass = computed(() =>
+  parseClass("leading-[1.4]", pt.value.label?.className),
+);
+
+const contentClass = computed(() =>
+  parseClass("flex items-center gap-[8rpx]", pt.value.content?.className),
+);
+
+const contentSlotClass = computed(() => parseClass("flex", pt.value.content?.className));
 
 const buttonStyle = computed(() => {
   if (!props.color) return {};
@@ -248,7 +308,7 @@ const buttonStyle = computed(() => {
   return {
     backgroundColor: props.color,
     borderColor: props.color,
-    color: \"#ffffff\",
+    color: "#ffffff",
   };
 });
 
@@ -330,142 +390,3 @@ function onTouchCancel() {
   isHover.value = false;
 }
 </script>
-
-<style scoped>
-.rb-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  position: relative;
-  border-radius: 16rpx;
-  font-weight: 500;
-  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-  border-width: 2rpx;
-  border-style: solid;
-  border-color: transparent;
-  overflow: hidden;
-}
-
-.rb-button__clicker {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  z-index: 2;
-}
-
-.rb-button__label {
-  line-height: 1.4;
-}
-
-.rb-button__icon {
-  font-size: 26rpx;
-}
-
-.rb-button__spinner {
-  width: 28rpx;
-  height: 28rpx;
-  border-radius: 9999rpx;
-  border: 4rpx solid rgba(255, 255, 255, 0.3);
-  border-top-color: rgba(255, 255, 255, 0.9);
-  animation: rb-spin 0.8s linear infinite;
-}
-
-.rb-button--small {
-  height: 64rpx;
-  padding: 0 24rpx;
-  font-size: 24rpx;
-}
-
-.rb-button--normal {
-  height: 72rpx;
-  padding: 0 32rpx;
-  font-size: 28rpx;
-}
-
-.rb-button--large {
-  height: 84rpx;
-  padding: 0 40rpx;
-  font-size: 30rpx;
-}
-
-.rb-button--rounded {
-  border-radius: 9999rpx;
-}
-
-.rb-button--icon {
-  padding: 0 24rpx;
-}
-
-.rb-button--text {
-  background-color: transparent;
-  border-color: transparent;
-}
-
-.rb-button--border {
-  background-color: transparent;
-  border-color: currentColor;
-}
-
-.rb-button--primary {
-  background-color: var(--color-primary);
-  color: #fff;
-}
-
-.rb-button--success {
-  background-color: var(--color-success);
-  color: #fff;
-}
-
-.rb-button--warn {
-  background-color: var(--color-warning);
-  color: #fff;
-}
-
-.rb-button--error {
-  background-color: var(--color-error);
-  color: #fff;
-}
-
-.rb-button--info {
-  background-color: var(--color-info);
-  color: #fff;
-}
-
-.rb-button--light {
-  background-color: #ffffff;
-  color: var(--color-gray-8);
-  border-color: var(--color-gray-4);
-}
-
-.rb-button--dark {
-  background-color: #1f2937;
-  color: #ffffff;
-}
-
-.rb-button--neutral {
-  background-color: var(--color-neutral);
-  color: #fff;
-}
-
-.rb-button--loading {
-  opacity: 0.7;
-}
-
-.rb-button--disabled {
-  opacity: 0.5;
-}
-
-.rb-button--hover {
-  opacity: 0.85;
-}
-
-@keyframes rb-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

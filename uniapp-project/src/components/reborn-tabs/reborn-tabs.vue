@@ -1,43 +1,27 @@
 <template>
-  <view
-    class="rb-tabs"
-    :class="[
-      {
-        'rb-tabs--line': showLine,
-        'rb-tabs--slider': showSlider,
-        'rb-tabs--fill': fill,
-        'rb-tabs--disabled': disabled,
-      },
-      pt.className,
-    ]"
-    :style="{ height: parseRpx(height) }"
-  >
+  <view :class="rootClass" :style="{ height: parseRpx(height) }">
     <scroll-view
-      class="rb-tabs__scrollbar"
+      :class="scrollClass"
       scroll-with-animation
       scroll-x
       :scroll-into-view="activeId"
       :show-scrollbar="false"
     >
-      <view class="rb-tabs__inner">
+      <view :class="innerClass">
         <view
           v-for="(item, index) in list"
           :key="item.value ?? index"
           :id="`rb-tab-${index}`"
-          class="rb-tabs__item"
-          :class="[pt.item?.className, { 'is-active': item.isActive, 'is-disabled': item.disabled }]"
+          :class="itemClass(item)"
           :style="{ padding: `0 ${parseRpx(gutter)}` }"
           @tap="change(index)"
         >
           <slot name="item" :item="item" :active="item.isActive">
-            <text
-              class="rb-tabs__item-label"
-              :class="[pt.text?.className]"
-              :style="getTextStyle(item)"
-            >
+            <text :class="textClass(item)" :style="getTextStyle(item)">
               {{ item.label }}
             </text>
           </slot>
+          <view v-if="showLine && item.isActive" :class="lineClass"></view>
         </view>
       </view>
     </scroll-view>
@@ -46,6 +30,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, type PropType } from "vue";
+import { parseClass, parsePt, type ClassValue } from "@/utils/tailwind";
 
 type TabsItem = {
   label: string;
@@ -58,9 +43,18 @@ type RenderItem = TabsItem & {
   disabled: boolean;
 };
 
+type PassThrough = {
+  className?: ClassValue;
+  scroll?: { className?: ClassValue };
+  inner?: { className?: ClassValue };
+  item?: { className?: ClassValue };
+  text?: { className?: ClassValue };
+  line?: { className?: ClassValue };
+};
+
 const props = defineProps({
   pt: {
-    type: Object,
+    type: Object as PropType<PassThrough>,
     default: () => ({}),
   },
   modelValue: {
@@ -107,7 +101,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
-const pt = computed(() => props.pt ?? {});
+const pt = computed(() => parsePt<PassThrough>(props.pt));
 const active = ref(props.modelValue);
 
 const list = computed<RenderItem[]>(() =>
@@ -125,6 +119,44 @@ const activeId = computed(() => {
   if (index === -1) return "";
   return `rb-tab-${index}`;
 });
+
+const rootClass = computed(() =>
+  parseClass(
+    "flex items-center w-full",
+    props.disabled && "opacity-60",
+    pt.value.className,
+  ),
+);
+
+const scrollClass = computed(() => parseClass("w-full h-full", pt.value.scroll?.className));
+
+const innerClass = computed(() =>
+  parseClass("flex items-center h-full", props.fill && "w-full", pt.value.inner?.className),
+);
+
+const itemClass = (item: RenderItem) =>
+  parseClass(
+    "flex items-center justify-center h-full text-[26rpx] text-[var(--color-gray-6)] relative",
+    item.isActive && "text-[var(--color-primary)]",
+    props.showSlider && item.isActive && "bg-[var(--color-primary)] text-white rounded-[16rpx]",
+    props.fill && "flex-1",
+    item.disabled && "opacity-40",
+    pt.value.item?.className,
+  );
+
+const textClass = (item: RenderItem) =>
+  parseClass(
+    "transition-colors duration-200",
+    props.showSlider && item.isActive && "text-white",
+    pt.value.text?.className,
+  );
+
+const lineClass = computed(() =>
+  parseClass(
+    "absolute bottom-[6rpx] left-1/2 h-[4rpx] w-[32rpx] -translate-x-1/2 rounded-full bg-[var(--color-primary)]",
+    pt.value.line?.className,
+  ),
+);
 
 function change(index: number) {
   if (props.disabled) return;
@@ -148,74 +180,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style scoped>
-.rb-tabs {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.rb-tabs__scrollbar {
-  width: 100%;
-  height: 100%;
-}
-
-.rb-tabs__inner {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-.rb-tabs__item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 26rpx;
-  color: var(--color-gray-6);
-  position: relative;
-}
-
-.rb-tabs__item-label {
-  transition: color 0.2s ease;
-}
-
-.rb-tabs__item.is-active {
-  color: var(--color-primary);
-}
-
-.rb-tabs--line .rb-tabs__item.is-active::after {
-  content: "";
-  position: absolute;
-  bottom: 6rpx;
-  left: 50%;
-  width: 32rpx;
-  height: 4rpx;
-  border-radius: 9999rpx;
-  background-color: var(--color-primary);
-  transform: translateX(-50%);
-}
-
-.rb-tabs--slider .rb-tabs__item.is-active {
-  background-color: var(--color-primary);
-  color: #ffffff;
-  border-radius: 16rpx;
-}
-
-.rb-tabs--fill .rb-tabs__inner {
-  width: 100%;
-}
-
-.rb-tabs--fill .rb-tabs__item {
-  flex: 1;
-}
-
-.rb-tabs--disabled {
-  opacity: 0.6;
-}
-
-.rb-tabs__item.is-disabled {
-  opacity: 0.4;
-}
-</style>
