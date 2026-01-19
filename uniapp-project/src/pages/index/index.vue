@@ -1,0 +1,242 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import RebornBadge from '@/components/reborn-badge/reborn-badge.vue'
+// import RebornButton from '@/components/reborn-button/reborn-button.vue'
+import RebornInput from '@/components/reborn-input/reborn-input.vue'
+import RebornInputNumber from '@/components/reborn-input-number/reborn-input-number.vue'
+import RebornSwitch from '@/components/reborn-switch/reborn-switch.vue'
+import RebornTabs from '@/components/reborn-tabs/reborn-tabs.vue'
+
+import ReButton from '@/components/re-button/ReButton.vue'
+import ReCheckbox from '@/components/re-checkbox/ReCheckbox.vue'
+import type { CheckboxProps } from '@/components/re-checkbox/ReCheckbox.vue'
+
+import ReInput from '@/components/re-input/ReInput.vue'
+import ReInputNumber from '@/components/re-input-number/re-input-number.vue'
+import { TabsRoot, TabsList, TabsTrigger, TabsContent } from '@/components/re-tabs/index'
+import type { TabsProps } from "@/components/re-tabs/TabsRoot.vue";
+
+const inputValue = ref('')
+const inputNumberValue = ref(1)
+const switchValue = ref(false)
+const showBadge = ref(true)
+const activeTab = ref(0) // Assuming index based, or check if it needs value
+const tabList = [
+  { label: 'Tab 1', value: 0 },
+  { label: 'Tab 2', value: 1 },
+  { label: 'Tab 3', value: 2 },
+]
+
+const size = ref<CheckboxProps["size"]>("md");
+const color = ref<CheckboxProps["color"]>("primary");
+
+
+const selectedGroup = ref<string[]>(["系统更新"]);
+const groupOptions = ["系统更新", "产品迭代", "活动通知"];
+
+
+const activeIndex = ref(0)
+const manyTabs = Array.from({ length: 20 }, (_, i) => `Tab ${i + 1}`)
+const customIndicatorIndex = ref(0)
+const type = ref<TabsProps["type"]>("line");
+const variant = ref<TabsProps["variant"]>("primary");
+const orientation = ref<TabsProps["orientation"]>("horizontal");
+const sticky = ref<boolean>(true);
+const shrink = ref<boolean>(true);
+const scrollspy = ref<boolean>(true);
+const swipeable = ref<boolean>(true);
+const activationMode = ref<TabsProps["activationMode"]>("manual");
+
+onLoad(() => {
+  console.log('Reborn UI Showcase Loaded')
+})
+
+const goToButtonPage = () => {
+  uni.navigateTo({
+    url: '/pages/button/index'
+  })
+}
+
+</script>
+
+<template>
+  <view class="
+      flex min-h-screen w-full justify-center
+      bg-[radial-gradient(circle_at_18%_20%,#e0f2fe,#fdf4ff_70%)] px-0 py-6
+      text-slate-800
+    ">
+    <view class="
+        flex w-full flex-col space-y-6 px-4
+        sm:px-5
+        md:w-[94vw] md:max-w-[700px]
+      ">
+      <!-- Header -->
+      <view class="py-8 text-center space-y-2">
+        <view
+          class="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          Reborn UI
+        </view>
+        <view class="text-slate-500 font-medium tracking-wide text-sm uppercase opacity-80">
+          Component Showcase
+        </view>
+      </view>
+
+      <!-- Buttons -->
+      <view class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 space-y-4">
+        <view class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <view class="w-1 h-5 bg-blue-500 rounded-full"></view>
+          Buttons
+          <view class="flex-1" />
+          <ReButton size="sm" variant="soft" @click="goToButtonPage">
+            View Demo Page
+            <template #trailing>
+              <view class="i-lucide-arrow-right w-4 h-4"></view>
+            </template>
+          </ReButton>
+        </view>
+        <!-- <view class="flex flex-wrap gap-3">
+          <RebornButton>Default</RebornButton>
+          <RebornButton variant="outline">Outline</RebornButton>
+          <RebornButton color="error">Danger</RebornButton>
+          <RebornButton color="success">success</RebornButton>
+          <RebornButton color="warning">warning</RebornButton>
+          <RebornButton color="info">info</RebornButton>
+          <RebornButton color="neutral">neutral</RebornButton>
+          <RebornButton loading>Loading</RebornButton>
+        </view> -->
+        <view class="flex flex-wrap gap-3">
+          <ReButton>Default</ReButton>
+          <ReButton variant="outline">Outline</ReButton>
+          <ReButton color="error">Danger</ReButton>
+          <ReButton color="success">success</ReButton>
+          <ReButton color="warning">warning</ReButton>
+          <ReButton color="info">info</ReButton>
+          <ReButton color="neutral">neutral</ReButton>
+          <ReButton loading>Loading</ReButton>
+        </view>
+      </view>
+      <view lass="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 space-y-4">
+        <view class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <view class="w-1 h-5 bg-blue-500 rounded-full"></view>
+          Checkbox
+        </view>
+        <view class="grid gap-4 md:grid-cols-3">
+          <ReCheckbox v-for="item in groupOptions" :key="item" v-model="selectedGroup" :value="item" :size="size"
+            :color="color" :label="item" />
+        </view>
+      </view>
+
+      <!-- Badges -->
+      <view class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 space-y-4">
+        <view class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <view class="w-1 h-5 bg-indigo-500 rounded-full"></view>
+          Badges
+        </view>
+        <view class="flex items-center gap-3 pl-2 flex-wrap">
+          <RebornBadge label="New" />
+          <RebornBadge label="Beta" variant="outline" />
+          <RebornBadge label="Admin" color="secondary" />
+          <RebornBadge label="99+" color="error" />
+          <RebornBadge v-if="showBadge" label="Closable Badge" closable color="error" @close="showBadge = false" />
+        </view>
+      </view>
+
+      <!-- Inputs -->
+      <view class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 space-y-5">
+        <view class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <view class="w-1 h-5 bg-violet-500 rounded-full"></view>
+          Form Inputs
+        </view>
+        <view class="space-y-4">
+          <view>
+            <view class="text-sm text-slate-500 mb-1.5 ml-1">Text Input</view>
+            <ReInput v-model="inputValue" placeholder="Type something..." />
+          </view>
+          <view>
+            <view class="text-sm text-slate-500 mb-1.5 ml-1">Password Input</view>
+            <ReInput v-model="inputValue" placeholder="Password" password />
+          </view>
+          <view>
+            <view class="text-sm text-slate-500 mb-1.5 ml-1">Clearable Input</view>
+            <ReInput v-model="inputValue" placeholder="Clearable" clearable />
+          </view>
+          <view>
+            <view class="text-sm text-slate-500 mb-1.5 ml-1">With Icons</view>
+            <ReInput v-model="inputValue" placeholder="Search...">
+              <template #leading>
+                <view class="flex items-center justify-center text-sm">
+                  22
+                </view>
+              </template>
+            </ReInput>
+          </view>
+          <view>
+            <view class="text-sm text-slate-500 mb-1.5 ml-1">Number Input</view>
+            <RebornInputNumber v-model="inputNumberValue" />
+          </view>
+          <view class="flex flex-col gap-2">
+            <view class="text-sm text-slate-500 mb-1.5 ml-1">Number Input</view>
+            <ReInputNumber v-model="inputNumberValue" size="sm" color="neutral" />
+            <ReInputNumber v-model="inputNumberValue" size="md" color="neutral" />
+            <ReInputNumber v-model="inputNumberValue" size="lg" color="neutral" />
+          </view>
+
+          <view class="flex items-center justify-between p-2">
+            <view class="text-sm text-slate-500">Switch Toggle</view>
+            <RebornSwitch v-model="switchValue" />
+          </view>
+          <view class="flex items-center justify-between p-2">
+            <view class="text-28 text-slate-500">Switch Toggle</view>
+            <!-- <ReCheckbox v-model="switchValue" /> -->
+            <RebornSwitch v-model="switchValue" size="md" color="primary" label="关" />
+          </view>
+        </view>
+      </view>
+
+      <!-- Tabs -->
+      <view class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 space-y-4">
+        <view class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <view class="w-1 h-5 bg-fuchsia-500 rounded-full"></view>
+          Tabs
+        </view>
+        <RebornTabs v-model="activeTab" :list="tabList" />
+        <view class="p-4 bg-slate-50 rounded-lg text-center text-sm text-slate-500">
+          Active Content: Tab {{ activeTab + 1 }}
+        </view>
+      </view>
+
+      <view
+        class="h-[500px] min-w-0 overflow-hidden bg-white rounded-lg flex flex-col border border-gray-200 dark:border-gray-800 shadow-sm">
+        <view class="p-4 flex-none border-b border-gray-100 dark:border-gray-800" v-if="sticky">
+          <view class="text-sm text-gray-500">Scroll down to see sticky header behavior.</view>
+        </view>
+
+        <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size" :orientation="orientation"
+          :sticky="sticky" :shrink="shrink" :scrollspy="scrollspy" :swipeable="swipeable"
+          :activationMode="activationMode" :ignore-page-scroll="true" class="flex-1 h-full min-h-0"
+          v-slot="{ currentScrollToId }">
+          <TabsList class="bg-white z-10">
+            <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
+              {{ tab }}
+            </TabsTrigger>
+          </TabsList>
+
+          <!-- Content Wrapper for Independent Scrolling -->
+          <scroll-view scroll-y scroll-with-animation :scroll-into-view="currentScrollToId"
+            class="flex-1 h-full min-h-0 relative bg-gray-50 dark:bg-gray-900/50">
+            <TabsContent v-for="(tab, index) in manyTabs" :key="tab" :index="index">
+              <view class="min-h-[500px] p-6">
+                <view class="text-lg font-medium">{{ tab }} Content</view>
+                <view class="text-gray-500 mt-2">
+                  Currently showing content for {{ tab }}.
+                  {{ sticky ? 'Try scrolling down!' : '' }}
+                </view>
+              </view>
+            </TabsContent>
+          </scroll-view>
+        </TabsRoot>
+      </view>
+
+    </view>
+  </view>
+</template>

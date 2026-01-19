@@ -36,7 +36,7 @@ withDefaults(defineProps<Props>(), {
       d="M21.25 75C21.25 44.2101 46.2101 19.25 77 19.25H355C385.79 19.25 410.75 44.2101 410.75 75V807C410.75 837.79 385.79 862.75 355 862.75H77C46.2101 862.75 21.25 837.79 21.25 807V75Z"
       class="fill-[#E5E5E5] stroke-[#E5E5E5] stroke-[0.5] dark:fill-[#404040] dark:stroke-[#404040]" />
     <foreignObject v-if="src" x="21.25" y="19.25" width="389.5" height="843.5" style="clip-path: url(#roundedCorners)">
-      <iframe :src="src" class="size-full bg-white border-none" />
+      <iframe src="/uni-render/#/pages/index/index" class="size-full bg-white border-none" />
     </foreignObject>
 
     <path
