@@ -1,5 +1,6 @@
 import uni from '@dcloudio/vite-plugin-uni'
 import { defineConfig } from 'vite'
+import uniPolyfill from 'vite-plugin-uni-polyfill'
 import { UnifiedViteWeappTailwindcssPlugin } from 'weapp-tailwindcss/vite'
 import { WeappTailwindcssDisabled } from './platform'
 import postcssPlugins from './postcss.config'
@@ -14,6 +15,7 @@ export default defineConfig(async () => {
     // uvtw 一定要放在 uni 后面
     plugins: [
       uni(),
+      uniPolyfill(),
       UnifiedViteWeappTailwindcssPlugin({
         rem2rpx: true,
         disabled: WeappTailwindcssDisabled,

@@ -1,5 +1,6 @@
 packages:
   - "packages/*"
+  - "web-project"
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@tailwindcss/oxide"

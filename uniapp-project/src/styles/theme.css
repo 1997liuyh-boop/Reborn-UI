@@ -132,12 +132,39 @@
 
     --radius: var(--radius-ui-md);
     
-    /* Button Heights from typography.css */
+    /* 辅助文字 (20px - 24px) */
+    --text-size-20: 20rpx;
+    --text-size-22: 22rpx;
+    --text-size-24: 24rpx;
+
+    /* 正文 (26rpx - 28rpx) */
+    --text-size-26: 26rpx;
+    --text-size-28: 28rpx;
+
+    /* 标题 (30rpx - 52rpx) */
+    --text-size-30: 30rpx;
+    --text-size-32: 32rpx;
+    --text-size-36: 36rpx;
+    --text-size-40: 40rpx;
+    --text-size-48: 48rpx;
+    --text-size-52: 52rpx;
+    
+    /* 按钮高度设置 */
     --button-2xl-height: 96rpx;
     --button-xl-height: 86rpx;
     --button-lg-height: 76rpx;
     --button-base-height: 64rpx;
     --button-sm-height: 56rpx;
     --button-xs-height: 48rpx;
+
+    /* 输入框高度设置 */
+    --input-lg-height: 96rpx;
+    --input-md-height: 90rpx;
+    --input-sm-height: 80rpx;
+    
+    /* 输入框高度设置 */
+    --input-lg-height: 96rpx;
+    --input-md-height: 90rpx;
+    --input-sm-height: 80rpx;
   }
 }

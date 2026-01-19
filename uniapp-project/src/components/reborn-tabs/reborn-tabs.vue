@@ -256,7 +256,7 @@ defineExpose({
 <template>
   <view :class="ui.root({ class: props.class })">
     <scroll-view :class="ui.list()" scroll-x scroll-with-animation :scroll-into-view="`tab-item-${active}`"
-      :show-scrollbar="false" class="rb-tabs__list">
+      :show-scrollbar="false" class="rb-tabs__list" enable-flex>
       <view v-for="(item, index) in props.list" :key="item.value" :id="`tab-item-${item.value}`"
         :class="ui.item({ class: 'rb-tabs__item' })" :data-state="active === item.value ? 'active' : 'inactive'"
         @tap="onChange(index)">

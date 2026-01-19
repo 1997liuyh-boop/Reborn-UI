@@ -67,6 +67,30 @@ export default <Config>{
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontSize: {
+        20: "var(--text-size-20)",
+        22: "var(--text-size-22)",
+        24: "var(--text-size-24)",
+        26: "var(--text-size-26)",
+        28: "var(--text-size-28)",
+        30: "var(--text-size-30)",
+        32: "var(--text-size-32)",
+        36: "var(--text-size-36)",
+        40: "var(--text-size-40)",
+        48: "var(--text-size-48)",
+        52: "var(--text-size-52)",
+      },
+      height: {
+        "button-2xl": "var(--button-2xl-height)",
+        "button-xl": "var(--button-xl-height)",
+        "button-lg": "var(--button-lg-height)",
+        "button-base": "var(--button-base-height)",
+        "button-sm": "var(--button-sm-height)",
+        "button-xs": "var(--button-xs-height)",
+        "input-lg": "var(--input-lg-height)",
+        "input-md": "var(--input-md-height)",
+        "input-sm": "var(--input-sm-height)",
+      },
     },
   },
   // https://tw.icebreaker.top/docs/quick-start/uni-app-css-macro
@@ -91,7 +115,7 @@ export default <Config>{
     iconsPlugin({
       // 在这里可以选择你要使用的 icon, 更多详见:
       // https://icon-sets.iconify.design/
-      collections: getIconCollections(['svg-spinners', 'mdi']),
+      collections: getIconCollections(['svg-spinners', 'mdi', 'lucide']),
     }),
   ],
   corePlugins: {

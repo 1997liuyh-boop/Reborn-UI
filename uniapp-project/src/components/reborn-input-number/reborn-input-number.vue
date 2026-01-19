@@ -103,17 +103,11 @@ let timer: any = null;
 function startDecrease() {
   if (isDecrementDisabled.value) return;
   decrease();
-  timer = setInterval(() => {
-    decrease();
-  }, 150);
 }
 
 function startIncrease() {
   if (isIncrementDisabled.value) return;
   increase();
-  timer = setInterval(() => {
-    increase();
-  }, 150);
 }
 
 function stop() {
@@ -135,7 +129,8 @@ watch(
 
 <template>
   <view :class="ui.wrapper({ class: props.class })" :data-disabled="props.disabled">
-    <view :class="ui.button()" @touchstart="startDecrease" @touchend="stop" @touchcancel="stop" @tap="decrease">
+    <view :class="ui.button()" @touchstart.stop="startDecrease" @touchend="stop" @touchcancel="stop"
+      @tap.stop="decrease">
       <slot name="decrement">
         <!-- Assuming generic icon class or text -->
         <text class="text-lg">-</text>
@@ -149,7 +144,8 @@ watch(
 
     <view :class="ui.divider()" />
 
-    <view :class="ui.button()" @touchstart="startIncrease" @touchend="stop" @touchcancel="stop" @tap="increase">
+    <view :class="ui.button()" @touchstart.stop="startIncrease" @touchend="stop" @touchcancel="stop"
+      @tap.stop="increase">
       <slot name="increment">
         <text class="text-lg">+</text>
       </slot>
