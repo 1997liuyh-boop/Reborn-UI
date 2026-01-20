@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - main
-      - 'feature/**'
-      - 'feature-*'
+      - "feature/**"
+      - "feature-*"
 
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Package build output
         id: package
@@ -38,11 +38,11 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           SAFE_BRANCH="${GITHUB_REF_NAME//\//-}"
           FILENAME="${TIMESTAMP}-${SAFE_BRANCH}.tar.gz"
-          
+
           # 2. 创建目录并打包
           mkdir -p build-artifacts
           tar -czf "build-artifacts/${FILENAME}" .output
-          
+
           # 3. 【关键】将变量写入 GITHUB_OUTPUT 供后续步骤使用
           echo "artifact_name=${FILENAME}" >> "$GITHUB_OUTPUT"
 
