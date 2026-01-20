@@ -6,7 +6,7 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
+    "preview": "PORT=3333 node server/index.mjs",
     "postinstall": "nuxt prepare",
     "format": "prettier . --check",
     "format:fix": "prettier . --write",
