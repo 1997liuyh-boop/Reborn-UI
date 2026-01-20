@@ -16,8 +16,7 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.26.2
+        # 不再写 version，自动读取 package.json 的 packageManager
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,19 +31,25 @@ jobs:
         run: npm run build
 
       - name: Package build output
+        id: package
         shell: bash
         run: |
-          timestamp=$(date +%Y%m%d%H%M%S)
-          safe_branch=${GITHUB_REF_NAME//\//-}
-          artifact_name="${timestamp}-${safe_branch}.tar.gz"
+          # 1. 生成变量
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          SAFE_BRANCH="${GITHUB_REF_NAME//\//-}"
+          FILENAME="${TIMESTAMP}-${SAFE_BRANCH}.tar.gz"
+          
+          # 2. 创建目录并打包
           mkdir -p build-artifacts
-          tar -czf "build-artifacts/${artifact_name}" .output
-          echo "artifact_name=${artifact_name}" >> "$GITHUB_OUTPUT"
-        id: package
+          tar -czf "build-artifacts/${FILENAME}" .output
+          
+          # 3. 【关键】将变量写入 GITHUB_OUTPUT 供后续步骤使用
+          echo "artifact_name=${FILENAME}" >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
+          # 使用上面步骤输出的变量
           name: ${{ steps.package.outputs.artifact_name }}
           path: build-artifacts/${{ steps.package.outputs.artifact_name }}
           if-no-files-found: error
