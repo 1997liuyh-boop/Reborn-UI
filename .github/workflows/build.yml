@@ -1,0 +1,49 @@
+name: Build and Package
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: npm run build
+
+      - name: Package build output
+        shell: bash
+        run: |
+          timestamp=$(date +%Y%m%d%H%M%S)
+          safe_branch=${GITHUB_REF_NAME//\//-}
+          artifact_name="${timestamp}-${safe_branch}.tar.gz"
+          mkdir -p build-artifacts
+          tar -czf "build-artifacts/${artifact_name}" .output
+          echo "artifact_name=${artifact_name}" >> "$GITHUB_OUTPUT"
+        id: package
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: build-artifacts/${{ steps.package.outputs.artifact_name }}
+          if-no-files-found: error
