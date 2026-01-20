@@ -2,7 +2,7 @@
 title: 按钮
 description: 显示按钮或看起来像按钮的组件。
 category: 按钮
-tags: [css, tailwind, button]
+tags: [css, tailwind, button, uniapp]
 badge: New
 ---
 

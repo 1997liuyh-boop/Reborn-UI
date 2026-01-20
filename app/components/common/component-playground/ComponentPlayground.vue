@@ -1,7 +1,24 @@
 <script setup lang="ts">
+import DeviceFrame from '../device-frame/DeviceFrame.vue'
+
+const props = defineProps<{
+  uniapp?: boolean
+  url?: string
+}>()
+
 const open = ref(false);
 
 const isDesktop = useMediaQuery("(min-width: 768px)");
+
+const items = [{
+  label: 'Web',
+  icon: 'i-lucide-globe',
+  slot: 'web'
+}, {
+  label: 'UniApp',
+  icon: 'i-lucide-smartphone',
+  slot: 'uniapp'
+}]
 </script>
 
 <template>
@@ -9,7 +26,22 @@ const isDesktop = useMediaQuery("(min-width: 768px)");
     <UPageCard variant="outline" class="bg-default/15 w-full min-w-0" :ui="{
       container: 'w-full min-w-0'
     }">
-      <slot name="component" />
+      <UTabs v-if="uniapp" :items="items" class="w-full">
+        <template #web>
+          <div class="pt-4">
+            <slot name="component" />
+          </div>
+        </template>
+        <template #uniapp>
+          <div class="flex justify-center pt-4">
+            <DeviceFrame v-if="url" :src="url" />
+            <div v-else class="text-sm text-muted-foreground p-4">
+              No Preview URL provided
+            </div>
+          </div>
+        </template>
+      </UTabs>
+      <slot v-else name="component" />
     </UPageCard>
 
     <div v-if="$slots.config" class="flex w-full flex-row items-center justify-between">

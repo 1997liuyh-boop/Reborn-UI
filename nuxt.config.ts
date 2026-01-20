@@ -121,14 +121,22 @@ export default defineNuxtConfig({
       },
     ],
   },
-
+  robots: {
+    // 明确禁用 robots.txt 的生成
+    robotsTxt: false
+  },
   nitro: {
     publicAssets: [
       {
         baseURL: 'uni-render',
-        dir: resolve(__dirname, './uniapp-project/dist/build/h5'),
+        dir: resolve(__dirname, './packages/uniapp-project/dist/build/h5'),
         maxAge: 60 * 60 * 24 * 7
       }
-    ]
+    ],
+    runtimeConfig: {
+      app: {
+        port: 3333 // 如果没有环境变量 PORT，则默认为 3333
+      }
+    }
   }
 });

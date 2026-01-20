@@ -25,7 +25,7 @@ function onClick() {
   <div class="flex flex-col gap-6 w-full">
     <!-- Configuration Panel -->
     <div
-      class="flex flex-wrap items-center gap-6 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-800">
+      class="flex flex-wrap items-center gap-6 p-4 border rounded-lg border-gray-4 bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-1">
 
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">颜色</span>
@@ -54,7 +54,7 @@ function onClick() {
     <!-- Main Preview -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div
-        class="flex flex-col gap-4 p-6 border rounded-lg justify-center items-center min-h-[160px] dark:border-gray-800">
+        class="flex flex-col gap-4 p-6 border rounded-lg justify-center items-center min-h-[160px] border-gray-4 dark:border-gray-1">
         <h3 class="text-sm font-medium text-gray-400 self-start mb-auto">按钮展示</h3>
         <div class="flex flex-wrap items-center justify-center gap-4 mb-auto">
           <RebornButton :color="color" :variant="variant" :size="size" :disabled="disabled" :loading="loading"
@@ -75,7 +75,7 @@ function onClick() {
       </div>
 
       <!-- Combinations -->
-      <div class="flex flex-col gap-4 p-6 border rounded-lg dark:border-gray-800">
+      <div class="flex flex-col gap-4 p-6 border rounded-lg border-gray-4 dark:border-gray-1">
         <h3 class="text-sm font-medium text-gray-400">组合展示</h3>
         <div class="flex flex-col gap-6 items-center justify-center flex-1">
           <!-- Button Group -->

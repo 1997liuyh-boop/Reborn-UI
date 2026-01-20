@@ -21,7 +21,7 @@ export default <Config>{
           10: '#660821',
         },
         orange: {
-          1: '#fff6e7',
+          1: '#fff7df',
           2: '#ffe9c9',
           3: '#ffd5a0',
           4: '#ffc370',
