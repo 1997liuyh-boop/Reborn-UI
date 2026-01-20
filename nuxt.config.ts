@@ -14,13 +14,8 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
+  // Ensure we use the local config module instead of the one bundled in the Docus layer.
   hooks: {
-    "imports:extend": (imports) => {
-      const index = imports.findIndex((i) => i.name === "defineProps");
-      if (index !== -1) {
-        imports.splice(index, 1);
-      }
-    },
     "modules:before": function () {
       const nuxt = useNuxt();
       const localConfigModule = resolve("./modules/config");
@@ -37,7 +32,6 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    "@nuxtjs/mdc", // Ensure MDC module is loaded for highlighting
     "@nuxt/content",
     "@nuxt/eslint",
     "@nuxt/fonts",
@@ -123,20 +117,20 @@ export default defineNuxtConfig({
   },
   robots: {
     // 明确禁用 robots.txt 的生成
-    robotsTxt: false
+    robotsTxt: false,
   },
   nitro: {
     publicAssets: [
       {
-        baseURL: 'uni-render',
-        dir: resolve(__dirname, './packages/uniapp-project/dist/build/h5'),
-        maxAge: 60 * 60 * 24 * 7
-      }
+        baseURL: "uni-render",
+        dir: resolve(__dirname, "./packages/uniapp-project/dist/build/h5"),
+        maxAge: 60 * 60 * 24 * 7,
+      },
     ],
     runtimeConfig: {
       app: {
-        port: 3333 // 如果没有环境变量 PORT，则默认为 3333
-      }
-    }
-  }
+        port: 3333, // 如果没有环境变量 PORT，则默认为 3333
+      },
+    },
+  },
 });

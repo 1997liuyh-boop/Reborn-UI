@@ -16,11 +16,10 @@
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
     "@number-flow/vue": "^0.4.8",
-    "@nuxt/content": "3.9.0",
+    "@nuxt/content": "3.11.0",
     "@nuxt/eslint": "1.12.1",
     "@nuxt/fonts": "0.12.1",
     "@nuxt/icon": "2.1.1",
-    "@iconify/utils": "^2.3.0",
     "@nuxt/image": "2.0.0",
     "@nuxt/kit": "^4.2.2",
     "@nuxt/scripts": "0.13.2",
@@ -70,6 +69,5 @@
     "typescript": "^5.9.3",
     "vue-tsc": "^3.2.1"
   },
-  "pnpm": {
-  }
+  "pnpm": {}
 }
