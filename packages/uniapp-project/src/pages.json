@@ -1,0 +1,52 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "weapp-tailwindcss"
+      }
+    },
+    {
+      "path": "pages/button/index",
+      "style": {
+        "navigationBarTitleText": "Button"
+      }
+    },
+    {
+      "path": "pages/checkbox/index",
+      "style": {
+        "navigationBarTitleText": "Checkbox"
+      }
+    },
+    {
+      "path": "pages/badge/index",
+      "style": {
+        "navigationBarTitleText": "Badge"
+      }
+    },
+    {
+      "path": "pages/input/index",
+      "style": {
+        "navigationBarTitleText": "Input"
+      }
+    },
+    {
+      "path": "pages/input-number/index",
+      "style": {
+        "navigationBarTitleText": "Input Number"
+      }
+    },
+    {
+      "path": "pages/switch/index",
+      "style": {
+        "navigationBarTitleText": "Switch"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "weapp-tailwindcss",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  }
+}

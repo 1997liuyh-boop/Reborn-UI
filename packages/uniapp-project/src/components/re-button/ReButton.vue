@@ -1,8 +1,18 @@
+<script lang="ts">
+export default {
+    options: {
+        virtualHost: true,
+        styleIsolation: 'shared'
+    }
+}
+</script>
+
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
-import theme, { buttonColors, buttonVariants, buttonSizes } from './re-button.config'
+import { computed, toRef, ref } from 'vue'
 import { useFieldGroup } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
+
+import theme, { buttonColors, buttonVariants, buttonSizes } from './re-button.config'
 
 const b = tv(theme)
 
@@ -16,7 +26,7 @@ interface UniEvent {
     [key: string]: any;
 }
 
-export interface ButtonProps {
+interface ButtonProps {
     label?: string
     color?: typeof buttonColors[number]
     variant?: typeof buttonVariants[number]
@@ -24,7 +34,7 @@ export interface ButtonProps {
     loading?: boolean
     disabled?: boolean
     square?: boolean
-    class?: any
+    customClass?: any
     ui?: any,
     hoverClass?: string, // 按钮点击态样式类
     hoverStopPropagation?: boolean, // 是否阻止点击态冒泡
@@ -92,13 +102,28 @@ const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 const square = toRef(props, 'square')
 
-const ui = computed(() => b({
+const tvSlots = computed(() => b({
     color: color.value,
     variant: variant.value,
     size: (fieldGroupSize.value || size.value) as any,
     square: square.value,
     fieldGroup: orientation.value
 }))
+
+const ui = computed(() => {
+    const slots = tvSlots.value as any
+    const result: any = {}
+
+    for (const key in slots) {
+        result[key] = (opts?: any) => {
+            const uiClass = props.ui?.[key]
+            const optsClass = opts?.class
+            return slots[key]({ class: [optsClass, uiClass] })
+        }
+    }
+
+    return result
+})
 
 // 点击事件处理
 function onTap(e: UniEvent) {
@@ -145,7 +170,7 @@ function onTouchCancel() {
 </script>
 
 <template>
-    <button :disabled="isDisabled" :class="ui.base({ class: props.class })" :hover-class="hoverClass"
+    <button :disabled="isDisabled" :class="ui.base({ class: props.customClass })" :hover-class="hoverClass"
         :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
         :hover-stay-time="hoverStayTime" :form-type="formType" :open-type="openType" :session-from="sessionFrom"
         :send-message-title="sendMessageTitle" :send-message-path="sendMessagePath" :send-message-img="sendMessageImg"
@@ -163,10 +188,10 @@ function onTouchCancel() {
         </slot>
 
         <slot :ui="ui">
-            <span v-if="label" :class="ui.base()">
+            <span v-if="label" :class="ui.label()">
                 {{ label }}
             </span>
-            <slot v-else :ui="ui" />
+            <slot v-else :ui="ui" :class="ui.label()" />
         </slot>
 
 

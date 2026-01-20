@@ -8,58 +8,116 @@ export default <Config>{
   theme: {
     extend: {
       colors: {
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        red: {
+          1: '#ffebee',
+          2: '#ffe0e4',
+          3: '#ffb1bc',
+          4: '#ff8b9b',
+          5: '#ff6675',
+          6: '#ff3d58',
+          7: '#d92946',
+          8: '#b31938',
+          9: '#8c0d2a',
+          10: '#660821',
+        },
+        orange: {
+          1: '#fff6e7',
+          2: '#ffe9c9',
+          3: '#ffd5a0',
+          4: '#ffc370',
+          5: '#ffb03b',
+          6: '#ff9711',
+          7: '#bf7c2a',
+          8: '#995c1a',
+          9: '#733d0e',
+          10: '#522601',
+        },
+        green: {
+          1: '#f1faf8',
+          2: '#e7f6f3',
+          3: '#a2dfcf',
+          4: '#5fcfad',
+          5: '#3ac29e',
+          6: '#16ae88',
+          7: '#0b876c',
+          8: '#036150',
+          9: '#003b32',
+          10: '#001412',
+        },
+        blue: {
+          1: '#ecf9ff',
+          2: '#dff4ff',
+          3: '#9ed6f5',
+          4: '#61ccff',
+          5: '#35b6f2',
+          6: '#0d99e5',
+          7: '#0277bf',
+          8: '#005999',
+          9: '#003f73',
+          10: '#00284d',
+        },
+        gray: {
+          1: '#ffffff',
+          2: '#f5f5f5',
+          3: '#eeeeee',
+          4: '#cccccc',
+          5: '#aaaaaa',
+          6: '#999999',
+          7: '#666666',
+          8: '#333333',
+        },
+        border: '#cccccc', // gray-4
+        input: '#cccccc', // gray-4
+        ring: '#ff3d58', // red-6
+        background: '#f5f5f5', // gray-2
+        foreground: '#333333', // gray-8
         primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
+          DEFAULT: '#ff3d58', // red-6
+          foreground: '#ffffff',
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
-          foreground: "var(--secondary-foreground)",
+          DEFAULT: '#333333', // gray-8
+          foreground: '#ffffff',
         },
         destructive: {
-          DEFAULT: "var(--destructive)",
-          foreground: "var(--destructive-foreground)",
+          DEFAULT: '#ff3d58', // red-6
+          foreground: '#ffffff',
         },
         muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "var(--muted-foreground)",
+          DEFAULT: '#eeeeee', // gray-3
+          foreground: '#999999', // gray-6
         },
         accent: {
-          DEFAULT: "var(--accent)",
-          foreground: "var(--accent-foreground)",
+          DEFAULT: '#cccccc', // gray-4
+          foreground: '#333333', // gray-8
         },
         popover: {
-          DEFAULT: "var(--popover)",
-          foreground: "var(--popover-foreground)",
+          DEFAULT: '#ffffff', // gray-1
+          foreground: '#333333', // gray-8
         },
         card: {
-          DEFAULT: "var(--card)",
-          foreground: "var(--card-foreground)",
+          DEFAULT: '#ffffff', // gray-1
+          foreground: '#333333', // gray-8
         },
         success: {
-          DEFAULT: "var(--success)",
-          foreground: "var(--success-foreground)",
+          DEFAULT: '#16ae88', // green-6
+          foreground: '#ffffff',
         },
         info: {
-          DEFAULT: "var(--info)",
-          foreground: "var(--info-foreground)",
+          DEFAULT: '#0d99e5', // blue-6
+          foreground: '#ffffff',
         },
         warning: {
-          DEFAULT: "var(--warning)",
-          foreground: "var(--warning-foreground)",
+          DEFAULT: '#ff9711', // orange-6
+          foreground: '#ffffff',
         },
         error: {
-          DEFAULT: "var(--error)",
-          foreground: "var(--error-foreground)",
+          DEFAULT: '#ff3d58', // red-6
+          foreground: '#ffffff',
         },
         neutral: {
-          DEFAULT: "var(--neutral)",
-          foreground: "var(--neutral-foreground)",
+          DEFAULT: '#999999', // gray-6
+          foreground: '#ffffff',
         },
       },
       borderRadius: {

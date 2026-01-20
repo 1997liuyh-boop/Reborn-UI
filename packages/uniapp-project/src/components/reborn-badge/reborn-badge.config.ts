@@ -1,6 +1,6 @@
 const size = ['xs', 'sm', 'md', 'lg', 'xl'] as const
 const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-const variant = ['solid', 'outline', 'soft', 'subtle'] as const
+const variant = ['solid', 'outline', 'soft', 'subtle', 'inverted'] as const
 
 export { size as badgeSizes, color as badgeColors, variant as badgeVariants }
 

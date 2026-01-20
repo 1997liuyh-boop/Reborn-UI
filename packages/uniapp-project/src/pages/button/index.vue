@@ -91,71 +91,23 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                             <label
                                 class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                                 <checkbox :checked="demoLoading" @click="demoLoading = !demoLoading"
-                                    :value="demoLoading" color="#0ea5e9" style="transform:scale(0.8)" />
+                                    :value="String(demoLoading)" color="#0ea5e9" style="transform:scale(0.8)" />
                                 Loading
                             </label>
                             <label
                                 class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                                 <checkbox :checked="demoDisabled" @click="demoDisabled = !demoDisabled"
-                                    :value="demoDisabled" color="#0ea5e9" style="transform:scale(0.8)" />
+                                    :value="String(demoDisabled)" color="#0ea5e9" style="transform:scale(0.8)" />
                                 Disabled
                             </label>
                             <label
                                 class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                                <checkbox :checked="demoSquare" @click="demoSquare = !demoSquare" :value="demoSquare"
-                                    color="#0ea5e9" style="transform:scale(0.8)" />
+                                <checkbox :checked="demoSquare" @click="demoSquare = !demoSquare"
+                                    :value="String(demoSquare)" color="#0ea5e9" style="transform:scale(0.8)" />
                                 Square
                             </label>
                         </view>
                     </view>
-                </view>
-            </view>
-        </view>
-
-        <!-- Variants Showcase -->
-        <view class="space-y-4">
-            <view class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <view class="w-1 h-5 bg-purple-500 rounded-full"></view>
-                Variants
-            </view>
-            <view
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <view class="flex flex-wrap gap-4 items-center">
-                    <ReButton v-for="v in variants" :key="v" :variant="v">
-                        {{ (v ?? '').charAt(0).toUpperCase() + (v ?? '').slice(1) }}
-                    </ReButton>
-                </view>
-            </view>
-        </view>
-
-        <!-- Colors Showcase -->
-        <view class="space-y-4">
-            <view class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <view class="w-1 h-5 bg-indigo-500 rounded-full"></view>
-                Colors
-            </view>
-            <view
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <view class="flex flex-wrap gap-4 items-center">
-                    <ReButton v-for="c in colors" :key="c" :color="c">
-                        {{ (c ?? '').charAt(0).toUpperCase() + (c ?? '').slice(1) }}
-                    </ReButton>
-                </view>
-            </view>
-        </view>
-
-        <!-- Sizes Showcase -->
-        <view class="space-y-4">
-            <view class="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <view class="w-1 h-5 bg-green-500 rounded-full"></view>
-                Sizes
-            </view>
-            <view
-                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <view class="flex flex-wrap items-end gap-4">
-                    <ReButton v-for="s in sizes" :key="s" :size="s" color="neutral" variant="outline">
-                        {{ s }}
-                    </ReButton>
                 </view>
             </view>
         </view>
@@ -181,11 +133,11 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                             <view class="i-lucide-arrow-right w-4 h-4"></view>
                         </template>
                     </ReButton>
-                    <ReButton square variant="soft">
-                        <view class="i-lucide-settings w-5 h-5"></view>
+                    <ReButton size="icon-md" variant="soft" custom-class="p-2.5">
+                        <view class="i-lucide-settings size-4"></view>
                     </ReButton>
-                    <ReButton square size="lg" color="error" class="rounded-full">
-                        <view class="i-lucide-trash-2 w-6 h-6"></view>
+                    <ReButton size="icon-lg" color="error" custom-class="rounded-full p-2.5">
+                        <view class="i-lucide-trash-2 size-6"></view>
                     </ReButton>
                 </view>
             </view>
