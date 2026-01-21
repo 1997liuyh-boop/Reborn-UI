@@ -74,6 +74,6 @@ export default {
   },
   defaultVariants: {
     size: "md" as (typeof size)[number],
-    color: "primary" as (typeof color)[number],
+    color: "neutral" as (typeof color)[number],
   },
 };

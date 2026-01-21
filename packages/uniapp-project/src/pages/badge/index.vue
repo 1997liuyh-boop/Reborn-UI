@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import RebornBadge from '@/components/reborn-badge/reborn-badge.vue'
+import RebornBadge from '@/components/reborn-badge/RebornBadge.vue'
 
 const showBadge = ref(true)
 const sizes = ['sm', 'md', 'lg'] as const

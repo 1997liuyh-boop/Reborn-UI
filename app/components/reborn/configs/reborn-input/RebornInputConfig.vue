@@ -1,7 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-  <ComponentPlayground>
+  <ComponentPlayground uniapp url="/uni-render/#/pages/input/index">
     <template #component>
       <RebornInputDemo />
     </template>

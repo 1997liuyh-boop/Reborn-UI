@@ -9,6 +9,7 @@ interface Props {
   demoFile: string;
   componentFiles?: string[];
   config: string;
+  uniapp?: boolean;
 }
 
 const {
@@ -19,6 +20,7 @@ const {
   componentFiles = [],
   demoFile,
   config,
+  uniapp = false,
 } = defineProps<Props>();
 
 const items = ref<TabsItem[]>([
@@ -34,23 +36,21 @@ const items = ref<TabsItem[]>([
   },
 ]);
 
+if (uniapp) {
+  items.value.push({
+    label: "UniApp Code",
+    icon: "tabler:code-asterisk",
+    slot: "uniapp",
+  });
+}
+
 if (showInstallation) {
   items.value.push({
     label: "Installation",
     icon: "si:lightning-line",
     slot: "installation",
   });
-
-  items.value.push({
-    label: "Credits",
-    icon: "tabler:heart-handshake",
-    slot: "creditsTab",
-  });
 }
-
-const demoCode = ref<string>("");
-const componentCode = ref<string>("");
-const componentsList = ref<{ ext: string; fileName: string; code: string }[]>([]);
 
 const installationItems = ref<TabsItem[]>([
   {
@@ -65,61 +65,12 @@ const installationItems = ref<TabsItem[]>([
   },
 ]);
 
-async function loadDemoCode() {
-  const codeGetter = getComponentCode({
-    fileName: demoFile,
-    id: componentId,
-    type: "examples",
-  });
-  if (codeGetter) {
-    demoCode.value = (await codeGetter()) as unknown as string;
-    demoCode.value = `
-## Component Usage
-
-
-::code-collapse
-
-\`\`\`${demoFile.split(".").at(-1)} [${demoFile}]
-${demoCode.value}
-\`\`\`
-
-::
-    `;
-  }
-}
-
-async function loadComponentCodes() {
-  if (!componentFiles) return;
-
-  const promises = componentFiles.map(async (fileName) => {
-    const codeGetter = getComponentCode({
-      fileName,
-      id: componentId,
-      type: "ui",
-    });
-
-    if (codeGetter) {
-      const code = (await codeGetter()) as unknown as string;
-      componentsList.value.push({
-        fileName,
-        ext: fileName.split(".").at(-1)!,
-        code,
-      });
-    }
-  });
-
-  // Wait for all async operations to complete
-  await Promise.all(promises);
-
-  componentCode.value = `
-::code-group
-${componentsList.value.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join("\n")}
-::`;
-}
-
-onMounted(() => {
-  loadDemoCode();
-  loadComponentCodes();
+// Use the composable for both component and demo code loading
+const { componentCode, demoCode } = useComponentCode({
+  componentId,
+  componentFiles,
+  demoFile,
+  type: 'ui'
 });
 </script>
 
@@ -168,12 +119,6 @@ onMounted(() => {
           <MDC v-if="componentCode" :key="componentCode" :value="componentCode" />
         </template>
       </UTabs>
-    </template>
-
-    <template v-if="showInstallation" #creditsTab>
-      <UPageCard class="bg-default/15">
-        <slot name="credits" />
-      </UPageCard>
     </template>
   </UTabs>
 </template>

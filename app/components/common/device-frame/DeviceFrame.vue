@@ -4,29 +4,28 @@ const props = defineProps<{
 }>()
 
 interface Device {
-    name: string
+    label: string
     width: number
     height: number
 }
 
 const devices: Device[] = [
-    { name: 'iPhone SE', width: 375, height: 667 },
-    { name: 'iPhone 12/13/14', width: 390, height: 844 },
-    { name: 'iPhone 14 Pro Max', width: 430, height: 932 },
-    { name: 'Pixel 7', width: 412, height: 915 },
-    { name: 'Galaxy S20', width: 360, height: 800 },
-    { name: 'iPad Mini', width: 768, height: 1024 },
+    { label: 'iPhone SE', width: 320, height: 568 },
+    { label: 'iPhone 12/13/14', width: 375, height: 812 },
+    { label: 'iPhone 14 Pro Max', width: 430, height: 932 },
+    { label: 'HUAWEI MATE 80', width: 366, height: 809 },
+    { label: 'HUAWEI MATE 70', width: 374, height: 827 },
+    { label: 'iPad', width: 768, height: 1024 },
 ]
 
-const selectedDeviceName = ref(devices[1].name)
-const selectedDevice = computed(() => devices.find(d => d.name === selectedDeviceName.value) || devices[0])
+const selectedDeviceName = ref(devices[1]!.label)
+const selectedDevice = computed(() => devices.find(d => d.label === selectedDeviceName.value) || devices[0])
 </script>
 
 <template>
     <div class="flex flex-col items-center gap-4 w-full h-full p-4 bg-muted/20">
         <div class="flex items-center gap-2">
-            <USelect v-model="selectedDeviceName" :options="devices" option-attribute="name" value-attribute="name"
-                class="" />
+            <USelect v-model="selectedDeviceName" :items="devices" labelKey="label" valueKey="label" class="z-999" />
             <div class="text-sm text-muted-foreground">
                 {{ selectedDevice?.width }} x {{ selectedDevice?.height }}
             </div>
@@ -39,7 +38,7 @@ const selectedDevice = computed(() => devices.find(d => d.name === selectedDevic
                 height: `${selectedDevice.height}px`,
                 maxHeight: 'calc(100vh - 200px)'
             }">
-            <iframe :src="props.src" class="w-full h-full bg-white border-none" :title="selectedDevice.name" />
+            <iframe :src="props.src" class="w-full h-full bg-white border-none" :title="selectedDevice.label" />
         </div>
     </div>
 </template>

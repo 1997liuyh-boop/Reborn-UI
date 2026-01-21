@@ -9,37 +9,58 @@
     {
       "path": "pages/button/index",
       "style": {
-        "navigationBarTitleText": "Button"
+        "navigationBarTitleText": "Button",
+        "titleNView": {
+          "autoBackButton": false
+        }
       }
     },
     {
       "path": "pages/checkbox/index",
       "style": {
-        "navigationBarTitleText": "Checkbox"
+        "navigationBarTitleText": "Checkbox",
+        "titleNView": {
+          "autoBackButton": false
+        }
       }
     },
     {
       "path": "pages/badge/index",
       "style": {
-        "navigationBarTitleText": "Badge"
+        "navigationBarTitleText": "Badge",
+        "titleNView": {
+          "autoBackButton": false
+        }
       }
     },
     {
       "path": "pages/input/index",
       "style": {
-        "navigationBarTitleText": "Input"
+        "navigationBarTitleText": "Input",
+        "titleNView": {
+          "autoBackButton": false
+        }
       }
     },
     {
       "path": "pages/input-number/index",
       "style": {
-        "navigationBarTitleText": "Input Number"
+        "navigationBarTitleText": "Input Number",
+        "titleNView": {
+          "autoBackButton": false
+        }
       }
     },
     {
       "path": "pages/switch/index",
       "style": {
         "navigationBarTitleText": "Switch"
+      }
+    },
+    {
+      "path": "pages/tabs/index",
+      "style": {
+        "navigationBarTitleText": "Tabs"
       }
     }
   ],

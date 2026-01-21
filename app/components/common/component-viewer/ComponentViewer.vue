@@ -9,6 +9,7 @@ interface Props {
   demoFile: string;
   componentFiles?: string[];
   config: string;
+  uniapp?: boolean;
 }
 
 const {
@@ -19,6 +20,7 @@ const {
   componentFiles = [],
   demoFile,
   config,
+  uniapp = false,
 } = defineProps<Props>();
 </script>
 
@@ -27,7 +29,7 @@ const {
     <ClientOnly>
       <ComponentTabs :dev-dependencies="devDependencies" :dependencies="dependencies"
         :show-installation="showInstallation" :component-id="componentId" :component-files="componentFiles"
-        :demo-file="demoFile" :config="config">
+        :demo-file="demoFile" :config="config" :uniapp="uniapp">
         <template #api>
           <slot name="api" />
         </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <ComponentPlayground>
+  <ComponentPlayground uniapp url="/uni-render/#/pages/switch/index">
     <template #component>
       <RebornSwitchDemo />
     </template>

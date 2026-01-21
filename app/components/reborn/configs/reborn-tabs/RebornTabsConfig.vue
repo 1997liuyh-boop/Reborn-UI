@@ -1,7 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-    <ComponentPlayground>
+    <ComponentPlayground uniapp url="/uni-render/#/pages/tabs/index">
         <template #component>
             <RebornTabsDemo />
         </template>

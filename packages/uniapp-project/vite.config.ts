@@ -17,7 +17,7 @@ export default defineConfig(async () => {
       uni(),
       uniPolyfill(),
       UnifiedViteWeappTailwindcssPlugin({
-        px2rpx: true,
+        // px2rpx: true,
         // rem2rpx: true,
         disabled: WeappTailwindcssDisabled,
       }),

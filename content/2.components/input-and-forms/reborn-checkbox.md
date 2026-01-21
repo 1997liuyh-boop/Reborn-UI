@@ -6,7 +6,7 @@ tags: [css, tailwind, checkbox]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornCheckboxDemo.vue" config="RebornCheckboxConfig" componentId="reborn-checkbox" :componentFiles='["RebornCheckbox.vue", "reborn-checkbox.config.ts"]'}
+::ComponentViewer{demoFile="RebornCheckboxDemo.vue" config="RebornCheckboxConfig" componentId="reborn-checkbox" :componentFiles='["RebornCheckbox.vue", "reborn-checkbox.config.ts"]' :uniapp="true"}
 
 #api
 

@@ -1,73 +1,96 @@
 const size = ["sm", "md", "lg"] as const;
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
+const shape = ["circle", "square"] as const;
 
-export { size as inputNumberSizes, color as inputNumberColors };
+export { size as inputNumberSizes, color as inputNumberColors, shape as inputNumberShapes };
 
 export default {
   slots: {
     wrapper:
-      "relative inline-flex items-center overflow-hidden rounded-full bg-white text-gray-800 ring-1 ring-gray-200 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-100 data-[disabled=true]:text-gray-400 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600",
+      "group relative inline-flex items-center overflow-hidden bg-white text-gray-8 ring-[1.5px] ring-gray-2 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-1 data-[disabled=true]:text-gray-4 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600",
     button:
-      "flex h-full items-center justify-center text-gray-600 transition-colors disabled:cursor-not-allowed disabled:text-gray-400 dark:text-gray-400 dark:hover:text-gray-200 dark:disabled:text-gray-600",
+      "flex h-full items-center justify-center text-gray-8 transition-colors disabled:cursor-not-allowed disabled:text-gray-4 dark:text-gray-400 dark:hover:text-gray-200 dark:disabled:text-gray-600",
     input:
-      "min-w-0 flex-1 bg-transparent text-center text-gray-800 outline-none placeholder:text-gray-400 dark:text-gray-200 dark:placeholder:text-gray-500",
-    divider: "h-1/2 w-px bg-gray-300 dark:bg-gray-700",
+      "min-w-0 flex-1 bg-transparent text-center text-gray-8 outline-none placeholder:text-gray-4 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none dark:text-gray-200 dark:placeholder:text-gray-500",
+    divider: "h-full w-[1.5px]",
     icon: "shrink-0",
   },
   variants: {
     size: {
       sm: {
-        wrapper: "h-8 w-28 text-sm",
-        input: "text-sm",
-        button: "px-3",
+        wrapper: "h-[calc(var(--text-size-26)*2)] text-[length:var(--text-size-26)]",
+        input: "w-[calc(var(--text-size-26)*2.5)] text-[length:var(--text-size-26)]",
+        button: "p-1.5",
         icon: "size-3.5",
       },
       md: {
-        wrapper: "h-10 w-36 text-base",
-        input: "text-base",
-        button: "px-4",
-        icon: "size-4", // Handled by icon component or custom class
+        wrapper: "h-[calc(var(--text-size-28)*2)] text-[length:var(--text-size-28)]",
+        input: "w-[calc(var(--text-size-28)*2.5)] text-[length:var(--text-size-28)]",
+        button: "p-2",
+        icon: "size-4",
       },
       lg: {
-        wrapper: "h-12 w-44 text-lg",
-        input: "text-lg",
-        button: "px-5",
+        wrapper: "h-[calc(var(--text-size-32)*2)] text-[length:var(--text-size-32)]",
+        input: "w-[calc(var(--text-size-32)*5)] text-[length:var(--text-size-32)]",
+        button: "p-2",
         icon: "size-5",
       },
     },
     color: {
       primary: {
-        wrapper: "focus-within:ring-primary/20",
+        wrapper: "ring-primary focus-within:ring-primary/20",
         button: "hover:text-primary",
+        divider: "bg-primary group-focus-within:bg-primary/20",
       },
       secondary: {
-        wrapper: "focus-within:ring-secondary/20",
+        wrapper: "ring-secondary focus-within:ring-secondary/20",
         button: "hover:text-secondary",
+        divider: "bg-secondary group-focus-within:bg-secondary/20",
       },
       success: {
-        wrapper: "focus-within:ring-success/20",
+        wrapper: "ring-success focus-within:ring-success/20",
         button: "hover:text-success",
+        divider: "bg-success group-focus-within:bg-success/20",
       },
       info: {
-        wrapper: "focus-within:ring-info/20",
+        wrapper: "ring-info focus-within:ring-info/20",
         button: "hover:text-info",
+        divider: "bg-info group-focus-within:bg-info/20",
       },
       warning: {
-        wrapper: "focus-within:ring-warning/20",
+        wrapper: "ring-warning focus-within:ring-warning/20",
         button: "hover:text-warning",
+        divider: "bg-warning group-focus-within:bg-warning/20",
       },
       error: {
-        wrapper: "focus-within:ring-error/20",
+        wrapper: "ring-error focus-within:ring-error/20",
         button: "hover:text-error",
+        divider: "bg-error group-focus-within:bg-error/20",
       },
       neutral: {
-        wrapper: "focus-within:ring-neutral/20",
+        wrapper: "ring-gray-4 focus-within:ring-gray-4/20",
         button: "hover:text-neutral",
+        divider: "bg-gray-4 group-focus-within:bg-gray-4/20",
       },
-    }
+    },
+    shape: {
+      circle: {
+        wrapper: "rounded-full",
+      },
+      square: {
+        wrapper: "rounded-md",
+      },
+    },
+    fieldGroup: {
+      horizontal:
+        "not-only:first:rounded-e-none not-only:last:rounded-s-none not-last:not-first:rounded-none focus-within:z-[1]",
+      vertical:
+        "not-only:first:rounded-b-none not-only:last:rounded-t-none not-last:not-first:rounded-none focus-within:z-[1]",
+    },
   },
   defaultVariants: {
-    size: "md",
-    color: "primary",
+    size: "sm" as (typeof size)[number],
+    color: "neutral" as (typeof color)[number],
+    shape: "circle" as (typeof shape)[number],
   },
 };

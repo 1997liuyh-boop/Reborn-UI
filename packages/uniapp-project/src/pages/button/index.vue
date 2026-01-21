@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ReButton from '@/components/re-button/ReButton.vue'
-import type { ButtonProps } from '@/components/re-button/ReButton.vue'
+import ReButton from '@/components/reborn-button/RebornButton.vue'
+import type { ButtonProps } from '@/components/reborn-button/RebornButton.vue'
 
 // Demo State
 const demoVariant = ref<ButtonProps['variant']>('solid')

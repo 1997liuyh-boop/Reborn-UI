@@ -6,7 +6,7 @@ tags: [css, tailwind, switch]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornSwitchDemo.vue" config="RebornSwitchConfig" componentId="reborn-switch" :componentFiles='["RebornSwitch.vue", "reborn-switch.config.ts"]'}
+::ComponentViewer{demoFile="RebornSwitchDemo.vue" config="RebornSwitchConfig" componentId="reborn-switch" :componentFiles='["RebornSwitch.vue", "reborn-switch.config.ts"]' :uniapp="true"}
 
 #api
 

@@ -6,7 +6,7 @@ tags: [css, tailwind, button, uniapp]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]' dependencies="class-variance-authority"}
+::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]' dependencies="class-variance-authority" :uniapp="true"}
 
 #api
 
