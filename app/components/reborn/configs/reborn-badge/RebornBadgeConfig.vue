@@ -1,7 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-    <ComponentPlayground uniapp url="/uni-render/#/pages/badge/index">
+    <ComponentPlayground uniapp url="/uni-render/#/pages/reborn-badge/RebornBadgeDemo">
         <template #component>
             <RebornBadgeDemo />
         </template>

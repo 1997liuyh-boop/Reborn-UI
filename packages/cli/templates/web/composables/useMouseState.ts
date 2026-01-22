@@ -1,4 +1,4 @@
-import { ref, readonly } from "vue";
+import { readonly, ref } from "vue";
 
 export function useMouseState() {
   const isMouseEntered = ref(false);
@@ -12,13 +12,3 @@ export function useMouseState() {
     setMouseEntered,
   };
 }
-
-
-
-
-
-
-
-
-
-

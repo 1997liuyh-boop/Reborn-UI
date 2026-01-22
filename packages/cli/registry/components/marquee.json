@@ -12,21 +12,11 @@
       "target": "web"
     },
     {
-      "path": "Marquee.vue",
-      "content": "<script lang=\"ts\" setup>\r\nwithDefaults(\r\n  defineProps<{\r\n    class?: string;\r\n    reverse?: boolean;\r\n    pauseOnHover?: boolean;\r\n    vertical?: boolean;\r\n    repeat?: number;\r\n  }>(),\r\n  {\r\n    pauseOnHover: false,\r\n    vertical: false,\r\n    repeat: 4,\r\n  },\r\n);\r\n</script>\r\n\r\n<template>\r\n  <view\r\n    class=\"group flex [gap:var(--gap)] overflow-hidden p-2 [--duration:40s] [--gap:1rem]\"\r\n    :class=\"[vertical ? 'flex-col' : 'flex-row', $props.class]\"\r\n  >\r\n    <view\r\n      v-for=\"index in repeat\"\r\n      :key=\"index\"\r\n      class=\"flex shrink-0 justify-around [gap:var(--gap)]\"\r\n      :class=\"[\r\n        vertical ? 'animate-marquee-vertical flex-col' : 'animate-marquee flex-row',\r\n        pauseOnHover ? 'group-hover:[animation-play-state:paused]' : '',\r\n      ]\"\r\n      :style=\"{\r\n        animationDirection: reverse ? 'reverse' : 'normal',\r\n      }\"\r\n    >\r\n      <slot />\r\n    </view>\r\n  </view>\r\n</template>\r\n\r\n<style scoped>\r\n.animate-marquee {\r\n  animation: marquee var(--duration) linear infinite;\r\n  animation-direction: reverse;\r\n}\r\n\r\n.animate-marquee-vertical {\r\n  animation: marquee-vertical var(--duration) linear infinite;\r\n}\r\n\r\n@keyframes marquee {\r\n  from {\r\n    transform: translateX(0);\r\n  }\r\n  to {\r\n    transform: translateX(calc(-100% - var(--gap)));\r\n  }\r\n}\r\n\r\n@keyframes marquee-vertical {\r\n  from {\r\n    transform: translateY(0);\r\n  }\r\n  to {\r\n    transform: translateY(calc(-100% - var(--gap)));\r\n  }\r\n}\r\n</style>\r\n",
-      "target": "uniapp"
-    },
-    {
       "path": "ReviewCard.vue",
       "content": "<script lang=\"ts\" setup>\r\ninterface Props {\r\n  img: string;\r\n  name: string;\r\n  username: string;\r\n  body: string;\r\n}\r\n\r\ndefineProps<Props>();\r\n</script>\r\n\r\n<template>\r\n  <figure\r\n    class=\"relative w-64 cursor-pointer overflow-hidden rounded-xl border border-gray-950/[.1] bg-gray-950/[.01] p-4 hover:bg-gray-950/[.05] dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]\"\r\n  >\r\n    <div class=\"flex flex-row items-center gap-2\">\r\n      <img\r\n        :src=\"img\"\r\n        class=\"rounded-full\"\r\n        width=\"32\"\r\n        height=\"32\"\r\n        alt=\"\"\r\n      />\r\n      <div class=\"flex flex-col\">\r\n        <span class=\"text-sm font-medium dark:text-white\">\r\n          {{ name }}\r\n        </span>\r\n        <p class=\"text-xs font-medium dark:text-white/40\">{{ username }}</p>\r\n      </div>\r\n    </div>\r\n    <blockquote class=\"mt-2 text-sm\">{{ body }}</blockquote>\r\n  </figure>\r\n</template>\r\n",
       "target": "web"
-    },
-    {
-      "path": "ReviewCard.vue",
-      "content": "<script lang=\"ts\" setup>\r\ninterface Props {\r\n  img: string;\r\n  name: string;\r\n  username: string;\r\n  body: string;\r\n}\r\n\r\ndefineProps<Props>();\r\n</script>\r\n\r\n<template>\r\n  <figure\r\n    class=\"relative w-64 cursor-pointer overflow-hidden rounded-xl border border-gray-950/[.1] bg-gray-950/[.01] p-4 hover:bg-gray-950/[.05] dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]\"\r\n  >\r\n    <view class=\"flex flex-row items-center gap-2\">\r\n      <image\r\n        :src=\"img\"\r\n        class=\"rounded-full\"\r\n        width=\"32\"\r\n        height=\"32\"\r\n        alt=\"\"\r\n      />\r\n      <view class=\"flex flex-col\">\r\n        <text class=\"text-sm font-medium dark:text-white\">\r\n          {{ name }}\r\n        </text>\r\n        <p class=\"text-xs font-medium dark:text-white/40\">{{ username }}</p>\r\n      </view>\r\n    </view>\r\n    <blockquote class=\"mt-2 text-sm\">{{ body }}</blockquote>\r\n  </figure>\r\n</template>\r\n",
-      "target": "uniapp"
     }
   ],
-  "fileCount": 5,
-  "contentHash": "f5e59e0ba0c0f21ab536d1a36976431e6c212b3a"
+  "fileCount": 3,
+  "contentHash": "f1c7b19be65a2a7f6c4424d3a1dad3ec7e1678b2"
 }

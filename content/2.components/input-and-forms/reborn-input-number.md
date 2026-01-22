@@ -2,8 +2,14 @@
 title: 数字输入框
 description: 带有增减按钮的数字输入组件。
 category: 表单与输入
-tags: [css, tailwind, input-number]
+tags: [css, tailwind, input-number, uniapp]
 badge: New
+navigation:
+  badges:
+    - label: New
+      color: primary
+    - label: UniApp
+      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornInputNumberDemo.vue" config="RebornInputNumberConfig" componentId="reborn-input-number" :componentFiles='["RebornInputNumber.vue", "reborn-input-number.config.ts"]' :uniapp="true"}

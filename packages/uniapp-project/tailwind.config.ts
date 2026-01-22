@@ -1,7 +1,8 @@
 import type { Config } from 'tailwindcss'
-import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons'
 import cssMacro from 'weapp-tailwindcss/css-macro'
 import { isMp } from './platform'
+// 以下部分可以不需要引入，除非你使用了这些功能
+import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons'
 
 export default <Config>{
   content: ['./index.html', './src/**/*.{html,js,ts,jsx,tsx,vue}'],
@@ -170,6 +171,7 @@ export default <Config>{
         // }
       },
     }),
+    // 以下部分可以不需要引入，除非你使用了这些功能
     iconsPlugin({
       // 在这里可以选择你要使用的 icon, 更多详见:
       // https://icon-sets.iconify.design/

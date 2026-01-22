@@ -7,52 +7,42 @@
       }
     },
     {
-      "path": "pages/button/index",
+      "path": "pages/reborn-button/RebornButtonDemo",
       "style": {
         "navigationBarTitleText": "Button",
-        "titleNView": {
-          "autoBackButton": false
-        }
+        "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/checkbox/index",
+      "path": "pages/reborn-checkbox/RebornCheckboxDemo",
       "style": {
         "navigationBarTitleText": "Checkbox",
-        "titleNView": {
-          "autoBackButton": false
-        }
+        "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/badge/index",
+      "path": "pages/reborn-badge/RebornBadgeDemo",
       "style": {
         "navigationBarTitleText": "Badge",
-        "titleNView": {
-          "autoBackButton": false
-        }
+        "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/input/index",
+      "path": "pages/reborn-input/RebornInputDemo",
       "style": {
         "navigationBarTitleText": "Input",
-        "titleNView": {
-          "autoBackButton": false
-        }
+        "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/input-number/index",
+      "path": "pages/reborn-input-number/RebornInputNumberDemo",
       "style": {
         "navigationBarTitleText": "Input Number",
-        "titleNView": {
-          "autoBackButton": false
-        }
+        "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/switch/index",
+      "path": "pages/reborn-switch/RebornSwitchDemo",
       "style": {
         "navigationBarTitleText": "Switch"
       }

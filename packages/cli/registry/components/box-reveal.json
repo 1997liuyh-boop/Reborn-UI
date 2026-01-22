@@ -10,15 +10,10 @@
       "target": "web"
     },
     {
-      "path": "BoxReveal.vue",
-      "content": "<script lang=\"ts\" setup>\r\nimport type { HTMLAttributes } from \"vue\";\r\nimport { Motion } from \"motion-v\";\r\n\r\ninterface BoxRevealProps {\r\n  color?: string;\r\n  duration?: number;\r\n  class?: HTMLAttributes[\"class\"];\r\n  delay?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<BoxRevealProps>(), {\r\n  color: \"#5046e6\",\r\n  duration: 0.5,\r\n  delay: 0.25,\r\n});\r\n\r\n// Motion variants\r\nconst initialMainVariants = { opacity: 0, y: 25 };\r\nconst visibleMainVariants = {\r\n  opacity: 1,\r\n  y: 0,\r\n};\r\n\r\nconst initialSlideVariants = { left: \"0%\" };\r\nconst visibleSlideVariants = {\r\n  left: \"100%\",\r\n};\r\n</script>\r\n\r\n<template>\r\n  <view\r\n    class=\"relative\"\r\n    :class=\"[$props.class]\"\r\n  >\r\n    <Motion\r\n      :initial=\"initialMainVariants\"\r\n      :while-in-view=\"visibleMainVariants\"\r\n      :transition=\"{\r\n        duration: props.duration,\r\n        delay: props.delay * 2,\r\n      }\"\r\n    >\r\n      <slot />\r\n    </Motion>\r\n    <Motion\r\n      class=\"box-background absolute inset-0 z-20\"\r\n      :initial=\"initialSlideVariants\"\r\n      :while-in-view=\"visibleSlideVariants\"\r\n      :transition=\"{\r\n        duration: props.duration,\r\n        ease: 'easeIn',\r\n        delay: props.delay,\r\n      }\"\r\n    />\r\n  </view>\r\n</template>\r\n\r\n<style scoped>\r\n.box-background {\r\n  background: v-bind(color);\r\n}\r\n</style>\r\n",
-      "target": "uniapp"
-    },
-    {
       "path": "index.ts",
       "content": "export { default as BoxReveal } from \"./BoxReveal.vue\";\r\n"
     }
   ],
-  "fileCount": 3,
-  "contentHash": "b60dfa6016c79fc05cc78b459da08017f8e94227"
+  "fileCount": 2,
+  "contentHash": "0799904053ecba0a17f577bc15ee35e4a2c82643"
 }

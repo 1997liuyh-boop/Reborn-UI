@@ -1,12 +1,14 @@
 import path from "node:path";
 import fs from "node:fs/promises";
+import fssync from "node:fs";
 import { Command } from "commander";
 import prompts from "prompts";
 import type { CliConfig, PackageManager } from "../types.js";
-import { ensureDir, listFilesRecursive, pathExists, writeJsonFile, writeTextFile } from "../utils/fs.js";
-import { detectPackageManager, readPackageJson } from "../utils/pm.js";
+import { copyDirRecursive, ensureDir, listFilesRecursive, pathExists, writeJsonFile, writeTextFile } from "../utils/fs.js";
+import { detectPackageManager } from "../utils/pm.js";
 import { DEFAULT_CONFIG_PATH, defaultConfig, loadConfigCompat } from "../utils/registry.js";
-import { copyTemplateSubdir } from "../utils/templates.js";
+import { findNearestPackageRoot } from "../utils/templates.js";
+import { TEMPLATES } from "../generated/templates.js";
 import { gradientText, showLogo, typewriter } from "../utils/ui.js";
 
 function looksLikeNuxtProject(cwd: string) {
@@ -15,6 +17,17 @@ function looksLikeNuxtProject(cwd: string) {
     pathExists(path.join(cwd, "nuxt.config.js")),
     pathExists(path.join(cwd, "nuxt.config.mjs")),
   ]).then((arr) => arr.some(Boolean));
+}
+
+function findWorkspaceRoot(startDir: string) {
+  let current = path.resolve(startDir);
+  for (; ;) {
+    const marker = path.join(current, "pnpm-workspace.yaml");
+    if (fssync.existsSync(marker)) return current;
+    const parent = path.dirname(current);
+    if (parent === current) return startDir;
+    current = parent;
+  }
 }
 
 
@@ -50,6 +63,68 @@ async function rewriteAliasInDir(params: {
   }
 }
 
+async function copyTemplates(params: {
+  cwd: string;
+  workspaceRoot: string;
+  platform: "web" | "uniapp";
+  cfg: CliConfig;
+  overwrite?: boolean;
+}) {
+  const { cwd, workspaceRoot, platform, cfg, overwrite } = params;
+
+  // 1. 尝试从仓库源码目录拷贝（本地开发场景）
+  const repoPaths = {
+    web: {
+      lib: path.join(workspaceRoot, "app/lib"),
+      composables: path.join(workspaceRoot, "app/composables"),
+    },
+    uniapp: {
+      lib: path.join(workspaceRoot, "packages/uniapp-project/src/lib"),
+      composables: path.join(workspaceRoot, "packages/uniapp-project/src/composables"),
+    },
+  };
+
+  const currentRepoPaths = repoPaths[platform];
+  let copiedFromRepo = false;
+
+  if (await pathExists(currentRepoPaths.lib)) {
+    await copyDirRecursive({
+      fromDir: currentRepoPaths.lib,
+      toDir: path.join(cwd, cfg.libDir),
+      overwrite,
+    });
+    copiedFromRepo = true;
+  }
+
+  if (await pathExists(currentRepoPaths.composables)) {
+    await copyDirRecursive({
+      fromDir: currentRepoPaths.composables,
+      toDir: path.join(cwd, cfg.composablesDir),
+      overwrite,
+      ignoreFileNames: platform === "web" ? new Set(["useComponentCode.ts", "useCopyToClipboard.ts","getComponentCode.ts","getUniappCode.ts"]) : undefined,
+    });
+    copiedFromRepo = true;
+  }
+
+  // 2. 如果不是在仓库内运行（例如 npx），则使用生成的字符串模板
+  if (!copiedFromRepo) {
+    const platformTemplates = TEMPLATES[platform];
+    for (const [relPath, content] of Object.entries(platformTemplates)) {
+      let targetPath = "";
+      if (relPath.startsWith("lib/")) {
+        targetPath = path.join(cwd, cfg.libDir, relPath.replace("lib/", ""));
+      } else if (relPath.startsWith("composables/")) {
+        targetPath = path.join(cwd, cfg.composablesDir, relPath.replace("composables/", ""));
+      }
+
+      if (targetPath) {
+        if (!overwrite && (await pathExists(targetPath))) continue;
+        await writeTextFile(targetPath, content);
+      }
+    }
+  }
+}
+
 export function initCommand() {
   const cmd = new Command("init")
     .description("初始化新项目")
@@ -82,6 +157,7 @@ export function initCommand() {
       "项目根目录映射别名符号（默认 @）",
       defaultConfig().aliasSymbol,
     )
+    .option("--platform <platform>", "目标平台：web|uniapp", "web")
     .option("--registry <pkgOrPath>", "registry 来源（默认 builtin）", defaultConfig().registry)
     .action(async (opts) => {
       const cwd = path.resolve(opts.cwd);
@@ -106,6 +182,7 @@ export function initCommand() {
         composablesDir: opts.composablesDir,
         aliasSymbol: opts.aliasSymbol,
         registry: opts.registry,
+        platform: opts.platform,
       };
 
       // 如果已存在 components.json，默认沿用（除非用户显式传参覆盖）
@@ -116,12 +193,23 @@ export function initCommand() {
         cfg.composablesDir = opts.composablesDir ?? existing.composablesDir ?? cfg.composablesDir;
         cfg.aliasSymbol = opts.aliasSymbol ?? existing.aliasSymbol ?? cfg.aliasSymbol;
         cfg.registry = opts.registry ?? existing.registry ?? cfg.registry;
+        cfg.platform = opts.platform ?? existing.platform ?? cfg.platform;
       }
 
       if (!opts.yes) {
         const nuxt = await looksLikeNuxtProject(cwd);
         const res = await prompts(
           [
+            {
+              type: "select",
+              name: "platform",
+              message: "选择目标平台",
+              choices: [
+                { title: "Web (默认)", value: "web" },
+                { title: "UniApp", value: "uniapp" },
+              ],
+              initial: cfg.platform === "uniapp" ? 1 : 0,
+            },
             {
               type: "text",
               name: "componentsDir",
@@ -154,6 +242,7 @@ export function initCommand() {
           },
         );
 
+        cfg.platform = res.platform ?? cfg.platform;
         cfg.componentsDir = res.componentsDir ?? cfg.componentsDir;
         cfg.libDir = res.libDir ?? cfg.libDir;
         cfg.composablesDir = res.composablesDir ?? cfg.composablesDir;
@@ -164,18 +253,15 @@ export function initCommand() {
         await writeJsonFile(cfgPath, cfg);
 
         // 复制模板：lib/ + composables/
-        await copyTemplateSubdir({
-          subdir: "lib",
+        const workspaceRoot = findWorkspaceRoot(findNearestPackageRoot(import.meta.url));
+        await copyTemplates({
           cwd,
-          targetDir: cfg.libDir,
+          workspaceRoot,
+          platform: cfg.platform as "web" | "uniapp",
+          cfg,
           overwrite: opts.overwrite,
         });
-        await copyTemplateSubdir({
-          subdir: "composables",
-          cwd,
-          targetDir: cfg.composablesDir,
-          overwrite: opts.overwrite,
-        });
+
         // 仅替换 "@/..." 的别名符号，不改其它路径内容
         await rewriteAliasInDir({ cwd, targetDir: cfg.libDir, aliasSymbol: cfg.aliasSymbol ?? "@" });
         await rewriteAliasInDir({
@@ -202,19 +288,16 @@ export function initCommand() {
       await ensureDir(path.dirname(cfgPath));
       await fs.writeFile(cfgPath, JSON.stringify(cfg, null, 2) + "\n", "utf8");
 
-      // 复制模板：lib/ + composables/
-      await copyTemplateSubdir({
-        subdir: "lib",
+      // 复制模板逻辑
+      const workspaceRoot = findWorkspaceRoot(findNearestPackageRoot(import.meta.url));
+      await copyTemplates({
         cwd,
-        targetDir: cfg.libDir,
+        workspaceRoot,
+        platform: cfg.platform as "web" | "uniapp",
+        cfg,
         overwrite: opts.overwrite,
       });
-      await copyTemplateSubdir({
-        subdir: "composables",
-        cwd,
-        targetDir: cfg.composablesDir,
-        overwrite: opts.overwrite,
-      });
+
       // 仅替换 "@/..." 的别名符号，不改其它路径内容
       await rewriteAliasInDir({ cwd, targetDir: cfg.libDir, aliasSymbol: cfg.aliasSymbol ?? "@" });
       await rewriteAliasInDir({

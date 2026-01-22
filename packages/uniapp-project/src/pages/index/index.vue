@@ -6,12 +6,6 @@ const goToDemo = (path: string) => {
   })
 }
 
-const goToButtonPage = () => {
-  uni.navigateTo({
-    url: '/pages/button/index'
-  })
-}
-
 </script>
 
 <template>
@@ -39,38 +33,38 @@ const goToButtonPage = () => {
       <view class="grid grid-cols-2 gap-2">
         <view
           class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 active:scale-95 transition-transform"
-          @click="goToButtonPage">
+          @click="goToDemo('/pages/reborn-button/RebornButtonDemo')">
           <view class="i-lucide-layout-grid size-8 mb-2 text-blue-500" />
           Buttons
         </view>
         <view
           class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 active:scale-95 transition-transform"
-          @click="goToDemo('/pages/input/index')">
+          @click="goToDemo('/pages/reborn-input/RebornInputDemo')">
           <view class="i-lucide-text-cursor-input size-8 mb-2 text-blue-500" />
           Input
         </view>
         <view
           class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 active:scale-95 transition-transform"
-          @click="goToDemo('/pages/input-number/index')">
+          @click="goToDemo('/pages/reborn-input-number/RebornInputNumberDemo')">
           <view class="i-lucide-hash size-8 mb-2 text-blue-500" />
           Input Number
         </view>
         <view
           class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 active:scale-95 transition-transform"
-          @click="goToDemo('/pages/switch/index')">
+          @click="goToDemo('/pages/reborn-switch/RebornSwitchDemo')">
           <view class="i-lucide-toggle-right size-8 mb-2 text-blue-500" />
           Switch
         </view>
         <view
           class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 active:scale-95 transition-transform"
-          @click="goToDemo('/pages/checkbox/index')">
+          @click="goToDemo('/pages/reborn-checkbox/RebornCheckboxDemo')">
           <view class="i-lucide-check-square size-8 mb-2 text-blue-500" />
           Checkbox
         </view>
 
         <view
           class="bg-white p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 active:scale-95 transition-transform"
-          @click="goToDemo('/pages/badge/index')">
+          @click="goToDemo('/pages/reborn-badge/RebornBadgeDemo')">
           <view class="i-lucide-badge-check size-8 mb-2 text-blue-500" />
           Badge
         </view>

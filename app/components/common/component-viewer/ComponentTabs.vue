@@ -65,12 +65,35 @@ const installationItems = ref<TabsItem[]>([
   },
 ]);
 
+// Platform tabs for manual installation (Web/UniApp)
+const platformItems = computed<TabsItem[]>(() => {
+  const items: TabsItem[] = [
+    {
+      label: "Web",
+      icon: "tabler:world",
+      slot: "web",
+    },
+  ];
+
+  if (uniapp) {
+    items.push({
+      label: "UniApp",
+      icon: "tabler:brand-wechat",
+      slot: "uniapp-platform",
+    });
+  }
+
+  return items;
+});
+
 // Use the composable for both component and demo code loading
-const { componentCode, demoCode } = useComponentCode({
+const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponentCode({
   componentId,
   componentFiles,
   demoFile,
-  type: 'ui'
+  type: 'ui',
+  uniapp,
+  uniappComponentId: componentId
 });
 </script>
 
@@ -90,6 +113,10 @@ const { componentCode, demoCode } = useComponentCode({
 
     <template #code>
       <MDC :key="demoCode" :value="demoCode" class="-mt-12" />
+    </template>
+
+    <template v-if="uniapp" #uniapp>
+      <MDC :key="uniappCode" :value="uniappCode" class="-mt-12" />
     </template>
 
     <template v-if="showInstallation" #installation>
@@ -116,7 +143,15 @@ const { componentCode, demoCode } = useComponentCode({
             project.
           </div>
 
-          <MDC v-if="componentCode" :key="componentCode" :value="componentCode" />
+          <UTabs :items="platformItems">
+            <template #web>
+              <MDC v-if="componentCode" :key="componentCode" :value="componentCode" />
+            </template>
+
+            <template v-if="uniapp" #uniapp-platform>
+              <MDC v-if="uniappComponentCode" :key="uniappComponentCode" :value="uniappComponentCode" />
+            </template>
+          </UTabs>
         </template>
       </UTabs>
     </template>

@@ -42,6 +42,11 @@ export function buildCommand() {
       "app/components/reborn/ui",
     )
     .option(
+      "--uniapp-source <path>",
+      "UniApp 组件源码目录（相对 root），如果不提供则通过转换生成",
+      "",
+    )
+    .option(
       "--out <path>",
       "输出 registry.json 路径（相对 root）",
       "packages/cli/registry/registry.json",
@@ -60,6 +65,9 @@ export function buildCommand() {
         ? path.resolve(opts.root)
         : findWorkspaceRoot(process.cwd());
       const sourceDir = path.join(rootDir, opts.source);
+      const uniappSourceDir = opts.uniappSource 
+        ? path.join(rootDir, opts.uniappSource)
+        : "";
       const outPath = path.join(rootDir, opts.out);
       const alsoOutPaths: string[] = (opts.alsoOut ?? []).map((p: string) =>
         path.join(rootDir, p),
@@ -93,20 +101,8 @@ export function buildCommand() {
           const ext = path.extname(absFile).toLowerCase();
 
           // 1. Web 版本（原样）
-          // 如果是 .vue，明确标记 target="web"
-          // 如果是其他文件（.ts/.js），默认不标记（表示通用），或者也可以标记 web。
-          // 策略：.vue 必须要分 web/uniapp；.ts/.js 视情况，这里先默认通用（不标记 target），
-          // 除非你需要 uniapp 特有的 js。
-          // 简化起见：.vue 文件生成两份，一份 target=web，一份 target=uniapp
-          // 其他文件生成一份，无 target（通用）。
-
           if (ext === ".vue") {
             files.push({ path: rel, content, target: "web" });
-            files.push({
-              path: rel,
-              content: transformToUniapp(content),
-              target: "uniapp",
-            });
           } else {
             files.push({ path: rel, content });
           }
@@ -115,6 +111,52 @@ export function buildCommand() {
           if (ext === ".ts" || ext === ".js" || ext === ".vue") {
             for (const dep of extractNpmDependenciesFromText(content)) {
               depSet.add(dep);
+            }
+          }
+        }
+
+        // 2. UniApp 版本
+        // 如果提供了 uniappSourceDir，从那里读取；否则通过转换生成
+        if (uniappSourceDir) {
+          const uniappComponentDir = path.join(uniappSourceDir, name);
+          if (fssync.existsSync(uniappComponentDir)) {
+            const uniappFiles = (await listFilesRecursive(uniappComponentDir)).filter(
+              isAllowedFile,
+            );
+            
+            for (const absFile of uniappFiles) {
+              const rel = path
+                .relative(uniappComponentDir, absFile)
+                .split(path.sep)
+                .join("/");
+              const content = await fs.readFile(absFile, "utf8");
+              const ext = path.extname(absFile).toLowerCase();
+
+              files.push({ path: rel, content, target: "uniapp" });
+
+              // 抽取依赖
+              if (ext === ".ts" || ext === ".js" || ext === ".vue") {
+                for (const dep of extractNpmDependenciesFromText(content)) {
+                  depSet.add(dep);
+                }
+              }
+            }
+          }
+        } else {
+          // 通过转换生成 UniApp 版本
+          for (const absFile of absFiles) {
+            const ext = path.extname(absFile).toLowerCase();
+            if (ext === ".vue") {
+              const rel = path
+                .relative(absComponentDir, absFile)
+                .split(path.sep)
+                .join("/");
+              const content = await fs.readFile(absFile, "utf8");
+              files.push({
+                path: rel,
+                content: transformToUniapp(content),
+                target: "uniapp",
+              });
             }
           }
         }
