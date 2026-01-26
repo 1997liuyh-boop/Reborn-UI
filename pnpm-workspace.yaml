@@ -1,6 +1,5 @@
 packages:
   - "packages/*"
-  - "uniapp-project"
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@tailwindcss/oxide"
