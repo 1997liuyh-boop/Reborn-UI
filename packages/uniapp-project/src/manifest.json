@@ -60,10 +60,10 @@
   },
   "h5": {
     "router": {
-      "mode": "hash",       // 建议使用 hash，避免 iframe 刷新后路径丢失
-      "base": "/uni-render/" 
+      "mode": "hash",
+      "base": "/docs/uni-render/" 
     },
-    "publicPath": "/uni-render/" // 关键：这决定了静态资源（CSS/JS）的引用路径
+    "publicPath": "/docs/uni-render/"
   },
   "mp-alipay": {
     "usingComponents": true

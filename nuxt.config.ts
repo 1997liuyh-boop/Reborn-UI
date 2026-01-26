@@ -68,7 +68,7 @@ export default defineNuxtConfig({
         },
       ],
     },
-    baseURL: "/",
+    baseURL: process.env.NODE_ENV === "development" ? "/" : "/docs/",
   },
 
   components: [
@@ -125,7 +125,7 @@ export default defineNuxtConfig({
   nitro: {
     publicAssets: [
       {
-        baseURL: "uni-render",
+        baseURL: "docs/uni-render",
         dir: resolve(__dirname, "./packages/uniapp-project/dist/build/h5"),
         maxAge: 60 * 60 * 24 * 7,
       },
