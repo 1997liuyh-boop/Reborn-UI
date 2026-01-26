@@ -120,7 +120,7 @@ function clamp(value: number, min: number, max: number): number {
 
 const parsedPrimaryColor = computed(() => parseColor(props.primaryColor));
 const parsedSecondaryColor = computed(() => parseColor(props.secondaryColor));
-const parsedCustomPalette = computed(() => props.customPalette.map(parseColor));
+const parsedCustomPalette = computed(() => props.customPalette?.map(parseColor));
 
 function applyDithering(
   ctx: CanvasRenderingContext2D,
@@ -428,17 +428,8 @@ watch(
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    :class="props.class"
-    class="relative h-full w-full"
-  >
-    <canvas
-      ref="canvasRef"
-      class="absolute inset-0 h-full w-full"
-      style="image-rendering: pixelated"
-      aria-label="Dithered image"
-      role="img"
-    />
+  <div ref="containerRef" :class="props.class" class="relative h-full w-full">
+    <canvas ref="canvasRef" class="absolute inset-0 h-full w-full" style="image-rendering: pixelated"
+      aria-label="Dithered image" role="img" />
   </div>
 </template>

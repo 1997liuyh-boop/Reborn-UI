@@ -80,7 +80,7 @@ function updateAndDrawParticles() {
   const canvas = canvasRef.value;
   ctx.value.clearRect(0, 0, canvas.width, canvas.height);
 
-  particles.value = particles.value.map((particle) => {
+  particles.value = particles.value?.map((particle) => {
     let newX = particle.x + particle.vx;
     let newY = particle.y + particle.vy;
 
@@ -146,14 +146,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="relative size-full overflow-hidden will-change-transform"
-    :style="{ background }"
-  >
-    <canvas
-      ref="canvasRef"
-      class="absolute inset-0 size-full"
-    />
+  <div ref="containerRef" class="relative size-full overflow-hidden will-change-transform" :style="{ background }">
+    <canvas ref="canvasRef" class="absolute inset-0 size-full" />
   </div>
 </template>

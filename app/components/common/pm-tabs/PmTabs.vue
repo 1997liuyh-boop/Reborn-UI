@@ -35,7 +35,7 @@ const items = ref([
 
 const mdc = `
 ::code-group
-${items.value.map((pm) => `\`\`\`bash [${pm.label}]\n${pm.command}\n\`\`\`\n`).join("\n")}
+${items.value?.map((pm) => `\`\`\`bash [${pm.label}]\n${pm.command}\n\`\`\`\n`).join("\n")}
 ::`;
 </script>
 

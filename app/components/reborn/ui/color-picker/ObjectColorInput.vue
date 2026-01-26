@@ -82,7 +82,7 @@ const inputs = computed(() => {
     }
   }
 
-  return inputsData.map((input, index) => ({
+  return inputsData?.map((input, index) => ({
     ...input,
     class: getInputClass(index, inputsData.length),
   }));
@@ -103,15 +103,7 @@ function handleChange(idx: number, event: Event) {
 
 <template>
   <div class="flex w-full min-w-0">
-    <input
-      v-for="(input, idx) in inputs"
-      :key="input.key"
-      :value="inputValues[idx]"
-      :min="input.min"
-      :max="input.max"
-      :class="input.class"
-      step="1"
-      @input="handleChange(idx, $event)"
-    />
+    <input v-for="(input, idx) in inputs" :key="input.key" :value="inputValues[idx]" :min="input.min" :max="input.max"
+      :class="input.class" step="1" @input="handleChange(idx, $event)" />
   </div>
 </template>

@@ -30,7 +30,7 @@ function startAnimation() {
 }
 
 const splitWords = computed(() => {
-  return currentWord.value.split(" ").map((word) => ({
+  return currentWord.value.split(" ")?.map((word) => ({
     word,
     letters: word.split(""),
   }));
@@ -61,35 +61,19 @@ watch(isVisible, (newValue) => {
 
 <template>
   <div class="relative inline-block px-2">
-    <Transition
-      @after-enter="$emit('animationStart')"
-      @after-leave="$emit('animationComplete')"
-    >
-      <div
-        v-show="isVisible"
-        class="relative z-10 inline-block text-left text-neutral-900 dark:text-neutral-100"
-        :class="[props.class]"
-      >
-        <template
-          v-for="(wordObj, wordIndex) in splitWords"
-          :key="wordObj.word + wordIndex"
-        >
-          <span
-            class="inline-block whitespace-nowrap opacity-0"
-            :style="{
-              animation: `fadeInWord 0.3s ease forwards`,
-              animationDelay: `${wordIndex * 0.3}s`,
-            }"
-          >
-            <span
-              v-for="(letter, letterIndex) in wordObj.letters"
-              :key="wordObj.word + letterIndex"
-              class="inline-block opacity-0"
-              :style="{
+    <Transition @after-enter="$emit('animationStart')" @after-leave="$emit('animationComplete')">
+      <div v-show="isVisible" class="relative z-10 inline-block text-left text-neutral-900 dark:text-neutral-100"
+        :class="[props.class]">
+        <template v-for="(wordObj, wordIndex) in splitWords" :key="wordObj.word + wordIndex">
+          <span class="inline-block whitespace-nowrap opacity-0" :style="{
+            animation: `fadeInWord 0.3s ease forwards`,
+            animationDelay: `${wordIndex * 0.3}s`,
+          }">
+            <span v-for="(letter, letterIndex) in wordObj.letters" :key="wordObj.word + letterIndex"
+              class="inline-block opacity-0" :style="{
                 animation: `fadeInLetter 0.2s ease forwards`,
                 animationDelay: `${wordIndex * 0.3 + letterIndex * 0.05}s`,
-              }"
-            >
+              }">
               {{ letter }}
             </span>
             <span class="inline-block">&nbsp;</span>
@@ -107,6 +91,7 @@ watch(isVisible, (newValue) => {
     transform: translateY(10px);
     filter: blur(8px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -120,6 +105,7 @@ watch(isVisible, (newValue) => {
     transform: translateY(10px);
     filter: blur(8px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -140,6 +126,7 @@ watch(isVisible, (newValue) => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -152,6 +139,7 @@ watch(isVisible, (newValue) => {
     transform: scale(1);
     filter: blur(0);
   }
+
   100% {
     opacity: 0;
     transform: scale(2);

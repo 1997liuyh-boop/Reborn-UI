@@ -69,14 +69,14 @@ export function buildCommand() {
         ? path.join(rootDir, opts.uniappSource)
         : "";
       const outPath = path.join(rootDir, opts.out);
-      const alsoOutPaths: string[] = (opts.alsoOut ?? []).map((p: string) =>
+      const alsoOutPaths: string[] = (opts.alsoOut ?? [])?.map((p: string) =>
         path.join(rootDir, p),
       );
 
       const dirents = await fs.readdir(sourceDir, { withFileTypes: true });
       const componentDirs = dirents
         .filter((d) => d.isDirectory())
-        .map((d) => path.join(sourceDir, d.name))
+        ?.map((d) => path.join(sourceDir, d.name))
         .sort((a, b) => a.localeCompare(b));
 
       const components: RegistryComponent[] = [];
@@ -193,7 +193,7 @@ export function buildCommand() {
             {
               ...c,
               fileCount: c.files.length,
-              contentHash: sha1(JSON.stringify(c.files.map((f) => f.content))),
+              contentHash: sha1(JSON.stringify(c.files?.map((f) => f.content))),
             },
           );
         }

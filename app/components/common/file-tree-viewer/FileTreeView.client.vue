@@ -16,7 +16,7 @@ const {
 
 const initialPath = defaultFile ? (rootPath ? `${rootPath}/${defaultFile}` : defaultFile) : '';
 
-const { mdcCode, loadFilesByPath } = useComponentCode({ 
+const { mdcCode, loadFilesByPath } = useComponentCode({
     paths: initialPath ? [initialPath] : [],
     format: 'collapse'
 });
@@ -55,7 +55,7 @@ function mapTree(input: any[], parentPath = ''): TreeItem[] {
                 path: parentPath ? `${parentPath}/${item}` : item
             } as any
         }
-        return Object.entries(item).map(([name, children]) => {
+        return Object.entries(item)?.map(([name, children]) => {
             const currentPath = parentPath ? `${parentPath}/${name}` : name
             return {
                 label: name,
@@ -78,37 +78,28 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
 </script>
 
 <template>
-    <div class="not-prose my-6 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-zinc-950">
+    <div
+        class="not-prose my-6 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-zinc-950">
         <div class="flex h-[500px] flex-col md:flex-row">
             <!-- Left Sidebar: File Tree -->
-            <div class="w-full border-b border-gray-200 bg-gray-50/50 p-4 md:w-64 md:border-b-0 md:border-r dark:border-gray-800 dark:bg-zinc-900/50">
+            <div
+                class="w-full border-b border-gray-200 bg-gray-50/50 p-4 md:w-64 md:border-b-0 md:border-r dark:border-gray-800 dark:bg-zinc-900/50">
                 <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Files
                 </div>
                 <div class="h-full overflow-y-auto no-scrollbar">
-                    <UTree 
-                        propagate-select 
-                        bubble-select 
-                        virtualize 
-                        :items="items" 
-                        @toggle="onToggle"
-                        :ui="{
-                            trigger: 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-md transition-colors px-2 py-1',
-                            label: 'text-sm'
-                        }"
-                    />
+                    <UTree propagate-select bubble-select virtualize :items="items" @toggle="onToggle" :ui="{
+                        trigger: 'hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-md transition-colors px-2 py-1',
+                        label: 'text-sm'
+                    }" />
                 </div>
             </div>
 
             <!-- Right Content: Code Viewer -->
             <div class="relative min-w-0 flex-1 bg-white dark:bg-zinc-950">
                 <div class="h-full overflow-y-auto p-4 custom-scrollbar">
-                    <MDC 
-                        v-if="selectedFileCode" 
-                        :key="selectedFileCode" 
-                        :value="selectedFileCode" 
-                        class="prose-sm prose-zinc dark:prose-invert max-w-none"
-                    />
+                    <MDC v-if="selectedFileCode" :key="selectedFileCode" :value="selectedFileCode"
+                        class="prose-sm prose-zinc dark:prose-invert max-w-none" />
                     <div v-else class="flex h-full items-center justify-center text-gray-400 dark:text-zinc-600">
                         Select a file to view its content
                     </div>
@@ -123,13 +114,16 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
     width: 6px;
     height: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #e2e8f0;
     border-radius: 3px;
 }
+
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #27272a;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
@@ -140,4 +134,3 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
     background-color: transparent !important;
 }
 </style>
-

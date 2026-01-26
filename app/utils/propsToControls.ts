@@ -94,7 +94,7 @@ export function propsToControls(
         // This is likely a union type, treat as select
         const options = prop.type
           .filter((t) => typeof t === "function" && t !== Array && t !== Object)
-          .map((t) => {
+          ?.map((t) => {
             if (t === String) return "string";
             if (t === Number) return "number";
             if (t === Boolean) return "boolean";

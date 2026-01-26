@@ -52,7 +52,7 @@ export function useComponentCode(options: UseComponentCodeOptions) {
 
     try {
       const results = await Promise.all(
-        pathList.map(async (path) => {
+        pathList?.map(async (path) => {
           const codeGetter = getComponentCode({
             fileName: path,
             type: 'all',
@@ -168,7 +168,7 @@ ${code}
     componentsList.value = []
 
     try {
-      const promises = componentFiles.map(async (fileName) => {
+      const promises = componentFiles?.map(async (fileName) => {
         const codeGetter = getComponentCode({
           fileName,
           id: componentId,
@@ -192,7 +192,7 @@ ${code}
       // Format as code-group markdown
       componentCode.value = `
 ::code-group
-${componentsList.value.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join('\n')}
+${componentsList.value?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join('\n')}
 ::`
     } catch (e) {
       error.value = e as Error
@@ -212,7 +212,7 @@ ${componentsList.value.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${it
       // Convert kebab-case to PascalCase (e.g., reborn-button -> RebornButton)
       const pascalCaseName = uniappComponentId
         .split('-')
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        ?.map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')
       
       // Only load demo page file from packages/uniapp-project/src/pages/{uniappComponentId}/
@@ -264,7 +264,7 @@ ${code}
       // Convert kebab-case to PascalCase (e.g., reborn-button -> RebornButton)
       const pascalCaseName = uniappComponentId
         .split('-')
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        ?.map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')
       
       // Load component files from packages/uniapp-project/src/components/{uniappComponentId}/
@@ -299,7 +299,7 @@ ${code}
       if (uniappFiles.length > 0) {
         uniappComponentCode.value = `
 ::code-group
-${uniappFiles.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join('\n')}
+${uniappFiles?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join('\n')}
 ::`
       } else {
         uniappComponentCode.value = ''

@@ -31,7 +31,7 @@ function triggerAnimation() {
 const { pause, resume } = useIntervalFn(
   () => {
     if (iterations.value < props.text.length) {
-      displayText.value = displayText.value.map((l, i) =>
+      displayText.value = displayText.value?.map((l, i) =>
         l === " " ? l : i <= iterations.value ? props.text[i] : getRandomLetter(),
       );
       iterations.value += 0.1;
@@ -61,22 +61,12 @@ if (props.animateOnLoad) {
 </script>
 
 <template>
-  <div
-    class="flex scale-100 cursor-default overflow-hidden py-2"
-    :class="[$props.class]"
-    @mouseenter="triggerAnimation"
-  >
+  <div class="flex scale-100 cursor-default overflow-hidden py-2" :class="[$props.class]"
+    @mouseenter="triggerAnimation">
     <div class="flex">
-      <Motion
-        v-for="(letter, i) in displayText"
-        :key="i"
-        as="span"
-        :class="[letter === ' ' ? 'w-3' : '', $props.class]"
-        class="inline-block font-mono"
-        :initial="{ opacity: 0, y: -10 }"
-        :animate="{ opacity: 1, y: 0 }"
-        :delay="i * (duration / (text.length * 10))"
-      >
+      <Motion v-for="(letter, i) in displayText" :key="i" as="span" :class="[letter === ' ' ? 'w-3' : '', $props.class]"
+        class="inline-block font-mono" :initial="{ opacity: 0, y: -10 }" :animate="{ opacity: 1, y: 0 }"
+        :delay="i * (duration / (text.length * 10))">
         {{ letter.toUpperCase() }}
       </Motion>
     </div>

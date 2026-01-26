@@ -1,6 +1,6 @@
 export function get(object: Record<string, any> | undefined, path: (string | number)[] | string, defaultValue?: any): any {
     if (typeof path === 'string') {
-        path = path.split('.').map((key) => {
+        path = path.split('.')?.map((key) => {
             const numKey = Number(key)
             return Number.isNaN(numKey) ? key : numKey
         })
@@ -21,7 +21,7 @@ export function get(object: Record<string, any> | undefined, path: (string | num
 
 export function set(object: Record<string, any>, path: (string | number)[] | string, value: any): void {
     if (typeof path === 'string') {
-        path = path.split('.').map((key) => {
+        path = path.split('.')?.map((key) => {
             const numKey = Number(key)
             return Number.isNaN(numKey) ? key : numKey
         })

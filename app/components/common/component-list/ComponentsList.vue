@@ -21,7 +21,7 @@ const selectedCategory = ref<string>("all");
 const categories = computed(() => {
   if (!components.value) return ["all", "new", "updated"];
 
-  const uniqueCategories = new Set(components.value.map((component) => component.category));
+  const uniqueCategories = new Set(components.value?.map((component) => component.category));
   return ["all", "new", "updated", ...Array.from(uniqueCategories)];
 });
 

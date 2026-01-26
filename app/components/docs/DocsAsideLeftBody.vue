@@ -15,7 +15,7 @@ interface NavItemWithBadges extends ContentNavigationItem {
 
 // Add data-nav-path and process badges
 function enrichNavItems(items: ContentNavigationItem[] = []): NavItemWithBadges[] {
-  return items.map((item) => {
+  return items?.map((item) => {
     const enrichedItem: NavItemWithBadges = {
       ...item,
       "data-nav-path": item.path,

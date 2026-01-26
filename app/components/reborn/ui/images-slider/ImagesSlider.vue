@@ -83,7 +83,7 @@ const currentImage = computed(() => loadedImages.value[currentIndex.value]);
 
 function loadImages() {
   isLoading.value = true;
-  const promises = props.images.map(
+  const promises = props.images?.map(
     (imageSrc): Promise<string> =>
       new Promise((resolve, reject) => {
         const image = new Image();
@@ -215,42 +215,20 @@ const transitionProps = computed(() => {
 </script>
 
 <template>
-  <div
-    ref="sliderRef"
-    tabindex="0"
+  <div ref="sliderRef" tabindex="0"
     class="relative flex size-full items-center justify-center overflow-hidden transition-colors focus:ring-1 focus:outline-none"
     :style="{
       perspective: props.perspective,
-    }"
-  >
-    <Transition
-      mode="out-in"
-      v-bind="transitionProps"
-    >
-      <div
-        :key="currentImage"
-        class=""
-      >
-        <img
-          :src="currentImage"
-          :class="props.imageClass"
-        />
+    }">
+    <Transition mode="out-in" v-bind="transitionProps">
+      <div :key="currentImage" class="">
+        <img :src="currentImage" :class="props.imageClass" />
       </div>
     </Transition>
-    <div
-      v-if="hideOverlay !== true"
-      class="absolute inset-0"
-      :class="[props.overlayClass]"
-    >
-      <Transition
-        appear
-        enter-active-class="transition-all duration-300 delay-300 ease-in-out"
-        enter-from-class="opacity-0 -translate-y-10"
-      >
-        <slot
-          v-if="!isLoading"
-          :current-index="currentIndex"
-        />
+    <div v-if="hideOverlay !== true" class="absolute inset-0" :class="[props.overlayClass]">
+      <Transition appear enter-active-class="transition-all duration-300 delay-300 ease-in-out"
+        enter-from-class="opacity-0 -translate-y-10">
+        <slot v-if="!isLoading" :current-index="currentIndex" />
       </Transition>
     </div>
   </div>

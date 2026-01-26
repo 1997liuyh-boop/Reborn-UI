@@ -103,7 +103,7 @@ function mapTree(input: any[], parentPath = ''): TreeItem[] {
                 path: parentPath ? `${parentPath}/${item}` : item
             } as any
         }
-        return Object.entries(item).map(([name, children]) => {
+        return Object.entries(item)?.map(([name, children]) => {
             const currentPath = parentPath ? `${parentPath}/${name}` : name
             return {
                 label: name,

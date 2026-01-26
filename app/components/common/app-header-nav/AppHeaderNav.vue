@@ -8,8 +8,8 @@ const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 
 const items = computed(() =>
   mapContentNavigation(
-    navigation?.value.map((item) => ({ ...item, children: undefined })) ?? [],
-  )?.map((item) => ({
+    navigation?.value?.map((item) => ({ ...item, children: undefined })) ?? [],
+  ) ??.map((item) => ({
     ...item,
     active: route.path.startsWith(item.to as string),
   })),
@@ -17,14 +17,7 @@ const items = computed(() =>
 </script>
 
 <template>
-  <UHeader
-    title=""
-    class="top-16 hidden items-center justify-between border-none lg:flex"
-  >
-    <UNavigationMenu
-      :items="items"
-      variant="pill"
-      highlight
-    />
+  <UHeader title="" class="top-16 hidden items-center justify-between border-none lg:flex">
+    <UNavigationMenu :items="items" variant="pill" highlight />
   </UHeader>
 </template>

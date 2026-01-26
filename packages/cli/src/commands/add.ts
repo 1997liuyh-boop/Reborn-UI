@@ -91,7 +91,7 @@ export function addCommand() {
         if (opts.yes) {
           throw new Error("未指定组件名；请传入组件参数或去掉 --yes 以交互选择。");
         }
-        const choices = registry.components.map((c) => ({
+        const choices = registry.components?.map((c) => ({
           title: c.name,
           value: c.name,
         }));

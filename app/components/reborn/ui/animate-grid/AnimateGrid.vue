@@ -32,7 +32,7 @@ function adjacentCardItems(i: number): HTMLElement[] {
       if (i % 4 === 3 && index === i + 1) return false;
       return true;
     })
-    .map((index) => card.value?.[index]) as HTMLElement[];
+    ?.map((index) => card.value?.[index]) as HTMLElement[];
 }
 
 function removeCardClasses(el: HTMLElement, adjacentCards: HTMLElement[]) {
@@ -63,29 +63,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="relative block"
-    :class="[props.class]"
-  >
-    <div
-      class="relative grid w-full max-w-full items-center justify-center"
-      :class="[props.cards.length < 4 ? `grid-cols-${props.cards.length}` : 'grid-cols-4']"
-      :style="{
+  <div class="relative block" :class="[props.class]">
+    <div class="relative grid w-full max-w-full items-center justify-center"
+      :class="[props.cards.length < 4 ? `grid-cols-${props.cards.length}` : 'grid-cols-4']" :style="{
         transform: `perspective(${perspective}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-      }"
-    >
-      <div
-        v-for="(item, index) in props.cards"
-        :key="index"
-        ref="card"
+      }">
+      <div v-for="(item, index) in props.cards" :key="index" ref="card"
         class="card block rounded border border-transparent px-3 py-5 transition-all duration-200"
-        :style="{ zIndex: index + 1 }"
-      >
-        <slot
-          name="logo"
-          :logo="item.logo"
-          :index="index"
-        />
+        :style="{ zIndex: index + 1 }">
+        <slot name="logo" :logo="item.logo" :index="index" />
       </div>
     </div>
   </div>

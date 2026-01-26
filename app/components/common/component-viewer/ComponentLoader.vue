@@ -100,7 +100,7 @@ const code = computed(() => {
         if (props.externalTypes?.length) {
             const removeArrayBrackets = (type: string): string => type.endsWith('[]') ? removeArrayBrackets(type.slice(0, -2)) : type
 
-            const types = props.externalTypes.map(type => removeArrayBrackets(type))
+            const types = props.externalTypes?.map(type => removeArrayBrackets(type))
             code += `import type { ${types.join(', ')} } from '@nuxt/ui'
 `
         }
@@ -200,13 +200,13 @@ const component = defineAsyncComponent(() => {
 })
 
 const componentProps = reactive({
-    ...Object.fromEntries(Object.entries(props.props || {}).map(([key, value]) => {
+    ...Object.fromEntries(Object.entries(props.props || {})?.map(([key, value]) => {
 
         return [key, value]
     }))
 })
 const componentEvents = reactive({
-    ...Object.fromEntries((props.model || []).map(key => [`onUpdate:${key}`, (e: any) => setComponentProp(key, e)])),
+    ...Object.fromEntries((props.model || [])?.map(key => [`onUpdate:${key}`, (e: any) => setComponentProp(key, e)])),
     ...(componentProps.modelValue ? { [`onUpdate:modelValue`]: (e: any) => setComponentProp('modelValue', e) } : {})
 })
 
