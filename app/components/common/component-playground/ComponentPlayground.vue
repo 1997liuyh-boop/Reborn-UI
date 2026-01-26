@@ -19,6 +19,14 @@ const items = [{
   icon: 'i-lucide-smartphone',
   slot: 'uniapp'
 }]
+const { app } = useRuntimeConfig()
+
+const computedUrl = computed(() => {
+  const base = app.baseURL || '/'
+  const uniUrl = base.replace(/\/$/, '') + props.url
+  console.log(uniUrl)
+  return uniUrl
+})
 </script>
 
 <template>
@@ -34,7 +42,7 @@ const items = [{
         </template>
         <template #uniapp>
           <div class="flex justify-center pt-4">
-            <DeviceFrame v-if="url" :src="url" />
+            <DeviceFrame v-if="computedUrl" :src="computedUrl" />
             <div v-else class="text-sm text-muted-foreground p-4">
               No Preview URL provided
             </div>
