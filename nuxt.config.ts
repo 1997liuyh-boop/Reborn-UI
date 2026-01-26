@@ -21,6 +21,7 @@ export default defineNuxtConfig({
         "Content-Security-Policy": "frame-ancestors 'self'",
       },
     },
+    "/uni-render/**": { file: resolve("./packages/uniapp-project/dist/build/h5/index.html") },
   },
 
   // Ensure we use the local config module instead of the one bundled in the Docus layer.
@@ -134,7 +135,7 @@ export default defineNuxtConfig({
   nitro: {
     publicAssets: [
       {
-        baseURL: "/docs/uni-render/",
+        baseURL: "/uni-render/",
         dir: resolve("./packages/uniapp-project/dist/build/h5"),
         maxAge: 60 * 60 * 24 * 7,
       },

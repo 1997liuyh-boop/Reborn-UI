@@ -53,9 +53,9 @@
     "h5" : {
         "router" : {
             "mode" : "hash",
-            "base" : "/docs/uni-render/"
+            "base" : "/uni-render/"
         },
-        "publicPath" : "/docs/uni-render/"
+        "publicPath" : "/uni-render/"
     },
     "mp-alipay" : {
         "usingComponents" : true
