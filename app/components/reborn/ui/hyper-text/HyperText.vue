@@ -31,9 +31,10 @@ function triggerAnimation() {
 const { pause, resume } = useIntervalFn(
   () => {
     if (iterations.value < props.text.length) {
-      displayText.value = displayText.value?.map((l, i) =>
+      const arr = displayText.value?.map((l, i) =>
         l === " " ? l : i <= iterations.value ? props.text[i] : getRandomLetter(),
       );
+      displayText.value = (arr ?? []) as string[];
       iterations.value += 0.1;
     } else {
       pause();
