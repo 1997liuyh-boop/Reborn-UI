@@ -125,7 +125,7 @@ export default defineNuxtConfig({
   nitro: {
     publicAssets: [
       {
-        baseURL: "docs/uni-render",
+        baseURL: "/docs/uni-render",
         dir: resolve(__dirname, "./packages/uniapp-project/dist/build/h5"),
         maxAge: 60 * 60 * 24 * 7,
       },
