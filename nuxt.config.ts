@@ -14,6 +14,15 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
+  routeRules: {
+    "/**": {
+      headers: {
+        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Security-Policy": "frame-ancestors 'self'",
+      },
+    },
+  },
+
   // Ensure we use the local config module instead of the one bundled in the Docus layer.
   hooks: {
     "modules:before": function () {

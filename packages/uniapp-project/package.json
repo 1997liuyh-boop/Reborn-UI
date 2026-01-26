@@ -1,6 +1,6 @@
 {
   "name": "uniapp-project",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "packageManager": "pnpm@10.26.1",
   "scripts": {
     "dev": "uni -p mp-weixin",

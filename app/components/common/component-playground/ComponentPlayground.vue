@@ -19,18 +19,6 @@ const items = [{
   icon: 'i-lucide-smartphone',
   slot: 'uniapp'
 }]
-const config = useRuntimeConfig();
-const nuxtBase = computed(() => {
-  // 优先用 runtimeConfig（你自己在 nuxt.config.ts 里配）
-  const b = config.public?.appBaseURL || "";
-  // 兜底用 Nuxt 内置 app.baseURL（有时是 "/"）
-  return (b || config.app?.baseURL || "/")?.replace(/\/+$/, "");
-});
-const iframeUrl = computed(() => {
-  const appBaseURL = nuxtBase.value;
-  const src = window.location.origin + appBaseURL + props.url;
-  return src;
-})
 </script>
 
 <template>
@@ -46,7 +34,7 @@ const iframeUrl = computed(() => {
         </template>
         <template #uniapp>
           <div class="flex justify-center pt-4">
-            <DeviceFrame v-if="iframeUrl" :src="iframeUrl" />
+            <DeviceFrame v-if="url" :src="url" />
             <div v-else class="text-sm text-muted-foreground p-4">
               No Preview URL provided
             </div>

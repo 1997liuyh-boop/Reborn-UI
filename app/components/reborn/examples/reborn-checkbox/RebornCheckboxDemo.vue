@@ -37,7 +37,8 @@ const plans = [
 
 <template>
   <div class="flex w-full flex-col gap-10">
-    <div class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800">
+    <div
+      class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 dark:bg-gray-800 p-4 dark:border-gray-800">
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-500">尺寸</span>
         <USelect v-model="size" :items="sizes" class="w-28" />
