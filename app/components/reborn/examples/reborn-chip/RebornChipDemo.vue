@@ -52,6 +52,9 @@ const show = ref(true)
           <span class="text-xs text-gray-500">目标</span>
         </div>
       </RebornChip>
+      <RebornChip v-model:show="show" :color="color" :size="size" :position="position" :text="text">
+        <UAvatar src="https://github.com/benjamincanac.png" size="3xl" />
+      </RebornChip>
     </div>
   </div>
 </template>

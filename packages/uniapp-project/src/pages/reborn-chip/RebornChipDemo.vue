@@ -62,18 +62,17 @@ const chipText = ref('100+')
         </view>
       </view>
     </RebornCard>
-    <RebornCard title="Preview">
+    <RebornCard title="Preview" custom-class="flex flex-wrap gap-3">
       <RebornChip v-model:show="showChip" :color="currentColor" :size="currentSize" :position="currentPosition"
         :text="chipText">
         <view class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-          <text class="text-xs text-slate-500">Target</text>
+          <text class="text-xs text-slate-500 dark:text-slate-200">Target</text>
         </view>
       </RebornChip>
-      <view class="flex flex-wrap gap-3">
-        <RebornChip color="success" size="sm" text="1" />
-        <RebornChip color="warning" size="md" text="2" />
-        <RebornChip color="error" size="lg" text="3" />
-      </view>
+      <RebornChip v-model:show="showChip" :color="currentColor" :size="currentSize" :position="currentPosition"
+        :text="chipText">
+        <image src="https://github.com/benjamincanac.png" class="w-12 h-12 rounded-full" />
+      </RebornChip>
     </RebornCard>
   </RebornPage>
 </template>

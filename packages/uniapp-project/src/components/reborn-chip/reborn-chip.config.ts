@@ -6,7 +6,7 @@ export { size as chipSizes, color as chipColors, position as chipPositions }
 
 export default {
   slots: {
-    root: 'relative inline-flex items-center justify-center shrink-0',
+    root: 'relative inline-flex items-center justify-center shrink-0 h-fit leading-none',
     base: 'absolute rounded-full flex items-center justify-center font-medium whitespace-nowrap text-white ring-2'
   },
   variants: {
