@@ -98,15 +98,15 @@ export default defineNuxtConfig({
     },
   },
 
-  content: {
-    // database: {
-    //   bindingName: "DB",
-    //   type: "d1",
-    // },
-    navigation: {
-      fields: ['tags', 'badges']  // Include tags and badges fields in navigation
-    }
-  },
+  // content: {
+  // database: {
+  //   bindingName: "DB",
+  //   type: "d1",
+  // },
+  // navigation: {
+  //   fields: ['tags', 'badges']  // Include tags and badges fields in navigation
+  // }
+  // },
 
   fonts: {
     processCSSVariables: true,

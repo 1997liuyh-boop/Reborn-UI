@@ -185,7 +185,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
           <template v-for="item in section.children" :key="item.path">
             <!-- Primary Menu Item -->
             <NuxtLink :to="item.path" :data-nav-path="item.path"
-              class="group relative flex items-center justify-between gap-2 px-3 py-1.5 rounded-md text-26 transition-all duration-200 border-l-2"
+              class="group relative flex items-center justify-between gap-2 px-3 py-2 rounded-md text-28 transition-all duration-200 border-l-2"
               :class="[
                 isActive(item) || hasActiveChild(item)
                   ? 'font-semibold shadow-sm border-l-primary text-primary bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]'
@@ -193,7 +193,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
               ]">
               <ClientOnly>
                 <SparklesText v-if="isActive(item)" :text="item.title" :colors="{ first: '#9E7AFF', second: '#FE8BBB' }"
-                  :sparkles-count="5" class="text-26 flex-1" />
+                  :sparkles-count="5" class="text-28 flex-1" />
                 <span v-else class="flex-1 truncate">{{ item.title }}</span>
                 <template #fallback>
                   <span class="flex-1 truncate">{{ item.title }}</span>
