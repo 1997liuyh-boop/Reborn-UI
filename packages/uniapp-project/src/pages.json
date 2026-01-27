@@ -29,6 +29,13 @@
       }
     },
     {
+      "path": "pages/reborn-chip/RebornChipDemo",
+      "style": {
+        "navigationBarTitleText": "Chip",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/reborn-input/RebornInputDemo",
       "style": {
         "navigationBarTitleText": "Input",
