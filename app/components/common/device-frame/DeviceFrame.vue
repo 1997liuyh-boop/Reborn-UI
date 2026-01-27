@@ -1,7 +1,32 @@
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+
 const props = defineProps<{
     src: string
 }>()
+
+// Use standard Nuxt color mode
+const colorMode = useColorMode()
+const iframeRef = ref<HTMLIFrameElement>()
+
+// Initial src
+const iframeSrc = computed(() => {
+    return props.src
+})
+
+function syncTheme() {
+    if (!iframeRef.value?.contentWindow) return
+
+    // Post message to uniapp H5
+    iframeRef.value.contentWindow.postMessage({
+        type: 'theme-change',
+        theme: colorMode.value
+    }, '*')
+}
+
+watch(() => colorMode.value, () => {
+    syncTheme()
+})
 
 interface Device {
     label: string
@@ -25,7 +50,7 @@ const selectedDevice = computed(() => devices.find(d => d.label === selectedDevi
 <template>
     <div class="flex flex-col items-center gap-4 w-full h-full p-4 bg-muted/20">
         <div class="flex items-center gap-2">
-            <USelect v-model="selectedDeviceName" :items="devices" labelKey="label" valueKey="label" class="z-999" />
+            <USelect v-model="selectedDeviceName" :items="devices" labelKey="label" valueKey="label" class="z-[999]" />
             <div class="text-sm text-muted-foreground">
                 {{ selectedDevice?.width }} x {{ selectedDevice?.height }}
             </div>
@@ -38,7 +63,8 @@ const selectedDevice = computed(() => devices.find(d => d.label === selectedDevi
                 height: `${selectedDevice.height}px`,
                 maxHeight: 'calc(100vh - 200px)'
             }">
-            <iframe :src="props.src" class="w-full h-full bg-white border-none" :title="selectedDevice.label" />
+            <iframe ref="iframeRef" :src="iframeSrc" class="w-full h-full bg-white border-none"
+                :title="selectedDevice.label" @load="syncTheme" />
         </div>
     </div>
 </template>
