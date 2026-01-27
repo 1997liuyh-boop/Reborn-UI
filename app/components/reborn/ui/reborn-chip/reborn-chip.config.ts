@@ -20,15 +20,15 @@ export default {
       neutral: { base: 'bg-neutral ring-neutral' }
     },
     size: {
-      '3xs': { base: 'h-[8rpx] min-w-[8rpx] text-[8rpx]' },
-      '2xs': { base: 'h-[10rpx] min-w-[10rpx] text-[10rpx]' },
-      xs: { base: 'h-[12rpx] min-w-[12rpx] text-[12rpx]' },
-      sm: { base: 'h-[14rpx] min-w-[14rpx] text-[14rpx]' },
-      md: { base: 'h-[16rpx] min-w-[16rpx] text-[16rpx]' },
-      lg: { base: 'h-[18rpx] min-w-[18rpx] text-[18rpx]' },
-      xl: { base: 'h-[20rpx] min-w-[20rpx] text-[20rpx]' },
-      '2xl': { base: 'h-[22rpx] min-w-[22rpx] text-[22rpx]' },
-      '3xl': { base: 'h-[24rpx] min-w-[24rpx] text-[24rpx]' }
+      '3xs': { base: 'h-[4px] min-w-[4px] text-[4px]' },
+      '2xs': { base: 'h-[5px] min-w-[5px] text-[5px]' },
+      xs: { base: 'h-[6px] min-w-[6px] text-[6px]' },
+      sm: { base: 'h-[7px] min-w-[7px] text-[7px]' },
+      md: { base: 'h-[8px] min-w-[8px] text-[8px]' },
+      lg: { base: 'h-[9px] min-w-[9px] text-[9px]' },
+      xl: { base: 'h-[10px] min-w-[10px] text-[10px]' },
+      '2xl': { base: 'h-[11px] min-w-[11px] text-[11px]' },
+      '3xl': { base: 'h-[12px] min-w-[12px] text-[12px]' }
     },
     position: {
       'top-right': { base: 'top-0 right-0' },

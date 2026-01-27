@@ -1,5 +1,5 @@
 ---
-title: Chip
+title: 提示点/标记
 description: 轻量级提示点/标记组件。
 category: 按钮
 tags: [css, tailwind, chip, uniapp]

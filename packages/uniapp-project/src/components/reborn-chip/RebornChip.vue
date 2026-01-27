@@ -16,8 +16,6 @@ export interface ChipProps {
   size?: typeof chipSizes[number]
   text?: string | number
   position?: typeof chipPositions[number]
-  inset?: boolean
-  standalone?: boolean
   show?: boolean
   customClass?: any
 }
@@ -26,8 +24,6 @@ const props = withDefaults(defineProps<ChipProps>(), {
   color: 'primary',
   size: 'md',
   position: 'top-right',
-  inset: false,
-  standalone: false,
   show: true
 })
 
@@ -43,8 +39,6 @@ const ui = computed(() => {
     color: props.color,
     size: props.size,
     position: props.position,
-    inset: props.inset,
-    standalone: props.standalone
   })
 
   return {
@@ -55,9 +49,9 @@ const ui = computed(() => {
 </script>
 
 <template>
-  <view v-if="show" :class="ui.root({ class: cn(props.customClass) })">
+  <view :class="ui.root({ class: cn(props.customClass) })">
     <slot />
-    <view :class="ui.base()">
+    <view :class="ui.base()" v-if="show">
       <text v-if="props.text">{{ props.text }}</text>
     </view>
   </view>

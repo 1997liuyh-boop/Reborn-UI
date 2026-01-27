@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import RebornChip from '@/components/reborn-chip/RebornChip.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -10,7 +11,7 @@ const showChip = ref(true)
 const currentColor = ref<typeof chipColors[number]>('primary')
 const currentSize = ref<typeof chipSizes[number]>('md')
 const currentPosition = ref<typeof chipPositions[number]>('top-right')
-const chipText = ref('9')
+const chipText = ref('100+')
 </script>
 
 <template>
@@ -53,7 +54,7 @@ const chipText = ref('9')
 
       <view class="flex flex-wrap items-center gap-3">
         <view class="text-sm text-slate-500">Text:</view>
-        <input v-model="chipText" class="border rounded px-3 py-1 text-sm" />
+        <RebornInput v-model="chipText" :rounded="false" />
         <view class="ml-auto">
           <view class="px-3 py-1 text-sm rounded border" @tap="showChip = !showChip">
             {{ showChip ? 'Hide' : 'Show' }}
@@ -61,15 +62,13 @@ const chipText = ref('9')
         </view>
       </view>
     </RebornCard>
-
-    <RebornCard title="Preview" custom-class="flex flex-wrap gap-6 items-center">
+    <RebornCard title="Preview">
       <RebornChip v-model:show="showChip" :color="currentColor" :size="currentSize" :position="currentPosition"
         :text="chipText">
         <view class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
           <text class="text-xs text-slate-500">Target</text>
         </view>
       </RebornChip>
-
       <view class="flex flex-wrap gap-3">
         <RebornChip color="success" size="sm" text="1" />
         <RebornChip color="warning" size="md" text="2" />
