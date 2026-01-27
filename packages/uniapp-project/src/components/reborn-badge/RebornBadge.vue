@@ -78,7 +78,7 @@ const handleClose = (e: any) => {
     :class="ui.base({ class: cn(props.customClass, 'transition-all duration-200 ease-in-out', isClosing && 'opacity-0 scale-90') })"
     @tap="onClick">
     <slot name="leading">
-      <view v-if="props.icon" :class="cn('mr-1', props.icon, ui.leadingIcon())"></view>
+      <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())"></view>
     </slot>
 
     <slot>

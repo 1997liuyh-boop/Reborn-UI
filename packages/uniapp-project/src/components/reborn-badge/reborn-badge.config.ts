@@ -1,6 +1,6 @@
 const size = ['xs', 'sm', 'md', 'lg', 'xl'] as const
 const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-const variant = ['solid', 'outline', 'soft', 'subtle', 'inverted'] as const
+const variant = ['solid', 'outline', 'soft', 'subtle'] as const
 
 export { size as badgeSizes, color as badgeColors, variant as badgeVariants }
 
@@ -63,8 +63,8 @@ export default {
     },
     square: {
       true: {
-          base: "px-1" // Override padding for square aspect
-      } 
+        base: "px-1" // Override padding for square aspect
+      }
     }
   },
   compoundVariants: [
@@ -108,18 +108,17 @@ export default {
       variant: "outline",
       class: { base: "text-primary border border-primary/50" }
     },
-    // ... Add more outline variants as needed mapping colors
-     {
+    {
       color: "error",
       variant: "outline",
       class: { base: "text-error border border-error/50" }
     },
-     {
+    {
       color: "success",
       variant: "outline",
       class: { base: "text-success border border-success/50" }
     },
-     {
+    {
       color: "warning",
       variant: "outline",
       class: { base: "text-warning border border-warning/50" }
@@ -129,13 +128,12 @@ export default {
       variant: "outline",
       class: { base: "text-info border border-info/50" }
     },
-    // Soft variants
-     {
+    {
       color: "primary",
       variant: "soft",
       class: { base: "bg-primary/10 text-primary" }
     },
-     {
+    {
       color: "error",
       variant: "soft",
       class: { base: "bg-error/10 text-error" }
@@ -145,7 +143,7 @@ export default {
       variant: "soft",
       class: { base: "bg-success/10 text-success" }
     },
-     {
+    {
       color: "warning",
       variant: "soft",
       class: { base: "bg-warning/10 text-warning" }
@@ -155,26 +153,50 @@ export default {
       variant: "soft",
       class: { base: "bg-info/10 text-info" }
     },
-    // Square variants adjustments
     {
-        size: "xs",
-        square: true,
-        class: { base: "w-4 h-4 p-0 items-center justify-center" }
+      color: "primary",
+      variant: "subtle",
+      class: { base: "bg-primary/10 border border-primary/50 text-primary" }
     },
-     {
-        size: "sm",
-        square: true,
-        class: { base: "w-5 h-5 p-0 items-center justify-center" }
+    {
+      color: "error",
+      variant: "subtle",
+      class: { base: "bg-error/10 border border-error/50 text-error" }
     },
-     {
-        size: "md",
-        square: true,
-        class: { base: "w-6 h-6 p-0 items-center justify-center" }
+    {
+      color: "success",
+      variant: "subtle",
+      class: { base: "bg-success/10 border border-success/50 text-success" }
     },
-     {
-        size: "lg",
-        square: true,
-        class: { base: "w-7 h-7 p-0 items-center justify-center" }
+    {
+      color: "warning",
+      variant: "subtle",
+      class: { base: "bg-warning/10 border border-warning/50 text-warning" }
+    },
+    {
+      color: "info",
+      variant: "subtle",
+      class: { base: "bg-info/10 border border-info/50 text-info" }
+    },
+    {
+      size: "xs",
+      square: true,
+      class: { base: "w-4 h-4 p-0 items-center justify-center" }
+    },
+    {
+      size: "sm",
+      square: true,
+      class: { base: "w-5 h-5 p-0 items-center justify-center" }
+    },
+    {
+      size: "md",
+      square: true,
+      class: { base: "w-6 h-6 p-0 items-center justify-center" }
+    },
+    {
+      size: "lg",
+      square: true,
+      class: { base: "w-7 h-7 p-0 items-center justify-center" }
     },
   ],
   defaultVariants: {

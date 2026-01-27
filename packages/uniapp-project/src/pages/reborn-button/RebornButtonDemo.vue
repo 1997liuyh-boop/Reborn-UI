@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import type { ButtonProps } from '@/components/reborn-button/RebornButton.vue'
 
 // Demo State
@@ -19,13 +20,7 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
 </script>
 
 <template>
-    <view class="w-full min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 space-y-8 pb-20">
-
-        <!-- Header -->
-        <view class="space-y-2">
-            <view class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Button</view>
-            <view class="text-slate-500 dark:text-slate-400">Trigger an action or navigate to another page.</view>
-        </view>
+    <RebornPage title="Button" description="Trigger an action or navigate to another page.">
 
         <!-- Interactive Playground -->
         <view class="space-y-4">
@@ -48,7 +43,7 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                 <!-- Controls -->
                 <view class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <view class="space-y-3">
-                        <view class="text-sm font-medium text-slate-500">Variant</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">Variant</view>
                         <view class="flex flex-wrap gap-2">
                             <view v-for="v in variants" :key="v"
                                 class="px-3 py-1.5 text-xs rounded-full border cursor-pointer transition-colors"
@@ -60,7 +55,7 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                     </view>
 
                     <view class="space-y-3">
-                        <view class="text-sm font-medium text-slate-500">Color</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">Color</view>
                         <view class="flex flex-wrap gap-2">
                             <view v-for="c in colors" :key="c"
                                 class="w-6 h-6 rounded-full cursor-pointer ring-2 ring-offset-2 ring-transparent transition-all"
@@ -74,7 +69,7 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                     </view>
 
                     <view class="space-y-3">
-                        <view class="text-sm font-medium text-slate-500">Size</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">Size</view>
                         <view class="flex flex-wrap gap-2">
                             <view v-for="s in sizes" :key="s"
                                 class="px-3 py-1.5 text-xs rounded-full border cursor-pointer transition-colors"
@@ -86,7 +81,7 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                     </view>
 
                     <view class="space-y-3 sm:col-span-2 lg:col-span-3">
-                        <view class="text-sm font-medium text-slate-500">States & Options</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">States & Options</view>
                         <view class="flex flex-wrap gap-4">
                             <label
                                 class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -143,5 +138,5 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
             </view>
         </view>
 
-    </view>
+    </RebornPage>
 </template>

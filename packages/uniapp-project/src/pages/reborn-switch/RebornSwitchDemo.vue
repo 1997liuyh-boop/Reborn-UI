@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import ReButton from '@/components/reborn-button/RebornButton.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
 const checked1 = ref(true)
 const checked2 = ref(false)
@@ -14,47 +17,40 @@ const currentColor = ref<typeof colors[number]>('primary')
 </script>
 
 <template>
-    <view class="p-4 space-y-6 bg-slate-50 min-h-screen pb-safe">
-        <view class="space-y-2">
-            <view class="text-xl font-bold text-slate-900">开关 (Switch)</view>
-            <view class="text-slate-500">允许用户在两种状态之间切换的控件。</view>
-        </view>
+    <RebornPage title="开关 (Switch)" description="允许用户在两种状态之间切换的控件。" custom-class="space-y-2">
 
         <!-- Colors -->
-        <view class="space-y-3">
-            <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">颜色 (Colors)</view>
-            <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 gap-4">
-                <RebornSwitch v-for="color in colors" :key="color" v-model="checked1" :color="color" :label="color" />
-            </view>
-        </view>
+        <RebornCard title="颜色 (Colors)" custom-class="flex flex-wrap gap-y-4">
+            <RebornSwitch v-for="color in colors" :key="color" v-model="checked1" :color="color" :label="color"
+                custom-class="w-1/2" />
+        </RebornCard>
 
-        <view class="space-y-4">
-            <view class="text-base font-medium text-gray-400">加载状态与自定义 (Loading & Customization)</view>
+        <RebornCard title="尺寸 (Size)" custom-class="flex gap-2">
+            <RebornSwitch v-for="size in sizes" :key="size" v-model="checked2" :size="size" :label="size" />
+        </RebornCard>
 
+        <RebornCard title="加载状态与自定义 (Loading & Customization)" custom-class="space-y-4">
             <!-- Configuration Controls -->
-            <view class="p-4 bg-white rounded-xl border border-gray-200 space-y-4">
-                <view class="space-y-2">
-                    <text class="text-sm text-gray-500">尺寸 (Size)</text>
-                    <view class="flex flex-wrap gap-2">
-                        <button v-for="size in sizes" :key="size"
-                            class="px-3 py-1 text-sm rounded-full border transition-colors"
-                            :class="currentSize === size ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-gray-200'"
-                            @tap="currentSize = size">
-                            {{ size }}
-                        </button>
-                    </view>
+            <view class="space-y-2">
+                <text class="text-sm text-gray-500">尺寸 (Size)</text>
+                <view class="space-x-2">
+                    <ReButton v-for="size in sizes" :key="size" :variant="currentSize === size ? 'solid' : 'outline'"
+                        :color="currentSize === size ? 'primary' : 'neutral'" @click="currentSize = size">
+                        {{ size.toUpperCase() }}
+                    </ReButton>
                 </view>
+            </view>
 
-                <view class="space-y-2">
-                    <text class="text-sm text-gray-500">颜色 (Color)</text>
-                    <view class="flex flex-wrap gap-2">
-                        <button v-for="color in colors" :key="color"
-                            class="px-3 py-1 text-sm rounded-full border transition-colors capitalize"
-                            :class="currentColor === color ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-gray-200'"
-                            @tap="currentColor = color">
-                            {{ color }}
-                        </button>
-                    </view>
+            <view class="space-y-2">
+                <text class="text-sm text-gray-500">颜色 (Color)</text>
+                <view class="flex flex-wrap gap-2">
+                    <view v-for="c in colors" :key="c"
+                        class="w-6 h-6 rounded-full cursor-pointer ring-2 ring-offset-2 ring-transparent transition-all"
+                        :class="[
+                            `bg-${c}`,
+                            currentColor === c ? 'ring-slate-400 scale-110' : 'hover:scale-110'
+                        ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
+                        @click="currentColor = c"></view>
                 </view>
             </view>
 
@@ -105,6 +101,6 @@ const currentColor = ref<typeof colors[number]>('primary')
                     }" />
                 </view>
             </view>
-        </view>
-    </view>
+        </RebornCard>
+    </RebornPage>
 </template>

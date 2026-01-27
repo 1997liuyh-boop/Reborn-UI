@@ -152,6 +152,8 @@ function onKeyboardheightchange(e: any) {
 
 // 聚焦方法
 function focus() {
+  if (props.disabled || props.readonly) return;
+
   setTimeout(() => {
     isFocusing.value = false;
 
@@ -163,6 +165,7 @@ function focus() {
 
 // 获取焦点事件
 function onFocus(e: any) {
+  if (props.disabled || props.readonly) return;
   isFocus.value = true;
   emit("focus", e);
 }
@@ -171,12 +174,11 @@ function onBlur(e: any) {
   isFocus.value = false;
   emit("blur", e);
 }
-
 // 切换密码显示状态
 function showPassword() {
+  if (props.disabled || props.readonly) return;
   isPassword.value = !isPassword.value;
 }
-
 // 清除方法
 function clear() {
   localValue.value = "";
@@ -202,13 +204,13 @@ defineExpose({
       <slot name="leading" :ui="ui" />
     </view>
 
-    <input :type="isPassword ? 'password' : props.type" :disabled="props.disabled" :readonly="props.readonly"
-      :placeholder="props.placeholder" :value="inputValue" :class="ui.input()" :password="isPassword"
-      :focus="props.focus" :placeholder-class="`text-surface-400 ${props.placeholderClass}`"
-      :maxlength="props.maxlength" :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType"
-      :confirm-hold="props.confirmHold" :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard"
-      @input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm"
-      @keyboardheightchange="onKeyboardheightchange" />
+    <input :type="isPassword ? 'password' : props.type" :disabled="props.disabled || props.readonly"
+      :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.input()"
+      :password="isPassword" :focus="props.focus && !props.disabled && !props.readonly"
+      :placeholder-class="`text-surface-400 ${props.placeholderClass}`" :maxlength="props.maxlength"
+      :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
+      :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
+      @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange" />
 
     <view v-if="$slots.trailing" :class="ui.trailing()">
       <slot name="trailing" :ui="ui" />

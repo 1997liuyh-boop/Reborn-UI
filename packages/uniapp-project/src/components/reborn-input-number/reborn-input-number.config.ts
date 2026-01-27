@@ -7,7 +7,7 @@ export { size as inputNumberSizes, color as inputNumberColors, shape as inputNum
 export default {
   slots: {
     wrapper:
-      "group relative inline-flex items-center overflow-hidden bg-white text-gray-8 ring-[1.5px] ring-gray-2 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-1 data-[disabled=true]:text-gray-4 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600",
+      "group relative inline-flex items-center overflow-hidden bg-white text-gray-8 ring-[1.5px] ring-gray-2 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-1 data-[disabled=true]:text-gray-4 dark:bg-gray-800 dark:text-gray-200  dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600",
     button:
       "flex h-full items-center justify-center text-gray-8 transition-colors disabled:cursor-not-allowed disabled:text-gray-4 dark:text-gray-400 dark:hover:text-gray-200 dark:disabled:text-gray-600",
     input:

@@ -5,6 +5,7 @@ import { isMp } from './platform'
 import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons'
 
 export default <Config>{
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{html,js,ts,jsx,tsx,vue}'],
   theme: {
     extend: {
@@ -175,7 +176,7 @@ export default <Config>{
     iconsPlugin({
       // 在这里可以选择你要使用的 icon, 更多详见:
       // https://icon-sets.iconify.design/
-      collections: getIconCollections(['svg-spinners', 'mdi', 'lucide']),
+      collections: getIconCollections(['svg-spinners', 'mdi', 'lucide', 'meteocons']),
     }),
   ],
   corePlugins: {

@@ -14,6 +14,8 @@ import TabsTriggerCopy from '@/components/reborn-tabs copy/TabsTrigger.vue'
 import TabsContentCopy from '@/components/reborn-tabs copy/TabsContent.vue'
 import { TabsProps as TabsPropsCopy } from '@/components/reborn-tabs copy/types'
 
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
+
 const activeTab1 = ref(0)
 const activeTab2 = ref(0)
 const activeTab3 = ref(0)
@@ -29,6 +31,7 @@ const activeIndex = ref(0)
 const manyTabs = Array.from({ length: 20 }, (_, i) => `Tab ${i + 1}`)
 const type = ref<TabsProps["type"]>("line");
 const variant = ref<TabsProps["variant"]>("primary");
+const size = ref<TabsProps["size"]>("md");
 const orientation = ref<TabsProps["orientation"]>("horizontal");
 const sticky = ref<boolean>(true);
 const shrink = ref<boolean>(true);
@@ -38,7 +41,7 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
 </script>
 
 <template>
-    <view class="p-4 space-y-6 bg-slate-50 min-h-screen pb-safe">
+    <RebornPage>
         <view class="space-y-2">
             <view class="text-xl font-bold text-slate-900">标签页 (Tabs)</view>
             <view class="text-slate-500">用于内容组织和导航的标签页组件。</view>
@@ -226,5 +229,5 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                 </scroll-view>
             </TabsRootCopy>
         </view>
-    </view>
+    </RebornPage>
 </template>
