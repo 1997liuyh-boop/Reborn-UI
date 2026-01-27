@@ -11,12 +11,19 @@ defineOptions({
 
 const b = tv(theme)
 
+type Theme = typeof theme
+type ChipColor = keyof Theme['variants']['color']
+type ChipSize = keyof Theme['variants']['size']
+type ChipPosition = keyof Theme['variants']['position']
+
 export interface ChipProps {
   color?: typeof chipColors[number]
   size?: typeof chipSizes[number]
   text?: string | number
   position?: typeof chipPositions[number]
   show?: boolean
+  inset?: boolean
+  standalone?: boolean
   customClass?: any
 }
 
@@ -24,7 +31,9 @@ const props = withDefaults(defineProps<ChipProps>(), {
   color: 'primary',
   size: 'md',
   position: 'top-right',
-  show: true
+  show: true,
+  inset: false,
+  standalone: false
 })
 
 const emit = defineEmits(['update:show'])
@@ -34,25 +43,36 @@ const show = computed({
   set: (value: boolean) => emit('update:show', value)
 })
 
-const ui = computed(() => {
-  const styles = b({
-    color: props.color,
-    size: props.size,
-    position: props.position,
-  })
+// const ui = computed(() => {
+//   const styles = b({
+//     color: props.color,
+//     size: props.size,
+//     position: props.position,
+//     inset: props.inset,
+//     standalone: props.standalone
+//   })
 
-  return {
-    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class) }),
-    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class) })
-  }
-})
+//   return {
+//     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class) }),
+//     base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class) }),
+//     label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class) })
+//   }
+// })
+
+const ui = computed(() => b({
+  color: props.color as ChipColor,
+  size: props.size as ChipSize,
+  position: props.position as ChipPosition,
+  inset: props.inset,
+  standalone: props.standalone
+}))
 </script>
 
 <template>
   <view :class="ui.root({ class: cn(props.customClass) })">
     <slot />
     <view :class="ui.base()" v-if="show">
-      <text v-if="props.text">{{ props.text }}</text>
+      <text v-if="props.text" :class="ui.label()">{{ props.text }}</text>
     </view>
   </view>
 </template>

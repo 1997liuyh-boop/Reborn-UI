@@ -17,6 +17,8 @@ export interface ChipProps {
   text?: string | number
   position?: ChipPosition | (string & {})
   show?: boolean
+  inset?: boolean
+  standalone?: boolean
   class?: any
   ui?: any
 }
@@ -25,7 +27,9 @@ const props = withDefaults(defineProps<ChipProps>(), {
   color: 'primary',
   size: 'md',
   position: 'top-right',
-  show: true
+  show: true,
+  inset: false,
+  standalone: false
 })
 
 const emit = defineEmits<{
@@ -41,16 +45,18 @@ const ui = computed(() => b({
   color: props.color as ChipColor,
   size: props.size as ChipSize,
   position: props.position as ChipPosition,
+  inset: props.inset,
+  standalone: props.standalone
 }))
 </script>
 
 <template>
   <span :class="ui.root({ class: props.class })">
     <slot />
-    <span v-if="show" :class="ui.base()">
-      <span v-if="props.text">
+    <div v-if="show" :class="ui.base()">
+      <div v-if="props.text" :class="ui.label()">
         {{ props.text }}
-      </span>
-    </span>
+      </div>
+    </div>
   </span>
 </template>
