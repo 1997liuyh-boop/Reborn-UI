@@ -60,4 +60,8 @@ body {
   scrollbar-width: none;
   /* Firefox */
 }
+
+page {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
 </style>

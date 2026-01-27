@@ -103,10 +103,16 @@ export default {
       variant: "solid",
       class: { base: "bg-neutral text-neutral-foreground" }
     },
+    // outline
     {
       color: "primary",
       variant: "outline",
       class: { base: "text-primary border border-primary/50" }
+    },
+    {
+      color: "secondary",
+      variant: "outline",
+      class: { base: "text-secondary border border-secondary/50" }
     },
     {
       color: "error",
@@ -129,9 +135,20 @@ export default {
       class: { base: "text-info border border-info/50" }
     },
     {
+      color: "neutral",
+      variant: "outline",
+      class: { base: "text-neutral border border-neutral/50" }
+    },
+    // soft
+    {
       color: "primary",
       variant: "soft",
       class: { base: "bg-primary/10 text-primary" }
+    },
+    {
+      color: "secondary",
+      variant: "soft",
+      class: { base: "bg-secondary/10 text-secondary" }
     },
     {
       color: "error",
@@ -154,9 +171,20 @@ export default {
       class: { base: "bg-info/10 text-info" }
     },
     {
+      color: "neutral",
+      variant: "soft",
+      class: { base: "bg-neutral/10 text-neutral" }
+    },
+    // subtle
+    {
       color: "primary",
       variant: "subtle",
       class: { base: "bg-primary/10 border border-primary/50 text-primary" }
+    },
+    {
+      color: "secondary",
+      variant: "subtle",
+      class: { base: "bg-secondary/10 border border-secondary/50 text-secondary" }
     },
     {
       color: "error",
@@ -178,6 +206,12 @@ export default {
       variant: "subtle",
       class: { base: "bg-info/10 border border-info/50 text-info" }
     },
+    {
+      color: "neutral",
+      variant: "subtle",
+      class: { base: "bg-neutral/10 border border-neutral/50 text-neutral" }
+    },
+    // square
     {
       size: "xs",
       square: true,

@@ -91,7 +91,7 @@ watch(
 
 <template>
   <view :class="[ui.wrapper({ class: props.customClass }), 'group', currentValue && 'is-checked']" @tap="onTap"
-    :data-disabled="props.disabled || props.loading">
+    :data-disabled="props.disabled || props.loading" style="-webkit-tap-highlight-color: transparent;">
 
     <view :class="ui.track()" :data-loading="props.loading">
       <view :class="ui.thumb()">

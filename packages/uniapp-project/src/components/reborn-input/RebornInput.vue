@@ -152,7 +152,10 @@ function onKeyboardheightchange(e: any) {
 
 // 聚焦方法
 function focus() {
-  if (props.disabled || props.readonly) return;
+  if (props.disabled || props.readonly) {
+    isFocusing.value = false;
+    return
+  };
 
   setTimeout(() => {
     isFocusing.value = false;
@@ -199,7 +202,8 @@ defineExpose({
 </script>
 
 <template>
-  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="props.disabled" :data-filled="isFilled">
+  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="props.disabled" :data-filled="isFilled"
+    @click="focus">
     <view v-if="$slots.leading" :class="ui.leading()">
       <slot name="leading" :ui="ui" />
     </view>

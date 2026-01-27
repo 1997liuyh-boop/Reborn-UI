@@ -8,6 +8,7 @@ const props = defineProps<{
 // Use standard Nuxt color mode
 const colorMode = useColorMode()
 const iframeRef = ref<HTMLIFrameElement>()
+const isLoading = ref(true)
 
 // Initial src
 const iframeSrc = computed(() => {
@@ -23,6 +24,15 @@ function syncTheme() {
         theme: colorMode.value
     }, '*')
 }
+
+function onIframeLoad() {
+    isLoading.value = false;
+    syncTheme()
+}
+
+watch(() => props.src, () => {
+    isLoading.value = true;
+}, { immediate: true })
 
 watch(() => colorMode.value, () => {
     syncTheme()
@@ -63,8 +73,14 @@ const selectedDevice = computed(() => devices.find(d => d.label === selectedDevi
                 height: `${selectedDevice.height}px`,
                 maxHeight: 'calc(100vh - 200px)'
             }">
+
+            <div v-if="isLoading"
+                class="absolute inset-0 flex items-center justify-center bg-white dark:bg-slate-950 z-10">
+                <UIcon name="svg-spinners:blocks-wave" class="size-15 text-red-5" />
+            </div>
+
             <iframe ref="iframeRef" :src="iframeSrc" class="w-full h-full bg-white border-none"
-                :title="selectedDevice.label" @load="syncTheme" />
+                :title="selectedDevice.label" @load="onIframeLoad" />
         </div>
     </div>
 </template>
