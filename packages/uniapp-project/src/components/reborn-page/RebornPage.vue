@@ -1,6 +1,7 @@
 <template>
     <view
-        class="w-full min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 space-y-8 pb-20 transition-colors duration-300">
+        class="w-full min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 space-y-8 pb-20 transition-colors duration-300"
+        :class="customClass">
 
         <!-- Header Section -->
         <view v-if="title || description || $slots.header" class="space-y-2">
@@ -18,5 +19,6 @@
 defineProps<{
     title?: string
     description?: string
+    customClass?: string
 }>()
 </script>

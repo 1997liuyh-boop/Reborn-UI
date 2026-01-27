@@ -17,12 +17,12 @@ const currentColor = ref<typeof colors[number]>('primary')
 </script>
 
 <template>
-    <RebornPage title="开关 (Switch)" description="允许用户在两种状态之间切换的控件。" custom-class="space-y-2">
+    <RebornPage title="开关 (Switch)" description="允许用户在两种状态之间切换的控件。" custom-class="flex flex-col gap-y-4">
 
         <!-- Colors -->
-        <RebornCard title="颜色 (Colors)" custom-class="flex flex-wrap gap-y-4">
+        <RebornCard title="颜色 (Colors)" custom-class="grid grid-cols-2 gap-2">
             <RebornSwitch v-for="color in colors" :key="color" v-model="checked1" :color="color" :label="color"
-                custom-class="w-1/2" />
+                custom-class="flex-1" />
         </RebornCard>
 
         <RebornCard title="尺寸 (Size)" custom-class="flex gap-2">
@@ -33,7 +33,7 @@ const currentColor = ref<typeof colors[number]>('primary')
             <!-- Configuration Controls -->
             <view class="space-y-2">
                 <text class="text-sm text-gray-500">尺寸 (Size)</text>
-                <view class="space-x-2">
+                <view class="flex flex-wrap gap-2">
                     <ReButton v-for="size in sizes" :key="size" :variant="currentSize === size ? 'solid' : 'outline'"
                         :color="currentSize === size ? 'primary' : 'neutral'" @click="currentSize = size">
                         {{ size.toUpperCase() }}

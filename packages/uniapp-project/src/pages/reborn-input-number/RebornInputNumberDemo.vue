@@ -27,7 +27,7 @@ const shapes = ['square', 'circle'] as const
             <!-- Size -->
             <view class="space-y-3">
                 <text class="text-sm text-slate-500">尺寸 (Size)</text>
-                <view class="space-x-1">
+                <view class="flex flex-wrap gap-2">
                     <ReButton v-for="size in sizes" :key="size" size="xs"
                         :variant="currentSize === size ? 'solid' : 'outline'"
                         :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size">
@@ -39,7 +39,7 @@ const shapes = ['square', 'circle'] as const
             <!-- Shape -->
             <view class="space-y-3">
                 <text class="text-sm text-slate-500">形状 (Shape)</text>
-                <view class="space-x-1">
+                <view class="flex flex-wrap gap-2">
                     <ReButton v-for="shape in shapes" :key="shape" size="xs"
                         :variant="currentShape === shape ? 'solid' : 'outline'"
                         :color="currentShape === shape ? 'primary' : 'neutral'" @tap="currentShape = shape">

@@ -181,9 +181,9 @@ function onTouchCancel() {
         </slot>
 
         <slot :ui="ui">
-            <span v-if="label" :class="ui.label()">
+            <text v-if="label" :class="ui.label()">
                 {{ label }}
-            </span>
+            </text>
             <slot v-else :ui="ui" :class="ui.label()" />
         </slot>
 

@@ -15,6 +15,7 @@ import TabsContentCopy from '@/components/reborn-tabs copy/TabsContent.vue'
 import { TabsProps as TabsPropsCopy } from '@/components/reborn-tabs copy/types'
 
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
 const activeTab1 = ref(0)
 const activeTab2 = ref(0)
@@ -41,28 +42,21 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
 </script>
 
 <template>
-    <RebornPage>
-        <view class="space-y-2">
-            <view class="text-xl font-bold text-slate-900">标签页 (Tabs)</view>
-            <view class="text-slate-500">用于内容组织和导航的标签页组件。</view>
-        </view>
+    <RebornPage :title="'标签页 (Tabs)'" :description="'用于内容组织和导航的标签页组件。'">
 
         <!-- Basic Usage -->
-        <view class="space-y-3">
-            <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">基础用法 (Basic)</view>
-            <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
-                <TabsRoot v-model:active="activeTab1" type="line">
-                    <TabsList>
-                        <TabsTrigger v-for="(tab, index) in tabs" :key="tab" :index="index" :label="tab" />
-                    </TabsList>
-                    <TabsContent v-for="(tab, index) in tabs" :key="tab" :index="index">
-                        <view class="p-4 bg-slate-50 rounded-lg mt-2">
-                            <text class="text-slate-600">Content of {{ tab }}</text>
-                        </view>
-                    </TabsContent>
-                </TabsRoot>
-            </view>
-        </view>
+        <RebornCard title="基础用法 (Basic)" class="space-y-3">
+            <TabsRoot v-model:active="activeTab1" type="line">
+                <TabsList>
+                    <TabsTrigger v-for="(tab, index) in tabs" :key="tab" :index="index" :label="tab" />
+                </TabsList>
+                <TabsContent v-for="(tab, index) in tabs" :key="tab" :index="index">
+                    <view class="p-4 bg-slate-50 rounded-lg mt-2">
+                        <text class="text-slate-600">Content of {{ tab }}</text>
+                    </view>
+                </TabsContent>
+            </TabsRoot>
+        </RebornCard>
 
         <!-- Card Type -->
         <view class="space-y-3">
