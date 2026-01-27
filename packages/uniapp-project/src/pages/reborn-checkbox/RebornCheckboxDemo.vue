@@ -68,7 +68,7 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
 
                 <!-- Custom Slot -->
                 <RebornCheckbox v-model="checked1" color="error" label="自定义图标、大小 (Slot)" :ui="{
-                    control: 'size-8 rounded-lg',
+                    control: 'size-8 rounded-lg group-[.is-checked]:bg-orange-5 group-[.is-checked]:border-green-5',
                 }">
                     <template #icon="{ checked }">
                         <view class="i-lucide-heart transition-all duration-300"
