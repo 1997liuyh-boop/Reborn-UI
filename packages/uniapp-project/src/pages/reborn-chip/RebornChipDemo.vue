@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import RebornInput from '@/components/reborn-input/RebornInput.vue'
-import RebornChip from '@/components/reborn-chip/RebornChip.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
+import RebornInput from '@/components/reborn-input/RebornInput.vue'
+import RebornChip from '@/components/reborn-chip/RebornChip.vue'
 
 import { chipColors, chipSizes, chipPositions } from '@/components/reborn-chip/reborn-chip.config'
 
@@ -70,7 +70,7 @@ const chipText = ref('100+')
         </view>
       </RebornChip>
       <RebornChip v-model:show="showChip" :color="currentColor" :size="currentSize" :position="currentPosition"
-        :text="chipText">
+        :text="chipText" inset>
         <image src="https://github.com/benjamincanac.png" class="w-12 h-12 rounded-full" />
       </RebornChip>
     </RebornCard>

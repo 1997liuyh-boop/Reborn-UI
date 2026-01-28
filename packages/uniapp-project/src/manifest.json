@@ -55,7 +55,10 @@
             "mode" : "hash",
             "base" : "/uni-render/"
         },
-        "publicPath" : "/uni-render/"
+        "publicPath" : "/uni-render/",
+        "devServer" : {
+            "port" : 5273
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true

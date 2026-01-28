@@ -105,6 +105,13 @@ const goToDemo = (path: string) => {
           <view class="i-lucide-gallery-horizontal-end size-8 mb-2 text-blue-500" />
           Tabs
         </view>
+
+        <view
+          class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 dark:text-slate-300 active:scale-95 transition-transform"
+          @click="goToDemo('/pages/reborn-tabs/index')">
+          <view class="i-lucide-gallery-horizontal-end size-8 mb-2 text-blue-500" />
+          Tabs
+        </view>
       </view>
 
     </view>

@@ -60,6 +60,12 @@
       "style": {
         "navigationBarTitleText": "Tabs"
       }
+    },
+    {
+      "path": "pages/reborn-tabs/index",
+      "style": {
+        "navigationBarTitleText": "Tabs"
+      }
     }
   ],
   "globalStyle": {
