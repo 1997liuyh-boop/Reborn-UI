@@ -7,12 +7,6 @@ import TabsTrigger from '@/components/reborn-tabs-test/TabsTrigger.vue'
 import TabsContent from '@/components/reborn-tabs-test/TabsContent.vue'
 import { TabsProps } from '@/components/reborn-tabs-test/types'
 
-// import { TabsRoot as TabsRootCopy, TabsList as TabsListCopy, TabsTrigger as TabsTriggerCopy, TabsContent as TabsContentCopy } from '@/components/reborn-tabs copy'
-import TabsRootCopy from '@/components/reborn-tabs copy/TabsRoot.vue'
-import TabsListCopy from '@/components/reborn-tabs copy/TabsList.vue'
-import TabsTriggerCopy from '@/components/reborn-tabs copy/TabsTrigger.vue'
-import TabsContentCopy from '@/components/reborn-tabs copy/TabsContent.vue'
-
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
@@ -44,7 +38,7 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
     <RebornPage :title="'标签页 (Tabs)'" :description="'用于内容组织和导航的标签页组件。'">
 
         <!-- Basic Usage -->
-        <RebornCard title="基础用法 (Basic)" class="space-y-3">
+        <!-- <RebornCard title="基础用法 (Basic)" class="space-y-3">
             <TabsRoot v-model:active="activeTab1" type="line">
                 <TabsList>
                     <TabsTrigger v-for="(tab, index) in tabs" :key="tab" :index="index" :label="tab" />
@@ -55,10 +49,10 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </view>
                 </TabsContent>
             </TabsRoot>
-        </RebornCard>
+        </RebornCard> -->
 
         <!-- Card Type -->
-        <view class="space-y-3">
+        <!-- <view class="space-y-3">
             <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">卡片样式 (Card)</view>
             <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
                 <TabsRoot v-model:active="activeTab1" type="card">
@@ -72,10 +66,10 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsContent>
                 </TabsRoot>
             </view>
-        </view>
+        </view> -->
 
         <!-- Vertical -->
-        <view class="space-y-3">
+        <!-- <view class="space-y-3">
             <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">垂直模式 (Vertical)</view>
             <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm h-64">
                 <TabsRoot v-model:active="activeTab3" orientation="vertical" class="h-full">
@@ -90,10 +84,10 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsContent>
                 </TabsRoot>
             </view>
-        </view>
+        </view> -->
 
         <!-- Scrollable -->
-        <view class="space-y-3">
+        <!-- <view class="space-y-3">
             <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">滚动模式 (Scrollable)</view>
             <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
                 <TabsRoot v-model:active="activeTab4">
@@ -107,10 +101,10 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsContent>
                 </TabsRoot>
             </view>
-        </view>
+        </view> -->
 
         <!-- Disabled State -->
-        <view class="space-y-3">
+        <!-- <view class="space-y-3">
             <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">禁用状态 (Disabled)</view>
             <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
                 <TabsRoot v-model:active="activeTab5">
@@ -130,10 +124,10 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsContent>
                 </TabsRoot>
             </view>
-        </view>
+        </view> -->
 
         <!-- Custom Color -->
-        <view class="space-y-3">
+        <!-- <view class="space-y-3">
             <view class="text-sm font-medium text-slate-500 uppercase tracking-wider">自定义颜色 (Color Variants)</view>
             <view class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-8">
                 <TabsRoot v-model:active="activeTab6" variant="success">
@@ -157,7 +151,7 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsList>
                 </TabsRoot>
             </view>
-        </view>
+        </view> -->
 
         <view
             class="h-[500px] min-w-0 overflow-hidden bg-white rounded-lg flex flex-col border border-gray-200 dark:border-gray-800 shadow-sm">
@@ -165,20 +159,24 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                 <view class="text-sm text-gray-500">Scroll down to see sticky header behavior.</view>
             </view>
 
+
+
             <TabsRoot v-model:active="activeIndex" :type="type" :variant="variant" :size="size"
                 :orientation="orientation" :sticky="sticky" :shrink="shrink" :scrollspy="scrollspy"
                 :swipeable="swipeable" :activationMode="activationMode" :ignore-page-scroll="true"
-                class="flex-1 h-full min-h-0" v-slot="{ currentScrollToId }">
+                custom-class="flex-1 h-full min-h-0" v-slot="{ currentScrollToId, rootId }">
                 <TabsList class="bg-white z-10">
-                    <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index">
+                    <TabsTrigger v-for="(tab, index) in manyTabs" :key="tab" :index="index" :disabled="index == 2">
                         {{ tab }}
                     </TabsTrigger>
                 </TabsList>
 
                 <!-- Content Wrapper for Independent Scrolling -->
+                <!-- Use height: 100% inside flex container for MP scrolling -->
                 <scroll-view scroll-y scroll-with-animation :scroll-into-view="currentScrollToId"
                     class="flex-1 h-full min-h-0 relative bg-gray-50 dark:bg-gray-900/50">
-                    <TabsContent v-for="(tab, index) in manyTabs" :key="tab" :index="index">
+                    <TabsContent v-for="(tab, index) in manyTabs" :key="tab" :index="index"
+                        :id="`${rootId}-content-${index}`">
                         <view class="min-h-[500px] p-6">
                             <view class="text-lg font-medium">{{ tab }} Content</view>
                             <view class="text-gray-500 mt-2">
@@ -191,7 +189,7 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
             </TabsRoot>
         </view>
 
-        <view
+        <!-- <view
             class="h-[500px] min-w-0 overflow-hidden bg-white rounded-lg flex flex-col border border-gray-200 dark:border-gray-800 shadow-sm">
             <view class="p-4 flex-none border-b border-gray-100 dark:border-gray-800" v-if="sticky">
                 <view class="text-sm text-gray-500">Scroll down to see sticky header behavior.</view>
@@ -207,7 +205,6 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsTriggerCopy>
                 </TabsListCopy>
 
-                <!-- Content Wrapper for Independent Scrolling -->
                 <scroll-view scroll-y scroll-with-animation :scroll-into-view="currentScrollToId"
                     class="flex-1 h-full min-h-0 relative bg-gray-50 dark:bg-gray-900/50">
                     <TabsContentCopy v-for="(tab, index) in manyTabs" :key="tab" :index="index">
@@ -221,6 +218,6 @@ const activationMode = ref<TabsProps["activationMode"]>("manual");
                     </TabsContentCopy>
                 </scroll-view>
             </TabsRootCopy>
-        </view>
+        </view> -->
     </RebornPage>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, computed, ref } from "vue";
+import { inject, computed, ref, useSlots } from "vue";
 import { cn } from "@/lib/utils";
 
 const props = defineProps<{
@@ -8,6 +8,9 @@ const props = defineProps<{
     label?: string
     customClass?: any
 }>();
+
+const slots = useSlots();
+const hasLabelSlot = computed(() => !!slots.label);
 
 const context = inject("TabsContext") as any;
 const localIndex = ref<number>(context.registerTrigger(props.index));
@@ -19,6 +22,7 @@ const isActive = computed(() => context.activeIndex.value === localIndex.value);
 
 function handleClick(event: any) {
     if (props.disabled) return;
+    // console.log('[TabsTrigger] Clicked:', localIndex.value, 'Current Active:', context.activeIndex.value);
 
     if (context.scrollspy.value) {
         context.scrollToContent(localIndex.value);
@@ -35,9 +39,9 @@ function handleClick(event: any) {
 
 <template>
     <view role="tab" :id="triggerId" :aria-selected="isActive"
-        :class="context.ui.value.trigger({ class: cn(props.customClass, context.uiOverrides.value?.trigger) })"
+        :class="[context.ui.value.trigger({ class: cn(props.customClass, context.uiOverrides.value?.trigger) }), { 'active': isActive }]"
         :data-state="isActive ? 'active' : 'inactive'" :data-orientation="context.orientation.value"
-        :data-disabled="props.disabled ? '' : undefined" :data-index="localIndex" @tap="handleClick">
+        :data-disabled="props.disabled ? 'true' : 'false'" :data-index="localIndex" @tap="handleClick">
         <view class="rb-tabs__trigger-inner inline-flex items-center justify-center gap-2">
             <text v-if="$slots['leading-icon']"
                 :class="context.ui.value.leadingIcon({ class: context.uiOverrides.value?.leadingIcon })">
@@ -52,16 +56,8 @@ function handleClick(event: any) {
             </text>
             <view data-tab-label :class="context.ui.value.label({ class: context.uiOverrides.value?.label })"
                 class="relative inline-flex items-center justify-center">
-                <!-- Hidden bold text to reserve space -->
-                <text
-                    class="font-bold opacity-0 invisible whitespace-pre overflow-hidden pointer-events-none select-none">
-                    <slot name="label">
-                        {{ props.label }}
-                        <slot></slot>
-                    </slot>
-                </text>
-                <!-- Visible text -->
-                <text class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-pre z-10">
+                <!-- Direct render for debugging MP click issues -->
+                <text class="whitespace-pre">
                     <slot name="label">
                         {{ props.label }}
                         <slot></slot>

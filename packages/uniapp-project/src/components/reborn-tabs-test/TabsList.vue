@@ -116,8 +116,8 @@ onMounted(async () => {
         <slot></slot>
         <slot name="indicator" :style="indicatorStyle"
             :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })">
-            <text :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })"
-                aria-hidden="true" :style="indicatorStyle"></text>
+            <view :class="context.ui.value.indicator({ class: context.uiOverrides.value?.indicator })"
+                aria-hidden="true" :style="indicatorStyle"></view>
         </slot>
     </scroll-view>
 </template>

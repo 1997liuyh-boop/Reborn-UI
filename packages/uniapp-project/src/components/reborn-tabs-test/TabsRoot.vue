@@ -164,6 +164,6 @@ defineExpose({
 
 <template>
     <view :class="cn(ui.root(), uiOverrides.root, props.customClass)">
-        <slot :ui="ui" :ui-overrides="uiOverrides" :current-scroll-to-id="currentScrollToId"></slot>
+        <slot :ui="ui" :ui-overrides="uiOverrides" :current-scroll-to-id="currentScrollToId" :root-id="rootId"></slot>
     </view>
 </template>

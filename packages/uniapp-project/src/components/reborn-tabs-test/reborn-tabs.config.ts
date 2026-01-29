@@ -8,7 +8,7 @@ export default {
     root: "flex flex-col gap-2 min-w-0",
     list: "relative flex max-w-full box-border gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
     trigger:
-      "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap px-3 py-2 text-32 font-medium text-gray-7 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[disabled]:pointer-events-none data-[disabled]:!text-gray-4 flex-1",
+      "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap px-3 py-2 text-32 font-medium text-gray-7 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[disabled=true]:pointer-events-none data-[disabled=true]:!text-gray-4 flex-1",
     leadingIcon: "flex items-center text-28",
     leadingAvatar: "flex items-center overflow-hidden rounded-full",
     leadingAvatarSize: "h-6 w-6",
@@ -18,41 +18,41 @@ export default {
     content:
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 scroll-mt-24",
     indicator:
-      "absolute bottom-1 left-0 h-1.5 w-0 rounded-full transition-all duration-300 ease-in-out z-0 opacity-90 -translate-y-1",
+      "absolute bottom-1 left-0 h-1.5 w-0 rounded-full transition-all duration-300 ease-in-out z-0 opacity-90 -translate-y-1 pointer-events-none",
   },
   variants: {
     type: {
       line: {
         list: "border-b border-gray-2",
-        trigger: "bg-transparent shadow-none rounded-none !text-gray-7 hover:text-gray-8 data-[state=active]:font-bold data-[state=active]:!text-gray-8",
+        trigger: "bg-transparent shadow-none rounded-none !text-gray-7 hover:text-gray-8 [&.active]:font-bold [&.active]:!text-gray-8",
         indicator: "block",
       },
       card: {
         list: "inline-flex items-center justify-start rounded-[var(--radius-ui-base)] bg-gray-2/70 p-1",
-        trigger: "rounded-[var(--radius-ui-sm)] px-3 py-2 shadow-none !text-gray-7 data-[state=active]:!text-white",
+        trigger: "rounded-[var(--radius-ui-sm)] px-3 py-2 shadow-none !text-gray-7 [&.active]:!text-white",
         indicator: "hidden",
       },
     },
     variant: {
       primary: {
-        trigger: "data-[state=active]:text-primary",
+        trigger: "[&.active]:text-primary",
         indicator:
           "bg-[linear-gradient(90deg,var(--color-red-6),var(--color-red-3),var(--color-blue-1),var(--color-orange-1))] bg-[length:200%]",
       },
       info: {
-        trigger: "data-[state=active]:text-info",
+        trigger: "[&.active]:text-info",
         indicator: "bg-info",
       },
       success: {
-        trigger: "data-[state=active]:text-success",
+        trigger: "[&.active]:text-success",
         indicator: "bg-success",
       },
       warning: {
-        trigger: "data-[state=active]:text-warning",
+        trigger: "[&.active]:text-warning",
         indicator: "bg-warning",
       },
       neutral: {
-        trigger: "data-[state=active]:text-gray-8",
+        trigger: "[&.active]:text-gray-8",
         indicator: "bg-gray-8",
       },
     },
@@ -133,35 +133,35 @@ export default {
       type: "card" as (typeof tabsTypes)[number],
       variant: "primary" as (typeof tabsVariants)[number],
       class: {
-        trigger: "data-[state=active]:bg-primary data-[state=active]:text-white",
+        trigger: "[&.active]:bg-primary [&.active]:text-white",
       },
     },
     {
       type: "card" as (typeof tabsTypes)[number],
       variant: "info" as (typeof tabsVariants)[number],
       class: {
-        trigger: "data-[state=active]:bg-info data-[state=active]:text-white",
+        trigger: "[&.active]:bg-info [&.active]:text-white",
       },
     },
     {
       type: "card" as (typeof tabsTypes)[number],
       variant: "success" as (typeof tabsVariants)[number],
       class: {
-        trigger: "data-[state=active]:bg-success data-[state=active]:text-white",
+        trigger: "[&.active]:bg-success [&.active]:text-white",
       },
     },
     {
       type: "card" as (typeof tabsTypes)[number],
       variant: "warning" as (typeof tabsVariants)[number],
       class: {
-        trigger: "data-[state=active]:bg-warning data-[state=active]:text-white",
+        trigger: "[&.active]:bg-warning [&.active]:text-white",
       },
     },
     {
       type: "card" as (typeof tabsTypes)[number],
       variant: "neutral" as (typeof tabsVariants)[number],
       class: {
-        trigger: "data-[state=active]:bg-gray-8 data-[state=active]:text-white",
+        trigger: "[&.active]:bg-gray-8 [&.active]:text-white",
       },
     },
     {
