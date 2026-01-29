@@ -66,6 +66,13 @@
       "style": {
         "navigationBarTitleText": "Tabs"
       }
+    },
+    {
+      "path": "pages/reborn-collapse/index",
+      "style": {
+        "navigationBarTitleText": "Collapse",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {
