@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // import { TabsRoot, TabsList, TabsTrigger, TabsContent } from '@/components/reborn-tabs'
-import TabsRoot from '@/components/reborn-tabs/TabsRoot.vue'
-import TabsList from '@/components/reborn-tabs/TabsList.vue'
-import TabsTrigger from '@/components/reborn-tabs/TabsTrigger.vue'
-import TabsContent from '@/components/reborn-tabs/TabsContent.vue'
-import { TabsProps } from '@/components/reborn-tabs/types'
+import TabsRoot from '@/components/reborn-tabs-test/TabsRoot.vue'
+import TabsList from '@/components/reborn-tabs-test/TabsList.vue'
+import TabsTrigger from '@/components/reborn-tabs-test/TabsTrigger.vue'
+import TabsContent from '@/components/reborn-tabs-test/TabsContent.vue'
+import { TabsProps } from '@/components/reborn-tabs-test/types'
 
 // import { TabsRoot as TabsRootCopy, TabsList as TabsListCopy, TabsTrigger as TabsTriggerCopy, TabsContent as TabsContentCopy } from '@/components/reborn-tabs copy'
 import TabsRootCopy from '@/components/reborn-tabs copy/TabsRoot.vue'
 import TabsListCopy from '@/components/reborn-tabs copy/TabsList.vue'
 import TabsTriggerCopy from '@/components/reborn-tabs copy/TabsTrigger.vue'
 import TabsContentCopy from '@/components/reborn-tabs copy/TabsContent.vue'
-import { TabsProps as TabsPropsCopy } from '@/components/reborn-tabs copy/types'
 
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'

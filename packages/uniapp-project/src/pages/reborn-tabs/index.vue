@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
-import RebornTabs from '@/components/new-tabs/RebornTabs.vue'
-import { TabsSizes, TabsColors, TabsVariants } from '@/components/new-tabs/reborn-tabs.config'
-import type { TabsItem } from '@/components/new-tabs/RebornTabs.vue'
+
+import RebornTabs from '@/components/reborn-tabs/RebornTabs.vue'
+import { TabsSizes, TabsColors, TabsVariants } from '@/components/reborn-tabs/reborn-tabs.config'
+import type { TabsItem } from '@/components/reborn-tabs/RebornTabs.vue'
 
 const tabs = ref<TabsItem[]>([])
 
@@ -73,7 +74,7 @@ onMounted(() => {
                         </view>
                     </view>
                 </view>
-                <RebornTabs :list="shortTabs" v-model="activeShortTab" :color="currentColor" :size="currentSize"
+                <RebornTabs v-model="activeShortTab" :list="shortTabs" :color="currentColor" :size="currentSize"
                     :variant="currentVariant" />
             </view>
         </RebornCard>

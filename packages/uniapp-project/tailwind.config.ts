@@ -140,6 +140,9 @@ export default <Config>{
         48: "var(--text-size-48)",
         52: "var(--text-size-52)",
       },
+      fontFamily: {
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"PingFang SC"', '"Microsoft YaHei"', '"Noto Sans SC"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+      },
       height: {
         "button-2xl": "var(--button-2xl-height)",
         "button-xl": "var(--button-xl-height)",
