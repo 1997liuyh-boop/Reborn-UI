@@ -68,14 +68,14 @@
       }
     },
     {
-      "path": "pages/reborn-collapse/index",
+      "path": "pages/reborn-collapse/RebornCollapseDemo",
       "style": {
         "navigationBarTitleText": "Collapse",
         "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/reborn-textarea/index",
+      "path": "pages/reborn-textarea/RebornTextareaDemo",
       "style": {
         "navigationBarTitleText": "Textarea",
         "navigationStyle": "custom"

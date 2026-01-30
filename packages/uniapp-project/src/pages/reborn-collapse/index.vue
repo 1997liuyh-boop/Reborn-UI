@@ -26,7 +26,7 @@ function toggle() {
                 <template #default="{ open }">
                     <view
                         class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg transition-colors active:bg-slate-100 dark:active:bg-slate-700 select-none">
-                        <text class="text-sm font-semibold text-slate-700 dark:text-slate-200">春江花月夜</text>
+                        <text class="text-sm font-semibold text-slate-700 dark:text-white">春江花月夜</text>
                         <view class="i-lucide-chevron-down size-5 text-slate-500 transition-transform duration-200"
                             :class="{ 'rotate-180': open }" />
                     </view>

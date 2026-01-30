@@ -79,7 +79,7 @@ const linesTokens = computed(() =>
                 <view class="h-[18px] text-[12px] text-gray-400 font-normal">
                     {{ t.py }}
                 </view>
-                <view class="text-[22px] font-bold text-gray-800 leading-none">
+                <view class="text-[22px] font-bold text-gray-800 dark:text-gray-1 leading-none">
                     {{ t.ch }}
                 </view>
             </view>
@@ -88,10 +88,10 @@ const linesTokens = computed(() =>
         <!-- 作者（居中，略小） -->
         <view class="mt-4 flex flex-wrap justify-center gap-x-1">
             <view v-for="(t, j) in authorTokens" :key="j" class="flex flex-col items-center">
-                <view class="h-[14px] text-[10px] text-gray-400">
+                <view class="h-[14px] text-[10px] text-gray-400 dark:text-gray-1">
                     {{ t.py }}
                 </view>
-                <view class="text-[14px] font-medium text-gray-500 leading-none">
+                <view class="text-[14px] font-medium text-gray-500 dark:text-gray-1 leading-none">
                     {{ t.ch }}
                 </view>
             </view>
@@ -100,10 +100,10 @@ const linesTokens = computed(() =>
         <!-- 序（左对齐，但带缩进风格） -->
         <view class="mt-4 flex flex-wrap gap-x-0.5 px-4">
             <view v-for="(t, j) in prefaceTokens" :key="j" class="flex flex-col items-center">
-                <view class="h-[14px] text-[10px] text-gray-400">
+                <view class="h-[14px] text-[10px] text-gray-400 dark:text-gray-1">
                     {{ t.py }}
                 </view>
-                <view class="text-[13px] text-gray-500 leading-tight">
+                <view class="text-[13px] text-gray-500 dark:text-gray-1 leading-tight">
                     {{ t.ch }}
                 </view>
             </view>
@@ -114,11 +114,12 @@ const linesTokens = computed(() =>
             <view v-for="(lineTokens, i) in linesTokens" :key="i" class="flex flex-wrap justify-center gap-x-1">
                 <view v-for="(t, j) in lineTokens" :key="j" class="flex flex-col items-center w-8">
                     <!-- 拼音 -->
-                    <view class="h-[16px] text-[11px] text-gray-400 whitespace-nowrap overflow-visible">
+                    <view
+                        class="h-[16px] text-[11px] text-gray-400 dark:text-gray-3 whitespace-nowrap overflow-visible">
                         {{ t.py }}
                     </view>
                     <!-- 汉字 -->
-                    <view class="text-base text-gray-700 leading-none font-serif">
+                    <view class="text-base text-gray-700 dark:text-gray-2 leading-none font-serif">
                         {{ t.ch }}
                     </view>
                 </view>
