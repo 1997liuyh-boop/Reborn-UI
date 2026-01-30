@@ -66,20 +66,44 @@ function onTouchEnd(e: any) {
             if (Math.abs(dx) > threshold && Math.abs(dy) < threshold) { // horizontal swipe
                 if (dx < 0) {
                     // Swipe Left -> Next
-                    if (currentIndex < maxIndex - 1) context.setActiveIndex(currentIndex + 1);
+                    if (currentIndex < maxIndex - 1) {
+                        const nextIndex = currentIndex + 1;
+                        context.setActiveIndex(nextIndex);
+                        if (context.scrollspy.value) {
+                            context.scrollToContent(nextIndex);
+                        }
+                    }
                 } else {
                     // Swipe Right -> Prev
-                    if (currentIndex > 0) context.setActiveIndex(currentIndex - 1);
+                    if (currentIndex > 0) {
+                        const prevIndex = currentIndex - 1;
+                        context.setActiveIndex(prevIndex);
+                        if (context.scrollspy.value) {
+                            context.scrollToContent(prevIndex);
+                        }
+                    }
                 }
             }
         } else if (isVertical) {
             if (Math.abs(dy) > threshold && Math.abs(dx) < threshold) {
                 if (dy < 0) {
                     // Swipe Up -> Next
-                    if (currentIndex < maxIndex - 1) context.setActiveIndex(currentIndex + 1);
+                    if (currentIndex < maxIndex - 1) {
+                        const nextIndex = currentIndex + 1;
+                        context.setActiveIndex(nextIndex);
+                        if (context.scrollspy.value) {
+                            context.scrollToContent(nextIndex);
+                        }
+                    }
                 } else {
                     // Swipe Down -> Prev
-                    if (currentIndex > 0) context.setActiveIndex(currentIndex - 1);
+                    if (currentIndex > 0) {
+                        const prevIndex = currentIndex - 1;
+                        context.setActiveIndex(prevIndex);
+                        if (context.scrollspy.value) {
+                            context.scrollToContent(prevIndex);
+                        }
+                    }
                 }
             }
         }

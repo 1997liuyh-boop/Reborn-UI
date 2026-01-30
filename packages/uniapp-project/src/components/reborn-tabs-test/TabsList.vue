@@ -18,64 +18,41 @@ function updateIndicator() {
 
     const activeIdx = context.activeIndex.value;
     const triggerId = `#${context.rootId}-trigger-${activeIdx}`;
+    const query = uni.createSelectorQuery().in(instance);
+    query.select(`${triggerId} .rb-tabs__trigger-inner`).boundingClientRect();
+    query.select(triggerId).boundingClientRect(); // Fallback
+    query.select(`#${context.rootId}-list`).boundingClientRect();
+    query.select(`#${context.rootId}-list`).scrollOffset();
 
-    const globalQuery = uni.createSelectorQuery(); // Try global first or in root?
-
-    globalQuery.select(`${triggerId} .rb-tabs__trigger-inner`).boundingClientRect();
-    globalQuery.select(triggerId).boundingClientRect(); // Fallback
-    globalQuery.select(`#${context.rootId}-list`).boundingClientRect();
-
-
-    globalQuery.exec((res) => {
-        if (!res || res.length < 3) return;
+    query.exec((res) => {
+        if (!res || res.length < 4) return;
 
         const innerRect = res[0] as UniApp.NodeInfo;
         const fallbackTriggerRect = res[1] as UniApp.NodeInfo;
         const listRect = res[2] as UniApp.NodeInfo;
+        const scrollRes = res[3] as any;
 
         if (!fallbackTriggerRect || !listRect) return;
         const triggerRect = (innerRect && (innerRect.width ?? 0) > 0) ? innerRect : fallbackTriggerRect;
 
-
         const isHorizontal = context.orientation.value === "horizontal";
+        const scrollLeft = scrollRes?.scrollLeft || 0;
+        const scrollTop = scrollRes?.scrollTop || 0;
 
         if (isHorizontal) {
-
-            uni.createSelectorQuery().in(instance).select(`#${context.rootId}-list`).scrollOffset((scrollRes) => {
-                const res = scrollRes as any;
-                const scrollLeft = res.scrollLeft || 0;
-                const scrollTop = res.scrollTop || 0;
-
-                const left = (triggerRect.left || 0) - (listRect.left || 0) + scrollLeft;
-                const top = (triggerRect.top || 0) - (listRect.top || 0) + scrollTop;
-
-                if (isHorizontal) {
-                    indicatorStyle.value = {
-                        '--radix-tabs-indicator-position': `${left}px`,
-                        '--radix-tabs-indicator-width': `${triggerRect.width}px`,
-                        opacity: 1
-                    };
-                } else {
-                    indicatorStyle.value = {
-                        '--radix-tabs-indicator-position': `${top}px`,
-                        '--radix-tabs-indicator-height': `${triggerRect.height}px`,
-                        opacity: 1
-                    };
-                }
-            }).exec();
+            const left = (triggerRect.left || 0) - (listRect.left || 0) + scrollLeft;
+            indicatorStyle.value = {
+                '--radix-tabs-indicator-position': `${left}px`,
+                '--radix-tabs-indicator-width': `${triggerRect.width}px`,
+                opacity: 1
+            };
         } else {
-
-            uni.createSelectorQuery().in(instance).select(`#${context.rootId}-list`).scrollOffset((scrollRes) => {
-                const res = scrollRes as any;
-                const scrollTop = res.scrollTop || 0;
-                const top = (triggerRect.top || 0) - (listRect.top || 0) + scrollTop;
-
-                indicatorStyle.value = {
-                    '--radix-tabs-indicator-position': `${top}px`,
-                    '--radix-tabs-indicator-height': `${triggerRect.height}px`,
-                    opacity: 1
-                };
-            }).exec();
+            const top = (triggerRect.top || 0) - (listRect.top || 0) + scrollTop;
+            indicatorStyle.value = {
+                '--radix-tabs-indicator-position': `${top}px`,
+                '--radix-tabs-indicator-height': `${triggerRect.height}px`,
+                opacity: 1
+            };
         }
     });
 }
@@ -83,7 +60,15 @@ function updateIndicator() {
 // --- Scrolling Logic ---
 function scrollToActiveTab() {
     const activeIdx = context.activeIndex.value;
-    scrollIntoId.value = `${context.rootId}-trigger-${activeIdx}`;
+    const nextId = `${context.rootId}-trigger-${activeIdx}`;
+    if (scrollIntoId.value === nextId) {
+        scrollIntoId.value = "";
+        nextTick(() => {
+            scrollIntoId.value = nextId;
+        });
+        return;
+    }
+    scrollIntoId.value = nextId;
 }
 
 // Watchers
