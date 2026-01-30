@@ -73,6 +73,13 @@
         "navigationBarTitleText": "Collapse",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/reborn-textarea/index",
+      "style": {
+        "navigationBarTitleText": "Textarea",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

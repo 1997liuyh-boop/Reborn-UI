@@ -28,21 +28,17 @@ const goToDemo = (path: string) => {
       <view class="py-10 text-center space-y-3">
         <view class="flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
           @click="toggleDarkMode">
-          <view class="relative text-4xl font-black tracking-tight flex items-baseline">
-            <text class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Reborn U
+          <view class="flex gap-1 items-baseline">
+            <text v-for="(char, index) in 'Reborn U'" :key="index"
+              class="text-4xl font-black text-blue-5 dark:text-orange-5">
+              {{ char }}
             </text>
 
-            <view class="relative inline-flex flex-col items-center">
-              <view class="absolute -top-5 -right-3.5 transition-all duration-500 ease-in-out"
+            <view class="bg-gradient-to-b from-blue-700 to-orange-500 h-4 w-2 relative">
+              <view class="absolute -top-5 -left-2 transition-all duration-500 ease-in-out"
                 :class="isDark ? '-translate-y-1 rotate-0 opacity-100' : 'translate-y-0 rotate-270 opacity-100'">
                 <view :class="isDark ? 'i-meteocons-clear-day-fill' : 'i-meteocons-extreme-drizzle-fill'"
                   class="size-6" />
-              </view>
-
-              <view
-                class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent transform translate-y-[1px] translate-x-1.5 font-bold text-2xl">
-                I
               </view>
             </view>
           </view>
@@ -118,6 +114,13 @@ const goToDemo = (path: string) => {
           @click="goToDemo('/pages/reborn-collapse/index')">
           <view class="i-lucide-chevrons-down-up size-8 mb-2 text-blue-500" />
           Collapse
+        </view>
+
+        <view
+          class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm flex flex-col items-center justify-center font-medium text-slate-700 dark:text-slate-300 active:scale-95 transition-transform"
+          @click="goToDemo('/pages/reborn-textarea/index')">
+          <view class="i-lucide-form-input size-8 mb-2 text-blue-500" />
+          Textarea
         </view>
       </view>
 

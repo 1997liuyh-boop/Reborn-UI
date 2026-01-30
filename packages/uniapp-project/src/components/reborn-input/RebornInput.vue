@@ -41,7 +41,7 @@ export interface InputProps {
 
 <script setup lang="ts">
 import { computed, nextTick, ref, toRef, useSlots, watch } from "vue";
-import theme, { inputSizes } from "./reborn-inputconfig";
+import theme, { inputSizes } from "./reborn-input.config";
 import { useFieldGroup } from "@/composables/useFieldGroup";
 import { tv } from "@/lib/tv";
 
