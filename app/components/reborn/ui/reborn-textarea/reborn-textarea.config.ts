@@ -4,19 +4,19 @@ const colors = ["primary", "secondary", "success", "info", "warning", "error", "
 const config = {
     slots: {
         root: "relative box-border shrink-0 grow-0 basis-auto min-h-0 min-w-0 flex flex-row items-center bg-white rounded-lg p-2 transition-all duration-200",
-        inner: "h-full flex-1 text-28 text-surface-700 bg-transparent disabled:cursor-not-allowed disabled:opacity-50",
-        text: "absolute right-2 bottom-2 text-xs text-gray-5 pointer-events-none",
+        inner: "h-full flex-1 text-sm text-surface-700 bg-transparent disabled:cursor-not-allowed disabled:opacity-50 outline-none border-none",
+        text: "absolute right-4 bottom-2 text-xs text-gray-500 pointer-events-none",
     },
     variants: {
         size: {
             sm: {
-                inner: "text-26",
+                inner: "text-xs",
             },
             md: {
-                inner: "text-28",
+                inner: "text-sm",
             },
             lg: {
-                inner: "text-32",
+                inner: "text-base",
             },
         },
         border: {
@@ -35,7 +35,7 @@ const config = {
         },
         error: {
             true: {
-                root: "border-red-500",
+                root: "border-red-500 ring-red-500",
             },
         },
         hasCount: {
@@ -123,7 +123,7 @@ const config = {
         border: true,
         color: "primary" as (typeof colors)[number],
     },
-}
+};
 
 export { sizes as textareaSizes, colors as textareaColors };
 export default config;
