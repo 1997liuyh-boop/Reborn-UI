@@ -3,7 +3,7 @@ import RebornCollapseDemo from '~/components/reborn/examples/reborn-collapse/Reb
 </script>
 
 <template>
-    <ComponentPlayground uniapp url="/uni-render/#pages/reborn-collapse/index">
+    <ComponentPlayground uniapp url="/uni-render/#pages/reborn-collapse/RebornCollapseDemo">
         <template #component>
             <RebornCollapseDemo />
         </template>

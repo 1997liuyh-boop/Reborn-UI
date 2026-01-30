@@ -12,7 +12,7 @@ navigation:
       color: success
 ---
 
-::ComponentViewer{demoFile="RebornCollapseDemo.vue" config="RebornCollapseConfig" componentId="reborn-collapse" :componentFiles='["RebornCollapse.vue", "reborn-collapse.config.ts"]' dependencies="tailwindcss" :uniapp="true"}
+::ComponentViewer{demoFile="RebornCollapseDemo.vue" config="RebornCollapseConfig" componentId="reborn-collapse" :componentFiles='["RebornCollapse.vue", "reborn-collapse.config.ts"]' :uniapp="true"}
 
 #api
 
