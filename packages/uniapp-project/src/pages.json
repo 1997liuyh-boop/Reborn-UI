@@ -80,6 +80,13 @@
         "navigationBarTitleText": "Textarea",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/reborn-image/RebornImageDemo",
+      "style": {
+        "navigationBarTitleText": "Image",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

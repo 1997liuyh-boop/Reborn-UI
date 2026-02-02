@@ -122,13 +122,9 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #27272a;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
+}.custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
-}
-
-/* 隐藏 UTree 默认可能带有的外层样式影响 */
+}/* 隐藏 UTree 默认可能带有的外层样式影响 */
 :deep(.prose pre) {
     margin: 0 !important;
     background-color: transparent !important;

@@ -43,19 +43,22 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                 <!-- Controls -->
                 <view class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <view class="space-y-3">
-                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">Variant</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
+                            按钮类型
+                        </view>
                         <view class="flex flex-wrap gap-2">
-                            <view v-for="v in variants" :key="v"
-                                class="px-3 py-1.5 text-xs rounded-full border cursor-pointer transition-colors"
-                                :class="demoVariant === v ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' : 'bg-transparent text-slate-600 border-slate-300 hover:border-slate-400'"
-                                @click="demoVariant = v">
+                            <ReButton v-for="v in variants" :key="v" variant="outline"
+                                :color="demoVariant === v ? 'primary' : 'neutral'" @click="demoVariant = v" size="sm"
+                                :square="false" custom-class="rounded-full">
                                 {{ v }}
-                            </view>
+                            </ReButton>
                         </view>
                     </view>
 
                     <view class="space-y-3">
-                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">Color</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
+                            按钮颜色
+                        </view>
                         <view class="flex flex-wrap gap-2">
                             <view v-for="c in colors" :key="c"
                                 class="w-6 h-6 rounded-full cursor-pointer ring-2 ring-offset-2 ring-transparent transition-all"
@@ -69,14 +72,21 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                     </view>
 
                     <view class="space-y-3">
-                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">Size</view>
+                        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
+                            按钮大小
+                        </view>
                         <view class="flex flex-wrap gap-2">
-                            <view v-for="s in sizes" :key="s"
+                            <!-- <view v-for="s in sizes" :key="s"
                                 class="px-3 py-1.5 text-xs rounded-full border cursor-pointer transition-colors"
                                 :class="demoSize === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' : 'bg-transparent text-slate-600 border-slate-300 hover:border-slate-400'"
                                 @click="demoSize = s">
                                 {{ s }}
-                            </view>
+                            </view> -->
+                            <ReButton v-for="s in sizes" :key="s" variant="outline"
+                                :color="demoSize === s ? 'primary' : 'neutral'" @click="demoSize = s" size="sm"
+                                :square="false" custom-class="rounded-full">
+                                {{ s }}
+                            </ReButton>
                         </view>
                     </view>
 
