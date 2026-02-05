@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
-import { computed, provide, ref, watch, onMounted, getCurrentInstance } from "vue";
+import { computed, provide, ref, watch, onMounted } from "vue";
 import * as z from 'zod'
 import { tv } from "@/lib/tv";
 import { cn } from '@/lib/utils';

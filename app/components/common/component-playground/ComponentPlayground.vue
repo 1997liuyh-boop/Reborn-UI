@@ -24,7 +24,6 @@ const { app } = useRuntimeConfig()
 const computedUrl = computed(() => {
   const base = app.baseURL || '/'
   const uniUrl = base.replace(/\/$/, '') + props.url
-  console.log(uniUrl)
   return uniUrl
 })
 </script>

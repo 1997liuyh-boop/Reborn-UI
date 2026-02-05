@@ -17,12 +17,12 @@ export interface ComponentCodeItem {
 }
 
 export function useComponentCode(options: UseComponentCodeOptions) {
-  const { 
-    componentId = '', 
-    componentFiles = [], 
-    demoFile, 
-    type = 'ui', 
-    uniapp = false, 
+  const {
+    componentId = '',
+    componentFiles = [],
+    demoFile,
+    type = 'ui',
+    uniapp = false,
     uniappComponentId,
     paths: initialPaths = [],
     format = 'both'
@@ -41,7 +41,7 @@ export function useComponentCode(options: UseComponentCodeOptions) {
   async function loadFilesByPath(paths?: string | string[]) {
     const targetPaths = paths || (Array.isArray(initialPaths) ? initialPaths : [initialPaths])
     const pathList = Array.isArray(targetPaths) ? targetPaths : [targetPaths]
-    
+
     if (pathList.length === 0) {
       mdcCode.value = ''
       return
@@ -96,7 +96,7 @@ export function useComponentCode(options: UseComponentCodeOptions) {
       )
 
       const validFiles = results.filter((f): f is ComponentCodeItem => f !== null)
-      
+
       let content = ""
       if (validFiles.length === 1) {
         const f = validFiles[0]!
@@ -137,7 +137,7 @@ export function useComponentCode(options: UseComponentCodeOptions) {
       if (codeGetter) {
         const code = (await codeGetter()) as unknown as string
         const fileExt = demoFile.split('.').at(-1)
-        
+
         demoCode.value = `
 ## Component Usage
 
@@ -214,7 +214,7 @@ ${componentsList.value?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${i
         .split('-')
         ?.map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')
-      
+
       // Only load demo page file from packages/uniapp-project/src/pages/{uniappComponentId}/
       const demoFileName = `${pascalCaseName}Demo.vue`
       const demoCodeGetter = getComponentCode({
@@ -222,12 +222,12 @@ ${componentsList.value?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${i
         fileName: demoFileName,
         type: 'uniapp-pages',
       })
-      
+
       if (demoCodeGetter) {
         try {
           const code = (await demoCodeGetter()) as unknown as string
           const fileExt = demoFileName.split('.').at(-1)
-          
+
           uniappCode.value = `
 ## UniApp Component Usage
 
@@ -260,33 +260,54 @@ ${code}
 
     try {
       const uniappFiles: ComponentCodeItem[] = []
-      
+
       // Convert kebab-case to PascalCase (e.g., reborn-button -> RebornButton)
       const pascalCaseName = uniappComponentId
         .split('-')
         ?.map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')
-      
-      // Load component files from packages/uniapp-project/src/components/{uniappComponentId}/
-      const componentFileNames = [
-        `${pascalCaseName}.vue`,
-        'index.ts',
-        `${uniappComponentId}.config.ts`
-      ]
-      
-      for (const fileName of componentFileNames) {
+
+      let targetFiles = componentFiles;
+
+      // If no componentFiles provided, fallback to default files
+      if (!targetFiles || targetFiles.length === 0) {
+        targetFiles = [
+          `${pascalCaseName}.vue`,
+          'index.ts',
+          `${uniappComponentId}.config.ts`
+        ]
+      }
+
+      for (const fileName of targetFiles) {
+        // Handle relative paths (e.g. "../reborn-form-item/RebornFormItem.vue")
+        // We need to determine the correct ID (folder) and filename
+        let targetId = uniappComponentId;
+        let targetFileName = fileName;
+
+        if (fileName.includes('/')) {
+          const parts = fileName.split('/');
+          targetFileName = parts.pop()!; // Get the file name
+          // If it's a relative path like "../reborn-form-item/RebornFormItem.vue"
+          // We need to resolve the correct component ID (folder name)
+          // Assuming the structure is consistent with packages/uniapp-project/src/components/{componentId}/
+          const folderName = parts[parts.length - 1];
+          if (folderName && folderName !== '..') {
+            targetId = folderName;
+          }
+        }
+
         const codeGetter = getComponentCode({
-          id: uniappComponentId,
-          fileName,
+          id: targetId,
+          fileName: targetFileName,
           type: 'uniapp-components',
         })
-        
+
         if (codeGetter) {
           try {
             const code = (await codeGetter()) as unknown as string
             uniappFiles.push({
-              fileName,
-              ext: fileName.split('.').at(-1)!,
+              fileName: targetFileName,
+              ext: targetFileName.split('.').at(-1)!,
               code,
             })
           } catch {

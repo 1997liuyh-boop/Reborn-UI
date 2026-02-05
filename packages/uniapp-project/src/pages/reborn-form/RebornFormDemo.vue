@@ -5,7 +5,7 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
 import RebornForm from '@/components/reborn-form/RebornForm.vue'
-import RebornFormItem from '@/components/reborn-form-item/RebornFormItem.vue'
+import RebornFormItem from '@/components/reborn-form/RebornFormItem.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import RebornCheckbox from '@/components/reborn-checkbox/RebornCheckbox.vue'

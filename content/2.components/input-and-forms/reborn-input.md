@@ -6,10 +6,13 @@ tags: [css, tailwind, input, uniapp]
 badge: New
 navigation:
   badges:
-    - label: New
+    - label: Web
       color: primary
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornInputDemo.vue" config="RebornInputConfig" componentId="reborn-input" :componentFiles='["RebornInput.vue", "reborn-input.config.ts"]' :uniapp="true"}

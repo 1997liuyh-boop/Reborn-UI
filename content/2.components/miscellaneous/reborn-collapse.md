@@ -6,10 +6,13 @@ tags: [css, tailwind, collapse, accordion, uniapp]
 badge: New
 navigation:
   badges:
-    - label: New
+    - label: Web
       color: primary
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornCollapseDemo.vue" config="RebornCollapseConfig" componentId="reborn-collapse" :componentFiles='["RebornCollapse.vue", "reborn-collapse.config.ts"]' :uniapp="true"}

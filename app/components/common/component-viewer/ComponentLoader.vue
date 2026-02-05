@@ -182,7 +182,6 @@ const code = computed(() => {
 
 const component = defineAsyncComponent(() => {
     const folder = props.componentName ?? props.id ?? route.path.split('/').pop() ?? ''
-    console.log(route.path, folder, pascalName.value)
     const key = `../reborn/${folder}/${pascalName.value}.vue`
     const loader = rebornComponentModules[key]
     if (loader) return loader()
@@ -221,7 +220,6 @@ function setComponentProp(name: string, value: any) {
 
 
 const { data: ast } = await useAsyncData(codeKey, async () => {
-    console.log(codeKey.value)
     if (!props.prettier) {
         return parseMarkdown(code.value)
     }

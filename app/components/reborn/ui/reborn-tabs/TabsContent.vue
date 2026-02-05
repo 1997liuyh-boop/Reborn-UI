@@ -45,8 +45,6 @@ const { distanceX, distanceY } = usePointerSwipe(contentRef, {
     onSwipeEnd(e: PointerEvent, direction) {
         if (!context.swipeable.value) return;
 
-        console.log('Swipe Debug:', { direction, dx: distanceX.value, dy: distanceY.value });
-
         const isHorizontal = context.orientation.value === 'horizontal';
         const isVertical = context.orientation.value === 'vertical';
         const maxIndex = context.contentCounter.value;

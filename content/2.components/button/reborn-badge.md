@@ -6,10 +6,13 @@ tags: [css, tailwind, badge, uniapp]
 badge: New
 navigation:
   badges:
-    - label: New
+    - label: Web
       color: primary
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornBadgeDemo.vue" config="RebornBadgeConfig" componentId="reborn-badge" :componentFiles='["RebornBadge.vue", "reborn-badge.config.ts"]' :uniapp="true"}

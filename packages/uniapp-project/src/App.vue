@@ -1,6 +1,5 @@
 <script setup lang="ts">
 onLaunch(() => {
-  console.log('App Launch')
   // #ifdef H5
   window.addEventListener('message', (event) => {
     if (event.data?.type === 'theme-change') {
@@ -13,12 +12,6 @@ onLaunch(() => {
     }
   })
   // #endif
-})
-onShow(() => {
-  console.log('App Show')
-})
-onHide(() => {
-  console.log('App Hide')
 })
 </script>
 

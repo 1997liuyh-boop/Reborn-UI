@@ -9,6 +9,7 @@ const navContainer = ref<HTMLElement | null>(null);
 interface NavItemWithBadges extends ContentNavigationItem {
   "data-nav-path"?: string;
   badges?: Array<{ label: string; color?: string }>;
+  chip?: { label: string; color?: string };
   tags?: string[];
   children?: NavItemWithBadges[];
 }
@@ -191,7 +192,17 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
                   ? 'font-semibold shadow-sm border-l-primary text-primary bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100 border-transparent'
               ]">
-              <ClientOnly>
+              <ClientOnly v-if="item.chip">
+                <RebornChip :text="item.chip.label" :color="(item.chip.color as any) || 'primary'" position="top-right">
+                  <SparklesText v-if="isActive(item)" :text="item.title"
+                    :colors="{ first: '#9E7AFF', second: '#FE8BBB' }" :sparkles-count="5" class="text-28 " />
+                  <span v-else class="truncate">{{ item.title }}</span>
+                  <template #fallback>
+                    <span class="truncate">{{ item.title }}</span>
+                  </template>
+                </RebornChip>
+              </ClientOnly>
+              <ClientOnly v-else>
                 <SparklesText v-if="isActive(item)" :text="item.title" :colors="{ first: '#9E7AFF', second: '#FE8BBB' }"
                   :sparkles-count="5" class="text-28 flex-1" />
                 <span v-else class="flex-1 truncate">{{ item.title }}</span>
@@ -217,7 +228,12 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
                     ? 'font-medium text-primary bg-[color-mix(in_srgb,var(--color-primary)_3%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] before:content-[\'\'] before:absolute before:left-[-1rem] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:bg-[var(--color-primary)] before:rounded-sm'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200'
                 ]">
-                <span class="flex-1 truncate">{{ child.title }}</span>
+
+                <RebornChip v-if="child.chip" :text="child.chip.label" :color="(child.chip.color as any) || 'primary'"
+                  position="top-right" inset class="flex-1">
+                  <span class="flex-1 truncate">{{ child.title }}</span>
+                </RebornChip>
+                <span v-else class="flex-1 truncate">{{ child.title }}</span>
 
                 <!-- Child Badges -->
                 <div v-if="child.badges && child.badges.length > 0" class="flex items-center gap-1 shrink-0">

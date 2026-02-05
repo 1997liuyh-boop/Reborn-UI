@@ -39,7 +39,6 @@ onMounted(() => {
   });
 
   if (!success) {
-    console.error("Failed to compile shader");
     return;
   }
 

@@ -6,10 +6,13 @@ tags: [css, tailwind, image, media, uniapp, viewerjs]
 badge: New
 navigation:
   badges:
-    - label: New
+    - label: Web
       color: primary
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornImageDemo.vue" config="RebornImageConfig" componentId="reborn-image" :componentFiles='["RebornImage.vue", "reborn-image.config.ts"]' dependencies="[viewerjs, vue-lazyload]" :uniapp="true"}

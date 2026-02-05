@@ -322,15 +322,13 @@ export class rebornShaderToy {
       });
 
       return true;
-    } catch (error) {
-      console.error("Failed to compile shader:", error);
+    } catch {
       return false;
     }
   }
 
   private draw(): void {
     if (!this.program || !this.mesh) {
-      console.warn("Program or mesh not initialized");
       return;
     }
 

@@ -6,10 +6,13 @@ tags: [css, tailwind, textarea, uniapp]
 badge: New
 navigation:
   badges:
-    - label: New
+    - label: Web
       color: primary
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornTextareaDemo.vue" config="RebornTextareaConfig" componentId="reborn-textarea" :componentFiles='["RebornTextarea.vue", "reborn-textarea.config.ts"]' :uniapp="true"}

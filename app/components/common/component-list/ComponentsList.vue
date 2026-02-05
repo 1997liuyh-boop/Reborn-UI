@@ -44,11 +44,11 @@ const filteredComponents = computed(() => {
 });
 
 function getCategoryColor(category: string) {
-  if (category.toLowerCase() === "new") {
+  if (category?.toLowerCase() === "new") {
     return "success";
   }
 
-  if (category.toLowerCase() === "updated") {
+  if (category?.toLowerCase() === "updated") {
     return "warning";
   }
 
