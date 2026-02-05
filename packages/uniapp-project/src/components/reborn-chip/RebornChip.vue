@@ -43,22 +43,6 @@ const show = computed({
   set: (value: boolean) => emit('update:show', value)
 })
 
-// const ui = computed(() => {
-//   const styles = b({
-//     color: props.color,
-//     size: props.size,
-//     position: props.position,
-//     inset: props.inset,
-//     standalone: props.standalone
-//   })
-
-//   return {
-//     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class) }),
-//     base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class) }),
-//     label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class) })
-//   }
-// })
-
 const ui = computed(() => b({
   color: props.color as ChipColor,
   size: props.size as ChipSize,

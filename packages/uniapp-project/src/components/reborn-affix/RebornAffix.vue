@@ -38,9 +38,10 @@ const props = withDefaults(defineProps<FloatViewProps>(), {
 });
 
 // 获取屏幕信息和安全区域
-const windowInfo = uni.getWindowInfo();
-const screenWidth = windowInfo.screenWidth;
-const screenHeight = windowInfo.screenHeight;
+// 获取屏幕信息和安全区域
+const windowInfo = uni.getWindowInfo() || {};
+const screenWidth = windowInfo.screenWidth || 0;
+const screenHeight = windowInfo.screenHeight || 0;
 
 // 获取底部安全区域高度 (iPhone X+ 的底部黑条)
 const safeAreaBottom = props.safeArea ? (windowInfo.safeAreaInsets?.bottom || 0) : 0;
@@ -156,3 +157,4 @@ function onTouchEnd() {
     });
 }
 </script>
+<style></style>

@@ -10,43 +10,37 @@
     {
       "path": "pages/reborn-button/RebornButtonDemo",
       "style": {
-        "navigationBarTitleText": "Button",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Button"
       }
     },
     {
       "path": "pages/reborn-checkbox/RebornCheckboxDemo",
       "style": {
-        "navigationBarTitleText": "Checkbox",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Checkbox"
       }
     },
     {
       "path": "pages/reborn-badge/RebornBadgeDemo",
       "style": {
-        "navigationBarTitleText": "Badge",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Badge"
       }
     },
     {
       "path": "pages/reborn-chip/RebornChipDemo",
       "style": {
-        "navigationBarTitleText": "Chip",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Chip"
       }
     },
     {
       "path": "pages/reborn-input/RebornInputDemo",
       "style": {
-        "navigationBarTitleText": "Input",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Input"
       }
     },
     {
       "path": "pages/reborn-input-number/RebornInputNumberDemo",
       "style": {
-        "navigationBarTitleText": "Input Number",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Input Number"
       }
     },
     {
@@ -70,36 +64,43 @@
     {
       "path": "pages/reborn-collapse/RebornCollapseDemo",
       "style": {
-        "navigationBarTitleText": "Collapse",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Collapse"
       }
     },
     {
       "path": "pages/reborn-textarea/RebornTextareaDemo",
       "style": {
-        "navigationBarTitleText": "Textarea",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Textarea"
       }
     },
     {
       "path": "pages/reborn-image/RebornImageDemo",
       "style": {
-        "navigationBarTitleText": "Image",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Image"
       }
     },
     {
       "path": "pages/reborn-form/RebornFormDemo",
       "style": {
-        "navigationBarTitleText": "Form",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Form"
       }
     },
     {
       "path": "pages/reborn-affix/RebornAffixDemo",
       "style": {
-        "navigationBarTitleText": "Affix",
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "Affix"
+      }
+    },
+    {
+      "path": "pages/reborn-back-top/RebornBackTopDemo",
+      "style": {
+        "navigationBarTitleText": "BackTop"
+      }
+    },
+    {
+      "path": "pages/reborn-sticky/RebornStickyDemo",
+      "style": {
+        "navigationBarTitleText": "Sticky"
       }
     }
   ],

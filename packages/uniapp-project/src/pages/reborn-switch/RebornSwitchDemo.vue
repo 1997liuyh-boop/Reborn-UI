@@ -21,12 +21,13 @@ const currentColor = ref<typeof colors[number]>('primary')
 
         <!-- Colors -->
         <RebornCard title="颜色 (Colors)" custom-class="grid grid-cols-2 gap-2">
-            <RebornSwitch v-for="color in colors" :key="color" v-model="checked1" :color="color" :label="color"
+            <RebornSwitch v-for="color in colors" :key="color" v-model="checked1" :color="color" :active-label="color"
                 custom-class="flex-1" />
         </RebornCard>
 
-        <RebornCard title="尺寸 (Size)" custom-class="flex gap-2">
-            <RebornSwitch v-for="size in sizes" :key="size" v-model="checked2" :size="size" :label="size" />
+        <RebornCard title="尺寸 (Size)" custom-class="flex flex-col gap-2">
+            <RebornSwitch v-for="size in sizes" :key="size" v-model="checked2" :size="size" :inactive-label="size"
+                :active-label="size" />
         </RebornCard>
 
         <RebornCard title="加载状态与自定义 (Loading & Customization)" custom-class="space-y-4">
@@ -58,25 +59,25 @@ const currentColor = ref<typeof colors[number]>('primary')
             <view class="grid gap-4 md:grid-cols-2">
                 <!-- Loading State -->
                 <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor" label="加载中 (Loading)"
-                        loading />
+                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
+                        active-label="加载中 (Loading)" loading />
                 </view>
 
                 <!-- Custom UI (Square) -->
                 <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor" label="方形 UI (Custom UI)"
-                        :ui="{ track: 'rounded-md', thumb: 'rounded-sm' }" />
+                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
+                        active-label="方形 UI (Custom UI)" :ui="{ track: 'rounded-md', thumb: 'rounded-sm' }" />
                 </view>
             </view>
 
             <view class="grid gap-4 md:grid-cols-2">
                 <!-- Custom Thumb Content (Icon) -->
                 <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor" label="自定义图标 (Thumb Slot)"
-                        :ui="{ track: 'group-[.is-checked]:bg-orange-6 bg-blue-6' }">
+                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
+                        active-label="自定义图标 (Thumb Slot)" :ui="{ track: 'group-[.is-checked]:bg-orange-6 bg-blue-6' }">
                         <template #thumb="{ checked }">
                             <view :class="[
-                                'size-3.5 transition-colors',
+                                'flex size-4 transition-colors',
                                 checked ? 'i-lucide-check text-orange-6' : 'i-lucide-x text-blue-6'
                             ]" />
                         </template>
@@ -85,17 +86,17 @@ const currentColor = ref<typeof colors[number]>('primary')
 
                 <!-- Custom Thumb + Loading -->
                 <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor" label="加载中 (Custom Icon)"
-                        loading>
+                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
+                        active-label="加载中 (Custom Icon)" loading>
                         <template #thumb="{ loading }">
-                            <view v-if="loading" class="i-lucide-loader size-full p-0.5 animate-spin text-primary" />
+                            <view v-if="loading" class="i-lucide-loader size-4 p-0.5 animate-spin text-primary flex" />
                         </template>
                     </RebornSwitch>
                 </view>
 
                 <!-- Custom Size (XL) -->
                 <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :color="currentColor" label="自定义大小 (Custom XL)" :ui="{
+                    <RebornSwitch v-model="onValue" :color="currentColor" active-label="自定义大小 (Custom XL)" :ui="{
                         track: 'h-8 w-14',
                         thumb: 'size-7 group-[.is-checked]:translate-x-6'
                     }" />

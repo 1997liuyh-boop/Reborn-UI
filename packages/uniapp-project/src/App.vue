@@ -65,5 +65,6 @@ body {
 page {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   font-family: Open Sans, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Segoe UI, Arial, Roboto, PingFang SC, miui, Hiragino Sans GB, Microsoft Yahei, sans-serif;
+  height: auto;
 }
 </style>

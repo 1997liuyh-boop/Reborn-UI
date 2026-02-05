@@ -2,8 +2,15 @@
 import * as z from 'zod'
 import { useDarkMode } from '@/composables/useDarkMode'
 import RebornAffix from '@/components/reborn-affix/RebornAffix.vue'
+import RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'
 
 const { isDark, toggleDarkMode } = useDarkMode()
+
+// const scrollTop = ref(0)
+
+// onPageScroll((e) => {
+//   scrollTop.value = e.scrollTop
+// })
 
 const list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']
 const menuItems = [
@@ -34,6 +41,8 @@ const menuItems = [
       { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/reborn-tabs/index' },
       { label: '折叠', icon: 'i-lucide-chevrons-down-up', path: '/pages/reborn-collapse/RebornCollapseDemo' },
       { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },
+      { label: '返回顶部', icon: 'i-lucide-arrow-big-up', path: '/pages/reborn-back-top/RebornBackTopDemo' },
+      { label: '吸顶', icon: 'i-lucide-arrow-up-to-line', path: '/pages/reborn-sticky/RebornStickyDemo' },
     ]
   },
   {
@@ -153,7 +162,6 @@ onMounted(async () => {
           </view>
         </view>
       </view>
-
     </view>
     <reborn-affix :right="20" :bottom="150" :no-snapping="true">
       <view class="w-10 h-10 flex flex-col items-center justify-center rounded-full bg-primary-500 overflow-hidden"
@@ -164,5 +172,6 @@ onMounted(async () => {
         </view>
       </view>
     </reborn-affix>
+    <reborn-back-top />
   </view>
 </template>

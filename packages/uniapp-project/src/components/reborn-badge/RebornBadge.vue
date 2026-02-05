@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useAttrs, useSlots, ref } from 'vue'
+import { computed, useSlots, ref } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config'
@@ -21,6 +21,14 @@ export interface BadgeProps {
   closable?: boolean
   closeIcon?: string
   customClass?: any
+  ui?: {
+    base?: string
+    label?: string
+    leadingIcon?: string
+    trailingIcon?: string
+    closeButton?: string
+    closeIcon?: string
+  }
 }
 
 const props = withDefaults(defineProps<BadgeProps>(), {
@@ -32,9 +40,10 @@ const props = withDefaults(defineProps<BadgeProps>(), {
 
 const emit = defineEmits(['close', 'click'])
 
-const attrs = useAttrs()
 const slots = useSlots()
 const isClosing = ref(false)
+
+const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
   const styles = b({
@@ -45,12 +54,12 @@ const ui = computed(() => {
   })
 
   return {
-    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class) }),
-    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class) }),
-    leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class) }),
-    trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(opts?.class) }),
-    closeButton: (opts?: { class?: any }) => styles.closeButton({ class: cn(opts?.class) }),
-    closeIcon: (opts?: { class?: any }) => styles.closeIcon({ class: cn(opts?.class) }),
+    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
+    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
+    leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
+    trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(opts?.class, uiOverrides.value.trailingIcon) }),
+    closeButton: (opts?: { class?: any }) => styles.closeButton({ class: cn(opts?.class, uiOverrides.value.closeButton) }),
+    closeIcon: (opts?: { class?: any }) => styles.closeIcon({ class: cn(opts?.class, uiOverrides.value.closeIcon) }),
   }
 })
 
