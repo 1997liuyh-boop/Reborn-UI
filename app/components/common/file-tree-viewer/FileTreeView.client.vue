@@ -118,9 +118,7 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #e2e8f0;
     border-radius: 3px;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+}.dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #27272a;
 }.custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;

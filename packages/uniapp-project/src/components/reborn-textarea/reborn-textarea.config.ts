@@ -4,7 +4,7 @@ const colors = ["primary", "secondary", "success", "info", "warning", "error", "
 const config = {
     slots: {
         root: "relative box-border shrink-0 grow-0 basis-auto min-h-0 min-w-0 flex flex-row items-center bg-white rounded-lg p-2 transition-all duration-200",
-        inner: "h-full flex-1 text-28 text-surface-700 bg-transparent disabled:cursor-not-allowed disabled:opacity-50",
+        inner: "h-full flex-1 text-28 text-gray-7 bg-transparent disabled:cursor-not-allowed disabled:opacity-50 w-full",
         text: "absolute right-2 bottom-2 text-xs text-gray-5 pointer-events-none",
     },
     variants: {
@@ -35,7 +35,8 @@ const config = {
         },
         error: {
             true: {
-                root: "border-red-500",
+                root: "ring-error text-error",
+                inner: "placeholder:text-error/50"
             },
         },
         hasCount: {

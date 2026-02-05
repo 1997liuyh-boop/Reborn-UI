@@ -17,6 +17,7 @@ const menuItems = [
   {
     label: '表单组件',
     children: [
+      { label: '表单', icon: 'i-lucide-layout-list', path: '/pages/reborn-form/RebornFormDemo' },
       { label: '输入框', icon: 'i-lucide-text-cursor-input', path: '/pages/reborn-input/RebornInputDemo' },
       { label: '计数器', icon: 'i-mdi-numbers', path: '/pages/reborn-input-number/RebornInputNumberDemo' },
       { label: '文本域', icon: 'i-lucide-form-input', path: '/pages/reborn-textarea/RebornTextareaDemo' },
@@ -47,36 +48,53 @@ const goToDemo = (path: string) => {
   })
 }
 
-const newData = ref({ email: 'test@qq.com', password: "12345", newPassword: '123456789' })
+const newData = ref({ email: 'test@qq.com', password: "12345", newPassword: '123456789', telPhone: "123", price: 100, code: '1234', content: [], list: [{ name: '13', no: 3, money: 3 }, { name: '2', no: 2, money: 2 }] })
 
-const schema = z.object({
-  email: z.string().email('Invalid email'),
-  newEmail: z.string().email('Invalid email'),
-  password: z.string({ message: 'Password is required' })
-    .min(8, 'Must be at least 8 characters'),
-  newPassword: z.string({ message: 'Password is required' })
-    .min(8, 'Must be at least 8 characters'),
-}).superRefine((data, ctx) => {
-  if (data.newPassword !== data.password) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['newPassword'],      // 错误挂到 newPassword 上
-      message: 'Passwords do not match',
+
+const baseSchema = z.object({
+  email: z.email('邮箱格式不正确').refine(val => val.endsWith('@qq.com') || val.endsWith('@163.com'), '仅支持 QQ 或 163 邮箱'),
+  password: z.string().min(8, '密码至少8位').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$/, '需包含大小写字母和特殊符号'),
+  newPassword: z.preprocess((val) => Number(val), z.number().refine(n => /^\d+(\.\d{1,2})?$/.test(n.toString()), '最多只能保留两位小数')),
+  telPhone: z.union([
+    z.literal(""),
+    z.string().regex(/^137\d{8}$/, '手机号格式不正确')
+  ]).optional(),
+  price: z.preprocess((val) => Number(val), z.number().refine(n => /^\d+(\.\d{1,2})?$/.test(n.toString()), '最多只能保留两位小数')),
+  code: z.string().length(4, '验证码必须为 4 位'),
+  content: z.array(z.string()).refine((val) => newData.value.price > 200 ? val.length > 2 : true, '价格大于200时，内容长度必须大于2'),
+  list: z.array(z.object({
+    name: z.string().min(2, 'Name 最少两个字符'),
+    no: z.coerce.number(),    // 强制转数字
+    money: z.coerce.number()  // 强制转数字
+  }))
+    .min(3, 'List 长度不能小于 3')
+    .refine((items) => {
+      // 逻辑：校验 no 和 money 是否递增
+      for (let i = 1; i < items.length; i++) {
+        if (items[i].no <= items[i - 1].no || items[i].money <= items[i - 1].money) {
+          return false;
+        }
+      }
+      return true;
+    }, {
+      message: 'no 和 money 必须是递增的'
     })
-  }
-})
+});
 
 onMounted(async () => {
+  const itemSchema = baseSchema.shape.list.element;
+  const contentSchema = itemSchema.pick({ name: true })
+  const res = await contentSchema.safeParseAsync(newData.value.list[1])
+  console.log(res)
+  // console.log(baseSchema instanceof z.ZodObject)
+  // newData.value.price = 300
+  // const fieldName = 'content';
+  // const contentSchema = baseSchema.pick({ [fieldName]: true })
+  // const res = await contentSchema.safeParseAsync(newData.value)
+  // if (!res.success) console.log(res.error.issues)
 
-  const r = schema
-    .pick({ password: true, newPassword: true })
-    .safeParse({
-      password: newData.value.password,
-      newPassword: '1234567289',
-    })
-
-  console.log(r.success)          // false
-  if (!r.success) console.log(r.error.issues)
+  // const res2 = await baseSchema.safeParseAsync(newData.value)
+  // if (!res2.success) console.log(res2.error.issues)
 })
 
 </script>

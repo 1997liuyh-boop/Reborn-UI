@@ -2,8 +2,9 @@
 import { computed, ref, useAttrs, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "@/lib/utils";
-import theme, { checkboxColors, checkboxSizes } from "./reborn-checkbox.config";
 import { tv } from "@/lib/tv";
+import theme, { checkboxColors, checkboxSizes } from "./reborn-checkbox.config";
+import { useFormInject } from "@/composables/useFieldGroup";
 
 const b = tv(theme);
 
@@ -42,6 +43,7 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
+const { size: fieldGroupSize, disabled: fieldGroupDisabled, isError } = useFormInject(props);
 
 const localValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? false);
 const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
@@ -59,8 +61,9 @@ const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
   const styles = b({
-    size: props.size,
+    size: props.size || fieldGroupSize.value,
     color: props.color,
+    error: isError.value,
   });
 
   return {
@@ -72,10 +75,6 @@ const ui = computed(() => {
   };
 });
 
-const inputAttrs = computed(() => {
-  const { class: _class, ...rest } = attrs;
-  return rest;
-});
 
 function updateValue(nextValue: boolean | CheckboxValue[]) {
   if (props.modelValue === undefined) {
@@ -111,8 +110,9 @@ watch(
 </script>
 
 <template>
-  <view :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', props.disabled && 'is-disabled')"
-    :data-disabled="props.disabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;" @tap="toggle">
+  <view :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', fieldGroupDisabled && 'is-disabled')"
+    :data-disabled="fieldGroupDisabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;"
+    @tap="toggle">
     <view :class="ui.control()">
       <slot name="icon" :checked="isChecked">
         <view class="i-lucide-check" :class="ui.icon()" />

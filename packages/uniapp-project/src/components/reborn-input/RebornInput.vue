@@ -1,4 +1,5 @@
 <script lang="ts">
+import { inputSizes, inputColors } from "./reborn-input.config";
 export type InputType =
   | "text"
   | "number"
@@ -36,14 +37,15 @@ export interface InputProps {
   placeholderClass?: string;
   autofocus?: boolean;
   rounded?: boolean;
+  color?: typeof inputColors[number];
 }
 </script>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, toRef, useSlots, watch } from "vue";
-import theme, { inputSizes } from "./reborn-input.config";
-import { useFieldGroup } from "@/composables/useFieldGroup";
 import { tv } from "@/lib/tv";
+import theme from "./reborn-input.config";
+import { useFormInject } from "@/composables/useFieldGroup";
 
 const b = tv(theme);
 const slots = useSlots();
@@ -71,6 +73,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   autofocus: false,
   clearable: false,
   rounded: true,
+  color: "primary",
 });
 
 const emit = defineEmits([
@@ -101,13 +104,13 @@ const inputValue = computed(() =>
 
 // 是否显示清除按钮
 const showClear = computed(() => {
-  return props.clearable && !props.disabled && !props.readonly && `${inputValue.value}` !== "";
+  return props.clearable && !fieldGroupDisabled.value && !props.readonly && `${inputValue.value}` !== "";
 });
 
 
 const isFilled = computed(() => `${inputValue.value ?? ""}`.length > 0);
 
-const { orientation, size: fieldGroupSize } = useFieldGroup(props);
+const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError } = useFormInject(props);
 
 const size = toRef(props, "size");
 
@@ -118,6 +121,8 @@ const ui = computed(() =>
     hasLeading: !!slots.leading,
     hasTrailing: !!slots.trailing || showClear.value || props.password,
     rounded: props.rounded,
+    color: props.color,
+    error: isError.value,
   }),
 );
 
@@ -152,7 +157,7 @@ function onKeyboardheightchange(e: any) {
 
 // 聚焦方法
 function focus() {
-  if (props.disabled || props.readonly) {
+  if (fieldGroupDisabled.value || props.readonly) {
     isFocusing.value = false;
     return
   };
@@ -168,7 +173,7 @@ function focus() {
 
 // 获取焦点事件
 function onFocus(e: any) {
-  if (props.disabled || props.readonly) return;
+  if (fieldGroupDisabled.value || props.readonly) return;
   isFocus.value = true;
   emit("focus", e);
 }
@@ -179,7 +184,7 @@ function onBlur(e: any) {
 }
 // 切换密码显示状态
 function showPassword() {
-  if (props.disabled || props.readonly) return;
+  if (fieldGroupDisabled.value || props.readonly) return;
   isPassword.value = !isPassword.value;
 }
 // 清除方法
@@ -202,16 +207,16 @@ defineExpose({
 </script>
 
 <template>
-  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="props.disabled" :data-filled="isFilled"
+  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled" :data-filled="isFilled"
     @click="focus">
     <view v-if="$slots.leading" :class="ui.leading()">
       <slot name="leading" :ui="ui" />
     </view>
 
-    <input :type="isPassword ? 'password' : props.type" :disabled="props.disabled || props.readonly"
+    <input :type="isPassword ? 'password' : props.type" :disabled="fieldGroupDisabled || props.readonly"
       :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.input()"
-      :password="isPassword" :focus="props.focus && !props.disabled && !props.readonly"
-      :placeholder-class="`text-surface-400 ${props.placeholderClass}`" :maxlength="props.maxlength"
+      :password="isPassword" :focus="props.focus && !fieldGroupDisabled && !props.readonly"
+      :placeholder-class="`text-gart-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
       :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
       @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange" />

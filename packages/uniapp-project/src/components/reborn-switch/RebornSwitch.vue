@@ -3,6 +3,7 @@ import type { ClassValue } from "clsx";
 import { computed, ref, useAttrs, watch } from "vue";
 import { tv } from '@/lib/tv';
 import { cn } from '@/lib/utils';
+import { useFormInject } from "@/composables/useFieldGroup";
 import theme, { switchColors, switchSizes } from "./reborn-switch.config";
 
 defineOptions({
@@ -10,12 +11,13 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const b = tv(theme);
+const b = tv(theme as any);
 
 export interface SwitchProps {
   modelValue?: boolean;
   defaultValue?: boolean;
-  label?: string;
+  activeLabel?: string;
+  inactiveLabel?: string;
   disabled?: boolean;
   loading?: boolean;
   size?: typeof switchSizes[number];
@@ -26,7 +28,8 @@ export interface SwitchProps {
     input: ClassValue;
     track: ClassValue;
     thumb: ClassValue;
-    label: ClassValue;
+    activeLabel: ClassValue;
+    inactiveLabel: ClassValue;
   }>;
 }
 
@@ -42,7 +45,9 @@ const emit = defineEmits<{
   (e: "change", value: boolean): void;
 }>();
 
-const attrs = useAttrs();
+const { disabled: formDisabled, size: formSize, isError } = useFormInject(props);
+
+const isDisabled = computed(() => formDisabled.value || props.disabled || props.loading);
 
 const localValue = ref(props.defaultValue ?? false);
 const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
@@ -50,10 +55,11 @@ const currentValue = computed(() => (props.modelValue !== undefined ? props.mode
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
-  const styles = b({
-    size: props.size,
+  const styles = (b as any)({
+    size: formSize.value || props.size,
     color: props.color,
     checked: currentValue.value,
+    error: isError.value,
   });
 
   return {
@@ -61,7 +67,8 @@ const ui = computed(() => {
     input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
     track: (opts?: { class?: any }) => styles.track({ class: cn(opts?.class, uiOverrides.value.track) }),
     thumb: (opts?: { class?: any }) => styles.thumb({ class: cn(opts?.class, uiOverrides.value.thumb) }),
-    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
+    activeLabel: (opts?: { class?: any }) => styles.activeLabel({ class: cn(opts?.class, uiOverrides.value.activeLabel) }),
+    inactiveLabel: (opts?: { class?: any }) => styles.inactiveLabel({ class: cn(opts?.class, uiOverrides.value.inactiveLabel) }),
   };
 });
 
@@ -91,7 +98,11 @@ watch(
 
 <template>
   <view :class="[ui.wrapper({ class: props.customClass }), 'group', currentValue && 'is-checked']" @tap="onTap"
-    :data-disabled="props.disabled || props.loading" style="-webkit-tap-highlight-color: transparent;">
+    :data-disabled="isDisabled" style="-webkit-tap-highlight-color: transparent;">
+
+    <view v-if="props.inactiveLabel || $slots.inactiveLabel" :class="ui.inactiveLabel()">
+      <slot name="inactiveLabel">{{ props.inactiveLabel }}</slot>
+    </view>
 
     <view :class="ui.track()" :data-loading="props.loading">
       <view :class="ui.thumb()">
@@ -101,9 +112,10 @@ watch(
       </view>
     </view>
 
-    <view v-if="props.label || $slots.default" :class="ui.label()">
-      <slot>{{ props.label }}</slot>
+    <view v-if="props.activeLabel || $slots.activeLabel" :class="ui.activeLabel()">
+      <slot name="activeLabel">{{ props.activeLabel }}</slot>
     </view>
+
   </view>
 </template>
 

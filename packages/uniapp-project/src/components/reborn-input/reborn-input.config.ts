@@ -1,4 +1,5 @@
-const inputSizes = ["sm", "md", "lg"] as const;
+const sizes = ["sm", "md", "lg"] as const;
+const colors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 
 const config = {
   slots: {
@@ -20,6 +21,29 @@ const config = {
       },
       lg: {
         input: "h-input-lg px-8 rounded-md",
+      },
+    },
+    color: {
+      primary: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-primary",
+      },
+      secondary: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-secondary",
+      },
+      success: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-success",
+      },
+      info: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-info",
+      },
+      warning: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-warning",
+      },
+      error: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-error",
+      },
+      neutral: {
+        input: "focus-within:ring-[1.5px] focus-within:ring-gray-4",
       },
     },
     multiline: {
@@ -55,12 +79,18 @@ const config = {
         input: "rounded-md",
       },
     },
+    error: {
+      true: {
+        input: "border-error text-error placeholder:text-error/50 focus-visible:ring-error focus-within:ring-error focus-within:border-error ring-error",
+      },
+    },
   },
   defaultVariants: {
     size: "md",
+    color: "neutral",
     rounded: true,
   },
 } as const;
 
-export { inputSizes };
+export { sizes as inputSizes, colors as inputColors };
 export default config;

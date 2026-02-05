@@ -32,7 +32,7 @@ export interface ButtonProps {
 
 <script setup lang="ts">
 import { computed, toRef, ref } from 'vue'
-import { useFieldGroup } from '@/composables/useFieldGroup'
+import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 
 import theme, { buttonColors, buttonVariants, buttonSizes } from './reborn-button.config'
@@ -86,9 +86,9 @@ const slots = defineSlots<{
     trailing(props: { ui: any }): any
 }>()
 
-const { orientation, size: fieldGroupSize } = useFieldGroup(props)
+const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled } = useFormInject(props)
 
-const isDisabled = computed(() => props.disabled || props.loading)
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled || props.loading)
 
 const color = toRef(props, 'color')
 const variant = toRef(props, 'variant')

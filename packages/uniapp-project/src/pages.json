@@ -87,6 +87,13 @@
         "navigationBarTitleText": "Image",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/reborn-form/RebornFormDemo",
+      "style": {
+        "navigationBarTitleText": "Form",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

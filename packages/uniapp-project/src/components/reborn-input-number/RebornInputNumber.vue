@@ -1,5 +1,5 @@
 <template>
-    <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="isDisabled">
+    <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled">
         <view :class="ui.button()" @touchstart="onMinus" @touchend="longPress.stop" @touchcancel="longPress.stop">
             <slot name="decrease-icon">
                 <view :class="ui.icon()" class="i-lucide-minus" />
@@ -8,7 +8,7 @@
 
         <view :class="ui.divider()" />
 
-        <input :class="ui.input()" :type="inputType" :value="value" :disabled="isDisabled" :readonly="!readonly"
+        <input :class="ui.input()" :type="inputType" :value="value" :disabled="fieldGroupDisabled" :readonly="!readonly"
             :placeholder="placeholder" @input="onInput" @blur="onBlur" />
 
         <view :class="ui.divider()" />
@@ -26,7 +26,7 @@ import { computed, nextTick, ref, watch, useAttrs, toRef } from "vue";
 import type { ClassValue } from "clsx";
 import theme, { inputNumberColors, inputNumberSizes, inputNumberShapes } from "./reborn-input-number.config";
 
-import { useFieldGroup } from "@/composables/useFieldGroup";
+import { useFormInject } from "@/composables/useFieldGroup";
 import { useLongPress } from "./long-press";
 import { cn } from "@/lib/utils";
 import { tv } from "@/lib/tv";
@@ -67,8 +67,8 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
     step: 1,
     disabled: false,
     ui: () => ({}),
-    size: "sm",
-    color: "neutral",
+    size: "md",
+    color: "primary",
     shape: "square",
     placeholder: "",
     inputType: "number",
@@ -78,12 +78,7 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
 const emit = defineEmits(["update:modelValue", "change", "input", "blur", "focus"]);
 
 const longPress = useLongPress();
-const { orientation, size: fieldGroupSize, disabled } = useFieldGroup();
-const attrs = useAttrs();
-
-const isDisabled = computed(() => {
-    return disabled.value || props.disabled;
-});
+const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled } = useFormInject(props);
 
 const uiOverrides = computed(() => props.ui || {});
 const b = tv(theme);
@@ -107,8 +102,8 @@ const ui = computed(() => {
 
 const value = ref(props.modelValue);
 
-const isPlus = computed(() => !isDisabled.value && value.value < props.max);
-const isMinus = computed(() => !isDisabled.value && value.value > props.min);
+const isPlus = computed(() => !fieldGroupDisabled.value && value.value < props.max);
+const isMinus = computed(() => !fieldGroupDisabled.value && value.value > props.min);
 
 function update() {
     nextTick(() => {
@@ -143,7 +138,7 @@ function onInput(e: any) {
 }
 
 function onPlus() {
-    if (isDisabled.value || !isPlus.value) return;
+    if (fieldGroupDisabled.value || !isPlus.value) return;
 
     longPress.start(() => {
         if (isPlus.value) {
@@ -155,7 +150,7 @@ function onPlus() {
 }
 
 function onMinus() {
-    if (isDisabled.value || !isMinus.value) return;
+    if (fieldGroupDisabled.value || !isMinus.value) return;
 
     longPress.start(() => {
         if (isMinus.value) {

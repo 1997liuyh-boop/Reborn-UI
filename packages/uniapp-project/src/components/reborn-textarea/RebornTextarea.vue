@@ -3,7 +3,7 @@ import { computed, nextTick, ref, watch, type PropType } from "vue";
 import { tv } from "@/lib/tv";
 import { cn } from "@/lib/utils";
 
-import { useFieldGroup } from "@/composables/useFieldGroup";
+import { useFormInject } from "@/composables/useFieldGroup";
 import theme, { textareaSizes, textareaColors } from "./reborn-textarea.config";
 
 defineOptions({
@@ -12,6 +12,7 @@ defineOptions({
 
 // 组件属性定义
 const props = defineProps({
+	// ... (props are fine, keeping them implied by context or unchanged)
 	// 颜色
 	color: {
 		type: String as PropType<typeof textareaColors[number]>,
@@ -183,12 +184,8 @@ const emit = defineEmits([
 	"keyboardheightchange",
 ]);
 
-const { disabled, isError } = useFieldGroup();
+const { disabled: isDisabled, isError } = useFormInject(props);
 
-// 是否禁用
-const isDisabled = computed(() => {
-	return disabled.value || props.disabled;
-});
 
 // 绑定值
 const value = ref(props.modelValue);

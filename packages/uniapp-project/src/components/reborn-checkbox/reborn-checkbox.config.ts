@@ -57,6 +57,12 @@ export default {
         icon: "text-white",
       },
     },
+    error: {
+      true: {
+        control: "border-error",
+        label: "text-error",
+      },
+    },
   },
   defaultVariants: {
     size: "md" as (typeof size)[number],
