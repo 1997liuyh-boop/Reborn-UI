@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import { useDarkMode } from '@/composables/useDarkMode'
+import RebornAffix from '@/components/reborn-affix/RebornAffix.vue'
 
 const { isDark, toggleDarkMode } = useDarkMode()
 
+const list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']
 const menuItems = [
   {
     label: '基础组件',
@@ -31,6 +33,7 @@ const menuItems = [
       { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/tabs/index' },
       { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/reborn-tabs/index' },
       { label: '折叠', icon: 'i-lucide-chevrons-down-up', path: '/pages/reborn-collapse/RebornCollapseDemo' },
+      { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },
     ]
   },
   {
@@ -152,5 +155,14 @@ onMounted(async () => {
       </view>
 
     </view>
+    <reborn-affix :right="20" :bottom="150" :no-snapping="true">
+      <view class="w-10 h-10 flex flex-col items-center justify-center rounded-full bg-primary-500 overflow-hidden"
+        @tap="toggleDarkMode">
+        <view class="flex flex-col duration-300 transition-transform"
+          :class="isDark ? '-translate-y-[20px]' : 'translate-y-[20px]'">
+          <view v-for="item in list" :key="item" :class="item" class="text-white size-10" />
+        </view>
+      </view>
+    </reborn-affix>
   </view>
 </template>

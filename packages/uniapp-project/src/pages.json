@@ -94,6 +94,13 @@
         "navigationBarTitleText": "Form",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/reborn-affix/RebornAffixDemo",
+      "style": {
+        "navigationBarTitleText": "Affix",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {
