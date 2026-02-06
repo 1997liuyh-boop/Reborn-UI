@@ -60,44 +60,45 @@ const goToDemo = (path: string) => {
   })
 }
 
-const newData = ref({ email: 'test@qq.com', password: "12345", newPassword: '123456789', telPhone: "123", price: 100, code: '1234', content: [], list: [{ name: '13', no: 3, money: 3 }, { name: '2', no: 2, money: 2 }] })
+// const newData = ref({ email: 'test@qq.com', password: "12345", newPassword: '123456789', telPhone: "123", price: 100, code: '1234', content: [], list: [{ name: '13', no: 3, money: 3 }, { name: '2', no: 2, money: 2 }] })
 
 
-const baseSchema = z.object({
-  email: z.email('邮箱格式不正确').refine(val => val.endsWith('@qq.com') || val.endsWith('@163.com'), '仅支持 QQ 或 163 邮箱'),
-  password: z.string().min(8, '密码至少8位').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$/, '需包含大小写字母和特殊符号'),
-  newPassword: z.preprocess((val) => Number(val), z.number().refine(n => /^\d+(\.\d{1,2})?$/.test(n.toString()), '最多只能保留两位小数')),
-  telPhone: z.union([
-    z.literal(""),
-    z.string().regex(/^137\d{8}$/, '手机号格式不正确')
-  ]).optional(),
-  price: z.preprocess((val) => Number(val), z.number().refine(n => /^\d+(\.\d{1,2})?$/.test(n.toString()), '最多只能保留两位小数')),
-  code: z.string().length(4, '验证码必须为 4 位'),
-  content: z.array(z.string()).refine((val) => newData.value.price > 200 ? val.length > 2 : true, '价格大于200时，内容长度必须大于2'),
-  list: z.array(z.object({
-    name: z.string().min(2, 'Name 最少两个字符'),
-    no: z.coerce.number(),    // 强制转数字
-    money: z.coerce.number()  // 强制转数字
-  }))
-    .min(3, 'List 长度不能小于 3')
-    .refine((items) => {
-      // 逻辑：校验 no 和 money 是否递增
-      for (let i = 1; i < items.length; i++) {
-        if (items[i].no <= items[i - 1].no || items[i].money <= items[i - 1].money) {
-          return false;
-        }
-      }
-      return true;
-    }, {
-      message: 'no 和 money 必须是递增的'
-    })
-});
+// const baseSchema = z.object({
+//   email: z.email('邮箱格式不正确').refine(val => val.endsWith('@qq.com') || val.endsWith('@163.com'), '仅支持 QQ 或 163 邮箱'),
+//   password: z.string().min(8, '密码至少8位').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$/, '需包含大小写字母和特殊符号'),
+//   newPassword: z.preprocess((val) => Number(val), z.number().refine(n => /^\d+(\.\d{1,2})?$/.test(n.toString()), '最多只能保留两位小数')),
+//   telPhone: z.union([
+//     z.literal(""),
+//     z.string().regex(/^137\d{8}$/, '手机号格式不正确')
+//   ]).optional(),
+//   price: z.preprocess((val) => Number(val), z.number().refine(n => /^\d+(\.\d{1,2})?$/.test(n.toString()), '最多只能保留两位小数')),
+//   code: z.string().length(4, '验证码必须为 4 位'),
+//   content: z.array(z.string()).refine((val) => newData.value.price > 200 ? val.length > 2 : true, '价格大于200时，内容长度必须大于2'),
+//   list: z.array(z.object({
+//     name: z.string().min(2, 'Name 最少两个字符'),
+//     no: z.coerce.number(),    // 强制转数字
+//     money: z.coerce.number()  // 强制转数字
+//   }))
+//     .min(3, 'List 长度不能小于 3')
+//     .refine((items) => {
+//       // 逻辑：校验 no 和 money 是否递增
+//       for (let i = 1; i < items.length; i++) {
+//         if (items[i].no <= items[i - 1].no || items[i].money <= items[i - 1].money) {
+//           return false;
+//         }
+//       }
+//       return true;
+//     }, {
+//       message: 'no 和 money 必须是递增的'
+//     })
+// });
 
 onMounted(async () => {
-  const itemSchema = baseSchema.shape.list.element;
-  const contentSchema = itemSchema.pick({ name: true })
-  const res = await contentSchema.safeParseAsync(newData.value.list[1])
-  console.log(res)
+
+  // const itemSchema = baseSchema.shape.list.element;
+  // const contentSchema = itemSchema.pick({ name: true })
+  // const res = await contentSchema.safeParseAsync(newData.value.list[1])
+  // console.log(res)
   // console.log(baseSchema instanceof z.ZodObject)
   // newData.value.price = 300
   // const fieldName = 'content';

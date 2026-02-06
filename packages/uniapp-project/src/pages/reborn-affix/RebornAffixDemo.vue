@@ -19,10 +19,10 @@ const list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']
         <reborn-card>
             <view class="dark:text-white">不吸附边缘，任意位置可拖拽</view>
         </reborn-card>
-        <reborn-affix disabled :left="20" :bottom="400" :gap="10">
+        <reborn-affix disabled :right="20" :bottom="150" :gap="10">
             <view class="size-10 i-meteocons-hurricane-fill"></view>
         </reborn-affix>
-        <reborn-affix :left="200" :bottom="50" :no-snapping="true">
+        <reborn-affix :left="20" :bottom="150" :no-snapping="true">
             <view
                 class="w-10 h-10 flex flex-col items-center justify-center rounded-full bg-primary-500 overflow-hidden"
                 @tap="toggleDarkMode">

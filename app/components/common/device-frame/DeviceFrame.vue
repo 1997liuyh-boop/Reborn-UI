@@ -67,7 +67,7 @@ const selectedDevice = computed(() => devices.find(d => d.label === selectedDevi
         </div>
 
         <div v-if="selectedDevice"
-            class="relative shadow-2xl rounded-[3rem] border-8 border-gray-900 bg-gray-900 overflow-hidden transition-all duration-300 ease-in-out"
+            class="touch-none overscroll-contain relative shadow-2xl rounded-[3rem] border-8 border-gray-900 bg-gray-900 overflow-hidden transition-all duration-300 ease-in-out"
             :style="{
                 width: `${selectedDevice.width}px`,
                 height: `${selectedDevice.height}px`,
@@ -79,7 +79,7 @@ const selectedDevice = computed(() => devices.find(d => d.label === selectedDevi
                 <UIcon name="svg-spinners:blocks-wave" class="size-15 text-red-5" />
             </div>
 
-            <iframe ref="iframeRef" :src="iframeSrc" class="w-full h-full bg-white border-none"
+            <iframe ref="iframeRef" :src="iframeSrc" class="touch-none w-full h-full bg-white border-none"
                 :title="selectedDevice.label" @load="onIframeLoad" />
         </div>
     </div>
