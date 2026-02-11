@@ -81,7 +81,7 @@ const emit = defineEmits([
 
 
 const slots = defineSlots<{
-    leading(props: { ui: any }): any
+    leading(props: { ui: any; loading: boolean }): any
     default(props: { ui: any }): any
     trailing(props: { ui: any }): any
 }>()
@@ -175,9 +175,8 @@ function onTouchCancel() {
         @addgroupapp="onAddGroupApp" @subscribe="onSubscribe" @login="onLogin"
         @getrealtimephonenumber="onGetRealtimePhoneNumber" @agreeprivacyauthorization="onAgreePrivacyAuthorization"
         @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
-        <slot name="leading" :ui="ui">
-            <!-- <Icon name="svg-spinners:270-ring" v-if="props.loading" :class="ui.leadingIcon()" /> -->
-            <view v-if="props.loading" :class="['i-svg-spinners-270-ring w-4 h-4', ui.leadingIcon()]" />
+        <slot name="leading" :loading="props.loading" :ui="ui">
+            <view v-if="props.loading" :class="ui.loading?.()" />
         </slot>
 
         <slot :ui="ui">

@@ -1,5 +1,5 @@
 <template>
-    <view class="fixed touch-none" :style="viewStyle" @touchstart="onTouchStart" @touchmove.stop.prevent="onTouchMove"
+    <view class="fixed touch-none" :style="viewStyle" @touchstart="onTouchStart" @touchmove="onTouchMove"
         @touchend="onTouchEnd" @touchcancel="onTouchEnd">
         <slot></slot>
     </view>
@@ -97,12 +97,19 @@ function onTouchStart(e: TouchEvent) {
 
 function onTouchMove(e: TouchEvent) {
     if (props.disabled || !position.isDragging || e.touches.length === 0) return;
-    e.preventDefault();
 
     const touch = e.touches[0];
     const deltaX = touch.clientX - dragState.startX;
     // Y轴逻辑：手指往上滑(clientY变小)，bottom值应该变大
     const deltaY = dragState.startY - touch.clientY;
+
+    // 增加拖拽阈值判断，避免误触点击事件
+    if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) return;
+
+    // 确认为拖拽行为，阻止默认事件
+    if (e.cancelable) {
+        e.preventDefault();
+    }
 
     let newX = position.x + deltaX;
     let newY = position.y + deltaY;

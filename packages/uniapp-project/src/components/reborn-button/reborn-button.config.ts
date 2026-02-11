@@ -22,6 +22,7 @@ export default {
     slots: {
         base: "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-gdray-4 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         label: "truncate",
+        loading: "border-2 border-gray-3 border-t-current rounded-full animate-spin",
         leadingIcon: "shrink-0",
         leadingAvatar: "shrink-0",
         leadingAvatarSize: "",
@@ -52,24 +53,39 @@ export default {
         size: {
             xs: {
                 base: "h-[var(--button-xs-height)] text-24 gap-1.5 px-3 has-[>svg]:px-2.5",
+                loading: "size-3",
             },
             sm: {
                 base: "h-[var(--button-sm-height)] text-24 gap-1.5 px-3 has-[>svg]:px-2.5",
+                loading: "size-3.5",
             },
             default: {
                 base: "h-[var(--button-base-height)] text-26 px-4 py-4 has-[>svg]:px-3",
+                loading: "size-4",
             },
-            md: { base: "h-[var(--button-base-height)] text-26 px-4 py-4 has-[>svg]:px-3" },
-            lg: { base: "h-[var(--button-lg-height)] text-28 px-6 has-[>svg]:px-4" },
-            xl: { base: "h-[var(--button-xl-height)] text-30 px-6 has-[>svg]:px-4" },
-            "2xl": { base: "h-[var(--button-2xl-height)] text-32 px-6 has-[>svg]:px-4" },
-            "icon-xs": { base: "" },
-            "icon-sm": { base: "size-[var(--button-sm-height)] p-1" },
-            icon: { base: "size-[var(--button-base-height)] p-2" },
-            "icon-md": { base: "size-[var(--button-base-height)] p-2" },
-            "icon-lg": { base: "size-[var(--button-lg-height)] p-2.5" },
-            "icon-xl": { base: "size-[var(--button-xl-height)] p-2.5" },
-            "icon-2xl": { base: "size-[var(--button-2xl-height)] p-2.5" },
+            md: {
+                base: "h-[var(--button-base-height)] text-26 px-4 py-4 has-[>svg]:px-3",
+                loading: "size-4",
+            },
+            lg: {
+                base: "h-[var(--button-lg-height)] text-28 px-6 has-[>svg]:px-4",
+                loading: "size-5",
+            },
+            xl: {
+                base: "h-[var(--button-xl-height)] text-30 px-6 has-[>svg]:px-4",
+                loading: "size-6",
+            },
+            "2xl": {
+                base: "h-[var(--button-2xl-height)] text-32 px-6 has-[>svg]:px-4",
+                loading: "size-7",
+            },
+            "icon-xs": { base: "", loading: "size-3" },
+            "icon-sm": { base: "size-[var(--button-sm-height)] p-1", loading: "size-3.5" },
+            icon: { base: "size-[var(--button-base-height)] p-2", loading: "size-4" },
+            "icon-md": { base: "size-[var(--button-base-height)] p-2", loading: "size-4" },
+            "icon-lg": { base: "size-[var(--button-lg-height)] p-2.5", loading: "size-5" },
+            "icon-xl": { base: "size-[var(--button-xl-height)] p-2.5", loading: "size-6" },
+            "icon-2xl": { base: "size-[var(--button-2xl-height)] p-2.5", loading: "size-7" },
         },
         square: {
             true: { base: "p-0" },

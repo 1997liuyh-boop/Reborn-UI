@@ -65,7 +65,7 @@ export function buildCommand() {
         ? path.resolve(opts.root)
         : findWorkspaceRoot(process.cwd());
       const sourceDir = path.join(rootDir, opts.source);
-      const uniappSourceDir = opts.uniappSource 
+      const uniappSourceDir = opts.uniappSource
         ? path.join(rootDir, opts.uniappSource)
         : "";
       const outPath = path.join(rootDir, opts.out);
@@ -104,7 +104,20 @@ export function buildCommand() {
           if (ext === ".vue") {
             files.push({ path: rel, content, target: "web" });
           } else {
-            files.push({ path: rel, content });
+            // Check for collision with UniApp source
+            let target: "web" | "uniapp" | undefined;
+            if (uniappSourceDir) {
+              const parts = rel.split("/");
+              const uniappFile = path.join(uniappSourceDir, name, ...parts);
+              if (fssync.existsSync(uniappFile)) {
+                target = "web";
+              }
+            }
+            if (target) {
+              files.push({ path: rel, content, target });
+            } else {
+              files.push({ path: rel, content });
+            }
           }
 
           // 只从代码文件里抽依赖
@@ -123,7 +136,7 @@ export function buildCommand() {
             const uniappFiles = (await listFilesRecursive(uniappComponentDir)).filter(
               isAllowedFile,
             );
-            
+
             for (const absFile of uniappFiles) {
               const rel = path
                 .relative(uniappComponentDir, absFile)
