@@ -1,4 +1,4 @@
-const size = ['xs', 'sm', 'md', 'lg', 'xl'] as const
+const size = ['sm', 'md', 'lg'] as const
 const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 const variant = ['solid', 'outline', 'soft', 'subtle'] as const
 
@@ -149,11 +149,6 @@ const compoundVariants = [
     class: { base: "bg-neutral bg-opacity-10 border border-neutral/50 text-neutral" }
   },
   // square
-  {
-    size: "xs",
-    square: true,
-    class: { base: "w-4 h-4 p-0 items-center justify-center" }
-  },
   {
     size: "sm",
     square: true,
