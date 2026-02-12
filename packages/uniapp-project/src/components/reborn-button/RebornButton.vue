@@ -124,7 +124,7 @@ const ui = computed(() => {
 function onTap(e: UniEvent) {
     if (isDisabled.value) return;
 
-    emit("click", e, ui.value);
+    emit("click", e);
     emit("tap", e);
 }
 
@@ -165,8 +165,8 @@ function onTouchCancel() {
 </script>
 
 <template>
-    <button :disabled="isDisabled" :class="ui.base({ class: props.customClass })" :hover-class="hoverClass"
-        :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
+    <button class="reborn-button" :disabled="isDisabled" :class="ui.base({ class: props.customClass })"
+        :hover-class="hoverClass" :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
         :hover-stay-time="hoverStayTime" :form-type="formType" :open-type="openType" :session-from="sessionFrom"
         :send-message-title="sendMessageTitle" :send-message-path="sendMessagePath" :send-message-img="sendMessageImg"
         :show-message-card="showMessageCard" :app-parameter="appParameter" :group-id="groupId" :guild-id="guildId"
@@ -192,3 +192,10 @@ function onTouchCancel() {
         <slot name="trailing" :ui="ui" />
     </button>
 </template>
+<style scoped>
+.reborn-button {
+    &::after {
+        border: none;
+    }
+}
+</style>

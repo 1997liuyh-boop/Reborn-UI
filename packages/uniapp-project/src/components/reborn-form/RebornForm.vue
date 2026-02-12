@@ -82,8 +82,6 @@ const initialModel = ref<any>({});
 const data = ref({} as any);// 滚动距离
 const scrollTop = ref(0);
 
-// scroll-view 滚动位置
-const scrollViewTop = ref(0);
 
 // 滚动到指定位置
 function scrollTo(top: number) {
@@ -99,7 +97,10 @@ function scrollTo(top: number) {
 	// #endif
 
 	// #ifdef APP
-	scrollViewTop.value = top;
+	uni.pageScrollTo({
+		scrollTop: top,
+		duration: 0
+	});
 	// #endif
 }
 
@@ -255,16 +256,7 @@ defineExpose({
 })
 </script>
 <template>
-	<!-- #ifdef APP -->
-	<scroll-view :style="{ flex: 1 }" :scroll-top="scrollViewTop" :scroll-with-animation="true">
-		<view :class="ui.root({ class: props.customClass })">
-			<slot></slot>
-		</view>
-	</scroll-view>
-	<!-- #endif -->
-	<!-- #ifndef APP -->
 	<view :class="ui.root({ class: props.customClass })">
 		<slot></slot>
 	</view>
-	<!-- #endif -->
 </template>
