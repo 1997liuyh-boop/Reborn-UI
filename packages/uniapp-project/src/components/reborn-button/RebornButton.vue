@@ -35,6 +35,8 @@ import { computed, toRef, ref } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 
+import { cn } from '@/lib/utils'
+
 import theme, { buttonColors, buttonVariants, buttonSizes } from './reborn-button.config'
 
 const b = tv(theme)
@@ -95,34 +97,34 @@ const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 const square = toRef(props, 'square')
 
-const tvSlots = computed(() => b({
-    color: color.value,
-    variant: variant.value,
-    size: (fieldGroupSize.value || size.value) as any,
-    square: square.value,
-    fieldGroup: orientation.value
-}))
+const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
-    const slots = tvSlots.value as any
-    const result: any = {}
+    const styles = b({
+        color: color.value,
+        variant: variant.value,
+        size: (fieldGroupSize.value || size.value) as any,
+        square: square.value,
+        fieldGroup: orientation.value
+    })
 
-    for (const key in slots) {
-        result[key] = (opts?: any) => {
-            const uiClass = props.ui?.[key]
-            const optsClass = opts?.class
-            return slots[key]({ class: [optsClass, uiClass] })
-        }
+    return {
+        base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
+        root: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }), // alias to base
+        label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
+        loading: (opts?: { class?: any }) => styles.loading({ class: cn(opts?.class, uiOverrides.value.loading) }),
+        leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
+        leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(opts?.class, uiOverrides.value.leadingAvatar) }),
+        leadingAvatarSize: (opts?: { class?: any }) => styles.leadingAvatarSize({ class: cn(opts?.class, uiOverrides.value.leadingAvatarSize) }),
+        trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(opts?.class, uiOverrides.value.trailingIcon) }),
     }
-
-    return result
 })
 
 // 点击事件处理
 function onTap(e: UniEvent) {
     if (isDisabled.value) return;
 
-    emit("click", e);
+    emit("click", e, ui.value);
     emit("tap", e);
 }
 

@@ -80,73 +80,73 @@ const compoundVariants = [
   {
     color: "primary",
     variant: "soft",
-    class: { base: "bg-primary/10 text-primary" }
+    class: { base: "bg-primary bg-opacity-10 text-primary" }
   },
   {
     color: "secondary",
     variant: "soft",
-    class: { base: "bg-secondary/10 text-secondary" }
+    class: { base: "bg-secondary bg-opacity-10 text-secondary" }
   },
   {
     color: "error",
     variant: "soft",
-    class: { base: "bg-error/10 text-error" }
+    class: { base: "bg-error bg-opacity-10 text-error" }
   },
   {
     color: "success",
     variant: "soft",
-    class: { base: "bg-success/10 text-success" }
+    class: { base: "bg-success bg-opacity-10 text-success" }
   },
   {
     color: "warning",
     variant: "soft",
-    class: { base: "bg-warning/10 text-warning" }
+    class: { base: "bg-warning bg-opacity-10 text-warning" }
   },
   {
     color: "info",
     variant: "soft",
-    class: { base: "bg-info/10 text-info" }
+    class: { base: "bg-info bg-opacity-10 text-info" }
   },
   {
     color: "neutral",
     variant: "soft",
-    class: { base: "bg-neutral/10 text-neutral" }
+    class: { base: "bg-neutral bg-opacity-10 text-neutral" }
   },
   // subtle
   {
     color: "primary",
     variant: "subtle",
-    class: { base: "bg-primary/10 border border-primary/50 text-primary" }
+    class: { base: "bg-primary bg-opacity-10 border border-primary/50 text-primary" }
   },
   {
     color: "secondary",
     variant: "subtle",
-    class: { base: "bg-secondary/10 border border-secondary/50 text-secondary" }
+    class: { base: "bg-secondary bg-opacity-10 border border-secondary/50 text-secondary" }
   },
   {
     color: "error",
     variant: "subtle",
-    class: { base: "bg-error/10 border border-error/50 text-error" }
+    class: { base: "bg-error bg-opacity-10 border border-error/50 text-error" }
   },
   {
     color: "success",
     variant: "subtle",
-    class: { base: "bg-success/10 border border-success/50 text-success" }
+    class: { base: "bg-success bg-opacity-10 border border-success/50 text-success" }
   },
   {
     color: "warning",
     variant: "subtle",
-    class: { base: "bg-warning/10 border border-warning/50 text-warning" }
+    class: { base: "bg-warning bg-opacity-10 border border-warning/50 text-warning" }
   },
   {
     color: "info",
     variant: "subtle",
-    class: { base: "bg-info/10 border border-info/50 text-info" }
+    class: { base: "bg-info bg-opacity-10 border border-info/50 text-info" }
   },
   {
     color: "neutral",
     variant: "subtle",
-    class: { base: "bg-neutral/10 border border-neutral/50 text-neutral" }
+    class: { base: "bg-neutral bg-opacity-10 border border-neutral/50 text-neutral" }
   },
   // square
   {

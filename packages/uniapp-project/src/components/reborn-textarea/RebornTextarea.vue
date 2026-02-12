@@ -212,9 +212,13 @@ const ui = computed(() =>
 
 // 文本框样式
 const textareaStyle = computed(() => {
-	const style = {
-		height: typeof props.height === 'number' ? `${props.height}rpx` : props.height,
-	};
+	const style: any = {};
+
+	if (!props.autoHeight) {
+		style.height = typeof props.height === 'number' ? `${props.height}rpx` : props.height;
+	} else {
+		style.minHeight = '48rpx';
+	}
 
 	return style;
 });
@@ -225,7 +229,9 @@ const placeholderStyle = computed(() => {
 
 // 点击事件
 function onTap() {
-	isFocus.value = true;
+	if (!isFocus.value) {
+		focus();
+	}
 }
 
 // 获取焦点事件

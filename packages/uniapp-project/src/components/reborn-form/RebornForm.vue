@@ -78,11 +78,35 @@ const {
 	clearValidate
 } = useFieldGroup();
 
-console.log('RebornForm: setup called');
-// --- Business Logic ---
-
 const initialModel = ref<any>({});
-const data = ref({} as any);
+const data = ref({} as any);// 滚动距离
+const scrollTop = ref(0);
+
+// scroll-view 滚动位置
+const scrollViewTop = ref(0);
+
+// 滚动到指定位置
+function scrollTo(top: number) {
+	// #ifdef H5
+	window.scrollTo({ top, behavior: "smooth" });
+	// #endif
+
+	// #ifdef MP
+	uni.pageScrollTo({
+		scrollTop: top,
+		duration: 300
+	});
+	// #endif
+
+	// #ifdef APP
+	scrollViewTop.value = top;
+	// #endif
+}
+
+// 回到顶部
+function scrollToTop() {
+	scrollTo(0 + Math.random() / 1000);
+}
 
 function parseToObject<T>(val: T) {
 	return JSON.parse(JSON.stringify(val || {}));
@@ -148,10 +172,11 @@ function scrollToField(prop: string) {
 	if (field && field.getBoundingClientRect) {
 		field.getBoundingClientRect((res: any) => {
 			if (res) {
-				uni.pageScrollTo({
-					scrollTop: res.top + (fields.value.size > 0 ? 0 : 0) + uni.getSystemInfoSync().windowTop - 44,
-					duration: 300
-				});
+				// uni.pageScrollTo({
+				// 	scrollTop: res.top + (fields.value.size > 0 ? 0 : 0) + uni.getSystemInfoSync().windowTop - 44,
+				// 	duration: 0
+				// });
+				scrollTo(res.top + (fields.value.size > 0 ? 0 : 0) + scrollTop.value);
 			}
 		});
 	}
@@ -230,7 +255,16 @@ defineExpose({
 })
 </script>
 <template>
+	<!-- #ifdef APP -->
+	<scroll-view :style="{ flex: 1 }" :scroll-top="scrollViewTop" :scroll-with-animation="true">
+		<view :class="ui.root({ class: props.customClass })">
+			<slot></slot>
+		</view>
+	</scroll-view>
+	<!-- #endif -->
+	<!-- #ifndef APP -->
 	<view :class="ui.root({ class: props.customClass })">
 		<slot></slot>
 	</view>
+	<!-- #endif -->
 </template>

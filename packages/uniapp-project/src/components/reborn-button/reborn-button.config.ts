@@ -9,13 +9,6 @@ export const buttonSizes = [
     "lg",
     "xl",
     "2xl",
-    "icon-xs",
-    "icon-sm",
-    "icon", // Mapped to icon-md
-    "icon-md",
-    "icon-lg",
-    "icon-xl",
-    "icon-2xl",
 ] as const;
 
 export default {
@@ -52,40 +45,33 @@ export default {
         },
         size: {
             xs: {
-                base: "h-[var(--button-xs-height)] text-24 gap-1.5 px-3 has-[>svg]:px-2.5",
+                base: "h-[var(--button-xs-height)] text-24 gap-1.5 px-3",
                 loading: "size-3",
             },
             sm: {
-                base: "h-[var(--button-sm-height)] text-24 gap-1.5 px-3 has-[>svg]:px-2.5",
+                base: "h-[var(--button-sm-height)] text-24 gap-1.5 px-3",
                 loading: "size-3.5",
             },
             default: {
-                base: "h-[var(--button-base-height)] text-26 px-4 py-4 has-[>svg]:px-3",
+                base: "h-[var(--button-base-height)] text-26 px-4",
                 loading: "size-4",
             },
             md: {
-                base: "h-[var(--button-base-height)] text-26 px-4 py-4 has-[>svg]:px-3",
+                base: "h-[var(--button-base-height)] text-26 px-4",
                 loading: "size-4",
             },
             lg: {
-                base: "h-[var(--button-lg-height)] text-28 px-6 has-[>svg]:px-4",
+                base: "h-[var(--button-lg-height)] text-28 px-6",
                 loading: "size-5",
             },
             xl: {
-                base: "h-[var(--button-xl-height)] text-30 px-6 has-[>svg]:px-4",
+                base: "h-[var(--button-xl-height)] text-30 px-6",
                 loading: "size-6",
             },
             "2xl": {
-                base: "h-[var(--button-2xl-height)] text-32 px-6 has-[>svg]:px-4",
+                base: "h-[var(--button-2xl-height)] text-32 px-6",
                 loading: "size-7",
             },
-            "icon-xs": { base: "", loading: "size-3" },
-            "icon-sm": { base: "size-[var(--button-sm-height)] p-1", loading: "size-3.5" },
-            icon: { base: "size-[var(--button-base-height)] p-2", loading: "size-4" },
-            "icon-md": { base: "size-[var(--button-base-height)] p-2", loading: "size-4" },
-            "icon-lg": { base: "size-[var(--button-lg-height)] p-2.5", loading: "size-5" },
-            "icon-xl": { base: "size-[var(--button-xl-height)] p-2.5", loading: "size-6" },
-            "icon-2xl": { base: "size-[var(--button-2xl-height)] p-2.5", loading: "size-7" },
         },
         square: {
             true: { base: "p-0" },
@@ -177,75 +163,75 @@ export default {
         {
             color: "primary" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-primary/10 text-primary hover:bg-primary/20",
+            class: "bg-primary bg-opacity-10 text-primary hover:bg-opacity-20",
         },
         {
             color: "secondary" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-secondary/10 text-secondary hover:bg-secondary/20",
+            class: "bg-secondary bg-opacity-10 text-secondary hover:bg-opacity-20",
         },
         {
             color: "success" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-success/10 text-success hover:bg-success/20",
+            class: "bg-success bg-opacity-10 text-success hover:bg-opacity-20",
         },
         {
             color: "info" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-info/10 text-info hover:bg-info/20",
+            class: "bg-info bg-opacity-10 text-info hover:bg-opacity-20",
         },
         {
             color: "warning" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-warning/10 text-warning hover:bg-warning/20",
+            class: "bg-warning bg-opacity-10 text-warning hover:bg-opacity-20",
         },
         {
             color: "error" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-error/10 text-error hover:bg-error/20",
+            class: "bg-error bg-opacity-10 text-error hover:bg-opacity-20",
         },
         {
             color: "neutral" as (typeof buttonColors)[number],
             variant: "soft" as (typeof buttonVariants)[number],
-            class: "bg-neutral/10 text-neutral hover:bg-neutral/20",
+            class: "bg-neutral bg-opacity-10 text-neutral hover:bg-opacity-20",
         },
 
         // Subtle Variants
         {
             color: "primary" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
-            class: "bg-primary/10 border border-primary text-primary hover:bg-primary/20",
+            class: "bg-primary bg-opacity-10 border border-primary text-primary hover:bg-opacity-20",
         },
         {
             color: "secondary" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
             class:
-                "bg-secondary/10 border border-secondary text-secondary hover:bg-secondary/20",
+                "bg-secondary bg-opacity-10 border border-secondary text-secondary hover:bg-opacity-20",
         },
         {
             color: "success" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
-            class: "bg-success/10 border border-success text-success hover:bg-success/20",
+            class: "bg-success bg-opacity-10 border border-success text-success hover:bg-opacity-20",
         },
         {
             color: "info" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
-            class: "bg-info/10 border border-info text-info hover:bg-info/20",
+            class: "bg-info bg-opacity-10 border border-info text-info hover:bg-opacity-20",
         },
         {
             color: "warning" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
-            class: "bg-warning/10 border border-warning text-warning hover:bg-warning/20",
+            class: "bg-warning bg-opacity-10 border border-warning text-warning hover:bg-opacity-20",
         },
         {
             color: "error" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
-            class: "bg-error/10 border border-error text-error hover:bg-error/20",
+            class: "bg-error bg-opacity-10 border border-error text-error hover:bg-opacity-20",
         },
         {
             color: "neutral" as (typeof buttonColors)[number],
             variant: "subtle" as (typeof buttonVariants)[number],
-            class: "bg-neutral/10 border border-neutral text-neutral hover:bg-neutral/20",
+            class: "bg-neutral bg-opacity-10 border border-neutral text-neutral hover:bg-opacity-20",
         },
     ],
     defaultVariants: {

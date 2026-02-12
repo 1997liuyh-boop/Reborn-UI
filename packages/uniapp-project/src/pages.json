@@ -108,6 +108,15 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "weapp-tailwindcss",
     "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "backgroundColor": "#F8F8F8",
+    "rpxCalcMaxDeviceWidth": 960,
+		"rpxCalcBaseDeviceWidth": 375,
+		"rpxCalcIncludeWidth": 750,
+		"app-plus": {
+			"pullToRefresh": {
+				"style": "circle",
+				"color": "#ff3d58"
+			}
+		}
   }
 }

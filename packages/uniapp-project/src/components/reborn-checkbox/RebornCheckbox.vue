@@ -9,37 +9,37 @@ import { useFormInject } from "@/composables/useFieldGroup";
 const b = tv(theme);
 
 defineOptions({
-  inheritAttrs: false,
+    inheritAttrs: false,
 });
 
 export type CheckboxValue = string | number;
 
 export interface CheckboxProps {
-  modelValue?: boolean | CheckboxValue[];
-  defaultValue?: boolean | CheckboxValue[];
-  value?: CheckboxValue;
-  label?: string;
-  disabled?: boolean;
-  size?: typeof checkboxSizes[number];
-  color?: typeof checkboxColors[number];
-  customClass?: any;
-  ui?: Partial<{
-    wrapper: ClassValue;
-    input: ClassValue;
-    control: ClassValue;
-    icon: ClassValue;
-    label: ClassValue;
-  }>;
+    modelValue?: boolean | CheckboxValue[];
+    defaultValue?: boolean | CheckboxValue[];
+    value?: CheckboxValue;
+    label?: string;
+    disabled?: boolean;
+    size?: typeof checkboxSizes[number];
+    color?: typeof checkboxColors[number];
+    customClass?: any;
+    ui?: Partial<{
+        wrapper: ClassValue;
+        input: ClassValue;
+        control: ClassValue;
+        icon: ClassValue;
+        label: ClassValue;
+    }>;
 }
 
 const props = withDefaults(defineProps<CheckboxProps>(), {
-  disabled: false,
-  size: "md",
-  color: "primary",
+    disabled: false,
+    size: "md",
+    color: "primary",
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: boolean | CheckboxValue[]): void;
+    (e: "update:modelValue", value: boolean | CheckboxValue[]): void;
 }>();
 
 const attrs = useAttrs();
@@ -50,77 +50,78 @@ const currentValue = computed(() => (props.modelValue !== undefined ? props.mode
 const optionValue = computed<CheckboxValue>(() => props.value ?? props.label ?? "");
 
 const isChecked = computed(() => {
-  if (Array.isArray(currentValue.value)) {
-    return currentValue.value.includes(optionValue.value);
-  }
+    if (Array.isArray(currentValue.value)) {
+        return currentValue.value.includes(optionValue.value);
+    }
 
-  return Boolean(currentValue.value);
+    return Boolean(currentValue.value);
 });
 
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
-  const styles = b({
-    size: props.size || fieldGroupSize.value,
-    color: props.color,
-    error: isError.value,
-  });
+    const styles = b({
+        size: props.size || fieldGroupSize.value,
+        color: props.color,
+        error: isError.value,
+    });
 
-  return {
-    wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(uiOverrides.value.wrapper, opts?.class) }),
-    input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
-    control: (opts?: { class?: any }) => styles.control({ class: cn(opts?.class, uiOverrides.value.control) }),
-    icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
-    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
-  };
+    return {
+        wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(uiOverrides.value.wrapper, opts?.class) }),
+        input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
+        control: (opts?: { class?: any }) => styles.control({ class: cn(opts?.class, uiOverrides.value.control) }),
+        icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
+        label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
+    };
 });
 
 
 function updateValue(nextValue: boolean | CheckboxValue[]) {
-  if (props.modelValue === undefined) {
-    localValue.value = nextValue;
-  }
-  emit("update:modelValue", nextValue);
+    if (props.modelValue === undefined) {
+        localValue.value = nextValue;
+    }
+    emit("update:modelValue", nextValue);
 }
 
 function toggle() {
-  if (props.disabled) return;
+    if (props.disabled) return;
 
-  if (Array.isArray(currentValue.value)) {
-    const next = new Set(currentValue.value);
-    if (next.has(optionValue.value)) {
-      next.delete(optionValue.value);
+    if (Array.isArray(currentValue.value)) {
+        const next = new Set(currentValue.value);
+        if (next.has(optionValue.value)) {
+            next.delete(optionValue.value);
+        } else {
+            next.add(optionValue.value);
+        }
+        updateValue(Array.from(next));
     } else {
-      next.add(optionValue.value);
+        updateValue(!isChecked.value);
     }
-    updateValue(Array.from(next));
-  } else {
-    updateValue(!isChecked.value);
-  }
 }
 
 watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== undefined) {
-      localValue.value = value;
-    }
-  },
+    () => props.modelValue,
+    (value) => {
+        if (value !== undefined) {
+            localValue.value = value;
+        }
+    },
 );
 </script>
 
 <template>
-  <view :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', fieldGroupDisabled && 'is-disabled')"
-    :data-disabled="fieldGroupDisabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;"
-    @tap="toggle">
-    <view :class="ui.control()">
-      <slot name="icon" :checked="isChecked">
-        <view class="i-lucide-check" :class="ui.icon()" />
-      </slot>
-    </view>
+    <view
+        :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', fieldGroupDisabled && 'is-disabled')"
+        :data-disabled="fieldGroupDisabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;"
+        @tap="toggle">
+        <view :class="ui.control()">
+            <slot name="icon" :checked="isChecked">
+                <view class="i-lucide-check" :class="ui.icon()" />
+            </slot>
+        </view>
 
-    <view v-if="props.label || $slots.default" :class="ui.label()">
-      <slot>{{ props.label }}</slot>
+        <view v-if="props.label || $slots.default" :class="ui.label()">
+            <slot>{{ props.label }}</slot>
+        </view>
     </view>
-  </view>
 </template>

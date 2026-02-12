@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
+import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import type { ButtonProps } from '@/components/reborn-button/RebornButton.vue'
 
@@ -17,6 +18,35 @@ const demoLabel = ref("Reborn UI")
 const variants: ButtonProps['variant'][] = ["solid", "outline", "soft", "subtle"]
 const colors: ButtonProps['color'][] = ["primary", "secondary", "success", "info", "warning", "error", "neutral"]
 const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
+
+function handleClick() {
+    copyContent("Reborn UI")
+    uni.showToast({
+        title: "click",
+        icon: "none"
+    })
+}
+function copyContent(text: string) {
+    uni.setClipboardData({
+        data: text, // 要复制的字符串
+        success: function () {
+            // 复制成功后的回调
+            uni.showToast({
+                title: '复制成功',
+                icon: 'success',
+                duration: 2000
+            });
+        },
+        fail: function (err) {
+            // 复制失败后的回调
+            uni.showToast({
+                title: '复制失败',
+                icon: 'none'
+            });
+            console.error('复制失败:', err);
+        }
+    });
+}
 </script>
 
 <template>
@@ -28,18 +58,16 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                 <view class="w-1 h-5 bg-blue-500 rounded-full"></view>
                 Playground
             </view>
-
             <view
                 class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
                 <!-- Preview Area -->
                 <view
                     class="flex items-center justify-center p-8 bg-slate-100 dark:bg-slate-950/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 min-h-[160px]">
                     <ReButton :variant="demoVariant" :color="demoColor" :size="demoSize" :loading="demoLoading"
-                        :disabled="demoDisabled" :square="demoSquare">
+                        :disabled="demoDisabled" :square="demoSquare" @click="handleClick">
                         {{ demoLabel }}
                     </ReButton>
                 </view>
-
                 <!-- Controls -->
                 <view class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <view class="space-y-3">
@@ -76,12 +104,6 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                             按钮大小
                         </view>
                         <view class="flex flex-wrap gap-2">
-                            <!-- <view v-for="s in sizes" :key="s"
-                                class="px-3 py-1.5 text-xs rounded-full border cursor-pointer transition-colors"
-                                :class="demoSize === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' : 'bg-transparent text-slate-600 border-slate-300 hover:border-slate-400'"
-                                @click="demoSize = s">
-                                {{ s }}
-                            </view> -->
                             <ReButton v-for="s in sizes" :key="s" variant="outline"
                                 :color="demoSize === s ? 'primary' : 'neutral'" @click="demoSize = s" size="sm"
                                 :square="false" custom-class="rounded-full">
@@ -92,25 +114,10 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
 
                     <view class="space-y-3 sm:col-span-2 lg:col-span-3">
                         <view class="text-sm font-medium text-slate-500 dark:text-slate-200">States & Options</view>
-                        <view class="flex flex-wrap gap-4">
-                            <label
-                                class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                                <checkbox :checked="demoLoading" @click="demoLoading = !demoLoading"
-                                    :value="String(demoLoading)" color="#0ea5e9" style="transform:scale(0.8)" />
-                                Loading
-                            </label>
-                            <label
-                                class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                                <checkbox :checked="demoDisabled" @click="demoDisabled = !demoDisabled"
-                                    :value="String(demoDisabled)" color="#0ea5e9" style="transform:scale(0.8)" />
-                                Disabled
-                            </label>
-                            <label
-                                class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                                <checkbox :checked="demoSquare" @click="demoSquare = !demoSquare"
-                                    :value="String(demoSquare)" color="#0ea5e9" style="transform:scale(0.8)" />
-                                Square
-                            </label>
+                        <view class="flex flex-col flex-wrap gap-4">
+                            <RebornSwitch v-model="demoLoading" active-label="加载中" inactive-label="取消加载" />
+                            <RebornSwitch v-model="demoDisabled" active-label="禁用" inactive-label="启用" />
+                            <RebornSwitch v-model="demoSquare" active-label="紧凑" inactive-label="正常" />
                         </view>
                     </view>
                 </view>
@@ -138,10 +145,10 @@ const sizes: ButtonProps['size'][] = ["xs", "sm", "md", "lg", "xl", "2xl"]
                             <view class="i-lucide-arrow-right w-4 h-4"></view>
                         </template>
                     </ReButton>
-                    <ReButton size="icon-md" variant="soft" custom-class="p-2.5">
+                    <ReButton size="md" variant="soft" custom-class="p-2">
                         <view class="i-lucide-settings size-4"></view>
                     </ReButton>
-                    <ReButton size="icon-lg" color="error" custom-class="rounded-full p-2.5">
+                    <ReButton size="lg" color="error" custom-class="rounded-full p-2">
                         <view class="i-lucide-trash-2 size-6"></view>
                     </ReButton>
                 </view>

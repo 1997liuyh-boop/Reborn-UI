@@ -27,7 +27,7 @@ const previewList = ref(["https://cms-image.leyifan.cn/resources/image/2026/01/2
                 原图
             </view>
             <view class="flex flex-col items-center justify-center">
-                <RebornImage :src="src" :preview-list="previewList" />
+                <RebornImage :src="src" preview :preview-list="previewList" />
                 预览列表
             </view>
         </RebornCard>
