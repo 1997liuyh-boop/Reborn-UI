@@ -10,166 +10,102 @@ defineOptions({
 	name: "cl-textarea",
 });
 
-// 组件属性定义
-const props = defineProps({
-	// ... (props are fine, keeping them implied by context or unchanged)
+export interface RebornTextareaProps {
 	// 颜色
-	color: {
-		type: String as PropType<typeof textareaColors[number]>,
-		default: "primary",
-	},
+	color: typeof textareaColors[number];
 	// 自定义样式类
-	customClass: {
-		type: [String, Object, Array] as PropType<any>,
-		default: "",
-	},
+	customClass: string;
 	// UI 覆盖
-	ui: {
-		type: Object as PropType<Record<string, any>>,
-		default: () => ({}),
-	},
+	ui: Record<string, any>;
 	// 绑定值
-	modelValue: {
-		type: String,
-		default: "",
-	},
+	modelValue: string;
 	// 尺寸
-	size: {
-		type: String as PropType<typeof textareaSizes[number]>,
-		default: "md",
-	},
+	size: typeof textareaSizes[number];
 	// 是否显示边框
-	border: {
-		type: Boolean,
-		default: true,
-	},
+	border: boolean;
 	// 是否禁用
-	disabled: {
-		type: Boolean,
-		default: false,
-	},
+	disabled: boolean;
 	// 是否只读
-	readonly: {
-		type: Boolean,
-		default: null,
-	},
+	readonly: boolean;
 	// 是否显示字数统计
-	showWordLimit: {
-		type: Boolean,
-		default: true,
-	},
+	showWordLimit: boolean;
 	// 名称
-	name: {
-		type: String,
-		default: "",
-	},
+	name: string;
 	// 占位符
-	placeholder: {
-		type: String,
-		default: () => "请输入",
-	},
+	placeholder: string;
 	// 占位符样式类
-	placeholderClass: {
-		type: String,
-		default: "",
-	},
+	placeholderClass: string;
 	// 占位符样式
-	placeholderStyle: {
-		type: String,
-		default: "",
-	},
+	placeholderStyle: string;
 	// 最大输入长度
-	maxlength: {
-		type: Number,
-		default: 100,
-	},
+	maxlength: number;
 	// 是否自动聚焦
-	autofocus: {
-		type: Boolean,
-		default: false,
-	},
+	autofocus: boolean;
 	// 设置键盘右下角按钮的文字
-	confirmType: {
-		type: String as PropType<"done" | "go" | "next" | "search" | "send">,
-		default: "done",
-	},
+	confirmType: string;
 	// 指定focus时的光标位置
-	cursor: {
-		type: Number,
-		default: 0,
-	},
+	cursor: number;
 	// 点击键盘确认按钮时是否保持键盘不收起
-	confirmHold: {
-		type: Boolean,
-		default: false,
-	},
+	confirmHold: boolean;
 	// 高度
-	height: {
-		type: [Number, String],
-		default: 140,
-	},
+	height: number | string;
 	// 是否自动增高
-	autoHeight: {
-		type: Boolean,
-		default: false,
-	},
+	autoHeight: boolean;
 	// 如果 textarea 是在一个 position:fixed 的区域，需要显示指定属性 fixed 为 true
-	fixed: {
-		type: Boolean,
-		default: false,
-	},
+	fixed: boolean;
 	// 光标与键盘的距离
-	cursorSpacing: {
-		type: Number,
-		default: 5,
-	},
+	cursorSpacing: number;
 	// 指定光标颜色
-	cursorColor: {
-		type: String,
-		default: "",
-	},
+	cursorColor: string;
 	// 是否显示键盘上方带有”完成“按钮那一栏
-	showConfirmBar: {
-		type: Boolean,
-		default: true,
-	},
+	showConfirmBar: boolean;
 	// 光标起始位置
-	selectionStart: {
-		type: Number,
-		default: -1,
-	},
+	selectionStart: number;
 	// 光标结束位置
-	selectionEnd: {
-		type: Number,
-		default: -1,
-	},
+	selectionEnd: number;
 	// 盘弹起时，是否自动上推页面
-	adjustPosition: {
-		type: Boolean,
-		default: true,
-	},
+	adjustPosition: boolean;
 	// 它提供了用户在编辑元素或其内容时可能输入的数据类型的提示。
-	inputmode: {
-		type: String as PropType<
-			"none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url"
-		>,
-		default: "text",
-	},
+	inputmode: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
 	// focus时，点击页面的时候不收起键盘
-	holdKeyboard: {
-		type: Boolean,
-		default: false,
-	},
+	holdKeyboard: boolean;
 	// 是否禁用默认内边距
-	disableDefaultPadding: {
-		type: Boolean,
-		default: true,
-	},
+	disableDefaultPadding: boolean;
 	// 键盘对齐位置
-	adjustKeyboardTo: {
-		type: String as PropType<"cursor" | "bottom">,
-		default: "cursor",
-	},
+	adjustKeyboardTo: string;
+}
+const props = withDefaults(defineProps<RebornTextareaProps>(), {
+	color: "primary",
+	customClass: "",
+	ui: () => ({}),
+	modelValue: "",
+	size: "md",
+	border: true,
+	disabled: false,
+	readonly: false,
+	showWordLimit: true,
+	name: "",
+	placeholder: () => "请输入",
+	placeholderClass: "",
+	placeholderStyle: "",
+	maxlength: 100,
+	autofocus: false,
+	confirmType: "done",
+	cursor: 0,
+	confirmHold: false,
+	height: 140,
+	autoHeight: false,
+	fixed: false,
+	cursorSpacing: 5,
+	cursorColor: "",
+	showConfirmBar: true,
+	selectionStart: -1,
+	selectionEnd: -1,
+	adjustPosition: true,
+	inputmode: "text",
+	holdKeyboard: false,
+	disableDefaultPadding: true,
+	adjustKeyboardTo: "cursor",
 });
 
 // 事件定义

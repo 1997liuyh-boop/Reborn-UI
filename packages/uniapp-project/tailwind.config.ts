@@ -5,7 +5,7 @@ import { isMp } from './platform'
 import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons'
 
 export default <Config>{
-  darkMode: 'class',
+  darkMode: 'media',
   content: ['./index.html', './src/**/*.{html,js,ts,jsx,tsx,vue}'],
   theme: {
     extend: {

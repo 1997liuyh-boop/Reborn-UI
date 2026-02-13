@@ -26,32 +26,25 @@ defineSlots<{
     default(props: { isSticky: boolean }): any;
 }>();
 
-const props = defineProps({
+export interface RebornStickyProps {
     // 吸顶偏移量, 单位px
-    offsetTop: {
-        type: Number,
-        default: 0
-    },
+    offsetTop: number;
     // 层级
-    zIndex: {
-        type: Number,
-        default: 100
-    },
+    zIndex: number;
     // 滚动位置
-    scrollTop: {
-        type: Number,
-        default: 0
-    },
+    scrollTop: number;
     // 是否需要减去导航栏高度
-    isNeedNavbarHeight: {
-        type: Boolean,
-        default: true
-    },
+    isNeedNavbarHeight: boolean;
     // 导航栏高度
-    navbarHeight: {
-        type: Number,
-        default: 44
-    }
+    navbarHeight: number;
+}
+
+const props = withDefaults(defineProps<RebornStickyProps>(), {
+    offsetTop: 0,
+    zIndex: 100,
+    scrollTop: 0,
+    isNeedNavbarHeight: true,
+    navbarHeight: 44
 });
 
 const { proxy } = getCurrentInstance()!;
