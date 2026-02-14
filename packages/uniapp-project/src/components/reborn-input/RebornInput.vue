@@ -87,6 +87,7 @@ const emit = defineEmits([
   "keyboardheightchange"
 ]);
 
+const inputRef = ref<HTMLInputElement | null>(null);
 const localValue = ref(props.defaultValue ?? "");
 
 // 是否聚焦（样式作用）
@@ -139,9 +140,8 @@ watch(
 function onInput(e: any) {
   const v1 = e.detail.value;
   localValue.value = v1; // Update local value for uncontrolled usage
-
   emit("update:modelValue", v1);
-  emit("input", e);
+  emit("input", v1);
   emit("change", v1);
 }
 
@@ -213,9 +213,9 @@ defineExpose({
       <slot name="leading" :ui="ui" />
     </view>
 
-    <input :type="isPassword ? 'password' : props.type" :disabled="fieldGroupDisabled || props.readonly"
+    <input ref="inputRef" :type="isPassword ? 'password' : props.type" :disabled="fieldGroupDisabled || props.readonly"
       :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.input()"
-      :password="isPassword" :focus="props.focus && !fieldGroupDisabled && !props.readonly"
+      :password="isPassword" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
       :placeholder-class="`text-gart-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
       :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"

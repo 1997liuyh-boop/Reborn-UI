@@ -26,6 +26,7 @@ export interface ButtonProps {
     publicId?: string, // 公众号ID
     phoneNumberNoQuotaToast?: boolean, // 手机号获取失败时是否弹出错误提示
     createliveactivity?: boolean, // 是否创建直播活动
+    isSpacing?: boolean, // 是否有间距
 }
 
 </script>
@@ -34,7 +35,6 @@ export interface ButtonProps {
 import { computed, toRef, ref } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
-
 import { cn } from '@/lib/utils'
 
 import theme, { buttonColors, buttonVariants, buttonSizes } from './reborn-button.config'

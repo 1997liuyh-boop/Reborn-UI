@@ -17,6 +17,7 @@ const menuItems = [
   {
     label: '基础组件',
     children: [
+      { label: '文本', icon: 'i-lucide-text', path: '/pages/reborn-text/index' },
       { label: '按钮', icon: 'i-lucide-mouse', path: '/pages/reborn-button/RebornButtonDemo' },
       { label: '图片', icon: 'i-lucide-image', path: '/pages/reborn-image/RebornImageDemo' },
       { label: '徽章', icon: 'i-lucide-badge-check', path: '/pages/reborn-badge/RebornBadgeDemo' },
@@ -28,9 +29,11 @@ const menuItems = [
     children: [
       { label: '表单', icon: 'i-lucide-layout-list', path: '/pages/reborn-form/RebornFormDemo' },
       { label: '输入框', icon: 'i-lucide-text-cursor-input', path: '/pages/reborn-input/RebornInputDemo' },
+      { label: '验证码', icon: 'i-lucide-key-round', path: '/pages/reborn-input-otp/RebornInputOtpDemo' },
       { label: '计数器', icon: 'i-mdi-numbers', path: '/pages/reborn-input-number/RebornInputNumberDemo' },
       { label: '文本域', icon: 'i-lucide-form-input', path: '/pages/reborn-textarea/RebornTextareaDemo' },
       { label: '开关', icon: 'i-lucide-toggle-right', path: '/pages/reborn-switch/RebornSwitchDemo' },
+      { label: '单选框', icon: 'i-lucide-circle', path: '/pages/reborn-radio/RebornRadioDemo' },
       { label: '复选框', icon: 'i-lucide-check-square', path: '/pages/reborn-checkbox/RebornCheckboxDemo' },
     ]
   },

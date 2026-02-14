@@ -12,67 +12,67 @@ defineOptions({
 
 export interface RebornTextareaProps {
 	// 颜色
-	color: typeof textareaColors[number];
+	color?: typeof textareaColors[number];
 	// 自定义样式类
-	customClass: string;
+	customClass?: string;
 	// UI 覆盖
-	ui: Record<string, any>;
+	ui?: Record<string, any>;
 	// 绑定值
 	modelValue: string;
 	// 尺寸
-	size: typeof textareaSizes[number];
+	size?: typeof textareaSizes[number];
 	// 是否显示边框
-	border: boolean;
+	border?: boolean;
 	// 是否禁用
-	disabled: boolean;
+	disabled?: boolean;
 	// 是否只读
-	readonly: boolean;
+	readonly?: boolean;
 	// 是否显示字数统计
-	showWordLimit: boolean;
+	showWordLimit?: boolean;
 	// 名称
-	name: string;
+	name?: string;
 	// 占位符
-	placeholder: string;
+	placeholder?: string;
 	// 占位符样式类
-	placeholderClass: string;
+	placeholderClass?: string;
 	// 占位符样式
-	placeholderStyle: string;
+	placeholderStyle?: string;
 	// 最大输入长度
-	maxlength: number;
+	maxlength?: number;
 	// 是否自动聚焦
-	autofocus: boolean;
+	autofocus?: boolean;
 	// 设置键盘右下角按钮的文字
-	confirmType: string;
+	confirmType?: string;
 	// 指定focus时的光标位置
-	cursor: number;
+	cursor?: number;
 	// 点击键盘确认按钮时是否保持键盘不收起
-	confirmHold: boolean;
+	confirmHold?: boolean;
 	// 高度
-	height: number | string;
+	height?: number | string;
 	// 是否自动增高
-	autoHeight: boolean;
+	autoHeight?: boolean;
 	// 如果 textarea 是在一个 position:fixed 的区域，需要显示指定属性 fixed 为 true
-	fixed: boolean;
+	fixed?: boolean;
 	// 光标与键盘的距离
-	cursorSpacing: number;
+	cursorSpacing?: number;
 	// 指定光标颜色
-	cursorColor: string;
+	cursorColor?: string;
 	// 是否显示键盘上方带有”完成“按钮那一栏
-	showConfirmBar: boolean;
+	showConfirmBar?: boolean;
 	// 光标起始位置
-	selectionStart: number;
+	selectionStart?: number;
 	// 光标结束位置
-	selectionEnd: number;
+	selectionEnd?: number;
 	// 盘弹起时，是否自动上推页面
-	adjustPosition: boolean;
+	adjustPosition?: boolean;
 	// 它提供了用户在编辑元素或其内容时可能输入的数据类型的提示。
-	inputmode: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
+	inputmode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
 	// focus时，点击页面的时候不收起键盘
-	holdKeyboard: boolean;
+	holdKeyboard?: boolean;
 	// 是否禁用默认内边距
-	disableDefaultPadding: boolean;
+	disableDefaultPadding?: boolean;
 	// 键盘对齐位置
-	adjustKeyboardTo: string;
+	adjustKeyboardTo?: string;
 }
 const props = withDefaults(defineProps<RebornTextareaProps>(), {
 	color: "primary",

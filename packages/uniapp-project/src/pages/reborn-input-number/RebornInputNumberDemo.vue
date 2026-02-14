@@ -106,7 +106,7 @@ const shapes = ['square', 'circle'] as const
                 <RebornInputNumber v-model="val3" :ui="{ wrapper: 'w-full' }" />
             </view>
 
-            <view class="grid grid-cols-2 gap-4">
+            <view class="flex gap-2">
                 <!-- Narrow -->
                 <view class="space-y-2">
                     <text class="text-sm text-slate-500">窄 (Narrow)</text>

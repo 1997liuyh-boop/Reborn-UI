@@ -102,6 +102,24 @@
       "style": {
         "navigationBarTitleText": "Sticky"
       }
+    },
+    {
+      "path": "pages/reborn-text/index",
+      "style": {
+        "navigationBarTitleText": "Text"
+      }
+    },
+    {
+      "path": "pages/reborn-input-otp/RebornInputOtpDemo",
+      "style": {
+        "navigationBarTitleText": "Input OTP"
+      }
+    },
+    {
+      "path": "pages/reborn-radio/RebornRadioDemo",
+      "style": {
+        "navigationBarTitleText": "Radio"
+      }
     }
   ],
   "globalStyle": {

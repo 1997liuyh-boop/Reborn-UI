@@ -13,13 +13,21 @@ export const buttonSizes = [
 
 export default {
     slots: {
-        base: "reborn-button [.reborn-button_+_&]:ml-2 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-gdray-4 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        base: "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-gdray-4 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         label: "truncate",
         loading: "border-2 border-gray-3 border-t-current rounded-full animate-spin",
         leadingIcon: "shrink-0",
         leadingAvatar: "shrink-0",
         leadingAvatarSize: "",
         trailingIcon: "shrink-0",
+    },
+    isSpacing: {
+        true: {
+            base: "reborn-button [.reborn-button_+_&]:ml-2",
+        },
+        false: {
+            base: "reborn-button",
+        },
     },
     variants: {
         fieldGroup: {

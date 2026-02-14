@@ -7,12 +7,12 @@ export { size as inputNumberSizes, color as inputNumberColors, shape as inputNum
 export default {
   slots: {
     wrapper:
-      "group relative inline-flex items-center overflow-hidden bg-white text-gray-8 ring-[1.5px] ring-gray-4 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-1 data-[disabled=true]:text-gray-4 dark:bg-gray-800 dark:text-gray-200  dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600",
+      "group relative inline-flex items-center overflow-hidden bg-white text-gray-8 ring-1 ring-gray-4 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-1 data-[disabled=true]:text-gray-4 dark:bg-gray-800 dark:text-gray-200  dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600",
     button:
-      "flex h-full items-center justify-center text-gray-8 transition-colors disabled:cursor-not-allowed disabled:text-gray-4 dark:text-gray-400 dark:hover:text-gray-200 dark:disabled:text-gray-600",
+      "flex h-full items-center justify-center text-gray-8 transition-colors disabled:cursor-not-allowed disabled:text-gray-4 dark:text-gray-4 dark:hover:text-gray-2 dark:disabled:text-gray-6",
     input:
       "min-w-0 flex-1 bg-transparent text-center text-gray-8 outline-none placeholder:text-gray-4 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none dark:text-gray-200 dark:placeholder:text-gray-500",
-    divider: "h-full w-[1.5px] bg-gray-4",
+    divider: "h-full w-[1px] bg-gray-4",
     icon: "shrink-0",
   },
   variants: {

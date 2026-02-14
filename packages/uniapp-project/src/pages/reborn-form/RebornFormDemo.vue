@@ -213,9 +213,10 @@ const scrollToBio = () => {
             </reborn-form>
 
             <view class="flex flex-col gap-3 mt-8">
-                <RebornButton @click="submit" block>提交</RebornButton>
-                <RebornButton @click="reset" variant="outline" block>重置</RebornButton>
-                <RebornButton @click="scrollToBio" variant="subtle" size="sm" block>滚动到简介</RebornButton>
+                <RebornButton @click="submit" :ui="{ base: 'w-full' }">提交</RebornButton>
+                <RebornButton @click="reset" variant="outline" :ui="{ base: 'w-full' }">重置</RebornButton>
+                <RebornButton @click="scrollToBio" variant="subtle" :ui="{ base: 'w-full' }">滚动到简介
+                </RebornButton>
             </view>
         </RebornCard>
         <RebornCard title="数据">
