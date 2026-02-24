@@ -1,0 +1,96 @@
+export type PopupDirection = "left" | "right" | "top" | "bottom" | "center";
+
+const config = {
+    slots: {
+        wrapper: "fixed inset-0 h-full w-full pointer-events-none",
+        mask: "absolute inset-0 h-full w-full bg-black opacity-0 transition-opacity duration-300 pointer-events-auto",
+        popup: "absolute duration-300 transition-transform pointer-events-auto",
+        inner: "bg-white dark:bg-gray-8 h-full w-full flex flex-col rounded-t-2xl",
+        draw: "bg-gray-2 dark:bg-gray-6 rounded-md absolute top-2 left-1/2 h-[5px] w-[35px] -translate-x-1/2 transition-colors duration-200",
+        header: "flex flex-row items-center flex-wrap h-[45px] pl-[13px] pr-[40px] relative",
+        title: "font-bold text-base truncate dark:text-white",
+        container: "flex-1",
+    },
+    variants: {
+        direction: {
+            left: {
+                wrapper: "",
+                popup: "left-0 top-0 -translate-x-full",
+            },
+            right: {
+                wrapper: "",
+                popup: "right-0 top-0 translate-x-full",
+            },
+            top: {
+                wrapper: "",
+                popup: "left-0 top-0 -translate-y-full",
+                inner: "rounded-b-2xl",
+            },
+            bottom: {
+                wrapper: "",
+                popup: "left-0 bottom-0 translate-y-full",
+                inner: "rounded-t-2xl",
+            },
+            center: {
+                wrapper: "flex flex-col items-center justify-center",
+                popup: "scale-[1.3] opacity-0 transition-[transform,opacity]",
+                inner: "rounded-2xl",
+            },
+        },
+        isOpen: {
+            true: {
+                mask: "opacity-40",
+            },
+            false: {}
+        },
+        isClose: {
+            true: {}
+        },
+        stopTransition: {
+            true: {
+                popup: "!transition-none",
+            }
+        }
+    },
+    compoundVariants: [
+        {
+            direction: "left" as PopupDirection,
+            isOpen: true,
+            class: { popup: "translate-x-0" }
+        },
+        {
+            direction: "right" as PopupDirection,
+            isOpen: true,
+            class: { popup: "translate-x-0" }
+        },
+        {
+            direction: "top" as PopupDirection,
+            isOpen: true,
+            class: { popup: "translate-y-0" }
+        },
+        {
+            direction: "bottom" as PopupDirection,
+            isOpen: true,
+            class: { popup: "translate-y-0" }
+        },
+        {
+            direction: "bottom" as PopupDirection,
+            isOpen: false,
+            isClose: true,
+            class: { popup: "translate-y-full" }
+        },
+        {
+            direction: "center" as PopupDirection,
+            isOpen: true,
+            class: { popup: "scale-100 opacity-100 translate-x-0 translate-y-0" }
+        }
+    ],
+    defaultVariants: {
+        direction: "bottom" as PopupDirection,
+        isOpen: false,
+        stopTransition: false,
+        isClose: false
+    }
+};
+
+export default config;

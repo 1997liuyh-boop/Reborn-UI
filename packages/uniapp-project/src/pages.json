@@ -120,6 +120,24 @@
       "style": {
         "navigationBarTitleText": "Radio"
       }
+    },
+    {
+      "path": "pages/reborn-rate/RebornRateDemo",
+      "style": {
+        "navigationBarTitleText": "Rate"
+      }
+    },
+    {
+      "path": "pages/reborn-select/RebornSelectDemo",
+      "style": {
+        "navigationBarTitleText": "Select"
+      }
+    },
+    {
+      "path": "pages/reborn-slider/RebornSliderDemo",
+      "style": {
+        "navigationBarTitleText": "Slider"
+      }
     }
   ],
   "globalStyle": {

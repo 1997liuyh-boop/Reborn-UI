@@ -60,7 +60,8 @@
         "publicPath" : "/uni-render/",
         "devServer" : {
             "port" : 5273
-        }
+        },
+        "darkmode" : true
     },
     "mp-alipay" : {
         "usingComponents" : true

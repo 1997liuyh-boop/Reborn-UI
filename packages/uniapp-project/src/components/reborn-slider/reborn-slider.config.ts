@@ -13,7 +13,7 @@ export default {
         thumb:
             "absolute rounded-full border-2 border-solid border-white pointer-events-none z-[1] shadow-[0_0_1px_1px_rgba(100,100,100,0.1)]",
         thumbActive: "z-[2]",
-        value: "text-center w-[50px]",
+        value: "text-center w-[50px] dark:text-gray-1",
     },
     variants: {
         size: {

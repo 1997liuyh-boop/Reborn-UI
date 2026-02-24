@@ -67,3 +67,30 @@ export const isHarmony = (): boolean => {
 
 	return false;
 };
+
+export const initTheme = () => {
+	let value: string | null;
+
+	// #ifdef APP
+	const appInfo = uni.getAppBaseInfo();
+	// @ts-ignore
+	const appTheme = appInfo.appTheme as string;
+	const osTheme = uni.getSystemInfoSync().osTheme!;
+
+	// 如果 appTheme 为 auto，则跟随系统主题，否则使用 appTheme
+	value = appTheme == "auto" ? osTheme : appTheme;
+	// #endif
+
+	// #ifdef H5 || MP
+	const hostTheme = uni.getAppBaseInfo().hostTheme;
+	if (hostTheme) {
+		// 如果有 hostTheme，则使用 hostTheme
+		value = hostTheme;
+	} else {
+		// 默认使用 light 主题
+		value = "light";
+	}
+	// #endif
+	console.log(value)
+	return value;
+};

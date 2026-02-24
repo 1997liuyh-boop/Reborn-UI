@@ -7,9 +7,9 @@ export default {
     slots: {
         wrapper: "inline-flex flex-row items-center gap-1",
         star: "relative cursor-pointer transition-transform active:scale-90",
-        icon: "transition-colors duration-150",
+        icon: "transition-colors duration-150 dark:text-gray-2",
         iconActive: "transition-colors duration-150",
-        value: "ml-1 font-medium tabular-nums",
+        value: "ml-1 font-medium tabular-nums dark:text-gray-1",
     },
     variants: {
         size: {

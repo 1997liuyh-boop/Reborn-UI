@@ -29,7 +29,9 @@ const menuItems = [
       { label: '单选框', icon: 'i-lucide-circle', path: '/pages/reborn-radio/RebornRadioDemo' },
       { label: '复选框', icon: 'i-lucide-check-square', path: '/pages/reborn-checkbox/RebornCheckboxDemo' },
       { label: '选择器', icon: 'i-lucide-list', path: '/pages/reborn-select/RebornSelectDemo' },
-      { label: '评分', icon: 'i-lucide-star', path: '/pages/reborn-rate/RebornRateDemo' },
+      {
+        label: '评分', icon: 'i-lucide-star', path: '/pages/reborn-rate/RebornRateDemo'
+      },
       { label: '滑块', icon: 'i-lucide-sliders-horizontal', path: '/pages/reborn-slider/RebornSliderDemo' },
     ]
   },
