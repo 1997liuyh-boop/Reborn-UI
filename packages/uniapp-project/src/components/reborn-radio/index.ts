@@ -1,4 +1,1 @@
-import RebornRadio from "./RebornRadio.vue";
-
-export { RebornRadio };
-export default RebornRadio;
+export { default as RebornRadio } from "./RebornRadio.vue";

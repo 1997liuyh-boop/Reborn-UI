@@ -28,6 +28,7 @@ export interface SwitchProps {
     input: ClassValue;
     track: ClassValue;
     thumb: ClassValue;
+    loading: ClassValue;
     activeLabel: ClassValue;
     inactiveLabel: ClassValue;
   }>;
@@ -60,6 +61,7 @@ const ui = computed(() => {
     color: props.color,
     checked: currentValue.value,
     error: isError.value,
+    loading: props.loading,
   });
 
   return {
@@ -67,6 +69,7 @@ const ui = computed(() => {
     input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
     track: (opts?: { class?: any }) => styles.track({ class: cn(opts?.class, uiOverrides.value.track) }),
     thumb: (opts?: { class?: any }) => styles.thumb({ class: cn(opts?.class, uiOverrides.value.thumb) }),
+    loading: (opts?: { class?: any }) => styles.loading({ class: cn(opts?.class, uiOverrides.value.loading) }),
     activeLabel: (opts?: { class?: any }) => styles.activeLabel({ class: cn(opts?.class, uiOverrides.value.activeLabel) }),
     inactiveLabel: (opts?: { class?: any }) => styles.inactiveLabel({ class: cn(opts?.class, uiOverrides.value.inactiveLabel) }),
   };
@@ -107,7 +110,7 @@ watch(
     <view :class="ui.track()" :data-loading="props.loading">
       <view :class="ui.thumb()">
         <slot name="thumb" :checked="currentValue" :loading="props.loading">
-          <view v-if="props.loading" class="i-lucide-loader-2 animate-spin text-gray-400 w-3 h-3" />
+          <view v-if="props.loading" :class="ui.loading()" />
         </slot>
       </view>
     </view>

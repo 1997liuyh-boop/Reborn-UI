@@ -1,4 +1,1 @@
-import RebornInputOtp from "./RebornInputOtp.vue";
-
-export { RebornInputOtp };
-export default RebornInputOtp;
+export { default as RebornInputOtp } from "./RebornInputOtp.vue";

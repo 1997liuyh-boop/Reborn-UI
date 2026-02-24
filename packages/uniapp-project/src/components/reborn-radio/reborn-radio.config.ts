@@ -43,18 +43,18 @@ export default {
         },
         size: {
             sm: {
-                activeIcon: "w-[26rpx] h-[26rpx]",
-                inactiveIcon: "w-[26rpx] h-[26rpx]",
+                activeIcon: "w-[32rpx] h-[32rpx]",
+                inactiveIcon: "w-[32rpx] h-[32rpx]",
                 label: "text-24"
             },
             md: {
-                activeIcon: "w-[28rpx] h-[28rpx]",
-                inactiveIcon: "w-[28rpx] h-[28rpx]",
+                activeIcon: "w-[36rpx] h-[36rpx]",
+                inactiveIcon: "w-[36rpx] h-[36rpx]",
                 label: "text-26"
             },
             lg: {
-                activeIcon: "w-[30rpx] h-[30rpx]",
-                inactiveIcon: "w-[30rpx] h-[30rpx]",
+                activeIcon: "w-[40rpx] h-[40rpx]",
+                inactiveIcon: "w-[40rpx] h-[40rpx]",
                 label: "text-28"
             }
         },

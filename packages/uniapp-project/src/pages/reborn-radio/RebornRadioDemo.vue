@@ -41,7 +41,8 @@
 
         <RebornCard title="自定义样式 (UI Prop)" custom-class="space-y-4">
             <RebornRadio v-model="v6" label="方框样式" value="1" :ui="{
-                control: 'rounded-md',
+                activeIcon: 'rounded-md',
+                inactiveIcon: 'rounded-md',
                 label: 'text-primary font-bold'
             }" active-icon="i-lucide-square-check" inactive-icon="i-lucide-square" />
         </RebornCard>

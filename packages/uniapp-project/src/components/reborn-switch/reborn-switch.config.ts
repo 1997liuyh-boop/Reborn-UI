@@ -13,6 +13,7 @@ export default {
       "absolute left-0.5 top-0.5 flex items-center justify-center rounded-full bg-white shadow transition-transform duration-200",
     activeLabel: "text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors",
     inactiveLabel: "text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors",
+    loading: "border-2 border-gray-2 border-t-current rounded-full animate-spin w-full h-full",
   },
   variants: {
     checked: {
@@ -67,13 +68,13 @@ export default {
     { size: 'lg', checked: true, class: { thumb: 'translate-x-7' } },
 
     // Color + Checked backgrounds
-    { color: 'primary', checked: true, class: { track: 'bg-primary' } },
-    { color: 'secondary', checked: true, class: { track: 'bg-secondary' } },
-    { color: 'success', checked: true, class: { track: 'bg-success' } },
-    { color: 'info', checked: true, class: { track: 'bg-info' } },
-    { color: 'warning', checked: true, class: { track: 'bg-warning' } },
-    { color: 'error', checked: true, class: { track: 'bg-error' } },
-    { color: 'neutral', checked: true, class: { track: 'bg-neutral' } },
+    { color: 'primary', checked: true, class: { track: 'bg-primary', loading: 'border-t-primary' } },
+    { color: 'secondary', checked: true, class: { track: 'bg-secondary', loading: 'border-t-secondary' } },
+    { color: 'success', checked: true, class: { track: 'bg-success', loading: 'border-t-success' } },
+    { color: 'info', checked: true, class: { track: 'bg-info', loading: 'border-t-info' } },
+    { color: 'warning', checked: true, class: { track: 'bg-warning', loading: 'border-t-warning' } },
+    { color: 'error', checked: true, class: { track: 'bg-error', loading: 'border-t-error' } },
+    { color: 'neutral', checked: true, class: { track: 'bg-neutral', loading: 'border-t-neutral' } },
 
     // Color + Checked activeLabel text colors
     { color: 'primary', checked: true, class: { activeLabel: 'text-primary dark:text-primary' } },

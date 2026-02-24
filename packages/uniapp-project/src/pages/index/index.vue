@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import * as z from 'zod'
 import { useDarkMode } from '@/composables/useDarkMode'
 import RebornAffix from '@/components/reborn-affix/RebornAffix.vue'
 import RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'
 
 const { isDark, toggleDarkMode } = useDarkMode()
-
-// const scrollTop = ref(0)
-
-// onPageScroll((e) => {
-//   scrollTop.value = e.scrollTop
-// })
 
 const list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']
 const menuItems = [
@@ -35,6 +28,9 @@ const menuItems = [
       { label: '开关', icon: 'i-lucide-toggle-right', path: '/pages/reborn-switch/RebornSwitchDemo' },
       { label: '单选框', icon: 'i-lucide-circle', path: '/pages/reborn-radio/RebornRadioDemo' },
       { label: '复选框', icon: 'i-lucide-check-square', path: '/pages/reborn-checkbox/RebornCheckboxDemo' },
+      { label: '选择器', icon: 'i-lucide-list', path: '/pages/reborn-select/RebornSelectDemo' },
+      { label: '评分', icon: 'i-lucide-star', path: '/pages/reborn-rate/RebornRateDemo' },
+      { label: '滑块', icon: 'i-lucide-sliders-horizontal', path: '/pages/reborn-slider/RebornSliderDemo' },
     ]
   },
   {
