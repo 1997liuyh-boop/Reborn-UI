@@ -120,7 +120,7 @@ const emit = defineEmits([
 	"keyboardheightchange",
 ]);
 
-const { disabled: isDisabled, isError } = useFormInject(props);
+const { disabled: isDisabled, isError, validate } = useFormInject(props);
 
 
 // 绑定值
@@ -179,6 +179,7 @@ function onFocus(e: any) {
 // 失去焦点事件
 function onBlur(e: any) {
 	emit("blur", e);
+	if (validate) validate('blur');
 
 	setTimeout(() => {
 		isFocus.value = false;
@@ -197,6 +198,7 @@ function onInput(e: any) {
 
 	if (v1 != v2) {
 		emit("change", v1);
+		if (validate) validate('change');
 	}
 }
 

@@ -85,8 +85,8 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
                     progress: 'bg-purple-500',
                 }">
                     <template #thumb="{ value }">
-                        <view :style="value.style"
-                            class="absolute rounded-full border-2 border-solid border-white pointer-events-none z-[1] w-7 text-center bg-warning text-24 text-white">
+                        <view :style="{ ...value.style, width: '30px', height: '20px' }"
+                            class="absolute rounded-full border-2 border-solid border-white pointer-events-none z-[1] text-center bg-warning text-24 text-white">
                             {{ value.value }}
                         </view>
                     </template>

@@ -12,7 +12,7 @@ export interface UseFieldGroupProps {
 export function useFieldGroup() {
 
   // Data & Context
-  const errors = ref(new Map<string, string>());
+  const errors = ref<Record<string, string>>({});
   const fields = ref(new Set<string>([]));
   const fieldInstances = ref<any[]>([]);
 
@@ -39,24 +39,26 @@ export function useFieldGroup() {
 
   function setError(prop: string, error: string) {
     if (errorLock.value) return;
-    if (prop !== "") errors.value.set(prop, error);
+    if (prop !== "") {
+      errors.value = { ...errors.value, [prop]: error };
+    }
   }
 
   function removeError(prop: string) {
-    if (prop !== "") errors.value.delete(prop);
+    if (prop !== "" && errors.value[prop] !== undefined) {
+      const newErrors = { ...errors.value };
+      delete newErrors[prop];
+      errors.value = newErrors;
+    }
   }
 
   function getError(prop: string): string {
-    if (prop !== "") return errors.value.get(prop) ?? "";
+    if (prop !== "") return errors.value[prop] ?? "";
     return "";
   }
 
   async function getErrors(): Promise<FormValidateError[]> {
-    const errs = [] as FormValidateError[];
-    errors.value.forEach((msg, field) => {
-      errs.push({ field, message: msg });
-    });
-    return errs;
+    return Object.entries(errors.value).map(([field, message]) => ({ field, message }));
   }
 
   function clearValidate(fieldsToClear?: string | string[]) {
@@ -64,7 +66,7 @@ export function useFieldGroup() {
       const propsArray = Array.isArray(fieldsToClear) ? fieldsToClear : [fieldsToClear];
       propsArray.forEach(prop => removeError(prop));
     } else {
-      errors.value.clear();
+      errors.value = {};
     }
   }
 
@@ -88,6 +90,7 @@ export interface UseFieldGroupItemProps {
   label?: string;
   labelPosition?: string;
   labelWidth?: string | number;
+  trigger?: 'blur' | 'change' | 'none' | Array<'blur' | 'change'>;
   ui?: any;
 }
 
@@ -126,6 +129,28 @@ export function useFieldGroupItem(props: UseFieldGroupItemProps) {
       .exec();
   };
 
+  const validate = (trigger: 'blur' | 'change') => {
+    if (!form || !props.prop) return;
+
+    let currentTrigger = props.trigger;
+    if (currentTrigger === undefined) {
+      currentTrigger = form.props?.trigger;
+    }
+
+    if (!currentTrigger || currentTrigger === 'none') return;
+
+    let shouldValidate = false;
+    if (Array.isArray(currentTrigger)) {
+      shouldValidate = currentTrigger.includes(trigger);
+    } else {
+      shouldValidate = currentTrigger === trigger;
+    }
+
+    if (shouldValidate && form.validateField) {
+      form.validateField(props.prop);
+    }
+  };
+
   // Watch for prop changes to update registration
   watch(() => props.prop, (newProp, oldProp) => {
     if (form) {
@@ -156,7 +181,8 @@ export function useFieldGroupItem(props: UseFieldGroupItemProps) {
     labelPosition,
     labelWidth,
     size,
-    getBoundingClientRect
+    getBoundingClientRect,
+    validate
   };
 }
 
@@ -181,11 +207,18 @@ export function useFormInject(props: any) {
     return formItem?.isError?.value || false;
   });
 
+  const validate = (trigger: 'blur' | 'change') => {
+    if (formItem?.validate) {
+      formItem.validate(trigger);
+    }
+  };
+
   return {
     form,
     size,
     disabled,
     orientation,
-    isError
+    isError,
+    validate
   };
 }

@@ -6,30 +6,30 @@ export { size as selectTriggerSizes, color as selectTriggerColors };
 export default {
     slots: {
         wrapper:
-            "flex flex-row items-center w-full box-border rounded-lg bg-white dark:bg-gray-8 border border-solid border-gray-2 dark:border-gray-7 transition-[border-color] duration-200 px-2.5",
-        content: "flex-1 truncate",
-        text: "text-sm",
-        placeholder: "text-sm text-gray-4",
+            "flex flex-row items-center w-full box-border rounded-lg bg-white dark:bg-gray-8 border border-solid border-gray-3 dark:border-gray-7 transition-[border-color] duration-200 px-2.5",
+        content: "flex-1 truncate text-gray-8 dark:text-gray-1",
+        text: "text-28",
+        placeholder: "text-28 text-gray-4",
         iconWrapper: "flex flex-row items-center justify-center pl-2.5",
-        clearIcon: "i-lucide-x-circle text-gray-4 size-4",
-        arrowIcon: "i-lucide-chevron-down text-gray-4 size-4",
+        clearIcon: "text-gray-4 size-4",
+        arrowIcon: "text-gray-4 size-4 transition-transform duration-200 origin-center",
     },
     variants: {
         size: {
             sm: {
                 wrapper: "h-7",
-                text: "text-[length:var(--text-size-24)]",
-                placeholder: "text-[length:var(--text-size-24)]",
+                text: "text-24",
+                placeholder: "text-24",
             },
             md: {
                 wrapper: "h-8",
-                text: "text-[length:var(--text-size-28)]",
-                placeholder: "text-[length:var(--text-size-28)]",
+                text: "text-28",
+                placeholder: "text-28",
             },
             lg: {
                 wrapper: "h-10",
-                text: "text-[length:var(--text-size-32)]",
-                placeholder: "text-[length:var(--text-size-32)]",
+                text: "text-32",
+                placeholder: "text-32",
             },
         },
         color: {
@@ -49,7 +49,7 @@ export default {
         },
         focus: {
             true: {
-                wrapper: "border-primary dark:border-primary",
+                arrowIcon: "rotate-180",
             },
         },
         error: {
@@ -59,13 +59,13 @@ export default {
         },
     },
     compoundVariants: [
-        { color: "primary" as (typeof color)[number], focus: true as const, class: { wrapper: "border-primary" } },
-        { color: "secondary" as (typeof color)[number], focus: true as const, class: { wrapper: "border-secondary" } },
-        { color: "success" as (typeof color)[number], focus: true as const, class: { wrapper: "border-success" } },
-        { color: "info" as (typeof color)[number], focus: true as const, class: { wrapper: "border-info" } },
-        { color: "warning" as (typeof color)[number], focus: true as const, class: { wrapper: "border-warning" } },
-        { color: "error" as (typeof color)[number], focus: true as const, class: { wrapper: "border-error" } },
-        { color: "neutral" as (typeof color)[number], focus: true as const, class: { wrapper: "border-neutral" } },
+        { color: "primary" as (typeof color)[number], focus: true as const, class: { wrapper: "border-primary dark:border-primary" } },
+        { color: "secondary" as (typeof color)[number], focus: true as const, class: { wrapper: "border-secondary dark:border-secondary" } },
+        { color: "success" as (typeof color)[number], focus: true as const, class: { wrapper: "border-success dark:border-success" } },
+        { color: "info" as (typeof color)[number], focus: true as const, class: { wrapper: "border-info dark:border-info" } },
+        { color: "warning" as (typeof color)[number], focus: true as const, class: { wrapper: "border-warning dark:border-warning" } },
+        { color: "error" as (typeof color)[number], focus: true as const, class: { wrapper: "border-error dark:border-error" } },
+        { color: "neutral" as (typeof color)[number], focus: true as const, class: { wrapper: "border-neutral dark:border-neutral" } },
     ],
     defaultVariants: {
         size: "md" as (typeof size)[number],

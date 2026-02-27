@@ -46,7 +46,7 @@ const emit = defineEmits<{
   (e: "change", value: boolean): void;
 }>();
 
-const { disabled: formDisabled, size: formSize, isError } = useFormInject(props);
+const { disabled: formDisabled, size: formSize, isError, validate } = useFormInject(props);
 
 const isDisabled = computed(() => formDisabled.value || props.disabled || props.loading);
 
@@ -82,6 +82,7 @@ function updateValue(nextValue: boolean) {
     }
     emit("update:modelValue", nextValue);
     emit("change", nextValue);
+    if (validate) validate('change');
   }
 }
 

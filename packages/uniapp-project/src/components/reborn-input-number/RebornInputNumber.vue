@@ -78,7 +78,7 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
 const emit = defineEmits(["update:modelValue", "change", "input", "blur", "focus"]);
 
 const longPress = useLongPress();
-const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled } = useFormInject(props);
+const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props);
 
 const uiOverrides = computed(() => props.ui || {});
 const b = tv(theme);
@@ -89,6 +89,7 @@ const ui = computed(() => {
         color: props.color,
         shape: props.shape,
         fieldGroup: orientation.value,
+        error: isError.value
     })
 
     return {
@@ -122,6 +123,7 @@ function update() {
         if (val != props.modelValue) {
             emit("update:modelValue", val);
             emit("change", val);
+            if (validate) validate('change');
         }
     });
 }
@@ -169,6 +171,7 @@ function onBlur(e: any) {
     }
     update();
     emit("blur", e);
+    if (validate) validate('blur');
 }
 
 watch(

@@ -53,11 +53,13 @@
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from "vue";
+import type { ClassValue } from "clsx";
+
 import { isAppIOS } from "@/lib/device";
 import { tv } from "@/lib/tv";
-import theme from "./reborn-popup.config";
+import { cn } from "@/lib/utils";
 
-const b = tv(theme);
+import theme from "./reborn-popup.config";
 
 defineOptions({
     name: "reborn-popup",
@@ -97,6 +99,17 @@ export interface PopupProps {
     keepAlive?: boolean;
     /** 是否启用 portal */
     enablePortal?: boolean;
+    /** 样式覆盖 */
+    ui?: Partial<{
+        wrapper: ClassValue;
+        mask: ClassValue;
+        popup: ClassValue;
+        inner: ClassValue;
+        draw: ClassValue;
+        header: ClassValue;
+        title: ClassValue;
+        container: ClassValue;
+    }>;
 }
 
 const props = withDefaults(defineProps<PopupProps>(), {
@@ -285,12 +298,35 @@ function onTouchEnd() {
     }
 }
 
-const ui = computed(() => b({
-    direction: props.direction as any,
-    isOpen: status.value == 1,
-    isClose: status.value == 2,
-    stopTransition: swipe.isTouch
-}));
+const uiOverrides = computed(() => props.ui || {});
+const b = tv(theme);
+
+const ui = computed(() => {
+    const styles = b({
+        direction: props.direction as any,
+        isOpen: status.value == 1,
+        isClose: status.value == 2,
+        stopTransition: swipe.isTouch
+    })
+    return {
+        wrapper: (opts?: { class?: any }) =>
+            styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
+        mask: (opts?: { class?: any }) =>
+            styles.mask({ class: cn(opts?.class, uiOverrides.value.mask) }),
+        popup: (opts?: { class?: any }) =>
+            styles.popup({ class: cn(opts?.class, uiOverrides.value.popup) }),
+        inner: (opts?: { class?: any }) =>
+            styles.inner({ class: cn(opts?.class, uiOverrides.value.inner) }),
+        draw: (opts?: { class?: any }) =>
+            styles.draw({ class: cn(opts?.class, uiOverrides.value.draw) }),
+        header: (opts?: { class?: any }) =>
+            styles.header({ class: cn(opts?.class, uiOverrides.value.header) }),
+        title: (opts?: { class?: any }) =>
+            styles.title({ class: cn(opts?.class, uiOverrides.value.title) }),
+        container: (opts?: { class?: any }) =>
+            styles.container({ class: cn(opts?.class, uiOverrides.value.container) }),
+    }
+});
 
 const popupH5Class = computed(() => {
     // #ifdef H5

@@ -39,6 +39,7 @@ export interface FormItemProps {
     requireAsteriskPosition?: 'left' | 'right'; // 标签位置
     labelWidth?: string | number; // 标签宽度
     labelPosition?: typeof formItemLabelPositions[number]; // 标签位置
+    trigger?: 'blur' | 'change' | 'none' | Array<'blur' | 'change'>; // 触发验证
     customClass?: ClassValue;
     ui?: Partial<{
         root: ClassValue;
@@ -57,22 +58,24 @@ const props = withDefaults(defineProps<FormItemProps>(), {
     requireAsteriskPosition: 'right',
 });
 
-console.log('RebornFormItem: props', props.prop, props);
 
 const {
     error,
     labelPosition,
     labelWidth,
     size,
-    getBoundingClientRect
+    getBoundingClientRect,
+    validate
 } = useFieldGroupItem({
     prop: props.prop,
     labelPosition: props.labelPosition,
-    labelWidth: props.labelWidth
+    labelWidth: props.labelWidth,
+    trigger: props.trigger
 });
 
 provide('rebornFormItem', {
-    isError: computed(() => !!error.value)
+    isError: computed(() => !!error.value),
+    validate
 });
 
 const labelStyle = computed(() => {

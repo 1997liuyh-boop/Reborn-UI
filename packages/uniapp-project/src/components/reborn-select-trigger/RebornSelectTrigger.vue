@@ -1,21 +1,23 @@
 <template>
 	<view :class="ui.wrapper({ class: props.customClass })" @tap="open">
 		<view :class="ui.content()">
-			<text v-if="showText" :class="ui.text()">{{ text }}</text>
-			<text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+			<slot>
+				<text v-if="showText" :class="ui.text()">{{ text }}</text>
+				<text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+			</slot>
 		</view>
 
 		<!-- 清空按钮 -->
-		<view v-if="showText && !isDisabled" :class="ui.iconWrapper()" @tap.stop="clear">
-			<slot name="clear-icon">
-				<view :class="ui.clearIcon()" />
+		<view v-if="showText && !isDisabled && clearable" :class="ui.iconWrapper()" @tap.stop="clear">
+			<slot name="clear-icon" :ui="ui.clearIcon()">
+				<view class="i-lucide-x-circle" :class="ui.clearIcon()" />
 			</slot>
 		</view>
 
 		<!-- 箭头图标 -->
 		<view v-if="!isDisabled && !showText" :class="ui.iconWrapper()">
-			<slot name="arrow-icon">
-				<view :class="ui.arrowIcon()" />
+			<slot name="arrow-icon" :ui="ui.arrowIcon()">
+				<view class="i-lucide-chevron-down " :class="ui.arrowIcon()" />
 			</slot>
 		</view>
 	</view>
@@ -46,6 +48,7 @@ export interface SelectTriggerProps {
 	size?: (typeof selectTriggerSizes)[number];
 	/** 颜色 */
 	color?: (typeof selectTriggerColors)[number];
+	clearable?: boolean;
 	/** 样式覆盖 */
 	ui?: Partial<{
 		wrapper: ClassValue;
@@ -67,6 +70,7 @@ const props = withDefaults(defineProps<SelectTriggerProps>(), {
 	focus: false,
 	size: "md",
 	color: "primary",
+	clearable: true,
 });
 
 const emit = defineEmits<{

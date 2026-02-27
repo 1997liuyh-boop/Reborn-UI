@@ -81,6 +81,12 @@ export default {
         wrapper: "rounded-md",
       },
     },
+    error: {
+      true: {
+        wrapper: "ring-error",
+        divider: "bg-error",
+      },
+    },
     fieldGroup: {
       horizontal:
         "not-only:first:rounded-e-none not-only:last:rounded-s-none not-last:not-first:rounded-none focus-within:z-[1]",

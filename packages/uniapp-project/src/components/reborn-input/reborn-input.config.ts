@@ -5,7 +5,7 @@ const config = {
   slots: {
     wrapper: "relative flex w-full items-center",
     input:
-      "flex h-10 w-full rounded-md border border-gray-2 bg-gray-2 px-3  text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-10 w-full rounded-md border border-gray-2 dark:border-gray-7 bg-gray-2 dark:bg-gray-8 px-3  text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
     leading: "absolute left-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground",
     trailing: "absolute right-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground",
     // Styles for internal icons like clear and password toggle

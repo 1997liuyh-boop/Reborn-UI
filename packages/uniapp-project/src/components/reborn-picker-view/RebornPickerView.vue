@@ -1,5 +1,5 @@
 <template>
-    <view :class="ui.wrapper()">
+    <view class="reborn-picker-view" :class="ui.wrapper()">
         <view :class="ui.header()" v-if="computedHeaders.length > 0">
             <text v-for="(label, index) in computedHeaders" :key="index" :class="ui.headerText()">
                 {{ label }}
@@ -7,10 +7,9 @@
         </view>
 
         <view :class="ui.pickerContainer()" :style="{ height: `${height}px` }">
-
             <picker-view class="h-full" :value="value" :mask-style="maskStyle" :mask-top-style="maskStyle"
-                :mask-bottom-style="maskStyle" :immediate-change="true" :indicator-style="indicatorStyle"
-                @change="onChange">
+                :indicator-class="ui.indicator()" :mask-bottom-style="maskStyle" :immediate-change="true"
+                :indicator-style="indicatorStyle" @change="onChange">
                 <picker-view-column v-for="(column, columnIndex) in columns" :key="columnIndex">
                     <!-- #ifdef APP-ANDROID -->
                     <view ref="columnItemRef" :style="{ height: `${itemHeight * column.length}px` }"></view>
@@ -19,10 +18,11 @@
                     <!-- #ifndef APP-ANDROID -->
                     <view :class="ui.item()" :style="{ height: `${itemHeight}px` }" v-for="(item, index) in column"
                         :key="index">
-                        <text
-                            :class="[ui.itemText(), isDark ? (index == value[columnIndex] ? 'text-white' : 'text-gray-4') : (index == value[columnIndex] ? 'text-gray-9' : 'text-gray-5')]">
-                            {{ item.label }}
-                        </text>
+                        <slot :item="item" :index="index">
+                            <text :class="ui.itemText({ active: index == value[columnIndex], color: color })">
+                                {{ item.label }}
+                            </text>
+                        </slot>
                     </view>
                     <!-- #endif -->
                 </picker-view-column>
@@ -36,7 +36,7 @@ import { isEqual, isNull } from 'lodash'
 import { computed, nextTick, onMounted, ref, shallowRef, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { isAppIOS, isAppAndroid, initTheme } from "@/lib/device";
-import theme from "./reborn-picker-view.config";
+import theme, { pickerColors } from "./reborn-picker-view.config";
 import { cn } from "@/lib/utils";
 import { tv } from "@/lib/tv";
 
@@ -52,6 +52,8 @@ export interface SelectOption {
 }
 
 export interface PickerViewProps {
+    /** 颜色 */
+    color?: typeof pickerColors[number];
     /** 表头 */
     headers?: string[];
     /** 当前选中索引 */
@@ -70,10 +72,12 @@ export interface PickerViewProps {
         pickerContainer: ClassValue;
         item: ClassValue;
         itemText: ClassValue;
+        indicator: ClassValue;
     }>;
 }
 
 const props = withDefaults(defineProps<PickerViewProps>(), {
+    color: 'primary',
     headers: () => [],
     value: () => [],
     columns: () => [],
@@ -84,6 +88,7 @@ const props = withDefaults(defineProps<PickerViewProps>(), {
 const emit = defineEmits<{
     (e: "change-value", values: any[]): void;
     (e: "change-index", indexes: number[]): void;
+    (e: "change-item", item: any): void;
 }>();
 
 // ui 样式系统
@@ -91,7 +96,9 @@ const uiOverrides = computed(() => props.ui || {});
 const b = tv(theme);
 
 const ui = computed(() => {
-    const styles = b();
+    const styles = b({
+        color: props.color,
+    });
 
     return {
         wrapper: (opts?: { class?: any }) =>
@@ -104,8 +111,10 @@ const ui = computed(() => {
             styles.pickerContainer({ class: cn(opts?.class, uiOverrides.value.pickerContainer) }),
         item: (opts?: { class?: any }) =>
             styles.item({ class: cn(opts?.class, uiOverrides.value.item) }),
-        itemText: (opts?: { class?: any }) =>
-            styles.itemText({ class: cn(opts?.class, uiOverrides.value.itemText) }),
+        itemText: (opts?: { class?: any, active?: boolean, color?: any }) =>
+            styles.itemText({ active: opts?.active, color: opts?.color, class: cn(opts?.class, uiOverrides.value.itemText) }),
+        indicator: (opts?: { class?: any }) =>
+            styles.indicator({ class: cn(opts?.class, uiOverrides.value.indicator) }),
     };
 });
 
@@ -141,9 +150,12 @@ function onChange(e: any) {
     const values = props.columns.map((c, i) => {
         return isNull(c[indexs[i]]) ? 0 : c[indexs[i]].value;
     });
-
+    const select = props.columns.map((c, i) => {
+        return isNull(c[indexs[i]]) ? 0 : c[indexs[i]];
+    });
     emit("change-value", values);
     emit("change-index", indexs);
+    emit("change-item", select);
 }
 
 // === Android Canvas 渲染 ===
@@ -177,40 +189,30 @@ const renderColumnItem = () => {
 };
 
 // 遮罩层样式
-const maskStyle = ref("");
-const renderMaskStyle = () => {
+const maskStyle = computed(() => {
     if (isDark.value) {
-        maskStyle.value = `background-image: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))`;
-    } else {
-        maskStyle.value = "";
+        return `background-image: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))`;
     }
-};
+    return "";
+});
 
 // 选择器指示器样式
-const indicatorStyle = ref("");
-const renderIndicatorStyle = () => {
+const indicatorStyle = computed(() => {
     let str = "";
-    const width = Math.ceil((windowWidth - 8) / props.columns.length - 10);
+    const columnsCount = props.columns.length || 1;
+    const width = Math.ceil((windowWidth - 8) / columnsCount - 10);
 
     const style: Record<string, string> = {
         height: `${props.itemHeight}px`,
-        width: `${width}px`,
-        left: "4px",
-        backgroundColor: "rgba(10, 10, 10, 0.04)",
-        borderRadius: "10px",
-        border: "1px solid rgba(10, 10, 10, 0.2)",
-        boxSizing: "border-box",
+        width: 'calc(100% - 4px)',
+        left: '2px',
+        "border-radius": "10px",
+        "box-sizing": "border-box",
     };
 
-    if (isDark.value) {
-        style.backgroundColor = "rgba(0, 0, 0, 0.01)";
-        style.border = "1px solid rgba(255, 255, 255, 0.3)";
-    }
-
     if (isAppIOS()) {
-        style.backgroundColor = isDark.value ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)";
         if (isDark.value) {
-            style.border = "none";
+            style["box-shadow"] = "none";
             style.width = `${width - 3}px`;
         } else {
             style.width = `${width + 2}px`;
@@ -226,13 +228,11 @@ const renderIndicatorStyle = () => {
         const key = objKeys[i];
         str += `${key}: ${style[key]};`;
     }
-    indicatorStyle.value = str;
-};
+    return str;
+});
 
 const render = () => {
     renderColumnItem();
-    renderMaskStyle();
-    renderIndicatorStyle();
 };
 
 onMounted(() => {

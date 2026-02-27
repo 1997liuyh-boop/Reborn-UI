@@ -8,14 +8,17 @@
             <!-- 单滑块模式 -->
             <template v-if="!range">
                 <slot name="thumb" :value="{ value: displayValue, style: singleThumbStyle }">
-                    <view :class="ui.thumb()" :style="singleThumbStyle"></view>
+                    <view class="reborn-slider__thumb-measure" :class="ui.thumb()" :style="singleThumbStyle">
+                    </view>
                 </slot>
             </template>
 
             <!-- 双滑块模式 -->
             <template v-if="range">
-                <view :class="[ui.thumb(), ui.thumbActive()]" :style="minThumbStyle"></view>
-                <view :class="[ui.thumb(), ui.thumbActive()]" :style="maxThumbStyle"></view>
+                <view class="reborn-slider__thumb-measure" :class="[ui.thumb(), ui.thumbActive()]"
+                    :style="minThumbStyle"></view>
+                <view class="reborn-slider__thumb-measure" :class="[ui.thumb(), ui.thumbActive()]"
+                    :style="maxThumbStyle"></view>
             </template>
 
             <view :class="ui.picker()" :style="{ height: blockSize * 1.5 + 'px' }" @touchstart.prevent="onTouchStart"
@@ -57,7 +60,7 @@ export interface SliderProps {
     /** 是否禁用 */
     disabled?: boolean;
     /** 滑块的大小 */
-    blockSize?: number;
+    // blockSize?: number;
     /** 线的高度 */
     trackHeight?: number;
     /** 是否显示当前值 */
@@ -90,7 +93,7 @@ const props = withDefaults(defineProps<SliderProps>(), {
     max: 100,
     step: 1,
     disabled: false,
-    blockSize: 20,
+    // blockSize: 20,
     trackHeight: 4,
     showValue: false,
     range: false,
@@ -103,6 +106,7 @@ const emit = defineEmits(["update:modelValue", "update:values", "change", "chang
 
 const { proxy } = getCurrentInstance()!;
 
+const blockSize = ref(20)
 // ui 样式系统
 const uiOverrides = computed(() => props.ui || {});
 const b = tv(theme);
@@ -135,7 +139,7 @@ const ui = computed(() => {
 });
 
 // reborn-form 上下文
-const { disabled, size } = useFormInject(props);
+const { disabled, size, validate } = useFormInject(props);
 
 
 // 当前滑块的值，单值模式
@@ -180,13 +184,20 @@ const rangePercentage = computed<RangePercentage>(() => {
 // 计算进度条的样式属性
 const progressStyle = computed(() => {
     const style: any = {};
+    const halfBlock = blockSize.value / 2;
 
     if (props.range) {
-        const { min, max } = rangePercentage.value;
-        style["left"] = `${min}%`;
-        style["width"] = `${max - min}%`;
+        // 范围模式：从左滑块中心到右滑块中心
+        const minPos = (rangePercentage.value.min / 100) * (trackWidth.value - blockSize.value) + halfBlock;
+        const maxPos = (rangePercentage.value.max / 100) * (trackWidth.value - blockSize.value) + halfBlock;
+        style["left"] = `${minPos}px`;
+        style["width"] = `${maxPos - minPos}px`;
     } else {
-        style["width"] = `${percentage.value}%`;
+        // 单值模式：从轨道起点到滑块中心
+        // 这里的计算公式要和 createThumbStyle 保持一致
+        const thumbLeft = (percentage.value / 100) * (trackWidth.value - blockSize.value);
+        style["left"] = `0px`;
+        style["width"] = `${thumbLeft + halfBlock}px`;
     }
 
     return style;
@@ -195,13 +206,17 @@ const progressStyle = computed(() => {
 // 创建滑块的定位样式（通用函数）
 function createThumbStyle(percentPosition: number) {
     const style: any = {};
-
-    const effectiveTrackWidth = trackWidth.value - props.blockSize + 1;
+    const effectiveTrackWidth = trackWidth.value - blockSize.value;
     const leftPosition = (percentPosition / 100) * effectiveTrackWidth;
-    const finalLeftPosition = Math.max(0, Math.min(effectiveTrackWidth, leftPosition));
 
-    style["left"] = `${finalLeftPosition}px`;
+    // 使用 Math.max/min 防止越界
+    const finalLeft = Math.max(0, Math.min(effectiveTrackWidth, leftPosition));
 
+    style["left"] = `${finalLeft}px`;
+    style["width"] = `${blockSize.value}px`;
+    style["height"] = `${blockSize.value}px`;
+    style["position"] = "absolute";
+    // 移除 flex，因为样式已经由 ui.thumb() 控制
     return style;
 }
 
@@ -232,15 +247,27 @@ const displayValue = computed<string>(() => {
 // 获取滑块轨道的位置和尺寸信息
 function getTrackInfo(): Promise<void> {
     return new Promise((resolve) => {
-        uni.createSelectorQuery()
-            .in(proxy)
-            .select(".reborn-slider__track")
-            .boundingClientRect((node: any) => {
-                trackWidth.value = node.width ?? 0;
-                trackLeft.value = node.left ?? 0;
-                resolve();
-            })
-            .exec();
+        const query = uni.createSelectorQuery().in(proxy);
+
+        // 同时选择轨道和滑块节点
+        query.select(".reborn-slider__track").boundingClientRect();
+        query.select(".reborn-slider__thumb-node").boundingClientRect();
+
+        query.exec((res) => {
+            const [trackNode, thumbNode] = res;
+
+            if (trackNode) {
+                trackWidth.value = trackNode.width ?? 0;
+                trackLeft.value = trackNode.left ?? 0;
+            }
+
+            // 自动识别 slot 或 默认滑块的高度
+            if (thumbNode && thumbNode.height > 0) {
+                blockSize.value = thumbNode.height;
+            }
+
+            resolve();
+        });
     });
 }
 
@@ -352,6 +379,17 @@ function onTouchEnd() {
     } else {
         emit("change", value.value);
     }
+    if (validate) validate('change');
+}
+
+function setBlockSize() {
+    if (props.size === "sm") {
+        blockSize.value = 16;
+    } else if (props.size === "md") {
+        blockSize.value = 20;
+    } else if (props.size === "lg") {
+        blockSize.value = 24;
+    }
 }
 
 // 监听外部传入的 modelValue 变化
@@ -419,15 +457,17 @@ watch(
 );
 
 onMounted(() => {
+    getTrackInfo();
     watch(
-        () => [props.showValue],
+        () => [props.range, props.size, props.showValue],
         () => {
             nextTick(() => {
+                setBlockSize();
                 getTrackInfo();
             });
-        }
+        },
+        { deep: true }
     );
 
-    getTrackInfo();
 });
 </script>

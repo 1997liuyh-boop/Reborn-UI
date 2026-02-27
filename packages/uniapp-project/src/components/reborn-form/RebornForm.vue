@@ -31,7 +31,7 @@ export interface FromProps {
 	size?: "" | "sm" | "md" | "lg"; // 表单大小
 	disabled?: boolean; // 是否禁用
 	scrollToError?: boolean; // 是否滚动到错误信息
-	trigger?: 'blur' | 'change'; // 触发验证
+	trigger?: 'blur' | 'change' | 'none' | Array<'blur' | 'change'>; // 触发验证
 	ui?: Partial<{
 		root: ClassValue;
 	}>;
@@ -50,7 +50,7 @@ const props = withDefaults(defineProps<FromProps>(), {
 	size: "",
 	disabled: false,
 	scrollToError: true,
-	trigger: 'blur',
+	trigger: 'none',
 });
 
 const b = tv(theme);
@@ -186,14 +186,13 @@ function scrollToField(prop: string) {
 // 验证整个表单
 function validate(callback?: (valid: boolean, errors: FormValidateError[]) => void): Promise<boolean> {
 	return new Promise(async (resolve) => {
-		console.log(fields.value);
 		const promises = Array.from(fields.value).map(prop => validateField(prop));
 		await Promise.all(promises);
 
 		const currentErrors = await getErrors();
 
 		if (currentErrors.length > 0 && props.scrollToError) {
-			const errorInstances = fieldInstances.value.filter(f => errors.value.has(f.prop));
+			const errorInstances = fieldInstances.value.filter(f => errors.value[f.prop] !== undefined);
 			if (errorInstances.length > 0) {
 				scrollToField(errorInstances[0].prop);
 			}
@@ -233,11 +232,11 @@ onMounted(() => {
 provide('rebornForm', {
 	props,
 	addField: (f: any) => {
-		console.log('RebornForm: addField received', f.prop);
 		addField(f);
 	},
 	removeField,
-	getError
+	getError,
+	validateField
 });
 
 function getField(prop: string) {

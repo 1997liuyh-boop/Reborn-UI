@@ -1,8 +1,11 @@
 <template>
 	<RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
-		:text="text" @open="open()" @clear="clear" />
-
-	<reborn-popup ref="popupRef" v-model="visible" :title="title">
+		:text="text" :clearable="clearable" :color="color" :size="size" @open="open()" @clear="clear" :ui="triggerUi">
+		<template #default>
+			<slot name="tag" :selectItem="selectItem" />
+		</template>
+	</RebornSelectTrigger>
+	<reborn-popup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
 		<view @touchmove.stop>
 			<slot name="prepend"></slot>
 
@@ -11,16 +14,22 @@
 					<text class="text-sm text-gray-4">暂无数据</text>
 				</view>
 
-				<RebornPickerView :value="indexes" :columns="columns" @change-index="onChange" v-else />
+				<RebornPickerView :color="color" :value="indexes" :columns="columns" :ui="pickerUi"
+					@change-index="onChange" v-else>
+					<template #default="{ item, index }">
+						<slot name="option" :item="item" :index="index" />
+					</template>
+				</RebornPickerView>
 			</view>
 
 			<slot name="append"></slot>
 
 			<view class="flex flex-row items-center justify-center p-3 gap-2">
-				<RebornButton v-if="showCancel" size="lg" variant="outline" color="primary" class="flex-1" @tap="close">
-					{{ cancelText }}</RebornButton>
-				<RebornButton v-if="showConfirm && !noOptions" size="lg" variant="solid" color="primary" class="flex-1"
-					@tap="confirm">{{ confirmText }}</RebornButton>
+				<RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="flex-1"
+					@tap="close">{{
+						cancelText }}</RebornButton>
+				<RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color"
+					class="flex-1" @tap="confirm">{{ confirmText }}</RebornButton>
 			</view>
 		</view>
 	</reborn-popup>
@@ -28,6 +37,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
+import type { ClassValue } from "clsx";
+
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import RebornButton from "../reborn-button/RebornButton.vue";
 import RebornPickerView from "../reborn-picker-view/RebornPickerView.vue";
@@ -35,14 +46,17 @@ import RebornPopup from "../reborn-popup/RebornPopup.vue";
 import type { SelectOption } from "../reborn-picker-view/RebornPickerView.vue";
 import { isEmpty, isNull } from "lodash";
 import { useFormInject } from "@/composables/useFieldGroup";
+import { selectColors, selectSizes } from "./reborn-select.config";
 
 defineOptions({
 	name: "reborn-select",
 });
 
 defineSlots<{
+	tag(): any;
 	prepend(): any;
 	append(): any;
+	option(): any;
 }>();
 
 export type SelectValue = string | number | (string | number)[] | null;
@@ -72,6 +86,41 @@ export interface SelectProps {
 	cancelText?: string;
 	/** 是否显示取消按钮 */
 	showCancel?: boolean;
+	/** 是否显示清空按钮 */
+	clearable?: boolean;
+	/** 颜色 */
+	color?: typeof selectColors[number];
+	/** 尺寸 */
+	size?: typeof selectSizes[number];
+	/** 样式覆盖 */
+	triggerUi?: Partial<{
+		wrapper: ClassValue;
+		content: ClassValue;
+		text: ClassValue;
+		placeholder: ClassValue;
+		iconWrapper: ClassValue;
+		clearIcon: ClassValue;
+		arrowIcon: ClassValue;
+	}>;
+	popupUi?: Partial<{
+		wrapper: ClassValue;
+		mask: ClassValue;
+		popup: ClassValue;
+		inner: ClassValue;
+		draw: ClassValue;
+		header: ClassValue;
+		title: ClassValue;
+		container: ClassValue;
+	}>;
+	pickerUi?: Partial<{
+		wrapper: ClassValue;
+		header: ClassValue;
+		headerText: ClassValue;
+		pickerContainer: ClassValue;
+		item: ClassValue;
+		itemText: ClassValue;
+		indicator: ClassValue;
+	}>;
 }
 
 const props = withDefaults(defineProps<SelectProps>(), {
@@ -87,16 +136,19 @@ const props = withDefaults(defineProps<SelectProps>(), {
 	showConfirm: true,
 	cancelText: "取消",
 	showCancel: true,
+	clearable: true,
+	color: "primary",
+	size: "md",
 });
 
 const emit = defineEmits<{
 	(e: "update:modelValue", value: SelectValue): void;
-	(e: "change", value: SelectValue): void;
+	(e: "change", value: SelectValue, select: any): void;
 	(e: "changing", value: SelectValue): void;
 }>();
 
 // reborn-form 上下文
-const { disabled } = useFormInject(props);
+const { disabled, validate } = useFormInject(props);
 const isDisabled = computed(() => disabled.value || props.disabled);
 
 // 弹出层引用
@@ -111,16 +163,18 @@ const value = ref<any[]>([]);
 // 当前选中项的索引
 const indexes = ref<number[]>([]);
 
+const selectItem = ref<any[]>([])
+
 // 计算选择器列表数据
 const columns = computed<SelectOption[][]>(() => {
-	let options = props.options;
+	let options = props.options || [];
 	let cols: SelectOption[][] = [];
 
 	for (let i = 0; i < props.columnCount; i++) {
 		const column = [...options];
 		const val = i >= value.value.length ? null : value.value[i];
 
-		let item = options.find((item) => item.value == val);
+		let item = options?.find((item) => item.value == val);
 		if (item == null && !isEmpty(options)) {
 			item = options[0];
 		}
@@ -140,8 +194,7 @@ const text = ref("");
 
 function updateText() {
 	const val = props.modelValue;
-
-	if (val == null || isEmpty(val)) {
+	if (val == null || val == undefined) {
 		text.value = "";
 	} else {
 		let arr: any[];
@@ -159,6 +212,12 @@ function updateText() {
 
 function getValue() {
 	return props.columnCount == 1 ? value.value[0] : value.value;
+}
+
+function getSelectItem(a: number[]): any[] {
+	return columns.value.map((c, i) => {
+		return isNull(c[a[i]]) ? 0 : c[a[i]];
+	});
 }
 
 function setValue(val: SelectValue) {
@@ -229,18 +288,23 @@ function clear() {
 	text.value = "";
 	if (props.columnCount == 1) {
 		emit("update:modelValue", null);
-		emit("change", null);
+		emit("change", null, null);
 	} else {
 		emit("update:modelValue", []);
-		emit("change", []);
+		emit("change", [], []);
 	}
+	if (validate) validate('change');
 }
 
 function confirm() {
 	onChange(indexes.value);
 	const val = getValue();
+
+	selectItem.value = getSelectItem(indexes.value)
+
 	emit("update:modelValue", val);
-	emit("change", val);
+	emit("change", val, selectItem.value);
+	if (validate) validate('change');
 	if (callback != null) {
 		callback(val);
 	}

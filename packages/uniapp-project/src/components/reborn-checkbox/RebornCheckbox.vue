@@ -43,7 +43,7 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
-const { size: fieldGroupSize, disabled: fieldGroupDisabled, isError } = useFormInject(props);
+const { size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props);
 
 const localValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? false);
 const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
@@ -81,6 +81,7 @@ function updateValue(nextValue: boolean | CheckboxValue[]) {
         localValue.value = nextValue;
     }
     emit("update:modelValue", nextValue);
+    if (validate) validate('change');
 }
 
 function toggle() {

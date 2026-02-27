@@ -18,17 +18,14 @@ export default {
     variants: {
         size: {
             sm: {
-                thumb: "size-4",
                 track: "h-1",
                 value: "text-[length:var(--text-size-24)]",
             },
             md: {
-                thumb: "size-5",
                 track: "h-1.5",
                 value: "text-[length:var(--text-size-28)]",
             },
             lg: {
-                thumb: "size-6",
                 track: "h-2",
                 value: "text-[length:var(--text-size-32)]",
             },

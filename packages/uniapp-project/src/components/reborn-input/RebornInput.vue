@@ -111,7 +111,7 @@ const showClear = computed(() => {
 
 const isFilled = computed(() => `${inputValue.value ?? ""}`.length > 0);
 
-const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError } = useFormInject(props);
+const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props);
 
 const size = toRef(props, "size");
 
@@ -143,6 +143,7 @@ function onInput(e: any) {
   emit("update:modelValue", v1);
   emit("input", v1);
   emit("change", v1);
+  if (validate) validate('change');
 }
 
 // 点击确认按钮事件
@@ -181,6 +182,7 @@ function onFocus(e: any) {
 function onBlur(e: any) {
   isFocus.value = false;
   emit("blur", e);
+  if (validate) validate('blur');
 }
 // 切换密码显示状态
 function showPassword() {

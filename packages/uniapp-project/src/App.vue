@@ -6,7 +6,8 @@ onLaunch(() => {
       const isDark = event.data.theme === 'dark'
       if (isDark) {
         document.documentElement.classList.add('dark')
-      } else {
+      }
+      else {
         document.documentElement.classList.remove('dark')
       }
     }
@@ -52,12 +53,38 @@ body {
   /* IE and Edge */
   scrollbar-width: none;
   /* Firefox */
-  font-family: Open Sans, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Segoe UI, Arial, Roboto, PingFang SC, miui, Hiragino Sans GB, Microsoft Yahei, sans-serif;
+  font-family:
+    Open Sans,
+    -apple-system,
+    BlinkMacSystemFont,
+    Helvetica Neue,
+    Helvetica,
+    Segoe UI,
+    Arial,
+    Roboto,
+    PingFang SC,
+    miui,
+    Hiragino Sans GB,
+    Microsoft Yahei,
+    sans-serif;
 }
 
 page {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  font-family: Open Sans, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Segoe UI, Arial, Roboto, PingFang SC, miui, Hiragino Sans GB, Microsoft Yahei, sans-serif;
+  font-family:
+    Open Sans,
+    -apple-system,
+    BlinkMacSystemFont,
+    Helvetica Neue,
+    Helvetica,
+    Segoe UI,
+    Arial,
+    Roboto,
+    PingFang SC,
+    miui,
+    Hiragino Sans GB,
+    Microsoft Yahei,
+    sans-serif;
   height: auto;
 }
 </style>

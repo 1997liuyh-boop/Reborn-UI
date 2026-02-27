@@ -8,7 +8,7 @@ export default {
     wrapper: "inline-flex items-center gap-3 cursor-pointer select-none",
     input: "sr-only",
     track:
-      "relative inline-flex items-center rounded-full bg-gray-200 transition-colors ring-1 ring-transparent data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
+      "relative inline-flex items-center rounded-full bg-gray-2 transition-colors ring-1 ring-transparent data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
     thumb:
       "absolute left-0.5 top-0.5 flex items-center justify-center rounded-full bg-white shadow transition-transform duration-200",
     activeLabel: "text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors",
@@ -22,7 +22,7 @@ export default {
         thumb: "translate-x-5",   // Default, will be overridden by size variants
       },
       false: {
-        track: "bg-gray-200",
+        track: "bg-gray-2 dark:bg-gray-7",
         thumb: "translate-x-0"
       }
     },
