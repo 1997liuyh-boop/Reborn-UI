@@ -10,6 +10,14 @@ const v3 = ref('md')
 const v4 = ref('2')
 const v5 = ref('1')
 const v6 = ref('1')
+const v7 = ref('😀')
+
+const emojis = [
+  { value: '😀', label: '开心' },
+  { value: '😍', label: '喜欢' },
+  { value: '🤔', label: '思考' },
+  { value: '🎉', label: '庆祝' },
+]
 </script>
 
 <template>
@@ -48,20 +56,30 @@ const v6 = ref('1')
 
     <RebornCard title="自定义图标" custom-class="space-y-4">
       {{ v5 }}
-      <RebornRadio
-        v-model="v5" label="自定义图标" value="1" active-icon="i-lucide-check-circle-2"
-        inactive-icon="i-lucide-circle"
-      />
+      <RebornRadio v-model="v5" label="自定义图标" value="1" active-icon="i-lucide-check-circle-2"
+        inactive-icon="i-lucide-circle" />
     </RebornCard>
 
     <RebornCard title="自定义样式 (UI Prop)" custom-class="space-y-4">
-      <RebornRadio
-        v-model="v6" label="方框样式" value="1" :ui="{
-          activeIcon: 'rounded-md',
-          inactiveIcon: 'rounded-md',
-          label: 'text-primary font-bold',
-        }" active-icon="i-lucide-square-check" inactive-icon="i-lucide-square"
-      />
+      <RebornRadio v-model="v6" label="方框样式" value="1" :ui="{
+        activeIcon: 'rounded-md',
+        inactiveIcon: 'rounded-md',
+        label: 'text-primary font-bold',
+      }" active-icon="i-lucide-square-check" inactive-icon="i-lucide-square" />
+    </RebornCard>
+
+    <RebornCard title="自定义插槽 (Slot)" custom-class="space-y-4">
+      <view class="flex flex-wrap gap-4">
+        <RebornRadio v-for="e in emojis" :key="e.value" v-model="v7" :value="e.value" :label="e.label">
+          <template #active-icon>
+            <text class="text-lg">{{ e.value }}</text>
+          </template>
+          <template #inactive-icon>
+            <text class="text-lg opacity-30">{{ e.value }}</text>
+          </template>
+        </RebornRadio>
+      </view>
+      <text class="text-sm text-gray-500">选中: {{ v7 }}</text>
     </RebornCard>
   </RebornPage>
 </template>

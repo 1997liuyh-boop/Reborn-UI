@@ -15,12 +15,10 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
   <RebornPage title="复选框 (Checkbox)" description="交互式复选框组件，支持布尔值或多选。">
     <!-- Combined View -->
     <RebornCard title="组合视图" custom-class="space-y-3">
-      <view
-        class="
+      <view class="
           text-sm text-slate-600
           dark:text-slate-200
-        "
-      >
+        ">
         已选: {{ groupValues }}
       </view>
       <view class="flex flex-col gap-2">
@@ -29,81 +27,61 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
         <RebornCheckbox v-model="groupValues" value="Option C" label="选项 C" />
       </view>
       <view class="flex flex-col gap-3">
-        <RebornCheckbox
-          v-model="groupValues" value="基础版" :ui="{
-            wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',
-            label: 'flex-1',
-          }"
-          :customClass="groupValues.includes('基础版') ? 'border-primary ring-1 ring-primary' : 'border-slate-200'"
-        >
+        <RebornCheckbox v-model="groupValues" value="基础版" :ui="{
+          wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',
+          label: 'flex-1',
+        }" :customClass="groupValues.includes('基础版') ? 'border-primary ring-1 ring-primary' : 'border-slate-200'">
           <view class="flex flex-col gap-1">
-            <text
-              class="
+            <text class="
                 font-bold text-slate-900
                 dark:text-slate-100
-              "
-            >
+              ">
               基础版
             </text>
-            <text
-              class="
+            <text class="
                 text-sm text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               适合快速接入的轻量配置。
             </text>
           </view>
         </RebornCheckbox>
 
-        <RebornCheckbox
-          v-model="groupValues" value="标准版" color="error" :ui="{
-            wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',
-            label: 'flex-1',
-          }" :customClass="groupValues.includes('标准版') ? 'border-error ring-1 ring-error' : 'border-slate-200'"
-        >
+        <RebornCheckbox v-model="groupValues" value="标准版" color="error" :ui="{
+          wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',
+          label: 'flex-1',
+        }" :customClass="groupValues.includes('标准版') ? 'border-error ring-1 ring-error' : 'border-slate-200'">
           <view class="flex flex-col gap-1">
-            <text
-              class="
+            <text class="
                 font-bold text-slate-900
                 dark:text-slate-100
-              "
-            >
+              ">
               标准版
             </text>
-            <text
-              class="
+            <text class="
                 text-sm text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               涵盖常用场景的均衡方案。
             </text>
           </view>
         </RebornCheckbox>
 
-        <RebornCheckbox
-          v-model="groupValues" value="旗舰版" color="neutral" :ui="{
-            wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',
-            label: 'flex-1',
-          }"
-          :customClass="groupValues.includes('旗舰版') ? 'border-neutral ring-1 ring-neutral' : 'border-slate-200'"
-        >
+        <RebornCheckbox v-model="groupValues" value="旗舰版" color="neutral" :ui="{
+          wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',
+          label: 'flex-1',
+        }" :customClass="groupValues.includes('旗舰版') ? 'border-neutral ring-1 ring-neutral' : 'border-slate-200'">
           <view class="flex flex-col gap-1">
-            <text
-              class="
+            <text class="
                 font-bold text-slate-900
                 dark:text-slate-100
-              "
-            >
+              ">
               旗舰版
             </text>
-            <text
-              class="
+            <text class="
                 text-sm text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               完整能力组合，满足复杂业务。
             </text>
           </view>
@@ -113,31 +91,23 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
 
     <!-- Advanced Customization -->
     <RebornCard title="高级定制">
-      <view
-        class="
+      <view class="
           grid grid-cols-1 gap-4
           md:grid-cols-2
-        "
-      >
+        ">
         <!-- Custom UI -->
-        <RebornCheckbox
-          v-model="checked1" color="error" label="完全圆角 (Custom UI)" :ui="{
-            control: 'rounded-full size-6',
-            icon: 'size-4',
-          }"
-        />
+        <RebornCheckbox v-model="checked1" color="error" label="完全圆角 (Custom UI)" :ui="{
+          control: 'rounded-full size-6',
+          icon: 'size-4',
+        }" />
 
         <!-- Custom Slot -->
-        <RebornCheckbox
-          v-model="checked1" color="error" label="自定义图标、大小 (Slot)" :ui="{
-            control: 'size-8 rounded-lg group-[.is-checked]:bg-orange-5 group-[.is-checked]:border-green-5',
-          }"
-        >
+        <RebornCheckbox v-model="checked1" color="error" label="自定义图标、大小 (Slot)" :ui="{
+          control: 'size-8 rounded-lg group-[.is-checked]:bg-orange-5 group-[.is-checked]:border-green-5',
+        }">
           <template #icon="{ checked }">
-            <view
-              class="i-lucide-heart transition-all duration-300"
-              :class="[checked ? 'scale-100 text-white' : `scale-0`]"
-            />
+            <view class="transition-all duration-300"
+              :class="[checked ? 'i-lucide-heart text-white' : `i-lucide-heart-crack text-gray-8`]" />
           </template>
         </RebornCheckbox>
       </view>
