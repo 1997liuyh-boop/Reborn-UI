@@ -21,23 +21,16 @@ navigation:
 
 ## API
 
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
-| `modelValue` | `string` | `""` | 输入值。 |
-| `length` | `number` | `4` | 验证码位数。 |
-| `autofocus` | `boolean` | `false` | 是否自动聚焦。 |
-| `disabled` | `boolean` | `false` | 是否禁用。 |
-| `inputType` | `"text" \| "number"` | `"number"` | 输入类型。 |
-| `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
-| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 颜色主题。 |
-
-## Events
-
-| 事件名 | 参数 | 描述 |
-| --- | --- | --- |
-| `update:modelValue` | `string` | 输入值变化。 |
-| `done` | `string` | 输入完成（达到指定位数）。 |
-| `focus` | `FocusEvent` | 输入框获焦。 |
-| `blur` | `FocusEvent` | 输入框失焦。 |
+| 属性名       | 类型                                                                                   | 默认值      | 描述           |
+| ------------ | -------------------------------------------------------------------------------------- | ----------- | -------------- |
+| `modelValue` | `string`                                                                               | `""`        | 输入值。       |
+| `length`     | `number`                                                                               | `4`         | 验证码位数。   |
+| `autofocus`  | `boolean`                                                                              | `false`     | 是否自动聚焦。 |
+| `disabled`   | `boolean`                                                                              | `false`     | 是否禁用。     |
+| `inputType`  | `"text" \| "number"`                                                                   | `"number"`  | 输入类型。     |
+| `size`       | `"sm" \| "md" \| "lg"`                                                                 | `"md"`      | 尺寸大小。     |
+| `color`      | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 颜色主题。     |
+| `class`      | `any`                                                                                  | -           | 根节点 class。 |
+| `ui`         | `Partial<{ root, inner, list, item, value, cursor }>`                                  | -           | 样式覆盖。     |
 
 ::

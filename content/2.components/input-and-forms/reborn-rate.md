@@ -21,29 +21,20 @@ navigation:
 
 ## API
 
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
-| `modelValue` | `number` | `0` | 当前评分值。 |
-| `count` | `number` | `5` | 星星总数。 |
-| `allowHalf` | `boolean` | `false` | 是否允许半星。 |
-| `showValue` | `boolean` | `false` | 是否显示当前分数。 |
-| `disabled` | `boolean` | `false` | 是否禁用。 |
-| `readonly` | `boolean` | `false` | 是否只读。 |
-| `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
-| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"warning"` | 颜色主题。 |
-
-## Events
-
-| 事件名 | 参数 | 描述 |
-| --- | --- | --- |
-| `update:modelValue` | `number` | 评分值变化。 |
-| `change` | `number` | 评分值确认变化。 |
-
-## Slots
-
-| 插槽名 | Props | 描述 |
-| --- | --- | --- |
-| `icon` | `{ index, active }` | 自定义星星图标。 |
-| `value` | `{ value }` | 自定义分数显示。 |
+| 属性名       | 类型                                                                                   | 默认值            | 描述               |
+| ------------ | -------------------------------------------------------------------------------------- | ----------------- | ------------------ |
+| `modelValue` | `number`                                                                               | `0`               | 当前评分值。       |
+| `count`      | `number`                                                                               | `5`               | 星星总数。         |
+| `allowHalf`  | `boolean`                                                                              | `false`           | 是否允许半星。     |
+| `showValue`  | `boolean`                                                                              | `false`           | 是否显示当前分数。 |
+| `disabled`   | `boolean`                                                                              | `false`           | 是否禁用。         |
+| `readonly`   | `boolean`                                                                              | `false`           | 是否只读。         |
+| `icon`       | `string`                                                                               | `"i-lucide-star"` | 未选中图标。       |
+| `activeIcon` | `string`                                                                               | `"i-lucide-star"` | 选中图标。         |
+| `halfIcon`   | `string`                                                                               | -                 | 半星图标。         |
+| `size`       | `"sm" \| "md" \| "lg"`                                                                 | `"md"`            | 尺寸大小。         |
+| `color`      | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"warning"`       | 颜色主题。         |
+| `class`      | `any`                                                                                  | -                 | 根节点 class。     |
+| `ui`         | `Partial<{ wrapper, star, icon, iconActive, value }>`                                  | -                 | 样式覆盖。         |
 
 ::
