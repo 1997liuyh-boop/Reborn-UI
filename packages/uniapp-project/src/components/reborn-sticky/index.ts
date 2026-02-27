@@ -1,1 +1,1 @@
-export { default as RebornSticky } from "./RebornSticky.vue";
+export { default as RebornSticky } from './RebornSticky.vue'

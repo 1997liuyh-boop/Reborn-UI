@@ -1,1 +1,1 @@
-export { default as RebornAffix } from "./RebornAffix.vue";
+export { default as RebornAffix } from './RebornAffix.vue'

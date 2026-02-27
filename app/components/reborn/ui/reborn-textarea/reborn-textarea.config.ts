@@ -4,7 +4,7 @@ const colors = ["primary", "secondary", "success", "info", "warning", "error", "
 const config = {
     slots: {
         root: "relative box-border shrink-0 grow-0 basis-auto min-h-0 min-w-0 flex flex-row items-center bg-white rounded-lg p-2 transition-all duration-200",
-        inner: "h-full flex-1 text-sm text-surface-700 bg-transparent disabled:cursor-not-allowed disabled:opacity-50 outline-none border-none",
+        inner: "h-full flex-1 text-sm text-gray-7 bg-transparent disabled:cursor-not-allowed disabled:opacity-50 outline-none border-none",
         text: "absolute right-4 bottom-2 text-xs text-gray-500 pointer-events-none",
     },
     variants: {

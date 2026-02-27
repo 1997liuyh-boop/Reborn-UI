@@ -1,1 +1,1 @@
-export { default as RebornSwitch } from "./RebornSwitch.vue";
+export { default as RebornSwitch } from './RebornSwitch.vue'

@@ -1,1 +1,1 @@
-export { default as RebornButton } from "./RebornButton.vue";
+export { default as RebornButton } from './RebornButton.vue'

@@ -1,1 +1,1 @@
-export { default as RebornCollapse } from "./RebornCollapse.vue";
+export { default as RebornCollapse } from './RebornCollapse.vue'

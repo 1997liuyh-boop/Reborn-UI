@@ -1,2 +1,2 @@
-export { default as RebornForm } from "./RebornForm.vue";
-export { default as RebornFormItem } from "./RebornFormItem.vue";
+export { default as RebornForm } from './RebornForm.vue'
+export { default as RebornFormItem } from './RebornFormItem.vue'

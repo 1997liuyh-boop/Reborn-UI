@@ -1,1 +1,1 @@
-export { default as RebornTextarea } from "./RebornTextarea.vue";
+export { default as RebornTextarea } from './RebornTextarea.vue'

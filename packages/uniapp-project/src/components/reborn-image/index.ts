@@ -1,1 +1,1 @@
-export { default as RebornImage } from "./RebornImage.vue";
+export { default as RebornImage } from './RebornImage.vue'

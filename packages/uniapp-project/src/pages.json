@@ -134,6 +134,12 @@
       }
     },
     {
+      "path": "pages/reborn-select-date/RebornSelectDateDemo",
+      "style": {
+        "navigationBarTitleText": "Select Date"
+      }
+    },
+    {
       "path": "pages/reborn-slider/RebornSliderDemo",
       "style": {
         "navigationBarTitleText": "Slider"
@@ -146,13 +152,13 @@
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8",
     "rpxCalcMaxDeviceWidth": 960,
-		"rpxCalcBaseDeviceWidth": 375,
-		"rpxCalcIncludeWidth": 750,
-		"app-plus": {
-			"pullToRefresh": {
-				"style": "circle",
-				"color": "#ff3d58"
-			}
-		}
+    "rpxCalcBaseDeviceWidth": 375,
+    "rpxCalcIncludeWidth": 750,
+    "app-plus": {
+      "pullToRefresh": {
+        "style": "circle",
+        "color": "#ff3d58"
+      }
+    }
   }
 }

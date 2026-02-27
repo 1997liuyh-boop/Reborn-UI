@@ -1,1 +1,1 @@
-export { default as RebornCheckbox } from "./RebornCheckbox.vue";
+export { default as RebornCheckbox } from './RebornCheckbox.vue'

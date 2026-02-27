@@ -1,1 +1,1 @@
-export { default as RebornCard } from "./RebornCard.vue";
+export { default as RebornCard } from './RebornCard.vue'

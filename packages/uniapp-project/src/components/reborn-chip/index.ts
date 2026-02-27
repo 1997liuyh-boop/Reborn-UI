@@ -1,1 +1,1 @@
-export { default as RebornChip } from "./RebornChip.vue";
+export { default as RebornChip } from './RebornChip.vue'

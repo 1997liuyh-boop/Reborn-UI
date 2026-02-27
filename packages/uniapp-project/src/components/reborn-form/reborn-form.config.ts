@@ -1,9 +1,9 @@
-const labelPositions = ["left", "top", "right"] as const;
+const labelPositions = ['left', 'top', 'right'] as const
 
-export { labelPositions as formLabelPositions };
+export { labelPositions as formLabelPositions }
 
 export default {
-    slots: {
-        root: "w-full",
-    },
-};
+  slots: {
+    root: 'w-full',
+  },
+}

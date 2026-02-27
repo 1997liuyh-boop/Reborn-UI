@@ -1,1 +1,1 @@
-export { default as RebornSlider } from "./RebornSlider.vue";
+export { default as RebornSlider } from './RebornSlider.vue'

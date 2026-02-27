@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
-import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
-import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 
 const checked1 = ref(true)
 const checked2 = ref(false)
@@ -17,91 +17,162 @@ const currentColor = ref<typeof colors[number]>('primary')
 </script>
 
 <template>
-    <RebornPage title="开关 (Switch)" description="允许用户在两种状态之间切换的控件。" custom-class="flex flex-col gap-y-4">
+  <RebornPage title="开关 (Switch)" description="允许用户在两种状态之间切换的控件。" custom-class="flex flex-col gap-y-4">
+    <!-- Colors -->
+    <RebornCard title="颜色 (Colors)" custom-class="grid grid-cols-2 gap-2">
+      <RebornSwitch
+        v-for="color in colors" :key="color" v-model="checked1" :color="color" :active-label="color"
+        custom-class="flex-1"
+      />
+    </RebornCard>
 
-        <!-- Colors -->
-        <RebornCard title="颜色 (Colors)" custom-class="grid grid-cols-2 gap-2">
-            <RebornSwitch v-for="color in colors" :key="color" v-model="checked1" :color="color" :active-label="color"
-                custom-class="flex-1" />
-        </RebornCard>
+    <RebornCard title="尺寸 (Size)" custom-class="flex flex-col gap-2">
+      <RebornSwitch
+        v-for="size in sizes" :key="size" v-model="checked2" :size="size" :inactive-label="size"
+        :active-label="size"
+      />
+    </RebornCard>
 
-        <RebornCard title="尺寸 (Size)" custom-class="flex flex-col gap-2">
-            <RebornSwitch v-for="size in sizes" :key="size" v-model="checked2" :size="size" :inactive-label="size"
-                :active-label="size" />
-        </RebornCard>
+    <RebornCard title="加载状态与自定义 (Loading & Customization)" custom-class="space-y-4">
+      <!-- Configuration Controls -->
+      <view class="space-y-2">
+        <text class="text-sm text-gray-500">尺寸 (Size)</text>
+        <view class="flex flex-wrap gap-2">
+          <ReButton
+            v-for="size in sizes" :key="size" :variant="currentSize === size ? 'solid' : 'outline'"
+            :color="currentSize === size ? 'primary' : 'neutral'" @click="currentSize = size"
+          >
+            {{ size.toUpperCase() }}
+          </ReButton>
+        </view>
+      </view>
 
-        <RebornCard title="加载状态与自定义 (Loading & Customization)" custom-class="space-y-4">
-            <!-- Configuration Controls -->
-            <view class="space-y-2">
-                <text class="text-sm text-gray-500">尺寸 (Size)</text>
-                <view class="flex flex-wrap gap-2">
-                    <ReButton v-for="size in sizes" :key="size" :variant="currentSize === size ? 'solid' : 'outline'"
-                        :color="currentSize === size ? 'primary' : 'neutral'" @click="currentSize = size">
-                        {{ size.toUpperCase() }}
-                    </ReButton>
-                </view>
-            </view>
+      <view class="space-y-2">
+        <text class="text-sm text-gray-500">颜色 (Color)</text>
+        <view class="flex flex-wrap gap-2">
+          <view
+            v-for="c in colors" :key="c"
+            class="
+              size-6 cursor-pointer rounded-full ring-2 ring-transparent
+              ring-offset-2 transition-all
+            "
+            :class="[
+              `
+                bg-${c}
+              `,
+              currentColor === c ? 'scale-110 ring-slate-400' : `
+                hover:scale-110
+              `,
+            ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
+            @click="currentColor = c"
+          />
+        </view>
+      </view>
 
-            <view class="space-y-2">
-                <text class="text-sm text-gray-500">颜色 (Color)</text>
-                <view class="flex flex-wrap gap-2">
-                    <view v-for="c in colors" :key="c"
-                        class="w-6 h-6 rounded-full cursor-pointer ring-2 ring-offset-2 ring-transparent transition-all"
-                        :class="[
-                            `bg-${c}`,
-                            currentColor === c ? 'ring-slate-400 scale-110' : 'hover:scale-110'
-                        ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-                        @click="currentColor = c"></view>
-                </view>
-            </view>
+      <!-- Examples -->
+      <view
+        class="
+          grid gap-4
+          md:grid-cols-2
+        "
+      >
+        <!-- Loading State -->
+        <view
+          class="
+            flex items-center gap-4 rounded-xl border border-gray-100 bg-white
+            p-4
+            dark:bg-gray-800
+          "
+        >
+          <RebornSwitch
+            v-model="onValue" :size="currentSize" :color="currentColor"
+            active-label="加载中 (Loading)" loading
+          />
+        </view>
 
-            <!-- Examples -->
-            <view class="grid gap-4 md:grid-cols-2">
-                <!-- Loading State -->
-                <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
-                        active-label="加载中 (Loading)" loading />
-                </view>
+        <!-- Custom UI (Square) -->
+        <view
+          class="
+            flex items-center gap-4 rounded-xl border border-gray-100 bg-white
+            p-4
+            dark:bg-gray-800
+          "
+        >
+          <RebornSwitch
+            v-model="onValue" :size="currentSize" :color="currentColor"
+            active-label="方形 UI (Custom UI)" :ui="{ track: 'rounded-md', thumb: 'rounded-sm' }"
+          />
+        </view>
+      </view>
 
-                <!-- Custom UI (Square) -->
-                <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
-                        active-label="方形 UI (Custom UI)" :ui="{ track: 'rounded-md', thumb: 'rounded-sm' }" />
-                </view>
-            </view>
+      <view
+        class="
+          grid gap-4
+          md:grid-cols-2
+        "
+      >
+        <!-- Custom Thumb Content (Icon) -->
+        <view
+          class="
+            flex items-center gap-4 rounded-xl border border-gray-100 bg-white
+            p-4
+            dark:bg-gray-800
+          "
+        >
+          <RebornSwitch
+            v-model="onValue" :size="currentSize" :color="currentColor"
+            active-label="自定义图标 (Thumb Slot)" :ui="{ track: 'group-[.is-checked]:bg-orange-6 bg-blue-6' }"
+          >
+            <template #thumb="{ checked }">
+              <view
+                class="flex size-4 transition-colors" :class="[
+                  checked ? 'i-lucide-check text-orange-6' : `
+                    i-lucide-x text-blue-6
+                  `,
+                ]"
+              />
+            </template>
+          </RebornSwitch>
+        </view>
 
-            <view class="grid gap-4 md:grid-cols-2">
-                <!-- Custom Thumb Content (Icon) -->
-                <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
-                        active-label="自定义图标 (Thumb Slot)" :ui="{ track: 'group-[.is-checked]:bg-orange-6 bg-blue-6' }">
-                        <template #thumb="{ checked }">
-                            <view :class="[
-                                'flex size-4 transition-colors',
-                                checked ? 'i-lucide-check text-orange-6' : 'i-lucide-x text-blue-6'
-                            ]" />
-                        </template>
-                    </RebornSwitch>
-                </view>
+        <!-- Custom Thumb + Loading -->
+        <view
+          class="
+            flex items-center gap-4 rounded-xl border border-gray-100 bg-white
+            p-4
+            dark:bg-gray-800
+          "
+        >
+          <RebornSwitch
+            v-model="onValue" :size="currentSize" :color="currentColor"
+            active-label="加载中 (Custom Icon)" loading
+          >
+            <template #thumb="{ loading }">
+              <view
+                v-if="loading" class="
+                  i-lucide-loader flex size-4 animate-spin p-0.5 text-primary
+                "
+              />
+            </template>
+          </RebornSwitch>
+        </view>
 
-                <!-- Custom Thumb + Loading -->
-                <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :size="currentSize" :color="currentColor"
-                        active-label="加载中 (Custom Icon)" loading>
-                        <template #thumb="{ loading }">
-                            <view v-if="loading" class="i-lucide-loader size-4 p-0.5 animate-spin text-primary flex" />
-                        </template>
-                    </RebornSwitch>
-                </view>
-
-                <!-- Custom Size (XL) -->
-                <view class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-                    <RebornSwitch v-model="onValue" :color="currentColor" active-label="自定义大小 (Custom XL)" :ui="{
-                        track: 'h-8 w-14',
-                        thumb: 'size-7 group-[.is-checked]:translate-x-6'
-                    }" />
-                </view>
-            </view>
-        </RebornCard>
-    </RebornPage>
+        <!-- Custom Size (XL) -->
+        <view
+          class="
+            flex items-center gap-4 rounded-xl border border-gray-100 bg-white
+            p-4
+            dark:bg-gray-800
+          "
+        >
+          <RebornSwitch
+            v-model="onValue" :color="currentColor" active-label="自定义大小 (Custom XL)" :ui="{
+              track: 'h-8 w-14',
+              thumb: 'size-7 group-[.is-checked]:translate-x-6',
+            }"
+          />
+        </view>
+      </view>
+    </RebornCard>
+  </RebornPage>
 </template>

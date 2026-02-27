@@ -1,1 +1,1 @@
-export { default as RebornBackTop } from "./RebornBackTop.vue";
+export { default as RebornBackTop } from './RebornBackTop.vue'

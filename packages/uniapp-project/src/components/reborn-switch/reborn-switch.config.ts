@@ -1,63 +1,63 @@
 const size = ['sm', 'md', 'lg'] as const
 const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 
-export { size as switchSizes, color as switchColors }
+export { color as switchColors, size as switchSizes }
 
 export default {
   slots: {
-    wrapper: "inline-flex items-center gap-3 cursor-pointer select-none",
-    input: "sr-only",
+    wrapper: 'inline-flex items-center gap-3 cursor-pointer select-none',
+    input: 'sr-only',
     track:
-      "relative inline-flex items-center rounded-full bg-gray-2 transition-colors ring-1 ring-transparent data-[loading=true]:cursor-wait data-[loading=true]:opacity-80",
+      'relative inline-flex items-center rounded-full bg-gray-2 transition-colors ring-1 ring-transparent data-[loading=true]:cursor-wait data-[loading=true]:opacity-80',
     thumb:
-      "absolute left-0.5 top-0.5 flex items-center justify-center rounded-full bg-white shadow transition-transform duration-200",
-    activeLabel: "text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors",
-    inactiveLabel: "text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors",
-    loading: "border-2 border-gray-2 border-t-current rounded-full animate-spin w-full h-full",
+      'absolute left-0.5 top-0.5 flex items-center justify-center rounded-full bg-white shadow transition-transform duration-200',
+    activeLabel: 'text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors',
+    inactiveLabel: 'text-gray-5 dark:text-gray-4 text-sm font-medium transition-colors',
+    loading: 'border-2 border-gray-2 border-t-current rounded-full animate-spin w-full h-full',
   },
   variants: {
     checked: {
       true: {
-        track: "bg-primary-500", // Default, will be overridden by color variants
-        thumb: "translate-x-5",   // Default, will be overridden by size variants
+        track: 'bg-primary-500', // Default, will be overridden by color variants
+        thumb: 'translate-x-5', // Default, will be overridden by size variants
       },
       false: {
-        track: "bg-gray-2 dark:bg-gray-7",
-        thumb: "translate-x-0"
-      }
+        track: 'bg-gray-2 dark:bg-gray-7',
+        thumb: 'translate-x-0',
+      },
     },
     size: {
       sm: {
-        track: "h-5 w-9",
-        thumb: "h-4 w-4",
-        activeLabel: "text-xs",
-        inactiveLabel: "text-xs",
+        track: 'h-5 w-9',
+        thumb: 'h-4 w-4',
+        activeLabel: 'text-xs',
+        inactiveLabel: 'text-xs',
       },
       md: {
-        track: "h-6 w-11",
-        thumb: "h-5 w-5",
-        activeLabel: "text-sm",
-        inactiveLabel: "text-sm",
+        track: 'h-6 w-11',
+        thumb: 'h-5 w-5',
+        activeLabel: 'text-sm',
+        inactiveLabel: 'text-sm',
       },
       lg: {
-        track: "h-7 w-14",
-        thumb: "h-6 w-6",
-        activeLabel: "text-base",
-        inactiveLabel: "text-base",
+        track: 'h-7 w-14',
+        thumb: 'h-6 w-6',
+        activeLabel: 'text-base',
+        inactiveLabel: 'text-base',
       },
     },
     color: {
-      primary: { track: "" },
-      secondary: { track: "" },
-      success: { track: "" },
-      info: { track: "" },
-      warning: { track: "" },
-      error: { track: "" },
-      neutral: { track: "" },
+      primary: { track: '' },
+      secondary: { track: '' },
+      success: { track: '' },
+      info: { track: '' },
+      warning: { track: '' },
+      error: { track: '' },
+      neutral: { track: '' },
     },
     error: {
       true: {
-        track: "ring-error",
+        track: 'ring-error',
       },
     },
   },
@@ -95,9 +95,8 @@ export default {
     { color: 'neutral', checked: false, class: { inactiveLabel: 'text-neutral dark:text-neutral' } },
   ],
   defaultVariants: {
-    size: "md",
-    color: "primary",
+    size: 'md',
+    color: 'primary',
     checked: false,
   },
 }
-

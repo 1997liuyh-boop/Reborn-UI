@@ -1,1 +1,1 @@
-export { default as RebornInputNumber } from "./RebornInputNumber.vue";
+export { default as RebornInputNumber } from './RebornInputNumber.vue'

@@ -1,1 +1,1 @@
-export { default as RebornText } from "./RebornText.vue";
+export { default as RebornText } from './RebornText.vue'

@@ -1,5 +1,4 @@
-
-import type { TV } from "tailwind-variants";
+import type { TV } from 'tailwind-variants'
 
 // #ifdef MP-WEIXIN
 // @ts-ignore
@@ -7,9 +6,8 @@ import { create } from '@weapp-tailwindcss/variants-v3'
 // #endif
 
 // #ifndef MP-WEIXIN
-import { tv as originTv } from "tailwind-variants";
+import { tv as originTv } from 'tailwind-variants'
 // #endif
-
 
 const textSizeKeys = ['20', '22', '24', '26', '28', '30', '32', '36', '40', '48', '52']
 
@@ -43,10 +41,9 @@ export const tv: TV = (options, config) =>
       ...config?.twMergeConfig,
       ...twMergeConfig,
     },
-  });
+  })
 
 // #endif
-
 
 // #ifndef MP-WEIXIN
 // @ts-ignore
@@ -58,6 +55,6 @@ export const tv: TV = (options, config) =>
       ...config?.twMergeConfig,
       ...twMergeConfig,
     },
-  });
+  })
 
 // #endif

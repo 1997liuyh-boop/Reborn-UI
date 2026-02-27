@@ -1,1 +1,1 @@
-export { default as RebornInputOtp } from "./RebornInputOtp.vue";
+export { default as RebornInputOtp } from './RebornInputOtp.vue'
