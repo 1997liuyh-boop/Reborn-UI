@@ -73,6 +73,10 @@ const textStyle = computed(() => {
     if (props.ellipsis) {
         style["-webkit-line-clamp"] = props.lines;
         style["line-clamp"] = props.lines;
+        style["-webkit-box-orient"] = "vertical";
+        style["display"] = "-webkit-box";
+        style["overflow"] = "hidden";
+        style["word-break"] = "break-all";
     }
     if (props.size) {
         style.fontSize = `${props.size}px`;

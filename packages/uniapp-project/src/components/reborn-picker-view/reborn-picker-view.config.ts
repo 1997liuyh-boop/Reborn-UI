@@ -7,7 +7,7 @@ const config = {
     pickerContainer: 'px-1',
     item: 'flex flex-row items-center justify-center  w-full',
     itemText: 'transition-colors duration-200',
-    indicator: 'bg-primary/10',
+    indicator: 'bg-primary/10 before:content-[""] before:absolute before:top-0 before:border-none after:content-[""] after:absolute after:bottom-0 after:border-none',
   },
   variants: {
     color: {

@@ -53,6 +53,14 @@ const disabled = ref(false);
                 <RebornSelectDate v-model="value1" type="date" :size="size" :color="color" start="2024-01-01"
                     end="2025-12-31" placeholder="限2024-2025" class="max-w-xs" />
             </div>
+
+            <div class="space-y-4">
+                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">自定义样式</h3>
+                <RebornSelectDate v-model="value1" type="date" :size="size" :color="color" :ui="{
+                    trigger: 'border-dashed border-2 rounded-xl bg-purple-50/50 dark:bg-purple-900/20 px-4',
+                    dropdown: 'rounded-2xl shadow-xl shadow-purple-500/10 border-purple-100 dark:border-purple-900 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm'
+                }" placeholder="重写触点和下拉框样式" class="max-w-xs" />
+            </div>
         </div>
     </div>
 </template>

@@ -33,6 +33,7 @@ navigation:
 | `labelFormat` | `string` | - | 显示文本格式化模板（如 `YYYY年MM月DD日`）。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 颜色主题。 |
+| `ui` | `Partial<{ wrapper, trigger, triggerText, placeholder, arrow, dropdown, calHeader, calNavBtn, calTitle, calWeekdays, calDays, calDay, calDayActive, calDayDisabled, calDayToday, clearBtn }>` | `{}` | 自定义类名覆盖。 |
 
 ## Events
 

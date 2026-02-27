@@ -116,10 +116,10 @@ function onChange(e: any) {
 
   // 获取所有列的值
   const values = props.columns.map((c, i) => {
-    return isNull(c[indexs[i]]) ? 0 : c[indexs[i]].value
+    return c?.[indexs[i]]?.value ?? 0
   })
   const select = props.columns.map((c, i) => {
-    return isNull(c[indexs[i]]) ? 0 : c[indexs[i]]
+    return c?.[indexs[i]] ?? null
   })
   emit('change-value', values)
   emit('change-index', indexs)
@@ -176,6 +176,7 @@ const indicatorStyle = computed(() => {
     'left': '2px',
     'border-radius': '10px',
     'box-sizing': 'border-box',
+    'border': 'none',
   }
 
   if (isAppIOS()) {
@@ -228,21 +229,16 @@ onMounted(() => {
     </view>
 
     <view :class="ui.pickerContainer()" :style="{ height: `${height}px` }">
-      <picker-view
-        class="h-full" :value="value" :mask-style="maskStyle" :mask-top-style="maskStyle"
+      <picker-view class="h-full" :value="value" :mask-style="maskStyle" :mask-top-style="maskStyle"
         :indicator-class="ui.indicator()" :mask-bottom-style="maskStyle" :immediate-change="true"
-        :indicator-style="indicatorStyle" @change="onChange"
-      >
+        :indicator-style="indicatorStyle" @change="onChange">
         <picker-view-column v-for="(column, columnIndex) in columns" :key="columnIndex">
           <!-- #ifdef APP-ANDROID -->
           <view ref="columnItemRef" :style="{ height: `${itemHeight * column.length}px` }" />
           <!-- #endif -->
 
           <!-- #ifndef APP-ANDROID -->
-          <view
-            v-for="(item, index) in column" :key="index" :class="ui.item()"
-            :style="{ height: `${itemHeight}px` }"
-          >
+          <view v-for="(item, index) in column" :key="index" :class="ui.item()" :style="{ height: `${itemHeight}px` }">
             <slot :item="item" :index="index">
               <text :class="ui.itemText({ active: index == value[columnIndex], color })">
                 {{ item.label }}
@@ -259,6 +255,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .reborn-picker-view {
   .uni-picker-view-indicator {
+
     // #ifdef H5
     &::after,
     &::before {

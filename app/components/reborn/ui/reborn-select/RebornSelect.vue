@@ -135,7 +135,8 @@ function onKeydown(e: KeyboardEvent) {
         case " ":
             e.preventDefault();
             if (highlightIndex.value >= 0 && highlightIndex.value < props.options.length) {
-                selectOption(props.options[highlightIndex.value]);
+                const opt = props.options[highlightIndex.value];
+                if (opt) selectOption(opt);
             }
             break;
         case "Escape":
@@ -160,7 +161,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
     <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" @keydown="onKeydown" tabindex="0">
-        <div :class="ui.trigger()" @click="toggle">
+        <div :class="ui.trigger()" @click="toggle" :data-state="isOpen ? 'open' : 'closed'">
             <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
 

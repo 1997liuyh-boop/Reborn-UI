@@ -30,6 +30,7 @@ navigation:
 | `clearable` | `boolean` | `true` | 是否允许清空。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 颜色主题。 |
+| `ui` | `Partial<{ wrapper, trigger, triggerText, placeholder, arrow, dropdown, option, optionActive, clearBtn }>` | `{}` | 自定义类名覆盖。 |
 
 ## SelectOption 类型
 

@@ -31,6 +31,10 @@ navigation:
 | `readonly` | `boolean` | `false` | 是否只读。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"warning"` | 颜色主题。 |
+| `icon` | `string` | `"i-lucide-star"` | 未选中图标类名（仅支持 Nuxt Icon）。 |
+| `activeIcon` | `string` | `"i-lucide-star"` | 选中图标类名（仅支持 Nuxt Icon）。 |
+| `halfIcon` | `string` | - | 半星图标类名（仅支持 Nuxt Icon）。 |
+| `ui` | `Partial<{ wrapper, star, icon, iconActive, value }>` | `{}` | 自定义类名覆盖。 |
 
 ## Events
 

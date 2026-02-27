@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { ClassValue } from 'clsx'
-import type { rateColors, rateSizes } from './reborn-rate.config'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import type { ClassValue } from "clsx";
+import type { rateColors, rateSizes } from "./reborn-rate.config";
+import { computed, ref, watch } from "vue";
 
-import { tv } from '~/lib/tv'
-import { cn } from '~/lib/utils'
-import theme from './reborn-rate.config'
+import { tv } from "~/lib/tv";
+import { cn } from "~/lib/utils";
+import theme from "./reborn-rate.config";
 
 defineOptions({
-    name: 'RebornRate',
-})
+    name: "RebornRate",
+});
 
 const props = withDefaults(defineProps<RateProps>(), {
     modelValue: 0,
@@ -18,60 +18,58 @@ const props = withDefaults(defineProps<RateProps>(), {
     showValue: false,
     disabled: false,
     readonly: false,
-    icon: 'lucide:star',
-    activeIcon: 'lucide:star',
-    size: 'md',
-    color: 'warning',
+    icon: "lucide:star",
+    activeIcon: "lucide:star",
+    size: "md",
+    color: "warning",
     ui: () => ({}),
-})
+});
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: number): void
-    (e: 'change', value: number): void
-}>()
+    (e: "update:modelValue", value: number): void;
+    (e: "change", value: number): void;
+}>();
 
 export interface RateProps {
     /** 当前评分 */
-    modelValue?: number
+    modelValue?: number;
     /** 星星总数 */
-    count?: number
+    count?: number;
     /** 允许半星 */
-    allowHalf?: boolean
+    allowHalf?: boolean;
     /** 显示分数 */
-    showValue?: boolean
+    showValue?: boolean;
     /** 是否禁用 */
-    disabled?: boolean
+    disabled?: boolean;
     /** 是否只读 */
-    readonly?: boolean
+    readonly?: boolean;
     /** 未选中图标 (Nuxt Icon name) */
-    icon?: string
+    icon?: string;
     /** 选中图标 (Nuxt Icon name) */
-    activeIcon?: string
+    activeIcon?: string;
     /** 半星选中图标 (Nuxt Icon name) */
-    halfIcon?: string
+    halfIcon?: string;
     /** 尺寸 */
-    size?: (typeof rateSizes)[number]
+    size?: (typeof rateSizes)[number];
     /** 颜色 */
-    color?: (typeof rateColors)[number]
+    color?: (typeof rateColors)[number];
     /** 样式覆盖 */
     ui?: Partial<{
-        wrapper: ClassValue
-        star: ClassValue
-        icon: ClassValue
-        iconActive: ClassValue
-        value: ClassValue
-    }>
+        wrapper: ClassValue;
+        star: ClassValue;
+        icon: ClassValue;
+        iconActive: ClassValue;
+        value: ClassValue;
+    }>;
     /** 自定义 class */
-    class?: any
+    class?: any;
 }
 
-const isInteractive = computed(
-    () => !props.disabled && !props.readonly,
-)
+const isInteractive = computed(() => !props.disabled && !props.readonly);
 
 // ui 样式系统
-const uiOverrides = computed(() => props.ui || {})
-const b = tv(theme)
+const uiOverrides = computed(() => props.ui || {});
+const b = tv(theme);
 
 const ui = computed(() => {
     const styles = b({
@@ -79,7 +77,7 @@ const ui = computed(() => {
         color: props.color,
         disabled: props.disabled,
         readonly: props.readonly,
-    })
+    });
 
     return {
         wrapper: (opts?: { class?: any }) =>
@@ -92,99 +90,107 @@ const ui = computed(() => {
             styles.iconActive({ class: cn(opts?.class, uiOverrides.value.iconActive) }),
         value: (opts?: { class?: any }) =>
             styles.value({ class: cn(opts?.class, uiOverrides.value.value) }),
-    }
-})
+    };
+});
 
 function getActiveIcon(index: number) {
     if (isHalf(index)) {
-        return props.halfIcon ?? props.activeIcon
+        return props.halfIcon ?? props.activeIcon;
     }
-    return props.activeIcon
+    return props.activeIcon;
 }
 
 // 当前评分
-const currentValue = ref<number>(props.modelValue)
+const currentValue = ref<number>(props.modelValue);
 
 // 判断当前星星是否为半星状态
 function isHalf(index: number): boolean {
-    return props.allowHalf && currentValue.value >= index - 0.5 && currentValue.value < index
+    return props.allowHalf && currentValue.value >= index - 0.5 && currentValue.value < index;
 }
 
 // 点击事件（Web 版：用鼠标位置判断半星）
 function onClick(e: MouseEvent, index: number) {
-    if (!isInteractive.value) { return }
+    if (!isInteractive.value) {
+        return;
+    }
 
     if (props.allowHalf) {
-        const target = e.currentTarget as HTMLElement
-        const rect = target.getBoundingClientRect()
-        const midX = rect.left + rect.width / 2
-        const newValue = e.clientX < midX ? index - 0.5 : index
+        const target = e.currentTarget as HTMLElement;
+        const rect = target.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+        const newValue = e.clientX < midX ? index - 0.5 : index;
 
         if (currentValue.value === newValue) {
-            updateValue(0)
+            updateValue(0);
+        } else {
+            updateValue(newValue);
         }
-        else {
-            updateValue(newValue)
-        }
-    }
-    else {
+    } else {
         // 点击同一个星星则清零
         if (currentValue.value === index) {
-            updateValue(0)
-        }
-        else {
-            updateValue(index)
+            updateValue(0);
+        } else {
+            updateValue(index);
         }
     }
 }
 
 // Web 增强：鼠标移动 hover 预览
-const hoverValue = ref(-1)
+const hoverValue = ref(-1);
+let moveRaf = 0;
 
 const displayValue = computed(() =>
     hoverValue.value >= 0 ? hoverValue.value : currentValue.value,
-)
+);
 
 function isHalfDisplay(index: number): boolean {
-    return props.allowHalf && displayValue.value >= index - 0.5 && displayValue.value < index
+    return props.allowHalf && displayValue.value >= index - 0.5 && displayValue.value < index;
 }
 
 function isActiveDisplay(index: number): boolean {
-    return displayValue.value >= index - (props.allowHalf ? 0.5 : 0) && displayValue.value >= index - 0.5
+    return (
+        displayValue.value >= index - (props.allowHalf ? 0.5 : 0) && displayValue.value >= index - 0.5
+    );
 }
 
 function onMouseMove(e: MouseEvent) {
-    if (!isInteractive.value) { return }
-
-    const wrapper = e.currentTarget as HTMLElement
-    const stars = wrapper.querySelectorAll('.reborn-rate__star')
-
-    for (let i = stars.length - 1; i >= 0; i--) {
-        const rect = (stars[i] as HTMLElement).getBoundingClientRect()
-        if (e.clientX >= rect.left) {
-            if (props.allowHalf) {
-                const midX = rect.left + rect.width / 2
-                hoverValue.value = e.clientX < midX ? i + 0.5 : i + 1
-            }
-            else {
-                hoverValue.value = i + 1
-            }
-            return
-        }
+    if (!isInteractive.value) {
+        return;
     }
-    hoverValue.value = 0
+    if (moveRaf) cancelAnimationFrame(moveRaf);
+
+    const x = e.clientX;
+    const wrapper = e.currentTarget as HTMLElement;
+
+    moveRaf = requestAnimationFrame(() => {
+        const stars = wrapper.querySelectorAll(".reborn-rate__star");
+        for (let i = stars.length - 1; i >= 0; i--) {
+            const rect = (stars[i] as HTMLElement).getBoundingClientRect();
+            if (x >= rect.left) {
+                if (props.allowHalf) {
+                    const midX = rect.left + rect.width / 2;
+                    hoverValue.value = x < midX ? i + 0.5 : i + 1;
+                } else {
+                    hoverValue.value = i + 1;
+                }
+                return;
+            }
+        }
+        hoverValue.value = 0;
+    });
 }
 
 function onMouseLeave() {
-    hoverValue.value = -1
+    if (moveRaf) cancelAnimationFrame(moveRaf);
+    hoverValue.value = -1;
 }
 
 // 更新值
 function updateValue(newValue: number) {
     if (currentValue.value !== newValue) {
-        currentValue.value = newValue
-        emit('update:modelValue', newValue)
-        emit('change', newValue)
+        currentValue.value = newValue;
+        emit("update:modelValue", newValue);
+        emit("change", newValue);
     }
 }
 
@@ -193,11 +199,11 @@ watch(
     () => props.modelValue,
     (val) => {
         if (val !== currentValue.value) {
-            currentValue.value = Math.max(0, Math.min(props.count, val))
+            currentValue.value = Math.max(0, Math.min(props.count, val));
         }
     },
     { immediate: true },
-)
+);
 </script>
 
 <template>
@@ -212,11 +218,10 @@ watch(
             </div>
 
             <!-- 激活图标（整星 / 半星） -->
-            <div v-if="isActiveDisplay(index)" class="absolute inset-0"
-                :class="[ui.iconActive(), isHalfDisplay(index) && 'w-1/2 overflow-hidden']">
-                <slot name="icon" :index="index" :active="true" :style="isHalfDisplay(index) ? { width: '200%' } : {}">
-                    <Icon :name="getActiveIcon(index)" class="size-full"
-                        :style="isHalfDisplay(index) ? { width: '200%' } : {}" />
+            <div v-if="isActiveDisplay(index)" class="absolute inset-0" :class="ui.iconActive()"
+                :style="isHalfDisplay(index) ? { clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)' } : {}">
+                <slot name="icon" :index="index" :active="true">
+                    <Icon :name="getActiveIcon(index)" class="size-full" />
                 </slot>
             </div>
         </div>

@@ -48,6 +48,13 @@ const options = [
                 <RebornSelect v-model="value2" :options="options" :size="size" :color="color" :clearable="false"
                     class="max-w-xs" />
             </div>
+            <div class="space-y-4">
+                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">自定义样式</h3>
+                <RebornSelect v-model="value2" :options="options" :size="size" :color="color" :ui="{
+                    trigger: 'border-dashed border-2 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 px-4',
+                    dropdown: 'rounded-xl shadow-xl shadow-blue-500/10 border-blue-100 dark:border-blue-900 bg-white/90 dark:bg-gray-800/90 backdrop-blur'
+                }" placeholder="自定义选项框和下拉框" class="max-w-xs" />
+            </div>
         </div>
     </div>
 </template>

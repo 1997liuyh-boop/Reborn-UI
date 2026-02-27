@@ -128,7 +128,7 @@ watch(
         </div>
         <div :class="ui.list()">
             <div v-for="(item, index) in list" :key="index" :class="ui.item()"
-                :data-active="value.length >= index && isFocus" :data-disabled="disabled" @click="onClick">
+                :data-active="value.length === index && isFocus" :data-disabled="disabled" @click="onClick">
                 <span :class="ui.value()">{{ item }}</span>
                 <span v-if="value.length === index && isFocus && item === ''" class="otp-cursor" :class="ui.cursor()" />
             </div>

@@ -99,14 +99,12 @@ const ui = computed(() => {
 const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
 const today = new Date();
 
-// Parse the model value to a Date
 function parseValue(v: string): Date | null {
     if (!v) return null;
     const d = new Date(v);
     return isNaN(d.getTime()) ? null : d;
 }
 
-// Format a Date to string based on type
 function formatDate(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -131,7 +129,6 @@ const displayText = computed(() => {
     return "";
 });
 
-// Calendar grid
 interface CalDay {
     date: Date;
     day: number;
@@ -173,28 +170,49 @@ const calendarDays = computed<CalDay[]>(() => {
     return days;
 });
 
-// Year list for year picker mode
+const currentYearDecade = computed(() => {
+    return Math.floor(viewYear.value / 10) * 10;
+});
+
+const viewYearPageStart = ref(currentYearDecade.value);
+
 const yearList = computed(() => {
     const start = props.start ? new Date(props.start).getFullYear() : 1970;
     const end = props.end ? new Date(props.end).getFullYear() : 2099;
-    const years: number[] = [];
-    for (let y = start; y <= end; y++) years.push(y);
+    const years: { year: number, isDisabled: boolean }[] = [];
+
+    for (let i = -1; i <= 10; i++) {
+        const y = viewYearPageStart.value + i;
+        years.push({
+            year: y,
+            isDisabled: y < start || y > end
+        });
+    }
     return years;
 });
 
-// Month list
 const monthList = computed(() => {
     return Array.from({ length: 12 }, (_, i) => i + 1);
 });
 
+const currentView = ref<"year" | "month" | "date">(props.type);
+
+watch(() => props.type, (newType) => {
+    currentView.value = newType;
+});
+
 const headerTitle = computed(() => {
-    if (props.type === "year") return "选择年份";
-    if (props.type === "month") return `${viewYear.value}年`;
+    if (currentView.value === "year") return `${viewYearPageStart.value} - ${viewYearPageStart.value + 9}`;
+    if (currentView.value === "month") return `${viewYear.value}年`;
     return `${viewYear.value}年${viewMonth.value + 1}月`;
 });
 
-function prevMonth() {
-    if (props.type === "month") {
+function prevPage() {
+    if (currentView.value === "year") {
+        viewYearPageStart.value -= 10;
+        return;
+    }
+    if (currentView.value === "month") {
         viewYear.value--;
         return;
     }
@@ -206,8 +224,12 @@ function prevMonth() {
     }
 }
 
-function nextMonth() {
-    if (props.type === "month") {
+function nextPage() {
+    if (currentView.value === "year") {
+        viewYearPageStart.value += 10;
+        return;
+    }
+    if (currentView.value === "month") {
         viewYear.value++;
         return;
     }
@@ -229,6 +251,8 @@ function selectDay(day: CalDay) {
 }
 
 function selectYear(year: number) {
+    viewYear.value = year;
+    viewYearPageStart.value = Math.floor(year / 10) * 10;
     if (props.type === "year") {
         selectedDate.value = new Date(year, 0, 1);
         const val = String(year);
@@ -236,11 +260,12 @@ function selectYear(year: number) {
         emit("change", val);
         isOpen.value = false;
     } else {
-        viewYear.value = year;
+        currentView.value = "month";
     }
 }
 
 function selectMonth(month: number) {
+    viewMonth.value = month - 1;
     if (props.type === "month") {
         selectedDate.value = new Date(viewYear.value, month - 1, 1);
         const val = `${viewYear.value}-${String(month).padStart(2, "0")}`;
@@ -248,16 +273,20 @@ function selectMonth(month: number) {
         emit("change", val);
         isOpen.value = false;
     } else {
-        viewMonth.value = month - 1;
+        currentView.value = "date";
     }
 }
 
 function toggle() {
     if (props.disabled) return;
     isOpen.value = !isOpen.value;
-    if (isOpen.value && selectedDate.value) {
-        viewYear.value = selectedDate.value.getFullYear();
-        viewMonth.value = selectedDate.value.getMonth();
+    if (isOpen.value) {
+        currentView.value = props.type;
+        if (selectedDate.value) {
+            viewYear.value = selectedDate.value.getFullYear();
+            viewMonth.value = selectedDate.value.getMonth();
+            viewYearPageStart.value = Math.floor(viewYear.value / 10) * 10;
+        }
     }
 }
 
@@ -274,7 +303,6 @@ function onClickOutside(e: MouseEvent) {
     }
 }
 
-// Initialize
 if (props.modelValue) {
     const d = parseValue(props.modelValue);
     if (d) {
@@ -290,12 +318,12 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
     <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })">
-        <div :class="ui.trigger()" @click="toggle">
+        <div :class="ui.trigger()" @click.stop="toggle" :data-state="isOpen ? 'open' : 'closed'">
             <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
 
             <div class="flex items-center gap-1">
-                <span v-if="clearable && modelValue" :class="ui.clearBtn()" @click="clear">
+                <span v-if="clearable && modelValue" :class="ui.clearBtn()" @click.stop="clear">
                     <Icon name="lucide:x" class="size-full" />
                 </span>
                 <Icon name="lucide:calendar" :class="ui.arrow()" />
@@ -306,27 +334,36 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100 ease-in"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
             <div v-if="isOpen" :class="ui.dropdown()" style="top: 100%; min-width: 280px">
-                <!-- Year picker -->
-                <template v-if="type === 'year'">
+                <template v-if="currentView === 'year'">
+                    <div :class="ui.calHeader()">
+                        <span :class="ui.calNavBtn()" @click.stop="prevPage">
+                            <Icon name="lucide:chevron-left" class="size-4" />
+                        </span>
+                        <span :class="ui.calTitle()">{{ headerTitle }}</span>
+                        <span :class="ui.calNavBtn()" @click.stop="nextPage">
+                            <Icon name="lucide:chevron-right" class="size-4" />
+                        </span>
+                    </div>
                     <div class="grid grid-cols-4 gap-1 max-h-[240px] overflow-auto">
-                        <div v-for="year in yearList" :key="year" :class="[
+                        <div v-for="item in yearList" :key="item.year" :class="[
                             ui.calDay(),
-                            selectedDate && selectedDate.getFullYear() === year ? ui.calDayActive() : '',
-                            year === today.getFullYear() ? ui.calDayToday() : '',
-                        ]" class="h-9" @click="selectYear(year)">
-                            {{ year }}
+                            selectedDate && selectedDate.getFullYear() === item.year ? ui.calDayActive() : '',
+                            item.year === today.getFullYear() && (!selectedDate || selectedDate.getFullYear() !== item.year) ? ui.calDayToday() : '',
+                            item.isDisabled ? ui.calDayDisabled() : '',
+                            item.year < viewYearPageStart || item.year >= viewYearPageStart + 10 ? 'text-gray-4 dark:text-gray-5' : ''
+                        ]" class="h-9" @click.stop="selectYear(item.year)">
+                            {{ item.year }}
                         </div>
                     </div>
                 </template>
 
-                <!-- Month picker -->
-                <template v-else-if="type === 'month'">
+                <template v-else-if="currentView === 'month'">
                     <div :class="ui.calHeader()">
-                        <span :class="ui.calNavBtn()" @click="prevMonth">
+                        <span :class="ui.calNavBtn()" @click.stop="prevPage">
                             <Icon name="lucide:chevron-left" class="size-4" />
                         </span>
-                        <span :class="ui.calTitle()">{{ viewYear }}年</span>
-                        <span :class="ui.calNavBtn()" @click="nextMonth">
+                        <span :class="ui.calTitle()" @click.stop="currentView = 'year'">{{ headerTitle }}</span>
+                        <span :class="ui.calNavBtn()" @click.stop="nextPage">
                             <Icon name="lucide:chevron-right" class="size-4" />
                         </span>
                     </div>
@@ -336,20 +373,19 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                             selectedDate && selectedDate.getFullYear() === viewYear && selectedDate.getMonth() === m - 1
                                 ? ui.calDayActive()
                                 : '',
-                        ]" class="h-9" @click="selectMonth(m)">
+                        ]" class="h-9" @click.stop="selectMonth(m)">
                             {{ m }}月
                         </div>
                     </div>
                 </template>
 
-                <!-- Date picker (calendar) -->
                 <template v-else>
                     <div :class="ui.calHeader()">
-                        <span :class="ui.calNavBtn()" @click="prevMonth">
+                        <span :class="ui.calNavBtn()" @click.stop="prevPage">
                             <Icon name="lucide:chevron-left" class="size-4" />
                         </span>
-                        <span :class="ui.calTitle()">{{ headerTitle }}</span>
-                        <span :class="ui.calNavBtn()" @click="nextMonth">
+                        <span :class="ui.calTitle()" @click.stop="currentView = 'month'">{{ headerTitle }}</span>
+                        <span :class="ui.calNavBtn()" @click.stop="nextPage">
                             <Icon name="lucide:chevron-right" class="size-4" />
                         </span>
                     </div>
@@ -364,7 +400,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                             day.isSelected ? ui.calDayActive() : '',
                             day.isDisabled ? ui.calDayDisabled() : '',
                             day.isToday && !day.isSelected ? ui.calDayToday() : '',
-                        ]" @click="selectDay(day)">
+                        ]" @click.stop="selectDay(day)">
                             {{ day.day }}
                         </div>
                     </div>
