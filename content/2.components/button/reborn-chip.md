@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornChipDemo.vue" config="RebornChipConfig" componentId="reborn-chip" :componentFiles='["RebornChip.vue", "chip.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornChipDemo.vue" config="RebornChipConfig" componentId="reborn-chip" :componentFiles='["RebornChip.vue", "chip.ts"]' :uniappFiles='["RebornChip.vue", "chip.ts"]'}
 
 #api
 

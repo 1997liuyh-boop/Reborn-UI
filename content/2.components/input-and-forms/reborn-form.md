@@ -14,7 +14,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornFormDemo.vue" config="RebornFormConfig" componentId="reborn-form" :componentFiles='["RebornForm.vue", "reborn-form.config.ts", "RebornFormItem.vue", "reborn-form-item.config.ts"]' dependencies="zod" :uniapp="true"}
+::ComponentViewer{demoFile="RebornFormDemo.vue" config="RebornFormConfig" componentId="reborn-form" :componentFiles='["RebornForm.vue", "reborn-form.config.ts", "RebornFormItem.vue", "reborn-form-item.config.ts"]' :uniappFiles='["RebornForm.vue", "reborn-form.config.ts", "RebornFormItem.vue", "reborn-form-item.config.ts"]' dependencies="zod"}
 
 #api
 

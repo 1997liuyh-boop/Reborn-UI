@@ -21,14 +21,12 @@ interface Form {
   selected: number | null
   selected2: string
   selected3: number[]
-  selected4: number | null
 }
 
 const form = reactive<Form>({
-  selected: null,
+  selected: 3,
   selected2: '#FF6600',
   selected3: [1, 3, 4],
-  selected4: 3,
 })
 
 const selectRef2 = ref<InstanceType<typeof RebornSelect> | null>(null)
@@ -199,26 +197,20 @@ function openSelect2() {
       <view class="text-xs">
         基础配置
       </view>
-      <RebornSelect
-        v-model="form.selected4" :options="options" :disabled="isDisabled" :show-cancel="isShowCancel"
-        :clearable="isShowClear" :size="currentSize" :color="currentColor"
-        :confirm-text="isButtonText ? '下一步' : '确定'" :cancel-text="isButtonText ? '关闭' : '取消'"
-      />
+      <RebornSelect v-model="form.selected" :options="options" :disabled="isDisabled" :show-cancel="isShowCancel"
+        :clearable="isShowClear" :size="currentSize" :color="currentColor" :confirm-text="isButtonText ? '下一步' : '确定'"
+        :cancel-text="isButtonText ? '关闭' : '取消'" />
 
       <view class="text-xs">
         插槽
       </view>
-      <RebornSelect
-        v-model="form.selected2" :options="options2" :disabled="isDisabled"
-        :show-cancel="isShowCancel" :clearable="isShowClear" :size="currentSize" :color="currentColor"
-        :confirm-text="isButtonText ? '下一步' : '确定'" :cancel-text="isButtonText ? '关闭' : '取消'"
-      >
+      <RebornSelect v-model="form.selected2" :options="options2" :disabled="isDisabled" :show-cancel="isShowCancel"
+        :clearable="isShowClear" :size="currentSize" :color="currentColor" :confirm-text="isButtonText ? '下一步' : '确定'"
+        :cancel-text="isButtonText ? '关闭' : '取消'">
         <template #tag="{ selectItem }">
-          <view
-            v-for="value in selectItem" :key="value.value" class="
+          <view v-for="value in selectItem" :key="value.value" class="
               flex items-center
-            "
-          >
+            ">
             <view class="mr-1 size-3 rounded-full" :style="{ backgroundColor: value.value }" />
             <text :style="{ color: value.value }">{{ value.label }}</text>
           </view>
@@ -232,20 +224,16 @@ function openSelect2() {
       <view class="text-xs">
         自定义样式
       </view>
-      <RebornSelect
-        v-model="form.selected3" :options="options3" :column-count="3" :size="currentSize"
-        :color="currentColor" :splitor="splitor" :triggerUi="{ text: 'text-red-5' }"
-      />
+      <RebornSelect v-model="form.selected3" :options="options3" :column-count="3" :size="currentSize"
+        :color="currentColor" :splitor="splitor" :triggerUi="{ text: 'text-red-5' }" />
     </RebornCard>
     <RebornCard title="控制器" custom-class="space-y-4">
       <view class="flex justify-between">
         <text class="text-sm text-slate-500">尺寸 (Size)</text>
         <view class="flex flex-wrap gap-2">
           <view v-for="size in selectSizes" :key="size">
-            <RebornButton
-              size="xs" :variant="currentSize === size ? 'solid' : 'outline'"
-              :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size"
-            >
+            <RebornButton size="xs" :variant="currentSize === size ? 'solid' : 'outline'"
+              :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size">
               {{ size }}
             </RebornButton>
           </view>
@@ -254,13 +242,10 @@ function openSelect2() {
       <view class="flex justify-between">
         <text class="text-sm text-slate-500">颜色 (Color)</text>
         <view class="flex flex-wrap gap-2">
-          <view
-            v-for="c in selectColors" :key="c"
-            class="
+          <view v-for="c in selectColors" :key="c" class="
               size-4 cursor-pointer rounded-full ring-2 ring-transparent
               ring-offset-2 transition-all
-            "
-            :class="[
+            " :class="[
               `
                 bg-${c}
               `,
@@ -268,8 +253,7 @@ function openSelect2() {
                 hover:scale-110
               `,
             ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-            @click="currentColor = c"
-          />
+            @click="currentColor = c" />
         </view>
       </view>
       <view class="mt-2 flex justify-between">

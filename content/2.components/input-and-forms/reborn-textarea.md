@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornTextareaDemo.vue" config="RebornTextareaConfig" componentId="reborn-textarea" :componentFiles='["RebornTextarea.vue", "reborn-textarea.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornTextareaDemo.vue" config="RebornTextareaConfig" componentId="reborn-textarea" :componentFiles='["RebornTextarea.vue", "reborn-textarea.config.ts"]' :uniappFiles='["RebornTextarea.vue", "reborn-textarea.config.ts"]'}
 
 #api
 

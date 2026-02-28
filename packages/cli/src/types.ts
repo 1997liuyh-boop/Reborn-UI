@@ -6,6 +6,7 @@ export interface CliConfig {
   libDir: string; // 工具库目录（cn/utils）
   composablesDir: string; // composables 目录
   registry: string;
+  aliasSymbol?: string;
 }
 
 export interface RegistryFile {

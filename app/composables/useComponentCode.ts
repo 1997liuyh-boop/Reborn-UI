@@ -4,6 +4,7 @@ export interface UseComponentCodeOptions {
   demoFile?: string
   type?: 'ui' | 'examples' | 'configs'
   uniapp?: boolean
+  uniappFiles?: string[]
   uniappComponentId?: string
   paths?: string | string[]
   format?: 'collapse' | 'group' | 'both' | 'none'
@@ -23,11 +24,11 @@ export function useComponentCode(options: UseComponentCodeOptions) {
     demoFile,
     type = 'ui',
     uniapp = false,
+    uniappFiles = [],
     uniappComponentId,
     paths: initialPaths = [],
     format = 'both'
   } = options
-
   const componentsList = ref<ComponentCodeItem[]>([])
   const componentCode = ref<string>('')
   const demoCode = ref<string>('')
@@ -259,7 +260,7 @@ ${code}
     }
 
     try {
-      const uniappFiles: ComponentCodeItem[] = []
+      const uniappComponentCodeItems: ComponentCodeItem[] = []
 
       // Convert kebab-case to PascalCase (e.g., reborn-button -> RebornButton)
       const pascalCaseName = uniappComponentId
@@ -267,8 +268,7 @@ ${code}
         ?.map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')
 
-      let targetFiles = componentFiles;
-
+      let targetFiles = uniappFiles?.length ? uniappFiles : componentFiles;
       // If no componentFiles provided, fallback to default files
       if (!targetFiles || targetFiles.length === 0) {
         targetFiles = [
@@ -294,6 +294,12 @@ ${code}
           if (folderName && folderName !== '..') {
             targetId = folderName;
           }
+        } else if (targetFileName.toLowerCase().startsWith('reborn')) {
+          // Auto-resolve component ID from flat file name (e.g., RebornButton.vue -> reborn-button)
+          const baseName = targetFileName.split('.')[0];
+          if (baseName) {
+            targetId = baseName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+          }
         }
 
         const codeGetter = getComponentCode({
@@ -305,7 +311,7 @@ ${code}
         if (codeGetter) {
           try {
             const code = (await codeGetter()) as unknown as string
-            uniappFiles.push({
+            uniappComponentCodeItems.push({
               fileName: targetFileName,
               ext: targetFileName.split('.').at(-1)!,
               code,
@@ -317,10 +323,10 @@ ${code}
       }
 
       // Format as code-group markdown
-      if (uniappFiles.length > 0) {
+      if (uniappComponentCodeItems.length > 0) {
         uniappComponentCode.value = `
 ::code-group
-${uniappFiles?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join('\n')}
+${uniappComponentCodeItems?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}\n\`\`\`\n`).join('\n')}
 ::`
       } else {
         uniappComponentCode.value = ''
@@ -347,7 +353,7 @@ ${uniappFiles?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${item.code}
   })
 
   // Watch for changes
-  watch(() => [componentFiles, demoFile, initialPaths] as const, () => {
+  watch(() => [componentFiles, uniappFiles, demoFile, initialPaths] as const, () => {
     loadAll()
   }, { deep: true })
 

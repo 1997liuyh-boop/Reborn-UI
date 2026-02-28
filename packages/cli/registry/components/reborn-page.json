@@ -1,0 +1,13 @@
+{
+  "name": "reborn-page",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "RebornPage.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { cn } from '@/lib/utils'\r\n\r\nconst props = defineProps<{\r\n  title?: string\r\n  description?: string\r\n  customClass?: string\r\n}>()\r\n\r\nconst computedClass = computed(() => {\r\n  return cn(\r\n    `\r\n      min-h-screen w-full space-y-8 bg-slate-50 p-4 pb-20 transition-colors\r\n      duration-300\r\n      sm:p-6\r\n      dark:bg-slate-950\r\n    `,\r\n    props.customClass,\r\n  )\r\n})\r\n</script>\r\n\r\n<template>\r\n  <view :class=\"computedClass\">\r\n    <view v-if=\"title || description || $slots.header\" class=\"space-y-2\">\r\n      <slot name=\"header\">\r\n        <view v-if=\"title\" class=\"\r\n            text-xl font-bold text-slate-900\r\n            dark:text-white\r\n          \">\r\n          {{ title }}\r\n        </view>\r\n        <view v-if=\"description\" class=\"\r\n            text-slate-500\r\n            dark:text-slate-400\r\n          \">\r\n          {{ description }}\r\n        </view>\r\n      </slot>\r\n    </view>\r\n\r\n    <slot />\r\n  </view>\r\n</template>\r\n",
+      "target": "uniapp"
+    }
+  ],
+  "fileCount": 1,
+  "contentHash": "6b430c1dd6f7cbd09a5b91821718a794e19a0991"
+}

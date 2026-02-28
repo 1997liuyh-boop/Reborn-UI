@@ -98,6 +98,7 @@ function clear() {
   emit('clear')
 }
 
+const slot = useSlots()
 // 打开
 function open() {
   if (isDisabled.value) { return }
@@ -108,10 +109,19 @@ function open() {
 <template>
   <view :class="ui.wrapper({ class: props.customClass })" @tap="open">
     <view :class="ui.content()">
+
+      <!-- #ifndef MP-WEIXIN -->
       <slot>
         <text v-if="showText" :class="ui.text()">{{ text }}</text>
         <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
       </slot>
+      <!-- #endif -->
+      <!-- #ifdef MP-WEIXIN -->
+      <slot :showText="showText" :text="text" :placeholder="placeholder" :ui="ui">
+        <text v-if="showText" :class="ui.text()">{{ text }}</text>
+        <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+      </slot>
+      <!-- #endif -->
     </view>
 
     <!-- 清空按钮 -->

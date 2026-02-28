@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornSliderDemo.vue" config="RebornSliderConfig" componentId="reborn-slider" :componentFiles='["RebornSlider.vue", "reborn-slider.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornSliderDemo.vue" config="RebornSliderConfig" componentId="reborn-slider" :componentFiles='["RebornSlider.vue", "reborn-slider.config.ts"]' :uniappFiles='["RebornSlider.vue", "reborn-slider.config.ts"]'}
 
 #api
 

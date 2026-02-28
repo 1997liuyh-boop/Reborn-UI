@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "reborn-radio.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "reborn-radio.config.ts"]' :uniappFiles='["RebornRadio.vue", "reborn-radio.config.ts"]'}
 
 #api
 

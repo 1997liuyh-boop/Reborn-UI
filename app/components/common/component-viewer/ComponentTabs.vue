@@ -9,7 +9,7 @@ interface Props {
   demoFile: string;
   componentFiles?: string[];
   config: string;
-  uniapp?: boolean;
+  uniappFiles?: string[];
 }
 
 const {
@@ -20,8 +20,10 @@ const {
   componentFiles = [],
   demoFile,
   config,
-  uniapp = false,
+  uniappFiles,
 } = defineProps<Props>();
+
+const uniapp = computed(() => !!uniappFiles && uniappFiles.length > 0);
 
 const items = ref<TabsItem[]>([
   {
@@ -36,7 +38,7 @@ const items = ref<TabsItem[]>([
   },
 ]);
 
-if (uniapp) {
+if (uniapp.value) {
   items.value.push({
     label: "UniApp Code",
     icon: "tabler:code-asterisk",
@@ -75,7 +77,7 @@ const platformItems = computed<TabsItem[]>(() => {
     },
   ];
 
-  if (uniapp) {
+  if (uniapp.value) {
     items.push({
       label: "UniApp",
       icon: "tabler:brand-wechat",
@@ -92,7 +94,8 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
   componentFiles,
   demoFile,
   type: 'ui',
-  uniapp,
+  uniapp: uniapp.value,
+  uniappFiles,
   uniappComponentId: componentId
 });
 </script>

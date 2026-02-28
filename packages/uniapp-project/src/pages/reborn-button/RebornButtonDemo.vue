@@ -53,127 +53,97 @@ function copyContent(text: string) {
   <RebornPage title="Button" description="Trigger an action or navigate to another page.">
     <!-- Interactive Playground -->
     <view class="space-y-4">
-      <view
-        class="
+      <view class="
           flex items-center gap-2 text-lg font-bold text-slate-900
           dark:text-slate-100
-        "
-      >
+        ">
         <view class="h-5 w-1 rounded-full bg-blue-500" />
         Playground
       </view>
-      <view
-        class="
+      <view class="
           space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm
           dark:border-slate-800 dark:bg-slate-900
-        "
-      >
+        ">
         <!-- Preview Area -->
-        <view
-          class="
+        <view class="
             flex min-h-[160px] items-center justify-center rounded-lg border
             border-dashed border-slate-300 bg-slate-100 p-8
             dark:border-slate-700 dark:bg-slate-950/50
-          "
-        >
-          <ReButton
-            :variant="demoVariant" :color="demoColor" :size="demoSize" :loading="demoLoading"
-            :disabled="demoDisabled" :square="demoSquare" @click="handleClick"
-          >
+          ">
+          <ReButton :variant="demoVariant" :color="demoColor" :size="demoSize" :loading="demoLoading"
+            :disabled="demoDisabled" :square="demoSquare" @click="handleClick">
             {{ demoLabel }}
           </ReButton>
         </view>
         <!-- Controls -->
-        <view
-          class="
+        <view class="
             grid gap-6
             sm:grid-cols-2
             lg:grid-cols-3
-          "
-        >
+          ">
           <view class="space-y-3">
-            <view
-              class="
+            <view class="
                 text-sm font-medium text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               按钮类型
             </view>
             <view class="flex flex-wrap gap-2">
-              <ReButton
-                v-for="v in variants" :key="v" variant="outline"
-                :color="demoVariant === v ? 'primary' : 'neutral'" size="sm" :square="false"
-                custom-class="rounded-full" @click="demoVariant = v"
-              >
+              <ReButton v-for="v in variants" :key="v" variant="outline"
+                :color="demoVariant === v ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
+                @click="demoVariant = v">
                 {{ v }}
               </ReButton>
             </view>
           </view>
 
           <view class="space-y-3">
-            <view
-              class="
+            <view class="
                 text-sm font-medium text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               按钮颜色
             </view>
             <view class="flex flex-wrap gap-2">
-              <view
-                v-for="c in colors" :key="c"
-                class="
+              <view v-for="c in colors" :key="c" class="
                   size-6 cursor-pointer rounded-full ring-2 ring-transparent
                   ring-offset-2 transition-all
-                "
-                :class="[
+                " :class="[
                   `
                     bg-${c}
                   `,
                   demoColor === c ? 'scale-110 ring-slate-400' : `
                     hover:scale-110
                   `,
-                ]"
-                :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-                @click="demoColor = c"
-              />
+                ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
+                @click="demoColor = c" />
             </view>
           </view>
 
           <view class="space-y-3">
-            <view
-              class="
+            <view class="
                 text-sm font-medium text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               按钮大小
             </view>
             <view class="flex flex-wrap gap-2">
-              <ReButton
-                v-for="s in sizes" :key="s" variant="outline"
-                :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false"
-                custom-class="rounded-full" @click="demoSize = s"
-              >
+              <ReButton v-for="s in sizes" :key="s" variant="outline" :color="demoSize === s ? 'primary' : 'neutral'"
+                size="sm" :square="false" custom-class="rounded-full" @click="demoSize = s">
                 {{ s }}
               </ReButton>
             </view>
           </view>
 
-          <view
-            class="
+          <view class="
               space-y-3
               sm:col-span-2
               lg:col-span-3
-            "
-          >
-            <view
-              class="
+            ">
+            <view class="
                 text-sm font-medium text-slate-500
                 dark:text-slate-200
-              "
-            >
+              ">
               States & Options
             </view>
             <view class="flex flex-col flex-wrap gap-4">
@@ -188,22 +158,18 @@ function copyContent(text: string) {
 
     <!-- Icons -->
     <view class="space-y-4">
-      <view
-        class="
+      <view class="
           flex items-center gap-2 text-lg font-bold text-slate-900
           dark:text-slate-100
-        "
-      >
+        ">
         <view class="h-5 w-1 rounded-full bg-orange-500" />
         With Icons
       </view>
-      <view
-        class="
+      <view class="
           overflow-hidden rounded-xl border border-slate-200 bg-white p-6
           shadow-sm
           dark:border-slate-800 dark:bg-slate-900
-        "
-      >
+        ">
         <view class="flex flex-wrap gap-4">
           <ReButton>
             <template #leading>

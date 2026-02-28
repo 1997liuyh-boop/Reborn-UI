@@ -6,7 +6,12 @@ export class DayUts {
       this._date = new Date()
     }
     else if (typeof date == 'string') {
-      this._date = new Date(date)
+      // 修复 iOS/Safari 的 'YYYY-MM-DD HH:mm:ss' 格式兼容性问题
+      // iOS 只支持 'YYYY/MM/DD' 等使用斜杠的格式，所以如果包含 '-' 则替换为 '/' (仅日期部分的 '-')
+      const safeDateStr = date.includes('-') && date.includes(':')
+        ? date.replace(/-/g, '/')
+        : date
+      this._date = new Date(safeDateStr)
     }
     else if (typeof date == 'number') {
       this._date = new Date(date)
@@ -306,7 +311,10 @@ export class DayUts {
       return date
     }
     else if (typeof date == 'string') {
-      return new Date(date)
+      const safeDateStr = date.includes('-') && date.includes(':')
+        ? date.replace(/-/g, '/')
+        : date
+      return new Date(safeDateStr)
     }
     else if (typeof date == 'number') {
       return new Date(date)

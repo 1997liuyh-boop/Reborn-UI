@@ -15,4 +15,4 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornBadgeDemo.vue" config="RebornBadgeConfig" componentId="reborn-badge" :componentFiles='["RebornBadge.vue", "reborn-badge.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornBadgeDemo.vue" config="RebornBadgeConfig" componentId="reborn-badge" :componentFiles='["RebornBadge.vue", "reborn-badge.config.ts"]' :uniappFiles='["RebornBadge.vue", "reborn-badge.config.ts"]'}

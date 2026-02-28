@@ -486,6 +486,7 @@ function clear() {
 }
 
 function confirm() {
+  console.log(props.rangeable)
   if (props.rangeable) {
     const [a, b] = values.value
 
@@ -562,13 +563,23 @@ defineExpose({
   <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
     :text="text" arrow-icon="i-lucide-calendar" :ui="triggerUi" :color="color" :size="size" :clearable="clearable"
     @open="open()" @clear="clear">
+    <!-- #ifndef MP-WEIXIN -->
     <template #default>
       <slot name="tag" />
     </template>
+    <!-- #endif -->
+
+    <!-- #ifdef MP-WEIXIN -->
+    <template #default="{ showText, text, placeholder, ui }">
+      <slot v-if="$slots.tag" name="tag" :selectItem="selectItem" />
+      <text v-else-if="showText" :class="ui.text()">{{ text }}</text>
+      <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+    </template>
+    <!-- #endif -->
   </RebornSelectTrigger>
 
   <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
-    <view @touchstart.stop @touchmove.stop>
+    <view @touchmove.stop>
       <view v-if="rangeable" :class="ui.rangeBox()">
         <view v-if="showShortcuts" :class="ui.shortcuts()">
           <view v-for="(item, index) in shortcuts" :key="index" class="
@@ -631,16 +642,11 @@ defineExpose({
           @change-value="onChange" />
       </view>
 
-      <view :class="ui.popupOp()">
-        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="
-            flex-1
-          " @tap="close">
-          {{
-            cancelText }}
+      <view class="flex flex-row items-center justify-center gap-2 p-3">
+        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="flex-1" @tap="close">
+          {{ cancelText }}
         </RebornButton>
-        <RebornButton v-if="showConfirm" :size="size" variant="solid" :color="color" class="
-            flex-1
-          " @tap="confirm">
+        <RebornButton v-if="showConfirm" :size="size" variant="solid" :color="color" class="flex-1" @click="confirm">
           {{ confirmText }}
         </RebornButton>
       </view>

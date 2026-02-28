@@ -118,7 +118,9 @@ const isDisabled = computed(() => disabled.value || props.disabled)
 const popupRef = ref<any>(null)
 
 // 是否为空选项
-const noOptions = computed(() => isEmpty(props.options))
+const noOptions = computed(() => {
+  return isEmpty(props.options)
+})
 
 // 当前选中的值
 const value = ref<any[]>([])
@@ -218,6 +220,8 @@ function setValue(val: SelectValue) {
 
   value.value = _value
   indexes.value = _indexes
+
+  selectItem.value = getSelectItem(indexes.value)
   updateText()
 }
 
@@ -305,51 +309,52 @@ defineExpose({
 </script>
 
 <template>
-  <RebornSelectTrigger
-    v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
-    :text="text" :clearable="clearable" :color="color" :size="size" :ui="triggerUi" @open="open()" @clear="clear"
-  >
+  <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
+    :text="text" :clearable="clearable" :color="color" :size="size" :ui="triggerUi" @open="open()" @clear="clear">
+    <!-- #ifndef MP-WEIXIN -->
     <template #default>
       <slot name="tag" :selectItem="selectItem" />
     </template>
+    <!-- #endif -->
+
+    <!-- #ifdef MP-WEIXIN -->
+    <template #default="{ showText, text, placeholder, ui }">
+      <slot v-if="$slots.tag" name="tag" :selectItem="selectItem" />
+      <text v-else-if="showText" :class="ui.text()">{{ text }}</text>
+      <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+    </template>
+    <!-- #endif -->
   </RebornSelectTrigger>
   <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
     <view @touchmove.stop>
       <slot name="prepend" />
 
       <view>
-        <view
-          v-if="noOptions" class="flex h-[300px] items-center justify-center"
-        >
-          <text class="text-sm text-gray-4">暂无数据</text>
-        </view>
-
-        <RebornPickerView
-          v-else :color="color" :value="indexes" :columns="columns"
-          :ui="pickerUi" @change-index="onChange"
-        >
+        <RebornPickerView v-if="!noOptions" :color="color" :value="indexes" :columns="columns" :ui="pickerUi"
+          @change-index="onChange">
+          <!-- #ifndef MP-WEIXIN -->
           <template #default="{ item, index }">
             <slot name="option" :item="item" :index="index" />
           </template>
+          <!-- #endif -->
         </RebornPickerView>
+
+        <view v-else class="flex h-[300px] items-center justify-center">
+          <text class="text-sm text-gray-4">暂无数据</text>
+        </view>
       </view>
 
       <slot name="append" />
 
-      <view class="flex flex-row items-center justify-center gap-2 p-3">
-        <RebornButton
-          v-if="showCancel" :size="size" variant="outline" :color="color" class="
+      <view class="flex flex-row items-center justify-center gap-2">
+        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="
             flex-1
-          "
-          @tap="close"
-        >
+          " @tap="close">
           {{
             cancelText }}
         </RebornButton>
-        <RebornButton
-          v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color"
-          class="flex-1" @tap="confirm"
-        >
+        <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color" class="flex-1"
+          @tap="confirm">
           {{ confirmText }}
         </RebornButton>
       </view>

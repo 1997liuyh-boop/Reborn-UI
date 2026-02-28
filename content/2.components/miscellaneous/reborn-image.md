@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornImageDemo.vue" config="RebornImageConfig" componentId="reborn-image" :componentFiles='["RebornImage.vue", "reborn-image.config.ts"]' dependencies="[viewerjs, vue-lazyload]" :uniapp="true"}
+::ComponentViewer{demoFile="RebornImageDemo.vue" config="RebornImageConfig" componentId="reborn-image" :componentFiles='["RebornImage.vue", "reborn-image.config.ts"]' dependencies="[viewerjs, vue-lazyload]" :uniappFiles='["RebornImage.vue", "reborn-image.config.ts"]'}
 
 #api
 

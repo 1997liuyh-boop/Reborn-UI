@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornInputOtpDemo.vue" config="RebornInputOtpConfig" componentId="reborn-input-otp" :componentFiles='["RebornInputOtp.vue", "reborn-input-otp.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornInputOtpDemo.vue" config="RebornInputOtpConfig" componentId="reborn-input-otp" :componentFiles='["RebornInputOtp.vue", "reborn-input-otp.config.ts"]' :uniappFiles='["RebornInputOtp.vue", "reborn-input-otp.config.ts"]'}
 
 #api
 

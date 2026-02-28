@@ -74,20 +74,34 @@ export function buildCommand() {
       );
 
       const dirents = await fs.readdir(sourceDir, { withFileTypes: true });
-      const componentDirs = dirents
+      let componentDirs = dirents
         .filter((d) => d.isDirectory())
-        ?.map((d) => path.join(sourceDir, d.name))
-        .sort((a, b) => a.localeCompare(b));
+        ?.map((d) => d.name);
+
+      if (uniappSourceDir && fssync.existsSync(uniappSourceDir)) {
+        const uniappDirents = await fs.readdir(uniappSourceDir, { withFileTypes: true });
+        const uniappDirs = uniappDirents
+          .filter((d) => d.isDirectory())
+          ?.map((d) => d.name);
+        for (const dir of uniappDirs) {
+          if (!componentDirs.includes(dir)) {
+            componentDirs.push(dir);
+          }
+        }
+      }
+
+      componentDirs = componentDirs.sort((a, b) => a.localeCompare(b));
 
       const components: RegistryComponent[] = [];
 
-      for (const absComponentDir of componentDirs) {
-        const name = path.basename(absComponentDir);
-        const absFiles = (await listFilesRecursive(absComponentDir)).filter(
-          isAllowedFile,
-        );
+      for (const componentName of componentDirs) {
+        const name = componentName;
+        const absComponentDir = path.join(sourceDir, componentName);
+        let absFiles: string[] = [];
 
-
+        if (fssync.existsSync(absComponentDir)) {
+          absFiles = (await listFilesRecursive(absComponentDir)).filter(isAllowedFile);
+        }
         const files: RegistryComponent["files"] = [];
         const depSet = new Set<string>();
 

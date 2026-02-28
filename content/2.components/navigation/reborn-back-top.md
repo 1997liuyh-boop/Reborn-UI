@@ -29,7 +29,7 @@ onPageScroll((e) => {
 ::
 
 
-::ComponentViewer{demoFile="RebornBackTopDemo.vue" config="RebornBackTopConfig" componentId="reborn-back-top" :componentFiles='["RebornBackTop.vue", "reborn-back-top.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornBackTopDemo.vue" config="RebornBackTopConfig" componentId="reborn-back-top" :componentFiles='["RebornBackTop.vue", "reborn-back-top.config.ts"]' :uniappFiles='["RebornBackTop.vue", "reborn-back-top.config.ts"]'}
 
 #api
 

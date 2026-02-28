@@ -14,7 +14,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornAffixDemo.vue" config="RebornAffixConfig" componentId="reborn-affix" :componentFiles='["RebornAffix.vue", "reborn-affix.config.ts"]'  :uniapp="true"}
+::ComponentViewer{demoFile="RebornAffixDemo.vue" config="RebornAffixConfig" componentId="reborn-affix" :componentFiles='["RebornAffix.vue", "reborn-affix.config.ts"]' :uniappFiles='["RebornAffix.vue", "reborn-affix.config.ts"]'}
 
 #api
 

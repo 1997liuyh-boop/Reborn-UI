@@ -15,7 +15,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornSelect.vue", "reborn-select.config.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]' dependencies="lodash"}
 
 #api
 
@@ -51,7 +51,7 @@ navigation:
 
 | 插槽名 | Props | 描述 |
 | --- | --- | --- |
-| `option` | `{ option, active }` | 自定义选项内容。 |
+| `option` | `{ option, active }` | 自定义选项内容。（微信小程序不支持） |
 
 ## 键盘操作
 

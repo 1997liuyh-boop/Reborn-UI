@@ -1,6 +1,3 @@
-<script lang="ts">
-</script>
-
 <script setup lang="ts">
 import type { buttonColors, buttonSizes, buttonVariants } from './reborn-button.config'
 import { computed, ref, toRef } from 'vue'
@@ -17,7 +14,7 @@ export interface ButtonProps {
   size?: typeof buttonSizes[number]
   loading?: boolean
   disabled?: boolean
-  square?: boolean
+  fluid?: boolean // 是否为 flex-1 布局
   customClass?: any
   ui?: any
   hoverClass?: string // 按钮点击态样式类
@@ -26,6 +23,7 @@ export interface ButtonProps {
   hoverStayTime?: number // 按钮点击态持续时间
   formType?: string // 表单提交类型
   openType?: string // 开放能力类型
+  lang?: string // 语言
   sessionFrom?: string // 会话来源
   sendMessageTitle?: string // 会话标题
   sendMessagePath?: string // 会话路径
@@ -37,7 +35,6 @@ export interface ButtonProps {
   publicId?: string // 公众号ID
   phoneNumberNoQuotaToast?: boolean // 手机号获取失败时是否弹出错误提示
   createliveactivity?: boolean // 是否创建直播活动
-  isSpacing?: boolean // 是否有间距
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -46,7 +43,7 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   size: 'md',
   loading: false,
   disabled: false,
-  square: false,
+  fluid: false,
   hoverStartTime: 20,
   hoverStayTime: 70,
 })
@@ -88,14 +85,13 @@ interface UniEvent {
   timeStamp: number
   [key: string]: any
 }
-const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled } = useFormInject(props)
+const { size: fieldGroupSize, disabled: fieldGroupDisabled } = useFormInject(props)
 
-const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled || props.loading)
+const isDisabled = computed(() => fieldGroupDisabled.value || props.loading)
 
 const color = toRef(props, 'color')
 const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
-const square = toRef(props, 'square')
 
 const uiOverrides = computed(() => props.ui || {})
 
@@ -104,8 +100,7 @@ const ui = computed(() => {
     color: color.value,
     variant: variant.value,
     size: (fieldGroupSize.value || size.value) as any,
-    square: square.value,
-    fieldGroup: orientation.value,
+    disabled: isDisabled.value,
   })
 
   return {
@@ -165,20 +160,23 @@ function onTouchCancel() {
 </script>
 
 <template>
-  <button
-    class="reborn-button" :disabled="isDisabled" :class="ui.base({ class: props.customClass })"
-    :hover-class="hoverClass" :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
-    :hover-stay-time="hoverStayTime" :form-type="formType" :open-type="openType" :session-from="sessionFrom"
-    :send-message-title="sendMessageTitle" :send-message-path="sendMessagePath" :send-message-img="sendMessageImg"
-    :show-message-card="showMessageCard" :app-parameter="appParameter" :group-id="groupId" :guild-id="guildId"
-    :public-id="publicId" :phone-number-no-quota-toast="phoneNumberNoQuotaToast"
-    :createliveactivity="createliveactivity" @tap.stop="onTap" @getuserinfo="onGetUserInfo" @contact="onContact"
-    @getphonenumber="onGetPhoneNumber" @error="onError" @opensetting="onOpenSetting" @launchapp="onLaunchApp"
-    @chooseavatar="onChooseAvatar" @chooseaddress="onChooseAddress" @chooseinvoicetitle="onChooseInvoiceTitle"
-    @addgroupapp="onAddGroupApp" @subscribe="onSubscribe" @login="onLogin"
-    @getrealtimephonenumber="onGetRealtimePhoneNumber" @agreeprivacyauthorization="onAgreePrivacyAuthorization"
-    @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel"
-  >
+  <view :class="[
+    ui.base({ class: props.customClass }),
+    isHover && hoverClass ? hoverClass : ''
+  ]" @tap.stop="onTap" @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
+    <button class="reborn-button-clicker absolute inset-0 z-10 m-0 size-full p-0 opacity-0" :disabled="isDisabled"
+      :hover-class="hoverClass" :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
+      :hover-stay-time="hoverStayTime" :form-type="formType" :open-type="openType" :lang="lang"
+      :session-from="sessionFrom" :send-message-title="sendMessageTitle" :send-message-path="sendMessagePath"
+      :send-message-img="sendMessageImg" :show-message-card="showMessageCard" :app-parameter="appParameter"
+      :group-id="groupId" :guild-id="guildId" :public-id="publicId"
+      :phone-number-no-quota-toast="phoneNumberNoQuotaToast" :createliveactivity="createliveactivity"
+      @getuserinfo="onGetUserInfo" @contact="onContact" @getphonenumber="onGetPhoneNumber" @error="onError"
+      @opensetting="onOpenSetting" @launchapp="onLaunchApp" @chooseavatar="onChooseAvatar"
+      @chooseaddress="onChooseAddress" @chooseinvoicetitle="onChooseInvoiceTitle" @addgroupapp="onAddGroupApp"
+      @subscribe="onSubscribe" @login="onLogin" @getrealtimephonenumber="onGetRealtimePhoneNumber"
+      @agreeprivacyauthorization="onAgreePrivacyAuthorization" />
+
     <slot name="leading" :loading="props.loading" :ui="ui">
       <view v-if="props.loading" :class="ui.loading?.()" />
     </slot>
@@ -191,13 +189,15 @@ function onTouchCancel() {
     </slot>
 
     <slot name="trailing" :ui="ui" />
-  </button>
+  </view>
 </template>
 
 <style scoped>
-.reborn-button {
-  &::after {
-    border: none;
-  }
+.reborn-button-clicker {
+  border: none;
+}
+
+.reborn-button-clicker::after {
+  border: none;
 }
 </style>

@@ -6,7 +6,10 @@ import { ensureDir, pathExists, writeTextFile } from "../utils/fs.js";
 import {
   detectPackageManager,
   readPackageJson,
+  getMissingDeps,
+  installDeps,
 } from "../utils/pm.js";
+import { getDependencies } from "../utils/dependencies.js";
 import { defaultConfig, loadConfigCompat, loadRegistry } from "../utils/registry.js";
 import cliProgress from "cli-progress";
 import chalk from "chalk";
@@ -130,7 +133,94 @@ export function addCommand() {
         throw new Error("已取消");
       }
 
-      const totalFiles = targets.reduce((acc, name) => {
+      const allComponentsToInstall = new Set<string>(targets);
+      const allNpmDependencies = new Set<string>();
+
+      for (const target of targets) {
+        const deps = getDependencies(target, platform as "web" | "uniapp");
+        if (deps.components) {
+          for (const c of deps.components) allComponentsToInstall.add(c);
+        }
+        if (deps.npmDependencies) {
+          for (const d of deps.npmDependencies) allNpmDependencies.add(d);
+        }
+      }
+
+      const additionalComponents = Array.from(allComponentsToInstall).filter(c => !targets.includes(c));
+      const npmDependenciesArray = Array.from(allNpmDependencies);
+
+      // Prompt for NPM dependencies
+      if (npmDependenciesArray.length > 0) {
+        const pkg = await readPackageJson(cwd);
+        const missingDeps = getMissingDeps(pkg, npmDependenciesArray);
+        if (missingDeps.length > 0) {
+          console.log(chalk.blue(`\n检测到当前组件需要以下未安装的 npm 依赖：${missingDeps.join(", ")}`));
+          const { installNpm } = await prompts({
+            type: "confirm",
+            name: "installNpm",
+            message: `是否需要为这些组件安装以上 npm 依赖?`,
+            initial: true,
+          });
+
+          if (installNpm) {
+            console.log(chalk.cyan("正在安装 npm 依赖..."));
+            await installDeps({ cwd, pm, deps: missingDeps });
+            successLog(`npm 依赖安装完成`);
+          }
+        }
+      }
+
+      let finalTargets = [...targets];
+      if (additionalComponents.length > 0) {
+        const missingComponents = [];
+        for (const c of additionalComponents) {
+          const baseDir = path.join(cwd, cfg.componentsDir, c);
+          if (!(await pathExists(baseDir))) {
+            missingComponents.push(c);
+          }
+        }
+
+        if (missingComponents.length > 0) {
+          console.log(chalk.blue(`\n检测到需要前置或关联组件：${missingComponents.join(", ")}`));
+          const { installComponents } = await prompts({
+            type: "confirm",
+            name: "installComponents",
+            message: `是否自动安装缺失的前置组件?`,
+            initial: true,
+          });
+          if (installComponents) {
+            finalTargets = [...finalTargets, ...missingComponents];
+          }
+        }
+      }
+
+      if (!opts.overwrite) {
+        const existingComponents = [];
+        for (const name of finalTargets) {
+          const baseDir = path.join(cwd, cfg.componentsDir, name);
+          if (await pathExists(baseDir)) {
+            existingComponents.push(name);
+          }
+        }
+
+        if (existingComponents.length > 0) {
+          console.log(chalk.yellow(`\n遇到已存在的组件：${existingComponents.join(", ")}`));
+          const { overwrite } = await prompts({
+            type: "confirm",
+            name: "overwrite",
+            message: `是否覆盖并继续安装？`,
+            initial: false,
+          });
+
+          if (!overwrite) {
+            console.log(chalk.red("已终止安装"));
+            return;
+          }
+          opts.overwrite = true;
+        }
+      }
+
+      const totalFiles = finalTargets.reduce((acc, name) => {
         const c = registry.components.find((x) => x.name === name);
         return acc + (c?.files.length ?? 0);
       }, 0);
@@ -144,7 +234,7 @@ export function addCommand() {
 
       bar.start(totalFiles, 0);
 
-      for (const name of targets) {
+      for (const name of finalTargets) {
         const c = registry.components.find((x) => x.name === name);
         if (!c) {
           bar.stop();
@@ -164,12 +254,12 @@ export function addCommand() {
       bar.stop();
 
       console.log("");
-      for (const name of targets) {
+      for (const name of finalTargets) {
         successLog(`组件 ${chalk.bold(name)} 已成功添加到项目`);
       }
 
       // eslint-disable-next-line no-console
-      console.log(`\n${chalk.bold.green('DONE')} 已完成 ${targets.length} 个组件的添加（pm=${pm}）`);
+      console.log(`\n${chalk.bold.green('DONE')} 已完成 ${finalTargets.length} 个组件的添加（pm=${pm}）`);
     });
 
   return cmd;

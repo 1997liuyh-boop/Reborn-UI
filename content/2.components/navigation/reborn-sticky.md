@@ -30,7 +30,7 @@ onPageScroll((e) => {
 ::
 
 
-::ComponentViewer{demoFile="RebornStickyDemo.vue" config="RebornStickyConfig" componentId="reborn-sticky" :componentFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]' :uniapp="true"}
+::ComponentViewer{demoFile="RebornStickyDemo.vue" config="RebornStickyConfig" componentId="reborn-sticky" :componentFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]' :uniappFiles='["RebornSticky.vue", "reborn-sticky.config.ts"]'}
 
 #api
 
