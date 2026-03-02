@@ -140,6 +140,12 @@
       }
     },
     {
+      "path": "pages/reborn-qrcode/RebornQrcodeDemo",
+      "style": {
+        "navigationBarTitleText": "Qrcode"
+      }
+    },
+    {
       "path": "pages/reborn-slider/RebornSliderDemo",
       "style": {
         "navigationBarTitleText": "Slider"
