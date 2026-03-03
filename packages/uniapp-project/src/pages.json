@@ -98,6 +98,12 @@
       }
     },
     {
+      "path": "pages/reborn-footer/RebornFooterDemo",
+      "style": {
+        "navigationBarTitleText": "Footer"
+      }
+    },
+    {
       "path": "pages/reborn-sticky/RebornStickyDemo",
       "style": {
         "navigationBarTitleText": "Sticky"
