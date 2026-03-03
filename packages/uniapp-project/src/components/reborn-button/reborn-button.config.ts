@@ -13,7 +13,7 @@ export const buttonSizes = [
 
 export default {
   slots: {
-    base: 'reborn-button flex flex-row items-center justify-center relative box-border border-transparent border border-solid transition-[background-color,border-color,opacity] duration-300 overflow-visible [.reborn-button_+_&]:ml-2',
+    base: 'reborn-button flex flex-row items-center justify-center relative box-border border-transparent border border-solid transition-[background-color,border-color,opacity] duration-300 overflow-visible',
     label: 'truncate',
     loading: 'border-2 border-current border-t-transparent rounded-full animate-spin',
     leadingIcon: 'shrink-0',
@@ -72,6 +72,12 @@ export default {
         base: 'h-[var(--button-2xl-height)] px-6 text-32 gap-2 rounded-[14px]',
         loading: 'size-7',
       },
+    },
+    gap: {
+      true: {
+        base: '[.reborn-button_+_&]:ml-2',
+      },
+      false: '',
     },
   },
   compoundVariants: [

@@ -104,6 +104,12 @@
       }
     },
     {
+      "path": "pages/reborn-footer/RebornFooterDemo",
+      "style": {
+        "navigationBarTitleText": "Footer"
+      }
+    },
+    {
       "path": "pages/reborn-text/index",
       "style": {
         "navigationBarTitleText": "Text"
@@ -143,6 +149,30 @@
       "path": "pages/reborn-slider/RebornSliderDemo",
       "style": {
         "navigationBarTitleText": "Slider"
+      }
+    },
+    {
+      "path": "pages/reborn-qrcode/RebornQrcodeDemo",
+      "style": {
+        "navigationBarTitleText": "Qrcode"
+      }
+    },
+    {
+      "path": "pages/reborn-picker-view/RebornPickerViewDemo",
+      "style": {
+        "navigationBarTitleText": "Picker View"
+      }
+    },
+    {
+      "path": "pages/reborn-popup/RebornPopupDemo",
+      "style": {
+        "navigationBarTitleText": "Popup"
+      }
+    },
+    {
+      "path": "pages/reborn-dropdown-select/RebornDropdownSelectDemo",
+      "style": {
+        "navigationBarTitleText": "Dropdown Select"
       }
     }
   ],

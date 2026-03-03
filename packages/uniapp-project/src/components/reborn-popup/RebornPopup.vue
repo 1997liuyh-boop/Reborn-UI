@@ -1,12 +1,10 @@
 <script lang="ts" setup>
 import type { ClassValue } from 'clsx'
 import { computed, reactive, ref, watch } from 'vue'
-
-import { isAppIOS } from '@/lib/device'
+import { isAppIOS, getSafeAreaHeight } from '@/lib/device'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-
-import theme from './reborn-popup.config'
+import theme, { type PopupDirection } from './reborn-popup.config'
 
 defineOptions({
   name: 'RebornPopup',
@@ -26,6 +24,7 @@ const props = withDefaults(defineProps<PopupProps>(), {
   pointerEvents: 'auto',
   keepAlive: false,
   enablePortal: true,
+  rounded: true,
 })
 
 const emit = defineEmits<{
@@ -41,8 +40,6 @@ defineSlots<{
   header: () => any
   default: () => any
 }>()
-
-export type PopupDirection = 'top' | 'bottom' | 'left' | 'right' | 'center'
 
 export interface PopupProps {
   /** 是否可见 */
@@ -71,6 +68,8 @@ export interface PopupProps {
   keepAlive?: boolean
   /** 是否启用 portal */
   enablePortal?: boolean
+  /** 是否圆角 */
+  rounded?: boolean
   /** 样式覆盖 */
   ui?: Partial<{
     wrapper: ClassValue
@@ -85,7 +84,7 @@ export interface PopupProps {
 }
 
 // 全局 zIndex 计数器
-let globalZIndex = 1000
+let globalZIndex = 600
 
 // 控制显示/隐藏
 const visible = ref(false)
@@ -254,6 +253,7 @@ const ui = computed(() => {
     isOpen: status.value == 1,
     isClose: status.value == 2,
     stopTransition: swipe.isTouch,
+    rounded: props.rounded,
   })
   return {
     wrapper: (opts?: { class?: any }) =>
@@ -278,10 +278,10 @@ const ui = computed(() => {
 const popupH5Class = computed(() => {
   // #ifdef H5
   const classes = []
-  if (['left', 'right', 'top'].includes(props.direction)) {
+  if (['left', 'right', 'top'].includes(props.direction!)) {
     classes.push('top-[44px]')
   }
-  if (['left', 'right'].includes(props.direction)) {
+  if (['left', 'right'].includes(props.direction!)) {
     classes.push('!h-[calc(100%-44px)]')
   }
   return classes.join(' ')
@@ -301,31 +301,7 @@ const popupStyle = computed(() => {
   }
   return style
 })
-/**
- * 获取安全区域高度
- * @param type 类型
- * @returns 安全区域高度
- */
-function getSafeAreaHeight(type: 'top' | 'bottom') {
-  const { safeAreaInsets } = uni.getWindowInfo()
 
-  let h: number
-
-  if (type == 'top') {
-    h = safeAreaInsets.top
-  }
-  else {
-    h = safeAreaInsets.bottom
-
-    // #ifdef APP-ANDROID
-    if (h == 0) {
-      h = 16
-    }
-    // #endif
-  }
-
-  return h
-}
 // 监听 modelValue
 watch(
   () => props.modelValue,
@@ -362,27 +338,21 @@ defineExpose({
     <root-portal :enable="enablePortal">
       <!-- #endif -->
 
-      <view
-        v-show="visible" v-if="keepAlive ? true : visible" :class="ui.wrapper()" :style="{
-          zIndex,
-          pointerEvents,
-        }" @touchmove.stop.prevent
-      >
+      <view v-show="visible" v-if="keepAlive ? true : visible" :class="ui.wrapper()" :style="{
+        zIndex,
+        pointerEvents,
+      }" @touchmove.stop.prevent>
         <!-- 遮罩 -->
         <view v-if="showMask" :class="ui.mask()" @tap="maskClose" />
 
         <!-- 弹出层 -->
-        <view
-          :class="[ui.popup(), popupH5Class]" :style="popupStyle" @touchstart="onTouchStart"
-          @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchEnd"
-        >
+        <view :class="[ui.popup(), popupH5Class]" :style="popupStyle" @touchstart="onTouchStart"
+          @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchEnd">
           <view :class="ui.inner()" :style="{ paddingBottom }">
             <!-- 拖拽条 -->
-            <view
-              v-if="isSwipeClose" :class="[ui.draw(), swipe.isMove ? `
+            <view v-if="isSwipeClose" :class="[ui.draw(), swipe.isMove ? `
                 !bg-gray-4
-              ` : '']"
-            />
+              ` : '']" />
 
             <!-- 头部 -->
             <view v-if="showHeader" :class="ui.header()">
@@ -390,14 +360,10 @@ defineExpose({
                 <text :class="ui.title()">{{ title }}</text>
               </slot>
 
-              <view
-                v-if="isOpen && showClose"
-                class="
+              <view v-if="isOpen && showClose" class="
                   i-lucide-x absolute right-3 size-5 text-gray-4
                   dark:text-gray-2
-                " @tap="close"
-                @touchmove.stop
-              />
+                " @tap="close" @touchmove.stop />
             </view>
 
             <!-- 内容 -->

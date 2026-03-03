@@ -94,3 +94,29 @@ export function initTheme() {
   // #endif
   return value
 }
+
+/**
+ * 获取安全区域高度
+ * @param type 类型
+ * @returns 安全区域高度
+ */
+export function getSafeAreaHeight(type: 'top' | 'bottom') {
+  const { safeAreaInsets } = uni.getWindowInfo()
+
+  let h: number
+
+  if (type == 'top') {
+    h = safeAreaInsets.top
+  }
+  else {
+    h = safeAreaInsets.bottom
+
+    // #ifdef APP-ANDROID
+    if (h == 0) {
+      h = 16
+    }
+    // #endif
+  }
+
+  return h
+}

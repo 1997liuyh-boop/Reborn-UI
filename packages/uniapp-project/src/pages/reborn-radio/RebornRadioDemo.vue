@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
+import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
 const v1 = ref('1')
 const v2 = ref('primary')
@@ -11,6 +12,7 @@ const v4 = ref('2')
 const v5 = ref('1')
 const v6 = ref('1')
 const v7 = ref('😀')
+const radioGroupValue = ref('New York')
 
 const emojis = [
   { value: '😀', label: '开心' },
@@ -69,8 +71,8 @@ const emojis = [
     </RebornCard>
 
     <RebornCard title="自定义插槽 (Slot)" custom-class="space-y-4">
-      <view class="flex flex-wrap gap-4">
-        <RebornRadio v-for="e in emojis" :key="e.value" v-model="v7" :value="e.value" :label="e.label">
+      <RebornRadioGroup v-model="v7">
+        <RebornRadio v-for="e in emojis" :key="e.value" :value="e.value" :label="e.label">
           <template #active-icon>
             <text class="text-lg">{{ e.value }}</text>
           </template>
@@ -78,8 +80,18 @@ const emojis = [
             <text class="text-lg opacity-30">{{ e.value }}</text>
           </template>
         </RebornRadio>
-      </view>
+      </RebornRadioGroup>
       <text class="text-sm text-gray-500">选中: {{ v7 }}</text>
+    </RebornCard>
+
+    <RebornCard title="单选框组 (Radio Group)" custom-class="space-y-4">
+      <RebornRadioGroup v-model="radioGroupValue" size="lg" color="primary">
+        <RebornRadio label="纽约" value="New York" />
+        <RebornRadio label="华盛顿" value="Washington" />
+        <RebornRadio label="洛杉矶" value="Los Angeles" />
+        <RebornRadio label="芝加哥" value="Chicago" />
+      </RebornRadioGroup>
+      <text class="text-sm text-gray-500">选中: {{ radioGroupValue }}</text>
     </RebornCard>
   </RebornPage>
 </template>

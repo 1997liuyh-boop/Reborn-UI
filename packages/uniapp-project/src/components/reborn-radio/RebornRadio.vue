@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { radioColors, radioSizes } from './reborn-radio.config'
-import { computed, useSlots } from 'vue'
+import { computed, useSlots, inject } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -47,16 +47,43 @@ interface Props {
 const slots = useSlots()
 
 const { disabled: formDisabled, size: formSize } = useFormInject(props)
+const radioGroup = inject('RebornRadioGroup', null) as any
 
-const isDisabled = computed(() => props.disabled || formDisabled.value)
-const isChecked = computed(() => props.modelValue === props.value)
+const isGroup = computed(() => !!radioGroup)
+
+const modelValue = computed({
+  get() {
+    return isGroup.value ? radioGroup.modelValue.value : props.modelValue
+  },
+  set(val) {
+    if (isGroup.value) {
+      radioGroup.updateValue(val)
+    } else {
+      emit('update:modelValue', val)
+    }
+  }
+})
+
+const isDisabled = computed(() => {
+  return isGroup.value ? (radioGroup.disabled.value || props.disabled) : (props.disabled || formDisabled.value)
+})
+
+const resolvedSize = computed(() => {
+  return isGroup.value ? (radioGroup.size.value || props.size) : (props.size || formSize.value)
+})
+
+const resolvedColor = computed(() => {
+  return isGroup.value ? (radioGroup.color.value || props.color) : props.color
+})
+
+const isChecked = computed(() => modelValue.value === props.value)
 const showLabel = computed(() => !!props.label || !!slots.default)
 
 const b = tv(theme)
 const ui = computed(() => {
   const styles = b({
-    size: props.size || formSize.value,
-    color: props.color,
+    size: resolvedSize.value,
+    color: resolvedColor.value,
     disabled: isDisabled.value,
     isRound: props.isRound,
   })
@@ -72,8 +99,12 @@ const ui = computed(() => {
 
 function onTap() {
   if (!isDisabled.value && !isChecked.value) {
-    emit('update:modelValue', props.value)
-    emit('change', props.value)
+    if (isGroup.value) {
+      radioGroup.updateValue(props.value)
+    } else {
+      emit('update:modelValue', props.value)
+      emit('change', props.value)
+    }
   }
 }
 </script>

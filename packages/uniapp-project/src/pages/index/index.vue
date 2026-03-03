@@ -36,6 +36,8 @@ const menuItems = [
         path: '/pages/reborn-rate/RebornRateDemo',
       },
       { label: '滑块', icon: 'i-lucide-sliders-horizontal', path: '/pages/reborn-slider/RebornSliderDemo' },
+      { label: '选择器视图', icon: 'i-lucide-list-checks', path: '/pages/reborn-picker-view/RebornPickerViewDemo' },
+      { label: '下拉选择', icon: 'i-lucide-chevron-down-circle', path: '/pages/reborn-dropdown-select/RebornDropdownSelectDemo' },
     ],
   },
   {
@@ -47,6 +49,7 @@ const menuItems = [
       { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },
       { label: '返回顶部', icon: 'i-lucide-arrow-big-up', path: '/pages/reborn-back-top/RebornBackTopDemo' },
       { label: '吸顶', icon: 'i-lucide-arrow-up-to-line', path: '/pages/reborn-sticky/RebornStickyDemo' },
+      { label: '底部栏', icon: 'i-lucide-panel-bottom', path: '/pages/reborn-footer/RebornFooterDemo' },
     ],
   },
   {
@@ -54,6 +57,13 @@ const menuItems = [
     children: [
 
       { label: '标签', icon: 'i-lucide-circle-dot', path: '/pages/reborn-chip/RebornChipDemo' },
+    ],
+  },
+  {
+    label: '其他组件',
+    children: [
+      { label: '二维码', icon: 'i-lucide-qr-code', path: '/pages/reborn-qrcode/RebornQrcodeDemo' },
+      { label: '弹出层', icon: 'i-lucide-layers', path: '/pages/reborn-popup/RebornPopupDemo' },
     ],
   },
 ]

@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { SelectOption } from '../reborn-picker-view/RebornPickerView.vue'
+import theme, { type selectColors, type selectSizes } from './reborn-select.config'
 
-import type { selectColors, selectSizes } from './reborn-select.config'
+import { tv } from '@/lib/tv'
+import { cn } from '@/lib/utils'
+
 import { isEmpty, isNull } from 'lodash'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
+import config from './reborn-select.config'
+
 import RebornButton from '../reborn-button/RebornButton.vue'
 import RebornPickerView from '../reborn-picker-view/RebornPickerView.vue'
 import RebornPopup from '../reborn-popup/RebornPopup.vue'
@@ -79,6 +84,13 @@ export interface SelectProps {
   color?: typeof selectColors[number]
   /** 尺寸 */
   size?: typeof selectSizes[number]
+  ui?: Partial<{
+    empty: ClassValue
+    buttons: ClassValue
+    emptyText: ClassValue
+    cancel: ClassValue
+    confirm: ClassValue
+  }>,
   /** 样式覆盖 */
   triggerUi?: Partial<{
     wrapper: ClassValue
@@ -120,6 +132,22 @@ const popupRef = ref<any>(null)
 // 是否为空选项
 const noOptions = computed(() => {
   return isEmpty(props.options)
+})
+
+// ui 样式系统
+const b = tv(theme)
+const ui = computed(() => {
+  const styles = b({
+    hideButtons: !props.showCancel && !props.showConfirm,
+  })
+
+  return {
+    buttons: (opts?: { class?: any }) => styles.buttons({ class: cn(opts?.class, props.ui?.buttons) }),
+    empty: (opts?: { class?: any }) => styles.empty({ class: cn(opts?.class, props.ui?.empty) }),
+    emptyText: (opts?: { class?: any }) => styles.emptyText({ class: cn(opts?.class, props.ui?.emptyText) }),
+    cancel: (opts?: { class?: any }) => styles.cancel({ class: cn(opts?.class, props.ui?.cancel) }),
+    confirm: (opts?: { class?: any }) => styles.confirm({ class: cn(opts?.class, props.ui?.confirm) }),
+  }
 })
 
 // 当前选中的值
@@ -339,21 +367,18 @@ defineExpose({
           <!-- #endif -->
         </RebornPickerView>
 
-        <view v-else class="flex h-[300px] items-center justify-center">
-          <text class="text-sm text-gray-4">暂无数据</text>
+        <view v-else :class="ui.empty()">
+          <text :class="ui.emptyText()">暂无数据</text>
         </view>
       </view>
 
       <slot name="append" />
 
-      <view class="flex flex-row items-center justify-center gap-2">
-        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="
-            flex-1
-          " @tap="close">
-          {{
-            cancelText }}
+      <view :class="ui.buttons()">
+        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" :class="ui.cancel()">
+          {{ cancelText }}
         </RebornButton>
-        <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color" class="flex-1"
+        <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color" :class="ui.confirm()"
           @tap="confirm">
           {{ confirmText }}
         </RebornButton>

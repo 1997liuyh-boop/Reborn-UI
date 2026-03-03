@@ -10,7 +10,7 @@ const props = defineProps<{
 const computedClass = computed(() => {
   return cn(
     `
-      min-h-screen w-full space-y-8 bg-slate-50 p-4 pb-20 transition-colors
+      min-h-screen w-full flex flex-col gap-4 bg-slate-50 p-4  transition-colors
       duration-300
       sm:p-6
       dark:bg-slate-950
