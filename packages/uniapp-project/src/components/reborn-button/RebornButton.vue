@@ -15,6 +15,7 @@ export interface ButtonProps {
   loading?: boolean
   disabled?: boolean
   fluid?: boolean // 是否为 flex-1 布局
+  gap?: boolean // 是否间隔按钮
   customClass?: any
   ui?: any
   hoverClass?: string // 按钮点击态样式类
@@ -44,6 +45,7 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   loading: false,
   disabled: false,
   fluid: false,
+  gap: false,
   hoverStartTime: 20,
   hoverStayTime: 70,
 })

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
-import { useDarkMode } from '@/composables/useDarkMode'
 import { isHarmony } from '@/lib/device'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -15,8 +14,6 @@ export interface RebornFooterProps {
   vt?: number
   // 内容高度
   height?: number | null
-  // 背景颜色
-  backgroundColor?: string | null
   ui?: {
     placeholder?: ClassValue
     wrapper?: ClassValue
@@ -32,11 +29,9 @@ const props = withDefaults(defineProps<RebornFooterProps>(), {
   minHeight: 30,
   vt: 0,
   height: null,
-  backgroundColor: null,
 })
 
 const { proxy } = getCurrentInstance()!
-const { isDark } = useDarkMode()
 
 const b = tv(theme)
 
@@ -66,14 +61,6 @@ const contentStyle = computed(() => {
   return style
 })
 
-const bgColor = computed(() => {
-  if (props.backgroundColor != null) {
-    return props.backgroundColor
-  }
-
-  return isDark.value ? '#1f2937' : '#ffffff'
-})
-
 function getSafeAreaHeight(type: 'top' | 'bottom') {
   const { safeAreaInsets } = uni.getWindowInfo()
 
@@ -93,7 +80,7 @@ function getSafeAreaHeight(type: 'top' | 'bottom') {
 }
 
 function setHeight(val: number) {
-  placeholderHeight.value = val
+  placeholderHeight.value = val + 5
   visible.value = val > props.minHeight + getSafeAreaHeight('bottom')
   rebornFooterOffset.set(visible.value ? val : 0)
 }
@@ -133,7 +120,7 @@ onMounted(() => {
   <view v-if="visible" :class="ui.placeholder()" :style="{ height: `${placeholderHeight}px` }" />
 
   <view :class="ui.wrapper()">
-    <view v-if="visible" id="reborn-footer-node" :class="ui.base()" :style="{ backgroundColor: bgColor }">
+    <view v-if="visible" id="reborn-footer-node" :class="ui.base()">
       <view :class="ui.content()" :style="contentStyle">
         <slot />
       </view>
