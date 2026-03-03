@@ -47,6 +47,7 @@ const menuItems = [
       { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },
       { label: '返回顶部', icon: 'i-lucide-arrow-big-up', path: '/pages/reborn-back-top/RebornBackTopDemo' },
       { label: '吸顶', icon: 'i-lucide-arrow-up-to-line', path: '/pages/reborn-sticky/RebornStickyDemo' },
+      { label: '底部栏', icon: 'i-lucide-panel-bottom', path: '/pages/reborn-footer/RebornFooterDemo' },
     ],
   },
   {
@@ -67,71 +68,91 @@ function goToDemo(path: string) {
 
 <template>
   <page-meta :root-class="isDark ? 'dark' : ''" />
-  <view class="
+  <view
+    class="
       flex min-h-screen w-full justify-center
       bg-[radial-gradient(circle_at_18%_20%,#e0f2fe,#fdf4ff_70%)] px-0 py-6
       text-slate-800 transition-colors duration-300
       dark:bg-slate-950 dark:bg-none dark:text-slate-200
-    ">
-    <view class="
+    "
+  >
+    <view
+      class="
         flex w-full flex-col space-y-6 px-4
         sm:px-5
         md:w-[94vw] md:max-w-[700px]
-      ">
+      "
+    >
       <!-- Header -->
       <view class="space-y-3 py-10 text-center">
-        <view class="
+        <view
+          class="
             flex cursor-pointer items-center justify-center transition-transform
             active:scale-95
-          " @click="toggleDarkMode">
+          " @click="toggleDarkMode"
+        >
           <view class="flex items-baseline gap-1">
-            <text v-for="(char, index) in 'Reborn U'" :key="index" class="
+            <text
+              v-for="(char, index) in 'Reborn U'" :key="index" class="
                 text-4xl font-black text-blue-5
                 dark:text-orange-5
-              ">
+              "
+            >
               {{ char }}
             </text>
 
-            <view class="
+            <view
+              class="
                 relative h-4 w-2 bg-gradient-to-b from-blue-700 to-orange-500
-              ">
-              <view class="
+              "
+            >
+              <view
+                class="
                   absolute -left-2 -top-5 transition-all duration-500
                   ease-in-out
                 " :class="isDark ? '-translate-y-1 rotate-0 opacity-100' : `
                   rotate-270 translate-y-0 opacity-100
-                `">
-                <view :class="isDark ? 'i-meteocons-clear-day-fill' : `
+                `"
+              >
+                <view
+                  :class="isDark ? 'i-meteocons-clear-day-fill' : `
                     i-meteocons-extreme-drizzle-fill
-                  `" class="size-6" />
+                  `" class="size-6"
+                />
               </view>
             </view>
           </view>
         </view>
 
-        <view class="
+        <view
+          class="
             text-sm font-medium uppercase tracking-wide text-slate-500
             opacity-80
             dark:text-slate-400
-          ">
+          "
+        >
           Component Showcase
         </view>
       </view>
 
       <view v-for="(item, index) in menuItems" :key="index">
-        <view class="
+        <view
+          class="
             mb-2 text-20 font-medium text-gray-7
             dark:text-gray-3
-          ">
+          "
+        >
           {{ item.label }}({{ item.children.length }})
         </view>
         <view class="grid grid-cols-3 gap-2">
-          <view v-for="(child, index) in item.children" :key="index" class="
+          <view
+            v-for="(child, index) in item.children" :key="index" class="
               flex flex-col items-center justify-center rounded-xl bg-white p-4
               text-20 font-medium text-gray-7 shadow-sm transition-transform
               active:scale-95
               dark:bg-slate-900 dark:text-gray-3
-            " @click="goToDemo(child.path)">
+            " @click="goToDemo(child.path)"
+          >
             <view class="mb-2 size-4 text-blue-500" :class="[child.icon]" />
             {{ child.label }}
           </view>
@@ -139,15 +160,21 @@ function goToDemo(path: string) {
       </view>
     </view>
     <RebornAffix :right="20" :bottom="150" :no-snapping="true">
-      <view class="
+      <view
+        class="
           bg-primary-500 flex size-10 flex-col items-center justify-center
           overflow-hidden rounded-full
-        " @tap="toggleDarkMode">
-        <view class="flex flex-col transition-transform duration-300"
-          :class="isDark ? '-translate-y-[20px]' : 'translate-y-[20px]'">
-          <view v-for="item in list" :key="item" :class="item" class="
+        " @tap="toggleDarkMode"
+      >
+        <view
+          class="flex flex-col transition-transform duration-300"
+          :class="isDark ? '-translate-y-[20px]' : 'translate-y-[20px]'"
+        >
+          <view
+            v-for="item in list" :key="item" :class="item" class="
               size-10 text-white
-            " />
+            "
+          />
         </view>
       </view>
     </RebornAffix>

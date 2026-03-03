@@ -104,6 +104,12 @@
       }
     },
     {
+      "path": "pages/reborn-footer/RebornFooterDemo",
+      "style": {
+        "navigationBarTitleText": "Footer"
+      }
+    },
+    {
       "path": "pages/reborn-text/index",
       "style": {
         "navigationBarTitleText": "Text"
