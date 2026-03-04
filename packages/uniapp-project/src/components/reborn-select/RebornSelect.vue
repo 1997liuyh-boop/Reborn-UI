@@ -6,10 +6,9 @@ import theme, { type selectColors, type selectSizes } from './reborn-select.conf
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 
-import { isEmpty, isNull } from 'lodash'
+import { isEmpty, isNull } from 'lodash-es'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
-import config from './reborn-select.config'
 
 import RebornButton from '../reborn-button/RebornButton.vue'
 import RebornPickerView from '../reborn-picker-view/RebornPickerView.vue'

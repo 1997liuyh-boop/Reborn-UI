@@ -1,7 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-    <ComponentPlayground>
+    <ComponentPlayground uniapp url="/uni-render/#/pages/reborn-input-otp/RebornInputOtpDemo">
         <template #component>
             <RebornInputOtpDemo />
         </template>

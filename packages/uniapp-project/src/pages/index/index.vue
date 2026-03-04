@@ -14,7 +14,6 @@ const menuItems = [
       { label: '按钮', icon: 'i-lucide-mouse', path: '/pages/reborn-button/RebornButtonDemo' },
       { label: '图片', icon: 'i-lucide-image', path: '/pages/reborn-image/RebornImageDemo' },
       { label: '徽章', icon: 'i-lucide-badge-check', path: '/pages/reborn-badge/RebornBadgeDemo' },
-      { label: '角标', icon: 'i-lucide-bell-dot', path: '/pages/reborn-chip/RebornChipDemo' },
     ],
   },
   {

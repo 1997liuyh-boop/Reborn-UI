@@ -4,7 +4,7 @@ import type { PropType } from 'vue'
 import type { SelectOption } from '../reborn-picker-view/RebornPickerView.vue'
 import type { selectDateColors, selectDateSizes } from './reborn-select-date.config'
 import type { SelectDateShortcut } from './types'
-import { isEmpty, isNull } from 'lodash'
+import { isEmpty, isNull } from 'lodash-es'
 import { computed, nextTick, ref, watch } from 'vue'
 
 import { useFormInject } from '@/composables/useFieldGroup'

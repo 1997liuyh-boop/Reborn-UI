@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { pickerColors } from './reborn-picker-view.config'
-import { isEqual, isNull } from 'lodash'
+import { isEqual, isNull } from 'lodash-es'
 import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
 import { initTheme, isAppAndroid, isAppIOS } from '@/lib/device'
 import { tv } from '@/lib/tv'
