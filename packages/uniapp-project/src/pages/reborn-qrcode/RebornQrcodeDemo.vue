@@ -286,6 +286,37 @@ const handleToast = (msg: string) => {
     uni.showToast({ title: msg, icon: 'none' })
 }
 
+const copyCurrentParams = () => {
+    const currentParams = {
+        text: qrConfig.value.text,
+        size: 200,
+        foreground: qrConfig.value.dotsOptions.color || '#000000',
+        background: qrConfig.value.backgroundOptions.color || '#ffffff',
+        pdColor: qrConfig.value.dotsOptions.color || '#000000',
+        logo: qrConfig.value.logoOptions.image || '',
+        logoSize: qrConfig.value.logoOptions.size === 'small' ? 20 : qrConfig.value.logoOptions.size === 'large' ? 60 : 40,
+        padding: qrConfig.value.margin * 5,
+        mode: qrConfig.value.dotsOptions.type === 'circular' ? 'circular' : qrConfig.value.dotsOptions.type === 'line' ? 'line' : qrConfig.value.dotsOptions.type === 'rectSmall' ? 'rectSmall' : 'rect',
+        ecc: qrConfig.value.ecc,
+        pdOuterRadius: qrConfig.value.cornersSquareOptions.type,
+        pdInnerRadius: qrConfig.value.cornersDotOptions.type,
+        dotsGradient: qrConfig.value.dotsOptions.gradient,
+        dotsImage: qrConfig.value.dotsOptions.image,
+        backgroundGradient: qrConfig.value.backgroundOptions.gradient,
+        backgroundTransparent: qrConfig.value.backgroundOptions.transparent,
+        logoOptions: qrConfig.value.logoOptions,
+        cornersSquareGradient: qrConfig.value.cornersSquareOptions.gradient || qrConfig.value.dotsOptions.gradient,
+        cornersDotGradient: qrConfig.value.cornersDotOptions.gradient || qrConfig.value.dotsOptions.gradient,
+        cornersSquareOptions: qrConfig.value.cornersSquareOptions,
+        cornersDotOptions: qrConfig.value.cornersDotOptions
+    }
+
+    uni.setClipboardData({
+        data: JSON.stringify(currentParams, null, 2),
+        success: () => handleToast('参数已复制')
+    })
+}
+
 const saveQRCode = async () => {
     try {
         isGenerating.value = true
@@ -377,6 +408,7 @@ const shareQRCode = async () => {
                             分享
                         </RebornButton>
                         <RebornButton @click="resetConfig" variant="solid" color="warning" gap>重置</RebornButton>
+                        <RebornButton @click="copyCurrentParams" variant="outline" color="primary" gap>复制参数</RebornButton>
                     </view>
                 </view>
             </view>
