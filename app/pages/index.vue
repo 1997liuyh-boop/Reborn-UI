@@ -11,7 +11,7 @@ const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 const isRoot = isRootPage();
 
 const isLandingPage = computed(() => {
-    return "/" === route.path.replace(/\/$/, "");
+    return route.path === "/";
 });
 
 const pageType = isLandingPage.value ? "landing" : "docs";

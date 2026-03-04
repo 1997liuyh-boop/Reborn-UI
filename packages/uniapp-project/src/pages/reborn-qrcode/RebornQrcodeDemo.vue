@@ -369,13 +369,14 @@ const shareQRCode = async () => {
 
                     <!-- 操作按钮 -->
                     <view class="flex flex-row flex-wrap mb-2 overflow-visible">
-                        <RebornButton @click="saveQRCode" :loading="isGenerating" variant="solid" color="primary">
+                        <RebornButton @click="saveQRCode" :loading="isGenerating" variant="solid" color="primary" gap>
                             保存
                         </RebornButton>
-                        <RebornButton @click="shareQRCode" :loading="isGenerating" variant="solid" color="secondary">
+                        <RebornButton @click="shareQRCode" :loading="isGenerating" variant="solid" color="secondary"
+                            gap>
                             分享
                         </RebornButton>
-                        <RebornButton @click="resetConfig" variant="solid" color="warning">重置</RebornButton>
+                        <RebornButton @click="resetConfig" variant="solid" color="warning" gap>重置</RebornButton>
                     </view>
                 </view>
             </view>

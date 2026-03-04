@@ -5,8 +5,6 @@ category: Navigation
 badge: New
 navigation:
   badges:
-    - label: Web
-      color: warning
     - label: UniApp
       color: success
   chip:

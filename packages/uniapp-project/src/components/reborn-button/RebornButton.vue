@@ -103,6 +103,7 @@ const ui = computed(() => {
     variant: variant.value,
     size: (fieldGroupSize.value || size.value) as any,
     disabled: isDisabled.value,
+    gap: props.gap,
   })
 
   return {
