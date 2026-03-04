@@ -9,10 +9,10 @@
     },
     {
       "path": "RebornCard.vue",
-      "content": "<script setup lang=\"ts\">\r\nwithDefaults(defineProps<{\r\n  title?: string\r\n  padding?: boolean\r\n  customClass?: string\r\n}>(), {\r\n  padding: true,\r\n  customClass: '',\r\n})\r\n</script>\r\n\r\n<template>\r\n  <view class=\"space-y-3\">\r\n    <view\n      v-if=\"title\" class=\"\n        text-sm font-medium uppercase tracking-wider text-slate-500\n        dark:text-slate-200\n      \"\n    >\r\n      {{ title }}\r\n    </view>\r\n    <view\r\n      class=\"\n        overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm\n        dark:border-gray-700 dark:bg-gray-800\n      \"\r\n      :class=\"[padding ? 'p-4' : '', customClass]\"\n    >\r\n      <slot />\r\n    </view>\r\n  </view>\r\n</template>\r\n",
+      "content": "<script setup lang=\"ts\">\r\nwithDefaults(defineProps<{\r\n  title?: string\r\n  padding?: boolean\r\n  customClass?: string\r\n  overflowVisible?: boolean\r\n}>(), {\r\n  padding: true,\r\n  customClass: '',\r\n  overflowVisible: false,\r\n})\r\n</script>\r\n\r\n<template>\r\n  <view class=\"space-y-3\">\r\n    <view v-if=\"title\" class=\"\r\n        text-sm font-medium uppercase tracking-wider text-slate-500\r\n        dark:text-slate-200\r\n      \">\r\n      {{ title }}\r\n    </view>\r\n    <view class=\"\r\n        rounded-xl border border-slate-200 bg-white shadow-sm\r\n        dark:border-gray-700 dark:bg-gray-800\r\n      \" :class=\"[padding ? 'p-4' : '', customClass, overflowVisible ? '' : 'overflow-hidden']\">\r\n      <slot />\r\n    </view>\r\n  </view>\r\n</template>\r\n",
       "target": "uniapp"
     }
   ],
   "fileCount": 2,
-  "contentHash": "9ac7d82022daa1fc3926dc3f9a891f598c9e153a"
+  "contentHash": "a64a71fae24a26ac7affcd9ec4f8c7460d859710"
 }

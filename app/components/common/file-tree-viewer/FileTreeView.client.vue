@@ -113,9 +113,7 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
+}.custom-scrollbar::-webkit-scrollbar-thumb {
     background: #e2e8f0;
     border-radius: 3px;
 }.dark .custom-scrollbar::-webkit-scrollbar-thumb {
