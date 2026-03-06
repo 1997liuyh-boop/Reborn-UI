@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<RebornTextProps>(), {
   ui: () => ({
     base: '',
   }),
-  pt: () => ({}),
+  customClass: '',
   value: null,
   type: 'default',
   mask: false,
@@ -34,7 +34,7 @@ export interface RebornTextProps {
   ui?: {
     base: string
   }
-  pt?: any
+  customClass?: string
   // 文本颜色
   color?: typeof textColors[number]
   // 字体大小
@@ -70,8 +70,6 @@ export interface RebornTextProps {
 }
 const cache = { key: 1 }
 interface PassThrough { className?: string }
-const pt = computed(() => (props.pt as PassThrough) || {})
-const ptClassName = computed(() => pt.value.className || '')
 
 // 样式生成
 const b = tv(theme)
@@ -208,14 +206,14 @@ const content = computed(() => {
 
 <template>
   <!-- #ifdef MP -->
-  <view :key="cache.key" :class="ui.base({ class: ptClassName })" :style="textStyle" :selectable="selectable"
+  <view :key="cache.key" :class="ui.base({ class: customClass })" :style="textStyle" :selectable="selectable"
     :space="space" :decode="decode">
     <slot>{{ content }}</slot>
   </view>
   <!-- #endif -->
 
   <!-- #ifndef MP -->
-  <text :key="cache.key" :class="ui.base({ class: ptClassName })" :style="textStyle" :selectable="selectable"
+  <text :key="cache.key" :class="ui.base({ class: customClass })" :style="textStyle" :selectable="selectable"
     :space="space" :decode="decode">
     <slot>{{ content }}</slot>
   </text>

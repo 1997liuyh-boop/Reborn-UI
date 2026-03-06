@@ -49,6 +49,7 @@ const menuItems = [
       { label: '返回顶部', icon: 'i-lucide-arrow-big-up', path: '/pages/reborn-back-top/RebornBackTopDemo' },
       { label: '吸顶', icon: 'i-lucide-arrow-up-to-line', path: '/pages/reborn-sticky/RebornStickyDemo' },
       { label: '底部栏', icon: 'i-lucide-panel-bottom', path: '/pages/reborn-footer/RebornFooterDemo' },
+      { label: '标签栏', icon: 'i-lucide-dock', path: '/pages/reborn-tabbar/RebornTabbarDemo' },
     ],
   },
   {

@@ -175,10 +175,6 @@ function scrollToField(prop: string) {
   if (field && field.getBoundingClientRect) {
     field.getBoundingClientRect((res: any) => {
       if (res) {
-        // uni.pageScrollTo({
-        // 	scrollTop: res.top + (fields.value.size > 0 ? 0 : 0) + uni.getSystemInfoSync().windowTop - 44,
-        // 	duration: 0
-        // });
         scrollTo(res.top + (fields.value.size > 0 ? 0 : 0) + scrollTop.value)
       }
     })

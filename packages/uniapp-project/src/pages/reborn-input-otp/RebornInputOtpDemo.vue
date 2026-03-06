@@ -46,10 +46,10 @@ const value12 = ref('1234')
           ">
           按钮大小
         </view>
-        <view class="space-x-2">
+        <view class="flex flex-wrap">
           <RebornButton v-for="s in inputOtpSizes" :key="s" variant="outline"
             :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
-            @click="demoSize = s">
+            @click="demoSize = s" gap>
             {{ s }}
           </RebornButton>
         </view>

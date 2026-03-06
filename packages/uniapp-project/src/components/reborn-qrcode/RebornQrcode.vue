@@ -109,20 +109,20 @@ function drawer() {
 
     nextTick(() => {
         // #ifdef MP-WEIXIN
-        const query = uni.createSelectorQuery().in(proxy);
-        query.select('#' + qrcodeId.value)
-            .fields({ node: true, size: true })
-            .exec((res) => {
-                if (res[0] && res[0].node) {
-                    const canvas = res[0].node;
-                    const ctx = canvas.getContext('2d');
+        const query = uni.createSelectorQuery().in(proxy as any);
+        (query.select('#' + qrcodeId.value) as any)
+            .fields({ node: true, size: true }, (res: any) => {
+                if (res?.node) {
+                    const canvas = res.node as any;
+                    const ctx = canvas.getContext('2d') as any;
                     const dpr = uni.getSystemInfoSync().pixelRatio;
                     canvas.width = props.size * dpr;
                     canvas.height = props.size * dpr;
                     ctx.scale(dpr, dpr);
                     drawQrcode(ctx, data, canvas);
                 }
-            });
+            })
+            .exec();
         // #endif
 
         // #ifndef MP-WEIXIN
@@ -139,27 +139,27 @@ function toPng(): Promise<string> {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             // #ifdef MP-WEIXIN
-            const query = uni.createSelectorQuery().in(proxy);
-            query.select('#' + qrcodeId.value)
-                .fields({ node: true })
-                .exec((res) => {
-                    if (res[0] && res[0].node) {
-                        const canvas = res[0].node;
-                        uni.canvasToTempFilePath({
-                            canvas: canvas,
+            const query = uni.createSelectorQuery().in(proxy as any);
+            (query.select('#' + qrcodeId.value) as any)
+                .fields({ node: true }, (res: any) => {
+                    if (res?.node) {
+                        const canvas = res.node as any;
+                        (uni.canvasToTempFilePath as any)({
+                            canvas,
                             destWidth: props.size * 3,
                             destHeight: props.size * 3,
-                            success: (res) => {
-                                resolve(res.tempFilePath);
+                            success: (result: any) => {
+                                resolve(result.tempFilePath);
                             },
-                            fail: (err) => {
+                            fail: (err: any) => {
                                 reject(err);
                             }
                         });
                     } else {
                         reject(new Error('未找到 canvas 节点'));
                     }
-                });
+                })
+                .exec();
             // #endif
 
             // #ifndef MP-WEIXIN

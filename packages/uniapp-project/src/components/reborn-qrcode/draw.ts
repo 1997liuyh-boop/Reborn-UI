@@ -104,6 +104,53 @@ function createFillStyle(ctx: any, styleConfig: any, size: number) {
 	return null;
 }
 
+function setFillStyle(ctx: any, fillStyle: any) {
+	if (typeof ctx.setFillStyle === 'function') {
+		ctx.setFillStyle(fillStyle);
+		return;
+	}
+	ctx.fillStyle = fillStyle;
+}
+
+function flushDraw(ctx: any) {
+	if (typeof ctx.draw === 'function') {
+		ctx.draw(false);
+	}
+}
+
+async function loadImageSource(src: string, canvasNode?: any) {
+	if (canvasNode?.createImage) {
+		const image = canvasNode.createImage();
+		await new Promise<void>((resolve, reject) => {
+			image.onload = () => resolve();
+			image.onerror = (err: any) => reject(err);
+			image.src = src;
+		});
+		return image;
+	}
+
+	const imageInfo = await new Promise<any>((resolve, reject) => {
+		uni.getImageInfo({
+			src,
+			success: (res) => {
+				if (
+					!res.path.startsWith('http://') &&
+					!res.path.startsWith('https://') &&
+					!res.path.startsWith('/') &&
+					!res.path.startsWith('data:') &&
+					!res.path.startsWith('wxfile://')
+				) {
+					res.path = '/' + res.path;
+				}
+				resolve(res);
+			},
+			fail: reject
+		});
+	});
+
+	return imageInfo.path;
+}
+
 /**
  * 绘制定位图案（码眼）
  */
@@ -123,11 +170,11 @@ function drawPositionPattern(
 	const safeOuterRadius = Math.max(0, outerRadius);
 	const safeCenterRadius = Math.max(0, centerRadius);
 
-	ctx.setFillStyle(pdSquareFillStyle);
+	setFillStyle(ctx, pdSquareFillStyle);
 	drawRoundedRect(ctx, startX, startY, patternSize, patternSize, safeOuterRadius);
 
 	if (background !== 'transparent') {
-		ctx.setFillStyle(background);
+		setFillStyle(ctx, background);
 		const innerStartX = startX + px;
 		const innerStartY = startY + px;
 		const innerSize = px * 5;
@@ -189,11 +236,11 @@ function drawPositionPattern(
 	}
 	ctx.closePath();
 
-	ctx.setFillStyle(pdSquareFillStyle);
+	setFillStyle(ctx, pdSquareFillStyle);
 	ctx.fill('evenodd'); // 用 evenodd 填充带洞的多边形
 
 	// 绘制中心点
-	ctx.setFillStyle(pdDotFillStyle);
+	setFillStyle(ctx, pdDotFillStyle);
 	const centerStartX = startX + px * 2;
 	const centerStartY = startY + px * 2;
 	const centerSize = px * 3;
@@ -203,7 +250,7 @@ function drawPositionPattern(
 /**
  * 在二维码中心绘制Logo
  */
-function drawLogo(ctx: any, options: QrcodeOptions, imagePath: string) {
+function drawLogo(ctx: any, options: QrcodeOptions, imageSource: any) {
 	ctx.save();
 
 	const contentSize = options.size - options.padding * 2;
@@ -251,7 +298,7 @@ function drawLogo(ctx: any, options: QrcodeOptions, imagePath: string) {
 
 	// 绘制Logo背景
 	if (!options.logoOptions || options.logoOptions.hideBackgroundDots !== false) {
-		ctx.setFillStyle(options.backgroundTransparent ? '#ffffff' : options.background);
+		setFillStyle(ctx, options.backgroundTransparent ? '#ffffff' : options.background);
 		drawRoundedRect(ctx, backgroundX, backgroundY, backgroundSize, backgroundSize, cornerRadius);
 	}
 
@@ -282,7 +329,7 @@ function drawLogo(ctx: any, options: QrcodeOptions, imagePath: string) {
 		ctx.clip();
 	}
 
-	ctx.drawImage(imagePath, logoX, logoY, logoSize, logoSize);
+	ctx.drawImage(imageSource, logoX, logoY, logoSize, logoSize);
 
 	if (cornerRadius > 0) {
 		ctx.restore();
@@ -294,7 +341,7 @@ function drawLogo(ctx: any, options: QrcodeOptions, imagePath: string) {
 /**
  * 绘制二维码到Canvas上下文
  */
-export async function drawQrcode(ctx: any, options: QrcodeOptions) {
+export async function drawQrcode(ctx: any, options: QrcodeOptions, canvasNode?: any) {
 	if (!ctx) return;
 
 	// 生成二维码数据矩阵
@@ -313,7 +360,7 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions) {
 		ctx.clearRect(0, 0, options.size, options.size);
 	} else {
 		const bgGradient = createFillStyle(ctx, options.backgroundGradient, options.size);
-		ctx.setFillStyle(bgGradient || options.background);
+		setFillStyle(ctx, bgGradient || options.background);
 		ctx.fillRect(0, 0, options.size, options.size);
 	}
 
@@ -412,7 +459,7 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions) {
 	const dot = px * 0.1;
 
 	// 加载前景图
-	let fgImgInfo: any = null;
+	let fgImageSource: any = null;
 	if (options.dotsImage) {
 		try {
 			let src = options.dotsImage;
@@ -428,33 +475,13 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions) {
 				src = '/' + src;
 			}
 			// #endif
-			fgImgInfo = await new Promise<any>((resolve, reject) => {
-				uni.getImageInfo({
-					src: src,
-					success: (res) => {
-						// uni.getImageInfo 在小程序中有时返回的 res.path 是不带 / 的相对路径
-						// 此时如果直接用 res.path 传给 ctx.drawImage() 会导致基于当前组件的相对路径解析错误（如 /components/...）
-						// 因此我们需要确保返回给 ctx.drawImage() 的 path 是绝对路径
-						if (
-							!res.path.startsWith('http://') &&
-							!res.path.startsWith('https://') &&
-							!res.path.startsWith('/') &&
-							!res.path.startsWith('data:') &&
-							!res.path.startsWith('wxfile://')
-						) {
-							res.path = '/' + res.path;
-						}
-						resolve(res);
-					},
-					fail: reject
-				});
-			});
+			fgImageSource = await loadImageSource(src, canvasNode);
 		} catch (e) {
 			console.error("加载前景图失败", e);
 		}
 	}
 
-	if (fgImgInfo) {
+	if (fgImageSource) {
 		ctx.save();
 		ctx.beginPath();
 	}
@@ -472,8 +499,8 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions) {
 					}
 				}
 
-				if (!fgImgInfo) {
-					ctx.setFillStyle(fgStyle);
+				if (!fgImageSource) {
+					setFillStyle(ctx, fgStyle);
 				}
 
 				const x = offsetX + px * i;
@@ -481,38 +508,38 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions) {
 
 				switch (options.mode) {
 					case "line":
-						if (fgImgInfo) ctx.rect(x, y, px, px / 2);
+						if (fgImageSource) ctx.rect(x, y, px, px / 2);
 						else ctx.fillRect(x, y, px, px / 2);
 						break;
 
 					case "circular":
-						if (!fgImgInfo) ctx.beginPath();
+						if (!fgImageSource) ctx.beginPath();
 						const rx = x + px / 2 - dot;
 						const ry = y + px / 2 - dot;
-						if (fgImgInfo) ctx.moveTo(rx + px / 2 - dot, ry);
+						if (fgImageSource) ctx.moveTo(rx + px / 2 - dot, ry);
 						ctx.arc(rx, ry, px / 2 - dot, 0, 2 * Math.PI);
-						if (!fgImgInfo) {
+						if (!fgImageSource) {
 							ctx.fill();
 							ctx.closePath();
 						}
 						break;
 
 					case "rectSmall":
-						if (fgImgInfo) ctx.rect(x + dot, y + dot, px - dot * 2, px - dot * 2);
+						if (fgImageSource) ctx.rect(x + dot, y + dot, px - dot * 2, px - dot * 2);
 						else ctx.fillRect(x + dot, y + dot, px - dot * 2, px - dot * 2);
 						break;
 
 					default:
-						if (fgImgInfo) ctx.rect(x, y, px, px);
+						if (fgImageSource) ctx.rect(x, y, px, px);
 						else ctx.fillRect(x, y, px, px);
 				}
 			}
 		}
 	}
 
-	if (fgImgInfo) {
+	if (fgImageSource) {
 		ctx.clip();
-		ctx.drawImage(fgImgInfo.path, 0, 0, options.size, options.size);
+		ctx.drawImage(fgImageSource, 0, 0, options.size, options.size);
 		ctx.restore();
 	}
 
@@ -561,30 +588,13 @@ export async function drawQrcode(ctx: any, options: QrcodeOptions) {
 			}
 			// #endif
 
-			const imgInfo = await new Promise<any>((resolve, reject) => {
-				uni.getImageInfo({
-					src: logoSrc,
-					success: (res) => {
-						if (
-							!res.path.startsWith('http://') &&
-							!res.path.startsWith('https://') &&
-							!res.path.startsWith('/') &&
-							!res.path.startsWith('data:') &&
-							!res.path.startsWith('wxfile://')
-						) {
-							res.path = '/' + res.path;
-						}
-						resolve(res);
-					},
-					fail: reject
-				});
-			});
-			drawLogo(ctx, options, imgInfo.path);
+			const logoImageSource = await loadImageSource(logoSrc, canvasNode);
+			drawLogo(ctx, options, logoImageSource);
 		} catch (err) {
 			console.error("二维码 Logo 加载失败", err);
 		}
 	}
 
 	// 执行绘制
-	ctx.draw(false);
+	flushDraw(ctx);
 }
