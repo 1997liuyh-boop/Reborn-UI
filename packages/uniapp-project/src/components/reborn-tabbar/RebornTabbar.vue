@@ -132,6 +132,14 @@ const presets = computed(() => {
 
 const ballCount = computed(() => props.ballColors.length || 3)
 
+const systemInfo = uni.getSystemInfoSync()
+const windowWidth = systemInfo.windowWidth
+
+const liquidStyleLeft = ref(0)
+const ballStyleLeft = ref(0)
+const animation01 = ref(false)
+const animation02 = ref(false)
+
 watch(
     [() => props.fixed, () => props.placeholder],
     () => {
@@ -190,6 +198,28 @@ function setChange(child: TabbarItem) {
                     isTransition.value = false
                 }, 600) // 动画周期
             }, 20)
+        } else if (props.animation === 'drop') {
+            const nextIdx = children.findIndex((c: any, i: number) => {
+                const cProps = c.$props || {}
+                return (cProps.name !== undefined ? cProps.name : i) === active
+            })
+            const count = children.length || 1
+            const leftPercent = (nextIdx + 0.5) / count
+            const centerPx = leftPercent * windowWidth
+
+            ballStyleLeft.value = centerPx - 22
+            animation01.value = true
+            animation02.value = true
+
+            if (transitionTimer) clearTimeout(transitionTimer)
+            transitionTimer = setTimeout(() => {
+                liquidStyleLeft.value = centerPx - (windowWidth / 2)
+                animation01.value = false
+            }, 300)
+
+            setTimeout(() => {
+                animation02.value = false
+            }, 610)
         }
     }
 
@@ -261,6 +291,30 @@ function setPlaceholderHeight() {
 <template>
     <view :class="ui.root({ class: cn(customClass) })" :style="placeholderStyle">
         <view class="reborn-tabbar-base" :class="ui.base()" :style="[rootStyle, customStyle]">
+            <!-- 水滴动画效果 (drop 动画特有) -->
+            <view v-if="animation === 'drop'"
+                class="absolute left-0 top-0 w-full h-[100rpx] overflow-hidden z-0 pointer-events-none">
+                <view
+                    class="absolute w-full h-full top-0 flex flex-col items-center justify-center transition-all duration-300"
+                    style="transition-timing-function: cubic-bezier(0.133, 1.01, 0.32, 1.275)"
+                    :style="{ left: `${liquidStyleLeft}px` }">
+                    <view class="relative box-border w-full h-full transition-all duration-300 drop-liquid-str01"
+                        style="transition-timing-function: cubic-bezier(0.133, 1.01, 0.32, 1.275)"
+                        :class="{ 'w-[200%]! h-0!': animation01 }">
+                        <image class="absolute left-0 right-0 bottom-0 top-0 w-full h-full"
+                            src="data:image/jpeg;base64,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"
+                            mode="scaleToFill"></image>
+                    </view>
+                    <view class="flex-1 drop-liquid-str02" :class="{ 'h-0!': animation01 }"></view>
+                </view>
+                <!-- 水滴掉落球体 -->
+                <view
+                    class="absolute z-30 top-[-16px] w-[44px] h-[44px] rounded-full transition-all duration-600 drop-ball bg-primary"
+                    :class="{ 'animate-[moveUpDownBall_0.6s_ease-in-out]': animation02 }"
+                    :style="{ left: `${ballStyleLeft}px` }">
+                </view>
+            </view>
+
             <!-- 飞线小球 (fly-balls 动画特有) -->
             <view v-if="animation === 'fly-balls'" class="absolute left-0 top-0 w-full h-full pointer-events-none z-10">
                 <view v-for="(color, index) in ballColors" :key="index" class="absolute pointer-events-none z-10"
@@ -308,5 +362,70 @@ function setPlaceholderHeight() {
 
 .fly-ball-anim-dynamic {
     animation: flyBallsJump var(--fly-ball-duration) ease-in-out forwards;
+}
+
+/* 水滴动画相关 CSS */
+.drop-liquid-str01::after {
+    position: absolute;
+    left: -100vw;
+    top: 0;
+    content: '';
+    width: 100vw;
+    height: 100%;
+    background-color: #fff;
+}
+
+.drop-liquid-str01::before {
+    position: absolute;
+    right: -100vw;
+    top: 0;
+    content: '';
+    width: 100vw;
+    height: 100rpx;
+    background-color: #fff;
+}
+
+.drop-liquid-str02 {
+    width: 100%;
+    height: 0rpx;
+    background-color: #ffffff;
+}
+
+.drop-liquid-str02::after {
+    position: absolute;
+    left: -100vw;
+    top: 0;
+    content: '';
+    width: 100vw;
+    height: 100rpx;
+    background-color: #fff;
+}
+
+.drop-liquid-str02::before {
+    position: absolute;
+    right: -100vw;
+    top: 0;
+    content: '';
+    width: 100vw;
+    height: 100rpx;
+    background-color: #fff;
+}
+
+@keyframes moveUpDownBall {
+    0% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-60px);
+    }
+
+    80% {
+        transform: translateY(6px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
 }
 </style>

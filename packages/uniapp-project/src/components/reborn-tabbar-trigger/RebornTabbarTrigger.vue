@@ -138,6 +138,12 @@ watch(() => active.value, (newVal) => {
                 isJelly.value = false
                 showActiveImage.value = true
             }, 500)
+        } else if (parentAnimation.value === 'drop') {
+            if (shakeTimer) clearTimeout(shakeTimer)
+            showActiveImage.value = false
+            setTimeout(() => {
+                showActiveImage.value = true
+            }, 50)
         } else {
             showActiveImage.value = false
         }
@@ -182,17 +188,33 @@ function handleClick() {
                         :class="[ui.icon(), isShaking ? 'animate-[shake_0.3s_ease-in-out]' : '', isJelly ? 'fly-balls-jelly' : '']">
                         <slot name="icon" :active="active" :ui="ui">
                             <!-- 选中时 -->
-                            <view
-                                :class="[ui.activeIcon(), parentAnimation === 'fly-balls' ? 'transition-opacity duration-300' : '']"
-                                :style="[textStyle, parentAnimation === 'fly-balls' ? { opacity: showActiveImage ? 1 : 0 } : {}]">
+                            <view :class="[
+                                ui.activeIcon(),
+                                parentAnimation === 'fly-balls' || parentAnimation === 'drop' ? 'transition-all duration-300' : ''
+                            ]" :style="[
+                                    textStyle,
+                                    parentAnimation === 'fly-balls' ? { opacity: showActiveImage ? 1 : 0 } : {},
+                                    parentAnimation === 'drop' ? {
+                                        opacity: showActiveImage ? 1 : 0,
+                                        transform: showActiveImage ? 'translateY(-10px)' : 'translateY(10px)'
+                                    } : {}
+                                ]">
                                 <RebornImage v-if="isImage(icon)" :width="imageSize || 40" :height="imageSize || 40"
                                     :src="icon!" mode="scaleToFill" />
                                 <view v-else :class="['text-40', icon]" />
                             </view>
                             <!-- 未选中时 -->
-                            <view
-                                :class="[ui.inactiveIcon(), parentAnimation === 'fly-balls' ? 'transition-opacity duration-300' : '']"
-                                :style="[textStyle, parentAnimation === 'fly-balls' ? { opacity: showActiveImage ? 0 : 1 } : {}]">
+                            <view :class="[
+                                ui.inactiveIcon(),
+                                parentAnimation === 'fly-balls' || parentAnimation === 'drop' ? 'transition-all duration-300' : ''
+                            ]" :style="[
+                                    textStyle,
+                                    parentAnimation === 'fly-balls' ? { opacity: showActiveImage ? 0 : 1 } : {},
+                                    parentAnimation === 'drop' ? {
+                                        opacity: showActiveImage ? 0 : 1,
+                                        transform: showActiveImage ? 'translateY(10px)' : 'translateY(0)'
+                                    } : {}
+                                ]">
                                 <RebornImage v-if="isImage(inactive || icon)" :width="imageSize || 40"
                                     :height="imageSize || 40" :src="inactive! || icon!" mode="scaleToFill" />
                                 <view v-else :class="['text-40', inactive || icon]" />
