@@ -48,12 +48,13 @@ function handleChange1({ value }: { value: string }) {
     uni.showToast({ title: '选中标签: ' + value, icon: 'none' })
 }
 
-function beforeChangeHook({ name }: { name: string | number }, done: () => void) {
+function beforeChangeHook({ name }: { name: string | number }, done: (shouldProceed?: boolean) => void) {
     uni.showLoading({ title: '校验中' })
     setTimeout(() => {
         uni.hideLoading()
         if (name === 2) {
             uni.showToast({ title: '请登录', icon: 'error' })
+            done(false)
             return
         }
         done()

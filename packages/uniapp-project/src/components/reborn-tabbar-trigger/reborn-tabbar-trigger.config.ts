@@ -47,6 +47,10 @@ export default {
                 activeIcon: 'absolute overflow-hidden z-[2] bottom-0 left-0 w-full h-full rounded-[12rpx] transition-all duration-400 ease-in-out box-border border border-solid border-transparent',
                 inactiveIcon: 'absolute overflow-hidden z-[2] bottom-0 left-0 w-full h-full rounded-[12rpx] transition-all duration-400 ease-in-out bg-[#f5f3f7] box-border border border-solid border-transparent',
             },
+            drop: {
+                icon: '!overflow-visible',
+            },
+            'fly-balls': {},
         },
         disabled: {
             true: {
@@ -77,6 +81,18 @@ export default {
 
         { animation: 'creative' as const, active: true, class: { activeIcon: 'opacity-100 translate-y-0 scale-100', inactiveIcon: 'opacity-0 translate-y-full scale-50' } },
         { animation: 'creative' as const, active: false, class: { activeIcon: 'opacity-0 -translate-y-full scale-50', inactiveIcon: 'opacity-100 translate-y-0 scale-100' } },
+
+        // fly-balls 动画: 激活时延迟 500ms 执行渐变，未激活时立刻执行渐变复原
+        { animation: 'fly-balls' as const, active: true, class: { activeIcon: 'opacity-100 transition-all duration-300 delay-500', inactiveIcon: 'opacity-0 transition-all duration-300 delay-500' } },
+        { animation: 'fly-balls' as const, active: false, class: { activeIcon: 'opacity-0 transition-all duration-300', inactiveIcon: 'opacity-100 transition-all duration-300' } },
+
+        // Drop 动画: 激活/未激活状态的过渡和位移
+        // normal 形状下，选中时图标上浮
+        { animation: 'drop' as const, shape: 'normal' as const, active: true, class: { activeIcon: 'opacity-100 -translate-y-[10px] transition-all duration-300', inactiveIcon: 'opacity-0 translate-y-[10px] transition-all duration-300' } },
+        { animation: 'drop' as const, shape: 'normal' as const, active: false, class: { activeIcon: 'opacity-0 translate-y-[10px] transition-all duration-300', inactiveIcon: 'opacity-100 translate-y-0 transition-all duration-300' } },
+        // round 形状下，选中时图标不上浮（保持原位）
+        { animation: 'drop' as const, shape: 'round' as const, active: true, class: { activeIcon: 'opacity-100 translate-y-0 transition-all duration-300', inactiveIcon: 'opacity-0 translate-y-[10px] transition-all duration-300' } },
+        { animation: 'drop' as const, shape: 'round' as const, active: false, class: { activeIcon: 'opacity-0 translate-y-[10px] transition-all duration-300', inactiveIcon: 'opacity-100 translate-y-0 transition-all duration-300' } },
 
         // Glass 动画: 激活状态 — 前景层向左下方偏移，背景产生毛玻璃效果
         {
@@ -155,6 +171,18 @@ export default {
         { shape: 'round' as const, active: true, color: 'warning' as const, class: { body: 'bg-warning/10' } },
         { shape: 'round' as const, active: true, color: 'error' as const, class: { body: 'bg-error/10' } },
         { shape: 'round' as const, active: true, color: 'neutral' as const, class: { body: 'bg-neutral/40' } },
+
+        // Round + Drop 动画: 激活时 body 显示颜色背景（球体没入效果）
+        // 增加 600ms 余量等待 dropBall 落脚后再通过动画渐现背景
+        { shape: 'round' as const, animation: 'drop' as const, active: true, class: { body: 'overflow-hidden transition-all duration-300 ease-out delay-[600ms]' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: false, class: { body: 'overflow-hidden transition-all duration-200 ease-in' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'primary' as const, class: { body: '!bg-primary/20' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'secondary' as const, class: { body: '!bg-secondary/20' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'success' as const, class: { body: '!bg-success/20' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'info' as const, class: { body: '!bg-info/20' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'warning' as const, class: { body: '!bg-warning/20' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'error' as const, class: { body: '!bg-error/20' } },
+        { shape: 'round' as const, animation: 'drop' as const, active: true, color: 'neutral' as const, class: { body: '!bg-neutral/20' } },
 
         // Round 形状 + Glass 动画: bodyGlowLayer 作为外层彩色背景，body 本身产生毛玻璃和悬浮效果
         {

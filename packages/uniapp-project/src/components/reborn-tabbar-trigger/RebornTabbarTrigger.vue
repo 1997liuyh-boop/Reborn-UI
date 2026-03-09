@@ -75,7 +75,7 @@ const parentShape = computed(() => {
 
 const parentAnimation = computed(() => {
     if (tabbar && tabbar.props.animation) {
-        return tabbar.props.animation as 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls'
+        return tabbar.props.animation as 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls' | 'drop'
     }
     return 'fade'
 })
@@ -127,28 +127,15 @@ const isShaking = ref(false)
 let shakeTimer: any = null
 
 const isJelly = ref(false)
-const showActiveImage = ref(active.value)
 
 watch(() => active.value, (newVal) => {
     if (parentAnimation.value === 'fly-balls') {
         if (newVal) {
             isJelly.value = true
-            showActiveImage.value = false
             setTimeout(() => {
                 isJelly.value = false
-                showActiveImage.value = true
             }, 500)
-        } else if (parentAnimation.value === 'drop') {
-            if (shakeTimer) clearTimeout(shakeTimer)
-            showActiveImage.value = false
-            setTimeout(() => {
-                showActiveImage.value = true
-            }, 50)
-        } else {
-            showActiveImage.value = false
         }
-    } else {
-        showActiveImage.value = newVal
     }
 }, { immediate: true })
 
@@ -157,6 +144,7 @@ watch(() => active.value, (newVal) => {
  */
 function handleClick() {
     if (props.disabled) return
+    if (tabbar && tabbar.locked.value) return
     const itemName: string | number = props.name !== undefined ? props.name : index.value
 
     if (active.value) {
@@ -188,33 +176,13 @@ function handleClick() {
                         :class="[ui.icon(), isShaking ? 'animate-[shake_0.3s_ease-in-out]' : '', isJelly ? 'fly-balls-jelly' : '']">
                         <slot name="icon" :active="active" :ui="ui">
                             <!-- 选中时 -->
-                            <view :class="[
-                                ui.activeIcon(),
-                                parentAnimation === 'fly-balls' || parentAnimation === 'drop' ? 'transition-all duration-300' : ''
-                            ]" :style="[
-                                    textStyle,
-                                    parentAnimation === 'fly-balls' ? { opacity: showActiveImage ? 1 : 0 } : {},
-                                    parentAnimation === 'drop' ? {
-                                        opacity: showActiveImage ? 1 : 0,
-                                        transform: showActiveImage ? 'translateY(-10px)' : 'translateY(10px)'
-                                    } : {}
-                                ]">
+                            <view :class="ui.activeIcon()" :style="textStyle">
                                 <RebornImage v-if="isImage(icon)" :width="imageSize || 40" :height="imageSize || 40"
                                     :src="icon!" mode="scaleToFill" />
                                 <view v-else :class="['text-40', icon]" />
                             </view>
                             <!-- 未选中时 -->
-                            <view :class="[
-                                ui.inactiveIcon(),
-                                parentAnimation === 'fly-balls' || parentAnimation === 'drop' ? 'transition-all duration-300' : ''
-                            ]" :style="[
-                                    textStyle,
-                                    parentAnimation === 'fly-balls' ? { opacity: showActiveImage ? 0 : 1 } : {},
-                                    parentAnimation === 'drop' ? {
-                                        opacity: showActiveImage ? 0 : 1,
-                                        transform: showActiveImage ? 'translateY(10px)' : 'translateY(0)'
-                                    } : {}
-                                ]">
+                            <view :class="ui.inactiveIcon()" :style="textStyle">
                                 <RebornImage v-if="isImage(inactive || icon)" :width="imageSize || 40"
                                     :height="imageSize || 40" :src="inactive! || icon!" mode="scaleToFill" />
                                 <view v-else :class="['text-40', inactive || icon]" />

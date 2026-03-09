@@ -47,13 +47,13 @@ export interface TabbarProps {
     /** 自定义内联样式 */
     customStyle?: string
     /** tcv 对应的 ui 覆盖类名 */
-    ui?: Partial<Record<'root' | 'base', string>>
+    ui?: Partial<Record<'root' | 'base' | 'dropBall' | 'flyBallsContainer' | 'flyBallItem', string>>
     /** 针对 fly-balls 动画下，小球默认深入下降的偏移量 (rpx) */
     ballShiftY?: number
     /**
      * 切换前的回调函数，返回 false 或 rejcect 可阻止切换。如果在函数内执行了 done 参数方法，则在执行 done 的时候才真正切换。
      */
-    beforeChange?: (params: { name: string | number }, done: () => void) => boolean | Promise<boolean> | void
+    beforeChange?: (params: { name: string | number }, done: (shouldProceed?: boolean) => void) => boolean | Promise<boolean> | void
 }
 
 const props = withDefaults(defineProps<TabbarProps>(), {
@@ -79,9 +79,12 @@ const { proxy } = getCurrentInstance() as any
 
 const { linkChildren, children } = useChildren(TABBAR_KEY)
 
+const locked = ref(false)
+
 linkChildren({
     props,
-    setChange
+    setChange,
+    locked,
 })
 
 const uiOverrides = computed(() => props.ui || {})
@@ -93,11 +96,15 @@ const ui = computed(() => {
         bordered: props.bordered,
         animation: props.animation as any,
         safeAreaInsetBottom: props.safeAreaInsetBottom,
+        color: props.color as any,
     })
 
     return {
         root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
         base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
+        dropBall: (opts?: { class?: any }) => styles.dropBall({ class: cn(opts?.class, uiOverrides.value.dropBall) }),
+        flyBallsContainer: (opts?: { class?: any }) => styles.flyBallsContainer({ class: cn(opts?.class, uiOverrides.value.flyBallsContainer) }),
+        flyBallItem: (opts?: { class?: any }) => styles.flyBallItem({ class: cn(opts?.class, uiOverrides.value.flyBallItem) }),
     }
 })
 
@@ -137,8 +144,48 @@ const windowWidth = systemInfo.windowWidth
 
 const liquidStyleLeft = ref(0)
 const ballStyleLeft = ref(0)
+const ballStartLeft = ref(0)
 const animation01 = ref(false)
 const animation02 = ref(false)
+
+/**
+ * 计算触发器中心点 (px)
+ */
+function getTargetCenterPx(index: number, count: number) {
+    if (props.shape === 'round') {
+        // round 模式下: 
+        // 1. tabBar 两侧有 32rpx 的外边距
+        // 2. 只有 active 的为 flex-[1.5]，其他的为 flex-1
+        // 注意：计算的是最终形态的中心点
+        const baseWidth = windowWidth - uni.upx2px(64)
+        const leftPercent = (index + 0.75) / (count + 0.5)
+        return leftPercent * baseWidth
+    } else {
+        // normal 模式下等分
+        const leftPercent = (index + 0.5) / count
+        return leftPercent * windowWidth
+    }
+}
+
+/**
+ * 初始化 drop 动画的液体背景位置（根据当前选中 tab 计算）
+ */
+function initDropPosition() {
+    const count = children.length || 1
+    const activeIdx = children.findIndex((c: any, i: number) => {
+        const cProps = c.$props || {}
+        return (cProps.name !== undefined ? cProps.name : i) === props.modelValue
+    })
+    const idx = activeIdx >= 0 ? activeIdx : 0
+    const centerPx = getTargetCenterPx(idx, count)
+
+    // 如果是 round，背景宽度较小，液体位置可以相对屏幕对准。但这里中心是正确的
+    let liquidBase = (props.shape === 'round') ? (windowWidth - uni.upx2px(64)) : windowWidth
+    liquidStyleLeft.value = centerPx - (liquidBase / 2)
+    const ballRadius = props.shape === 'round' ? 16 : 22
+    ballStartLeft.value = centerPx - ballRadius
+    ballStyleLeft.value = centerPx - ballRadius
+}
 
 watch(
     [() => props.fixed, () => props.placeholder],
@@ -148,10 +195,28 @@ watch(
     { deep: true, immediate: false }
 )
 
+// 当 animation 切换为 drop 时，初始化液体背景位置
+watch(
+    () => props.animation,
+    (newAnim) => {
+        if (newAnim === 'drop') {
+            nextTick(() => {
+                initDropPosition()
+            })
+        }
+    },
+)
+
 onMounted(() => {
     if (props.fixed && props.placeholder) {
         nextTick(() => {
             setPlaceholderHeight()
+        })
+    }
+    // 如果初始就是 drop 动画，初始化位置
+    if (props.animation === 'drop') {
+        nextTick(() => {
+            initDropPosition()
         })
     }
 })
@@ -168,6 +233,7 @@ function setChange(child: TabbarItem) {
     const active = child.name
 
     if (active === props.modelValue) return
+    if (locked.value) return
 
     const done = () => {
         // 先找到变更前的 active index 索引，记录小球起飞位置
@@ -190,12 +256,14 @@ function setChange(child: TabbarItem) {
             newIndexRef.value = nextIdx >= 0 ? nextIdx : 0
 
             // 触发动画，清空先前的过渡并重新开始
+            locked.value = true
             isTransition.value = false
             setTimeout(() => {
                 isTransition.value = true
                 if (transitionTimer) clearTimeout(transitionTimer)
                 transitionTimer = setTimeout(() => {
                     isTransition.value = false
+                    locked.value = false
                 }, 600) // 动画周期
             }, 20)
         } else if (props.animation === 'drop') {
@@ -204,36 +272,55 @@ function setChange(child: TabbarItem) {
                 return (cProps.name !== undefined ? cProps.name : i) === active
             })
             const count = children.length || 1
-            const leftPercent = (nextIdx + 0.5) / count
-            const centerPx = leftPercent * windowWidth
+            const centerPx = getTargetCenterPx(nextIdx, count)
 
-            ballStyleLeft.value = centerPx - 22
+            // 记录起点（当前球位置）和终点
+            locked.value = true
+            const ballRadius = props.shape === 'round' ? 16 : 22
+            ballStartLeft.value = ballStyleLeft.value
+            ballStyleLeft.value = centerPx - ballRadius
             animation01.value = true
             animation02.value = true
 
             if (transitionTimer) clearTimeout(transitionTimer)
             transitionTimer = setTimeout(() => {
-                liquidStyleLeft.value = centerPx - (windowWidth / 2)
+                let liquidBase = (props.shape === 'round') ? (windowWidth - uni.upx2px(64)) : windowWidth
+                liquidStyleLeft.value = centerPx - (liquidBase / 2)
                 animation01.value = false
             }, 300)
 
             setTimeout(() => {
                 animation02.value = false
+                locked.value = false
             }, 610)
         }
     }
 
     if (props.beforeChange && typeof props.beforeChange === 'function') {
-        const result = props.beforeChange({ name: active }, done)
+        locked.value = true
+        const wrappedDone = (shouldProceed: boolean = true) => {
+            if (shouldProceed) {
+                done()
+            }
+            locked.value = false
+        }
+        const result = props.beforeChange({ name: active }, wrappedDone)
         if (result === true) {
-            done()
+            wrappedDone()
         } else if (result && typeof (result as Promise<any>).then === 'function') {
             (result as Promise<any>).then((isPass: boolean | void) => {
                 if (isPass !== false) {
-                    done()
+                    wrappedDone()
+                } else {
+                    locked.value = false
                 }
-            }).catch(() => { })
+            }).catch(() => {
+                locked.value = false
+            })
+        } else if (result === false) {
+            locked.value = false
         }
+        // result === undefined: 用户将使用 wrappedDone 回调来决定
     } else {
         done()
     }
@@ -292,33 +379,16 @@ function setPlaceholderHeight() {
     <view :class="ui.root({ class: cn(customClass) })" :style="placeholderStyle">
         <view class="reborn-tabbar-base" :class="ui.base()" :style="[rootStyle, customStyle]">
             <!-- 水滴动画效果 (drop 动画特有) -->
-            <view v-if="animation === 'drop'"
-                class="absolute left-0 top-0 w-full h-[100rpx] overflow-hidden z-0 pointer-events-none">
-                <view
-                    class="absolute w-full h-full top-0 flex flex-col items-center justify-center transition-all duration-300"
-                    style="transition-timing-function: cubic-bezier(0.133, 1.01, 0.32, 1.275)"
-                    :style="{ left: `${liquidStyleLeft}px` }">
-                    <view class="relative box-border w-full h-full transition-all duration-300 drop-liquid-str01"
-                        style="transition-timing-function: cubic-bezier(0.133, 1.01, 0.32, 1.275)"
-                        :class="{ 'w-[200%]! h-0!': animation01 }">
-                        <image class="absolute left-0 right-0 bottom-0 top-0 w-full h-full"
-                            src="data:image/jpeg;base64,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"
-                            mode="scaleToFill"></image>
-                    </view>
-                    <view class="flex-1 drop-liquid-str02" :class="{ 'h-0!': animation01 }"></view>
-                </view>
-                <!-- 水滴掉落球体 -->
-                <view
-                    class="absolute z-30 top-[-16px] w-[44px] h-[44px] rounded-full transition-all duration-600 drop-ball bg-primary"
-                    :class="{ 'animate-[moveUpDownBall_0.6s_ease-in-out]': animation02 }"
-                    :style="{ left: `${ballStyleLeft}px` }">
-                </view>
+            <view v-if="animation === 'drop'" v-show="shape !== 'round' || animation02"
+                :class="[ui.dropBall(), { 'drop-ball-bounce': animation02 }]"
+                :style="{ left: `${ballStyleLeft}px`, '--drop-ball-start': `${ballStartLeft}px`, '--drop-ball-end': `${ballStyleLeft}px` }">
             </view>
 
             <!-- 飞线小球 (fly-balls 动画特有) -->
-            <view v-if="animation === 'fly-balls'" class="absolute left-0 top-0 w-full h-full pointer-events-none z-10">
-                <view v-for="(color, index) in ballColors" :key="index" class="absolute pointer-events-none z-10"
-                    :class="[isTransition ? 'fly-ball-anim-dynamic' : '']" :style="getBallStyle(index)">
+            <view v-if="animation === 'fly-balls'" :class="ui.flyBallsContainer()">
+                <view v-for="(color, index) in ballColors" :key="index"
+                    :class="[ui.flyBallItem(), isTransition ? 'fly-ball-anim-dynamic' : '']"
+                    :style="getBallStyle(index)">
                 </view>
             </view>
 
@@ -360,72 +430,43 @@ function setPlaceholderHeight() {
     }
 }
 
+@keyframes dropBallArc {
+    0% {
+        left: var(--drop-ball-start);
+        transform: translateY(0) scale(var(--drop-ball-scale-start, 1));
+        opacity: var(--drop-ball-opacity-start, 1);
+    }
+
+    15% {
+        left: var(--drop-ball-start);
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translateY(-50px) scale(1);
+        opacity: 1;
+    }
+
+    85% {
+        left: var(--drop-ball-end);
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        left: var(--drop-ball-end);
+        transform: translateY(0) scale(var(--drop-ball-scale-end, 1));
+        opacity: var(--drop-ball-opacity-end, 1);
+    }
+}
+
 .fly-ball-anim-dynamic {
     animation: flyBallsJump var(--fly-ball-duration) ease-in-out forwards;
 }
 
-/* 水滴动画相关 CSS */
-.drop-liquid-str01::after {
-    position: absolute;
-    left: -100vw;
-    top: 0;
-    content: '';
-    width: 100vw;
-    height: 100%;
-    background-color: #fff;
-}
 
-.drop-liquid-str01::before {
-    position: absolute;
-    right: -100vw;
-    top: 0;
-    content: '';
-    width: 100vw;
-    height: 100rpx;
-    background-color: #fff;
-}
-
-.drop-liquid-str02 {
-    width: 100%;
-    height: 0rpx;
-    background-color: #ffffff;
-}
-
-.drop-liquid-str02::after {
-    position: absolute;
-    left: -100vw;
-    top: 0;
-    content: '';
-    width: 100vw;
-    height: 100rpx;
-    background-color: #fff;
-}
-
-.drop-liquid-str02::before {
-    position: absolute;
-    right: -100vw;
-    top: 0;
-    content: '';
-    width: 100vw;
-    height: 100rpx;
-    background-color: #fff;
-}
-
-@keyframes moveUpDownBall {
-    0% {
-        transform: translateY(0);
-    }
-
-    40% {
-        transform: translateY(-60px);
-    }
-
-    80% {
-        transform: translateY(6px);
-    }
-
-    100% {
-        transform: translateY(0);
-    }
+.drop-ball-bounce {
+    animation: dropBallArc 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 </style>

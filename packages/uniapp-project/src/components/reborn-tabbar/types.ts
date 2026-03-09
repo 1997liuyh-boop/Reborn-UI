@@ -26,6 +26,7 @@ export type TabbarProvide = {
         color?: (typeof tabbarColors)[number]
     }
     setChange: (child: TabbarItem) => void
+    locked: import('vue').Ref<boolean>
 }
 
 export const TABBAR_KEY: InjectionKey<TabbarProvide> = Symbol('reborn-tabbar')
