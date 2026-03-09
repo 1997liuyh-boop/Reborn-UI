@@ -186,6 +186,18 @@
       "style": {
         "navigationBarTitleText": "Feedback"
       }
+    },
+    {
+      "path": "pages/demo/index",
+      "style": {
+        "navigationBarTitleText": "Demo"
+      }
+    },
+    {
+      "path": "pages/demo/feedback/index",
+      "style": {
+        "navigationBarTitleText": "Feedback Demo"
+      }
     }
   ],
   "globalStyle": {

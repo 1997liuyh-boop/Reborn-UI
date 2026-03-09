@@ -57,7 +57,7 @@ const menuItems = [
     children: [
 
       { label: '标签', icon: 'i-lucide-circle-dot', path: '/pages/reborn-chip/RebornChipDemo' },
-      { label: '反馈', icon: 'i-lucide-loader-circle', path: '/pages/reborn-feedback-demo/index' },
+      { label: '反馈', icon: 'i-lucide-loader-circle', path: '/pages/demo/index' },
     ],
   },
   {
