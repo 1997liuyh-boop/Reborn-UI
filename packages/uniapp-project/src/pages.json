@@ -180,6 +180,12 @@
       "style": {
         "navigationBarTitleText": "Tabbar"
       }
+    },
+    {
+      "path": "pages/reborn-feedback-demo/index",
+      "style": {
+        "navigationBarTitleText": "Feedback"
+      }
     }
   ],
   "globalStyle": {
