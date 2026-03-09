@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-tabbar-trigger.config'
@@ -75,7 +75,7 @@ const parentShape = computed(() => {
 
 const parentAnimation = computed(() => {
     if (tabbar && tabbar.props.animation) {
-        return tabbar.props.animation as 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls'
+        return tabbar.props.animation as 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls' | 'liquid-ball'
     }
     return 'fade'
 })

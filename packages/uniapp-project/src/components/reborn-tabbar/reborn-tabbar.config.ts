@@ -1,6 +1,6 @@
 export const tabbarColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 export const tabbarShapes = ['normal', 'round'] as const
-export const tabbarAnimations = ['reveal', 'flip', 'creative', 'glass', 'fly-balls', 'drop'] as const
+export const tabbarAnimations = ['reveal', 'flip', 'creative', 'glass', 'fly-balls', 'drop', 'liquid-ball'] as const
 
 export default {
     slots: {
@@ -35,6 +35,7 @@ export default {
             glass: '',
             'fly-balls': '',
             drop: '',
+            'liquid-ball': '',
         },
     },
     compoundVariants: [

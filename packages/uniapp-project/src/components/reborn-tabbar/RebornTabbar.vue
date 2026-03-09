@@ -28,7 +28,7 @@ export interface TabbarProps {
     safeAreaInsetBottom?: boolean
     /** 形状：normal (常规) | round (悬浮圆角) */
     shape?: (typeof tabbarShapes)[number]
-    /** 动画类型，目前支持 reveal, flip, creative, glass, fly-balls 等 */
+    /** 动画类型，目前支持 reveal, flip, creative, glass, fly-balls, liquid-ball 等 */
     animation?: (typeof tabbarAnimations)[number] | null
     /** 小球动画特有的配置：小球颜色的数组 */
     ballColors?: string[]
@@ -71,6 +71,7 @@ const props = withDefaults(defineProps<TabbarProps>(), {
 })
 
 const emit = defineEmits(['change', 'update:modelValue'])
+const { windowWidth } = uni.getSystemInfoSync()
 
 const b = tv(theme)
 
@@ -153,6 +154,21 @@ let transitionTimer: any = null
 const oldIndexRef = ref(0)
 const newIndexRef = ref(0)
 
+const liquidAnimation01 = ref(false)
+const liquidAnimation02 = ref(false)
+const liquidBallLeft = ref(0)
+const liquidWaveLeft = ref(0)
+let liquidTimer1: any = null
+let liquidTimer2: any = null
+
+const liquidBallStyle = computed<CSSProperties>(() => ({
+    left: `${liquidBallLeft.value}px`,
+}))
+
+const liquidWaveStyle = computed<CSSProperties>(() => ({
+    left: `${liquidWaveLeft.value}px`,
+}))
+
 /**
  * 子项状态变更
  */
@@ -172,6 +188,10 @@ function setChange(child: TabbarItem) {
         // 触发 v-model 值更新
         emit('update:modelValue', active)
         emit('change', { value: active })
+
+        if (props.animation === 'liquid-ball') {
+            runLiquidBall(active)
+        }
 
         if (props.animation === 'fly-balls') {
             // 找到即将变成活跃的 tag 的索引，记录小球落脚点
@@ -244,6 +264,36 @@ const getBallStyle = (ballIndex: number) => {
 }
 
 
+function runLiquidBall(active: string | number) {
+    const currentIndex = children.findIndex((c: any, i: number) => {
+        const cProps = c.$props || {}
+        return (cProps.name !== undefined ? cProps.name : i) === active
+    })
+
+    if (currentIndex < 0) return
+
+    const count = children.length || 1
+    const itemWidth = windowWidth / count
+    const centerLeft = itemWidth * currentIndex + itemWidth / 2
+
+    liquidBallLeft.value = centerLeft - 22
+    liquidAnimation01.value = true
+    liquidAnimation02.value = true
+
+    if (liquidTimer1) clearTimeout(liquidTimer1)
+    if (liquidTimer2) clearTimeout(liquidTimer2)
+
+    liquidTimer1 = setTimeout(() => {
+        liquidWaveLeft.value = centerLeft - windowWidth / 2
+        liquidAnimation01.value = false
+    }, 300)
+
+    liquidTimer2 = setTimeout(() => {
+        liquidAnimation02.value = false
+    }, 610)
+}
+
+
 function setPlaceholderHeight() {
     if (!props.fixed || !props.placeholder) {
         return
@@ -268,12 +318,134 @@ function setPlaceholderHeight() {
                 </view>
             </view>
 
+            <view v-if="animation === 'liquid-ball'" class="liquid-tabbar-layer">
+                <view class="liquid-box">
+                    <view class="liquid" :style="liquidWaveStyle">
+                        <view class="liquid-str01" :class="{ 'liquid_str01': liquidAnimation01 }">
+                            <view class="liquid-image-fill" />
+                        </view>
+                        <view class="liquid-str02" />
+                    </view>
+                </view>
+                <view class="liquid-ball" :class="{ 'liquid-ball_': liquidAnimation02 }" :style="liquidBallStyle" />
+            </view>
+
             <slot />
         </view>
     </view>
 </template>
 
 <style scoped>
+.liquid-tabbar-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.liquid-box {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.liquid {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+}
+
+.liquid-str01 {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    transition: height .3s cubic-bezier(0.333, 1.01, 0.32, 1.275), width 0.3s cubic-bezier(0.133, 1.01, 0.32, 1.275);
+}
+
+.liquid-image-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    background: radial-gradient(circle at center, #ffc59d 0%, #ff9f69 45%, #ff763f 100%);
+}
+
+.liquid-str01::after,
+.liquid-str01::before,
+.liquid-str02::after,
+.liquid-str02::before {
+    position: absolute;
+    top: 0;
+    content: '';
+    width: 100vw;
+    height: 100%;
+    background-color: #fff;
+}
+
+.liquid-str01::after,
+.liquid-str02::after {
+    left: -100vw;
+}
+
+.liquid-str01::before,
+.liquid-str02::before {
+    right: -100vw;
+}
+
+.liquid_str01 {
+    width: calc(100% + 100%);
+    height: 0;
+}
+
+.liquid-str02 {
+    width: 100%;
+    height: 0;
+    background-color: #fff;
+}
+
+.liquid-ball {
+    position: absolute;
+    z-index: 3;
+    top: -16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #ff763f;
+    transition: all .6s;
+}
+
+.liquid-ball_ {
+    animation: moveUpDownBall .6s ease-in-out;
+}
+
+@keyframes moveUpDownBall {
+    0% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-60px);
+    }
+
+    80% {
+        transform: translateY(6px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
 /* 飞入动画：中心对齐、使用动态跳跃高度与动画时长保证兼容性 */
 @keyframes flyBallsJump {
     0% {

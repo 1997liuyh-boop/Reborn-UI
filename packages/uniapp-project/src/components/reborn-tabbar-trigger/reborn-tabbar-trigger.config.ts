@@ -47,6 +47,9 @@ export default {
                 activeIcon: 'absolute overflow-hidden z-[2] bottom-0 left-0 w-full h-full rounded-[12rpx] transition-all duration-400 ease-in-out box-border border border-solid border-transparent',
                 inactiveIcon: 'absolute overflow-hidden z-[2] bottom-0 left-0 w-full h-full rounded-[12rpx] transition-all duration-400 ease-in-out bg-[#f5f3f7] box-border border border-solid border-transparent',
             },
+            'liquid-ball': {
+                icon: 'w-[60rpx] h-[60rpx] grid',
+            },
         },
         disabled: {
             true: {
@@ -77,6 +80,10 @@ export default {
 
         { animation: 'creative' as const, active: true, class: { activeIcon: 'opacity-100 translate-y-0 scale-100', inactiveIcon: 'opacity-0 translate-y-full scale-50' } },
         { animation: 'creative' as const, active: false, class: { activeIcon: 'opacity-0 -translate-y-full scale-50', inactiveIcon: 'opacity-100 translate-y-0 scale-100' } },
+
+
+        { animation: 'liquid-ball' as const, active: true, class: { activeIcon: 'opacity-100 scale-100 -translate-y-[26rpx]', inactiveIcon: 'opacity-0 scale-100 -translate-y-[26rpx]' } },
+        { animation: 'liquid-ball' as const, active: false, class: { activeIcon: 'opacity-0 scale-100', inactiveIcon: 'opacity-100 scale-100' } },
 
         // Glass 动画: 激活状态 — 前景层向左下方偏移，背景产生毛玻璃效果
         {

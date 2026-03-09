@@ -18,7 +18,7 @@ export type TabbarProvide = {
         safeAreaInsetBottom?: boolean
         bordered?: boolean
         shape?: (typeof tabbarShapes)[number] | null
-        animation?: 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls' | null
+        animation?: 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls' | 'liquid-ball' | null
         activeColor?: string
         inactiveColor?: string
         placeholder?: boolean
