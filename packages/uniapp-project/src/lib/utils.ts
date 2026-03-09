@@ -35,27 +35,3 @@ const { twMerge } = create({
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-
-export function isArray(value: any): boolean {
-  if (typeof Array.isArray === "function") {
-    return Array.isArray(value);
-  } else {
-    return Object.prototype.toString.call(value) === "[object Array]";
-  }
-}
-
-export function isEmpty(value: any): boolean {
-  if (isArray(value)) {
-    return value.length === 0;
-  }
-
-  if (value instanceof Object) {
-    return Object.keys(value).length === 0;
-  }
-
-  return value === "" || value === undefined || value === null;
-}
-
-export function last<T>(array: T[]): T | null {
-  return isArray(array) && array.length > 0 ? array[array.length - 1] : null;
-}
