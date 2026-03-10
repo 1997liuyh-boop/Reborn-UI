@@ -180,6 +180,42 @@
       "style": {
         "navigationBarTitleText": "Tabbar"
       }
+    },
+    {
+      "path": "pages/reborn-transition/RebornTransitionDemo",
+      "style": {
+        "navigationBarTitleText": "Transition Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-overlay/RebornOverlayDemo",
+      "style": {
+        "navigationBarTitleText": "Overlay Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-loading/RebornLoadingDemo",
+      "style": {
+        "navigationBarTitleText": "Loading Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-toast/RebornToastDemo",
+      "style": {
+        "navigationBarTitleText": "Toast Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-loadmore/RebornLoadmoreDemo",
+      "style": {
+        "navigationBarTitleText": "Loadmore Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-draggable/RebornDraggableDemo",
+      "style": {
+        "navigationBarTitleText": "Draggable Demo"
+      }
     }
   ],
   "globalStyle": {

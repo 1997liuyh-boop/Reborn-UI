@@ -55,8 +55,8 @@ const menuItems = [
   {
     label: '状态组件',
     children: [
-
       { label: '标签', icon: 'i-lucide-circle-dot', path: '/pages/reborn-chip/RebornChipDemo' },
+      { label: '加载', icon: 'i-lucide-loader', path: '/pages/reborn-loading/RebornLoadingDemo' },
     ],
   },
   {
@@ -64,6 +64,11 @@ const menuItems = [
     children: [
       { label: '二维码', icon: 'i-lucide-qr-code', path: '/pages/reborn-qrcode/RebornQrcodeDemo' },
       { label: '弹出层', icon: 'i-lucide-layers', path: '/pages/reborn-popup/RebornPopupDemo' },
+      { label: '过渡动画', icon: 'i-lucide-move', path: '/pages/reborn-transition/RebornTransitionDemo' },
+      { label: '遮罩层', icon: 'i-lucide-square', path: '/pages/reborn-overlay/RebornOverlayDemo' },
+      { label: '提示框', icon: 'i-lucide-message-square', path: '/pages/reborn-toast/RebornToastDemo' },
+      { label: '加载更多', icon: 'i-lucide-arrow-down-circle', path: '/pages/reborn-loadmore/RebornLoadmoreDemo' },
+      { label: '拖拽排序', icon: 'i-lucide-move', path: '/pages/reborn-draggable/RebornDraggableDemo' },
     ],
   },
 ]

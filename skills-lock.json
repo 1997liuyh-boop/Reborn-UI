@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "uniapp": {
+      "source": "hairyf/skills",
+      "sourceType": "github",
+      "computedHash": "b32f7ab0dde1b36282a90788018ee2be82b41c1c5e37a1504a6db49a4469b28c"
+    }
+  }
+}

@@ -1,44 +1,60 @@
 <script setup lang="ts">
+import { computed, type PropType } from 'vue'
+import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
+import theme, { type PageUI } from './reborn-page.config'
 
-const props = defineProps<{
-  title?: string
-  description?: string
-  customClass?: string
-}>()
+const props = defineProps({
+  title: { type: String, default: '' },
+  description: { type: String, default: '' },
+  customClass: { type: String, default: '' },
+  ui: {
+    type: Object as PropType<PageUI>,
+    default: () => ({}),
+  },
+})
 
-const computedClass = computed(() => {
-  return cn(
-    `
-      min-h-screen w-full flex flex-col gap-4 bg-slate-50 p-4  transition-colors
-      duration-300
-      sm:p-6
-      dark:bg-slate-950
-    `,
-    props.customClass,
-  )
+const b = tv(theme)
+const uiOverrides = computed(() => props.ui || {})
+
+const ui = computed(() => {
+  const styles = b()
+  return {
+    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
+    header: (opts?: { class?: any }) => styles.header({ class: cn(opts?.class, uiOverrides.value.header) }),
+    title: (opts?: { class?: any }) => styles.title({ class: cn(opts?.class, uiOverrides.value.title) }),
+    description: (opts?: { class?: any }) => styles.description({ class: cn(opts?.class, uiOverrides.value.description) }),
+    body: (opts?: { class?: any }) => styles.body({ class: cn(opts?.class, uiOverrides.value.body) }),
+  }
 })
 </script>
 
 <template>
-  <view :class="computedClass">
-    <view v-if="title || description || $slots.header" class="space-y-2">
+  <view :class="ui.root({ class: props.customClass })">
+    <view v-if="title || description || $slots.header" :class="ui.header()">
       <slot name="header">
-        <view v-if="title" class="
-            text-xl font-bold text-slate-900
-            dark:text-white
-          ">
+        <view v-if="title" :class="ui.title()">
           {{ title }}
         </view>
-        <view v-if="description" class="
-            text-slate-500
-            dark:text-slate-400
-          ">
+        <view v-if="description" :class="ui.description()">
           {{ description }}
         </view>
       </slot>
     </view>
 
-    <slot />
+    <view :class="ui.body()">
+      <slot />
+    </view>
   </view>
 </template>
+
+<script lang="ts">
+export default {
+  name: 'reborn-page',
+  options: {
+    virtualHost: true,
+    addGlobalClass: true,
+    styleIsolation: 'shared',
+  },
+}
+</script>
