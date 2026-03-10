@@ -2,7 +2,6 @@
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import ReButton from '@/components/reborn-button/RebornButton.vue'
-import RebornOverlay from '@/components/reborn-overlay/RebornOverlay.vue'
 import { useToast } from '@/components/reborn-toast/index'
 const toast = useToast()
 

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import RebornTabbar from '@/components/reborn-tabbar/RebornTabbar.vue'
-import RebornTabbarTrigger from '@/components/reborn-tabbar-trigger/RebornTabbarTrigger.vue'
+import { RebornTabbar, RebornTabbarTrigger } from '@/components/reborn-tabbar'
 import { tabbarAnimations, tabbarShapes, tabbarColors } from '@/components/reborn-tabbar/reborn-tabbar.config'
 
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
