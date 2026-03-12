@@ -40,8 +40,8 @@
                 </template>
             </RebornWaterfall>
 
-            <RebornLoadmore :status="state" @click="getList" safe-area-bottom></RebornLoadmore>
         </view>
+        <RebornLoadmore :state="state" color="primary" @click="getList" safe-area-bottom></RebornLoadmore>
         <RebornBackTop :scroll-top="scrollTop" :bottom="100" :ui="{ wrapper: 'fixed right-5 z-50' }">
             <view
                 class="flex size-12 items-center justify-center rounded-full bg-success text-white shadow-lg border-2 border-white">
@@ -58,13 +58,13 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornBadge from "@/components/reborn-badge/RebornBadge.vue";
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
-import RebornLoadmore from '@/components/reborn-loadmore/reborn-loadmore.vue'
+import RebornLoadmore from '@/components/reborn-loadmore/RebornLoadmore.vue'
 import RebornWaterfall from '@/components/reborn-waterfall/RebornWaterfall.vue'
 import RebornBackTop from "@/components/reborn-back-top/RebornBackTop.vue";
 
 const waterfallRef = ref<any>(null);
 const loading = ref(false);
-const state = ref<'loading' | 'loadmore' | 'finished' | 'error'>('loadmore');
+const state = ref<'loading' | 'error' | 'finished'>('loading')
 const page = ref(1);
 const pageSize = 10;
 const isError = ref(false);
@@ -114,7 +114,7 @@ const getList = () => {
             if (data.length < pageSize || page.value >= 5) {
                 state.value = 'finished'
             } else {
-                state.value = 'loadmore'
+                state.value = 'loading'
                 page.value++
             }
         },

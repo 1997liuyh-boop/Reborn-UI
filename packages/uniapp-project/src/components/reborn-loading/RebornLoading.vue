@@ -1,19 +1,25 @@
 <template>
     <view :class="ui.root()" :style="rootStyle">
-        <!-- Ring / Outline -->
-        <view v-if="props.type === 'ring' || props.type === 'outline'" :class="ui.container()">
-            <view :class="ui.indicator()" />
+        <!-- Ring -->
+        <view v-if="props.type === 'ring'" :class="ui.container()">
+            <view :class="ui.indicator()" :style="getRingIndicatorStyle()" />
+        </view>
+
+        <!-- Outline -->
+        <view v-else-if="props.type === 'outline'" :class="ui.container()">
+            <view :class="ui.outlineTrack()" :style="getOutlineTrackStyle()" />
+            <view :class="ui.indicator()" :style="getRingIndicatorStyle(true)" />
         </view>
 
         <!-- Spinner -->
         <view v-else-if="props.type === 'spinner'" :class="ui.container()">
             <view v-for="i in 12" :key="i" :class="ui.spinnerItem()"
-                :style="{ transform: `rotate(${(i - 1) * 30}deg)`, animationDelay: `${(i - 1) * 0.08}s` }" />
+                :style="getSpinnerItemStyle(i)" />
         </view>
 
         <!-- Bars Scale -->
         <view v-else-if="props.type === 'bars-scale'" :class="ui.container()">
-            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ animationDelay: `${(i - 1) * 0.12}s` }" />
+            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="getBarsItemStyle(i)" />
         </view>
 
         <!-- Blocks Shuffle -->
@@ -26,7 +32,7 @@
         <!-- Blocks Wave -->
         <view v-else-if="props.type === 'blocks-wave'" :class="ui.container()">
             <view v-for="i in 9" :key="i" :class="ui.waveItem()"
-                :style="{ animationDelay: `${((i - 1) % 3 + Math.floor((i - 1) / 3)) * 0.12}s` }" />
+                :style="getWaveItemStyle(i)" />
         </view>
 
         <!-- Gooey Balls -->
@@ -49,16 +55,16 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, watch, ref, type PropType } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { addUnit, isDef, objToStyle } from '@/lib/util'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-import theme, { type LoadingUI, LoadingColor, LoadingType } from './reborn-loading.config'
+import theme, { type LoadingUI, LoadingColors, LoadingTypes } from './reborn-loading.config'
 
 export type RebornLoadingProps = {
     ui?: LoadingUI
-    type?: LoadingType
-    color?: LoadingColor
+    type?: typeof LoadingTypes[number]
+    color?: typeof LoadingColors[number]
     size?: string | number
     customClass?: string
 }
@@ -89,10 +95,8 @@ const rootStyle = computed(() => {
     return objToStyle(style)
 })
 
-const b = tv({
-    extend: tv(theme),
-    slots: props.ui
-})
+
+const b = tv(theme)
 
 const ui = computed(() => {
     const styles = b({ color: props.color, type: props.type })
@@ -100,6 +104,7 @@ const ui = computed(() => {
         root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, props.ui?.root) }),
         container: (opts?: { class?: any }) => styles.container({ class: cn(opts?.class, props.ui?.container) }),
         indicator: (opts?: { class?: any }) => styles.indicator({ class: cn(opts?.class, props.ui?.indicator) }),
+        outlineTrack: (opts?: { class?: any }) => styles.outlineTrack({ class: cn(opts?.class, props.ui?.outlineTrack) }),
         spinnerItem: (opts?: { class?: any }) => styles.spinnerItem({ class: cn(opts?.class, props.ui?.spinnerItem) }),
         barItem: (opts?: { class?: any }) => styles.barItem({ class: cn(opts?.class, props.ui?.barItem) }),
         blockItem: (opts?: { class?: any }) => styles.blockItem({ class: cn(opts?.class, props.ui?.blockItem) }),
@@ -107,6 +112,35 @@ const ui = computed(() => {
         gooeyItem: (opts?: { class?: any }) => styles.gooeyItem({ class: cn(opts?.class, props.ui?.gooeyItem) }),
     }
 })
+
+function getAnimationStyle(name: string, duration: string, timingFunction: string, delaySeconds: number = 0) {
+    return `animation:${name} ${duration} ${timingFunction} infinite;animation-delay:${delaySeconds ? `${delaySeconds}s` : '0s'};`
+}
+
+function getSpinnerItemStyle(index: number) {
+    return `transform:rotate(${(index - 1) * 30}deg);${getAnimationStyle('rb-spinner', '1s', 'linear', (index - 1) * 0.08)}`
+}
+
+function getBarsItemStyle(index: number) {
+    return getAnimationStyle('rb-bars-scale', '1s', 'ease-in-out', (index - 1) * 0.12)
+}
+
+function getWaveItemStyle(index: number) {
+    return getAnimationStyle(
+        'rb-blocks-wave',
+        '1s',
+        'ease-in-out',
+        ((index - 1) % 3 + Math.floor((index - 1) / 3)) * 0.12
+    )
+}
+
+function getRingIndicatorStyle(isOutline: boolean = false) {
+    return `border-color:currentColor;border-top-color:transparent;${isOutline ? 'position:absolute;inset:0;' : ''}${getAnimationStyle('rb-rotate', '0.8s', 'linear')}`
+}
+
+function getOutlineTrackStyle() {
+    return 'border-color:currentColor;'
+}
 
 </script>
 

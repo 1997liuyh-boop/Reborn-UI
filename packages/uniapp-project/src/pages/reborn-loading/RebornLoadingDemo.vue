@@ -1,69 +1,45 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornLoading from '@/components/reborn-loading/RebornLoading.vue'
+import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
+import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
+import { LoadingTypes, LoadingColors } from '@/components/reborn-loading/reborn-loading.config'
+
+const demoColor = ref<typeof LoadingColors[number]>('primary')
+const demoType = ref<typeof LoadingTypes[number]>('ring')
 </script>
 <template>
-    <view class="p-8 flex flex-col gap-12 items-center bg-gray-50 min-h-screen">
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Ring (Default)</text>
-            <view class="flex gap-4">
-                <reborn-loading type="ring" color="error" size="40px" />
-                <reborn-loading type="ring" color="primary" size="40px" />
-                <reborn-loading type="ring" color="success" size="40px" />
-            </view>
-        </view>
+    <RebornPage title="Loading" description="加载组件">
+        <RebornCard title="配置" custom-class="space-y-4">
 
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Outline</text>
-            <view class="flex gap-4">
-                <reborn-loading type="outline" color="error" size="40px" />
-                <reborn-loading type="outline" color="primary" size="40px" />
-                <reborn-loading type="outline" color="success" size="40px" />
+            <reborn-loading :type="demoType" :color="demoColor" size="80rpx" />
+            <view class="space-y-3">
+                <view class="
+                text-sm font-medium text-slate-500
+                dark:text-slate-200
+              ">
+                    按钮颜色
+                </view>
+                <view class="flex flex-wrap gap-2">
+                    <view v-for="c in LoadingColors" :key="c" class="
+                  size-6 cursor-pointer rounded-full ring-2 ring-transparent
+                  ring-offset-2 transition-all
+                " :class="[
+                    `
+                    bg-${c}
+                  `,
+                    demoColor === c ? 'scale-110 ring-slate-400' : `
+                    hover:scale-110
+                  `,
+                ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
+                        @click="demoColor = c" />
+                </view>
             </view>
-        </view>
-
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Spinner</text>
-            <view class="flex gap-4">
-                <reborn-loading type="spinner" color="error" size="40px" />
-                <reborn-loading type="spinner" color="primary" size="40px" />
-                <reborn-loading type="spinner" color="success" size="40px" />
-            </view>
-        </view>
-
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Bars Scale</text>
-            <view class="flex gap-4">
-                <reborn-loading type="bars-scale" color="error" size="40px" />
-                <reborn-loading type="bars-scale" color="primary" size="40px" />
-                <reborn-loading type="bars-scale" color="success" size="40px" />
-            </view>
-        </view>
-
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Blocks Shuffle</text>
-            <view class="flex gap-4">
-                <reborn-loading type="blocks-shuffle" color="error" size="40px" />
-                <reborn-loading type="blocks-shuffle" color="primary" size="40px" />
-                <reborn-loading type="blocks-shuffle" color="success" size="40px" />
-            </view>
-        </view>
-
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Blocks Wave</text>
-            <view class="flex gap-4">
-                <reborn-loading type="blocks-wave" color="error" size="40px" />
-                <reborn-loading type="blocks-wave" color="primary" size="40px" />
-                <reborn-loading type="blocks-wave" color="success" size="40px" />
-            </view>
-        </view>
-
-        <view class="flex flex-col items-center gap-4">
-            <text class="text-sm text-gray-400">Gooey Balls</text>
-            <view class="flex gap-4">
-                <reborn-loading type="gooey-balls" color="error" size="40px" />
-                <reborn-loading type="gooey-balls" color="primary" size="40px" />
-                <reborn-loading type="gooey-balls" color="success" size="40px" />
-            </view>
-        </view>
-    </view>
+            <RebornRadioGroup v-model="demoType">
+                <RebornRadio v-for="t in LoadingTypes" :key="t" :value="t" :label="t" />
+            </RebornRadioGroup>
+        </RebornCard>
+    </RebornPage>
 </template>

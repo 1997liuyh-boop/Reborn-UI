@@ -6,7 +6,7 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
-import RebornLoadmore from '@/components/reborn-loadmore/reborn-loadmore.vue'
+import RebornLoadmore from '@/components/reborn-loadmore/RebornLoadmore.vue'
 import { loadMoreColors, LoadMoreState } from "@/components/reborn-loadmore/reborn-loadmore.config";
 
 const list = ref<any[]>([])
