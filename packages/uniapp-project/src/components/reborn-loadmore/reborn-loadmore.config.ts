@@ -1,5 +1,5 @@
 export const loadMoreColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-export const LoadMoreState = ['loading', 'error', 'finished']
+export const LoadMoreState = ['loading', 'error', 'finished'] as const
 
 export type LoadMoreUI = {
     root?: string
@@ -31,6 +31,8 @@ const config = {
         },
         state: {
             finished: { text: 'px-2', },
+            error: {},
+            loading: {},
         }
     },
     defaultVariants: {
