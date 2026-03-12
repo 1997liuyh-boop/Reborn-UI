@@ -70,6 +70,8 @@ const menuItems = [
       { label: '提示框', icon: 'i-lucide-message-square', path: '/pages/reborn-toast/RebornToastDemo' },
       { label: '加载更多', icon: 'i-lucide-arrow-down-circle', path: '/pages/reborn-loadmore/RebornLoadmoreDemo' },
       { label: '拖拽排序', icon: 'i-lucide-move', path: '/pages/reborn-draggable/RebornDraggableDemo' },
+      { label: '瀑布流', icon: 'i-mdi-waterfall', path: '/pages/reborn-waterfall/RebornWaterfallDemo' },
+      { label: '取色器', icon: 'i-lucide-palette', path: '/pages/reborn-color-picker/RebornColorPickerDemo' },
     ],
   },
 ]

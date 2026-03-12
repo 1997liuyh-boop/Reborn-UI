@@ -222,6 +222,18 @@
       "style": {
         "navigationBarTitleText": "Popover Demo"
       }
+    },
+    {
+      "path": "pages/reborn-color-picker/RebornColorPickerDemo",
+      "style": {
+        "navigationBarTitleText": "Color Picker Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-waterfall/RebornWaterfallDemo",
+      "style": {
+        "navigationBarTitleText": "Waterfall Demo"
+      }
     }
   ],
 
