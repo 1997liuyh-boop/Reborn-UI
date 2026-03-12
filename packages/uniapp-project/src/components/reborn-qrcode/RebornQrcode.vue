@@ -1,7 +1,8 @@
 <template>
     <view :style="{ width: size + 'px', height: size + 'px' }">
         <!-- #ifdef MP-WEIXIN -->
-        <canvas type="2d" :id="qrcodeId" :style="{ width: size + 'px', height: size + 'px' }"></canvas>
+        <canvas class="relative z-1" type="2d" :id="qrcodeId"
+            :style="{ width: size + 'px', height: size + 'px' }"></canvas>
         <!-- #endif -->
         <!-- #ifndef MP-WEIXIN -->
         <canvas :canvas-id="qrcodeId" :id="qrcodeId" :style="{ width: size + 'px', height: size + 'px' }"></canvas>

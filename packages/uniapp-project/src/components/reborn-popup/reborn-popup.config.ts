@@ -5,7 +5,7 @@ const config = {
     wrapper: 'fixed inset-0 h-full w-full pointer-events-none',
     mask: 'absolute top-0 bottom-0 left-0 right-0 h-full w-full bg-black opacity-0 transition-opacity',
     popup: 'absolute duration-300 transition-transform pointer-events-auto',
-    inner: 'bg-white dark:bg-gray-8 h-full w-full flex flex-col rounded-t-lg',
+    inner: 'bg-white dark:bg-gray-8 h-full w-full flex flex-col',
     draw: 'bg-gray-2 dark:bg-gray-6 rounded-md absolute top-2 left-1/2 h-[5px] w-[35px] -translate-x-1/2 transition-colors duration-200',
     header: 'flex flex-row items-center flex-wrap h-[45px] pl-[13px] pr-[40px]',
     title: 'font-bold text-base truncate dark:text-white',
@@ -16,22 +16,22 @@ const config = {
       left: {
         wrapper: '',
         popup: 'left-0 top-0 -translate-x-full',
-        inner: 'rounded-r-lg rounded-l-none',
+        inner: 'rounded-r-lg',
       },
       right: {
         wrapper: '',
         popup: 'right-0 top-0 translate-x-full',
-        inner: 'rounded-l-lg rounded-r-none',
+        inner: 'rounded-l-lg',
       },
       top: {
         wrapper: '',
         popup: 'left-0 top-0 -translate-y-full',
-        inner: 'rounded-b-lg rounded-t-none',
+        inner: 'rounded-b-lg',
       },
       bottom: {
         wrapper: '',
         popup: 'left-0 bottom-0 translate-y-full',
-        inner: 'rounded-t-lg rounded-b-none',
+        inner: 'rounded-t-lg',
       },
       center: {
         wrapper: 'flex flex-col items-center justify-center',
@@ -84,7 +84,7 @@ const config = {
     },
   ],
   defaultVariants: {
-    direction: 'bottom' as (typeof PopupDirection)[number],
+    direction: 'bottom' as 'bottom' | 'top' | 'left' | 'right' | 'center',
     isOpen: false,
     stopTransition: false,
     isClose: false,

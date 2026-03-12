@@ -2,9 +2,9 @@
 import { ref } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
-import { RebornPopover } from '@/components/reborn-popover'
-import { RebornButton } from '@/components/reborn-button'
-import { RebornSelect } from '@/components/reborn-select'
+import RebornPopover from '@/components/reborn-popover/RebornPopover.vue'
+import RebornButton from '@/components/reborn-button/RebornButton.vue'
+import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
 
 const isControlledOpen = ref(false)
 const showPopover = ref(false)

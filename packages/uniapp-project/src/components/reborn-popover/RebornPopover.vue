@@ -34,13 +34,15 @@
                 </view>
 
                 <!-- 用户自定义样式 -->
-                <slot name="content" v-else />
+                <view v-if="useContentSlot">
+                    <slot name="content" />
+                </view>
             </view>
 
         </RebornTransition>
 
         <!-- Click-away mask to handle closing -->
-        <view v-if="showPopover && dismissible" class="fixed inset-0 z-[490] bg-transparent" @click.stop="close"
+        <view v-if="showPopover && dismissible" class="fixed inset-0 z-490 bg-transparent" @click.stop="close"
             @touchmove.stop.prevent="() => { }"></view>
 
         <view @click.stop="toggle" :class="ui.target()" id="target">
@@ -61,8 +63,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import RebornTransition from '../reborn-transition/RebornTransition.vue'
-import { computed, getCurrentInstance, inject, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, inject, onBeforeMount, onBeforeUnmount, onMounted, ref, watch, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import { popoverProps, type PopoverExpose } from './types'
@@ -71,8 +72,12 @@ import { closeOther, pushToQueue, removeFromQueue } from './composables/clickout
 import { type Queue, queueKey } from './composables/useQueue'
 import theme from './reborn-popover.config'
 
+import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
+
 const props = defineProps(popoverProps)
 const emit = defineEmits(['update:modelValue', 'update:open', 'menuclick', 'change', 'open', 'close'])
+const slots = useSlots()
+const useContentSlot = computed(() => !!slots.content)
 
 const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})

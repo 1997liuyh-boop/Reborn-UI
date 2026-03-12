@@ -166,7 +166,8 @@ function handleClick() {
 </script>
 
 <template>
-    <view :class="ui.root({ class: cn(customClass) })" :style="customStyle" @click="handleClick">
+    <view class="reborn-tabbar-trigger" :class="ui.root({ class: cn(customClass) })" :style="customStyle"
+        @click="handleClick">
         <slot :active="active" :ui="ui">
             <!-- round + glass: bodyGlowLayer 包裹 body，提供颜色背景；默认 display:contents 不影响布局 -->
             <view :class="ui.bodyGlowLayer()">

@@ -148,43 +148,46 @@ const ballStartLeft = ref(0)
 const animation01 = ref(false)
 const animation02 = ref(false)
 
-/**
- * 计算触发器中心点 (px)
- */
-function getTargetCenterPx(index: number, count: number) {
-    if (props.shape === 'round') {
-        // round 模式下: 
-        // 1. tabBar 两侧有 32rpx 的外边距
-        // 2. 只有 active 的为 flex-[1.5]，其他的为 flex-1
-        // 注意：计算的是最终形态的中心点
-        const baseWidth = windowWidth - uni.upx2px(64)
-        const leftPercent = (index + 0.75) / (count + 0.5)
-        return leftPercent * baseWidth
-    } else {
-        // normal 模式下等分
-        const leftPercent = (index + 0.5) / count
-        return leftPercent * windowWidth
-    }
+function getActiveCenterPx(nextIdx: number): Promise<number> {
+    return new Promise((resolve) => {
+        const query = uni.createSelectorQuery().in(proxy)
+        query.selectAll('.reborn-tabbar-trigger').boundingClientRect((nodes: any) => {
+            if (nodes && nodes[nextIdx]) {
+                const node = nodes[nextIdx]
+                // Centering inside the physical node
+                resolve(node.left + node.width / 2)
+            } else {
+                // fallback math
+                const count = children.length || 1
+                if (props.shape === 'round') {
+                    const baseWidth = windowWidth - uni.upx2px(64)
+                    const leftPercent = (nextIdx + 0.75) / (count + 0.5)
+                    resolve(uni.upx2px(32) + leftPercent * baseWidth)
+                } else {
+                    resolve(((nextIdx + 0.5) / count) * windowWidth)
+                }
+            }
+        }).exec()
+    })
 }
 
 /**
  * 初始化 drop 动画的液体背景位置（根据当前选中 tab 计算）
  */
 function initDropPosition() {
-    const count = children.length || 1
     const activeIdx = children.findIndex((c: any, i: number) => {
         const cProps = c.$props || {}
         return (cProps.name !== undefined ? cProps.name : i) === props.modelValue
     })
     const idx = activeIdx >= 0 ? activeIdx : 0
-    const centerPx = getTargetCenterPx(idx, count)
 
-    // 如果是 round，背景宽度较小，液体位置可以相对屏幕对准。但这里中心是正确的
-    let liquidBase = (props.shape === 'round') ? (windowWidth - uni.upx2px(64)) : windowWidth
-    liquidStyleLeft.value = centerPx - (liquidBase / 2)
-    const ballRadius = props.shape === 'round' ? 16 : 22
-    ballStartLeft.value = centerPx - ballRadius
-    ballStyleLeft.value = centerPx - ballRadius
+    getActiveCenterPx(idx).then((centerPx) => {
+        let liquidBase = (props.shape === 'round') ? (windowWidth - uni.upx2px(64)) : windowWidth
+        liquidStyleLeft.value = centerPx - (liquidBase / 2)
+        const ballRadius = props.shape === 'round' ? 16 : 22
+        ballStartLeft.value = centerPx - ballRadius
+        ballStyleLeft.value = centerPx - ballRadius
+    })
 }
 
 watch(
@@ -195,13 +198,15 @@ watch(
     { deep: true, immediate: false }
 )
 
-// 当 animation 切换为 drop 时，初始化液体背景位置
+// 当 animation 或 shape 切换为 drop 时，初始化液体背景位置
 watch(
-    () => props.animation,
-    (newAnim) => {
+    () => [props.animation, props.shape],
+    ([newAnim]) => {
         if (newAnim === 'drop') {
             nextTick(() => {
-                initDropPosition()
+                setTimeout(() => {
+                    initDropPosition()
+                }, 100)
             })
         }
     },
@@ -271,28 +276,28 @@ function setChange(child: TabbarItem) {
                 const cProps = c.$props || {}
                 return (cProps.name !== undefined ? cProps.name : i) === active
             })
-            const count = children.length || 1
-            const centerPx = getTargetCenterPx(nextIdx, count)
 
-            // 记录起点（当前球位置）和终点
-            locked.value = true
-            const ballRadius = props.shape === 'round' ? 16 : 22
-            ballStartLeft.value = ballStyleLeft.value
-            ballStyleLeft.value = centerPx - ballRadius
-            animation01.value = true
-            animation02.value = true
+            getActiveCenterPx(nextIdx).then((centerPx) => {
+                // 记录起点（当前球位置）和终点
+                locked.value = true
+                const ballRadius = props.shape === 'round' ? 16 : 22
+                ballStartLeft.value = ballStyleLeft.value
+                ballStyleLeft.value = centerPx - ballRadius
+                animation01.value = true
+                animation02.value = true
 
-            if (transitionTimer) clearTimeout(transitionTimer)
-            transitionTimer = setTimeout(() => {
-                let liquidBase = (props.shape === 'round') ? (windowWidth - uni.upx2px(64)) : windowWidth
-                liquidStyleLeft.value = centerPx - (liquidBase / 2)
-                animation01.value = false
-            }, 300)
+                if (transitionTimer) clearTimeout(transitionTimer)
+                transitionTimer = setTimeout(() => {
+                    let liquidBase = (props.shape === 'round') ? (windowWidth - uni.upx2px(64)) : windowWidth
+                    liquidStyleLeft.value = centerPx - (liquidBase / 2)
+                    animation01.value = false
+                }, 300)
 
-            setTimeout(() => {
-                animation02.value = false
-                locked.value = false
-            }, 610)
+                setTimeout(() => {
+                    animation02.value = false
+                    locked.value = false
+                }, 610)
+            })
         }
     }
 
