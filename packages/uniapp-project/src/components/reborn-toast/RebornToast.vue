@@ -16,7 +16,7 @@ import RebornOverlay from '@/components/reborn-overlay/RebornOverlay.vue'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 import base64 from '@/lib/base64'
 import { addUnit, isDef, isFunction } from '@/lib/util'
-import { defaultOptions, getToastOptionKey, toastIcon, type ToastDirection, type ToastOptions } from './index'
+import { globalOptionRef, getToastOptionKey, toastIcon, type ToastDirection, type ToastOptions } from './index'
 import { toastTheme } from './reborn-toast.config'
 
 interface ToastProps {
@@ -73,7 +73,7 @@ let opened: (() => void) | null = null
 let closed: (() => void) | null = null
 
 const key = getToastOptionKey(props.selector)
-const toastOption = inject(key, ref<ToastOptions>(defaultOptions))
+const toastOption = inject(key, globalOptionRef)
 watch(() => toastOption.value, (val) => reset(val), { immediate: true, deep: true })
 watch(() => iconName.value, buildSvg, { immediate: true })
 
@@ -84,7 +84,6 @@ const rootClass = computed(() => {
     const dir = direction.value === 'vertical' ? toastTheme.vertical : ''
     const withIcon = (iconName.value && (iconName.value !== 'loading' || msg.value)) ? toastTheme.withIcon : ''
     const customConfigColor = color.value ? toastTheme.colors[color.value as keyof typeof toastTheme.colors] : ''
-    // If a custom specific color is picked, remove the root bg-black/80 and text-white classes and substitute with custom
     const finalBase = customConfigColor ? base.replace('bg-black/80', '').replace('text-white', '') + ` ${customConfigColor}` : base
     return `${finalBase} ${pos} ${dir} ${withIcon} ${props.customClass}`
 })

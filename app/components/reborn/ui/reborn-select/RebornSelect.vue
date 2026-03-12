@@ -169,7 +169,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                 <span v-if="clearable && modelValue != null" :class="ui.clearBtn()" @click="clear">
                     <Icon name="lucide:x" class="size-full" />
                 </span>
-                <Icon name="lucide:chevron-down" :class="ui.arrow()" />
+                <Icon v-else name="lucide:chevron-down" :class="ui.arrow()" />
             </div>
         </div>
 

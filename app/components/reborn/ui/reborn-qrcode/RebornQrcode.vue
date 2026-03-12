@@ -14,6 +14,9 @@ interface RebornQrcodeOptions {
   logo?: string
   logoSize?: number
   padding?: number
+  logoMargin?: number
+  logoHideBackgroundDots?: boolean
+  logoShadow?: boolean
   mode?: ClQrcodeMode
   ecc?: eccLevel
   pdOuterRadius?: number
@@ -39,6 +42,9 @@ const props = withDefaults(defineProps<RebornQrcodeOptions>(), {
   logo: '',
   logoSize: 40,
   padding: 5,
+  logoMargin: 4,
+  logoHideBackgroundDots: false,
+  logoShadow: false,
   mode: 'circular',
   ecc: eccLevel.H,
   pdOuterRadius: undefined,
@@ -49,7 +55,13 @@ const frameData = computed(() => generateFrame(props.text, props.ecc))
 const width = computed(() => frameData.value.width)
 const cellSize = computed(() => (props.size - props.padding * 2) / width.value)
 
-const eyeRects = computed(() => {
+interface EyeRect {
+  x: number
+  y: number
+  size: number
+}
+
+const eyeRects = computed((): EyeRect[] => {
   const w = width.value
   const s = 7
   return [
@@ -60,7 +72,32 @@ const eyeRects = computed(() => {
 })
 
 function isInEye(x: number, y: number) {
-  return eyeRects.value.some((eye) => x >= eye.x && x < eye.x + eye.size && y >= eye.y && y < eye.y + eye.size)
+  return eyeRects.value.some((eye: EyeRect) => x >= eye.x && x < eye.x + eye.size && y >= eye.y && y < eye.y + eye.size)
+}
+
+function isInLogo(x: number, y: number) {
+  if (!props.logo || !props.logoHideBackgroundDots) return false
+
+  const logoPx = {
+    x1: (props.size - props.logoSize) / 2 - props.logoMargin,
+    y1: (props.size - props.logoSize) / 2 - props.logoMargin,
+    x2: (props.size + props.logoSize) / 2 + props.logoMargin,
+    y2: (props.size + props.logoSize) / 2 + props.logoMargin,
+  }
+
+  const dotPx = {
+    x1: props.padding + x * cellSize.value,
+    y1: props.padding + y * cellSize.value,
+    x2: props.padding + (x + 1) * cellSize.value,
+    y2: props.padding + (y + 1) * cellSize.value,
+  }
+
+  return (
+    dotPx.x1 < logoPx.x2 &&
+    dotPx.x2 > logoPx.x1 &&
+    dotPx.y1 < logoPx.y2 &&
+    dotPx.y2 > logoPx.y1
+  )
 }
 
 const dots = computed(() => {
@@ -70,14 +107,14 @@ const dots = computed(() => {
   for (let y = 0; y < w; y++) {
     for (let x = 0; x < w; x++) {
       const idx = y * w + x
-      if (frame[idx] && !isInEye(x, y))
+      if (frame[idx] && !isInEye(x, y) && !isInLogo(x, y))
         arr.push({ x, y })
     }
   }
   return arr
 })
 
-const eyeCenter = (eye: { x: number, y: number }) => {
+const eyeCenter = (eye: EyeRect) => {
   return { x: eye.x + 2, y: eye.y + 2 }
 }
 
@@ -206,6 +243,10 @@ const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number)
     </svg>
 
     <img v-if="logo" :src="logo" alt="logo" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded"
-      :style="{ width: `${logoSize}px`, height: `${logoSize}px` }">
+      :style="{
+        width: `${logoSize}px`,
+        height: `${logoSize}px`,
+        filter: logoShadow ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' : 'none'
+      }">
   </div>
 </template>

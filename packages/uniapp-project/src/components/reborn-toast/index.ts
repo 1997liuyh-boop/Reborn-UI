@@ -42,7 +42,7 @@ let toastContainer: HTMLElement | null = null
 let globalTimer: ReturnType<typeof setTimeout> | null = null
 
 // 全局唯一的配置，保证应用中同一时刻只有一个 Toast 实际在工作
-const globalOptionRef = ref<ToastOptions>({ ...defaultOptions })
+export const globalOptionRef = ref<ToastOptions>({ ...defaultOptions })
 
 export function useToast(selector = '') {
     const key = getToastOptionKey(selector)

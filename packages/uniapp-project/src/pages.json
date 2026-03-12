@@ -216,8 +216,15 @@
       "style": {
         "navigationBarTitleText": "Draggable Demo"
       }
+    },
+    {
+      "path": "pages/reborn-popover/RebornPopoverDemo",
+      "style": {
+        "navigationBarTitleText": "Popover Demo"
+      }
     }
   ],
+
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "weapp-tailwindcss",

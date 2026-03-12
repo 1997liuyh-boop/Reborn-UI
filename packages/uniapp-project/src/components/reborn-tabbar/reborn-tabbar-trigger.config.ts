@@ -88,8 +88,8 @@ export default {
 
         // Drop 动画: 激活/未激活状态的过渡和位移
         // normal 形状下，选中时图标上浮
-        { animation: 'drop' as const, shape: 'normal' as const, active: true, class: { activeIcon: 'opacity-100 -translate-y-[10px] transition-all duration-300', inactiveIcon: 'opacity-0 translate-y-[10px] transition-all duration-300' } },
-        { animation: 'drop' as const, shape: 'normal' as const, active: false, class: { activeIcon: 'opacity-0 translate-y-[10px] transition-all duration-300', inactiveIcon: 'opacity-100 translate-y-0 transition-all duration-300' } },
+        { animation: 'drop' as const, shape: 'normal' as const, active: true, class: { activeIcon: 'opacity-100 -translate-y-1/2 transition-all duration-300', inactiveIcon: 'opacity-0 translate-y-0 transition-all duration-300' } },
+        { animation: 'drop' as const, shape: 'normal' as const, active: false, class: { activeIcon: 'opacity-0 translate-y-0 transition-all duration-300', inactiveIcon: 'opacity-100 translate-y-0 transition-all duration-600' } },
         // round 形状下，选中时图标不上浮（保持原位）
         { animation: 'drop' as const, shape: 'round' as const, active: true, class: { activeIcon: 'opacity-100 translate-y-0 transition-all duration-300', inactiveIcon: 'opacity-0 translate-y-[10px] transition-all duration-300' } },
         { animation: 'drop' as const, shape: 'round' as const, active: false, class: { activeIcon: 'opacity-0 translate-y-[10px] transition-all duration-300', inactiveIcon: 'opacity-100 translate-y-0 transition-all duration-300' } },
