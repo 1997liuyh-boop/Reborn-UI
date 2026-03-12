@@ -7,7 +7,7 @@ export { color as TabsColors, size as TabsSizes, variant as TabsVariants }
 export default {
   slots: {
     tabs: '',
-    scrollbar: 'flex flex-row w-full h-full',
+    scrollbar: 'flex flex-row w-full h-full overflow-x-scroll',
     inner: 'flex flex-row relative',
     item: 'flex flex-row items-center justify-center relative z-10 transition-colors group',
     text: 'font-light whitespace-nowrap',

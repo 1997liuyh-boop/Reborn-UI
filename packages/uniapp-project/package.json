@@ -90,6 +90,7 @@
     "@iconify-json/svg-spinners": "^1.2.4",
     "@types/node": "^24.10.9",
     "@vue/runtime-core": "^3.5.27",
+    "@vueuse/shared": "^10.11.1",
     "autoprefixer": "^10.4.24",
     "eslint": "^9.39.2",
     "postcss": "^8.5.6",

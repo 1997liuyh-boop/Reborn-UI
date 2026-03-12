@@ -600,7 +600,7 @@ export function generateFrame(
 		t = ALIGNMENT_DELTA[version];
 		y = width - 7;
 
-		for (;;) {
+		for (; ;) {
 			x = width - 7;
 
 			while (x > t - 3) {
@@ -701,13 +701,7 @@ export function generateFrame(
 
 	// String to array.
 	for (i = 0; i < v; i++) {
-		// #ifdef APP-ANDROID
-		// @ts-ignore
-		eccBuffer[i.toInt()] = str.charCodeAt(i)!;
-		// #endif
-		// #ifndef APP-ANDROID
 		eccBuffer[i] = str.charCodeAt(i)!;
-		// #endif
 	}
 
 	//++++++++++++++++++++==============

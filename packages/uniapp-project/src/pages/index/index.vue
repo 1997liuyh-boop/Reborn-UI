@@ -63,7 +63,8 @@ const menuItems = [
     label: '其他组件',
     children: [
       { label: '二维码', icon: 'i-lucide-qr-code', path: '/pages/reborn-qrcode/RebornQrcodeDemo' },
-      { label: '弹出层', icon: 'i-lucide-layers', path: '/pages/reborn-popup/RebornPopupDemo' },
+      { label: '弹出层', icon: 'i-lucide-layers-2', path: '/pages/reborn-popup/RebornPopupDemo' },
+      { label: '弹出气泡', icon: 'i-lucide-layers', path: '/pages/reborn-popover/RebornPopoverDemo' },
       { label: '过渡动画', icon: 'i-lucide-move', path: '/pages/reborn-transition/RebornTransitionDemo' },
       { label: '遮罩层', icon: 'i-lucide-square', path: '/pages/reborn-overlay/RebornOverlayDemo' },
       { label: '提示框', icon: 'i-lucide-message-square', path: '/pages/reborn-toast/RebornToastDemo' },

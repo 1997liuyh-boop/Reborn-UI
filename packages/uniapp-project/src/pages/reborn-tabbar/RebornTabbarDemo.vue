@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { RebornTabbar, RebornTabbarTrigger } from '@/components/reborn-tabbar'
+import RebornTabbar from '@/components/reborn-tabbar/RebornTabbar.vue'
+import RebornTabbarTrigger from '@/components/reborn-tabbar/RebornTabbarTrigger.vue'
 import { tabbarAnimations, tabbarShapes, tabbarColors } from '@/components/reborn-tabbar/reborn-tabbar.config'
 
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
@@ -62,7 +63,7 @@ function beforeChangeHook({ name }: { name: string | number }, done: (shouldProc
 </script>
 
 <template>
-    <RebornPage title="Tabbar 标签栏" description="页面底部标签栏，用于页面级路由跳转或内容区域切换。" custom-class="p-0">
+    <RebornPage title="Tabbar 标签栏" description="页面底部标签栏，用于页面级路由跳转或内容区域切换。" :ui="{ body: 'p-0' }">
 
         <RebornTabbar bordered :animation="animation" :shape="shape" v-model="tabbar" :fixed="fixed" :color="demoColor"
             @change="handleChange" :ball-shift-y="-10">

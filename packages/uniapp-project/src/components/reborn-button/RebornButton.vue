@@ -165,7 +165,7 @@ function onTouchCancel() {
   <view :class="[
     ui.base({ class: props.customClass }),
     isHover && hoverClass ? hoverClass : ''
-  ]" @tap.stop="onTap" @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
+  ]" @tap="onTap" @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
     <button class="reborn-button-clicker absolute inset-0 z-10 m-0 size-full p-0 opacity-0" :disabled="isDisabled"
       :hover-class="hoverClass" :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
       :hover-stay-time="hoverStayTime" :form-type="formType" :open-type="openType" :lang="lang"

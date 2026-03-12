@@ -24,7 +24,7 @@
     "@nuxt/image": "2.0.0",
     "@nuxt/kit": "^4.2.2",
     "@nuxt/scripts": "0.13.2",
-    "@nuxt/ui": "^4.3.0",
+    "@nuxt/ui": "^4.5.1",
     "@oxc-parser/wasm": "^0.60.0",
     "@splinetool/runtime": "^1.12.29",
     "@uiw/color-convert": "^2.9.2",

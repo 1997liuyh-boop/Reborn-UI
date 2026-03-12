@@ -12,29 +12,18 @@ defineOptions({
   inheritAttrs: false,
 })
 
-const props = withDefaults(defineProps<SwitchProps>(), {
-  disabled: false,
-  loading: false,
-  size: 'md',
-  color: 'primary',
-})
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-  (e: 'change', value: boolean): void
-}>()
-
-const b = tv(theme as any)
-
 export interface SwitchProps {
-  modelValue?: boolean
-  defaultValue?: boolean
+  modelValue?: any
+  defaultValue?: any
+  activeValue?: any
+  inactiveValue?: any
   activeLabel?: string
   inactiveLabel?: string
   disabled?: boolean
   loading?: boolean
   size?: typeof switchSizes[number]
   color?: typeof switchColors[number]
+  beforeChange?: () => boolean | Promise<boolean>
   customClass?: any
   ui?: Partial<{
     wrapper: ClassValue
@@ -47,12 +36,31 @@ export interface SwitchProps {
   }>
 }
 
+const props = withDefaults(defineProps<SwitchProps>(), {
+  activeValue: true,
+  inactiveValue: false,
+  disabled: false,
+  loading: false,
+  size: 'md',
+  color: 'primary',
+})
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: any): void
+  (e: 'change', value: any): void
+}>()
+
+const b = tv(theme as any)
+
 const { disabled: formDisabled, size: formSize, isError, validate } = useFormInject(props)
 
 const isDisabled = computed(() => formDisabled.value || props.disabled || props.loading)
 
-const localValue = ref(props.defaultValue ?? false)
-const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value))
+const localValue = ref(props.defaultValue ?? props.inactiveValue)
+const isChecked = computed(() => {
+  const val = props.modelValue !== undefined ? props.modelValue : localValue.value
+  return val === props.activeValue
+})
 
 const uiOverrides = computed(() => props.ui || {})
 
@@ -60,7 +68,7 @@ const ui = computed(() => {
   const styles = (b as any)({
     size: formSize.value || props.size,
     color: props.color,
-    checked: currentValue.value,
+    active: isChecked.value,
     error: isError.value,
     loading: props.loading,
   })
@@ -76,7 +84,8 @@ const ui = computed(() => {
   }
 })
 
-function updateValue(nextValue: boolean) {
+function updateValue(checked: boolean) {
+  const nextValue = checked ? props.activeValue : props.inactiveValue
   if (!props.disabled && !props.loading) {
     if (props.modelValue === undefined) {
       localValue.value = nextValue
@@ -87,8 +96,22 @@ function updateValue(nextValue: boolean) {
   }
 }
 
-function onTap() {
-  updateValue(!currentValue.value)
+async function onTap() {
+  if (props.disabled || props.loading) return
+
+  const originalChecked = isChecked.value
+  const newChecked = !originalChecked
+
+  if (props.beforeChange) {
+    try {
+      const result = await props.beforeChange()
+      if (result === false) return
+    } catch (e) {
+      return
+    }
+  }
+
+  updateValue(newChecked)
 }
 
 watch(
@@ -99,15 +122,20 @@ watch(
     }
   },
 )
+
+const isFocused = ref(false)
+defineExpose({
+  focus: () => {
+    isFocused.value = true
+  },
+})
 </script>
 
 <template>
-  <view
-    class="group" :class="[ui.wrapper({ class: props.customClass }), currentValue && `
+  <view class="group" :class="[ui.wrapper({ class: props.customClass }), isChecked && `
       is-checked
-    `]" :data-disabled="isDisabled"
-    style="-webkit-tap-highlight-color: transparent;" @tap="onTap"
-  >
+    `, isFocused && 'is-focused']" :data-disabled="isDisabled" style="-webkit-tap-highlight-color: transparent;"
+    @tap="onTap">
     <view v-if="props.inactiveLabel || $slots.inactiveLabel" :class="ui.inactiveLabel()">
       <slot name="inactiveLabel">
         {{ props.inactiveLabel }}
@@ -116,7 +144,7 @@ watch(
 
     <view :class="ui.track()" :data-loading="props.loading">
       <view :class="ui.thumb()">
-        <slot name="thumb" :checked="currentValue" :loading="props.loading">
+        <slot name="thumb" :checked="isChecked" :loading="props.loading">
           <view v-if="props.loading" :class="ui.loading()" />
         </slot>
       </view>

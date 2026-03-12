@@ -94,7 +94,8 @@ export default {
         { animation: 'drop' as const, color: 'neutral' as const, class: { dropBall: 'bg-neutral/80' } },
 
         // Round + Drop: 球体更小、位置更贴合 round body，动画开始时缩放融合背景，结束时（落在新位置）无需再单独放大，而是通过透明度渐变同时触发器背景亮起实现融合
-        { shape: 'round' as const, animation: 'drop' as const, class: { dropBall: '!w-8 !h-8 !top-[-10px] [--drop-ball-scale-start:3] [--drop-ball-opacity-start:0] [--drop-ball-scale-end:1] [--drop-ball-opacity-end:0]' } },
+        // NOTE: 添加了 opacity-0 以防止动画类移除后由于 base 为 opacity-1 而产生的白色层闪烁
+        { shape: 'round' as const, animation: 'drop' as const, class: { dropBall: 'opacity-0 !w-8 !h-8 !top-[-10px] [--drop-ball-scale-start:3] [--drop-ball-opacity-start:0] [--drop-ball-scale-end:1] [--drop-ball-opacity-end:0]' } },
     ],
     defaultVariants: {
         shape: 'normal' as const,

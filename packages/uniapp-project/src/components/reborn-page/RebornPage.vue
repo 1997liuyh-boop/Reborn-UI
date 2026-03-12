@@ -3,6 +3,7 @@ import { computed, type PropType } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { type PageUI } from './reborn-page.config'
+import RebornToast from '@/components/reborn-toast/RebornToast.vue'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -45,6 +46,8 @@ const ui = computed(() => {
     <view :class="ui.body()">
       <slot />
     </view>
+
+    <RebornToast />
   </view>
 </template>
 
