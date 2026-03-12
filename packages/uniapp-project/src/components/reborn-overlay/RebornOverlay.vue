@@ -29,6 +29,7 @@ const props = defineProps({
     lockScroll: { type: Boolean, default: true },
     zIndex: { type: Number, default: 10 },
     closeOnClickOverlay: { type: Boolean, default: true },
+    absolute: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'close'])
@@ -36,7 +37,7 @@ const emit = defineEmits(['update:modelValue', 'close'])
 const b = tv(theme)
 
 const overlayClass = computed(() => {
-    return `${b()} ${props.customClass}`
+    return `${b({ absolute: props.absolute })} ${props.customClass}`
 })
 
 function handleClick() {

@@ -10,6 +10,8 @@ export interface ToastOptions {
   show?: boolean;
   zIndex?: number;
   cover?: boolean;
+  color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' | '';
+  direction?: 'horizontal' | 'vertical';
 }
 
 const toastDefaultOptionKey = '__REBORN_TOAST_OPTION__';

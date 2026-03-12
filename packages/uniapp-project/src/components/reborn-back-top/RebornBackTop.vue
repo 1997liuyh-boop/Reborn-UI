@@ -102,12 +102,10 @@ function toTop() {
 <template>
   <view :class="ui.wrapper()" :style="{ bottom: viewBottom, opacity: visible ? 1 : 0 }" @tap.stop="toTop">
     <slot>
-      <view
-        :class="[
-          ui.base(),
-          visible ? '-translate-x-3' : 'translate-x-20',
-        ]"
-      >
+      <view :class="[
+        ui.base(),
+        visible ? '-translate-x-3' : 'translate-x-20',
+      ]">
         <text :class="ui.icon()">↑</text>
       </view>
     </slot>

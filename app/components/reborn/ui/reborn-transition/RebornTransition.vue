@@ -23,62 +23,45 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits(['click', 'beforeEnter', 'enter', 'beforeLeave', 'afterLeave', 'leave', 'afterEnter']);
-const inited = ref(props.show);
-const display = ref(props.show);
-const classes = ref('');
 
 const durationOf = (type: 'enter' | 'leave') => (typeof props.duration === 'object'
   ? (props.duration[type] ?? 300)
   : (props.duration === false ? 0 : Number(props.duration)));
 
-const style = computed(() => `transition-duration:${durationOf(display.value ? 'enter' : 'leave')}ms;${display.value || !props.destroy ? '' : 'display:none;'}${props.customStyle}`);
-const rootClass = computed(() => `rb-transition ease-in-out ${props.customClass} ${classes.value}`);
-const isShow = computed(() => !props.lazyRender || inited.value);
+const style = computed(() => `${props.customStyle}`);
 
 function getClassNames(name = props.name ?? "fade") {
   const names = Array.isArray(name) ? name : [name];
-  const picked = names.map(n => transitionStyles[n]).filter(Boolean);
+  const picked = names.map(n => transitionStyles[n]).filter((it): it is Record<string, string> => !!it);
   const join = (key: string) => picked.map(it => it[key]).join(' ');
   return {
-    enter: `${join('enter')} ${join('enter-active')}`.trim(),
-    enterTo: `${join('enter-to')} ${join('enter-active')}`.trim(),
-    leave: `${join('leave')} ${join('leave-active')}`.trim(),
-    leaveTo: `${join('leave-to')} ${join('leave-active')}`.trim(),
+    enterFrom: join('enter'),
+    enterActive: join('enter-active'),
+    enterTo: join('enter-to'),
+    leaveFrom: join('leave'),
+    leaveActive: join('leave-active'),
+    leaveTo: join('leave-to'),
   };
 }
 
-function enter() {
-  const c = getClassNames();
-  emit('beforeEnter');
-  inited.value = true;
-  display.value = true;
-  classes.value = c.enter;
-  requestAnimationFrame(() => {
-    emit('enter');
-    classes.value = c.enterTo;
-    setTimeout(() => emit('afterEnter'), durationOf('enter'));
-  });
-}
+const transitionClasses = computed(() => getClassNames());
+const renderReady = ref(!props.lazyRender);
 
-function leave() {
-  const c = getClassNames();
-  emit('beforeLeave');
-  classes.value = c.leave;
-  requestAnimationFrame(() => {
-    emit('leave');
-    classes.value = c.leaveTo;
-    setTimeout(() => {
-      display.value = false;
-      emit('afterLeave');
-    }, durationOf('leave'));
-  });
-}
-
-watch(() => props.show, v => (v ? enter() : leave()), { immediate: true });
+watch(() => props.show, (val) => {
+  if (val && props.lazyRender) renderReady.value = true;
+}, { immediate: true });
 </script>
 
 <template>
-  <div v-if="isShow" :class="rootClass" :style="style" @click="emit('click')">
-    <slot />
-  </div>
+  <Transition :enter-from-class="transitionClasses.enterFrom" :enter-active-class="transitionClasses.enterActive"
+    :enter-to-class="transitionClasses.enterTo" :leave-from-class="transitionClasses.leaveFrom"
+    :leave-active-class="transitionClasses.leaveActive" :leave-to-class="transitionClasses.leaveTo"
+    @before-enter="emit('beforeEnter')" @enter="emit('enter')" @after-enter="emit('afterEnter')"
+    @before-leave="emit('beforeLeave')" @leave="emit('leave')" @after-leave="emit('afterLeave')">
+    <div v-if="renderReady && (props.destroy ? props.show : true)" v-show="props.destroy ? true : props.show"
+      :class="`rb-transition ease-in-out ${props.customClass}`"
+      :style="`transition-duration: ${durationOf(props.show ? 'enter' : 'leave')}ms; ${style}`" @click="emit('click')">
+      <slot />
+    </div>
+  </Transition>
 </template>

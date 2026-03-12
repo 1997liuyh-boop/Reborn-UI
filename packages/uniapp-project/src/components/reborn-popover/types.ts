@@ -10,11 +10,6 @@ export interface PopoverContentProps {
 }
 
 export const popoverProps = {
-    /** 触发模式：'click' (默认) 或 'hover' （小程序环境下一般仅支持 click） */
-    mode: {
-        type: String as PropType<'click' | 'hover'>,
-        default: 'click'
-    },
     /** 内容位置与偏移配置 */
     content: {
         type: Object as PropType<PopoverContentProps>,

@@ -59,11 +59,11 @@ const isShowlimitSlot = ref(false);
                     </div>
                 </div>
             </div>
-            <RebornSwitch v-model="isBorder" label="边框" />
-            <RebornSwitch v-model="isShowCount" label="字数统计" />
-            <RebornSwitch v-model="isShowlimitSlot" label="自定义字数统计" />
-            <RebornSwitch v-model="isDisabled" label="禁用" />
-            <RebornSwitch v-model="isAutoHeight" label="自动增高" />
+            <RebornSwitch v-model="isBorder" active-label="边框" />
+            <RebornSwitch v-model="isShowCount" active-label="字数统计" />
+            <RebornSwitch v-model="isShowlimitSlot" active-label="自定义字数统计" />
+            <RebornSwitch v-model="isDisabled" active-label="禁用" />
+            <RebornSwitch v-model="isAutoHeight" active-label="自动增高" />
         </div>
     </div>
 </template>

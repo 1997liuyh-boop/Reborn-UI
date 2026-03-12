@@ -673,7 +673,7 @@ watch(
 .reborn-draggable {
     &__item {
         &--dragging {
-            @apply opacity-80 z-20;
+            @apply opacity-95 z-20 scale-105 shadow-md;
         }
 
         &--disabled {
