@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-tabbar-trigger.config'
@@ -78,6 +78,43 @@ const parentAnimation = computed(() => {
         return tabbar.props.animation as 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls' | 'drop'
     }
     return 'fade'
+})
+
+const pureIcon = computed(() => Boolean(tabbar?.props.pureIcon))
+const hasTitle = computed(() => Boolean(props.title))
+const isNormalDrop = computed(() => parentShape.value === 'normal' && parentAnimation.value === 'drop')
+const isRoundDropPureIcon = computed(() =>
+    parentShape.value === 'round' && parentAnimation.value === 'drop' && pureIcon.value
+)
+
+const rootExtraClass = computed(() => {
+    if (parentShape.value === 'round' && pureIcon.value) {
+        return '!flex-1'
+    }
+    return ''
+})
+
+const bodyExtraClass = computed(() => {
+    const classes: string[] = []
+    if (parentShape.value === 'round' && pureIcon.value) {
+        classes.push('!px-0 !w-[64rpx] !min-w-[64rpx]')
+    }
+    if (isRoundDropPureIcon.value) {
+        if (active.value) {
+            classes.push('shadow-[0_8px_20px_rgba(15,23,42,0.08)]')
+        } else {
+            classes.push('!bg-transparent shadow-none')
+        }
+    }
+    return classes.join(' ')
+})
+
+const iconExtraClass = computed(() => {
+    if (!active.value) return ''
+    if (isNormalDrop.value) {
+        return pureIcon.value ? '!-translate-y-[22px]' : '!-translate-y-[18px]'
+    }
+    return ''
 })
 
 const b = tv(theme)
@@ -166,15 +203,15 @@ function handleClick() {
 </script>
 
 <template>
-    <view class="reborn-tabbar-trigger" :class="ui.root({ class: cn(customClass) })" :style="customStyle"
+    <view class="reborn-tabbar-trigger" :class="ui.root({ class: cn(customClass, rootExtraClass) })" :style="customStyle"
         @click="handleClick">
         <slot :active="active" :ui="ui">
             <!-- round + glass: bodyGlowLayer 包裹 body，提供颜色背景；默认 display:contents 不影响布局 -->
             <view :class="ui.bodyGlowLayer()">
-                <view :class="ui.body()">
+                <view :class="ui.body({ class: bodyExtraClass })">
                     <!-- Icon area with animation -->
                     <view v-if="$slots.icon || icon"
-                        :class="[ui.icon(), isShaking ? 'animate-[shake_0.3s_ease-in-out]' : '', isJelly ? 'fly-balls-jelly' : '']">
+                        :class="[ui.icon({ class: iconExtraClass }), isShaking ? 'animate-[shake_0.3s_ease-in-out]' : '', isJelly ? 'fly-balls-jelly' : '']">
                         <slot name="icon" :active="active" :ui="ui">
                             <!-- 选中时 -->
                             <view :class="ui.activeIcon()" :style="textStyle">
@@ -194,7 +231,7 @@ function handleClick() {
                     </view>
 
                     <!-- 标题 -->
-                    <view v-if="title" :class="ui.title()" :style="textStyle">
+                    <view v-if="title && !pureIcon" :class="ui.title()" :style="textStyle">
                         {{ title }}
                     </view>
                 </view>

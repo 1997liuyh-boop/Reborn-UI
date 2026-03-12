@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import RebornTabbar from '@/components/reborn-tabbar/RebornTabbar.vue'
 import RebornTabbarTrigger from '@/components/reborn-tabbar/RebornTabbarTrigger.vue'
 import { tabbarAnimations, tabbarShapes, tabbarColors } from '@/components/reborn-tabbar/reborn-tabbar.config'
@@ -31,7 +31,7 @@ const tabbarList = computed(() => {
     return Object.entries(obj).map(([key, value]) => {
         return {
             name: key,
-            title: onlyIcon.value ? '' : value,
+            title: value,
             icon: `https://mall.leyifan.cn/static/h5/new_images/${key}_active.png`,
             inactive: `https://mall.leyifan.cn/static/h5/new_images/${key}.png`,
         }
@@ -66,7 +66,7 @@ function beforeChangeHook({ name }: { name: string | number }, done: (shouldProc
     <RebornPage title="Tabbar 标签栏" description="页面底部标签栏，用于页面级路由跳转或内容区域切换。" :ui="{ body: 'p-0' }">
 
         <RebornTabbar bordered :animation="animation" :shape="shape" v-model="tabbar" :fixed="fixed" :color="demoColor"
-            @change="handleChange" :ball-shift-y="-10">
+            :pure-icon="onlyIcon" @change="handleChange" :ball-shift-y="-10">
             <RebornTabbarTrigger v-for="item in tabbarList" :key="item.name" :name="item.name" :title="item.title"
                 :image-size="52" :icon="item.icon" :inactive="item.inactive" />
         </RebornTabbar>

@@ -17,6 +17,7 @@ export type TabbarProvide = {
         fixed?: boolean
         safeAreaInsetBottom?: boolean
         bordered?: boolean
+        pureIcon?: boolean
         shape?: (typeof tabbarShapes)[number] | null
         animation?: 'fade' | 'flip' | 'reveal' | 'creative' | 'glass' | 'fly-balls' | 'drop' | null
         activeColor?: string

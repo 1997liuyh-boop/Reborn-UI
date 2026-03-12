@@ -9,6 +9,7 @@ const props = defineProps<{
     isGenerating: boolean
     exportSizeIndex: number
     dropdownOptions: any[]
+    modalOpen?: boolean
 }>()
 
 const emit = defineEmits(['update:modelValue', 'update:exportSizeIndex', 'save', 'share', 'reset'])
@@ -33,8 +34,8 @@ defineExpose({
 <template>
     <view class="bg-white rounded-xl p-4 shadow-lg w-full box-border flex items-start flex-col gap-4 sm:flex-row">
         <!-- 左侧：二维码预览 -->
-        <view class="flex items-center justify-center">
-            <reborn-qrcode ref="qrcodeRef" :text="qrConfig.text" :size="200" :padding="qrConfig.margin * 5"
+        <view class="flex items-center justify-center size-[200px]">
+            <reborn-qrcode v-if="!modalOpen" ref="qrcodeRef" :text="qrConfig.text" :size="200" :padding="qrConfig.margin * 5"
                 :mode="qrConfig.dotsType === 'circular' ? 'circular' : qrConfig.dotsType === 'line' ? 'line' : qrConfig.dotsType === 'rectSmall' ? 'rectSmall' : 'rect'"
                 :foreground="qrConfig.dotsColor || '#000000'" :background="qrConfig.backgroundColor || '#ffffff'"
                 :logo="qrConfig.logoImage || ''"
@@ -53,6 +54,7 @@ defineExpose({
                 :cornersDotGradient="qrConfig.cornersDotGradient || qrConfig.dotsGradient"
                 :cornersSquareOptions="{ type: qrConfig.cornersSquareType, color: qrConfig.dotsColor, gradient: qrConfig.cornersSquareGradient }"
                 :cornersDotOptions="{ type: qrConfig.cornersDotType, color: qrConfig.dotsColor, gradient: qrConfig.cornersDotGradient }"></reborn-qrcode>
+            <view v-else class="size-[200px] rounded-[16rpx] bg-[#fafafa] border border-solid border-[#f0f0f0]"></view>
         </view>
 
         <!-- 右侧：操作按钮区 -->

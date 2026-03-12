@@ -93,6 +93,9 @@ const dropdownOptions = computed(() => exportSizeOptions.value.map((item, index)
     label: item.label, value: index
 })))
 const exportSizeIndex = ref(0)
+const modalOpen = computed(() =>
+    showColorPickerModal.value || showGradientEditorModal.value || showForegroundImageModal.value
+)
 
 // Modal States
 const showColorPickerModal = ref(false)
@@ -264,8 +267,8 @@ const selectPredefinedLogo = (logo: string) => {
         <view class="flex flex-col w-full">
             <!-- 预览区域 -->
             <PreviewSection v-model="qrConfig" v-model:qrcodeRef="qrcodeRef" v-model:exportSizeIndex="exportSizeIndex"
-                :isGenerating="isGenerating" :dropdownOptions="dropdownOptions" @save="saveQRCode" @share="shareQRCode"
-                @reset="resetConfig" />
+                :isGenerating="isGenerating" :dropdownOptions="dropdownOptions" :modalOpen="modalOpen" @save="saveQRCode"
+                @share="shareQRCode" @reset="resetConfig" />
 
             <!-- 配置面板 -->
             <view class="bg-white rounded-xl shadow-[0_4rpx_20rpx_rgba(0,0,0,0.08)] overflow-hidden mt-6">
