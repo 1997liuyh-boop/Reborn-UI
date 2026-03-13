@@ -85,6 +85,7 @@ const ui = computed(() => {
     color: props.color,
     disabled: disabled.value,
     readonly: props.readonly,
+    allowHalf: props.allowHalf,
   })
 
   return {
@@ -247,10 +248,8 @@ watch(
 
 <template>
   <view :class="ui.wrapper({ class: props.customClass })">
-    <view
-      v-for="index in count" :key="index" class="reborn-rate__star" :class="ui.star()" @tap="onTap(index)"
-      @touchstart="onTouchStart($event, index)" @touchmove="onTouchMove($event, index)"
-    >
+    <view v-for="index in count" :key="index" class="reborn-rate__star" :class="ui.star()" @tap="onTap(index)"
+      @touchstart="onTouchStart($event, index)" @touchmove="onTouchMove($event, index)">
       <!-- 未激活图标 -->
       <view :class="ui.icon()" class="opacity-30">
         <slot name="icon" :index="index" :active="false">
@@ -259,24 +258,19 @@ watch(
       </view>
 
       <!-- 激活图标（整星 / 半星） -->
-      <view
-        v-if="currentValue >= index - (allowHalf ? 0.5 : 0) && currentValue >= index - 0.5"
-        class="absolute inset-0" :class="[ui.iconActive(), isHalf(index) && `
+      <view v-if="currentValue >= index - (allowHalf ? 0.5 : 0) && currentValue >= index - 0.5" class="absolute inset-0"
+        :class="[ui.iconActive(), isHalf(index) && `
           w-1/2 overflow-hidden
-        `]"
-      >
+        `]">
         <slot name="icon" :index="index" :active="true" :style="isHalf(index) ? { width: '200%' } : {}">
-          <view
-            :class="activeIcon(index)" class="size-full"
-            :style="isHalf(index) ? { width: '200%' } : {}"
-          />
+          <view :class="activeIcon(index)" class="size-full" :style="isHalf(index) ? { width: '200%' } : {}" />
         </slot>
       </view>
     </view>
 
     <!-- 分数显示 -->
     <slot name="value" :value="currentValue">
-      <text v-if="showValue" :class="ui.value()">{{ currentValue }}</text>
+      <view v-if="showValue" :class="ui.value()">{{ currentValue }}</view>
     </slot>
   </view>
 </template>

@@ -138,7 +138,7 @@ const props = defineProps({
     default: () => ({}),
   },
   ui: {
-    type: Object as PropType<Partial<{ wrapper: ClassValue, popupOp: ClassValue, rangeBox: ClassValue, rangeValues: ClassValue, rangeStart: ClassValue, rangeEnd: ClassValue, shortcuts: ClassValue, separator: ClassValue }>>,
+    type: Object as PropType<Partial<{ wrapper: ClassValue, popupOp: ClassValue, rangeBox: ClassValue, rangeValues: ClassValue, rangeStart: ClassValue, rangeEnd: ClassValue, shortcuts: ClassValue, shortcutItem: ClassValue, separator: ClassValue, rangeValueText: ClassValue, rangePlaceholder: ClassValue, footer: ClassValue }>>,
     default: () => ({}),
   },
 })
@@ -162,7 +162,11 @@ const ui = computed(() => {
     rangeStart: (opts?: { class?: any }) => styles.rangeStart({ class: [opts?.class, props.ui?.rangeStart] }),
     rangeEnd: (opts?: { class?: any }) => styles.rangeEnd({ class: [opts?.class, props.ui?.rangeEnd] }),
     shortcuts: (opts?: { class?: any }) => styles.shortcuts({ class: [opts?.class, props.ui?.shortcuts] }),
+    shortcutItem: (opts?: { class?: any, active?: boolean }) => b({ color: props.color, shortcutActive: opts?.active === true }).shortcutItem({ class: [opts?.class, props.ui?.shortcutItem] }),
     separator: (opts?: { class?: any }) => styles.separator({ class: [opts?.class, props.ui?.separator] }),
+    rangeValueText: (opts?: { class?: any }) => styles.rangeValueText({ class: [opts?.class, props.ui?.rangeValueText] }),
+    rangePlaceholder: (opts?: { class?: any }) => styles.rangePlaceholder({ class: [opts?.class, props.ui?.rangePlaceholder] }),
+    footer: (opts?: { class?: any }) => styles.footer({ class: [opts?.class, props.ui?.footer] }),
   }
 })
 
@@ -257,7 +261,8 @@ const start = computed(() => {
       return props.start
     }
     else {
-      return values.value[0]
+      // 结束日期模式下，必须大于等于已选的开始日期；若未选开始日期则使用全局开始日期
+      return values.value[0] || props.start
     }
   }
   else {
@@ -275,47 +280,51 @@ const list = computed(() => {
     return arr
   }
 
+  // 获取当前选中的各个分量，用于判断后续列的边界
   const [year, month, date, hour, minute] = value.value
-  const isLeapYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
-  const days = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month > 0 ? month - 1 : 0]
-  const yearRange = Math.max(60, endYear - startYear + 1)
 
-  for (let i = 0; i < yearRange; i++) {
-    const yearNum = startYear + i
-    if (yearNum <= endYear) {
-      arr[0].push({ label: yearNum.toString(), value: yearNum })
-    }
-
-    const monthNum = startYear == year ? startMonth + i : i + 1
-    const endMonthNum = endYear == year ? endMonth : 12
-    if (monthNum <= endMonthNum) {
-      arr[1].push({ label: monthNum.toString().padStart(2, '0'), value: monthNum })
-    }
-
-    const dateNum = startYear == year && startMonth == month ? startDate + i : i + 1
-    const endDateNum = endYear == year && endMonth == month ? endDate : days
-    if (dateNum <= endDateNum) {
-      arr[2].push({ label: dateNum.toString().padStart(2, '0'), value: dateNum })
-    }
-
-    const hourNum = startYear == year && startMonth == month && startDate == date ? startHour + i : i
-    const endHourNum = endYear == year && endMonth == month && endDate == date ? endHour : 24
-    if (hourNum < endHourNum) {
-      arr[3].push({ label: hourNum.toString().padStart(2, '0'), value: hourNum })
-    }
-
-    const minuteNum = startYear == year && startMonth == month && startDate == date && startHour == hour ? startMinute + i : i
-    const endMinuteNum = endYear == year && endMonth == month && endDate == date && endHour == hour ? endMinute : 60
-    if (minuteNum < endMinuteNum) {
-      arr[4].push({ label: minuteNum.toString().padStart(2, '0'), value: minuteNum })
-    }
-
-    const secondNum = startYear == year && startMonth == month && startDate == date && startHour == hour && startMinute == minute ? startSecond + i : i
-    const endSecondNum = endYear == year && endMonth == month && endDate == date && endHour == hour && endMinute == minute ? endSecond : 60
-    if (secondNum < endSecondNum) {
-      arr[5].push({ label: secondNum.toString().padStart(2, '0'), value: secondNum })
-    }
+  // 1. 年份列
+  for (let y = startYear; y <= endYear; y++) {
+    arr[0].push({ label: y.toString(), value: y })
   }
+
+  // 2. 月份列
+  const sM = (year === startYear) ? startMonth : 1
+  const eM = (year === endYear) ? endMonth : 12
+  for (let m = sM; m <= eM; m++) {
+    arr[1].push({ label: m.toString().padStart(2, '0'), value: m })
+  }
+
+  // 3. 日期列
+  const isLeapYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+  const daysInMonth = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1] || 31
+  const sD = (year === startYear && month === startMonth) ? startDate : 1
+  const eD = (year === endYear && month === endMonth) ? endDate : daysInMonth
+  for (let d = sD; d <= eD; d++) {
+    arr[2].push({ label: d.toString().padStart(2, '0'), value: d })
+  }
+
+  // 4. 小时列
+  const sH = (year === startYear && month === startMonth && date === startDate) ? startHour : 0
+  const eH = (year === endYear && month === endMonth && date === endDate) ? endHour : 23
+  for (let h = sH; h <= eH; h++) {
+    arr[3].push({ label: h.toString().padStart(2, '0'), value: h })
+  }
+
+  // 5. 分钟列
+  const smm = (year === startYear && month === startMonth && date === startDate && hour === sH) ? startMinute : 0
+  const emm = (year === endYear && month === endMonth && date === endDate && hour === eH) ? endMinute : 59
+  for (let m = smm; m <= emm; m++) {
+    arr[4].push({ label: m.toString().padStart(2, '0'), value: m })
+  }
+
+  // 6. 秒钟列
+  const ss = (year === startYear && month === startMonth && date === startDate && hour === sH && minute === smm) ? startSecond : 0
+  const es = (year === endYear && month === endMonth && date === endDate && hour === eH && minute === emm) ? endSecond : 59
+  for (let s = ss; s <= es; s++) {
+    arr[5].push({ label: s.toString().padStart(2, '0'), value: s })
+  }
+
   return arr
 })
 
@@ -362,13 +371,24 @@ function checkDate(values: number[]): number[] {
     checkedValues.push(defaultValues[i])
   }
 
+  // 修复可能出现的 NaN 情况
+  for (let i = 0; i < 6; i++) {
+    if (isNaN(checkedValues[i])) {
+      checkedValues[i] = defaultValues[i]
+    }
+  }
+
   let [year, month, date, hour, minute, second] = checkedValues
   const isLeapYear = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
   const daysInMonth = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
   const maxDay = daysInMonth[month > 0 ? month - 1 : 0] || 31
 
+  if (month < 1) { month = 1 }
+  else if (month > 12) { month = 12 }
+
   if (date < 1) { date = 1 }
   else if (date > maxDay) { date = maxDay }
+
   if (hour < 0) { hour = 0 }
   else if (hour > 23) { hour = 23 }
   if (minute < 0) { minute = 0 }
@@ -444,17 +464,18 @@ function setRangeValue(val: string[], index: number) {
   shortcutsIndex.value = index
   values.value = [...val] as string[]
   setValue(val[rangeIndex.value])
+  pickerKey.value += 1
 }
 
 const visible = ref(false)
+const pickerKey = ref(0)
 let callback: ((value: string | string[]) => void) | null = null
 
 function open(cb: ((value: string | string[]) => void) | null = null) {
   if (isDisabled.value) { return }
 
-  visible.value = true
   callback = cb
-
+  // 先同步写好选中值，再打开弹窗，避免首帧用空 value 渲染
   nextTick(() => {
     if (props.rangeable) {
       rangeIndex.value = 0
@@ -464,6 +485,8 @@ function open(cb: ((value: string | string[]) => void) | null = null) {
     else {
       setValue(props.modelValue)
     }
+    visible.value = true
+    pickerKey.value += 1
   })
 }
 
@@ -486,7 +509,6 @@ function clear() {
 }
 
 function confirm() {
-  console.log(props.rangeable)
   if (props.rangeable) {
     const [a, b] = values.value
 
@@ -508,6 +530,10 @@ function confirm() {
     if (callback != null) { callback!(values.value as string[]) }
   }
   else {
+    // 打开时若无初始值，内部已用当前时间作为选中；确认时若 value 仍为空则兜底为当前时间，确保能赋上值
+    if (isEmpty(value.value)) {
+      value.value = checkDate(dayUts().toArray())
+    }
     const val = dayUts(toDate()).format(valueFormat.value)
 
     emit('update:modelValue', val)
@@ -518,6 +544,10 @@ function confirm() {
   }
 
   updateText()
+  // 非范围模式：确认后用当前选中值更新展示（props 未同步时避免文案被清空）
+  if (!props.rangeable && !isEmpty(value.value)) {
+    text.value = dayUts(toDate()).format(labelFormat.value)
+  }
   close()
 }
 
@@ -563,86 +593,116 @@ defineExpose({
   <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
     :text="text" arrow-icon="i-lucide-calendar" :ui="triggerUi" :color="color" :size="size" :clearable="clearable"
     @open="open()" @clear="clear">
-    <!-- #ifndef MP-WEIXIN -->
-    <template #default>
-      <slot name="tag" />
-    </template>
-    <!-- #endif -->
 
-    <!-- #ifdef MP-WEIXIN -->
     <template #default="{ showText, text, placeholder, ui }">
-      <slot v-if="$slots.tag" name="tag" :selectItem="selectItem" />
+      <!-- #ifndef MP-WEIXIN -->
+      <slot name="tag" />
+      <!-- #endif -->
+      <!-- #ifdef MP-WEIXIN -->
+      <slot v-if="$slots.tag" name="tag" />
       <text v-else-if="showText" :class="ui.text()">{{ text }}</text>
       <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+      <!-- #endif -->
     </template>
-    <!-- #endif -->
   </RebornSelectTrigger>
 
   <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
     <view @touchmove.stop>
       <view v-if="rangeable" :class="ui.rangeBox()">
         <view v-if="showShortcuts" :class="ui.shortcuts()">
-          <view v-for="(item, index) in shortcuts" :key="index" class="
-              flex cursor-pointer items-center gap-1 rounded-md border
-              border-solid px-2 py-1 text-xs transition-colors
-            " :class="shortcutsIndex == index ? `
-              border-${color}
-              text-${color}
-              bg-${color}-50
-              dark:bg-${color}-900/20
-            ` : `
-              border-gray-2
-              dark:border-gray-7
-              text-gray-6
-              dark:text-gray-4
-              bg-transparent
-            `" @tap="setRangeValue(item.value, index)">
+          <!-- #ifdef H5 -->
+          <view v-for="(item, index) in shortcuts" :key="index"
+            :class="ui.shortcutItem({ active: shortcutsIndex === index })" @tap.stop="setRangeValue(item.value, index)"
+            @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
             <text class="i-lucide-zap" />
             <text>{{ item.label }}</text>
           </view>
+          <!-- #endif -->
+          <!-- #ifndef H5 -->
+          <view v-for="(item, index) in shortcuts" :key="index"
+            :class="ui.shortcutItem({ active: shortcutsIndex === index })" @tap.stop="setRangeValue(item.value, index)">
+            <text class="i-lucide-zap" />
+            <text>{{ item.label }}</text>
+          </view>
+          <!-- #endif -->
         </view>
 
         <view :class="ui.rangeValues()">
+          <!-- #ifdef H5 -->
           <view :class="ui.rangeStart({
             class: rangeIndex == 0 ? rangeActiveStyle.start : '',
-          })" @tap="setRange(0)">
-            <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: 'text-center block w-full' }"
+          })" @tap.stop="setRange(0)" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
+            <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: ui.rangeValueText() }"
               :color="rangeIndex == 0 ? color : 'neutral'">
               {{
                 values[0] }}
             </RebornText>
-            <RebornText v-else class="text-surface-400 block w-full text-center">
+            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
               {{ startPlaceholder
               }}
             </RebornText>
           </view>
+          <!-- #endif -->
+          <!-- #ifndef H5 -->
+          <view :class="ui.rangeStart({
+            class: rangeIndex == 0 ? rangeActiveStyle.start : '',
+          })" @tap.stop="setRange(0)">
+            <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: ui.rangeValueText() }"
+              :color="rangeIndex == 0 ? color : 'neutral'">
+              {{
+                values[0] }}
+            </RebornText>
+            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
+              {{ startPlaceholder
+              }}
+            </RebornText>
+          </view>
+          <!-- #endif -->
 
           <RebornText :ui="{ base: ui.separator() }">
             {{ rangeSeparator }}
           </RebornText>
 
+          <!-- #ifdef H5 -->
           <view :class="ui.rangeEnd({
             class: rangeIndex == 1 ? rangeActiveStyle.end : '',
-          })" @tap="setRange(1)">
-            <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: 'text-center block w-full' }"
+          })" @tap.stop="setRange(1)" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
+            <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: ui.rangeValueText() }"
               :color="rangeIndex == 1 ? color : 'neutral'">
               {{
                 values[1] }}
             </RebornText>
-            <RebornText v-else class="text-surface-400 block w-full text-center">
+            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
               {{ endPlaceholder
               }}
             </RebornText>
           </view>
+          <!-- #endif -->
+          <!-- #ifndef H5 -->
+          <view :class="ui.rangeEnd({
+            class: rangeIndex == 1 ? rangeActiveStyle.end : '',
+          })" @tap.stop="setRange(1)">
+            <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: ui.rangeValueText() }"
+              :color="rangeIndex == 1 ? color : 'neutral'">
+              {{
+                values[1] }}
+            </RebornText>
+            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
+              {{ endPlaceholder
+              }}
+            </RebornText>
+          </view>
+          <!-- #endif -->
         </view>
       </view>
 
       <view>
-        <RebornPickerView :headers="headers" :value="indexes" :columns="columns" :ui="pickerUi" :color="color"
-          @change-value="onChange" />
+        <!-- rangeable 时仅在 pickerKey>0 后渲染，避免首帧用空 indexes 导致 1970/1/1；非 rangeable 始终渲染 -->
+        <RebornPickerView v-if="!rangeable || pickerKey > 0" :key="pickerKey" :headers="headers" :value="indexes"
+          :columns="columns" :ui="pickerUi" :color="color" @change-value="onChange" />
       </view>
 
-      <view class="flex flex-row items-center justify-center gap-2 p-3">
+      <view :class="ui.footer()">
         <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="flex-1" @tap="close">
           {{ cancelText }}
         </RebornButton>

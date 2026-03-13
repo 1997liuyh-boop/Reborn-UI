@@ -15,13 +15,14 @@ import { tv } from '@/lib/tv'
 import theme from './reborn-color-picker.config'
 import RebornPopover from '../reborn-popover/RebornPopover.vue'
 import RebornColorPickerPanel from './RebornColorPickerPanel.vue'
-import { hexToHsva, hsvaToHex, hsvaToRgba, rgbaToHex, hexToRgba, rgbaToHsva, hsvaToRgba as hsvaToRgbaUtil } from '@/lib/color-utils'
+import { colorStringToHsva, detectColorFormat, hsvaToColorString, type ColorFormat } from '@/lib/color-utils'
 
 const props = defineProps({
     modelValue: { type: String, default: '#000000' },
     disabled: { type: Boolean, default: false },
     size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' },
-    format: { type: String as PropType<'hex' | 'rgb' | 'rgba'>, default: 'hex' },
+    defaultFormat: { type: String as PropType<ColorFormat | undefined>, default: undefined },
+    format: { type: String as PropType<ColorFormat | undefined>, default: undefined },
     /** Popover content config */
     content: { type: Object as PropType<any>, default: () => ({ side: 'right', align: 'center', sideOffset: 8 }) },
     /** Whether to show arrow */
@@ -29,43 +30,40 @@ const props = defineProps({
     ui: { type: Object as PropType<any>, default: () => ({}) }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'onChange'])
 const b = tv(theme)
 const showPicker = ref(false)
+const resolvedDefaultFormat = computed<ColorFormat | undefined>(() => props.defaultFormat ?? props.format)
+const selectedFormat = ref<ColorFormat>(resolvedDefaultFormat.value ?? detectColorFormat(props.modelValue))
 
 // Internal color state in HSVA to avoid precision loss
-const internalHsva = ref(hexToHsva(props.modelValue))
+const internalHsva = ref(colorStringToHsva(props.modelValue))
 
-// Watch modelValue from outside
-watch(() => props.modelValue, (val) => {
-    // Basic check to avoid infinite loop
-    if (val === getFormattedColor(internalHsva.value)) return
-
-    if (val.startsWith('#')) {
-        internalHsva.value = hexToHsva(val)
-    } else if (val.startsWith('rgb')) {
-        // Simple regex for rgb/rgba
-        const match = val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
-        if (match) {
-            internalHsva.value = rgbaToHsva({
-                r: parseInt(match[1]),
-                g: parseInt(match[2]),
-                b: parseInt(match[3]),
-                a: match[4] ? parseFloat(match[4]) : 1
-            })
-        }
+watch(() => resolvedDefaultFormat.value, (val) => {
+    if (val) {
+        selectedFormat.value = val
     }
-})
+}, { immediate: true })
+
+watch(() => props.modelValue, (val) => {
+    const nextHsva = colorStringToHsva(val)
+    // 与当前内部状态一致时跳过，避免 Panel 选色后产生多余回写和重渲染导致卡顿
+    const same =
+        internalHsva.value.h === nextHsva.h &&
+        internalHsva.value.s === nextHsva.s &&
+        internalHsva.value.v === nextHsva.v &&
+        internalHsva.value.a === nextHsva.a
+    if (!same) {
+        internalHsva.value = nextHsva
+    }
+
+    if (!resolvedDefaultFormat.value) {
+        selectedFormat.value = detectColorFormat(val)
+    }
+}, { immediate: true })
 
 function getFormattedColor(hsva: any) {
-    if (props.format === 'hex') {
-        return hsvaToHex(hsva)
-    }
-    const rgba = hsvaToRgbaUtil(hsva)
-    if (props.format === 'rgb') {
-        return `rgb(${rgba.r}, ${rgba.g}, ${rgba.b})`
-    }
-    return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a.toFixed(2)})`
+    return hsvaToColorString(hsva, selectedFormat.value)
 }
 
 const colorValue = computed({
@@ -86,9 +84,11 @@ const uiClasses = computed(() => {
     }
 })
 
-function onPanelChange(hsva: any) {
+function onPanelChange(value: string) {
+    const hsva = colorStringToHsva(value)
     internalHsva.value = hsva
     emit('update:modelValue', getFormattedColor(hsva))
+    emit('onChange', value)
 }
 
 function togglePicker() {
@@ -107,7 +107,8 @@ function togglePicker() {
             </view>
         </view>
         <template #content>
-            <RebornColorPickerPanel :modelValue="colorValue" @update:modelValue="onPanelChange" />
+            <RebornColorPickerPanel :model-value="colorValue" v-model:format="selectedFormat"
+                @update:modelValue="onPanelChange" />
         </template>
     </RebornPopover>
 </template>

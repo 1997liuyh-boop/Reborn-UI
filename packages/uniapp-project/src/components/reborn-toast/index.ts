@@ -4,7 +4,7 @@ import { deepMerge } from '@/lib/util'
 export type ToastIconType = 'success' | 'error' | 'warning' | 'loading' | 'info'
 export type ToastPositionType = 'top' | 'middle-top' | 'middle' | 'bottom'
 export type ToastDirection = 'vertical' | 'horizontal'
-export type ToastLoadingType = 'outline' | 'ring' | 'spinner'
+export type ToastLoadingType = 'outline' | 'ring' | 'spinner' | 'bars-scale' | 'blocks-shuffle' | 'blocks-wave' | 'gooey-balls'
 
 export type ToastColorType = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
 

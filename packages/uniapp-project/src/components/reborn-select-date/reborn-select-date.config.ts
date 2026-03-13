@@ -10,9 +10,25 @@ export default {
     rangeStart: 'flex-1 rounded-xl border border-solid p-2 text-center transition-colors',
     rangeEnd: 'flex-1 rounded-xl border border-solid p-2 text-center transition-colors',
     shortcuts: 'mb-4 flex flex-row flex-wrap items-center gap-2',
+    shortcutItem: 'flex cursor-pointer items-center gap-1 rounded-md border border-solid px-2 py-1 text-xs transition-colors',
     separator: 'text-gray-5 mx-3 text-sm',
+    rangeValueText: 'text-center block w-full',
+    rangePlaceholder: 'text-surface-400 block w-full text-center',
+    footer: 'flex flex-row items-center justify-center gap-2 p-3',
   },
   variants: {
+    shortcutActive: {
+      true: {},
+      false: {
+        shortcutItem: `
+          border-gray-2
+          dark:border-gray-7
+          text-gray-6
+          dark:text-gray-4
+          bg-transparent
+        `,
+      },
+    },
     color: {
       primary: {
         rangeStart: `
@@ -215,8 +231,16 @@ export default {
         `,
       },
     },
+    // 快捷选项选中态（按 color）
+    { shortcutActive: true as const, color: 'primary' as const, class: { shortcutItem: 'border-primary text-primary bg-primary-50 dark:bg-primary-900/20' } },
+    { shortcutActive: true as const, color: 'success' as const, class: { shortcutItem: 'border-success text-success bg-success-50 dark:bg-success-900/20' } },
+    { shortcutActive: true as const, color: 'info' as const, class: { shortcutItem: 'border-info text-info bg-info-50 dark:bg-info-900/20' } },
+    { shortcutActive: true as const, color: 'warning' as const, class: { shortcutItem: 'border-warning text-warning bg-warning-50 dark:bg-warning-900/20' } },
+    { shortcutActive: true as const, color: 'error' as const, class: { shortcutItem: 'border-error text-error bg-error-50 dark:bg-error-900/20' } },
+    { shortcutActive: true as const, color: 'neutral' as const, class: { shortcutItem: 'border-neutral text-neutral bg-neutral-50 dark:bg-neutral-900/20' } },
   ],
   defaultVariants: {
     color: 'primary' as const,
+    shortcutActive: false as const,
   },
 }

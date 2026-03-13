@@ -7,7 +7,7 @@ const config = {
     popup: 'absolute duration-300 transition-transform pointer-events-auto',
     inner: 'bg-white dark:bg-gray-8 h-full w-full flex flex-col',
     draw: 'bg-gray-2 dark:bg-gray-6 rounded-md absolute top-2 left-1/2 h-[5px] w-[35px] -translate-x-1/2 transition-colors duration-200',
-    header: 'flex flex-row items-center flex-wrap h-[45px] pl-[13px] pr-[40px]',
+    header: 'flex flex-row items-center flex-wrap h-[70rpx] pl-[20rpx] pr-[40rpx]',
     title: 'font-bold text-base truncate dark:text-white',
     container: 'flex-1',
   },

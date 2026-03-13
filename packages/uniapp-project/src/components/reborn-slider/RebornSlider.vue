@@ -181,6 +181,7 @@ function createThumbStyle(percentPosition: number) {
   style.left = `${finalLeft}px`
   style.width = `${blockSize.value}px`
   style.height = `${blockSize.value}px`
+  style.top = 0
   style.position = 'absolute'
   // 移除 flex，因为样式已经由 ui.thumb() 控制
   return style
@@ -461,20 +462,12 @@ onMounted(() => {
 
       <!-- 双滑块模式 -->
       <template v-if="range">
-        <view
-          class="reborn-slider__thumb-measure" :class="[ui.thumb(), ui.thumbActive()]"
-          :style="minThumbStyle"
-        />
-        <view
-          class="reborn-slider__thumb-measure" :class="[ui.thumb(), ui.thumbActive()]"
-          :style="maxThumbStyle"
-        />
+        <view class="reborn-slider__thumb-measure" :class="[ui.thumb(), ui.thumbActive()]" :style="minThumbStyle" />
+        <view class="reborn-slider__thumb-measure" :class="[ui.thumb(), ui.thumbActive()]" :style="maxThumbStyle" />
       </template>
 
-      <view
-        :class="ui.picker()" :style="{ height: `${blockSize * 1.5}px` }" @touchstart.prevent="onTouchStart"
-        @touchmove.prevent="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchEnd"
-      />
+      <view :class="ui.picker()" :style="{ height: `${blockSize * 1.5}px` }" @touchstart.prevent="onTouchStart"
+        @touchmove.prevent="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchEnd" />
     </view>
 
     <slot name="value" :value="displayValue">

@@ -222,13 +222,15 @@ onMounted(() => {
 
 <template>
   <view class="reborn-picker-view" :class="ui.wrapper()">
-    <view v-if="computedHeaders.length > 0" :class="ui.header()">
+    <view v-if="computedHeaders.length > 0" :class="ui.header()" @touchstart.stop @touchmove.stop @touchend.stop
+      @touchcancel.stop>
       <text v-for="(label, index) in computedHeaders" :key="index" :class="ui.headerText()">
         {{ label }}
       </text>
     </view>
 
-    <view :class="ui.pickerContainer()" :style="{ height: `${height}px` }">
+    <view :class="ui.pickerContainer()" :style="{ height: `${height}px` }" @touchstart.stop @touchmove.stop
+      @touchend.stop @touchcancel.stop>
       <picker-view class="h-full" :value="value" :mask-style="maskStyle" :mask-top-style="maskStyle"
         :indicator-class="ui.indicator()" :mask-bottom-style="maskStyle" :immediate-change="true"
         :indicator-style="indicatorStyle" @change="onChange">

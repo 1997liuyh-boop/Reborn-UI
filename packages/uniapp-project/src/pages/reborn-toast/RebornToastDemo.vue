@@ -38,7 +38,7 @@ function showMiddletoast() {
     toast.show({
         position: 'middle',
         iconName: 'loading',
-        loadingType: 'ring',
+        loadingType: 'spinner',
         loadingColor: '#fff',
         msg: '中间toast',
         closed() {
@@ -67,7 +67,7 @@ function showLoadingToast() {
 function showLoadingToast2() {
     toast.loading({
         msg: '3s后自动关闭',
-        loadingType: 'ring',
+        loadingType: 'gooey-balls',
         loadingColor: '#fff'
     })
     setTimeout(() => {

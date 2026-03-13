@@ -355,7 +355,8 @@ defineExpose({
               ` : '']" />
 
             <!-- 头部 -->
-            <view v-if="showHeader" :class="ui.header()">
+            <view v-if="showHeader" :class="ui.header()" @touchstart.stop @touchmove.stop @touchend.stop
+              @touchcancel.stop>
               <slot name="header">
                 <text :class="ui.title()">{{ title }}</text>
               </slot>

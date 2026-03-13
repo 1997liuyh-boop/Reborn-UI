@@ -1,44 +1,36 @@
 <template>
     <view :class="ui.root()" :style="rootStyle">
-        <!-- Ring -->
-        <view v-if="props.type === 'ring'" :class="ui.container()">
-            <view :class="ui.indicator()" :style="getRingIndicatorStyle()" />
+        <view v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
+            :style="containerStyle">
+            <view v-if="props.type === 'outline'" :class="ui.outlineTrack()" />
+            <view :class="ui.indicator()" :style="ringIndicatorStyle" />
         </view>
 
-        <!-- Outline -->
-        <view v-else-if="props.type === 'outline'" :class="ui.container()">
-            <view :class="ui.outlineTrack()" :style="getOutlineTrackStyle()" />
-            <view :class="ui.indicator()" :style="getRingIndicatorStyle(true)" />
+        <view v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()"
+            :style="containerStyle">
+            <view v-for="i in 12" :key="i" :class="ui.spinnerItem()" :style="{ '--i': i }" />
         </view>
 
-        <!-- Spinner -->
-        <view v-else-if="props.type === 'spinner'" :class="ui.container()">
-            <view v-for="i in 12" :key="i" :class="ui.spinnerItem()"
-                :style="getSpinnerItemStyle(i)" />
+        <view v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" :class="ui.container()"
+            :style="containerStyle">
+            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ '--i': i }" />
         </view>
 
-        <!-- Bars Scale -->
-        <view v-else-if="props.type === 'bars-scale'" :class="ui.container()">
-            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="getBarsItemStyle(i)" />
+        <view v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" :class="ui.container()"
+            :style="containerStyle">
+            <view :class="ui.blockItem()" class="rb-shuffle-1" />
+            <view :class="ui.blockItem()" class="rb-shuffle-2" />
         </view>
 
-        <!-- Blocks Shuffle -->
-        <view v-else-if="props.type === 'blocks-shuffle'" :class="ui.container()">
-            <view :class="ui.blockItem()" style="left: 0; top: 0; animation: rb-blocks-shuffle 1s linear infinite;" />
-            <view :class="ui.blockItem()"
-                style="left: 0; top: 0; animation: rb-blocks-shuffle 1s linear infinite -0.5s;" />
+        <view v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" :class="ui.container()"
+            :style="containerStyle">
+            <view v-for="i in 9" :key="i" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
         </view>
 
-        <!-- Blocks Wave -->
-        <view v-else-if="props.type === 'blocks-wave'" :class="ui.container()">
-            <view v-for="i in 9" :key="i" :class="ui.waveItem()"
-                :style="getWaveItemStyle(i)" />
-        </view>
-
-        <!-- Gooey Balls -->
-        <view v-else-if="props.type === 'gooey-balls'" :class="ui.container()">
-            <view :class="ui.gooeyItem()" style="animation: rb-gooey-1 0.75s ease-in-out infinite;" />
-            <view :class="ui.gooeyItem()" style="animation: rb-gooey-2 0.75s ease-in-out infinite;" />
+        <view v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" :class="ui.container()"
+            :style="containerStyle">
+            <view :class="ui.gooeyItem()" class="rb-gooey-1" />
+            <view :class="ui.gooeyItem()" class="rb-gooey-2" />
         </view>
     </view>
 </template>
@@ -46,11 +38,7 @@
 <script lang="ts">
 export default {
     name: 'reborn-loading',
-    options: {
-        virtualHost: true,
-        addGlobalClass: true,
-        styleIsolation: 'shared'
-    }
+    options: { virtualHost: true, addGlobalClass: true, styleIsolation: 'shared' }
 }
 </script>
 
@@ -64,7 +52,7 @@ import theme, { type LoadingUI, LoadingColors, LoadingTypes } from './reborn-loa
 export type RebornLoadingProps = {
     ui?: LoadingUI
     type?: typeof LoadingTypes[number]
-    color?: typeof LoadingColors[number]
+    color?: typeof LoadingColors[number] | string
     size?: string | number
     customClass?: string
 }
@@ -77,75 +65,74 @@ const props = withDefaults(defineProps<RebornLoadingProps>(), {
 })
 
 const iconSize = ref<string>('30px')
+watch(() => props.size, (val) => { iconSize.value = addUnit(val) }, { immediate: true })
 
-watch(
-    () => props.size,
-    (newVal) => {
-        iconSize.value = addUnit(newVal)
-    },
-    { deep: true, immediate: true }
-)
+const isPresetColor = computed(() => LoadingColors.includes(props.color as typeof LoadingColors[number]))
 
+// bars-scale / blocks-wave 用百分比布局，尺寸过小时子元素会接近 0 不显示，故设最小宽高
+const MIN_SIZE_FOR_GRID = '32px'
 const rootStyle = computed(() => {
-    const style: Record<string, any> = {}
-    if (isDef(iconSize.value)) {
-        style.width = iconSize.value
-        style.height = iconSize.value
+    const style: Record<string, string> = {
+        width: iconSize.value,
+        height: iconSize.value,
+    }
+    if (props.type === 'bars-scale' || props.type === 'blocks-wave') {
+        style.minWidth = MIN_SIZE_FOR_GRID
+        style.minHeight = MIN_SIZE_FOR_GRID
     }
     return objToStyle(style)
 })
+const containerStyle = computed(() => {
+    const style: Record<string, string> = {}
+    if (props.color && !isPresetColor.value) {
+        style.color = props.color
+    }
 
+    return objToStyle(style)
+})
 
-const b = tv(theme)
-
-const ui = computed(() => {
-    const styles = b({ color: props.color, type: props.type })
+// ring 在自定义颜色时直接给 indicator 设边框色，避免 currentColor 在小程序等环境不继承导致显示成 U 形
+const ringIndicatorStyle = computed(() => {
+    if (props.type !== 'ring' || isPresetColor.value) return {}
+    const c = props.color as string
+    if (!c) return {}
     return {
-        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, props.ui?.root) }),
-        container: (opts?: { class?: any }) => styles.container({ class: cn(opts?.class, props.ui?.container) }),
-        indicator: (opts?: { class?: any }) => styles.indicator({ class: cn(opts?.class, props.ui?.indicator) }),
-        outlineTrack: (opts?: { class?: any }) => styles.outlineTrack({ class: cn(opts?.class, props.ui?.outlineTrack) }),
-        spinnerItem: (opts?: { class?: any }) => styles.spinnerItem({ class: cn(opts?.class, props.ui?.spinnerItem) }),
-        barItem: (opts?: { class?: any }) => styles.barItem({ class: cn(opts?.class, props.ui?.barItem) }),
-        blockItem: (opts?: { class?: any }) => styles.blockItem({ class: cn(opts?.class, props.ui?.blockItem) }),
-        waveItem: (opts?: { class?: any }) => styles.waveItem({ class: cn(opts?.class, props.ui?.waveItem) }),
-        gooeyItem: (opts?: { class?: any }) => styles.gooeyItem({ class: cn(opts?.class, props.ui?.gooeyItem) }),
+        borderColor: c,
+        borderTopColor: 'transparent',
     }
 })
 
-function getAnimationStyle(name: string, duration: string, timingFunction: string, delaySeconds: number = 0) {
-    return `animation:${name} ${duration} ${timingFunction} infinite;animation-delay:${delaySeconds ? `${delaySeconds}s` : '0s'};`
-}
+const b = tv(theme)
+const ui = computed(() => {
+    const styles = b({
+        color: isPresetColor.value ? props.color as typeof LoadingColors[number] : undefined,
+        type: props.type
+    })
+    // 映射所有 slots
+    const slots = ['root', 'container', 'indicator', 'outlineTrack', 'spinnerItem', 'barItem', 'blockItem', 'waveItem', 'gooeyItem'] as const
+    const res: any = {}
+    slots.forEach(slot => {
+        res[slot] = (opts?: { class?: any }) => styles[slot]({ class: cn(opts?.class, slot === 'root' ? props.customClass : undefined, (props.ui as any)?.[slot]) })
+    })
+    return res as Record<keyof LoadingUI, (opts?: { class?: any }) => string>
+})
 
-function getSpinnerItemStyle(index: number) {
-    return `transform:rotate(${(index - 1) * 30}deg);${getAnimationStyle('rb-spinner', '1s', 'linear', (index - 1) * 0.08)}`
+// 仅保留复杂的延迟算法在 JS 中，其余交给 CSS
+function getWaveDelay(index: number) {
+    return ((index - 1) % 3 + Math.floor((index - 1) / 3)) * 0.12 + 's'
 }
-
-function getBarsItemStyle(index: number) {
-    return getAnimationStyle('rb-bars-scale', '1s', 'ease-in-out', (index - 1) * 0.12)
-}
-
-function getWaveItemStyle(index: number) {
-    return getAnimationStyle(
-        'rb-blocks-wave',
-        '1s',
-        'ease-in-out',
-        ((index - 1) % 3 + Math.floor((index - 1) / 3)) * 0.12
-    )
-}
-
-function getRingIndicatorStyle(isOutline: boolean = false) {
-    return `border-color:currentColor;border-top-color:transparent;${isOutline ? 'position:absolute;inset:0;' : ''}${getAnimationStyle('rb-rotate', '0.8s', 'linear')}`
-}
-
-function getOutlineTrackStyle() {
-    return 'border-color:currentColor;'
-}
-
 </script>
 
 <style>
-/* Use non-scoped style for keyframes so Tailwind arbitrary values can find them */
+/* 1. 性能基础设置 */
+.rb-loading view {
+    box-sizing: border-box;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    /* 开启硬件加速 */
+}
+
+/* 2. 动画定义 */
 @keyframes rb-rotate {
     from {
         transform: rotate(0deg);
@@ -238,5 +225,54 @@ function getOutlineTrackStyle() {
     50% {
         transform: translateX(-20%) scale(1);
     }
+}
+
+/* 3. 动画逻辑应用 (核心优化) */
+/* Ring & Outline */
+.rb-loading .rb-loading-indicator {
+    border-color: currentColor;
+    border-top-color: transparent !important;
+    animation: rb-rotate 0.8s linear infinite;
+    will-change: transform;
+}
+
+/* Spinner */
+.rb-loading .rb-loading-spinnerItem {
+    transform: rotate(calc((var(--i) - 1) * 30deg));
+    animation: rb-spinner 1s linear infinite;
+    animation-delay: calc((var(--i) - 1) * 0.08s);
+    will-change: opacity;
+}
+
+/* Bars Scale */
+.rb-loading .rb-loading-barItem {
+    animation: rb-bars-scale 1s ease-in-out infinite;
+    animation-delay: calc((var(--i) - 1) * 0.12s);
+    will-change: transform, opacity;
+}
+
+/* Blocks Shuffle */
+.rb-shuffle-1 {
+    animation: rb-blocks-shuffle 1s linear infinite;
+}
+
+.rb-shuffle-2 {
+    animation: rb-blocks-shuffle 1s linear infinite -0.5s;
+}
+
+/* Blocks Wave */
+.rb-loading .rb-loading-waveItem {
+    animation: rb-blocks-wave 1s ease-in-out infinite;
+    animation-delay: var(--d);
+    will-change: transform, opacity;
+}
+
+/* Gooey */
+.rb-gooey-1 {
+    animation: rb-gooey-1 0.75s ease-in-out infinite;
+}
+
+.rb-gooey-2 {
+    animation: rb-gooey-2 0.75s ease-in-out infinite;
 }
 </style>

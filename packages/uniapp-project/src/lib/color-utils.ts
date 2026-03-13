@@ -12,6 +12,8 @@ export interface RgbaColor {
     a: number
 }
 
+export type ColorFormat = 'hex' | 'rgb' | 'rgba'
+
 export function hexToHsva(hex: string): HsvaColor {
     const rgba = hexToRgba(hex)
     return rgbaToHsva(rgba)
@@ -27,11 +29,16 @@ export function hexToRgba(hex: string): RgbaColor {
     if (hex.length === 3) {
         hex = hex.split('').map(char => char + char).join('')
     }
-    const int = parseInt(hex, 16)
-    const r = (int >> 16) & 255
-    const g = (int >> 8) & 255
-    const b = int & 255
-    const a = hex.length === 8 ? ((int >> 24) & 255) / 255 : 1
+
+    if (hex.length !== 6 && hex.length !== 8) {
+        return { r: 0, g: 0, b: 0, a: 1 }
+    }
+
+    const r = parseInt(hex.slice(0, 2), 16)
+    const g = parseInt(hex.slice(2, 4), 16)
+    const b = parseInt(hex.slice(4, 6), 16)
+    const a = hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1
+
     return { r, g, b, a }
 }
 
@@ -86,4 +93,55 @@ export function hsvaToRgba(hsva: HsvaColor): RgbaColor {
         b: Math.round(b * 255),
         a: hsva.a
     }
+}
+
+export function detectColorFormat(value: string | undefined | null): ColorFormat {
+    if (!value) return 'hex'
+
+    const normalized = value.trim().toLowerCase()
+    if (normalized.startsWith('rgba(')) return 'rgba'
+    if (normalized.startsWith('rgb(')) return 'rgb'
+    return 'hex'
+}
+
+export function parseColorString(value: string | undefined | null): RgbaColor | null {
+    if (!value) return null
+
+    const normalized = value.trim()
+
+    if (normalized.startsWith('#')) {
+        return hexToRgba(normalized)
+    }
+
+    const match = normalized.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/i)
+    if (!match) return null
+
+    return {
+        r: Number.parseInt(match[1] || '0'),
+        g: Number.parseInt(match[2] || '0'),
+        b: Number.parseInt(match[3] || '0'),
+        a: match[4] ? Number.parseFloat(match[4]) : 1,
+    }
+}
+
+export function colorStringToHsva(value: string | undefined | null): HsvaColor {
+    const rgba = parseColorString(value)
+    if (!rgba) {
+        return hexToHsva('#000000')
+    }
+
+    return rgbaToHsva(rgba)
+}
+
+export function hsvaToColorString(hsva: HsvaColor, format: ColorFormat): string {
+    if (format === 'hex') {
+        return hsvaToHex(hsva)
+    }
+
+    const rgba = hsvaToRgba(hsva)
+    if (format === 'rgb') {
+        return `rgb(${rgba.r}, ${rgba.g}, ${rgba.b})`
+    }
+
+    return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a.toFixed(2)})`
 }

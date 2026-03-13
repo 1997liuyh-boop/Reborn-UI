@@ -6,22 +6,33 @@ import type { inputColors, inputSizes } from './reborn-input.config'
 import { computed, nextTick, ref, toRef, useSlots, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
+import { cn } from '@/lib/utils'
 import theme from './reborn-input.config'
 
 export type InputType
   = | 'text'
-    | 'number'
-    | 'idcard'
-    | 'digit'
-    | 'tel'
-    | 'safe-password'
-    | 'nickname'
-    | 'none'
-    | 'decimal'
-    | 'numeric'
-    | 'search'
-    | 'email'
-    | 'url'
+  | 'number'
+  | 'idcard'
+  | 'digit'
+  | 'tel'
+  | 'safe-password'
+  | 'nickname'
+  | 'none'
+  | 'decimal'
+  | 'numeric'
+  | 'search'
+  | 'email'
+  | 'url'
+
+export type InputUI = {
+  wrapper?: string
+  input?: string
+  leading?: string
+  trailing?: string
+  iconBox?: string
+  clear?: string
+  password?: string
+}
 
 export interface InputProps {
   modelValue?: string | number
@@ -46,6 +57,7 @@ export interface InputProps {
   autofocus?: boolean
   rounded?: boolean
   color?: typeof inputColors[number]
+  ui?: InputUI
 }
 
 defineOptions({
@@ -81,7 +93,6 @@ const emit = defineEmits([
   'clear',
   'keyboardheightchange',
 ])
-const b = tv(theme)
 const slots = useSlots()
 
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -111,8 +122,10 @@ const { orientation, size: fieldGroupSize, disabled: fieldGroupDisabled, isError
 
 const size = toRef(props, 'size')
 
-const ui = computed(() =>
-  b({
+const b = tv(theme)
+const uiOverrides = computed(() => props.ui || {})
+const ui = computed(() => {
+  const styles = b({
     size: (fieldGroupSize.value || size.value) as any,
     fieldGroup: orientation.value,
     hasLeading: !!slots.leading,
@@ -120,7 +133,24 @@ const ui = computed(() =>
     rounded: props.rounded,
     color: props.color,
     error: isError.value,
-  }),
+  })
+  return {
+    wrapper: (opts?: { class?: any }) =>
+      styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
+    input: (opts?: { class?: any }) =>
+      styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
+    leading: (opts?: { class?: any }) =>
+      styles.leading({ class: cn(opts?.class, uiOverrides.value.leading) }),
+    trailing: (opts?: { class?: any }) =>
+      styles.trailing({ class: cn(opts?.class, uiOverrides.value.trailing) }),
+    iconBox: (opts?: { class?: any }) =>
+      styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
+    clear: (opts?: { class?: any }) =>
+      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.clear) }),
+    password: (opts?: { class?: any }) =>
+      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
+  }
+}
 )
 
 watch(
@@ -180,10 +210,11 @@ function onBlur(e: any) {
   emit('blur', e)
   if (validate) { validate('blur') }
 }
-// 切换密码显示状态
+// 切换密码显示状态（key 变化会重挂载 input，下一帧恢复焦点以便继续输入）
 function showPassword() {
   if (fieldGroupDisabled.value || props.readonly) { return }
   isPassword.value = !isPassword.value
+  nextTick(() => focus())
 }
 // 清除方法
 function clear() {
@@ -205,56 +236,35 @@ defineExpose({
 </script>
 
 <template>
-  <view
-    :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled" :data-filled="isFilled"
-    @click="focus"
-  >
+  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled" :data-filled="isFilled"
+    @click="focus">
     <view v-if="$slots.leading" :class="ui.leading()">
       <slot name="leading" :ui="ui" />
     </view>
 
-    <input
-      ref="inputRef" :type="isPassword ? 'password' : props.type" :disabled="fieldGroupDisabled || props.readonly"
-      :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.input()"
-      :password="isPassword" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
+    <input ref="inputRef" :key="isPassword ? 'pwd' : 'text'" :type="isPassword ? 'password' : props.type"
+      :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly" :placeholder="props.placeholder"
+      :value="inputValue" :class="ui.input()" :password="isPassword"
+      :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
       :placeholder-class="`text-gart-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
       :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
-      @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange"
-    >
+      @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
 
     <view v-if="$slots.trailing" :class="ui.trailing()">
       <slot name="trailing" :ui="ui" />
     </view>
 
     <!-- Icons Section -->
-    <view class="absolute bottom-0 right-3 top-0 z-20 flex items-center gap-2">
-      <view
-        v-if="showClear"
-        class="
-          flex cursor-pointer items-center justify-center p-1
-          text-muted-foreground transition-opacity
-          hover:opacity-80
-        "
-        @tap.stop="clear"
-      >
+    <view :class="ui.iconBox()" @tap.stop>
+      <view v-if="showClear" :class="ui.clear()" @tap.stop="clear">
         <view class="i-lucide-x-circle size-4" />
       </view>
 
-      <view
-        v-if="password"
-        class="
-          flex cursor-pointer items-center justify-center p-1
-          text-muted-foreground transition-opacity
-          hover:opacity-80
-        "
-        @tap.stop="showPassword"
-      >
-        <view
-          class="size-4" :class="[isPassword ? 'i-lucide-eye' : `
+      <view v-if="password" :class="ui.password()" @tap.stop="showPassword">
+        <view class="size-4" :class="[isPassword ? 'i-lucide-eye' : `
             i-lucide-eye-off
-          `]"
-        />
+          `]" />
       </view>
     </view>
   </view>

@@ -16,17 +16,17 @@ export default {
       sm: {
         icon: 'size-4',
         iconActive: 'size-4',
-        value: 'text-[length:var(--text-size-24)]',
+        value: 'text-24',
       },
       md: {
         icon: 'size-5',
         iconActive: 'size-5',
-        value: 'text-[length:var(--text-size-28)]',
+        value: 'text-28',
       },
       lg: {
         icon: 'size-7',
         iconActive: 'size-7',
-        value: 'text-[length:var(--text-size-32)]',
+        value: 'text-32',
       },
     },
     color: {
@@ -48,9 +48,37 @@ export default {
         star: 'cursor-default active:scale-100',
       },
     },
+    allowHalf: {
+      true: {},
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      size: 'sm',
+      allowHalf: true,
+      class: {
+        value: '!w-[30rpx]',
+      },
+    },
+    {
+      size: 'md',
+      allowHalf: true,
+      class: {
+        value: '!w-[40rpx]',
+      },
+    },
+    {
+      size: 'lg',
+      allowHalf: true,
+      class: {
+        value: '!w-[40rpx]',
+      },
+    },
+  ],
   defaultVariants: {
     size: 'md' as (typeof size)[number],
     color: 'warning' as (typeof color)[number],
+    allowHalf: false,
   },
 }

@@ -132,8 +132,8 @@ const isFocusing = ref<boolean>(props.autofocus)
 
 const b = tv(theme)
 
-const ui = computed(() =>
-  b({
+const ui = computed(() => {
+  const styles = b({
     size: props.size,
     border: props.border,
     focused: isFocus.value,
@@ -141,8 +141,16 @@ const ui = computed(() =>
     error: isError.value,
     hasCount: props.showWordLimit,
     color: props.color,
-  }),
-)
+  })
+  return {
+    root: (opts?: { class?: any }) =>
+      styles.root({ class: cn(opts?.class, props.ui?.root) }),
+    inner: (opts?: { class?: any }) =>
+      styles.inner({ class: cn(opts?.class, props.ui?.inner) }),
+    text: (opts?: { class?: any }) =>
+      styles.text({ class: cn(opts?.class, props.ui?.text) }),
+  }
+})
 
 // 文本框样式
 const textareaStyle = computed(() => {
@@ -241,19 +249,18 @@ defineExpose({
 </script>
 
 <template>
-  <view :class="ui.root({ class: cn(props.customClass, props.ui?.root) })" @tap="onTap">
-    <textarea :class="ui.inner({ class: props.ui?.inner })" :style="textareaStyle" :value="value" :name="name"
-      :disabled="readonly ?? isDisabled" :placeholder="placeholder"
-      :placeholder-class="`text-gray-4 ${placeholderClass}`" :placeholder-style="placeholderStyle"
-      :maxlength="maxlength" :focus="isFocusing" :cursor="cursor" :cursor-spacing="cursorSpacing"
-      :cursor-color="cursorColor" :show-confirm-bar="showConfirmBar" :confirm-hold="confirmHold"
-      :auto-height="autoHeight" :fixed="fixed" :adjust-position="adjustPosition" :hold-keyboard="holdKeyboard"
-      :inputmode="inputmode" :disable-default-padding="disableDefaultPadding" :adjust-keyboard-to="adjustKeyboardTo"
-      @confirm="onConfirm" @input="onInput" @linechange="onLineChange" @blur="onBlur" @focus="onFocus"
-      @keyboardheightchange="onKeyboardheightchange" />
+  <view :class="ui.root({ class: cn(props.customClass) })" @tap="onTap">
+    <textarea :class="ui.inner()" :style="textareaStyle" :value="value" :name="name" :disabled="readonly || isDisabled"
+      :placeholder="placeholder" :placeholder-class="`text-gray-4 ${placeholderClass}`"
+      :placeholder-style="placeholderStyle" :maxlength="maxlength" :focus="isFocusing" :cursor="cursor"
+      :cursor-spacing="cursorSpacing" :cursor-color="cursorColor" :show-confirm-bar="showConfirmBar"
+      :confirm-hold="confirmHold" :auto-height="autoHeight" :fixed="fixed" :adjust-position="adjustPosition"
+      :hold-keyboard="holdKeyboard" :inputmode="inputmode" :disable-default-padding="disableDefaultPadding"
+      :adjust-keyboard-to="adjustKeyboardTo" @confirm="onConfirm" @input="onInput" @linechange="onLineChange"
+      @blur="onBlur" @focus="onFocus" @keyboardheightchange="onKeyboardheightchange" />
 
     <slot v-if="showWordLimit" name="limit" :length="value.length" :max="maxlength">
-      <text :size="12" :class="ui.text({ class: props.ui?.text })">
+      <text :size="12" :class="ui.text()">
         {{
           value.length }} / {{ maxlength }}
       </text>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import * as z from 'zod'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -78,7 +78,7 @@ const genderOptions = [
   },
 ]
 
-const emailRule = z.email('邮箱格式不正确').refine(val => val.endsWith('@qq.com') || val.endsWith('@163.com'), '仅支持 QQ 或 163 邮箱')
+const emailRule = z.string().email('邮箱格式不正确').refine(val => val.endsWith('@qq.com') || val.endsWith('@163.com'), '仅支持 QQ 或 163 邮箱')
 const phoneSchema = z.string()
   .min(11, { message: '手机号长度不足' })
   .max(11, { message: '手机号长度超出' })
@@ -88,7 +88,11 @@ const rules = z.object({
   username: z.string().min(3, '用户名至少3个字符'),
   password: passwordSchema,
   newPassword: passwordSchema.refine(val => val !== form.value.password, '新密码不能与旧密码相同'),
-  gender: z.coerce.number({ message: '请选择性别' }),
+  gender: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined) ? undefined : Number(val),
+    z.number({ message: '请选择性别' })
+      .refine((n) => [0, 1, 2].includes(n), '请选择性别'),
+  ),
   email: emailRule,
   age: z.number()
     .min(18, { message: '年龄最小不能小于 18 岁' })
@@ -136,6 +140,7 @@ function addContact() {
 }
 
 async function submit() {
+  console.log(form.value)
   if (!formRef.value) { return }
 
   const valid = await formRef.value.validate((isValid: boolean, errors: any[]) => {
@@ -169,27 +174,21 @@ function scrollToBio() {
 <template>
   <RebornPage title="Form 表单" description="表单组件用于数据录入与校验，支持多种校验规则、错误提示、禁用状态等功能。">
     <RebornCard title="表单验证">
-      <view
-        class="
+      <view class="
           mb-4 flex items-center justify-between border-b border-gray-100 pb-4
           dark:border-gray-800
-        "
-      >
-        <text
-          class="
+        ">
+        <text class="
             text-sm text-gray-6
             dark:text-gray-4
-          "
-        >
+          ">
           开启实时校验（输入内容时立即见效）
         </text>
         <RebornSwitch v-model="immediateValidate" />
       </view>
 
-      <RebornForm
-        ref="formRef" :model-value="form" :rules="rules" label-width="160rpx" label-position="left"
-        size="sm" :trigger="formTrigger"
-      >
+      <RebornForm ref="formRef" :model-value="form" :rules="rules" label-width="160rpx" label-position="left" size="sm"
+        :trigger="formTrigger">
         <RebornFormItem prop="username" label="用户名" required>
           <RebornInput v-model="form.username" placeholder="请输入用户名" />
         </RebornFormItem>
@@ -276,41 +275,29 @@ function scrollToBio() {
               </RebornButton>
             </view>
           </template>
-          <view
-            v-for="(contact, index) in form.contacts" :key="index"
-            class="mb-4 flex flex-col rounded-xl p-4 ring-1 ring-gray-200"
-          >
-            <view
-              class="
+          <view v-for="(contact, index) in form.contacts" :key="index"
+            class="mb-4 flex flex-col rounded-xl p-4 ring-1 ring-gray-200">
+            <view class="
                 mb-4 flex items-center gap-1 border-b border-gray-200 pb-2
                 text-26 font-medium text-gray-8
                 dark:text-gray-1
-              "
-            >
+              ">
               联系人 {{ index + 1 }}
             </view>
-            <RebornFormItem
-              :prop="`contacts-${index}-name`" label="姓名" required label-position="top"
-              require-asterisk-position="left"
-            >
+            <RebornFormItem :prop="`contacts-${index}-name`" label="姓名" required label-position="top"
+              require-asterisk-position="left">
               <RebornInput v-model="contact.name" placeholder="请输入姓名" />
             </RebornFormItem>
-            <RebornFormItem
-              :prop="`contacts-${index}-phone`" label="手机号" required label-position="top"
-              require-asterisk-position="left"
-            >
+            <RebornFormItem :prop="`contacts-${index}-phone`" label="手机号" required label-position="top"
+              require-asterisk-position="left">
               <RebornInput v-model="contact.phone" placeholder="请输入手机号" />
             </RebornFormItem>
-            <RebornFormItem
-              :prop="`contacts-${index}-email`" label="邮箱" required label-position="top"
-              require-asterisk-position="left"
-            >
+            <RebornFormItem :prop="`contacts-${index}-email`" label="邮箱" required label-position="top"
+              require-asterisk-position="left">
               <RebornInput v-model="contact.email" placeholder="请输入邮箱" />
             </RebornFormItem>
-            <RebornFormItem
-              :prop="`contacts-${index}-no`" label="序号" required label-position="top"
-              require-asterisk-position="left"
-            >
+            <RebornFormItem :prop="`contacts-${index}-no`" label="序号" required label-position="top"
+              require-asterisk-position="left">
               <RebornInputNumber v-model="contact.no" placeholder="请输入序号" />
             </RebornFormItem>
           </view>
@@ -330,19 +317,15 @@ function scrollToBio() {
       </view>
     </RebornCard>
     <RebornCard title="数据">
-      <view
-        class="
+      <view class="
           overflow-hidden rounded-lg bg-gray-50 p-4
           dark:bg-gray-900
-        "
-      >
-        <text
-          class="
+        ">
+        <text class="
             select-text whitespace-pre-wrap break-all font-mono text-xs
             leading-5 text-gray-7
             dark:text-gray-3
-          "
-        >
+          ">
           {{ JSON.stringify(form, null, 4) }}
         </text>
       </view>

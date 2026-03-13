@@ -1,5 +1,6 @@
 <template>
-    <view class="reborn-draggable" :class="ui.root({ class: props.className })">
+    <view class="reborn-draggable" :class="ui.root({ class: props.className })" :data-dragging="dragging"
+        @touchmove="dragWxs.touchmove">
         <!-- @vue-ignore -->
         <view v-for="(item, index) in list" :key="getItemKey(item, index)" class="reborn-draggable__item" :class="[
             ui.item(),
@@ -25,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, getCurrentInstance, type PropType, watch } from "vue";
+import { computed, ref, getCurrentInstance, type PropType, watch, onMounted, onUnmounted } from "vue";
 import theme from "./reborn-draggable.config";
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -52,6 +53,9 @@ type ItemPosition = {
     width: number;
     height: number;
 };
+
+// 解决 TS 类型检查报错：为 WXS 模块提供声明
+const dragWxs = { touchmove: (e: any, ins: any) => true };
 
 // 位移偏移量类型定义
 type TranslateOffset = {
@@ -667,6 +671,21 @@ watch(
         immediate: true
     }
 );
+</script>
+
+<script module="dragWxs" lang="wxs">
+module.exports = {
+    touchmove: function (e, ins) {
+        if (e.currentTarget && e.currentTarget.dataset) {
+            var dragging = e.currentTarget.dataset.dragging;
+            // 判断是否在拖拽中（兼容各端 boolean 和 string)
+            if (dragging === true || dragging === 'true') {
+                return false; // 阻止默认的页面滚动行为
+            }
+        }
+        return true;
+    }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -24,15 +24,15 @@ const colorRgba = ref('rgba(244, 63, 94, 0.50)')
         <RebornCard title="输出格式" overflowVisible>
             <view class="flex flex-col space-y-4">
                 <view class="flex items-center space-x-4">
-                    <RebornColorPicker v-model="colorHex" format="hex" />
+                    <RebornColorPicker v-model="colorHex" default-format="hex" />
                     <text class="text-xs font-mono bg-gray-100 p-1 rounded">HEX: {{ colorHex }}</text>
                 </view>
                 <view class="flex items-center space-x-4">
-                    <RebornColorPicker v-model="colorRgb" format="rgb" />
+                    <RebornColorPicker v-model="colorRgb" default-format="rgb" />
                     <text class="text-xs font-mono bg-gray-100 p-1 rounded">RGB: {{ colorRgb }}</text>
                 </view>
                 <view class="flex items-center space-x-4">
-                    <RebornColorPicker v-model="colorRgba" format="rgba" />
+                    <RebornColorPicker v-model="colorRgba" default-format="rgba" />
                     <text class="text-xs font-mono bg-gray-100 p-1 rounded">RGBA: {{ colorRgba }}</text>
                 </view>
             </view>

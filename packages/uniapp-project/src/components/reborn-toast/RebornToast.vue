@@ -16,24 +16,27 @@ import RebornOverlay from '@/components/reborn-overlay/RebornOverlay.vue'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 import base64 from '@/lib/base64'
 import { addUnit, isDef, isFunction } from '@/lib/util'
+import { tv } from '@/lib/tv'
+import { cn } from '@/lib/utils'
 import { globalOptionRef, getToastOptionKey, toastIcon, type ToastDirection, type ToastOptions } from './index'
-import { toastTheme } from './reborn-toast.config'
+import theme, { toastColors, toastDirections, toastPositions } from './reborn-toast.config'
+import type { ToastLoadingType, ToastIconType, ToastPositionType } from './index'
 
 interface ToastProps {
     selector?: string
     msg?: string
     direction?: ToastDirection
-    iconName?: 'success' | 'error' | 'warning' | 'loading' | 'info' | ''
+    iconName?: ToastIconType | ''
     iconSize?: number
-    loadingType?: 'outline' | 'ring' | 'spinner'
+    loadingType?: ToastLoadingType
     loadingColor?: string
     loadingSize?: number
-    position?: 'top' | 'middle-top' | 'middle' | 'bottom'
+    position?: ToastPositionType
     zIndex?: number
     cover?: boolean
     iconClass?: string
     classPrefix?: string
-    color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' | ''
+    color?: Exclude<typeof toastColors[number], 'default'> | ''
     opened?: () => void
     closed?: () => void
     customClass?: string
@@ -77,15 +80,20 @@ const toastOption = inject(key, globalOptionRef)
 watch(() => toastOption.value, (val) => reset(val), { immediate: true, deep: true })
 watch(() => iconName.value, buildSvg, { immediate: true })
 
+const b = tv(theme)
 const transitionStyle = computed(() => `z-index:${zIndex.value};position:fixed;left:0;top:50%;width:100%;transform:translate(0,-50%);text-align:center;pointer-events:none;`)
-const rootClass = computed(() => {
-    const base = toastTheme.root
-    const pos = toastTheme.positions[position.value]
-    const dir = direction.value === 'vertical' ? toastTheme.vertical : ''
-    const withIcon = (iconName.value && (iconName.value !== 'loading' || msg.value)) ? toastTheme.withIcon : ''
-    const customConfigColor = color.value ? toastTheme.colors[color.value as keyof typeof toastTheme.colors] : ''
-    const finalBase = customConfigColor ? base.replace('bg-black/80', '').replace('text-white', '') + ` ${customConfigColor}` : base
-    return `${finalBase} ${pos} ${dir} ${withIcon} ${props.customClass}`
+const ui = computed(() => {
+    const styles = b({
+        position: position.value as typeof toastPositions[number],
+        direction: direction.value as typeof toastDirections[number],
+        withIcon: Boolean(iconName.value && (iconName.value !== 'loading' || msg.value)),
+        color: (color.value || 'default') as typeof toastColors[number],
+    })
+
+    return {
+        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class) }),
+        msg: (opts?: { class?: any }) => styles.msg({ class: cn(opts?.class) }),
+    }
 })
 const svgStyle = computed(() => {
     const size = iconSize.value || '30rpx'
@@ -124,13 +132,13 @@ function reset(option: ToastOptions) {
         custom-style="background-color:transparent;pointer-events:auto;" />
     <RebornTransition name="fade" :show="show" :custom-style="transitionStyle" @after-enter="onAfterEnter"
         @after-leave="onAfterLeave">
-        <view :class="rootClass">
+        <view :class="ui.root({ class: props.customClass })">
             <RebornLoading v-if="iconName === 'loading'" :type="loadingType" :color="loadingColor as any"
                 :size="loadingSize" :custom-class="direction === 'vertical' ? 'mb-2' : 'mr-2'" />
             <view v-else-if="iconName"
                 :class="direction === 'vertical' ? 'mb-2 mx-auto inline-block bg-cover bg-no-repeat' : 'mr-2 inline-block bg-cover bg-no-repeat'"
                 :style="svgStyle" />
-            <view v-if="msg" :class="toastTheme.msg">{{ msg }}</view>
+            <view v-if="msg" :class="ui.msg()">{{ msg }}</view>
         </view>
     </RebornTransition>
 </template>

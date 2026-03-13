@@ -10,6 +10,8 @@ const config = {
     trailing: 'absolute right-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
     // Styles for internal icons like clear and password toggle
     icon: 'absolute right-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground transition-opacity hover:opacity-80 cursor-pointer z-10',
+    iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-2',
+    iconSection: 'flex cursor-pointer items-center justify-center p-1 text-muted-foreground transition-opacity hover:opacity-80',
   },
   variants: {
     size: {

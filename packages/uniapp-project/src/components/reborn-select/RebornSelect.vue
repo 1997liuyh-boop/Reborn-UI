@@ -338,19 +338,17 @@ defineExpose({
 <template>
   <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
     :text="text" :clearable="clearable" :color="color" :size="size" :ui="triggerUi" @open="open()" @clear="clear">
-    <!-- #ifndef MP-WEIXIN -->
-    <template #default>
-      <slot name="tag" :selectItem="selectItem" />
-    </template>
-    <!-- #endif -->
 
-    <!-- #ifdef MP-WEIXIN -->
     <template #default="{ showText, text, placeholder, ui }">
+      <!-- #ifndef MP-WEIXIN -->
+      <slot name="tag" :selectItem="selectItem" />
+      <!-- #endif -->
+      <!-- #ifdef MP-WEIXIN -->
       <slot v-if="$slots.tag" name="tag" :selectItem="selectItem" />
       <text v-else-if="showText" :class="ui.text()">{{ text }}</text>
       <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+      <!-- #endif -->
     </template>
-    <!-- #endif -->
   </RebornSelectTrigger>
   <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
     <view @touchmove.stop>
@@ -374,11 +372,12 @@ defineExpose({
       <slot name="append" />
 
       <view :class="ui.buttons()">
-        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" :class="ui.cancel()">
+        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" :class="ui.cancel()"
+          @tap.stop="close">
           {{ cancelText }}
         </RebornButton>
         <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color" :class="ui.confirm()"
-          @tap="confirm">
+          @tap.stop="confirm">
           {{ confirmText }}
         </RebornButton>
       </view>

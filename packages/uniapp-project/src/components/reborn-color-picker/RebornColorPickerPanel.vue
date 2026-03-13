@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch, getCurrentInstance, onMounted } from "vue";
 import {
-    hexToHsva,
+    colorStringToHsva,
+    detectColorFormat,
+    hsvaToColorString,
     hsvaToHex,
     hsvaToRgba,
     rgbaToHsva,
-    hexToRgba,
     rgbaToHex,
 } from "../../lib/color-utils";
-import type { HsvaColor } from "../../lib/color-utils";
+import type { ColorFormat, HsvaColor } from "../../lib/color-utils";
 import { tv } from "@/lib/tv";
 import { cn } from "@/lib/utils";
 import theme from "./reborn-color-picker-panel.config";
@@ -18,6 +19,7 @@ import RebornInput from "../reborn-input/RebornInput.vue";
 
 interface Props {
     modelValue?: string;
+    format?: ColorFormat;
     class?: any;
     ui?: {
         root?: string
@@ -46,6 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
     (e: "update:modelValue", value: string): void;
+    (e: "update:format", value: ColorFormat): void;
 }>();
 
 const { proxy } = getCurrentInstance()!;
@@ -79,8 +82,14 @@ const ui = computed(() => {
 });
 
 // --- 状态 ---
-const colorHsv = ref<HsvaColor>(hexToHsva(props.modelValue || "#000000"));
-const format = ref<"hex" | "rgb" | "rgba">("hex");
+const colorHsv = ref<HsvaColor>(colorStringToHsva(props.modelValue || "#000000"));
+const format = ref<ColorFormat>(props.format || detectColorFormat(props.modelValue));
+
+// 画布/滑块区域 rect 缓存，touchmove 时用缓存同步计算位置，避免每次异步 query 导致不跟手
+type Rect = { left: number; top: number; width: number; height: number };
+const saturationRect = ref<Rect | null>(null);
+const hueRect = ref<Rect | null>(null);
+const alphaRect = ref<Rect | null>(null);
 
 // --- 来自 base.css 的预设颜色 ---
 const presets = [
@@ -93,25 +102,15 @@ const rgbaValue = computed(() => hsvaToRgba(colorHsv.value));
 
 const displayValue = computed({
     get: () => {
-        if (format.value === "hex") return hexValue.value.toUpperCase();
-        if (format.value === "rgb") return `rgb(${rgbaValue.value.r}, ${rgbaValue.value.g}, ${rgbaValue.value.b})`;
-        return `rgba(${rgbaValue.value.r}, ${rgbaValue.value.g}, ${rgbaValue.value.b}, ${rgbaValue.value.a.toFixed(2)})`;
+        const value = hsvaToColorString(colorHsv.value, format.value);
+        return format.value === "hex" ? value.toUpperCase() : value;
     },
     set: (val: string) => {
         try {
-            if (val.startsWith("#")) {
-                colorHsv.value = hexToHsva(val);
-            } else if (val.startsWith("rgb")) {
-                const matches = val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-                if (matches) {
-                    const [_, r, g, b, a] = matches;
-                    colorHsv.value = rgbaToHsva({
-                        r: parseInt(r || "0"),
-                        g: parseInt(g || "0"),
-                        b: parseInt(b || "0"),
-                        a: a ? parseFloat(a) : 1,
-                    });
-                }
+            colorHsv.value = colorStringToHsva(val);
+
+            if (!props.format) {
+                format.value = detectColorFormat(val);
             }
         } catch (e) {
             // 忽略无效输入
@@ -122,62 +121,84 @@ const displayValue = computed({
 // --- 监听器 ---
 watch(() => props.modelValue, (val: string | undefined) => {
     if (!val) return;
-    // Auto detect format from incoming string if it's not clear
-    if (val.startsWith('rgba')) format.value = 'rgba';
-    else if (val.startsWith('rgb')) format.value = 'rgb';
-    else if (val.startsWith('#')) format.value = 'hex';
 
-    const hsv = hexToHsva(val.startsWith('#') ? val : rgbaToHex(parseRgba(val)));
-    if (JSON.stringify(hsv) !== JSON.stringify(colorHsv.value)) {
+    if (props.format) {
+        format.value = props.format;
+    } else {
+        format.value = detectColorFormat(val);
+    }
+
+    const hsv = colorStringToHsva(val);
+    const cur = colorHsv.value;
+    if (
+        cur.h !== hsv.h || cur.s !== hsv.s || cur.v !== hsv.v || cur.a !== hsv.a
+    ) {
         colorHsv.value = hsv;
     }
 });
 
-function parseRgba(val: string) {
-    const matches = val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    if (matches) {
-        return {
-            r: parseInt(matches[1]),
-            g: parseInt(matches[2]),
-            b: parseInt(matches[3]),
-            a: matches[4] ? parseFloat(matches[4]) : 1
-        };
+watch(() => props.format, (val) => {
+    if (val) {
+        format.value = val;
     }
-    return { r: 0, g: 0, b: 0, a: 1 };
-}
+}, { immediate: true });
 
 watch(displayValue, (val: string) => {
     emit("update:modelValue", val);
 });
 
-// --- 交互逻辑 ---
+watch(format, (val) => {
+    emit("update:format", val);
+});
+
+// --- 交互逻辑：touchstart 预热 rect 缓存，touchmove 用缓存同步计算，避免异步 query 导致不跟手 ---
+function updateSaturationFromRect(rect: Rect, clientX: number, clientY: number) {
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+    colorHsv.value = {
+        ...colorHsv.value,
+        s: x * 100,
+        v: (1 - y) * 100,
+    };
+}
+
 function handleSaturationTouch(e: any) {
     const touch = e.touches[0];
+    if (!touch) return;
+    if (e.type === "touchstart") saturationRect.value = null;
+    const rect = saturationRect.value;
+    if (rect) {
+        updateSaturationFromRect(rect, touch.clientX, touch.clientY);
+        return;
+    }
     uni.createSelectorQuery()
         .in(proxy)
         .select(".reborn-saturation")
-        .boundingClientRect((rect: any) => {
-            if (!rect) return;
-            const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
-            const y = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
-
-            colorHsv.value = {
-                ...colorHsv.value,
-                s: x * 100,
-                v: (1 - y) * 100,
-            };
+        .boundingClientRect((r: any) => {
+            if (!r) return;
+            saturationRect.value = { left: r.left, top: r.top, width: r.width, height: r.height };
+            updateSaturationFromRect(saturationRect.value, touch.clientX, touch.clientY);
         })
         .exec();
 }
 
 function handleHueTouch(e: any) {
     const touch = e.touches[0];
+    if (!touch) return;
+    if (e.type === "touchstart") hueRect.value = null;
+    const rect = hueRect.value;
+    if (rect) {
+        const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        colorHsv.value = { ...colorHsv.value, h: x * 360 };
+        return;
+    }
     uni.createSelectorQuery()
         .in(proxy)
         .select(".reborn-hue-slider")
-        .boundingClientRect((rect: any) => {
-            if (!rect) return;
-            const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        .boundingClientRect((r: any) => {
+            if (!r) return;
+            hueRect.value = { left: r.left, top: r.top, width: r.width, height: r.height };
+            const x = Math.max(0, Math.min(1, (touch.clientX - r.left) / r.width));
             colorHsv.value = { ...colorHsv.value, h: x * 360 };
         })
         .exec();
@@ -185,19 +206,28 @@ function handleHueTouch(e: any) {
 
 function handleAlphaTouch(e: any) {
     const touch = e.touches[0];
+    if (!touch) return;
+    if (e.type === "touchstart") alphaRect.value = null;
+    const rect = alphaRect.value;
+    if (rect) {
+        const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        colorHsv.value = { ...colorHsv.value, a: x };
+        return;
+    }
     uni.createSelectorQuery()
         .in(proxy)
         .select(".reborn-alpha-slider")
-        .boundingClientRect((rect: any) => {
-            if (!rect) return;
-            const x = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        .boundingClientRect((r: any) => {
+            if (!r) return;
+            alphaRect.value = { left: r.left, top: r.top, width: r.width, height: r.height };
+            const x = Math.max(0, Math.min(1, (touch.clientX - r.left) / r.width));
             colorHsv.value = { ...colorHsv.value, a: x };
         })
         .exec();
 }
 
 function selectPreset(color: string) {
-    colorHsv.value = hexToHsva(color);
+    colorHsv.value = colorStringToHsva(color);
 }
 </script>
 
@@ -236,7 +266,8 @@ function selectPreset(color: string) {
             <view :class="ui.formatToggles()">
                 <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="xs"
                     :variant="format === f ? 'solid' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
-                    class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors" @tap="format = f">
+                    class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors"
+                    @tap="format = f as ColorFormat">
                     {{ f }}
                 </RebornButton>
             </view>
