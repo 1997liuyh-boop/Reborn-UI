@@ -20,20 +20,21 @@ onPageScroll((e) => {
   <RebornPage title="Backtop 回到顶部" description="返回页面顶部的操作按钮">
     <RebornSticky :scroll-top="scrollTop">
       <template #default="{ isSticky }">
-        <RebornCard :title="isSticky ? '' : '颜色'">
+        <RebornCard>
+          <template #title>
+            <view v-if="!isSticky">
+              颜色
+            </view>
+          </template>
           <view class="flex flex-wrap gap-2">
-            <view
-              v-for="c in backTopColors" :key="c"
-              class="
+            <view v-for="c in backTopColors" :key="c" class="
                 size-6 cursor-pointer rounded-full ring-2 ring-transparent
                 ring-offset-2 transition-all
-              "
-              :class="[`
+              " :class="[`
                 bg-${c}
               `, color === c ? 'scale-110 ring-slate-400' : `hover:scale-110`]"
               :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-              @click="color = c"
-            />
+              @click="color = c" />
           </view>
         </RebornCard>
       </template>
@@ -41,23 +42,23 @@ onPageScroll((e) => {
 
     <RebornSticky :scroll-top="scrollTop" :offset-top="66">
       <template #default="{ isSticky }">
-        <RebornCard :title="isSticky ? '' : '大小'">
+        <RebornCard>
+          <template #title>
+            <view v-if="!isSticky">
+              大小
+            </view>
+          </template>
           <view class="flex flex-wrap gap-2">
-            <view
-              v-for="s in backTopSizes" :key="s"
-              class="
+            <view v-for="s in backTopSizes" :key="s" class="
                 cursor-pointer rounded-full border px-3 py-1.5 text-xs
                 transition-colors
-              "
-              :class="size === s ? `
+              " :class="size === s ? `
                 border-slate-900 bg-slate-900 text-white
                 dark:bg-white dark:text-slate-900
               ` : `
                 border-slate-300 bg-transparent text-slate-600
                 hover:border-slate-400
-              `"
-              @click="size = s"
-            >
+              `" @click="size = s">
               {{ s }}
             </view>
           </view>
@@ -77,12 +78,10 @@ onPageScroll((e) => {
     </RebornCard>
 
     <view class="space-y-4 p-4">
-      <view
-        v-for="item in items" :key="item" class="
+      <view v-for="item in items" :key="item" class="
           rounded bg-white p-4 shadow
           dark:bg-gray-800
-        "
-      >
+        ">
         {{ item }}
       </view>
     </view>
@@ -92,12 +91,10 @@ onPageScroll((e) => {
 
     <!-- 自定义内容 & 样式 -->
     <RebornBackTop :scroll-top="scrollTop" :bottom="100" :ui="{ wrapper: 'fixed left-5 z-50' }" color="success">
-      <view
-        class="
+      <view class="
           flex size-12 items-center justify-center rounded-lg bg-success
           text-white shadow-lg
-        "
-      >
+        ">
         <text class="text-sm font-bold">TOP</text>
       </view>
     </RebornBackTop>

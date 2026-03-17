@@ -4,9 +4,11 @@ import { ref } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
+import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornSelectDate from '@/components/reborn-select-date/RebornSelectDate.vue'
-import { selectDateColors } from '@/components/reborn-select-date/reborn-select-date.config'
+import { selectDateColors, selectDateSizes } from '@/components/reborn-select-date/reborn-select-date.config'
 
 // 1. 基础用法
 const date1 = ref('')
@@ -17,6 +19,8 @@ const date2 = ref('')
 // 3. 自定义触发器
 const date3 = ref('')
 const selectDateRef3 = ref<InstanceType<typeof RebornSelectDate> | null>(null)
+const currentSize = ref<typeof selectDateSizes[number]>(selectDateSizes[0])
+const currentColor = ref<typeof selectDateColors[number]>(selectDateColors[0])
 
 function openSelectDate3() {
     selectDateRef3.value?.open((value: any) => {
@@ -40,7 +44,6 @@ const customShortcuts: SelectDateShortcut[] = [
 // 6. 自定义日期格式
 const dateFormat = ref('')
 const currentType = ref<'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'>('date')
-const currentColor = ref<typeof selectDateColors[number]>(selectDateColors[0])
 const typeOptions = [
     { label: 'YYYY', value: 'year' },
     { label: 'YYYY-MM', value: 'month' },
@@ -53,49 +56,56 @@ const typeOptions = [
 
 <template>
     <RebornPage title="日期选择器" description="用于选择日期/时间的组件，支持范围选择和多种日期格式。">
-        <RebornCard title="配置" custom-class="space-y-4">
-            <view class="space-y-3">
-                <view class="
-                text-sm font-medium text-slate-500
-                dark:text-slate-200
-              ">
-                    按钮颜色
-                </view>
-                <view class="flex flex-wrap gap-2">
-                    <view v-for="c in selectDateColors" :key="c" class="
-                  size-6 cursor-pointer rounded-full ring-2 ring-transparent
-                  ring-offset-2 transition-all
-                " :class="[
-                    `
-                    bg-${c}
-                  `,
-                    currentColor === c ? 'scale-110 ring-slate-400' : `
-                    hover:scale-110
-                  `,
-                ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-                        @click="currentColor = c" />
-                </view>
-            </view>
-        </RebornCard>
-        <!-- 1. 基础用法 -->
-        <RebornCard title="基础用法" custom-class="space-y-4">
-            <view class="text-xs text-gray-4">
-                默认配置，类型为 second，显示完整日期时间选择。
-            </view>
-            <RebornSelectDate v-model="date1" :color="currentColor" />
-            <RebornSelectDate v-model="date1" :color="currentColor">
+        <RebornCard title="playground">
+            <RebornText color="neutral">
+                基础用法
+            </RebornText>
+            <RebornSelectDate v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor"
+                :size="currentSize" />
+            <RebornText color="neutral">
+                插槽
+            </RebornText>
+            <RebornSelectDate v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor"
+                :size="currentSize">
                 <template #tag>
-                    <view class="text-xs text-surface-500">
-                        {{ date1 || '未选择' }}
-                    </view>
+                    <RebornText color="neutral">
+                        插槽： {{ dateFormat }}
+                    </RebornText>
                 </template>
             </RebornSelectDate>
-            <view class="text-xs text-surface-500">
-                当前值：{{ date1 || '未选择' }}
-            </view>
+        </RebornCard>
+        <RebornCard title="配置">
+            <RebornText color="neutral">
+                尺寸：
+            </RebornText>
+            <RebornRadioGroup v-model="currentSize">
+                <RebornRadio v-for="s in selectDateSizes" :key="s" :value="s" :label="s" />
+            </RebornRadioGroup>
+            <RebornText color="neutral">
+                按钮颜色：
+            </RebornText>
+            <RebornRadioGroup v-model="currentColor">
+                <RebornRadio v-for="item in selectDateColors" :key="item" :value="item" :showIcon="false">
+                    <template #default="{ isChecked }">
+                        <view class="relative flex size-5">
+                            <view v-if="isChecked"
+                                class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                                :class="`bg-${item}`">
+                            </view>
+                            <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`"></view>
+                        </view>
+                    </template>
+                </RebornRadio>
+            </RebornRadioGroup>
+            <RebornText color="neutral">
+                格式化：
+            </RebornText>
+            <RebornRadioGroup v-model="currentType">
+                <RebornRadio v-for="item in typeOptions" :key="item.value" :value="item.value" :label="item.label"
+                    size="sm" />
+            </RebornRadioGroup>
         </RebornCard>
 
-        <!-- 2. 固定开始、结束日期 -->
         <RebornCard title="固定开始、结束日期" custom-class="space-y-4">
             <view class="text-xs text-gray-4">
                 通过 start 和 end 属性限制可选日期范围。
@@ -107,7 +117,6 @@ const typeOptions = [
             </view>
         </RebornCard>
 
-        <!-- 3. 自定义触发器 -->
         <RebornCard title="自定义触发器" custom-class="space-y-4">
             <view class="text-xs text-gray-4">
                 通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开。
@@ -147,19 +156,5 @@ const typeOptions = [
             </view>
         </RebornCard>
 
-        <!-- 6. 自定义日期格式 -->
-        <RebornCard title="自定义日期格式" custom-class="space-y-4">
-            <view class="text-xs text-gray-4">
-                通过 type 属性切换日期精度，使用 Radio 组件选择不同格式。
-            </view>
-            <view class="flex flex-wrap gap-3">
-                <RebornRadio v-for="item in typeOptions" :key="item.value" v-model="currentType" :value="item.value"
-                    :label="item.label" size="sm" />
-            </view>
-            <RebornSelectDate v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor" />
-            <view class="text-xs text-surface-500">
-                格式：{{typeOptions.find(t => t.value === currentType)?.label}} | 当前值：{{ dateFormat || '未选择' }}
-            </view>
-        </RebornCard>
     </RebornPage>
 </template>

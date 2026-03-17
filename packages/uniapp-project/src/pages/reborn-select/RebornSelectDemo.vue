@@ -193,7 +193,7 @@ function openSelect2() {
 
 <template>
   <RebornPage title="选择器" description="用于从一组选项中选择一个值的组件。">
-    <RebornCard title="基础用法" custom-class="space-y-4">
+    <RebornCard title="基础用法" overflow-visible>
       <view class="text-xs">
         基础配置
       </view>
@@ -227,7 +227,7 @@ function openSelect2() {
       <RebornSelect v-model="form.selected3" :options="options3" :column-count="3" :size="currentSize"
         :color="currentColor" :splitor="splitor" :triggerUi="{ text: 'text-red-5' }" />
     </RebornCard>
-    <RebornCard title="控制器" custom-class="space-y-4">
+    <RebornCard title="控制器" overflow-visible>
       <view class="flex justify-between">
         <text class="text-sm text-slate-500">尺寸 (Size)</text>
         <view class="flex flex-wrap gap-2">
@@ -280,7 +280,7 @@ function openSelect2() {
       </view>
     </RebornCard>
     <!-- 自定义触发器 -->
-    <RebornCard title="自定义触发器" custom-class="space-y-4">
+    <RebornCard title="自定义触发器" overflow-visible>
       <view class="text-xs text-gray-4">
         通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开
       </view>
@@ -291,7 +291,7 @@ function openSelect2() {
     </RebornCard>
 
     <!-- 空数据 -->
-    <RebornCard title="空数据" custom-class="space-y-4">
+    <RebornCard title="空数据" overflow-visible>
       <RebornSelect v-model="form.selected" :options="options4" />
     </RebornCard>
   </RebornPage>

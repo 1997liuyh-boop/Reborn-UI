@@ -1,6 +1,9 @@
 /* Copy from web-project/app/assets/theme/base.css */
+/* 主题变量挂载到 body（H5）/ page（小程序），避免 :root 在微信小程序下报错； */
 @layer base {
-  :root {
+  :root,
+  body,
+  page {
     /* ===== Red ===== */
     --color-red-1: #ffebee;
     --color-red-2: #ffe0e4;
@@ -153,14 +156,9 @@
     --button-2xl-height: 96rpx;
     --button-xl-height: 86rpx;
     --button-lg-height: 76rpx;
-    --button-base-height: 64rpx;
+    --button-md-height: 64rpx;
     --button-sm-height: 56rpx;
     --button-xs-height: 48rpx;
-
-    /* 输入框高度设置 */
-    --input-lg-height: 96rpx;
-    --input-md-height: 90rpx;
-    --input-sm-height: 80rpx;
 
     /* 输入框高度设置 */
     --input-lg-height: 96rpx;

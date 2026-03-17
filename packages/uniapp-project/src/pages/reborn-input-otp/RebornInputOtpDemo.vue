@@ -17,16 +17,15 @@ const value12 = ref('1234')
 
 <template>
   <RebornPage title="OTP 验证码输入" description="验证码输入组件，用于输入一次性密码（OTP）或验证码，支持自定义位数、自动聚焦等">
-    <RebornCard title="基础用法" custom-class="space-y-4">
-      <view class="space-y-3">
-        <view class="
+    <RebornCard title="基础用法" custom-class="flex flex-col gap-3">
+      <view class="
             text-sm font-medium text-slate-500
             dark:text-slate-200
           ">
-          按钮颜色
-        </view>
-        <view class="flex flex-wrap gap-2">
-          <view v-for="c in inputOtpColors" :key="c" class="
+        按钮颜色
+      </view>
+      <view class="flex flex-wrap gap-2">
+        <view v-for="c in inputOtpColors" :key="c" class="
               size-6 cursor-pointer rounded-full ring-2 ring-transparent
               ring-offset-2 transition-all
             " :class="[
@@ -35,24 +34,20 @@ const value12 = ref('1234')
               `,
               demoColor === c ? 'scale-110 ring-slate-400' : `hover:scale-110`,
             ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-            @click="demoColor = c" />
-        </view>
+          @click="demoColor = c" />
       </view>
-
-      <view class="space-y-3">
-        <view class="
+      <view class="
             text-sm font-medium text-slate-500
             dark:text-slate-200
           ">
-          按钮大小
-        </view>
-        <view class="flex flex-wrap">
-          <RebornButton v-for="s in inputOtpSizes" :key="s" variant="outline"
-            :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
-            @click="demoSize = s" gap>
-            {{ s }}
-          </RebornButton>
-        </view>
+        按钮大小
+      </view>
+      <view class="flex flex-wrap">
+        <RebornButton v-for="s in inputOtpSizes" :key="s" variant="outline"
+          :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
+          @click="demoSize = s" gap>
+          {{ s }}
+        </RebornButton>
       </view>
       <RebornInputOtp v-model="value1" :color="demoColor" :size="demoSize" />
     </RebornCard>

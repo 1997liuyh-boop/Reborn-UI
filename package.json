@@ -75,6 +75,10 @@
     "zod-to-json-schema": "^3.23.5"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "weapp-tailwindcss",
+      "@weapp-tailwindcss/merge-v3"
+    ],
     "overrides": {
       "@nuxt/content": "^3.11.0",
       "zod": "^3.23.8",

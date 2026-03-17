@@ -127,7 +127,7 @@ function onTap() {
       </template>
 
       <view v-if="showLabel" :class="ui.label()" :data-checked="isChecked">
-        <slot>{{ label }}</slot>
+        <slot :isChecked="isChecked">{{ label }}</slot>
       </view>
     </view>
   </view>

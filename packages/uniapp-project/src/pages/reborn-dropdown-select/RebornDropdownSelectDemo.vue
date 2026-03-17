@@ -24,33 +24,29 @@ const options = [
 <template>
   <RebornPage title="DropdownSelect 下拉选择">
     <RebornCard title="基础用法" custom-class="space-y-4" overflow-visible>
-      <view class="space-y-3">
-        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
-          颜色
-        </view>
-        <view class="flex flex-wrap gap-2">
-          <view v-for="c in dropdownSelectColors" :key="c" class="
+      <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
+        颜色
+      </view>
+      <view class="flex flex-wrap gap-2">
+        <view v-for="c in dropdownSelectColors" :key="c" class="
               size-6 cursor-pointer rounded-full ring-2 ring-transparent
               ring-offset-2 transition-all
             " :class="[
               `bg-${c}`,
               demoColor === c ? 'scale-110 ring-slate-400' : `hover:scale-110`,
             ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-            @click="demoColor = c" />
-        </view>
+          @click="demoColor = c" />
       </view>
 
-      <view class="space-y-3">
-        <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
-          尺寸
-        </view>
-        <view class="flex flex-row flex-wrap mb-2 overflow-visible">
-          <RebornButton v-for="s in dropdownSelectSizes" :key="s" variant="outline"
-            :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
-            @click="demoSize = s">
-            {{ s }}
-          </RebornButton>
-        </view>
+      <view class="text-sm font-medium text-slate-500 dark:text-slate-200">
+        尺寸
+      </view>
+      <view>
+        <RebornButton v-for="s in dropdownSelectSizes" :key="s" variant="outline" gap
+          :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
+          @click="demoSize = s">
+          {{ s }}
+        </RebornButton>
       </view>
 
       <RebornDropdownSelect v-model="value1" :options="options" :color="demoColor" :size="demoSize" placeholder="请选择" />

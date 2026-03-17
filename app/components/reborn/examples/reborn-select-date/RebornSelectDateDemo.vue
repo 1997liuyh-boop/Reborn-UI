@@ -7,6 +7,8 @@ const color = ref<any>("primary");
 const value1 = ref("");
 const value2 = ref("");
 const value3 = ref("");
+const value4 = ref("");
+const value5 = ref<string[]>([]);
 const disabled = ref(false);
 </script>
 
@@ -60,6 +62,21 @@ const disabled = ref(false);
                     trigger: 'border-dashed border-2 rounded-xl bg-purple-50/50 dark:bg-purple-900/20 px-4',
                     dropdown: 'rounded-2xl shadow-xl shadow-purple-500/10 border-purple-100 dark:border-purple-900 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm'
                 }" placeholder="重写触点和下拉框样式" class="max-w-xs" />
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">自定义格式</h3>
+                <RebornSelectDate v-model="value4" type="date" :size="size" :color="color"
+                    labelFormat="YYYY年MM月DD日" valueFormat="YYYY/MM/DD"
+                    placeholder="显示格式：年月日" class="max-w-xs" />
+                <p class="text-sm text-gray-500">选中值: {{ value4 || '空' }}</p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">日期范围选择</h3>
+                <RebornSelectDate v-model="value5" type="date" :size="size" :color="color"
+                    rangeable placeholder="选择日期范围" class="max-w-md" />
+                <p class="text-sm text-gray-500">选中范围: {{ value5.length ? value5.join(' ~ ') : '空' }}</p>
             </div>
         </div>
     </div>

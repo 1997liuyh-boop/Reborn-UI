@@ -15,6 +15,7 @@ export interface ButtonProps {
   disabled?: boolean
   fluid?: boolean // 是否为 flex-1 布局
   gap?: boolean // 是否间隔按钮
+  block?: boolean // 是否块级元素
   customClass?: any
   ui?: any
   hoverClass?: string // 按钮点击态样式类
@@ -47,6 +48,7 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   gap: false,
   hoverStartTime: 20,
   hoverStayTime: 70,
+  block: false
 })
 
 // 事件定义
@@ -107,13 +109,9 @@ const ui = computed(() => {
 
   return {
     base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
-    root: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }), // alias to base
+    inner: (opts?: { class?: any }) => styles.inner({ class: cn(opts?.class, uiOverrides.value.inner) }),
     label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
     loading: (opts?: { class?: any }) => styles.loading({ class: cn(opts?.class, uiOverrides.value.loading) }),
-    leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
-    leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(opts?.class, uiOverrides.value.leadingAvatar) }),
-    leadingAvatarSize: (opts?: { class?: any }) => styles.leadingAvatarSize({ class: cn(opts?.class, uiOverrides.value.leadingAvatarSize) }),
-    trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(opts?.class, uiOverrides.value.trailingIcon) }),
   }
 })
 
@@ -166,18 +164,17 @@ function onTouchCancel() {
     ui.base({ class: props.customClass }),
     isHover && hoverClass ? hoverClass : ''
   ]" @tap="onTap" @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
-    <button class="reborn-button-clicker absolute inset-0 z-10 m-0 size-full p-0 opacity-0" :disabled="isDisabled"
-      :hover-class="hoverClass" :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime"
-      :hover-stay-time="hoverStayTime" :form-type="formType" :open-type="openType" :lang="lang"
-      :session-from="sessionFrom" :send-message-title="sendMessageTitle" :send-message-path="sendMessagePath"
-      :send-message-img="sendMessageImg" :show-message-card="showMessageCard" :app-parameter="appParameter"
-      :group-id="groupId" :guild-id="guildId" :public-id="publicId"
-      :phone-number-no-quota-toast="phoneNumberNoQuotaToast" :createliveactivity="createliveactivity"
-      @getuserinfo="onGetUserInfo" @contact="onContact" @getphonenumber="onGetPhoneNumber" @error="onError"
-      @opensetting="onOpenSetting" @launchapp="onLaunchApp" @chooseavatar="onChooseAvatar"
-      @chooseaddress="onChooseAddress" @chooseinvoicetitle="onChooseInvoiceTitle" @addgroupapp="onAddGroupApp"
-      @subscribe="onSubscribe" @login="onLogin" @getrealtimephonenumber="onGetRealtimePhoneNumber"
-      @agreeprivacyauthorization="onAgreePrivacyAuthorization" />
+    <button :class="ui.inner()" :disabled="isDisabled" :hover-class="hoverClass"
+      :hover-stop-propagation="hoverStopPropagation" :hover-start-time="hoverStartTime" :hover-stay-time="hoverStayTime"
+      :form-type="formType" :open-type="openType" :lang="lang" :session-from="sessionFrom"
+      :send-message-title="sendMessageTitle" :send-message-path="sendMessagePath" :send-message-img="sendMessageImg"
+      :show-message-card="showMessageCard" :app-parameter="appParameter" :group-id="groupId" :guild-id="guildId"
+      :public-id="publicId" :phone-number-no-quota-toast="phoneNumberNoQuotaToast"
+      :createliveactivity="createliveactivity" @getuserinfo="onGetUserInfo" @contact="onContact"
+      @getphonenumber="onGetPhoneNumber" @error="onError" @opensetting="onOpenSetting" @launchapp="onLaunchApp"
+      @chooseavatar="onChooseAvatar" @chooseaddress="onChooseAddress" @chooseinvoicetitle="onChooseInvoiceTitle"
+      @addgroupapp="onAddGroupApp" @subscribe="onSubscribe" @login="onLogin"
+      @getrealtimephonenumber="onGetRealtimePhoneNumber" @agreeprivacyauthorization="onAgreePrivacyAuthorization" />
 
     <slot name="leading" :loading="props.loading" :ui="ui">
       <view v-if="props.loading" :class="ui.loading?.()" />

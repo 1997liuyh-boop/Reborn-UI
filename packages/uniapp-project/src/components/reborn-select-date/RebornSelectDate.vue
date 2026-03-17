@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
-import type { PropType } from 'vue'
 import type { SelectOption } from '../reborn-picker-view/RebornPickerView.vue'
 import type { selectDateColors, selectDateSizes } from './reborn-select-date.config'
 import type { SelectDateShortcut } from './types'
@@ -22,126 +21,124 @@ defineOptions({
   name: 'RebornSelectDate',
 })
 
-// 组件属性定义
-const props = defineProps({
-  modelValue: {
-    type: String,
-    default: '',
+export type SelectDateType = 'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'
+
+export interface TriggerUiShape {
+  wrapper?: ClassValue
+  content?: ClassValue
+  text?: ClassValue
+  placeholder?: ClassValue
+  iconWrapper?: ClassValue
+  clearIcon?: ClassValue
+  arrowIcon?: ClassValue
+}
+
+export interface PopupUiShape {
+  wrapper?: ClassValue
+  mask?: ClassValue
+  popup?: ClassValue
+  inner?: ClassValue
+  draw?: ClassValue
+  header?: ClassValue
+  title?: ClassValue
+  container?: ClassValue
+}
+
+export interface PickerUiShape {
+  wrapper?: ClassValue
+  header?: ClassValue
+  headerText?: ClassValue
+  pickerContainer?: ClassValue
+  item?: ClassValue
+  itemText?: ClassValue
+  indicator?: ClassValue
+}
+
+export interface SelectDateUiShape {
+  wrapper?: ClassValue
+  popupOp?: ClassValue
+  rangeBox?: ClassValue
+  rangeValues?: ClassValue
+  rangeStart?: ClassValue
+  rangeEnd?: ClassValue
+  shortcuts?: ClassValue
+  shortcutItem?: ClassValue
+  separator?: ClassValue
+  rangeValueText?: ClassValue
+  rangePlaceholder?: ClassValue
+  footer?: ClassValue
+  cancel?: ClassValue
+  cancelButton?: ClassValue
+  confirm?: ClassValue
+  confirmButton?: ClassValue
+}
+
+export interface SelectDateProps {
+  modelValue?: string
+  values?: string[]
+  title?: string
+  headers?: string[]
+  placeholder?: string
+  showTrigger?: boolean
+  disabled?: boolean
+  confirmText?: string
+  showConfirm?: boolean
+  cancelText?: string
+  showCancel?: boolean
+  labelFormat?: string
+  valueFormat?: string
+  start?: string
+  end?: string
+  type?: SelectDateType
+  rangeable?: boolean
+  startPlaceholder?: string
+  endPlaceholder?: string
+  rangeSeparator?: string
+  showShortcuts?: boolean
+  shortcuts?: SelectDateShortcut[]
+  clearable?: boolean
+  size?: typeof selectDateSizes[number]
+  color?: typeof selectDateColors[number]
+  triggerUi?: Partial<TriggerUiShape>
+  popupUi?: Partial<PopupUiShape>
+  pickerUi?: Partial<PickerUiShape>
+  ui?: Partial<SelectDateUiShape>
+}
+
+const props = withDefaults(
+  defineProps<SelectDateProps>(),
+  {
+    modelValue: '',
+    values: () => [],
+    title: '请选择',
+    headers: () => ['年', '月', '日', '时', '分', '秒'],
+    placeholder: '请选择',
+    showTrigger: true,
+    disabled: false,
+    confirmText: '确定',
+    showConfirm: true,
+    cancelText: '取消',
+    showCancel: true,
+    labelFormat: '',
+    valueFormat: '',
+    start: '1970-01-01 00:00:00',
+    end: '2099-12-31 23:59:59',
+    type: 'second',
+    rangeable: false,
+    startPlaceholder: '开始日期',
+    endPlaceholder: '结束日期',
+    rangeSeparator: '至',
+    showShortcuts: true,
+    shortcuts: () => [],
+    clearable: true,
+    size: 'md',
+    color: 'primary',
+    triggerUi: () => ({}),
+    popupUi: () => ({}),
+    pickerUi: () => ({}),
+    ui: () => ({}),
   },
-  values: {
-    type: Array as PropType<string[]>,
-    default: () => [],
-  },
-  title: {
-    type: String,
-    default: () => '请选择',
-  },
-  // 表头
-  headers: {
-    type: Array as PropType<string[]>,
-    default: () => ["年", "月", "日", "时", "分", "秒"]
-  },
-  placeholder: {
-    type: String,
-    default: () => '请选择',
-  },
-  showTrigger: {
-    type: Boolean,
-    default: true,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  confirmText: {
-    type: String,
-    default: () => '确定',
-  },
-  showConfirm: {
-    type: Boolean,
-    default: true,
-  },
-  cancelText: {
-    type: String,
-    default: () => '取消',
-  },
-  showCancel: {
-    type: Boolean,
-    default: true,
-  },
-  labelFormat: {
-    type: String as PropType<string>,
-    default: '',
-  },
-  valueFormat: {
-    type: String as PropType<string>,
-    default: '',
-  },
-  start: {
-    type: String,
-    default: '1970-01-01 00:00:00',
-  },
-  end: {
-    type: String,
-    default: '2099-12-31 23:59:59',
-  },
-  type: {
-    type: String as PropType<'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'>,
-    default: 'second',
-  },
-  rangeable: {
-    type: Boolean,
-    default: false,
-  },
-  startPlaceholder: {
-    type: String,
-    default: () => '开始日期',
-  },
-  endPlaceholder: {
-    type: String,
-    default: () => '结束日期',
-  },
-  rangeSeparator: {
-    type: String,
-    default: () => '至',
-  },
-  showShortcuts: {
-    type: Boolean,
-    default: true,
-  },
-  shortcuts: {
-    type: Array as PropType<SelectDateShortcut[]>,
-    default: () => [],
-  },
-  clearable: {
-    type: Boolean,
-    default: true,
-  },
-  size: {
-    type: String as PropType<typeof selectDateSizes[number]>,
-    default: 'md',
-  },
-  color: {
-    type: String as PropType<typeof selectDateColors[number]>,
-    default: 'primary',
-  },
-  triggerUi: {
-    type: Object as PropType<Partial<{ wrapper: ClassValue, content: ClassValue, text: ClassValue, placeholder: ClassValue, iconWrapper: ClassValue, clearIcon: ClassValue, arrowIcon: ClassValue }>>,
-    default: () => ({}),
-  },
-  popupUi: {
-    type: Object as PropType<Partial<{ wrapper: ClassValue, mask: ClassValue, popup: ClassValue, inner: ClassValue, draw: ClassValue, header: ClassValue, title: ClassValue, container: ClassValue }>>,
-    default: () => ({}),
-  },
-  pickerUi: {
-    type: Object as PropType<Partial<{ wrapper: ClassValue, header: ClassValue, headerText: ClassValue, pickerContainer: ClassValue, item: ClassValue, itemText: ClassValue, indicator: ClassValue }>>,
-    default: () => ({}),
-  },
-  ui: {
-    type: Object as PropType<Partial<{ wrapper: ClassValue, popupOp: ClassValue, rangeBox: ClassValue, rangeValues: ClassValue, rangeStart: ClassValue, rangeEnd: ClassValue, shortcuts: ClassValue, shortcutItem: ClassValue, separator: ClassValue, rangeValueText: ClassValue, rangePlaceholder: ClassValue, footer: ClassValue }>>,
-    default: () => ({}),
-  },
-})
+)
 
 const emit = defineEmits(['update:modelValue', 'change', 'update:values', 'range-change'])
 
@@ -167,6 +164,10 @@ const ui = computed(() => {
     rangeValueText: (opts?: { class?: any }) => styles.rangeValueText({ class: [opts?.class, props.ui?.rangeValueText] }),
     rangePlaceholder: (opts?: { class?: any }) => styles.rangePlaceholder({ class: [opts?.class, props.ui?.rangePlaceholder] }),
     footer: (opts?: { class?: any }) => styles.footer({ class: [opts?.class, props.ui?.footer] }),
+    cancel: (opts?: { class?: any }) => styles.cancel({ class: [opts?.class, props.ui?.cancel] }),
+    cancelButton: (opts?: { class?: any }) => styles.cancelButton({ class: [opts?.class, props.ui?.cancelButton] }),
+    confirm: (opts?: { class?: any }) => styles.confirm({ class: [opts?.class, props.ui?.confirm] }),
+    confirmButton: (opts?: { class?: any }) => styles.confirmButton({ class: [opts?.class, props.ui?.confirmButton] }),
   }
 })
 
@@ -481,6 +482,12 @@ function open(cb: ((value: string | string[]) => void) | null = null) {
       rangeIndex.value = 0
       setValues(props.values)
       setValue(values.value[0])
+      // 打开时若无已选范围，滚轮会显示当前时间，把当前展示同步到 values 以便直接点确定即可选中
+      const currentStr = dayUts(toDate()).format(valueFormat.value)
+      if (!values.value[0])
+        values.value[0] = currentStr
+      if (!values.value[1])
+        values.value[1] = values.value[0]
     }
     else {
       setValue(props.modelValue)
@@ -590,128 +597,137 @@ defineExpose({
 </script>
 
 <template>
-  <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
-    :text="text" arrow-icon="i-lucide-calendar" :ui="triggerUi" :color="color" :size="size" :clearable="clearable"
-    @open="open()" @clear="clear">
+  <view>
+    <RebornSelectTrigger v-if="showTrigger" :placeholder="placeholder" :disabled="isDisabled" :focus="popupRef?.isOpen"
+      :text="text" arrow-icon="i-lucide-calendar" :ui="triggerUi" :color="color" :size="size" :clearable="clearable"
+      @open="open()" @clear="clear">
 
-    <template #default="{ showText, text, placeholder, ui }">
-      <!-- #ifndef MP-WEIXIN -->
-      <slot name="tag" />
-      <!-- #endif -->
-      <!-- #ifdef MP-WEIXIN -->
-      <slot v-if="$slots.tag" name="tag" />
-      <text v-else-if="showText" :class="ui.text()">{{ text }}</text>
-      <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
-      <!-- #endif -->
-    </template>
-  </RebornSelectTrigger>
+      <template #default="{ showText, text, placeholder, ui }">
+        <!-- #ifndef MP-WEIXIN -->
+        <slot name="tag" />
+        <!-- #endif -->
+        <!-- #ifdef MP-WEIXIN -->
+        <slot v-if="$slots.tag" name="tag" />
+        <text v-else-if="showText" :class="ui.text()">{{ text }}</text>
+        <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
+        <!-- #endif -->
+      </template>
+    </RebornSelectTrigger>
 
-  <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
-    <view @touchmove.stop>
-      <view v-if="rangeable" :class="ui.rangeBox()">
-        <view v-if="showShortcuts" :class="ui.shortcuts()">
-          <!-- #ifdef H5 -->
-          <view v-for="(item, index) in shortcuts" :key="index"
-            :class="ui.shortcutItem({ active: shortcutsIndex === index })" @tap.stop="setRangeValue(item.value, index)"
-            @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
-            <text class="i-lucide-zap" />
-            <text>{{ item.label }}</text>
+    <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi" position="bottom">
+      <view @touchmove.stop class="bg-white">
+        <view v-if="rangeable" :class="ui.rangeBox()">
+          <view v-if="showShortcuts" :class="ui.shortcuts()">
+            <!-- #ifdef H5 -->
+            <view v-for="(item, index) in shortcuts" :key="index"
+              :class="ui.shortcutItem({ active: shortcutsIndex === index })"
+              @tap.stop="setRangeValue(item.value, index)" @touchstart.stop @touchmove.stop @touchend.stop
+              @touchcancel.stop>
+              <text class="i-lucide-zap" />
+              <text>{{ item.label }}</text>
+            </view>
+            <!-- #endif -->
+            <!-- #ifndef H5 -->
+            <view v-for="(item, index) in shortcuts" :key="index"
+              :class="ui.shortcutItem({ active: shortcutsIndex === index })"
+              @tap.stop="setRangeValue(item.value, index)">
+              <text class="i-lucide-zap" />
+              <text>{{ item.label }}</text>
+            </view>
+            <!-- #endif -->
           </view>
-          <!-- #endif -->
-          <!-- #ifndef H5 -->
-          <view v-for="(item, index) in shortcuts" :key="index"
-            :class="ui.shortcutItem({ active: shortcutsIndex === index })" @tap.stop="setRangeValue(item.value, index)">
-            <text class="i-lucide-zap" />
-            <text>{{ item.label }}</text>
+
+          <view :class="ui.rangeValues()">
+            <!-- #ifdef H5 -->
+            <view :class="ui.rangeStart({
+              class: rangeIndex == 0 ? rangeActiveStyle.start : '',
+            })" @tap.stop="setRange(0)" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
+              <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: ui.rangeValueText() }"
+                :color="rangeIndex == 0 ? color : 'neutral'">
+                {{
+                  values[0] }}
+              </RebornText>
+              <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
+                {{ startPlaceholder
+                }}
+              </RebornText>
+            </view>
+            <!-- #endif -->
+            <!-- #ifndef H5 -->
+            <view :class="ui.rangeStart({
+              class: rangeIndex == 0 ? rangeActiveStyle.start : '',
+            })" @tap.stop="setRange(0)">
+              <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: ui.rangeValueText() }"
+                :color="rangeIndex == 0 ? color : 'neutral'">
+                {{
+                  values[0] }}
+              </RebornText>
+              <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
+                {{ startPlaceholder
+                }}
+              </RebornText>
+            </view>
+            <!-- #endif -->
+
+            <RebornText :ui="{ base: ui.separator() }">
+              {{ rangeSeparator }}
+            </RebornText>
+
+            <!-- #ifdef H5 -->
+            <view :class="ui.rangeEnd({
+              class: rangeIndex == 1 ? rangeActiveStyle.end : '',
+            })" @tap.stop="setRange(1)" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
+              <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: ui.rangeValueText() }"
+                :color="rangeIndex == 1 ? color : 'neutral'">
+                {{
+                  values[1] }}
+              </RebornText>
+              <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
+                {{ endPlaceholder
+                }}
+              </RebornText>
+            </view>
+            <!-- #endif -->
+            <!-- #ifndef H5 -->
+            <view :class="ui.rangeEnd({
+              class: rangeIndex == 1 ? rangeActiveStyle.end : '',
+            })" @tap.stop="setRange(1)">
+              <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: ui.rangeValueText() }"
+                :color="rangeIndex == 1 ? color : 'neutral'">
+                {{
+                  values[1] }}
+              </RebornText>
+              <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
+                {{ endPlaceholder
+                }}
+              </RebornText>
+            </view>
+            <!-- #endif -->
           </view>
-          <!-- #endif -->
         </view>
 
-        <view :class="ui.rangeValues()">
-          <!-- #ifdef H5 -->
-          <view :class="ui.rangeStart({
-            class: rangeIndex == 0 ? rangeActiveStyle.start : '',
-          })" @tap.stop="setRange(0)" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
-            <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: ui.rangeValueText() }"
-              :color="rangeIndex == 0 ? color : 'neutral'">
-              {{
-                values[0] }}
-            </RebornText>
-            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
-              {{ startPlaceholder
-              }}
-            </RebornText>
+        <view>
+          <!-- rangeable 时仅在 pickerKey>0 后渲染，避免首帧用空 indexes 导致 1970/1/1；非 rangeable 始终渲染 -->
+          <RebornPickerView v-if="!rangeable || pickerKey > 0" :key="pickerKey" :headers="headers" :value="indexes"
+            :columns="columns" :ui="pickerUi" :color="color" @change-value="onChange" />
+        </view>
+        <view :class="ui.footer()">
+          <view :class="ui.cancel()">
+            <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color"
+              :ui="{ base: ui.cancelButton() }" block @tap="close">
+              {{ cancelText }}
+            </RebornButton>
           </view>
-          <!-- #endif -->
-          <!-- #ifndef H5 -->
-          <view :class="ui.rangeStart({
-            class: rangeIndex == 0 ? rangeActiveStyle.start : '',
-          })" @tap.stop="setRange(0)">
-            <RebornText v-if="values.length > 0 && values[0] != ''" :ui="{ base: ui.rangeValueText() }"
-              :color="rangeIndex == 0 ? color : 'neutral'">
-              {{
-                values[0] }}
-            </RebornText>
-            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
-              {{ startPlaceholder
-              }}
-            </RebornText>
+          <view :class="ui.confirm()">
+            <RebornButton v-if="showConfirm" :size="size" variant="solid" :color="color"
+              :ui="{ base: ui.confirmButton() }" block @click="confirm">
+              {{ confirmText }}
+            </RebornButton>
           </view>
-          <!-- #endif -->
-
-          <RebornText :ui="{ base: ui.separator() }">
-            {{ rangeSeparator }}
-          </RebornText>
-
-          <!-- #ifdef H5 -->
-          <view :class="ui.rangeEnd({
-            class: rangeIndex == 1 ? rangeActiveStyle.end : '',
-          })" @tap.stop="setRange(1)" @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop>
-            <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: ui.rangeValueText() }"
-              :color="rangeIndex == 1 ? color : 'neutral'">
-              {{
-                values[1] }}
-            </RebornText>
-            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
-              {{ endPlaceholder
-              }}
-            </RebornText>
-          </view>
-          <!-- #endif -->
-          <!-- #ifndef H5 -->
-          <view :class="ui.rangeEnd({
-            class: rangeIndex == 1 ? rangeActiveStyle.end : '',
-          })" @tap.stop="setRange(1)">
-            <RebornText v-if="values.length > 1 && values[1] != ''" :ui="{ base: ui.rangeValueText() }"
-              :color="rangeIndex == 1 ? color : 'neutral'">
-              {{
-                values[1] }}
-            </RebornText>
-            <RebornText v-else :ui="{ base: ui.rangePlaceholder() }">
-              {{ endPlaceholder
-              }}
-            </RebornText>
-          </view>
-          <!-- #endif -->
         </view>
       </view>
-
-      <view>
-        <!-- rangeable 时仅在 pickerKey>0 后渲染，避免首帧用空 indexes 导致 1970/1/1；非 rangeable 始终渲染 -->
-        <RebornPickerView v-if="!rangeable || pickerKey > 0" :key="pickerKey" :headers="headers" :value="indexes"
-          :columns="columns" :ui="pickerUi" :color="color" @change-value="onChange" />
-      </view>
-
-      <view :class="ui.footer()">
-        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" class="flex-1" @tap="close">
-          {{ cancelText }}
-        </RebornButton>
-        <RebornButton v-if="showConfirm" :size="size" variant="solid" :color="color" class="flex-1" @click="confirm">
-          {{ confirmText }}
-        </RebornButton>
-      </view>
-    </view>
-  </RebornPopup>
+    </RebornPopup>
+  </view>
 </template>
 
 <style scoped></style>

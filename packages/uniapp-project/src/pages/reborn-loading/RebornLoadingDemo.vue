@@ -25,15 +25,14 @@ const onChange = (color: string) => {
     <RebornCard title="配置" custom-class="space-y-4" overflowVisible>
 
       <reborn-loading :type="demoType" :color="demoColor ? demoColor : colorValue" size="80rpx" />
-      <view class="space-y-3">
-        <view class="
+      <view class="
                 text-sm font-medium text-slate-500
                 dark:text-slate-200
               ">
-          按钮颜色
-        </view>
-        <view class="flex flex-wrap gap-2">
-          <view v-for="c in LoadingColors" :key="c" class="
+        按钮颜色
+      </view>
+      <view class="flex flex-wrap gap-2">
+        <view v-for="c in LoadingColors" :key="c" class="
                   size-6 cursor-pointer rounded-full ring-2 ring-transparent
                   ring-offset-2 transition-all
                 " :class="[
@@ -44,8 +43,7 @@ const onChange = (color: string) => {
                     hover:scale-110
                   `,
                 ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-            @click="demoColorChange(c)" />
-        </view>
+          @click="demoColorChange(c)" />
       </view>
       <RebornColorPicker v-model="colorValue" @onChange="onChange" />
       <RebornRadioGroup v-model="demoType">

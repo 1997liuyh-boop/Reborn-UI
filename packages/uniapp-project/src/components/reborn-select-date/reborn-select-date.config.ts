@@ -14,7 +14,15 @@ export default {
     separator: 'text-gray-5 mx-3 text-sm',
     rangeValueText: 'text-center block w-full',
     rangePlaceholder: 'text-surface-400 block w-full text-center',
-    footer: 'flex flex-row items-center justify-center gap-2 p-3',
+    footer: 'flex flex-row items-center justify-center gap-2 px-3 pt-3 pb-[calc(0.75rem+var(--window-bottom))]',
+    cancel: 'flex-1 ',
+    cancelButton: 'w-full',
+    confirm: 'flex-1 ',
+    confirmButton: 'w-full',
+    popup: 'bg-white',
+    draw: 'bg-gray-4',
+    header: 'bg-white',
+    title: 'text-gray-9',
   },
   variants: {
     shortcutActive: {

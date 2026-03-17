@@ -4,7 +4,6 @@ export const buttonVariants = ['solid', 'outline', 'soft', 'subtle'] as const
 export const buttonSizes = [
   'xs',
   'sm',
-  'default', // Mapped to md
   'md',
   'lg',
   'xl',
@@ -14,6 +13,7 @@ export const buttonSizes = [
 export default {
   slots: {
     base: 'reborn-button flex flex-row items-center justify-center relative box-border border-transparent border border-solid transition-[background-color,border-color,opacity] duration-300 overflow-visible',
+    inner: 'reborn-button-clicker absolute inset-0 z-10 m-0 size-full p-0 opacity-0',
     label: 'truncate',
     loading: 'border-2 border-current border-t-transparent rounded-full animate-spin',
     leadingIcon: 'shrink-0',
@@ -31,6 +31,14 @@ export default {
       error: '',
       neutral: '',
     },
+    block: {
+      true: {
+        base: 'flex'
+      },
+      false: {
+        base: 'inline-flex',
+      }
+    },
     variant: {
       solid: '',
       outline: '',
@@ -45,31 +53,27 @@ export default {
     },
     size: {
       'xs': {
-        base: 'h-[var(--button-xs-height)] px-3 text-24 gap-1.5 rounded-[6px]',
+        base: 'h-button-xs px-3 text-24 gap-1.5 rounded-[6px]',
         loading: 'size-3',
       },
       'sm': {
-        base: 'h-[var(--button-sm-height)] px-3 text-24 gap-1.5 rounded-[6px]',
+        base: 'h-button-sm px-3 text-24 gap-1.5 rounded-[6px]',
         loading: 'size-3.5',
       },
-      'default': {
-        base: 'h-[var(--button-base-height)] px-4 text-26 gap-1.5 rounded-[8px]',
-        loading: 'size-4',
-      },
       'md': {
-        base: 'h-[var(--button-base-height)] px-4 text-26 gap-1.5 rounded-[8px]',
+        base: 'h-button-md px-4 text-26 gap-1.5 rounded-[8px]',
         loading: 'size-4',
       },
       'lg': {
-        base: 'h-[var(--button-lg-height)] px-6 text-28 gap-1.5 rounded-[10px]',
+        base: 'h-button-lg px-6 text-28 gap-1.5 rounded-[10px]',
         loading: 'size-5',
       },
       'xl': {
-        base: 'h-[var(--button-xl-height)] px-6 text-30 gap-2 rounded-[12px]',
+        base: 'h-button-xl px-6 text-30 gap-2 rounded-[12px]',
         loading: 'size-6',
       },
       '2xl': {
-        base: 'h-[var(--button-2xl-height)] px-6 text-32 gap-2 rounded-[14px]',
+        base: 'h-button-2xl px-6 text-32 gap-2 rounded-[14px]',
         loading: 'size-7',
       },
     },
@@ -241,5 +245,6 @@ export default {
     color: 'primary' as (typeof buttonColors)[number],
     variant: 'solid' as (typeof buttonVariants)[number],
     size: 'md' as (typeof buttonSizes)[number],
+    block: false
   },
 }

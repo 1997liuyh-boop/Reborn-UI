@@ -210,7 +210,7 @@ function onBlur(e: any) {
   emit('blur', e)
   if (validate) { validate('blur') }
 }
-// 切换密码显示状态（key 变化会重挂载 input，下一帧恢复焦点以便继续输入）
+// 切换密码显示状态
 function showPassword() {
   if (fieldGroupDisabled.value || props.readonly) { return }
   isPassword.value = !isPassword.value
@@ -242,9 +242,8 @@ defineExpose({
       <slot name="leading" :ui="ui" />
     </view>
 
-    <input ref="inputRef" :key="isPassword ? 'pwd' : 'text'" :type="isPassword ? 'password' : props.type"
-      :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly" :placeholder="props.placeholder"
-      :value="inputValue" :class="ui.input()" :password="isPassword"
+    <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
+      :placeholder="props.placeholder" :value="inputValue" :class="ui.input()" :password="isPassword"
       :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
       :placeholder-class="`text-gart-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"

@@ -1,94 +1,35 @@
-export type PopupDirection = 'top' | 'bottom' | 'left' | 'right' | 'center'
+const PopupDirection = ['center', 'top', 'right', 'bottom', 'left'] as const
+export type PopupPosition = (typeof PopupDirection)[number]
 
-const config = {
+export default {
   slots: {
-    wrapper: 'fixed inset-0 h-full w-full pointer-events-none',
-    mask: 'absolute top-0 bottom-0 left-0 right-0 h-full w-full bg-black opacity-0 transition-opacity',
-    popup: 'absolute duration-300 transition-transform pointer-events-auto',
-    inner: 'bg-white dark:bg-gray-8 h-full w-full flex flex-col',
-    draw: 'bg-gray-2 dark:bg-gray-6 rounded-md absolute top-2 left-1/2 h-[5px] w-[35px] -translate-x-1/2 transition-colors duration-200',
-    header: 'flex flex-row items-center flex-wrap h-[70rpx] pl-[20rpx] pr-[40rpx]',
-    title: 'font-bold text-base truncate dark:text-white',
-    container: 'flex-1',
+    base: 'fixed bg-white',
+    inner: 'relative',
+    draw: 'mx-auto mt-2 h-1 w-10 rounded-full bg-gray-3',
+    header: 'flex items-center justify-between px-4 py-3 border-b border-gray-2',
+    title: 'text-28 font-medium text-gray-9',
+    closeIcon: 'text-gray-5 cursor-pointer',
   },
   variants: {
-    direction: {
-      left: {
-        wrapper: '',
-        popup: 'left-0 top-0 -translate-x-full',
-        inner: 'rounded-r-lg',
-      },
-      right: {
-        wrapper: '',
-        popup: 'right-0 top-0 translate-x-full',
-        inner: 'rounded-l-lg',
+    position: {
+      center: {
+        base: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg',
       },
       top: {
-        wrapper: '',
-        popup: 'left-0 top-0 -translate-y-full',
-        inner: 'rounded-b-lg',
+        base: 'top-0 left-0 right-0',
       },
       bottom: {
-        wrapper: '',
-        popup: 'left-0 bottom-0 translate-y-full',
-        inner: 'rounded-t-lg',
+        base: 'bottom-0 left-0 right-0 rounded-t-2xl',
       },
-      center: {
-        wrapper: 'flex flex-col items-center justify-center',
-        popup: 'scale-[1.3] opacity-0 transition-[transform,opacity]',
-        inner: 'rounded-lg',
+      left: {
+        base: 'top-0 left-0 bottom-0',
       },
-    },
-    isOpen: {
-      true: {
-        mask: 'opacity-40',
-      },
-      false: {},
-    },
-    isClose: {
-      true: {},
-    },
-    stopTransition: {
-      true: {
-        popup: '!transition-none',
-      },
-    },
-    rounded: {
-      true: {},
-      false: {
-        inner: '!rounded-none',
+      right: {
+        base: 'top-0 right-0 bottom-0',
       },
     },
   },
-  compoundVariants: [
-    {
-      direction: ['left', 'right'] as PopupDirection[],
-      isOpen: true,
-      class: { popup: 'translate-x-0' },
-    },
-    {
-      direction: ['top', 'bottom'] as PopupDirection[],
-      isOpen: true,
-      class: { popup: 'translate-y-0' },
-    },
-    {
-      direction: 'bottom' as PopupDirection,
-      isOpen: false,
-      isClose: true,
-      class: { popup: 'translate-y-full' },
-    },
-    {
-      direction: 'center' as PopupDirection,
-      isOpen: true,
-      class: { popup: 'scale-100 opacity-100 translate-x-0 translate-y-0' },
-    },
-  ],
   defaultVariants: {
-    direction: 'bottom' as 'bottom' | 'top' | 'left' | 'right' | 'center',
-    isOpen: false,
-    stopTransition: false,
-    isClose: false,
+    position: 'center' as const,
   },
 }
-
-export default config

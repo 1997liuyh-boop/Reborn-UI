@@ -147,7 +147,7 @@ export default <Config>{
         "button-2xl": "var(--button-2xl-height)",
         "button-xl": "var(--button-xl-height)",
         "button-lg": "var(--button-lg-height)",
-        "button-base": "var(--button-base-height)",
+        "button-md": "var(--button-md-height)",
         "button-sm": "var(--button-sm-height)",
         "button-xs": "var(--button-xs-height)",
         "input-lg": "var(--input-lg-height)",

@@ -116,6 +116,9 @@ const rangeValue = ref<number[]>([...props.values])
 // 轨道宽度（像素）
 const trackWidth = ref<number>(0)
 
+// 轨道高度（像素）
+const trackHeight = ref<number>(0)
+
 // 轨道左侧距离屏幕的距离（像素）
 const trackLeft = ref<number>(0)
 
@@ -181,7 +184,7 @@ function createThumbStyle(percentPosition: number) {
   style.left = `${finalLeft}px`
   style.width = `${blockSize.value}px`
   style.height = `${blockSize.value}px`
-  style.top = 0
+  style.top = `${(blockSize.value / 2 - trackHeight.value) / 2}px`
   style.position = 'absolute'
   // 移除 flex，因为样式已经由 ui.thumb() 控制
   return style
@@ -225,6 +228,7 @@ function getTrackInfo(): Promise<void> {
 
       if (trackNode) {
         trackWidth.value = trackNode.width ?? 0
+        trackHeight.value = trackNode.height ?? 0
         trackLeft.value = trackNode.left ?? 0
       }
 
@@ -274,10 +278,7 @@ function updateValue(newValue: number | number[]) {
     const newRangeValues = newValue as number[]
     const currentRangeValues = rangeValue.value
 
-    if (newRangeValues[0] > newRangeValues[1]) {
-      activeThumbIndex.value = 1 - activeThumbIndex.value
-    }
-
+    // 移除交叉时切换activeThumbIndex的逻辑，保持用户选择的滑块不变
     const sortedValues = [
       Math.min(newRangeValues[0], newRangeValues[1]),
       Math.max(newRangeValues[0], newRangeValues[1]),

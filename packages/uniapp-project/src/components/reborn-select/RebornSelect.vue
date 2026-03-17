@@ -34,7 +34,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   showCancel: true,
   clearable: true,
   color: 'primary',
-  size: 'md',
+  size: 'lg',
 })
 
 const emit = defineEmits<{
@@ -48,6 +48,7 @@ defineSlots<{
   prepend: () => any
   append: () => any
   option: (props: { item: SelectOption, index: number }) => any
+  empty: () => any
 }>()
 
 export type SelectValue = string | number | (string | number)[] | null
@@ -88,7 +89,9 @@ export interface SelectProps {
     buttons: ClassValue
     emptyText: ClassValue
     cancel: ClassValue
+    cancelButton: ClassValue
     confirm: ClassValue
+    confirmButton: ClassValue
   }>,
   /** 样式覆盖 */
   triggerUi?: Partial<{
@@ -145,7 +148,9 @@ const ui = computed(() => {
     empty: (opts?: { class?: any }) => styles.empty({ class: cn(opts?.class, props.ui?.empty) }),
     emptyText: (opts?: { class?: any }) => styles.emptyText({ class: cn(opts?.class, props.ui?.emptyText) }),
     cancel: (opts?: { class?: any }) => styles.cancel({ class: cn(opts?.class, props.ui?.cancel) }),
+    cancelButton: (opts?: { class?: any }) => styles.cancelButton({ class: cn(opts?.class, props.ui?.cancelButton) }),
     confirm: (opts?: { class?: any }) => styles.confirm({ class: cn(opts?.class, props.ui?.confirm) }),
+    confirmButton: (opts?: { class?: any }) => styles.confirmButton({ class: cn(opts?.class, props.ui?.confirmButton) }),
   }
 })
 
@@ -365,21 +370,27 @@ defineExpose({
         </RebornPickerView>
 
         <view v-else :class="ui.empty()">
-          <text :class="ui.emptyText()">暂无数据</text>
+          <slot name="empty">
+            <text :class="ui.emptyText()">暂无数据</text>
+          </slot>
         </view>
       </view>
 
       <slot name="append" />
 
       <view :class="ui.buttons()">
-        <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color" :class="ui.cancel()"
-          @tap.stop="close">
-          {{ cancelText }}
-        </RebornButton>
-        <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color" :class="ui.confirm()"
-          @tap.stop="confirm">
-          {{ confirmText }}
-        </RebornButton>
+        <view :class="ui.cancel()">
+          <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color"
+            :ui="{ base: ui.cancelButton() }" block @tap.stop="close">
+            {{ cancelText }}
+          </RebornButton>
+        </view>
+        <view :class="ui.confirm()">
+          <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color"
+            :ui="{ base: ui.confirmButton() }" block @tap.stop="confirm">
+            {{ confirmText }}
+          </RebornButton>
+        </view>
       </view>
     </view>
   </RebornPopup>

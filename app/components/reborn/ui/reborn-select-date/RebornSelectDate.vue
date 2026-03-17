@@ -10,11 +10,12 @@ const b = tv(theme);
 defineOptions({ inheritAttrs: false });
 
 export interface SelectDateProps {
-    modelValue?: string;
+    modelValue?: string | string[];
     type?: "year" | "month" | "date";
     placeholder?: string;
     disabled?: boolean;
     clearable?: boolean;
+    rangeable?: boolean;
     start?: string;
     end?: string;
     labelFormat?: string;
@@ -48,6 +49,7 @@ const props = withDefaults(defineProps<SelectDateProps>(), {
     placeholder: "请选择日期",
     disabled: false,
     clearable: true,
+    rangeable: false,
     start: "1970-01-01",
     end: "2099-12-31",
     size: "md",
@@ -55,8 +57,8 @@ const props = withDefaults(defineProps<SelectDateProps>(), {
 });
 
 const emit = defineEmits<{
-    (e: "update:modelValue", value: string): void;
-    (e: "change", value: string): void;
+    (e: "update:modelValue", value: string | string[]): void;
+    (e: "change", value: string | string[]): void;
 }>();
 
 const isOpen = ref(false);
@@ -67,6 +69,8 @@ const viewYear = ref(new Date().getFullYear());
 const viewMonth = ref(new Date().getMonth()); // 0-indexed
 
 const selectedDate = ref<Date | null>(null);
+const rangeStart = ref<Date | null>(null);
+const rangeEnd = ref<Date | null>(null);
 
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
@@ -109,6 +113,14 @@ function formatDate(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
+
+    if (props.valueFormat) {
+        return props.valueFormat
+            .replace("YYYY", String(y))
+            .replace("MM", m)
+            .replace("DD", day);
+    }
+
     if (props.type === "year") return `${y}`;
     if (props.type === "month") return `${y}-${m}`;
     return `${y}-${m}-${day}`;
@@ -125,6 +137,15 @@ function formatDisplay(d: Date): string {
 }
 
 const displayText = computed(() => {
+    if (props.rangeable) {
+        if (rangeStart.value && rangeEnd.value) {
+            return `${formatDisplay(rangeStart.value)} ~ ${formatDisplay(rangeEnd.value)}`;
+        }
+        if (rangeStart.value) {
+            return formatDisplay(rangeStart.value);
+        }
+        return "";
+    }
     if (selectedDate.value) return formatDisplay(selectedDate.value);
     return "";
 });
@@ -136,6 +157,9 @@ interface CalDay {
     isToday: boolean;
     isSelected: boolean;
     isDisabled: boolean;
+    isInRange: boolean;
+    isRangeStart: boolean;
+    isRangeEnd: boolean;
 }
 
 const calendarDays = computed<CalDay[]>(() => {
@@ -164,7 +188,11 @@ const calendarDays = computed<CalDay[]>(() => {
         if (startLimit && d < startLimit) isDisabled = true;
         if (endLimit && d > endLimit) isDisabled = true;
 
-        days.push({ date: d, day: d.getDate(), isCurrentMonth, isToday, isSelected, isDisabled });
+        const isRangeStart = rangeStart.value ? d.toDateString() === rangeStart.value.toDateString() : false;
+        const isRangeEnd = rangeEnd.value ? d.toDateString() === rangeEnd.value.toDateString() : false;
+        const isInRange = rangeStart.value && rangeEnd.value && d >= rangeStart.value && d <= rangeEnd.value;
+
+        days.push({ date: d, day: d.getDate(), isCurrentMonth, isToday, isSelected, isDisabled, isInRange, isRangeStart, isRangeEnd });
     }
 
     return days;
@@ -243,11 +271,30 @@ function nextPage() {
 
 function selectDay(day: CalDay) {
     if (day.isDisabled) return;
-    selectedDate.value = day.date;
-    const val = formatDate(day.date);
-    emit("update:modelValue", val);
-    emit("change", val);
-    isOpen.value = false;
+
+    if (props.rangeable) {
+        if (!rangeStart.value || (rangeStart.value && rangeEnd.value)) {
+            rangeStart.value = day.date;
+            rangeEnd.value = null;
+        } else {
+            if (day.date < rangeStart.value) {
+                rangeEnd.value = rangeStart.value;
+                rangeStart.value = day.date;
+            } else {
+                rangeEnd.value = day.date;
+            }
+            const val = [formatDate(rangeStart.value), formatDate(rangeEnd.value)];
+            emit("update:modelValue", val);
+            emit("change", val);
+            isOpen.value = false;
+        }
+    } else {
+        selectedDate.value = day.date;
+        const val = formatDate(day.date);
+        emit("update:modelValue", val);
+        emit("change", val);
+        isOpen.value = false;
+    }
 }
 
 function selectYear(year: number) {
@@ -293,8 +340,10 @@ function toggle() {
 function clear(e: Event) {
     e.stopPropagation();
     selectedDate.value = null;
-    emit("update:modelValue", "");
-    emit("change", "");
+    rangeStart.value = null;
+    rangeEnd.value = null;
+    emit("update:modelValue", props.rangeable ? [] : "");
+    emit("change", props.rangeable ? [] : "");
 }
 
 function onClickOutside(e: MouseEvent) {
@@ -304,11 +353,27 @@ function onClickOutside(e: MouseEvent) {
 }
 
 if (props.modelValue) {
-    const d = parseValue(props.modelValue);
-    if (d) {
-        selectedDate.value = d;
-        viewYear.value = d.getFullYear();
-        viewMonth.value = d.getMonth();
+    if (props.rangeable && Array.isArray(props.modelValue)) {
+        const [start, end] = props.modelValue;
+        if (start) {
+            const d1 = parseValue(start);
+            if (d1) {
+                rangeStart.value = d1;
+                viewYear.value = d1.getFullYear();
+                viewMonth.value = d1.getMonth();
+            }
+        }
+        if (end) {
+            const d2 = parseValue(end);
+            if (d2) rangeEnd.value = d2;
+        }
+    } else if (!props.rangeable && typeof props.modelValue === 'string') {
+        const d = parseValue(props.modelValue);
+        if (d) {
+            selectedDate.value = d;
+            viewYear.value = d.getFullYear();
+            viewMonth.value = d.getMonth();
+        }
     }
 }
 
@@ -397,9 +462,10 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                     <div :class="ui.calDays()">
                         <div v-for="(day, idx) in calendarDays" :key="idx" :class="[
                             ui.calDay(),
-                            day.isSelected ? ui.calDayActive() : '',
+                            day.isSelected || day.isRangeStart || day.isRangeEnd ? ui.calDayActive() : '',
                             day.isDisabled ? ui.calDayDisabled() : '',
-                            day.isToday && !day.isSelected ? ui.calDayToday() : '',
+                            day.isToday && !day.isSelected && !day.isRangeStart && !day.isRangeEnd ? ui.calDayToday() : '',
+                            day.isInRange && !day.isRangeStart && !day.isRangeEnd ? 'bg-primary/10 dark:bg-primary/20' : '',
                         ]" @click.stop="selectDay(day)">
                             {{ day.day }}
                         </div>

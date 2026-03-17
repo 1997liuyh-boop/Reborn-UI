@@ -53,6 +53,9 @@ const rect = reactive<Rect>({
   top: 0,
 })
 
+// 记录初始位置是否已获取
+const isInitialized = ref(false)
+
 // 当前页面滚动的距离
 const scrollTop = ref(0)
 
@@ -60,7 +63,8 @@ const scrollTop = ref(0)
 const isSticky = computed(() => {
   if (rect.height == 0) { return false }
 
-  return scrollTop.value >= rect.top
+  // 添加1px的容差，避免微信小程序滚动精度问题
+  return scrollTop.value + 1 >= rect.top
 })
 
 const ui = computed(() => {
@@ -120,7 +124,7 @@ function getRect() {
   const next = () => {
     uni.createSelectorQuery()
       .in(proxy)
-      .select('.reborn-sticky-wrapper') // Updated selector
+      .select('.reborn-sticky-wrapper')
       .boundingClientRect()
       .exec((nodes) => {
         if (isEmpty(nodes)) {
@@ -129,13 +133,16 @@ function getRect() {
 
         const node = nodes[0] as UniApp.NodeInfo
 
-        // 赋值时做空值处理，保证类型安全
         rect.height = node.height ?? 0
-
         rect.width = node.width ?? 0
-        rect.left = node.left ?? 0
-        // top需要减去offsetTop并加上当前滚动距离，保证吸顶准确
-        rect.top = (node.top ?? 0) - props.offsetTop + scrollTop.value
+
+        // 只在初始化时记录位置
+        if (!isInitialized.value) {
+          rect.left = node.left ?? 0
+          // 记录元素距离页面顶部的绝对位置（不减去offsetTop）
+          rect.top = (node.top ?? 0) + scrollTop.value
+          isInitialized.value = true
+        }
       })
   }
 
@@ -172,13 +179,13 @@ defineExpose({
 
 <template>
   <view class="reborn-sticky-wrapper" :class="ui.wrapper()" :style="{
-    height: rect.height == 0 ? 'auto' : `${rect.height}px`,
+    height: rect.height > 0 ? `${rect.height}px` : 'auto',
     zIndex,
   }">
     <view :class="ui.content()" :style="{
-      width: isSticky ? `${rect.width}px` : '100%',
-      left: isSticky ? `${rect.left}px` : 0,
-      top: `${stickyTop}px`,
+      width: isSticky ? `${rect.width}px` : 'auto',
+      left: isSticky ? `${rect.left}px` : 'auto',
+      top: isSticky ? `${stickyTop}px` : 'auto',
     }">
       <slot :is-sticky="isSticky" />
     </view>

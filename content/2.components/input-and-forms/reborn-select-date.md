@@ -14,11 +14,6 @@ navigation:
     color: primary
 ---
 
-::warning
-web端暂未开发。
-::
-
-
 ::ComponentViewer{demoFile="RebornSelectDateDemo.vue" config="RebornSelectDateConfig" componentId="reborn-select-date" :componentFiles='["RebornSelectDate.vue", "reborn-select-date.config.ts"]' :uniappFiles='["RebornSelectDate.vue", "reborn-select-date.config.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]'}
 
 #api

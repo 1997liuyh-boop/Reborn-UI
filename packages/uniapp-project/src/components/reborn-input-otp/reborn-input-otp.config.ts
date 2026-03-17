@@ -4,7 +4,7 @@ const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', '
 export default {
   slots: {
     root: 'relative inline-flex items-center',
-    inner: 'absolute top-0 h-full z-10 opacity-0 w-full left-0',
+    inner: 'absolute top-0 h-full z-10 opacity-0 w-[200%] -left-full',
     list: 'flex flex-row relative gap-1',
     item: 'flex flex-row items-center justify-center duration-100 border border-solid border-gray-4 rounded-lg bg-gray-1 dark:bg-gray-8 ',
     value: 'text-inherit font-medium',

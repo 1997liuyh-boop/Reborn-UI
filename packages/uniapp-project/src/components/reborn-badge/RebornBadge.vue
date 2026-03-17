@@ -84,30 +84,31 @@ function handleClose(e: any) {
 </script>
 
 <template>
-  <view
-    :class="ui.base({ class: cn(props.customClass, `
+  <text>
+    <view :class="ui.base({
+      class: cn(props.customClass, `
       transition-all duration-200 ease-in-out
-    `, isClosing && 'scale-90 opacity-0') })"
-    @tap="onClick"
-  >
-    <slot name="leading">
-      <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
-    </slot>
-
-    <slot>
-      <text v-if="props.label" :class="ui.label()">{{ props.label }}</text>
-    </slot>
-
-    <slot name="trailing" />
-
-    <view v-if="props.closable" :class="ui.closeButton()" @tap.stop="handleClose">
-      <slot name="close">
-        <!-- Using simple text x or check if icon component exists -->
-        <!-- <text>×</text> -->
-        <view :class="cn(props.closeIcon, ui.closeIcon())" /> <!-- Assuming icon class -->
+    `, isClosing && 'scale-90 opacity-0')
+    })" @tap="onClick">
+      <slot name="leading">
+        <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
       </slot>
+
+      <slot>
+        <text v-if="props.label" :class="ui.label()">{{ props.label }}</text>
+      </slot>
+
+      <slot name="trailing" />
+
+      <view v-if="props.closable" :class="ui.closeButton()" @tap.stop="handleClose">
+        <slot name="close">
+          <!-- Using simple text x or check if icon component exists -->
+          <!-- <text>×</text> -->
+          <view :class="cn(props.closeIcon, ui.closeIcon())" /> <!-- Assuming icon class -->
+        </slot>
+      </view>
     </view>
-  </view>
+  </text>
 </template>
 
 <style scoped></style>
