@@ -14,24 +14,25 @@ export default {
 
 <template>
   <!-- #ifdef H5 -->
+  <!-- H5端使用 teleport -->
   <teleport to="body">
-    <slot />
+    <!-- #endif -->
+    <!-- #ifdef MP-WEIXIN || MP-ALIPAY -->
+    <!-- #ifndef MP-DINGTALK -->
+    <!-- 小程序使用 root-portal -->
+    <root-portal>
+      <!-- #endif -->
+      <!-- #endif -->
+      <view>
+        <slot />
+      </view>
+      <!-- #ifdef MP-WEIXIN || MP-ALIPAY -->
+      <!-- #ifndef MP-DINGTALK -->
+    </root-portal>
+    <!-- #endif -->
+    <!-- #endif -->
+    <!-- #ifdef H5 -->
   </teleport>
-  <!-- #endif -->
-  <!-- #ifdef MP-WEIXIN || MP-ALIPAY -->
-  <!-- #ifndef MP-DINGTALK -->
-  <root-portal>
-    <slot />
-  </root-portal>
-  <!-- #endif -->
-  <!-- #endif -->
-  <!-- #ifdef APP-PLUS -->
-  <view>
-    <slot />
-  </view>
-  <!-- #endif -->
-  <!-- #ifndef H5 || MP-WEIXIN || MP-ALIPAY || APP-PLUS -->
-  <slot />
   <!-- #endif -->
 </template>
 

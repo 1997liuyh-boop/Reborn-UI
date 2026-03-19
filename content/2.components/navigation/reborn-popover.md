@@ -4,10 +4,8 @@ description: 点击或悬浮元素，弹出一个可定制内容的气泡区域�
 badge: New
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
   chip:
     label: NEW
     color: primary

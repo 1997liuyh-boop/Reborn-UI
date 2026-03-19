@@ -14,6 +14,7 @@ const menuItems = [
       { label: '按钮', icon: 'i-lucide-mouse', path: '/pages/reborn-button/RebornButtonDemo' },
       { label: '图片', icon: 'i-lucide-image', path: '/pages/reborn-image/RebornImageDemo' },
       { label: '徽章', icon: 'i-lucide-badge-check', path: '/pages/reborn-badge/RebornBadgeDemo' },
+      { label: '根节点传送门', icon: 'i-lucide-arrow-right-left', path: '/pages/reborn-root-portal/RebornRootPortalDemo' },
     ],
   },
   {
@@ -37,6 +38,7 @@ const menuItems = [
       { label: '滑块', icon: 'i-lucide-sliders-horizontal', path: '/pages/reborn-slider/RebornSliderDemo' },
       { label: '选择器视图', icon: 'i-lucide-list-checks', path: '/pages/reborn-picker-view/RebornPickerViewDemo' },
       { label: '下拉选择', icon: 'i-lucide-chevron-down-circle', path: '/pages/reborn-dropdown-select/RebornDropdownSelectDemo' },
+      { label: '级联选择', icon: 'i-lucide-chevron-down-circle', path: '/pages/reborn-cascader/RebornCascaderDemo' },
     ],
   },
   {

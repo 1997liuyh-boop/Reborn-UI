@@ -6,10 +6,8 @@ tags: [css, tailwind, rate, rating, star, uniapp]
 badge: New
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
   chip:
     label: NEW
     color: primary

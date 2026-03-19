@@ -4,10 +4,8 @@ description: 支持列表拖拽排序的容器组件。
 category: Miscellaneous
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornDraggableDemo.vue" config="RebornDraggableConfig" componentId="reborn-draggable" :componentFiles='["RebornDraggable.vue", "reborn-draggable.config.ts"]' :uniappFiles='["RebornDraggable.vue", "reborn-draggable.config.ts"]'}

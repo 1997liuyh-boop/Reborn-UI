@@ -4,10 +4,8 @@ description: 支持 useToast() 调用的轻提示组件。
 category: Miscellaneous
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornToastDemo.vue" config="RebornToastConfig" componentId="reborn-toast" :componentFiles='["RebornToast.vue", "index.ts"]' :uniappFiles='["RebornToast.vue", "index.ts", "reborn-toast.config.ts"]'}

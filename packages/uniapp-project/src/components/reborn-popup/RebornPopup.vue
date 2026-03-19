@@ -16,7 +16,8 @@ import RebornTransition from '../reborn-transition/RebornTransition.vue'
 import RebornRootPortal from '../reborn-root-portal/RebornRootPortal.vue'
 import type { TransitionName } from '../reborn-transition/RebornTransition.vue'
 import { tv } from '@/lib/tv'
-import theme, { PopupPosition } from './reborn-popup.config'
+import { getSystemInfo } from '@/lib/device'
+import theme, { PopupPosition, PopupColor } from './reborn-popup.config'
 
 interface PopupProps {
   customClass?: string
@@ -45,6 +46,8 @@ interface PopupProps {
   ui?: any
   rootPortal?: boolean
   enablePortal?: boolean
+  color?: PopupColor
+  round?: boolean
 }
 
 const props = withDefaults(defineProps<PopupProps>(), {
@@ -72,6 +75,8 @@ const props = withDefaults(defineProps<PopupProps>(), {
   swipeCloseThreshold: 150,
   rootPortal: false,
   enablePortal: false,
+  color: 'neutral',
+  round: true,
 })
 
 const emit = defineEmits([
@@ -119,17 +124,17 @@ const style = computed(() => {
   if (swipe.isTouch && swipe.offsetY > 0) {
     transform = `transform: translateY(${swipe.offsetY}px);`
   }
-  return `z-index:${actualZIndex.value}; margin-top: ${safeTop.value}px; margin-bottom: ${safeBottom.value}px; ${transform} ${props.customStyle}`
+  return `z-index:${actualZIndex.value}; padding-top: ${safeTop.value}px; padding-bottom: ${safeBottom.value}px; ${transform} ${props.customStyle}`
 })
 
 const b = tv(theme)
 const rootClass = computed(() => {
-  return b({ position: actualPosition.value, class: props.customClass })
+  return b({ position: actualPosition.value, color: props.color, class: props.customClass, round: props.round })
 })
 
 onBeforeMount(() => {
-  const { safeArea, screenHeight, safeAreaInsets } = uni.getSystemInfoSync()
-  if (props.safeAreaInsetTop && safeArea) {
+  const { safeArea, screenHeight, safeAreaInsets } = getSystemInfo()
+  if (props.safeAreaInsetTop && safeArea && actualPosition.value === 'top') {
     // #ifdef MP-WEIXIN
     safeTop.value = safeArea.top || 44
     // #endif
@@ -137,8 +142,7 @@ onBeforeMount(() => {
     safeTop.value = safeAreaInsets?.top || 44
     // #endif
   }
-
-  if (props.safeAreaInsetBottom && safeArea) {
+  if (props.safeAreaInsetBottom && safeArea && actualPosition.value === 'bottom') {
     // #ifdef MP-WEIXIN
     safeBottom.value = screenHeight - (safeArea.bottom || 0)
     // #endif

@@ -234,6 +234,18 @@
       "style": {
         "navigationBarTitleText": "Waterfall Demo"
       }
+    },
+    {
+      "path": "pages/reborn-root-portal/RebornRootPortalDemo",
+      "style": {
+        "navigationBarTitleText": "Root Portal Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-cascader/RebornCascaderDemo",
+      "style": {
+        "navigationBarTitleText": "Cascader Demo"
+      }
     }
   ],
 

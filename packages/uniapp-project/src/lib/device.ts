@@ -158,7 +158,7 @@ export function getSystemInfo(): SystemInfo {
   let systemInfo: SystemInfo
   // #ifdef MP-WEIXIN
   try {
-    // const systemSetting = uni.getSystemSetting() // 暂时不需要
+    // const systemSetting = uni.getSystemInfoSync() // 暂时不需要
     const deviceInfo = uni.getDeviceInfo()
     const windowInfo = uni.getWindowInfo()
     const appBaseInfo = uni.getAppBaseInfo()

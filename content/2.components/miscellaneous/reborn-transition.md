@@ -4,10 +4,8 @@ description: 过渡动画容器，支持 fade / slide / zoom。
 category: Miscellaneous
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornTransitionDemo.vue" config="RebornTransitionConfig" componentId="reborn-transition" :componentFiles='["RebornTransition.vue", "reborn-transition.config.ts"]' :uniappFiles='["RebornTransition.vue", "reborn-transition.config.ts"]'}

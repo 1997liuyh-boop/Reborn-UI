@@ -6,10 +6,8 @@ tags: [css, tailwind, checkbox, uniapp]
 badge: New
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
   chip:
     label: NEW
     color: primary

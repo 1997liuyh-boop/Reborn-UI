@@ -6,10 +6,8 @@ tags: [qrcode, canvas, svg, uniapp, web]
 badge: New
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornQrcodeDemo.vue" config="RebornQrcodeConfig" componentId="reborn-qrcode" :componentFiles='["RebornQrcode.vue", "qrcode.ts"]' :uniappFiles='["RebornQrcode.vue", "draw.ts", "qrcode.ts"]'}

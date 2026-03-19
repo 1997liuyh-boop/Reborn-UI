@@ -4,10 +4,8 @@ description: 提供颜色选择的组件。
 category: Input and Forms
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornColorPickerDemo.vue" config="RebornColorPickerConfig" componentId="reborn-color-picker" :componentFiles='["RebornColorPicker.vue", "RebornColorPickerPanel.vue", "reborn-color-picker.config.ts", "reborn-color-picker-panel.config.ts"]' :uniappFiles='["RebornColorPicker.vue", "reborn-color-picker.config.ts"]'}

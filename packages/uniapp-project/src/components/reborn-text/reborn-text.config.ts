@@ -19,13 +19,27 @@ export default {
       },
     },
     color: {
-      primary: 'text-primary',
-      secondary: 'text-secondary',
-      success: 'text-success',
-      info: 'text-info',
-      warning: 'text-warning',
-      error: 'text-error',
-      neutral: 'text-neutral',
+      primary: {
+        base: 'text-primary',
+      },
+      secondary: {
+        base: 'text-secondary',
+      },
+      success: {
+        base: 'text-success',
+      },
+      info: {
+        base: 'text-info',
+      },
+      warning: {
+        base: 'text-warning',
+      },
+      error: {
+        base: 'text-error',
+      },
+      neutral: {
+        base: 'text-neutral',
+      },
     },
     ellipsis: {
       true: {

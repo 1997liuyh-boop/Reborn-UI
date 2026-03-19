@@ -4,10 +4,8 @@ description: 全屏遮罩层，支持点击关闭和滚动锁定。
 category: Miscellaneous
 navigation:
   badges:
-    - label: Web
+    - label: 通
       color: primary
-    - label: UniApp
-      color: success
 ---
 
 ::ComponentViewer{demoFile="RebornOverlayDemo.vue" config="RebornOverlayConfig" componentId="reborn-overlay" :componentFiles='["RebornOverlay.vue", "reborn-overlay.config.ts"]' :uniappFiles='["RebornOverlay.vue", "reborn-overlay.config.ts"]'}

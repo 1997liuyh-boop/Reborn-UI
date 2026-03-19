@@ -614,7 +614,7 @@ defineExpose({
       </template>
     </RebornSelectTrigger>
 
-    <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi" position="bottom">
+    <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi" position="bottom" :color="color">
       <view @touchmove.stop class="bg-white">
         <view v-if="rangeable" :class="ui.rangeBox()">
           <view v-if="showShortcuts" :class="ui.shortcuts()">
