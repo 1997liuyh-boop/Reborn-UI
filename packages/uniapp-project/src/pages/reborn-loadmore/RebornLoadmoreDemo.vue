@@ -21,6 +21,17 @@ const loading = ref(false)
 const demoColor = ref<typeof loadMoreColors[number]>('neutral')
 const demoState = ref<typeof LoadMoreState[number]>('loading')
 
+const fixedImages = [
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn1.jpg', ratio: 0.75 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn2.jpg', ratio: 1.25 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn3.jpg', ratio: 0.6 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn4.jpg', ratio: 1.5 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn5.jpg', ratio: 0.8 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn7.jpg', ratio: 1.1 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn8.jpg', ratio: 0.9 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn9.jpg', ratio: 1.33 }
+];
+
 const getList = () => {
     // 1. 拦截重复请求或已加载完成的状态
     if (loading.value || state.value === 'finished' || state.value === 'error') return
@@ -28,43 +39,41 @@ const getList = () => {
     loading.value = true
     state.value = 'loading'
 
-    uni.request({
-        // 替换为 JSONPlaceholder 接口，国内访问较快
-        url: 'https://jsonplaceholder.typicode.com/posts',
-        method: 'GET',
-        data: {
-            _page: page.value,   // 当前页码
-            _limit: pageSize      // 每页数量
-        },
-        success: (res: any) => {
-            const data = res.data || []
+    // 模拟网络请求延迟
+    setTimeout(() => {
+        const start = (page.value - 1) * pageSize
 
-            // 模拟数据：因为 posts 接口没有图片，我们手动塞一个占位图以便展示
-            const mappedData = data.map((item: any) => ({
-                id: item.id,
-                title: item.title,
-                body: item.body,
-                image: `https://picsum.photos/200/150?random=${item.id}` // 随机图片
-            }))
-
-            list.value.push(...mappedData)
-
-            if (list.value.length === 20) {
-                isError.value = !isError.value
-                state.value = isError.value ? 'error' : 'loading'
-            } else if (list.value.length >= 40) { // 这里演示加载到50条停止
-                state.value = 'finished'
-            } else {
-                page.value++
+        // 模拟数据生成
+        const mappedData = Array.from({ length: pageSize }).map((_, index) => {
+            const globalIndex = start + index;
+            const imgData = fixedImages[globalIndex % fixedImages.length];
+            return {
+                id: globalIndex + 1,
+                title: `分页加载示例标题 ${globalIndex + 1}`,
+                body: '这是一段模拟的分页加载描述文本，用于展示在列表项中。我们可以通过滚动到底部来触发更多的加载流程。',
+                image: imgData.url
             }
-        },
-        fail: () => {
+        })
+
+        list.value.push(...mappedData)
+
+        // 模拟错误发生（在列表长度到达 20 时演示）
+        if (list.value.length === 20 && !isError.value) {
+            isError.value = true
             state.value = 'error'
-        },
-        complete: () => {
             loading.value = false
+            return
         }
-    })
+
+        // 演示加载到 50 条停止
+        if (list.value.length >= 50) {
+            state.value = 'finished'
+        } else {
+            state.value = 'loading'
+            page.value++
+        }
+        loading.value = false
+    }, 800)
 }
 
 // 失败点击重试

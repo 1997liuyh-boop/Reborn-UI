@@ -4,9 +4,11 @@
             <RebornWaterfall ref="waterfallRef" :column="2">
                 <template #item="{ item }">
                     <view class="bg-white mb-2 rounded-xl dark:!bg-gray-8 relative shadow-sm overflow-hidden">
-                        <RebornImage :src="item['image']" mode="widthFix" width="100%" height="100%" :lazyLoad="true"
-                            custom-class="w-full h-auto">
-                        </RebornImage>
+                        <view class="w-full relative overflow-hidden" :style="{ aspectRatio: item['ratio'] || 1 }">
+                            <RebornImage :src="item['image']" mode="aspectFill" width="100%" height="100%"
+                                :lazyLoad="true" custom-class="absolute left-0 top-0 w-full h-full">
+                            </RebornImage>
+                        </view>
 
                         <view class="p-3">
                             <template v-if="item['isAd']">
@@ -66,9 +68,20 @@ const waterfallRef = ref<any>(null);
 const loading = ref(false);
 const state = ref<'loading' | 'error' | 'finished'>('loading')
 const page = ref(1);
-const pageSize = 10;
+const pageSize = 4;
 const isError = ref(false);
 const scrollTop = ref(0);
+
+const fixedImages = [
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn1.jpg', ratio: 0.75 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn2.jpg', ratio: 1.25 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn3.jpg', ratio: 0.6 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn4.jpg', ratio: 1.5 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn5.jpg', ratio: 0.8 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn7.jpg', ratio: 1.1 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn8.jpg', ratio: 0.9 },
+    { url: 'http://image.mall.leyifan.cn/mp/static/assets/cn9.jpg', ratio: 1.33 }
+];
 
 const getList = () => {
     // 1. 拦截重复请求或已加载完成的状态
@@ -77,54 +90,43 @@ const getList = () => {
     loading.value = true
     state.value = 'loading'
 
-    uni.request({
-        // 替换为 JSONPlaceholder 接口，国内访问较快
-        url: 'https://jsonplaceholder.typicode.com/posts',
-        method: 'GET',
-        data: {
-            _page: page.value,   // 当前页码
-            _limit: pageSize      // 每页数量
-        },
-        success: (res: any) => {
-            const data = (res.data || []) as any[]
+    // 模拟网络请求延迟
+    setTimeout(() => {
+        const start = (page.value - 1) * pageSize
 
-            if (data.length === 0) {
-                state.value = 'finished'
-                return
+        // 使用取模运算循环利用固定的 8 张图片生成每一页的数据
+        const mappedData = Array.from({ length: pageSize }).map((_, index) => {
+            const globalIndex = start + index;
+            const imgData = fixedImages[globalIndex % fixedImages.length];
+            return {
+                id: globalIndex + 1,
+                title: `精选热门风景推荐 ${globalIndex + 1}`,
+                body: '远离城市的喧嚣，感受大自然最纯粹的呼吸与心跳。在这里将美好定格，把宁静永留心间。',
+                isAd: globalIndex === 3,
+                image: imgData.url,
+                ratio: imgData.ratio
             }
+        })
 
-            // 模拟数据：因为 posts 接口没有图片，我们手动塞一个占位图以便展示
-            const mappedData = data.map((item: any, index: number) => ({
-                id: item.id,
-                title: item.title,
-                body: item.body,
-                isAd: index === 3,
-                image: `https://picsum.photos/400/500?random=${index}` // 随机图片
-            }))
+        waterfallRef.value?.append(mappedData)
 
-            waterfallRef.value?.append(mappedData)
-
-            // 模拟一个错误发生
-            if (page.value === 3 && !isError.value) {
-                isError.value = true
-                state.value = 'error'
-                return
-            }
-
-            if (data.length < pageSize || page.value >= 5) {
-                state.value = 'finished'
-            } else {
-                state.value = 'loading'
-                page.value++
-            }
-        },
-        fail: () => {
+        // 模拟一个错误发生（演示 error 状态）
+        if (page.value === 2 && !isError.value) {
+            isError.value = true
             state.value = 'error'
-        },
-        complete: () => {
             loading.value = false
+            return
         }
-    })
+
+        if (page.value >= 25) {
+            console.log('finished')
+            state.value = 'finished'
+        } else {
+            state.value = 'loading'
+            page.value++
+        }
+        loading.value = false
+    }, 600)
 }
 
 function random(min: number, max: number): number {

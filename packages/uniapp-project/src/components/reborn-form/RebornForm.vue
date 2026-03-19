@@ -8,6 +8,7 @@ import { useFieldGroup } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-form.config'
+import { getSystemInfo } from '@/lib/device'
 
 export type { FormValidateError }
 
@@ -175,7 +176,12 @@ function scrollToField(prop: string) {
   if (field && field.getBoundingClientRect) {
     field.getBoundingClientRect((res: any) => {
       if (res) {
-        scrollTo(res.top + (fields.value.size > 0 ? 0 : 0) + scrollTop.value)
+        const { windowHeight } = getSystemInfo()
+        uni.createSelectorQuery().selectViewport().scrollOffset((scrollRes: any) => {
+          const currentScrollTop = scrollRes ? scrollRes.scrollTop : 0
+          const target = currentScrollTop + res.top - windowHeight / 2 + (res.height || 0) / 2
+          scrollTo(Math.max(target, 0))
+        }).exec()
       }
     })
   }

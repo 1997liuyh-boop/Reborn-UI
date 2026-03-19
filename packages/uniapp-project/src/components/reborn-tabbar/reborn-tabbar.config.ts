@@ -23,7 +23,8 @@ export default {
         },
         fixed: {
             true: {
-                base: 'fixed left-0 bottom-0 right-0 !z-[150]',
+                // bottom-[-1px] 为了解决border-t 导致tabbar上移1px的问题
+                base: 'fixed left-0 bottom-[-1px] right-0 !z-[150]',
             },
             false: '',
         },
@@ -70,9 +71,8 @@ export default {
                 base: 'box-content bottom-[env(safe-area-inset-bottom)]',
             },
         },
-        // round 形状特有的安全区 padding (用于撑起空间)
+        // 安全区 padding (用于撑起空间)
         {
-            shape: 'round' as const,
             fixed: true,
             safeAreaInsetBottom: true,
             class: {

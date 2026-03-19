@@ -161,6 +161,8 @@ const value = ref<any[]>([])
 const indexes = ref<number[]>([])
 
 const selectItem = ref<any[]>([])
+const renderKey = ref(0)
+
 
 // 计算选择器列表数据
 const columns = computed<SelectOption[][]>(() => {
@@ -253,7 +255,11 @@ function setValue(val: SelectValue) {
   value.value = _value
   indexes.value = _indexes
 
-  selectItem.value = getSelectItem(indexes.value)
+  if (val == null || (Array.isArray(val) && val.length === 0)) {
+    selectItem.value = []
+  } else {
+    selectItem.value = getSelectItem(indexes.value)
+  }
   updateText()
 }
 
@@ -280,6 +286,7 @@ const visible = ref(false)
 let callback: ((value: SelectValue) => void) | null = null
 
 function open(cb: ((value: SelectValue) => void) | null = null) {
+  renderKey.value++
   visible.value = true
   setValue(props.modelValue)
   callback = cb
@@ -356,12 +363,12 @@ defineExpose({
     </template>
   </RebornSelectTrigger>
   <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
-    <view @touchmove.stop>
+    <view @touchmove.stop.prevent @wheel.stop.prevent>
       <slot name="prepend" />
 
       <view>
-        <RebornPickerView v-if="!noOptions" :color="color" :value="indexes" :columns="columns" :ui="pickerUi"
-          @change-index="onChange">
+        <RebornPickerView :key="renderKey" v-if="!noOptions" :color="color" :value="indexes" :columns="columns"
+          :ui="pickerUi" @change-index="onChange">
           <!-- #ifndef MP-WEIXIN -->
           <template #default="{ item, index }">
             <slot name="option" :item="item" :index="index" />

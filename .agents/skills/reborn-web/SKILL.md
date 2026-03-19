@@ -16,6 +16,7 @@ Reborn UI 是一个遵循现代设计规范的高性能组件库。在 Web 平�
 | 主题 | 说明 | 参考 |
 |------|------|------|
 | 目录结构 | Web 侧组件、Playground 与文档的物理存路径放规范 | [core-structure](references/core-structure.md) |
+| 设计令牌 (Tokens) | 颜色体系、语义化映射与全局样式规范 | [design-tokens](references/design-tokens.md) |
 | 配置文件 (Config) | 支持 Slots 变体、类型收口与跨端参数对齐规范 | [component-config](references/component-config.md) |
 | 组件实现 (Vue) | 中文注释规范、defineModel 语法糖及跨端一致性实践 | [component-implementation](references/component-implementation.md) |
 | 文档规范 (MD) | 组件文档结构、ComponentViewer 配置及平台差异标注 | [documentation-standards](references/documentation-standards.md) |

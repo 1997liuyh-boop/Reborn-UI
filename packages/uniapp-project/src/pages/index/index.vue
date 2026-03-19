@@ -38,7 +38,7 @@ const menuItems = [
       { label: '滑块', icon: 'i-lucide-sliders-horizontal', path: '/pages/reborn-slider/RebornSliderDemo' },
       { label: '选择器视图', icon: 'i-lucide-list-checks', path: '/pages/reborn-picker-view/RebornPickerViewDemo' },
       { label: '下拉选择', icon: 'i-lucide-chevron-down-circle', path: '/pages/reborn-dropdown-select/RebornDropdownSelectDemo' },
-      { label: '级联选择', icon: 'i-lucide-chevron-down-circle', path: '/pages/reborn-cascader/RebornCascaderDemo' },
+      { label: '级联选择', icon: 'i-lucide-square-stack', path: '/pages/reborn-cascader/RebornCascaderDemo' },
     ],
   },
   {
@@ -50,8 +50,10 @@ const menuItems = [
       { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },
       { label: '返回顶部', icon: 'i-lucide-arrow-big-up', path: '/pages/reborn-back-top/RebornBackTopDemo' },
       { label: '吸顶', icon: 'i-lucide-arrow-up-to-line', path: '/pages/reborn-sticky/RebornStickyDemo' },
+      { label: '悬浮按钮', icon: 'i-lucide-mouse-pointer-2', path: '/pages/reborn-fab/RebornFabDemo' },
       { label: '底部栏', icon: 'i-lucide-panel-bottom', path: '/pages/reborn-footer/RebornFooterDemo' },
       { label: '标签栏', icon: 'i-lucide-dock', path: '/pages/reborn-tabbar/RebornTabbarDemo' },
+      { label: '瀑布流', icon: 'i-mdi-waterfall', path: '/pages/reborn-waterfall/RebornWaterfallDemo' },
     ],
   },
   {
@@ -72,8 +74,8 @@ const menuItems = [
       { label: '提示框', icon: 'i-lucide-message-square', path: '/pages/reborn-toast/RebornToastDemo' },
       { label: '加载更多', icon: 'i-lucide-arrow-down-circle', path: '/pages/reborn-loadmore/RebornLoadmoreDemo' },
       { label: '拖拽排序', icon: 'i-lucide-move', path: '/pages/reborn-draggable/RebornDraggableDemo' },
-      { label: '瀑布流', icon: 'i-mdi-waterfall', path: '/pages/reborn-waterfall/RebornWaterfallDemo' },
       { label: '取色器', icon: 'i-lucide-palette', path: '/pages/reborn-color-picker/RebornColorPickerDemo' },
+      { label: '分页', icon: 'i-lucide-list-ordered', path: '/pages/reborn-pagination/RebornPaginationDemo' },
     ],
   },
 ]

@@ -16,6 +16,7 @@ Reborn UI 是一个遵循现代设计规范的高性能组件库。在 UniApp �
 | 主题 | 说明 | 参考 |
 |------|------|------|
 | 目录结构 | 组件、配置、Demo 与工具类的存放路径规范 | [core-structure](references/core-structure.md) |
+| 设计令牌 (Tokens) | 颜色体系（10 级灰度）、圆角与字号规范 | [design-tokens](references/design-tokens.md) |
 | 配置文件 (Config) | 强制 Slots 模式、类型定义位置及 rpx 单位规范 | [component-config](references/component-config.md) |
 | 组件实现 (Vue) | 中文注释、v-model 语法糖、一致性检查及 Props 模式 | [component-implementation](references/component-implementation.md) |
 | Demo 开发 | RebornPage/Card 容器规范及完整状态展示指南 | [demo-standards](references/demo-standards.md) |

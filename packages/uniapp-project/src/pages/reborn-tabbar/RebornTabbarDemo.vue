@@ -137,15 +137,12 @@ function beforeChangeHook({ name }: { name: string | number }, done: (shouldProc
         </view>
 
         <!-- 监听切换事件 -->
-        <view class="text-26 font-bold mt-4 mb-2">监听切换事件</view>
+        <view class="text-26 font-bold mt-4 mb-2">监听切换事件+固定底部</view>
         <view class="relative w-full bg-gray-2 rounded-md ">
-            <RebornTabbar v-model="tabbar3" :before-change="beforeChangeHook" @change="handleChange1"
-                active-color="#ee0a24" inactive-color="#7d7e80">
-                <RebornTabbarTrigger title="首页" icon="i-lucide-home" />
-                <RebornTabbarTrigger title="分类" icon="i-lucide-shopping-cart" />
-                <RebornTabbarTrigger title="我的" icon="i-lucide-user" />
-                <RebornTabbarTrigger title="相册" icon="i-lucide-image" />
-                <RebornTabbarTrigger title="客服" icon="i-lucide-message-circle" />
+            <RebornTabbar bordered :animation="animation" :shape="shape" v-model="tabbar" :fixed="true"
+                :color="demoColor" :pure-icon="onlyIcon" @change="handleChange1" :ball-shift-y="-10">
+                <RebornTabbarTrigger v-for="item in tabbarList" :key="item.name" :name="item.name" :title="item.title"
+                    :image-size="52" :icon="item.icon" :inactive="item.inactive" />
             </RebornTabbar>
         </view>
 

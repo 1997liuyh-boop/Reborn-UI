@@ -1,0 +1,38 @@
+{
+  "name": "reborn-overlay",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as RebornOverlay } from './RebornOverlay.vue';\r\n",
+      "target": "web"
+    },
+    {
+      "path": "reborn-overlay.config.ts",
+      "content": "export default { base: 'inset-0 bg-gray-8/70 dark:bg-gray-2/70' } as const;\r\n",
+      "target": "web"
+    },
+    {
+      "path": "RebornOverlay.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { computed, watch } from 'vue';\r\nimport RebornTransition from '../reborn-transition/RebornTransition.vue';\r\nimport theme from './reborn-overlay.config';\r\n\r\ninterface Props {\r\n  modelValue?: boolean;\r\n  duration?: number;\r\n  lockScroll?: boolean;\r\n  zIndex?: number;\r\n  closeOnClickOverlay?: boolean;\r\n  absolute?: boolean;\r\n  customClass?: string;\r\n  customStyle?: string;\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  modelValue: false,\r\n  duration: 300,\r\n  lockScroll: true,\r\n  zIndex: 100,\r\n  closeOnClickOverlay: true,\r\n  absolute: false,\r\n  customClass: '',\r\n  customStyle: ''\r\n});\r\nconst emit = defineEmits(['update:modelValue', 'close']);\r\n\r\nwatch(() => props.modelValue && props.lockScroll, (locked) => {\r\n  if (typeof document !== 'undefined') document.body.style.overflow = locked ? 'hidden' : '';\r\n}, { immediate: true });\r\n\r\nconst overlayClass = computed(() => `${props.absolute ? 'absolute' : 'fixed'} ${theme.base} ${props.customClass}`);\r\nconst overlayStyle = computed(() => `z-index:${props.zIndex};${props.customStyle}`);\r\nconst onClick = () => { if (props.closeOnClickOverlay) { emit('update:modelValue', false); emit('close'); } };\r\n</script>\r\n<template>\r\n  <RebornTransition :show=\"props.modelValue\" name=\"fade\" :duration=\"props.duration\" :custom-class=\"overlayClass\"\r\n    :custom-style=\"overlayStyle\" :disable-touch-move=\"props.lockScroll\" @click=\"onClick\">\r\n    <slot />\r\n  </RebornTransition>\r\n</template>\r\n",
+      "target": "web"
+    },
+    {
+      "path": "index.ts",
+      "content": "// @ts-ignore\r\nimport RebornOverlay from './reborn-overlay.vue'\r\n\r\nexport default RebornOverlay\r\nexport { RebornOverlay }\r\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "reborn-overlay.config.ts",
+      "content": "const config = {\r\n    base: 'inset-0 bg-gray-8/70 dark:bg-gray-2/70',\r\n    variants: {\r\n        absolute: {\r\n            true: 'absolute',\r\n            false: 'fixed'\r\n        }\r\n    },\r\n    defaultVariants: {\r\n        absolute: false\r\n    }\r\n} as const\r\n\r\nexport default config\r\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "RebornOverlay.vue",
+      "content": "<script lang=\"ts\">\r\nexport default {\r\n    name: 'reborn-overlay',\r\n    options: {\r\n        virtualHost: true,\r\n        addGlobalClass: true,\r\n        styleIsolation: 'shared'\r\n    }\r\n}\r\n</script>\r\n\r\n<script lang=\"ts\" setup>\r\nimport { computed, type PropType } from 'vue'\r\nimport RebornTransition from '../reborn-transition/RebornTransition.vue'\r\nimport { tv } from '@/lib/tv'\r\nimport theme from './reborn-overlay.config'\r\n// #ifdef H5\r\nimport { useLockScroll } from '@/composables/useLockScroll'\r\n// #endif\r\n\r\nconst props = defineProps({\r\n    customClass: { type: String, default: '' },\r\n    customStyle: { type: String, default: '' },\r\n    modelValue: { type: Boolean, default: false },\r\n    duration: {\r\n        type: [Object, Number, Boolean] as PropType<Record<string, number> | number | boolean>,\r\n        default: 300\r\n    },\r\n    lockScroll: { type: Boolean, default: true },\r\n    zIndex: { type: Number, default: 10 },\r\n    closeOnClickOverlay: { type: Boolean, default: true },\r\n    absolute: { type: Boolean, default: false },\r\n})\r\n\r\nconst emit = defineEmits(['update:modelValue', 'close'])\r\n\r\nconst b = tv(theme)\r\n\r\nconst overlayClass = computed(() => {\r\n    return `${b({ absolute: props.absolute })} ${props.customClass}`\r\n})\r\n\r\nfunction handleClick() {\r\n    if (props.closeOnClickOverlay) {\r\n        emit('update:modelValue', false)\r\n        emit('close')\r\n    }\r\n}\r\n\r\n// #ifdef H5\r\nuseLockScroll(() => props.modelValue && props.lockScroll)\r\n// #endif\r\n</script>\r\n\r\n<template>\r\n    <reborn-transition :show=\"modelValue\" name=\"fade\" :custom-class=\"overlayClass\" :duration=\"duration\"\r\n        :custom-style=\"`z-index: ${zIndex}; ${customStyle}`\" :disable-touch-move=\"lockScroll\" @click=\"handleClick\">\r\n        <slot></slot>\r\n    </reborn-transition>\r\n</template>\r\n",
+      "target": "uniapp"
+    }
+  ],
+  "fileCount": 6,
+  "contentHash": "aa390631bae238e04896b84b570c8e3ad3f84a20"
+}

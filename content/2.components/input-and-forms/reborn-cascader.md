@@ -1,7 +1,8 @@
 ---
-title: Cascader 级联选择器
+title: Cascader
 description: 在包含多层级的数据结构中进行选择，常用作省市区选择、分类选择等场景。
 category: Input and Forms
+badge: New
 navigation:
   badges:
     - label: UniApp

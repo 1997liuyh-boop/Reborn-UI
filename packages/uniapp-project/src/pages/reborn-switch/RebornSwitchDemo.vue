@@ -133,14 +133,6 @@ const focusSwitch = () => {
           <RebornSwitch v-model="beforeChangeValue" :before-change="handleBeforeChange" active-label="需确认" />
         </view>
 
-        <!-- 手动聚焦 -->
-        <view class="flex flex-col gap-2 rounded-xl border border-gray-100 bg-white p-4 dark:bg-gray-800">
-          <view class="flex justify-between items-center">
-            <text class="text-xs text-gray-400 uppercase font-bold">手动聚焦</text>
-            <ReButton size="xs" variant="soft" @click="focusSwitch">点击聚焦</ReButton>
-          </view>
-          <RebornSwitch ref="switchRef" active-label="Focus Me" />
-        </view>
       </view>
     </RebornCard>
 

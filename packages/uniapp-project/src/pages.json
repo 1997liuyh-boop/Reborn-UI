@@ -246,6 +246,18 @@
       "style": {
         "navigationBarTitleText": "Cascader Demo"
       }
+    },
+    {
+      "path": "pages/reborn-fab/RebornFabDemo",
+      "style": {
+        "navigationBarTitleText": "Fab Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-pagination/RebornPaginationDemo",
+      "style": {
+        "navigationBarTitleText": "Pagination Demo"
+      }
     }
   ],
 

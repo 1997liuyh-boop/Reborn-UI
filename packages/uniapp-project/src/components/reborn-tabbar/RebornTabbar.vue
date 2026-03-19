@@ -377,7 +377,8 @@ function setPlaceholderHeight() {
 </script>
 
 <template>
-    <view :class="ui.root({ class: cn(customClass) })" :style="placeholderStyle">
+    <view :class="ui.root({ class: cn(customClass) })">
+        <view v-if="fixed && placeholder && height" class="reborn-tabbar-placeholder" :style="placeholderStyle"></view>
         <view class="reborn-tabbar-base" :class="ui.base()" :style="[rootStyle, customStyle]">
             <view v-if="dropBallVisible" :class="[ui.dropBall(), { 'drop-ball-bounce': dropBallAnimating }]" :style="{
                 left: '0px',

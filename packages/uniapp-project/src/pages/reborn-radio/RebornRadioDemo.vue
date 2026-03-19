@@ -57,7 +57,6 @@ const emojis = [
     </RebornCard>
 
     <RebornCard title="自定义图标" custom-class="space-y-4">
-      {{ v5 }}
       <RebornRadio v-model="v5" label="自定义图标" value="1" active-icon="i-lucide-check-circle-2"
         inactive-icon="i-lucide-circle" />
     </RebornCard>
