@@ -5,47 +5,36 @@ const config = {
   slots: {
     wrapper: 'relative flex w-full items-center',
     input:
-      'flex h-10 w-full rounded-md border border-gray-2 dark:border-gray-7 bg-gray-2 dark:bg-gray-8 px-3  text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      'flex w-full bg-gray-2 dark:bg-gray-8 px-3 text-sm text-gray-8 dark:text-gray-1  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
     leading: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
-    trailing: 'absolute right-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
-    // Styles for internal icons like clear and password toggle
-    icon: 'absolute right-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground transition-opacity hover:opacity-80 cursor-pointer z-10',
-    iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-2',
-    iconSection: 'flex cursor-pointer items-center justify-center p-1 text-muted-foreground transition-opacity hover:opacity-80',
+    iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-[16rpx]',
+    iconSection: 'flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
+    separator: 'w-px transition-colors bg-gray-4',
   },
   variants: {
     size: {
       sm: {
         input: 'h-input-sm px-3',
+        iconSection: '[--icon-size:var(--text-size-36)]',
+        separator: 'h-[var(--text-size-32)]',
       },
       md: {
         input: 'h-input-md px-3',
+        iconSection: '[--icon-size:var(--text-size-40)]',
+        separator: 'h-[var(--text-size-36)]',
       },
       lg: {
-        input: 'h-input-lg px-8 rounded-md',
+        input: 'h-input-lg px-3',
+        iconSection: '[--icon-size:var(--text-size-48)]',
+        separator: 'h-[var(--text-size-40)]',
       },
     },
-    color: {
-      primary: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-primary',
+    border: {
+      true: {
+        input: 'ring-offset-background focus:ring-2 focus:ring-offset-2',
       },
-      secondary: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-secondary',
-      },
-      success: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-success',
-      },
-      info: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-info',
-      },
-      warning: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-warning',
-      },
-      error: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-error',
-      },
-      neutral: {
-        input: 'focus-within:ring-[1.5px] focus-within:ring-gray-4',
+      false: {
+        input: 'border-0 focus:ring-0 focus-visible:ring-0',
       },
     },
     multiline: {
@@ -78,21 +67,37 @@ const config = {
         input: 'rounded-full',
       },
       false: {
-        input: 'rounded-md',
+        input: 'rounded-ui-base',
       },
     },
     error: {
       true: {
-        input: 'border-error text-error placeholder:text-error/50 focus-visible:ring-error focus-within:ring-error focus-within:border-error ring-error',
+        input: 'border-error text-error placeholder:text-error/50 ring-error',
       },
     },
+    focus: {
+      true: {},
+      false: {},
+    },
   },
+  compoundVariants: [
+    { border: true, focus: true, class: { input: 'ring-2 ring-offset-2' } },
+    { color: 'primary', border: true, focus: true, class: { input: 'border-primary ring-primary', separator: 'bg-red-4', } },
+    { color: 'secondary', border: true, focus: true, class: { input: 'border-secondary ring-secondary', separator: 'bg-gray-8', } },
+    { color: 'success', border: true, focus: true, class: { input: 'border-success ring-success', separator: 'bg-green-4', } },
+    { color: 'info', border: true, focus: true, class: { input: 'border-info ring-info', separator: 'bg-blue-4', } },
+    { color: 'warning', border: true, focus: true, class: { input: 'border-warning ring-warning', separator: 'bg-orange-4', } },
+    { color: 'error', border: true, focus: true, class: { input: 'border-error ring-error', separator: 'bg-red-4', } },
+    { color: 'neutral', border: true, focus: true, class: { input: 'border-gray-4 ring-gray-4', separator: 'bg-gray-4', } },
+  ] as any,
   defaultVariants: {
-    size: 'md',
+    size: 'sm',
     color: 'neutral',
     rounded: true,
+    border: true,
+    focus: false,
   },
-} as const
+} as const;
 
 export { colors as inputColors, sizes as inputSizes }
 export default config

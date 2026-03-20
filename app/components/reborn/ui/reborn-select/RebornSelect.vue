@@ -18,6 +18,7 @@ export interface SelectOption {
 
 export interface SelectProps {
     modelValue?: any;
+    multiple?: boolean;
     options?: SelectOption[];
     placeholder?: string;
     disabled?: boolean;
@@ -40,6 +41,7 @@ export interface SelectProps {
 
 const props = withDefaults(defineProps<SelectProps>(), {
     modelValue: null,
+    multiple: false,
     options: () => [],
     placeholder: "请选择",
     disabled: false,
@@ -79,16 +81,27 @@ const ui = computed(() => {
     };
 });
 
-const selectedOption = computed(() =>
-    props.options.find((o) => o.value === props.modelValue) ?? null,
-);
+const isSelected = (value: any) => {
+    if (props.multiple && Array.isArray(props.modelValue)) {
+        return props.modelValue.includes(value);
+    }
+    return value === props.modelValue;
+};
 
-const displayText = computed(() => selectedOption.value?.label ?? "");
+const selectedOptions = computed(() => {
+    if (props.multiple && Array.isArray(props.modelValue)) {
+        return props.options.filter(o => props.modelValue.includes(o.value));
+    }
+    const opt = props.options.find(o => o.value === props.modelValue);
+    return opt ? [opt] : [];
+});
+
+const displayText = computed(() => selectedOptions.value.map(o => o.label).join(', ') || "");
 
 function toggle() {
     if (props.disabled) return;
     isOpen.value = !isOpen.value;
-    if (isOpen.value) {
+    if (isOpen.value && !props.multiple) {
         highlightIndex.value = props.options.findIndex((o) => o.value === props.modelValue);
         nextTick(() => scrollToActive());
     }
@@ -96,15 +109,29 @@ function toggle() {
 
 function selectOption(option: SelectOption) {
     if (option.disabled) return;
-    emit("update:modelValue", option.value);
-    emit("change", option.value);
-    isOpen.value = false;
+
+    if (props.multiple) {
+        const newValue = Array.isArray(props.modelValue) ? [...props.modelValue] : [];
+        const index = newValue.indexOf(option.value);
+        if (index > -1) {
+            newValue.splice(index, 1);
+        } else {
+            newValue.push(option.value);
+        }
+        emit("update:modelValue", newValue);
+        emit("change", newValue);
+    } else {
+        emit("update:modelValue", option.value);
+        emit("change", option.value);
+        isOpen.value = false;
+    }
 }
 
 function clear(e: Event) {
     e.stopPropagation();
-    emit("update:modelValue", null);
-    emit("change", null);
+    const newValue = props.multiple ? [] : null;
+    emit("update:modelValue", newValue);
+    emit("change", newValue);
 }
 
 function onClickOutside(e: MouseEvent) {
@@ -166,7 +193,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
 
             <div class="flex items-center gap-1">
-                <span v-if="clearable && modelValue != null" :class="ui.clearBtn()" @click="clear">
+                <span v-if="clearable && (multiple ? modelValue?.length > 0 : modelValue != null)"
+                    :class="ui.clearBtn()" @click="clear">
                     <Icon name="lucide:x" class="size-full" />
                 </span>
                 <Icon v-else name="lucide:chevron-down" :class="ui.arrow()" />
@@ -179,12 +207,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             <div v-if="isOpen" ref="dropdownRef" :class="ui.dropdown()" style="max-height: 240px; top: 100%">
                 <div v-for="(option, index) in options" :key="index" :class="[
                     ui.option(),
-                    option.value === modelValue ? ui.optionActive() : '',
+                    isSelected(option.value) ? ui.optionActive() : '',
                     highlightIndex === index ? 'bg-gray-100 dark:bg-gray-700/50' : '',
                     option.disabled ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30',
                 ]" @click="selectOption(option)" @mouseenter="highlightIndex = index">
-                    <slot name="option" :option="option" :active="option.value === modelValue">
-                        {{ option.label }}
+                    <slot name="option" :option="option" :active="isSelected(option.value)">
+                        <div class="flex w-full items-center justify-between gap-2">
+                            <span class="flex-1 truncate">{{ option.label }}</span>
+                            <Icon v-if="multiple && isSelected(option.value)" name="lucide:check"
+                                class="size-4 opacity-75 shrink-0" />
+                        </div>
                     </slot>
                 </div>
 

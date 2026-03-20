@@ -132,28 +132,30 @@ defineExpose({
 </script>
 
 <template>
-  <view class="group" :class="[ui.wrapper({ class: props.customClass }), isChecked && `
+  <view>
+    <view class="group" :class="[ui.wrapper({ class: props.customClass }), isChecked && `
       is-checked
     `, isFocused && 'is-focused']" :data-disabled="isDisabled" style="-webkit-tap-highlight-color: transparent;"
-    @tap="onTap">
-    <view v-if="props.inactiveLabel || $slots.inactiveLabel" :class="ui.inactiveLabel()">
-      <slot name="inactiveLabel">
-        {{ props.inactiveLabel }}
-      </slot>
-    </view>
-
-    <view :class="ui.track()" :data-loading="props.loading">
-      <view :class="ui.thumb()">
-        <slot name="thumb" :checked="isChecked" :loading="props.loading">
-          <view v-if="props.loading" :class="ui.loading()" />
+      @tap="onTap">
+      <view v-if="props.inactiveLabel || $slots.inactiveLabel" :class="ui.inactiveLabel()">
+        <slot name="inactiveLabel">
+          {{ props.inactiveLabel }}
         </slot>
       </view>
-    </view>
 
-    <view v-if="props.activeLabel || $slots.activeLabel" :class="ui.activeLabel()">
-      <slot name="activeLabel">
-        {{ props.activeLabel }}
-      </slot>
+      <view :class="ui.track()" :data-loading="props.loading">
+        <view :class="ui.thumb()">
+          <slot name="thumb" :checked="isChecked" :loading="props.loading">
+            <view v-if="props.loading" :class="ui.loading()" />
+          </slot>
+        </view>
+      </view>
+
+      <view v-if="props.activeLabel || $slots.activeLabel" :class="ui.activeLabel()">
+        <slot name="activeLabel">
+          {{ props.activeLabel }}
+        </slot>
+      </view>
     </view>
   </view>
 </template>

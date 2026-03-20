@@ -32,9 +32,9 @@ const filteredComponents = computed(() => {
   let filtered = components.value;
 
   if (selectedCategory.value === "new") {
-    filtered = filtered.filter((component) => component.badge === "New");
+    filtered = filtered.filter((component) => component.badge?.toLowerCase() === "new");
   } else if (selectedCategory.value === "updated") {
-    filtered = filtered.filter((component) => component.badge === "Updated");
+    filtered = filtered.filter((component) => component.badge?.toLowerCase() === "updated" || component.badge?.toLowerCase() === "update");
   } else if (selectedCategory.value !== "all") {
     filtered = filtered.filter((component) => component.category === selectedCategory.value);
   }
@@ -99,7 +99,7 @@ function getCategoryColor(category: string) {
           description: ' text-ellipsis line-clamp-2',
         }" :to="component.path">
         <UBadge v-if="component.badge" class="absolute top-6 right-6" variant="subtle"
-          :color="component.badge === 'New' ? 'success' : 'warning'" :label="component.badge" />
+          :color="component.badge?.toLowerCase() === 'new' ? 'success' : 'warning'" :label="component.badge" />
         <div class="flex flex-wrap items-center gap-2">
           <UBadge v-for="tag in component.tags" :key="component.id + tag" :label="tag" variant="soft"
             class="font-normal" />

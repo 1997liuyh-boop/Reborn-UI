@@ -3,19 +3,19 @@ import { ref } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornFab from '@/components/reborn-fab/RebornFab.vue'
-import RebornFabAction from '@/components/reborn-fab/RebornFabAction.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
-import { fabColors, fabDirections } from '@/components/reborn-fab/reborn-fab.config'
+import { fabColors, fabDirections, fabPositions } from '@/components/reborn-fab/reborn-fab.config'
 
 const active1 = ref(false)
 const defaultActive = ref(false)
-const draggable = ref(true)
+const draggable = ref(false)
 const useTriggerSlot = ref(false)
 const demoColor = ref<any>('primary')
 const demoDirection = ref<any>('top')
+const demoPosition = ref<any>('right-bottom')
 
 function handleClick() {
     uni.showToast({ title: '点击了主按钮', icon: 'none' })
@@ -42,9 +42,14 @@ function handleAction(name: string) {
                     :style="{ backgroundColor: `var(--color-${c})` }" @tap="demoColor = c" />
             </view>
 
-            <RebornText color="neutral">展开方向 (仅展开模式生效)</RebornText>
-            <RebornRadioGroup v-model="demoDirection">
+            <RebornText color="neutral">展开方向 (开启拖拽后无效)</RebornText>
+            <RebornRadioGroup v-model="demoDirection" direction="row">
                 <RebornRadio v-for="d in fabDirections" :key="d" :value="d">{{ d }}</RebornRadio>
+            </RebornRadioGroup>
+
+            <RebornText color="neutral">位置</RebornText>
+            <RebornRadioGroup v-model="demoPosition" direction="row" :disabled="draggable">
+                <RebornRadio v-for="d in fabPositions" :key="d" :value="d">{{ d }}</RebornRadio>
             </RebornRadioGroup>
 
             <view class="flex items-center justify-between">
@@ -69,13 +74,24 @@ function handleAction(name: string) {
 
         <!-- 演示组件 -->
         <RebornFab v-if="!useTriggerSlot" v-model="active1" :active="defaultActive" :color="demoColor"
-            :draggable="draggable" :direction="demoDirection" expandable @click="handleClick">
-            <RebornFabAction icon="i-lucide-share-2" color="#007aff" @click="handleAction('分享')" />
-            <RebornFabAction icon="i-lucide-star" color="#ff9500" @click="handleAction('收藏')" />
-            <RebornFabAction icon="i-lucide-download" color="#4cd964" @click="handleAction('下载')" />
+            :draggable="draggable" :direction="demoDirection" expandable :position="demoPosition" @click="handleClick">
+            <template #default>
+                <view class="flex items-center justify-center size-12 rounded-full shadow-md bg-primary text-white"
+                    @tap="handleAction('分享')">
+                    <view class="i-lucide-share-2 text-32" />
+                </view>
+                <view class="flex items-center justify-center size-12 rounded-full shadow-md bg-warning text-white"
+                    @tap="handleAction('收藏')">
+                    <view class="i-lucide-star text-32" />
+                </view>
+                <view class="flex items-center justify-center size-12 rounded-full shadow-md bg-success text-white"
+                    @tap="handleAction('下载')">
+                    <view class="i-lucide-download text-32" />
+                </view>
+            </template>
         </RebornFab>
 
-        <RebornFab v-else position="left-bottom" :draggable="draggable" :expandable="false">
+        <RebornFab v-else :draggable="draggable" :expandable="false" :position="demoPosition">
             <template #trigger>
                 <view
                     class="pointer-events-auto flex items-center gap-2 px-4 py-2 bg-error text-white rounded-full shadow-lg active:scale-95 transition-transform"

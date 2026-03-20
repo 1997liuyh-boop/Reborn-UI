@@ -19,7 +19,7 @@ export default {
     variant: {
       line: {
         inner: '',
-        item: 'hover:text-gray-900 dark:hover:text-gray-100', // Removed static border-b-2
+        item: 'hover:text-gray-900 dark:hover:text-gray-100',
         text: 'text-gray-7',
         active: 'font-semibold text-gray-8',
       },

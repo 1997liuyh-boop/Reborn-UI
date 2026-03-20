@@ -7,7 +7,6 @@ import RebornColorPicker from '@/components/reborn-color-picker/RebornColorPicke
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
-import { colorPickerSizes } from '@/components/reborn-color-picker/reborn-color-picker.config'
 
 // Demo State
 const demoVariant = ref<ButtonProps['variant']>('solid')

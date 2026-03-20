@@ -54,6 +54,7 @@ const menuItems = [
       { label: '底部栏', icon: 'i-lucide-panel-bottom', path: '/pages/reborn-footer/RebornFooterDemo' },
       { label: '标签栏', icon: 'i-lucide-dock', path: '/pages/reborn-tabbar/RebornTabbarDemo' },
       { label: '瀑布流', icon: 'i-mdi-waterfall', path: '/pages/reborn-waterfall/RebornWaterfallDemo' },
+      { label: '分页', icon: 'i-lucide-list-ordered', path: '/pages/reborn-pagination/RebornPaginationDemo' },
     ],
   },
   {
@@ -75,7 +76,6 @@ const menuItems = [
       { label: '加载更多', icon: 'i-lucide-arrow-down-circle', path: '/pages/reborn-loadmore/RebornLoadmoreDemo' },
       { label: '拖拽排序', icon: 'i-lucide-move', path: '/pages/reborn-draggable/RebornDraggableDemo' },
       { label: '取色器', icon: 'i-lucide-palette', path: '/pages/reborn-color-picker/RebornColorPickerDemo' },
-      { label: '分页', icon: 'i-lucide-list-ordered', path: '/pages/reborn-pagination/RebornPaginationDemo' },
     ],
   },
 ]

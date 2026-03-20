@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { computed, getCurrentInstance, onMounted, reactive, ref, watch, CSSProperties } from 'vue'
+import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import { getSystemInfo, isH5 } from '@/lib/device'
-import theme, { fabColors, fabPositions, fabDirections } from './reborn-fab.config'
+import theme, { fabColors, fabDirections, fabPositions } from './reborn-fab.config'
 
 /**
  * RebornFab 悬浮按钮组件
@@ -14,6 +14,13 @@ type FabPosition = typeof fabPositions[number]
 type FabDirection = typeof fabDirections[number]
 type FabColor = typeof fabColors[number]
 
+interface UiMap {
+    root: string
+    trigger: string
+    icon: string
+    actions: string
+}
+
 interface Props {
     /** 绑定值，控制展开状态 */
     modelValue?: boolean
@@ -21,6 +28,11 @@ interface Props {
     active?: boolean
     /** 预设位置 */
     position?: FabPosition
+    /** 自定义位置 */
+    top?: string | number
+    bottom?: string | number
+    left?: string | number
+    right?: string | number
     /** 展开方向 */
     direction?: FabDirection
     /** 主题颜色 */
@@ -44,7 +56,7 @@ interface Props {
     /** 自定义类名 */
     customClass?: string
     /** UI 配置 */
-    ui?: any
+    ui?: UiMap
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -56,11 +68,16 @@ const props = withDefaults(defineProps<Props>(), {
     disabled: false,
     draggable: false,
     expandable: false,
-    gap: () => ({ top: 32, left: 32, right: 32, bottom: 32 }),
+    gap: () => ({ top: 16, left: 16, right: 16, bottom: 16 }),
     inactiveIcon: 'i-lucide-plus',
     activeIcon: 'i-lucide-plus',
     zIndex: 99,
-    ui: () => ({})
+    ui: () => ({
+        root: '',
+        trigger: '',
+        icon: '',
+        actions: ''
+    })
 })
 
 const emit = defineEmits(['update:modelValue', 'click'])
@@ -103,7 +120,6 @@ const uiClasses = computed(() => {
         trigger: (opts?: any) => styles.trigger({ class: cn(opts?.class, uiOverrides.value.trigger) }),
         icon: (opts?: any) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
         actions: (opts?: any) => styles.actions({ class: cn(opts?.class, uiOverrides.value.actions) }),
-        action: (opts?: any) => styles.action({ class: cn(opts?.class, uiOverrides.value.action) })
     }
 })
 
@@ -121,9 +137,11 @@ async function updateBounding() {
             fabSize.height = res[0].height || 56
         }
 
-        const { top = 32, left: gLeft = 32, right = 32, bottom = 32 } = props.gap
-        bounding.minTop = top
-        bounding.minLeft = gLeft
+        const { top = 16, left: left = 16, right = 16, bottom = 16 } = props.gap
+        screen.width = sysInfo.windowWidth
+        screen.height = isH5() ? sysInfo.windowTop + sysInfo.windowHeight : sysInfo.windowHeight
+        bounding.minTop = isH5() ? sysInfo.windowTop + top : top
+        bounding.minLeft = left
         bounding.maxLeft = screen.width - fabSize.width - right
         bounding.maxTop = screen.height - fabSize.height - bottom
 
@@ -137,8 +155,6 @@ async function updateBounding() {
 // 初始化位置
 function initPosition() {
     const { minLeft, minTop, maxLeft, maxTop } = bounding
-    const centerX = (minLeft + maxLeft) / 2
-    const centerY = (minTop + maxTop) / 2
 
     switch (props.position) {
         case 'left-top':
@@ -155,22 +171,6 @@ function initPosition() {
             break
         case 'right-bottom':
             left.value = maxLeft
-            top.value = maxTop
-            break
-        case 'left-center':
-            left.value = minLeft
-            top.value = centerY
-            break
-        case 'right-center':
-            left.value = maxLeft
-            top.value = centerY
-            break
-        case 'top-center':
-            left.value = centerX
-            top.value = minTop
-            break
-        case 'bottom-center':
-            left.value = centerX
             top.value = maxTop
             break
     }
@@ -210,6 +210,12 @@ watch(() => props.direction, (val) => {
     isActive.value = false
 })
 
+watch(() => props.position, () => {
+    if (!props.draggable) {
+        initPosition()
+    }
+})
+
 function handleTouchEnd() {
     if (!props.draggable || props.disabled) return
 
@@ -236,24 +242,78 @@ function handleClick() {
     }
 }
 
+function handleMouseEnter() {
+    if (props.disabled) return
+    isActive.value = true
+}
+
+function handleMouseLeave() {
+    if (props.disabled) return
+    isActive.value = false
+}
+
 const rootStyle = computed(() => {
-    const style: CSSProperties = {
+    const style: any = {
         top: `${top.value}px`,
         left: `${left.value}px`,
         zIndex: props.zIndex,
         transition: attractTransition.value ? 'all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)' : 'none'
     }
+
+    if (props.top !== undefined) style.top = typeof props.top === 'number' ? `${props.top}px` : props.top
+    if (props.bottom !== undefined) style.bottom = typeof props.bottom === 'number' ? `${props.bottom}px` : props.bottom
+    if (props.left !== undefined) style.left = typeof props.left === 'number' ? `${props.left}px` : props.left
+    if (props.right !== undefined) style.right = typeof props.right === 'number' ? `${props.right}px` : props.right
+
     return style
 })
 
 // 动作面板偏移样式
 const actionsStyle = computed(() => {
-    const offset = 80 // 展开间距
+    const isVisible = isActive.value
+    const offset = isVisible ? 'calc(100% + 12px)' : '0px'
+    const opacity = isVisible ? 1 : 0
+    const scale = isVisible ? 1 : 0.3
+
+    const base: any = {
+        opacity,
+        transformOrigin: 'center center',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    }
+
     switch (fabDirection.value) {
-        case 'top': return { bottom: `${offset}px`, flexDirection: 'column-reverse', left: '50%', transform: 'translateX(-50%)' }
-        case 'bottom': return { top: `${offset}px`, flexDirection: 'column', left: '50%', transform: 'translateX(-50%)' }
-        case 'left': return { right: `${offset}px`, flexDirection: 'row-reverse', top: '50%', transform: 'translateY(-50%)' }
-        case 'right': return { left: `${offset}px`, flexDirection: 'row', top: '50%', transform: 'translateY(-50%)' }
+        case 'top':
+            return {
+                ...base,
+                bottom: offset,
+                left: '50%',
+                transform: `translateX(-50%) scale(${scale})`,
+                flexDirection: 'column-reverse'
+            }
+        case 'bottom':
+            return {
+                ...base,
+                top: offset,
+                left: '50%',
+                transform: `translateX(-50%) scale(${scale})`,
+                flexDirection: 'column'
+            }
+        case 'left':
+            return {
+                ...base,
+                right: offset,
+                top: '50%',
+                transform: `translateY(-50%) scale(${scale})`,
+                flexDirection: 'row-reverse'
+            }
+        case 'right':
+            return {
+                ...base,
+                left: offset,
+                top: '50%',
+                transform: `translateY(-50%) scale(${scale})`,
+                flexDirection: 'row'
+            }
         default: return {}
     }
 })
@@ -270,12 +330,11 @@ defineExpose({
 
 <template>
     <view :class="uiClasses.root()" :style="[rootStyle as any, customStyle]" @touchmove.stop.prevent="handleTouchMove"
-        @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+        @touchstart="handleTouchStart" @touchend="handleTouchEnd" @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave">
         <!-- 动作按钮组 -->
-        <view v-if="expandable"
-            :class="[uiClasses.actions(), isActive ? 'opacity-100' : 'opacity-0 pointer-events-none']"
-            :style="[actionsStyle as any]">
-            <slot />
+        <view v-show="expandable" :class="uiClasses.actions()" :style="[actionsStyle as any]">
+            <slot :isActive="isActive" />
         </view>
 
         <!-- 主触发按钮 -->

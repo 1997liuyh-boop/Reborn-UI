@@ -32,6 +32,7 @@ export type InputUI = {
   iconBox?: string
   clear?: string
   password?: string
+  separator?: string
 }
 
 export interface InputProps {
@@ -42,7 +43,6 @@ export interface InputProps {
   readonly?: boolean
   type?: InputType
   size?: typeof inputSizes[number]
-  rows?: number
   customClass?: any
   password?: boolean
   clearable?: boolean
@@ -56,6 +56,7 @@ export interface InputProps {
   placeholderClass?: string
   autofocus?: boolean
   rounded?: boolean
+  border?: boolean
   color?: typeof inputColors[number]
   ui?: InputUI
 }
@@ -67,8 +68,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   disabled: false,
   readonly: false,
   type: 'text',
-  size: 'md',
-  rows: 4,
+  size: 'sm',
   focus: false,
   password: false,
   maxlength: 140,
@@ -81,7 +81,8 @@ const props = withDefaults(defineProps<InputProps>(), {
   autofocus: false,
   clearable: false,
   rounded: true,
-  color: 'primary',
+  border: false,
+  color: 'neutral',
 })
 const emit = defineEmits([
   'update:modelValue',
@@ -95,7 +96,6 @@ const emit = defineEmits([
 ])
 const slots = useSlots()
 
-const inputRef = ref<HTMLInputElement | null>(null)
 const localValue = ref(props.defaultValue ?? '')
 
 // 是否聚焦（样式作用）
@@ -131,8 +131,10 @@ const ui = computed(() => {
     hasLeading: !!slots.leading,
     hasTrailing: !!slots.trailing || showClear.value || props.password,
     rounded: props.rounded,
+    border: props.border,
     color: props.color,
     error: isError.value,
+    focus: isFocus.value,
   })
   return {
     wrapper: (opts?: { class?: any }) =>
@@ -141,14 +143,16 @@ const ui = computed(() => {
       styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
     leading: (opts?: { class?: any }) =>
       styles.leading({ class: cn(opts?.class, uiOverrides.value.leading) }),
-    trailing: (opts?: { class?: any }) =>
-      styles.trailing({ class: cn(opts?.class, uiOverrides.value.trailing) }),
     iconBox: (opts?: { class?: any }) =>
       styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
+    trailing: (opts?: { class?: any }) =>
+      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.trailing) }),
     clear: (opts?: { class?: any }) =>
       styles.iconSection({ class: cn(opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) =>
       styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
+    separator: (opts?: { class?: any }) =>
+      styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
   }
 }
 )
@@ -158,6 +162,16 @@ watch(
   (value) => {
     if (value !== undefined) {
       localValue.value = value
+    }
+  },
+)
+
+watch(
+  [() => props.disabled, fieldGroupDisabled],
+  ([disabled, fgDisabled]) => {
+    if (disabled || fgDisabled) {
+      isFocus.value = false
+      isFocusing.value = false
     }
   },
 )
@@ -245,25 +259,29 @@ defineExpose({
     <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
       :placeholder="props.placeholder" :value="inputValue" :class="ui.input()" :password="isPassword"
       :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
-      :placeholder-class="`text-gart-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
+      :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
       :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
       @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
 
-    <view v-if="$slots.trailing" :class="ui.trailing()">
-      <slot name="trailing" :ui="ui" />
-    </view>
 
     <!-- Icons Section -->
     <view :class="ui.iconBox()" @tap.stop>
       <view v-if="showClear" :class="ui.clear()" @tap.stop="clear">
-        <view class="i-lucide-x-circle size-4" />
+        <view class="i-lucide-x-circle" style="width: var(--icon-size); height: var(--icon-size);" />
       </view>
 
+      <view v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
+
       <view v-if="password" :class="ui.password()" @tap.stop="showPassword">
-        <view class="size-4" :class="[isPassword ? 'i-lucide-eye' : `
-            i-lucide-eye-off
-          `]" />
+        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
+          style="width: var(--icon-size); height: var(--icon-size);" />
+      </view>
+
+      <view v-if="password && $slots.trailing" :class="ui.separator()" />
+
+      <view v-if="$slots.trailing" :class="ui.trailing()">
+        <slot name="trailing" :ui="ui" />
       </view>
     </view>
   </view>

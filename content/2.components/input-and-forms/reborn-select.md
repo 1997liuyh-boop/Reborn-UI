@@ -3,14 +3,14 @@ title: 下拉选择
 description: 自定义下拉选择组件，支持键盘导航和动画过渡。
 category: 表单与输入
 tags: [css, tailwind, select, dropdown, uniapp]
-badge: New
+badge: Update
 navigation:
   badges:
     - label: 通
       color: primary
   chip:
-    label: NEW
-    color: primary
+    label: UPDATE
+    color: warning
 ---
 
 
@@ -23,6 +23,7 @@ navigation:
 | 属性名 | 类型 | 默认值 | 描述 | 平台 |
 | --- | --- | --- | --- | --- |
 | `modelValue` | `any` (Web) / `string \| number \| (string \| number)[] \| null` (UniApp) | `null` | 选择器的值。 | 通用 |
+| `multiple` | `boolean` | `false` | 是否为多选模式。开启后 `modelValue` 为数组格式。 | Web |
 | `options` | `SelectOption[]` | `[]` | 选择器的数据源选项。`SelectOption` 包含 `label`、`value`、`disabled` 等字段。 | 通用 |
 | `placeholder` | `string` | `'请选择'` | 选择器的占位符文本。 | 通用 |
 | `disabled` | `boolean` | `false` | 是否禁用选择器。UniApp 版本兼容 `reborn-form`。 | 通用 |

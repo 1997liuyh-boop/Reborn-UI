@@ -1,16 +1,5 @@
-export const fabPositions = [
-    'left-top',
-    'right-top',
-    'left-bottom',
-    'right-bottom',
-    'left-center',
-    'right-center',
-    'top-center',
-    'bottom-center'
-] as const
-
 export const fabDirections = ['top', 'bottom', 'left', 'right'] as const
-
+export const fabPositions = ['left-top', 'right-top', 'left-bottom', 'right-bottom'] as const
 export const fabColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 
 export default {

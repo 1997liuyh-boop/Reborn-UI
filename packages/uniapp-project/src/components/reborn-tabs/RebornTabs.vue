@@ -143,7 +143,6 @@ function getIndex() {
 }
 
 // 更新下划线、滑块、滚动条等位置
-// 更新下划线、滑块、滚动条等位置
 function updatePosition() {
   nextTick(() => {
     if (itemRects.value?.length) {
@@ -222,11 +221,11 @@ function refresh() {
   setTimeout(() => {
     // 创建选择器查询
     uni.createSelectorQuery()
-    // 作用域限定为当前组件
+      // 作用域限定为当前组件
       .in(proxy)
-    // 选择tab容器
+      // 选择tab容器
       .select('.reborn-tabs')
-    // 获取容器的left和width
+      // 获取容器的left和width
       .boundingClientRect((node: any) => {
         // 设置tab左侧偏移
         tabLeft.value = node?.left ?? 0
@@ -282,48 +281,35 @@ onMounted(() => {
 
 <template>
   <view class="reborn-tabs" :class="ui.tabs({ class: cn(props.customClass, uiOverrides.tabs) })">
-    <scroll-view
-      class="reborn-tabs__scroll-view" :class="ui.scrollbar({ class: uiOverrides.scrollbar })"
+    <scroll-view class="reborn-tabs__scroll-view" :class="ui.scrollbar({ class: uiOverrides.scrollbar })"
       :scroll-with-animation="true" :scroll-x="true" direction="horizontal" :scroll-left="scrollLeft"
-      :show-scrollbar="false"
-    >
+      :show-scrollbar="false">
       <view :class="ui.inner({ class: uiOverrides.inner })">
-        <view
-          v-for="(item, index) in list" :key="index"
-          class="reborn-tabs__item"
-          :class="ui.item({ class: uiOverrides.item })" :data-state="item.isActive ? 'active' : 'inactive'" :data-disabled="item.disabled ? 'true' : undefined"
-          @tap="change(index)"
-        >
+        <view v-for="(item, index) in list" :key="index" class="reborn-tabs__item"
+          :class="ui.item({ class: uiOverrides.item })" :data-state="item.isActive ? 'active' : 'inactive'"
+          :data-disabled="item.disabled ? 'true' : undefined" @tap="change(index)">
           <slot name="item" :item="item" :active="item.isActive">
-            <text
-              v-if="item.isActive" class="reborn-tabs__text"
-              :class="ui.active({ class: cn(uiOverrides.active, item.disabled || props.disabled ? `
+            <text v-if="item.isActive" class="reborn-tabs__text" :class="ui.active({
+              class: cn(uiOverrides.active, item.disabled || props.disabled ? `
                 cursor-not-allowed text-gray-5
-              ` : '') })"
-            >
+              ` : '')
+            })">
               {{ item.label }}
             </text>
-            <text
-              v-else class="reborn-tabs__text"
-              :class="ui.text({ class: cn(uiOverrides.text, item.disabled || props.disabled ? `
+            <text v-else class="reborn-tabs__text" :class="ui.text({
+              class: cn(uiOverrides.text, item.disabled || props.disabled ? `
                 cursor-not-allowed text-gray-5
-              ` : '') })"
-            >
+              ` : '')
+            })">
               {{ item.label }}
             </text>
           </slot>
         </view>
         <template v-if="lineLeft > 0">
-          <view
-            v-if="variant == 'line'"
-            :class="ui.line({ class: uiOverrides.line })"
-            :style="{ transform: `translateX(${lineLeft}px)`, width: `${lineWidth}px` }"
-          />
-          <view
-            v-if="variant == 'card'"
-            :class="ui.slider({ class: uiOverrides.slider })"
-            :style="{ transform: `translateX(${sliderLeft}px)`, width: `${sliderWidth}px` }"
-          />
+          <view v-if="variant == 'line'" :class="ui.line({ class: uiOverrides.line })"
+            :style="{ transform: `translateX(${lineLeft}px)`, width: `${lineWidth}px` }" />
+          <view v-if="variant == 'card'" :class="ui.slider({ class: uiOverrides.slider })"
+            :style="{ transform: `translateX(${sliderLeft}px)`, width: `${sliderWidth}px` }" />
         </template>
       </view>
     </scroll-view>

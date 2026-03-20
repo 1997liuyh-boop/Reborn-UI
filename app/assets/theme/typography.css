@@ -29,6 +29,21 @@
     --input-lg-height: 96px;
     --input-md-height: 90px;
     --input-sm-height: 80px;
+
+    --input-px-lg: 32px;
+    --input-px-md: 24px;
+    --input-px-sm: 20px;
+
+    --input-icon-lg: 32px;
+    --input-icon-md: 24px;
+    --input-icon-sm: 20px;
+
+    --input-sep-lg: 32px;
+    --input-sep-md: 28px;
+    --input-sep-sm: 24px;
+
+    --input-border-color: var(--color-gray-3);
+    --input-focus-ring-color: rgba(0, 0, 0, 0.1);
   }
   
   @media (min-width: 768px) {
@@ -56,6 +71,21 @@
       --input-lg-height: 48px;
       --input-md-height: 45px;
       --input-sm-height: 40px;
+
+      --input-px-lg: 16px;
+      --input-px-md: 12px;
+      --input-px-sm: 10px;
+
+      --input-icon-lg: 16px;
+      --input-icon-md: 12px;
+      --input-icon-sm: 10px;
+
+      --input-sep-lg: 16px;
+      --input-sep-md: 14px;
+      --input-sep-sm: 12px;
+
+      --input-border-color: var(--color-gray-3);
+      --input-focus-ring-color: rgba(0, 0, 0, 0.05);
     }
   }
 }
@@ -72,4 +102,17 @@
   --text-40: var(--text-size-40);
   --text-48: var(--text-size-48);
   --text-52: var(--text-size-52);
+
+  /* 输入框尺寸 (可直接用作 Tailwind utility: h-input-sm-height 等) */
+  --height-input-sm: var(--input-sm-height);
+  --height-input-md: var(--input-md-height);
+  --height-input-lg: var(--input-lg-height);
+
+  --spacing-input-px-sm: var(--input-px-sm);
+  --spacing-input-px-md: var(--input-px-md);
+  --spacing-input-px-lg: var(--input-px-lg);
+
+  --spacing-input-sep-sm: var(--input-sep-sm);
+  --spacing-input-sep-md: var(--input-sep-md);
+  --spacing-input-sep-lg: var(--input-sep-lg);
 }

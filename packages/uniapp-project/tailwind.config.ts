@@ -123,9 +123,15 @@ export default <Config>{
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "var(--radius-ui-lg)",
+        md: "var(--radius-ui-md)",
+        sm: "var(--radius-ui-sm)",
+        "ui-2xs": "var(--radius-ui-2xs)",
+        "ui-xs": "var(--radius-ui-xs)",
+        "ui-sm": "var(--radius-ui-sm)",
+        "ui-md": "var(--radius-ui-md)",
+        "ui-base": "var(--radius-ui-base)",
+        "ui-lg": "var(--radius-ui-lg)",
       },
       fontSize: {
         20: "var(--text-size-20)",
