@@ -8,6 +8,7 @@ export type CascaderColor = (typeof CascaderColors)[number]
 export interface CascaderUI {
     root?: string
     popup?: string
+    tabsScroll?: string
     tabs?: string
     tab?: string
     tabActive?: string
@@ -20,6 +21,15 @@ export interface CascaderUI {
     footerText?: string
     loading?: string
     loadingText?: string
+    listScroll?: string
+    listInner?: string
+    column?: string
+    columnScroll?: string
+    itemInner?: string
+    checkbox?: string
+    nodeLoading?: string
+    nodeArrow?: string
+    footerActions?: string
 }
 
 // 选项接口定义
@@ -81,8 +91,9 @@ const config = {
     slots: {
         root: 'w-full',
         popup: 'bg-white dark:bg-slate-900 rounded-t-[32rpx] overflow-hidden',
-        tabs: 'flex flex-row items-center border-b border-gray-100 dark:border-slate-800 p-2 gap-1.5 overflow-x-auto no-scrollbar',
-        tab: 'shrink-0',
+        tabsScroll: 'w-full border-b border-gray-100 dark:border-slate-800 no-scrollbar',
+        tabs: 'flex flex-row items-center p-2 gap-1.5',
+        tab: 'reborn-cascader-tab shrink-0 text-28 [.reborn-cascader-tab_+_&]:ml-1',
         tabActive: '',
         list: 'h-[600rpx]',
         item: 'flex flex-row items-center justify-between px-[32rpx] py-[24rpx] active:bg-gray-50 dark:active:bg-slate-800 transition-colors',
@@ -93,20 +104,30 @@ const config = {
         footerText: 'text-[24rpx] text-gray-500',
         loading: 'flex flex-col items-center justify-center h-full w-full',
         loadingText: 'mt-2 text-[24rpx] text-gray-400',
+        listScroll: 'w-full h-full no-scrollbar',
+        listInner: 'flex flex-row h-full min-w-full',
+        column: 'shrink-0 h-full border-r border-gray-100 dark:border-slate-800 last:border-r-0',
+        columnScroll: 'h-full',
+        itemInner: 'flex flex-row items-center',
+        checkbox: 'mr-2',
+        nodeLoading: 'ml-auto h-[32rpx] w-[32rpx]',
+        nodeArrow: 'i-lucide-chevron-right text-[32rpx] text-gray-300 ml-auto',
+        footerActions: 'flex flex-row gap-2',
     },
     variants: {
         size: {
             sm: {
-                item: 'px-[24rpx] py-[16rpx]',
-                itemText: 'text-[24rpx]',
+                tab: 'text-26',
+                item: 'h-input-sm',
+                itemText: 'text-26',
             },
             md: {
-                item: 'px-[32rpx] py-[24rpx]',
-                itemText: 'text-[28rpx]',
+                item: 'h-input-md',
+                itemText: 'text-28',
             },
             lg: {
-                item: 'px-[40rpx] py-[32rpx]',
-                itemText: 'text-[32rpx]',
+                item: 'h-input-lg',
+                itemText: 'text-28',
             },
         },
         color: {

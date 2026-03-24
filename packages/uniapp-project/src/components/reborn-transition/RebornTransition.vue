@@ -27,6 +27,7 @@ export type TransitionName =
     | 'slide-up'
     | 'zoom-in'
     | 'zoom-out'
+    | 'badge-custom'
 
 const props = defineProps({
     customClass: { type: String, default: '' },

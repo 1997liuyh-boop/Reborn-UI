@@ -148,9 +148,9 @@ const ui = computed(() => {
     trailing: (opts?: { class?: any }) =>
       styles.iconSection({ class: cn(opts?.class, uiOverrides.value.trailing) }),
     clear: (opts?: { class?: any }) =>
-      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.clear) }),
+      styles.icon({ class: cn(opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) =>
-      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
+      styles.icon({ class: cn(opts?.class, uiOverrides.value.password) }),
     separator: (opts?: { class?: any }) =>
       styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
   }
@@ -267,15 +267,14 @@ defineExpose({
 
     <!-- Icons Section -->
     <view :class="ui.iconBox()" @tap.stop>
-      <view v-if="showClear" :class="ui.clear()" @tap.stop="clear">
-        <view class="i-lucide-x-circle" style="width: var(--icon-size); height: var(--icon-size);" />
+      <view v-if="showClear" :class="ui.trailing()" @tap.stop="clear">
+        <view class="i-lucide-x-circle" :class="ui.clear()" />
       </view>
 
       <view v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
-      <view v-if="password" :class="ui.password()" @tap.stop="showPassword">
-        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
-          style="width: var(--icon-size); height: var(--icon-size);" />
+      <view v-if="password" :class="ui.trailing()" @tap="showPassword">
+        <view :class="ui.password({ class: isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off' })" />
       </view>
 
       <view v-if="password && $slots.trailing" :class="ui.separator()" />

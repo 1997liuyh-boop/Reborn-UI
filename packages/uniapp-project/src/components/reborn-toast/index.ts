@@ -53,7 +53,7 @@ export function useToast(selector = '') {
 
     // #ifdef H5
     if (!toastContainer) {
-        toastContainer = document.createElement('div')
+        toastContainer = document.createElement('view')
         toastContainer.id = 'reborn-toast-container'
         document.body.appendChild(toastContainer)
 

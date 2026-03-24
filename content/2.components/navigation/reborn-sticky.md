@@ -1,7 +1,7 @@
 ---
 title: Sticky 吸顶
 description: Sticky 组件用于将元素固定在页面顶部，当页面滚动时，被包裹的内容会始终保持在可视区域的顶部。常用于导航栏、标题栏等需要始终可见的内容。
-category: Navigation
+category: 导航
 badge: New
 navigation:
   badges:

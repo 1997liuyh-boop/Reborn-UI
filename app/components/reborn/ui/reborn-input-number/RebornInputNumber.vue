@@ -2,7 +2,7 @@
 import { computed, ref, toRef, useAttrs, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
-import theme, { inputNumberColors, inputNumberSizes } from "./reborn-input-number.config";
+import theme, { inputNumberColors, inputNumberSizes, inputNumberShapes } from "./reborn-input-number.config";
 import { useFieldGroup } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 
@@ -21,6 +21,7 @@ export interface InputNumberProps {
   disabled?: boolean;
   size?: typeof inputNumberSizes[number];
   color?: typeof inputNumberColors[number];
+  shape?: typeof inputNumberShapes[number];
   class?: any;
   ui?: Partial<{
     wrapper: ClassValue;
@@ -36,6 +37,7 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
   step: 1,
   size: "md",
   color: "primary",
+  shape: "circle",
 });
 
 const emit = defineEmits<{
@@ -57,6 +59,7 @@ const ui = computed(() => {
   const styles = b({
     size: (fieldGroupSize.value || size.value) as any,
     color: props.color,
+    shape: props.shape,
     fieldGroup: orientation.value,
   });
 

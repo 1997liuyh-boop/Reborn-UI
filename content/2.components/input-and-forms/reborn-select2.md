@@ -1,5 +1,5 @@
 ---
-title: 下拉选择
+title: 下拉选择2
 description: 自定义下拉选择组件，支持键盘导航和动画过渡。
 category: 表单与输入
 tags: [css, tailwind, select, dropdown, uniapp]
@@ -14,10 +14,8 @@ navigation:
 ---
 
 
-::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornDropdownSelect.vue", "reborn-dropdown-select.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts", "RebornTransition.vue", "reborn-transition.config.ts"]' dependencies="lodash-es"}
+::ComponentViewer{demoFile="RebornSelectDemo2.vue" config="RebornSelectConfig2" componentId="reborn-select-2" :componentFiles='[]' :uniappFiles='["RebornSelect.vue", "reborn-select.config.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]' dependencies="lodash-es"}
 ::
-
-<!-- ::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornSelect.vue", "reborn-select.config.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]' dependencies="lodash-es"} -->
 
 
 ## API

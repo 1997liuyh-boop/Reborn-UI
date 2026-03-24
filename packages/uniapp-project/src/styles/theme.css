@@ -70,6 +70,8 @@
     --radius-ui-base: 16rpx;
     --radius-ui-lg: 24rpx;
 
+    
+
     /* Font family */
     --font-sans:
       -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', Roboto, Helvetica, Arial,
@@ -164,5 +166,10 @@
     --input-lg-height: 96rpx;
     --input-md-height: 90rpx;
     --input-sm-height: 80rpx;
+
+    /* 徽章高度设置 */
+    --badge-lg-height: 38rpx;
+    --badge-md-height: 36rpx;
+    --badge-sm-height: 28rpx;
   }
 }

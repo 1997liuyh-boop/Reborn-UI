@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, toRef, useAttrs, watch } from "vue";
+import { computed, nextTick, ref, toRef, useAttrs, useSlots, watch } from "vue";
 import theme, { inputColors, inputSizes } from "./reborn-input.config";
 import { useFieldGroup } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
@@ -55,6 +55,7 @@ const emit = defineEmits<{
 const attrs = useAttrs();
 
 const inputRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null);
+const slots = useSlots();
 const localValue = ref(props.defaultValue ?? "");
 
 // 聚焦状态
@@ -80,12 +81,12 @@ const ui = computed(() => {
     size: (fieldGroupSize.value || size.value) as any,
     fieldGroup: orientation.value,
     multiline: isMultiline.value,
-    rounded: props.rounded,
+    rounded: props.rounded || true,
     border: props.border,
     color: props.color,
     focus: isFocus.value,
-    hasLeading: !!useSlots().leading,
-    hasTrailing: !!useSlots().trailing || showClear.value || props.password,
+    hasLeading: !!slots.leading,
+    hasTrailing: !!slots.trailing || showClear.value || props.password,
   });
 
   return {
@@ -93,6 +94,7 @@ const ui = computed(() => {
     input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class) }),
     leading: (opts?: { class?: any }) => styles.leading({ class: cn(opts?.class) }),
     iconBox: (opts?: { class?: any }) => styles.iconBox({ class: cn(opts?.class) }),
+    icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class) }),
     trailing: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class) }),
     clear: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class) }),
     password: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class) }),
@@ -167,14 +169,13 @@ defineExpose({
 
     <div :class="ui.iconBox()" @click.stop>
       <div v-if="showClear" :class="ui.clear()" @click.stop="clear">
-        <Icon name="lucide:x-circle" class="size-[1em]" style="width: var(--icon-size); height: var(--icon-size);" />
+        <Icon name="lucide:x-circle" :class="ui.icon()" />
       </div>
 
       <div v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
       <div v-if="password" :class="ui.password()" @click.stop="togglePassword">
-        <Icon :name="isPassword ? 'lucide:eye' : 'lucide:eye-off'" class="size-[1em]"
-          style="width: var(--icon-size); height: var(--icon-size);" />
+        <Icon :name="isPassword ? 'lucide:eye' : 'lucide:eye-off'" :class="ui.icon()" />
       </div>
 
       <div v-if="password && $slots.trailing" :class="ui.separator()" />

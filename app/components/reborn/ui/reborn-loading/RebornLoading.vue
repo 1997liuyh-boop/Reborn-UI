@@ -1,52 +1,43 @@
 <template>
-    <view :class="ui.root()" :style="rootStyle">
-        <view v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
+    <div :class="ui.root()" :style="rootStyle">
+        <div v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
             :style="containerStyle">
-            <view v-if="props.type === 'outline'" :class="ui.outlineTrack()" />
-            <view :class="ui.indicator()" :style="ringIndicatorStyle" />
-        </view>
+            <div v-if="props.type === 'outline'" :class="ui.outlineTrack()" />
+            <div :class="ui.indicator()" :style="ringIndicatorStyle" />
+        </div>
 
-        <view v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()"
-            :style="containerStyle">
-            <view v-for="i in 12" :key="i" :class="ui.spinnerItem()" :style="{ '--i': i }" />
-        </view>
+        <div v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()" :style="containerStyle">
+            <div v-for="i in 12" :key="i" :class="ui.spinnerItem()" :style="{ '--i': (i as any) }" />
+        </div>
 
-        <view v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" :class="ui.container()"
+        <div v-else-if="props.type === 'bars-scale'" key="loading-bars-scale" :class="ui.container()"
             :style="containerStyle">
-            <view v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ '--i': i }" />
-        </view>
+            <div v-for="i in 5" :key="i" :class="ui.barItem()" :style="{ '--i': (i as any) }" />
+        </div>
 
-        <view v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" :class="ui.container()"
+        <div v-else-if="props.type === 'blocks-shuffle'" key="loading-blocks-shuffle" :class="ui.container()"
             :style="containerStyle">
-            <view :class="ui.blockItem()" class="rb-shuffle-1" />
-            <view :class="ui.blockItem()" class="rb-shuffle-2" />
-        </view>
+            <div :class="ui.blockItem()" class="rb-shuffle-1" />
+            <div :class="ui.blockItem()" class="rb-shuffle-2" />
+        </div>
 
-        <view v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" :class="ui.container()"
+        <div v-else-if="props.type === 'blocks-wave'" key="loading-blocks-wave" :class="ui.container()"
             :style="containerStyle">
-            <view v-for="i in 9" :key="i" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
-        </view>
+            <div v-for="i in 9" :key="i" :class="ui.waveItem()" :style="{ '--d': getWaveDelay(i) }" />
+        </div>
 
-        <view v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" :class="ui.container()"
+        <div v-else-if="props.type === 'gooey-balls'" key="loading-gooey-balls" :class="ui.container()"
             :style="containerStyle">
-            <view :class="ui.gooeyItem()" class="rb-gooey-1" />
-            <view :class="ui.gooeyItem()" class="rb-gooey-2" />
-        </view>
-    </view>
+            <div :class="ui.gooeyItem()" class="rb-gooey-1" />
+            <div :class="ui.gooeyItem()" class="rb-gooey-2" />
+        </div>
+    </div>
 </template>
 
-<script lang="ts">
-export default {
-    name: 'reborn-loading',
-    options: { virtualHost: true, addGlobalClass: true, styleIsolation: 'shared' }
-}
-</script>
-
 <script lang="ts" setup>
-import { computed, watch, ref } from 'vue'
-import { addUnit, objToStyle } from '@/lib/util'
-import { tv } from '@/lib/tv'
-import { cn } from '@/lib/utils'
+import { computed } from 'vue'
+import { tv } from '~/lib/tv'
+import { cn } from '~/lib/utils'
 import theme, { type LoadingUI, LoadingColors, LoadingTypes } from './reborn-loading.config'
 
 export type RebornLoadingProps = {
@@ -61,16 +52,20 @@ const props = withDefaults(defineProps<RebornLoadingProps>(), {
     ui: () => ({}),
     type: 'ring',
     color: 'primary',
-    size: '30px'
+    size: '1.2em'
 })
-
-const iconSize = ref<string>('30px')
-watch(() => props.size, (val) => { iconSize.value = addUnit(val) }, { immediate: true })
 
 const isPresetColor = computed(() => LoadingColors.includes(props.color as typeof LoadingColors[number]))
 
+const addUnit = (val: string | number) => {
+    if (typeof val === 'number') return `${val}px`
+    return val
+}
+
+const iconSize = computed(() => addUnit(props.size))
+
 // bars-scale / blocks-wave 用百分比布局，尺寸过小时子元素会接近 0 不显示，故设最小宽高
-const MIN_SIZE_FOR_GRID = '32px'
+const MIN_SIZE_FOR_GRID = '24px'
 const rootStyle = computed(() => {
     const style: Record<string, string> = {
         width: iconSize.value,
@@ -80,18 +75,18 @@ const rootStyle = computed(() => {
         style.minWidth = MIN_SIZE_FOR_GRID
         style.minHeight = MIN_SIZE_FOR_GRID
     }
-    return objToStyle(style)
+    return style
 })
 const containerStyle = computed(() => {
     const style: Record<string, string> = {}
     if (props.color && !isPresetColor.value) {
-        style.color = props.color
+        style.color = props.color as string
     }
 
-    return objToStyle(style)
+    return style
 })
 
-// ring 在自定义颜色时直接给 indicator 设边框色，避免 currentColor 在小程序等环境不继承导致显示成 U 形
+// ring 在自定义颜色时直接给 indicator 设边框色
 const ringIndicatorStyle = computed(() => {
     if (props.type !== 'ring' || isPresetColor.value) return {}
     const c = props.color as string
@@ -123,13 +118,12 @@ function getWaveDelay(index: number) {
 }
 </script>
 
-<style>
+<style scoped>
 /* 1. 性能基础设置 */
-.rb-loading view {
+.rb-loading div {
     box-sizing: border-box;
     backface-visibility: hidden;
     transform: translateZ(0);
-    /* 开启硬件加速 */
 }
 
 /* 2. 动画定义 */
@@ -227,31 +221,27 @@ function getWaveDelay(index: number) {
     }
 }
 
-/* 3. 动画逻辑应用 (核心优化) */
-/* Ring & Outline */
-.rb-loading .rb-loading-indicator {
+/* 3. 动画逻辑应用 */
+.rb-loading :deep(.rb-loading-indicator) {
     border-color: currentColor;
     border-top-color: transparent !important;
     animation: rb-rotate 0.8s linear infinite;
     will-change: transform;
 }
 
-/* Spinner */
-.rb-loading .rb-loading-spinnerItem {
+.rb-loading :deep(.rb-loading-spinnerItem) {
     transform: rotate(calc((var(--i) - 1) * 30deg));
     animation: rb-spinner 1s linear infinite;
     animation-delay: calc((var(--i) - 1) * 0.08s);
     will-change: opacity;
 }
 
-/* Bars Scale */
-.rb-loading .rb-loading-barItem {
+.rb-loading :deep(.rb-loading-barItem) {
     animation: rb-bars-scale 1s ease-in-out infinite;
     animation-delay: calc((var(--i) - 1) * 0.12s);
     will-change: transform, opacity;
 }
 
-/* Blocks Shuffle */
 .rb-shuffle-1 {
     animation: rb-blocks-shuffle 1s linear infinite;
 }
@@ -260,14 +250,12 @@ function getWaveDelay(index: number) {
     animation: rb-blocks-shuffle 1s linear infinite -0.5s;
 }
 
-/* Blocks Wave */
-.rb-loading .rb-loading-waveItem {
+.rb-loading :deep(.rb-loading-waveItem) {
     animation: rb-blocks-wave 1s ease-in-out infinite;
     animation-delay: var(--d);
     will-change: transform, opacity;
 }
 
-/* Gooey */
 .rb-gooey-1 {
     animation: rb-gooey-1 0.75s ease-in-out infinite;
 }

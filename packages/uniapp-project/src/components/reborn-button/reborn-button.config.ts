@@ -4,10 +4,18 @@ export const buttonVariants = ['solid', 'outline', 'soft', 'subtle'] as const
 export const buttonSizes = [
   'xs',
   'sm',
+  'default',
   'md',
   'lg',
   'xl',
   '2xl',
+  'icon-xs',
+  'icon-sm',
+  'icon',
+  'icon-md',
+  'icon-lg',
+  'icon-xl',
+  'icon-2xl',
 ] as const
 
 export default {
@@ -15,7 +23,7 @@ export default {
     base: 'reborn-button flex flex-row items-center justify-center relative box-border border-transparent border border-solid transition-[background-color,border-color,opacity] duration-300 overflow-visible',
     inner: 'reborn-button-clicker absolute inset-0 z-10 m-0 size-full p-0 opacity-0',
     label: 'truncate',
-    loading: 'border-2 border-current border-t-transparent rounded-full animate-spin',
+    loading: 'flex items-center justify-center',
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',
     leadingAvatarSize: '',
@@ -46,8 +54,12 @@ export default {
       subtle: '',
     },
     disabled: {
+      true: '',
+      false: '',
+    },
+    round: {
       true: {
-        base: '!bg-opacity-60 !border-opacity-60 !text-opacity-60',
+        base: '!rounded-full',
       },
       false: '',
     },
@@ -59,6 +71,10 @@ export default {
       'sm': {
         base: 'h-button-sm px-3 text-24 gap-1.5 rounded-[6px]',
         loading: 'size-3.5',
+      },
+      'default': {
+        base: 'h-button-md px-4 text-26 gap-1.5 rounded-[8px]',
+        loading: 'size-4',
       },
       'md': {
         base: 'h-button-md px-4 text-26 gap-1.5 rounded-[8px]',
@@ -76,6 +92,38 @@ export default {
         base: 'h-button-2xl px-6 text-32 gap-2 rounded-[14px]',
         loading: 'size-7',
       },
+      'icon-xs': {
+        base: 'w-button-xs h-button-xs p-0 text-24 rounded-[6px]',
+        loading: 'size-3',
+      },
+      'icon-sm': {
+        base: 'w-button-sm h-button-sm p-0 text-24 rounded-[6px]',
+        loading: 'size-3.5',
+      },
+      'icon': {
+        base: 'w-button-md h-button-md p-0 text-26 rounded-[8px]',
+        loading: 'size-4',
+      },
+      'icon-md': {
+        base: 'w-button-md h-button-md p-0 text-26 rounded-[8px]',
+        loading: 'size-4',
+      },
+      'icon-lg': {
+        base: 'w-button-lg h-button-lg p-0 text-28 rounded-[10px]',
+        loading: 'size-5',
+      },
+      'icon-xl': {
+        base: 'w-button-xl h-button-xl p-0 text-30 rounded-[12px]',
+        loading: 'size-6',
+      },
+      'icon-2xl': {
+        base: 'w-button-2xl h-button-2xl p-0 text-32 rounded-[14px]',
+        loading: 'size-7',
+      },
+    },
+    loading: {
+      true: 'pointer-events-none opacity-80',
+      false: '',
     },
     gap: {
       true: {
@@ -85,7 +133,6 @@ export default {
     },
   },
   compoundVariants: [
-    // Solid Variants
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'solid' as (typeof buttonVariants)[number],
@@ -122,7 +169,6 @@ export default {
       class: 'bg-neutral border-neutral text-white hover:bg-neutral/90',
     },
 
-    // Outline Variants
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'outline' as (typeof buttonVariants)[number],
@@ -166,7 +212,6 @@ export default {
         'bg-transparent text-neutral border-neutral hover:bg-neutral-50',
     },
 
-    // Soft Variants
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'soft' as (typeof buttonVariants)[number],
@@ -203,7 +248,6 @@ export default {
       class: 'bg-neutral/10 border-transparent text-neutral hover:bg-neutral/20',
     },
 
-    // Subtle Variants
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'subtle' as (typeof buttonVariants)[number],
@@ -240,11 +284,33 @@ export default {
       variant: 'subtle' as (typeof buttonVariants)[number],
       class: 'bg-neutral/10 border-neutral text-neutral hover:bg-neutral/20',
     },
+
+    {
+      variant: 'solid' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
+    },
+    {
+      variant: 'outline' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-gray-2 !border-gray-4 !text-gray-6 hover:!bg-gray-2 hover:!border-gray-4',
+    },
+    {
+      variant: 'soft' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-gray-2 !border-transparent !text-gray-6 hover:!bg-gray-2',
+    },
+    {
+      variant: 'subtle' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-gray-2 !border-gray-4 !text-gray-6 hover:!bg-gray-2 hover:!border-gray-4',
+    },
   ],
   defaultVariants: {
     color: 'primary' as (typeof buttonColors)[number],
     variant: 'solid' as (typeof buttonVariants)[number],
     size: 'md' as (typeof buttonSizes)[number],
-    block: false
+    block: false,
+    loading: false
   },
 }

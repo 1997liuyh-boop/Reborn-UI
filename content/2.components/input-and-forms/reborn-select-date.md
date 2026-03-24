@@ -1,7 +1,7 @@
 ---
 title: 日期选择
 description: 自定义日历式日期选择组件，支持年、月、日模式以及时间范围选择。
-category: Input and Forms
+category: 表单与输入
 badge: New
 navigation:
   badges:

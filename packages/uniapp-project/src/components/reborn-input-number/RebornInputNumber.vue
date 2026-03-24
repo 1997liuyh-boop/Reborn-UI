@@ -24,7 +24,7 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
   ui: () => ({}),
   size: 'md',
   color: 'primary',
-  shape: 'square',
+  shape: 'circle',
   placeholder: '',
   inputType: 'number',
   readonly: true,
@@ -166,7 +166,8 @@ watch(() => props.min, update)
 
 <template>
   <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled">
-    <view :class="ui.button()" @touchstart="onMinus" @touchend="longPress.stop" @touchcancel="longPress.stop">
+    <view :class="ui.button()" :data-disabled="!isMinus" @touchstart="onMinus" @touchend="longPress.stop"
+      @touchcancel="longPress.stop">
       <slot name="decrease-icon">
         <view :class="ui.icon()" class="i-lucide-minus" />
       </slot>
@@ -179,7 +180,8 @@ watch(() => props.min, update)
 
     <view :class="ui.divider()" />
 
-    <view :class="ui.button()" @touchstart="onPlus" @touchend="longPress.stop" @touchcancel="longPress.stop">
+    <view :class="ui.button()" :data-disabled="!isPlus" @touchstart="onPlus" @touchend="longPress.stop"
+      @touchcancel="longPress.stop">
       <slot name="increase-icon">
         <view :class="ui.icon()" class="i-lucide-plus" />
       </slot>

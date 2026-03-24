@@ -1,7 +1,7 @@
 ---
 title: Loading 加载器
 description: uniapp 单独展示。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: UniApp

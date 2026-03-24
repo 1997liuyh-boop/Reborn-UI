@@ -3,134 +3,105 @@ import { ref } from 'vue'
 import { badgeColors, badgeSizes, badgeVariants } from '@/components/reborn-badge/reborn-badge.config'
 import RebornBadge from '@/components/reborn-badge/RebornBadge.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
-
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
+import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
+import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
+import RebornInput from '@/components/reborn-input/RebornInput.vue'
 
+// 演练场状态
+const color = ref<(typeof badgeColors)[number]>('primary')
+const variant = ref<(typeof badgeVariants)[number]>('solid')
+const size = ref<(typeof badgeSizes)[number]>('md')
+const label = ref('乐一番')
+const closable = ref(false)
+const square = ref(false)
 const showBadge = ref(true)
-// const sizes = ['sm', 'md', 'lg'] as const
-// const variants = ['solid', 'outline', 'soft'] as const
-// const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const
-const currentColor = ref<typeof badgeColors[number]>('primary')
-const demoSize = ref<typeof badgeSizes[number]>('md')
-const demoVariant = ref<typeof badgeVariants[number]>('solid')
+
+/** 处理关闭事件 */
 function handleClose() {
-  showBadge.value = false
-  setTimeout(() => {
-    showBadge.value = true
-  }, 2000)
+  uni.showToast({ title: '徽标已关闭！', icon: 'none' })
 }
 </script>
 
 <template>
-  <RebornPage title="Badge" description="Badge component for status, labels, and notifications.">
-    <!-- Variants -->
-    <RebornCard title="Variants" custom-class="space-y-4">
-      <view class="space-y-3">
-        <view
-          class="
-            text-sm font-medium text-slate-500
-            dark:text-slate-200
-          "
-        >
-          Variant
-        </view>
-        <view class="flex flex-wrap gap-2">
-          <view
-            v-for="v in badgeVariants" :key="v"
-            class="
-              cursor-pointer rounded-full border px-3 py-1.5 text-xs
-              transition-colors
-            "
-            :class="demoVariant === v ? `
-              border-slate-900 bg-slate-900 text-white
-              dark:bg-white dark:text-slate-900
-            ` : `
-              border-slate-300 bg-transparent text-slate-600
-              hover:border-slate-400
-            `"
-            @click="demoVariant = v"
-          >
-            {{ v }}
-          </view>
-        </view>
+  <RebornPage title="Badge 徽标" description="用于展示状态、数量或重要标识的微型标签。支持多种色彩、感官风格及交互状态。">
+
+    <!-- Playground Section -->
+    <RebornCard title="交互演练场" custom-class="overflow-hidden p-0">
+      <!-- Preview -->
+      <view class="flex-1 p-10 flex items-center justify-center min-h-[300rpx] bg-blue-1">
+        <RebornBadge v-model:show="showBadge" :color="color" :variant="variant" :size="size" :label="label"
+          :closable="closable" :square="square" @close="handleClose" />
+      </view>
+      <!-- Controls -->
+      <view class="space-y-2">
+        <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">内容文本</text>
+        <RebornInput v-model="label" placeholder="输入标签文字" />
       </view>
 
-      <view class="space-y-3">
-        <text class="text-sm text-slate-500">Color</text>
-        <view class="flex flex-wrap gap-2">
-          <view
-            v-for="c in badgeColors" :key="c"
-            class="
-              size-6 cursor-pointer rounded-full ring-2 ring-transparent
-              ring-offset-2 transition-all
-            "
-            :class="[
-              `
-                bg-${c}
-              `,
-              currentColor === c ? 'scale-110 ring-slate-400' : `
-                hover:scale-110
-              `,
-            ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-            @click="currentColor = c"
-          />
-        </view>
+      <view class="space-y-2">
+        <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">预设色彩</text>
+        <RebornRadioGroup v-model="color">
+          <RebornRadio v-for="item in badgeColors" :key="item" :value="item" :showIcon="false">
+            <template #default="{ isChecked }">
+              <view class="relative flex size-5">
+                <view v-if="isChecked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                  :class="`bg-${item}`">
+                </view>
+                <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`"></view>
+              </view>
+            </template>
+          </RebornRadio>
+        </RebornRadioGroup>
       </view>
 
-      <view class="space-y-3">
-        <view
-          class="
-            text-sm font-medium text-slate-500
-            dark:text-slate-200
-          "
-        >
-          Size
-        </view>
-        <view class="flex flex-wrap gap-2">
-          <view
-            v-for="s in badgeSizes" :key="s"
-            class="
-              cursor-pointer rounded-full border px-3 py-1.5 text-xs
-              transition-colors
-            "
-            :class="demoSize === s ? `
-              border-slate-900 bg-slate-900 text-white
-              dark:bg-white dark:text-slate-900
-            ` : `
-              border-slate-300 bg-transparent text-slate-600
-              hover:border-slate-400
-            `"
-            @click="demoSize = s"
-          >
-            {{ s }}
-          </view>
-        </view>
+      <view class="space-y-2">
+        <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">视觉风格</text>
+        <RebornRadioGroup v-model="variant">
+          <RebornRadio v-for="item in badgeVariants" :key="item" :value="item" :label="item">
+          </RebornRadio>
+        </RebornRadioGroup>
       </view>
 
-      <view class="flex flex-wrap gap-3">
-        <RebornBadge :variant="demoVariant" :label="demoVariant" :color="currentColor" :size="demoSize" />
+      <view class="space-y-2">
+        <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">尺寸规格</text>
+        <RebornRadioGroup v-model="size">
+          <RebornRadio v-for="item in badgeSizes" :key="item" :value="item" :label="item">
+          </RebornRadio>
+        </RebornRadioGroup>
+      </view>
+
+      <view class="space-y-2">
+        <view class="text-[10px] font-bold uppercase tracking-widest text-slate-400">关闭图标</view>
+        <RebornSwitch v-model="closable" active-label="显示" inactive-label="隐藏" />
+      </view>
+
+      <view class="space-y-2">
+        <view class="text-[10px] font-bold uppercase tracking-widest text-slate-400">显示控制</view>
+        <RebornSwitch v-model="showBadge" active-label="显示" inactive-label="隐藏" />
+      </view>
+
+    </RebornCard>
+
+    <!-- Variants Matrix -->
+    <RebornCard title="变体矩阵 (Variants Matrix)">
+      <view v-for="v in badgeVariants" :key="v">
+        <text class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{{ v }}</text>
+        <view class="flex flex-wrap items-center gap-1">
+          <RebornBadge v-for="c in badgeColors" :key="c" :variant="v" :color="c" size="sm" :label="c" />
+        </view>
       </view>
     </RebornCard>
 
-    <!-- Icons -->
-    <RebornCard title="Icons" custom-class="flex flex-wrap gap-3">
-      <RebornBadge icon="i-lucide-check" label="Success" color="success" />
-      <RebornBadge icon="i-lucide-alert-circle" label="Warning" color="warning" />
-      <RebornBadge icon="i-lucide-info" label="Info" color="info" />
-      <RebornBadge icon="i-lucide-star" />
-    </RebornCard>
-
-    <!-- Closable -->
-    <RebornCard title="Closable" custom-class="flex flex-wrap gap-3">
-      <RebornBadge v-if="showBadge" label="Closable (Reappears in 2s)" closable @close="handleClose" />
-      <RebornBadge label="Closable Outline" variant="outline" closable />
-      <RebornBadge label="Closable Soft" variant="soft" closable />
-    </RebornCard>
-
-    <!-- Square -->
-    <RebornCard title="Square" custom-class="flex flex-wrap gap-3">
-      <RebornBadge label="Square Badge" square />
-      <RebornBadge label="Square Outline" variant="outline" square />
+    <!-- Icons & Slots -->
+    <RebornCard title="图标集成 (Icons)">
+      <view>
+        <RebornBadge icon="i-lucide-check" label="Success" color="success" />
+        <RebornBadge icon="i-lucide-alert-circle" label="Warning" color="warning" gap />
+        <RebornBadge icon="i-lucide-info" label="Info" color="info" gap />
+        <RebornBadge icon="i-lucide-star" square color="primary" variant="soft" gap />
+      </view>
     </RebornCard>
   </RebornPage>
 </template>

@@ -1,7 +1,7 @@
 ---
 title: Draggable 拖拽排序
 description: 支持列表拖拽排序的容器组件。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: 通

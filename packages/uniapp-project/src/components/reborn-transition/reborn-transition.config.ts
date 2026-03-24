@@ -86,5 +86,13 @@ export const transitionStyles: Record<string, Record<string, string>> = {
         leave: 'opacity-100 scale-100',
         'leave-active': 'transition-[opacity,transform]',
         'leave-to': 'opacity-0 scale-125'
+    },
+    'badge-custom': {
+        enter: 'opacity-0 scale-50',
+        'enter-active': 'transition-[opacity,transform]',
+        'enter-to': 'opacity-100 scale-100',
+        leave: 'opacity-100 [transform:rotateY(0deg)]',
+        'leave-active': 'transition-[opacity,transform]',
+        'leave-to': 'opacity-0 [transform:rotateY(-90deg)]'
     }
 }

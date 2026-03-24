@@ -1,7 +1,7 @@
 ---
 title: Transition 过渡
 description: 过渡动画容器，支持 fade / slide / zoom。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: 通

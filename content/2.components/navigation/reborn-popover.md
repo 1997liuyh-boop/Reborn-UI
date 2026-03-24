@@ -1,6 +1,7 @@
 ---
 title: Popover 
 description: 点击或悬浮元素，弹出一个可定制内容的气泡区域。
+category: 导航
 badge: New
 navigation:
   badges:

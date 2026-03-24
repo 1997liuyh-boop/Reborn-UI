@@ -1,7 +1,7 @@
 ---
 title: 级联选择器
 description: 在包含多层级的数据结构中进行选择，常用作省市区选择、分类选择等场景。
-category: Input and Forms
+category: 表单与输入
 badge: New
 navigation:
   badges:

@@ -69,7 +69,6 @@ export interface RebornTextProps {
   preWrap?: boolean
 }
 const cache = { key: 1 }
-interface PassThrough { className?: string }
 
 // 样式生成
 const b = tv(theme)

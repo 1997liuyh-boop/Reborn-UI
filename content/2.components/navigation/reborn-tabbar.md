@@ -1,7 +1,7 @@
 ---
 title: Tabbar 底部标签栏
 description: uniapp 单独展示。
-category: Navigation
+category: 导航
 navigation:
   badges:
     - label: UniApp

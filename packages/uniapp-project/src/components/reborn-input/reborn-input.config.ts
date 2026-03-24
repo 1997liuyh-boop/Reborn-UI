@@ -1,55 +1,71 @@
-const sizes = ['sm', 'md', 'lg'] as const
-const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
+const sizes = ['sm', 'md', 'lg'] as const;
+const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const;
 
 const config = {
   slots: {
-    wrapper: 'relative flex w-full items-center',
+    wrapper:
+      'relative flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1',
     input:
-      'flex w-full bg-gray-2 dark:bg-gray-8 px-3 text-sm text-gray-8 dark:text-gray-1  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
+      'flex-1 h-full bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
     leading: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
     iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-[16rpx]',
     iconSection: 'flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
+    icon: '',
     separator: 'w-px transition-colors bg-gray-4',
   },
   variants: {
     size: {
       sm: {
-        input: 'h-input-sm px-3',
-        iconSection: '[--icon-size:var(--text-size-36)]',
+        wrapper: 'h-input-sm',
+        input: 'text-26 leading-normal',
+        icon: 'text-40',
         separator: 'h-[var(--text-size-32)]',
       },
       md: {
-        input: 'h-input-md px-3',
-        iconSection: '[--icon-size:var(--text-size-40)]',
+        wrapper: 'h-input-md',
+        input: 'text-28 leading-normal',
+        icon: 'text-40',
         separator: 'h-[var(--text-size-36)]',
       },
       lg: {
-        input: 'h-input-lg px-3',
-        iconSection: '[--icon-size:var(--text-size-48)]',
+        wrapper: 'h-input-lg',
+        input: 'text-28 leading-normal',
+        icon: 'text-40',
         separator: 'h-[var(--text-size-40)]',
+      },
+    },
+    rounded: {
+      true: '',
+      false: {
+        wrapper: 'rounded-ui-base',
       },
     },
     border: {
       true: {
-        input: 'ring-offset-background focus:ring-2 focus:ring-offset-2',
+        wrapper: 'ring-gray-3 dark:ring-gray-7',
       },
       false: {
-        input: 'border-0 focus:ring-0 focus-visible:ring-0',
+        wrapper: 'ring-transparent',
+      },
+    },
+    error: {
+      true: {
+        wrapper: 'ring-error/50 bg-error/5 focus-within:ring-error',
+        input: 'text-error placeholder:text-error/50',
       },
     },
     multiline: {
       true: {
-        input: 'h-auto',
+        wrapper: 'h-auto py-4 items-start',
+        input: 'min-h-[160rpx] resize-none',
       },
     },
     fieldGroup: {
       horizontal: {
         wrapper: 'first:rounded-r-none last:rounded-l-none',
-        input: 'first:rounded-r-none last:rounded-l-none focus:z-10',
       },
       vertical: {
         wrapper: 'first:rounded-b-none last:rounded-t-none',
-        input: 'first:rounded-b-none last:rounded-t-none focus:z-10',
       },
     },
     hasLeading: {
@@ -62,18 +78,14 @@ const config = {
         input: 'pr-9',
       },
     },
-    rounded: {
-      true: {
-        input: 'rounded-full',
-      },
-      false: {
-        input: 'rounded-ui-base',
-      },
-    },
-    error: {
-      true: {
-        input: 'border-error text-error placeholder:text-error/50 ring-error',
-      },
+    color: {
+      primary: {},
+      secondary: {},
+      success: {},
+      info: {},
+      warning: {},
+      error: {},
+      neutral: {},
     },
     focus: {
       true: {},
@@ -81,14 +93,51 @@ const config = {
     },
   },
   compoundVariants: [
-    { border: true, focus: true, class: { input: 'ring-2 ring-offset-2' } },
-    { color: 'primary', border: true, focus: true, class: { input: 'border-primary ring-primary', separator: 'bg-red-4', } },
-    { color: 'secondary', border: true, focus: true, class: { input: 'border-secondary ring-secondary', separator: 'bg-gray-8', } },
-    { color: 'success', border: true, focus: true, class: { input: 'border-success ring-success', separator: 'bg-green-4', } },
-    { color: 'info', border: true, focus: true, class: { input: 'border-info ring-info', separator: 'bg-blue-4', } },
-    { color: 'warning', border: true, focus: true, class: { input: 'border-warning ring-warning', separator: 'bg-orange-4', } },
-    { color: 'error', border: true, focus: true, class: { input: 'border-error ring-error', separator: 'bg-red-4', } },
-    { color: 'neutral', border: true, focus: true, class: { input: 'border-gray-4 ring-gray-4', separator: 'bg-gray-4', } },
+    {
+      color: 'primary',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-primary/30', separator: 'bg-primary/40' },
+    },
+    {
+      color: 'secondary',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-secondary/30', separator: 'bg-secondary/40' },
+    },
+    {
+      color: 'success',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-success/30', separator: 'bg-success/40' },
+    },
+    {
+      color: 'info',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-info/30', separator: 'bg-info/40' },
+    },
+    {
+      color: 'warning',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-warning/30', separator: 'bg-warning/40' },
+    },
+    {
+      color: 'error',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-error/30', separator: 'bg-error/40' },
+    },
+    {
+      color: 'neutral',
+      focus: true,
+      border: true,
+      class: { wrapper: 'bg-white dark:bg-gray-900 ring-gray-400/30', separator: 'bg-gray-400/40' },
+    },
+    { size: 'sm', rounded: true, class: { wrapper: 'rounded-ui-sm' } },
+    { size: 'md', rounded: true, class: { wrapper: 'rounded-ui-md' } },
+    { size: 'lg', rounded: true, class: { wrapper: 'rounded-full' } },
   ] as any,
   defaultVariants: {
     size: 'sm',
@@ -99,5 +148,5 @@ const config = {
   },
 } as const;
 
-export { colors as inputColors, sizes as inputSizes }
-export default config
+export { colors as inputColors, sizes as inputSizes };
+export default config;

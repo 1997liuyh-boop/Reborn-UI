@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
-import theme, { selectColors, selectSizes } from "./reborn-select.config";
+import theme, { selectColors, selectSizes, selectAnimations } from "./reborn-select.config";
 import { tv } from "~/lib/tv";
 
 const b = tv(theme);
@@ -35,6 +35,8 @@ export interface SelectProps {
         dropdown: ClassValue;
         option: ClassValue;
         optionActive: ClassValue;
+        optionHighlight: ClassValue;
+        empty: ClassValue;
         clearBtn: ClassValue;
     }>;
 }
@@ -77,6 +79,8 @@ const ui = computed(() => {
         dropdown: (opts?: { class?: any }) => styles.dropdown({ class: cn(opts?.class, uiOverrides.value.dropdown) }),
         option: (opts?: { class?: any }) => styles.option({ class: cn(opts?.class, uiOverrides.value.option) }),
         optionActive: (opts?: { class?: any }) => styles.optionActive({ class: cn(opts?.class, uiOverrides.value.optionActive) }),
+        optionHighlight: (opts?: { class?: any }) => styles.optionHighlight({ class: cn(opts?.class, uiOverrides.value.optionHighlight) }),
+        empty: (opts?: { class?: any }) => styles.empty({ class: cn(opts?.class, uiOverrides.value.empty) }),
         clearBtn: (opts?: { class?: any }) => styles.clearBtn({ class: cn(opts?.class, uiOverrides.value.clearBtn) }),
     };
 });
@@ -201,16 +205,17 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             </div>
         </div>
 
-        <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 -translate-y-1"
-            enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100 ease-in"
-            leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
-            <div v-if="isOpen" ref="dropdownRef" :class="ui.dropdown()" style="max-height: 240px; top: 100%">
+        <Transition :enter-active-class="selectAnimations.enterActiveClass"
+            :enter-from-class="selectAnimations.enterFromClass" :enter-to-class="selectAnimations.enterToClass"
+            :leave-active-class="selectAnimations.leaveActiveClass" :leave-from-class="selectAnimations.leaveFromClass"
+            :leave-to-class="selectAnimations.leaveToClass">
+            <div v-if="isOpen" ref="dropdownRef" :class="ui.dropdown()">
                 <div v-for="(option, index) in options" :key="index" :class="[
                     ui.option(),
                     isSelected(option.value) ? ui.optionActive() : '',
-                    highlightIndex === index ? 'bg-gray-100 dark:bg-gray-700/50' : '',
-                    option.disabled ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30',
-                ]" @click="selectOption(option)" @mouseenter="highlightIndex = index">
+                    highlightIndex === index ? ui.optionHighlight() : '',
+                ]" :data-disabled="option.disabled ? 'true' : 'false'" @click="selectOption(option)"
+                    @mouseenter="highlightIndex = index">
                     <slot name="option" :option="option" :active="isSelected(option.value)">
                         <div class="flex w-full items-center justify-between gap-2">
                             <span class="flex-1 truncate">{{ option.label }}</span>
@@ -220,7 +225,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
                     </slot>
                 </div>
 
-                <div v-if="options.length === 0" class="flex items-center justify-center py-6 text-sm text-gray-400">
+                <div v-if="options.length === 0" :class="ui.empty()">
                     暂无数据
                 </div>
             </div>

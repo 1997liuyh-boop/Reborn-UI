@@ -1,7 +1,7 @@
 ---
 title: Overlay 遮罩
 description: 全屏遮罩层，支持点击关闭和滚动锁定。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: 通

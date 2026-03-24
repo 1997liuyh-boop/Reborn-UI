@@ -16,6 +16,8 @@ import RebornButton from '../reborn-button/RebornButton.vue'
 import RebornCheckbox from '../reborn-checkbox/RebornCheckbox.vue'
 import RebornLoading from '../reborn-loading/RebornLoading.vue'
 
+import RebornTransition from '../reborn-transition/RebornTransition.vue'
+
 defineOptions({
     name: 'RebornCascader',
 })
@@ -62,6 +64,7 @@ const ui = computed(() => {
     return {
         root: (opts?: { class?: any }) => s.root({ class: cn(opts?.class, props.customClass, u.root) }),
         popup: (opts?: { class?: any }) => s.popup({ class: cn(opts?.class, u.popup) }),
+        tabsScroll: (opts?: { class?: any }) => s.tabsScroll({ class: cn(opts?.class, u.tabsScroll) }),
         tabs: (opts?: { class?: any }) => s.tabs({ class: cn(opts?.class, u.tabs) }),
         tab: (opts?: { class?: any }) => s.tab({ class: cn(opts?.class, u.tab) }),
         list: (opts?: { class?: any }) => s.list({ class: cn(opts?.class, u.list) }),
@@ -73,6 +76,15 @@ const ui = computed(() => {
         footerText: (opts?: { class?: any }) => s.footerText({ class: cn(opts?.class, u.footerText) }),
         loading: (opts?: { class?: any }) => s.loading({ class: cn(opts?.class, u.loading) }),
         loadingText: (opts?: { class?: any }) => s.loadingText({ class: cn(opts?.class, u.loadingText) }),
+        listScroll: (opts?: { class?: any }) => s.listScroll({ class: cn(opts?.class, u.listScroll) }),
+        listInner: (opts?: { class?: any }) => s.listInner({ class: cn(opts?.class, u.listInner) }),
+        column: (opts?: { class?: any }) => s.column({ class: cn(opts?.class, u.column) }),
+        columnScroll: (opts?: { class?: any }) => s.columnScroll({ class: cn(opts?.class, u.columnScroll) }),
+        itemInner: (opts?: { class?: any }) => s.itemInner({ class: cn(opts?.class, u.itemInner) }),
+        checkbox: (opts?: { class?: any }) => s.checkbox({ class: cn(opts?.class, u.checkbox) }),
+        nodeLoading: (opts?: { class?: any }) => s.nodeLoading({ class: cn(opts?.class, u.nodeLoading) }),
+        nodeArrow: (opts?: { class?: any }) => s.nodeArrow({ class: cn(opts?.class, u.nodeArrow) }),
+        footerActions: (opts?: { class?: any }) => s.footerActions({ class: cn(opts?.class, u.footerActions) }),
     }
 })
 
@@ -82,9 +94,22 @@ const isRootLoading = ref(false)
 const current = ref(0) // 当前操作的层级索引
 const activePath = ref<(string | number)[]>([]) // 当前显示的路径
 const selectedPaths = ref<(string | number)[][]>([]) // 多选选中的路径集合
-const scrollIntoViewId = ref('') // 水平滚动的目标ID
+const tabScrollIntoViewId = ref('') // 顶部标签滚动 ID
+const listScrollIntoViewId = ref('') // 列表区域滚动 ID
 const loadingNodes = ref<Record<string, boolean>>({}) // 记录加载状态
 const internalOptions = ref<CascaderOption[]>([])
+
+// 监听当前层级变化进行辅助对齐（居中显示）
+watch(current, (val) => {
+    nextTick(() => {
+        setTimeout(() => {
+            // 设置 ID 时让其滚动到前一个索引节点，形成“居中”显示效果（让当前/新节点在中间）
+            const scrollIndex = Math.max(0, val - 1)
+            tabScrollIntoViewId.value = `tab-${scrollIndex}`
+            listScrollIntoViewId.value = `column-${scrollIndex}`
+        }, 100)
+    })
+})
 
 watch(() => props.options, (val) => {
     internalOptions.value = JSON.parse(JSON.stringify(val || []))
@@ -216,8 +241,6 @@ const open = async () => {
     } else {
         current.value = 0
     }
-    console.log(activePath.value)
-    console.log(labels.value)
 }
 
 const close = () => {
@@ -228,7 +251,6 @@ const onLabelTap = (index: number) => {
     // 点击标签，回到该级并清除后续选择
     activePath.value = activePath.value.slice(0, index)
     current.value = index
-    scrollIntoViewId.value = `column-${index}`
 }
 
 const toggleMultiSelection = (node: CascaderOption, path: (string | number)[], isCheck: boolean) => {
@@ -305,9 +327,9 @@ const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox =
                 loadingNodes.value[nodeId] = false
             }
         }
-        // 自动滚动到新的一级
+        // 自动跳转到新的一级
         nextTick(() => {
-            scrollIntoViewId.value = `column-${listIndex + 1}`
+            current.value = listIndex + 1
         })
     }
 }
@@ -363,17 +385,22 @@ defineExpose({ open, close, clear })
         <RebornPopup v-model="visible" :title="title" position="bottom" round @close="close" :color="color" rootPortal>
             <view :class="ui.popup()">
                 <!-- 顶部标签页 -->
-                <view v-if="!multiple" :class="ui.tabs()">
-                    <view v-for="(label, index) in labels" :key="index" :class="ui.tab()" @tap="onLabelTap(index)">
-                        <slot name="tabs" :label="label" :index="index" :current="current">
-                            <RebornBadge variant="subtle" :color="index === current ? color : 'neutral'" :size="size">
-                                <template #default>
-                                    {{ label }}
-                                </template>
-                            </RebornBadge>
-                        </slot>
+                <scroll-view v-if="!multiple" scroll-x :class="ui.tabsScroll()" :scroll-into-view="tabScrollIntoViewId"
+                    scroll-with-animation>
+                    <view :class="ui.tabs()">
+                        <view v-for="(label, index) in labels" :key="index" :id="'tab-' + index" :class="ui.tab()"
+                            @tap="onLabelTap(index)">
+                            <slot name="tabs" :label="label" :index="index" :current="current">
+                                <RebornBadge variant="subtle" :color="index === current ? color : 'neutral'"
+                                    :size="size">
+                                    <template #default>
+                                        {{ label }}
+                                    </template>
+                                </RebornBadge>
+                            </slot>
+                        </view>
                     </view>
-                </view>
+                </scroll-view>
 
                 <!-- 列表内容 -->
                 <view :class="ui.list()" :style="{ height: typeof height === 'number' ? height + 'rpx' : height }">
@@ -381,43 +408,40 @@ defineExpose({ open, close, clear })
                         <RebornLoading type="spinner" :color="color" size="64rpx" />
                         <text :class="ui.loadingText()">正在加载数据...</text>
                     </view>
-                    <scroll-view v-else scroll-x class="w-full h-full no-scrollbar" :scroll-into-view="scrollIntoViewId"
+                    <scroll-view v-else scroll-x :class="ui.listScroll()" :scroll-into-view="listScrollIntoViewId"
                         scroll-with-animation>
-                        <view class="flex flex-row h-full min-w-full">
+                        <view :class="ui.listInner()">
                             <view v-for="(listData, listIndex) in lists" :key="listIndex" :id="`column-${listIndex}`"
-                                :class="[
-                                    columnWidthClass,
-                                    'shrink-0 h-full border-r border-gray-100 dark:border-slate-800 last:border-r-0'
-                                ]">
-                                <scroll-view scroll-y class="h-full">
-                                    <view v-for="(item, itemIndex) in listData" :key="`${listIndex}-${item[valueKey]}`"
-                                        :class="[
-                                            ui.item(),
-                                            activePath[listIndex] === item[valueKey] ? ui.itemActive() : ''
-                                        ]" @tap="onItemTap(item, listIndex)">
-                                        <view class="flex flex-row items-center">
-                                            <view v-if="props.multiple" class="mr-2"
-                                                @tap.stop="onItemTap(item, listIndex, true)">
-                                                <RebornCheckbox :modelValue="isItemSelected(item, listIndex)"
-                                                    :indeterminate="isItemIndeterminate(item, listIndex)" />
+                                :class="ui.column({ class: columnWidthClass })">
+                                <RebornTransition :show="true" name="fade-right" :duration="300" custom-class="h-full">
+                                    <scroll-view scroll-y :class="ui.columnScroll()">
+                                        <view v-for="(item, itemIndex) in listData"
+                                            :key="`${listIndex}-${item[valueKey]}`" :class="[
+                                                ui.item(),
+                                                activePath[listIndex] === item[valueKey] ? ui.itemActive() : ''
+                                            ]" @tap="onItemTap(item, listIndex)">
+                                            <view :class="ui.itemInner()">
+                                                <view v-if="props.multiple" :class="ui.checkbox()"
+                                                    @tap.stop="onItemTap(item, listIndex, true)">
+                                                    <RebornCheckbox :modelValue="isItemSelected(item, listIndex)"
+                                                        :indeterminate="isItemIndeterminate(item, listIndex)" />
+                                                </view>
+                                                <slot name="item" :item="item" :listIndex="listIndex"
+                                                    :active="activePath[listIndex] === item[valueKey]">
+                                                    <RebornText
+                                                        :custom-class="activePath[listIndex] === item[valueKey] ? ui.itemTextActive() : ui.itemText()"
+                                                        :ellipsis="ellipsis" :lines="lines">
+                                                        {{ item[labelKey] }}
+                                                    </RebornText>
+                                                </slot>
                                             </view>
-                                            <slot name="item" :item="item" :listIndex="listIndex"
-                                                :active="activePath[listIndex] === item[valueKey]">
-                                                <RebornText
-                                                    :custom-class="activePath[listIndex] === item[valueKey] ? ui.itemTextActive() : ui.itemText()"
-                                                    :ellipsis="ellipsis" :lines="lines">
-                                                    {{ item[labelKey] }}
-                                                </RebornText>
-                                            </slot>
+                                            <view v-if="loadingNodes[String(item[valueKey])]" :class="ui.nodeLoading()">
+                                                <RebornLoading type="outline" :color="color" size="32rpx" />
+                                            </view>
+                                            <view v-else-if="!isLeafNode(item, listIndex)" :class="ui.nodeArrow()" />
                                         </view>
-                                        <view v-if="loadingNodes[String(item[valueKey])]"
-                                            class="ml-auto h-[32rpx] w-[32rpx]">
-                                            <RebornLoading type="outline" :color="color" size="32rpx" />
-                                        </view>
-                                        <view v-else-if="!isLeafNode(item, listIndex)"
-                                            class="i-lucide-chevron-right text-[32rpx] text-gray-300 ml-auto" />
-                                    </view>
-                                </scroll-view>
+                                    </scroll-view>
+                                </RebornTransition>
                             </view>
                         </view>
                     </scroll-view>
@@ -426,7 +450,7 @@ defineExpose({ open, close, clear })
                 <!-- 底部操作栏 (多选模式) -->
                 <view v-if="props.multiple" :class="ui.footer()">
                     <text :class="ui.footerText()">已选 {{ selectedPaths.length }} 项</text>
-                    <view class="flex flex-row gap-2">
+                    <view :class="ui.footerActions()">
                         <RebornButton size="sm" variant="outline" @tap="clear">清空</RebornButton>
                         <RebornButton size="sm" @tap="onConfirm">确认</RebornButton>
                     </view>

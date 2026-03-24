@@ -1,7 +1,7 @@
 ---
 title: BackTop
 description: 该组件一个用于长页面，滑动一定距离后，出现返回顶部按钮，方便快速返回顶部的场景
-category: Navigation
+category: 导航
 badge: New
 navigation:
   badges:

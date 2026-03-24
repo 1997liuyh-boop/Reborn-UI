@@ -9,9 +9,16 @@ import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import { inputColors, inputSizes } from '@/components/reborn-input/reborn-input.config'
+import RebornImage from '@/components/reborn-image/RebornImage.vue'
 
 const input1 = ref('')
-const input2 = ref('五条悟')
+const input2 = ref('')
+
+const isTranslated = ref(false)
+
+function toggleTranslate() {
+  isTranslated.value = !isTranslated.value
+}
 
 const colors = ref<typeof inputColors[number]>('neutral')
 const currentSize = ref<typeof inputSizes[number]>('sm')
@@ -37,6 +44,27 @@ const border = ref(true)
         </template>
         <template #trailing="{ ui }">
           <view class="i-lucide-calendar text-gray-400" :class="ui.trailing()" />
+        </template>
+      </RebornInput>
+      <RebornInput v-model="input2" :size="currentSize" :color="colors" :password="password" :disabled="disabled"
+        :rounded="rounded" :clearable="clearable" :border="border" placeholder="关键词/商品ID/网址">
+        <template #leading>
+          <RebornImage src="https://mall.leyifan.cn/static/h5/new_images/index_search_small.png?v=1" width="30"
+            height="30" mode="widthFix" />
+        </template>
+        <template #trailing>
+          <view class="relative h-[80rpx] w-[80rpx] flex items-center justify-center" @tap.stop="toggleTranslate">
+            <view
+              class="absolute left-[8rpx] top-[12rpx] flex h-[46rpx] w-[46rpx] items-center justify-center rounded-[8rpx] border text-[22rpx] font-bold transition-all duration-300"
+              :class="[isTranslated ? 'translate-x-[26rpx] translate-y-[12rpx] z-10 border-info bg-white text-info shadow-sm' : 'z-0 border-gray-200 bg-[#f8f9fa] text-gray-400']">
+              译
+            </view>
+            <view
+              class="absolute left-[34rpx] top-[24rpx] flex h-[46rpx] w-[46rpx] items-center justify-center rounded-[8rpx] border text-[22rpx] font-bold transition-all duration-300"
+              :class="[isTranslated ? '-translate-x-[26rpx] -translate-y-[12rpx] z-0 border-gray-200 bg-[#f8f9fa] text-gray-400' : 'z-10 border-info bg-white text-info shadow-sm']">
+              原
+            </view>
+          </view>
         </template>
       </RebornInput>
     </RebornCard>
@@ -66,22 +94,22 @@ const border = ref(true)
       </view>
 
       <view>
-        <RebornText color="neutral">是否密码</RebornText>
+        <RebornText color="neutral">密码</RebornText>
         <RebornSwitch v-model="password" active-label="是" inactive-label="否" />
       </view>
 
       <view>
-        <RebornText color="neutral">是否禁用</RebornText>
+        <RebornText color="neutral">禁用</RebornText>
         <RebornSwitch v-model="disabled" active-label="是" inactive-label="否" />
       </view>
 
       <view>
-        <RebornText color="neutral">是否圆角</RebornText>
+        <RebornText color="neutral">圆角</RebornText>
         <RebornSwitch v-model="rounded" active-label="是" inactive-label="否" />
       </view>
 
       <view>
-        <RebornText color="neutral">是否可清空</RebornText>
+        <RebornText color="neutral">可清空</RebornText>
         <RebornSwitch v-model="clearable" active-label="是" inactive-label="否" />
       </view>
 

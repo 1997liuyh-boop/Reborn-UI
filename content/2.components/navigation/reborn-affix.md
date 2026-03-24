@@ -1,7 +1,7 @@
 ---
 title: Affix 悬浮
 description: Affix 组件用于将元素固定在页面上的特定位置，并允许用户在屏幕范围内自由拖拽。当元素被拖拽到屏幕边缘时，它会自动吸附到最近的边缘，方便用户快速定位。常用于悬浮按钮、快捷操作入口等场景。
-category: Navigation
+category: 导航
 badge: New
 navigation:
   badges:

@@ -10,7 +10,7 @@ const menuItems = [
   {
     label: '基础组件',
     children: [
-      { label: '文本', icon: 'i-lucide-text', path: '/pages/reborn-text/index' },
+      { label: '文本', icon: 'i-lucide-text', path: '/pages/reborn-text/RebornTextDemo' },
       { label: '按钮', icon: 'i-lucide-mouse', path: '/pages/reborn-button/RebornButtonDemo' },
       { label: '图片', icon: 'i-lucide-image', path: '/pages/reborn-image/RebornImageDemo' },
       { label: '徽章', icon: 'i-lucide-badge-check', path: '/pages/reborn-badge/RebornBadgeDemo' },

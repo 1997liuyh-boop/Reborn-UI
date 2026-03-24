@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import RebornSelectTrigger from '@/components/reborn-select-trigger/RebornSelectTrigger.vue'
+import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme, { type dropdownSelectColors, type dropdownSelectSizes } from './reborn-dropdown-select.config'
@@ -103,17 +104,22 @@ function onClear() {
       @clear="onClear" />
 
     <!-- Mask to close dropdown -->
-    <view v-if="isOpen" :class="ui.mask()" @tap="closeDropdown" />
+    <RebornTransition :show="isOpen" name="fade" :duration="200">
+      <view :class="ui.mask()" @tap="closeDropdown" />
+    </RebornTransition>
 
-    <view v-if="isOpen" :class="ui.content()">
-      <view v-for="(item, index) in options" :key="index" :class="ui.item({ selected: item.value === modelValue })"
-        @tap.stop="selectOption(item)">
-        <text :class="ui.itemText({ selected: item.value === modelValue })">{{ item.label }}</text>
-        <text v-if="item.value === modelValue" class="i-lucide-check" :class="ui.itemIcon()" />
+    <RebornTransition :show="isOpen" name="fade-down" :duration="200"
+      custom-style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999;">
+      <view :class="ui.content()">
+        <view v-for="(item, index) in options" :key="index" :class="ui.item({ selected: item.value === modelValue })"
+          @tap.stop="selectOption(item)">
+          <text :class="ui.itemText({ selected: item.value === modelValue })">{{ item.label }}</text>
+          <text v-if="item.value === modelValue" class="i-lucide-check" :class="ui.itemIcon()" />
+        </view>
+        <view v-if="options.length === 0" :class="ui.empty()">
+          无数据
+        </view>
       </view>
-      <view v-if="options.length === 0" :class="ui.empty()">
-        无数据
-      </view>
-    </view>
+    </RebornTransition>
   </view>
 </template>

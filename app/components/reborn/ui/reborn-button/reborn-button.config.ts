@@ -5,14 +5,14 @@ const variant = ["solid", "outline", "soft", "subtle"] as const;
 const size = [
   "xs",
   "sm",
-  "default", // Mapped to md
+  "default",
   "md",
   "lg",
   "xl",
   "2xl",
   "icon-xs",
   "icon-sm",
-  "icon", // Mapped to icon-md
+  "icon",
   "icon-md",
   "icon-lg",
   "icon-xl",
@@ -23,7 +23,7 @@ export { color as buttonColors, variant as buttonVariants, size as buttonSizes }
 
 export default {
   slots: {
-    base: "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 disabled:bg-gray-4 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+    base: "reborn-button inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
     label: "truncate",
     leadingIcon: "shrink-0",
     leadingAvatar: "shrink-0",
@@ -74,9 +74,20 @@ export default {
       "icon-xl": { base: "size-[var(--button-xl-height)]" },
       "icon-2xl": { base: "size-[var(--button-2xl-height)]" },
     },
-    square: {
-      true: { base: "p-0" },
+    gap: {
+      true: {
+        base: '[.reborn-button_+_&]:ml-2',
+      },
+      false: '',
     },
+    disabled: {
+      true: "cursor-not-allowed opacity-70",
+      false: ""
+    },
+    round: {
+      true: "rounded-full",
+      false: ""
+    }
   },
   compoundVariants: [
     // Solid Variants
@@ -86,7 +97,7 @@ export default {
       class: "bg-primary text-white hover:bg-primary/75",
     },
     {
-      color: "secondary" as (typeof color)[number], // Secondary not in original, defaulting to Purple/Violet or Gray? User had Info=Gray. I'll make Secondary=Violet
+      color: "secondary" as (typeof color)[number],
       variant: "solid" as (typeof variant)[number],
       class: "bg-secondary text-white hover:bg-secondary/75",
     },
@@ -96,7 +107,7 @@ export default {
       class: "bg-success text-white hover:bg-success/75",
     },
     {
-      color: "info" as (typeof color)[number], // User's original info was gray-8. I will keep that as explicit choice.
+      color: "info" as (typeof color)[number],
       variant: "solid" as (typeof variant)[number],
       class: "bg-info text-white hover:bg-info/75",
     },
@@ -106,7 +117,7 @@ export default {
       class: "bg-warning text-white hover:bg-warning/75",
     },
     {
-      color: "error" as (typeof color)[number], // User's original default was red.
+      color: "error" as (typeof color)[number],
       variant: "solid" as (typeof variant)[number],
       class: "bg-error text-white hover:bg-error/75",
     },
@@ -116,12 +127,11 @@ export default {
       class: "bg-neutral text-white hover:bg-neutral/75",
     },
 
-    // Outline Variants
     {
       color: "primary" as (typeof color)[number],
       variant: "outline" as (typeof variant)[number],
       class:
-        "bg-transparent text-primary border border-primary hover:bg-primary/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-primary border border-primary hover:bg-primary/10",
     },
     {
       color: "secondary" as (typeof color)[number],
@@ -157,10 +167,29 @@ export default {
       color: "neutral" as (typeof color)[number],
       variant: "outline" as (typeof variant)[number],
       class:
-        "bg-transparent text-neutral border border-neutral hover:bg-neutral/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-neutral border border-neutral hover:bg-neutral/10",
+    },
+    {
+      variant: "solid" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-gray-6 dark:bg-gray-2 text-white/50",
+    },
+    {
+      variant: "soft" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-gray-6 dark:bg-gray-2 text-gray-4",
+    },
+    {
+      variant: "subtle" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-gray-6 dark:bg-gray-2 ring-1 ring-inset ring-[--color-gray-7] text-gray-4",
+    },
+    {
+      variant: "outline" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-gray-2 dark:bg-gray-8 border-gray-4 text-gray-6",
     },
 
-    // Soft Variants (Freestyling as requested, using lighter 1/2 shades)
     {
       color: "primary" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
@@ -197,11 +226,9 @@ export default {
       class: "bg-neutral/10 text-neutral hover:bg-neutral/20",
     },
 
-    // Subtle Variants (Transparent bg, colored text, hover light bg)
     {
       color: "primary" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      // class: "bg-transparent text-primary hover:bg-primary/10",
       class: "bg-primary/10 ring-1 ring-inset ring-primary text-primary hover:bg-primary/20",
     },
     {

@@ -1,7 +1,7 @@
 ---
 title: Footer 底部栏
 description: 固定在页面底部的操作容器组件，支持自动占位、最小高度控制和安全区适配。
-category: Navigation
+category: 导航
 badge: New
 navigation:
   badges:

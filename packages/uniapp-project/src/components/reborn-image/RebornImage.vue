@@ -5,6 +5,8 @@ import { computed, ref } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-image.config'
+import RebornLoading from '../reborn-loading/RebornLoading.vue'
+import { LoadingTypes } from '../reborn-loading/reborn-loading.config'
 
 export interface ImageProps {
   customClass?: ClassValue
@@ -20,6 +22,8 @@ export interface ImageProps {
   webp?: boolean // 是否解码webp格式
   showMenuByLongpress?: boolean // 是否长按显示菜单
   round?: boolean // 是否显示圆角
+  loadingType?: typeof LoadingTypes[number]
+  loadingSize?: string | number
   ui?: Partial<{
     root: ClassValue
     error: ClassValue
@@ -40,6 +44,7 @@ const props = withDefaults(defineProps<ImageProps>(), {
   webp: false,
   showMenuByLongpress: false,
   round: false,
+  loadingType: 'outline',
 })
 
 // 事件定义
@@ -63,10 +68,34 @@ const ui = computed(() => {
   }
 })
 
+
 // 加载状态
 const isLoading = ref(true)
 // 加载失败状态
 const isError = ref(false)
+
+// 计算加载图标大小 (width/height 的 0.6)
+const loadingSize = computed(() => {
+  if (props.loadingSize) return props.loadingSize
+
+  const wStr = String(props.width)
+  const hStr = String(props.height)
+  const wNum = parseFloat(wStr)
+  const hNum = parseFloat(hStr)
+
+  // 取最大的数值部分
+  const maxNum = Math.max(Number.isNaN(wNum) ? 0 : wNum, Number.isNaN(hNum) ? 0 : hNum)
+
+  // 按照 props.width 的单位来处理
+  const extractUnit = (s: string | number) => {
+    if (typeof s === 'number') return 'rpx'
+    const unitMatch = String(s).match(/px|rpx|%|vw|vh$/)
+    return unitMatch ? unitMatch[0] : 'rpx'
+  }
+
+  const unit = extractUnit(props.width)
+  return `${maxNum * 0.6}${unit}`
+})
 
 function getUnit(val: string | number | undefined | null): string | undefined {
   if (val == null || val === '') { return undefined }
@@ -131,10 +160,7 @@ function onTap() {
     </view>
     <view v-else-if="isLoading && showLoading" :class="ui.loading()">
       <slot name="loading">
-        <view :class="ui.loadingIcon()" class="
-            size-6 animate-spin rounded-full border-2 border-gray-3
-            border-t-blue-500
-          " />
+        <RebornLoading :type="loadingType" :size="loadingSize" />
       </slot>
     </view>
     <image :class="ui.inner()" :src="src" :mode="mode" :lazy-load="lazyLoad" :webp="webp"

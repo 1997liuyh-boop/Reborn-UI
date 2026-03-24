@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
+import RebornLoading from '../reborn-loading/RebornLoading.vue'
 import theme, { buttonColors, buttonVariants, buttonSizes } from './reborn-button.config'
 import { useFieldGroup } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
@@ -13,9 +14,10 @@ export interface ButtonProps {
     size?: typeof buttonSizes[number]
     loading?: boolean
     disabled?: boolean
-    square?: boolean
+    round?: boolean
     class?: any
     ui?: any
+    gap?: boolean // 是否间隔按钮
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -24,7 +26,8 @@ const props = withDefaults(defineProps<ButtonProps>(), {
     size: 'md',
     loading: false,
     disabled: false,
-    square: false
+    round: true,
+    gap: false
 })
 
 const slots = defineSlots<{
@@ -40,7 +43,15 @@ const isDisabled = computed(() => props.disabled || props.loading)
 const color = toRef(props, 'color')
 const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
-const square = toRef(props, 'square')
+
+const loadingColor = computed(() => {
+    if (props.variant === 'solid') return 'white'
+    return props.color
+})
+
+const isIconOnly = computed(() => {
+    return props.size?.startsWith('icon') || (!props.label && !slots.default)
+})
 
 const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})
@@ -50,12 +61,20 @@ const ui = computed(() => {
         color: color.value,
         variant: variant.value,
         size: (fieldGroupSize.value || size.value) as any,
-        square: square.value,
         fieldGroup: orientation.value,
+        gap: props.gap,
+        disabled: props.disabled,
+        round: props.round,
     })
 
     return {
-        base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
+        base: (opts?: { class?: any }) => styles.base({
+            class: cn(
+                opts?.class,
+                props.loading ? 'opacity-80' : '',
+                uiOverrides.value.base
+            )
+        }),
         label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
         leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
         leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(opts?.class, uiOverrides.value.leadingAvatar) }),
@@ -67,18 +86,23 @@ const ui = computed(() => {
 
 <template>
     <button :disabled="isDisabled" :class="ui.base({ class: props.class })" v-bind="$attrs">
-        <slot name="leading" :ui="ui">
-            <Icon name="svg-spinners:270-ring" v-if="props.loading" :class="ui.leadingIcon()" />
-        </slot>
+        <!-- Leading / Spinner -->
+        <template v-if="props.loading">
+            <RebornLoading :color="loadingColor" :class="ui.leadingIcon()" />
+        </template>
+        <slot v-else name="leading" :ui="ui" />
 
-        <slot :ui="ui">
-            <span v-if="label" :class="ui.label()">
-                {{ label }}
-            </span>
-            <slot v-else :ui="ui" />
-        </slot>
+        <!-- Content -->
+        <template v-if="!isIconOnly || !props.loading">
+            <slot :ui="ui">
+                <span v-if="label" :class="ui.label()">
+                    {{ label }}
+                </span>
+                <slot v-else :ui="ui" />
+            </slot>
+        </template>
 
-
-        <slot name="trailing" :ui="ui.trailingIcon()" />
+        <!-- Trailing -->
+        <slot v-if="!props.loading" name="trailing" :ui="ui.trailingIcon()" />
     </button>
 </template>

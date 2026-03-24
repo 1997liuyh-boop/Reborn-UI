@@ -6,30 +6,30 @@ export { color as selectTriggerColors, size as selectTriggerSizes }
 export default {
   slots: {
     wrapper:
-      'flex flex-row items-center w-full box-border rounded-lg bg-white dark:bg-gray-8 border border-solid border-gray-3 dark:border-gray-7 transition-[border-color] duration-200 px-2.5',
+      'flex flex-row items-center w-full box-border leading-normal rounded-ui-base rounded-lg bg-white dark:bg-gray-8 border border-solid border-gray-3 dark:border-gray-7 transition-[border-color] duration-200 px-2.5',
     content: 'flex-1 truncate text-gray-8 dark:text-gray-1',
     text: 'text-28 overflow-hidden text-ellipsis whitespace-nowrap',
     placeholder: 'text-28 text-gray-4',
     iconWrapper: 'flex flex-row items-center justify-center pl-2.5',
-    clearIcon: 'text-gray-4 size-4',
-    arrowIcon: 'text-gray-4 size-4 transition-transform duration-200 origin-center',
+    clearIcon: 'text-gray-4 text-40',
+    arrowIcon: 'text-gray-4 text-40 transition-transform duration-200 origin-center',
   },
   variants: {
     size: {
       sm: {
         wrapper: 'h-input-sm',
-        text: 'text-24',
-        placeholder: 'text-24',
+        text: 'text-26 leading-normal',
+        placeholder: 'text-26',
       },
       md: {
         wrapper: 'h-input-md',
-        text: 'text-28',
+        text: 'text-28 leading-normal',
         placeholder: 'text-28',
       },
       lg: {
         wrapper: 'h-input-lg',
-        text: 'text-32',
-        placeholder: 'text-32',
+        text: 'text-28 leading-normal',
+        placeholder: 'text-28',
       },
     },
     color: {

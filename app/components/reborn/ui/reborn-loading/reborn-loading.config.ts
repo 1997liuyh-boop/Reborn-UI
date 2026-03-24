@@ -6,7 +6,7 @@ const config = {
         root: 'inline-block align-middle rb-loading',
         container: 'w-full h-full relative',
         indicator: 'w-full h-full rb-loading-indicator',
-        outlineTrack: 'absolute inset-0 rounded-full border-[3px] opacity-20',
+        outlineTrack: 'absolute inset-0 rounded-full border-2 opacity-20',
         spinnerItem: 'absolute top-0 left-[46%] w-[8%] h-[25%] bg-current rounded-sm origin-[50%_200%] rb-loading-spinnerItem',
         barItem: 'w-[15%] h-[60%] bg-current rounded-sm rb-loading-barItem',
         blockItem: 'absolute w-[40%] h-[40%] bg-current rounded-sm',
@@ -17,11 +17,11 @@ const config = {
         type: {
             ring: {
                 container: 'flex items-center justify-center',
-                indicator: 'rounded-full border-[2px] border-solid'
+                indicator: 'rounded-full border-2 border-solid'
             },
             outline: {
                 container: 'flex items-center justify-center',
-                indicator: 'absolute inset-0 rounded-full border-[2px]'
+                indicator: 'absolute inset-0 rounded-full border-2'
             },
             spinner: {
                 container: 'flex items-center justify-center'

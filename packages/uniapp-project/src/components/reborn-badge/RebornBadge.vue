@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import type { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config'
-import { computed, ref, useSlots } from 'vue'
+import { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config'
+import { computed, nextTick, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-badge.config'
+import RebornTransition from '../reborn-transition/RebornTransition.vue'
 
 defineOptions({
   name: 'RebornBadge',
   inheritAttrs: false,
 })
 
-import type { BadgeColor, BadgeSize, BadgeVariant } from './reborn-badge.config'
+// 直接从主体对象派生类型，以确保静态分析正常工作
+type BadgeColor = (typeof badgeColors)[number]
+type BadgeVariant = (typeof badgeVariants)[number]
+type BadgeSize = (typeof badgeSizes)[number]
 
 export interface BadgeProps {
+  gap?: boolean
   label?: string | number
   color?: BadgeColor
   variant?: BadgeVariant
@@ -23,6 +28,7 @@ export interface BadgeProps {
   closeIcon?: string
   customClass?: any
   ui?: {
+    root?: string
     base?: string
     label?: string
     leadingIcon?: string
@@ -37,14 +43,16 @@ const props = withDefaults(defineProps<BadgeProps>(), {
   variant: 'solid',
   size: 'md',
   closeIcon: 'i-mdi-close-circle',
+  gap: false
 })
 
 const emit = defineEmits(['close', 'click'])
 
+const show = defineModel<boolean>('show', { default: true })
+
 const b = tv(theme)
 
 const slots = useSlots()
-const isClosing = ref(false)
 
 const uiOverrides = computed(() => props.ui || {})
 
@@ -54,9 +62,11 @@ const ui = computed(() => {
     variant: props.variant,
     size: props.size,
     square: props.square || (!props.label && !props.icon && !slots.default),
+    gap: props.gap,
   })
 
   return {
+    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
     base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
     label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
     leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
@@ -71,7 +81,7 @@ function onClick(e: any) {
 }
 
 function handleClose(e: any) {
-  isClosing.value = true
+  show.value = false
   nextTick(() => {
     emit('close', e)
   })
@@ -79,27 +89,29 @@ function handleClose(e: any) {
 </script>
 
 <template>
-  <view :class="ui.base({
-    class: cn(props.customClass, `
-      transition-all duration-200 ease-in-out
-    `, isClosing && 'scale-90 opacity-0')
-  })" @tap="onClick">
-    <slot name="leading">
-      <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
-    </slot>
-
-    <slot>
-      <text v-if="props.label" :class="ui.label()">{{ props.label }}</text>
-    </slot>
-
-    <slot name="trailing" />
-
-    <view v-if="props.closable" :class="ui.closeButton()" @tap.stop="handleClose">
-      <slot name="close">
-        <view :class="cn(props.closeIcon, ui.closeIcon())" />
+  <RebornTransition :show="show" name="badge-custom" :duration="200" destroy :custom-class="ui.root()">
+    <view :class="ui.base({
+      class: cn(props.customClass)
+    })" @tap="onClick">
+      <slot name="leading">
+        <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
       </slot>
+
+      <text v-if="props.label || slots.default" :class="ui.label()">
+        <slot>
+          <text v-if="props.label">{{ props.label }}</text>
+        </slot>
+      </text>
+
+      <slot name="trailing" />
+
+      <view v-if="props.closable" :class="ui.closeButton()" @tap.stop="handleClose">
+        <slot name="close">
+          <view :class="cn(props.closeIcon, ui.closeIcon())" />
+        </slot>
+      </view>
     </view>
-  </view>
+  </RebornTransition>
 </template>
 
 <style scoped></style>

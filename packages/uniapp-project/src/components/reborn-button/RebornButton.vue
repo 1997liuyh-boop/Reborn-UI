@@ -5,6 +5,7 @@ import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-button.config'
+import RebornLoading from '../reborn-loading/RebornLoading.vue'
 
 export interface ButtonProps {
   label?: string
@@ -36,6 +37,7 @@ export interface ButtonProps {
   publicId?: string // 公众号ID
   phoneNumberNoQuotaToast?: boolean // 手机号获取失败时是否弹出错误提示
   createliveactivity?: boolean // 是否创建直播活动
+  round?: boolean // 是否为胶囊形状
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -48,7 +50,8 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   gap: false,
   hoverStartTime: 20,
   hoverStayTime: 70,
-  block: false
+  block: false,
+  round: true
 })
 
 // 事件定义
@@ -96,6 +99,33 @@ const color = toRef(props, 'color')
 const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 
+const loadingColor = computed(() => {
+  if (props.variant === 'solid') { return 'white' }
+  return props.color
+})
+
+const loadingSize = computed(() => {
+  const sizeMap: Record<string, number> = {
+    'xs': 24,
+    'sm': 28,
+    'default': 32,
+    'md': 32,
+    'lg': 36,
+    'xl': 40,
+    '2xl': 48,
+    'icon-xs': 24,
+    'icon-sm': 28,
+    'icon': 32,
+    'icon-md': 32,
+    'icon-lg': 36,
+    'icon-xl': 40,
+    'icon-2xl': 48,
+  }
+  return sizeMap[size.value] || 16
+})
+
+const isIconOnly = computed(() => props.size?.startsWith('icon') || props.size === 'icon')
+
 const uiOverrides = computed(() => props.ui || {})
 
 const ui = computed(() => {
@@ -103,12 +133,14 @@ const ui = computed(() => {
     color: color.value,
     variant: variant.value,
     size: (fieldGroupSize.value || size.value) as any,
-    disabled: isDisabled.value,
+    disabled: fieldGroupDisabled.value,
+    loading: props.loading,
     gap: props.gap,
+    round: props.round
   })
 
   return {
-    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
+    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base, props.customClass) }),
     inner: (opts?: { class?: any }) => styles.inner({ class: cn(opts?.class, uiOverrides.value.inner) }),
     label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
     loading: (opts?: { class?: any }) => styles.loading({ class: cn(opts?.class, uiOverrides.value.loading) }),
@@ -161,7 +193,7 @@ function onTouchCancel() {
 
 <template>
   <view :class="[
-    ui.base({ class: props.customClass }),
+    ui.base(),
     isHover && hoverClass ? hoverClass : ''
   ]" @tap="onTap" @touchstart="onTouchStart" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
     <button :class="ui.inner()" :disabled="isDisabled" :hover-class="hoverClass"
@@ -176,18 +208,23 @@ function onTouchCancel() {
       @addgroupapp="onAddGroupApp" @subscribe="onSubscribe" @login="onLogin"
       @getrealtimephonenumber="onGetRealtimePhoneNumber" @agreeprivacyauthorization="onAgreePrivacyAuthorization" />
 
-    <slot name="leading" :loading="props.loading" :ui="ui">
-      <view v-if="props.loading" :class="ui.loading?.()" />
-    </slot>
+    <!-- Leading Slot / Loading Spinner -->
+    <view v-if="props.loading && !isIconOnly" :class="ui.loading()">
+      <RebornLoading :color="loadingColor" :size="loadingSize" />
+    </view>
+    <slot v-else name="leading" :loading="props.loading" :ui="ui" />
 
-    <slot :ui="ui">
+    <view v-if="props.loading && isIconOnly" class="icon-loading">
+      <RebornLoading :color="loadingColor" :size="loadingSize" />
+    </view>
+    <slot v-else :ui="ui">
       <text v-if="label" :class="ui.label()">
         {{ label }}
       </text>
-      <slot v-else :ui="ui" :class="ui.label()" />
     </slot>
 
-    <slot name="trailing" :ui="ui" />
+    <!-- Trailing Slot -->
+    <slot v-if="!props.loading" name="trailing" :ui="ui" />
   </view>
 </template>
 

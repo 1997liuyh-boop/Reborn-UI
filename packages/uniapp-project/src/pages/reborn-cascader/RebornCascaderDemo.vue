@@ -91,8 +91,8 @@ const lazyLoad = (node: any, resolve: any) => {
             return
         }
         const children = [
-            { label: `动态节点 ${value}-1`, value: `${value}-1`, leaf: cunt.value >= 5 ? true : false },
-            { label: `动态节点 ${value}-2`, value: `${value}-2`, leaf: cunt.value >= 5 ? true : false },
+            { label: `动态节点 ${value}-1`, value: `${value}-1`, leaf: cunt.value >= 8 ? true : false },
+            { label: `动态节点 ${value}-2`, value: `${value}-2`, leaf: cunt.value >= 9 ? true : false },
         ]
         resolve(children)
     }, 1000)

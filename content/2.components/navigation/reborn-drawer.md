@@ -1,7 +1,7 @@
 ---
 title: Drawer 抽屉
 description: 基于 Overlay + Transition 的抽屉面板。
-category: Navigation
+category: 导航
 navigation:
   badges:
     - label: Web

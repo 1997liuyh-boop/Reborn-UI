@@ -6,11 +6,12 @@ export { colors as inputColors, sizes as inputSizes };
 export default {
   slots: {
     wrapper:
-      "relative inline-flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1 focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:ring-[var(--input-focus-ring-color)]",
+      "relative inline-flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1",
     input:
       "min-w-0 flex-1 bg-transparent text-gray-8 dark:text-gray-1 placeholder:text-gray-5 outline-none disabled:cursor-not-allowed",
     leading: "inline-flex items-center text-gray-6",
     iconBox: "inline-flex items-center gap-2",
+    icon: "",
     iconSection: "flex cursor-pointer items-center justify-center text-gray-5 transition-all hover:opacity-80",
     separator: "w-px transition-colors bg-gray-4",
   },
@@ -18,37 +19,33 @@ export default {
     size: {
       sm: {
         wrapper: "h-input-sm px-input-px-sm",
-        input: "text-[length:var(--text-size-26)]",
-        iconSection: "[--icon-size:var(--input-icon-sm)]",
+        input: "text-26 leading-normal",
+        icon: "text-26",
         separator: "h-input-sep-sm",
       },
       md: {
         wrapper: "h-input-md px-input-px-md",
-        input: "text-[length:var(--text-size-28)]",
-        iconSection: "[--icon-size:var(--input-icon-md)]",
+        input: "text-28 leading-normal",
+        icon: "text-28",
         separator: "h-input-sep-md",
       },
       lg: {
         wrapper: "h-input-lg px-input-px-lg",
-        input: "text-[length:var(--text-size-32)]",
-        iconSection: "[--icon-size:var(--input-icon-lg)]",
+        input: "text-28 leading-normal",
+        icon: "text-28",
         separator: "h-input-sep-lg",
       },
     },
     rounded: {
-      true: {
-        wrapper: "rounded-full",
-      },
-      false: {
-        wrapper: "rounded-ui-base",
-      },
+      true: "",
+      false: ""
     },
     border: {
       true: {
         wrapper: "ring-gray-3 dark:ring-gray-7",
       },
       false: {
-        wrapper: "ring-transparent",
+        wrapper: "",
       },
     },
     error: {
@@ -91,38 +88,48 @@ export default {
     {
       color: "primary",
       focus: true,
-      class: { wrapper: "ring-primary/30", separator: "bg-primary/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-primary/30", separator: "bg-primary/40" },
     },
     {
       color: "secondary",
       focus: true,
-      class: { wrapper: "ring-secondary/30", separator: "bg-secondary/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-secondary/30", separator: "bg-secondary/40" },
     },
     {
       color: "success",
       focus: true,
-      class: { wrapper: "ring-success/30", separator: "bg-success/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-success/30", separator: "bg-success/40" },
     },
     {
       color: "info",
       focus: true,
-      class: { wrapper: "ring-info/30", separator: "bg-info/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-info/30", separator: "bg-info/40" },
     },
     {
       color: "warning",
       focus: true,
-      class: { wrapper: "ring-warning/30", separator: "bg-warning/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-warning/30", separator: "bg-warning/40" },
     },
     {
       color: "error",
       focus: true,
-      class: { wrapper: "ring-error/30", separator: "bg-error/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-error/30", separator: "bg-error/40" },
     },
     {
       color: "neutral",
       focus: true,
-      class: { wrapper: "ring-gray-400/30", separator: "bg-gray-400/40" },
+      border: true,
+      class: { wrapper: "bg-white dark:bg-gray-900 ring-gray-400/30", separator: "bg-gray-400/40" },
     },
+    { size: "sm", rounded: true, class: { wrapper: "rounded-ui-sm" } },
+    { size: "md", rounded: true, class: { wrapper: "rounded-ui-sm" } },
+    { size: "lg", rounded: true, class: { wrapper: "rounded-full" } },
   ] as any,
   defaultVariants: {
     size: "md",

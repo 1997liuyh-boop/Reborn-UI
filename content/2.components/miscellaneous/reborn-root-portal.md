@@ -1,7 +1,7 @@
 ---
 title: RootPortal 根门户
 description: 将子节点渲染到页面的根节点，脱离当前层级关系。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: UniApp

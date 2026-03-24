@@ -1,26 +1,132 @@
-import type { VariantProps } from "class-variance-authority"
-import { cva } from "class-variance-authority"
+/** 徽章颜色选项 */
+export const badgeColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
+/** 徽章变体选项 */
+export const badgeVariants = ['solid', 'outline', 'soft', 'subtle'] as const
+/** 徽章尺寸选项 */
+export const badgeSizes = ['sm', 'md', 'lg'] as const
 
-export { default as Badge } from "./RebornBadge.vue"
-
-export const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
-        destructive:
-         "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
+const config = {
+  /** 徽章插槽样式配置 */
+  slots: {
+    root: 'reborn-badge',
+    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color]',
+    label: 'inline-flex items-center justify-center truncate',
+    leadingIcon: 'shrink-0',
+    trailingIcon: 'shrink-0',
+    closeButton: 'inline-flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none',
+    closeIcon: ''
   },
-)
-export type BadgeVariants = VariantProps<typeof badgeVariants>
+  /** 徽章变体配置 */
+  variants: {
+    /** 字段组（组合使用）时的样式 */
+    fieldGroup: {
+      horizontal: 'not-only:first:rounded-e-none not-only:last:rounded-s-none not-last:not-first:rounded-none focus-visible:z-[1]',
+      vertical: 'not-only:first:rounded-b-none not-only:last:rounded-t-none not-last:not-first:rounded-none focus-visible:z-[1]'
+    },
+    /** 样式变体 */
+    variant: {
+      solid: '',
+      outline: 'bg-transparent border border-solid',
+      soft: 'border-transparent',
+      subtle: 'border border-solid'
+    },
+    /** 颜色配置 */
+    color: {
+      primary: '',
+      secondary: '',
+      success: '',
+      info: '',
+      warning: '',
+      error: '',
+      neutral: ''
+    },
+    /** 尺寸配置：高度、内边距、字体等 */
+    size: {
+      sm: {
+        base: 'h-badge-sm px-2 rounded-ui-xs gap-1',
+        label: 'text-20 leading-none',
+        leadingIcon: 'size-3.5',
+        trailingIcon: 'size-3.5',
+        closeIcon: 'text-22',
+      },
+      md: {
+        base: 'h-badge-md px-2 rounded-ui-sm gap-1',
+        label: 'text-22 leading-normal',
+        leadingIcon: 'size-4',
+        trailingIcon: 'size-4',
+        closeIcon: 'text-24'
+      },
+      lg: {
+        base: 'h-badge-lg px-2 rounded-ui-md gap-1',
+        label: 'text-22 leading-normal',
+        leadingIcon: 'size-4',
+        trailingIcon: 'size-4',
+        closeIcon: 'text-24'
+      }
+    },
+    /** 是否为正方形（等宽高） */
+    square: {
+      true: 'p-0 aspect-square'
+    },
+    gap: {
+      true: {
+        root: '[.reborn-badge+_&]:ml-2'
+      }
+    }
+  },
+  /** 复合变体：根据颜色和样式变体组合生成的样式 */
+  compoundVariants: [
+    // Solid
+    { color: 'primary' as any, variant: 'solid' as any, class: 'bg-primary border-primary text-inverted' },
+    { color: 'secondary' as any, variant: 'solid' as any, class: 'bg-secondary border-secondary text-inverted' },
+    { color: 'success' as any, variant: 'solid' as any, class: 'bg-success border-success text-inverted' },
+    { color: 'info' as any, variant: 'solid' as any, class: 'bg-info border-info text-inverted' },
+    { color: 'warning' as any, variant: 'solid' as any, class: 'bg-warning border-warning text-inverted' },
+    { color: 'error' as any, variant: 'solid' as any, class: 'bg-error border-error text-inverted' },
+    { color: 'neutral' as any, variant: 'solid' as any, class: 'bg-neutral border-neutral text-inverted' },
+
+    // Outline
+    { color: 'primary' as any, variant: 'outline' as any, class: 'border-primary text-primary' },
+    { color: 'secondary' as any, variant: 'outline' as any, class: 'border-secondary text-secondary' },
+    { color: 'success' as any, variant: 'outline' as any, class: 'border-success text-success' },
+    { color: 'info' as any, variant: 'outline' as any, class: 'border-info text-info' },
+    { color: 'warning' as any, variant: 'outline' as any, class: 'border-warning text-warning' },
+    { color: 'error' as any, variant: 'outline' as any, class: 'border-error text-error' },
+    { color: 'neutral' as any, variant: 'outline' as any, class: 'border-neutral text-neutral' },
+
+    // Soft
+    { color: 'primary' as any, variant: 'soft' as any, class: 'bg-primary/10 text-primary' },
+    { color: 'secondary' as any, variant: 'soft' as any, class: 'bg-secondary/10 text-secondary' },
+    { color: 'success' as any, variant: 'soft' as any, class: 'bg-success/10 text-success' },
+    { color: 'info' as any, variant: 'soft' as any, class: 'bg-info/10 text-info' },
+    { color: 'warning' as any, variant: 'soft' as any, class: 'bg-warning/10 text-warning' },
+    { color: 'error' as any, variant: 'soft' as any, class: 'bg-error/10 text-error' },
+    { color: 'neutral' as any, variant: 'soft' as any, class: 'bg-neutral/10 text-neutral' },
+
+    // Subtle
+    { color: 'primary' as any, variant: 'subtle' as any, class: 'bg-primary/10 border-primary/20 text-primary' },
+    { color: 'secondary' as any, variant: 'subtle' as any, class: 'bg-secondary/10 border-secondary/20 text-secondary' },
+    { color: 'success' as any, variant: 'subtle' as any, class: 'bg-success/10 border-success/20 text-success' },
+    { color: 'info' as any, variant: 'subtle' as any, class: 'bg-info/10 border-info/20 text-info' },
+    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-warning/10 border-warning/20 text-warning' },
+    { color: 'error' as any, variant: 'subtle' as any, class: 'bg-error/10 border-error/20 text-error' },
+    { color: 'neutral' as any, variant: 'subtle' as any, class: 'bg-neutral/10 border-neutral/20 text-neutral' },
+  ],
+  /** 默认变体值 */
+  defaultVariants: {
+    color: 'primary' as (typeof badgeColors)[number],
+    variant: 'solid' as (typeof badgeVariants)[number],
+    size: 'md' as (typeof badgeSizes)[number]
+  }
+}
+
+/** 徽章 UI 样式覆盖接口 */
+export type BadgeUI = {
+  base?: string
+  label?: string
+  leadingIcon?: string
+  trailingIcon?: string
+  closeButton?: string
+}
+
+export default config

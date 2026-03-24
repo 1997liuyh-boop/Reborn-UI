@@ -110,7 +110,7 @@
       }
     },
     {
-      "path": "pages/reborn-text/index",
+      "path": "pages/reborn-text/RebornTextDemo",
       "style": {
         "navigationBarTitleText": "Text"
       }

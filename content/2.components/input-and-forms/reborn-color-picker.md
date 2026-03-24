@@ -1,7 +1,7 @@
 ---
 title: 取色器
 description: 提供颜色选择的组件。
-category: Input and Forms
+category: 表单与输入
 navigation:
   badges:
     - label: 通

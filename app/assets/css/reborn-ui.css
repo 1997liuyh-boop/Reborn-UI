@@ -104,3 +104,11 @@
 @theme {
   --animate-aurora: aurora 60s linear infinite;
 }
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -1,6 +1,7 @@
 ---
 title: Pagination
 description: 当数据量过多时，使用分页分解数据。
+category: 导航
 badge: New
 navigation:
   badges:

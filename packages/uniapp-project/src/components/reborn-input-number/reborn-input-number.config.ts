@@ -9,7 +9,7 @@ export default {
     wrapper:
       'group relative inline-flex items-center overflow-hidden bg-white text-gray-8 ring-1 ring-gray-4 transition-colors focus-within:ring-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-gray-1 data-[disabled=true]:text-gray-4 dark:bg-gray-800 dark:text-gray-200  dark:data-[disabled=true]:bg-gray-900 dark:data-[disabled=true]:text-gray-600',
     button:
-      'flex h-full items-center justify-center text-gray-8 transition-colors disabled:cursor-not-allowed disabled:text-gray-4 dark:text-gray-4 dark:hover:text-gray-2 dark:disabled:text-gray-6',
+      'flex h-full items-center justify-center text-gray-8 transition-all active:scale-[0.85] active:opacity-75 data-[disabled=true]:!scale-100 data-[disabled=true]:!opacity-100 data-[disabled=true]:!cursor-not-allowed data-[disabled=true]:!text-gray-4 dark:text-gray-4 dark:hover:text-gray-2',
     input:
       'min-w-0 flex-1 bg-transparent text-center text-gray-8 outline-none placeholder:text-gray-4 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none dark:text-gray-200 dark:placeholder:text-gray-500',
     divider: 'h-full w-[1px] bg-gray-4',
@@ -18,20 +18,20 @@ export default {
   variants: {
     size: {
       sm: {
-        wrapper: 'h-[calc(var(--text-size-26)*2)] text-[length:var(--text-size-26)]',
-        input: 'w-[calc(var(--text-size-26)*2.5)] text-[length:var(--text-size-26)]',
+        wrapper: 'h-[calc(var(--text-size-26)*2)] text-26',
+        input: 'w-[calc(var(--text-size-26)*2.5)] text-26',
         button: 'p-1.5',
         icon: 'size-3.5',
       },
       md: {
-        wrapper: 'h-[calc(var(--text-size-28)*2)] text-[length:var(--text-size-28)]',
-        input: 'w-[calc(var(--text-size-28)*2.5)] text-[length:var(--text-size-28)]',
+        wrapper: 'h-[calc(var(--text-size-28)*2)] text-28',
+        input: 'w-[calc(var(--text-size-28)*2.5)] text-28',
         button: 'p-2',
         icon: 'size-4',
       },
       lg: {
-        wrapper: 'h-[calc(var(--text-size-32)*2)] text-[length:var(--text-size-32)]',
-        input: 'w-[calc(var(--text-size-32)*5)] text-[length:var(--text-size-32)]',
+        wrapper: 'h-[calc(var(--text-size-32)*2)] text-32',
+        input: 'w-[calc(var(--text-size-32)*5)] text-32',
         button: 'p-2',
         icon: 'size-5',
       },

@@ -1,7 +1,7 @@
 ---
-title: Loadmore 加载更多
+title:  加载更多
 description: uniapp 单独展示。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: UniApp

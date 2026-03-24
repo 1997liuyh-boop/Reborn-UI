@@ -392,9 +392,9 @@ defineExpose({
             {{ cancelText }}
           </RebornButton>
         </view>
-        <view :class="ui.confirm()">
-          <RebornButton v-if="showConfirm && !noOptions" :size="size" variant="solid" :color="color"
-            :ui="{ base: ui.confirmButton() }" block @tap.stop="confirm">
+        <view v-if="showConfirm && !noOptions" :class="ui.confirm()">
+          <RebornButton :size="size" variant="solid" :color="color" :ui="{ base: ui.confirmButton() }" block
+            @tap.stop="confirm">
             {{ confirmText }}
           </RebornButton>
         </view>

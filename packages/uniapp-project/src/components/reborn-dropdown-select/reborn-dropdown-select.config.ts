@@ -5,8 +5,9 @@ const config = {
   slots: {
     wrapper: 'relative w-full',
     trigger: 'w-full',
-    content: 'absolute top-full left-0 right-0 bg-white dark:bg-gray-8 border border-gray-2 dark:border-gray-7 rounded-md shadow-lg z-[999] max-h-[400rpx] overflow-y-auto mt-1',
-    item: 'py-2 px-3 text-sm text-gray-8 dark:text-gray-2 border-b border-gray-100 dark:border-gray-7 last:border-b-0 active:bg-gray-50 dark:active:bg-gray-7 flex items-center justify-between',
+    //  leading-normal rounded-ui-base
+    content: 'absolute top-full left-0 right-0 bg-white dark:bg-gray-8 border border-gray-2 dark:border-gray-7 shadow-lg z-[999] max-h-[400rpx] overflow-y-auto mt-1 rounded-ui-base',
+    item: 'leading-normal text-sm text-gray-8 dark:text-gray-2 border-b border-gray-100 dark:border-gray-7 last:border-b-0 active:bg-gray-50 dark:active:bg-gray-7 flex items-center justify-between',
     itemText: 'flex-1 truncate',
     itemIcon: 'w-4 h-4 text-blue-6 dark:text-blue-400',
     empty: 'py-3 text-center text-gray-400 text-sm',
@@ -45,13 +46,16 @@ const config = {
     },
     size: {
       sm: {
-        item: 'py-1.5 px-2 text-xs',
+        // trigger: 'h-input-sm px-2 text-26 gap-1 leading-none',
+        item: 'h-input-sm text-26 leading-none px-2',
       },
       md: {
-        item: 'py-2 px-3 text-sm',
+        // trigger: 'h-input-md px-3 text-28 gap-2',
+        item: 'h-input-md text-28 leading-normal px-3',
       },
       lg: {
-        item: 'py-3 px-4 text-base',
+        // trigger: 'h-input-lg px-3 text-28 gap-2',
+        item: 'h-input-lg px-3 text-base',
       },
     },
     disabled: {

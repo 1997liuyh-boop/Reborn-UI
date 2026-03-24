@@ -7,22 +7,33 @@ import RebornColorPicker from '@/components/reborn-color-picker/RebornColorPicke
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
+import { buttonColors, buttonVariants, buttonSizes } from '@/components/reborn-button/reborn-button.config'
+import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
+import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
 // Demo State
-const demoVariant = ref<ButtonProps['variant']>('solid')
-const demoColor = ref<ButtonProps['color']>('primary')
-const demoSize = ref<ButtonProps['size']>('md')
-const colorPicker = ref('#000000')
+const demoVariant = ref<(typeof buttonVariants)[number]>('solid')
+const demoColor = ref<(typeof buttonColors)[number]>('primary')
+const demoSize = ref<(typeof buttonSizes)[number]>('md')
+const iconSize = ref<(typeof buttonSizes)[number]>('icon-md')
 const demoLoading = ref(false)
 const demoDisabled = ref(false)
 const demoSquare = ref(false)
 const demoLabel = ref('Reborn UI')
 const customButtonColor = ref('#6366f1')
 
-// Options
-const variants: ButtonProps['variant'][] = ['solid', 'outline', 'soft', 'subtle']
-const colors: ButtonProps['color'][] = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral']
-const sizes: ButtonProps['size'][] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl']
+// Options Mapping
+const variantOptions = (buttonVariants as unknown as string[]).map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v as (typeof buttonVariants)[number] }))
+const colorOptions = (buttonColors as unknown as string[]).map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c as (typeof buttonColors)[number] }))
+const baseSizeOptions = (buttonSizes as unknown as string[])
+  .filter(s => !s.startsWith('icon') && s !== 'default')
+  .map(s => ({ label: s.toUpperCase(), value: s as (typeof buttonSizes)[number] }))
+const iconSizeOptions = (buttonSizes as unknown as string[])
+  .filter(s => s.startsWith('icon') || s === 'icon')
+  .map(s => ({
+    label: s === 'icon' ? 'MD' : s.replace('icon-', '').toUpperCase(),
+    value: s as (typeof buttonSizes)[number],
+  }))
 
 function handleClick() {
   copyContent('Reborn UI')
@@ -57,111 +68,185 @@ function copyContent(text: string) {
 <template>
   <RebornPage title="Button 按钮" description="就是按钮 用于触发操作或导航到另一个页面">
     <RebornCard title="基础用法" overflow-visible>
-      <view class="
-            flex min-h-[160px] items-center justify-center rounded-lg border
-            border-dashed border-slate-300 bg-slate-100 p-8
-            dark:border-slate-700 dark:bg-slate-950/50
-          ">
-        <RebornButton :variant="demoVariant" :color="demoColor" :size="demoSize" :loading="demoLoading"
-          :disabled="demoDisabled" :square="demoSquare" @click="handleClick">
-          {{ demoLabel }}
-        </RebornButton>
+      <view class="relative overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-900/40">
+        <!-- 装饰背景 -->
+        <view
+          class="absolute -right-20 -top-20 size-48 rounded-full bg-primary/20 blur-3xl transition-transform duration-1000" />
+        <view class="absolute -left-20 -bottom-20 size-48 rounded-full bg-blue-500/15 blur-3xl" />
+        <view class="absolute inset-0 bg-linear-to-tr from-transparent via-primary/5 to-transparent" />
+
+        <view class="
+              relative flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-xl border
+              border-white/40 p-8 shadow-2xl backdrop-blur-xl bg-white/20
+              dark:border-white/10 dark:bg-black/30
+            ">
+          <RebornButton :variant="demoVariant" :color="demoColor" :size="demoSize" :loading="demoLoading"
+            :disabled="demoDisabled" :square="demoSquare" @click="handleClick">
+            {{ demoLabel }}
+          </RebornButton>
+
+          <view v-if="demoSize === 'md'" class="mt-4 flex gap-2">
+            <RebornButton :size="iconSize" :variant="demoVariant" :color="demoColor" :loading="demoLoading"
+              :disabled="demoDisabled">
+              <view class="i-lucide-plus" />
+            </RebornButton>
+            <RebornButton :size="iconSize" variant="outline" :color="demoColor" :loading="demoLoading"
+              :disabled="demoDisabled">
+              <view class="i-lucide-share-2" />
+            </RebornButton>
+          </view>
+        </view>
       </view>
 
-      <RebornText color="neutral">
-        按钮类型
-      </RebornText>
-      <view>
-        <RebornButton v-for="v in variants" :key="v" variant="outline" gap
-          :color="demoVariant === v ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
-          @click="demoVariant = v">
-          {{ v }}
-        </RebornButton>
-      </view>
-
-      <RebornText color="neutral">
-        按钮颜色
+      <RebornText :size="28" color="neutral" class="mt-8 font-semibold">
+        按钮类型 (Variants)
       </RebornText>
       <view class="flex flex-wrap gap-2">
-        <view v-for="c in colors" :key="c" class="
-                  size-6 cursor-pointer rounded-full ring-2 ring-transparent
-                  ring-offset-2 transition-all
-                " :class="[
-                  `
-                    bg-${c}
-                  `,
-                  demoColor === c ? 'scale-110 ring-slate-400' : `
-                    hover:scale-110
-                  `,
-                ]" :style="{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }"
-          @click="demoColor = c" />
-      </view>
-
-      <RebornText color="neutral">
-        按钮大小
-      </RebornText>
-      <view>
-        <RebornButton v-for="s in sizes" :key="s" variant="outline" :color="demoSize === s ? 'primary' : 'neutral'"
-          size="sm" gap :square="false" custom-class="rounded-full" @click="demoSize = s">
-          {{ s }}
+        <RebornButton v-for="item in variantOptions" :key="item.value" variant="outline"
+          :color="demoVariant === item.value ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
+          @click="demoVariant = item.value">
+          {{ item.label }}
         </RebornButton>
       </view>
-      <RebornText color="neutral">
-        其他状态
+
+      <RebornText :size="28" color="neutral" class="mt-6 font-semibold">
+        按钮颜色 (Colors)
       </RebornText>
-      <view class="flex flex-col flex-wrap gap-4">
-        <RebornSwitch v-model="demoLoading" active-label="加载中" inactive-label="取消加载" />
-        <RebornSwitch v-model="demoDisabled" active-label="禁用" inactive-label="启用" />
-        <RebornSwitch v-model="demoSquare" active-label="紧凑" inactive-label="正常" />
+      <RebornRadioGroup v-model="demoColor">
+        <RebornRadio v-for="item in colorOptions" :key="item.value" :value="item.value" :showIcon="false">
+          <template #default="{ isChecked }">
+            <view class="relative flex size-5">
+              <view v-if="isChecked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                :class="`bg-${item.value}`">
+              </view>
+              <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item.value}`"></view>
+            </view>
+          </template>
+        </RebornRadio>
+      </RebornRadioGroup>
+
+      <RebornText :size="28" color="neutral" class="mt-6 font-semibold">
+        标准尺寸 (Base Sizes)
+      </RebornText>
+      <view class="flex flex-wrap gap-2">
+        <RebornButton v-for="item in baseSizeOptions" :key="item.value" variant="outline"
+          :color="demoSize === item.value ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
+          @click="demoSize = item.value">
+          {{ item.label }}
+        </RebornButton>
+      </view>
+
+      <RebornText :size="28" color="neutral" class="mt-6 font-semibold">
+        图标尺寸 (Icon Sizes)
+      </RebornText>
+      <view class="flex flex-wrap gap-2">
+        <RebornButton v-for="item in iconSizeOptions" :key="item.value" variant="outline"
+          :color="iconSize === item.value ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
+          @click="iconSize = item.value">
+          {{ item.label }}
+        </RebornButton>
+      </view>
+
+      <RebornText :size="28" color="neutral" class="mt-6 font-semibold">
+        其他状态 (States)
+      </RebornText>
+      <view class="flex flex-col gap-4">
+        <RebornSwitch v-model="demoLoading" active-label="加载中 (Loading)" inactive-label="取消加载" />
+        <RebornSwitch v-model="demoDisabled" active-label="禁用 (Disabled)" inactive-label="启用" />
+        <RebornSwitch v-model="demoSquare" active-label="紧凑布局 (Square)" inactive-label="常规布局" />
       </view>
     </RebornCard>
 
+    <RebornCard title="图标与文本" overflow-visible>
+      <view class="flex flex-wrap gap-4">
+        <RebornButton :loading="demoLoading">
+          <template #leading>
+            <view class="i-lucide-mail size-4" />
+          </template>
+          Login with Email
+        </RebornButton>
 
-    <RebornCard title="图标" overflow-visible>
-      <RebornButton>
-        <template #leading>
-          <view class="i-lucide-mail size-4" />
-        </template>
-        Login with Email
-      </RebornButton>
-      <RebornButton variant="outline">
-        Next Step
-        <template #trailing>
-          <view class="i-lucide-arrow-right size-4" />
-        </template>
-      </RebornButton>
-      <view>
-        <RebornButton size="md" variant="soft" custom-class="w-10 h-10 p-0">
-          <view class="i-lucide-settings size-6" />
+        <RebornButton variant="outline" color="secondary" :loading="demoLoading">
+          Next Step
+          <template #trailing>
+            <view class="i-lucide-arrow-right size-4" />
+          </template>
         </RebornButton>
-        <RebornButton size="lg" color="error" custom-class="rounded-full p-0 w-10 h-10" gap>
-          <view class="i-lucide-trash-2 size-6" />
+
+        <RebornButton variant="soft" color="success" :loading="demoLoading">
+          <template #leading>
+            <view class="i-lucide-check size-4" />
+          </template>
+          Completed
         </RebornButton>
+      </view>
+
+      <view class="mt-6 flex flex-wrap items-center gap-4">
+        <RebornButton size="icon-sm" variant="soft" :loading="demoLoading" custom-class="rounded-full">
+          <view class="i-lucide-plus" />
+        </RebornButton>
+        <RebornButton size="icon" variant="soft" :loading="demoLoading" custom-class="rounded-full">
+          <view class="i-lucide-settings" />
+        </RebornButton>
+        <RebornButton size="icon-lg" variant="soft" :loading="demoLoading" custom-class="rounded-full">
+          <view class="i-lucide-user" />
+        </RebornButton>
+        <RebornButton size="icon-xl" color="error" :loading="demoLoading" custom-class="rounded-full">
+          <view class="i-lucide-trash-2" />
+        </RebornButton>
+      </view>
+    </RebornCard>
+
+    <RebornCard title="组合展示" overflow-visible>
+      <view class="flex flex-col gap-6">
+        <view class="flex flex-col gap-2">
+          <RebornText :size="24" color="neutral">
+            不同 Variant 下的 Loading 表现 (Primary Color)
+          </RebornText>
+          <view class="flex flex-wrap gap-3">
+            <RebornButton variant="solid" loading>Solid</RebornButton>
+            <RebornButton variant="outline" loading>Outline</RebornButton>
+            <RebornButton variant="soft" loading>Soft</RebornButton>
+            <RebornButton variant="subtle" loading>Subtle</RebornButton>
+          </view>
+        </view>
+
+        <view class="flex flex-col gap-2">
+          <RebornText :size="24" color="neutral">
+            不同 Color 下的 Loading 表现 (Subtle Variant)
+          </RebornText>
+          <view class="flex flex-wrap gap-3">
+            <RebornButton color="success" variant="subtle" loading>Success</RebornButton>
+            <RebornButton color="warning" variant="subtle" loading>Warning</RebornButton>
+            <RebornButton color="error" variant="subtle" loading>Error</RebornButton>
+            <RebornButton color="info" variant="subtle" loading>Info</RebornButton>
+          </view>
+        </view>
       </view>
     </RebornCard>
 
     <!-- 自定义颜色：通过 CSS 变量 + customClass 传入任意色值 -->
-    <RebornCard title="自定义颜色" overflow-visible>
+    <RebornCard title="高级自定义" overflow-visible>
       <view class="flex flex-col gap-4">
         <view class="flex flex-wrap items-center gap-3">
-          <RebornText color="neutral">
-            选择颜色
+          <RebornText :size="28" color="neutral">
+            自定义主题色
           </RebornText>
           <RebornColorPicker v-model="customButtonColor" :content="{ side: 'top', align: 'start', sideOffset: 8 }" />
-          <RebornText color="neutral" class="text-24">
+          <RebornText color="neutral" :size="24" class="text-24">
             {{ customButtonColor }}
           </RebornText>
         </view>
         <view class="flex flex-wrap gap-3" :style="{ '--btn-custom': customButtonColor }">
           <RebornButton
-            custom-class="!bg-[var(--btn-custom)] !border-[var(--btn-custom)] border border-solid text-white"
+            custom-class="!bg-[var(--btn-custom)] !border-[var(--btn-custom)] border border-solid text-white shadow-lg active:scale-95"
             @click="handleClick">
-            Solid 自定义色
+            Solid Custom
           </RebornButton>
           <RebornButton variant="outline"
             custom-class="!border-[var(--btn-custom)] !text-[var(--btn-custom)] border border-solid bg-transparent"
             @click="handleClick">
-            Outline 自定义色
+            Outline Custom
           </RebornButton>
         </view>
       </view>

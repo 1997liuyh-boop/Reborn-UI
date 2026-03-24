@@ -1,7 +1,7 @@
 ---
 title: Toast 轻提示
 description: 支持 useToast() 调用的轻提示组件。
-category: Miscellaneous
+category: 杂项
 navigation:
   badges:
     - label: 通

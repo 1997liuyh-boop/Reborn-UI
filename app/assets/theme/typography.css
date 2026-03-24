@@ -1,53 +1,5 @@
 @layer base {
   :root {
-    /* 辅助文字 (20px - 24px) */
-    --text-size-20: 20px;
-    --text-size-22: 22px;
-    --text-size-24: 24px;
-
-    /* 正文 (26px - 28px) */
-    --text-size-26: 26px;
-    --text-size-28: 28px;
-
-    /* 标题 (30px - 52px) */
-    --text-size-30: 30px;
-    --text-size-32: 32px;
-    --text-size-36: 36px;
-    --text-size-40: 40px;
-    --text-size-48: 48px;
-    --text-size-52: 52px;
-    
-    /* 按钮高度设置 */
-    --button-2xl-height: 96px;
-    --button-xl-height: 86px;
-    --button-lg-height: 76px;
-    --button-base-height: 64px;
-    --button-sm-height: 56px;
-    --button-xs-height: 48px;
-
-    /* 输入框高度设置 */
-    --input-lg-height: 96px;
-    --input-md-height: 90px;
-    --input-sm-height: 80px;
-
-    --input-px-lg: 32px;
-    --input-px-md: 24px;
-    --input-px-sm: 20px;
-
-    --input-icon-lg: 32px;
-    --input-icon-md: 24px;
-    --input-icon-sm: 20px;
-
-    --input-sep-lg: 32px;
-    --input-sep-md: 28px;
-    --input-sep-sm: 24px;
-
-    --input-border-color: var(--color-gray-3);
-    --input-focus-ring-color: rgba(0, 0, 0, 0.1);
-  }
-  
-  @media (min-width: 768px) {
-    :root {
       /* Web (1/2 size) */
       --text-size-20: 10px;
       --text-size-22: 11px;
@@ -67,6 +19,10 @@
       --button-base-height: 32px;
       --button-sm-height: 28px;
       --button-xs-height: 24px;
+      
+      --badge-lg-height: 19px;
+      --badge-md-height: 18px;
+      --badge-sm-height: 14px;
 
       --input-lg-height: 48px;
       --input-md-height: 45px;
@@ -87,7 +43,6 @@
       --input-border-color: var(--color-gray-3);
       --input-focus-ring-color: rgba(0, 0, 0, 0.05);
     }
-  }
 }
 
 @theme {
@@ -107,6 +62,11 @@
   --height-input-sm: var(--input-sm-height);
   --height-input-md: var(--input-md-height);
   --height-input-lg: var(--input-lg-height);
+
+  /* Badge Heights */
+  --height-badge-sm: var(--badge-sm-height);
+  --height-badge-md: var(--badge-md-height);
+  --height-badge-lg: var(--badge-lg-height);
 
   --spacing-input-px-sm: var(--input-px-sm);
   --spacing-input-px-md: var(--input-px-md);
