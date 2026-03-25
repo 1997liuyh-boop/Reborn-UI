@@ -133,6 +133,12 @@ importers:
       vue-use-spring:
         specifier: ^0.3.3
         version: 0.3.3(vue@3.5.29(typescript@5.9.3))
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+      zod-to-json-schema:
+        specifier: ^3.23.5
+        version: 3.25.1(zod@3.25.76)
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.7.3
@@ -170,12 +176,6 @@ importers:
       vue-tsc:
         specifier: ^3.2.1
         version: 3.2.5(typescript@5.9.3)
-      zod:
-        specifier: ^3.23.8
-        version: 3.25.76
-      zod-to-json-schema:
-        specifier: ^3.23.5
-        version: 3.25.1(zod@3.25.76)
 
   packages/cli:
     dependencies:
@@ -19136,7 +19136,7 @@ snapshots:
 
   '@unocss/rule-utils@66.6.2':
     dependencies:
-      '@unocss/core': 66.6.2
+      '@unocss/core': 66.6.4
       magic-string: 0.30.21
     optional: true
 

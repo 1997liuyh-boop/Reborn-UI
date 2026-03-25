@@ -4,7 +4,7 @@
   "files": [
     {
       "path": "reborn-page.config.ts",
-      "content": "const config = {\r\n    slots: {\r\n        root: 'min-h-screen w-full flex flex-col gap-4 bg-gray-2 transition-colors duration-300',\r\n        header: 'flex flex-col gap-2 p-4',\r\n        title: 'text-xl font-bold text-gray-800 dark:text-white',\r\n        description: 'text-sm text-gray-5 dark:text-gray-3',\r\n        body: 'p-4',\r\n    },\r\n} as const\r\n\r\nexport type PageUI = {\r\n    root?: string\r\n    header?: string\r\n    title?: string\r\n    description?: string\r\n    body?: string\r\n}\r\n\r\nexport default config\r\n",
+      "content": "const config = {\r\n    slots: {\r\n        root: 'min-h-screen w-full  bg-gray-2 transition-colors duration-300',\r\n        header: 'flex flex-col gap-2 p-4',\r\n        title: 'text-xl font-bold text-gray-800 dark:text-white',\r\n        description: 'text-sm text-gray-5 dark:text-gray-3',\r\n        body: 'p-4 flex flex-col gap-4',\r\n    },\r\n} as const\r\n\r\nexport type PageUI = {\r\n    root?: string\r\n    header?: string\r\n    title?: string\r\n    description?: string\r\n    body?: string\r\n}\r\n\r\nexport default config\r\n",
       "target": "uniapp"
     },
     {
@@ -14,5 +14,5 @@
     }
   ],
   "fileCount": 2,
-  "contentHash": "18b77a8894d6184f635b8f62c301f69caeeeee90"
+  "contentHash": "2c2778b46b3fd51874aa81a57e57f5daa45fcec7"
 }
