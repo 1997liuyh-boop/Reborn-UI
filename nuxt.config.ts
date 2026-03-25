@@ -68,7 +68,7 @@ export default defineNuxtConfig({
         },
       ],
     },
-    baseURL: process.env.NODE_ENV === "development" ? "/" : "/docs/",
+    baseURL: "/",
   },
 
   components: [
