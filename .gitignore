@@ -5,6 +5,7 @@
 .nitro
 .cache
 dist
+.cnb.yml
 
 # Node dependencies
 node_modules
