@@ -55,8 +55,8 @@
     "viewerjs": "^1.11.7",
     "vue": "^3.5.26",
     "vue-use-spring": "^0.3.3",
-    "zod": "^4.3.6",
-    "zod-to-json-schema": "^3.25.1"
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.7.3",

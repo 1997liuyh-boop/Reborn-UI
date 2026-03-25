@@ -21,8 +21,9 @@ main:
         - name: "build-stage"
           image: node:20
           script:
-            - npm install --registry=https://registry.npmmirror.com
-            - npm run build
+            - corepack enable
+            - pnpm install --no-frozen-lockfile
+            - pnpm run build
           artifacts:
             paths:
               - .output/
