@@ -1,0 +1,31 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: node:20
+  script:
+    - npm install --registry=https://registry.npmmirror.com
+    - npm run build
+  artifacts:
+    paths:
+      - .output/
+    expire_in: 1 hour
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H 110.42.242.107 >> ~/.ssh/known_hosts
+  script:
+    # 传输构建产物到服务器
+    - rsync -avz --delete .output/ root@110.42.242.107:/www/wwwroot/nuxt-app/
+    # 重启 PM2 服务
+    - ssh root@110.42.242.107 "cd /www/wwwroot/nuxt-app && pm2 delete nuxt-app || true && pm2 start ecosystem.config.js || pm2 start .output/server/index.js --name nuxt-app"
+  only:
+    - main  # 或您的默认分支
