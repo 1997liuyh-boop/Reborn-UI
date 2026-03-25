@@ -1,31 +1,59 @@
-stages:
-  - build
-  - deploy
+# .cnb.yml - 自动部署配置
+# 功能：代码提交到main分支时自动构建并部署到腾讯云服务器
 
-build:
-  stage: build
-  image: node:20
-  script:
-    - npm install --registry=https://registry.npmmirror.com
-    - npm run build
-  artifacts:
-    paths:
-      - .output/
-    expire_in: 1 hour
-
-deploy:
-  stage: deploy
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client rsync
-    - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan -H 110.42.242.107 >> ~/.ssh/known_hosts
-  script:
-    # 传输构建产物到服务器
-    - rsync -avz --delete .output/ root@110.42.242.107:/www/wwwroot/nuxt-app/
-    # 重启 PM2 服务
-    - ssh root@110.42.242.107 "cd /www/wwwroot/nuxt-app && pm2 delete nuxt-app || true && pm2 start ecosystem.config.js || pm2 start .output/server/index.js --name nuxt-app"
-  only:
-    - main  # 或您的默认分支
+main:
+  push:
+    - name: "auto-deploy-on-main-push"
+      runner:
+        tags: cnb:arch:default
+      env:
+        # 服务器连接配置
+        SERVER_IP: "110.42.242.107"
+        SERVER_USER: "root"
+        DEPLOY_PATH: "/www/wwwroot/nuxt-app"
+        # SSH私钥（从密钥仓库导入）
+        SSH_PRIVATE_KEY: $DEPLOY_SSH_PRIVATE_KEY
+      imports:
+        # 引用密钥配置文件
+        - .cnb/secrets/deploy.yml
+      stages:
+        # 第一阶段：构建Nuxt.js应用
+        - name: "build-stage"
+          image: node:20
+          script:
+            - npm install --registry=https://registry.npmmirror.com
+            - npm run build
+          artifacts:
+            paths:
+              - .output/
+            expire_in: 1 hour
+        
+        # 第二阶段：部署到腾讯云服务器
+        - name: "deploy-stage"
+          image: alpine:latest
+          script: |
+            # 安装部署工具
+            apk add --no-cache openssh-client rsync
+            
+            # 配置SSH连接
+            mkdir -p ~/.ssh
+            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+            
+            # 同步构建产物到服务器
+            rsync -avz --delete .output/ $SERVER_USER@$SERVER_IP:$DEPLOY_PATH/
+            
+            # 重启应用服务
+            ssh $SERVER_USER@$SERVER_IP "
+              cd $DEPLOY_PATH && 
+              pm2 delete nuxt-app 2>/dev/null || true &&
+              pm2 start ecosystem.config.js 2>/dev/null || 
+              pm2 start .output/server/index.js --name nuxt-app
+            "
+            
+            echo "🎉 自动部署完成！"
+            echo "📍 服务器: $SERVER_IP"
+            echo "🌿 分支: $CNB_BRANCH"
+            echo "📝 提交: $CNB_COMMIT_SHORT"
+            echo "⏰ 时间: $(date)"
