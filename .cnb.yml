@@ -48,7 +48,7 @@ main:
             # 重启应用服务
             ssh $SERVER_USER@$SERVER_IP "
               cd $DEPLOY_PATH && 
-              export PATH=$PATH:/usr/local/bin && 
+              export PATH=$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin && 
               pm2 delete re-ui 2>/dev/null || true &&
               pm2 start .output/server/index.mjs --name re-ui || npx pm2 start .output/server/index.mjs --name re-ui
             "
