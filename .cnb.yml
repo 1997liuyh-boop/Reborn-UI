@@ -10,7 +10,7 @@ main:
         # 服务器连接配置
         SERVER_IP: "110.42.242.107"
         SERVER_USER: "root"
-        DEPLOY_PATH: "/www/wwwroot/nuxt-app"
+        DEPLOY_PATH: "/www/wwwroot/re-ui"
         # SSH私钥（从密钥仓库导入）
         SSH_PRIVATE_KEY: $DEPLOY_SSH_PRIVATE_KEY
       imports:
@@ -49,8 +49,8 @@ main:
             ssh $SERVER_USER@$SERVER_IP "
               cd $DEPLOY_PATH && 
               export PATH=$PATH:/usr/local/bin && 
-              pm2 delete nuxt-app 2>/dev/null || true &&
-              pm2 start .output/server/index.mjs --name nuxt-app || npx pm2 start .output/server/index.mjs --name nuxt-app
+              pm2 delete re-ui 2>/dev/null || true &&
+              pm2 start .output/server/index.mjs --name re-ui || npx pm2 start .output/server/index.mjs --name re-ui
             "
             
             echo "🎉 自动部署完成！"
