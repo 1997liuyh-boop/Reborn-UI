@@ -129,7 +129,7 @@ const ui = computed(() => {
     size: (fieldGroupSize.value || size.value) as any,
     fieldGroup: orientation.value,
     hasLeading: !!slots.leading,
-    hasTrailing: !!slots.trailing || showClear.value || props.password,
+    hasTrailing: !!slots.trailing || showClear.value,
     rounded: props.rounded,
     border: props.border,
     color: props.color,
@@ -219,17 +219,58 @@ function onFocus(e: any) {
   emit('focus', e)
 }
 
+// 失去焦点事件
 function onBlur(e: any) {
   isFocus.value = false
   emit('blur', e)
   if (validate) { validate('blur') }
 }
-// 切换密码显示状态
-function showPassword() {
+// 处理密码显示/隐藏图标的交互事件
+// 使用 touchstart.prevent 阻止移动端默认失焦行为，同时处理切换逻辑
+// 不再单独绑定 tap 事件，避免 touchstart + tap 在移动端重复触发导致状态抵消
+const isPasswordToggling = ref(false)
+function handleInteraction() {
   if (fieldGroupDisabled.value || props.readonly) { return }
+  if (isPasswordToggling.value) { return }
+  isPasswordToggling.value = true
   isPassword.value = !isPassword.value
-  nextTick(() => focus())
+  setTimeout(() => { isPasswordToggling.value = false }, 300)
+  if (isFocus.value) {
+    const query = uni.createSelectorQuery();
+    query.select('.reborn-input').fields({ node: true, rect: true }, (res) => {
+      if (res && res.node) {
+        const node = res.node
+
+        // #ifdef H5
+        node.focus();
+        nextTick(() => {
+          const len = String(inputValue.value ?? '').length;
+          if (typeof node.setSelectionRange === 'function') {
+            node.setSelectionRange(len, len);
+          }
+        })
+        // #endif
+
+        // #ifndef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO
+        node.focus();
+        // #endif
+      }
+    }).exec();
+  }
 }
+
+
+function handleFocus(e: any) {
+  if (fieldGroupDisabled.value || props.readonly) { return }
+  if (isFocus.value) {
+    // input 已聚焦时，阻止 touchstart 默认行为，防止 input 失焦导致键盘闪烁
+    e.preventDefault()
+  }
+  else {
+    focus()
+  }
+}
+
 // 清除方法
 function clear() {
   localValue.value = ''
@@ -250,30 +291,30 @@ defineExpose({
 </script>
 
 <template>
-  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled" :data-filled="isFilled"
-    @click="focus">
+  <view :class="ui.wrapper({ class: props.customClass })" :data-disabled="fieldGroupDisabled" :data-filled="isFilled">
     <view v-if="$slots.leading" :class="ui.leading()">
       <slot name="leading" :ui="ui" />
     </view>
 
-    <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
+    <view :class="ui.input()" @touchstart="handleFocus">
+      <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
       :placeholder="props.placeholder" :value="inputValue" :class="ui.input()" :password="isPassword"
       :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
       :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
-      :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
-      @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
-
+      :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard"
+      @input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
+    </view>
 
     <!-- Icons Section -->
-    <view :class="ui.iconBox()" @tap.stop>
-      <view v-if="showClear" :class="ui.clear()" @tap.stop="clear">
+    <view :class="ui.iconBox()" @tap.stop.prevent>
+      <view v-if="showClear" :class="ui.clear({ class: 'right-0' })" @tap.stop="clear">
         <view class="i-lucide-x-circle" style="width: var(--icon-size); height: var(--icon-size);" />
       </view>
 
       <view v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
-      <view v-if="password" :class="ui.password()" @tap.stop="showPassword">
+      <view v-if="password" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction" >
         <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
           style="width: var(--icon-size); height: var(--icon-size);" />
       </view>

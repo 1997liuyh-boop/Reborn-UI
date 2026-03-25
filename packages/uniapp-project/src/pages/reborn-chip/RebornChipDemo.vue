@@ -117,11 +117,13 @@ const chipText = ref('100+')
       </view>
     </RebornCard>
     <RebornCard title="Preview" custom-class="flex flex-wrap gap-3">
-      <RebornChip
+      <view>
+        <RebornChip
         v-model:show="showChip" :color="currentColor" :size="currentSize" :position="currentPosition"
         :text="chipText"
       >
         <view
+
           class="
             flex size-16 items-center justify-center rounded-lg bg-slate-100
             dark:bg-slate-800
@@ -137,6 +139,7 @@ const chipText = ref('100+')
           </text>
         </view>
       </RebornChip>
+      </view>
       <RebornChip
         v-model:show="showChip" :color="currentColor" :size="currentSize" :position="currentPosition"
         :text="chipText" inset
