@@ -50,7 +50,7 @@ main:
               cd $DEPLOY_PATH && 
               export PATH=$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin && 
               pm2 delete re-ui 2>/dev/null || true &&
-              pm2 start .output/server/index.mjs --name re-ui || npx pm2 start .output/server/index.mjs --name re-ui
+              pm2 start server/index.mjs --name re-ui || npx pm2 start server/index.mjs --name re-ui
             "
             
             echo "🎉 自动部署完成！"
