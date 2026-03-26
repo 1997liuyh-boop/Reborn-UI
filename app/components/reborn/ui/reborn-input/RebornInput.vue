@@ -11,6 +11,18 @@ defineOptions({
   inheritAttrs: false,
 });
 
+export interface InputUi {
+  wrapper?: string;
+  input?: string;
+  leading?: string;
+  iconBox?: string;
+  icon?: string;
+  trailing?: string;
+  clear?: string;
+  password?: string;
+  separator?: string;
+}
+
 export interface InputProps {
   modelValue?: string | number;
   defaultValue?: string | number;
@@ -24,10 +36,12 @@ export interface InputProps {
   border?: boolean;
   password?: boolean;
   clearable?: boolean;
+  separator?: boolean;
   autofocus?: boolean;
   as?: "input" | "textarea";
   rows?: number;
   class?: any;
+  ui?: InputUi;
 }
 
 const props = withDefaults(defineProps<InputProps>(), {
@@ -40,9 +54,11 @@ const props = withDefaults(defineProps<InputProps>(), {
   border: true,
   password: false,
   clearable: false,
+  separator: true,
   autofocus: false,
   as: "input",
   rows: 4,
+  ui: () => ({}),
 });
 
 const emit = defineEmits<{
@@ -76,6 +92,7 @@ const { orientation, size: fieldGroupSize } = useFieldGroup(props);
 
 const size = toRef(props, "size");
 
+const uiOverrides = computed(() => props.ui || {})
 const ui = computed(() => {
   const styles = b({
     size: (fieldGroupSize.value || size.value) as any,
@@ -90,15 +107,15 @@ const ui = computed(() => {
   });
 
   return {
-    wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, props.class) }),
-    input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class) }),
-    leading: (opts?: { class?: any }) => styles.leading({ class: cn(opts?.class) }),
-    iconBox: (opts?: { class?: any }) => styles.iconBox({ class: cn(opts?.class) }),
-    icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class) }),
-    trailing: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class) }),
-    clear: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class) }),
-    password: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class) }),
-    separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class) }),
+    wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, props.class, uiOverrides.value.wrapper) }),
+    input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
+    leading: (opts?: { class?: any }) => styles.leading({ class: cn(opts?.class, uiOverrides.value.leading) }),
+    iconBox: (opts?: { class?: any }) => styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
+    icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
+    trailing: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.trailing) }),
+    clear: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.clear) }),
+    password: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
+    separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
   };
 });
 
@@ -157,7 +174,7 @@ defineExpose({
 
 <template>
   <div :class="ui.wrapper()" :data-disabled="props.disabled" :data-filled="isFilled" @click="inputRef?.focus()">
-    <span v-if="$slots.leading" :class="ui.leading()">
+    <span v-if="$slots.leading" :class="ui.leading()" @click.stop>
       <slot name="leading" :ui="ui" />
     </span>
 
@@ -168,17 +185,19 @@ defineExpose({
       @blur="onBlur" />
 
     <div :class="ui.iconBox()" @click.stop>
-      <div v-if="showClear" :class="ui.clear()" @click.stop="clear">
-        <Icon name="lucide:x-circle" :class="ui.icon()" />
-      </div>
+      <Transition name="fade">
+        <div v-if="showClear" :class="ui.clear()" @click.stop="clear">
+          <Icon name="lucide:x-circle" :class="ui.icon()" />
+        </div>
+      </Transition>
 
-      <div v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
+      <div v-if="separator && showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
       <div v-if="password" :class="ui.password()" @click.stop="togglePassword">
         <Icon :name="isPassword ? 'lucide:eye' : 'lucide:eye-off'" :class="ui.icon()" />
       </div>
 
-      <div v-if="password && $slots.trailing" :class="ui.separator()" />
+      <div v-if="separator && password && $slots.trailing" :class="ui.separator()" />
 
       <div v-if="$slots.trailing" :class="ui.trailing()">
         <slot name="trailing" :ui="ui" />
@@ -186,3 +205,15 @@ defineExpose({
     </div>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

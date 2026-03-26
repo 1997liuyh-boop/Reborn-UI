@@ -193,7 +193,9 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 <template>
     <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" @keydown="onKeydown" tabindex="0">
         <div :class="ui.trigger()" @click="toggle" :data-state="isOpen ? 'open' : 'closed'">
-            <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
+            <slot v-if="displayText" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="ui">
+                <span :class="ui.triggerText()">{{ displayText }}</span>
+            </slot>
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
 
             <div class="flex items-center gap-1">

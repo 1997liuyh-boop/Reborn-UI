@@ -58,6 +58,7 @@ export interface InputProps {
   rounded?: boolean
   border?: boolean
   color?: typeof inputColors[number]
+  separator?: boolean
   ui?: InputUI
 }
 
@@ -83,6 +84,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   rounded: true,
   border: false,
   color: 'neutral',
+  separator: true,
 })
 const emit = defineEmits([
   'update:modelValue',
@@ -271,13 +273,13 @@ defineExpose({
         <view class="i-lucide-x-circle" :class="ui.clear()" />
       </view>
 
-      <view v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
+      <view v-if="separator && showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
       <view v-if="password" :class="ui.trailing()" @tap="showPassword">
         <view :class="ui.password({ class: isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off' })" />
       </view>
 
-      <view v-if="password && $slots.trailing" :class="ui.separator()" />
+      <view v-if="separator && password && $slots.trailing" :class="ui.separator()" />
 
       <view v-if="$slots.trailing" :class="ui.trailing()">
         <slot name="trailing" :ui="ui" />

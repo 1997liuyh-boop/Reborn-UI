@@ -38,6 +38,12 @@
       }
     },
     {
+      "path": "pages/reborn-search-box/RebornSearchBoxDemo",
+      "style": {
+        "navigationBarTitleText": "Search Box"
+      }
+    },
+    {
       "path": "pages/reborn-input-number/RebornInputNumberDemo",
       "style": {
         "navigationBarTitleText": "Input Number"

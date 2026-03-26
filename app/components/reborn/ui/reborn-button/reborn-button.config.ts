@@ -63,7 +63,7 @@ export default {
         base: "h-[var(--button-base-height)] text-26 leading-[1.5] px-4 py-4 has-[>svg]:px-3",
       },
       md: { base: "h-[var(--button-base-height)] text-26 leading-[1.5] px-4 py-4 has-[>svg]:px-3" },
-      lg: { base: "h-[var(--button-lg-height)] text-28 leading-[1.5] px-6 has-[>svg]:px-4" },
+      lg: { base: "h-[var(--button-lg-height)] text-28 leading-[1.5] px-5 has-[>svg]:px-4" },
       xl: { base: "h-[var(--button-xl-height)] text-30 leading-[1.5] px-6 has-[>svg]:px-4" },
       "2xl": { base: "h-[var(--button-2xl-height)] text-32 leading-[1.5] px-6 has-[>svg]:px-4" },
       "icon-xs": { base: "" },

@@ -22,6 +22,7 @@ const menuItems = [
     children: [
       { label: '表单', icon: 'i-lucide-layout-list', path: '/pages/reborn-form/RebornFormDemo' },
       { label: '输入框', icon: 'i-lucide-text-cursor-input', path: '/pages/reborn-input/RebornInputDemo' },
+      { label: '搜索框', icon: 'i-lucide-search', path: '/pages/reborn-search-box/RebornSearchBoxDemo' },
       { label: '验证码', icon: 'i-lucide-key-round', path: '/pages/reborn-input-otp/RebornInputOtpDemo' },
       { label: '数字输入', icon: 'i-mdi-numbers', path: '/pages/reborn-input-number/RebornInputNumberDemo' },
       { label: '文本域', icon: 'i-lucide-form-input', path: '/pages/reborn-textarea/RebornTextareaDemo' },
