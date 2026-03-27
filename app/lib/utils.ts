@@ -5,7 +5,16 @@ import { extendTailwindMerge } from "tailwind-merge";
 export const twMergeConfig = {
   extend: {
     classGroups: {
-      "font-size": [{ text: [(value: string) => !isNaN(Number(value))] }],
+      "font-size": [
+        {
+          text: [
+            (value: string) => !isNaN(Number(value)),
+            (value: string) => value.startsWith("caption-"),
+            (value: string) => value.startsWith("body-"),
+            (value: string) => value.startsWith("title-"),
+          ],
+        },
+      ],
     },
   },
 };

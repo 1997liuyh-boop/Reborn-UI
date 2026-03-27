@@ -7,11 +7,21 @@ export interface RadioGroupProps {
     disabled?: boolean
     size?: (typeof radioSizes)[number]
     color?: (typeof radioColors)[number]
+    variant?: "simple" | "circle";
+    activeIcon?: string;
+    inactiveIcon?: string;
+    showIcon?: boolean;
     class?: any
 }
 
 const props = withDefaults(defineProps<RadioGroupProps>(), {
     disabled: false,
+    size: "md",
+    color: "primary",
+    variant: "simple",
+    activeIcon: "i-lucide-check",
+    inactiveIcon: "",
+    showIcon: true,
 })
 
 const emit = defineEmits<{
@@ -29,6 +39,10 @@ provide('RebornRadioGroup', {
     disabled: toRef(props, 'disabled'),
     size: toRef(props, 'size'),
     color: toRef(props, 'color'),
+    variant: toRef(props, 'variant'),
+    activeIcon: toRef(props, 'activeIcon'),
+    inactiveIcon: toRef(props, 'inactiveIcon'),
+    showIcon: toRef(props, 'showIcon'),
     updateValue
 })
 </script>

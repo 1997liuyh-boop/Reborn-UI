@@ -37,7 +37,7 @@ const isShowlimitSlot = ref(false);
         </div>
         <div class="col-span-2 flex flex-col gap-4">
             <div class="space-y-3">
-                <div class="text-28 font-medium text-slate-500 dark:text-slate-200">边框active颜色</div>
+                <div class="text-sm font-medium text-slate-500 dark:text-slate-200">边框active颜色</div>
                 <div class="flex flex-wrap gap-2">
                     <div v-for="c in textareaColors" :key="c"
                         class="w-6 h-6 rounded-full cursor-pointer ring-2 ring-offset-2 ring-transparent transition-all"

@@ -7,60 +7,60 @@
                 <div class="font-medium text-muted-foreground text-sm">应用规则</div>
                 <div class="font-medium text-muted-foreground text-sm">举例</div>
 
-                <!-- 20px -->
-                <div class="text-sm">20px</div>
-                <div class="text-sm text-muted-foreground">辅助文字</div>
-                <div class="truncate"><span class="text-20">Font 乐淘一番切煤神器</span></div>
+                <!-- text-caption-sm -->
+                <div class="text-sm">text-caption-sm</div>
+                <div class="text-sm text-muted-foreground">辅助文字 10px</div>
+                <div class="truncate"><span class="text-caption-sm">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 22px -->
-                <div class="text-sm">22px</div>
-                <div class="text-sm text-muted-foreground">辅助文字</div>
-                <div class="truncate"><span class="text-22">Font 乐淘一番切煤神器</span></div>
+                <!-- text-caption-md -->
+                <div class="text-sm">text-caption-md</div>
+                <div class="text-sm text-muted-foreground">辅助文字 11px</div>
+                <div class="truncate"><span class="text-caption-md">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 24px -->
-                <div class="text-sm">24px</div>
-                <div class="text-sm text-muted-foreground">辅助文字</div>
-                <div class="truncate"><span class="text-24">Font 乐淘一番切煤神器</span></div>
+                <!-- text-caption-lg -->
+                <div class="text-sm">text-caption-lg</div>
+                <div class="text-sm text-muted-foreground">辅助文字 12px</div>
+                <div class="truncate"><span class="text-caption-lg">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 26px -->
-                <div class="text-sm">26px</div>
-                <div class="text-sm">正文（小）</div>
-                <div class="truncate"><span class="text-26">Font 乐淘一番切煤神器</span></div>
+                <!-- text-body-sm -->
+                <div class="text-sm">text-body-sm</div>
+                <div class="text-sm text-muted-foreground">正文小 13px</div>
+                <div class="truncate"><span class="text-body-sm">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 28px -->
-                <div class="text-sm">28px</div>
-                <div class="text-sm">正文</div>
-                <div class="truncate"><span class="text-28">Font 乐淘一番切煤神器</span></div>
+                <!-- text-body-base -->
+                <div class="text-sm">text-body-base</div>
+                <div class="text-sm text-muted-foreground">正文 14px</div>
+                <div class="truncate"><span class="text-body-base">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 30px -->
-                <div class="text-sm">30px</div>
-                <div class="text-sm">标题（次）</div>
-                <div class="truncate"><span class="text-30">Font 乐淘一番切煤神器</span></div>
+                <!-- text-title-sm -->
+                <div class="text-sm">text-title-sm</div>
+                <div class="text-sm text-muted-foreground">标题（次） 15px</div>
+                <div class="truncate"><span class="text-title-sm">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 32px -->
-                <div class="text-sm">32px</div>
-                <div class="text-sm">标题（主）</div>
-                <div class="truncate"><span class="text-32">Font 乐淘一番切煤神器</span></div>
+                <!-- text-title-md -->
+                <div class="text-sm">text-title-md</div>
+                <div class="text-sm text-muted-foreground">标题（主） 16px</div>
+                <div class="truncate"><span class="text-title-md">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 36px -->
-                <div class="text-sm">36px</div>
-                <div class="text-sm">标题（大）</div>
-                <div class="truncate"><span class="text-36">Font 乐淘一番切煤神器</span></div>
+                <!-- text-title-lg -->
+                <div class="text-sm">text-title-lg</div>
+                <div class="text-sm text-muted-foreground">标题（大） 18px</div>
+                <div class="truncate"><span class="text-title-lg">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 40px -->
-                <div class="text-sm">40px</div>
-                <div class="text-sm">标题（特大）</div>
-                <div class="truncate"><span class="text-40">Font 乐淘一番切煤神器</span></div>
+                <!-- text-title-xl -->
+                <div class="text-sm">text-title-xl</div>
+                <div class="text-sm text-muted-foreground">标题（特大） 20px</div>
+                <div class="truncate"><span class="text-title-xl">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 48px -->
-                <div class="text-sm">48px</div>
-                <div class="text-sm">标题（特大）</div>
-                <div class="truncate"><span class="text-48">Font 乐淘一番切煤神器</span></div>
+                <!-- text-title-2xl -->
+                <div class="text-sm">text-title-2xl</div>
+                <div class="text-sm text-muted-foreground">标题（2*特大） 24px</div>
+                <div class="truncate"><span class="text-title-2xl">Font 乐淘一番切煤神器</span></div>
 
-                <!-- 52px -->
-                <div class="text-sm">52px</div>
-                <div class="text-sm">标题（特大）</div>
-                <div class="truncate"><span class="text-52">Font 乐淘一番切煤神器</span></div>
+                <!-- text-title-3xl -->
+                <div class="text-sm">text-title-3xl</div>
+                <div class="text-sm text-muted-foreground">标题（3*特大） 28px</div>
+                <div class="truncate"><span class="text-title-3xl">Font 乐淘一番切煤神器</span></div>
             </div>
         </template>
     </ComponentPlayground>

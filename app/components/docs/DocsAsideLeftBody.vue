@@ -167,7 +167,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
   <div ref="navContainer" class="space-y-2">
     <template v-for="section in navWithData" :key="section.path">
       <div v-if="section.title" @click="toggleSection(section.path)"
-        class="cursor-pointer w-full px-3 text-30 font-semibold text-gray-8 dark:text-gray-1 uppercase tracking-wider flex items-center justify-between group hover:text-gray-900 dark:hover:text-white transition-colors">
+        class="cursor-pointer w-full px-3 text-[15px] font-semibold text-gray-8 dark:text-gray-1 uppercase tracking-wider flex items-center justify-between group hover:text-gray-900 dark:hover:text-white transition-colors">
         <ClientOnly>
           <HyperText :text="section.title" class="font-bold py-0.5!" :duration="800" :animate-on-load="true" />
           <template #fallback>
@@ -186,7 +186,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
           <template v-for="item in section.children" :key="item.path">
             <!-- Primary Menu Item -->
             <NuxtLink :to="item.path" :data-nav-path="item.path"
-              class="group relative flex items-center justify-between gap-2 px-3 py-2 rounded-md text-28 transition-all duration-200 border-l-2"
+              class="group relative flex items-center justify-between gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200 border-l-2"
               :class="[
                 isActive(item) || hasActiveChild(item)
                   ? 'font-semibold shadow-sm border-l-primary text-primary bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]'
@@ -195,7 +195,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
               <ClientOnly v-if="item.chip">
                 <RebornChip :text="item.chip.label" :color="(item.chip.color as any) || 'primary'" position="top-right">
                   <SparklesText v-if="isActive(item)" :text="item.title"
-                    :colors="{ first: '#9E7AFF', second: '#FE8BBB' }" :sparkles-count="5" class="text-28 " />
+                    :colors="{ first: '#9E7AFF', second: '#FE8BBB' }" :sparkles-count="5" class="text-sm " />
                   <span v-else class="truncate">{{ item.title }}</span>
                   <template #fallback>
                     <span class="truncate">{{ item.title }}</span>
@@ -204,7 +204,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
               </ClientOnly>
               <ClientOnly v-else>
                 <SparklesText v-if="isActive(item)" :text="item.title" :colors="{ first: '#9E7AFF', second: '#FE8BBB' }"
-                  :sparkles-count="5" class="text-28 flex-1" />
+                  :sparkles-count="5" class="text-sm flex-1" />
                 <span v-else class="flex-1 truncate">{{ item.title }}</span>
                 <template #fallback>
                   <span class="flex-1 truncate">{{ item.title }}</span>
@@ -222,7 +222,7 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
             <div v-if="item.children && item.children.length > 0"
               class="ml-4 mt-0.5 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700/50 pl-4">
               <NuxtLink v-for="child in item.children" :key="child.path" :to="child.path" :data-nav-path="child.path"
-                class="group relative flex items-center justify-between gap-2 px-3 py-1.5 rounded-md text-26 transition-all duration-200"
+                class="group relative flex items-center justify-between gap-2 px-3 py-1.5 rounded-md text-[13px] transition-all duration-200"
                 :class="[
                   isActive(child)
                     ? 'font-medium text-primary bg-[color-mix(in_srgb,var(--color-primary)_3%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] before:content-[\'\'] before:absolute before:left-[-1rem] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:bg-[var(--color-primary)] before:rounded-sm'

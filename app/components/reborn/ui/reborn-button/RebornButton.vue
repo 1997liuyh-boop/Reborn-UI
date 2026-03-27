@@ -18,6 +18,7 @@ export interface ButtonProps {
     class?: any
     ui?: any
     gap?: boolean // 是否间隔按钮
+    circle?: boolean
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -27,7 +28,8 @@ const props = withDefaults(defineProps<ButtonProps>(), {
     loading: false,
     disabled: false,
     round: true,
-    gap: false
+    gap: false,
+    circle: false
 })
 
 const slots = defineSlots<{
@@ -49,8 +51,21 @@ const loadingColor = computed(() => {
     return props.color
 })
 
+const loadingSize = computed(() => {
+    const sizeMap: Record<string, number> = {
+        'xs': 14,
+        'sm': 16,
+        'default': 18,
+        'md': 18,
+        'lg': 20,
+        'xl': 22,
+        '2xl': 24,
+    }
+    return sizeMap[size.value] || 18
+})
+
 const isIconOnly = computed(() => {
-    return props.size?.startsWith('icon') || (!props.label && !slots.default)
+    return props.circle || (!props.label && !slots.default)
 })
 
 const b = tv(theme)
@@ -65,6 +80,7 @@ const ui = computed(() => {
         gap: props.gap,
         disabled: props.disabled,
         round: props.round,
+        circle: props.circle
     })
 
     return {
@@ -88,7 +104,7 @@ const ui = computed(() => {
     <button :disabled="isDisabled" :class="ui.base({ class: props.class })" v-bind="$attrs">
         <!-- Leading / Spinner -->
         <template v-if="props.loading">
-            <RebornLoading :color="loadingColor" :class="ui.leadingIcon()" />
+            <RebornLoading :color="loadingColor" :size="loadingSize" :class="ui.leadingIcon()" />
         </template>
         <slot v-else name="leading" :ui="ui" />
 

@@ -38,6 +38,7 @@ export interface ButtonProps {
   phoneNumberNoQuotaToast?: boolean // 手机号获取失败时是否弹出错误提示
   createliveactivity?: boolean // 是否创建直播活动
   round?: boolean // 是否为胶囊形状
+  circle?: boolean // 是否为圆形
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -51,7 +52,8 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   hoverStartTime: 20,
   hoverStayTime: 70,
   block: false,
-  round: true
+  round: true,
+  circle: false
 })
 
 // 事件定义
@@ -106,25 +108,18 @@ const loadingColor = computed(() => {
 
 const loadingSize = computed(() => {
   const sizeMap: Record<string, number> = {
-    'xs': 24,
-    'sm': 28,
-    'default': 32,
-    'md': 32,
-    'lg': 36,
-    'xl': 40,
-    '2xl': 48,
-    'icon-xs': 24,
-    'icon-sm': 28,
-    'icon': 32,
-    'icon-md': 32,
-    'icon-lg': 36,
-    'icon-xl': 40,
-    'icon-2xl': 48,
+    'xs': 22,
+    'sm': 24,
+    'default': 26,
+    'md': 26,
+    'lg': 28,
+    'xl': 30,
+    '2xl': 32,
   }
   return sizeMap[size.value] || 16
 })
 
-const isIconOnly = computed(() => props.size?.startsWith('icon') || props.size === 'icon')
+const isIconOnly = computed(() => props.circle)
 
 const uiOverrides = computed(() => props.ui || {})
 
@@ -136,7 +131,8 @@ const ui = computed(() => {
     disabled: fieldGroupDisabled.value,
     loading: props.loading,
     gap: props.gap,
-    round: props.round
+    round: props.round,
+    circle: props.circle
   })
 
   return {
@@ -214,7 +210,7 @@ function onTouchCancel() {
     </view>
     <slot v-else name="leading" :loading="props.loading" :ui="ui" />
 
-    <view v-if="props.loading && isIconOnly" class="icon-loading">
+    <view v-if="props.loading && isIconOnly" :class="ui.loading()">
       <RebornLoading :color="loadingColor" :size="loadingSize" />
     </view>
     <slot v-else :ui="ui">

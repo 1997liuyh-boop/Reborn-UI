@@ -16,6 +16,7 @@ export interface RadioProps {
     disabled?: boolean;
     size?: (typeof radioSizes)[number];
     color?: (typeof radioColors)[number];
+    variant?: "simple" | "circle";
     activeIcon?: string;
     inactiveIcon?: string;
     showIcon?: boolean;
@@ -25,6 +26,7 @@ export interface RadioProps {
         wrapper: ClassValue;
         activeIcon: ClassValue;
         inactiveIcon: ClassValue;
+        innerDot: ClassValue;
         label: ClassValue;
     }>;
 }
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<RadioProps>(), {
     disabled: false,
     size: "md",
     color: "primary",
+    variant: "simple",
     activeIcon: "i-lucide-check",
     inactiveIcon: "",
     showIcon: true,
@@ -47,7 +50,6 @@ const radioGroup = inject<any>("RebornRadioGroup", null);
 const isGroup = computed(() => !!radioGroup);
 
 const slots = useSlots();
-const attrs = useAttrs();
 
 const isChecked = computed(() => {
     if (isGroup.value) {
@@ -59,6 +61,10 @@ const isChecked = computed(() => {
 const computedDisabled = computed(() => isGroup.value ? (radioGroup.disabled.value || props.disabled) : props.disabled);
 const computedSize = computed(() => isGroup.value && radioGroup.size?.value ? radioGroup.size.value : props.size);
 const computedColor = computed(() => isGroup.value && radioGroup.color?.value ? radioGroup.color.value : props.color);
+const computedVariant = computed(() => isGroup.value && radioGroup.variant?.value ? radioGroup.variant.value : props.variant);
+const computedActiveIcon = computed(() => isGroup.value && radioGroup.activeIcon?.value !== undefined ? radioGroup.activeIcon.value : props.activeIcon);
+const computedInactiveIcon = computed(() => isGroup.value && radioGroup.inactiveIcon?.value !== undefined ? radioGroup.inactiveIcon.value : props.inactiveIcon);
+const computedShowIcon = computed(() => isGroup.value && radioGroup.showIcon?.value !== undefined ? radioGroup.showIcon.value : props.showIcon);
 
 const showLabel = computed(() => !!props.label || !!slots.default);
 
@@ -68,6 +74,8 @@ const ui = computed(() => {
     const styles = b({
         size: computedSize.value,
         color: computedColor.value,
+        variant: computedVariant.value,
+        checked: isChecked.value,
         disabled: computedDisabled.value,
     });
     return {
@@ -75,6 +83,7 @@ const ui = computed(() => {
         wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
         activeIcon: (opts?: { class?: any }) => styles.activeIcon({ class: cn(opts?.class, uiOverrides.value.activeIcon) }),
         inactiveIcon: (opts?: { class?: any }) => styles.inactiveIcon({ class: cn(opts?.class, uiOverrides.value.inactiveIcon) }),
+        innerDot: (opts?: { class?: any }) => styles.innerDot({ class: cn(opts?.class, uiOverrides.value.innerDot) }),
         label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
     };
 });
@@ -95,15 +104,19 @@ function onTap() {
     <div :class="ui.root({ class: props.class })" :data-disabled="computedDisabled" :data-checked="isChecked"
         @click="onTap">
         <div :class="ui.wrapper()">
-            <template v-if="showIcon">
+            <template v-if="computedShowIcon">
                 <slot v-if="isChecked" name="active-icon">
                     <div :class="ui.activeIcon()">
-                        <Icon v-if="activeIcon" :name="activeIcon" class="size-full" />
+                        <!-- 实心圆点，通过 config 中的 variant 控制显示/隐藏 -->
+                        <div :class="ui.innerDot()" />
+                        <!-- 勾选图标，仅在非 circle 模式下显示 -->
+                        <Icon v-if="computedVariant !== 'circle' && computedActiveIcon" :name="computedActiveIcon"
+                            class="size-full" />
                     </div>
                 </slot>
                 <slot v-else name="inactive-icon">
                     <div :class="ui.inactiveIcon()">
-                        <Icon v-if="inactiveIcon" :name="inactiveIcon" class="size-full" />
+                        <Icon v-if="computedInactiveIcon" :name="computedInactiveIcon" class="size-full" />
                     </div>
                 </slot>
             </template>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ButtonProps } from '@/components/reborn-button/RebornButton.vue'
 import { ref } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
@@ -15,7 +14,6 @@ import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 const demoVariant = ref<(typeof buttonVariants)[number]>('solid')
 const demoColor = ref<(typeof buttonColors)[number]>('primary')
 const demoSize = ref<(typeof buttonSizes)[number]>('md')
-const iconSize = ref<(typeof buttonSizes)[number]>('icon-md')
 const demoLoading = ref(false)
 const demoDisabled = ref(false)
 const demoSquare = ref(false)
@@ -25,15 +23,8 @@ const customButtonColor = ref('#6366f1')
 // Options Mapping
 const variantOptions = (buttonVariants as unknown as string[]).map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v as (typeof buttonVariants)[number] }))
 const colorOptions = (buttonColors as unknown as string[]).map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c as (typeof buttonColors)[number] }))
-const baseSizeOptions = (buttonSizes as unknown as string[])
-  .filter(s => !s.startsWith('icon') && s !== 'default')
-  .map(s => ({ label: s.toUpperCase(), value: s as (typeof buttonSizes)[number] }))
-const iconSizeOptions = (buttonSizes as unknown as string[])
-  .filter(s => s.startsWith('icon') || s === 'icon')
-  .map(s => ({
-    label: s === 'icon' ? 'MD' : s.replace('icon-', '').toUpperCase(),
-    value: s as (typeof buttonSizes)[number],
-  }))
+const baseSizeOptions = buttonSizes.map(s => ({ label: s.toUpperCase(), value: s as (typeof buttonSizes)[number] }))
+
 
 function handleClick() {
   copyContent('Reborn UI')
@@ -85,13 +76,13 @@ function copyContent(text: string) {
             {{ demoLabel }}
           </RebornButton>
 
-          <view v-if="demoSize === 'md'" class="mt-4 flex gap-2">
-            <RebornButton :size="iconSize" :variant="demoVariant" :color="demoColor" :loading="demoLoading"
-              :disabled="demoDisabled">
+          <view class="mt-4 flex gap-2">
+            <RebornButton :size="demoSize" :variant="demoVariant" :color="demoColor" :loading="demoLoading"
+              :disabled="demoDisabled" circle>
               <view class="i-lucide-plus" />
             </RebornButton>
-            <RebornButton :size="iconSize" variant="outline" :color="demoColor" :loading="demoLoading"
-              :disabled="demoDisabled">
+            <RebornButton :size="demoSize" variant="outline" :color="demoColor" :loading="demoLoading"
+              :disabled="demoDisabled" circle>
               <view class="i-lucide-share-2" />
             </RebornButton>
           </view>
@@ -137,17 +128,6 @@ function copyContent(text: string) {
       </view>
 
       <RebornText :size="28" color="neutral" class="mt-6 font-semibold">
-        图标尺寸 (Icon Sizes)
-      </RebornText>
-      <view class="flex flex-wrap gap-2">
-        <RebornButton v-for="item in iconSizeOptions" :key="item.value" variant="outline"
-          :color="iconSize === item.value ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
-          @click="iconSize = item.value">
-          {{ item.label }}
-        </RebornButton>
-      </view>
-
-      <RebornText :size="28" color="neutral" class="mt-6 font-semibold">
         其他状态 (States)
       </RebornText>
       <view class="flex flex-col gap-4">
@@ -182,16 +162,16 @@ function copyContent(text: string) {
       </view>
 
       <view class="mt-6 flex flex-wrap items-center gap-4">
-        <RebornButton size="icon-sm" variant="soft" :loading="demoLoading" custom-class="rounded-full">
+        <RebornButton size="sm" variant="soft" circle :loading="demoLoading">
           <view class="i-lucide-plus" />
         </RebornButton>
-        <RebornButton size="icon" variant="soft" :loading="demoLoading" custom-class="rounded-full">
+        <RebornButton size="md" variant="soft" circle :loading="demoLoading">
           <view class="i-lucide-settings" />
         </RebornButton>
-        <RebornButton size="icon-lg" variant="soft" :loading="demoLoading" custom-class="rounded-full">
+        <RebornButton size="lg" variant="soft" circle :loading="demoLoading" custom-class="rounded-full">
           <view class="i-lucide-user" />
         </RebornButton>
-        <RebornButton size="icon-xl" color="error" :loading="demoLoading" custom-class="rounded-full">
+        <RebornButton size="xl" color="error" circle :loading="demoLoading" custom-class="rounded-full">
           <view class="i-lucide-trash-2" />
         </RebornButton>
       </view>

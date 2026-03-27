@@ -6,7 +6,7 @@ import { buttonColors, buttonVariants, buttonSizes } from "~/components/reborn/u
 
 const colorOptions = buttonColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
 const variantOptions = buttonVariants.map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v }));
-const sizeOptions = buttonSizes.filter(s => !s.startsWith('icon')).map(s => ({ label: s.toUpperCase(), value: s as typeof buttonSizes[number] }));
+const sizeOptions = buttonSizes.map(s => ({ label: s.toUpperCase(), value: s as typeof buttonSizes[number] }));
 
 const color = ref<typeof buttonColors[number]>('primary')
 const variant = ref<typeof buttonVariants[number]>('solid')
@@ -24,13 +24,11 @@ function onClick() {
 
 <template>
   <div class="flex flex-col gap-10 w-full max-w-6xl mx-auto pb-20">
-    <!-- Header Section -->
     <div class="flex flex-col gap-2">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Button 按钮</h2>
       <p class="text-lg text-gray-500 dark:text-gray-400">用于触发特定操作的交互组件。</p>
     </div>
 
-    <!-- Interactive Playground -->
     <section class="flex flex-col gap-4">
       <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200">交互演练场</h3>
       <div
@@ -67,8 +65,8 @@ function onClick() {
               点我交互 ({{ clickCount }})
             </RebornButton>
 
-            <RebornButton :color="color" :variant="variant" size="icon-md" :disabled="disabled" :loading="loading">
-              <Icon name="lucide:sparkles" size="18" />
+            <RebornButton :color="color" :variant="variant" :size="size" :disabled="disabled" :loading="loading" circle>
+              <Icon name="lucide:sparkles" />
             </RebornButton>
 
             <RebornButton :color="color" variant="outline" :size="size" :disabled="disabled" :loading="loading">
@@ -108,9 +106,9 @@ function onClick() {
               {{ s.label }}
             </RebornButton>
           </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <RebornButton v-for="s in (['icon-xs', 'icon-sm', 'icon-md', 'icon-lg', 'icon-xl'] as const)" :key="s"
-              :size="s" color="secondary" variant="soft">
+          <div>
+            <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" circle color="secondary" gap
+              variant="soft">
               <Icon name="lucide:star" />
             </RebornButton>
           </div>
@@ -133,7 +131,6 @@ function onClick() {
         </div>
       </section>
 
-      <!-- Button Groups -->
       <section
         class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
         <h4 class="font-medium text-gray-700 dark:text-gray-300">组合与编排</h4>

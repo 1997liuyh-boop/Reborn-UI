@@ -10,13 +10,6 @@ const size = [
   "lg",
   "xl",
   "2xl",
-  "icon-xs",
-  "icon-sm",
-  "icon",
-  "icon-md",
-  "icon-lg",
-  "icon-xl",
-  "icon-2xl",
 ] as const;
 
 export { color as buttonColors, variant as buttonVariants, size as buttonSizes };
@@ -54,25 +47,18 @@ export default {
     },
     size: {
       xs: {
-        base: "h-[var(--button-xs-height)] text-24 leading-[1.5] gap-1.5 px-3 has-[>svg]:px-2.5",
+        base: "h-button-xs text-caption-lg leading-[1.5] gap-1.5 px-3 has-[>svg]:px-2.5",
       },
       sm: {
-        base: "h-[var(--button-sm-height)] text-24 leading-[1.5] gap-1.5 px-3 has-[>svg]:px-2.5",
+        base: "h-button-sm text-body-sm leading-[1.5] gap-1.5 px-3 has-[>svg]:px-2.5",
       },
       default: {
-        base: "h-[var(--button-base-height)] text-26 leading-[1.5] px-4 py-4 has-[>svg]:px-3",
+        base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3",
       },
-      md: { base: "h-[var(--button-base-height)] text-26 leading-[1.5] px-4 py-4 has-[>svg]:px-3" },
-      lg: { base: "h-[var(--button-lg-height)] text-28 leading-[1.5] px-5 has-[>svg]:px-4" },
-      xl: { base: "h-[var(--button-xl-height)] text-30 leading-[1.5] px-6 has-[>svg]:px-4" },
-      "2xl": { base: "h-[var(--button-2xl-height)] text-32 leading-[1.5] px-6 has-[>svg]:px-4" },
-      "icon-xs": { base: "" },
-      "icon-sm": { base: "size-[var(--button-sm-height)]" },
-      icon: { base: "size-[var(--button-base-height)]" },
-      "icon-md": { base: "size-[var(--button-base-height)]" },
-      "icon-lg": { base: "size-[var(--button-lg-height)]" },
-      "icon-xl": { base: "size-[var(--button-xl-height)]" },
-      "icon-2xl": { base: "size-[var(--button-2xl-height)]" },
+      md: { base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3" },
+      lg: { base: "h-button-lg text-title-md leading-[1.5] px-5 has-[>svg]:px-4" },
+      xl: { base: "h-button-xl text-title-lg leading-[1.5] px-6 has-[>svg]:px-4" },
+      "2xl": { base: "h-button-2xl text-title-xl leading-[1.5] px-6 has-[>svg]:px-4" },
     },
     gap: {
       true: {
@@ -85,9 +71,17 @@ export default {
       false: ""
     },
     round: {
-      true: "rounded-full",
-      false: ""
-    }
+      true: {
+        base: "rounded-full",
+      },
+      false: "",
+    },
+    circle: {
+      true: {
+        base: "!aspect-square !w-auto !p-0 has-[>svg]:!p-0 rounded-full",
+      },
+      false: "",
+    },
   },
   compoundVariants: [
     // Solid Variants

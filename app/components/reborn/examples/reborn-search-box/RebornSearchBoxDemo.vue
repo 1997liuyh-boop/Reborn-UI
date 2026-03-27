@@ -13,16 +13,26 @@ const searchValue = ref<SearchBoxModelValue>({
 const skuSearchValue = ref<SearchBoxModelValue>({
   inputValue: "",
   selectValue: "1",
+  language: 'cn',
+  origin: ['jp', 'us'],
+  platform: 'mercari',
+  price: [1000, 5000],
 });
 
 /** SKU 属性列表 */
 const skuAttributes = ref<SkuOption[]>([
   {
+    key: 'language',
+    title: '语言',
+    slots: 'language',
+    slotsCover: true,
+  },
+  {
     title: "发货地",
     key: "origin",
     labelKey: "label",
     valueKey: "value",
-    multiple: false,
+    multiple: true,
     children: [
       { label: "日本", value: "jp" },
       { label: "美国", value: "us" },
@@ -41,13 +51,15 @@ const skuAttributes = ref<SkuOption[]>([
   },
   {
     title: "价格区间",
-    key: "price_range",
+    key: "price",
     labelKey: "label",
     valueKey: "value",
     multiple: false,
+    slots: 'price',
+    slotsCover: false,
     children: [
-      { label: "1000-5000 JPY", value: "1000-5000" },
-      { label: "5000-10000 JPY", value: "5000-10000" },
+      { label: "1000-5000 JPY", value: [1000, 5000] },
+      { label: "5000-10000 JPY", value: [5000, 10000] },
     ]
   },
   {
@@ -104,25 +116,14 @@ const handleSelectSku = (attr: any) => {
   <div class="flex flex-col gap-12 p-8 max-w-3xl mx-auto">
 
     <!-- 基础用法 -->
-    <section class="flex flex-col gap-4  relative z-10">
+    <section class="flex flex-col gap-4 relative z-10">
       <h2 class="text-2xl font-bold">基础用法</h2>
       <RebornSearchBox v-model="searchValue" placeholder="搜索您感兴趣的内容..." :select-attrs="{ options: selectOptions }"
         :recommend-keywords="recommendKeywords" history-title="Search History" recommend-title="Popular Searches"
         clear-all-label="Clear All" @search="handleSearch" @click-camera="handleCameraClick">
-        <!-- <template #recommend-list="{ ui, selectRecommend }">
-          <div :class="ui.sectionTitle()">推荐搜索</div>
-          <div :class="ui.associateList()">
-            <div v-for="item in recommendKeywords" :key="item" :class="ui.associateItem()"
-              @click="selectRecommend(item)">
-              <Icon name="lucide:trending-up" class="size-4 text-gray-4 shrink-0" />
-              <span>{{ item }}</span>
-            </div>
-          </div>
-        </template> -->
       </RebornSearchBox>
 
-      <!-- 当前绑定值展示 -->
-      <div class="rounded-xl bg-gray-1 dark:bg-gray-8 px-4 py-3 text-24 text-gray-6 dark:text-gray-3 font-mono">
+      <div class="rounded-xl bg-gray-1 dark:bg-gray-8 px-4 py-3 text-xs text-gray-6 dark:text-gray-3 font-mono">
         <span class="text-gray-4">modelValue: </span>{{ JSON.stringify(searchValue) }}
       </div>
     </section>
@@ -131,9 +132,25 @@ const handleSelectSku = (attr: any) => {
     <section class="flex flex-col gap-4 relative z-1">
       <h2 class="text-2xl font-bold">SKU 属性搜索模式</h2>
       <RebornSearchBox v-model="skuSearchValue" mode="sku" placeholder="搜索商品属性..."
-        :select-attrs="{ options: selectOptions }" :sku-attributes="skuAttributes" :show-history="false"
-        @search="handleSearch" @select-sku="handleSelectSku" />
-      <div class="rounded-xl bg-gray-1 dark:bg-gray-8 px-4 py-3 text-24 text-gray-6 dark:text-gray-3 font-mono">
+        :select-attrs="{ options: selectOptions }" :sku-attributes="skuAttributes" :show-history="true"
+        @search="handleSearch" @select-sku="handleSelectSku">
+        <template #language>
+          <RebornRadioGroup v-model="skuSearchValue.language" variant="circle">
+            <RebornRadio value="cn">直接搜索</RebornRadio>
+            <RebornRadio value="en">翻译成日文搜索</RebornRadio>
+          </RebornRadioGroup>
+        </template>
+        <template #price>
+          <div class="flex gap-2 w-full">
+            <RebornInput v-model="skuSearchValue.price[0]" placeholder="价格区间" size="sm" />
+            <div
+              class="relative content:'~' before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-2 before:h-px before:bg-gray-6 dark:before:bg-gray-3">
+            </div>
+            <RebornInput v-model="skuSearchValue.price[1]" placeholder="价格区间" size="sm" />
+          </div>
+        </template>
+      </RebornSearchBox>
+      <div class="rounded-xl bg-gray-1 dark:bg-gray-8 px-4 py-3 text-xs text-gray-6 dark:text-gray-3 font-mono">
         <span class="text-gray-4">modelValue: </span>{{ JSON.stringify(skuSearchValue) }}
       </div>
     </section>

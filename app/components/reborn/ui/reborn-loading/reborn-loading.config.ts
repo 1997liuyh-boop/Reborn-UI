@@ -3,10 +3,10 @@ export const LoadingColors = ['primary', 'secondary', 'success', 'info', 'warnin
 
 const config = {
     slots: {
-        root: 'inline-block align-middle rb-loading',
+        root: 'inline-flex items-center justify-center align-middle rb-loading shrink-0',
         container: 'w-full h-full relative',
-        indicator: 'w-full h-full rb-loading-indicator',
-        outlineTrack: 'absolute inset-0 rounded-full border-2 opacity-20',
+        indicator: 'rb-loading-indicator origin-center',
+        outlineTrack: 'opacity-20',
         spinnerItem: 'absolute top-0 left-[46%] w-[8%] h-[25%] bg-current rounded-sm origin-[50%_200%] rb-loading-spinnerItem',
         barItem: 'w-[15%] h-[60%] bg-current rounded-sm rb-loading-barItem',
         blockItem: 'absolute w-[40%] h-[40%] bg-current rounded-sm',
@@ -16,12 +16,10 @@ const config = {
     variants: {
         type: {
             ring: {
-                container: 'flex items-center justify-center',
-                indicator: 'rounded-full border-2 border-solid'
+                container: 'flex items-center justify-center'
             },
             outline: {
-                container: 'flex items-center justify-center',
-                indicator: 'absolute inset-0 rounded-full border-2'
+                container: 'flex items-center justify-center'
             },
             spinner: {
                 container: 'flex items-center justify-center'

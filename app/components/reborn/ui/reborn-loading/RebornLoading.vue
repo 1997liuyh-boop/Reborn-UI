@@ -2,8 +2,16 @@
     <div :class="ui.root()" :style="rootStyle">
         <div v-if="props.type === 'ring' || props.type === 'outline'" :key="props.type" :class="ui.container()"
             :style="containerStyle">
-            <div v-if="props.type === 'outline'" :class="ui.outlineTrack()" />
-            <div :class="ui.indicator()" :style="ringIndicatorStyle" />
+            <svg v-if="props.type === 'outline'" class="absolute inset-0 w-full h-full" :class="ui.outlineTrack()"
+                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
+            </svg>
+            <svg class="absolute inset-0 w-full h-full" :class="ui.indicator()" :style="ringIndicatorStyle"
+                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 9.27455 20.9097 6.80375 19.1414 5"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
         </div>
 
         <div v-else-if="props.type === 'spinner'" key="loading-spinner" :class="ui.container()" :style="containerStyle">
@@ -86,14 +94,12 @@ const containerStyle = computed(() => {
     return style
 })
 
-// ring 在自定义颜色时直接给 indicator 设边框色
 const ringIndicatorStyle = computed(() => {
     if (props.type !== 'ring' || isPresetColor.value) return {}
     const c = props.color as string
     if (!c) return {}
     return {
-        borderColor: c,
-        borderTopColor: 'transparent',
+        color: c
     }
 })
 
@@ -223,8 +229,6 @@ function getWaveDelay(index: number) {
 
 /* 3. 动画逻辑应用 */
 .rb-loading :deep(.rb-loading-indicator) {
-    border-color: currentColor;
-    border-top-color: transparent !important;
     animation: rb-rotate 0.8s linear infinite;
     will-change: transform;
 }

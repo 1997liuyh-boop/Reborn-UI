@@ -1,6 +1,7 @@
 const sizes = ['sm', 'md', 'lg'] as const;
+const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const;
 
-export { sizes as searchBoxSizes };
+export { sizes as searchBoxSizes, colors as searchBoxColors };
 
 /** 各 size 对应的 RebornInput 内部 ui 覆盖配置 (UniApp 2x 比例) */
 export const searchBoxInputUi: Record<typeof sizes[number], { wrapper: string; icon: string; iconBox: string }> = {
@@ -35,6 +36,14 @@ export default {
         skuItem: "flex flex-col gap-8 p-12 bg-gray-1 dark:bg-gray-8 rounded-12 cursor-pointer hover:border-primary transition-all border border-transparent",
         skuLabel: "text-24 text-gray-5",
         skuValue: "text-28 font-medium truncate",
+        // 翻译切换按钮外层容器
+        translateWrapper: "relative h-[80rpx] w-[82rpx] flex items-center justify-center pointer-events-auto",
+        // 翻译切换卡片基础样式（位置由各卡片内联定义）
+        translateCardBase: "absolute flex h-[46rpx] w-[46rpx] items-center justify-center rounded-ui-md border border-[2px] text-[22rpx] font-bold transition-all duration-300 pointer-events-none",
+        // 激活卡片样式（颜色部分由 color variant 覆盖）
+        translateCardActive: "z-10 bg-white shadow-sm border-primary text-primary",
+        // 非激活卡片样式（固定灰色，不随 color 变化）
+        translateCardInactive: "z-0 border-gray-200 bg-[#f8f9fa] text-gray-400",
     },
     variants: {
         size: {
@@ -68,16 +77,32 @@ export default {
         },
         color: {
             primary: {
-                searchButton: "bg-red-600",
+                searchButton: "bg-primary",
+                translateCardActive: "z-10 bg-white shadow-sm border-primary text-primary",
             },
-            blue: {
-                searchButton: "bg-blue-600",
+            secondary: {
+                searchButton: "bg-secondary",
+                translateCardActive: "z-10 bg-white shadow-sm border-secondary text-secondary",
             },
-            green: {
-                searchButton: "bg-emerald-600",
+            success: {
+                searchButton: "bg-success",
+                translateCardActive: "z-10 bg-white shadow-sm border-success text-success",
             },
-            orange: {
-                searchButton: "bg-orange-600",
+            info: {
+                searchButton: "bg-info",
+                translateCardActive: "z-10 bg-white shadow-sm border-info text-info",
+            },
+            warning: {
+                searchButton: "bg-warning",
+                translateCardActive: "z-10 bg-white shadow-sm border-warning text-warning",
+            },
+            error: {
+                searchButton: "bg-error",
+                translateCardActive: "z-10 bg-white shadow-sm border-error text-error",
+            },
+            neutral: {
+                searchButton: "bg-neutral",
+                translateCardActive: "z-10 bg-white shadow-sm border-neutral text-neutral",
             },
         },
     },

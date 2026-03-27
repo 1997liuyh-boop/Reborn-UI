@@ -9,13 +9,6 @@ export const buttonSizes = [
   'lg',
   'xl',
   '2xl',
-  'icon-xs',
-  'icon-sm',
-  'icon',
-  'icon-md',
-  'icon-lg',
-  'icon-xl',
-  'icon-2xl',
 ] as const
 
 export default {
@@ -65,7 +58,7 @@ export default {
     },
     size: {
       'xs': {
-        base: 'h-button-xs px-3 text-24 gap-1.5 rounded-[6px]',
+        base: 'h-button-xs px-3 text-22 gap-1.5 rounded-[6px]',
         loading: 'size-3',
       },
       'sm': {
@@ -92,34 +85,6 @@ export default {
         base: 'h-button-2xl px-6 text-32 gap-2 rounded-[14px]',
         loading: 'size-7',
       },
-      'icon-xs': {
-        base: 'w-button-xs h-button-xs p-0 text-24 rounded-[6px]',
-        loading: 'size-3',
-      },
-      'icon-sm': {
-        base: 'w-button-sm h-button-sm p-0 text-24 rounded-[6px]',
-        loading: 'size-3.5',
-      },
-      'icon': {
-        base: 'w-button-md h-button-md p-0 text-26 rounded-[8px]',
-        loading: 'size-4',
-      },
-      'icon-md': {
-        base: 'w-button-md h-button-md p-0 text-26 rounded-[8px]',
-        loading: 'size-4',
-      },
-      'icon-lg': {
-        base: 'w-button-lg h-button-lg p-0 text-28 rounded-[10px]',
-        loading: 'size-5',
-      },
-      'icon-xl': {
-        base: 'w-button-xl h-button-xl p-0 text-30 rounded-[12px]',
-        loading: 'size-6',
-      },
-      'icon-2xl': {
-        base: 'w-button-2xl h-button-2xl p-0 text-32 rounded-[14px]',
-        loading: 'size-7',
-      },
     },
     loading: {
       true: 'pointer-events-none opacity-80',
@@ -131,8 +96,21 @@ export default {
       },
       false: '',
     },
+    circle: {
+      true: {
+        base: 'p-0 !rounded-full',
+      },
+      false: '',
+    },
   },
   compoundVariants: [
+    { circle: true, size: 'xs' as (typeof buttonSizes)[number], class: { base: 'w-button-xs' } },
+    { circle: true, size: 'sm' as (typeof buttonSizes)[number], class: { base: 'w-button-sm' } },
+    { circle: true, size: 'md' as (typeof buttonSizes)[number], class: { base: 'w-button-md' } },
+    { circle: true, size: 'default' as (typeof buttonSizes)[number], class: { base: 'w-button-md' } },
+    { circle: true, size: 'lg' as (typeof buttonSizes)[number], class: { base: 'w-button-lg' } },
+    { circle: true, size: 'xl' as (typeof buttonSizes)[number], class: { base: 'w-button-xl' } },
+    { circle: true, size: '2xl' as (typeof buttonSizes)[number], class: { base: 'w-button-2xl' } },
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'solid' as (typeof buttonVariants)[number],

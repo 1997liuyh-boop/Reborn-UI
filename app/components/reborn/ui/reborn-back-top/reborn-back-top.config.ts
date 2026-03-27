@@ -18,9 +18,9 @@ export default {
             neutral: { base: 'bg-neutral' }
         },
         size: {
-            sm: { base: 'size-8', icon: 'text-26' },
-            md: { base: 'size-10', icon: 'text-28' },
-            lg: { base: 'size-12', icon: 'text-30' }
+            sm: { base: 'size-8', icon: 'text-body-sm' },
+            md: { base: 'size-10', icon: 'text-body-base' },
+            lg: { base: 'size-12', icon: 'text-title-sm' }
         },
     },
     defaultVariants: {

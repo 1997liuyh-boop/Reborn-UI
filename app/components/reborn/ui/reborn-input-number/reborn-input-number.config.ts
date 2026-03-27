@@ -19,20 +19,20 @@ export default {
   variants: {
     size: {
       sm: {
-        wrapper: "h-input-sm w-28 text-26",
-        input: "text-26",
+        wrapper: "h-input-sm w-28 text-body-sm",
+        input: "text-body-sm",
         button: "px-2.5",
         icon: "size-3.5",
       },
       md: {
-        wrapper: "h-input-md w-36 text-28",
-        input: "text-28",
+        wrapper: "h-input-md w-36 text-body-base",
+        input: "text-body-base",
         button: "px-3.5",
         icon: "size-4",
       },
       lg: {
-        wrapper: "h-input-lg w-44 text-32",
-        input: "text-32",
+        wrapper: "h-input-lg w-44 text-title-md",
+        input: "text-title-md",
         button: "px-4.5",
         icon: "size-5",
       },

@@ -1,18 +1,5 @@
 @layer base {
   :root {
-      /* Web (1/2 size) */
-      --text-size-20: 10px;
-      --text-size-22: 11px;
-      --text-size-24: 12px;
-      --text-size-26: 13px;
-      --text-size-28: 14px;
-      --text-size-30: 15px;
-      --text-size-32: 16px;
-      --text-size-36: 18px;
-      --text-size-40: 20px;
-      --text-size-48: 24px;
-      --text-size-52: 28px; 
-      
       --button-2xl-height: 48px;
       --button-xl-height: 43px;
       --button-lg-height: 38px;
@@ -40,23 +27,33 @@
       --input-sep-md: 14px;
       --input-sep-sm: 12px;
 
-      --input-border-color: var(--color-gray-3);
-      --input-focus-ring-color: rgba(0, 0, 0, 0.05);
     }
 }
 
 @theme {
-  --text-20: var(--text-size-20);
-  --text-22: var(--text-size-22);
-  --text-24: var(--text-size-24);
-  --text-26: var(--text-size-26);
-  --text-28: var(--text-size-28);
-  --text-30: var(--text-size-30);
-  --text-32: var(--text-size-32);
-  --text-36: var(--text-size-36);
-  --text-40: var(--text-size-40);
-  --text-48: var(--text-size-48);
-  --text-52: var(--text-size-52);
+  /* 辅助文字 (Caption) */
+  --text-caption-sm: 10px;
+  --text-caption-md: 11px;
+  --text-caption-lg: 12px;
+
+  /* 正文 (Body) */
+  --text-body-sm: 13px;
+  --text-body-base: 14px;
+
+  /* 标题 (Title) */
+  --text-title-sm: 15px;
+  --text-title-md: 16px;
+  --text-title-lg: 18px;
+  --text-title-xl: 20px;
+  --text-title-2xl: 24px;
+  --text-title-3xl: 26px;
+  /* 按钮尺寸 */
+  --height-button-2xl: var(--button-2xl-height);
+  --height-button-xl: var(--button-xl-height);
+  --height-button-lg: var(--button-lg-height);
+  --height-button-base: var(--button-base-height);
+  --height-button-sm: var(--button-sm-height);
+  --height-button-xs: var(--button-xs-height);
 
   /* 输入框尺寸 (可直接用作 Tailwind utility: h-input-sm-height 等) */
   --height-input-sm: var(--input-sm-height);

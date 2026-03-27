@@ -110,6 +110,8 @@ export interface SearchBoxProps {
   recommendKeywords?: string[];
   /** 历史记录区块标题 */
   historyTitle?: string;
+  /** 空历史记录提示文字 */
+  emptyHistoryLabel?: string;
   /** 推荐搜索区块标题 */
   recommendTitle?: string;
   /** 清空全部历史记录按钮文字 */
@@ -119,7 +121,7 @@ export interface SearchBoxProps {
 const props = withDefaults(defineProps<SearchBoxProps>(), {
   modelValue: () => ({ inputValue: "", selectValue: "" }),
   placeholder: "请输入搜索内容",
-  size: "md",
+  size: "sm",
   color: "primary",
   mode: "associate",
   showDropdown: true,
@@ -130,6 +132,7 @@ const props = withDefaults(defineProps<SearchBoxProps>(), {
   selectUi: () => ({}),
   recommendKeywords: () => [],
   historyTitle: "历史记录",
+  emptyHistoryLabel: "暂无最近的搜索记录",
   recommendTitle: "推荐搜索",
   clearAllLabel: "清空全部",
 });
@@ -144,6 +147,7 @@ const emit = defineEmits<{
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
+const wrapperRef = ref<HTMLElement | null>(null);
 const isExpanded = ref(false); // 下拉面板展开状态
 const localHistory = ref<string[]>([]); // 本地历史记录列表
 
@@ -196,7 +200,10 @@ const handleRemoveHistoryItem = (keyword: string) => {
 
 /** 搜索框自身各槽位样式 */
 const ui = computed(() => {
-  const styles = b({ expanded: isExpanded.value, size: props.size });
+  const styles = b({
+    expanded: isExpanded.value,
+    //  size: props.size 
+  });
   const uiOverrides = props.ui || {};
 
   return {
@@ -262,7 +269,7 @@ const internalSelectUi = computed(() => {
 const internalSelectProps = computed(() => ({
   ...props.selectAttrs,
   color: props.color,
-  size: "sm" as const,
+  size: "md" as const,
   ui: internalSelectUi.value,
   clearable: false,
 }));
@@ -303,8 +310,17 @@ const onFocus = (e: FocusEvent) => {
 
 /** 失去焦点收起面板 (需延时，避开点击下拉列表时的冲突) */
 const onBlur = (e: FocusEvent) => {
+  const nextTarget = e.relatedTarget as Node | null;
+  // 如果新焦点仍在组件内部，则不关闭面板 (如从主输入框点击到了 SKU 里的输入框)
+  if (nextTarget && wrapperRef.value?.contains(nextTarget)) {
+    return;
+  }
+
   setTimeout(() => {
-    isExpanded.value = false;
+    // 再次确认当前活跃元素是否在外部
+    if (!wrapperRef.value?.contains(document.activeElement)) {
+      isExpanded.value = false;
+    }
   }, 200);
   emit("blur", e);
 };
@@ -386,7 +402,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div :class="ui.wrapper()">
+  <div ref="wrapperRef" :class="ui.wrapper()">
     <!-- 搜索输入框核心区 -->
     <div ref="inputWrapperRef" :class="ui.inputWrapper()">
       <RebornInput ref="inputRef" :model-value="modelValue?.inputValue" :placeholder="placeholder" clearable
@@ -417,7 +433,7 @@ onUnmounted(() => {
               <Icon name="lucide:camera" :class="ui.cameraIcon()" @click.stop="handleCameraClick" />
             </slot>
 
-            <RebornButton @click.stop="handleSearch" size="lg" :color="color">
+            <RebornButton @click.stop="handleSearch" :size="isExpanded ? 'md' : 'lg'" :color="color">
               <slot name="search-button" :ui="ui">
                 <Icon name="lucide:search" :class="ui.searchIconInner()" />
               </slot>
@@ -434,8 +450,15 @@ onUnmounted(() => {
       opacity: isExpanded ? 1 : 0,
       pointerEvents: isExpanded ? 'auto' : 'none',
     }">
-      <div ref="contentRef" :class="ui.dropdown()" :style="{ paddingTop: `${internalInputHeight}px` }"
-        @mousedown.prevent>
+      <div ref="contentRef" :class="ui.dropdown()" :style="{ paddingTop: `${internalInputHeight / 2 + 24}px` }"
+        @mousedown="(e) => {
+          const target = e.target as HTMLElement;
+          // 如果点击的是输入框等可聚焦元素，不要阻止默认行为，否则会导致无法正常聚焦
+          if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
+            return;
+          }
+          e.preventDefault();
+        }">
         <slot name="dropdown" :ui="ui" :history="localHistory">
 
           <!-- SKU 属性搜索区块 -->
@@ -443,21 +466,34 @@ onUnmounted(() => {
             <slot name="sku-list" :ui="ui" :attributes="skuAttributes">
               <RebornSku :model-value="modelValue" :options="skuAttributes"
                 @update:model-value="(val: any) => emit('update:modelValue', val)"
-                @change="(key: string, val: any) => emit('select-sku', { label: key, value: val } as any)" />
+                @change="(key: string, val: any) => emit('select-sku', { label: key, value: val } as any)" @click.stop>
+                <!-- 将从 RebornSearchBox 接收到的所有插槽全部穿透转发给 RebornSku (例如 #price 等) -->
+                <template v-for="(_, name) in $slots" #[name]="slotData">
+                  <slot :name="name" v-bind="slotData" />
+                </template>
+              </RebornSku>
             </slot>
           </template>
 
           <!-- 历史搜索区块 -->
-          <div v-if="showHistory && localHistory.length > 0" :class="ui.section()">
+          <div v-if="showHistory" :class="ui.section()">
             <div :class="ui.sectionTitle()">
               <span>{{ historyTitle }}</span>
-              <span :class="ui.clearAll()" @click="handleClearHistory">{{ clearAllLabel }}</span>
+              <div v-if="localHistory.length > 0" :class="ui.clearAll()" @click="handleClearHistory">
+                <Icon name="lucide:trash-2" />
+                {{ clearAllLabel }}
+              </div>
             </div>
-            <div :class="ui.historyTags()">
+
+            <div v-if="localHistory.length > 0" :class="ui.historyTags()">
               <slot name="history" :history="localHistory" :ui="ui">
                 <RebornBadge v-for="h in localHistory" :key="h" :label="h" closable variant="soft" color="neutral"
-                  :ui="{ label: 'text-gray-7' }" @click="selectHistory(h)" @close="handleRemoveHistoryItem(h)" />
+                  size="md" :ui="{ label: 'text-gray-7' }" @click="selectHistory(h)"
+                  @close="handleRemoveHistoryItem(h)" />
               </slot>
+            </div>
+            <div v-else class="text-sm text-gray-400 py-2">
+              {{ emptyHistoryLabel }}
             </div>
           </div>
 

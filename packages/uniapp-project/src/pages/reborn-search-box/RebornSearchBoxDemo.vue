@@ -55,7 +55,8 @@ const onRemoveHistory = () => {
     <view>
       <text class="text-32 font-bold mb-4 block">关联搜索模式 (Associate)</text>
       <RebornSearchBox v-model="searchQuery" :category="selectedCategory" placeholder="搜索商品/店铺..."
-        @search="handleSearch" @click-category="handleCategoryClick" @click-camera="handleCameraClick">
+        @search="handleSearch" @click-category="handleCategoryClick" @click-camera="handleCameraClick"
+        :color="'primary'" :border="true">
         <template #associate-list="{ ui }">
           <view :class="ui.section()">
             <text :class="ui.sectionTitle()">为您推荐</text>
@@ -110,8 +111,18 @@ const onRemoveHistory = () => {
       </view>
     </view>
 
+    <view class="pb-4">
+      <text class="text-32 font-bold mb-4 block">新功能：翻译切换与自定义样式</text>
+      <RebornSearchBox placeholder="关键词/商品ID/网址" :rounded="true" :border="true" clearable />
+    </view>
+
     <view class="pb-20">
-      <text class="text-32 font-bold mb-4 block">禁用下拉框</text>
+      <text class="text-32 font-bold mb-4 block">禁用状态</text>
+      <RebornSearchBox disabled placeholder="禁用状态的搜索框" />
+    </view>
+
+    <view class="pb-20">
+      <text class="text-32 font-bold mb-4 block">原本的禁用下拉框</text>
       <RebornSearchBox :show-dropdown="false" placeholder="这个搜索框不会弹出面板" />
     </view>
   </view>

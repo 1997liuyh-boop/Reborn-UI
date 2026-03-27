@@ -106,6 +106,9 @@ const isFocus = ref<boolean>(props.autofocus)
 // 是否聚焦（输入框作用）
 const isFocusing = ref<boolean>(props.autofocus)
 
+// 标记是否正在执行程序主动触焦（屏蔽中间 blur 副作用）
+const isProgrammaticFocus = ref(false)
+
 // 是否显示密码
 const isPassword = ref(props.password)
 
@@ -205,11 +208,14 @@ function focus() {
     return
   };
 
+  // 标记为程序主动触焦，防止 isFocusing 切换时产生的 blur 事件破坏样式状态
+  isProgrammaticFocus.value = true
   setTimeout(() => {
     isFocusing.value = false
 
     nextTick(() => {
       isFocusing.value = true
+      isProgrammaticFocus.value = false
     })
   }, 0)
 }
@@ -222,6 +228,8 @@ function onFocus(e: any) {
 }
 
 function onBlur(e: any) {
+  // 程序主动触焦过程中产生的 blur 为副作用，忽略以保持样式连贯
+  if (isProgrammaticFocus.value) return
   isFocus.value = false
   emit('blur', e)
   if (validate) { validate('blur') }

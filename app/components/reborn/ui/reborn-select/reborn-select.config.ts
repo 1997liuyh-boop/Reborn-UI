@@ -32,22 +32,22 @@ export default {
     variants: {
         size: {
             sm: {
-                trigger: "h-input-sm px-2 text-26 gap-1 rounded-ui-sm leading-none",
-                option: "h-input-sm text-26 px-2 leading-none",
+                trigger: "h-input-sm px-2 text-body-sm gap-1 rounded-ui-sm leading-none",
+                option: "h-input-sm text-body-sm px-2 leading-none",
                 dropdown: "rounded-ui-sm",
                 arrow: "size-3",
                 clearBtn: "size-3",
             },
             md: {
-                trigger: "h-input-md px-3 text-28 gap-2 rounded-ui-md",
-                option: "h-input-md text-28 px-3",
+                trigger: "h-input-md px-3 text-body-base gap-2 rounded-ui-md",
+                option: "h-input-md text-body-base px-3",
                 dropdown: "rounded-ui-md",
                 arrow: "size-4",
                 clearBtn: "size-4",
             },
             lg: {
-                trigger: "h-input-lg px-4 text-28 gap-2 rounded-ui-base",
-                option: "h-input-lg text-28  px-4",
+                trigger: "h-input-lg px-4 text-body-base gap-2 rounded-ui-base",
+                option: "h-input-lg text-body-base  px-4",
                 dropdown: "rounded-ui-base",
                 arrow: "size-5",
                 clearBtn: "size-5",

@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme from "./reborn-sku.config";
+import RebornBadge from "../reborn-badge/RebornBadge.vue";
 
 const b = tv(theme);
 
@@ -20,17 +21,17 @@ export interface SkuOption {
   /** 绑定到 modelValue 的 key */
   key: string;
   /** 选项列表中用于显示的字段名 */
-  labelKey: string;
+  labelKey?: string;
   /** 选项列表中用于取值的字段名 */
-  valueKey: string;
+  valueKey?: string;
   /** 是否支持多选 */
-  multiple: boolean;
+  multiple?: boolean;
   /** 自定义插槽名称 */
   slots?: string;
   /** slots 节点是否完全覆盖该属性组，为 true 时不渲染默认内容 */
   slotsCover?: boolean;
   /** 属性选项列表 */
-  children: SkuOptionItem[];
+  children?: SkuOptionItem[];
 }
 
 /** RebornSku UI 覆盖类型 */
@@ -40,8 +41,6 @@ export interface SkuUi {
   title?: string;
   list?: string;
   item?: string;
-  itemActive?: string;
-  itemDisabled?: string;
 }
 
 export interface SkuProps {
@@ -75,29 +74,38 @@ const ui = computed(() => ({
   title: cn(styles.title(), uiOverrides.value.title),
   list: cn(styles.list(), uiOverrides.value.list),
   item: cn(styles.item(), uiOverrides.value.item),
-  itemActive: cn(styles.itemActive(), uiOverrides.value.itemActive),
-  itemDisabled: cn(styles.itemDisabled(), uiOverrides.value.itemDisabled),
 }));
+
+/** 深度判断两个值是否相等 (应对 value 是数组 [1000, 5000] 等情况) */
+function isEqual(a: any, b: any): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
 
 /** 判断某个选项是否被选中 */
 function isSelected(option: SkuOption, item: SkuOptionItem): boolean {
   const current = props.modelValue?.[option.key];
-  const val = item[option.valueKey];
+  const val = option.valueKey ? item[option.valueKey] : item;
   if (option.multiple && Array.isArray(current)) {
-    return current.includes(val);
+    return current.some(c => isEqual(c, val));
   }
-  return current === val;
+  return isEqual(current, val);
 }
 
 /** 点击某个属性值 */
 function handleSelect(option: SkuOption, item: SkuOptionItem) {
-  const val = item[option.valueKey];
+  const val = option.valueKey ? item[option.valueKey] : item;
   const current = props.modelValue?.[option.key];
   let next: any;
 
   if (option.multiple) {
     const arr: any[] = Array.isArray(current) ? [...current] : [];
-    const idx = arr.indexOf(val);
+    const idx = arr.findIndex(c => isEqual(c, val));
     if (idx > -1) {
       arr.splice(idx, 1);
     } else {
@@ -106,7 +114,7 @@ function handleSelect(option: SkuOption, item: SkuOptionItem) {
     next = arr;
   } else {
     // 单选：再次点击取消选中
-    next = current === val ? undefined : val;
+    next = isEqual(current, val) ? undefined : val;
   }
 
   const newValue = { ...props.modelValue, [option.key]: next };
@@ -125,23 +133,17 @@ function handleSelect(option: SkuOption, item: SkuOptionItem) {
       <div v-else :class="ui.group">
         <div v-if="option.title" :class="ui.title">{{ option.title }}</div>
 
-        <!-- 自定义插槽（非覆盖模式，插入到列表区域） -->
-        <slot v-if="option.slots" :name="option.slots" :option="option" :modelValue="modelValue" />
-
-        <div v-else :class="ui.list">
-          <div
-            v-for="item in option.children"
-            :key="item[option.valueKey]"
-            :class="[
-              ui.item,
-              isSelected(option, item) ? ui.itemActive : '',
-            ]"
-            @click="handleSelect(option, item)"
-          >
+        <div :class="ui.list">
+          <RebornBadge v-for="(item, index) in option.children" :key="index" size="md"
+            :color="isSelected(option, item) ? 'primary' : 'neutral'" variant="soft" @click="handleSelect(option, item)"
+            :class="ui.item" :ui="{ label: isSelected(option, item) ? '' : 'text-gray-7' }">
             <slot name="item" :item="item" :option="option" :selected="isSelected(option, item)">
-              {{ item[option.labelKey] }}
+              {{ option.labelKey ? item[option.labelKey] : item }}
             </slot>
-          </div>
+          </RebornBadge>
+
+          <!-- 如果没有完全覆盖 (slotsCover=false) 但提供了插槽，作为附加组件挂载在选项列表后方 (例如自定义输入框) -->
+          <slot v-if="option.slots" :name="option.slots" :option="option" :modelValue="modelValue" />
         </div>
       </div>
     </template>

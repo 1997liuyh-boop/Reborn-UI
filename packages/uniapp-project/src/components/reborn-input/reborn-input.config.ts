@@ -6,10 +6,10 @@ const config = {
     wrapper:
       'relative flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1',
     input:
-      'flex-1 h-full bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
+      'flex-1 h-full bg-transparent border-0 outline-none px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
     leading: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
     iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-[16rpx]',
-    iconSection: 'flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
+    iconSection: 'self-stretch flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
     icon: '',
     separator: 'w-px transition-colors bg-gray-4',
   },

@@ -8,13 +8,13 @@ export default {
     root: "flex flex-col gap-2 min-w-0",
     list: "relative flex max-w-full box-border gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
     trigger:
-      "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap px-3 py-2 text-32 font-medium text-gray-7 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1",
-    leadingIcon: "flex items-center text-28",
+      "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap px-3 py-2 text-title-md font-medium text-gray-7 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1",
+    leadingIcon: "flex items-center text-body-base",
     leadingAvatar: "flex items-center overflow-hidden rounded-full",
     leadingAvatarSize: "h-6 w-6",
     label: "relative z-10",
-    trailingBadge: "flex items-center rounded-full bg-gray-2 px-2 py-0.5 text-24 text-gray-7",
-    trailingBadgeSize: "text-24",
+    trailingBadge: "flex items-center rounded-full bg-gray-2 px-2 py-0.5 text-caption-lg text-gray-7",
+    trailingBadgeSize: "text-caption-lg",
     content:
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 scroll-mt-24",
     indicator:
@@ -76,19 +76,19 @@ export default {
     },
     size: {
       sm: {
-        trigger: "text-28 px-2.5 py-1.5",
+        trigger: "text-body-base px-2.5 py-1.5",
         leadingAvatarSize: "h-5 w-5",
-        trailingBadgeSize: "text-20",
+        trailingBadgeSize: "text-caption-sm",
       },
       md: {
-        trigger: "text-32 px-3 py-2",
+        trigger: "text-title-md px-3 py-2",
         leadingAvatarSize: "h-6 w-6",
-        trailingBadgeSize: "text-22",
+        trailingBadgeSize: "text-caption-md",
       },
       lg: {
-        trigger: "text-36 px-4 py-2.5",
+        trigger: "text-title-lg px-4 py-2.5",
         leadingAvatarSize: "h-7 w-7",
-        trailingBadgeSize: "text-24",
+        trailingBadgeSize: "text-caption-lg",
       },
     },
     sticky: {

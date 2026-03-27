@@ -8,7 +8,7 @@ export const badgeSizes = ['sm', 'md', 'lg'] as const
 const config = {
   /** 徽章插槽样式配置 */
   slots: {
-    root: 'reborn-badge',
+    root: 'reborn-badge cursor-pointer',
     base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color]',
     label: 'inline-flex items-center justify-center truncate',
     leadingIcon: 'shrink-0',
@@ -44,24 +44,24 @@ const config = {
     size: {
       sm: {
         base: 'h-badge-sm px-2 rounded-ui-xs gap-1',
-        label: 'text-20 leading-none',
+        label: 'text-caption-lg leading-none',
         leadingIcon: 'size-3.5',
         trailingIcon: 'size-3.5',
-        closeIcon: 'text-22',
+        closeIcon: 'text-caption-lg',
       },
       md: {
         base: 'h-badge-md px-2 rounded-ui-sm gap-1',
-        label: 'text-22 leading-normal',
+        label: 'text-body-base leading-normal',
         leadingIcon: 'size-4',
         trailingIcon: 'size-4',
-        closeIcon: 'text-24'
+        closeIcon: 'text-body-base'
       },
       lg: {
         base: 'h-badge-lg px-2 rounded-ui-md gap-1',
-        label: 'text-22 leading-normal',
+        label: 'text-title-md leading-normal',
         leadingIcon: 'size-4',
         trailingIcon: 'size-4',
-        closeIcon: 'text-24'
+        closeIcon: 'text-title-md'
       }
     },
     /** 是否为正方形（等宽高） */
