@@ -171,10 +171,14 @@ function setPromise(duration: number) {
 function onTransitionEnd() {
     if (transitionEnded.value) return
     transitionEnded.value = true
+    // 先将 display 置为 false，再触发 after-leave 事件。
+    // 这样外部监听 after-leave 时，display.value=false 已被标记 dirty，
+    // Vue 调度器会在下一个 nextTick（flush）前先把 setData({display:none})
+    // 发往渲染层，确保渲染层隐藏元素的时序早于任何重置逻辑。
+    if (!props.show && display.value) display.value = false
     if (status.value === 'leave') {
         emit('after-leave')
     } else if (status.value === 'enter') { emit('after-enter') }
-    if (!props.show && display.value) display.value = false
 }
 function noop() { }
 </script>

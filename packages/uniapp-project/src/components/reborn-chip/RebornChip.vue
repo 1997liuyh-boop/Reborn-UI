@@ -54,10 +54,12 @@ const ui = computed(() => b({
 </script>
 
 <template>
-  <view :class="ui.root({ class: cn(props.customClass) })" style="background-color: tomato;">
-    <slot />
-    <view v-if="show" :class="ui.base()">
-      <text v-if="props.text" :class="ui.label()">{{ props.text }}</text>
+  <view>
+    <view :class="ui.root({ class: cn(props.customClass) })">
+      <slot />
+      <view v-if="show" :class="ui.base()">
+        <text v-if="props.text" :class="ui.label()">{{ props.text }}</text>
+      </view>
     </view>
   </view>
 </template>

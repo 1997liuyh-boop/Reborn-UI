@@ -27,6 +27,7 @@ export type InputType
 export type InputUI = {
   wrapper?: string
   input?: string
+  inputItem?: string
   leading?: string
   trailing?: string
   iconBox?: string
@@ -135,6 +136,7 @@ const ui = computed(() => {
     color: props.color,
     error: isError.value,
     focus: isFocus.value,
+    password: props.password,
   })
   return {
     wrapper: (opts?: { class?: any }) =>
@@ -153,6 +155,8 @@ const ui = computed(() => {
       styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
     separator: (opts?: { class?: any }) =>
       styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
+    inputItem: (opts?: { class?: any }) =>
+      styles.inputItem({ class: cn(opts?.class, uiOverrides.value.inputItem) }),
   }
 }
 )
@@ -235,30 +239,14 @@ function handleInteraction() {
   isPasswordToggling.value = true
   isPassword.value = !isPassword.value
   setTimeout(() => { isPasswordToggling.value = false }, 300)
-  if (isFocus.value) {
-    const query = uni.createSelectorQuery();
-    query.select('.reborn-input').fields({ node: true, rect: true }, (res) => {
-      if (res && res.node) {
-        const node = res.node
-
-        // #ifdef H5
-        node.focus();
-        nextTick(() => {
-          const len = String(inputValue.value ?? '').length;
-          if (typeof node.setSelectionRange === 'function') {
-            node.setSelectionRange(len, len);
-          }
-        })
-        // #endif
-
-        // #ifndef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO
-        node.focus();
-        // #endif
-      }
-    }).exec();
-  }
 }
 
+// 切换密码显示状态
+function showPassword() {
+  if (fieldGroupDisabled.value || props.readonly) { return }
+  isPassword.value = !isPassword.value
+  nextTick(() => focus())
+}
 
 function handleFocus(e: any) {
   if (fieldGroupDisabled.value || props.readonly) { return }
@@ -296,15 +284,31 @@ defineExpose({
       <slot name="leading" :ui="ui" />
     </view>
 
+    
+    <!-- #ifdef H5 || APP-PLUS -->
     <view :class="ui.input()" @touchstart="handleFocus">
       <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
-      :placeholder="props.placeholder" :value="inputValue" :class="ui.input()" :password="isPassword"
+      :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()" :password="isPassword"
       :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
       :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
       :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
       :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard"
       @input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
     </view>
+    <!-- #endif -->
+
+    <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
+    <view :class="ui.input({ class: 'relative' })" @focus="onFocus">
+      <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
+      :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()" :password="isPassword"
+      :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
+      :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
+      :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
+      :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard"
+      @input="onInput" @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
+    </view>
+    <!-- #endif -->
+
 
     <!-- Icons Section -->
     <view :class="ui.iconBox()" @tap.stop.prevent>
@@ -314,10 +318,20 @@ defineExpose({
 
       <view v-if="showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
-      <view v-if="password" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction" >
+      
+      <!-- #ifdef H5 || APP-PLUS -->
+      <view v-if="password" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction">
         <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
           style="width: var(--icon-size); height: var(--icon-size);" />
       </view>
+      <!-- #endif -->
+      
+      <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
+      <view v-if="password" :class="ui.password({ class: 'h-full' })" @tap.stop="showPassword">
+        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
+          style="width: var(--icon-size); height: var(--icon-size);" />
+      </view>
+      <!-- #endif -->
 
       <view v-if="password && $slots.trailing" :class="ui.separator()" />
 

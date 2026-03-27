@@ -32,7 +32,7 @@ const props = defineProps({
     absolute: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:modelValue', 'close'])
+const emit = defineEmits(['update:modelValue', 'close', 'click'])
 
 const b = tv(theme)
 
@@ -41,6 +41,7 @@ const overlayClass = computed(() => {
 })
 
 function handleClick() {
+    emit('click')
     if (props.closeOnClickOverlay) {
         emit('update:modelValue', false)
         emit('close')
