@@ -6,7 +6,8 @@ const config = {
     wrapper:
       'relative flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1',
     input:
-      'flex-1 h-full bg-transparent border-0 outline-none px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
+      'flex w-full bg-gray-2 dark:bg-gray-8 px-3 text-sm text-gray-8 dark:text-gray-1  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
+    inputItem: 'h-full',
     leading: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
     iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-[16rpx]',
     iconSection: 'self-stretch flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
@@ -86,6 +87,14 @@ const config = {
       warning: {},
       error: {},
       neutral: {},
+    },
+    password: {
+      true: {
+        inputItem: 'h-full w-[88%]',
+      },
+      false: {
+        inputItem: 'h-full w-[100%]',
+      },
     },
     focus: {
       true: {},

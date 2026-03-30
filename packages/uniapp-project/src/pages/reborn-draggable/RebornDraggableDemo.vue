@@ -30,6 +30,7 @@ const list2 = ref([
  */
 function onStart(index: number) {
     console.log("开始拖拽:", index);
+    
 }
 
 /**
@@ -37,6 +38,7 @@ function onStart(index: number) {
  */
 function onEnd(index: number) {
     console.log("结束拖拽:", index);
+    
 }
 
 /**
@@ -53,7 +55,7 @@ function onChange(newList: any[]) {
             <view class="p-4">
                 <reborn-draggable v-model="list1" @start="onStart" @end="onEnd" @change="onChange">
                     <template #item="{ item }">
-                        <view class="mb-2 flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm"
+                        <view class="flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm"
                             :class="item.color">
                             {{ item.name }}
                         </view>
@@ -66,7 +68,7 @@ function onChange(newList: any[]) {
             <view class="p-4">
                 <reborn-draggable v-model="list2" :long-press="false">
                     <template #item="{ item }">
-                        <view class="mb-2 flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm" :class="[
+                        <view class="flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm" :class="[
                             { 'opacity-50': item['disabled'] },
                             item.color
                         ]">
@@ -81,7 +83,7 @@ function onChange(newList: any[]) {
             <view class="p-4">
                 <reborn-draggable v-model="list2" :columns="3" :long-press="false">
                     <template #item="{ item }">
-                        <view class="flex flex-row items-center justify-center p-3 rounded-lg m-1 text-white" :class="[
+                        <view class="flex flex-row items-center justify-center p-3 rounded-lg text-white" :class="[
                             { 'opacity-50': item['disabled'] },
                             item.color
                         ]">
@@ -97,7 +99,7 @@ function onChange(newList: any[]) {
             <view class="p-4">
                 <reborn-draggable v-model="list1" disabled>
                     <template #item="{ item }">
-                        <view class="mb-2 flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm"
+                        <view class="flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm"
                             :class="item.color">
                             {{ item.name }} (禁用)
                         </view>
