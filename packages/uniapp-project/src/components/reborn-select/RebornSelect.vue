@@ -293,6 +293,7 @@ function open(cb: ((value: SelectValue) => void) | null = null) {
 }
 
 function close() {
+  console.log('close');
   visible.value = false
 }
 
@@ -388,7 +389,7 @@ defineExpose({
       <view :class="ui.buttons()">
         <view :class="ui.cancel()">
           <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color"
-            :ui="{ base: ui.cancelButton() }" block @tap.stop="close">
+            :ui="{ base: ui.cancelButton() }" block @tap="close">
             {{ cancelText }}
           </RebornButton>
         </view>

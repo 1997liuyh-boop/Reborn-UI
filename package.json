@@ -76,16 +76,14 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "weapp-tailwindcss",
-      "@weapp-tailwindcss/merge-v3",
       "@parcel/watcher",
       "@tailwindcss/oxide",
       "better-sqlite3",
+      "core-js",
       "esbuild",
       "sharp",
       "unrs-resolver",
-      "vue-demi",
-      "weapp-tailwindcss"
+      "vue-demi"
     ],
     "overrides": {
       "@nuxt/content": "^3.11.0",

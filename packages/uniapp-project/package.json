@@ -78,7 +78,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@dcloudio/types": "^3.4.29",
+    "@dcloudio/types": "^3.4.19",
     "@dcloudio/uni-automator": "3.0.0-4080720251210001",
     "@dcloudio/uni-cli-shared": "3.0.0-4080720251210001",
     "@dcloudio/uni-stacktracey": "3.0.0-4080720251210001",
