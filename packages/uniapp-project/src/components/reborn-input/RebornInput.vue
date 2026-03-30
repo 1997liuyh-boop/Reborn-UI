@@ -154,7 +154,7 @@ const ui = computed(() => {
     clear: (opts?: { class?: any }) =>
       styles.icon({ class: cn(opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) =>
-      styles.icon({ class: cn(opts?.class, uiOverrides.value.password) }),
+      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
     separator: (opts?: { class?: any }) =>
       styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
     inputItem: (opts?: { class?: any }) =>
@@ -286,28 +286,28 @@ defineExpose({
       <slot name="leading" :ui="ui" />
     </view>
 
-    
+
     <!-- #ifdef H5 || APP-PLUS -->
-    <view :class="ui.input()" @touchstart="handleFocus">
-      <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
-      :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()" :password="isPassword"
-      :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
-      :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
-      :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
-      :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard"
-      @input="onInput" @focus="onFocus" @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
+    <view :class="ui.input({ class: 'h-full' })" @touchstart="handleFocus">
+      <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly"
+        :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()"
+        :password="isPassword" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
+        :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
+        :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
+        :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @focus="onFocus"
+        @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
     </view>
     <!-- #endif -->
 
     <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
     <view :class="ui.input({ class: 'relative' })" @focus="onFocus">
-      <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly" :readonly="props.readonly"
-      :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()" :password="isPassword"
-      :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
-      :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
-      :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
-      :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard"
-      @input="onInput" @blur="onBlur" @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
+      <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly"
+        :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()"
+        :password="isPassword" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
+        :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
+        :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
+        :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @blur="onBlur"
+        @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
     </view>
     <!-- #endif -->
 
@@ -320,18 +320,16 @@ defineExpose({
 
       <view v-if="separator && showClear && (password || $slots.trailing)" :class="ui.separator()" />
 
-      
+
       <!-- #ifdef H5 || APP-PLUS -->
       <view v-if="password" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction">
-        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
-          style="width: var(--icon-size); height: var(--icon-size);" />
+        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']" />
       </view>
       <!-- #endif -->
-      
+
       <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
       <view v-if="password" :class="ui.password({ class: 'h-full' })" @tap.stop="showPassword">
-        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']"
-          style="width: var(--icon-size); height: var(--icon-size);" />
+        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']" />
       </view>
       <!-- #endif -->
 
