@@ -1,6 +1,6 @@
 {
   "name": "reborn-ui",
-  "version": "0.1.79",
+  "version": "0.1.81",
   "description": "A CLI for Reborn UI",
   "author": "1997liuyh-boop",
   "license": "MIT",
@@ -26,10 +26,11 @@
     "dev": "tsx src/index.ts",
     "clean": "rimraf dist",
     "prepare": "tsup",
+    "publish:version": "tsx src/scripts/prepare-publish-version.ts",
     "templates:sync": "tsx src/scripts/sync-templates.ts",
     "registry:build": "tsx src/index.ts build --root ../.. --uniapp-source packages/uniapp-project/src/components",
     "prepack": "npm run templates:sync && npm run build && npm run registry:build",
-    "prepublishOnly": "npm run templates:sync && npm run build && npm run registry:build"
+    "prepublishOnly": "npm run publish:version && npm run templates:sync && npm run build && npm run registry:build"
   },
   "dependencies": {
     "chalk": "^5.6.2",

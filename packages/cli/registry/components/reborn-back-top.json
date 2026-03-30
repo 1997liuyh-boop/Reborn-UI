@@ -7,7 +7,7 @@
   "files": [
     {
       "path": "reborn-back-top.config.ts",
-      "content": "const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const\r\nconst sizes = [\"sm\", \"md\", \"lg\"] as const;\r\nexport { color as backTopColors, sizes as backTopSizes };\r\nexport default {\r\n    slots: {\r\n        wrapper: \"fixed right-0 z-50 overflow-visible pointer-none transition-all duration-300 active:scale-95\",\r\n        base: \"flex flex-row items-center justify-center text-white shadow-lg rounded-full pointer-events-auto cursor-pointer transition-transform duration-300\",\r\n        icon: \"text-white\"\r\n    },\r\n    variants: {\r\n        color: {\r\n            primary: { base: 'bg-primary' },\r\n            secondary: { base: 'bg-secondary' },\r\n            success: { base: 'bg-success' },\r\n            info: { base: 'bg-info' },\r\n            warning: { base: 'bg-warning' },\r\n            error: { base: 'bg-error' },\r\n            neutral: { base: 'bg-neutral' }\r\n        },\r\n        size: {\r\n            sm: { base: 'size-8', icon: 'text-26' },\r\n            md: { base: 'size-10', icon: 'text-28' },\r\n            lg: { base: 'size-12', icon: 'text-30' }\r\n        },\r\n    },\r\n    defaultVariants: {\r\n        color: 'primary' as const,\r\n        size: 'md' as const\r\n    }\r\n}\r\n",
+      "content": "const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const\r\nconst sizes = [\"sm\", \"md\", \"lg\"] as const;\r\nexport { color as backTopColors, sizes as backTopSizes };\r\nexport default {\r\n    slots: {\r\n        wrapper: \"fixed right-0 z-50 overflow-visible pointer-none transition-all duration-300 active:scale-95\",\r\n        base: \"flex flex-row items-center justify-center text-white shadow-lg rounded-full pointer-events-auto cursor-pointer transition-transform duration-300\",\r\n        icon: \"text-white\"\r\n    },\r\n    variants: {\r\n        color: {\r\n            primary: { base: 'bg-primary' },\r\n            secondary: { base: 'bg-secondary' },\r\n            success: { base: 'bg-success' },\r\n            info: { base: 'bg-info' },\r\n            warning: { base: 'bg-warning' },\r\n            error: { base: 'bg-error' },\r\n            neutral: { base: 'bg-neutral' }\r\n        },\r\n        size: {\r\n            sm: { base: 'size-8', icon: 'text-body-sm' },\r\n            md: { base: 'size-10', icon: 'text-body-base' },\r\n            lg: { base: 'size-12', icon: 'text-title-sm' }\r\n        },\r\n    },\r\n    defaultVariants: {\r\n        color: 'primary' as const,\r\n        size: 'md' as const\r\n    }\r\n}\r\n",
       "target": "web"
     },
     {
@@ -32,5 +32,5 @@
     }
   ],
   "fileCount": 5,
-  "contentHash": "dd969cbe3dfbd4f4e09202580deb85c9c84fe3a4"
+  "contentHash": "04d5a4ae4db5871033893e8aae00a9cd2047389f"
 }
