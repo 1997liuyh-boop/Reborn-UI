@@ -4,12 +4,12 @@ const colors = ["primary", "secondary", "success", "info", "warning", "error", "
 export { sizes as selectSizes, colors as selectColors };
 
 export const selectAnimations = {
-    enterActiveClass: "transition duration-150 ease-out",
-    enterFromClass: "opacity-0 -translate-y-1",
-    enterToClass: "opacity-100 translate-y-0",
-    leaveActiveClass: "transition duration-100 ease-in",
-    leaveFromClass: "opacity-100 translate-y-0",
-    leaveToClass: "opacity-0 -translate-y-1",
+    enterActiveClass: "transition-[height,opacity] duration-300 ease-out overflow-hidden",
+    enterFromClass: "opacity-0",
+    enterToClass: "opacity-100",
+    leaveActiveClass: "transition-[height,opacity] duration-200 ease-in overflow-hidden",
+    leaveFromClass: "opacity-100",
+    leaveToClass: "opacity-0",
 };
 
 export default {
@@ -21,7 +21,7 @@ export default {
         placeholder: "text-gray-4 dark:text-gray-5",
         arrow: "transition-transform duration-200 text-gray-4 shrink-0",
         dropdown:
-            "absolute z-50 mt-1 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-auto max-h-[240px] top-full scrollbar-hide",
+            "absolute z-50 mt-1 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-hidden max-h-[240px] top-full scrollbar-hide",
         option:
             "flex items-center cursor-pointer transition-colors leading-normal text-gray-7 dark:text-gray-2 data-[disabled=true]:opacity-50 data-[disabled=true]:pointer-events-none data-[disabled=true]:hover:bg-transparent",
         optionActive: "",
@@ -56,31 +56,31 @@ export default {
         color: {
             primary: {
                 trigger: "group-focus:border-primary data-[state=open]:border-primary",
-                optionActive: "bg-primary/10 text-primary",
+                optionActive: "bg-primary/10 dark:bg-primary/80 text-primary",
             },
             secondary: {
                 trigger: "group-focus:border-secondary data-[state=open]:border-secondary",
-                optionActive: "bg-secondary/10 text-secondary",
+                optionActive: "bg-secondary/10 dark:bg-secondary/80 text-secondary",
             },
             success: {
                 trigger: "group-focus:border-success data-[state=open]:border-success",
-                optionActive: "bg-success/10 text-success",
+                optionActive: "bg-success/10 dark:bg-success/80 text-success",
             },
             info: {
                 trigger: "group-focus:border-info data-[state=open]:border-info",
-                optionActive: "bg-info/10 text-info",
+                optionActive: "bg-info/10 dark:bg-info/80 text-info",
             },
             warning: {
                 trigger: "group-focus:border-warning data-[state=open]:border-warning",
-                optionActive: "bg-warning/10 text-warning",
+                optionActive: "bg-warning/10 dark:bg-warning/80 text-warning",
             },
             error: {
                 trigger: "group-focus:border-error data-[state=open]:border-error",
-                optionActive: "bg-error/10 text-error",
+                optionActive: "bg-error/10 dark:bg-error/80 text-error",
             },
             neutral: {
                 trigger: "group-focus:border-neutral data-[state=open]:border-neutral",
-                optionActive: "bg-neutral/10 text-neutral",
+                optionActive: "bg-neutral/10 dark:bg-neutral/80 text-neutral",
             },
         },
         open: {

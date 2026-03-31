@@ -58,6 +58,7 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
+const isOpening = ref(false);
 const wrapperRef = ref<HTMLElement | null>(null);
 const dropdownRef = ref<HTMLElement | null>(null);
 const highlightIndex = ref(-1);
@@ -104,10 +105,13 @@ const displayText = computed(() => selectedOptions.value.map(o => o.label).join(
 
 function toggle() {
     if (props.disabled) return;
+    const opening = !isOpen.value;
+    if (opening) {
+        isOpening.value = true;
+    }
     isOpen.value = !isOpen.value;
     if (isOpen.value && !props.multiple) {
         highlightIndex.value = props.options.findIndex((o) => o.value === props.modelValue);
-        nextTick(() => scrollToActive());
     }
 }
 
@@ -177,17 +181,93 @@ function onKeydown(e: KeyboardEvent) {
     }
 }
 
-function scrollToActive() {
-    if (dropdownRef.value && highlightIndex.value >= 0) {
-        const el = dropdownRef.value.children[highlightIndex.value] as HTMLElement;
-        el?.scrollIntoView?.({ block: "nearest" });
+function scrollToActive(instant = false) {
+    if (!dropdownRef.value || highlightIndex.value < 0) return;
+    const container = dropdownRef.value;
+    const el = container.children[highlightIndex.value] as HTMLElement;
+    if (!el) return;
+
+    if (instant) {
+        let maxH = 240;
+        if (typeof window !== "undefined") {
+            const cssMax = window.getComputedStyle(container).maxHeight;
+            if (cssMax && cssMax !== "none") {
+                maxH = parseInt(cssMax, 10) || 240;
+            }
+        }
+
+        const targetHeight = Math.min(container.scrollHeight, maxH);
+        const top = el.offsetTop;
+        const bottom = top + el.offsetHeight;
+        const cTop = container.scrollTop;
+
+        let newScrollTop = cTop;
+        if (top < cTop) {
+            newScrollTop = top;
+        } else if (bottom > cTop + targetHeight) {
+            newScrollTop = bottom - targetHeight;
+        }
+
+        container.scrollTop = newScrollTop;
+    } else {
+        el.scrollIntoView({ block: "nearest" });
     }
 }
 
-watch(highlightIndex, () => nextTick(scrollToActive));
+watch(highlightIndex, () => {
+    if (isOpening.value) return;
+    nextTick(() => scrollToActive(false));
+});
 
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
+
+const onBeforeEnter = (el: Element) => {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = '0';
+    htmlEl.style.opacity = '0';
+
+    nextTick(() => {
+        scrollToActive(true);
+    });
+};
+
+const onEnter = (el: Element, done: () => void) => {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
+    htmlEl.style.opacity = '1';
+    htmlEl.addEventListener('transitionend', done, { once: true });
+};
+
+const onAfterEnter = (el: Element) => {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = 'auto';
+    htmlEl.style.overflowY = 'auto';
+    isOpening.value = false;
+};
+
+const onBeforeLeave = (el: Element) => {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
+    htmlEl.style.opacity = '1';
+    htmlEl.style.overflowY = 'hidden';
+};
+
+const onLeave = (el: Element, done: () => void) => {
+    const htmlEl = el as HTMLElement;
+    // Force reflow
+    htmlEl.offsetHeight;
+    htmlEl.style.height = '0';
+    htmlEl.style.opacity = '0';
+    htmlEl.addEventListener('transitionend', done, { once: true });
+};
+
+const onAfterLeave = (el: Element) => {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = '';
+    htmlEl.style.opacity = '';
+    isOpening.value = false;
+};
 </script>
 
 <template>
@@ -210,7 +290,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
         <Transition :enter-active-class="selectAnimations.enterActiveClass"
             :enter-from-class="selectAnimations.enterFromClass" :enter-to-class="selectAnimations.enterToClass"
             :leave-active-class="selectAnimations.leaveActiveClass" :leave-from-class="selectAnimations.leaveFromClass"
-            :leave-to-class="selectAnimations.leaveToClass">
+            :leave-to-class="selectAnimations.leaveToClass" @before-enter="onBeforeEnter" @enter="onEnter"
+            @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave" @after-leave="onAfterLeave">
             <div v-if="isOpen" ref="dropdownRef" :class="ui.dropdown()">
                 <div v-for="(option, index) in options" :key="index" :class="[
                     ui.option(),

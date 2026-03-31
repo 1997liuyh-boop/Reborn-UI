@@ -28,8 +28,9 @@ export const inputTheme = {
  */
 export const selectTheme = {
     slots: {
-        trigger: "border-0! bg-transparent!",
-        dropdown: "p-4! w-auto!",
+        wrapper: "h-full!",
+        trigger: "border-0! bg-transparent! h-full! overflow-hidden",
+        dropdown: "w-auto!",
         triggerText: "truncate w-[50px]",
     }
 } as const;
@@ -38,23 +39,23 @@ export const selectTheme = {
 export default {
     slots: {
         /** 最外层容器 */
-        wrapper: "relative",
+        wrapper: "relative z-10",
         /** 输入框及按钮包裹层 */
         inputWrapper: "flex-1 transition-all p-1.5 z-20 rounded-full relative",
         /** 基础输入框样式 */
-        input: "w-full bg-transparent border-none outline-none text-body-base text-gray-4 dark:text-gray-1 placeholder:text-gray-5",
+        input: "w-full bg-transparent border-none outline-none text-body-base text-gray-4 dark:text-gray-1 placeholder:text-gray-7",
         /** 相机识别图标 */
         cameraIcon: "text-title-2xl text-gray-5 cursor-pointer hover:text-gray-7/80 dark:hover:text-gray-2/80 transition-colors",
 
         // --- 下拿面板相关 ---
         /** 下拿面板外层容器 (负责动画过渡高度、透明度) */
-        dropdownOuter: "absolute left-0 w-full overflow-hidden transition-[height,opacity] duration-300 ease-in-out z-10 pointer-events-none shadow-lg",
+        dropdownOuter: "absolute left-0 w-full overflow-hidden transition-[height,opacity] duration-300 ease-in-out z-10 pointer-events-none drop-shadow-lg",
         /** 下拿面板内容区 (承载具体列表、样式背景) */
-        dropdown: "left-0 w-full bg-white dark:bg-gray-9 border border-gray-1 dark:border-gray-8 rounded-b-2xl shadow-xl z-20 overflow-hidden py-4 px-5 flex flex-col gap-6 z-1",
+        dropdown: "left-0 w-full bg-white dark:bg-gray-9 border border-gray-1 dark:border-gray-8 rounded-b-2xl drop-shadow-xl z-20 overflow-hidden py-4 px-5 flex flex-col gap-6 z-1",
         /** 功能区块 (如：最近搜索、联想列表) */
         section: "flex flex-col gap-3",
         /** 区块标题样式 */
-        sectionTitle: "text-title-md font-bold text-gray-8 dark:text-gray-6 flex items-center justify-between",
+        sectionTitle: "text-title-md font-bold text-gray-8 dark:text-gray-1 flex items-center justify-between",
         /** 历史记录标签容器 */
         historyTags: "flex flex-wrap gap-2",
         /** 单条历史记录标签 */
@@ -67,24 +68,21 @@ export default {
         associateList: "flex flex-col",
         /** 联想项 */
         associateItem: "flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 dark:hover:bg-gray-8 rounded-ui-sm transition-colors text-body-base text-gray-8 dark:text-gray-1",
-        /** SKU 属性网格容器 */
-        skuWrapper: "grid grid-cols-2 gap-4",
-        /** SKU 属性单项 */
-        skuItem: "flex flex-col gap-2 p-3 bg-gray-1 dark:bg-gray-8 rounded-ui-md cursor-pointer hover:border-primary transition-all border border-transparent",
-        /** SKU 属性名 */
-        skuLabel: "text-caption-lg text-gray-5",
-        /** SKU 属性值 */
-        skuValue: "text-body-base font-medium truncate",
-
         // --- 内部组件及辅助槽位 ---
         /** 选择器与输入框之间的连结包裹 */
-        leadingWrapper: "flex items-center",
+        leadingWrapper: "flex items-center h-full",
         /** 后置元素包裹层 */
         trailingWrapper: "flex gap-6 items-center",
         /** 垂直分隔线 */
-        separator: "mx-6 bg-[#D3D2D9]!",
+        separator: "mr-6 ml-3 bg-[#D3D2D9]!",
         /** 搜索按钮内的图标 */
         searchIconInner: "size-5",
+        /** 历史记录为空时的提示文字 */
+        emptyText: "text-sm text-gray-4 py-2",
+        /** 推荐搜索列表中的图标 */
+        recommendIcon: "size-4 text-gray-4 shrink-0",
+        /** 左侧选择器触发文字样式 */
+        selectTriggerText: "w-[50px] truncate text-gray-9 dark:text-gray-2",
     },
     variants: {
         // size: {
@@ -108,11 +106,11 @@ export default {
         /** 下拉面板展开状态下的背景切换 */
         expanded: {
             true: {
-                inputWrapper: "bg-white",
+                inputWrapper: "bg-white dark:bg-gray-8  shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]",
                 input: "bg-[#F7F7F9]",
             },
             false: {
-                inputWrapper: "bg-[#F7F7F9]",
+                inputWrapper: "bg-[#F7F7F9] dark:bg-gray-8",
             },
         },
     },

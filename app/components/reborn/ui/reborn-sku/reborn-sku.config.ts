@@ -6,7 +6,7 @@ export default {
     /** 单个属性组容器 */
     group: "flex flex-col gap-2",
     /** 属性组标题 */
-    title: "text-body-base font-medium text-gray-7 dark:text-gray-3",
+    title: "text-body-base font-medium text-gray-8 dark:text-gray-1",
     /** 属性值列表容器 */
     list: "flex flex-wrap gap-2",
     /** 单个属性值项 */

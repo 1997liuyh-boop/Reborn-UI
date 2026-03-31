@@ -10,10 +10,6 @@
   --ui-primary: black;
 }
 
-:root {
-  --ui-container: min(90rem, 100%);
-}
-
 .dark {
   --ui-bg: black;
   --ui-primary: white;

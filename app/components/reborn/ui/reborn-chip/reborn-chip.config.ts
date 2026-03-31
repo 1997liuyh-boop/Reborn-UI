@@ -1,4 +1,4 @@
-const size = ['3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const
+const size = ['xs', 'sm', 'md', 'lg', 'xl'] as const
 const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 const position = ['top-right', 'bottom-right', 'top-left', 'bottom-left'] as const
 
@@ -21,15 +21,11 @@ export default {
       neutral: { base: 'bg-neutral ring-neutral' }
     },
     size: {
-      '3xs': { base: 'h-[4px] min-w-[4px]', label: 'text-[4px]' },
-      '2xs': { base: 'h-[5px] min-w-[5px]', label: 'text-[5px]' },
-      xs: { base: 'h-[6px] min-w-[6px]', label: 'text-[6px]' },
-      sm: { base: 'h-[7px] min-w-[7px]', label: 'text-[7px]' },
-      md: { base: 'h-[8px] min-w-[8px]', label: 'text-[8px]' },
-      lg: { base: 'h-[9px] min-w-[9px]', label: 'text-[9px]' },
-      xl: { base: 'h-[10px] min-w-[10px]', label: 'text-[10px]' },
-      '2xl': { base: 'h-[11px] min-w-[11px]', label: 'text-[11px]' },
-      '3xl': { base: 'h-[12px] min-w-[12px]', label: 'text-[12px]' }
+      xs: { base: 'h-[10px] min-w-[10px]', label: 'text-[4px]' },
+      sm: { base: 'h-[12px] min-w-[12px]', label: 'text-[6px]' },
+      md: { base: 'h-[14px] min-w-[14px]', label: 'text-[8px]' },
+      lg: { base: 'h-[16px] min-w-[16px]', label: 'text-[10px]' },
+      xl: { base: 'h-[18px] min-w-[18px]', label: 'text-[12px]' }
     },
     position: {
       'top-right': { base: 'top-0 right-0' },

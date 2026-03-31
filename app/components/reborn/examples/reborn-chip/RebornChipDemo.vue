@@ -3,13 +3,9 @@ import RebornChip from '~/components/reborn/ui/reborn-chip/RebornChip.vue'
 
 import { chipColors, chipSizes, chipPositions } from '~/components/reborn/ui/reborn-chip/reborn-chip.config'
 
-// const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-// const sizes = ['3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const
-// const positions = ['top-right', 'bottom-right', 'top-left', 'bottom-left'] as const
-
 const color = ref<typeof chipColors[number]>('primary')
 const status = ref<typeof chipColors[number]>(chipColors[0])
-const size = ref<typeof chipSizes[number]>('3xl')
+const size = ref<typeof chipSizes[number]>('md')
 const position = ref<typeof chipPositions[number]>('top-right')
 const text = ref('9')
 const show = ref(true)

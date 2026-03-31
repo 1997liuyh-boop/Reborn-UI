@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import theme from './reborn-chip.config'
 import { tv } from '~/lib/tv'
+import { cn } from '~/lib/utils'
 
 const b = tv(theme)
 
@@ -41,13 +42,20 @@ const show = computed({
   set: (value) => emit('update:show', value)
 })
 
-const ui = computed(() => b({
-  color: props.color as ChipColor,
-  size: props.size as ChipSize,
-  position: props.position as ChipPosition,
-  inset: props.inset,
-  standalone: props.standalone
-}))
+const ui = computed(() => {
+  const styles = b({
+    color: props.color as ChipColor,
+    size: props.size as ChipSize,
+    position: props.position as ChipPosition,
+    inset: props.inset,
+    standalone: props.standalone
+  })
+  return {
+    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.class, props.ui?.root) }),
+    base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, props.ui?.base) }),
+    label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, props.ui?.label) }),
+  }
+})
 </script>
 
 <template>

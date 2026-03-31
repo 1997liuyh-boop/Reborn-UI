@@ -193,7 +193,8 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100 border-transparent'
               ]">
               <ClientOnly v-if="item.chip">
-                <RebornChip :text="item.chip.label" :color="(item.chip.color as any) || 'primary'" position="top-right">
+                <RebornChip :text="item.chip.label" :color="(item.chip.color as any) || 'primary'" position="top-right"
+                  :ui="{ base: 'rounded-ui-2xs px-1 text-xs' }" size="sm">
                   <SparklesText v-if="isActive(item)" :text="item.title"
                     :colors="{ first: '#9E7AFF', second: '#FE8BBB' }" :sparkles-count="5" class="text-sm " />
                   <span v-else class="truncate">{{ item.title }}</span>

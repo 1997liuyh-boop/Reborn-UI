@@ -1,134 +1,134 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import RebornSearchBox from "@/components/reborn-search-box/RebornSearchBox.vue";
+import { ref, reactive } from 'vue'
+import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import RebornCard from '@/components/reborn-card/RebornCard.vue'
+import RebornSearchBox from '@/components/reborn-search-box/RebornSearchBox.vue'
+import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
+import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
+import { searchBoxColors, searchBoxSizes, type SearchBoxSize, type SearchBoxColor } from '@/components/reborn-search-box/reborn-search-box.config'
 
-const searchQuery = ref("");
-const selectedCategory = ref("全部");
+// 1. 交互演练场状态
+const state = reactive({
+  value: '',
+  placeholder: '关键词/商品ID/网址',
+  size: 'sm' as SearchBoxSize,
+  color: 'primary' as SearchBoxColor,
+  border: false,
+  disabled: false
+})
 
-const skuSearchQuery = ref("");
-const skuAttributes = ref([
-  { label: "品牌", value: "Apple" },
-  { label: "分类", value: "手机" },
-  { label: "颜色", value: "深空灰" },
-  { label: "存储", value: "256GB" },
-]);
+// 默认搜索值
+const searchQuery = ref('')
+const customSlotQuery = ref('')
 
-const handleSearch = (val: string) => {
+// 颜色选项转换
+const colorOptions: { label: string, value: SearchBoxColor }[] = searchBoxColors.map(c => ({
+  label: c.charAt(0).toUpperCase() + c.slice(1),
+  value: c as SearchBoxColor
+}))
+
+// 尺寸选项转换
+const sizeOptions: { label: string, value: SearchBoxSize }[] = [
+  { label: '小 (sm)', value: 'sm' },
+  { label: '中 (md)', value: 'md' },
+  { label: '大 (lg)', value: 'lg' }
+]
+
+const handleSearch = (value: string) => {
   uni.showToast({
-    title: `搜索: ${val}\n目录: ${selectedCategory.value}`,
-    icon: 'none'
-  });
-};
-
-const handleCategoryClick = () => {
-  const categories = ["全部", "商品", "店铺", "用户"] as const;
-  const currentIndex = categories.indexOf(selectedCategory.value as any);
-  selectedCategory.value = categories[(currentIndex + 1) % categories.length];
-};
-
-const handleCameraClick = () => {
-  uni.showToast({
-    title: '点击了相机图标',
-    icon: 'none'
-  });
-};
-
-const handleSelectSku = (attr: any) => {
-  uni.showToast({
-    title: `选择 SKU: ${attr.label}=${attr.value}`,
-    icon: 'none'
-  });
-};
-
-// Custom history simulation
-const customHistory = ref(["Vue", "Uni-app", "Tailwind"]);
-const onSaveHistory = (newHistory: string[]) => {
-  customHistory.value = newHistory;
-};
-const onRemoveHistory = () => {
-  customHistory.value = [];
-};
+    title: `搜索: ${value || '空内容'}`,
+    icon: 'none',
+  })
+}
 </script>
 
 <template>
-  <view class="p-4 flex flex-col gap-8 bg-gray-50 dark:bg-gray-950 min-h-screen">
-    <view>
-      <text class="text-32 font-bold mb-4 block">关联搜索模式 (Associate)</text>
-      <RebornSearchBox v-model="searchQuery" :category="selectedCategory" placeholder="搜索商品/店铺..."
-        @search="handleSearch" @click-category="handleCategoryClick" @click-camera="handleCameraClick"
-        :color="'primary'" :border="true">
-        <template #associate-list="{ ui }">
-          <view :class="ui.section()">
-            <text :class="ui.sectionTitle()">为您推荐</text>
-            <view :class="ui.associateList()">
-              <view v-for="item in ['Switch OLED', 'PlayStation 5', 'RTX 4090']" :key="item" :class="ui.associateItem()"
-                @tap="searchQuery = item; handleSearch(item)">
-                <view class="i-lucide-trending-up size-4 text-orange-500 mr-2" />
-                <text>{{ item }}</text>
-              </view>
-            </view>
+  <RebornPage title="SearchBox 搜索框" description="支持多端适配、翻译切换及高度自定义插槽的搜索核心。">
+
+    <!-- 交互预览区 (直接平铺) -->
+    <view class="mb-6">
+      <view class="text-xs text-gray-400 mb-3 px-1 font-bold uppercase tracking-widest">LIVE PREVIEW</view>
+      <RebornSearchBox v-model="state.value" :placeholder="state.placeholder" :size="state.size" :color="state.color"
+        :border="state.border" :disabled="state.disabled" @search="handleSearch" />
+    </view>
+
+    <!-- 配置面板 -->
+    <RebornCard padding custom-class="mb-8">
+      <view class="grid grid-cols-1 gap-6">
+        <view class="grid grid-cols-2 gap-4">
+          <view class="flex flex-col gap-2">
+            <text class="text-[22rpx] text-gray-400 uppercase font-bold px-1">尺寸规格</text>
+            <RebornSelect v-model="state.size" :options="sizeOptions" size="sm" placeholder="选择尺寸" title="切换尺寸" />
           </view>
-        </template>
-      </RebornSearchBox>
-    </view>
+          <view class="flex flex-col gap-2">
+            <text class="text-[22rpx] text-gray-400 uppercase font-bold px-1">主题颜色</text>
+            <RebornSelect v-model="state.color" :options="colorOptions" size="sm" placeholder="选择颜色" title="切换主题颜色" />
+          </view>
+        </view>
 
-    <view>
-      <text class="text-32 font-bold mb-4 block">SKU 属性模式 & 蓝色主题</text>
-      <RebornSearchBox v-model="skuSearchQuery" mode="sku" color="blue" placeholder="搜索规格属性..."
-        :sku-attributes="skuAttributes" @select-sku="handleSelectSku" />
-    </view>
+        <view class="flex items-center justify-start gap-12 px-1">
+          <RebornSwitch v-model="state.border" size="sm" active-label="显示边框"
+            :ui="{ activeLabel: 'text-sm text-gray-500', inactiveLabel: 'text-sm text-gray-500' }" />
+          <RebornSwitch v-model="state.disabled" size="sm" active-label="禁用状态"
+            :ui="{ activeLabel: 'text-sm text-gray-500', inactiveLabel: 'text-sm text-gray-500' }" />
+        </view>
+      </view>
+    </RebornCard>
 
-    <view>
-      <text class="text-32 font-bold mb-4 block">颜色变体</text>
-      <view class="flex flex-col gap-4">
-        <view class="flex flex-col gap-2">
-          <text class="text-24 text-gray-500">PRIMARY (RED)</text>
-          <RebornSearchBox color="primary" placeholder="Primary Search" />
-        </view>
-        <view class="flex flex-col gap-2">
-          <text class="text-24 text-gray-500">GREEN (EMERALD)</text>
-          <RebornSearchBox color="green" placeholder="Green Search" />
-        </view>
-        <view class="flex flex-col gap-2">
-          <text class="text-24 text-gray-500">ORANGE</text>
-          <RebornSearchBox color="orange" placeholder="Orange Search" />
-        </view>
+    <!-- 分隔标题样式 -->
+    <view class="flex items-center gap-4 mb-4 mt-2">
+      <view class="w-1 h-6 bg-primary rounded-full"></view>
+      <text class="text-28 font-bold text-gray-800 dark:text-gray-200">各尺寸对比</text>
+    </view>
+    <view class="flex flex-col gap-5 mb-8">
+      <view v-for="size in sizeOptions" :key="size.value" class="flex flex-col gap-2">
+        <text class="text-22 text-gray-400 px-1">{{ size.label }}</text>
+        <RebornSearchBox :size="size.value" :placeholder="`${size.label} 搜索框预览`" border />
       </view>
     </view>
 
-    <view>
-      <text class="text-32 font-bold mb-4 block">自定义存储 (Mock)</text>
-      <RebornSearchBox placeholder="搜索词将存储在下方列表" :save-history="onSaveHistory" :remove-history="onRemoveHistory" />
-      <view class="mt-4 p-4 bg-white dark:bg-gray-900 rounded-16 border border-gray-100 dark:border-gray-800">
-        <text class="text-24 font-bold block mb-2">当前自定义存储内容:</text>
-        <view class="flex flex-row flex-wrap gap-2">
-          <view v-for="h in customHistory" :key="h"
-            class="px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-8 border border-gray-100 dark:border-gray-700">
-            <text class="text-24 text-gray-600 dark:text-gray-400">{{ h }}</text>
-          </view>
-          <text v-if="customHistory.length === 0" class="text-24 text-gray-400 italic">暂无历史</text>
-        </view>
+    <view class="flex items-center gap-4 mb-4 mt-2">
+      <view class="w-1 h-6 bg-secondary rounded-full"></view>
+      <text class="text-28 font-bold text-gray-800 dark:text-gray-200">色彩风格</text>
+    </view>
+    <view class="grid grid-cols-1 gap-5 mb-8">
+      <view v-for="color in colorOptions.slice(0, 4)" :key="color.value" class="flex flex-col gap-2">
+        <text class="text-22 text-gray-400 px-1">{{ color.label }}</text>
+        <RebornSearchBox :color="color.value" :placeholder="`${color.label} 主题色展示`" border />
       </view>
     </view>
 
-    <view class="pb-4">
-      <text class="text-32 font-bold mb-4 block">新功能：翻译切换与自定义样式</text>
-      <RebornSearchBox placeholder="关键词/商品ID/网址" :rounded="true" :border="true" clearable />
+    <view class="flex items-center gap-4 mb-4 mt-2">
+      <view class="w-1 h-6 bg-success rounded-full"></view>
+      <text class="text-28 font-bold text-gray-800 dark:text-gray-200">高度自定义 (Slots)</text>
+    </view>
+    <view class="flex flex-col gap-5 mb-10">
+      <view class="flex flex-col gap-2">
+        <text class="text-22 text-gray-400 px-1">识图搜索场景 (Slot: default)</text>
+        <RebornSearchBox v-model="customSlotQuery" color="success" placeholder="点击右侧图标试试">
+          <view
+            class="flex items-center gap-1.5 px-2.5 py-1 bg-success/10 rounded-full text-success active:scale-95 transition-all">
+            <view class="i-lucide-scan-line text-28" />
+            <text class="text-22 font-bold">识图</text>
+          </view>
+        </RebornSearchBox>
+      </view>
+
+      <view class="flex flex-col gap-2">
+        <text class="text-22 text-gray-400 px-1">默认相机样式</text>
+        <RebornSearchBox placeholder="不传入插槽时的默认表现" />
+      </view>
     </view>
 
-    <view class="pb-20">
-      <text class="text-32 font-bold mb-4 block">禁用状态</text>
-      <RebornSearchBox disabled placeholder="禁用状态的搜索框" />
+    <!-- 提示区 -->
+    <view
+      class="p-6 bg-gray-100/50 dark:bg-gray-800/30 rounded-2xl text-center border border-gray-100 dark:border-gray-800">
+      <text class="text-22 text-gray-500">
+        💡 提示：点击组件右侧的“源/译”按钮，可体验平滑的切换动效。该功能已内置于组件核心。
+      </text>
     </view>
-
-    <view class="pb-20">
-      <text class="text-32 font-bold mb-4 block">原本的禁用下拉框</text>
-      <RebornSearchBox :show-dropdown="false" placeholder="这个搜索框不会弹出面板" />
-    </view>
-  </view>
+    <view class="h-10"></view>
+  </RebornPage>
 </template>
 
-
-<style scoped>
-/* Page specific styles */
-</style>
+<style scoped></style>

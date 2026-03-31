@@ -54,14 +54,13 @@ export interface SearchBoxUi {
   associateList?: string;
   /** 联想项 */
   associateItem?: string;
-  skuWrapper?: string;
-  skuItem?: string;
-  skuLabel?: string;
-  skuValue?: string;
   leadingWrapper?: string;
   trailingWrapper?: string;
   separator?: string;
   searchIconInner?: string;
+  emptyText?: string;
+  recommendIcon?: string;
+  selectTriggerText?: string;
 }
 
 /** 搜索框双向绑定值类型 */
@@ -235,14 +234,7 @@ const ui = computed(() => {
       styles.associateList({ class: cn(opts?.class, uiOverrides.associateList) }),
     associateItem: (opts?: { class?: any }) =>
       styles.associateItem({ class: cn(opts?.class, uiOverrides.associateItem) }),
-    skuWrapper: (opts?: { class?: any }) =>
-      styles.skuWrapper({ class: cn(opts?.class, uiOverrides.skuWrapper) }),
-    skuItem: (opts?: { class?: any }) =>
-      styles.skuItem({ class: cn(opts?.class, uiOverrides.skuItem) }),
-    skuLabel: (opts?: { class?: any }) =>
-      styles.skuLabel({ class: cn(opts?.class, uiOverrides.skuLabel) }),
-    skuValue: (opts?: { class?: any }) =>
-      styles.skuValue({ class: cn(opts?.class, uiOverrides.skuValue) }),
+
     leadingWrapper: (opts?: { class?: any }) =>
       styles.leadingWrapper({ class: cn(opts?.class) }),
     trailingWrapper: (opts?: { class?: any }) =>
@@ -251,6 +243,12 @@ const ui = computed(() => {
       styles.separator({ class: cn(opts?.class) }),
     searchIconInner: (opts?: { class?: any }) =>
       styles.searchIconInner({ class: cn(opts?.class, uiOverrides.searchIconInner) }),
+    emptyText: (opts?: { class?: any }) =>
+      styles.emptyText({ class: cn(opts?.class, uiOverrides.emptyText) }),
+    recommendIcon: (opts?: { class?: any }) =>
+      styles.recommendIcon({ class: cn(opts?.class, uiOverrides.recommendIcon) }),
+    selectTriggerText: (opts?: { class?: any }) =>
+      styles.selectTriggerText({ class: cn(opts?.class, uiOverrides.selectTriggerText) }),
   };
 });
 
@@ -411,12 +409,12 @@ onUnmounted(() => {
         @keydown.enter="handleSearch">
         <!-- 前置选择器槽位 -->
         <template #leading="{ ui: inputSlotUi }">
-          <div :class="ui.leadingWrapper()">
+          <div :class="ui.leadingWrapper()" @click.stop="isExpanded = false">
             <RebornSelect :model-value="modelValue?.selectValue" v-bind="internalSelectProps"
               @update:model-value="handleSelectChange" @click.stop>
               <template #default="{ displayText, ui: selectSlotUi }">
                 <slot name="select-trigger" :displayText="displayText" :ui="selectSlotUi">
-                  <div class="w-[50px] text-ellipsis text-gray-8!" :class="selectSlotUi.triggerText()">
+                  <div :class="[ui.selectTriggerText(), selectSlotUi.triggerText()]">
                     {{ displayText }}
                   </div>
                 </slot>
@@ -492,7 +490,7 @@ onUnmounted(() => {
                   @close="handleRemoveHistoryItem(h)" />
               </slot>
             </div>
-            <div v-else class="text-sm text-gray-400 py-2">
+            <div v-else :class="ui.emptyText()">
               {{ emptyHistoryLabel }}
             </div>
           </div>
@@ -504,7 +502,7 @@ onUnmounted(() => {
               <div :class="ui.associateList()">
                 <div v-for="item in recommendKeywords" :key="item" :class="ui.associateItem()"
                   @click="selectRecommend(item)">
-                  <Icon name="lucide:trending-up" class="size-4 text-gray-4 shrink-0" />
+                  <Icon name="lucide:trending-up" :class="ui.recommendIcon()" />
                   <span>{{ item }}</span>
                 </div>
               </div>
