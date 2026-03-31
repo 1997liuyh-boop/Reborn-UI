@@ -1,8 +1,9 @@
 <template>
     <view class="reborn-draggable" :class="ui.root({ class: props.className })" :data-dragging="dragging"
-        @touchmove="dragWxs.touchmove">
+        :style="{ gap: `${props.gap * 0.25}rem` }"
+        @touchmove.stop.prevent="dragWxs.touchmove">
         <!-- @vue-ignore -->
-        <view v-for="(item, index) in list" :key="getItemKey(item, index)" class="reborn-draggable__item" :class="[
+        <view v-for="(item, index) in list" :key="getItemKey(item, index)" class="rounded-lg reborn-draggable__item" :class="[
             ui.item(),
             {
                 'reborn-draggable__item--disabled': disabled,
@@ -24,6 +25,8 @@
         </view>
     </view>
 </template>
+
+
 
 <script lang="ts" setup>
 import { computed, ref, getCurrentInstance, type PropType, watch, onMounted, onUnmounted } from "vue";
@@ -93,6 +96,11 @@ const props = defineProps({
     longPress: {
         type: Boolean,
         default: true
+    },
+    /** 间距 */
+    gap: {
+        type: Number,
+        default: 4
     }
 });
 
@@ -129,6 +137,18 @@ const itemHeight = ref(0);
 const itemWidth = ref(0);
 /** 是否已开始排序模拟（防止误触） */
 const sortingStarted = ref(false);
+
+// #ifdef H5
+/**
+ * H5 端专用：以 passive:false 模式注册到 document，
+ * 使得拖拽期间可以调用 preventDefault() 阻止页面滚动
+ */
+function h5PreventScroll(e: TouchEvent) {
+    if (dragging.value) {
+        e.preventDefault();
+    }
+}
+// #endif
 
 
 const b = tv(theme)
@@ -374,10 +394,16 @@ function getItemStyle(index: number) {
     const isCurrent = dragIndex.value == index;
 
     // 多列布局时设置等宽分布
+    // 用 calc 精确扣除 gap 占用空间：(100% - (columns-1) * gapSize) / columns
+    // Tailwind gap-N 对应 N * 0.25rem
     if (props.columns > 1) {
-        const widthPercent = 100 / props.columns;
-        style["flex-basis"] = `${widthPercent}%`;
-        style["width"] = `${widthPercent}%`;
+        const gapRem = props.gap * 0.25;
+        const totalGapRem = (props.columns - 1) * gapRem;
+        const calcWidth = totalGapRem > 0
+            ? `calc((100% - ${totalGapRem}rem) / ${props.columns})`
+            : `${100 / props.columns}%`;
+        style["flex-basis"] = calcWidth;
+        style["width"] = calcWidth;
         style["box-sizing"] = "border-box";
     }
 
@@ -531,6 +557,7 @@ async function onTouchStart(event: any, index: number, type: string) {
 
     // 初始化拖拽状态
     dragging.value = true;
+    
 
     // 初始化拖拽索引
     dragIndex.value = index;
@@ -541,12 +568,18 @@ async function onTouchStart(event: any, index: number, type: string) {
     offsetY.value = 0;
     // 初始化拖拽数据项
     dragItem.value = list.value[index];
+    
 
     // 先获取所有项目的位置信息，为后续计算做准备
     await getItemPosition();
 
     // 触发开始事件
     emit("start", index);
+
+    // H5 端：注册 passive:false 的全局 touchmove 拦截，防止页面跟随滚动
+    // #ifdef H5
+    document.addEventListener("touchmove", h5PreventScroll, { passive: false });
+    // #endif
 
     // 震动
     uni.$emit("cool.vibrate");
@@ -632,6 +665,11 @@ function onTouchEnd(): void {
     dropping.value = true;
     dragging.value = false;
 
+    // H5 端：移除全局 touchmove 拦截
+    // #ifdef H5
+    document.removeEventListener("touchmove", h5PreventScroll);
+    // #endif
+
     // 重置所有状态
     reset();
 
@@ -657,6 +695,7 @@ function getItemKey(item: any, index: number): string {
     // #endif
 }
 
+
 watch(
     computed(() => props.modelValue),
     (val: any[]) => {
@@ -671,6 +710,13 @@ watch(
         immediate: true
     }
 );
+
+// #ifdef H5
+// 组件卸载时兜底清理，防止拖拽中途组件被销毁导致监听器残留
+onUnmounted(() => {
+    document.removeEventListener("touchmove", h5PreventScroll);
+});
+// #endif
 </script>
 
 <script module="dragWxs" lang="wxs">
