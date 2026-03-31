@@ -268,7 +268,7 @@ onMounted(() => {
             </view>
             <!-- 分割线 -->
             <view class="w-[1px] h-1/2 bg-gray-4" />
-            22
+            
           </view>
         </template>
       </RebornInput>

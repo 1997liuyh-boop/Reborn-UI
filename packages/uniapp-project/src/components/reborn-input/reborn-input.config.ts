@@ -4,13 +4,13 @@ const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', '
 const config = {
   slots: {
     wrapper:
-      'relative flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1',
+      'relative flex w-full items-center transition-colors ring-1 ring-transparent bg-gray-2 dark:bg-gray-8 text-gray-8 dark:text-gray-1 overflow-hidden',
     input:
-      'flex w-full bg-gray-2 dark:bg-gray-8 px-3 text-sm text-gray-8 dark:text-gray-1  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
-    inputItem: 'h-full',
+      'flex-1 min-w-0 h-full pl-3 text-sm text-gray-8 dark:text-gray-1  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none transition-colors',
+    inputItem: 'h-full w-full',
     leading: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-muted-foreground',
-    iconBox: 'absolute bottom-0 right-3 top-0 z-20 flex items-center gap-[16rpx]',
-    iconSection: 'self-stretch flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
+    iconBox: 'h-full flex-shrink-0 flex items-center gap-[16rpx] pr-3',
+    iconSection: 'flex cursor-pointer items-center justify-center text-muted-foreground transition-all hover:opacity-80',
     icon: '',
     separator: 'w-px transition-colors bg-gray-4',
   },
@@ -75,9 +75,7 @@ const config = {
       },
     },
     hasTrailing: {
-      true: {
-        input: 'pr-9',
-      },
+      true: {},
     },
     color: {
       primary: {},
@@ -89,12 +87,8 @@ const config = {
       neutral: {},
     },
     password: {
-      true: {
-        inputItem: 'h-full w-[88%]',
-      },
-      false: {
-        inputItem: 'h-full w-[100%]',
-      },
+      true: {},
+      false: {},
     },
     focus: {
       true: {},
