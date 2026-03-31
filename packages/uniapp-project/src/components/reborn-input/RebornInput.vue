@@ -300,14 +300,14 @@ defineExpose({
     <!-- #endif -->
 
     <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
-    <view :class="ui.input({ class: 'relative' })" @focus="onFocus">
+    <view :class="ui.input({ class: 'h-full' })">
       <input ref="inputRef" :type="props.type" :disabled="fieldGroupDisabled || props.readonly"
         :readonly="props.readonly" :placeholder="props.placeholder" :value="inputValue" :class="ui.inputItem()"
         :password="isPassword" :focus="isFocusing && !fieldGroupDisabled && !props.readonly"
         :placeholder-class="`text-gray-4 ${props.placeholderClass}`" :maxlength="props.maxlength"
         :cursor-spacing="props.cursorSpacing" :confirm-type="props.confirmType" :confirm-hold="props.confirmHold"
         :adjust-position="props.adjustPosition" :hold-keyboard="props.holdKeyboard" @input="onInput" @blur="onBlur"
-        @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange">
+        @confirm="onConfirm" @keyboardheightchange="onKeyboardheightchange" @focus="onFocus">
     </view>
     <!-- #endif -->
 
@@ -323,13 +323,13 @@ defineExpose({
 
       <!-- #ifdef H5 || APP-PLUS -->
       <view v-if="password" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction">
-        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']" />
+        <view :class="[isPassword ? 'i-lucide-eye-off' : 'i-lucide-eye']" />
       </view>
       <!-- #endif -->
 
       <!-- #ifdef MP-WEIXIN || MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
       <view v-if="password" :class="ui.password({ class: 'h-full' })" @tap.stop="showPassword">
-        <view :class="[isPassword ? 'i-lucide-eye' : 'i-lucide-eye-off']" />
+        <view :class="[isPassword ? 'i-lucide-eye-off' : 'i-lucide-eye']" />
       </view>
       <!-- #endif -->
 
