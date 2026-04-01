@@ -11,10 +11,6 @@ navigation:
     color: primary
 ---
 
-# RebornContainer 容器
-
-容器组件用于包裹页面内容，提供响应式的最大宽度限制以及水平居中对齐。
-
 ## 基础用法
 
 直接包裹内容即可实现基础布局。
