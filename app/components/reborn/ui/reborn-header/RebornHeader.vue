@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from '#imports';
 import { tv } from 'tailwind-variants';
 import { createReusableTemplate } from '@vueuse/core';
-import RebornDrawer from '../reborn-drawer/RebornDrawer.vue';
+import RebornPopup from '../reborn-popup/RebornPopup.vue';
 import theme from './reborn-header.config';
 import { cn } from '~/lib/utils';
 
@@ -11,26 +11,26 @@ const b = tv(theme);
 
 defineOptions({ inheritAttrs: false });
 
-export type HeaderMode = 'modal' | 'slideover' | 'drawer';
+export type HeaderMode = 'modal' | 'slideover' | 'popup';
 
 export interface RebornHeaderProps {
-    /** Header title text */
+    /** 导航栏标题文本 */
     title?: string;
-    /** Link URL for the title */
+    /** 标题链接地址 */
     to?: string;
-    /** Mobile menu toggle side */
+    /** 移动端菜单切换按钮侧边 (左/右) */
     toggleSide?: 'left' | 'right';
-    /** Mobile menu mode */
+    /** 移动端菜单模式 */
     mode?: HeaderMode;
-    /** Custom wrapper tag */
+    /** 自定义包装标签 */
     as?: string;
-    /** Whether the header is sticky */
+    /** 是否吸顶显示 */
     sticky?: boolean;
-    /** Automatically close when route changes */
+    /** 路由改变时是否自动关闭菜单 */
     autoClose?: boolean;
-    /** Custom class for the root element */
+    /** 根元素的自定义类名 */
     class?: any;
-    /** UI slots overrides */
+    /** UI 插槽样式覆盖 */
     ui?: Partial<{
         root: string;
         container: string;
@@ -39,10 +39,10 @@ export interface RebornHeaderProps {
         center: string;
         right: string;
         toggle: string;
-        drawer: string;
-        drawerHeader: string;
-        drawerBody: string;
-        drawerFooter: string;
+        popup: string;
+        popupHeader: string;
+        popupBody: string;
+        popupFooter: string;
     }>;
 }
 
@@ -50,7 +50,7 @@ const props = withDefaults(defineProps<RebornHeaderProps>(), {
     title: 'Nuxt UI',
     to: '/',
     toggleSide: 'right',
-    mode: 'drawer',
+    mode: 'popup',
     as: 'header',
     sticky: false,
     autoClose: true,
@@ -64,7 +64,7 @@ const [DefineLeftTemplate, ReuseLeftTemplate] = createReusableTemplate();
 const [DefineRightTemplate, ReuseRightTemplate] = createReusableTemplate();
 const [DefineToggleTemplate, ReuseToggleTemplate] = createReusableTemplate();
 
-// Auto close menu on route change
+// 监听路由变化，自动关闭移动端菜单
 watch(() => route.fullPath, () => {
     if (props.autoClose) {
         isMenuOpen.value = false;
@@ -85,10 +85,9 @@ const ui = computed(() => {
         center: (opts?: { class?: any }) => styles.center({ class: cn(opts?.class, overrides.center) }),
         right: (opts?: { class?: any }) => styles.right({ class: cn(opts?.class, overrides.right) }),
         toggle: (opts?: { class?: any }) => styles.toggle({ class: cn(opts?.class, overrides.toggle) }),
-        drawer: (opts?: { class?: any }) => styles.drawer({ class: cn(opts?.class, overrides.drawer) }),
-        drawerHeader: (opts?: { class?: any }) => styles.drawerHeader({ class: cn(opts?.class, overrides.drawerHeader) }),
-        drawerBody: (opts?: { class?: any }) => styles.drawerBody({ class: cn(opts?.class, overrides.drawerBody) }),
-        drawerFooter: (opts?: { class?: any }) => styles.drawerFooter({ class: cn(opts?.class, overrides.drawerFooter) }),
+        popupHeader: (opts?: { class?: any }) => styles.popupHeader({ class: cn(opts?.class, overrides.popupHeader) }),
+        popupBody: (opts?: { class?: any }) => styles.popupBody({ class: cn(opts?.class, overrides.popupBody) }),
+        popupFooter: (opts?: { class?: any }) => styles.popupFooter({ class: cn(opts?.class, overrides.popupFooter) }),
     };
 });
 
@@ -98,7 +97,7 @@ function toggleMenu() {
 </script>
 
 <template>
-    <!-- Toggle Button Template -->
+    <!-- 切换按钮模板 (复用) -->
     <DefineToggleTemplate>
         <slot name="toggle" :open="isMenuOpen" :toggle="toggleMenu">
             <div :class="ui.toggle()" @click="toggleMenu">
@@ -107,7 +106,7 @@ function toggleMenu() {
         </slot>
     </DefineToggleTemplate>
 
-    <!-- Left Section Template -->
+    <!-- 左侧区域模板 (复用) -->
     <DefineLeftTemplate>
         <div v-if="$slots.left || $slots.title || title || toggleSide === 'left'" :class="ui.left()">
             <ReuseToggleTemplate v-if="toggleSide === 'left'" />
@@ -122,16 +121,18 @@ function toggleMenu() {
         </div>
     </DefineLeftTemplate>
 
-    <!-- Right Section Template -->
+    <!-- 右侧区域模板 (复用) -->
     <DefineRightTemplate>
         <div v-if="$slots.right || toggleSide === 'right'" :class="ui.right()">
-            <slot name="right" />
+            <div class="hidden md:flex">
+                <slot name="right" />
+            </div>
 
             <ReuseToggleTemplate v-if="toggleSide === 'right'" />
         </div>
     </DefineRightTemplate>
 
-    <!-- Header Root -->
+    <!-- 导航栏根容器 -->
     <component :is="as" v-bind="$attrs" :class="ui.root()">
         <slot name="top" />
 
@@ -148,37 +149,31 @@ function toggleMenu() {
         <slot name="bottom" />
     </component>
 
-    <!-- Mobile Menu Drawer (supports modal/slideover mapping to Drawer for now) -->
-    <RebornDrawer v-model="isMenuOpen" :placement="toggleSide" size="100%" :ui="{
-        root: 'z-[980]', // Just below the sticky header (which is usually z-1000 in Header.vue)
+    <!-- 移动端菜单弹窗 (支持从 Drawer 映射为 Popup) -->
+    <RebornPopup v-model="isMenuOpen" :position="toggleSide" size="100%" :round="false" :ui="{
+        root: 'z-[980]', // 位于吸顶导航栏下方 (Header 通常 z-1000)
     }">
-        <div :class="ui.drawer()">
-            <!-- Drawer Header (Always visible unless content slot overrides everything) -->
-            <slot name="drawer-header" :close="() => isMenuOpen = false">
-                <div :class="ui.drawerHeader()">
-                    <div class="flex items-center gap-4">
-                        <NuxtLink v-if="to && (title || $slots.title)" :to="to" :class="ui.title()"
-                            @click="isMenuOpen = false">
-                            <slot name="title">
-                                {{ title }}
-                            </slot>
-                        </NuxtLink>
-                    </div>
-
-                    <ReuseToggleTemplate />
+        <!-- 弹窗头部 (除非被插槽覆盖，否则始终可见) -->
+        <template #header>
+            <slot name="header" :close="() => isMenuOpen = false">
+                <div :class="ui.popupHeader()">
+                    <NuxtLink v-if="to && (title || $slots.title)" :to="to" :class="ui.title()"
+                        @click="isMenuOpen = false">
+                        {{ title }}
+                    </NuxtLink>
                 </div>
             </slot>
+        </template>
 
-            <div v-if="$slots.body || $slots.default || $slots.content" :class="ui.drawerBody()">
-                <slot name="content" :close="() => isMenuOpen = false">
-                    <slot name="body" />
-                    <slot v-if="!$slots.body" />
-                </slot>
-            </div>
-
-            <div v-if="$slots.footer" :class="ui.drawerFooter()">
-                <slot name="footer" />
-            </div>
+        <div v-if="$slots.body || $slots.default || $slots.content" :class="ui.popupBody()">
+            <slot name="content" :close="() => isMenuOpen = false">
+                <slot name="body" />
+                <slot v-if="!$slots.body" />
+            </slot>
         </div>
-    </RebornDrawer>
+
+        <div v-if="$slots.footer" :class="ui.popupFooter()">
+            <slot name="footer" />
+        </div>
+    </RebornPopup>
 </template>

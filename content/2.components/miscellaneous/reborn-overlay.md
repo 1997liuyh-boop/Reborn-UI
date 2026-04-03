@@ -6,6 +6,9 @@ navigation:
   badges:
     - label: 通
       color: primary
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornOverlayDemo.vue" config="RebornOverlayConfig" componentId="reborn-overlay" :componentFiles='["RebornOverlay.vue", "reborn-overlay.config.ts"]' :uniappFiles='["RebornOverlay.vue", "reborn-overlay.config.ts"]'}

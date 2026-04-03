@@ -7,7 +7,7 @@ badge: New
 navigation:
   badges:
     - label: Web
-      color: primary
+      color: info
   chip:
     label: NEW
     color: primary

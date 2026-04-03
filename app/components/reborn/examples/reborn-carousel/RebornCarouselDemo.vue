@@ -11,6 +11,9 @@ const centeredSlides = ref(false);
 const direction = ref<"horizontal" | "vertical">("horizontal");
 const carouselType = ref<"default" | "card">("default");
 const grabCursor = ref(true);
+const color = ref<"primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral">("primary");
+const paginationType = ref<"line" | "dot" | "fraction" | "button">("line");
+const indicatorOffset = ref<number>(16);
 
 const featureSlides = [
   {
@@ -86,7 +89,7 @@ const carouselCode = computed(() => {
   const props = [];
   if (carouselType.value !== "default") props.push(`type="${carouselType.value}"`);
   if (slidesPerView.value !== 1)
-    props.push(`:slides-per-view="${typeof slidesPerView.value === "string" ? `'${slidesPerView.value}'` : slidesPerView.value}"`);
+    props.push(`:slides-perview="${typeof slidesPerView.value === "string" ? `'${slidesPerView.value}'` : slidesPerView.value}"`);
   if (spaceBetween.value !== 0) props.push(`:space-between="${spaceBetween.value}"`);
   if (autoplay.value) props.push(':autoplay="{ delay: 2600 }"');
   if (!motionBlur.value) props.push(':motion-blur="false"');
@@ -96,6 +99,9 @@ const carouselCode = computed(() => {
   if (centeredSlides.value) props.push(":centered-slides=\"true\"");
   if (loop.value) props.push("loop");
   if (grabCursor.value) props.push("grab-cursor");
+  if (color.value !== "primary") props.push(`color="${color.value}"`);
+  if (paginationType.value !== "line") props.push(`:pagination="{ clickable: true, type: '${paginationType.value}' }"`);
+  if (indicatorOffset.value !== 16) props.push(`:indicator-offset="${indicatorOffset.value}"`);
 
   const propsStr = props.length > 0 ? "\n  " + props.join("\n  ") : "";
   return `<RebornCarousel v-model="activeIndex"${propsStr}\n>\n  <!-- slides content -->\n</RebornCarousel>`;
@@ -137,10 +143,10 @@ const copyToClipboard = () => {
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                       <div class="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                      <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">实时代码演示</span>
+                      <span class="text-caption-sm font-bold uppercase tracking-[0.2em] text-slate-400">实时代码演示</span>
                     </div>
                     <button @click="copyToClipboard"
-                      class="text-[10px] font-bold uppercase tracking-wider text-blue-500 hover:text-blue-600 transition-colors">
+                      class="text-caption-sm font-bold uppercase tracking-wider text-blue-500 hover:text-blue-600 transition-colors">
                       复制代码
                     </button>
                   </div>
@@ -154,7 +160,7 @@ const copyToClipboard = () => {
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">显示项目</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">显示项目</span>
             <RebornSelect v-model="slidesPerView" :options="[
               { label: '1 项 / 屏', value: 1 },
               { label: '2 项 / 屏', value: 2 },
@@ -164,12 +170,12 @@ const copyToClipboard = () => {
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">项目间距</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">项目间距</span>
             <RebornInputNumber v-model="spaceBetween" :min="0" :max="100" :step="4" size="md" />
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">容器方向</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">容器方向</span>
             <RebornSelect v-model="direction" :options="[
               { label: '水平滚动', value: 'horizontal' },
               { label: '垂直滚动', value: 'vertical' }
@@ -177,7 +183,7 @@ const copyToClipboard = () => {
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">展示模式</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">展示模式</span>
             <RebornSelect v-model="carouselType" :options="[
               { label: '默认模式', value: 'default' },
               { label: '卡片聚焦', value: 'card' }
@@ -185,7 +191,7 @@ const copyToClipboard = () => {
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">箭头显示</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">箭头显示</span>
             <RebornSelect v-model="arrow" :options="[
               { label: '悬停时显示', value: 'hover' },
               { label: '始终显示', value: 'always' },
@@ -194,7 +200,7 @@ const copyToClipboard = () => {
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">指示器位置</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">指示器位置</span>
             <RebornSelect v-model="indicatorPosition" :options="[
               { label: '内置 (Inside)', value: 'inside' },
               { label: '外置 (Outside)', value: 'outside' },
@@ -203,38 +209,63 @@ const copyToClipboard = () => {
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">居中模式</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">指示器偏移 (px)</span>
+            <RebornInputNumber v-model="indicatorOffset" :min="0" :max="100" :step="4" size="md" />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">指示器类型</span>
+            <RebornSelect v-model="paginationType" :options="[
+              { label: '线条 (Line)', value: 'line' },
+              { label: '圆点 (Dot)', value: 'dot' },
+              { label: '分数 (Fraction)', value: 'fraction' },
+              { label: '按钮 (Button)', value: 'button' }
+            ]" size="md" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">主题颜色</span>
+            <RebornSelect v-model="color" :options="[
+              { label: 'Primary', value: 'primary' },
+              { label: 'Secondary', value: 'secondary' },
+              { label: 'Success', value: 'success' },
+              { label: 'Info', value: 'info' },
+              { label: 'Warning', value: 'warning' },
+              { label: 'Error', value: 'error' },
+              { label: 'Neutral', value: 'neutral' }
+            ]" size="md" />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">居中模式</span>
             <RebornSwitch v-model="centeredSlides" active-label="开启" inactive-label="关闭" size="md" />
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">自动播放 (2.6s)</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">自动播放 (2.6s)</span>
             <RebornSwitch v-model="autoplay" size="md" />
           </div>
 
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">动态模糊</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">动态模糊</span>
             <RebornSwitch v-model="motionBlur" size="md" />
           </div>
           <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">无限循环</span>
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">无限循环</span>
             <RebornSwitch v-model="loop" size="md" />
           </div>
 
-          <div class="flex flex-col gap-1">
-            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">抓取光标</span>
-            <RebornSwitch v-model="grabCursor" size="md" />
-          </div>
+
         </div>
       </div>
     </div>
 
-    <RebornCarousel v-model="activeIndex" :type="carouselType" :slides-per-view="slidesPerView"
+    <RebornCarousel v-model="activeIndex" :type="carouselType" :slides-perview="slidesPerView"
       :space-between="spaceBetween" :autoplay="autoplay ? { delay: 2600 } : false" :motion-blur="motionBlur"
-      :pagination="{ clickable: true }" :arrow="arrow" :indicator-position="indicatorPosition" :direction="direction"
-      :centered-slides="centeredSlides" :loop="loop" :grab-cursor="grabCursor">
+      :pagination="{ clickable: true, type: paginationType }" :arrow="arrow" :indicator-position="indicatorPosition"
+      :direction="direction" :centered-slides="centeredSlides" :loop="loop" :grab-cursor="grabCursor" :color="color"
+      :indicator-offset="indicatorOffset">
       <div v-for="slide in featureSlides" :key="slide.title"
-        :class="`flex h-full flex-col justify-between bg-gradient-to-br ${slide.tone} p-7 text-white`">
+        :class="`flex h-full flex-col justify-between bg-linear-to-br ${slide.tone} p-7 text-white`">
         <div class="space-y-3">
           <p class="text-xs font-medium tracking-[0.28em] text-white/70 uppercase">
             {{ slide.eyebrow }}
@@ -260,11 +291,11 @@ const copyToClipboard = () => {
       </h3>
     </div>
 
-    <RebornCarousel type="card" :slides-per-view="'auto'" :space-between="20" :pagination="{ clickable: true }"
-      arrow="always" indicator-position="outside" :motion-blur="true" :centered-slides="true" :autoplay="false"
-      height="26rem" loop>
+    <RebornCarousel type="card" :slides-perview="'auto'" :space-between="20"
+      :pagination="{ clickable: true, type: 'dot' }" arrow="always" indicator-position="outside" :motion-blur="true"
+      :centered-slides="true" :autoplay="false" height="26rem" loop color="secondary">
       <div v-for="card in cardSlides" :key="card.title"
-        :class="`flex h-full w-full max-w-[18rem] flex-col justify-between rounded-[32px] bg-gradient-to-br ${card.tone} p-7 text-white md:max-w-[22rem]`">
+        :class="`flex h-full w-full max-w-[18rem] flex-col justify-between rounded-[32px] bg-linear-to-br ${card.tone} p-7 text-white md:max-w-88`">
         <div class="space-y-3">
           <span class="inline-flex w-fit rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
             {{ card.label }}
@@ -286,10 +317,11 @@ const copyToClipboard = () => {
       <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">也可以做时间线式轮播</h3>
     </div>
 
-    <RebornCarousel direction="vertical" :slides-per-view="1" :space-between="18" :pagination="{ clickable: true }"
-      arrow="always" indicator-position="outside" height="22rem">
+    <RebornCarousel direction="vertical" :slides-perview="1" :space-between="18"
+      :pagination="{ clickable: true, type: 'button' }" arrow="always" indicator-position="inside" height="22rem"
+      color="info" :ui="{ arrowGroup: 'px-10' }">
       <div v-for="(item, index) in timelineSlides" :key="item.title"
-        class="flex h-full flex-col justify-between rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),linear-gradient(135deg,_#ffffff,_#f8fafc)] p-7 text-slate-900 shadow-sm dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.98))] dark:text-white">
+        class="flex h-full flex-col justify-between rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.16),transparent_34%),linear-gradient(135deg,#ffffff,#f8fafc)] p-7 text-slate-900 shadow-sm dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,41,59,0.98))] dark:text-white">
         <div class="flex items-center justify-between">
           <span class="text-sm text-slate-400 dark:text-slate-500">0{{ index + 1 }}</span>
           <span class="rounded-full bg-slate-900 px-3 py-1 text-xs text-white dark:bg-white dark:text-slate-900">
@@ -309,9 +341,9 @@ const copyToClipboard = () => {
       <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">你可以自由控制导航 UI</h3>
     </div>
 
-    <RebornCarousel :slides-per-view="1" :space-between="20" loop>
+    <RebornCarousel slides-per-view="auto" :space-between="20" loop>
       <div v-for="slide in featureSlides.slice(0, 3)" :key="slide.title"
-        :class="`flex flex-col justify-center items-center rounded-3xl bg-gradient-to-br ${slide.tone} p-12 text-white text-center`">
+        :class="`flex flex-col justify-center items-center rounded-3xl bg-linear-to-br ${slide.tone} p-12 text-white text-center`">
         <h4 class="text-4xl font-bold mb-4">{{ slide.title }}</h4>
         <p class="opacity-80">{{ slide.description }}</p>
       </div>

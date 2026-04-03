@@ -194,3 +194,39 @@ function noop() { }
         <slot />
     </view>
 </template>
+
+<style lang="scss" scoped>
+:deep(.rb-transition-fade-enter-active) {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+:deep(.rb-transition-fade-leave-active) {
+    transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    will-change: opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+:deep(.rb-transition-zoom-in-enter-active),
+:deep(.rb-transition-zoom-in-leave-active),
+:deep(.rb-transition-zoom-out-enter-active),
+:deep(.rb-transition-zoom-out-leave-active) {
+    transform-origin: center;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+:deep(.rb-transition-zoom-in-enter-active),
+:deep(.rb-transition-zoom-out-enter-active) {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:deep(.rb-transition-zoom-in-leave-active),
+:deep(.rb-transition-zoom-out-leave-active) {
+    transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+</style>

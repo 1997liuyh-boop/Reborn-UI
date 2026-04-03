@@ -72,20 +72,20 @@ export const transitionStyles: Record<string, Record<string, string>> = {
         'leave-to': 'translate-x-full'
     },
     'zoom-in': {
-        enter: 'opacity-0 scale-[0.8]',
+        enter: 'opacity-0 scale-[0.92]',
         'enter-active': 'transition-[opacity,transform]',
         'enter-to': 'opacity-100 scale-100',
         leave: 'opacity-100 scale-100',
         'leave-active': 'transition-[opacity,transform]',
-        'leave-to': 'opacity-0 scale-[0.8]'
+        'leave-to': 'opacity-0 scale-[0.96]'
     },
     'zoom-out': {
-        enter: 'opacity-0 scale-125',
+        enter: 'opacity-0 scale-[1.08]',
         'enter-active': 'transition-[opacity,transform]',
         'enter-to': 'opacity-100 scale-100',
         leave: 'opacity-100 scale-100',
         'leave-active': 'transition-[opacity,transform]',
-        'leave-to': 'opacity-0 scale-125'
+        'leave-to': 'opacity-0 scale-[1.04]'
     },
     'badge-custom': {
         enter: 'opacity-0 scale-50',

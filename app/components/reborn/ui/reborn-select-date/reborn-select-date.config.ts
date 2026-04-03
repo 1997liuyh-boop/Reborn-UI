@@ -16,7 +16,7 @@ export default {
         calHeader: "flex items-center justify-between mb-2",
         calNavBtn: "p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3",
         calTitle: "text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors",
-        calWeekdays: "grid grid-cols-7 gap-0 text-center text-xs text-gray-4 dark:text-gray-5 mb-1",
+        calWeekdays: "grid grid-cols-7 gap-0 text-center text-xs text-gray-4 dark:text-gray-5",
         calDays: "grid grid-cols-7 gap-0",
         calDay:
             "flex items-center justify-center rounded-md text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7",
@@ -29,23 +29,26 @@ export default {
         size: {
             sm: {
                 trigger: "h-8 px-2 text-xs gap-1",
+                calWeekdays: " mb-2",
                 arrow: "size-3",
                 clearBtn: "size-3",
-                calDays: "gap-y-3",
+                calDays: "gap-y-2",
                 calDay: "text-xs",
             },
             md: {
                 trigger: "h-10 px-3 text-sm gap-2",
                 arrow: "size-4",
                 clearBtn: "size-4",
-                calDays: "gap-y-4",
+                calWeekdays: " mb-3",
+                calDays: "gap-y-3",
                 calDay: "text-sm",
             },
             lg: {
                 trigger: "h-12 px-4 text-base gap-2",
                 arrow: "size-5",
                 clearBtn: "size-5",
-                calDays: "gap-y-5",
+                calWeekdays: " mb-4",
+                calDays: "gap-y-4",
                 calDay: "text-base",
             },
         },

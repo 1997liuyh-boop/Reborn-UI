@@ -6,6 +6,9 @@ navigation:
   badges:
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 ::warning
 web端组件描述：暂时不需要

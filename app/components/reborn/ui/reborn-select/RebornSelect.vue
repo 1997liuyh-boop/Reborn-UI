@@ -2,7 +2,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
-import theme, { selectColors, selectSizes, selectAnimations } from "./reborn-select.config";
+import theme, { selectColors, selectSizes } from "./reborn-select.config";
+import RebornTransition from "../reborn-transition/RebornTransition.vue";
 import { tv } from "~/lib/tv";
 
 const b = tv(theme);
@@ -30,11 +31,16 @@ export interface SelectProps {
         wrapper: ClassValue;
         trigger: ClassValue;
         triggerText: ClassValue;
+        triggerIconWrapper: ClassValue;
         placeholder: ClassValue;
         arrow: ClassValue;
         dropdown: ClassValue;
+        dropdownInner: ClassValue;
         option: ClassValue;
+        optionContent: ClassValue;
+        optionLabel: ClassValue;
         optionActive: ClassValue;
+        optionActiveIcon: ClassValue;
         optionHighlight: ClassValue;
         empty: ClassValue;
         clearBtn: ClassValue;
@@ -75,11 +81,16 @@ const ui = computed(() => {
         wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
         trigger: (opts?: { class?: any }) => styles.trigger({ class: cn(opts?.class, uiOverrides.value.trigger) }),
         triggerText: (opts?: { class?: any }) => styles.triggerText({ class: cn(opts?.class, uiOverrides.value.triggerText) }),
+        triggerIconWrapper: (opts?: { class?: any }) => styles.triggerIconWrapper({ class: cn(opts?.class, uiOverrides.value.triggerIconWrapper) }),
         placeholder: (opts?: { class?: any }) => styles.placeholder({ class: cn(opts?.class, uiOverrides.value.placeholder) }),
         arrow: (opts?: { class?: any }) => styles.arrow({ class: cn(opts?.class, uiOverrides.value.arrow) }),
         dropdown: (opts?: { class?: any }) => styles.dropdown({ class: cn(opts?.class, uiOverrides.value.dropdown) }),
+        dropdownInner: (opts?: { class?: any }) => styles.dropdownInner({ class: cn(opts?.class, uiOverrides.value.dropdownInner) }),
         option: (opts?: { class?: any }) => styles.option({ class: cn(opts?.class, uiOverrides.value.option) }),
+        optionContent: (opts?: { class?: any }) => styles.optionContent({ class: cn(opts?.class, uiOverrides.value.optionContent) }),
+        optionLabel: (opts?: { class?: any }) => styles.optionLabel({ class: cn(opts?.class, uiOverrides.value.optionLabel) }),
         optionActive: (opts?: { class?: any }) => styles.optionActive({ class: cn(opts?.class, uiOverrides.value.optionActive) }),
+        optionActiveIcon: (opts?: { class?: any }) => styles.optionActiveIcon({ class: cn(opts?.class, uiOverrides.value.optionActiveIcon) }),
         optionHighlight: (opts?: { class?: any }) => styles.optionHighlight({ class: cn(opts?.class, uiOverrides.value.optionHighlight) }),
         empty: (opts?: { class?: any }) => styles.empty({ class: cn(opts?.class, uiOverrides.value.empty) }),
         clearBtn: (opts?: { class?: any }) => styles.clearBtn({ class: cn(opts?.class, uiOverrides.value.clearBtn) }),
@@ -221,53 +232,6 @@ watch(highlightIndex, () => {
 
 onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
-
-const onBeforeEnter = (el: Element) => {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = '0';
-    htmlEl.style.opacity = '0';
-
-    nextTick(() => {
-        scrollToActive(true);
-    });
-};
-
-const onEnter = (el: Element, done: () => void) => {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
-    htmlEl.style.opacity = '1';
-    htmlEl.addEventListener('transitionend', done, { once: true });
-};
-
-const onAfterEnter = (el: Element) => {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = 'auto';
-    htmlEl.style.overflowY = 'auto';
-    isOpening.value = false;
-};
-
-const onBeforeLeave = (el: Element) => {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
-    htmlEl.style.opacity = '1';
-    htmlEl.style.overflowY = 'hidden';
-};
-
-const onLeave = (el: Element, done: () => void) => {
-    const htmlEl = el as HTMLElement;
-    // Force reflow
-    htmlEl.offsetHeight;
-    htmlEl.style.height = '0';
-    htmlEl.style.opacity = '0';
-    htmlEl.addEventListener('transitionend', done, { once: true });
-};
-
-const onAfterLeave = (el: Element) => {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = '';
-    htmlEl.style.opacity = '';
-    isOpening.value = false;
-};
 </script>
 
 <template>
@@ -278,7 +242,7 @@ const onAfterLeave = (el: Element) => {
             </slot>
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
 
-            <div class="flex items-center gap-1">
+            <div :class="ui.triggerIconWrapper()">
                 <span v-if="clearable && (multiple ? modelValue?.length > 0 : modelValue != null)"
                     :class="ui.clearBtn()" @click="clear">
                     <Icon name="lucide:x" class="size-full" />
@@ -287,12 +251,10 @@ const onAfterLeave = (el: Element) => {
             </div>
         </div>
 
-        <Transition :enter-active-class="selectAnimations.enterActiveClass"
-            :enter-from-class="selectAnimations.enterFromClass" :enter-to-class="selectAnimations.enterToClass"
-            :leave-active-class="selectAnimations.leaveActiveClass" :leave-from-class="selectAnimations.leaveFromClass"
-            :leave-to-class="selectAnimations.leaveToClass" @before-enter="onBeforeEnter" @enter="onEnter"
-            @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave" @after-leave="onAfterLeave">
-            <div v-if="isOpen" ref="dropdownRef" :class="ui.dropdown()">
+        <RebornTransition :show="isOpen" :duration="{ enter: 300, leave: 200 }"
+            @before-enter="nextTick(() => scrollToActive(true))" @after-enter="isOpening = false"
+            @after-leave="isOpening = false" :custom-class="ui.dropdown()" name="select-collapse">
+            <div ref="dropdownRef" :class="ui.dropdownInner()">
                 <div v-for="(option, index) in options" :key="index" :class="[
                     ui.option(),
                     isSelected(option.value) ? ui.optionActive() : '',
@@ -300,10 +262,10 @@ const onAfterLeave = (el: Element) => {
                 ]" :data-disabled="option.disabled ? 'true' : 'false'" @click="selectOption(option)"
                     @mouseenter="highlightIndex = index">
                     <slot name="option" :option="option" :active="isSelected(option.value)">
-                        <div class="flex w-full items-center justify-between gap-2">
-                            <span class="flex-1 truncate">{{ option.label }}</span>
+                        <div :class="ui.optionContent()">
+                            <span :class="ui.optionLabel()">{{ option.label }}</span>
                             <Icon v-if="multiple && isSelected(option.value)" name="lucide:check"
-                                class="size-4 opacity-75 shrink-0" />
+                                :class="ui.optionActiveIcon()" />
                         </div>
                     </slot>
                 </div>
@@ -312,6 +274,6 @@ const onAfterLeave = (el: Element) => {
                     暂无数据
                 </div>
             </div>
-        </Transition>
+        </RebornTransition>
     </div>
 </template>

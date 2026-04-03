@@ -17,9 +17,6 @@ navigation:
 ::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornDropdownSelect.vue", "reborn-dropdown-select.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts", "RebornTransition.vue", "reborn-transition.config.ts"]' dependencies="lodash-es"}
 ::
 
-<!-- ::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornSelect.vue", "reborn-select.config.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]' dependencies="lodash-es"} -->
-
-
 ## API
 
 | 属性名 | 类型 | 默认值 | 描述 | 平台 |
@@ -77,11 +74,18 @@ navigation:
 | `wrapper` | 选择器最外层容器样式。 |
 | `trigger` | 触发器按钮样式。 |
 | `triggerText` | 触发器文本样式。 |
+| `triggerIconWrapper` | 触发器右侧图标（清除/箭头）的包装容器样式。 |
 | `placeholder` | 占位符文本样式。 |
 | `arrow` | 箭头图标样式。 |
-| `dropdown` | 下拉菜单容器样式。 |
-| `option` | 选项样式。 |
-| `optionActive` | 选中选项的样式。 |
+| `dropdown` | 下拉菜单容器样式（含定位及投影）。 |
+| `dropdownInner` | 下拉菜单内层容器（通常设为 `w-full`）。 |
+| `option` | 选项整体容器样式。 |
+| `optionContent` | 选项内容区（包含文本及选中图标）的包装样式。 |
+| `optionLabel` | 选项文本样式。 |
+| `optionActive` | 选中选项的背景/文本颜色样式（由 `color` 变量控制）。 |
+| `optionActiveIcon` | 选中状态下的 Check 图标样式。 |
+| `optionHighlight` | 键盘或鼠标悬停时的背景高亮样式。 |
+| `empty` | 数据为空时的显示区域样式。 |
 | `clearBtn` | 清空按钮样式。 |
 
 ### UniApp 版本 `ui`

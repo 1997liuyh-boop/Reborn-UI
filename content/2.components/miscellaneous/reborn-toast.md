@@ -6,6 +6,9 @@ navigation:
   badges:
     - label: 通
       color: primary
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornToastDemo.vue" config="RebornToastConfig" componentId="reborn-toast" :componentFiles='["RebornToast.vue", "index.ts"]' :uniappFiles='["RebornToast.vue", "index.ts", "reborn-toast.config.ts"]'}

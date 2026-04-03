@@ -8,6 +8,9 @@ navigation:
   badges:
     - label: 通
       color: primary
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornQrcodeDemo.vue" config="RebornQrcodeConfig" componentId="reborn-qrcode" :componentFiles='["RebornQrcode.vue", "qrcode.ts"]' :uniappFiles='["RebornQrcode.vue", "draw.ts", "qrcode.ts"]'}

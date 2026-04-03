@@ -80,6 +80,14 @@ function custom() {
         </div>
 
         <div class="space-y-4">
+            <h3 class="text-lg font-medium">折叠 动画</h3>
+            <div class="grid grid-cols-4 gap-2">
+                <RebornButton color="primary" variant="solid" @click="transition('select-collapse')">select-collapse
+                </RebornButton>
+            </div>
+        </div>
+
+        <div class="space-y-4">
             <h3 class="text-lg font-medium">自定义 动画</h3>
             <div class="grid grid-cols-4 gap-2">
                 <RebornButton color="primary" variant="solid" @click="custom">custom</RebornButton>

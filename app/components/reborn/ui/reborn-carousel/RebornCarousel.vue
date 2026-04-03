@@ -31,10 +31,11 @@ interface CarouselAutoplay {
 
 interface CarouselPagination {
   clickable?: boolean;
+  type?: "line" | "dot" | "fraction" | "button";
 }
 
 export interface RebornCarouselBreakpoint {
-  slidesPerView?: number | "auto";
+  slidesPerview?: number | "auto";
   spaceBetween?: number;
   centeredSlides?: boolean;
   arrow?: CarouselArrowMode;
@@ -49,7 +50,7 @@ export interface RebornCarouselBreakpoint {
 
 export interface RebornCarouselProps {
   /** 每屏显示的幻灯片数量，或 'auto' (根据内容宽度) */
-  slidesPerView?: number | "auto";
+  slidesPerview?: number | "auto";
   /** 幻灯片之间的间距 (px) */
   spaceBetween?: number;
   /** 是否居中展示活动项 */
@@ -80,6 +81,10 @@ export interface RebornCarouselProps {
   breakpoints?: Record<number, RebornCarouselBreakpoint>;
   /** 是否启用抓取手势光标 */
   grabCursor?: boolean;
+  /** 指示器偏移量 (px) */
+  indicatorOffset?: number;
+  /** 默认主题颜色 */
+  color?: "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
   /** 自定义根节点类名 */
   class?: any;
   /** 内置 UI 部件的类名覆盖 */
@@ -103,7 +108,7 @@ export interface RebornCarouselProps {
 }
 
 const props = withDefaults(defineProps<RebornCarouselProps>(), {
-  slidesPerView: 1,
+  slidesPerview: 1,
   spaceBetween: 0,
   centeredSlides: false,
   loop: false,
@@ -119,6 +124,8 @@ const props = withDefaults(defineProps<RebornCarouselProps>(), {
   initialSlide: 0,
   breakpoints: () => ({}),
   grabCursor: false,
+  indicatorOffset: undefined,
+  color: "primary",
   ui: () => ({}),
 });
 
@@ -328,7 +335,7 @@ const responsiveProps = computed(() => {
 
 /** 当前生效的每屏显示数量 */
 const effectiveSlidesPerView = computed(
-  () => responsiveProps.value.slidesPerView ?? props.slidesPerView,
+  () => responsiveProps.value.slidesPerview ?? props.slidesPerview,
 );
 /** 当前生效的项目间距 */
 const effectiveSpaceBetween = computed(
@@ -372,6 +379,38 @@ const showIndicators = computed(
 );
 /** 是否显示箭头 */
 const showArrows = computed(() => effectiveArrow.value !== "never" && slideCount.value > 1);
+
+/** 指示器是否为分页分数模式 */
+const isFractionPagination = computed(() => props.pagination?.type === "fraction");
+
+/** 指示器包装容器样式，用于应用自定义偏移值 */
+const indicatorWrapperStyle = computed(() => {
+  const offset = props.indicatorOffset ?? 16;
+
+  if (isVertical.value) {
+    if (effectiveIndicatorPosition.value === "inside") {
+      return { right: `${offset}px` };
+    }
+    if (effectiveIndicatorPosition.value === "outside") {
+      return { marginLeft: `${offset}px` };
+    }
+    return {};
+  }
+
+  if (props.indicatorOffset === undefined) {
+    return {};
+  }
+
+  if (effectiveIndicatorPosition.value === "inside") {
+    return { bottom: `${props.indicatorOffset}px` };
+  }
+
+  if (effectiveIndicatorPosition.value === "outside") {
+    return { marginTop: `${props.indicatorOffset}px` };
+  }
+
+  return {};
+});
 
 /** 计算后的自动播放延迟时间 */
 const autoplayDelay = computed(() => {
@@ -455,6 +494,8 @@ const ui = computed(() => {
     arrow: effectiveArrow.value,
     indicatorPosition: effectiveIndicatorPosition.value,
     motionBlur: effectiveMotionBlur.value,
+    color: props.color,
+    indicatorType: props.pagination?.type || "line",
   });
 
   return {
@@ -1227,39 +1268,81 @@ defineExpose({
           <button type="button" aria-label="上一项" :disabled="!canGoPrev" :class="ui.arrow()" @click="prev">
             <Icon
               :name="isVertical ? 'material-symbols:keyboard-arrow-up-rounded' : 'material-symbols:arrow-back-ios-new-rounded'"
-              class="size-5" />
+              :class="cn('size-5 transition-colors duration-200', !!canGoPrev && `active:text-${props.color}`)" />
           </button>
         </slot>
         <slot name="next" :next="next">
           <button type="button" aria-label="下一项" :disabled="!canGoNext" :class="ui.arrow()" @click="() => next(true)">
             <Icon
               :name="isVertical ? 'material-symbols:keyboard-arrow-down-rounded' : 'material-symbols:arrow-forward-ios-rounded'"
-              class="size-5" />
+              :class="cn('size-5 transition-colors duration-200', !!canGoNext && `active:text-${props.color}`)" />
           </button>
         </slot>
       </div>
 
-      <div v-if="showIndicators && effectiveIndicatorPosition === 'inside'" :class="ui.indicatorWrapper()">
+      <div v-if="showIndicators && effectiveIndicatorPosition === 'inside'" :class="ui.indicatorWrapper()"
+        :style="indicatorWrapperStyle">
         <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
-          <div :class="ui.indicators()">
-            <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-${index}`" type="button"
-              :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
-                class: index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
-              })
-                " @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
+          <div v-if="isFractionPagination"
+            class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-white/60 bg-white/72 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
+            <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
+            <span class="mx-1 opacity-50">/</span>
+            <span>{{ slideCount }}</span>
+          </div>
+          <div v-else :class="ui.indicators()">
+            <template v-if="props.pagination?.type === 'button'">
+              <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-btn-${index}`"
+                type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+                  class: [
+                    index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                    index === currentIndex && `bg-${props.color}`,
+                    'rounded-full', // 圆形
+                  ],
+                })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)">
+                {{ index + 1 }}
+              </button>
+            </template>
+            <button v-else v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-${index}`"
+              type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+                class: [
+                  index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                  index === currentIndex && props.pagination?.type === 'dot' && `bg-${props.color}`,
+                ]
+              })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
           </div>
         </slot>
       </div>
     </div>
 
-    <div v-if="showIndicators && effectiveIndicatorPosition === 'outside'" :class="ui.indicatorWrapper()">
+    <div v-if="showIndicators && effectiveIndicatorPosition === 'outside'" :class="ui.indicatorWrapper()"
+      :style="indicatorWrapperStyle">
       <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
-        <div :class="ui.indicators()">
-          <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-${index}`" type="button"
-            :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
-              class: index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
-            })
-              " @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
+        <div v-if="isFractionPagination"
+          class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
+          <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
+          <span class="mx-1 opacity-50">/</span>
+          <span>{{ slideCount }}</span>
+        </div>
+        <div v-else :class="ui.indicators()">
+          <template v-if="props.pagination?.type === 'button'">
+            <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-btn-${index}`"
+              type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+                class: [
+                  index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                  index === currentIndex && `bg-${props.color}`,
+                  'rounded-full', // 圆形
+                ],
+              })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)">
+              {{ index + 1 }}
+            </button>
+          </template>
+          <button v-else v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-${index}`"
+            type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+              class: [
+                index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                index === currentIndex && props.pagination?.type === 'dot' && `bg-${props.color}`,
+              ]
+            })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
         </div>
       </slot>
     </div>

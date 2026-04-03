@@ -4,14 +4,18 @@ import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { selectDateColors, selectDateSizes } from "./reborn-select-date.config";
 import { tv } from "~/lib/tv";
+import type { DatePickerType } from "../reborn-date-picker-panel/reborn-date-picker-panel.config";
+import RebornDatePickerPanel from "../reborn-date-picker-panel/RebornDatePickerPanel.vue";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 
 const b = tv(theme);
 
 defineOptions({ inheritAttrs: false });
 
 export interface SelectDateProps {
-    modelValue?: string | string[];
-    type?: "year" | "month" | "date";
+    type?: DatePickerType;
     placeholder?: string;
     disabled?: boolean;
     clearable?: boolean;
@@ -44,7 +48,6 @@ export interface SelectDateProps {
 }
 
 const props = withDefaults(defineProps<SelectDateProps>(), {
-    modelValue: "",
     type: "date",
     placeholder: "请选择日期",
     disabled: false,
@@ -54,23 +57,17 @@ const props = withDefaults(defineProps<SelectDateProps>(), {
     end: "2099-12-31",
     size: "md",
     color: "primary",
+    labelFormat: "YYYY-MM-DD",
 });
 
 const emit = defineEmits<{
-    (e: "update:modelValue", value: string | string[]): void;
-    (e: "change", value: string | string[]): void;
+    (e: "change", value: any): void;
 }>();
+
+const modelValue = defineModel<any>({ default: "" });
 
 const isOpen = ref(false);
 const wrapperRef = ref<HTMLElement | null>(null);
-
-// Calendar state
-const viewYear = ref(new Date().getFullYear());
-const viewMonth = ref(new Date().getMonth()); // 0-indexed
-
-const selectedDate = ref<Date | null>(null);
-const rangeStart = ref<Date | null>(null);
-const rangeEnd = ref<Date | null>(null);
 
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
@@ -100,280 +97,82 @@ const ui = computed(() => {
     };
 });
 
-const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-const today = new Date();
+const panelUi = computed(() => ({
+    wrapper: "p-0", // No padding inside dropdown as dropdown has its own
+    header: ui.value.calHeader(),
+    navBtn: ui.value.calNavBtn(),
+    title: ui.value.calTitle(),
+    weekdays: ui.value.calWeekdays(),
+    days: ui.value.calDays(),
+    day: ui.value.calDay(),
+    dayActive: ui.value.calDayActive(),
+    dayDisabled: ui.value.calDayDisabled(),
+    dayToday: ui.value.calDayToday(),
+}));
 
-function parseValue(v: string): Date | null {
+function parseValue(v: any): Date | null {
     if (!v) return null;
-    const d = new Date(v);
-    return isNaN(d.getTime()) ? null : d;
-}
-
-function formatDate(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-
-    if (props.valueFormat) {
-        return props.valueFormat
-            .replace("YYYY", String(y))
-            .replace("MM", m)
-            .replace("DD", day);
-    }
-
-    if (props.type === "year") return `${y}`;
-    if (props.type === "month") return `${y}-${m}`;
-    return `${y}-${m}-${day}`;
+    if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+    const d = props.valueFormat ? dayjs(v, props.valueFormat) : dayjs(v);
+    return d.isValid() ? d.toDate() : null;
 }
 
 function formatDisplay(d: Date): string {
-    if (props.labelFormat) {
-        return props.labelFormat
-            .replace("YYYY", String(d.getFullYear()))
-            .replace("MM", String(d.getMonth() + 1).padStart(2, "0"))
-            .replace("DD", String(d.getDate()).padStart(2, "0"));
+    if (props.labelFormat && props.labelFormat !== "YYYY-MM-DD") {
+        return dayjs(d).format(props.labelFormat);
     }
-    return formatDate(d);
+
+    const formatStr =
+        ["year", "yearrange", "years"].includes(props.type as string) ? "YYYY" :
+            ["month", "monthrange", "months"].includes(props.type as string) ? "YYYY-MM" :
+                ["datetime", "datetimerange"].includes(props.type as string) ? "YYYY-MM-DD HH:mm:ss" :
+                    "YYYY-MM-DD";
+
+    return dayjs(d).format(formatStr);
 }
 
 const displayText = computed(() => {
     if (props.rangeable) {
-        if (rangeStart.value && rangeEnd.value) {
-            return `${formatDisplay(rangeStart.value)} ~ ${formatDisplay(rangeEnd.value)}`;
-        }
-        if (rangeStart.value) {
-            return formatDisplay(rangeStart.value);
+        if (Array.isArray(modelValue.value) && modelValue.value.length >= 2) {
+            const d1 = parseValue(modelValue.value[0]);
+            const d2 = parseValue(modelValue.value[1]);
+            if (d1 && d2) return `${formatDisplay(d1)} ~ ${formatDisplay(d2)}`;
         }
         return "";
     }
-    if (selectedDate.value) return formatDisplay(selectedDate.value);
+    if (modelValue.value) {
+        const d = parseValue(modelValue.value);
+        if (d) return formatDisplay(d);
+    }
     return "";
 });
-
-interface CalDay {
-    date: Date;
-    day: number;
-    isCurrentMonth: boolean;
-    isToday: boolean;
-    isSelected: boolean;
-    isDisabled: boolean;
-    isInRange: boolean;
-    isRangeStart: boolean;
-    isRangeEnd: boolean;
-}
-
-const calendarDays = computed<CalDay[]>(() => {
-    const firstDayOfMonth = new Date(viewYear.value, viewMonth.value, 1);
-    const startWeekday = firstDayOfMonth.getDay();
-    const daysInMonth = new Date(viewYear.value, viewMonth.value + 1, 0).getDate();
-
-    const startDate = new Date(firstDayOfMonth);
-    startDate.setDate(startDate.getDate() - startWeekday);
-
-    const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
-    const days: CalDay[] = [];
-
-    const startLimit = props.start ? new Date(props.start) : null;
-    const endLimit = props.end ? new Date(props.end) : null;
-
-    for (let i = 0; i < totalCells; i++) {
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-
-        const isCurrentMonth = d.getMonth() === viewMonth.value && d.getFullYear() === viewYear.value;
-        const isToday = d.toDateString() === today.toDateString();
-        const isSelected = selectedDate.value ? d.toDateString() === selectedDate.value.toDateString() : false;
-
-        let isDisabled = !isCurrentMonth;
-        if (startLimit && d < startLimit) isDisabled = true;
-        if (endLimit && d > endLimit) isDisabled = true;
-
-        const isRangeStart = rangeStart.value ? d.toDateString() === rangeStart.value.toDateString() : false;
-        const isRangeEnd = rangeEnd.value ? d.toDateString() === rangeEnd.value.toDateString() : false;
-        const isInRange = rangeStart.value && rangeEnd.value && d >= rangeStart.value && d <= rangeEnd.value;
-
-        days.push({ date: d, day: d.getDate(), isCurrentMonth, isToday, isSelected, isDisabled, isInRange, isRangeStart, isRangeEnd });
-    }
-
-    return days;
-});
-
-const currentYearDecade = computed(() => {
-    return Math.floor(viewYear.value / 10) * 10;
-});
-
-const viewYearPageStart = ref(currentYearDecade.value);
-
-const yearList = computed(() => {
-    const start = props.start ? new Date(props.start).getFullYear() : 1970;
-    const end = props.end ? new Date(props.end).getFullYear() : 2099;
-    const years: { year: number, isDisabled: boolean }[] = [];
-
-    for (let i = -1; i <= 10; i++) {
-        const y = viewYearPageStart.value + i;
-        years.push({
-            year: y,
-            isDisabled: y < start || y > end
-        });
-    }
-    return years;
-});
-
-const monthList = computed(() => {
-    return Array.from({ length: 12 }, (_, i) => i + 1);
-});
-
-const currentView = ref<"year" | "month" | "date">(props.type);
-
-watch(() => props.type, (newType) => {
-    currentView.value = newType;
-});
-
-const headerTitle = computed(() => {
-    if (currentView.value === "year") return `${viewYearPageStart.value} - ${viewYearPageStart.value + 9}`;
-    if (currentView.value === "month") return `${viewYear.value}年`;
-    return `${viewYear.value}年${viewMonth.value + 1}月`;
-});
-
-function prevPage() {
-    if (currentView.value === "year") {
-        viewYearPageStart.value -= 10;
-        return;
-    }
-    if (currentView.value === "month") {
-        viewYear.value--;
-        return;
-    }
-    if (viewMonth.value === 0) {
-        viewMonth.value = 11;
-        viewYear.value--;
-    } else {
-        viewMonth.value--;
-    }
-}
-
-function nextPage() {
-    if (currentView.value === "year") {
-        viewYearPageStart.value += 10;
-        return;
-    }
-    if (currentView.value === "month") {
-        viewYear.value++;
-        return;
-    }
-    if (viewMonth.value === 11) {
-        viewMonth.value = 0;
-        viewYear.value++;
-    } else {
-        viewMonth.value++;
-    }
-}
-
-function selectDay(day: CalDay) {
-    if (day.isDisabled) return;
-
-    if (props.rangeable) {
-        if (!rangeStart.value || (rangeStart.value && rangeEnd.value)) {
-            rangeStart.value = day.date;
-            rangeEnd.value = null;
-        } else {
-            if (day.date < rangeStart.value) {
-                rangeEnd.value = rangeStart.value;
-                rangeStart.value = day.date;
-            } else {
-                rangeEnd.value = day.date;
-            }
-            const val = [formatDate(rangeStart.value), formatDate(rangeEnd.value)];
-            emit("update:modelValue", val);
-            emit("change", val);
-            isOpen.value = false;
-        }
-    } else {
-        selectedDate.value = day.date;
-        const val = formatDate(day.date);
-        emit("update:modelValue", val);
-        emit("change", val);
-        isOpen.value = false;
-    }
-}
-
-function selectYear(year: number) {
-    viewYear.value = year;
-    viewYearPageStart.value = Math.floor(year / 10) * 10;
-    if (props.type === "year") {
-        selectedDate.value = new Date(year, 0, 1);
-        const val = String(year);
-        emit("update:modelValue", val);
-        emit("change", val);
-        isOpen.value = false;
-    } else {
-        currentView.value = "month";
-    }
-}
-
-function selectMonth(month: number) {
-    viewMonth.value = month - 1;
-    if (props.type === "month") {
-        selectedDate.value = new Date(viewYear.value, month - 1, 1);
-        const val = `${viewYear.value}-${String(month).padStart(2, "0")}`;
-        emit("update:modelValue", val);
-        emit("change", val);
-        isOpen.value = false;
-    } else {
-        currentView.value = "date";
-    }
-}
 
 function toggle() {
     if (props.disabled) return;
     isOpen.value = !isOpen.value;
-    if (isOpen.value) {
-        currentView.value = props.type;
-        if (selectedDate.value) {
-            viewYear.value = selectedDate.value.getFullYear();
-            viewMonth.value = selectedDate.value.getMonth();
-            viewYearPageStart.value = Math.floor(viewYear.value / 10) * 10;
+}
+
+function onPanelChange(val: string | string[]) {
+    if (props.rangeable) {
+        if (Array.isArray(val) && val.length === 2) {
+            isOpen.value = false;
         }
+    } else {
+        isOpen.value = false;
     }
+    emit("change", val);
 }
 
 function clear(e: Event) {
     e.stopPropagation();
-    selectedDate.value = null;
-    rangeStart.value = null;
-    rangeEnd.value = null;
-    emit("update:modelValue", props.rangeable ? [] : "");
-    emit("change", props.rangeable ? [] : "");
+    const val = props.rangeable ? [] : "";
+    modelValue.value = val;
+    emit("change", val);
 }
 
 function onClickOutside(e: MouseEvent) {
     if (wrapperRef.value && !wrapperRef.value.contains(e.target as Node)) {
         isOpen.value = false;
-    }
-}
-
-if (props.modelValue) {
-    if (props.rangeable && Array.isArray(props.modelValue)) {
-        const [start, end] = props.modelValue;
-        if (start) {
-            const d1 = parseValue(start);
-            if (d1) {
-                rangeStart.value = d1;
-                viewYear.value = d1.getFullYear();
-                viewMonth.value = d1.getMonth();
-            }
-        }
-        if (end) {
-            const d2 = parseValue(end);
-            if (d2) rangeEnd.value = d2;
-        }
-    } else if (!props.rangeable && typeof props.modelValue === 'string') {
-        const d = parseValue(props.modelValue);
-        if (d) {
-            selectedDate.value = d;
-            viewYear.value = d.getFullYear();
-            viewMonth.value = d.getMonth();
-        }
     }
 }
 
@@ -388,7 +187,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
 
             <div class="flex items-center gap-1">
-                <span v-if="clearable && modelValue" :class="ui.clearBtn()" @click.stop="clear">
+                <span v-if="clearable && (rangeable ? (modelValue?.length ?? 0) > 0 : modelValue)"
+                    :class="ui.clearBtn()" @click.stop="clear">
                     <Icon name="lucide:x" class="size-full" />
                 </span>
                 <Icon name="lucide:calendar" :class="ui.arrow()" />
@@ -399,78 +199,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-100 ease-in"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
             <div v-if="isOpen" :class="ui.dropdown()" style="top: 100%; min-width: 280px">
-                <template v-if="currentView === 'year'">
-                    <div :class="ui.calHeader()">
-                        <span :class="ui.calNavBtn()" @click.stop="prevPage">
-                            <Icon name="lucide:chevron-left" class="size-4" />
-                        </span>
-                        <span :class="ui.calTitle()">{{ headerTitle }}</span>
-                        <span :class="ui.calNavBtn()" @click.stop="nextPage">
-                            <Icon name="lucide:chevron-right" class="size-4" />
-                        </span>
-                    </div>
-                    <div class="grid grid-cols-4 gap-1 max-h-[240px] overflow-auto">
-                        <div v-for="item in yearList" :key="item.year" :class="[
-                            ui.calDay(),
-                            selectedDate && selectedDate.getFullYear() === item.year ? ui.calDayActive() : '',
-                            item.year === today.getFullYear() && (!selectedDate || selectedDate.getFullYear() !== item.year) ? ui.calDayToday() : '',
-                            item.isDisabled ? ui.calDayDisabled() : '',
-                            item.year < viewYearPageStart || item.year >= viewYearPageStart + 10 ? 'text-gray-4 dark:text-gray-5' : ''
-                        ]" class="h-9" @click.stop="selectYear(item.year)">
-                            {{ item.year }}
-                        </div>
-                    </div>
-                </template>
-
-                <template v-else-if="currentView === 'month'">
-                    <div :class="ui.calHeader()">
-                        <span :class="ui.calNavBtn()" @click.stop="prevPage">
-                            <Icon name="lucide:chevron-left" class="size-4" />
-                        </span>
-                        <span :class="ui.calTitle()" @click.stop="currentView = 'year'">{{ headerTitle }}</span>
-                        <span :class="ui.calNavBtn()" @click.stop="nextPage">
-                            <Icon name="lucide:chevron-right" class="size-4" />
-                        </span>
-                    </div>
-                    <div class="grid grid-cols-4 gap-1">
-                        <div v-for="m in monthList" :key="m" :class="[
-                            ui.calDay(),
-                            selectedDate && selectedDate.getFullYear() === viewYear && selectedDate.getMonth() === m - 1
-                                ? ui.calDayActive()
-                                : '',
-                        ]" class="h-9" @click.stop="selectMonth(m)">
-                            {{ m }}月
-                        </div>
-                    </div>
-                </template>
-
-                <template v-else>
-                    <div :class="ui.calHeader()">
-                        <span :class="ui.calNavBtn()" @click.stop="prevPage">
-                            <Icon name="lucide:chevron-left" class="size-4" />
-                        </span>
-                        <span :class="ui.calTitle()" @click.stop="currentView = 'month'">{{ headerTitle }}</span>
-                        <span :class="ui.calNavBtn()" @click.stop="nextPage">
-                            <Icon name="lucide:chevron-right" class="size-4" />
-                        </span>
-                    </div>
-
-                    <div :class="ui.calWeekdays()">
-                        <span v-for="w in weekdays" :key="w">{{ w }}</span>
-                    </div>
-
-                    <div :class="ui.calDays()">
-                        <div v-for="(day, idx) in calendarDays" :key="idx" :class="[
-                            ui.calDay(),
-                            day.isSelected || day.isRangeStart || day.isRangeEnd ? ui.calDayActive() : '',
-                            day.isDisabled ? ui.calDayDisabled() : '',
-                            day.isToday && !day.isSelected && !day.isRangeStart && !day.isRangeEnd ? ui.calDayToday() : '',
-                            day.isInRange && !day.isRangeStart && !day.isRangeEnd ? 'bg-primary/10 dark:bg-primary/20' : '',
-                        ]" @click.stop="selectDay(day)">
-                            {{ day.day }}
-                        </div>
-                    </div>
-                </template>
+                <RebornDatePickerPanel v-model="modelValue" @change="onPanelChange" :type="type" :rangeable="rangeable"
+                    :start="start" :end="end" :size="size" :color="color" :ui="panelUi" :value-format="valueFormat" />
             </div>
         </Transition>
     </div>

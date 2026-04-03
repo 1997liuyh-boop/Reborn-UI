@@ -5,7 +5,7 @@ category: 导航
 navigation:
   badges:
     - label: WEB
-      color: primary
+      color: info
   chip:
     label: NEW
     color: primary

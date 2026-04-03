@@ -6,6 +6,9 @@ navigation:
   badges:
     - label: UniApp
       color: success
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornRootPortalDemo.vue" config="RebornRootPortalConfig" componentId="reborn-root-portal" :componentFiles='["RebornRootPortal.vue", "reborn-root-portal.config.ts"]' :uniappFiles='["RebornRootPortal.vue", "reborn-root-portal.config.ts"]'}

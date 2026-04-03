@@ -3,8 +3,15 @@ title: 走马灯 Carousel
 description: 自研的走马灯轮播组件，支持多项显示、自动播放、指示器、箭头控制、卡片模式、纵向布局和响应式配置。
 category: 导航
 tags: [css, tailwind, carousel, slider, motion]
-badge: New
+navigation:
+  badges:
+    - label: web
+      color: info
+  chip:
+    label: NEW
+    color: primary
 ---
+
 
 ::ComponentViewer{demoFile="RebornCarouselDemo.vue" config="RebornCarouselConfig" componentId="reborn-carousel" :componentFiles='["RebornCarousel.vue", "reborn-carousel.config.ts"]'}
 
@@ -12,26 +19,29 @@ badge: New
 
 ## API
 
-| 属性名              | 类型                               | 默认值         | 描述                                                                                                 |
-| ------------------- | ---------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
-| `modelValue`        | `number \| null`                   | `null`         | 当前激活项索引，支持 `v-model`。未传时使用内部状态。                                                 |
-| `slidesPerView`     | `number \| "auto"`                 | `1`            | 一屏展示的项目数量；设为 `"auto"` 时根据子项自身宽高决定可见项。                                     |
-| `spaceBetween`      | `number`                           | `0`            | 轮播项之间的间距，单位 `px`。                                                                        |
-| `centeredSlides`    | `boolean`                          | `false`        | 是否让当前激活项居中显示。                                                                           |
-| `loop`              | `boolean`                          | `false`        | 是否启用循环切换。                                                                                   |
-| `autoplay`          | `boolean \| { delay?: number }`    | `false`        | 自动播放配置；传 `true` 时使用默认间隔 `3000ms`。                                                    |
-| `pagination`        | `null \| { clickable?: boolean }`  | `null`         | 指示器配置；传对象后显示分页器。                                                                     |
-| `trigger`           | `"hover" \| "click"`               | `"hover"`      | 指示器切换触发方式。                                                                                 |
-| `indicatorPosition` | `"inside" \| "outside" \| "none"`  | `"inside"`     | 指示器位置。                                                                                         |
-| `arrow`             | `"hover" \| "always" \| "never"`   | `"hover"`      | 箭头显示策略。                                                                                       |
-| `motionBlur`        | `boolean`                          | `false`        | 是否对非激活项增加动态模糊效果。                                                                     |
-| `height`            | `string`                           | `"20rem"`      | 轮播容器高度；设为 `"auto"` 时随内容自适应。                                                         |
-| `type`              | `"default" \| "card"`              | `"default"`    | 展示类型；`card` 模式会强化中间项层级，并按子项自身尺寸布局。                                        |
-| `direction`         | `"horizontal" \| "vertical"`       | `"horizontal"` | 轮播方向。                                                                                           |
-| `initialSlide`      | `number`                           | `0`            | 初始激活项索引；当 `modelValue` 为空时生效。                                                         |
-| `breakpoints`       | `Record<number, BreakpointConfig>` | `{}`           | 响应式配置；可在断点中覆盖 `slidesPerView`、`spaceBetween`、`type`、`direction` 等参数。             |
-| `class`             | `any`                              | `-`            | 追加到根节点的自定义类名。                                                                           |
-| `ui`                | `object`                           | `{}`           | 细粒度样式覆盖对象，用于重写 `root`、`viewport`、`track`、`slide`、`arrow`、`indicator` 等区域样式。 |
+| 属性名              | 类型                                                                          | 默认值         | 描述                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
+| `modelValue`        | `number \| null`                                                              | `null`         | 当前激活项索引，支持 `v-model`。未传时使用内部状态。                                                 |
+| `slidesPerView`     | `number \| "auto"`                                                            | `1`            | 一屏展示的项目数量；设为 `"auto"` 时根据子项自身宽高决定可见项。                                     |
+| `spaceBetween`      | `number`                                                                      | `0`            | 轮播项之间的间距，单位 `px`。                                                                        |
+| `centeredSlides`    | `boolean`                                                                     | `false`        | 是否让当前激活项居中显示。                                                                           |
+| `loop`              | `boolean`                                                                     | `false`        | 是否启用循环切换。                                                                                   |
+| `autoplay`          | `boolean \| { delay?: number }`                                               | `false`        | 自动播放配置；传 `true` 时使用默认间隔 `3000ms`。                                                    |
+| `pagination`        | `null \| { clickable?: boolean, type?: 'line' \| 'dot' \| 'fraction' \| 'button' }` | `null`         | 指示器配置；支持线条、圆点、分数和按钮四种类型。                                                     |
+| `trigger`           | `"hover" \| "click"`                                                          | `"hover"`      | 指示器切换触发方式。                                                                                 |
+| `indicatorPosition` | `"inside" \| "outside" \| "none"`                                             | `"inside"`     | 指示器位置。                                                                                         |
+| `indicatorOffset`   | `number`                                                                      | `undefined`    | 指示器偏移量 (px)；垂直模式下为侧边间距，水平模式下为底部/外部间距。                                 |
+| `color`             | `"primary" \| ... \| "neutral"`                                               | `"primary"`    | 轮播的主题颜色，影响 active 状态下的指示器和图标颜色。                                               |
+| `arrow`             | `"hover" \| "always" \| "never"`                                              | `"hover"`      | 箭头显示策略。                                                                                       |
+| `motionBlur`        | `boolean`                                                                     | `false`        | 是否对非激活项增加动态模糊效果。                                                                     |
+| `height`            | `string`                                                                      | `"auto"`       | 轮播容器高度；设为 `"auto"` 时随内容自适应。                                                         |
+| `type`              | `"default" \| "card"`                                                         | `"default"`    | 展示类型；`card` 模式会强化中间项层级，并按子项自身尺寸布局。                                        |
+| `direction`         | `"horizontal" \| "vertical"`                                                  | `"horizontal"` | 轮播方向。                                                                                           |
+| `initialSlide`      | `number`                                                                      | `0`            | 初始激活项索引；当 `modelValue` 为空时生效。                                                         |
+| `breakpoints`       | `Record<number, BreakpointConfig>`                                            | `{}`           | 响应式配置；可在断点中覆盖 `slidesPerView`、`spaceBetween`、`type`、`direction` 等参数。             |
+| `grabCursor`        | `boolean`                                                                     | `false`        | 是否启用抓取光标。                                                                                   |
+| `class`             | `any`                                                                         | `-`            | 追加到根节点的自定义类名。                                                                           |
+| `ui`                | `object`                                                                      | `{}`           | 细粒度样式覆盖对象，用于重写各个 UI 区域的样式。                                                     |
 
 ### BreakpointConfig
 
@@ -56,9 +66,12 @@ badge: New
 
 ## Slots
 
-| 插槽名    | Props | 描述                                                   |
-| --------- | ----- | ------------------------------------------------------ |
-| `default` | `-`   | 轮播内容插槽，可放任意卡片、图片、文本块或自定义布局。 |
+| 插槽名       | Props                                              | 描述                                                   |
+| ------------ | -------------------------------------------------- | ------------------------------------------------------ |
+| `default`    | `-`                                                | 轮播内容插槽，可放任意卡片、图片、文本块或自定义布局。 |
+| `prev`       | `{ prev: Function }`                               | 自定义上一页箭头。                                     |
+| `next`       | `{ next: Function }`                               | 自定义下一页箭头。                                     |
+| `indicators` | `{ activeIndex: number, count: number, goTo: Function }` | 自定义指示器区域。                                     |
 
 ## Expose
 
@@ -72,6 +85,7 @@ badge: New
 
 `ui` 支持覆盖以下区域：
 
+- `wrapper`
 - `root`
 - `viewport`
 - `track`
@@ -81,6 +95,7 @@ badge: New
 - `slideInactive`
 - `arrowGroup`
 - `arrow`
+- `indicatorWrapper`
 - `indicators`
 - `indicator`
 - `indicatorActive`

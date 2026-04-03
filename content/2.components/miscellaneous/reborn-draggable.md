@@ -6,6 +6,9 @@ navigation:
   badges:
     - label: 通
       color: primary
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornDraggableDemo.vue" config="RebornDraggableConfig" componentId="reborn-draggable" :componentFiles='["RebornDraggable.vue", "reborn-draggable.config.ts"]' :uniappFiles='["RebornDraggable.vue", "reborn-draggable.config.ts"]'}

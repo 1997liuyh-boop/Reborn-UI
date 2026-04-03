@@ -66,16 +66,15 @@ const disabled = ref(false);
 
             <div class="space-y-4">
                 <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">自定义格式</h3>
-                <RebornSelectDate v-model="value4" type="date" :size="size" :color="color"
-                    labelFormat="YYYY年MM月DD日" valueFormat="YYYY/MM/DD"
-                    placeholder="显示格式：年月日" class="max-w-xs" />
+                <RebornSelectDate v-model="value4" type="date" :size="size" :color="color" labelFormat="YYYY年MM月DD日"
+                    valueFormat="YYYY/MM/DD" placeholder="显示格式：年月日" class="max-w-xs" />
                 <p class="text-sm text-gray-500">选中值: {{ value4 || '空' }}</p>
             </div>
 
             <div class="space-y-4">
                 <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">日期范围选择</h3>
-                <RebornSelectDate v-model="value5" type="date" :size="size" :color="color"
-                    rangeable placeholder="选择日期范围" class="max-w-md" />
+                <RebornSelectDate v-model="value5" type="daterange" :size="size" :color="color" rangeable
+                    placeholder="选择日期范围" class="max-w-md" />
                 <p class="text-sm text-gray-500">选中范围: {{ value5.length ? value5.join(' ~ ') : '空' }}</p>
             </div>
         </div>

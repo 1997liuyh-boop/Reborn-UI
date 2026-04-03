@@ -1,3 +1,14 @@
+<script lang="ts">
+export const selectAnimations = {
+  enterActiveClass: "transition-[height,opacity] duration-300 ease-out overflow-hidden",
+  enterFromClass: "opacity-0",
+  enterToClass: "opacity-100",
+  leaveActiveClass: "transition-[height,opacity] duration-200 ease-in overflow-hidden",
+  leaveFromClass: "opacity-100",
+  leaveToClass: "opacity-0",
+};
+</script>
+
 <script setup lang="ts">
 import type { TransitionName } from './reborn-transition.config';
 import { computed, ref, watch } from 'vue';
@@ -9,28 +20,109 @@ const props = withDefaults(defineProps<{
   lazyRender?: boolean;
   name?: TransitionName | TransitionName[];
   destroy?: boolean;
+  appear?: boolean;
   customClass?: string;
   customStyle?: string;
   disableTouchMove?: boolean;
+  collapse?: boolean;
 }>(), {
   show: false,
   duration: 300,
   lazyRender: false,
   destroy: true,
+  appear: false,
   customClass: '',
   customStyle: '',
   disableTouchMove: false,
+  collapse: undefined,
 });
 
-const emit = defineEmits(['click', 'beforeEnter', 'enter', 'beforeLeave', 'afterLeave', 'leave', 'afterEnter']);
+const emit = defineEmits<{
+  (e: 'click'): void;
+  (e: 'beforeEnter', el: Element): void;
+  (e: 'enter', el: Element, done: () => void): void;
+  (e: 'afterEnter', el: Element): void;
+  (e: 'beforeLeave', el: Element): void;
+  (e: 'leave', el: Element, done: () => void): void;
+  (e: 'afterLeave', el: Element): void;
+}>();
+
+const isCollapse = computed(() => {
+  if (props.collapse !== undefined) return props.collapse;
+  const name = props.name ?? 'fade';
+  const names = Array.isArray(name) ? name : [name];
+  return names.includes('select-collapse' as TransitionName);
+});
+
+const onBeforeEnterInternal = (el: Element) => {
+  if (isCollapse.value) {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = '0';
+    htmlEl.style.opacity = '0';
+    htmlEl.style.overflow = 'hidden';
+  }
+  emit('beforeEnter', el);
+};
+
+const onEnterInternal = (el: Element, done: () => void) => {
+  if (isCollapse.value) {
+    const htmlEl = el as HTMLElement;
+    // Force reflow
+    htmlEl.offsetHeight;
+    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
+    htmlEl.style.opacity = '1';
+    htmlEl.addEventListener('transitionend', done, { once: true });
+  }
+  emit('enter', el, done);
+};
+
+const onAfterEnterInternal = (el: Element) => {
+  if (isCollapse.value) {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = 'auto';
+    htmlEl.style.overflow = '';
+  }
+  emit('afterEnter', el);
+};
+
+const onBeforeLeaveInternal = (el: Element) => {
+  if (isCollapse.value) {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
+    htmlEl.style.opacity = '1';
+    htmlEl.style.overflow = 'hidden';
+  }
+  emit('beforeLeave', el);
+};
+
+const onLeaveInternal = (el: Element, done: () => void) => {
+  if (isCollapse.value) {
+    const htmlEl = el as HTMLElement;
+    // Force reflow
+    htmlEl.offsetHeight;
+    htmlEl.style.height = '0';
+    htmlEl.style.opacity = '0';
+    htmlEl.addEventListener('transitionend', done, { once: true });
+  }
+  emit('leave', el, done);
+};
+
+const onAfterLeaveInternal = (el: Element) => {
+  if (isCollapse.value) {
+    const htmlEl = el as HTMLElement;
+    htmlEl.style.height = '';
+    htmlEl.style.opacity = '';
+    htmlEl.style.overflow = '';
+  }
+  emit('afterLeave', el);
+};
 
 const durationOf = (type: 'enter' | 'leave') => (typeof props.duration === 'object'
   ? (props.duration[type] ?? 300)
   : (props.duration === false ? 0 : Number(props.duration)));
 
-const style = computed(() => `${props.customStyle}`);
-
-function getClassNames(name = props.name ?? "fade") {
+const transitionClasses = computed(() => {
+  const name = props.name ?? 'fade';
   const names = Array.isArray(name) ? name : [name];
   const picked = names.map(n => transitionStyles[n]).filter((it): it is Record<string, string> => !!it);
   const join = (key: string) => picked.map(it => it[key]).join(' ');
@@ -42,9 +134,8 @@ function getClassNames(name = props.name ?? "fade") {
     leaveActive: join('leave-active'),
     leaveTo: join('leave-to'),
   };
-}
+});
 
-const transitionClasses = computed(() => getClassNames());
 const renderReady = ref(!props.lazyRender);
 
 watch(() => props.show, (val) => {
@@ -53,14 +144,17 @@ watch(() => props.show, (val) => {
 </script>
 
 <template>
-  <Transition :enter-from-class="transitionClasses.enterFrom" :enter-active-class="transitionClasses.enterActive"
-    :enter-to-class="transitionClasses.enterTo" :leave-from-class="transitionClasses.leaveFrom"
-    :leave-active-class="transitionClasses.leaveActive" :leave-to-class="transitionClasses.leaveTo"
-    @before-enter="emit('beforeEnter')" @enter="emit('enter')" @after-enter="emit('afterEnter')"
-    @before-leave="emit('beforeLeave')" @leave="emit('leave')" @after-leave="emit('afterLeave')">
-    <div v-if="renderReady && (props.destroy ? props.show : true)" v-show="props.destroy ? true : props.show"
-      :class="`rb-transition ease-in-out ${props.customClass}`"
-      :style="`transition-duration: ${durationOf(props.show ? 'enter' : 'leave')}ms; ${style}`" @click="emit('click')">
+  <Transition :appear="appear" :enter-from-class="transitionClasses.enterFrom"
+    :enter-active-class="transitionClasses.enterActive" :enter-to-class="transitionClasses.enterTo"
+    :leave-from-class="transitionClasses.leaveFrom" :leave-active-class="transitionClasses.leaveActive"
+    :leave-to-class="transitionClasses.leaveTo" :appear-from-class="appear ? transitionClasses.enterFrom : undefined"
+    :appear-active-class="appear ? transitionClasses.enterActive : undefined"
+    :appear-to-class="appear ? transitionClasses.enterTo : undefined" @before-enter="onBeforeEnterInternal"
+    @enter="onEnterInternal" @after-enter="onAfterEnterInternal" @before-leave="onBeforeLeaveInternal"
+    @leave="onLeaveInternal" @after-leave="onAfterLeaveInternal">
+    <div v-if="renderReady && (destroy ? show : true)" v-show="destroy ? true : show"
+      :class="['rb-transition transform-gpu will-change-[opacity,transform]', customClass]"
+      :style="`transition-duration: ${durationOf(show ? 'enter' : 'leave')}ms; ${customStyle}`" @click="emit('click')">
       <slot />
     </div>
   </Transition>

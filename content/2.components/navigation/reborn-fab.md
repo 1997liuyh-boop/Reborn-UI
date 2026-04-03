@@ -9,7 +9,7 @@ navigation:
       color: primary
   chip:
     label: NEW
-    color: success
+    color: primary 
 ---
 
 ::ComponentViewer{demoFile="RebornFabDemo.vue" config="RebornFabConfig" componentId="reborn-fab" :componentFiles='["RebornFab.vue", "reborn-fab.config.ts"]' :uniappFiles='["RebornFab.vue", "reborn-fab.config.ts"]' dependencies="clsx, tailwind-variants"}

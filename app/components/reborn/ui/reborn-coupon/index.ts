@@ -1,1 +1,1 @@
-export { default as Coupon } from "./RebornCoupon.vue";
+export { default as RebornCoupon } from "./RebornCoupon.vue";

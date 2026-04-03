@@ -3,29 +3,22 @@ const colors = ["primary", "secondary", "success", "info", "warning", "error", "
 
 export { sizes as selectSizes, colors as selectColors };
 
-export const selectAnimations = {
-    enterActiveClass: "transition-[height,opacity] duration-300 ease-out overflow-hidden",
-    enterFromClass: "opacity-0",
-    enterToClass: "opacity-100",
-    leaveActiveClass: "transition-[height,opacity] duration-200 ease-in overflow-hidden",
-    leaveFromClass: "opacity-100",
-    leaveToClass: "opacity-0",
-};
-
 export default {
     slots: {
         wrapper: "relative inline-flex w-full group outline-none",
-        trigger:
-            "flex w-full items-center justify-between leading-normal border border-gray-3 dark:border-gray-6 bg-gray-1 dark:bg-gray-8 transition-colors cursor-pointer select-none outline-none",
+        trigger: "flex w-full items-center justify-between leading-normal border border-gray-3 dark:border-gray-6 bg-gray-1 dark:bg-gray-8 transition-colors cursor-pointer select-none outline-none",
         triggerText: "truncate text-gray-8 dark:text-gray-1",
+        triggerIconWrapper: "flex items-center gap-1",
         placeholder: "text-gray-4 dark:text-gray-5",
         arrow: "transition-transform duration-200 text-gray-4 shrink-0",
-        dropdown:
-            "absolute z-50 mt-1 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-hidden max-h-[240px] top-full scrollbar-hide",
-        option:
-            "flex items-center cursor-pointer transition-colors leading-normal text-gray-7 dark:text-gray-2 data-[disabled=true]:opacity-50 data-[disabled=true]:pointer-events-none data-[disabled=true]:hover:bg-transparent",
+        dropdown: "absolute z-50 mt-1 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-hidden! max-h-[240px] top-full scrollbar-hide",
+        dropdownInner: "w-full",
+        option: "flex items-center cursor-pointer transition-colors leading-normal text-gray-7 dark:text-gray-2 data-[disabled=true]:opacity-50 data-[disabled=true]:pointer-events-none data-[disabled=true]:hover:bg-transparent",
+        optionContent: "flex w-full items-center justify-between gap-2",
+        optionLabel: "flex-1 truncate",
         optionActive: "",
-        optionHighlight: "",
+        optionActiveIcon: "size-4 opacity-75 shrink-0",
+        optionHighlight: "bg-gray-50 dark:bg-gray-700/50",
         empty: "flex items-center justify-center py-6 text-sm text-gray-400",
         clearBtn: "shrink-0 text-gray-4 hover:text-gray-6 dark:hover:text-gray-3 cursor-pointer",
     },

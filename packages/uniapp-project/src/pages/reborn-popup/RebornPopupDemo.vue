@@ -61,7 +61,7 @@ const directions: { label: string; value: PopupPosition }[] = [
       </view>
     </RebornCard>
 
-    <RebornPopup v-model="show" :direction="direction" :show-mask="showMask" :show-header="showHeader"
+    <RebornPopup v-model="show" :position="direction" :show-mask="showMask" :show-header="showHeader"
       :show-close="showClose" :swipe-close="swipeClose" :rounded="rounded">
       <template #header>
         <text class="text-24 text-gray-9">方向：{{ direction }}</text>
