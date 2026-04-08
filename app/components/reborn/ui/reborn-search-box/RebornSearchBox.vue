@@ -6,7 +6,7 @@ import RebornSelect, { type SelectProps } from "../reborn-select/RebornSelect.vu
 import RebornBadge from "../reborn-badge/RebornBadge.vue";
 import { inputColors } from "../reborn-input/reborn-input.config";
 import type { InputUi } from "../reborn-input/RebornInput.vue";
-import theme, { searchBoxSizes, inputTheme, selectTheme } from "./reborn-search-box.config";
+import theme, { searchBoxSizes, inputTheme, selectTriggerTheme, selectUiTheme } from "./reborn-search-box.config";
 import RebornSku, { type SkuOption } from "../reborn-sku/RebornSku.vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -23,16 +23,29 @@ export type SkuAttribute = SkuOption;
 
 /** RebornSelect 组件的 UI 覆盖类型定义 */
 export interface SelectUi {
+  /** 触发器最外层容器样式 */
   wrapper?: string;
+  /** 触发器主体按钮样式 */
   trigger?: string;
+  /** 触发器文本内容样式 */
   triggerText?: string;
+  /** 占位提示文字样式 */
   placeholder?: string;
+  /** 右侧箭头/图标样式 */
   arrow?: string;
+  /** 触发器内部生成的浮层(Dropdown)容器样式 */
   dropdown?: string;
-  option?: string;
-  optionActive?: string;
-  optionHighlight?: string;
-  empty?: string;
+  /** 内部 RebornSelect 内容区(Dropdown Content)包装容器样式 */
+  internalDropdown?: string;
+  /** 内部 RebornSelect 单个选项样式 */
+  internalOption?: string;
+  /** 内部 RebornSelect 选中项样式 */
+  internalOptionActive?: string;
+  /** 内部 RebornSelect 高亮项样式 */
+  internalOptionHighlight?: string;
+  /** 内部 RebornSelect 空状态提示样式 */
+  internalEmpty?: string;
+  /** 清除按钮样式 */
   clearBtn?: string;
 }
 
@@ -60,7 +73,6 @@ export interface SearchBoxUi {
   searchIconInner?: string;
   emptyText?: string;
   recommendIcon?: string;
-  selectTriggerText?: string;
 }
 
 /** 搜索框双向绑定值类型 */
@@ -247,27 +259,44 @@ const ui = computed(() => {
       styles.emptyText({ class: cn(opts?.class, uiOverrides.emptyText) }),
     recommendIcon: (opts?: { class?: any }) =>
       styles.recommendIcon({ class: cn(opts?.class, uiOverrides.recommendIcon) }),
-    selectTriggerText: (opts?: { class?: any }) =>
-      styles.selectTriggerText({ class: cn(opts?.class, uiOverrides.selectTriggerText) }),
   };
 });
 
-/** 内部 Select 组件 UI 配置 */
-const internalSelectUi = computed(() => {
-  const selectStyles = tv(selectTheme)();
-  return {
-    ...props.selectUi,
-    trigger: cn(selectStyles.trigger(), props.selectUi?.trigger),
-    dropdown: cn(selectStyles.dropdown(), props.selectUi?.dropdown),
-    triggerText: cn(selectStyles.triggerText(), props.selectUi?.triggerText),
-  };
-});
+/** 内部 Select 组件基础样式 */
+const selectTriggerStyles = tv(selectTriggerTheme)();
+const selectUiStyles = tv(selectUiTheme)();
+
+/** 
+ * 内部 Select 组件触发器 UI 配置
+ * 这里的属性将透传给 RebornSelectTrigger 进行样式覆盖
+ */
+const internalSelectTriggerUi = computed(() => ({
+  ...props.selectUi,
+  wrapper: cn(selectTriggerStyles.wrapper(), props.selectUi?.wrapper),
+  trigger: cn(selectTriggerStyles.trigger(), props.selectUi?.trigger),
+  triggerText: cn(selectTriggerStyles.triggerText(), props.selectUi?.triggerText),
+  dropdown: cn(selectTriggerStyles.dropdown(), props.selectUi?.dropdown),
+}));
+
+/** 
+ * 内部 Select 组件内容 UI 配置
+ * 这里的属性将透传给 RebornSelect 的 ui 属性，用于覆盖选项列表等内部样式
+ */
+const internalSelectUi = computed(() => ({
+  ...props.selectUi,
+  dropdown: cn(selectUiStyles.dropdown(), props.selectUi?.internalDropdown),
+  option: props.selectUi?.internalOption,
+  optionActive: props.selectUi?.internalOptionActive,
+  optionHighlight: props.selectUi?.internalOptionHighlight,
+  empty: props.selectUi?.internalEmpty,
+}));
 
 /** 合并后的 RebornSelect 组件属性 */
 const internalSelectProps = computed(() => ({
   ...props.selectAttrs,
   color: props.color,
   size: "md" as const,
+  triggerUi: internalSelectTriggerUi.value,
   ui: internalSelectUi.value,
   clearable: false,
 }));
@@ -411,10 +440,10 @@ onUnmounted(() => {
         <template #leading="{ ui: inputSlotUi }">
           <div :class="ui.leadingWrapper()" @click.stop="isExpanded = false">
             <RebornSelect :model-value="modelValue?.selectValue" v-bind="internalSelectProps"
-              @update:model-value="handleSelectChange" @click.stop>
+              @update:model-value="handleSelectChange" :bordered="false" @click.stop>
               <template #default="{ displayText, ui: selectSlotUi }">
                 <slot name="select-trigger" :displayText="displayText" :ui="selectSlotUi">
-                  <div :class="[ui.selectTriggerText(), selectSlotUi.triggerText()]">
+                  <div :class="selectSlotUi.triggerText()">
                     {{ displayText }}
                   </div>
                 </slot>

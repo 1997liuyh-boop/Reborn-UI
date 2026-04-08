@@ -45,6 +45,10 @@ navigation:
 | `clearable` | `boolean` | `true` | 是否显示清空按钮。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸。 |
 | `color` | `'primary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 选择器的主题颜色。 |
+| `bordered` | `boolean` | `true` | 是否显示边框。 |
+| `showArrow` | `boolean` | `true` | 是否显示右侧箭头图标。 |
+| `arrowAnimation` | `boolean` | `true` | 展开时箭头是否旋转动画。 |
+| `triggerUi` | `Partial<SelectTriggerUI>` | `{}` | 用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。 |
 
 ## Emits
 
@@ -57,9 +61,9 @@ navigation:
 
 ## Slots
 
-| 名称 | 参数 | 描述 |
-| --- | --- | --- |
-| `tag` | `-` | 自定义选择后的展示标签。 |
+| `default` | `{ displayText, placeholder, isOpen, ui }` | 自定义触发器内容。 |
+| `cover`   | `{ displayText, placeholder, isOpen, ui }` | 覆盖整个触发器内容的插槽，完全替代文本和图标。 |
+| `tag`     | `-`                                        | 自定义选择后的展示标签。 |
 
 ## UI
 各个内部组件的 UI 样式覆盖参数。

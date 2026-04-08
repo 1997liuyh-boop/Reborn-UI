@@ -4,7 +4,7 @@ import { selectColors, selectSizes } from "~/components/reborn/ui/reborn-select/
 
 // --- Playground 状态 ---
 const state = ref<Record<string, any>>({
-    value: null,
+    value: 50,
     size: "md",
     color: "primary",
     multiple: false,
@@ -20,6 +20,8 @@ const options = [
     { label: "Svelte", value: "svelte" },
     { label: "Solid.js", value: "solid" },
 ];
+
+const opstion1 = ref<any[]>([])
 
 // --- 控制面板配置 ---
 const controls: any = [
@@ -74,6 +76,12 @@ const sizeSections = [
     { label: "标准尺寸 (md)", size: "md" as const },
     { label: "大尺寸 (lg)", size: "lg" as const },
 ];
+
+onMounted(() => {
+    for (let i = 0; i < 100; i++) {
+        opstion1.value.push({ label: `选项${i}`, value: i });
+    }
+})
 </script>
 
 <template>
@@ -81,7 +89,7 @@ const sizeSections = [
         <!-- 第一部分：交互式游乐场 -->
         <Playground v-model="state" :controls="controls" component-name="RebornSelect" title="交互体验"
             description="通过左侧面板实时调节组件属性，在右侧查看视觉反馈">
-            <RebornSelect v-model="state.value" :options="options" :size="state.size" :color="state.color"
+            <RebornSelect v-model="state.value" :options="opstion1" :size="state.size" :color="state.color"
                 :multiple="state.multiple" :clearable="state.clearable" :disabled="state.disabled"
                 :placeholder="state.placeholder" class="min-w-64" />
         </Playground>
@@ -141,9 +149,10 @@ const sizeSections = [
                 <div
                     class="rounded-3xl bg-indigo-50/30 p-8 dark:bg-indigo-950/10 border-2 border-indigo-100 dark:border-indigo-900/50">
                     <h4 class="mb-4 text-sm font-bold text-indigo-400 uppercase tracking-widest">Custom Styling</h4>
-                    <p class="mb-6 text-xs text-indigo-500/70">通过 ui 属性深度定制触发器和下拉列表</p>
-                    <RebornSelect v-model="coloredValue" :options="options" :ui="{
+                    <p class="mb-6 text-xs text-indigo-500/70">通过 triggerUi 和 ui 属性深度定制触发器和下拉列表</p>
+                    <RebornSelect v-model="coloredValue" :options="options" :trigger-ui="{
                         trigger: 'border-dashed border-2 rounded-xl bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 px-4 h-14',
+                    }" :ui="{
                         dropdown: 'rounded-xl shadow-2xl shadow-indigo-500/10 border-indigo-100 dark:border-indigo-900 bg-white/90 dark:bg-gray-800/90 backdrop-blur'
                     }" class="w-full" />
                 </div>

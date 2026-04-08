@@ -5,6 +5,7 @@ import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
 import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
 import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
+import RebornColorPicker from "~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue";
 import { tv } from "tailwind-variants";
 import config from "./play-ground.config";
 
@@ -15,7 +16,7 @@ export interface PlaygroundControlItem {
     /** v-model 绑定到 modelValue 中的 key */
     key: string;
     /** 渲染的组件类型 */
-    component: "select" | "input" | "checkbox" | "slider";
+    component: "select" | "input" | "checkbox" | "slider" | "color-picker";
     /** 传递给控件的额外 props（如 options、type 等） */
     props?: Record<string, any>;
     /** 默认值，用于检测是否需要在代码中展示此属性 */
@@ -164,6 +165,10 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                                     @update:model-value="updateField(item.key, $event)" />
                                 <RebornSlider v-else-if="item.component === 'slider'" :model-value="getField(item.key)"
                                     v-bind="item.props" size="sm" class="bg-white! dark:bg-gray-800!"
+                                    @update:model-value="updateField(item.key, $event)" />
+                                <RebornColorPicker v-else-if="item.component === 'color-picker'"
+                                    :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                    class="bg-white! dark:bg-gray-800!"
                                     @update:model-value="updateField(item.key, $event)" />
                             </div>
                         </template>

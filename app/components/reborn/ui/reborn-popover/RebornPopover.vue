@@ -1,384 +1,445 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted, toRef } from "vue"
-import { tv } from "~/lib/tv"
-import theme, { popoverAnimations } from "./reborn-popover.config"
-import { cn } from "~/lib/utils"
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { tv } from "~/lib/tv";
+import theme from "./reborn-popover.config";
+import RebornTransition from "../reborn-transition/RebornTransition.vue";
 
 defineOptions({
-    name: "RebornPopover"
-})
+  name: "RebornPopover",
+});
 
-/**
- * Popover 内容配置
- */
 export interface PopoverContentProps {
-    /** Popover 相对于触发器的显示位置 */
-    side?: "top" | "right" | "bottom" | "left"
-    /** Popover 沿触发器轴线的对齐方式 */
-    align?: "start" | "center" | "end"
-    /** Popover 与触发器之间的间距 */
-    sideOffset?: number
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
+  sideOffset?: number;
 }
 
-/**
- * RebornPopover 组件属性
- */
+type PopoverSide = NonNullable<PopoverContentProps["side"]>;
+type PopoverAlign = NonNullable<PopoverContentProps["align"]>;
+
 export interface PopoverProps {
-    /** 触发模式：'click' (默认) 或 'hover' */
-    mode?: "click" | "hover"
-    /** 内容位置与偏移配置 */
-    content?: PopoverContentProps
-    /** 是否显示箭头 */
-    arrow?: boolean
-    /** 是否将 Popover 渲染到指定的 DOM 节点 (通常为 'body') */
-    portal?: boolean | string
-    /** 点击外部时是否关闭 Popover */
-    dismissible?: boolean
-    /** 受控显示状态 */
-    open?: boolean
-    /** 非受控默认显示状态 */
-    defaultOpen?: boolean
-    /** 是否显示遮罩层并捕获焦点 */
-    modal?: boolean
-    /** 延迟打开时间 (ms) - 适用于 hover 模式 */
-    openDelay?: number
-    /** 延迟关闭时间 (ms) - 适用于 hover 模式，防止意外关闭 */
-    closeDelay?: number
-    /** 额外的类名 */
-    class?: any
-    /** UI 覆盖配置 */
-    ui?: any
+  mode?: "click" | "hover";
+  content?: PopoverContentProps;
+  arrow?: boolean;
+  portal?: boolean | string;
+  dismissible?: boolean;
+  open?: boolean;
+  defaultOpen?: boolean;
+  modal?: boolean;
+  openDelay?: number;
+  closeDelay?: number;
+  class?: any;
+  ui?: any;
 }
 
 const props = withDefaults(defineProps<PopoverProps>(), {
-    mode: "click",
-    portal: true,
-    arrow: false,
-    dismissible: true,
-    modal: false,
-    openDelay: 0,
-    closeDelay: 120,
-    content: () => ({
-        side: "bottom",
-        align: "center",
-        sideOffset: 8
-    })
-})
+  mode: "click",
+  portal: true,
+  arrow: false,
+  dismissible: true,
+  modal: false,
+  openDelay: 0,
+  closeDelay: 120,
+  content: () => ({
+    side: "bottom",
+    align: "center",
+    sideOffset: 8,
+  }),
+});
 
 const emit = defineEmits<{
-    /** 当显示状态发生变化时触发 */
-    (e: "update:open", v: boolean): void
-}>()
+  (e: "update:open", v: boolean): void;
+}>();
 
-/* ---------------- 显示状态 ---------------- */
+const internalOpen = ref(props.defaultOpen ?? props.open ?? false);
 
-/** 内部状态，与 props.defaultOpen 或 props.open 同步 */
-const internalOpen = ref(props.defaultOpen ?? props.open ?? false)
+watch(
+  () => props.open,
+  (v) => {
+    if (v !== undefined) internalOpen.value = v;
+  },
+);
 
-watch(() => props.open, v => {
-    if (v !== undefined) internalOpen.value = v
-})
-
-/** 计算后的显示状态，处理 v-model 同步 */
 const open = computed({
-    get: () => internalOpen.value,
-    set: v => {
-        internalOpen.value = v
-        emit("update:open", v)
-    }
-})
+  get: () => internalOpen.value,
+  set: (value) => {
+    internalOpen.value = value;
+    emit("update:open", value);
+  },
+});
 
-/* ---------------- refs ---------------- */
+const wrapperRef = ref<HTMLElement>();
+const triggerRef = ref<HTMLElement>();
+const contentRefComponent = ref<any>();
+const contentRef = computed(() => contentRefComponent.value?.el as HTMLElement | undefined);
 
-const wrapperRef = ref<HTMLElement>()
-const triggerRef = ref<HTMLElement>()
-const contentRef = ref<HTMLElement>()
+let hoverCount = 0;
+let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 
-/* ---------------- 悬停逻辑 ---------------- */
-
-let hoverCount = 0
-let hoverTimer: any = null
-
-/** 处理 hover 模式下的鼠标移入，支持延迟打开 */
 const onMouseEnter = () => {
-    if (props.mode !== "hover") return
+  if (props.mode !== "hover") return;
 
-    hoverCount++
-    clearTimeout(hoverTimer)
+  hoverCount++;
+  if (hoverTimer) clearTimeout(hoverTimer);
 
-    hoverTimer = setTimeout(() => {
-        open.value = true
-    }, props.openDelay)
-}
+  hoverTimer = setTimeout(() => {
+    open.value = true;
+  }, props.openDelay);
+};
 
-/** 处理 hover 模式下的鼠标移出，支持延迟关闭并检查连续性 */
 const onMouseLeave = () => {
-    if (props.mode !== "hover") return
+  if (props.mode !== "hover") return;
 
-    hoverCount--
+  hoverCount--;
+  if (hoverTimer) clearTimeout(hoverTimer);
 
-    hoverTimer = setTimeout(() => {
-        if (hoverCount <= 0) open.value = false
-    }, props.closeDelay)
-}
-
-/* ---------------- click trigger ---------------- */
+  hoverTimer = setTimeout(() => {
+    if (hoverCount <= 0) open.value = false;
+  }, props.closeDelay);
+};
 
 const onClickTrigger = () => {
-    if (props.mode === "click") {
-        open.value = !open.value
-    }
-}
+  if (props.mode === "click") {
+    open.value = !open.value;
+  }
+};
 
-/* ---------------- 点击外部关闭 ---------------- */
+const onClickOutside = (event: MouseEvent) => {
+  if (!open.value || !props.dismissible) return;
 
-const onClickOutside = (e: MouseEvent) => {
-    if (!open.value || !props.dismissible) return
+  const target = event.target as Node;
+  if (wrapperRef.value?.contains(target) || contentRef.value?.contains(target)) {
+    return;
+  }
 
-    const target = e.target as Node
+  open.value = false;
+};
 
-    if (
-        wrapperRef.value?.contains(target) ||
-        contentRef.value?.contains(target)
-    ) {
-        return
-    }
-
-    open.value = false
-}
-
-/* ---------------- 位置计算 ---------------- */
+const VIEWPORT_OFFSET = 8;
+const ARROW_INSET = 20;
 
 const style = ref<Record<string, string>>({
-    transform: "translate3d(0,0,0)"
-})
+  left: "0px",
+  top: "0px",
+});
 
-/**
- * 根据触发器的边界动态计算 Popover 的位置。
- * 使用 offsetWidth/Height 以排除绝对定位箭头的溢出干扰。
- */
-const calculatePosition = () => {
-    if (!triggerRef.value || !contentRef.value) return
+const resolvedSide = ref<PopoverSide>(props.content?.side || "bottom");
+const resolvedAlign = ref<PopoverAlign>(props.content?.align || "center");
 
-    const rect = triggerRef.value.getBoundingClientRect()
-    // 不直接测量 contentRef 的 bounds，因为它包含了绝对定位出的箭头，
-    // 我们需要测量定义的视觉边界内容盒子。
-    const contentBox = contentRef.value.firstElementChild as HTMLElement
-    const cWidth = contentBox.offsetWidth
-    const cHeight = contentBox.offsetHeight
+const arrowPosition = ref({
+  x: "50%",
+  y: "50%",
+});
 
-    const side = props.content?.side || "bottom"
-    const align = props.content?.align || "center"
-    const offset = props.content?.sideOffset ?? 8
+function getPosition(
+  rect: DOMRect,
+  width: number,
+  height: number,
+  side: PopoverSide,
+  align: PopoverAlign,
+  offset: number,
+) {
+  let x = rect.left;
+  let y = rect.bottom + offset;
 
-    let x = rect.left
-    let y = rect.bottom + offset
+  if (side === "top") {
+    y = rect.top - height - offset;
+  }
 
-    // 基于 'side' 属性的坐标计算
-    if (side === "top") {
-        y = rect.top - cHeight - offset
+  if (side === "left") {
+    x = rect.left - width - offset;
+    y = rect.top + rect.height / 2 - height / 2;
+  }
+
+  if (side === "right") {
+    x = rect.right + offset;
+    y = rect.top + rect.height / 2 - height / 2;
+  }
+
+  if (side === "top" || side === "bottom") {
+    if (align === "center") {
+      x = rect.left + rect.width / 2 - width / 2;
+    } else if (align === "end") {
+      x = rect.right - width;
     }
+  }
 
-    if (side === "left") {
-        x = rect.left - cWidth - offset
-        y = rect.top + rect.height / 2 - cHeight / 2
+  if (side === "left" || side === "right") {
+    if (align === "start") {
+      y = rect.top;
+    } else if (align === "end") {
+      y = rect.bottom - height;
     }
+  }
 
-    if (side === "right") {
-        x = rect.right + offset
-        y = rect.top + rect.height / 2 - cHeight / 2
-    }
-
-    // side 轴线上的对齐逻辑
-    if (side === "bottom" || side === "top") {
-        if (align === "center") {
-            x = rect.left + rect.width / 2 - cWidth / 2
-        }
-
-        if (align === "end") {
-            x = rect.right - cWidth
-        }
-    }
-
-    if (side === "left" || side === "right") {
-        if (align === "start") {
-            y = rect.top
-        }
-
-        if (align === "end") {
-            y = rect.bottom - cHeight
-        }
-    }
-
-    // 屏幕碰撞排查逻辑（防止 Popover 超出视口）
-    const vWidth = window.innerWidth
-    const vHeight = document.documentElement.clientHeight
-
-    if (x < 8) x = 8
-    if (x + cWidth > vWidth - 8) x = vWidth - cWidth - 8
-    if (y < 8) y = 8
-    if (y + cHeight > vHeight - 8) y = vHeight - cHeight - 8
-
-    style.value = {
-        transform: `translate3d(${x}px, ${y}px, 0)`
-    }
+  return { x, y };
 }
 
+function getOverflow(x: number, y: number, width: number, height: number) {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = document.documentElement.clientHeight;
 
-let frame: number | null = null
-
-const updatePosition = () => {
-    if (frame) return
-
-    frame = requestAnimationFrame(() => {
-        calculatePosition()
-        frame = null
-    })
+  return {
+    top: y < VIEWPORT_OFFSET,
+    bottom: y + height > viewportHeight - VIEWPORT_OFFSET,
+    left: x < VIEWPORT_OFFSET,
+    right: x + width > viewportWidth - VIEWPORT_OFFSET,
+  };
 }
 
+function clampPosition(x: number, y: number, width: number, height: number) {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = document.documentElement.clientHeight;
+
+  return {
+    x: Math.min(Math.max(x, VIEWPORT_OFFSET), viewportWidth - width - VIEWPORT_OFFSET),
+    y: Math.min(Math.max(y, VIEWPORT_OFFSET), viewportHeight - height - VIEWPORT_OFFSET),
+  };
+}
+
+function getVerticalAlignFallbacks(align: PopoverAlign, direction: "top" | "bottom") {
+  if (direction === "bottom") {
+    if (align === "start") return ["center", "end"] as PopoverAlign[];
+    if (align === "center") return ["end"] as PopoverAlign[];
+    return [] as PopoverAlign[];
+  }
+
+  if (align === "end") return ["center", "start"] as PopoverAlign[];
+  if (align === "center") return ["start"] as PopoverAlign[];
+  return [] as PopoverAlign[];
+}
+
+function syncArrowPosition(rect: DOMRect, x: number, y: number, width: number, height: number) {
+  const triggerCenterX = rect.left + rect.width / 2 - x;
+  const triggerCenterY = rect.top + rect.height / 2 - y;
+
+  arrowPosition.value = {
+    x: `${Math.min(Math.max(triggerCenterX, ARROW_INSET), width - ARROW_INSET)}px`,
+    y: `${Math.min(Math.max(triggerCenterY, ARROW_INSET), height - ARROW_INSET)}px`,
+  };
+}
+
+function calculatePosition(contentElement?: HTMLElement) {
+  const currentContent = contentElement ?? contentRef.value;
+  if (!triggerRef.value || !currentContent) return;
+
+  const contentBox = currentContent.firstElementChild as HTMLElement | null;
+  if (!contentBox) return;
+
+  const rect = triggerRef.value.getBoundingClientRect();
+  const width = contentBox.offsetWidth;
+  const height = contentBox.offsetHeight;
+  const offset = props.content?.sideOffset ?? 8;
+
+  let side: PopoverSide = props.content?.side || "bottom";
+  let align: PopoverAlign = props.content?.align || "center";
+  const originAlign: PopoverAlign = props.content?.align || "center";
+  let position = getPosition(rect, width, height, side, align, offset);
+  let overflow = getOverflow(position.x, position.y, width, height);
+
+  if (side === "bottom" && overflow.bottom) {
+    side = "top";
+    position = getPosition(rect, width, height, side, align, offset);
+    overflow = getOverflow(position.x, position.y, width, height);
+  } else if (side === "top" && overflow.top) {
+    side = "bottom";
+    position = getPosition(rect, width, height, side, align, offset);
+    overflow = getOverflow(position.x, position.y, width, height);
+  } else if (side === "left" || side === "right") {
+    if (side === "left" && overflow.left) {
+      side = "right";
+      position = getPosition(rect, width, height, side, align, offset);
+      overflow = getOverflow(position.x, position.y, width, height);
+    } else if (side === "right" && overflow.right) {
+      side = "left";
+      position = getPosition(rect, width, height, side, align, offset);
+      overflow = getOverflow(position.x, position.y, width, height);
+    }
+
+    if (overflow.bottom || overflow.top) {
+      const direction = overflow.bottom ? "bottom" : "top";
+
+      for (const nextAlign of getVerticalAlignFallbacks(align, direction)) {
+        align = nextAlign;
+        position = getPosition(rect, width, height, side, align, offset);
+        overflow = getOverflow(position.x, position.y, width, height);
+
+        if (
+          (direction === "bottom" && !overflow.bottom) ||
+          (direction === "top" && !overflow.top)
+        ) {
+          break;
+        }
+      }
+
+      if ((direction === "bottom" && overflow.bottom) || (direction === "top" && overflow.top)) {
+        side = direction === "bottom" ? "top" : "bottom";
+        align = originAlign;
+        position = getPosition(rect, width, height, side, align, offset);
+      }
+    }
+  }
+
+  const clamped = clampPosition(position.x, position.y, width, height);
+  resolvedSide.value = side;
+  resolvedAlign.value = align;
+  syncArrowPosition(rect, clamped.x, clamped.y, width, height);
+
+  style.value = {
+    left: `${clamped.x}px`,
+    top: `${clamped.y}px`,
+  };
+}
+
+let frame: number | null = null;
+
+function updatePosition() {
+  if (frame) return;
+
+  frame = requestAnimationFrame(() => {
+    calculatePosition();
+    frame = null;
+  });
+}
+
+const onBeforeEnter = (el: Element) => {
+  calculatePosition(el as HTMLElement);
+};
+
+const onEnter = (el: Element) => {
+  calculatePosition(el as HTMLElement);
+};
 
 let resizeObserver: ResizeObserver | null = null;
 
-/** 当内容元素被检测到或尺寸变化时自动更新位置 */
-watch(contentRef, (el) => {
+watch(
+  contentRef,
+  (element) => {
     if (resizeObserver) {
-        resizeObserver.disconnect()
-        resizeObserver = null
+      resizeObserver.disconnect();
+      resizeObserver = null;
     }
-    if (el) {
-        resizeObserver = new ResizeObserver(() => {
-            if (open.value) updatePosition()
-        })
-        resizeObserver.observe(el)
 
-        if (open.value) {
-            // 使用双重 requestAnimationFrame 确保在显示状态切换（display:block）后的布局重计算已完成
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => calculatePosition())
-            })
-        }
+    if (!element) return;
+
+    resizeObserver = new ResizeObserver(() => {
+      if (open.value) updatePosition();
+    });
+    resizeObserver.observe(element);
+
+    if (open.value) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => calculatePosition());
+      });
     }
-}, { immediate: true })
+  },
+  { immediate: true },
+);
 
 onMounted(() => {
-    document.addEventListener("mousedown", onClickOutside)
-    window.addEventListener("resize", updatePosition)
-    window.addEventListener("scroll", updatePosition, true)
-})
+  document.addEventListener("mousedown", onClickOutside);
+  window.addEventListener("resize", updatePosition);
+  window.addEventListener("scroll", updatePosition, true);
+});
 
 onUnmounted(() => {
-    document.removeEventListener("mousedown", onClickOutside)
-    window.removeEventListener("resize", updatePosition)
-    window.removeEventListener("scroll", updatePosition, true)
-    if (resizeObserver) resizeObserver.disconnect()
-})
+  document.removeEventListener("mousedown", onClickOutside);
+  window.removeEventListener("resize", updatePosition);
+  window.removeEventListener("scroll", updatePosition, true);
+  if (hoverTimer) clearTimeout(hoverTimer);
+  if (resizeObserver) resizeObserver.disconnect();
+});
 
-watch(open, v => {
-    if (v) {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                calculatePosition()
-            })
-        })
-    }
-})
+watch(open, (value) => {
+  if (!value) return;
 
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => calculatePosition());
+  });
+});
 
-/**
- * 计算指示箭头的精确样式。
- * 使用 clip-path 渲染一个真正的三角形，并隐藏旋转正方形中不需要的边缘。
- */
 const arrowStyle = computed(() => {
-    const side = props.content?.side || "bottom"
-    const offsetScale = "-6px"
+  const side = resolvedSide.value;
+  const offsetScale = "-6px";
 
-    // 为了形成完美的三角形并防止重叠，我们在旋转后的正方形上使用 clip-path 裁剪。
-    if (side === "bottom")
-        return {
-            top: offsetScale, left: "50%", transform: "translateX(-50%) rotate(45deg)",
-            clipPath: "polygon(0 0, 100% 0, 0 100%)",
-            borderBottomWidth: "0", borderRightWidth: "0"
-        }
-
-    if (side === "top")
-        return {
-            bottom: offsetScale, left: "50%", transform: "translateX(-50%) rotate(45deg)",
-            clipPath: "polygon(100% 100%, 100% 0, 0 100%)",
-            borderTopWidth: "0", borderLeftWidth: "0"
-        }
-
-    if (side === "left")
-        return {
-            right: offsetScale, top: "50%", transform: "translateY(-50%) rotate(45deg)",
-            clipPath: "polygon(100% 0, 0 0, 100% 100%)",
-            borderBottomWidth: "0", borderLeftWidth: "0"
-        }
-
-    if (side === "right")
-        return {
-            left: offsetScale, top: "50%", transform: "translateY(-50%) rotate(45deg)",
-            clipPath: "polygon(0 100%, 0 0, 100% 100%)",
-            borderTopWidth: "0", borderRightWidth: "0"
-        }
-})
-
-/* ---------------- styles ---------------- */
-
-const b = tv(theme)
-const ui = computed(() => {
-    return b({
-        side: props.content?.side,
-        align: props.content?.align
-    })
-})
-
-/**
- * 计算动画类名，根据 side 动态选择方向性动画偏移
- */
-const ani = computed(() => {
-    const side = props.content?.side || "bottom"
-    const specific = popoverAnimations[side]
+  if (side === "bottom") {
     return {
-        ...popoverAnimations.base,
-        enterFromClass: cn(popoverAnimations.base.enterActiveClass && "", specific.enterFromClass),
-        leaveToClass: cn(popoverAnimations.base.leaveActiveClass && "", specific.leaveToClass)
-    }
-})
+      top: offsetScale,
+      left: arrowPosition.value.x,
+      transform: "translateX(-50%) rotate(45deg)",
+      clipPath: "polygon(0 0, 100% 0, 0 100%)",
+      borderBottomWidth: "0",
+      borderRightWidth: "0",
+    };
+  }
+
+  if (side === "top") {
+    return {
+      bottom: offsetScale,
+      left: arrowPosition.value.x,
+      transform: "translateX(-50%) rotate(45deg)",
+      clipPath: "polygon(100% 100%, 100% 0, 0 100%)",
+      borderTopWidth: "0",
+      borderLeftWidth: "0",
+    };
+  }
+
+  if (side === "left") {
+    return {
+      right: offsetScale,
+      top: arrowPosition.value.y,
+      transform: "translateY(-50%) rotate(45deg)",
+      clipPath: "polygon(100% 0, 0 0, 100% 100%)",
+      borderBottomWidth: "0",
+      borderLeftWidth: "0",
+    };
+  }
+
+  return {
+    left: offsetScale,
+    top: arrowPosition.value.y,
+    transform: "translateY(-50%) rotate(45deg)",
+    clipPath: "polygon(0 100%, 0 0, 100% 100%)",
+    borderTopWidth: "0",
+    borderRightWidth: "0",
+  };
+});
+
+const b = tv(theme);
+const ui = computed(() => {
+  return b({
+    side: resolvedSide.value,
+    align: resolvedAlign.value,
+  });
+});
 
 defineExpose({
-    close: () => (open.value = false)
-})
+  close: () => (open.value = false),
+});
 </script>
 
 <template>
-    <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter"
-        @mouseleave="onMouseLeave">
-        <div ref="triggerRef" :class="ui.trigger()" @click="onClickTrigger">
-            <slot :open="open" />
-        </div>
-
-        <Teleport :to="typeof portal === 'string' ? portal : 'body'" :disabled="!portal">
-
-            <!-- mask -->
-            <div v-if="open && modal" :class="ui.mask()" @click="props.dismissible && (open = false)" />
-
-            <Transition :enter-active-class="ani.enterActiveClass" :enter-from-class="ani.enterFromClass"
-                :enter-to-class="ani.enterToClass" :leave-active-class="ani.leaveActiveClass"
-                :leave-from-class="ani.leaveFromClass" :leave-to-class="ani.leaveToClass">
-                <div v-show="open" ref="contentRef" :class="ui.contentWrapper()" :style="style"
-                    @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-                    <div :class="ui.content()">
-                        <slot name="content" />
-
-                        <!-- 隐形的悬停桥接层，用于通过间隙时保持鼠标连续性 -->
-                        <div v-if="props.mode === 'hover'" :class="ui.bridge()"
-                            :style="{ margin: `-${props.content?.sideOffset ?? 8}px` }" />
-
-                        <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" />
-                    </div>
-                </div>
-            </Transition>
-
-        </Teleport>
+  <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave">
+    <div ref="triggerRef" :class="ui.trigger()" @click="onClickTrigger">
+      <slot :open="open" />
     </div>
+
+    <Teleport :to="typeof portal === 'string' ? portal : 'body'" :disabled="!portal">
+      <div v-if="open && modal" :class="ui.mask()" @click="props.dismissible && (open = false)" />
+
+      <RebornTransition :show="open" name="zoom-in" :duration="{ enter: 200, leave: 150 }"
+        :custom-class="ui.contentWrapper()" :custom-style="style" ref="contentRefComponent"
+        @before-enter="onBeforeEnter" @enter="onEnter" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+        <div :class="ui.content()">
+          <slot name="content" />
+
+          <div v-if="props.mode === 'hover'" :class="ui.bridge()"
+            :style="{ margin: `-${props.content.sideOffset ?? 8}px` }" />
+
+          <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" />
+        </div>
+      </RebornTransition>
+    </Teleport>
+  </div>
 </template>

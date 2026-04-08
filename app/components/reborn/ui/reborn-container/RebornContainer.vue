@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { VNode } from 'vue'
+import type { ClassValue } from 'clsx'
 
 /**
  * RebornContainer 属性定义
@@ -17,9 +18,9 @@ export interface ContainerProps {
     /**
      * 组件 UI 微调配置
      */
-    ui?: {
-        root?: any
-    }
+    ui?: Partial<{
+        root: ClassValue
+    }>
 }
 
 /**

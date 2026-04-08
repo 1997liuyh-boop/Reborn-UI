@@ -30,7 +30,7 @@ export default {
     arrowGroup:
       "pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 justify-between max-w-(--ui-container) mx-auto",
     arrow:
-      "pointer-events-auto cursor-pointer size-10 rounded-full inline-flex items-center justify-center bg-[#302F33]/45 backdrop-blur-3xl border border-[#BABCBF] shadow-lg text-white transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
+      "pointer-events-auto cursor-pointer size-10 rounded-full inline-flex items-center justify-center bg-[#000000]/45 backdrop-blur-3xl border border-[#BABCBF] shadow-lg text-white transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
     indicatorWrapper: "flex justify-center",
     indicators:
       "flex items-center gap-2 pointer-events-auto",

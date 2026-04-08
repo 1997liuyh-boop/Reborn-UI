@@ -22,9 +22,15 @@ const props = withDefaults(defineProps<{
   destroy?: boolean;
   appear?: boolean;
   customClass?: string;
-  customStyle?: string;
+  customStyle?: any;
   disableTouchMove?: boolean;
   collapse?: boolean;
+  enterFromClass?: string;
+  enterActiveClass?: string;
+  enterToClass?: string;
+  leaveFromClass?: string;
+  leaveActiveClass?: string;
+  leaveToClass?: string;
 }>(), {
   show: false,
   duration: 300,
@@ -72,6 +78,8 @@ const onEnterInternal = (el: Element, done: () => void) => {
     htmlEl.style.height = `${htmlEl.scrollHeight}px`;
     htmlEl.style.opacity = '1';
     htmlEl.addEventListener('transitionend', done, { once: true });
+  } else {
+    done();
   }
   emit('enter', el, done);
 };
@@ -103,6 +111,8 @@ const onLeaveInternal = (el: Element, done: () => void) => {
     htmlEl.style.height = '0';
     htmlEl.style.opacity = '0';
     htmlEl.addEventListener('transitionend', done, { once: true });
+  } else {
+    done();
   }
   emit('leave', el, done);
 };
@@ -122,6 +132,17 @@ const durationOf = (type: 'enter' | 'leave') => (typeof props.duration === 'obje
   : (props.duration === false ? 0 : Number(props.duration)));
 
 const transitionClasses = computed(() => {
+  if (props.enterActiveClass || props.enterFromClass || props.leaveActiveClass || props.leaveFromClass) {
+    return {
+      enterFrom: props.enterFromClass || '',
+      enterActive: props.enterActiveClass || '',
+      enterTo: props.enterToClass || '',
+      leaveFrom: props.leaveFromClass || '',
+      leaveActive: props.leaveActiveClass || '',
+      leaveTo: props.leaveToClass || '',
+    };
+  }
+
   const name = props.name ?? 'fade';
   const names = Array.isArray(name) ? name : [name];
   const picked = names.map(n => transitionStyles[n]).filter((it): it is Record<string, string> => !!it);
@@ -137,10 +158,15 @@ const transitionClasses = computed(() => {
 });
 
 const renderReady = ref(!props.lazyRender);
+const elRef = ref<HTMLElement | null>(null);
 
 watch(() => props.show, (val) => {
   if (val && props.lazyRender) renderReady.value = true;
 }, { immediate: true });
+
+defineExpose({
+  el: elRef,
+});
 </script>
 
 <template>
@@ -152,9 +178,10 @@ watch(() => props.show, (val) => {
     :appear-to-class="appear ? transitionClasses.enterTo : undefined" @before-enter="onBeforeEnterInternal"
     @enter="onEnterInternal" @after-enter="onAfterEnterInternal" @before-leave="onBeforeLeaveInternal"
     @leave="onLeaveInternal" @after-leave="onAfterLeaveInternal">
-    <div v-if="renderReady && (destroy ? show : true)" v-show="destroy ? true : show"
+    <div v-if="renderReady && (destroy ? show : true)" v-show="destroy ? true : show" ref="elRef"
       :class="['rb-transition transform-gpu will-change-[opacity,transform]', customClass]"
-      :style="`transition-duration: ${durationOf(show ? 'enter' : 'leave')}ms; ${customStyle}`" @click="emit('click')">
+      :style="[{ transitionDuration: `${durationOf(show ? 'enter' : 'leave')}ms` }, customStyle]"
+      @click="emit('click')">
       <slot />
     </div>
   </Transition>

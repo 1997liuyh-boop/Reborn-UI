@@ -5,14 +5,6 @@ export { sizes as selectSizes, colors as selectColors };
 
 export default {
     slots: {
-        wrapper: "relative inline-flex w-full group outline-none",
-        trigger: "flex w-full items-center justify-between leading-normal border border-gray-3 dark:border-gray-6 bg-gray-1 dark:bg-gray-8 transition-colors cursor-pointer select-none outline-none",
-        triggerText: "truncate text-gray-8 dark:text-gray-1",
-        triggerIconWrapper: "flex items-center gap-1",
-        placeholder: "text-gray-4 dark:text-gray-5",
-        arrow: "transition-transform duration-200 text-gray-4 shrink-0",
-        dropdown: "absolute z-50 mt-1 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-hidden! max-h-[240px] top-full scrollbar-hide",
-        dropdownInner: "w-full",
         option: "flex items-center cursor-pointer transition-colors leading-normal text-gray-7 dark:text-gray-2 data-[disabled=true]:opacity-50 data-[disabled=true]:pointer-events-none data-[disabled=true]:hover:bg-transparent",
         optionContent: "flex w-full items-center justify-between gap-2",
         optionLabel: "flex-1 truncate",
@@ -20,30 +12,18 @@ export default {
         optionActiveIcon: "size-4 opacity-75 shrink-0",
         optionHighlight: "bg-gray-50 dark:bg-gray-700/50",
         empty: "flex items-center justify-center py-6 text-sm text-gray-400",
-        clearBtn: "shrink-0 text-gray-4 hover:text-gray-6 dark:hover:text-gray-3 cursor-pointer",
+        dropdown: "max-h-60 overflow-y-auto scrollbar-hide",
     },
     variants: {
         size: {
             sm: {
-                trigger: "h-input-sm px-2 text-body-sm gap-1 rounded-ui-sm leading-none",
                 option: "h-input-sm text-body-sm px-2 leading-none",
-                dropdown: "rounded-ui-sm",
-                arrow: "size-3",
-                clearBtn: "size-3",
             },
             md: {
-                trigger: "h-input-md px-3 text-body-base gap-2 rounded-ui-md",
                 option: "h-input-md text-body-base px-3",
-                dropdown: "rounded-ui-md",
-                arrow: "size-4",
-                clearBtn: "size-4",
             },
             lg: {
-                trigger: "h-input-lg px-4 text-body-base gap-2 rounded-ui-base",
                 option: "h-input-lg text-body-base  px-4",
-                dropdown: "rounded-ui-base",
-                arrow: "size-5",
-                clearBtn: "size-5",
             },
         },
         color: {
@@ -77,12 +57,10 @@ export default {
             },
         },
         open: {
-            true: { arrow: "rotate-180" },
+            true: {},
         },
         disabled: {
-            true: {
-                trigger: "opacity-50 pointer-events-none cursor-not-allowed bg-gray-50 dark:bg-gray-900",
-            },
+            true: {},
         },
     },
     defaultVariants: {

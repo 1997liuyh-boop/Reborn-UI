@@ -129,21 +129,7 @@ function formatDisplay(val: any) {
 </script>
 
 <template>
-    <div class="space-y-16 p-8 max-w-7xl mx-auto pb-32">
-        <!-- Header Section -->
-        <header class="space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-primary p-2 rounded-2xl shadow-lg shadow-primary/20">
-                    <Icon name="lucide:calendar-range" class="size-8 text-white" />
-                </div>
-                <div>
-                    <h1 class="text-4xl font-black tracking-tight text-gray-900 dark:text-gray-100 uppercase">
-                        DatePickerPanel</h1>
-                    <p class="text-gray-500 font-medium tracking-wide">支持 12 种选择模式，应对各种复杂的日期与时间交互需求。</p>
-                </div>
-            </div>
-        </header>
-
+    <div class="space-y-16 mx-auto pb-32">
         <!-- Playground -->
         <Playground v-model="state" :controls="controls" component-name="RebornDatePickerPanel"
             title="交互演练场 (Playground)" description="实时调节 12 种模式、颜色、形状及尺寸，感受最直观的视觉反馈。">
@@ -188,8 +174,8 @@ function formatDisplay(val: any) {
 
                     <div
                         class="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2">
-                        <RebornDatePickerPanel v-model="item.model" :type="item.value" :color="state.color"
-                            :shape="state.shape" :size="state.size" :border="false" />
+                        <RebornDatePickerPanel v-model="item.model" :type="(item.value as DatePickerType)"
+                            :color="state.color" :shape="state.shape" :size="state.size" :border="false" />
                     </div>
 
                     <div

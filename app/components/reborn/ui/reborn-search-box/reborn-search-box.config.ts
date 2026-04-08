@@ -26,12 +26,24 @@ export const inputTheme = {
  * RebornSelect 内部 UI 覆盖配置 
  * 用于搜索框左侧的分类选择器，强制去除边框并限制文字宽度
  */
-export const selectTheme = {
+/** 
+ * RebornSelect 内部触发器 UI 覆盖配置 
+ */
+export const selectTriggerTheme = {
     slots: {
         wrapper: "h-full!",
         trigger: "border-0! bg-transparent! h-full! overflow-hidden",
+        dropdown: "min-w-30!",
+        triggerText: "min-w-15 truncate text-gray-9 dark:text-gray-2",
+    }
+} as const;
+
+/** 
+ * RebornSelect 内部组件 UI 覆盖配置 
+ */
+export const selectUiTheme = {
+    slots: {
         dropdown: "w-auto!",
-        triggerText: "truncate w-[50px]",
     }
 } as const;
 
@@ -82,7 +94,7 @@ export default {
         /** 推荐搜索列表中的图标 */
         recommendIcon: "size-4 text-gray-4 shrink-0",
         /** 左侧选择器触发文字样式 */
-        selectTriggerText: "w-[50px] truncate text-gray-9 dark:text-gray-2",
+        selectTriggerText: "",
     },
     variants: {
         // size: {

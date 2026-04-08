@@ -48,6 +48,19 @@ import RebornTransition from '../reborn-transition/RebornTransition.vue';
 import type { TransitionName } from '../reborn-transition/reborn-transition.config';
 import theme from './reborn-popup.config';
 import { tv } from '~/lib/tv';
+import { cn } from '~/lib/utils';
+
+
+export interface RebornPopupUi {
+  wrapper?: string;
+  root?: string;
+  header?: string;
+  title?: string;
+  closeBtn?: string;
+  body?: string;
+  footer?: string;
+  resizer?: string;
+}
 
 export interface RebornPopupProps {
   /** 是否将弹出层插入至 body 节点 */
@@ -122,6 +135,7 @@ export interface RebornPopupProps {
   headerAriaLevel?: string;
   /** 自定义根元素类名 */
   class?: any;
+  ui?: RebornPopupUi;
 }
 
 /** 是否显示弹出层 */
@@ -161,7 +175,8 @@ const props = withDefaults(defineProps<RebornPopupProps>(), {
   safeAreaInsetBottom: true,
   safeAreaInsetTop: true,
   lazyRender: true,
-  headerAriaLevel: '2'
+  headerAriaLevel: '2',
+  ui: () => ({})
 });
 
 const emit = defineEmits<{
@@ -219,7 +234,24 @@ const transitionName = computed<TransitionName>(() => {
 });
 
 const ui = computed(() => {
-  return tv(theme)({ position: actualPosition.value as any });
+  const overrides = props.ui || {};
+  const resolveStyles = (round = props.round) => tv(theme)({
+    position: actualPosition.value as any,
+    round
+  });
+
+  return {
+    wrapper: (opts?: { class?: any }) => resolveStyles().wrapper({ class: cn(opts?.class, overrides.wrapper) }),
+    root: (opts?: { class?: any; round?: boolean }) => resolveStyles(opts?.round ?? props.round).root({
+      class: cn(opts?.class, overrides.root),
+    }),
+    header: (opts?: { class?: any }) => resolveStyles().header({ class: cn(opts?.class, overrides.header) }),
+    title: (opts?: { class?: any }) => resolveStyles().title({ class: cn(opts?.class, overrides.title) }),
+    closeBtn: (opts?: { class?: any }) => resolveStyles().closeBtn({ class: cn(opts?.class, overrides.closeBtn) }),
+    body: (opts?: { class?: any }) => resolveStyles().body({ class: cn(opts?.class, overrides.body) }),
+    footer: (opts?: { class?: any }) => resolveStyles().footer({ class: cn(opts?.class, overrides.footer) }),
+    resizer: (opts?: { class?: any }) => resolveStyles().resizer({ class: cn(opts?.class, overrides.resizer) }),
+  };
 });
 
 const computedOverlayClass = computed(() => {

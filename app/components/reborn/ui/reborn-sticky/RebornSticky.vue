@@ -1,7 +1,7 @@
 <template>
     <div ref="wrapperRef" class="reborn-sticky-wrapper" :class="ui.wrapper()" :style="{
         height: isSticky ? rect.height + 'px' : 'auto',
-        zIndex
+        zIndex: isSticky ? zIndex : 'auto'
     }">
         <div ref="contentRef" :class="ui.content()" :style="{
             width: isSticky ? rect.width + 'px' : '100%',
