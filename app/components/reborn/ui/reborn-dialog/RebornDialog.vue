@@ -240,7 +240,7 @@ const normalizedCloseButton = computed<ButtonProps | null>(() => {
 });
 
 const headerVisible = computed(() =>
-  Boolean(slots.header || props.title || props.description || normalizedCloseButton.value),
+  Boolean(slots.header || props.title || props.description),
 );
 
 function normalizeActionButton(
