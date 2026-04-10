@@ -57,6 +57,11 @@ export default {
         icon: "text-white",
       },
     },
+    error: {
+      true: {
+        control: "border-red-5 ring-red-5/20 dark:border-red-5",
+      },
+    },
   },
   defaultVariants: {
     size: "md" as (typeof size)[number],

@@ -89,19 +89,25 @@ const isOpen = ref(false);
 const triggerRef = ref<any>(null);
 
 /** 外部传入的 UI 配置 */
-const triggerUi = computed(() => props.triggerUi || {});
+const {
+    disabled: fieldGroupDisabled,
+    size: fieldGroupSize,
+    isError,
+    validate
+} = useFormInject(props);
+
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+
 const uiOverrides = computed(() => props.ui || {});
 
-/**
- * 生成符合 UI 规范的样式映射表
- */
 const ui = computed(() => {
     const styles = b({
-        size: props.size,
+        size: fieldGroupSize.value || props.size,
         color: props.color,
         open: isOpen.value,
-        disabled: props.disabled,
+        disabled: isDisabled.value,
         rangeable: props.rangeable,
+        error: isError.value,
     });
     return {
         wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
@@ -118,6 +124,12 @@ const ui = computed(() => {
         calDayToday: (opts?: { class?: any }) => styles.calDayToday({ class: cn(opts?.class, uiOverrides.value.calDayToday) }),
     };
 });
+
+/** 触发器 (Trigger) 的最终 UI 配置 */
+const selectTriggerUi = computed(() => ({
+    ...props.triggerUi,
+    dropdown: cn(props.triggerUi?.dropdown, ui.value.dropdown()),
+}));
 
 const panelUi = computed(() => ({
     wrapper: "p-0", // No padding inside dropdown as dropdown has its own
@@ -212,6 +224,7 @@ function onPanelChange(val: string | string[]) {
         isOpen.value = false;
     }
     emit("change", val);
+    validate("change");
 }
 
 function removeSelection(index: number, e?: Event) {
@@ -221,6 +234,7 @@ function removeSelection(index: number, e?: Event) {
         next.splice(index, 1);
         modelValue.value = next;
         emit("change", next);
+        validate("change");
     }
 }
 
@@ -230,11 +244,15 @@ function clear(e: Event) {
     const val = isArrayType ? [] : "";
     modelValue.value = val;
     emit("change", val);
+    validate("change");
 }
 
 function onClickOutside(e: MouseEvent) {
     if (triggerRef.value?.$el && !triggerRef.value.$el.contains(e.target as Node)) {
-        isOpen.value = false;
+        if (isOpen.value) {
+            isOpen.value = false;
+            validate("blur");
+        }
     }
 }
 
@@ -244,10 +262,10 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
     <RebornSelectTrigger ref="triggerRef" :class="props.class" :display-text="displayText" :placeholder="placeholder"
-        :is-open="isOpen" :disabled="disabled" :size="size" :color="color"
-        :clearable="clearable && (Array.isArray(modelValue) ? modelValue.length > 0 : !!modelValue)" :ui="triggerUi"
-        :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation" icon="lucide:calendar"
-        @toggle="toggle" @clear="clear">
+        :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size" :color="color"
+        :clearable="clearable && (Array.isArray(modelValue) ? modelValue.length > 0 : !!modelValue)"
+        :ui="selectTriggerUi" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation"
+        icon="lucide:calendar" :error="isError" @toggle="toggle" @clear="clear">
         <template #cover="{ displayText, placeholder, isOpen, ui: triggerUi }" v-if="$slots.cover">
             <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi" />
         </template>

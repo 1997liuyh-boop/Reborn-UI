@@ -1,0 +1,19 @@
+{
+  "name": "reborn-container",
+  "dependencies": [
+    "clsx"
+  ],
+  "files": [
+    {
+      "path": "reborn-container.config.ts",
+      "content": "export default {\r\n    slots: {\r\n        root: 'w-full max-w-(--ui-container) mx-auto px-4 sm:px-6 lg:px-8',\r\n    },\r\n}"
+    },
+    {
+      "path": "RebornContainer.vue",
+      "content": "<script lang=\"ts\">\r\nimport type { VNode } from 'vue'\r\nimport type { ClassValue } from 'clsx'\r\n\r\n/**\r\n * RebornContainer 属性定义\r\n */\r\nexport interface ContainerProps {\r\n    /**\r\n     * 容器渲染的 HTML 元素或组件\r\n     * @defaultValue 'div'\r\n     */\r\n    as?: any\r\n    /**\r\n     * 容器自定义类名\r\n     */\r\n    class?: any\r\n    /**\r\n     * 组件 UI 微调配置\r\n     */\r\n    ui?: Partial<{\r\n        root: ClassValue\r\n    }>\r\n}\r\n\r\n/**\r\n * RebornContainer 插槽定义\r\n */\r\nexport interface ContainerSlots {\r\n    /**\r\n     * 容器默认插槽内容\r\n     */\r\n    default?(props?: {}): VNode[]\r\n}\r\n</script>\r\n\r\n<script setup lang=\"ts\">\r\nimport { computed } from 'vue'\r\nimport { cn } from '~/lib/utils'\r\nimport { tv } from '~/lib/tv'\r\nimport theme from './reborn-container.config'\r\n\r\nconst props = withDefaults(defineProps<ContainerProps>(), {\r\n    as: 'div',\r\n})\r\n\r\ndefineSlots<ContainerSlots>()\r\n\r\n/**\r\n * 基于 tailwind-variants 生成样式对象\r\n */\r\nconst variant = tv(theme)\r\n\r\nconst ui = computed(() => {\r\n    const styles = variant()\r\n\r\n    return {\r\n        root: (opts?: { class?: any }) => styles.root({\r\n            class: cn(opts?.class, props.ui?.root, props.class)\r\n        })\r\n    }\r\n})\r\n</script>\r\n\r\n<template>\r\n    <component :is=\"as\" :class=\"ui.root()\">\r\n        <slot />\r\n    </component>\r\n</template>\r\n",
+      "target": "web"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "9401f15869d267f52e36062ddcc07dd625350c59"
+}

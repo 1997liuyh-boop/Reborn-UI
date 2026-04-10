@@ -6,10 +6,10 @@ export { sizes as timePickerSizes, colors as timePickerColors };
 export default {
   slots: {
     wrapper: "relative inline-flex w-full group outline-none",
+    trigger: "",
     triggerText: "truncate text-gray-8 dark:text-gray-1 flex-1",
     placeholder: "truncate text-gray-4 dark:text-gray-5 flex-1",
-    dropdown:
-      "absolute z-50 mt-2 w-full rounded-2xl border border-gray-2 bg-white p-2 shadow-xl shadow-gray-9/8 dark:border-gray-7 dark:bg-gray-8 dark:shadow-black/20 top-full",
+    dropdown: "",
     rangeText: "flex items-center gap-2 truncate w-full",
     separator: "shrink-0 text-gray-4 dark:text-gray-5",
   },
@@ -31,10 +31,22 @@ export default {
     open: {
       true: {},
     },
+    isRange: {
+      true: {},
+      false: {},
+    },
     disabled: {
       true: {},
     },
   },
+  compoundVariants: [
+    { isRange: true, size: "sm", class: { dropdown: "min-w-72", trigger: "min-w-45" } },
+    { isRange: true, size: "md", class: { dropdown: "min-w-80", trigger: "min-w-50" } },
+    { isRange: true, size: "lg", class: { dropdown: "min-w-88", trigger: "min-w-55" } },
+    { isRange: false, size: "sm", class: { dropdown: "min-w-40" } },
+    { isRange: false, size: "md", class: { dropdown: "min-w-45" } },
+    { isRange: false, size: "lg", class: { dropdown: "min-w-52" } },
+  ] as any,
   defaultVariants: {
     size: "md" as (typeof sizes)[number],
     color: "primary" as (typeof colors)[number],

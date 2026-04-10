@@ -82,6 +82,11 @@ export default {
                 dropdown: "bottom-full mb-1",
             },
         },
+        error: {
+            true: {
+                trigger: "border-red-5 focus:border-red-5 data-[state=open]:border-red-5",
+            },
+        },
     },
     defaultVariants: {
         size: "md" as (typeof sizes)[number],

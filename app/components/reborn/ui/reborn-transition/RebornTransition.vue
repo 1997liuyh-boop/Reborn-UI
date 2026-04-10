@@ -61,70 +61,74 @@ const isCollapse = computed(() => {
 });
 
 const onBeforeEnterInternal = (el: Element) => {
-  if (isCollapse.value) {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = '0';
-    htmlEl.style.opacity = '0';
-    htmlEl.style.overflow = 'hidden';
+  if (isCollapse.value && el instanceof HTMLElement) {
+    el.style.height = "0";
+    el.style.opacity = "0";
+    el.style.overflow = "hidden";
   }
-  emit('beforeEnter', el);
+  emit("beforeEnter", el);
 };
 
 const onEnterInternal = (el: Element, done: () => void) => {
-  if (isCollapse.value) {
-    const htmlEl = el as HTMLElement;
+  if (isCollapse.value && el instanceof HTMLElement) {
     // Force reflow
-    htmlEl.offsetHeight;
-    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
-    htmlEl.style.opacity = '1';
-    htmlEl.addEventListener('transitionend', done, { once: true });
+    el.offsetHeight;
+    el.style.height = `${el.scrollHeight}px`;
+    el.style.opacity = "1";
+    el.addEventListener("transitionend", done, { once: true });
   } else {
-    done();
+    const duration = durationOf('enter');
+    if (duration <= 0) {
+      done();
+    } else {
+      window.setTimeout(done, duration);
+    }
   }
-  emit('enter', el, done);
+  emit("enter", el, done);
 };
 
 const onAfterEnterInternal = (el: Element) => {
-  if (isCollapse.value) {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = 'auto';
-    htmlEl.style.overflow = '';
+  if (isCollapse.value && el instanceof HTMLElement) {
+    el.style.height = "auto";
+    el.style.overflow = "";
   }
-  emit('afterEnter', el);
+  emit("afterEnter", el);
 };
 
 const onBeforeLeaveInternal = (el: Element) => {
-  if (isCollapse.value) {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
-    htmlEl.style.opacity = '1';
-    htmlEl.style.overflow = 'hidden';
+  if (isCollapse.value && el instanceof HTMLElement) {
+    el.style.height = `${el.scrollHeight}px`;
+    el.style.opacity = "1";
+    el.style.overflow = "hidden";
   }
-  emit('beforeLeave', el);
+  emit("beforeLeave", el);
 };
 
 const onLeaveInternal = (el: Element, done: () => void) => {
-  if (isCollapse.value) {
-    const htmlEl = el as HTMLElement;
+  if (isCollapse.value && el instanceof HTMLElement) {
     // Force reflow
-    htmlEl.offsetHeight;
-    htmlEl.style.height = '0';
-    htmlEl.style.opacity = '0';
-    htmlEl.addEventListener('transitionend', done, { once: true });
+    el.offsetHeight;
+    el.style.height = "0";
+    el.style.opacity = "0";
+    el.addEventListener("transitionend", done, { once: true });
   } else {
-    done();
+    const duration = durationOf('leave');
+    if (duration <= 0) {
+      done();
+    } else {
+      window.setTimeout(done, duration);
+    }
   }
-  emit('leave', el, done);
+  emit("leave", el, done);
 };
 
 const onAfterLeaveInternal = (el: Element) => {
-  if (isCollapse.value) {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.height = '';
-    htmlEl.style.opacity = '';
-    htmlEl.style.overflow = '';
+  if (isCollapse.value && el instanceof HTMLElement) {
+    el.style.height = "";
+    el.style.opacity = "";
+    el.style.overflow = "";
   }
-  emit('afterLeave', el);
+  emit("afterLeave", el);
 };
 
 const durationOf = (type: 'enter' | 'leave') => (typeof props.duration === 'object'

@@ -1,11 +1,9 @@
-import { tv, type VariantProps } from 'tailwind-variants'
+const labelPositions = ['left', 'top', 'right'] as const
 
-export const formVariants = tv({
-    base: '',
-})
-
-export type FormVariants = VariantProps<typeof formVariants>
+export { labelPositions as formLabelPositions }
 
 export default {
-    base: ''
+    slots: {
+        root: 'w-full space-y-4',
+    },
 }

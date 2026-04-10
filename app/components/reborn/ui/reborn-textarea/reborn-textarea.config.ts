@@ -35,7 +35,7 @@ const config = {
         },
         error: {
             true: {
-                root: "border-red-500 ring-red-500",
+                root: "border-red-5 ring-red-5",
             },
         },
         hasCount: {

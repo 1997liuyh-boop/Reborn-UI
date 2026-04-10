@@ -29,16 +29,25 @@ const emit = defineEmits<{
     (e: 'change', value: any): void
 }>()
 
+const {
+    disabled: fieldGroupDisabled,
+    size: fieldGroupSize,
+    isError,
+    validate
+} = useFormInject(props);
+
 const updateValue = (value: any) => {
     emit('update:modelValue', value)
     emit('change', value)
+    validate('change')
 }
 
 provide('RebornRadioGroup', {
     modelValue: toRef(props, 'modelValue'),
-    disabled: toRef(props, 'disabled'),
-    size: toRef(props, 'size'),
+    disabled: computed(() => fieldGroupDisabled.value || props.disabled),
+    size: computed(() => fieldGroupSize.value || props.size),
     color: toRef(props, 'color'),
+    isError: isError,
     variant: toRef(props, 'variant'),
     activeIcon: toRef(props, 'activeIcon'),
     inactiveIcon: toRef(props, 'inactiveIcon'),

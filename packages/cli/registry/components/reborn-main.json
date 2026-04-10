@@ -1,0 +1,19 @@
+{
+  "name": "reborn-main",
+  "dependencies": [
+    "tailwind-variants"
+  ],
+  "files": [
+    {
+      "path": "reborn-main.config.ts",
+      "content": "export default {\r\n    slots: {\r\n        base: 'min-h-screen',\r\n    },\r\n}\r\n"
+    },
+    {
+      "path": "RebornMain.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { computed } from 'vue'\r\nimport { tv } from 'tailwind-variants'\r\nimport { cn } from '~/lib/utils'\r\nimport theme from './reborn-main.config'\r\n\r\nexport interface MainProps {\r\n    /** UI 样式调整 */\r\n    ui?: Partial<{\r\n        base: any\r\n    }>\r\n    /** 自定义类名 */\r\n    class?: any\r\n}\r\n\r\nconst props = defineProps<MainProps>()\r\n\r\nconst b = tv(theme)\r\nconst uiOverrides = computed(() => props.ui || {})\r\n\r\nconst ui = computed(() => {\r\n    const styles = b()\r\n\r\n    return {\r\n        base: (opts?: { class?: any }) => styles.base({\r\n            class: cn(\r\n                opts?.class,\r\n                uiOverrides.value.base\r\n            )\r\n        }),\r\n    }\r\n})\r\n</script>\r\n\r\n<template>\r\n    <main :class=\"ui.base({ class: props.class })\">\r\n        <slot />\r\n    </main>\r\n</template>\r\n",
+      "target": "web"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "1b030456b408d4453dcfbfc1920803bf9a0af59f"
+}

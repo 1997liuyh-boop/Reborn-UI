@@ -70,6 +70,8 @@ const showLabel = computed(() => !!props.label || !!slots.default);
 
 const uiOverrides = computed(() => props.ui || {});
 
+const isError = computed(() => isGroup.value ? !!radioGroup.isError?.value : false);
+
 const ui = computed(() => {
     const styles = b({
         size: computedSize.value,
@@ -77,6 +79,7 @@ const ui = computed(() => {
         variant: computedVariant.value,
         checked: isChecked.value,
         disabled: computedDisabled.value,
+        error: isError.value,
     });
     return {
         root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),

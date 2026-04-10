@@ -68,6 +68,11 @@ export default {
         inactiveLabel: "text-gray-9 dark:text-gray-1 font-medium",
       },
     },
+    error: {
+      true: {
+        track: "ring-red-5 focus-within:ring-red-5/20 dark:ring-red-5",
+      },
+    },
   },
   compoundVariants: [
     { color: "primary" as (typeof color)[number], active: true, class: { activeLabel: "text-primary" } },

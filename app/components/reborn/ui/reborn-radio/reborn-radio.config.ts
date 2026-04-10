@@ -65,6 +65,11 @@ export default {
                 root: "opacity-50 pointer-events-none",
             },
         },
+        error: {
+            true: {
+                inactiveIcon: "border-red-5 ring-red-5/20 dark:border-red-5",
+            },
+        },
     },
     compoundVariants: [
         // 当为 circle 变体时，覆盖 activeIcon 的背景和边框逻辑

@@ -92,6 +92,15 @@ const emit = defineEmits<{
   (e: "change", value: any): void;
 }>();
 
+const {
+  disabled: fieldGroupDisabled,
+  size: fieldGroupSize,
+  isError,
+  validate
+} = useFormInject(props);
+
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+
 /** 下拉框是否展开 */
 const isOpen = ref(false);
 /** 触发器组件引用 */
@@ -108,10 +117,11 @@ const uiOverrides = computed(() => props.ui || {});
  */
 const ui = computed(() => {
   const styles = b({
-    size: props.size,
+    size: fieldGroupSize.value || props.size,
     color: props.color,
     open: isOpen.value,
-    disabled: props.disabled,
+    disabled: isDisabled.value,
+    error: isError.value,
   });
   return {
     option: (opts?: { class?: any }) =>
@@ -205,9 +215,11 @@ function selectOption(option: SelectOption) {
     }
     emit("update:modelValue", newValue);
     emit("change", newValue);
+    validate("change");
   } else {
     emit("update:modelValue", option.value);
     emit("change", option.value);
+    validate("change");
     isOpen.value = false;
   }
 }
@@ -220,6 +232,7 @@ function clear(e: Event) {
   const newValue = props.multiple ? [] : null;
   emit("update:modelValue", newValue);
   emit("change", newValue);
+  validate("change");
 }
 
 /**
@@ -227,7 +240,10 @@ function clear(e: Event) {
  */
 function onClickOutside(e: MouseEvent) {
   if (triggerRef.value?.$el && !triggerRef.value.$el.contains(e.target as Node)) {
-    isOpen.value = false;
+    if (isOpen.value) {
+      isOpen.value = false;
+      validate("blur");
+    }
   }
 }
 
@@ -304,10 +320,10 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 
 <template>
   <RebornSelectTrigger ref="triggerRef" :class="props.class" :display-text="displayText" :placeholder="placeholder"
-    :is-open="isOpen" :disabled="disabled" :size="size" :color="color"
+    :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size" :color="color"
     :clearable="clearable && (multiple ? modelValue?.length > 0 : modelValue != null)" :ui="triggerUi"
     :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation" :scroll-to-active="scrollToActive"
-    @toggle="toggle" @clear="clear" @keydown="onKeydown">
+    :error="isError" @toggle="toggle" @clear="clear" @keydown="onKeydown">
     <template #cover="{ displayText, placeholder, isOpen, ui: triggerUi }" v-if="$slots.cover">
       <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi" />
     </template>

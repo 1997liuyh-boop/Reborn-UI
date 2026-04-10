@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import theme, { badgeColors, badgeVariants, badgeSizes } from './reborn-badge.config'
 import RebornTransition from '../reborn-transition/RebornTransition.vue'
-import { useFieldGroup } from '~/composables/useFieldGroup'
+import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
 
@@ -83,7 +83,7 @@ const emit = defineEmits<{
 
 const show = defineModel<boolean>('show', { default: true })
 
-const { orientation, size: fieldGroupSize } = useFieldGroup(props)
+const { orientation, size: fieldGroupSize } = useFormInject(props)
 
 const uiOverrides = computed(() => props.ui || {})
 const ui = computed(() => {

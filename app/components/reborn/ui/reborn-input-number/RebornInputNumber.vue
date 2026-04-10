@@ -3,7 +3,7 @@ import { computed, ref, toRef, useAttrs, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { inputNumberColors, inputNumberSizes, inputNumberShapes } from "./reborn-input-number.config";
-import { useFieldGroup } from "~/composables/useFieldGroup";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 
 const b = tv(theme);
@@ -49,7 +49,13 @@ const attrs = useAttrs();
 const localValue = ref(props.defaultValue ?? props.min ?? 0);
 const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
 
-const { orientation, size: fieldGroupSize } = useFieldGroup(props);
+const {
+  orientation,
+  size: fieldGroupSize,
+  disabled: fieldGroupDisabled,
+  isError,
+  validate
+} = useFormInject(props);
 
 const size = toRef(props, "size");
 
@@ -61,6 +67,7 @@ const ui = computed(() => {
     color: props.color,
     shape: props.shape,
     fieldGroup: orientation.value,
+    error: isError.value,
   });
 
   return {

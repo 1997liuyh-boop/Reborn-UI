@@ -4,7 +4,7 @@ description: 用于将内容居中并在不同屏幕尺寸下限制最大宽度�
 category: 导航
 navigation:
   badges:
-    - label: WEB
+    - label: Web
       color: info
   chip:
     label: NEW

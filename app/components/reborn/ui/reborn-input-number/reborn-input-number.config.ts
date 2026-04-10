@@ -77,6 +77,11 @@ export default {
       circle: { wrapper: "rounded-full" },
       square: {},
     },
+    error: {
+      true: {
+        wrapper: "ring-red-5 focus-within:ring-red-5/20 dark:ring-red-5",
+      },
+    },
   },
   compoundVariants: [
     { shape: "square", size: "sm", class: { wrapper: "rounded-ui-sm" } },

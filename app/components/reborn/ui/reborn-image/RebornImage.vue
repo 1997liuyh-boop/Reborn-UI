@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
 import { computed, ref, watch } from "vue";
-// import { useIntersectionObserver } from '@vueuse/nuxt' // Or standard import, Nuxt likely auto-imports
+import { useIntersectionObserver } from '@vueuse/core';
 import type { PropType } from "vue";
 import { tv } from '@/lib/tv';
 import { cn } from '@/lib/utils';
@@ -44,7 +44,7 @@ const b = tv(theme);
 
 const uiOverrides = computed(() => props.ui || {});
 
-// Root element ref
+// 根元素引用
 const rootRef = ref<HTMLElement | null>(null);
 const shouldLoad = ref(!props.lazyLoad);
 
@@ -65,11 +65,27 @@ const ui = computed(() => {
 	};
 })
 
-// VueUse Lazy Load Logic
+const imgRef = ref<HTMLImageElement | null>(null);
+
+import { onMounted } from 'vue';
+onMounted(() => {
+	// 如果图片在 JS 执行/挂载前就已经加载好了（比如浏览器缓存或者 SSR），手动触发结束 loading
+	if (imgRef.value && imgRef.value.complete && imgRef.value.naturalWidth > 0) {
+		isLoading.value = false;
+		isError.value = false;
+	} else if (imgRef.value && imgRef.value.complete && imgRef.value.naturalWidth === 0) {
+		// 加载失败也是 complete，但没有宽高
+		isLoading.value = false;
+		isError.value = true;
+	}
+});
+
+// VueUse 懒加载逻辑
 if (props.lazyLoad) {
 	const { stop } = useIntersectionObserver(
 		rootRef,
-		([{ isIntersecting }]: IntersectionObserverEntry[]) => {
+		(entries) => {
+			const isIntersecting = entries[0]?.isIntersecting;
 			if (isIntersecting) {
 				shouldLoad.value = true;
 				stop();
@@ -84,14 +100,14 @@ const currentSrc = computed(() => {
 	return shouldLoad.value ? props.src : '';
 });
 
-// Status for data-lazy attribute
+// data-lazy 属性状态
 const lazyStatus = computed(() => {
 	if (isError.value) return 'error';
 	if (isLoading.value) return 'loading';
 	return 'loaded';
 });
 
-// Helper functions
+// 辅助函数
 function getUnit(val: string | number | undefined | null): string | undefined {
 	if (val == null || val === "") return undefined;
 
@@ -109,8 +125,8 @@ function onLoad(e: any) {
 }
 
 function onError(e: any) {
-	isLoading.value = false; // Stop loading spinner
-	isError.value = true;    // Show error
+	isLoading.value = false; // 停止加载动画
+	isError.value = true;    // 显示错误
 	emit("error", e);
 }
 

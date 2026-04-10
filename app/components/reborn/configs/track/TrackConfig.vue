@@ -3,7 +3,7 @@
 <template>
     <ComponentPlayground>
         <template #component>
-            <GaEventDemo />
+            <TrackDemo />
         </template>
     </ComponentPlayground>
 </template>

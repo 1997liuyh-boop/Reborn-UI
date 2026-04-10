@@ -1,134 +1,225 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import RebornFab from "~/components/reborn/ui/reborn-fab/RebornFab.vue"
+import Playground from "~/components/common/play-ground/Playground.vue"
 
-const fabColors = ['primary', 'success', 'warning', 'error', 'info', 'neutral'] as const
-const fabDirections = ['top', 'right', 'bottom', 'left'] as const
-const fabPositions = ['left-top', 'right-top', 'left-bottom', 'right-bottom'] as const
-const fabTriggers = ['click', 'hover'] as const
+// 悬浮按钮配置项
+const fabColors = [
+    { label: 'Primary', value: 'primary' },
+    { label: 'Success', value: 'success' },
+    { label: 'Warning', value: 'warning' },
+    { label: 'Error', value: 'error' },
+    { label: 'Info', value: 'info' },
+    { label: 'Neutral', value: 'neutral' }
+]
+const fabDirections = [
+    { label: 'Top', value: 'top' },
+    { label: 'Right', value: 'right' },
+    { label: 'Bottom', value: 'bottom' },
+    { label: 'Left', value: 'left' }
+]
+const fabPositions = [
+    { label: 'Left Top', value: 'left-top' },
+    { label: 'Right Top', value: 'right-top' },
+    { label: 'Left Bottom', value: 'left-bottom' },
+    { label: 'Right Bottom', value: 'right-bottom' }
+]
+const fabTriggers = [
+    { label: 'Click (点击)', value: 'click' },
+    { label: 'Hover (悬浮)', value: 'hover' }
+]
 
-const isActive = ref(false)
-const defaultActive = ref(false)
-const draggable = ref(false)
-const demoColor = ref<any>('primary')
-const demoDirection = ref<any>('top')
-const demoPosition = ref<any>('right-bottom')
-const demoTrigger = ref<any>('click')
-const useTriggerSlot = ref(false)
-const customCoord = ref(false)
+// 统一状态
+const state = ref({
+    isActive: false,
+    draggable: true as boolean,
+    color: 'primary' as any,
+    direction: 'top' as any,
+    position: 'right-bottom' as any,
+    trigger: 'click' as any,
+    customCoord: false,
+    useTriggerSlot: false,
+    expandable: true,
+    attract: true
+})
 
+// 控制面板配置
+const controls = [
+    {
+        title: "核心配置",
+        children: [
+            {
+                label: "主题色调",
+                key: "color",
+                component: "select" as const,
+                defaultValue: "primary",
+                props: { options: fabColors }
+            },
+            {
+                label: "允许拖拽",
+                key: "draggable",
+                component: "checkbox" as const,
+                defaultValue: true
+            },
+            {
+                label: "开启展开",
+                key: "expandable",
+                component: "checkbox" as const,
+                defaultValue: true
+            },
+            {
+                label: "自动吸边",
+                key: "attract",
+                component: "checkbox" as const,
+                defaultValue: true
+            }
+        ]
+    },
+    {
+        title: "交互与位置",
+        children: [
+            {
+                label: "触发方式",
+                key: "trigger",
+                component: "select" as const,
+                defaultValue: "click",
+                props: { options: fabTriggers }
+            },
+            {
+                label: "预设位置",
+                key: "position",
+                component: "select" as const,
+                defaultValue: "right-bottom",
+                props: { options: fabPositions }
+            },
+            {
+                label: "展开方向",
+                key: "direction",
+                component: "select" as const,
+                defaultValue: "top",
+                props: { options: fabDirections }
+            }
+        ]
+    },
+    {
+        title: "高级开发",
+        children: [
+            {
+                label: "自定义Slot",
+                key: "useTriggerSlot",
+                component: "checkbox" as const,
+                defaultValue: false
+            },
+            {
+                label: "自定义坐标",
+                key: "customCoord",
+                component: "checkbox" as const,
+                defaultValue: false
+            }
+        ]
+    }
+]
+
+/**
+ * 处理操作项点击
+ */
 function handleAction(name: string) {
     console.log('点击了动作: ' + name)
-}
-
-function handleCustomClick() {
-    console.log('触发了自定义分享')
 }
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div class="p-6 flex flex-col gap-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <RebornText color="neutral">
-                        按钮颜色：
-                    </RebornText>
-                    <RebornRadioGroup v-model="demoColor">
-                        <RebornRadio v-for="item in fabColors" :key="item" :value="item" :showIcon="false">
-                            <template #default="{ isChecked }">
-                                <div class="relative flex size-5">
-                                    <div v-if="isChecked"
-                                        class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
-                                        :class="`bg-${item}`">
-                                    </div>
-                                    <div class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`"></div>
-                                </div>
-                            </template>
-                        </RebornRadio>
-                    </RebornRadioGroup>
-                </div>
+    <div class="space-y-12 pb-24">
+        <!-- 交互演练场 -->
+        <Playground v-model="state" :controls="controls" component-name="RebornFab" title="交互演练场"
+            description="尝试拖动右侧预览区的按钮，或通过左侧面板调整交互参数。">
 
-                <div>
-                    <RebornText color="neutral" class="block">
-                        自定义坐标 (bottom: 100px)：
-                    </RebornText>
-                    <RebornSwitch v-model="customCoord" />
-                </div>
-                <div>
-                    <RebornText color="neutral">
-                        触发方式：
-                    </RebornText>
-                    <RebornRadioGroup v-model="demoTrigger" direction="row">
-                        <RebornRadio v-for="t in fabTriggers" :key="t" :value="t">{{ t }}</RebornRadio>
-                    </RebornRadioGroup>
-                </div>
-                <div>
-                    <RebornText color="neutral" class="block">
-                        开启拖拽：
-                    </RebornText>
-                    <RebornSwitch v-model="draggable" />
-                </div>
+            <RebornFab v-if="!state.useTriggerSlot" v-model="state.isActive" :color="state.color"
+                :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                :position="state.position" :trigger="state.trigger" :bottom="state.customCoord ? 150 : undefined"
+                :expandable="state.expandable" :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
+                <template #default>
+                    <div class="flex items-center justify-center size-12 rounded-full bg-emerald-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all"
+                        @click="handleAction('分享')">
+                        <Icon name="lucide:share-2" class="size-6" />
+                    </div>
+                    <div class="flex items-center justify-center size-12 rounded-full bg-amber-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all"
+                        @click="handleAction('收藏')">
+                        <Icon name="lucide:star" class="size-6" />
+                    </div>
+                    <div class="flex items-center justify-center size-12 rounded-full bg-blue-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all relative"
+                        @click="handleAction('消息')">
+                        <Icon name="lucide:message-square" class="size-6" />
+                        <span
+                            class="absolute top-0 right-0 size-3 bg-error rounded-full border-2 border-white dark:border-neutral-900"></span>
+                    </div>
+                </template>
+            </RebornFab>
 
-                <div>
-                    <RebornText color="neutral">
-                        展开方向：
-                    </RebornText>
-                    <RebornRadioGroup v-model="demoDirection" direction="row">
-                        <RebornRadio v-for="d in fabDirections" :key="d" :value="d">{{ d }}</RebornRadio>
-                    </RebornRadioGroup>
-                </div>
+            <!-- 自定义触发器演示 -->
+            <RebornFab v-else position="right-bottom" :draggable="state.draggable" :expandable="false"
+                :attract="state.attract" :trigger="state.trigger" :bottom="state.customCoord ? 150 : undefined"
+                :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
+                <template #trigger>
+                    <div
+                        class="group flex items-center gap-3 pl-3 pr-5 py-2.5 bg-linear-to-r from-rose-500 to-pink-500 text-white rounded-full shadow-xl shadow-rose-500/20 active:scale-95 transition-all cursor-pointer ring-0 hover:ring-4 ring-rose-500/10">
+                        <div
+                            class="size-8 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Icon name="lucide:heart" class="size-5 fill-white" />
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs opacity-80 leading-tight tracking-tighter">Like This</span>
+                            <span class="text-sm font-bold leading-tight">点个赞吧</span>
+                        </div>
+                    </div>
+                </template>
+            </RebornFab>
+        </Playground>
 
-                <div>
-                    <RebornText color="neutral" class="block">
-                        自定义触发器 (Slot)：
-                    </RebornText>
-                    <RebornSwitch v-model="useTriggerSlot" />
+        <!-- 变体矩阵 (Showcases) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 技巧卡片 -->
+            <div
+                class="p-8 rounded-3xl bg-neutral-100/50 dark:bg-neutral-800/30 border border-neutral-200/50 dark:border-neutral-700/50 space-y-6">
+                <div class="flex items-center gap-2 text-primary font-bold">
+                    <Icon name="lucide:sparkles" class="size-5" />
+                    高级交互特性
                 </div>
-                <div>
-                    <RebornText color="neutral">
-                        预设位置 (非自定义坐标时)：
-                    </RebornText>
-                    <RebornRadioGroup v-model="demoPosition" direction="row">
-                        <RebornRadio v-for="d in fabPositions" :key="d" :value="d">{{ d }}</RebornRadio>
-                    </RebornRadioGroup>
+                <div class="space-y-4">
+                    <div v-for="(item, i) in [
+                        { t: '自动吸附', d: '释放后会自动寻找最近的窗口边缘进行贴合。' },
+                        { t: '最优展开', d: '位于左边缘时自动向右展开，顶部边缘向下展开。' },
+                        { t: '触碰反馈', d: '点击或悬浮时触发展开，支持多级操作嵌套。' }
+                    ]" :key="i" class="flex items-start gap-4">
+                        <div
+                            class="size-8 rounded-full bg-white dark:bg-neutral-800 shadow-sm flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                            0{{ i + 1 }}
+                        </div>
+                        <div class="space-y-1">
+                            <div class="font-medium">{{ item.t }}</div>
+                            <div class="text-sm text-neutral-500">{{ item.d }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div
-                class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 italic text-sm text-blue-600 dark:text-blue-400">
-                提示：抽屉式动画会自动根据展开方向平滑滑出。开启拖拽后移动至左右边缘会自动吸附并切换展开方向。
+            <!-- 自定义内容展示 -->
+            <div class="p-8 rounded-3xl bg-linear-to-br from-primary/5 to-info/5 border border-primary/10 space-y-4">
+                <div class="flex items-center gap-2 text-primary font-bold">
+                    <Icon name="lucide:layout-template" class="size-5" />
+                    自定义 Slot
+                </div>
+                <p class="text-sm text-neutral-500">
+                    除了标准的 Icon 模式，你可以通过插槽完全自定义按钮的外观，例如胶囊形态、带文字的按钮等，适应更复杂的业务需求。
+                </p>
+                <div class="pt-4 flex justify-center">
+                    <div
+                        class="px-6 py-3 bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 flex items-center gap-3 animate-pulse">
+                        <div class="size-8 rounded-full bg-primary/20 animate-bounce"></div>
+                        <div class="h-4 w-24 bg-neutral-200 dark:bg-neutral-700 rounded-full"></div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- 标准用法 -->
-        <RebornFab v-if="!useTriggerSlot" v-model="isActive" :active="defaultActive" :color="demoColor"
-            :draggable="draggable" :direction="demoDirection" :position="demoPosition" :trigger="demoTrigger"
-            :bottom="customCoord ? 150 : undefined" expandable :gap="{ bottom: 100, right: 32 }">
-            <template #default>
-                <div class="flex items-center justify-center size-10 rounded-full bg-emerald-500 text-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
-                    @click="handleAction('分享')">
-                    <Icon name="lucide:share-2" class="size-5" />
-                </div>
-                <div class="flex items-center justify-center size-10 rounded-full bg-amber-500 text-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
-                    @click="handleAction('收藏')">
-                    <Icon name="lucide:star" class="size-5" />
-                </div>
-                <div class="flex items-center justify-center size-10 rounded-full bg-blue-500 text-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
-                    @click="handleAction('消息')">
-                    <Icon name="lucide:message-circle" class="size-5" />
-                </div>
-            </template>
-        </RebornFab>
-
-        <!-- 自定义内容 -->
-        <RebornFab v-else position="right-bottom" :draggable="draggable" :expandable="false" :bottom="160">
-            <template #trigger>
-                <div class="pointer-events-auto flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-full shadow-lg active:scale-95 transition-transform cursor-pointer"
-                    @click="handleCustomClick">
-                    <Icon name="lucide:heart" class="size-5" />
-                    <span class="text-sm font-medium">点个赞吧</span>
-                </div>
-            </template>
-        </RebornFab>
     </div>
 </template>

@@ -52,18 +52,28 @@ const attrs = useAttrs();
 const inputRef = ref<HTMLInputElement>();
 
 const localValue = ref(props.defaultValue ?? props.inactiveValue);
+const {
+  disabled: fieldGroupDisabled,
+  size: fieldGroupSize,
+  isError,
+  validate
+} = useFormInject(props);
+
 const isChecked = computed(() => {
   const val = props.modelValue !== undefined ? props.modelValue : localValue.value;
   return val === props.activeValue;
 });
 
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
   const styles = b({
-    size: props.size,
+    size: fieldGroupSize.value || props.size,
     color: props.color,
     active: isChecked.value,
+    error: isError.value,
   });
 
   return {

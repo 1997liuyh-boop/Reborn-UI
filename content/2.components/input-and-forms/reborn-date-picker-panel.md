@@ -6,8 +6,8 @@ tags: [calendar, date, select, panel, uniapp]
 badge: New
 navigation:
   badges:
-    - label: 新
-      color: success
+    - label: Web
+      color: info
   chip:
     label: NEW
     color: primary

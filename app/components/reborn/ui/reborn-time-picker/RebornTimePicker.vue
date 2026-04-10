@@ -109,34 +109,41 @@ const isOpen = ref(false);
 /** 触发器组件引用 */
 const triggerRef = ref<any>(null);
 
-/** 外部传入的 UI 配置 */
-const triggerUi = computed(() => props.triggerUi || {});
+/**
+ * 生成及管理样式映射表
+ */
+const styles = computed(() => b({
+  size: props.size,
+  color: props.color,
+  open: isOpen.value,
+  disabled: props.disabled,
+  isRange: props.isRange,
+}));
+
+/** 传给 Trigger 的 UI 配置，合并了 config 中的宽度逻辑 */
+const triggerUi = computed(() => {
+  const ui = { ...(props.triggerUi || {}) };
+  ui.dropdown = cn(styles.value.dropdown(), ui.dropdown);
+  ui.trigger = cn(styles.value.trigger(), ui.trigger);
+  return ui;
+});
+
 const uiOverrides = computed(() => props.ui || {});
 
-/**
- * 生成样式映射表
- */
 const ui = computed(() => {
-  const styles = b({
-    size: props.size,
-    color: props.color,
-    open: isOpen.value,
-    disabled: props.disabled,
-  });
+  const s = styles.value;
 
   return {
     wrapper: (opts?: { class?: any }) =>
-      styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
+      s.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
     triggerText: (opts?: { class?: any }) =>
-      styles.triggerText({ class: cn(opts?.class, uiOverrides.value.triggerText) }),
+      s.triggerText({ class: cn(opts?.class, uiOverrides.value.triggerText) }),
     placeholder: (opts?: { class?: any }) =>
-      styles.placeholder({ class: cn(opts?.class, uiOverrides.value.placeholder) }),
-    dropdown: (opts?: { class?: any }) =>
-      styles.dropdown({ class: cn(opts?.class, uiOverrides.value.dropdown) }),
+      s.placeholder({ class: cn(opts?.class, uiOverrides.value.placeholder) }),
     rangeText: (opts?: { class?: any }) =>
-      styles.rangeText({ class: cn(opts?.class, uiOverrides.value.rangeText) }),
+      s.rangeText({ class: cn(opts?.class, uiOverrides.value.rangeText) }),
     separator: (opts?: { class?: any }) =>
-      styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
+      s.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
   };
 });
 

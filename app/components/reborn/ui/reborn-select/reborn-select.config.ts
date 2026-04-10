@@ -62,6 +62,9 @@ export default {
         disabled: {
             true: {},
         },
+        error: {
+            true: {},
+        },
     },
     defaultVariants: {
         size: "md" as (typeof sizes)[number],

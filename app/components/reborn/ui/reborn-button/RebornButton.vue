@@ -2,7 +2,7 @@
 import { computed, toRef } from 'vue'
 import RebornLoading from '../reborn-loading/RebornLoading.vue'
 import theme, { buttonColors, buttonVariants, buttonSizes } from './reborn-button.config'
-import { useFieldGroup } from '~/composables/useFieldGroup'
+import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
 
@@ -38,7 +38,7 @@ const slots = defineSlots<{
     trailing(props: { ui: any }): any
 }>()
 
-const { orientation, size: fieldGroupSize } = useFieldGroup(props)
+const { orientation, size: fieldGroupSize } = useFormInject(props)
 
 const isDisabled = computed(() => props.disabled || props.loading)
 

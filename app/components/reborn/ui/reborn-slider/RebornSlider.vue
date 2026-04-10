@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { sliderColors, sliderSizes } from "./reborn-slider.config";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 
 const b = tv(theme);
@@ -50,9 +51,23 @@ const emit = defineEmits<{
     (e: "changing", value: number | number[]): void;
 }>();
 
+const {
+    disabled: fieldGroupDisabled,
+    size: fieldGroupSize,
+    isError,
+    validate
+} = useFormInject(props);
+
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
-    const styles = b({ size: props.size, color: props.color, disabled: props.disabled });
+    const styles = b({
+        size: fieldGroupSize.value || props.size,
+        color: props.color,
+        disabled: isDisabled.value,
+        error: isError.value,
+    });
     return {
         wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
         inner: (opts?: { class?: any }) => styles.inner({ class: cn(opts?.class, uiOverrides.value.inner) }),
@@ -119,14 +134,17 @@ const displayValue = computed(() => {
 });
 
 function calculateValue(clientX: number): number {
-    if (!trackRef.value) return props.min;
+    if (!trackRef.value) return props.min ?? 0;
     const rect = trackRef.value.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    let val = props.min + pct * (props.max - props.min);
-    if (props.step > 0) {
-        val = Math.round((val - props.min) / props.step) * props.step + props.min;
+    const min = props.min ?? 0;
+    const max = props.max ?? 100;
+    const step = props.step ?? 1;
+    let val = min + pct * (max - min);
+    if (step > 0) {
+        val = Math.round((val - min) / step) * step + min;
     }
-    return Math.max(props.min, Math.min(props.max, val));
+    return Math.max(min, Math.min(max, val));
 }
 
 function determineActiveThumb(clientX: number): number {
@@ -147,7 +165,9 @@ function updateValue(newValue: number | number[]) {
     } else {
         const n = newValue as number;
         if (value.value !== n) {
-            value.value = n;
+            const minVal = props.min ?? 0;
+            const maxVal = props.max ?? 100;
+            value.value = Math.max(minVal, Math.min(maxVal, n));
             emit("update:modelValue", n);
             emit("changing", n);
         }

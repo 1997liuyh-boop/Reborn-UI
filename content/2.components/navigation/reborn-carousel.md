@@ -5,7 +5,7 @@ category: 导航
 tags: [css, tailwind, carousel, slider, motion]
 navigation:
   badges:
-    - label: web
+    - label: Web
       color: info
   chip:
     label: NEW

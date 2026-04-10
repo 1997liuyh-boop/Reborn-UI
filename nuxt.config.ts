@@ -44,7 +44,7 @@ export default defineNuxtConfig({
 
   plugins: [
     { src: "./plugins/clarity.js", mode: "client" },
-    { src: "./plugins/ga-event.client.ts", mode: "client" },
+    { src: "./plugins/track.client.ts", mode: "client" },
     { src: "./plugins/prettier.ts", mode: "client" },
   ],
 

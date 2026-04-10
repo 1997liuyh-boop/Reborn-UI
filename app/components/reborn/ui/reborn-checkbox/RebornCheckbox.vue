@@ -3,6 +3,7 @@ import { computed, ref, useAttrs, watch } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { checkboxColors, checkboxSizes } from "./reborn-checkbox.config";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 
 const b = tv(theme);
@@ -43,6 +44,13 @@ const emit = defineEmits<{
 
 const attrs = useAttrs();
 
+const {
+  disabled: fieldGroupDisabled,
+  size: fieldGroupSize,
+  isError,
+  validate
+} = useFormInject(props);
+
 const localValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? false);
 const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
 const optionValue = computed<CheckboxValue>(() => props.value ?? props.label ?? "");
@@ -55,12 +63,15 @@ const isChecked = computed(() => {
   return Boolean(currentValue.value);
 });
 
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
   const styles = b({
-    size: props.size,
+    size: fieldGroupSize.value || props.size,
     color: props.color,
+    error: isError.value,
   });
 
   return {
@@ -96,10 +107,12 @@ function handleChange(event: Event) {
       next.delete(optionValue.value);
     }
     updateValue(Array.from(next));
+    validate("change");
     return;
   }
 
   updateValue(checked);
+  validate("change");
 }
 
 watch(
@@ -113,8 +126,8 @@ watch(
 </script>
 
 <template>
-  <label :class="ui.wrapper({ class: props.class })" :data-disabled="props.disabled">
-    <input v-bind="inputAttrs" type="checkbox" :value="optionValue" :checked="isChecked" :disabled="props.disabled"
+  <label :class="ui.wrapper({ class: props.class })" :data-disabled="isDisabled">
+    <input v-bind="inputAttrs" type="checkbox" :value="optionValue" :checked="isChecked" :disabled="isDisabled"
       :class="ui.input()" @change="handleChange" />
 
     <span :class="ui.control()">

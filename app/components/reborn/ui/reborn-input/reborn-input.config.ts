@@ -50,8 +50,8 @@ export default {
     },
     error: {
       true: {
-        wrapper: "ring-error/50 bg-error/5 focus-within:ring-error",
-        input: "text-error placeholder:text-error/50",
+        wrapper: "ring-red-5/50 bg-red-5/5 focus-within:ring-red-5",
+        input: "text-red-5 placeholder:text-red-5/50",
       },
     },
     multiline: {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, toRef, useAttrs, useSlots, watch } from "vue";
 import theme, { inputColors, inputSizes } from "./reborn-input.config";
-import { useFieldGroup } from "~/composables/useFieldGroup";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 
@@ -88,7 +88,13 @@ const showClear = computed(() => {
   return props.clearable && !props.disabled && !props.readonly && `${inputValue.value}` !== "";
 });
 
-const { orientation, size: fieldGroupSize } = useFieldGroup(props);
+const {
+  orientation,
+  size: fieldGroupSize,
+  disabled: fieldGroupDisabled,
+  isError,
+  validate
+} = useFormInject(props);
 
 const size = toRef(props, "size");
 
@@ -102,6 +108,7 @@ const ui = computed(() => {
     border: props.border,
     color: props.color,
     focus: isFocus.value,
+    error: isError.value,
     hasLeading: !!slots.leading,
     hasTrailing: !!slots.trailing || showClear.value || props.password,
   });
@@ -130,6 +137,7 @@ function handleInput(event: Event) {
     localValue.value = target.value;
   }
   emit("update:modelValue", target.value);
+  validate('change');
 }
 
 function onFocus(e: FocusEvent) {
@@ -140,6 +148,7 @@ function onFocus(e: FocusEvent) {
 function onBlur(e: FocusEvent) {
   isFocus.value = false;
   emit("blur", e);
+  validate('blur');
 }
 
 function clear() {

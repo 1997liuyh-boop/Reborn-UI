@@ -5,8 +5,8 @@ category: 表单与输入
 badge: Update
 navigation:
   badges:
-    - label: 新
-      color: primary
+    - label: Web
+      color: info
   chip:
     label: UPDATE
     color: warning

@@ -336,14 +336,24 @@ function emitValue(triggerChange = true) {
   if (props.isRange) {
     normalizeRangeOrder();
     const value = [formatTime(startState.value), formatTime(endState.value)];
-    modelValue.value = value;
-    if (triggerChange) emit("change", value);
+    const isSame =
+      Array.isArray(modelValue.value) &&
+      modelValue.value.length === 2 &&
+      modelValue.value[0] === value[0] &&
+      modelValue.value[1] === value[1];
+
+    if (!isSame) {
+      modelValue.value = value;
+      if (triggerChange) emit("change", value);
+    }
     return;
   }
 
   const value = formatTime(startState.value);
-  modelValue.value = value;
-  if (triggerChange) emit("change", value);
+  if (modelValue.value !== value) {
+    modelValue.value = value;
+    if (triggerChange) emit("change", value);
+  }
 }
 
 function updateState(role: TimeRangeRole, incomingState: TimeState, direction: 1 | -1 = 1) {
@@ -395,46 +405,105 @@ function confirm() {
   emit("confirm", modelValue.value);
 }
 
-function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit) {
+function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit, instant = false) {
   const column = columnRefs.get(columnKey(role, unit));
-  if (!column) return;
+  if (!column || column.clientHeight === 0) return false;
 
-  const active = column.querySelector<HTMLElement>("[data-active='true']");
-  if (!active) return;
+  const value = getState(role)[unit];
+  const items = column.querySelectorAll<HTMLElement>("[data-value]");
+  // 目标索引位于中间那一组
+  const targetIndex = unitMax[unit] + 1 + value;
+  const active = items[targetIndex];
 
-  const offset = active.offsetTop - column.clientHeight / 2 + active.clientHeight / 2;
-  column.scrollTo({ top: Math.max(0, offset) });
+  if (!active) return false;
+
+  // 使用 getBoundingClientRect 计算相对于滚动容器的真实偏移
+  const columnRect = column.getBoundingClientRect();
+  const activeRect = active.getBoundingClientRect();
+  const actualOffset = activeRect.top - columnRect.top + column.scrollTop;
+  const targetScroll = actualOffset - column.clientHeight / 2 + active.clientHeight / 2;
+
+  column.scrollTo({
+    top: Math.max(0, targetScroll),
+    behavior: instant ? "auto" : "smooth",
+  });
+  return true;
 }
 
-function syncColumns() {
-  nextTick(() => {
+function handleScroll(role: TimeRangeRole, unit: TimeUnit, event: Event) {
+  const column = event.target as HTMLElement;
+  if (!column) return;
+
+  const paddingTop = parseFloat(getComputedStyle(column).paddingTop) || 0;
+  const paddingBottom = parseFloat(getComputedStyle(column).paddingBottom) || 0;
+  const contentHeight = column.scrollHeight - paddingTop - paddingBottom;
+  const sectionHeight = contentHeight / 3;
+
+  const adjustedScroll = column.scrollTop - paddingTop;
+
+  // 如果滚动到第一组或第三组，则瞬间重置回中间那一组
+  if (adjustedScroll < sectionHeight * 0.3) {
+    column.scrollTop += sectionHeight;
+  } else if (adjustedScroll > sectionHeight * 1.7) {
+    column.scrollTop -= sectionHeight;
+  }
+}
+
+function syncColumns(instant = false) {
+  const trySync = (retryCount = 0) => {
     const roles: TimeRangeRole[] = props.isRange ? ["start", "end"] : ["start"];
+    let allSynced = true;
+
     for (const role of roles) {
       for (const unit of activeUnits.value) {
-        scrollColumnToActive(role, unit);
+        if (!scrollColumnToActive(role, unit, instant)) {
+          allSynced = false;
+        }
       }
     }
+
+    if (!allSynced && retryCount < 10) {
+      requestAnimationFrame(() => trySync(retryCount + 1));
+    }
+  };
+
+  nextTick(() => {
+    requestAnimationFrame(() => trySync());
   });
 }
 
+function getCurrentTimeState(): TimeState {
+  const now = dayjs();
+  return {
+    hour: now.hour(),
+    minute: now.minute(),
+    second: now.second(),
+    millisecond: now.millisecond(),
+  };
+}
+
 function initFromModel() {
+  const defaultState = getCurrentTimeState();
+
   if (props.isRange && Array.isArray(props.modelValue)) {
     const start = sanitizeState(
       "start",
-      parseTime(props.modelValue[0]) ?? { hour: 0, minute: 0, second: 0, millisecond: 0 },
+      parseTime(props.modelValue[0]) ?? defaultState,
     );
     const end = sanitizeState("end", parseTime(props.modelValue[1]) ?? cloneState(start));
     startState.value = start;
     endState.value = end;
     normalizeRangeOrder();
-    syncColumns();
+    emitValue(false);
+    syncColumns(true);
     return;
   }
 
   const parsed = typeof props.modelValue === "string" ? parseTime(props.modelValue) : null;
-  startState.value = sanitizeState("start", parsed ?? { hour: 0, minute: 0, second: 0, millisecond: 0 });
+  startState.value = sanitizeState("start", parsed ?? defaultState);
   endState.value = cloneState(startState.value);
-  syncColumns();
+  emitValue(false);
+  syncColumns(true);
 }
 
 watch(() => props.modelValue, initFromModel, { immediate: true });
@@ -442,7 +511,7 @@ watch(() => props.modelValue, initFromModel, { immediate: true });
 watch(
   [startState, endState, () => props.arrowControl],
   () => {
-    syncColumns();
+    syncColumns(props.arrowControl); // 如果是箭头控制且在大规模移动，可能需要平滑
   },
   { deep: true },
 );
@@ -463,17 +532,22 @@ watch(
             <Icon name="lucide:chevron-up" :class="ui.arrowButton()"
               @click="cycleValue('start', unit as TimeUnit, -1)" />
             <div :ref="(el: any) => setColumnRef('start', unit as TimeUnit, el)" :class="ui.list()"
-              @wheel.prevent="onWheel('start', unit as TimeUnit, $event)">
-              <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
-                :key="`start-${unit}-${value}`" :class="[
-                  ui.item(),
-                  isDisabledValue('start', unit, value)
-                    ? ui.itemDisabled()
-                    : getState('start')[unit] === value
-                      ? ui.itemActive()
-                      : ui.itemIdle(),
-                ]" :data-active="getState('start')[unit] === value" @click="setValue('start', unit, value)">
-                {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
+              @wheel.prevent="onWheel('start', unit as TimeUnit, $event)"
+              @scroll="handleScroll('start', unit as TimeUnit, $event)">
+              <!-- 三组数据实现无限滚动 -->
+              <div v-for="i in 3" :key="i" class="flex flex-col">
+                <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
+                  :key="`start-${unit}-${i}-${value}`" :class="[
+                    ui.item(),
+                    isDisabledValue('start', unit, value)
+                      ? ui.itemDisabled()
+                      : getState('start')[unit] === value
+                        ? ui.itemActive()
+                        : ui.itemIdle(),
+                  ]" :data-active="getState('start')[unit] === value" :data-value="value"
+                  @click="setValue('start', unit, value)">
+                  {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
+                </div>
               </div>
             </div>
             <Icon name="lucide:chevron-down" :class="ui.arrowButton()"
@@ -495,17 +569,21 @@ watch(
           <div v-for="unit in activeUnits" :key="`end-${unit}`" :class="ui.column()">
             <Icon name="lucide:chevron-up" :class="ui.arrowButton()" @click="cycleValue('end', unit as TimeUnit, -1)" />
             <div :ref="(el: any) => setColumnRef('end', unit as TimeUnit, el)" :class="ui.list()"
-              @wheel.prevent="onWheel('end', unit as TimeUnit, $event)">
-              <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
-                :key="`end-${unit}-${value}`" :class="[
-                  ui.item(),
-                  isDisabledValue('end', unit, value)
-                    ? ui.itemDisabled()
-                    : getState('end')[unit] === value
-                      ? ui.itemActive()
-                      : ui.itemIdle(),
-                ]" :data-active="getState('end')[unit] === value" @click="setValue('end', unit, value)">
-                {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
+              @wheel.prevent="onWheel('end', unit as TimeUnit, $event)"
+              @scroll="handleScroll('end', unit as TimeUnit, $event)">
+              <div v-for="i in 3" :key="i" class="flex flex-col">
+                <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
+                  :key="`end-${unit}-${i}-${value}`" :class="[
+                    ui.item(),
+                    isDisabledValue('end', unit, value)
+                      ? ui.itemDisabled()
+                      : getState('end')[unit] === value
+                        ? ui.itemActive()
+                        : ui.itemIdle(),
+                  ]" :data-active="getState('end')[unit] === value" :data-value="value"
+                  @click="setValue('end', unit, value)">
+                  {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
+                </div>
               </div>
             </div>
             <Icon name="lucide:chevron-down" :class="ui.arrowButton()"
@@ -523,17 +601,21 @@ watch(
         <div v-for="unit in activeUnits" :key="unit" :class="ui.column()">
           <Icon name="lucide:chevron-up" :class="ui.arrowButton()" @click="cycleValue('start', unit as TimeUnit, -1)" />
           <div :ref="(el: any) => setColumnRef('start', unit as TimeUnit, el)" :class="ui.list()"
-            @wheel.prevent="onWheel('start', unit as TimeUnit, $event)">
-            <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
-              :key="`${unit}-${value}`" :class="[
-                ui.item(),
-                isDisabledValue('start', unit, value)
-                  ? ui.itemDisabled()
-                  : getState('start')[unit] === value
-                    ? ui.itemActive()
-                    : ui.itemIdle(),
-              ]" :data-active="getState('start')[unit] === value" @click="setValue('start', unit, value)">
-              {{ pad(value) }}
+            @wheel.prevent="onWheel('start', unit as TimeUnit, $event)"
+            @scroll="handleScroll('start', unit as TimeUnit, $event)">
+            <div v-for="i in 3" :key="i" class="flex flex-col">
+              <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
+                :key="`${unit}-${i}-${value}`" :class="[
+                  ui.item(),
+                  isDisabledValue('start', unit, value)
+                    ? ui.itemDisabled()
+                    : getState('start')[unit] === value
+                      ? ui.itemActive()
+                      : ui.itemIdle(),
+                ]" :data-active="getState('start')[unit] === value" :data-value="value"
+                @click="setValue('start', unit, value)">
+                {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
+              </div>
             </div>
           </div>
           <Icon name="lucide:chevron-down" :class="ui.arrowButton()"
@@ -545,8 +627,8 @@ watch(
     <!-- 底部操作栏 -->
     <div :class="ui.footer()">
       <slot name="footer">
-        <RebornButton variant="outline" size="sm" @click="clear">清空</RebornButton>
-        <RebornButton size="sm" @click="confirm">确定</RebornButton>
+        <RebornButton variant="outline" size="xs" @click="clear">清空</RebornButton>
+        <RebornButton size="xs" @click="confirm">确定</RebornButton>
       </slot>
     </div>
   </div>

@@ -36,6 +36,7 @@ export interface ContainerSlots {
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { cn } from '~/lib/utils'
 import { tv } from '~/lib/tv'
 import theme from './reborn-container.config'
 
@@ -48,11 +49,16 @@ defineSlots<ContainerSlots>()
 /**
  * 基于 tailwind-variants 生成样式对象
  */
+const variant = tv(theme)
+
 const ui = computed(() => {
-    const b = tv(theme)
-    return b({
-        class: [props.ui?.root, props.class]
-    })
+    const styles = variant()
+
+    return {
+        root: (opts?: { class?: any }) => styles.root({
+            class: cn(opts?.class, props.ui?.root, props.class)
+        })
+    }
 })
 </script>
 

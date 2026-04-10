@@ -35,6 +35,7 @@ export interface SelectTriggerProps {
   /** 展开时箭头是否旋转 */
   arrowAnimation?: boolean;
   scrollToActive?: (instant?: boolean) => void;
+  error?: boolean;
 }
 
 const props = withDefaults(defineProps<SelectTriggerProps>(), {
@@ -114,6 +115,7 @@ const ui = computed(() => {
     disabled: props.disabled,
     placement: isUpward.value ? "top" : "bottom",
     bordered: props.bordered,
+    error: props.error,
   });
 
   return {
@@ -140,6 +142,16 @@ const ui = computed(() => {
 
 function handleClear(event: Event) {
   emit("clear", event);
+}
+
+function onBeforeEnter() {
+  nextTick(() => {
+    try {
+      props.scrollToActive?.(true);
+    } catch (e) {
+      console.error("[RebornSelectTrigger] Error in scrollToActive:", e);
+    }
+  });
 }
 
 defineExpose({
@@ -172,8 +184,8 @@ defineExpose({
     </div>
 
     <RebornTransition ref="transitionRef" :show="isOpen" :duration="{ enter: 300, leave: 200 }"
-      @before-enter="nextTick(() => props.scrollToActive?.(true))" @after-enter="isOpening = false"
-      @after-leave="isOpening = false" :custom-class="ui.dropdown()" name="select-collapse">
+      @before-enter="onBeforeEnter" @after-enter="isOpening = false" @after-leave="isOpening = false"
+      :custom-class="ui.dropdown()" name="select-collapse">
       <div ref="dropdownInnerRef" :class="ui.dropdownInner()">
         <slot name="content" />
       </div>

@@ -70,9 +70,12 @@ export default {
         disabled: {
             true: {},
         },
+        error: {
+            true: {},
+        },
         rangeable: {
             true: {
-                dropdown: "min-w-[560px]",
+                dropdown: "min-w-[600px]",
             },
         },
     },

@@ -12,7 +12,7 @@ export default {
         thumb:
             "absolute rounded-full border-2 border-solid border-white pointer-events-none z-[1] shadow-[0_0_1px_1px_rgba(100,100,100,0.1)]",
         thumbActive: "z-[2]",
-        value: "text-center w-[50px] text-gray-700 dark:text-gray-200",
+        value: "text-center w-[50px] text-gray-8 dark:text-gray-1",
     },
     variants: {
         size: {
@@ -31,6 +31,11 @@ export default {
         },
         disabled: {
             true: { wrapper: "opacity-50 pointer-events-none" },
+        },
+        error: {
+            true: {
+                track: "ring-1 ring-red-5 dark:ring-red-5",
+            },
         },
     },
     defaultVariants: {
