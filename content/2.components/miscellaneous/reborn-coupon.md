@@ -39,6 +39,11 @@ RebornCoupon 提供强大的 CSS Mask 遮罩能力，仅通过配置属性即可
 | `splitColor` | 撕拉线的颜色 (设置后将渲染可见的虚线/点线覆盖在遮罩之上) | `String` | — |
 | `size` | **已废弃**。请使用 splitWidth/splitHeight，此属性目前仅作为兼容降级使用。 | `Number` | `4` |
 | `hoverable` | 开启悬停交互动画 (scale-101 + shadow-lg) | `Boolean` | `false` |
+| `sm` | 小屏幕 (sm: 640px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |
+| `md` | 中屏幕 (md: 768px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |
+| `lg` | 大屏幕 (lg: 1024px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |
+| `xl` | 特大屏幕 (xl: 1280px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |
+| `xxl` | 2xl 屏幕 (1536px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |
 | `ui` | 深度定制各插槽容器的类名 (root, left, right, center) | `Object` | `{}` |
 | `class` | 传递给根容器的额外类名 | `Any` | — |
 

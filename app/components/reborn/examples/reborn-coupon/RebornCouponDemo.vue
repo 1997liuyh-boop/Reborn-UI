@@ -275,6 +275,43 @@ const activeCode = computed(() => {
                 </template>
             </RebornCoupon>
         </Playground>
+        <!-- 响应式示例 -->
+        <div class="space-y-4">
+            <RebornCoupon v-for="item in 2" :key="item" type="perforated" :radius="8" :size="[1, 4]" split="dashed"
+                direction="vertical" :gap="4" split-color="#575859" :sm="{ width: 300, height: 74, offset: 178 }"
+                :md="{ width: 400, height: 74, offset: 278 }" :lg="{ width: 400, height: 81, offset: 278 }"
+                :xl="{ width: 500, height: 90, offset: 363 }" :xxl="{ width: 444, height: 90, offset: 307 }"
+                :ui="{ right: 'flex items-center justify-center' }" class="bg-white rounded-ui-sm" data-aos="zoom-in"
+                :data-aos-delay="50 * item">
+                <template #left>
+                    <div class="flex items-center justify-center gap-x-5 h-full">
+                        <div class="flex flex-col items-center gap-y-2">
+                            <NuxtImg src="https://www.rakufun.com/images/sites/Mercari.png"
+                                class="mobile:size-[24px] tablet:size-[32px]" />
+                            <p class="text-body-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">
+                                Mercari</p>
+                        </div>
+                        <div>
+                            <p>
+                                <b class="text-title-xl tablet:text-[30px] text-gray-9 leading-[30px]">
+                                    5000
+                                </b>
+                                <sub>
+                                    日元
+                                </sub>
+                            </p>
+                            <p class="text-[#888A8C] text-caption-lg tablet:text-body-base">
+                                滿{{ 1000 * item }}日圓可用
+                            </p>
+                        </div>
+                    </div>
+                </template>
+                <template #right>
+                    <RebornButton>立即领取</RebornButton>
+                </template>
+            </RebornCoupon>
+        </div>
+
         <RebornCoupon type="perforated" :width="379" :height="90" :offset="244" :radius="16" :size="[1, 6]"
             split="dashed" :gap="6" direction="vertical" split-color="#575859" class="bg-white rounded-ui-sm">
             <!-- <template #left>
