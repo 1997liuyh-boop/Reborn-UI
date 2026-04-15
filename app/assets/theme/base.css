@@ -1,6 +1,7 @@
 @theme {
-
-  /* ===== Red ===== */
+  /* --- 基础色调方案 (Color Palettes) --- */
+  
+  /* 红色系 (Red) */
   --color-red-1: #ffebee;
   --color-red-2: #ffe0e4;
   --color-red-3: #ffb1bc;
@@ -12,7 +13,7 @@
   --color-red-9: #8c0d2a;
   --color-red-10: #660821;
 
-  /* ===== Orange ===== */
+  /* 橙色系 (Orange) */
   --color-orange-1: #fff7df;
   --color-orange-2: #ffe9c9;
   --color-orange-3: #ffd5a0;
@@ -24,7 +25,7 @@
   --color-orange-9: #733d0e;
   --color-orange-10: #522601;
 
-  /* ===== Green ===== */
+  /* 绿色系 (Green) */
   --color-green-1: #f1faf8;
   --color-green-2: #e7f6f3;
   --color-green-3: #a2dfcf;
@@ -36,7 +37,7 @@
   --color-green-9: #003b32;
   --color-green-10: #001412;
 
-  /* ===== Blue ===== */
+  /* 蓝色系 (Blue) */
   --color-blue-1: #ecf9ff;
   --color-blue-2: #dff4ff;
   --color-blue-3: #9ed6f5;
@@ -48,7 +49,7 @@
   --color-blue-9: #003f73;
   --color-blue-10: #00284d;
 
-  /* ===== Gray ===== */
+  /* 灰色系 (Gray) */
   --color-gray-1: #ffffff;
   --color-gray-2: #f5f5f5;
   --color-gray-3: #eeeeee;
@@ -60,7 +61,9 @@
   --color-gray-9: #111111;
   --color-gray-10: #000000;
 
-  /* ===== Radius ===== */
+  /* --- 基础样式方案 (Base Schemes) --- */
+
+  /* 圆角 (Radius) */
   --radius-ui-2xs: 4px;
   --radius-ui-xs: 6px;
   --radius-ui-sm: 8px;
@@ -68,12 +71,10 @@
   --radius-ui-base: 16px;
   --radius-ui-lg: 24px;
 
-  /* Font family */
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Roboto,
-    Helvetica, Arial, sans-serif;
+  /* 字体族 (Font Family) */
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Roboto, Helvetica, Arial, sans-serif;
 
-  /* Semantic Colors */
+  /* --- 语义化颜色 (Semantic Colors) --- */
   --color-primary: var(--color-red-6);
   --color-secondary: var(--color-gray-8);
   --color-success: var(--color-green-6);
@@ -89,10 +90,11 @@
 }
 
 :root {
+  /* 容器限制 */
   --ui-container: min(90rem, 100%);
 }
 
-
+/* 常用工具类 (Utilities) */
 @utility scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;

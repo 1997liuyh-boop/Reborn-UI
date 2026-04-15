@@ -13,10 +13,10 @@ const fabColors = [
     { label: 'Neutral', value: 'neutral' }
 ]
 const fabDirections = [
-    { label: 'Top', value: 'top' },
-    { label: 'Right', value: 'right' },
-    { label: 'Bottom', value: 'bottom' },
-    { label: 'Left', value: 'left' }
+    { label: '上方', value: 'top' },
+    { label: '下方', value: 'bottom' },
+    { label: '左侧', value: 'left' },
+    { label: '右侧', value: 'right' },
 ]
 const fabPositions = [
     { label: 'Left Top', value: 'left-top' },
@@ -28,16 +28,22 @@ const fabTriggers = [
     { label: 'Click (点击)', value: 'click' },
     { label: 'Hover (悬浮)', value: 'hover' }
 ]
+const fabVariants = [
+    { label: 'Float (悬浮)', value: 'float' },
+    { label: 'Capsule (胶囊)', value: 'capsule' },
+    { label: 'Circle (环形)', value: 'circle' }
+]
 
 // 统一状态
 const state = ref({
     isActive: false,
     draggable: true as boolean,
     color: 'primary' as any,
+    variant: 'float' as any,
     direction: 'top' as any,
     position: 'right-bottom' as any,
     trigger: 'click' as any,
-    customCoord: false,
+    customCoord: true,
     useTriggerSlot: false,
     expandable: true,
     attract: true
@@ -48,6 +54,13 @@ const controls = [
     {
         title: "核心配置",
         children: [
+            {
+                label: "UI 变体",
+                key: "variant",
+                component: "select" as const,
+                defaultValue: "float",
+                props: { options: fabVariants }
+            },
             {
                 label: "主题色调",
                 key: "color",
@@ -114,7 +127,22 @@ const controls = [
                 label: "自定义坐标",
                 key: "customCoord",
                 component: "checkbox" as const,
-                defaultValue: false
+                defaultValue: true
+            },
+            {
+                label: "同步显隐(仅拖拽可见)",
+                key: "syncHideTest",
+                component: "checkbox" as const,
+                hide: (val: any, state: any) => !state.draggable
+            },
+            {
+                label: "异步显隐(非Primary可见)",
+                key: "asyncHideTest",
+                component: "checkbox" as const,
+                hide: async (val: any, state: any) => {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    return state.color === 'primary';
+                }
             }
         ]
     }
@@ -134,32 +162,52 @@ function handleAction(name: string) {
         <Playground v-model="state" :controls="controls" component-name="RebornFab" title="交互演练场"
             description="尝试拖动右侧预览区的按钮，或通过左侧面板调整交互参数。">
 
-            <RebornFab v-if="!state.useTriggerSlot" v-model="state.isActive" :color="state.color"
-                :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
-                :position="state.position" :trigger="state.trigger" :bottom="state.customCoord ? 150 : undefined"
-                :expandable="state.expandable" :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
-                <template #default>
-                    <div class="flex items-center justify-center size-12 rounded-full bg-emerald-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all"
-                        @click="handleAction('分享')">
-                        <Icon name="lucide:share-2" class="size-6" />
-                    </div>
-                    <div class="flex items-center justify-center size-12 rounded-full bg-amber-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all"
-                        @click="handleAction('收藏')">
-                        <Icon name="lucide:star" class="size-6" />
-                    </div>
-                    <div class="flex items-center justify-center size-12 rounded-full bg-blue-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all relative"
-                        @click="handleAction('消息')">
-                        <Icon name="lucide:message-square" class="size-6" />
-                        <span
-                            class="absolute top-0 right-0 size-3 bg-error rounded-full border-2 border-white dark:border-neutral-900"></span>
-                    </div>
-                </template>
-            </RebornFab>
+            <template v-if="!state.useTriggerSlot">
+                <!-- 浮动模式演示 (支持 Linear 与 Radial 切换) -->
+                <RebornFab v-if="state.variant === 'float'" v-model="state.isActive" :color="state.color"
+                    variant="float" :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                    :position="state.position" :trigger="state.trigger" :top="state.customCoord ? '40vh' : undefined"
+                    :expandable="state.expandable" :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
+                    <template #default>
+                        <div v-for="i in 5" :key="i"
+                            class="flex items-center justify-center size-12 rounded-full bg-emerald-500 text-white shadow-lg cursor-pointer hover:rotate-12 hover:scale-110 active:scale-95 transition-all"
+                            @click="handleAction('按钮 ' + i)">
+                            <Icon name="lucide:star" class="size-6" />
+                        </div>
+                    </template>
+                </RebornFab>
+
+                <!-- 胶囊模式演示 -->
+                <RebornFab v-else-if="state.variant === 'capsule'" v-model="state.isActive" :color="state.color"
+                    variant="capsule" :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                    :position="state.position" :trigger="state.trigger" :top="state.customCoord ? '65vh' : undefined"
+                    :expandable="state.expandable" divider :gap="{ top: 32, bottom: 32, left: 32, right: 32 }"
+                    :z-index="500">
+                    <template #default>
+                        <Icon name="lucide:share-2" v-for="item in 3" :key="item" class="size-6 text-white"
+                            @click="handleAction('分享')" />
+                    </template>
+                </RebornFab>
+
+                <!-- 环形模式演示 -->
+                <RebornFab v-else-if="state.variant === 'circle'" v-model="state.isActive" :color="state.color"
+                    variant="circle" :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                    :position="state.position" :trigger="state.trigger" :top="state.customCoord ? '20vh' : undefined"
+                    :expandable="state.expandable" :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
+                    <template #default>
+                        <div v-for="i in 5" :key="i"
+                            class="flex items-center justify-center size-10 rounded-full bg-indigo-500 text-white shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-all text-sm font-bold"
+                            @click="handleAction('环形按钮' + i)">
+                            {{ i }}
+                        </div>
+                    </template>
+                </RebornFab>
+            </template>
 
             <!-- 自定义触发器演示 -->
             <RebornFab v-else position="right-bottom" :draggable="state.draggable" :expandable="false"
                 :attract="state.attract" :trigger="state.trigger" :bottom="state.customCoord ? 150 : undefined"
-                :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
+                :color="state.color" :z-index="500" @click="handleAction('自定义触发器')">
                 <template #trigger>
                     <div
                         class="group flex items-center gap-3 pl-3 pr-5 py-2.5 bg-linear-to-r from-rose-500 to-pink-500 text-white rounded-full shadow-xl shadow-rose-500/20 active:scale-95 transition-all cursor-pointer ring-0 hover:ring-4 ring-rose-500/10">

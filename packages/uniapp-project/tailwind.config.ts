@@ -6,7 +6,7 @@ import { getIconCollections, iconsPlugin } from '@egoist/tailwindcss-icons'
 
 export default <Config>{
   darkMode: 'media',
-  content: ['./index.html', './src/**/*.{html,js,ts,jsx,tsx,vue}', '../../app/components/**/*.{html,js,ts,jsx,tsx,vue}'],
+  content: ['./index.html', './src/**/*.{html,js,ts,jsx,tsx,vue}'],
   theme: {
     extend: {
       colors: {

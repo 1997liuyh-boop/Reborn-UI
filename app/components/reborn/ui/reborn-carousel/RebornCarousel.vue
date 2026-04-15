@@ -42,10 +42,14 @@ export interface RebornCarouselBreakpoint {
   indicatorPosition?: CarouselIndicatorPosition;
   motionBlur?: boolean;
   height?: string;
+  /**轮播类型 (默认或卡片) */
   type?: CarouselType;
+  /** 滚动方向 */
   direction?: CarouselDirection;
   /** 是否启用抓取手势光标 */
   grabCursor?: boolean;
+  /** 是否由元素内容自身决定宽高（禁用强行拉伸） */
+  autoSize?: boolean;
 }
 
 export interface RebornCarouselProps {
@@ -81,6 +85,8 @@ export interface RebornCarouselProps {
   breakpoints?: Record<number, RebornCarouselBreakpoint>;
   /** 是否启用抓取手势光标 */
   grabCursor?: boolean;
+  /** 是否由元素内容自身决定宽高（禁用强行拉伸） */
+  autoSize?: boolean;
   /** 指示器偏移量 (px) */
   indicatorOffset?: number;
   /** 默认主题颜色 */
@@ -124,6 +130,7 @@ const props = withDefaults(defineProps<RebornCarouselProps>(), {
   initialSlide: 0,
   breakpoints: () => ({}),
   grabCursor: false,
+  autoSize: false,
   indicatorOffset: undefined,
   color: "primary",
   ui: () => ({}),
@@ -182,6 +189,7 @@ const viewportRef = ref<HTMLDivElement | any>(null);
 const trackRef = ref<HTMLDivElement | null>(null);
 const slideRefs = ref<HTMLElement[]>([]);
 const currentIndex = ref(0);
+const currentRenderIndex = ref(0);
 const viewportWidth = ref(0);
 const viewportMainSize = ref(0);
 const isHovering = ref(false);
@@ -241,7 +249,10 @@ const cloneCount = computed(() => {
 
   const perView =
     effectiveSlidesPerView.value === "auto" ? 1 : Number(effectiveSlidesPerView.value);
-  return Math.min(slideCount.value, Math.max(1, Math.ceil(perView) + 1));
+  // 增加克隆数量以提供更大的拖拽缓冲区
+  // 保证两端至少有 slideCount 处理或至少 2 倍 perView
+  const minClones = Math.max(Math.ceil(perView) * 2, 4);
+  return Math.min(slideCount.value, minClones);
 });
 
 /**
@@ -361,12 +372,14 @@ const effectiveType = computed(() => responsiveProps.value.type ?? props.type);
 const effectiveDirection = computed(() => responsiveProps.value.direction ?? props.direction);
 /** 当前生效的抓取光标 */
 const effectiveGrabCursor = computed(() => responsiveProps.value.grabCursor ?? props.grabCursor);
+/** 当前生效的自动尺寸（完全自适应内部元素） */
+const effectiveAutoSize = computed(() => responsiveProps.value.autoSize ?? props.autoSize);
 
 /** 是否为垂直滚动 */
 const isVertical = computed(() => effectiveDirection.value === "vertical");
 /** 是否使用内在尺寸 (自动宽度或卡片模式) */
 const usesIntrinsicSlideSize = computed(
-  () => effectiveType.value === "card" || effectiveSlidesPerView.value === "auto",
+  () => effectiveType.value === "card" || effectiveSlidesPerView.value === "auto" || effectiveAutoSize.value,
 );
 /** 指示器是否可点击 */
 const isIndicatorClickable = computed(() => props.pagination?.clickable !== false);
@@ -441,8 +454,8 @@ const viewportStyle = computed(() => {
   const base: Record<string, any> = {
     // 关键点：自动高度模式下视口随内容长，不由父级容器 100% 裁切，由 root 容器裁切
     height: isAuto ? "auto" : "100%",
-    // loop 模式使用 JS 控制滚动，不使用 scroll-snap（避免与静默跳转冲突）
-    scrollSnapType: props.loop ? "none" : isVertical.value ? "y mandatory" : "x mandatory",
+    // loop 模式也使用 CSS scroll-snap，浏览器原生处理每次滑动 ±1 slide
+    scrollSnapType: isVertical.value ? "y mandatory" : "x mandatory",
     // 强制禁用 CSS 的 scroll-behavior，确保 jumpToRealPosition 的 behavior: 'auto' 是瞬时的
     scrollBehavior: "auto !important" as any,
   };
@@ -475,12 +488,10 @@ const slideSizeStyle = computed(() => {
   return isVertical.value
     ? {
       flexBasis: safeSize,
-      height: safeSize,
       minHeight: safeSize,
     }
     : {
       flexBasis: safeSize,
-      width: safeSize,
     };
 });
 
@@ -512,6 +523,7 @@ const ui = computed(() => {
           opts?.class,
           overrides.value.slide,
           effectiveHeight.value === "auto" && "h-auto",
+          effectiveAutoSize.value && "!w-auto !h-auto self-center",
         ),
       }),
     slideInner: (opts?: { class?: any }) =>
@@ -520,6 +532,7 @@ const ui = computed(() => {
           opts?.class,
           overrides.value.slideInner,
           effectiveHeight.value === "auto" && "h-auto",
+          effectiveAutoSize.value && "!w-auto !h-auto inline-block",
         ),
       }),
     arrowGroup: (opts?: { class?: any }) =>
@@ -693,16 +706,18 @@ function syncCurrentFromScroll(emitChange = false) {
 
   const currentOffset = isVertical.value ? viewport.scrollTop : viewport.scrollLeft;
   let nearestIndex = 0;
+  let nearestRenderIndex = 0;
   let nearestDistance = Number.POSITIVE_INFINITY;
 
   if (props.loop) {
-    // loop 模式：在渲染列表中找最近的 slide，然后映射回真实索引
+    // loop 模式：在渲染列表中找最近的 slide，同时记录渲染索引用于吸附
     renderSlides.value.forEach((item, renderIdx) => {
       const target = getSlideTarget(renderIdx);
       const distance = Math.abs(target - currentOffset);
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearestIndex = item.realIndex;
+        nearestRenderIndex = renderIdx;
       }
     });
   } else {
@@ -712,9 +727,12 @@ function syncCurrentFromScroll(emitChange = false) {
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearestIndex = index;
+        nearestRenderIndex = index;
       }
     });
   }
+
+  currentRenderIndex.value = nearestRenderIndex;
 
   if (nearestIndex !== currentIndex.value) {
     setActiveIndex(nearestIndex, {
@@ -762,6 +780,9 @@ function jumpToRealPosition(realIndex: number) {
     top: isVertical.value ? target : 0,
     behavior: "auto",
   });
+
+  // 同步渲染索引到真实位置，防止下次拖拽使用过期的克隆索引
+  currentRenderIndex.value = renderIdx;
 
   // 等待浏览器完成滚动后解除锁定
   requestAnimationFrame(() => {
@@ -972,6 +993,8 @@ function startAutoplay() {
   autoplayTimer = window.setInterval(handleAutoplayStep, autoplayDelay.value);
 }
 
+let scrollTimeout: any = null;
+
 /**
  * 处理滚动事件触发的索引同步
  */
@@ -986,7 +1009,45 @@ function handleScroll() {
 
   scrollFrame = requestAnimationFrame(() => {
     syncCurrentFromScroll(true);
+
+    // 针对 loop 模式的边界检测，即使在拖拽中也执行静默跳转以防止撞墙
+    if (props.loop && !isJumping.value) {
+      const viewport = viewportRef.value;
+      if (viewport) {
+        const scrollPos = isVertical.value ? viewport.scrollTop : viewport.scrollLeft;
+        const firstTarget = getSlideTarget(1);
+        const lastTarget = getSlideTarget(renderSlides.value.length - 2);
+
+        if (scrollPos < firstTarget || scrollPos > lastTarget) {
+          jumpToRealPosition(currentIndex.value);
+        }
+      }
+    }
   });
+}
+
+/**
+ * 处理滚动结束 (原生事件) — loop 模式下检测是否停在了克隆位置，若是则静默跳转到真实位置
+ */
+function handleScrollEnd() {
+  if (isJumping.value || (props.loop && isLoopTransitioning.value)) {
+    return;
+  }
+
+  if (props.loop) {
+    syncCurrentFromScroll(true);
+    const item = renderSlides.value[currentRenderIndex.value];
+    if (item?.isClone) {
+      jumpToRealPosition(item.realIndex);
+    }
+  }
+}
+
+/**
+ * 限制渲染索引在有效范围内
+ */
+function clampRenderIndex(index: number) {
+  return Math.min(Math.max(index, 0), renderSlides.value.length - 1);
 }
 
 /**
@@ -1040,6 +1101,7 @@ function getSlideClass(realIndex: number) {
     ui.value.slide(),
     isActive ? ui.value.slideActive() : ui.value.slideInactive(),
     effectiveHeight.value === "auto" && "h-auto",
+    effectiveAutoSize.value && "!w-auto !h-auto self-center",
   );
 }
 
@@ -1050,6 +1112,7 @@ function getSlideInnerClass() {
   return cn(
     ui.value.slideInner(),
     effectiveHeight.value === "auto" ? "h-auto" : "h-full",
+    effectiveAutoSize.value && "!w-auto !h-auto inline-block",
   );
 }
 
@@ -1140,6 +1203,7 @@ watch(
     effectiveHeight,
     effectiveType,
     effectiveCenteredSlides,
+    effectiveAutoSize,
   ],
   () => {
     nextTick(() => {
@@ -1242,18 +1306,27 @@ defineExpose({
         ui.viewport(),
         effectiveGrabCursor && 'cursor-grab',
         effectiveGrabCursor && isDragging && 'cursor-grabbing'
-      ]" :style="viewportStyle" :data-direction="effectiveDirection" tabindex="0"
-        @mousedown="effectiveGrabCursor && (isDragging = true)" @mouseup="isDragging = false"
-        @mouseleave="isHovering = false; isDragging = false" @focusin="isFocused = true" @focusout="isFocused = false"
-        @keydown="handleKeydown" @scroll="handleScroll">
+      ]" :style="viewportStyle" :data-direction="effectiveDirection" tabindex="0" @mousedown="() => {
+        if (effectiveGrabCursor) {
+          isDragging = true;
+          isJumping = false;
+          isLoopTransitioning = false;
+        }
+      }" @mouseup="isDragging = false" @touchstart="() => {
+          isDragging = true;
+          isJumping = false;
+          isLoopTransitioning = false;
+        }" @touchend="isDragging = false" @mouseleave="isHovering = false; isDragging = false"
+        @focusin="isFocused = true" @focusout="isFocused = false" @keydown="handleKeydown" @scroll="handleScroll"
+        @scrollend="handleScrollEnd">
         <div ref="trackRef" :class="ui.track()" :style="trackStyle">
           <div v-for="(item, renderIdx) in renderSlides"
             :key="item.isClone ? `clone-${item.renderIndex}-${item.realIndex}` : `slide-${item.realIndex}`"
             :ref="(el: any) => setSlideRef(el, renderIdx)" :class="getSlideClass(item.realIndex)" :style="[
               slideSizeStyle,
               {
-                scrollSnapAlign: props.loop ? undefined : 'center',
-                scrollSnapStop: props.loop ? undefined : 'always',
+                scrollSnapAlign: 'center',
+                scrollSnapStop: 'always',
               },
             ]" :aria-hidden="item.isClone ? 'true' : undefined">
             <div :class="ui.slideInner({ class: getSlideInnerClass() })">

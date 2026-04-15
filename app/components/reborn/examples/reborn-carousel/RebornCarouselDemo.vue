@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeroBanner from './components/HeroBanner.vue';
 const slidesPerView = ref<1 | 2 | 3 | "auto">(2);
 const spaceBetween = ref(20);
 const arrow = ref<"hover" | "always" | "never">("hover");
@@ -157,7 +158,6 @@ const copyToClipboard = () => {
             </template>
           </RebornPopover>
         </div>
-
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <div class="flex flex-col gap-1">
             <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">显示项目</span>
@@ -258,6 +258,8 @@ const copyToClipboard = () => {
         </div>
       </div>
     </div>
+
+    <HeroBanner />
 
     <RebornCarousel v-model="activeIndex" :type="carouselType" :slides-perview="slidesPerView"
       :space-between="spaceBetween" :autoplay="autoplay ? { delay: 2600 } : false" :motion-blur="motionBlur"

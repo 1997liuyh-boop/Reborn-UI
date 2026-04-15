@@ -1,36 +1,6 @@
-@layer base {
-  :root {
-      --button-2xl-height: 48px;
-      --button-xl-height: 43px;
-      --button-lg-height: 38px;
-      --button-base-height: 32px;
-      --button-sm-height: 28px;
-      --button-xs-height: 24px;
-      
-      --badge-lg-height: 38px;
-      --badge-md-height: 32px;
-      --badge-sm-height: 28px;
-
-      --input-lg-height: 48px;
-      --input-md-height: 45px;
-      --input-sm-height: 40px;
-
-      --input-px-lg: 16px;
-      --input-px-md: 12px;
-      --input-px-sm: 10px;
-
-      --input-icon-lg: 16px;
-      --input-icon-md: 12px;
-      --input-icon-sm: 10px;
-
-      --input-sep-lg: 16px;
-      --input-sep-md: 14px;
-      --input-sep-sm: 12px;
-
-    }
-}
-
 @theme {
+  /* --- 字体大小 (Text Sizes) --- */
+  
   /* 辅助文字 (Caption) */
   --text-caption-sm: 10px;
   --text-caption-md: 11px;
@@ -47,29 +17,41 @@
   --text-title-xl: 20px;
   --text-title-2xl: 24px;
   --text-title-3xl: 26px;
-  /* 按钮尺寸 */
-  --height-button-2xl: var(--button-2xl-height);
-  --height-button-xl: var(--button-xl-height);
-  --height-button-lg: var(--button-lg-height);
-  --height-button-base: var(--button-base-height);
-  --height-button-sm: var(--button-sm-height);
-  --height-button-xs: var(--button-xs-height);
 
-  /* 输入框尺寸 (可直接用作 Tailwind utility: h-input-sm-height 等) */
-  --height-input-sm: var(--input-sm-height);
-  --height-input-md: var(--input-md-height);
-  --height-input-lg: var(--input-lg-height);
+  /* --- 结构化高度 (Structural Heights) --- */
+  
+  /* 按钮高度 (Button) */
+  --height-button-2xl: 48px;
+  --height-button-xl: 43px;
+  --height-button-lg: 38px;
+  --height-button-base: 32px;
+  --height-button-sm: 28px;
+  --height-button-xs: 24px;
 
-  /* Badge Heights */
-  --height-badge-sm: var(--badge-sm-height);
-  --height-badge-md: var(--badge-md-height);
-  --height-badge-lg: var(--badge-lg-height);
+  /* 输入框高度 (Input) */
+  --height-input-sm: 40px;
+  --height-input-md: 45px;
+  --height-input-lg: 48px;
 
-  --spacing-input-px-sm: var(--input-px-sm);
-  --spacing-input-px-md: var(--input-px-md);
-  --spacing-input-px-lg: var(--input-px-lg);
+  /* 徽章高度 (Badge) */
+  --height-badge-sm: 28px;
+  --height-badge-md: 32px;
+  --height-badge-lg: 38px;
 
-  --spacing-input-sep-sm: var(--input-sep-sm);
-  --spacing-input-sep-md: var(--input-sep-md);
-  --spacing-input-sep-lg: var(--input-sep-lg);
+  /* --- 间距与对齐 (Spacing) --- */
+  
+  /* 输入框水平内边距 (Padding X) */
+  --spacing-input-px-sm: 10px;
+  --spacing-input-px-md: 12px;
+  --spacing-input-px-lg: 16px;
+
+  /* 输入框分隔间距 (Separator) */
+  --spacing-input-sep-sm: 12px;
+  --spacing-input-sep-md: 14px;
+  --spacing-input-sep-lg: 16px;
+
+  /* 图标尺寸 (Icons) */
+  --size-input-icon-sm: 10px;
+  --size-input-icon-md: 12px;
+  --size-input-icon-lg: 16px;
 }

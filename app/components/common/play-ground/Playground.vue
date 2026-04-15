@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, reactive, watch, onMounted } from "vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
@@ -21,6 +21,8 @@ export interface PlaygroundControlItem {
     props?: Record<string, any>;
     /** 默认值，用于检测是否需要在代码中展示此属性 */
     defaultValue?: any;
+    /** 是否隐藏该控件，接受当前字段值和状态对象，支持 Promise */
+    hide?: (value: any, modelValue: Record<string, any>) => boolean | Promise<boolean>;
 }
 
 /** 控件分组 */
@@ -68,6 +70,42 @@ function updateField(key: string, value: any) {
 function getField(key: string) {
     return props.modelValue[key];
 }
+
+/** 显回状态管理 */
+const visibilityMap = reactive<Record<string, boolean>>({});
+
+async function updateVisibility() {
+    const promises: Promise<void>[] = [];
+
+    props.controls.forEach(group => {
+        group.children.forEach(item => {
+            if (item.hide) {
+                const res = item.hide(props.modelValue[item.key], props.modelValue);
+                if (res instanceof Promise) {
+                    promises.push(res.then(hidden => {
+                        visibilityMap[item.key] = !!hidden;
+                    }));
+                } else {
+                    visibilityMap[item.key] = !!res;
+                }
+            } else {
+                visibilityMap[item.key] = false;
+            }
+        });
+    });
+
+    if (promises.length > 0) {
+        await Promise.all(promises);
+    }
+}
+
+// 深度监听 modelValue 或 controls 的变化
+watch(() => props.modelValue, () => updateVisibility(), { deep: true, immediate: true });
+watch(() => props.controls, () => updateVisibility(), { deep: true });
+
+onMounted(() => {
+    updateVisibility();
+});
 
 /** 自动生成代码明细 */
 const activeCode = computed(() => {
@@ -144,33 +182,37 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                     <!-- 控件列表 -->
                     <div :class="ui.controlList()">
                         <template v-for="item in group.children" :key="item.key">
-                            <!-- Checkbox：不需要外包 label -->
-                            <RebornCheckbox v-if="item.component === 'checkbox'" :model-value="getField(item.key)"
-                                :label="item.label" v-bind="item.props" size="sm"
-                                @update:model-value="updateField(item.key, $event)" />
+                            <template v-if="!visibilityMap[item.key]">
+                                <!-- Checkbox：不需要外包 label -->
+                                <RebornCheckbox v-if="item.component === 'checkbox'" :model-value="getField(item.key)"
+                                    :label="item.label" v-bind="item.props" size="sm"
+                                    @update:model-value="updateField(item.key, $event)" />
 
-                            <!-- Select / Input：统一外包 label -->
-                            <div v-else :class="ui.fieldWrapper()">
-                                <label :class="ui.fieldLabel()">
-                                    {{ item.label }}
-                                    <span v-if="item.component === 'slider'" :class="ui.fieldValue()">
-                                        {{ getField(item.key) }}
-                                    </span>
-                                </label>
-                                <RebornSelect v-if="item.component === 'select'" :model-value="getField(item.key)"
-                                    v-bind="item.props" class="w-full" size="sm"
-                                    @update:model-value="updateField(item.key, $event)" />
-                                <RebornInput v-else-if="item.component === 'input'" :model-value="getField(item.key)"
-                                    v-bind="item.props" size="sm" class="bg-white! dark:bg-gray-800!"
-                                    @update:model-value="updateField(item.key, $event)" />
-                                <RebornSlider v-else-if="item.component === 'slider'" :model-value="getField(item.key)"
-                                    v-bind="item.props" size="sm" class="bg-white! dark:bg-gray-800!"
-                                    @update:model-value="updateField(item.key, $event)" />
-                                <RebornColorPicker v-else-if="item.component === 'color-picker'"
-                                    :model-value="getField(item.key)" v-bind="item.props" size="sm"
-                                    class="bg-white! dark:bg-gray-800!"
-                                    @update:model-value="updateField(item.key, $event)" />
-                            </div>
+                                <!-- Select / Input：统一外包 label -->
+                                <div v-else :class="ui.fieldWrapper()">
+                                    <label :class="ui.fieldLabel()">
+                                        {{ item.label }}
+                                        <span v-if="item.component === 'slider'" :class="ui.fieldValue()">
+                                            {{ getField(item.key) }}
+                                        </span>
+                                    </label>
+                                    <RebornSelect v-if="item.component === 'select'" :model-value="getField(item.key)"
+                                        v-bind="item.props" class="w-full" size="sm"
+                                        @update:model-value="updateField(item.key, $event)" />
+                                    <RebornInput v-else-if="item.component === 'input'"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                        class="bg-white! dark:bg-gray-800!"
+                                        @update:model-value="updateField(item.key, $event)" />
+                                    <RebornSlider v-else-if="item.component === 'slider'"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                        class="bg-white! dark:bg-gray-800!"
+                                        @update:model-value="updateField(item.key, $event)" />
+                                    <RebornColorPicker v-else-if="item.component === 'color-picker'"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                        class="bg-white! dark:bg-gray-800!"
+                                        @update:model-value="updateField(item.key, $event)" />
+                                </div>
+                            </template>
                         </template>
                     </div>
                 </div>
