@@ -1,12 +1,12 @@
 export default {
     slots: {
         wrapper: 'fixed pointer-events-none',
-        root: 'pointer-events-auto fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50',
-        header: 'px-4 py-4 w-full flex items-center justify-between border-b border-gray-1 dark:border-gray-8 shrink-0',
+        root: 'p-4 pointer-events-auto fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50',
+        header: 'w-full flex items-center justify-between border-b border-gray-1 dark:border-gray-8 shrink-0',
         title: 'text-base font-medium text-gray-900 dark:text-gray-100',
         closeBtn: '',
         body: 'flex-1 overflow-y-auto p-4',
-        footer: 'px-4 py-3 border-t border-gray-1 dark:border-gray-8 shrink-0',
+        footer: 'border-t border-gray-1 dark:border-gray-8 shrink-0',
         resizer: 'absolute bg-transparent hover:bg-primary/20 hover:backdrop-blur-sm transition-colors z-[100]'
     },
     variants: {

@@ -9,7 +9,7 @@ export { sizes as searchBoxSizes };
  */
 export const inputTheme = {
     slots: {
-        wrapper: "h-[36px]!",
+        wrapper: "",
         icon: "",
         iconBox: "",
     },
@@ -52,18 +52,20 @@ export default {
     slots: {
         /** 最外层容器 */
         wrapper: "relative z-10",
+        /** 展开状态下的底色卡片 (绝对定位，圆角匹配输入框药丸形状) */
+        backdropCard: "absolute inset-x-0 -top-[6px] -left-[6px] w-[calc(100%+12px)] bg-white dark:bg-gray-8 rounded-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] border border-gray-1 dark:border-gray-8 z-0 pointer-events-none transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
         /** 输入框及按钮包裹层 */
-        inputWrapper: "flex-1 transition-all p-1.5 z-20 rounded-full relative",
+        inputWrapper: "flex-1 transition-all z-20 rounded-full relative",
         /** 基础输入框样式 */
         input: "w-full bg-transparent border-none outline-none text-body-base text-gray-4 dark:text-gray-1 placeholder:text-gray-7",
         /** 相机识别图标 */
         cameraIcon: "text-title-2xl text-gray-5 cursor-pointer hover:text-gray-7/80 dark:hover:text-gray-2/80 transition-colors",
 
         // --- 下拿面板相关 ---
-        /** 下拿面板外层容器 (负责动画过渡高度、透明度) */
-        dropdownOuter: "absolute left-0 w-full overflow-hidden transition-[height,opacity] duration-300 ease-in-out z-10 pointer-events-none drop-shadow-lg",
-        /** 下拿面板内容区 (承载具体列表、样式背景) */
-        dropdown: "left-0 w-full bg-white dark:bg-gray-9 border border-gray-1 dark:border-gray-8 rounded-b-2xl drop-shadow-xl z-20 overflow-hidden py-4 px-5 flex flex-col gap-6 z-1",
+        /** 下拉面板外层容器 (负责高度过渡动画，内容淡入由内层控制) */
+        dropdownOuter: "absolute -left-[6px] w-[calc(100%+12px)] overflow-hidden transition-[height] duration-350 ease-[cubic-bezier(0.4,0,0.2,1)] z-10 pointer-events-none drop-shadow-xl will-change-[height]",
+        /** 下拉面板内容区 (承载具体列表、样式背景，底部圆角匹配药丸风格) */
+        dropdown: "left-0 w-full bg-white dark:bg-gray-9 border border-gray-1 dark:border-gray-8 rounded-b-3xl z-20 overflow-hidden py-4 px-5 flex flex-col gap-6 z-1 transition-[opacity,transform] duration-250 ease-out",
         /** 功能区块 (如：最近搜索、联想列表) */
         section: "flex flex-col gap-3",
         /** 区块标题样式 */
@@ -84,7 +86,7 @@ export default {
         /** 选择器与输入框之间的连结包裹 */
         leadingWrapper: "flex items-center h-full",
         /** 后置元素包裹层 */
-        trailingWrapper: "flex gap-6 items-center",
+        trailingWrapper: "flex gap-x-[24px] items-center",
         /** 垂直分隔线 */
         separator: "mr-6 ml-3 bg-[#D3D2D9]!",
         /** 搜索按钮内的图标 */
@@ -118,7 +120,7 @@ export default {
         /** 下拉面板展开状态下的背景切换 */
         expanded: {
             true: {
-                inputWrapper: "bg-white dark:bg-gray-8  shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]",
+                inputWrapper: "",
                 input: "bg-[#F7F7F9]",
             },
             false: {

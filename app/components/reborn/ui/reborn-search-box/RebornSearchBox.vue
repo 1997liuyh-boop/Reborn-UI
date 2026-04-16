@@ -52,6 +52,8 @@ export interface SelectUi {
 /** RebornSearchBox 组件本身的 UI 槽位定义 */
 export interface SearchBoxUi {
   wrapper?: string;
+  /** 展开状态下的底色卡片 */
+  backdropCard?: string;
   inputWrapper?: string;
   input?: string;
   cameraIcon?: string;
@@ -220,6 +222,8 @@ const ui = computed(() => {
   return {
     wrapper: (opts?: { class?: any }) =>
       styles.wrapper({ class: cn(opts?.class, props.class, uiOverrides.wrapper) }),
+    backdropCard: (opts?: { class?: any }) =>
+      styles.backdropCard({ class: cn(opts?.class, uiOverrides.backdropCard) }),
     inputWrapper: (opts?: { class?: any }) =>
       styles.inputWrapper({ class: cn(opts?.class, uiOverrides.inputWrapper) }),
     inputLink: (opts?: { class?: any }) =>
@@ -430,6 +434,15 @@ onUnmounted(() => {
 
 <template>
   <div ref="wrapperRef" :class="ui.wrapper()">
+    <!-- 展开状态下的底色卡片 (绝对定位，圆角匹配输入框的药丸形状) -->
+    <div :class="ui.backdropCard()" :style="{
+      height: `${internalInputHeight + 12}px`,
+      borderBottom: 'none',
+      opacity: isExpanded ? 1 : 0,
+      transform: isExpanded ? 'scaleY(1)' : 'scaleY(0.95)',
+      transformOrigin: 'top center',
+    }" />
+
     <!-- 搜索输入框核心区 -->
     <div ref="inputWrapperRef" :class="ui.inputWrapper()">
       <RebornInput ref="inputRef" :model-value="modelValue?.inputValue" :placeholder="placeholder" clearable
@@ -460,7 +473,7 @@ onUnmounted(() => {
               <Icon name="lucide:camera" :class="ui.cameraIcon()" @click.stop="handleCameraClick" />
             </slot>
 
-            <RebornButton @click.stop="handleSearch" :size="isExpanded ? 'md' : 'lg'" :color="color">
+            <RebornButton @click.stop="handleSearch" :size="size" :color="color">
               <slot name="search-button" :ui="ui">
                 <Icon name="lucide:search" :class="ui.searchIconInner()" />
               </slot>
@@ -474,18 +487,21 @@ onUnmounted(() => {
     <div :class="ui.dropdownOuter()" :style="{
       height: isExpanded ? `${dropdownHeight}px` : '0px',
       top: `${internalInputHeight / 2}px`,
-      opacity: isExpanded ? 1 : 0,
       pointerEvents: isExpanded ? 'auto' : 'none',
     }">
-      <div ref="contentRef" :class="ui.dropdown()" :style="{ paddingTop: `${internalInputHeight / 2 + 24}px` }"
-        @mousedown="(e) => {
-          const target = e.target as HTMLElement;
-          // 如果点击的是输入框等可聚焦元素，不要阻止默认行为，否则会导致无法正常聚焦
-          if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
-            return;
-          }
-          e.preventDefault();
-        }">
+      <div ref="contentRef" :class="ui.dropdown()" :style="{
+        paddingTop: `${internalInputHeight / 2 + 24}px`,
+        opacity: isExpanded ? 1 : 0,
+        transform: isExpanded ? 'translateY(0)' : 'translateY(-8px)',
+        transitionDelay: isExpanded ? '100ms' : '0ms',
+      }" @mousedown="(e) => {
+        const target = e.target as HTMLElement;
+        // 如果点击的是输入框等可聚焦元素，不要阻止默认行为，否则会导致无法正常聚焦
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
+          return;
+        }
+        e.preventDefault();
+      }">
         <slot name="dropdown" :ui="ui" :history="localHistory">
 
           <!-- SKU 属性搜索区块 -->

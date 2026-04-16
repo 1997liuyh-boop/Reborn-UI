@@ -5,30 +5,71 @@ import { generateFrame } from './qrcode'
 import { eccLevel } from './types'
 
 interface RebornQrcodeOptions {
-  size?: number
+  /** 二维码尺寸 (px) */
+  size?: number | string
+  /** 前景色 (实心点颜色) */
   foreground?: string
+  /** 别名：前景色 */
+  dotsColor?: string
+  /** 背景颜色 */
   background?: string
-  pdColor?: string | null
-  pdRadius?: number
-  text?: string
-  logo?: string
-  logoSize?: number
-  padding?: number
-  logoMargin?: number
-  logoHideBackgroundDots?: boolean
-  logoShadow?: boolean
-  mode?: ClQrcodeMode
-  ecc?: eccLevel
-  pdOuterRadius?: number
-  pdInnerRadius?: number
-  dotsGradient?: any
-  dotsImage?: string | null
-  backgroundGradient?: any
+  /** 别名：背景颜色 */
+  backgroundColor?: string
+  /** 背景是否透明 (会忽略 background 设置) */
   backgroundTransparent?: boolean
+  /** 定位点 (Eyes) 的颜色，不传则跟随前景色 */
+  pdColor?: string | null
+  /** 定位点基础圆角半径 (默认 10) */
+  pdRadius?: number | string
+  /** 二维码编码的内容文案 */
+  text?: string
+  /** Logo 图片地址 (会自动居中显示) */
+  logo?: string
+  /** 别名：Logo 图片地址 */
+  logoImage?: string
+  /** Logo 尺寸 (px) */
+  logoSize?: number | string
+  /** 二维码内边距 (px) */
+  padding?: number | string
+  /** 别名：内边距 */
+  margin?: number | string
+  /** Logo 外部预留边空 (用于遮住背景点点) */
+  logoMargin?: number | string
+  /** 是否隐藏 Logo 下方的点 */
+  logoHideBackgroundDots?: boolean
+  /** Logo 是否显示阴影 */
+  logoShadow?: boolean
+  /** Logo 形状: 'circle' | 'square' */
+  logoShape?: 'circle' | 'square'
+  /** 点阵渲染模式: 'circular' | 'rectSmall' | 'line' | 'rect' */
+  mode?: ClQrcodeMode
+  /** 别名：渲染模式 */
+  dotsType?: ClQrcodeMode
+  /** 容错等级: L (7%), M (15%), Q (25%), H (30%) */
+  ecc?: eccLevel
+  /** 定位点 (Eyes) 外框渲染类型: 'rect' (直角), 'extra-rounded' (圆角), 'dot' (圆形) */
+  cornersSquareType?: 'rect' | 'dot' | 'square' | 'extra-rounded'
+  /** 定位点 (Eyes) 中央内点渲染类型: 'rect' (直角), 'dot' (圆形) */
+  cornersDotType?: 'rect' | 'dot' | 'square'
+  /** 定位点 (Eyes) 外框圆角半径 (优先级高于 cornersSquareType) */
+  pdOuterRadius?: number | string
+  /** 定位点 (Eyes) 中央内点圆角半径 (优先级高于 cornersDotType) */
+  pdInnerRadius?: number | string
+  /** 点阵渐变配置 { direction, colorStops } */
+  dotsGradient?: any
+  /** 点阵使用图片填充的图案地址 */
+  dotsImage?: string | null
+  /** 背景渐变配置 */
+  backgroundGradient?: any
+  /** Logo 其他选项 (扩展参数) */
   logoOptions?: any
+  /** 定位点外框渐变配置 */
   cornersSquareGradient?: any
+  /** 定位点中央内点渐变配置 */
   cornersDotGradient?: any
+  /** 定位点外框自定义属性 */
   cornersSquareOptions?: any
+  /** 定位点中央内点自定义属性 */
   cornersDotOptions?: any
 }
 
@@ -45,15 +86,38 @@ const props = withDefaults(defineProps<RebornQrcodeOptions>(), {
   logoMargin: 4,
   logoHideBackgroundDots: false,
   logoShadow: false,
-  mode: 'circular',
   ecc: eccLevel.H,
-  pdOuterRadius: undefined,
-  pdInnerRadius: undefined,
+})
+
+// 计算最终生效的参数 (处理 Alias 优先级及类型转换)
+const finalSize = computed(() => Number(props.size))
+const finalForeground = computed(() => props.dotsColor || props.foreground)
+const finalBackground = computed(() => props.backgroundColor || props.background)
+const finalPadding = computed(() => (props.margin !== undefined ? Number(props.margin) : Number(props.padding)))
+const finalLogo = computed(() => props.logoImage || props.logo)
+const finalLogoSize = computed(() => Number(props.logoSize))
+const finalLogoMargin = computed(() => Number(props.logoMargin))
+const finalMode = computed(() => props.dotsType || props.mode || 'circular')
+
+// 定位点半径处理 (处理 'rect' 逻辑)
+const finalPdOuterRadius = computed(() => {
+  if (props.pdOuterRadius !== undefined) return Number(props.pdOuterRadius)
+  if (props.cornersSquareType === 'rect') return 0
+  if (props.cornersSquareType === 'extra-rounded') return finalSize.value * 0.1
+  if (props.cornersSquareType === 'dot') return finalSize.value * 0.2
+  return Number(props.pdRadius)
+})
+
+const finalPdInnerRadius = computed(() => {
+  if (props.pdInnerRadius !== undefined) return Number(props.pdInnerRadius)
+  if (props.cornersDotType === 'rect') return 0
+  if (props.cornersDotType === 'dot') return finalSize.value * 0.1
+  return Number(props.pdRadius) / 2
 })
 
 const frameData = computed(() => generateFrame(props.text, props.ecc))
 const width = computed(() => frameData.value.width)
-const cellSize = computed(() => (props.size - props.padding * 2) / width.value)
+const cellSize = computed(() => (finalSize.value - finalPadding.value * 2) / width.value)
 
 interface EyeRect {
   x: number
@@ -76,20 +140,20 @@ function isInEye(x: number, y: number) {
 }
 
 function isInLogo(x: number, y: number) {
-  if (!props.logo || !props.logoHideBackgroundDots) return false
+  if (!finalLogo.value || !props.logoHideBackgroundDots) return false
 
   const logoPx = {
-    x1: (props.size - props.logoSize) / 2 - props.logoMargin,
-    y1: (props.size - props.logoSize) / 2 - props.logoMargin,
-    x2: (props.size + props.logoSize) / 2 + props.logoMargin,
-    y2: (props.size + props.logoSize) / 2 + props.logoMargin,
+    x1: (finalSize.value - finalLogoSize.value) / 2 - finalLogoMargin.value,
+    y1: (finalSize.value - finalLogoSize.value) / 2 - finalLogoMargin.value,
+    x2: (finalSize.value + finalLogoSize.value) / 2 + finalLogoMargin.value,
+    y2: (finalSize.value + finalLogoSize.value) / 2 + finalLogoMargin.value,
   }
 
   const dotPx = {
-    x1: props.padding + x * cellSize.value,
-    y1: props.padding + y * cellSize.value,
-    x2: props.padding + (x + 1) * cellSize.value,
-    y2: props.padding + (y + 1) * cellSize.value,
+    x1: finalPadding.value + x * cellSize.value,
+    y1: finalPadding.value + y * cellSize.value,
+    x2: finalPadding.value + (x + 1) * cellSize.value,
+    y2: finalPadding.value + (y + 1) * cellSize.value,
   }
 
   return (
@@ -138,27 +202,27 @@ const getGradientCoords = (gradient: any) => {
 const dotsFill = computed(() => {
   if (props.dotsImage) return `url(#${qrcodeId.value}-dots-img)`
   if (props.dotsGradient) return `url(#${qrcodeId.value}-dots-grad)`
-  return props.foreground
+  return finalForeground.value
 })
 
 const bgFill = computed(() => {
   if (props.backgroundTransparent) return 'transparent'
   if (props.backgroundGradient) return `url(#${qrcodeId.value}-bg-grad)`
-  return props.background
+  return finalBackground.value
 })
 
 const cornerSquareFill = computed(() => {
   if (props.cornersSquareGradient) return `url(#${qrcodeId.value}-cs-grad)`
   if (props.cornersSquareOptions?.color) return props.cornersSquareOptions.color
   if (props.pdColor) return props.pdColor
-  return props.foreground
+  return finalForeground.value
 })
 
 const cornerDotFill = computed(() => {
   if (props.cornersDotGradient) return `url(#${qrcodeId.value}-cd-grad)`
   if (props.cornersDotOptions?.color) return props.cornersDotOptions.color
   if (props.pdColor) return props.pdColor
-  return props.foreground
+  return finalForeground.value
 })
 
 const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number) => {
@@ -177,8 +241,9 @@ const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number)
 </script>
 
 <template>
-  <div :style="{ width: `${size}px`, height: `${size}px` }" class="relative">
-    <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" xmlns="http://www.w3.org/2000/svg">
+  <div :style="{ width: `${finalSize}px`, height: `${finalSize}px` }" class="relative overflow-hidden">
+    <svg :width="finalSize" :height="finalSize" :viewBox="`0 0 ${finalSize} ${finalSize}`"
+      xmlns="http://www.w3.org/2000/svg">
       <defs>
         <!-- Dots Gradient -->
         <linearGradient v-if="dotsGradient" :id="`${qrcodeId}-dots-grad`" gradientUnits="userSpaceOnUse"
@@ -214,38 +279,39 @@ const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number)
         </pattern>
       </defs>
 
-      <rect :width="size" :height="size" :fill="bgFill" />
+      <rect :width="finalSize" :height="finalSize" :fill="bgFill" />
 
       <template v-for="dot in dots" :key="`${dot.x}-${dot.y}`">
-        <circle v-if="mode === 'circular'" :cx="padding + (dot.x + 0.5) * cellSize"
-          :cy="padding + (dot.y + 0.5) * cellSize" :r="cellSize * 0.42" :fill="dotsFill" />
-        <rect v-else-if="mode === 'rectSmall'" :x="padding + dot.x * cellSize + cellSize * 0.2"
-          :y="padding + dot.y * cellSize + cellSize * 0.2" :width="cellSize * 0.6" :height="cellSize * 0.6" rx="1"
+        <circle v-if="finalMode === 'circular'" :cx="finalPadding + (dot.x + 0.5) * cellSize"
+          :cy="finalPadding + (dot.y + 0.5) * cellSize" :r="cellSize * 0.42" :fill="dotsFill" />
+        <rect v-else-if="finalMode === 'rectSmall'" :x="finalPadding + dot.x * cellSize + cellSize * 0.2"
+          :y="finalPadding + dot.y * cellSize + cellSize * 0.2" :width="cellSize * 0.6" :height="cellSize * 0.6" rx="1"
           :fill="dotsFill" />
-        <rect v-else-if="mode === 'line'" :x="padding + dot.x * cellSize"
-          :y="padding + dot.y * cellSize + cellSize * 0.15" :width="cellSize" :height="cellSize * 0.7"
+        <rect v-else-if="finalMode === 'line'" :x="finalPadding + dot.x * cellSize"
+          :y="finalPadding + dot.y * cellSize + cellSize * 0.15" :width="cellSize" :height="cellSize * 0.7"
           :fill="dotsFill" />
-        <rect v-else :x="padding + dot.x * cellSize" :y="padding + dot.y * cellSize" :width="cellSize"
+        <rect v-else :x="finalPadding + dot.x * cellSize" :y="finalPadding + dot.y * cellSize" :width="cellSize"
           :height="cellSize" :fill="dotsFill" />
       </template>
 
       <template v-for="eye in eyeRects" :key="`${eye.x}-${eye.y}`">
         <!-- Position Ring (Outer 7x7 - Inner 5x5) -->
         <path :d="`
-            ${getRoundRectPath(padding + eye.x * cellSize, padding + eye.y * cellSize, eye.size * cellSize, eye.size * cellSize, pdOuterRadius ?? pdRadius)}
-            ${getRoundRectPath(padding + (eye.x + 1) * cellSize, padding + (eye.y + 1) * cellSize, 5 * cellSize, 5 * cellSize, Math.max(0, (pdOuterRadius ?? pdRadius) - cellSize))}
+            ${getRoundRectPath(finalPadding + eye.x * cellSize, finalPadding + eye.y * cellSize, eye.size * cellSize, eye.size * cellSize, finalPdOuterRadius)}
+            ${getRoundRectPath(finalPadding + (eye.x + 1) * cellSize, finalPadding + (eye.y + 1) * cellSize, 5 * cellSize, 5 * cellSize, Math.max(0, finalPdOuterRadius - cellSize))}
           `" fill-rule="evenodd" :fill="cornerSquareFill" />
         <!-- Inner Center Dot (3x3) -->
         <path
-          :d="getRoundRectPath(padding + eyeCenter(eye).x * cellSize, padding + eyeCenter(eye).y * cellSize, 3 * cellSize, 3 * cellSize, pdInnerRadius ?? pdRadius / 2)"
+          :d="getRoundRectPath(finalPadding + eyeCenter(eye).x * cellSize, finalPadding + eyeCenter(eye).y * cellSize, 3 * cellSize, 3 * cellSize, finalPdInnerRadius)"
           :fill="cornerDotFill" />
       </template>
     </svg>
 
-    <img v-if="logo" :src="logo" alt="logo" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded"
-      :style="{
-        width: `${logoSize}px`,
-        height: `${logoSize}px`,
+    <img v-if="finalLogo" :src="finalLogo" alt="logo"
+      class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      :class="[logoShape === 'circle' ? 'rounded-full' : 'rounded']" :style="{
+        width: `${finalLogoSize}px`,
+        height: `${finalLogoSize}px`,
         filter: logoShadow ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' : 'none'
       }">
   </div>

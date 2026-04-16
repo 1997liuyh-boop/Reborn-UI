@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from '#imports';
 import { tv } from 'tailwind-variants';
 import { createReusableTemplate } from '@vueuse/core';
@@ -28,6 +28,8 @@ export interface RebornHeaderProps {
     sticky?: boolean;
     /** 路由改变时是否自动关闭菜单 */
     autoClose?: boolean;
+    /** 菜单展开前的拦截函数 */
+    beforeToggle?: () => boolean | Promise<boolean>;
     /** 根元素的自定义类名 */
     class?: any;
     /** UI 插槽样式覆盖 */
@@ -91,8 +93,26 @@ const ui = computed(() => {
     };
 });
 
-function toggleMenu() {
-    isMenuOpen.value = !isMenuOpen.value;
+async function toggleMenu() {
+    if (isMenuOpen.value) {
+        isMenuOpen.value = false;
+        return;
+    }
+
+    if (!props.beforeToggle) {
+        isMenuOpen.value = true;
+        return;
+    }
+
+    try {
+        const canOpen = await props.beforeToggle();
+
+        if (canOpen === true) {
+            isMenuOpen.value = true;
+        }
+    } catch {
+        // beforeToggle 被拒绝时阻止菜单展开
+    }
 }
 </script>
 
