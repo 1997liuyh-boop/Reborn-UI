@@ -39,8 +39,7 @@ function onChange(newList: any[]) {
             <div class="rounded-xl border bg-card text-card-foreground shadow p-4">
                 <RebornDraggable v-model="list1" @start="onStart" @end="onEnd" @change="onChange">
                     <template #item="{ item }">
-                        <div class="mb-2 flex h-16 items-center rounded-lg px-4 text-white shadow-sm"
-                            :class="item.color">
+                        <div class="flex h-16 items-center rounded-lg px-4 text-white shadow-sm" :class="item.color">
                             {{ item.name }}
                         </div>
                     </template>

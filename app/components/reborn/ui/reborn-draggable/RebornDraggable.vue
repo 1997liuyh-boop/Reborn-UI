@@ -60,7 +60,7 @@ const getItemKey = (item: any, index: number) => {
     <div v-for="(item, index) in list" :key="getItemKey(item, index)" :class="[
       theme.item,
       isItemDisabled(item) ? 'cursor-not-allowed opacity-50' : 'cursor-move',
-      dragIndex === index ? 'opacity-90 scale-105 shadow-md relative z-10' : ''
+      dragIndex === index ? 'opacity-90 scale-105 relative z-10' : ''
     ]" :draggable="!isItemDisabled(item)" @dragstart="onDragStart($event, index, item)"
       @dragenter="onDragEnter($event, index, item)" @dragover.prevent @drop="onDrop(index)" @dragend="onDragEnd">
       <slot name="item" :item="item" :index="index" :dragging="dragIndex === index">{{ item }}</slot>

@@ -188,7 +188,7 @@ const sizeStyle = computed(() => {
 })
 
 const style = computed(() => {
-  const base = `z-index:${actualZIndex.value}; padding-top: ${safeTop.value}px; padding-bottom: ${safeBottom.value}px; ${sizeStyle.value}`
+  const base = `z-index:${actualZIndex.value}; padding-top: ${safeTop.value}px; padding-bottom: ${safeBottom.value}px;`
   if (swipe.exiting) {
     // 退场：ease-in 加速滑出屏幕，offsetY 会被设为超大值驱动此动画
     return `${base} transition: transform ${EXIT_DURATION}ms ease-in; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
