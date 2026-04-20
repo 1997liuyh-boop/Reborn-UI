@@ -14,9 +14,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch } from 'vue';
+import { computed, ref, reactive, watch, onMounted, onUnmounted } from 'vue';
 import { tv } from 'tailwind-variants';
-import { useWindowScroll, useElementBounding } from '@vueuse/core';
+import { useWindowScroll, useElementBounding, useResizeObserver } from '@vueuse/core';
 import theme from './reborn-sticky.config';
 
 defineOptions({
@@ -76,12 +76,22 @@ const isSticky = computed(() => {
     return wrapperTop.value <= stickyThreshold.value;
 });
 
+// 监听吸顶状态变化，更新尺寸
 watch(isSticky, (newValue) => {
     if (newValue) {
         rect.height = wrapperHeight.value;
         rect.width = wrapperWidth.value;
         rect.left = wrapperLeft.value;
         rect.top = wrapperTop.value + scrollTop.value;
+    }
+});
+
+// 监听内容尺寸变化，实时更新占位高度
+useResizeObserver(wrapperRef, () => {
+    if (isSticky.value) {
+        rect.height = wrapperHeight.value;
+        rect.width = wrapperWidth.value;
+        rect.left = wrapperLeft.value;
     }
 });
 

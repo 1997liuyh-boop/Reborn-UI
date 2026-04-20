@@ -335,9 +335,19 @@ function handleSearch() {
 
 /** 获得焦点展开面板 */
 const onFocus = (e: FocusEvent) => {
-  isExpanded.value = true;
+  if (props.showDropdown) {
+    isExpanded.value = true;
+  }
   emit("focus", e);
 };
+
+/** 点击输入框展开面板 */
+const onInputClick = () => {
+  if (props.showDropdown) {
+    isExpanded.value = true;
+  }
+};
+
 
 /** 失去焦点收起面板 (需延时，避开点击下拉列表时的冲突) */
 const onBlur = (e: FocusEvent) => {
@@ -400,6 +410,11 @@ watch(isExpanded, (val) => {
   }
 });
 
+/** 监听 showDropdown 属性，若关闭则强制收起面板 */
+watch(() => props.showDropdown, (val) => {
+  if (!val) isExpanded.value = false;
+});
+
 let contentObserver: ResizeObserver | null = null;
 let inputObserver: ResizeObserver | null = null;
 
@@ -447,7 +462,7 @@ onUnmounted(() => {
     <div ref="inputWrapperRef" :class="ui.inputWrapper()">
       <RebornInput ref="inputRef" :model-value="modelValue?.inputValue" :placeholder="placeholder" clearable
         :separator="false" :class="ui.inputLink()" :size="size" :color="color" :ui="internalInputUi"
-        @click="isExpanded = true" @update:model-value="handleInputValueChange" @focus="onFocus" @blur="onBlur"
+        @click="onInputClick" @update:model-value="handleInputValueChange" @focus="onFocus" @blur="onBlur"
         @keydown.enter="handleSearch">
         <!-- 前置选择器槽位 -->
         <template #leading="{ ui: inputSlotUi }">

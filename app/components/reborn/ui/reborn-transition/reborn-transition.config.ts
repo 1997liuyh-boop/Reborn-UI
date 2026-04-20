@@ -18,37 +18,37 @@ export const transitionStyles: Record<string, Record<string, string>> = {
   'fade-up': {
     // 从上淡入淡出 (starts from top)
     enter: '-translate-y-8 opacity-0',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'translate-y-0 opacity-100',
     leave: 'translate-y-0 opacity-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': '-translate-y-8 opacity-0',
   },
   'fade-down': {
     // 从下淡入淡出 (starts from bottom)
     enter: 'translate-y-8 opacity-0',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'translate-y-0 opacity-100',
     leave: 'translate-y-0 opacity-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': 'translate-y-8 opacity-0',
   },
   'fade-left': {
     // 从左淡入淡出
     enter: '-translate-x-8 opacity-0',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'translate-x-0 opacity-100',
     leave: 'translate-x-0 opacity-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': '-translate-x-8 opacity-0',
   },
   'fade-right': {
     // 从右淡入淡出
     enter: 'translate-x-8 opacity-0',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'translate-x-0 opacity-100',
     leave: 'translate-x-0 opacity-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': 'translate-x-8 opacity-0',
   },
   'slide-up': {
@@ -86,28 +86,28 @@ export const transitionStyles: Record<string, Record<string, string>> = {
   'zoom-in': {
     // 缩入 (从 0.9 放大到 1)
     enter: 'opacity-0 scale-90',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'opacity-100 scale-100',
     leave: 'opacity-100 scale-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': 'opacity-0 scale-90',
   },
   'zoom-out': {
     // 缩出 (从 1.1 缩小到 1)
     enter: 'opacity-0 scale-110',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'opacity-100 scale-100',
     leave: 'opacity-100 scale-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': 'opacity-0 scale-110',
   },
   'zoom': {
     // 标准缩放 (入场放大，离场放大消失)
     enter: 'opacity-0 scale-90',
-    'enter-active': `transition-all ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'opacity-100 scale-100',
     leave: 'opacity-100 scale-100',
-    'leave-active': `transition-all ${EASE_LEAVE}`,
+    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
     'leave-to': 'opacity-0 scale-110',
   },
   'badge-custom': {
