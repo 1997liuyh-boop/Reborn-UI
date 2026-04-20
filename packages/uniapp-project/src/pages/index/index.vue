@@ -56,6 +56,7 @@ const menuItems = [
       { label: '标签栏', icon: 'i-lucide-dock', path: '/pages/reborn-tabbar/RebornTabbarDemo' },
       { label: '瀑布流', icon: 'i-mdi-waterfall', path: '/pages/reborn-waterfall/RebornWaterfallDemo' },
       { label: '分页', icon: 'i-lucide-list-ordered', path: '/pages/reborn-pagination/RebornPaginationDemo' },
+      { label: '通知栏', icon: 'i-lucide-megaphone', path: '/pages/reborn-notice-bar/RebornNoticeBarDemo' },
     ],
   },
   {

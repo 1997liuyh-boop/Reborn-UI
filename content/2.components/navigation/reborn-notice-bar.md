@@ -2,13 +2,17 @@
 title: NoticeBar 通知栏
 description: 用于循环播放展示一组消息通知，支持多种内容溢出时的处理方式。
 category: 导航
+badge: New
 navigation:
   badges:
     - label: 通
       color: primary
+  chip:
+    label: NEW
+    color: primary
 ---
 
-::ComponentViewer{demoFile="RebornNoticeBarDemo.vue" config="RebornNoticeBarConfig" componentId="reborn-notice-bar" :componentFiles='["RebornNoticeBar.vue", "reborn-notice-bar.config.ts"]' :uniappFiles='[]'}
+::ComponentViewer{demoFile="RebornNoticeBarDemo.vue" config="RebornNoticeBarConfig" componentId="reborn-notice-bar" :componentFiles='["RebornNoticeBar.vue", "reborn-notice-bar.config.ts"]' :uniappFiles='["RebornNoticeBar.vue", "reborn-notice-bar.config.ts"]'}
 
 #api
 

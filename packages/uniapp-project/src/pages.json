@@ -264,6 +264,12 @@
       "style": {
         "navigationBarTitleText": "Pagination Demo"
       }
+    },
+    {
+      "path": "pages/reborn-notice-bar/RebornNoticeBarDemo",
+      "style": {
+        "navigationBarTitleText": "NoticeBar Demo"
+      }
     }
   ],
 

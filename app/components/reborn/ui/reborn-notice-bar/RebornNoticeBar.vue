@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue';
-import { rebornNoticeBar } from './reborn-notice-bar.config';
+import { cn } from '@/lib/utils';
+import { rebornNoticeBar, type NoticeBarUI } from './reborn-notice-bar.config';
 
 defineOptions({ name: 'RebornNoticeBar' });
 
@@ -29,6 +30,12 @@ interface RebornNoticeBarProps {
   direction?: NoticeBarDirection;
   /** 垂直滚动时的轮播间隔时间，单位 ms */
   interval?: number;
+  /** UI 覆盖 */
+  ui?: NoticeBarUI;
+  /** 自定义类名 */
+  customClass?: string;
+  /** 自定义样式 */
+  customStyle?: string;
 }
 
 const props = withDefaults(defineProps<RebornNoticeBarProps>(), {
@@ -41,6 +48,9 @@ const props = withDefaults(defineProps<RebornNoticeBarProps>(), {
   disabled: false,
   direction: 'horizontal',
   interval: 3000,
+  customClass: '',
+  customStyle: '',
+  ui: () => ({}),
 });
 
 const emit = defineEmits<{
@@ -60,6 +70,7 @@ const rootRef = ref<HTMLElement | null>(null);
 const textRef = ref<HTMLElement | null>(null);
 const wrapperRef = ref<HTMLElement | null>(null);
 
+const scrollDistance = ref(0);
 const shouldScroll = ref(false);
 const animationDuration = ref(0);
 const isPaused = ref(false);
@@ -82,7 +93,21 @@ const hasMultipleText = computed(() => textList.value.length > 1);
 const isVerticalScroll = computed(() => props.direction === 'vertical' && hasMultipleText.value);
 
 /** 计算样式 */
-const styles = computed(() => rebornNoticeBar({ wrapable: props.wrapable }));
+const styles = computed(() => {
+  const b = rebornNoticeBar({
+    wrapable: props.wrapable,
+    disabled: props.disabled,
+  });
+  return {
+    root: (opts?: { class?: any }) => b.root({ class: cn(opts?.class, props.customClass, props.ui?.root) }),
+    content: (opts?: { class?: any }) => b.content({ class: cn(opts?.class, props.ui?.content) }),
+    textWrapper: (opts?: { class?: any }) => b.textWrapper({ class: cn(opts?.class, props.ui?.textWrapper) }),
+    text: (opts?: { class?: any }) => b.text({ class: cn(opts?.class, props.ui?.text) }),
+    icon: (opts?: { class?: any }) => b.icon({ class: cn(opts?.class, props.ui?.icon) }),
+    verticalWrapper: (opts?: { class?: any }) => b.verticalWrapper({ class: cn(opts?.class, props.ui?.verticalWrapper) }),
+    verticalItem: (opts?: { class?: any }) => b.verticalItem({ class: cn(opts?.class, props.ui?.verticalItem) }),
+  };
+});
 
 /** 内联样式 */
 const rootStyle = computed(() => ({
@@ -94,6 +119,7 @@ const rootStyle = computed(() => ({
 const textStyle = computed(() => {
   if (!shouldScroll.value || props.wrapable || isVerticalScroll.value) return {};
   return {
+    '--scroll-distance': `${scrollDistance.value}px`,
     animationDuration: `${animationDuration.value}s`,
     animationPlayState: isPaused.value ? 'paused' : 'running',
   };
@@ -118,10 +144,10 @@ const checkOverflow = () => {
     const wrapperWidth = wrapperRef.value.offsetWidth;
     const textWidth = textRef.value.scrollWidth;
 
-    if (textWidth > wrapperWidth) {
+    if (textWidth > wrapperWidth && wrapperWidth > 0) {
       shouldScroll.value = true;
-      const scrollDistance = textWidth + wrapperWidth;
-      animationDuration.value = scrollDistance / props.speed;
+      scrollDistance.value = wrapperWidth;
+      animationDuration.value = (textWidth + wrapperWidth) / props.speed;
     } else {
       shouldScroll.value = false;
     }
@@ -193,15 +219,17 @@ const goTo = (index: number) => {
 
 // 监听内容变化
 watch(() => props.text, () => {
+  if (!import.meta.client) return;
   checkOverflow();
   if (isVerticalScroll.value) {
     verticalIndex.value = 0;
     startVerticalTimer();
   }
-}, { immediate: true });
+});
 
 // 监听方向变化
 watch(() => props.direction, () => {
+  if (!import.meta.client) return;
   checkOverflow();
   if (isVerticalScroll.value) {
     startVerticalTimer();
@@ -212,6 +240,7 @@ watch(() => props.direction, () => {
 
 // 监听禁用状态
 watch(() => props.disabled, (disabled) => {
+  if (!import.meta.client) return;
   if (disabled) {
     stopVerticalTimer();
   } else if (isVerticalScroll.value) {
@@ -242,7 +271,7 @@ defineExpose({
 </script>
 
 <template>
-  <div v-if="!disabled" ref="rootRef" :class="styles.root()" :style="rootStyle" @click="handleClick" @mouseenter="pause"
+  <div ref="rootRef" :class="styles.root()" :style="rootStyle" @click="handleClick" @mouseenter="pause"
     @mouseleave="resume">
     <!-- 左侧图标插槽 -->
     <span v-if="slots['left-icon'] || props.leftIcon" :class="styles.icon()">
@@ -265,12 +294,15 @@ defineExpose({
       </div>
 
       <!-- 水平滚动模式 -->
-      <div v-else ref="textRef" :class="[styles.text(), shouldScroll && !wrapable ? 'animate-notice-bar-scroll' : '']"
-        :style="textStyle">
+      <div v-else ref="textRef" :class="[
+        styles.text(),
+        shouldScroll && !wrapable ? 'animate-notice-bar-scroll' : '',
+        !props.scrollable && !wrapable && !isVerticalScroll ? 'truncate w-full' : ''
+      ]" :style="textStyle">
         <slot>
           <template v-if="hasMultipleText">
-            <span v-for="(item, index) in textList" :key="index">
-              {{ item }}<span v-if="index < textList.length - 1" class="mx-4">|</span>
+            <span v-for="(item, index) in textList" :key="index" class="mr-6 last:mr-0">
+              {{ item }}
             </span>
           </template>
           <template v-else>{{ props.text }}</template>
@@ -290,7 +322,7 @@ defineExpose({
 <style scoped>
 @keyframes notice-bar-scroll {
   0% {
-    transform: translateX(100%);
+    transform: translateX(var(--scroll-distance, 100%));
   }
 
   100% {

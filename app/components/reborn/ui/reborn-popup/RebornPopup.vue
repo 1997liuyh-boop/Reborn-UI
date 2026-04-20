@@ -281,7 +281,8 @@ const panelRootStyle = computed(() => {
   if (isHorizontal.value || actualPosition.value === 'center') {
     style = `width:${targetSize.value};`;
   } else {
-    style = `height:${targetSize.value};`;
+    // 对于 top/bottom 位置，限制最大高度不超过屏幕高度
+    style = `height:${targetSize.value};max-height:100vh;`;
   }
 
   // 安全区域适配 (针对移动端 Web)
