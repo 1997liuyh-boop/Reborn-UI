@@ -14,9 +14,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted, onUnmounted } from 'vue';
+import { computed, ref, reactive, watch } from 'vue';
 import { tv } from 'tailwind-variants';
-import { useWindowScroll, useElementBounding, useResizeObserver } from '@vueuse/core';
+import { useWindowScroll, useElementBounding, useResizeObserver, useEventListener } from '@vueuse/core';
 import theme from './reborn-sticky.config';
 
 defineOptions({
@@ -25,6 +25,11 @@ defineOptions({
 
 defineSlots<{
     default(props: { isSticky: boolean }): any;
+}>();
+
+const emit = defineEmits<{
+    (e: 'change', isSticky: boolean): void;
+    (e: 'resize', rect: { height: number; width: number; left: number; top: number }): void;
 }>();
 
 export interface RebornStickyProps {
@@ -76,24 +81,30 @@ const isSticky = computed(() => {
     return wrapperTop.value <= stickyThreshold.value;
 });
 
+const updateDimensions = () => {
+    updateRect();
+    rect.height = wrapperHeight.value;
+    rect.width = wrapperWidth.value;
+    rect.left = wrapperLeft.value;
+    rect.top = wrapperTop.value + scrollTop.value;
+    emit('resize', { ...rect });
+};
+
 // 监听吸顶状态变化，更新尺寸
 watch(isSticky, (newValue) => {
     if (newValue) {
-        rect.height = wrapperHeight.value;
-        rect.width = wrapperWidth.value;
-        rect.left = wrapperLeft.value;
-        rect.top = wrapperTop.value + scrollTop.value;
+        updateDimensions();
     }
+    emit('change', newValue);
 });
 
+// 监听窗口大小变化 (SSR 安全)
+if (import.meta.client) {
+    useEventListener(window, 'resize', updateDimensions);
+}
+
 // 监听内容尺寸变化，实时更新占位高度
-useResizeObserver(wrapperRef, () => {
-    if (isSticky.value) {
-        rect.height = wrapperHeight.value;
-        rect.width = wrapperWidth.value;
-        rect.left = wrapperLeft.value;
-    }
-});
+useResizeObserver(wrapperRef, updateDimensions);
 
 const ui = computed(() => {
     const styles = b({
@@ -107,6 +118,12 @@ const ui = computed(() => {
 
 const stickyTop = computed(() => {
     return isSticky.value ? stickyThreshold.value : 0;
+});
+
+defineExpose({
+    height: computed(() => rect.height),
+    isSticky,
+    rect
 });
 
 </script>

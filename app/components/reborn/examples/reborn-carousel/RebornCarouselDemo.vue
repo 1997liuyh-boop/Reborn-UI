@@ -297,7 +297,7 @@ const copyToClipboard = () => {
       :pagination="{ clickable: true, type: 'dot' }" arrow="always" indicator-position="outside" :motion-blur="true"
       :centered-slides="true" :autoplay="false" height="26rem" loop color="secondary">
       <div v-for="card in cardSlides" :key="card.title"
-        :class="`flex h-full w-full max-w-[18rem] flex-col justify-between rounded-[32px] bg-linear-to-br ${card.tone} p-7 text-white md:max-w-88`">
+        :class="`flex h-full w-full flex-col justify-between rounded-[32px] bg-linear-to-br ${card.tone} p-7 text-white`">
         <div class="space-y-3">
           <span class="inline-flex w-fit rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
             {{ card.label }}

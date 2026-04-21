@@ -154,7 +154,7 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: SearchBoxModelValue): void;
   (e: "search", value: SearchBoxModelValue): void;
   (e: "click-camera"): void;
-  (e: "select-sku", attr: SkuAttribute): void;
+  (e: "select-sku", attr: { label: string, value: string | number }): void;
   (e: "focus", event: FocusEvent): void;
   (e: "blur", event: FocusEvent): void;
 }>();
@@ -389,6 +389,7 @@ function handleCameraClick() {
 /** Select 选中值变更 */
 function handleSelectChange(val: string | number) {
   emit("update:modelValue", { ...props.modelValue!, selectValue: val });
+  emit("select-sku", { label: 'selectValue', value: val });
 }
 
 const contentRef = ref<HTMLElement | null>(null);
@@ -524,7 +525,7 @@ onUnmounted(() => {
             <slot name="sku-list" :ui="ui" :attributes="skuAttributes">
               <RebornSku :model-value="modelValue" :options="skuAttributes"
                 @update:model-value="(val: any) => emit('update:modelValue', val)"
-                @change="(key: string, val: any) => emit('select-sku', { label: key, value: val } as any)" @click.stop>
+                @change="(key: string, val: any) => emit('select-sku', { label: key, value: val })" @click.stop>
                 <!-- 将从 RebornSearchBox 接收到的所有插槽全部穿透转发给 RebornSku (例如 #price 等) -->
                 <template v-for="(_, name) in $slots" #[name]="slotData">
                   <slot :name="name" v-bind="slotData" />

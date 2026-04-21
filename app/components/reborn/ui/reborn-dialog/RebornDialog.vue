@@ -624,9 +624,9 @@ defineExpose({
   </div>
 
   <Teleport to="body">
-    <div v-if="mounted" :class="ui.root()" :style="rootStyle">
+    <div v-if="mounted" :class="ui.root()" :style="rootStyle" @wheel="(e) => !props.scrollable && e.preventDefault()">
       <RebornTransition :show="visible" name="fade" :duration="220" :appear="true" custom-class="absolute inset-0">
-        <div :class="ui.backdrop()" @click="onBackdropClick" />
+        <div :class="ui.backdrop()" @click="onBackdropClick" @touchmove.prevent />
       </RebornTransition>
 
       <RebornTransition :show="visible" name="zoom-in" :duration="240" :appear="true" :custom-class="ui.shell()"

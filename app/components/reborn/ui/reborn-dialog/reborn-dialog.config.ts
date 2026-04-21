@@ -5,7 +5,7 @@ export default {
     backdrop: "absolute inset-0 bg-black/45 backdrop-blur-[2px]",
     shell: "absolute inset-0 flex items-center justify-center p-4 sm:p-6",
     panel:
-      "relative flex w-full max-w-[560px] flex-col overflow-hidden rounded-ui-md border border-black/5 bg-white text-gray-900 shadow-[0_32px_90px_rgba(15,23,42,0.22)]",
+      "relative flex w-full max-w-[560px] flex-col overflow-hidden rounded-ui-md border border-black/5 bg-white text-gray-900 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
     header: "flex items-start justify-between gap-4 border-b border-gray-2 px-4 py-3",
     headerContent: "min-w-0 flex-1 space-y-1",
     title: "text-title-md font-semibold leading-[1.35] text-gray-900",
