@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { textColors } from "./reborn-text.config";
 import { tv } from "~/lib/tv";
+import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 
 const b = tv(theme);
 
@@ -34,6 +35,8 @@ export interface RebornTextProps {
     ellipsis?: boolean;
     /** 最大行数 */
     lines?: number;
+    /** 是否开启 Tooltip (自动检测省略并显示) */
+    tooltip?: boolean;
     /** 是否保留空白 */
     preWrap?: boolean;
     class?: any;
@@ -51,6 +54,7 @@ const props = withDefaults(defineProps<RebornTextProps>(), {
     maskChar: "*",
     ellipsis: false,
     lines: 1,
+    tooltip: false,
     preWrap: false,
 });
 
@@ -132,10 +136,68 @@ const content = computed(() => {
         default: return val;
     }
 });
+
+/** 省略号自动气泡提示逻辑 */
+const textRef = ref<HTMLElement | null>(null);
+const isEllipsisActive = ref(false);
+const tooltipText = ref("");
+let observer: ResizeObserver | null = null;
+
+const checkEllipsis = () => {
+    if (!props.tooltip || !textRef.value) {
+        isEllipsisActive.value = false;
+        return;
+    }
+
+    const el = textRef.value;
+
+    // 由于我们使用了 display: -webkit-box 来实现多行和单行截断，
+    // 前端文本截断后会自动换行（隐藏在盒子模型外），
+    // 所以不论是单行还是多行，超出时 scrollHeight 都会大于 clientHeight。
+    // 我们综合检查宽高的溢出来确保兼容性。
+    isEllipsisActive.value = el.scrollHeight > el.clientHeight + 0.5 || el.scrollWidth > el.clientWidth + 0.5;
+
+    // 获取实际的文本供 Tooltip 显示
+    if (isEllipsisActive.value) {
+        tooltipText.value = content.value ? String(content.value) : (el.textContent || '').trim();
+    }
+};
+
+onMounted(() => {
+    if (props.tooltip && textRef.value) {
+        // 渲染完成后稍微延迟检查，确保字体和布局完全就绪
+        nextTick(() => {
+            nextTick(checkEllipsis);
+        });
+
+        observer = new ResizeObserver(() => {
+            checkEllipsis();
+        });
+        observer.observe(textRef.value);
+    }
+});
+
+onBeforeUnmount(() => {
+    if (observer) {
+        observer.disconnect();
+        observer = null;
+    }
+});
+
+// 当内容或样式参数变化时，重新检查
+watch(() => [content.value, props.lines, props.size, props.ellipsis, props.tooltip], () => {
+    nextTick(() => {
+        nextTick(checkEllipsis);
+    });
+});
 </script>
 
 <template>
-    <span :class="ui.base({ class: props.class })" :style="textStyle">
-        <slot>{{ content }}</slot>
-    </span>
+    <RebornTooltip :disabled="!props.tooltip || !isEllipsisActive" :content="tooltipText" placement="top">
+        <span ref="textRef"
+            :class="cn(ui.base({ class: props.class }), { 'cursor-pointer': props.tooltip && isEllipsisActive })"
+            :style="textStyle">
+            <slot>{{ content }}</slot>
+        </span>
+    </RebornTooltip>
 </template>

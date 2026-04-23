@@ -84,13 +84,13 @@ export const transitionStyles: Record<string, Record<string, string>> = {
     'leave-to': '-translate-x-[100%]',
   },
   'zoom-in': {
-    // 缩入 (从 0.9 放大到 1)
-    enter: 'opacity-0 scale-90',
-    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
+    // 缩入 (从 0.95 放大到 1，关闭时缩小到 0.92)
+    enter: 'opacity-0 scale-95',
+    'enter-active': `transition-[opacity,transform] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]`,
     'enter-to': 'opacity-100 scale-100',
     leave: 'opacity-100 scale-100',
-    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
-    'leave-to': 'opacity-0 scale-90',
+    'leave-active': `transition-[opacity,transform] duration-250 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]`,
+    'leave-to': 'opacity-0 scale-95',
   },
   'zoom-out': {
     // 缩出 (从 1.1 缩小到 1)
@@ -103,12 +103,12 @@ export const transitionStyles: Record<string, Record<string, string>> = {
   },
   'zoom': {
     // 标准缩放 (入场放大，离场放大消失)
-    enter: 'opacity-0 scale-90',
+    enter: 'opacity-0 scale-95',
     'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
     'enter-to': 'opacity-100 scale-100',
     leave: 'opacity-100 scale-100',
     'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
-    'leave-to': 'opacity-0 scale-110',
+    'leave-to': 'opacity-0 scale-105',
   },
   'badge-custom': {
     enter: 'opacity-0 scale-50',

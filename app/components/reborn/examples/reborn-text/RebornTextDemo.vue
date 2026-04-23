@@ -60,12 +60,28 @@ const color = ref<any>("primary");
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">文本省略</h3>
-                <RebornText :color="color" ellipsis :lines="2" class="max-w-xs">
-                    这是一段很长的文本内容，用于测试多行文本省略功能。当内容超出指定行数时，会显示省略号。这是一段很长的文本内容，用于测试多行文本省略功能。
-                    这是一段很长的文本内容，用于测试多行文本省略功能。当内容超出指定行数时，会显示省略号。这是一段很长的文本内容，用于测试多行文本省略功能。
-                    这是一段很长的文本内容，用于测试多行文本省略功能。当内容超出指定行数时，会显示省略号。这是一段很长的文本内容，用于测试多行文本省略功能。
-                </RebornText>
+                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">自动气泡提示 (Tooltip)</h3>
+                <div class="grid gap-6">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs text-gray-400">单行省略 + Tooltip</span>
+                        <RebornText :color="color" ellipsis tooltip class="max-w-[100px]">
+                            这是一段很长的单行文本内容，超出会显示省略号和气泡
+                        </RebornText>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs text-gray-400">单行未省略 (无 Tooltip)</span>
+                        <RebornText :color="color" ellipsis tooltip class="max-w-[200px]">
+                            短文本
+                        </RebornText>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs text-gray-400">多行省略 + Tooltip</span>
+                        <RebornText :color="color" ellipsis :lines="2" tooltip class="max-w-xs">
+                            这是一段很长的文本内容，用于测试多行文本省略且显示 Tooltip
+                            功能。当内容超出指定行数时，会显示省略号并显示 Tooltip。这是一段延伸内容，确保一定会超出两行显示。
+                        </RebornText>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

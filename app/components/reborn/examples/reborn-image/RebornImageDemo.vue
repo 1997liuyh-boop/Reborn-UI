@@ -23,6 +23,26 @@ const previewList = ref(["https://cms-image.leyifan.cn/resources/image/2026/01/2
         </div>
 
         <div>
+            <h3 class="mb-4 text-xl font-bold border-b pb-2">Taobao 商品详情风格放大镜</h3>
+            <div class="grid grid-cols-3 gap-10">
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-gray-400 mb-2">默认 (Lens: 100, Zoom: 2x)</span>
+                    <RebornImage :src="src" magnifier width="200" height="200" />
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-gray-400 mb-2">小透镜高倍率 (Lens: 40, Zoom: 5x)</span>
+                    <RebornImage :src="src" magnifier :magnifier-size="40" :magnifier-zoom="5" width="200"
+                        height="200" />
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-gray-400 mb-2">自定义视口 (Box: 150x300, Zoom: 1.5x)</span>
+                    <RebornImage :src="src" magnifier :magnifier-size="60" :magnifier-zoom="1.5" magnifier-width="150"
+                        magnifier-height="300" width="200" height="200" />
+                </div>
+            </div>
+        </div>
+
+        <div>
             <h3 class="mb-2 font-bold">状态/自定义大小</h3>
             <div class="grid grid-cols-3 gap-2">
                 <RebornImage src="https://example.com/error.jpg" width="180" height="180"

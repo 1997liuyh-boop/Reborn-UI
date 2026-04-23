@@ -625,14 +625,15 @@ defineExpose({
 
   <Teleport to="body">
     <div v-if="mounted" :class="ui.root()" :style="rootStyle" @wheel="(e) => !props.scrollable && e.preventDefault()">
-      <RebornTransition :show="visible" name="fade" :duration="220" :appear="true" custom-class="absolute inset-0">
+      <RebornTransition :show="visible" name="fade" :duration="280" :appear="true"
+        custom-class="absolute inset-0 transform-gpu">
         <div :class="ui.backdrop()" @click="onBackdropClick" @touchmove.prevent />
       </RebornTransition>
 
-      <RebornTransition :show="visible" name="zoom-in" :duration="240" :appear="true" :custom-class="ui.shell()"
-        @after-enter="onOpened" @after-leave="onClosed">
-        <div ref="panelRef" :class="ui.panel()" :style="panelStyle" tabindex="-1" role="dialog" :aria-modal="true"
-          :aria-labelledby="props.title && !$slots.header ? titleId : undefined"
+      <RebornTransition :show="visible" name="zoom-in" :duration="250" :appear="true"
+        :custom-class="cn(ui.shell(), 'transform-gpu')" @after-enter="onOpened" @after-leave="onClosed">
+        <div ref="panelRef" :class="cn(ui.panel(), 'will-change-transform')" :style="panelStyle" tabindex="-1"
+          role="dialog" :aria-modal="true" :aria-labelledby="props.title && !$slots.header ? titleId : undefined"
           :aria-describedby="props.description && !$slots.header ? descriptionId : undefined" @click.stop>
           <div v-if="headerVisible" :class="ui.header()" @mousedown="onHeaderMouseDown">
             <div :class="ui.headerContent()">

@@ -34,8 +34,8 @@ export default {
     },
     fullscreen: {
       true: {
-        shell: "p-0",
-        panel: "h-full max-h-none max-w-none rounded-none border-0",
+        shell: "p-0!",
+        panel: "h-full max-h-none max-w-none rounded-none! border-0",
         header: "px-8 py-6",
         body: "min-h-0 flex-1 px-8 py-6",
         footer: "px-8 py-5",

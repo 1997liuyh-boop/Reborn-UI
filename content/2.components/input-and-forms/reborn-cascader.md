@@ -5,8 +5,11 @@ category: 表单与输入
 badge: New
 navigation:
   badges:
-    - label: UniApp
-      color: success
+    - label: 通
+      color: primary
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornCascaderDemo.vue" config="RebornCascaderConfig" componentId="reborn-cascader" :uniappFiles='["RebornCascader.vue", "reborn-cascader.config.ts"]'}

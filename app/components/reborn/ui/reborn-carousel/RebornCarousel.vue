@@ -7,7 +7,6 @@ import {
   Text,
   computed,
   defineComponent,
-  h,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -22,6 +21,7 @@ import theme from "./reborn-carousel.config";
 type CarouselArrowMode = "hover" | "always" | "never";
 type CarouselDirection = "horizontal" | "vertical";
 type CarouselIndicatorPosition = "inside" | "outside" | "none";
+type CarouselThumbsPosition = "top" | "bottom" | "left" | "right";
 type CarouselTrigger = "hover" | "click";
 type CarouselType = "default" | "card";
 
@@ -32,6 +32,12 @@ interface CarouselAutoplay {
 interface CarouselPagination {
   clickable?: boolean;
   type?: "line" | "dot" | "fraction" | "button";
+}
+
+interface CarouselThumbs {
+  position?: CarouselThumbsPosition;
+  loop?: boolean;
+  arrow?: CarouselArrowMode;
 }
 
 export interface RebornCarouselBreakpoint {
@@ -89,6 +95,7 @@ export interface RebornCarouselProps {
   autoSize?: boolean;
   /** 指示器偏移量 (px) */
   indicatorOffset?: number;
+  thumbs?: CarouselThumbs | null;
   /** 默认主题颜色 */
   color?: "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
   /** 自定义根节点类名 */
@@ -110,6 +117,17 @@ export interface RebornCarouselProps {
     indicator: ClassValue;
     indicatorActive: ClassValue;
     indicatorInactive: ClassValue;
+    thumbsShell: ClassValue;
+    thumbsPanel: ClassValue;
+    thumbsViewport: ClassValue;
+    thumbsTrack: ClassValue;
+    thumbsArrowGroup: ClassValue;
+    thumbsArrow: ClassValue;
+    thumb: ClassValue;
+    thumbActive: ClassValue;
+    thumbInactive: ClassValue;
+    thumbPreview: ClassValue;
+    thumbOverlay: ClassValue;
   }>;
 }
 
@@ -132,12 +150,13 @@ const props = withDefaults(defineProps<RebornCarouselProps>(), {
   grabCursor: false,
   autoSize: false,
   indicatorOffset: undefined,
+  thumbs: null,
   color: "primary",
   ui: () => ({}),
 });
 
-const modelValue = defineModel<number | null>("modelValue", {
-  default: null,
+const modelValue = defineModel<number>("modelValue", {
+  default: 0,
 });
 
 const emit = defineEmits<{
@@ -147,13 +166,20 @@ const emit = defineEmits<{
 const CarouselSlotItem = defineComponent({
   name: "CarouselSlotItem",
   props: {
-    vnode: {
-      type: Object as PropType<VNode>,
+    slotFn: {
+      type: Function as PropType<() => VNode[]>,
+      required: true,
+    },
+    index: {
+      type: Number,
       required: true,
     },
   },
   setup(localProps) {
-    return () => h(Fragment, [localProps.vnode]);
+    return () => {
+      const nodes = normalizeNodes(localProps.slotFn?.() ?? []);
+      return nodes[localProps.index] ?? null;
+    };
   },
 });
 
@@ -184,10 +210,14 @@ function normalizeNodes(nodes: VNode[] = []): VNode[] {
 }
 
 const slots = useSlots();
+const defaultSlotFn = computed(() => slots.default ?? (() => []));
 const b = tv(theme);
 const viewportRef = ref<HTMLDivElement | any>(null);
 const trackRef = ref<HTMLDivElement | null>(null);
+const thumbsViewportRef = ref<HTMLDivElement | null>(null);
+const mainRootRef = ref<HTMLDivElement | null>(null);
 const slideRefs = ref<HTMLElement[]>([]);
+const thumbRefs = ref<HTMLElement[]>([]);
 const currentIndex = ref(0);
 const currentRenderIndex = ref(0);
 const viewportWidth = ref(0);
@@ -204,10 +234,14 @@ let resizeObserver: ResizeObserver | null = null;
 let scrollFrame = 0;
 let autoplayTimer: any = null;
 let isUpdatingLayout = false;
+let isApplyingIndex = false;
 let layoutFrame = 0;
 
 /** 自动高度模式下的当前像素高度 */
 const currentSlideHeight = ref(0);
+/** 主图区域实际渲染尺寸，用于同步缩略图面板 */
+const mainRootSize = ref({ width: 0, height: 0 });
+let mainRootObserver: ResizeObserver | null = null;
 
 /**
  * 更新自动高度：计算当前活动项的实际高度并应用
@@ -233,6 +267,8 @@ function updateAutoHeight() {
 const slideNodes = computed(() => normalizeNodes(slots.default?.() ?? []));
 /** 真实幻灯片总数 */
 const slideCount = computed(() => slideNodes.value.length);
+
+
 
 // ============================
 // loop 克隆逻辑
@@ -260,8 +296,7 @@ const cloneCount = computed(() => {
  * 每个元素带 { node, realIndex, renderIndex, isClone }。
  */
 const renderSlides = computed(() => {
-  const nodes = slideNodes.value;
-  const count = nodes.length;
+  const count = slideCount.value;
 
   if (count === 0) {
     return [];
@@ -270,8 +305,7 @@ const renderSlides = computed(() => {
   const clones = cloneCount.value;
 
   if (clones === 0) {
-    return nodes.map((node, i) => ({
-      node,
+    return Array.from({ length: count }, (_, i) => ({
       realIndex: i,
       renderIndex: i,
       isClone: false,
@@ -279,7 +313,6 @@ const renderSlides = computed(() => {
   }
 
   const result: Array<{
-    node: VNode;
     realIndex: number;
     renderIndex: number;
     isClone: boolean;
@@ -289,7 +322,6 @@ const renderSlides = computed(() => {
   for (let i = 0; i < clones; i++) {
     const realIdx = ((count - clones + i) % count + count) % count;
     result.push({
-      node: nodes[realIdx]!,
       realIndex: realIdx,
       renderIndex: result.length,
       isClone: true,
@@ -299,7 +331,6 @@ const renderSlides = computed(() => {
   // 真实节点
   for (let i = 0; i < count; i++) {
     result.push({
-      node: nodes[i]!,
       realIndex: i,
       renderIndex: result.length,
       isClone: false,
@@ -310,7 +341,6 @@ const renderSlides = computed(() => {
   for (let i = 0; i < clones; i++) {
     const realIdx = i % count;
     result.push({
-      node: nodes[realIdx]!,
       realIndex: realIdx,
       renderIndex: result.length,
       isClone: true,
@@ -392,6 +422,19 @@ const showIndicators = computed(
 );
 /** 是否显示箭头 */
 const showArrows = computed(() => effectiveArrow.value !== "never" && slideCount.value > 1);
+const showThumbs = computed(() => !!props.thumbs && slideCount.value > 1);
+const thumbsPosition = computed<CarouselThumbsPosition>(() => props.thumbs?.position ?? "bottom");
+const thumbsArrow = computed<CarouselArrowMode>(() => props.thumbs?.arrow ?? "never");
+const thumbsLoop = computed(() => props.thumbs?.loop ?? false);
+const isThumbsVertical = computed(
+  () => thumbsPosition.value === "left" || thumbsPosition.value === "right",
+);
+const showThumbArrows = computed(
+  () => showThumbs.value && thumbsArrow.value !== "never" && slideCount.value > 1,
+);
+const isThumbsBeforeMain = computed(
+  () => thumbsPosition.value === "top" || thumbsPosition.value === "left",
+);
 
 /** 指示器是否为分页分数模式 */
 const isFractionPagination = computed(() => props.pagination?.type === "fraction");
@@ -424,6 +467,67 @@ const indicatorWrapperStyle = computed(() => {
 
   return {};
 });
+
+const thumbsShellClass = computed(() => {
+  if (!showThumbs.value) {
+    return "w-full";
+  }
+
+  return ui.value.thumbsShell({
+    class: cn(
+      isThumbsVertical.value && "items-start",
+    ),
+  });
+});
+
+const mainPaneClass = computed(() =>
+  cn("min-w-0", showThumbs.value && isThumbsVertical.value ? "flex-1" : "w-full"),
+);
+
+const thumbsPanelClass = computed(() =>
+  ui.value.thumbsPanel({
+    class: cn(
+      isThumbsBeforeMain.value ? "order-first" : "order-last",
+      isThumbsVertical.value ? "w-24 flex-col self-stretch md:w-28" : "w-full flex-col",
+    ),
+  }),
+);
+
+const thumbsPanelStyle = computed(() => {
+  if (!showThumbs.value) {
+    return undefined;
+  }
+
+  if (isThumbsVertical.value) {
+    // left/right：缩略图高度跟随主图高度
+    const h = mainRootSize.value.height;
+    return h > 0 ? { height: `${h}px` } : undefined;
+  }
+
+  // top/bottom：缩略图宽度跟随主图宽度
+  const w = mainRootSize.value.width;
+  return w > 0 ? { width: `${w}px` } : undefined;
+});
+
+const thumbsViewportClass = computed(() =>
+  ui.value.thumbsViewport({
+    class: cn(
+      isThumbsVertical.value ? "flex-1 overflow-y-auto overflow-x-hidden" : "overflow-x-auto overflow-y-hidden",
+    ),
+  }),
+);
+
+const thumbsTrackClass = computed(() =>
+  ui.value.thumbsTrack({
+    class: cn(
+      isThumbsVertical.value ? "flex-col" : "min-w-max flex-row",
+    ),
+  }),
+);
+
+const thumbsArrowGroupClass = computed(() =>
+  ui.value.thumbsArrowGroup(),
+);
 
 /** 计算后的自动播放延迟时间 */
 const autoplayDelay = computed(() => {
@@ -507,6 +611,8 @@ const ui = computed(() => {
     motionBlur: effectiveMotionBlur.value,
     color: props.color,
     indicatorType: props.pagination?.type || "line",
+    thumbsPosition: thumbsPosition.value,
+    thumbsArrow: thumbsArrow.value,
   });
 
   return {
@@ -557,6 +663,28 @@ const ui = computed(() => {
       styles.slideActive({ class: cn(opts?.class, overrides.value.slideActive) }),
     slideInactive: (opts?: { class?: any }) =>
       styles.slideInactive({ class: cn(opts?.class, overrides.value.slideInactive) }),
+    thumbsShell: (opts?: { class?: any }) =>
+      styles.thumbsShell({ class: cn(opts?.class, overrides.value.thumbsShell) }),
+    thumbsPanel: (opts?: { class?: any }) =>
+      styles.thumbsPanel({ class: cn(opts?.class, overrides.value.thumbsPanel) }),
+    thumbsViewport: (opts?: { class?: any }) =>
+      styles.thumbsViewport({ class: cn(opts?.class, overrides.value.thumbsViewport) }),
+    thumbsTrack: (opts?: { class?: any }) =>
+      styles.thumbsTrack({ class: cn(opts?.class, overrides.value.thumbsTrack) }),
+    thumbsArrowGroup: (opts?: { class?: any }) =>
+      styles.thumbsArrowGroup({ class: cn(opts?.class, overrides.value.thumbsArrowGroup) }),
+    thumbsArrow: (opts?: { class?: any }) =>
+      styles.thumbsArrow({ class: cn(opts?.class, overrides.value.thumbsArrow) }),
+    thumb: (opts?: { class?: any }) =>
+      styles.thumb({ class: cn(opts?.class, overrides.value.thumb) }),
+    thumbActive: (opts?: { class?: any }) =>
+      styles.thumbActive({ class: cn(opts?.class, overrides.value.thumbActive) }),
+    thumbInactive: (opts?: { class?: any }) =>
+      styles.thumbInactive({ class: cn(opts?.class, overrides.value.thumbInactive) }),
+    thumbPreview: (opts?: { class?: any }) =>
+      styles.thumbPreview({ class: cn(opts?.class, overrides.value.thumbPreview) }),
+    thumbOverlay: (opts?: { class?: any }) =>
+      styles.thumbOverlay({ class: cn(opts?.class, overrides.value.thumbOverlay) }),
   };
 });
 
@@ -610,6 +738,15 @@ function setSlideRef(el: any, index: number) {
 
   const element = (el.$el || el) as HTMLElement;
   slideRefs.value[index] = element;
+}
+
+function setThumbRef(el: any, index: number) {
+  if (!el) {
+    return;
+  }
+
+  const element = (el.$el || el) as HTMLElement;
+  thumbRefs.value[index] = element;
 }
 
 /**
@@ -807,6 +944,7 @@ function applyIndex(
     return;
   }
 
+  isApplyingIndex = true;
   const nextIndex = setActiveIndex(index, {
     emitChange: options.emitChange,
     syncModel: options.syncModel,
@@ -815,6 +953,15 @@ function applyIndex(
   nextTick(() => {
     const renderIdx = realToRenderIndex(nextIndex);
     scrollToRenderIndex(renderIdx, options.behavior ?? "smooth");
+
+    // 针对平滑滚动，在滚动结束或一定时间后解除锁定
+    if ((options.behavior ?? "smooth") === "smooth") {
+      waitForScrollEnd(() => {
+        isApplyingIndex = false;
+      });
+    } else {
+      isApplyingIndex = false;
+    }
   });
 }
 
@@ -826,6 +973,26 @@ function goTo(index: number) {
   });
   // 手动跳转重置自动播放计时
   startAutoplay();
+}
+
+function navigateToSlide(index: number, allowWrap = false) {
+  if (slideCount.value <= 1) {
+    return;
+  }
+
+  const targetIndex = allowWrap
+    ? ((index % slideCount.value) + slideCount.value) % slideCount.value
+    : Math.min(Math.max(index, 0), slideCount.value - 1);
+
+  if (targetIndex === currentIndex.value) {
+    return;
+  }
+
+  if (props.loop) {
+    loopGoTo(targetIndex);
+  } else {
+    goTo(targetIndex);
+  }
 }
 
 /**
@@ -999,7 +1166,7 @@ let scrollTimeout: any = null;
  * 处理滚动事件触发的索引同步
  */
 function handleScroll() {
-  if (isJumping.value || (props.loop && isLoopTransitioning.value)) {
+  if (isJumping.value || isApplyingIndex || (props.loop && isLoopTransitioning.value)) {
     return;
   }
 
@@ -1142,10 +1309,97 @@ function handleIndicatorClick(index: number) {
   }
 }
 
+function handleThumbClick(index: number) {
+  navigateToSlide(index);
+}
+
+function handleThumbKeydown(index: number, event: KeyboardEvent) {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  event.preventDefault();
+  handleThumbClick(index);
+}
+
+function prevThumb() {
+  navigateToSlide(currentIndex.value - 1, thumbsLoop.value);
+}
+
+function nextThumb() {
+  navigateToSlide(currentIndex.value + 1, thumbsLoop.value);
+}
+
+function scrollThumbIntoView(index: number, behavior: ScrollBehavior = "smooth") {
+  const viewport = thumbsViewportRef.value;
+  const thumb = thumbRefs.value[index];
+
+  if (!viewport || !thumb) {
+    return;
+  }
+
+  // 手动计算滚动位置，避免使用 scrollIntoView 导致页面滚动
+  if (isThumbsVertical.value) {
+    const viewportHeight = viewport.clientHeight;
+    const thumbTop = thumb.offsetTop;
+    const thumbHeight = thumb.offsetHeight;
+    const scrollTop = thumbTop - (viewportHeight - thumbHeight) / 2;
+
+    viewport.scrollTo({
+      top: Math.max(0, scrollTop),
+      behavior,
+    });
+  } else {
+    const viewportWidth = viewport.clientWidth;
+    const thumbLeft = thumb.offsetLeft;
+    const thumbWidth = thumb.offsetWidth;
+    const scrollLeft = thumbLeft - (viewportWidth - thumbWidth) / 2;
+
+    viewport.scrollTo({
+      left: Math.max(0, scrollLeft),
+      behavior,
+    });
+  }
+}
+
+function getThumbClass(index: number) {
+  const isActive = index === currentIndex.value;
+
+  return ui.value.thumb({
+    class: cn(
+      isThumbsVertical.value
+        ? "aspect-[4/3] w-full"
+        : "aspect-[4/3] w-20 shrink-0 sm:w-24 md:w-28",
+      isActive ? ui.value.thumbActive() : ui.value.thumbInactive(),
+    ),
+  });
+}
+
+function getThumbPreviewClass(index: number) {
+  return ui.value.thumbPreview({
+    class: cn(
+      index === currentIndex.value ? "scale-100" : "scale-[0.96]",
+    ),
+  });
+}
+
 /** 是否可以跳转到上一页 */
 const canGoPrev = computed(() => props.loop || currentIndex.value > 0);
 /** 是否可以跳转到下一页 */
-const canGoNext = computed(() => props.loop || currentIndex.value < slideCount.value - 1);
+const canGoNext = computed(() => {
+  if (props.loop) {
+    return true;
+  }
+
+  // 非 loop 模式：检查是否已经显示了最后一项
+  const perView = effectiveSlidesPerView.value === "auto" ? 1 : Number(effectiveSlidesPerView.value);
+  const lastVisibleIndex = currentIndex.value + perView - 1;
+
+  // 如果最后一项已经显示，则不能继续切换
+  return lastVisibleIndex < slideCount.value - 1;
+});
+const canGoPrevThumb = computed(() => thumbsLoop.value || currentIndex.value > 0);
+const canGoNextThumb = computed(() => thumbsLoop.value || currentIndex.value < slideCount.value - 1);
 
 // ============================
 // 监听器 (Watchers)
@@ -1155,7 +1409,7 @@ const canGoNext = computed(() => props.loop || currentIndex.value < slideCount.v
 watch(
   () => modelValue.value,
   (value) => {
-    if (typeof value === "number" && value !== currentIndex.value) {
+    if (value !== currentIndex.value) {
       applyIndex(value, {
         behavior: "smooth",
         emitChange: false,
@@ -1183,6 +1437,7 @@ watch(
 /** 幻灯片内容（数量）变化时，同步 DOM 引用并重新修正滚动位置 */
 watch(slideCount, () => {
   slideRefs.value = slideRefs.value.slice(0, renderSlides.value.length);
+  thumbRefs.value = thumbRefs.value.slice(0, slideCount.value);
   nextTick(() => {
     updateViewportMainSize();
     updateAutoHeight();
@@ -1193,6 +1448,20 @@ watch(slideCount, () => {
     });
   });
 });
+
+watch(
+  () => [showThumbs.value, currentIndex.value, thumbsPosition.value],
+  () => {
+    if (!showThumbs.value) {
+      return;
+    }
+
+    nextTick(() => {
+      scrollThumbIntoView(currentIndex.value, "smooth");
+    });
+  },
+  { immediate: true },
+);
 
 /** 监听所有影响布局计算的响应式属性，发生变化时排期更新布局 */
 watch(
@@ -1259,6 +1528,18 @@ onMounted(() => {
     if (viewportRef.value) {
       resizeObserver.observe(viewportRef.value);
     }
+
+    // 监听主图根元素尺寸，同步到缩略图面板
+    if (mainRootRef.value) {
+      mainRootObserver = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        if (entry) {
+          const { width, height } = entry.contentRect;
+          mainRootSize.value = { width, height };
+        }
+      });
+      mainRootObserver.observe(mainRootRef.value);
+    }
   }
 
   /** 执行组件挂载后的首次对齐和高度同步 */
@@ -1289,6 +1570,7 @@ onBeforeUnmount(() => {
     window.removeEventListener("resize", resizeHandler);
   }
   resizeObserver?.disconnect();
+  mainRootObserver?.disconnect();
 });
 
 /** 暴露给外部调用的方法 */
@@ -1301,123 +1583,163 @@ defineExpose({
 
 <template>
   <div :class="ui.wrapper({ class: props.class })">
-    <div :class="ui.root()" :style="rootStyle" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-      <div ref="viewportRef" :class="[
-        ui.viewport(),
-        effectiveGrabCursor && 'cursor-grab',
-        effectiveGrabCursor && isDragging && 'cursor-grabbing'
-      ]" :style="viewportStyle" :data-direction="effectiveDirection" tabindex="0" @mousedown="() => {
-        if (effectiveGrabCursor) {
-          isDragging = true;
-          isJumping = false;
-          isLoopTransitioning = false;
-        }
-      }" @mouseup="isDragging = false" @touchstart="() => {
-          isDragging = true;
-          isJumping = false;
-          isLoopTransitioning = false;
-        }" @touchend="isDragging = false" @mouseleave="isHovering = false; isDragging = false"
-        @focusin="isFocused = true" @focusout="isFocused = false" @keydown="handleKeydown" @scroll="handleScroll"
-        @scrollend="handleScrollEnd">
-        <div ref="trackRef" :class="ui.track()" :style="trackStyle">
-          <div v-for="(item, renderIdx) in renderSlides"
-            :key="item.isClone ? `clone-${item.renderIndex}-${item.realIndex}` : `slide-${item.realIndex}`"
-            :ref="(el: any) => setSlideRef(el, renderIdx)" :class="getSlideClass(item.realIndex)" :style="[
-              slideSizeStyle,
-              {
-                scrollSnapAlign: 'center',
-                scrollSnapStop: 'always',
-              },
-            ]" :aria-hidden="item.isClone ? 'true' : undefined">
-            <div :class="ui.slideInner({ class: getSlideInnerClass() })">
-              <CarouselSlotItem :vnode="item.node" />
+    <div :class="thumbsShellClass">
+      <div v-if="showThumbs" :class="thumbsPanelClass" :style="thumbsPanelStyle">
+        <div ref="thumbsViewportRef" :class="thumbsViewportClass">
+          <div :class="thumbsTrackClass">
+            <div v-for="index in slideCount" :key="`thumb-${index - 1}`" :ref="(el: any) => setThumbRef(el, index - 1)"
+              :class="getThumbClass(index - 1)" :aria-current="(index - 1) === currentIndex ? 'true' : 'false'" role="button"
+              tabindex="0" @click="handleThumbClick(index - 1)" @keydown="(event) => handleThumbKeydown(index - 1, event)">
+              <div :class="getThumbPreviewClass(index - 1)">
+                <CarouselSlotItem :slotFn="defaultSlotFn" :index="index - 1" />
+              </div>
+              <div :class="ui.thumbOverlay({ class: (index - 1) === currentIndex ? 'opacity-40' : 'opacity-10' })" />
             </div>
           </div>
         </div>
+
+        <!-- 缩略图箭头使用绝对定位 -->
+        <div v-if="showThumbArrows" :class="thumbsArrowGroupClass">
+          <button type="button" :disabled="!canGoPrevThumb" :class="ui.thumbsArrow()" @click="prevThumb">
+            <Icon
+              :name="isThumbsVertical ? 'material-symbols:keyboard-arrow-up-rounded' : 'material-symbols:arrow-back-ios-new-rounded'"
+              class="size-4.5" />
+          </button>
+          <button type="button" :disabled="!canGoNextThumb" :class="ui.thumbsArrow()" @click="nextThumb">
+            <Icon
+              :name="isThumbsVertical ? 'material-symbols:keyboard-arrow-down-rounded' : 'material-symbols:arrow-forward-ios-rounded'"
+              class="size-4.5" />
+          </button>
+        </div>
       </div>
 
-      <div v-if="showArrows" :class="ui.arrowGroup()">
-        <slot name="prev" :prev="prev">
-          <button type="button" aria-label="上一项" :disabled="!canGoPrev" :class="ui.arrow()" @click="prev">
-            <Icon
-              :name="isVertical ? 'material-symbols:keyboard-arrow-up-rounded' : 'material-symbols:arrow-back-ios-new-rounded'"
-              :class="cn('size-5 transition-colors duration-200', !!canGoPrev && `active:text-${props.color}`)" />
-          </button>
-        </slot>
-        <slot name="next" :next="next">
-          <button type="button" aria-label="下一项" :disabled="!canGoNext" :class="ui.arrow()" @click="() => next(true)">
-            <Icon
-              :name="isVertical ? 'material-symbols:keyboard-arrow-down-rounded' : 'material-symbols:arrow-forward-ios-rounded'"
-              :class="cn('size-5 transition-colors duration-200', !!canGoNext && `active:text-${props.color}`)" />
-          </button>
-        </slot>
-      </div>
-
-      <div v-if="showIndicators && effectiveIndicatorPosition === 'inside'" :class="ui.indicatorWrapper()"
-        :style="indicatorWrapperStyle">
-        <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
-          <div v-if="isFractionPagination"
-            class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-white/60 bg-white/72 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
-            <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
-            <span class="mx-1 opacity-50">/</span>
-            <span>{{ slideCount }}</span>
+      <div :class="mainPaneClass">
+        <div ref="mainRootRef" :class="ui.root()" :style="rootStyle" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+          <div ref="viewportRef" :class="[
+            ui.viewport(),
+            effectiveGrabCursor && 'cursor-grab',
+            effectiveGrabCursor && isDragging && 'cursor-grabbing'
+          ]" :style="viewportStyle" :data-direction="effectiveDirection" tabindex="0" @mousedown="() => {
+            if (effectiveGrabCursor) {
+              isDragging = true;
+              isJumping = false;
+              isLoopTransitioning = false;
+            }
+          }" @mouseup="isDragging = false" @touchstart="() => {
+            isDragging = true;
+            isJumping = false;
+            isLoopTransitioning = false;
+          }" @touchend="isDragging = false" @mouseleave="isHovering = false; isDragging = false"
+            @focusin="isFocused = true" @focusout="isFocused = false" @keydown="handleKeydown" @scroll="handleScroll"
+            @scrollend="handleScrollEnd" @wheel="(e) => {
+              // 防止垂直模式下滚动穿透到父容器
+              if (isVertical.value) {
+                e.stopPropagation();
+              }
+            }">
+            <div ref="trackRef" :class="ui.track()" :style="trackStyle">
+              <div v-for="(item, renderIdx) in renderSlides"
+                :key="item.isClone ? `clone-${item.renderIndex}-${item.realIndex}` : `slide-${item.realIndex}`"
+                :ref="(el: any) => setSlideRef(el, renderIdx)" :class="getSlideClass(item.realIndex)" :style="[
+                  slideSizeStyle,
+                  {
+                    scrollSnapAlign: 'center',
+                    scrollSnapStop: 'always',
+                  },
+                ]" :aria-hidden="item.isClone ? 'true' : undefined">
+                <div :class="ui.slideInner({ class: getSlideInnerClass() })">
+                  <CarouselSlotItem :slotFn="defaultSlotFn" :index="item.realIndex" />
+                </div>
+              </div>
+            </div>
           </div>
-          <div v-else :class="ui.indicators()">
-            <template v-if="props.pagination?.type === 'button'">
-              <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-btn-${index}`"
+
+          <div v-if="showArrows" :class="ui.arrowGroup()">
+            <slot name="prev" :prev="prev">
+              <button type="button" aria-label="上一项" :disabled="!canGoPrev" :class="ui.arrow()" @click="prev">
+                <Icon
+                  :name="isVertical ? 'material-symbols:keyboard-arrow-up-rounded' : 'material-symbols:arrow-back-ios-new-rounded'"
+                  :class="cn('size-5 transition-colors duration-200', !!canGoPrev && `active:text-${props.color}`)" />
+              </button>
+            </slot>
+            <slot name="next" :next="next">
+              <button type="button" aria-label="下一项" :disabled="!canGoNext" :class="ui.arrow()"
+                @click="() => next(true)">
+                <Icon
+                  :name="isVertical ? 'material-symbols:keyboard-arrow-down-rounded' : 'material-symbols:arrow-forward-ios-rounded'"
+                  :class="cn('size-5 transition-colors duration-200', !!canGoNext && `active:text-${props.color}`)" />
+              </button>
+            </slot>
+          </div>
+
+          <div v-if="showIndicators && effectiveIndicatorPosition === 'inside'" :class="ui.indicatorWrapper()"
+            :style="indicatorWrapperStyle">
+            <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
+              <div v-if="isFractionPagination"
+                class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-white/60 bg-white/72 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
+                <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
+                <span class="mx-1 opacity-50">/</span>
+                <span>{{ slideCount }}</span>
+              </div>
+              <div v-else :class="ui.indicators()">
+                <template v-if="props.pagination?.type === 'button'">
+                  <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-btn-${index}`"
+                    type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+                      class: [
+                        index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                        index === currentIndex && `bg-${props.color}`,
+                        'rounded-full', // 圆形
+                      ],
+                    })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)">
+                    {{ index + 1 }}
+                  </button>
+                </template>
+                <button v-else v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-${index}`"
+                  type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+                    class: [
+                      index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                      index === currentIndex && props.pagination?.type === 'dot' && `bg-${props.color}`,
+                    ]
+                  })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
+              </div>
+            </slot>
+          </div>
+        </div>
+
+        <!-- outside 指示器在 mainPane 内部，但在 root 外部，确保不受 flex 影响 -->
+        <div v-if="showIndicators && effectiveIndicatorPosition === 'outside'" :class="ui.indicatorWrapper()"
+          :style="indicatorWrapperStyle">
+          <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
+            <div v-if="isFractionPagination"
+              class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
+              <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
+              <span class="mx-1 opacity-50">/</span>
+              <span>{{ slideCount }}</span>
+            </div>
+            <div v-else :class="ui.indicators()">
+              <template v-if="props.pagination?.type === 'button'">
+                <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-btn-${index}`"
+                  type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
+                    class: [
+                      index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
+                      index === currentIndex && `bg-${props.color}`,
+                      'rounded-full', // 圆形
+                    ],
+                  })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)">
+                  {{ index + 1 }}
+                </button>
+              </template>
+              <button v-else v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-${index}`"
                 type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
                   class: [
                     index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
-                    index === currentIndex && `bg-${props.color}`,
-                    'rounded-full', // 圆形
-                  ],
-                })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)">
-                {{ index + 1 }}
-              </button>
-            </template>
-            <button v-else v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-inside-${index}`"
-              type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
-                class: [
-                  index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
-                  index === currentIndex && props.pagination?.type === 'dot' && `bg-${props.color}`,
-                ]
-              })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
-          </div>
-        </slot>
+                    index === currentIndex && props.pagination?.type === 'dot' && `bg-${props.color}`,
+                  ]
+                })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
+            </div>
+          </slot>
+        </div>
       </div>
-    </div>
-
-    <div v-if="showIndicators && effectiveIndicatorPosition === 'outside'" :class="ui.indicatorWrapper()"
-      :style="indicatorWrapperStyle">
-      <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
-        <div v-if="isFractionPagination"
-          class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
-          <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
-          <span class="mx-1 opacity-50">/</span>
-          <span>{{ slideCount }}</span>
-        </div>
-        <div v-else :class="ui.indicators()">
-          <template v-if="props.pagination?.type === 'button'">
-            <button v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-btn-${index}`"
-              type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
-                class: [
-                  index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
-                  index === currentIndex && `bg-${props.color}`,
-                  'rounded-full', // 圆形
-                ],
-              })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)">
-              {{ index + 1 }}
-            </button>
-          </template>
-          <button v-else v-for="(_, index) in slideCount" :key="`reborn-carousel-indicator-outside-${index}`"
-            type="button" :aria-label="`切换到第 ${index + 1} 项`" :class="ui.indicator({
-              class: [
-                index === currentIndex ? ui.indicatorActive() : ui.indicatorInactive(),
-                index === currentIndex && props.pagination?.type === 'dot' && `bg-${props.color}`,
-              ]
-            })" @mouseenter="handleIndicatorEnter(index)" @click="handleIndicatorClick(index)" />
-        </div>
-      </slot>
     </div>
   </div>
 </template>

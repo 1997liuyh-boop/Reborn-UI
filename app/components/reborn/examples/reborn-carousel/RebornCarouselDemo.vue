@@ -15,6 +15,10 @@ const grabCursor = ref(true);
 const color = ref<"primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral">("primary");
 const paginationType = ref<"line" | "dot" | "fraction" | "button">("line");
 const indicatorOffset = ref<number>(16);
+const thumbsPosition = ref<"top" | "bottom" | "left" | "right">("bottom");
+const thumbsArrow = ref<"hover" | "always" | "never">("always");
+const thumbsLoop = ref(true);
+const thumbsShowcaseIndex = ref(0);
 
 const featureSlides = [
   {
@@ -86,6 +90,12 @@ const timelineSlides = [
   },
 ];
 
+const thumbsConfig = computed(() => ({
+  position: thumbsPosition.value,
+  loop: thumbsLoop.value,
+  arrow: thumbsArrow.value,
+}));
+
 const carouselCode = computed(() => {
   const props = [];
   if (carouselType.value !== "default") props.push(`type="${carouselType.value}"`);
@@ -103,6 +113,7 @@ const carouselCode = computed(() => {
   if (color.value !== "primary") props.push(`color="${color.value}"`);
   if (paginationType.value !== "line") props.push(`:pagination="{ clickable: true, type: '${paginationType.value}' }"`);
   if (indicatorOffset.value !== 16) props.push(`:indicator-offset="${indicatorOffset.value}"`);
+  props.push(`:thumbs="{ position: '${thumbsPosition.value}', loop: ${thumbsLoop.value}, arrow: '${thumbsArrow.value}' }"`);
 
   const propsStr = props.length > 0 ? "\n  " + props.join("\n  ") : "";
   return `<RebornCarousel v-model="activeIndex"${propsStr}\n>\n  <!-- slides content -->\n</RebornCarousel>`;
@@ -118,7 +129,7 @@ const copyToClipboard = () => {
 <template>
   <section class="max-w-full overflow-hidden space-y-6">
     <div
-      class="relative z-10 flex flex-col gap-8 rounded-[32px] border border-slate-200/50 bg-white/60 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40 dark:shadow-none">
+      class="relative z-10 flex flex-col gap-8  border border-slate-200/50 bg-white/60 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40 dark:shadow-none">
 
       <!-- Layout Settings -->
       <div class="space-y-5">
@@ -166,6 +177,25 @@ const copyToClipboard = () => {
               { label: '2 项 / 屏', value: 2 },
               { label: '3 项 / 屏', value: 3 },
               { label: '自动宽度', value: 'auto' }
+            ]" size="md" />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">Thumbs Position</span>
+            <RebornSelect v-model="thumbsPosition" :options="[
+              { label: 'Bottom', value: 'bottom' },
+              { label: 'Top', value: 'top' },
+              { label: 'Left', value: 'left' },
+              { label: 'Right', value: 'right' }
+            ]" size="md" />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">Thumbs Arrow</span>
+            <RebornSelect v-model="thumbsArrow" :options="[
+              { label: 'Always', value: 'always' },
+              { label: 'Hover', value: 'hover' },
+              { label: 'Never', value: 'never' }
             ]" size="md" />
           </div>
 
@@ -254,6 +284,10 @@ const copyToClipboard = () => {
             <RebornSwitch v-model="loop" size="md" />
           </div>
 
+          <div class="flex flex-col gap-1">
+            <span class="text-caption-md font-semibold text-slate-400 uppercase tracking-wider">Thumbs Loop</span>
+            <RebornSwitch v-model="thumbsLoop" size="md" />
+          </div>
 
         </div>
       </div>
@@ -265,7 +299,7 @@ const copyToClipboard = () => {
       :space-between="spaceBetween" :autoplay="autoplay ? { delay: 2600 } : false" :motion-blur="motionBlur"
       :pagination="{ clickable: true, type: paginationType }" :arrow="arrow" :indicator-position="indicatorPosition"
       :direction="direction" :centered-slides="centeredSlides" :loop="loop" :grab-cursor="grabCursor" :color="color"
-      :indicator-offset="indicatorOffset">
+      :indicator-offset="indicatorOffset" :thumbs="thumbsConfig">
       <div v-for="slide in featureSlides" :key="slide.title"
         :class="`flex h-full flex-col justify-between bg-linear-to-br ${slide.tone} p-7 text-white`">
         <div class="space-y-3">
@@ -287,6 +321,49 @@ const copyToClipboard = () => {
 
   <section class="max-w-full overflow-hidden space-y-4">
     <div class="space-y-2">
+      <p class="text-sm font-medium tracking-[0.28em] text-slate-400 uppercase">Thumbs Mode</p>
+      <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">Left-side thumbs work well for galleries and
+        modular content flows</h3>
+    </div>
+
+    <RebornCarousel v-model="thumbsShowcaseIndex" :slides-perview="1" :space-between="24"
+      :pagination="{ clickable: true, type: 'fraction' }" arrow="always" :indicator-position="indicatorPosition"
+      :thumbs="{ position: 'right', loop: true, arrow: 'hover' }" height="auto" loop color="warning">
+      <div v-for="(slide, index) in featureSlides" :key="`${slide.title}-thumbs`"
+        :class="`flex h-full flex-col justify-between  bg-linear-to-br ${slide.tone} p-8 text-white`">
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-3">
+            <p class="text-xs font-medium tracking-[0.28em] text-white/70 uppercase">
+              {{ slide.eyebrow }}
+            </p>
+            <h3 class="max-w-[14ch] text-3xl leading-tight font-semibold md:text-[2.25rem]">
+              {{ slide.title }}
+            </h3>
+          </div>
+          <span class="rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
+            0{{ index + 1 }}
+          </span>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+          <p class="max-w-[38ch] text-sm leading-7 text-white/82 md:text-base">
+            {{ slide.description }}
+          </p>
+          <div class="rounded-[28px] border border-white/15 bg-white/10 p-5 backdrop-blur-md">
+            <p class="text-xs uppercase tracking-[0.24em] text-white/55">Preview Notes</p>
+            <p class="mt-3 text-lg leading-7 text-white/88">
+              The thumbs rail stays synchronized with the main slide, which makes it useful for media galleries,
+              campaign
+              decks, and content-heavy showcases.
+            </p>
+          </div>
+        </div>
+      </div>
+    </RebornCarousel>
+  </section>
+
+  <section class="max-w-full overflow-hidden space-y-4">
+    <div class="space-y-2">
       <p class="text-sm font-medium tracking-[0.28em] text-slate-400 uppercase">基础卡片模式</p>
       <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">
         中心项更强，边缘项保留预览
@@ -297,7 +374,7 @@ const copyToClipboard = () => {
       :pagination="{ clickable: true, type: 'dot' }" arrow="always" indicator-position="outside" :motion-blur="true"
       :centered-slides="true" :autoplay="false" height="26rem" loop color="secondary">
       <div v-for="card in cardSlides" :key="card.title"
-        :class="`flex h-full w-full flex-col justify-between rounded-[32px] bg-linear-to-br ${card.tone} p-7 text-white`">
+        :class="`flex h-full w-full flex-col justify-between  bg-linear-to-br ${card.tone} p-7 text-white`">
         <div class="space-y-3">
           <span class="inline-flex w-fit rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
             {{ card.label }}
