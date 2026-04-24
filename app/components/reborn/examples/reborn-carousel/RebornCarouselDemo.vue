@@ -293,8 +293,6 @@ const copyToClipboard = () => {
       </div>
     </div>
 
-    <HeroBanner />
-
     <RebornCarousel v-model="activeIndex" :type="carouselType" :slides-perview="slidesPerView"
       :space-between="spaceBetween" :autoplay="autoplay ? { delay: 2600 } : false" :motion-blur="motionBlur"
       :pagination="{ clickable: true, type: paginationType }" :arrow="arrow" :indicator-position="indicatorPosition"
@@ -389,6 +387,8 @@ const copyToClipboard = () => {
       </div>
     </RebornCarousel>
   </section>
+
+  <HeroBanner />
 
   <section class="max-w-full overflow-hidden space-y-4">
     <div class="space-y-2">

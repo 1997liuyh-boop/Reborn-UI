@@ -501,18 +501,21 @@ const thumbsPanelStyle = computed(() => {
   if (isThumbsVertical.value) {
     // left/right：缩略图高度跟随主图高度
     const h = mainRootSize.value.height;
-    return h > 0 ? { height: `${h}px` } : undefined;
+    // 如果主图高度还未计算出来，使用最小高度避免全部显示
+    return h > 0 ? { height: `${h}px` } : { minHeight: '100px' };
   }
 
   // top/bottom：缩略图宽度跟随主图宽度
   const w = mainRootSize.value.width;
-  return w > 0 ? { width: `${w}px` } : undefined;
+  // 如果主图宽度还未计算出来，使用最小宽度避免全部显示
+  return w > 0 ? { width: `${w}px` } : { minWidth: '100px' };
 });
 
 const thumbsViewportClass = computed(() =>
   ui.value.thumbsViewport({
     class: cn(
       isThumbsVertical.value ? "flex-1 overflow-y-auto overflow-x-hidden" : "overflow-x-auto overflow-y-hidden",
+      "overflow-hidden", // 确保初始化时就隐藏溢出内容
     ),
   }),
 );
@@ -520,7 +523,7 @@ const thumbsViewportClass = computed(() =>
 const thumbsTrackClass = computed(() =>
   ui.value.thumbsTrack({
     class: cn(
-      isThumbsVertical.value ? "flex-col" : "min-w-max flex-row",
+      isThumbsVertical.value ? "flex-col w-full" : "flex-row", // 移除 min-w-max，使用 flex-1 或固定宽度
     ),
   }),
 );

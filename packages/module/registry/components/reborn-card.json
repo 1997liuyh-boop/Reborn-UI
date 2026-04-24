@@ -1,0 +1,18 @@
+{
+  "name": "reborn-card",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as RebornCard } from './RebornCard.vue'\r\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "RebornCard.vue",
+      "content": "<script setup lang=\"ts\">\r\nwithDefaults(defineProps<{\r\n  title?: string\r\n  padding?: boolean\r\n  customClass?: string\r\n  overflowVisible?: boolean\r\n}>(), {\r\n  padding: true,\r\n  customClass: '',\r\n  overflowVisible: false,\r\n})\r\n</script>\r\n\r\n<template>\r\n  <view class=\"flex flex-col gap-3\">\r\n    <slot name=\"title\">\r\n      <view v-if=\"title\" class=\"\r\n        text-sm font-medium uppercase tracking-wider text-slate-500\r\n        dark:text-slate-200\r\n      \">\r\n        {{ title }}\r\n      </view>\r\n    </slot>\r\n    <view class=\"\r\n        rounded-xl border border-slate-200 bg-white shadow-sm\r\n        dark:border-gray-700 dark:bg-gray-800 flex flex-col gap-3\r\n      \" :class=\"[padding ? 'p-4' : '', customClass, overflowVisible ? '' : 'overflow-hidden']\">\r\n      <slot />\r\n    </view>\r\n  </view>\r\n</template>\r\n",
+      "target": "uniapp"
+    }
+  ],
+  "fileCount": 2,
+  "contentHash": "2eb65d14d8308f17b82df89b14bd3843104b2c5d"
+}

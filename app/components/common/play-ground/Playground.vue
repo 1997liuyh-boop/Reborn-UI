@@ -216,6 +216,7 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                         </template>
                     </div>
                 </div>
+                <slot name="left"></slot>
             </div>
 
             <!-- ========== 右侧预览区 ========== -->

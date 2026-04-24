@@ -84,6 +84,7 @@ const ui = computed(() => {
 
 const imgRef = ref<HTMLImageElement | null>(null);
 const imgDimensions = ref({ width: 0, height: 0 });
+const naturalDimensions = ref({ width: 0, height: 0 });
 
 import { onMounted } from 'vue';
 onMounted(() => {
@@ -93,6 +94,7 @@ onMounted(() => {
 		isError.value = false;
 		const rect = imgRef.value.getBoundingClientRect();
 		imgDimensions.value = { width: rect.width, height: rect.height };
+		naturalDimensions.value = { width: imgRef.value.naturalWidth, height: imgRef.value.naturalHeight };
 	} else if (imgRef.value && imgRef.value.complete && imgRef.value.naturalWidth === 0) {
 		// 加载失败也是 complete，但没有宽高
 		isLoading.value = false;
@@ -167,6 +169,7 @@ function onLoad(e: any) {
 	if (imgRef.value) {
 		const rect = imgRef.value.getBoundingClientRect();
 		imgDimensions.value = { width: rect.width, height: rect.height };
+		naturalDimensions.value = { width: imgRef.value.naturalWidth, height: imgRef.value.naturalHeight };
 		// 立即更新 imgRect，确保放大镜使用最新的尺寸
 		imgRect.value = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
 	}
@@ -217,10 +220,155 @@ watch(() => props.src, () => {
 
 // 放大镜相关状态
 const showMagnifier = ref(false);
-const magnifierPosition = ref({ x: 0, y: 0 });
 const lensPosition = ref({ x: 0, y: 0 });
 const imgRect = ref({ top: 0, left: 0, width: 0, height: 0 });
-const currentZoom = ref(props.magnifierZoom);
+const previewState = ref({
+	width: 0,
+	height: 0,
+	backgroundWidth: 0,
+	backgroundHeight: 0,
+	backgroundX: 0,
+	backgroundY: 0,
+});
+
+function clamp(value: number, min: number, max: number) {
+	if (max < min) return min;
+	return Math.min(Math.max(value, min), max);
+}
+
+function getNumericSize(val: string | number | undefined | null, fallback: number) {
+	if (typeof val === "number" && Number.isFinite(val)) return val;
+
+	if (typeof val === "string") {
+		const trimmed = val.trim();
+		if (!trimmed) return fallback;
+		if (/^-?\d+(\.\d+)?(px)?$/.test(trimmed)) {
+			return parseFloat(trimmed);
+		}
+	}
+
+	return fallback;
+}
+
+function resolvePosition(mode?: string) {
+	switch (mode) {
+		case "top":
+			return { x: 0.5, y: 0 };
+		case "bottom":
+			return { x: 0.5, y: 1 };
+		case "left":
+			return { x: 0, y: 0.5 };
+		case "right":
+			return { x: 1, y: 0.5 };
+		case "top left":
+			return { x: 0, y: 0 };
+		case "top right":
+			return { x: 1, y: 0 };
+		case "bottom left":
+			return { x: 0, y: 1 };
+		case "bottom right":
+			return { x: 1, y: 1 };
+		case "center":
+		default:
+			return { x: 0.5, y: 0.5 };
+	}
+}
+
+function getRenderedContentRect(containerWidth: number, containerHeight: number) {
+	const naturalWidth = naturalDimensions.value.width || containerWidth;
+	const naturalHeight = naturalDimensions.value.height || containerHeight;
+
+	if (!naturalWidth || !naturalHeight) {
+		return {
+			left: 0,
+			top: 0,
+			width: containerWidth,
+			height: containerHeight,
+		};
+	}
+
+	if (props.mode === "scaleToFill") {
+		return {
+			left: 0,
+			top: 0,
+			width: containerWidth,
+			height: containerHeight,
+		};
+	}
+
+	if (props.mode === "aspectFit" || props.mode === "aspectFill") {
+		const scale = props.mode === "aspectFit"
+			? Math.min(containerWidth / naturalWidth, containerHeight / naturalHeight)
+			: Math.max(containerWidth / naturalWidth, containerHeight / naturalHeight);
+		const width = naturalWidth * scale;
+		const height = naturalHeight * scale;
+
+		return {
+			left: (containerWidth - width) / 2,
+			top: (containerHeight - height) / 2,
+			width,
+			height,
+		};
+	}
+
+	if (props.mode === "widthFix" || props.mode === "heightFix") {
+		return {
+			left: 0,
+			top: 0,
+			width: containerWidth,
+			height: containerHeight,
+		};
+	}
+
+	const position = resolvePosition(props.mode);
+	return {
+		left: (containerWidth - naturalWidth) * position.x,
+		top: (containerHeight - naturalHeight) * position.y,
+		width: naturalWidth,
+		height: naturalHeight,
+	};
+}
+
+function getVisibleContentRect(contentRect: { left: number; top: number; width: number; height: number }, containerWidth: number, containerHeight: number) {
+	const left = Math.max(0, contentRect.left);
+	const top = Math.max(0, contentRect.top);
+	const right = Math.min(containerWidth, contentRect.left + contentRect.width);
+	const bottom = Math.min(containerHeight, contentRect.top + contentRect.height);
+
+	if (right <= left || bottom <= top) {
+		return {
+			left: 0,
+			top: 0,
+			width: containerWidth,
+			height: containerHeight,
+		};
+	}
+
+	return {
+		left,
+		top,
+		width: right - left,
+		height: bottom - top,
+	};
+}
+
+const magnifierViewStyle = computed(() => ({
+	position: "fixed",
+	zIndex: 9999,
+	width: `${previewState.value.width || imgRect.value.width}px`,
+	height: `${previewState.value.height || imgRect.value.height}px`,
+	left: `${imgRect.value.left + imgRect.value.width + 16}px`,
+	top: `${imgRect.value.top}px`,
+}));
+
+const magnifierPreviewStyle = computed(() => ({
+	position: "absolute",
+	inset: "0",
+	backgroundImage: `url("${props.src}")`,
+	backgroundRepeat: "no-repeat",
+	backgroundSize: `${previewState.value.backgroundWidth}px ${previewState.value.backgroundHeight}px`,
+	backgroundPosition: `${previewState.value.backgroundX}px ${previewState.value.backgroundY}px`,
+}));
 
 // 放大镜鼠标移动处理
 function onMouseMove(e: MouseEvent) {
@@ -232,55 +380,69 @@ function onMouseMove(e: MouseEvent) {
 
 	const x = e.clientX - rect.left;
 	const y = e.clientY - rect.top;
+	const contentRect = getRenderedContentRect(rect.width, rect.height);
+	const visibleContentRect = getVisibleContentRect(contentRect, rect.width, rect.height);
 
-	// magnifierSize 直接控制透镜（遮罩层）大小
+	const zoom = props.magnifierZoom;
 	const lensWidth = props.magnifierSize;
 	const lensHeight = props.magnifierSize;
 
 	// 计算透镜位置（跟随鼠标中心）
-	let lensX = x - lensWidth / 2;
-	let lensY = y - lensHeight / 2;
+	let lensX: number;
+	let lensY: number;
 
-	// 边界限制
-	lensX = Math.max(0, Math.min(lensX, rect.width - lensWidth));
-	lensY = Math.max(0, Math.min(lensY, rect.height - lensHeight));
+	if (visibleContentRect.width <= lensWidth) {
+		lensX = visibleContentRect.left + (visibleContentRect.width - lensWidth) / 2;
+	} else {
+		lensX = clamp(
+			x - lensWidth / 2,
+			visibleContentRect.left,
+			visibleContentRect.left + visibleContentRect.width - lensWidth
+		);
+	}
+
+	if (visibleContentRect.height <= lensHeight) {
+		lensY = visibleContentRect.top + (visibleContentRect.height - lensHeight) / 2;
+	} else {
+		lensY = clamp(
+			y - lensHeight / 2,
+			visibleContentRect.top,
+			visibleContentRect.top + visibleContentRect.height - lensHeight
+		);
+	}
 
 	lensPosition.value = { x: lensX, y: lensY };
 
-	// magnifierZoom 直接控制倍率
-	const zoom = props.magnifierZoom;
-	currentZoom.value = zoom;
+	const viewWidth = getNumericSize(props.magnifierWidth, rect.width);
+	const viewHeight = getNumericSize(props.magnifierHeight, rect.height);
+	const imageX = clamp(x - contentRect.left, 0, contentRect.width);
+	const imageY = clamp(y - contentRect.top, 0, contentRect.height);
+	const backgroundWidth = contentRect.width * zoom;
+	const backgroundHeight = contentRect.height * zoom;
 
-	// 获取预览窗口的实际尺寸（用于对齐计算）
-	const vw = parseFloat(String(props.magnifierWidth)) || rect.width;
-	const vh = parseFloat(String(props.magnifierHeight)) || rect.height;
+	let bgX = viewWidth / 2 - imageX * zoom;
+	let bgY = viewHeight / 2 - imageY * zoom;
 
-	// 计算视野偏移：目标是让鼠标指向的点 (x, y) 尽量处于预览窗口中心
-	// 预览中心点在缩放后的坐标 = x * zoom, y * zoom
-	// 我们希望这个点位于窗口的 (vw/2, vh/2)
-	let bgX = vw / 2 - x * zoom;
-	let bgY = vh / 2 - y * zoom;
-
-	// 边界检查：确保预览窗口被图片填满（不露白）
-	const zw = rect.width * zoom;
-	const zh = rect.height * zoom;
-
-	// 限制 bgX 范围 [vw - zw, 0]
-	if (zw > vw) {
-		bgX = Math.min(0, Math.max(bgX, vw - zw));
+	if (backgroundWidth > viewWidth) {
+		bgX = clamp(bgX, viewWidth - backgroundWidth, 0);
 	} else {
-		// 如果缩放后的图片比窗口还小，则居中展示
-		bgX = (vw - zw) / 2;
+		bgX = (viewWidth - backgroundWidth) / 2;
 	}
 
-	// 限制 bgY 范围 [vh - zh, 0]
-	if (zh > vh) {
-		bgY = Math.min(0, Math.max(bgY, vh - zh));
+	if (backgroundHeight > viewHeight) {
+		bgY = clamp(bgY, viewHeight - backgroundHeight, 0);
 	} else {
-		bgY = (vh - zh) / 2;
+		bgY = (viewHeight - backgroundHeight) / 2;
 	}
 
-	magnifierPosition.value = { x: bgX, y: bgY };
+	previewState.value = {
+		width: viewWidth,
+		height: viewHeight,
+		backgroundWidth,
+		backgroundHeight,
+		backgroundX: bgX,
+		backgroundY: bgY,
+	};
 }
 
 function onMouseEnter() {
@@ -321,19 +483,9 @@ function onMouseLeave() {
 		<ClientOnly>
 			<Teleport to="body">
 				<div v-if="magnifier && showMagnifier && !isLoading && !isError" :class="ui.magnifierView()" :style="{
-					position: 'fixed',
-					zIndex: 9999,
-					width: getUnit(magnifierWidth) || `${imgRect.width}px`,
-					height: getUnit(magnifierHeight) || `${imgRect.height}px`,
-					left: `${imgRect.left + imgRect.width + 16}px`,
-					top: `${imgRect.top}px`,
+					...magnifierViewStyle
 				}">
-					<img :class="ui.magnifierViewImage()" :src="src" :style="{
-						width: `${imgRect.width * currentZoom}px`,
-						height: `${imgRect.height * currentZoom}px`,
-						left: `${magnifierPosition.x}px`,
-						top: `${magnifierPosition.y}px`
-					}" />
+					<div :class="ui.magnifierViewImage()" :style="magnifierPreviewStyle" />
 				</div>
 			</Teleport>
 		</ClientOnly>

@@ -1,0 +1,26 @@
+{
+  "name": "reborn-root-portal",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "import RebornRootPortal from './RebornRootPortal.vue'\r\nimport config from './reborn-root-portal.config'\r\n\r\nexport { RebornRootPortal, config }\r\nexport default RebornRootPortal\r\n"
+    },
+    {
+      "path": "reborn-root-portal.config.ts",
+      "content": "const config = {\r\n    slots: {\r\n        base: 'fixed inset-0 pointer-events-none z-[999]',\r\n        content: 'pointer-events-auto'\r\n    }\r\n} as const\r\n\r\nexport default config\r\n"
+    },
+    {
+      "path": "RebornRootPortal.vue",
+      "content": "<template>\r\n    <teleport to=\"body\">\r\n        <slot />\r\n    </teleport>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\n// RebornRootPortal Web Implementation\r\n</script>\r\n",
+      "target": "web"
+    },
+    {
+      "path": "RebornRootPortal.vue",
+      "content": "<script lang=\"ts\">\nexport default {\n  name: 'reborn-root-portal',\n  options: {\n    virtualHost: true,\n    addGlobalClass: true,\n    styleIsolation: 'shared'\n  }\n}\n</script>\n\n<script lang=\"ts\" setup>\n</script>\n\n<template>\n  <!-- #ifdef H5 -->\n  <!-- H5端使用 teleport -->\n  <teleport to=\"body\">\n    <!-- #endif -->\n    <!-- #ifdef MP-WEIXIN || MP-ALIPAY -->\n    <!-- #ifndef MP-DINGTALK -->\n    <!-- 小程序使用 root-portal -->\n    <root-portal>\n      <!-- #endif -->\n      <!-- #endif -->\n      <view>\n        <slot />\n      </view>\n      <!-- #ifdef MP-WEIXIN || MP-ALIPAY -->\n      <!-- #ifndef MP-DINGTALK -->\n    </root-portal>\n    <!-- #endif -->\n    <!-- #endif -->\n    <!-- #ifdef H5 -->\n  </teleport>\n  <!-- #endif -->\n</template>\n\n<!-- #ifdef APP-PLUS -->\n<script module=\"render\" lang=\"renderjs\">\nexport default {\n  mounted() {\n    if (this.$ownerInstance.$el) {\n      (document.querySelector('uni-app') || document.body).appendChild(this.$ownerInstance.$el)\n    }\n  },\n  beforeDestroy() {\n    if (this.$ownerInstance.$el) {\n      (document.querySelector('uni-app') || document.body).removeChild(this.$ownerInstance.$el)\n    }\n  }\n}\n</script>\n<!-- #endif -->\n",
+      "target": "uniapp"
+    }
+  ],
+  "fileCount": 4,
+  "contentHash": "9b676448b7d1b2c63e55a2ec8466e5274de8374d"
+}

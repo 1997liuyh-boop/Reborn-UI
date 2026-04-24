@@ -4,8 +4,8 @@ description: 常用于展示鼠标悬停时的提示信息。
 category: 导航
 navigation:
   badges:
-    - label: 新
-      color: primary
+    - label: web
+      color: info
   chip:
     label: NEW
     color: primary
@@ -19,15 +19,15 @@ navigation:
 
 ### Props
 
-| 属性名 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| `content` | 提示内容 | `string` | - |
-| `placement` | 出现方向与对齐方式 | `TooltipPlacement` | `'bottom'` |
-| `effect` | 主题效果 | `'dark' \| 'light'` | `'dark'` |
-| `arrow` | 是否显示箭头 | `boolean` | `true` |
-| `openDelay` | 打开延时 | `number` | `100` |
-| `closeDelay` | 关闭延时 | `number` | `100` |
-| `disabled` | 是否禁用 | `boolean` | `false` |
+| 属性名       | 说明               | 类型                | 默认值     |
+| ------------ | ------------------ | ------------------- | ---------- |
+| `content`    | 提示内容           | `string`            | -          |
+| `placement`  | 出现方向与对齐方式 | `TooltipPlacement`  | `'bottom'` |
+| `effect`     | 主题效果           | `'dark' \| 'light'` | `'dark'`   |
+| `arrow`      | 是否显示箭头       | `boolean`           | `true`     |
+| `openDelay`  | 打开延时           | `number`            | `100`      |
+| `closeDelay` | 关闭延时           | `number`            | `100`      |
+| `disabled`   | 是否禁用           | `boolean`           | `false`    |
 
 ### TooltipPlacement
 
@@ -38,9 +38,9 @@ navigation:
 
 ### Slots
 
-| 插槽名 | 说明 |
-| --- | --- |
-| `default` | 触发提示的元素 |
+| 插槽名    | 说明                                      |
+| --------- | ----------------------------------------- |
+| `default` | 触发提示的元素                            |
 | `content` | 自定义提示内容，优先级高于 `content` 属性 |
 
 ## 基础用法

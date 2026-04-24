@@ -17,6 +17,7 @@
     }">
     <div v-for="(img, index) in featureSlides" :key="index" class="w-full h-full flex items-center justify-center">
       <RebornImage :src="img" width="668" height="668" magnifier :magnifierZoom="3" :magnifierSize="150"
+        :magnifierWidth="500" :magnifierHeight="500"
         customClass="w-full h-full object-contain cursor-crosshair transition-opacity duration-300" />
     </div>
   </RebornCarousel>

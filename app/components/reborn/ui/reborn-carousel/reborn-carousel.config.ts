@@ -212,7 +212,7 @@ export default {
       top: {
         thumbsShell: "flex-col",
         thumbsPanel: "order-first w-full flex-col mb-5",
-        thumbsArrowGroup: "inset-x-0 top-1/2 translate-y-1/2 flex-row justify-between items-center",
+        thumbsArrowGroup: "inset-x-0 top-1/2 -translate-y-1/2 flex-row justify-between items-center",
       },
       // 底部位置：垂直排列，顶部间距，箭头垂直居中
       bottom: {

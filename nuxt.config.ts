@@ -111,6 +111,13 @@ export default defineNuxtConfig({
 
   fonts: {
     processCSSVariables: true,
+    providers: {
+      adobe: false,
+      bunny: false,
+      fontshare: false,
+      fontsource: false,
+      googleicons: false,
+    },
     families: [
       {
         name: "Geist",
