@@ -270,6 +270,18 @@
       "style": {
         "navigationBarTitleText": "NoticeBar Demo"
       }
+    },
+    {
+      "path": "pages/reborn-breadcrumb/RebornBreadcrumbDemo",
+      "style": {
+        "navigationBarTitleText": "Breadcrumb"
+      }
+    },
+    {
+      "path": "pages/reborn-watermark/RebornWatermarkDemo",
+      "style": {
+        "navigationBarTitleText": "Watermark"
+      }
     }
   ],
 

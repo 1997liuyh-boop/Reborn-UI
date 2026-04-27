@@ -5,7 +5,8 @@
       "Bash(npx vue-tsc *)",
       "Bash(npm run *)",
       "WebFetch(domain:element-plus.org)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(npx tsc *)"
     ]
   }
 }

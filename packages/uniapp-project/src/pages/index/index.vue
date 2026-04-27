@@ -15,6 +15,8 @@ const menuItems = [
       { label: '图片', icon: 'i-lucide-image', path: '/pages/reborn-image/RebornImageDemo' },
       { label: '徽章', icon: 'i-lucide-badge-check', path: '/pages/reborn-badge/RebornBadgeDemo' },
       { label: '根节点传送门', icon: 'i-lucide-arrow-right-left', path: '/pages/reborn-root-portal/RebornRootPortalDemo' },
+      { label: '面包屑', icon: 'i-lucide-arrow-right-left', path: '/pages/reborn-breadcrumb/RebornBreadcrumbDemo' },
+      { label: '水印', icon: 'i-lucide-arrow-right-left', path: '/pages/reborn-watermark/RebornWatermarkDemo' },
     ],
   },
   {

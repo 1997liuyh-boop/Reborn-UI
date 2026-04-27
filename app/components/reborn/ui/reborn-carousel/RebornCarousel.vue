@@ -423,6 +423,15 @@ const showIndicators = computed(
 /** 是否显示箭头 */
 const showArrows = computed(() => effectiveArrow.value !== "never" && slideCount.value > 1);
 const showThumbs = computed(() => !!props.thumbs && slideCount.value > 1);
+const isThumbsReady = computed(() => {
+  if (!showThumbs.value) return false;
+  if (isThumbsVertical.value) {
+    // left/right 模式：等待高度获取到
+    return mainRootSize.value.height > 0;
+  }
+  // top/bottom 模式：等待宽度获取到
+  return mainRootSize.value.width > 0;
+});
 const thumbsPosition = computed<CarouselThumbsPosition>(() => props.thumbs?.position ?? "bottom");
 const thumbsArrow = computed<CarouselArrowMode>(() => props.thumbs?.arrow ?? "never");
 const thumbsLoop = computed(() => props.thumbs?.loop ?? false);
@@ -619,75 +628,105 @@ const ui = computed(() => {
   });
 
   return {
-    wrapper: (opts?: { class?: any }) =>
-      styles.wrapper({ class: cn(opts?.class, overrides.value.wrapper) }),
-    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, overrides.value.root) }),
-    viewport: (opts?: { class?: any }) =>
-      styles.viewport({ class: cn(opts?.class, overrides.value.viewport) }),
-    track: (opts?: { class?: any }) =>
-      styles.track({ class: cn(opts?.class, overrides.value.track) }),
-    slide: (opts?: { class?: any }) =>
-      styles.slide({
+    wrapper: (opts: { class?: any } = {}) =>
+      styles.wrapper({ class: cn(opts.class, overrides.value.wrapper) }),
+    root: (opts: { class?: any } = {}) => styles.root({ class: cn(opts.class, overrides.value.root) }),
+    viewport: (opts: { class?: any } = {}) =>
+      styles.viewport({ class: cn(opts.class, overrides.value.viewport) }),
+    track: (opts: { class?: any } = {}) =>
+      styles.track({ class: cn(opts.class, overrides.value.track) }),
+    slide: (opts: { class?: any; active?: boolean } = {}) => {
+      const base = styles.slide({
         class: cn(
-          opts?.class,
+          opts.class,
           overrides.value.slide,
           effectiveHeight.value === "auto" && "h-auto",
           effectiveAutoSize.value && "!w-auto !h-auto self-center",
         ),
-      }),
-    slideInner: (opts?: { class?: any }) =>
+      });
+      if (opts.active === undefined) return base;
+      return cn(
+        base,
+        opts.active
+          ? styles.slideActive({ class: cn(overrides.value.slideActive) })
+          : styles.slideInactive({ class: cn(overrides.value.slideInactive) }),
+      );
+    },
+    slideInner: (opts: { class?: any } = {}) =>
       styles.slideInner({
         class: cn(
-          opts?.class,
+          opts.class,
           overrides.value.slideInner,
-          effectiveHeight.value === "auto" && "h-auto",
+          effectiveHeight.value === "auto" ? "h-auto" : "h-full",
           effectiveAutoSize.value && "!w-auto !h-auto inline-block",
         ),
       }),
-    arrowGroup: (opts?: { class?: any }) =>
-      styles.arrowGroup({ class: cn(opts?.class, overrides.value.arrowGroup) }),
-    arrow: (opts?: { class?: any }) =>
-      styles.arrow({ class: cn(opts?.class, overrides.value.arrow) }),
-    indicatorWrapper: (opts?: { class?: any }) =>
-      styles.indicatorWrapper({ class: cn(opts?.class, overrides.value.indicatorWrapper) }),
-    indicators: (opts?: { class?: any }) =>
-      styles.indicators({ class: cn(opts?.class, overrides.value.indicators) }),
-    indicator: (opts?: { class?: any }) =>
-      styles.indicator({ class: cn(opts?.class, overrides.value.indicator) }),
-    indicatorActive: (opts?: { class?: any }) =>
+    arrowGroup: (opts: { class?: any } = {}) =>
+      styles.arrowGroup({ class: cn(opts.class, overrides.value.arrowGroup) }),
+    arrow: (opts: { class?: any } = {}) =>
+      styles.arrow({ class: cn(opts.class, overrides.value.arrow) }),
+    indicatorWrapper: (opts: { class?: any } = {}) =>
+      styles.indicatorWrapper({ class: cn(opts.class, overrides.value.indicatorWrapper) }),
+    indicators: (opts: { class?: any } = {}) =>
+      styles.indicators({ class: cn(opts.class, overrides.value.indicators) }),
+    indicator: (opts: { class?: any } = {}) =>
+      styles.indicator({ class: cn(opts.class, overrides.value.indicator) }),
+    indicatorActive: (opts: { class?: any } = {}) =>
       styles.indicatorActive({
-        class: cn(opts?.class, overrides.value.indicatorActive),
+        class: cn(opts.class, overrides.value.indicatorActive),
       }),
-    indicatorInactive: (opts?: { class?: any }) =>
+    indicatorInactive: (opts: { class?: any } = {}) =>
       styles.indicatorInactive({
-        class: cn(opts?.class, overrides.value.indicatorInactive),
+        class: cn(opts.class, overrides.value.indicatorInactive),
       }),
-    slideActive: (opts?: { class?: any }) =>
-      styles.slideActive({ class: cn(opts?.class, overrides.value.slideActive) }),
-    slideInactive: (opts?: { class?: any }) =>
-      styles.slideInactive({ class: cn(opts?.class, overrides.value.slideInactive) }),
-    thumbsShell: (opts?: { class?: any }) =>
-      styles.thumbsShell({ class: cn(opts?.class, overrides.value.thumbsShell) }),
-    thumbsPanel: (opts?: { class?: any }) =>
-      styles.thumbsPanel({ class: cn(opts?.class, overrides.value.thumbsPanel) }),
-    thumbsViewport: (opts?: { class?: any }) =>
-      styles.thumbsViewport({ class: cn(opts?.class, overrides.value.thumbsViewport) }),
-    thumbsTrack: (opts?: { class?: any }) =>
-      styles.thumbsTrack({ class: cn(opts?.class, overrides.value.thumbsTrack) }),
-    thumbsArrowGroup: (opts?: { class?: any }) =>
-      styles.thumbsArrowGroup({ class: cn(opts?.class, overrides.value.thumbsArrowGroup) }),
-    thumbsArrow: (opts?: { class?: any }) =>
-      styles.thumbsArrow({ class: cn(opts?.class, overrides.value.thumbsArrow) }),
-    thumb: (opts?: { class?: any }) =>
-      styles.thumb({ class: cn(opts?.class, overrides.value.thumb) }),
-    thumbActive: (opts?: { class?: any }) =>
-      styles.thumbActive({ class: cn(opts?.class, overrides.value.thumbActive) }),
-    thumbInactive: (opts?: { class?: any }) =>
-      styles.thumbInactive({ class: cn(opts?.class, overrides.value.thumbInactive) }),
-    thumbPreview: (opts?: { class?: any }) =>
-      styles.thumbPreview({ class: cn(opts?.class, overrides.value.thumbPreview) }),
-    thumbOverlay: (opts?: { class?: any }) =>
-      styles.thumbOverlay({ class: cn(opts?.class, overrides.value.thumbOverlay) }),
+    slideActive: (opts: { class?: any } = {}) =>
+      styles.slideActive({ class: cn(opts.class, overrides.value.slideActive) }),
+    slideInactive: (opts: { class?: any } = {}) =>
+      styles.slideInactive({ class: cn(opts.class, overrides.value.slideInactive) }),
+    thumbsShell: (opts: { class?: any } = {}) =>
+      styles.thumbsShell({ class: cn(opts.class, overrides.value.thumbsShell) }),
+    thumbsPanel: (opts: { class?: any } = {}) =>
+      styles.thumbsPanel({ class: cn(opts.class, overrides.value.thumbsPanel) }),
+    thumbsViewport: (opts: { class?: any } = {}) =>
+      styles.thumbsViewport({ class: cn(opts.class, overrides.value.thumbsViewport) }),
+    thumbsTrack: (opts: { class?: any } = {}) =>
+      styles.thumbsTrack({ class: cn(opts.class, overrides.value.thumbsTrack) }),
+    thumbsArrowGroup: (opts: { class?: any } = {}) =>
+      styles.thumbsArrowGroup({ class: cn(opts.class, overrides.value.thumbsArrowGroup) }),
+    thumbsArrow: (opts: { class?: any } = {}) =>
+      styles.thumbsArrow({ class: cn(opts.class, overrides.value.thumbsArrow) }),
+    thumb: (opts: { class?: any; active?: boolean } = {}) => {
+      const base = styles.thumb({
+        class: cn(
+          opts.class,
+          overrides.value.thumb,
+          isThumbsVertical.value
+            ? "aspect-[4/3] w-full"
+            : "aspect-[4/3] w-20 shrink-0 sm:w-24 md:w-28",
+        ),
+      });
+      if (opts.active === undefined) return base;
+      return cn(
+        base,
+        opts.active
+          ? styles.thumbActive({ class: cn(overrides.value.thumbActive) })
+          : styles.thumbInactive({ class: cn(overrides.value.thumbInactive) }),
+      );
+    },
+    thumbActive: (opts: { class?: any } = {}) =>
+      styles.thumbActive({ class: cn(opts.class, overrides.value.thumbActive) }),
+    thumbInactive: (opts: { class?: any } = {}) =>
+      styles.thumbInactive({ class: cn(opts.class, overrides.value.thumbInactive) }),
+    thumbPreview: (opts: { class?: any; active?: boolean } = {}) =>
+      styles.thumbPreview({
+        class: cn(
+          opts.class,
+          overrides.value.thumbPreview,
+          opts.active !== undefined && (opts.active ? "scale-100" : "scale-[0.96]"),
+        ),
+      }),
+    thumbOverlay: (opts: { class?: any } = {}) =>
+      styles.thumbOverlay({ class: cn(opts.class, overrides.value.thumbOverlay) }),
   };
 });
 
@@ -1262,31 +1301,6 @@ function getVisualDistance(realIndex: number) {
 }
 
 /**
- * 获取幻灯片的外层容器类名，处理活动态、模糊和类型效果
- */
-function getSlideClass(realIndex: number) {
-  const isActive = realIndex === currentIndex.value;
-
-  return cn(
-    ui.value.slide(),
-    isActive ? ui.value.slideActive() : ui.value.slideInactive(),
-    effectiveHeight.value === "auto" && "h-auto",
-    effectiveAutoSize.value && "!w-auto !h-auto self-center",
-  );
-}
-
-/**
- * 获取幻灯片的内层内容容器类名，处理渲染优化和圆角修正
- */
-function getSlideInnerClass() {
-  return cn(
-    ui.value.slideInner(),
-    effectiveHeight.value === "auto" ? "h-auto" : "h-full",
-    effectiveAutoSize.value && "!w-auto !h-auto inline-block",
-  );
-}
-
-/**
  * 指示器悬停事件处理器
  */
 function handleIndicatorEnter(index: number) {
@@ -1365,27 +1379,6 @@ function scrollThumbIntoView(index: number, behavior: ScrollBehavior = "smooth")
   }
 }
 
-function getThumbClass(index: number) {
-  const isActive = index === currentIndex.value;
-
-  return ui.value.thumb({
-    class: cn(
-      isThumbsVertical.value
-        ? "aspect-[4/3] w-full"
-        : "aspect-[4/3] w-20 shrink-0 sm:w-24 md:w-28",
-      isActive ? ui.value.thumbActive() : ui.value.thumbInactive(),
-    ),
-  });
-}
-
-function getThumbPreviewClass(index: number) {
-  return ui.value.thumbPreview({
-    class: cn(
-      index === currentIndex.value ? "scale-100" : "scale-[0.96]",
-    ),
-  });
-}
-
 /** 是否可以跳转到上一页 */
 const canGoPrev = computed(() => props.loop || currentIndex.value > 0);
 /** 是否可以跳转到下一页 */
@@ -1453,9 +1446,9 @@ watch(slideCount, () => {
 });
 
 watch(
-  () => [showThumbs.value, currentIndex.value, thumbsPosition.value],
-  () => {
-    if (!showThumbs.value) {
+  () => [showThumbs.value, isThumbsReady.value, currentIndex.value, thumbsPosition.value],
+  ([show, ready]) => {
+    if (!show || !ready) {
       return;
     }
 
@@ -1587,13 +1580,14 @@ defineExpose({
 <template>
   <div :class="ui.wrapper({ class: props.class })">
     <div :class="thumbsShellClass">
-      <div v-if="showThumbs" :class="thumbsPanelClass" :style="thumbsPanelStyle">
+      <div v-if="showThumbs && isThumbsReady" :class="thumbsPanelClass" :style="thumbsPanelStyle">
         <div ref="thumbsViewportRef" :class="thumbsViewportClass">
           <div :class="thumbsTrackClass">
             <div v-for="index in slideCount" :key="`thumb-${index - 1}`" :ref="(el: any) => setThumbRef(el, index - 1)"
-              :class="getThumbClass(index - 1)" :aria-current="(index - 1) === currentIndex ? 'true' : 'false'" role="button"
-              tabindex="0" @click="handleThumbClick(index - 1)" @keydown="(event) => handleThumbKeydown(index - 1, event)">
-              <div :class="getThumbPreviewClass(index - 1)">
+              :class="ui.thumb({ active: (index - 1) === currentIndex })"
+              :aria-current="(index - 1) === currentIndex ? 'true' : 'false'" role="button" tabindex="0"
+              @click="handleThumbClick(index - 1)" @keydown="(event) => handleThumbKeydown(index - 1, event)">
+              <div :class="ui.thumbPreview({ active: (index - 1) === currentIndex })">
                 <CarouselSlotItem :slotFn="defaultSlotFn" :index="index - 1" />
               </div>
               <div :class="ui.thumbOverlay({ class: (index - 1) === currentIndex ? 'opacity-40' : 'opacity-10' })" />
@@ -1617,7 +1611,8 @@ defineExpose({
       </div>
 
       <div :class="mainPaneClass">
-        <div ref="mainRootRef" :class="ui.root()" :style="rootStyle" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+        <div ref="mainRootRef" :class="ui.root()" :style="rootStyle" @mouseenter="isHovering = true"
+          @mouseleave="isHovering = false">
           <div ref="viewportRef" :class="[
             ui.viewport(),
             effectiveGrabCursor && 'cursor-grab',
@@ -1643,14 +1638,15 @@ defineExpose({
             <div ref="trackRef" :class="ui.track()" :style="trackStyle">
               <div v-for="(item, renderIdx) in renderSlides"
                 :key="item.isClone ? `clone-${item.renderIndex}-${item.realIndex}` : `slide-${item.realIndex}`"
-                :ref="(el: any) => setSlideRef(el, renderIdx)" :class="getSlideClass(item.realIndex)" :style="[
+                :ref="(el: any) => setSlideRef(el, renderIdx)"
+                :class="ui.slide({ active: item.realIndex === currentIndex })" :style="[
                   slideSizeStyle,
                   {
                     scrollSnapAlign: 'center',
                     scrollSnapStop: 'always',
                   },
                 ]" :aria-hidden="item.isClone ? 'true' : undefined">
-                <div :class="ui.slideInner({ class: getSlideInnerClass() })">
+                <div :class="ui.slideInner()">
                   <CarouselSlotItem :slotFn="defaultSlotFn" :index="item.realIndex" />
                 </div>
               </div>
