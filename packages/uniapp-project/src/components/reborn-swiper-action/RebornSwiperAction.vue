@@ -143,6 +143,20 @@ const suppressNextTap = ref(false)
 const isScrollLocked = ref(false)
 const lockDirection = ref<'x' | 'y' | ''>('')
 let scrollLockTimer: ReturnType<typeof setTimeout> | undefined
+let touchMoveCount = 0
+let verticalLockMoveCount = 0
+let pageScrollWatcherTimer: ReturnType<typeof setInterval> | undefined
+let pageScrollWatcherPending = false
+let pageScrollTopBaseline = 0
+let h5ScrollLockRegistered = false
+let h5TouchActive = false
+let h5GestureGuarding = false
+let h5TouchStartX = 0
+let h5TouchStartY = 0
+let h5ScrollPositionLocked = false
+let h5LockedScrollTop = 0
+let h5BodyOverflow = ''
+let h5DocumentOverflow = ''
 
 const leftRawWidth = computed(() => getActionsWidth(props.leftActions))
 const rightRawWidth = computed(() => getActionsWidth(props.rightActions))
@@ -164,7 +178,7 @@ const contentStyle = computed(() => {
   const timingFunction = isClosing ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.22, 1, 0.36, 1)'
   const duration = isDragging.value ? 0 : (isClosing ? props.closeDuration : props.duration)
 
-  return `transform: translateX(${translateX.value}px); transition: transform ${duration}ms ${timingFunction};`
+  return `transform: translate3d(${translateX.value}px, 0, 0); transition: transform ${duration}ms ${timingFunction}; will-change: transform; touch-action: pan-y;`
 })
 
 const touchThresholdPx = computed(() => toPx(props.touchThreshold))
@@ -178,6 +192,13 @@ function toPx(value: number) {
   }
 
   return value
+}
+
+function isAppRuntime() {
+  // #ifdef APP
+  return true
+  // #endif
+  return false
 }
 
 /**
@@ -319,28 +340,86 @@ function isAtRevealBoundary(value: number) {
 /**
  * 判断是否已经出现滑块方向意图。只要往有操作区的一侧滑动，就优先交给滑块处理。
  */
-function hasSwipeIntent(diffX: number) {
-  const intentThreshold = 1
+function hasSwipeIntent(diffX: number, diffY = 0) {
+  const absX = Math.abs(diffX)
+  const intentThreshold = getSwipeIntentThreshold()
+
+  if (absX < intentThreshold || !isSwipeSlopeAllowed(absX, diffY)) {
+    return false
+  }
 
   if (diffX < 0 && (hasRightActions.value || openedSide.value === 'left')) {
-    return Math.abs(diffX) >= intentThreshold
+    return true
   }
 
   if (diffX > 0 && (hasLeftActions.value || openedSide.value === 'right')) {
-    return diffX >= intentThreshold
+    return true
   }
 
   return false
+}
+
+function getSwipeIntentThreshold() {
+  return Math.max(8, Math.min(16, touchThresholdPx.value * 1.4))
+}
+
+function isSwipeSlopeAllowed(absX: number, diffY: number) {
+  const verticalDistance = Math.abs(diffY)
+
+  if (verticalDistance <= getSwipeIntentThreshold()) {
+    return true
+  }
+
+  if (diffY < 0) {
+    return absX >= verticalDistance * 1.15
+  }
+
+  const ratio = Math.max(1.2, props.directionRatio)
+
+  return absX * ratio >= verticalDistance
+}
+
+function hasSwipeDirection(diffX: number) {
+  return (diffX < 0 && (hasRightActions.value || openedSide.value === 'left'))
+    || (diffX > 0 && (hasLeftActions.value || openedSide.value === 'right'))
+}
+
+/**
+ * App 基座在方向未确认的前几帧容易先触发页面滚动；有横向分量时先保留给滑块判定。
+ */
+function shouldDeferVerticalForSwipe(diffX: number, diffY: number) {
+  const absX = Math.abs(diffX)
+  const absY = Math.abs(diffY)
+  const intentThreshold = getSwipeIntentThreshold()
+
+  if (!hasSwipeDirection(diffX) || absX < intentThreshold * 0.5) {
+    return false
+  }
+
+  if (hasSwipeIntent(diffX, diffY)) {
+    return true
+  }
+
+  return absY < intentThreshold && isSwipeSlopeAllowed(absX, diffY)
 }
 
 /**
  * 判断本次手势是否已经满足横向滑动条件。
  */
 function shouldLockHorizontal(diffX: number, diffY: number) {
-  const absX = Math.abs(diffX)
-  const threshold = touchThresholdPx.value
+  return hasSwipeIntent(diffX, diffY)
+}
 
-  return hasSwipeIntent(diffX) || (absX >= threshold * 0.6 && !shouldLockVertical(diffX, diffY))
+function shouldUpgradeVerticalToHorizontal(diffX: number, diffY: number) {
+  if (!shouldLockHorizontal(diffX, diffY)) {
+    return false
+  }
+
+  const absY = Math.abs(diffY)
+  const moveDistanceLimit = Math.max(touchThresholdPx.value * 3, getSwipeIntentThreshold() * 2.2)
+  const moveCountLimit = 2
+
+  return touchMoveCount - verticalLockMoveCount <= moveCountLimit && absY <= moveDistanceLimit
 }
 
 /**
@@ -352,7 +431,10 @@ function shouldLockVertical(diffX: number, diffY: number) {
   const threshold = touchThresholdPx.value
   const verticalDeadZone = threshold * 0.8
 
-  return absY >= threshold && absX <= verticalDeadZone && !hasSwipeIntent(diffX)
+  return absY >= threshold
+    && absX <= verticalDeadZone
+    && !hasSwipeIntent(diffX, diffY)
+    && !shouldDeferVerticalForSwipe(diffX, diffY)
 }
 
 /**
@@ -363,9 +445,138 @@ function preventHorizontalGesture(event: any) {
     event.preventDefault()
   }
 
+  stopGesturePropagation(event)
+}
+
+/**
+ * App 基座中页面滚动层也可能继续接收 touchmove，横向手势确认后需要截断传播。
+ */
+function stopGesturePropagation(event: any) {
   if (event.stopPropagation) {
     event.stopPropagation()
   }
+
+  if (event.stopImmediatePropagation) {
+    event.stopImmediatePropagation()
+  }
+}
+
+function getH5ScrollTop() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return 0
+  }
+
+  const scroller = document.scrollingElement || document.documentElement || document.body
+  return window.pageYOffset || scroller?.scrollTop || document.body?.scrollTop || 0
+}
+
+function holdH5ScrollPosition() {
+  if (!isAppRuntime() || typeof window === 'undefined' || typeof document === 'undefined') {
+    return
+  }
+
+  if (!h5ScrollPositionLocked) {
+    h5LockedScrollTop = getH5ScrollTop()
+    h5BodyOverflow = document.body?.style.overflow || ''
+    h5DocumentOverflow = document.documentElement?.style.overflow || ''
+
+    if (document.body) {
+      document.body.style.overflow = 'hidden'
+    }
+
+    if (document.documentElement) {
+      document.documentElement.style.overflow = 'hidden'
+    }
+
+    h5ScrollPositionLocked = true
+  }
+
+  const currentTop = getH5ScrollTop()
+  if (Math.abs(currentTop - h5LockedScrollTop) > 0) {
+    window.scrollTo(window.pageXOffset || 0, h5LockedScrollTop)
+  }
+}
+
+function releaseH5ScrollPosition() {
+  if (!h5ScrollPositionLocked || typeof document === 'undefined') {
+    return
+  }
+
+  if (document.body) {
+    document.body.style.overflow = h5BodyOverflow
+  }
+
+  if (document.documentElement) {
+    document.documentElement.style.overflow = h5DocumentOverflow
+  }
+
+  h5ScrollPositionLocked = false
+}
+
+function preventH5Scroll(event: TouchEvent) {
+  const touch = event.touches?.[0]
+
+  if (h5TouchActive && touch && !props.disabled) {
+    const diffX = touch.clientX - h5TouchStartX
+    const diffY = touch.clientY - h5TouchStartY
+
+    if (shouldLockHorizontal(diffX, diffY)) {
+      if (lockDirection.value !== 'x') {
+        lockHorizontalGesture()
+      }
+
+      if (event.cancelable !== false) {
+        event.preventDefault()
+      }
+      stopGesturePropagation(event)
+      holdH5ScrollPosition()
+      applyHorizontalMove(diffX)
+      return
+    }
+
+    if (shouldLockVertical(diffX, diffY)) {
+      h5GestureGuarding = false
+      releaseH5ScrollPosition()
+      return
+    }
+  }
+
+  if (h5GestureGuarding) {
+    if (event.cancelable !== false) {
+      event.preventDefault()
+    }
+    stopGesturePropagation(event)
+    holdH5ScrollPosition()
+    return
+  }
+
+  if (!isScrollLocked.value && !isHorizontalMoving.value && lockDirection.value !== 'x') {
+    return
+  }
+
+  if (event.cancelable !== false) {
+    event.preventDefault()
+  }
+  stopGesturePropagation(event)
+  holdH5ScrollPosition()
+}
+
+function registerH5ScrollLock() {
+  if (h5ScrollLockRegistered || typeof document === 'undefined') {
+    return
+  }
+
+  document.addEventListener('touchmove', preventH5Scroll, { passive: false, capture: true })
+  h5ScrollLockRegistered = true
+}
+
+function unregisterH5ScrollLock() {
+  if (!h5ScrollLockRegistered || typeof document === 'undefined') {
+    return
+  }
+
+  document.removeEventListener('touchmove', preventH5Scroll, true)
+  h5ScrollLockRegistered = false
 }
 
 function lockPageScroll() {
@@ -375,6 +586,7 @@ function lockPageScroll() {
   }
 
   isScrollLocked.value = true
+  registerH5ScrollLock()
 }
 
 function releasePageScroll(delay = 0) {
@@ -385,16 +597,25 @@ function releasePageScroll(delay = 0) {
 
   if (delay <= 0) {
     isScrollLocked.value = false
+    h5TouchActive = false
+    h5GestureGuarding = false
+    releaseH5ScrollPosition()
+    unregisterH5ScrollLock()
     return
   }
 
   scrollLockTimer = setTimeout(() => {
     isScrollLocked.value = false
+    h5TouchActive = false
+    h5GestureGuarding = false
+    releaseH5ScrollPosition()
+    unregisterH5ScrollLock()
     scrollLockTimer = undefined
   }, delay)
 }
 
 function lockHorizontalGesture() {
+  h5GestureGuarding = false
   lockDirection.value = 'x'
   isDragging.value = true
   isHorizontalMoving.value = true
@@ -402,6 +623,73 @@ function lockHorizontalGesture() {
   suppressNextTap.value = true
   lockPageScroll()
   closeOtherInGroup()
+}
+
+function applyHorizontalMove(diffX: number) {
+  const nextTranslateX = startTranslateX.value + diffX
+  const isOpeningFarther = Math.abs(nextTranslateX) > Math.abs(startTranslateX.value)
+  const shouldUseResist = isOpeningFarther && !isAtRevealBoundary(startTranslateX.value)
+  const targetTranslateX = dampTranslate(shouldUseResist ? resistTranslate(nextTranslateX) : nextTranslateX)
+
+  dragTargetX.value = nextTranslateX
+  translateX.value = followTranslate(targetTranslateX, !isOpeningFarther)
+}
+
+function getViewportScrollTop(callback: (scrollTop: number) => void) {
+  uni.createSelectorQuery()
+    .selectViewport()
+    .scrollOffset((data) => {
+      const scrollData = data as { scrollTop?: number } | null
+      callback(scrollData?.scrollTop || 0)
+    })
+    .exec()
+}
+
+function startPageScrollWatcher() {
+  if (!props.closeOnPageScroll || pageScrollWatcherTimer) {
+    return
+  }
+
+  getViewportScrollTop((scrollTop) => {
+    pageScrollTopBaseline = scrollTop
+  })
+
+  pageScrollWatcherTimer = setInterval(() => {
+    if (!openedSide.value || !props.closeOnPageScroll) {
+      stopPageScrollWatcher()
+      return
+    }
+
+    if (pageScrollWatcherPending) {
+      return
+    }
+
+    pageScrollWatcherPending = true
+    getViewportScrollTop((scrollTop) => {
+      pageScrollWatcherPending = false
+
+      if (!openedSide.value || isHorizontalMoving.value) {
+        pageScrollTopBaseline = scrollTop
+        return
+      }
+
+      if (Math.abs(scrollTop - pageScrollTopBaseline) > 1) {
+        closeByPageScroll()
+        return
+      }
+
+      pageScrollTopBaseline = scrollTop
+    })
+  }, 80)
+}
+
+function stopPageScrollWatcher() {
+  if (pageScrollWatcherTimer) {
+    clearInterval(pageScrollWatcherTimer)
+    pageScrollWatcherTimer = undefined
+  }
+
+  pageScrollWatcherPending = false
 }
 
 /**
@@ -494,8 +782,10 @@ function updateOpenedSide(side: SwiperActionSide | '') {
 
   if (side) {
     markActiveInGroup()
+    startPageScrollWatcher()
   } else {
     clearActiveInGroup()
+    stopPageScrollWatcher()
   }
 
   if (previous === side) {
@@ -589,6 +879,14 @@ function onTouchStart(event: any) {
     return
   }
 
+  registerH5ScrollLock()
+  h5TouchActive = true
+  h5GestureGuarding = isAppRuntime()
+  h5TouchStartX = touch.clientX
+  h5TouchStartY = touch.clientY
+  if (h5GestureGuarding) {
+    holdH5ScrollPosition()
+  }
   startX.value = touch.clientX
   startY.value = touch.clientY
   startTranslateX.value = translateX.value
@@ -596,6 +894,8 @@ function onTouchStart(event: any) {
   isDragging.value = true
   isHorizontalMoving.value = false
   lockDirection.value = ''
+  touchMoveCount = 0
+  verticalLockMoveCount = 0
 }
 
 /**
@@ -613,15 +913,25 @@ function onTouchMove(event: any) {
 
   const diffX = touch.clientX - startX.value
   const diffY = touch.clientY - startY.value
+  touchMoveCount += 1
 
   if (!lockDirection.value) {
     if (shouldLockHorizontal(diffX, diffY)) {
       lockHorizontalGesture()
     } else if (shouldLockVertical(diffX, diffY)) {
       lockDirection.value = 'y'
+      verticalLockMoveCount = touchMoveCount
       isHorizontalMoving.value = false
-      releasePageScroll()
-      syncTranslate(openedSide.value)
+      if (scrollLockTimer) {
+        clearTimeout(scrollLockTimer)
+        scrollLockTimer = undefined
+      }
+      isScrollLocked.value = false
+      if (openedSide.value && props.closeOnPageScroll) {
+        closeByPageScroll()
+      } else {
+        syncTranslate(openedSide.value)
+      }
       return
     } else {
       return
@@ -629,7 +939,7 @@ function onTouchMove(event: any) {
   }
 
   if (lockDirection.value === 'y') {
-    if (shouldLockHorizontal(diffX, diffY)) {
+    if (shouldUpgradeVerticalToHorizontal(diffX, diffY)) {
       lockHorizontalGesture()
     } else {
       return
@@ -641,14 +951,7 @@ function onTouchMove(event: any) {
   }
 
   preventHorizontalGesture(event)
-
-  const nextTranslateX = startTranslateX.value + diffX
-  const isOpeningFarther = Math.abs(nextTranslateX) > Math.abs(startTranslateX.value)
-  const shouldUseResist = isOpeningFarther && !isAtRevealBoundary(startTranslateX.value)
-  const targetTranslateX = dampTranslate(shouldUseResist ? resistTranslate(nextTranslateX) : nextTranslateX)
-
-  dragTargetX.value = nextTranslateX
-  translateX.value = followTranslate(targetTranslateX, !isOpeningFarther)
+  applyHorizontalMove(diffX)
 }
 
 /**
@@ -811,6 +1114,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   releasePageScroll()
+  unregisterH5ScrollLock()
+  stopPageScrollWatcher()
   clearActiveInGroup()
 })
 
@@ -828,8 +1133,8 @@ defineExpose({
   <view :class="ui.root()" :style="customStyle" :data-instance-id="instanceId" :data-swiping="isHorizontalMoving"
     :data-scroll-locked="isScrollLocked" :data-disabled="disabled" :data-has-left-actions="hasLeftActions"
     :data-has-right-actions="hasRightActions" :data-opened-side="openedSide" :data-touch-threshold="touchThresholdPx"
-    @touchstart="swipeWxs.touchstart" @touchmove.stop.prevent="swipeWxs.touchmove" @touchend="swipeWxs.touchend"
-    @touchcancel="swipeWxs.touchcancel">
+    :data-direction-ratio="directionRatio" @touchstart="swipeWxs.touchstart" @touchmove="swipeWxs.touchmove"
+    @touchend="swipeWxs.touchend" @touchcancel="swipeWxs.touchcancel">
     <view v-if="hasLeftActions" :class="cn(ui.actions(), ui.leftActions())" :style="`width: ${leftWidth}px;`">
       <view v-for="(item, index) in leftActions" :key="item.key || index" :class="getActionClass(item)"
         :style="getActionStyle(item, 'left')" @tap.stop="onActionTap(item, index, 'left')">
@@ -897,7 +1202,8 @@ function getTouch(e) {
 }
 
 function getThreshold(dataset) {
-  var value = Number(dataset.touchThreshold || dataset.touchthreshold || 12)
+  var rawValue = dataset.touchThreshold || dataset.touchthreshold || 12
+  var value = rawValue - 0
 
   if (value > 0) {
     return value
@@ -906,21 +1212,84 @@ function getThreshold(dataset) {
   return 12
 }
 
-function hasSwipeIntent(diffX, dataset) {
-  var intentThreshold = 1
+function getDirectionRatio(dataset) {
+  var rawValue = dataset.directionRatio || dataset.directionratio || 2.4
+  var value = rawValue - 0
+
+  if (value > 0) {
+    return value
+  }
+
+  return 2.4
+}
+
+function getSwipeIntentThreshold(dataset) {
+  var threshold = getThreshold(dataset)
+
+  return Math.max(8, Math.min(16, threshold * 1.4))
+}
+
+function isSwipeSlopeAllowed(absX, diffY, dataset) {
+  var verticalDistance = Math.abs(diffY)
+
+  if (verticalDistance <= getSwipeIntentThreshold(dataset)) {
+    return true
+  }
+
+  if (diffY < 0) {
+    return absX >= verticalDistance * 1.15
+  }
+
+  var ratio = Math.max(1.2, getDirectionRatio(dataset))
+
+  return absX * ratio >= verticalDistance
+}
+
+function hasSwipeIntent(diffX, diffY, dataset) {
+  var absX = Math.abs(diffX)
+  var intentThreshold = getSwipeIntentThreshold(dataset)
   var openedSide = dataset.openedSide || dataset.openedside || ''
   var hasLeftActions = isTruthy(dataset.hasLeftActions || dataset.hasleftactions)
   var hasRightActions = isTruthy(dataset.hasRightActions || dataset.hasrightactions)
 
+  if (absX < intentThreshold || !isSwipeSlopeAllowed(absX, diffY, dataset)) {
+    return false
+  }
+
   if (diffX < 0 && (hasRightActions || openedSide === 'left')) {
-    return Math.abs(diffX) >= intentThreshold
+    return true
   }
 
   if (diffX > 0 && (hasLeftActions || openedSide === 'right')) {
-    return diffX >= intentThreshold
+    return true
   }
 
   return false
+}
+
+function hasSwipeDirection(diffX, dataset) {
+  var openedSide = dataset.openedSide || dataset.openedside || ''
+  var hasLeftActions = isTruthy(dataset.hasLeftActions || dataset.hasleftactions)
+  var hasRightActions = isTruthy(dataset.hasRightActions || dataset.hasrightactions)
+
+  return (diffX < 0 && (hasRightActions || openedSide === 'left'))
+    || (diffX > 0 && (hasLeftActions || openedSide === 'right'))
+}
+
+function shouldDeferVerticalForSwipe(diffX, diffY, dataset) {
+  var absX = Math.abs(diffX)
+  var absY = Math.abs(diffY)
+  var intentThreshold = getSwipeIntentThreshold(dataset)
+
+  if (!hasSwipeDirection(diffX, dataset) || absX < intentThreshold * 0.5) {
+    return false
+  }
+
+  if (hasSwipeIntent(diffX, diffY, dataset)) {
+    return true
+  }
+
+  return absY < intentThreshold && isSwipeSlopeAllowed(absX, diffY, dataset)
 }
 
 function shouldLockVertical(diffX, diffY, dataset) {
@@ -928,20 +1297,35 @@ function shouldLockVertical(diffX, diffY, dataset) {
   var absY = Math.abs(diffY)
   var threshold = getThreshold(dataset)
 
-  return absY >= threshold && absX <= threshold * 0.8 && !hasSwipeIntent(diffX, dataset)
+  return absY >= threshold
+    && absX <= threshold * 0.8
+    && !hasSwipeIntent(diffX, diffY, dataset)
+    && !shouldDeferVerticalForSwipe(diffX, diffY, dataset)
 }
 
 function shouldLockHorizontal(diffX, diffY, dataset) {
-  var absX = Math.abs(diffX)
-  var threshold = getThreshold(dataset)
+  return hasSwipeIntent(diffX, diffY, dataset)
+}
 
-  return hasSwipeIntent(diffX, dataset) || (absX >= threshold * 0.6 && !shouldLockVertical(diffX, diffY, dataset))
+function shouldUpgradeVerticalToHorizontal(diffX, diffY, dataset, state) {
+  if (!shouldLockHorizontal(diffX, diffY, dataset)) {
+    return false
+  }
+
+  var absY = Math.abs(diffY)
+  var threshold = getThreshold(dataset)
+  var moveDistanceLimit = Math.max(threshold * 3, getSwipeIntentThreshold(dataset) * 2.2)
+  var moveCountLimit = 2
+
+  return state.moveCount - state.verticalLockMoveCount <= moveCountLimit && absY <= moveDistanceLimit
 }
 
 function resetState(id) {
   gestureStates[id] = {
     active: false,
     lockDirection: '',
+    moveCount: 0,
+    verticalLockMoveCount: 0,
     startX: 0,
     startY: 0
   }
@@ -961,6 +1345,8 @@ module.exports = {
     gestureStates[id] = {
       active: true,
       lockDirection: '',
+      moveCount: 0,
+      verticalLockMoveCount: 0,
       startX: touch.clientX,
       startY: touch.clientY
     }
@@ -990,18 +1376,20 @@ module.exports = {
 
     var diffX = touch.clientX - state.startX
     var diffY = touch.clientY - state.startY
+    state.moveCount += 1
 
     if (!state.lockDirection) {
       if (shouldLockHorizontal(diffX, diffY, dataset)) {
         state.lockDirection = 'x'
       } else if (shouldLockVertical(diffX, diffY, dataset)) {
         state.lockDirection = 'y'
+        state.verticalLockMoveCount = state.moveCount
       } else {
         return true
       }
     }
 
-    if (state.lockDirection === 'y' && shouldLockHorizontal(diffX, diffY, dataset)) {
+    if (state.lockDirection === 'y' && shouldUpgradeVerticalToHorizontal(diffX, diffY, dataset, state)) {
       state.lockDirection = 'x'
     }
 

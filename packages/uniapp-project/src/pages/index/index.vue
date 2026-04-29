@@ -79,7 +79,7 @@ const menuItems = [
       { label: '拖拽排序', icon: 'i-lucide-move', path: '/pages/reborn-draggable/RebornDraggableDemo' },
       { label: '取色器', icon: 'i-lucide-palette', path: '/pages/reborn-color-picker/RebornColorPickerDemo' },
       { label: '签名', icon: 'i-lucide-pen-tool', path: '/pages/reborn-signature/RebornSignatureDemo' },
-      { label: '滑动操作', icon: 'i-lucide-swipe', path: '/pages/reborn-swiper-action/RebornSwiperActionDemo' },
+      { label: '滑动操作', icon: 'i-lucide-panel-right-open', path: '/pages/reborn-swiper-action/RebornSwiperActionDemo' },
     ],
   },
 ]
