@@ -4,6 +4,13 @@ description: 可为容器内任意元素附加点击烟花特效。
 category: 杂项
 tags: [css, tailwind, canvas]
 badge: New
+navigation:
+  badges:
+    - label: Web
+      color: info
+  chip:
+    label: NEW
+    color: primary
 ---
 
 ::ComponentViewer{demoFile="FireworksDemo.vue" config="FireworksConfig" componentId="fireworks" :componentFiles='["Fireworks.vue"]'}

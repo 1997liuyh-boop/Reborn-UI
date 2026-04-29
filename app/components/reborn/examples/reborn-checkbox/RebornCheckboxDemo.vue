@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
+import RebornCheckboxGroup from "~/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue";
 import type { CheckboxProps } from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
 import { checkboxColors, checkboxSizes } from "~/components/reborn/ui/reborn-checkbox/reborn-checkbox.config";
 
@@ -14,6 +15,9 @@ const disabledValue = ref(true);
 
 const selectedGroup = ref<string[]>(["系统更新"]);
 const groupOptions = ["系统更新", "产品迭代", "活动通知"];
+
+const selectedGroup2 = ref<string[]>(["Apple"]);
+const groupOptions2 = ["Apple", "Huawei", "Xiaomi"];
 
 const selectedPlans = ref<string[]>(["标准版"]);
 const plans = [
@@ -70,6 +74,16 @@ const plans = [
       </div>
 
       <div class="space-y-4">
+        <h3 class="text-base font-medium text-gray-400">Checkbox Group</h3>
+        {{ selectedGroup2 }}
+        <div class="grid gap-4">
+          <RebornCheckboxGroup v-model="selectedGroup2" :size="size" :color="color">
+            <RebornCheckbox v-for="option in groupOptions2" :key="option" :value="option" :label="option" />
+          </RebornCheckboxGroup>
+        </div>
+      </div>
+
+      <div class="space-y-4">
         <h3 class="text-base font-medium text-gray-400">组合视图</h3>
         {{ selectedPlans }}
         <div class="grid gap-4 md:grid-cols-2">
@@ -108,3 +122,4 @@ const plans = [
     </div>
   </div>
 </template>
+

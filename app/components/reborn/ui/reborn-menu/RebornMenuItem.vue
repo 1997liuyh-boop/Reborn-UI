@@ -95,7 +95,7 @@ function handleClick() {
     :style="itemStyle"
     role="menuitem"
     :aria-current="isActive ? 'page' : undefined"
-    @click="handleClick"
+    @click.stop="handleClick"
   >
     <div :class="itemUi.menuItemContent()">
       <div v-if="$slots.icon" :class="itemUi.menuItemIcon()">

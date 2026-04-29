@@ -3,8 +3,9 @@ import { tv } from "~/lib/tv";
 const menuModes = ["horizontal", "vertical"] as const;
 const menuTriggers = ["hover", "click"] as const;
 const menuColors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
+const expandTypes = ["normal", "popup"] as const;
 
-export { menuModes, menuTriggers, menuColors };
+export { menuModes, menuTriggers, menuColors, expandTypes };
 
 const theme = tv({
   slots: {
@@ -26,7 +27,7 @@ const theme = tv({
       horizontal: {
         menu: "flex-row items-center px-2 py-1",
         menuItem: "h-10 rounded-xl px-4",
-        subMenuPopup: "left-0 top-full mt-2",
+        subMenuPopup: "left-full top-0 ml-2",
         subMenuContent: "min-w-[200px]",
       },
       vertical: {
@@ -70,6 +71,13 @@ const theme = tv({
     opened: {
       true: {},
       false: {},
+    },
+    expandType: {
+      normal: {
+        subMenuPopup: "relative z-auto left-auto top-auto ml-0 mt-0 border-0 shadow-none p-0 bg-transparent overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out grid",
+        subMenuContent: "min-w-0 ml-4",
+      },
+      popup: {},
     },
   },
   compoundVariants: [
@@ -124,58 +132,16 @@ const theme = tv({
     },
     {
       active: false,
-      color: "primary",
       class: {
-        menuItem: "hover:bg-primary/10 hover:text-primary active:scale-[0.98] dark:hover:bg-primary/20",
+        menuItem: "hover:bg-gray-2 active:scale-[0.98]",
       },
     },
     {
-      active: false,
-      color: "secondary",
-      class: {
-        menuItem: "hover:bg-secondary/10 hover:text-secondary active:scale-[0.98] dark:hover:bg-secondary/20",
-      },
-    },
-    {
-      active: false,
-      color: "success",
-      class: {
-        menuItem: "hover:bg-success/10 hover:text-success active:scale-[0.98] dark:hover:bg-success/20",
-      },
-    },
-    {
-      active: false,
-      color: "info",
-      class: {
-        menuItem: "hover:bg-info/10 hover:text-info active:scale-[0.98] dark:hover:bg-info/20",
-      },
-    },
-    {
-      active: false,
-      color: "warning",
-      class: {
-        menuItem: "hover:bg-warning/10 hover:text-warning active:scale-[0.98] dark:hover:bg-warning/20",
-      },
-    },
-    {
-      active: false,
-      color: "error",
-      class: {
-        menuItem: "hover:bg-error/10 hover:text-error active:scale-[0.98] dark:hover:bg-error/20",
-      },
-    },
-    {
-      active: false,
-      color: "neutral",
-      class: {
-        menuItem: "hover:bg-neutral/10 hover:text-neutral active:scale-[0.98] dark:hover:bg-neutral/20",
-      },
-    },
-    {
-      mode: "horizontal",
+      mode: "vertical",
+      expandType: "normal",
       opened: true,
       class: {
-        menuItemArrow: "rotate-180",
+        menuItemArrow: "rotate-90",
       },
     },
   ],
@@ -186,6 +152,7 @@ const theme = tv({
     active: false,
     disabled: false,
     opened: false,
+    expandType: "popup" as (typeof expandTypes)[number],
   },
 });
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
-import { computed, inject, onBeforeUnmount, provide, type ComputedRef } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch, type ComputedRef } from "vue";
 import { cn } from "~/lib/utils";
 import theme from "./reborn-menu.config";
 
@@ -39,6 +39,8 @@ const menuContext = inject<{
   textColor: ComputedRef<string>;
   activeTextColor: ComputedRef<string>;
   color: ComputedRef<string>;
+  expandType: ComputedRef<"normal" | "popup">;
+  expandMutex: ComputedRef<boolean>;
   ui: any;
   handleSelect: (index: string, indexPath: string[]) => void;
   handleOpen: (index: string, indexPath: string[]) => void;
@@ -46,25 +48,47 @@ const menuContext = inject<{
   toggleSubMenu: (index: string, indexPath: string[]) => void;
   clearCloseTimer?: () => void;
   registerCloseTimer?: (timer: ReturnType<typeof setTimeout>) => void;
+  notifyResize?: () => void;
 }>("reborn-menu");
 
 const isActive = computed(() => menuContext?.active.value.includes(props.index) ?? false);
 const isOpened = computed(() => menuContext?.openedMenus.value.includes(props.index) ?? false);
 const indexPath = computed(() => [...(menuContext?.parentIndexPath.value ?? []), props.index]);
 
+/** 一级水平菜单不显示箭头 */
+const isRootHorizontal = computed(
+  () =>
+    menuContext?.mode.value === "horizontal" &&
+    (menuContext?.parentIndexPath.value ?? []).length === 0
+);
+
+/** 折叠模式或水平模式下子菜单强制浮层展开，不可平铺 */
+const effectiveExpandType = computed(() => {
+  if (menuContext?.collapse.value) return "popup";
+  if (menuContext?.mode.value === "horizontal") return "popup";
+  return menuContext?.expandType.value ?? "popup";
+});
+
+// 平铺展开使用 CSS Grid 动画，无需 JS 计算高度
+
 if (menuContext) {
   provide("reborn-menu", {
     ...menuContext,
     parentIndexPath: indexPath,
     collapse: computed(() => false),
+    /** 子级通知时，由于使用 CSS Grid 动画，直接向上冒泡即可 */
+    notifyResize: () => {
+      menuContext?.notifyResize?.();
+    },
   });
 }
 
 const subMenuUi = computed(() => {
   const styles = theme({
     mode: menuContext?.mode.value ?? "vertical",
-    collapse: false,
+    collapse: menuContext?.collapse.value ?? false,
     color: menuContext?.color.value ?? "primary",
+    expandType: effectiveExpandType.value,
   });
 
   const localOverrides = props.ui || {};
@@ -143,7 +167,7 @@ onBeforeUnmount(() => {
   <li
     :class="subMenuUi.subMenu({ class: props.class })"
     role="menuitem"
-    @click="handleClick"
+    @click.stop="handleClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
@@ -161,16 +185,18 @@ onBeforeUnmount(() => {
         <div :class="subMenuUi.menuItemTitle()">
           <slot name="title">{{ index }}</slot>
         </div>
-        <div :class="subMenuUi.menuItemArrow({ opened: isOpened })">
+        <div v-if="!isRootHorizontal" :class="subMenuUi.menuItemArrow({ opened: isOpened })">
           <Icon
-            :name="menuContext?.mode.value === 'horizontal' ? 'lucide:chevron-down' : 'lucide:chevron-right'"
+            name="lucide:chevron-right"
             class="size-4"
           />
         </div>
       </div>
     </div>
 
+    <!-- 浮层展开：保持 v-show -->
     <div
+      v-if="effectiveExpandType === 'popup'"
       v-show="isOpened"
       :class="subMenuUi.subMenuPopup()"
       :style="{
@@ -181,6 +207,23 @@ onBeforeUnmount(() => {
       <ul :class="subMenuUi.subMenuContent()" role="menu">
         <slot />
       </ul>
+    </div>
+
+    <!-- 平铺展开：CSS Grid 高度动画 -->
+    <div
+      v-else
+      :class="subMenuUi.subMenuPopup()"
+      :style="{
+        gridTemplateRows: isOpened ? '1fr' : '0fr',
+        backgroundColor: menuContext?.backgroundColor.value,
+        color: menuContext?.textColor.value,
+      }"
+    >
+      <div class="min-h-0">
+        <ul :class="subMenuUi.subMenuContent()" role="menu">
+          <slot />
+        </ul>
+      </div>
     </div>
   </li>
 </template>

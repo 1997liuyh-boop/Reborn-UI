@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useAttrs, watch } from "vue";
+import { computed, ref, useAttrs, watch, inject } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { checkboxColors, checkboxSizes } from "./reborn-checkbox.config";
@@ -40,9 +40,13 @@ const props = withDefaults(defineProps<CheckboxProps>(), {
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: boolean | CheckboxValue[]): void;
+  (e: "change", value: boolean | CheckboxValue[]): void;
 }>();
 
 const attrs = useAttrs();
+
+const checkboxGroup = inject<any>("RebornCheckboxGroup", null);
+const isGroup = computed(() => !!checkboxGroup);
 
 const {
   disabled: fieldGroupDisabled,
@@ -52,7 +56,12 @@ const {
 } = useFormInject(props);
 
 const localValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? false);
-const currentValue = computed(() => (props.modelValue !== undefined ? props.modelValue : localValue.value));
+const currentValue = computed(() => {
+  if (isGroup.value) {
+    return checkboxGroup.modelValue.value;
+  }
+  return (props.modelValue !== undefined ? props.modelValue : localValue.value)
+});
 const optionValue = computed<CheckboxValue>(() => props.value ?? props.label ?? "");
 
 const isChecked = computed(() => {
@@ -63,15 +72,34 @@ const isChecked = computed(() => {
   return Boolean(currentValue.value);
 });
 
-const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+const isDisabled = computed(() => {
+  if (isGroup.value) {
+    return checkboxGroup.disabled.value || props.disabled;
+  }
+  return fieldGroupDisabled.value || props.disabled
+});
+
+const computedSize = computed(() => {
+  if (isGroup.value && checkboxGroup.size?.value) {
+    return checkboxGroup.size.value;
+  }
+  return fieldGroupSize.value || props.size;
+});
+
+const computedColor = computed(() => {
+  if (isGroup.value && checkboxGroup.color?.value) {
+    return checkboxGroup.color.value;
+  }
+  return props.color;
+});
 
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
   const styles = b({
-    size: fieldGroupSize.value || props.size,
-    color: props.color,
-    error: isError.value,
+    size: computedSize.value,
+    color: computedColor.value,
+    error: isError.value || (isGroup.value && checkboxGroup.isError?.value),
   });
 
   return {
@@ -93,11 +121,17 @@ function updateValue(nextValue: boolean | CheckboxValue[]) {
     localValue.value = nextValue;
   }
   emit("update:modelValue", nextValue);
+  emit("change", nextValue);
 }
 
 function handleChange(event: Event) {
   const target = event.target as HTMLInputElement;
   const checked = target.checked;
+
+  if (isGroup.value) {
+    checkboxGroup.updateValue(optionValue.value);
+    return;
+  }
 
   if (Array.isArray(currentValue.value)) {
     const next = new Set(currentValue.value);
@@ -141,3 +175,4 @@ watch(
     </span>
   </label>
 </template>
+

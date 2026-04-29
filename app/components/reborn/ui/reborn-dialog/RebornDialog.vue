@@ -210,34 +210,12 @@ const dragOffset = ref({ x: 0, y: 0 });
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
 let bodyLockTimer: ReturnType<typeof setTimeout> | null = null;
-const initialPaddingState = { right: "", overflow: "" };
+const initialPaddingState = { right: "", overflow: "", htmlOverflow: "" };
 
 const isControlled = computed(() => props.open !== undefined);
 const mergedOpen = computed(() =>
   isControlled.value ? Boolean(props.open) : internalOpen.value,
 );
-const normalizedCloseButton = computed<ButtonProps | null>(() => {
-  if (props.close === false) {
-    return null;
-  }
-
-  const defaults: ButtonProps = {
-    color: "primary",
-    variant: "outline",
-    size: "sm",
-    circle: true,
-  };
-
-  if (props.close === true || props.close === undefined) {
-    return defaults;
-  }
-
-  return {
-    ...defaults,
-    ...props.close,
-    circle: props.close.circle ?? true,
-  };
-});
 
 const headerVisible = computed(() =>
   Boolean(slots.header || props.title || props.description),
@@ -529,6 +507,7 @@ watch(
     }
 
     const body = document.body;
+    const html = document.documentElement;
     if (bodyLockTimer) {
       clearTimeout(bodyLockTimer);
       bodyLockTimer = null;
@@ -536,13 +515,15 @@ watch(
 
     if (locked) {
       if (!body.hasAttribute("data-scroll-locked")) {
-        const scrollbarWidth = window.innerWidth - body.clientWidth;
+        const scrollbarWidth = window.innerWidth - html.clientWidth;
         initialPaddingState.right = body.style.paddingRight;
         initialPaddingState.overflow = body.style.overflow;
+        initialPaddingState.htmlOverflow = html.style.overflow;
         if (scrollbarWidth > 0) {
           body.style.paddingRight = `${scrollbarWidth}px`;
         }
         body.style.overflow = "hidden";
+        html.style.overflow = "hidden";
         body.setAttribute("data-scroll-locked", "1");
       } else {
         const lockCount = Number.parseInt(body.getAttribute("data-scroll-locked") || "1", 10);
@@ -560,6 +541,7 @@ watch(
       if (lockCount <= 0) {
         body.style.paddingRight = initialPaddingState.right;
         body.style.overflow = initialPaddingState.overflow;
+        html.style.overflow = initialPaddingState.htmlOverflow;
         body.removeAttribute("data-scroll-locked");
       } else {
         body.setAttribute("data-scroll-locked", `${lockCount}`);
@@ -598,11 +580,13 @@ onBeforeUnmount(() => {
 
     if (props.lockScroll && mounted.value) {
       const body = document.body;
+      const html = document.documentElement;
       if (body.hasAttribute("data-scroll-locked")) {
         const lockCount = Number.parseInt(body.getAttribute("data-scroll-locked") || "1", 10) - 1;
         if (lockCount <= 0) {
           body.style.paddingRight = initialPaddingState.right;
           body.style.overflow = initialPaddingState.overflow;
+          html.style.overflow = initialPaddingState.htmlOverflow;
           body.removeAttribute("data-scroll-locked");
         } else {
           body.setAttribute("data-scroll-locked", `${lockCount}`);
@@ -647,10 +631,7 @@ defineExpose({
               </slot>
             </div>
 
-            <RebornButton v-if="normalizedCloseButton" v-bind="normalizedCloseButton" :class="ui.close()"
-              @click="onCloseClick">
-              <Icon :name="props.closeIcon" />
-            </RebornButton>
+            <img v-if="close" src="~/assets/images/icon/close.png" alt="" :class="ui.close()" @click="onCloseClick" />
           </div>
 
           <div :class="ui.body()">
