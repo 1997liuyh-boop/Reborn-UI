@@ -59,6 +59,9 @@ const actionIconClass = 'size-[30rpx]'
 const actionTextClass = 'text-[26rpx] font-medium'
 const activeHistoryActionClass = 'border-primary bg-primary/10 text-primary'
 const inactiveHistoryActionClass = 'border-gray-3 bg-white text-gray-4 opacity-50'
+const penColorButtonClass = 'size-[52rpx] rounded-full ring-2 ring-transparent ring-offset-[4rpx] ring-offset-white transition-all duration-200'
+const activePenColorButtonClass = 'scale-110 ring-gray-4'
+const inactivePenColorButtonClass = 'opacity-90'
 
 const statusText = computed(() => {
     if (!signaturePath.value) {
@@ -204,12 +207,10 @@ function resetLandscapeSignature() {
             <view class="flex flex-row items-center justify-between gap-[24rpx]">
                 <text class="text-[28rpx] text-gray-6">画笔颜色</text>
                 <view class="flex flex-row flex-wrap justify-end gap-[12rpx]">
-                    <view v-for="item in penColors" :key="item"
-                        class="size-[52rpx] flex items-center justify-center rounded-full border border-solid border-gray-3 bg-white"
-                        :class="selectedPenColor === item ? 'border-primary ring-2 ring-primary/20' : ''"
-                        @tap="selectedPenColor = item">
-                        <view class="size-[34rpx] rounded-full" :style="{ backgroundColor: item }" />
-                    </view>
+                    <view v-for="item in penColors" :key="item" :class="[
+                        penColorButtonClass,
+                        selectedPenColor === item ? activePenColorButtonClass : inactivePenColorButtonClass,
+                    ]" :style="{ backgroundColor: item }" @tap="selectedPenColor = item" />
                 </view>
             </view>
 
