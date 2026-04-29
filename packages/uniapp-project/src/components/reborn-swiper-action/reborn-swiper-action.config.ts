@@ -27,11 +27,11 @@ export const swiperActionColorClasses: Record<SwiperActionColor, string> = {
 
 export default {
   slots: {
-    root: 'reborn-swiper-action relative w-full overflow-hidden rounded-[16rpx] bg-gray-2 dark:bg-gray-9',
-    actions: 'absolute inset-y-0 z-0 flex flex-row overflow-hidden',
-    leftActions: 'left-0 justify-start',
-    rightActions: 'right-0 justify-end',
-    content: 'relative z-10 w-full bg-white transition-transform dark:bg-gray-8',
+    root: 'reborn-swiper-action relative w-full overflow-hidden rounded-[16rpx] bg-white dark:bg-gray-8',
+    actions: 'absolute bottom-[1px] top-[1px] z-0 flex flex-row overflow-hidden',
+    leftActions: 'left-[1px] justify-start',
+    rightActions: 'right-[1px] justify-end',
+    content: 'relative z-10 w-full overflow-hidden rounded-[16rpx] bg-white shadow-[0_0_0_2px_rgba(255,255,255,1)] transition-transform [backface-visibility:hidden] dark:bg-gray-8 dark:shadow-[0_0_0_2px_rgba(51,51,51,1)]',
     action: 'flex h-full min-h-[112rpx] flex-col items-center justify-center gap-[8rpx] px-[28rpx] text-[26rpx] font-medium',
     icon: 'text-[34rpx] leading-none',
     text: 'whitespace-nowrap leading-none',

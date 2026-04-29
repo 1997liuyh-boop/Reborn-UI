@@ -142,7 +142,9 @@ const isSmoothClosing = ref(false)
 const suppressNextTap = ref(false)
 const isScrollLocked = ref(false)
 const lockDirection = ref<'x' | 'y' | ''>('')
+const dragStartOpenedSide = ref<SwiperActionSide | ''>('')
 let scrollLockTimer: ReturnType<typeof setTimeout> | undefined
+let dragStartSideResetTimer: ReturnType<typeof setTimeout> | undefined
 let touchMoveCount = 0
 let verticalLockMoveCount = 0
 let pageScrollWatcherTimer: ReturnType<typeof setInterval> | undefined
@@ -154,9 +156,6 @@ let h5GestureGuarding = false
 let h5TouchStartX = 0
 let h5TouchStartY = 0
 let h5ScrollPositionLocked = false
-let h5LockedScrollTop = 0
-let h5BodyOverflow = ''
-let h5DocumentOverflow = ''
 
 const leftRawWidth = computed(() => getActionsWidth(props.leftActions))
 const rightRawWidth = computed(() => getActionsWidth(props.rightActions))
@@ -172,13 +171,15 @@ const leftWidth = computed(() => Math.min(leftRawWidth.value, maxRevealWidth.val
 const rightWidth = computed(() => Math.min(rightRawWidth.value, maxRevealWidth.value))
 const hasLeftActions = computed(() => props.leftActions.length > 0)
 const hasRightActions = computed(() => props.rightActions.length > 0)
+const shouldShowLeftActions = computed(() => hasLeftActions.value && !(isDragging.value && dragStartOpenedSide.value === 'right'))
+const shouldShowRightActions = computed(() => hasRightActions.value && !(isDragging.value && dragStartOpenedSide.value === 'left'))
 
 const contentStyle = computed(() => {
   const isClosing = isTapClosing.value || isSmoothClosing.value
   const timingFunction = isClosing ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.22, 1, 0.36, 1)'
   const duration = isDragging.value ? 0 : (isClosing ? props.closeDuration : props.duration)
 
-  return `transform: translate3d(${translateX.value}px, 0, 0); transition: transform ${duration}ms ${timingFunction}; will-change: transform; touch-action: pan-y;`
+  return `transform: translate3d(${translateX.value}px, 0, 0); transition: transform ${duration}ms ${timingFunction}; will-change: transform; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; backface-visibility: hidden; -webkit-backface-visibility: hidden; contain: paint;`
 })
 
 const touchThresholdPx = computed(() => toPx(props.touchThreshold))
@@ -194,11 +195,8 @@ function toPx(value: number) {
   return value
 }
 
-function isAppRuntime() {
-  // #ifdef APP
-  return true
-  // #endif
-  return false
+function canUseH5TouchLock() {
+  return typeof window !== 'undefined' && typeof document !== 'undefined'
 }
 
 /**
@@ -326,6 +324,21 @@ function dampTranslate(value: number) {
   return value
 }
 
+function constrainOpenedSideTranslate(value: number) {
+  const crossSideLimit = Math.max(2, Math.min(8, touchThresholdPx.value * 0.5))
+  const crossSideDamping = 0.18
+
+  if (startTranslateX.value > 0 && value < 0) {
+    return Math.max(-crossSideLimit, value * crossSideDamping)
+  }
+
+  if (startTranslateX.value < 0 && value > 0) {
+    return Math.min(crossSideLimit, value * crossSideDamping)
+  }
+
+  return value
+}
+
 /**
  * 判断触摸起点是否已经在操作区边界附近。
  */
@@ -363,6 +376,10 @@ function getSwipeIntentThreshold() {
   return Math.max(8, Math.min(16, touchThresholdPx.value * 1.4))
 }
 
+function getSwipeVerticalTakeoverLimit() {
+  return Math.max(touchThresholdPx.value * 3, getSwipeIntentThreshold() * 2.2)
+}
+
 function isSwipeSlopeAllowed(absX: number, diffY: number) {
   const verticalDistance = Math.abs(diffY)
 
@@ -374,14 +391,16 @@ function isSwipeSlopeAllowed(absX: number, diffY: number) {
     return absX >= verticalDistance * 1.15
   }
 
-  const ratio = Math.max(1.2, props.directionRatio)
-
-  return absX * ratio >= verticalDistance
+  return verticalDistance <= getSwipeVerticalTakeoverLimit() && absX >= verticalDistance * 0.85
 }
 
 function hasSwipeDirection(diffX: number) {
   return (diffX < 0 && (hasRightActions.value || openedSide.value === 'left'))
     || (diffX > 0 && (hasLeftActions.value || openedSide.value === 'right'))
+}
+
+function shouldPreferOpenedSideSwipe(diffX: number) {
+  return Math.abs(startTranslateX.value) > 0 && hasSwipeDirection(diffX)
 }
 
 /**
@@ -407,6 +426,15 @@ function shouldDeferVerticalForSwipe(diffX: number, diffY: number) {
  * 判断本次手势是否已经满足横向滑动条件。
  */
 function shouldLockHorizontal(diffX: number, diffY: number) {
+  if (shouldPreferOpenedSideSwipe(diffX)) {
+    const absX = Math.abs(diffX)
+    const intentThreshold = Math.max(4, getSwipeIntentThreshold() * 0.45)
+
+    if (absX >= intentThreshold && isSwipeSlopeAllowed(absX, diffY)) {
+      return true
+    }
+  }
+
   return hasSwipeIntent(diffX, diffY)
 }
 
@@ -416,7 +444,7 @@ function shouldUpgradeVerticalToHorizontal(diffX: number, diffY: number) {
   }
 
   const absY = Math.abs(diffY)
-  const moveDistanceLimit = Math.max(touchThresholdPx.value * 3, getSwipeIntentThreshold() * 2.2)
+  const moveDistanceLimit = getSwipeVerticalTakeoverLimit()
   const moveCountLimit = 2
 
   return touchMoveCount - verticalLockMoveCount <= moveCountLimit && absY <= moveDistanceLimit
@@ -429,10 +457,24 @@ function shouldLockVertical(diffX: number, diffY: number) {
   const absX = Math.abs(diffX)
   const absY = Math.abs(diffY)
   const threshold = touchThresholdPx.value
+
+  if (shouldPreferOpenedSideSwipe(diffX)) {
+    const horizontalThreshold = Math.max(4, getSwipeIntentThreshold() * 0.45)
+    const verticalBreakoutDistance = Math.max(threshold * 1.35, getSwipeVerticalTakeoverLimit() * 1.35)
+    const isVerticalBreakout = absY >= Math.max(verticalBreakoutDistance, absX * 1.45)
+
+    if (absX >= horizontalThreshold && !isVerticalBreakout) {
+      return false
+    }
+  }
+
   const verticalDeadZone = threshold * 0.8
+  const isStraightVertical = absX <= verticalDeadZone
+  const isVerticalDominant = absY >= absX * 1.15
+  const isLongDownwardScroll = diffY > 0 && absY > getSwipeVerticalTakeoverLimit() && absY >= absX * 0.75
 
   return absY >= threshold
-    && absX <= verticalDeadZone
+    && (isStraightVertical || isVerticalDominant || isLongDownwardScroll)
     && !hasSwipeIntent(diffX, diffY)
     && !shouldDeferVerticalForSwipe(diffX, diffY)
 }
@@ -461,53 +503,17 @@ function stopGesturePropagation(event: any) {
   }
 }
 
-function getH5ScrollTop() {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return 0
-  }
-
-  const scroller = document.scrollingElement || document.documentElement || document.body
-  return window.pageYOffset || scroller?.scrollTop || document.body?.scrollTop || 0
-}
-
 function holdH5ScrollPosition() {
-  if (!isAppRuntime() || typeof window === 'undefined' || typeof document === 'undefined') {
+  if (!canUseH5TouchLock()) {
     return
   }
 
-  if (!h5ScrollPositionLocked) {
-    h5LockedScrollTop = getH5ScrollTop()
-    h5BodyOverflow = document.body?.style.overflow || ''
-    h5DocumentOverflow = document.documentElement?.style.overflow || ''
-
-    if (document.body) {
-      document.body.style.overflow = 'hidden'
-    }
-
-    if (document.documentElement) {
-      document.documentElement.style.overflow = 'hidden'
-    }
-
-    h5ScrollPositionLocked = true
-  }
-
-  const currentTop = getH5ScrollTop()
-  if (Math.abs(currentTop - h5LockedScrollTop) > 0) {
-    window.scrollTo(window.pageXOffset || 0, h5LockedScrollTop)
-  }
+  h5ScrollPositionLocked = true
 }
 
 function releaseH5ScrollPosition() {
-  if (!h5ScrollPositionLocked || typeof document === 'undefined') {
+  if (!h5ScrollPositionLocked) {
     return
-  }
-
-  if (document.body) {
-    document.body.style.overflow = h5BodyOverflow
-  }
-
-  if (document.documentElement) {
-    document.documentElement.style.overflow = h5DocumentOverflow
   }
 
   h5ScrollPositionLocked = false
@@ -519,6 +525,16 @@ function preventH5Scroll(event: TouchEvent) {
   if (h5TouchActive && touch && !props.disabled) {
     const diffX = touch.clientX - h5TouchStartX
     const diffY = touch.clientY - h5TouchStartY
+
+    if (lockDirection.value === 'x') {
+      if (event.cancelable !== false) {
+        event.preventDefault()
+      }
+      stopGesturePropagation(event)
+      holdH5ScrollPosition()
+      applyHorizontalMove(diffX)
+      return
+    }
 
     if (shouldLockHorizontal(diffX, diffY)) {
       if (lockDirection.value !== 'x') {
@@ -561,8 +577,16 @@ function preventH5Scroll(event: TouchEvent) {
   holdH5ScrollPosition()
 }
 
+function preventContentDefault(event: Event) {
+  if (event.cancelable !== false && event.preventDefault) {
+    event.preventDefault()
+  }
+
+  stopGesturePropagation(event)
+}
+
 function registerH5ScrollLock() {
-  if (h5ScrollLockRegistered || typeof document === 'undefined') {
+  if (h5ScrollLockRegistered || !canUseH5TouchLock()) {
     return
   }
 
@@ -571,7 +595,7 @@ function registerH5ScrollLock() {
 }
 
 function unregisterH5ScrollLock() {
-  if (!h5ScrollLockRegistered || typeof document === 'undefined') {
+  if (!h5ScrollLockRegistered || !canUseH5TouchLock()) {
     return
   }
 
@@ -626,7 +650,7 @@ function lockHorizontalGesture() {
 }
 
 function applyHorizontalMove(diffX: number) {
-  const nextTranslateX = startTranslateX.value + diffX
+  const nextTranslateX = constrainOpenedSideTranslate(startTranslateX.value + diffX)
   const isOpeningFarther = Math.abs(nextTranslateX) > Math.abs(startTranslateX.value)
   const shouldUseResist = isOpeningFarther && !isAtRevealBoundary(startTranslateX.value)
   const targetTranslateX = dampTranslate(shouldUseResist ? resistTranslate(nextTranslateX) : nextTranslateX)
@@ -690,6 +714,23 @@ function stopPageScrollWatcher() {
   }
 
   pageScrollWatcherPending = false
+}
+
+function clearDragStartOpenedSide(delay = 0) {
+  if (dragStartSideResetTimer) {
+    clearTimeout(dragStartSideResetTimer)
+    dragStartSideResetTimer = undefined
+  }
+
+  if (delay <= 0) {
+    dragStartOpenedSide.value = ''
+    return
+  }
+
+  dragStartSideResetTimer = setTimeout(() => {
+    dragStartOpenedSide.value = ''
+    dragStartSideResetTimer = undefined
+  }, delay)
 }
 
 /**
@@ -881,7 +922,7 @@ function onTouchStart(event: any) {
 
   registerH5ScrollLock()
   h5TouchActive = true
-  h5GestureGuarding = isAppRuntime()
+  h5GestureGuarding = canUseH5TouchLock() && (hasLeftActions.value || hasRightActions.value || !!openedSide.value)
   h5TouchStartX = touch.clientX
   h5TouchStartY = touch.clientY
   if (h5GestureGuarding) {
@@ -891,6 +932,7 @@ function onTouchStart(event: any) {
   startY.value = touch.clientY
   startTranslateX.value = translateX.value
   dragTargetX.value = translateX.value
+  dragStartOpenedSide.value = openedSide.value
   isDragging.value = true
   isHorizontalMoving.value = false
   lockDirection.value = ''
@@ -922,11 +964,13 @@ function onTouchMove(event: any) {
       lockDirection.value = 'y'
       verticalLockMoveCount = touchMoveCount
       isHorizontalMoving.value = false
+      h5GestureGuarding = false
       if (scrollLockTimer) {
         clearTimeout(scrollLockTimer)
         scrollLockTimer = undefined
       }
       isScrollLocked.value = false
+      releaseH5ScrollPosition()
       if (openedSide.value && props.closeOnPageScroll) {
         closeByPageScroll()
       } else {
@@ -961,6 +1005,7 @@ function onTouchEnd() {
   if (!isDragging.value) {
     isHorizontalMoving.value = false
     releasePageScroll()
+    clearDragStartOpenedSide()
     return
   }
 
@@ -973,11 +1018,13 @@ function onTouchEnd() {
     syncTranslate(openedSide.value)
     lockDirection.value = ''
     releasePageScroll()
+    clearDragStartOpenedSide()
     return
   }
 
   lockDirection.value = ''
   releasePageScroll(props.duration)
+  clearDragStartOpenedSide(props.duration)
 
   if (wasHorizontalMoving) {
     setTimeout(() => {
@@ -1024,6 +1071,7 @@ function onTouchCancel() {
   releasePageScroll()
   lockDirection.value = ''
   syncTranslate(openedSide.value)
+  clearDragStartOpenedSide()
 }
 
 /**
@@ -1083,8 +1131,26 @@ function getActionWidth(item: SwiperActionItem, side: SwiperActionSide) {
   return toPx(item.width || props.actionWidth)
 }
 
-function getActionStyle(item: SwiperActionItem, side: SwiperActionSide) {
-  return `width: ${getActionWidth(item, side)}px; ${item.customStyle || ''}`
+/**
+ * 仅给操作区外侧按钮补圆角，内侧保持直角，保证三端表现一致。
+ */
+function getActionOuterRadiusStyle(index: number, side: SwiperActionSide) {
+  const radius = `${toPx(14)}px`
+  const actions = side === 'left' ? props.leftActions : props.rightActions
+
+  if (side === 'left' && index === 0 && actions.length > 0) {
+    return `border-top-left-radius: ${radius}; border-bottom-left-radius: ${radius};`
+  }
+
+  if (side === 'right' && index === actions.length - 1 && actions.length > 0) {
+    return `border-top-right-radius: ${radius}; border-bottom-right-radius: ${radius};`
+  }
+
+  return ''
+}
+
+function getActionStyle(item: SwiperActionItem, side: SwiperActionSide, index: number) {
+  return `width: ${getActionWidth(item, side)}px; ${getActionOuterRadiusStyle(index, side)} ${item.customStyle || ''}`
 }
 
 watch(
@@ -1116,6 +1182,7 @@ onBeforeUnmount(() => {
   releasePageScroll()
   unregisterH5ScrollLock()
   stopPageScrollWatcher()
+  clearDragStartOpenedSide()
   clearActiveInGroup()
 })
 
@@ -1135,9 +1202,9 @@ defineExpose({
     :data-has-right-actions="hasRightActions" :data-opened-side="openedSide" :data-touch-threshold="touchThresholdPx"
     :data-direction-ratio="directionRatio" @touchstart="swipeWxs.touchstart" @touchmove="swipeWxs.touchmove"
     @touchend="swipeWxs.touchend" @touchcancel="swipeWxs.touchcancel">
-    <view v-if="hasLeftActions" :class="cn(ui.actions(), ui.leftActions())" :style="`width: ${leftWidth}px;`">
+    <view v-if="shouldShowLeftActions" :class="cn(ui.actions(), ui.leftActions())" :style="`width: ${leftWidth}px;`">
       <view v-for="(item, index) in leftActions" :key="item.key || index" :class="getActionClass(item)"
-        :style="getActionStyle(item, 'left')" @tap.stop="onActionTap(item, index, 'left')">
+        :style="getActionStyle(item, 'left', index)" @tap.stop="onActionTap(item, index, 'left')">
         <slot name="left-action" :item="item" :index="index" side="left" :ui="ui">
           <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
           <text :class="ui.text()">{{ item.text }}</text>
@@ -1145,9 +1212,9 @@ defineExpose({
       </view>
     </view>
 
-    <view v-if="hasRightActions" :class="cn(ui.actions(), ui.rightActions())" :style="`width: ${rightWidth}px;`">
+    <view v-if="shouldShowRightActions" :class="cn(ui.actions(), ui.rightActions())" :style="`width: ${rightWidth}px;`">
       <view v-for="(item, index) in rightActions" :key="item.key || index" :class="getActionClass(item)"
-        :style="getActionStyle(item, 'right')" @tap.stop="onActionTap(item, index, 'right')">
+        :style="getActionStyle(item, 'right', index)" @tap.stop="onActionTap(item, index, 'right')">
         <slot name="right-action" :item="item" :index="index" side="right" :ui="ui">
           <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
           <text :class="ui.text()">{{ item.text }}</text>
@@ -1156,7 +1223,8 @@ defineExpose({
     </view>
 
     <view :class="ui.content()" :style="contentStyle" @tap="onContentTap" @touchstart="onTouchStart"
-      @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchCancel">
+      @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchCancel"
+      @contextmenu="preventContentDefault" @dragstart="preventContentDefault" @selectstart="preventContentDefault">
       <slot :open-side="openedSide" :close="close">
         <view class="flex min-h-[112rpx] flex-row items-center justify-between px-[32rpx]">
           <view class="flex flex-col gap-[8rpx]">
@@ -1229,6 +1297,10 @@ function getSwipeIntentThreshold(dataset) {
   return Math.max(8, Math.min(16, threshold * 1.4))
 }
 
+function getSwipeVerticalTakeoverLimit(dataset) {
+  return Math.max(getThreshold(dataset) * 3, getSwipeIntentThreshold(dataset) * 2.2)
+}
+
 function isSwipeSlopeAllowed(absX, diffY, dataset) {
   var verticalDistance = Math.abs(diffY)
 
@@ -1240,9 +1312,7 @@ function isSwipeSlopeAllowed(absX, diffY, dataset) {
     return absX >= verticalDistance * 1.15
   }
 
-  var ratio = Math.max(1.2, getDirectionRatio(dataset))
-
-  return absX * ratio >= verticalDistance
+  return verticalDistance <= getSwipeVerticalTakeoverLimit(dataset) && absX >= verticalDistance * 0.85
 }
 
 function hasSwipeIntent(diffX, diffY, dataset) {
@@ -1276,6 +1346,12 @@ function hasSwipeDirection(diffX, dataset) {
     || (diffX > 0 && (hasLeftActions || openedSide === 'right'))
 }
 
+function shouldPreferOpenedSideSwipe(diffX, dataset) {
+  var openedSide = dataset.openedSide || dataset.openedside || ''
+
+  return !!openedSide && hasSwipeDirection(diffX, dataset)
+}
+
 function shouldDeferVerticalForSwipe(diffX, diffY, dataset) {
   var absX = Math.abs(diffX)
   var absY = Math.abs(diffY)
@@ -1297,13 +1373,36 @@ function shouldLockVertical(diffX, diffY, dataset) {
   var absY = Math.abs(diffY)
   var threshold = getThreshold(dataset)
 
+  if (shouldPreferOpenedSideSwipe(diffX, dataset)) {
+    var horizontalThreshold = Math.max(4, getSwipeIntentThreshold(dataset) * 0.45)
+    var verticalBreakoutDistance = Math.max(threshold * 1.35, getSwipeVerticalTakeoverLimit(dataset) * 1.35)
+    var isVerticalBreakout = absY >= Math.max(verticalBreakoutDistance, absX * 1.45)
+
+    if (absX >= horizontalThreshold && !isVerticalBreakout) {
+      return false
+    }
+  }
+
+  var isStraightVertical = absX <= threshold * 0.8
+  var isVerticalDominant = absY >= absX * 1.15
+  var isLongDownwardScroll = diffY > 0 && absY > getSwipeVerticalTakeoverLimit(dataset) && absY >= absX * 0.75
+
   return absY >= threshold
-    && absX <= threshold * 0.8
+    && (isStraightVertical || isVerticalDominant || isLongDownwardScroll)
     && !hasSwipeIntent(diffX, diffY, dataset)
     && !shouldDeferVerticalForSwipe(diffX, diffY, dataset)
 }
 
 function shouldLockHorizontal(diffX, diffY, dataset) {
+  if (shouldPreferOpenedSideSwipe(diffX, dataset)) {
+    var absX = Math.abs(diffX)
+    var intentThreshold = Math.max(4, getSwipeIntentThreshold(dataset) * 0.45)
+
+    if (absX >= intentThreshold && isSwipeSlopeAllowed(absX, diffY, dataset)) {
+      return true
+    }
+  }
+
   return hasSwipeIntent(diffX, diffY, dataset)
 }
 
@@ -1313,8 +1412,7 @@ function shouldUpgradeVerticalToHorizontal(diffX, diffY, dataset, state) {
   }
 
   var absY = Math.abs(diffY)
-  var threshold = getThreshold(dataset)
-  var moveDistanceLimit = Math.max(threshold * 3, getSwipeIntentThreshold(dataset) * 2.2)
+  var moveDistanceLimit = getSwipeVerticalTakeoverLimit(dataset)
   var moveCountLimit = 2
 
   return state.moveCount - state.verticalLockMoveCount <= moveCountLimit && absY <= moveDistanceLimit

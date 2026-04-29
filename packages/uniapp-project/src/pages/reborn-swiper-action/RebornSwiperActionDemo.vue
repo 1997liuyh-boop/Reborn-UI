@@ -174,7 +174,7 @@ function handleContentClick() {
 
     <RebornCard title="列表互斥" :border="false" overflow-visible>
       <view class="flex flex-col gap-[16rpx]">
-        <RebornSwiperAction v-for="(item, index) in messageList" :key="item.title" group="message-list"
+        <RebornSwiperAction v-for="(item, index) in messageList" :key="`${item.title}-${index}`" group="message-list"
           :right-actions="rightActions" :ui="{ action: 'px-[16rpx]' }" @click="handleAction">
           <view class="flex min-h-[120rpx] flex-row items-center gap-[24rpx] px-[32rpx]">
             <view class="flex size-[68rpx] shrink-0 items-center justify-center rounded-full bg-gray-1 dark:bg-gray-7">
