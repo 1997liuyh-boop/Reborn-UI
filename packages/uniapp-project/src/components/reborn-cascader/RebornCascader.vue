@@ -382,7 +382,8 @@ defineExpose({ open, close, clear })
         <RebornSelectTrigger v-if="showTrigger" :text="triggerText" :placeholder="placeholder" :disabled="disabled"
             :focus="visible" :color="color" :size="size" @open="open" @clear="clear" />
 
-        <RebornPopup v-model="visible" :title="title" position="bottom" round @close="close" :color="color" rootPortal>
+        <RebornPopup v-model="visible" :lazy-render="false" :title="title" position="bottom" round @close="close"
+            :color="color" rootPortal>
             <view :class="ui.popup()">
                 <!-- 顶部标签页 -->
                 <scroll-view v-if="!multiple" scroll-x :class="ui.tabsScroll()" :scroll-into-view="tabScrollIntoViewId"

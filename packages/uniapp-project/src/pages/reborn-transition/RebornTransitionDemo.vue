@@ -80,24 +80,24 @@ function transition(n: TransitionName) {
             </RebornTransition>
         </view>
         <RebornCard title="Fade 动画" custom-class="grid grid-cols-3 gap-2">
-            <RebornButton variant="soft" @click="fade">fade</RebornButton>
-            <RebornButton variant="soft" @click="fadeUp">fade-up</RebornButton>
-            <RebornButton variant="soft" @click="fadeDown">fade-down</RebornButton>
-            <RebornButton variant="soft" @click="fadeLeft">fade-left</RebornButton>
-            <RebornButton variant="soft" @click="fadeRight">fade-right</RebornButton>
+            <RebornButton variant="soft" @click="fade" size="sm">fade</RebornButton>
+            <RebornButton variant="soft" @click="fadeUp" size="sm">fade-up</RebornButton>
+            <RebornButton variant="soft" @click="fadeDown" size="sm">fade-down</RebornButton>
+            <RebornButton variant="soft" @click="fadeLeft" size="sm">fade-left</RebornButton>
+            <RebornButton variant="soft" @click="fadeRight" size="sm">fade-right</RebornButton>
         </RebornCard>
         <RebornCard title="Slide 动画" custom-class="grid grid-cols-3 gap-2">
-            <RebornButton variant="soft" @click="slideUp">slide-up</RebornButton>
-            <RebornButton variant="soft" @click="slideDown">slide-down</RebornButton>
-            <RebornButton variant="soft" @click="slideLeft">slide-left</RebornButton>
-            <RebornButton variant="soft" @click="slideRight">slide-right</RebornButton>
+            <RebornButton variant="soft" @click="slideUp" size="sm">slide-up</RebornButton>
+            <RebornButton variant="soft" @click="slideDown" size="sm">slide-down</RebornButton>
+            <RebornButton variant="soft" @click="slideLeft" size="sm">slide-left</RebornButton>
+            <RebornButton variant="soft" @click="slideRight" size="sm">slide-right</RebornButton>
         </RebornCard>
         <RebornCard title="Zoom 动画" custom-class="grid grid-cols-3 gap-2">
-            <RebornButton variant="soft" @click="zoomIn">zoom-in</RebornButton>
-            <RebornButton variant="soft" @click="zoomOut">zoom-out</RebornButton>
+            <RebornButton variant="soft" @click="zoomIn" size="sm">zoom-in</RebornButton>
+            <RebornButton variant="soft" @click="zoomOut" size="sm">zoom-out</RebornButton>
         </RebornCard>
         <RebornCard title="自定义 动画" custom-class="grid grid-cols-3 gap-2">
-            <RebornButton variant="soft" @click="custom">custom</RebornButton>
+            <RebornButton variant="soft" @click="custom" size="sm">custom</RebornButton>
         </RebornCard>
     </RebornPage>
 </template>
