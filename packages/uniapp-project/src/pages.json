@@ -282,6 +282,18 @@
       "style": {
         "navigationBarTitleText": "Watermark"
       }
+    },
+    {
+      "path": "pages/reborn-signature/RebornSignatureDemo",
+      "style": {
+        "navigationBarTitleText": "Signature Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-swiper-action/RebornSwiperActionDemo",
+      "style": {
+        "navigationBarTitleText": "SwiperAction Demo"
+      }
     }
   ],
 
