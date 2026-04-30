@@ -30,25 +30,33 @@ definePageMeta({
 
 const collectionName = computed(() => (isEnabled.value ? `${pageType}_${locale.value}` : pageType));
 
-const [{ data: page }, { data: surround }] = await Promise.all([
+const [{ data: page, error: pageError }, { data: surround, error: surroundError }] = await Promise.all([
   useAsyncData(
-    kebabCase(route.path),
+    `content-${kebabCase(route.path || "index")}`,
     () =>
       queryCollection(collectionName.value as keyof Collections)
         .path(route.path)
         .first() as Promise<DocsEnCollectionItem>,
   ),
-  useAsyncData(`${kebabCase(route.path)}-surround`, () => {
+  useAsyncData(`content-${kebabCase(route.path || "index")}-surround`, () => {
     return queryCollectionItemSurroundings(collectionName.value as keyof Collections, route.path, {
       fields: ["description"],
     });
   }),
 ]);
 
+if (pageError.value) {
+  throw createError({
+    statusCode: 500,
+    statusMessage: pageError.value.message || "Internal Server Error",
+    fatal: true,
+  });
+}
+
 if (!page.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: "Page not found",
+    statusMessage: `Page not found: ${route.path} in collection ${collectionName.value}`,
     fatal: true,
   });
 }

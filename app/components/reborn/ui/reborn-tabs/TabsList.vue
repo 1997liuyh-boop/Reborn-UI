@@ -12,7 +12,7 @@ const props = defineProps<{
 const listRef = ref<HTMLElement | null>(null);
 const indicatorStyle = ref({});
 
-// --- Indicator logic ---
+// --- 指示器逻辑 ---
 function updateIndicator() {
     if (!listRef.value) return;
 
@@ -30,14 +30,14 @@ function updateIndicator() {
     const listRect = listRef.value.getBoundingClientRect();
     const tabRect = activeTab.getBoundingClientRect();
 
-    // Try to get the text span for precise width measurement
+    // 尝试获取文本 span 以进行精确的宽度测量
     const textSpan = activeTab.querySelector('[data-tab-label]') as HTMLElement;
     const textRect = textSpan?.getBoundingClientRect() || tabRect;
 
     const isHorizontal = context.orientation.value === "horizontal";
 
     if (isHorizontal) {
-        // Calculate position based on text span, centered under the text
+        // 根据文本 span 计算位置，居中显示在文本下方
         const left = textRect.left - listRect.left + listRef.value.scrollLeft;
         indicatorStyle.value = {
             '--radix-tabs-indicator-position': `${left}px`,
@@ -54,7 +54,7 @@ function updateIndicator() {
     }
 }
 
-// --- Scrolling Logic ---
+// --- 滚动逻辑 ---
 function scrollToActiveTab() {
     if (!listRef.value) return;
     const activeTab = listRef.value.querySelector('[data-state="active"]') as HTMLElement;
@@ -67,8 +67,8 @@ function scrollToActiveTab() {
     const tabRect = activeTab.getBoundingClientRect();
 
     if (isHorizontal) {
-        // Horizontal: Calculate target scrollLeft to center the tab
-        // relativeLeft = distance from left edge of container visible area
+        // 水平：计算目标 scrollLeft 以使选项卡居中
+        // relativeLeft = 距离容器可见区域左边缘的距离
         const relativeLeft = tabRect.left - listRect.left;
         const centerOffset = (listRect.width - tabRect.width) / 2;
         const diff = relativeLeft - centerOffset;
@@ -78,8 +78,8 @@ function scrollToActiveTab() {
             behavior: "smooth"
         });
     } else {
-        // Vertical: Calculate target scrollTop to center the tab
-        // relativeTop = distance from top edge of container visible area
+        // 垂直：计算目标 scrollTop 以使选项卡居中
+        // relativeTop = 距离容器可见区域上边缘的距离
         const relativeTop = tabRect.top - listRect.top;
         const centerOffset = (listRect.height - tabRect.height) / 2;
         const diff = relativeTop - centerOffset;
@@ -91,7 +91,7 @@ function scrollToActiveTab() {
     }
 }
 
-// Watchers
+// 监听器
 watch(() => context.activeIndex.value, async () => {
     await nextTick();
     scrollToActiveTab();
@@ -106,7 +106,7 @@ onMounted(async () => {
     await nextTick();
     scrollToActiveTab();
     updateIndicator();
-    // Initial scroll might not be needed if default is handled, but good to ensure
+    // 如果处理了默认值，可能不需要初始滚动，但为了确保万一
 });
 
 </script>

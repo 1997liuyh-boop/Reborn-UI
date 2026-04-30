@@ -136,7 +136,7 @@ function scrollToContent(index: number) {
 
     const scrollParent = getScrollParent(el);
 
-    // Manual calculation:
+    // 手动计算：
     const elRect = el.getBoundingClientRect();
     let currentScrollTop = 0;
     let parentRectTop = 0;
@@ -152,10 +152,10 @@ function scrollToContent(index: number) {
         }
     }
 
-    // Target position relative to the scroll parent's top
+    // 相对于滚动父元素顶部的目标位置
     const relativeTop = elRect.top - parentRectTop + currentScrollTop;
 
-    // Read scroll-margin-top from element style (defined in config)
+    // 从元素样式中读取 scroll-margin-top（在配置中定义）
     const style = window.getComputedStyle(el);
     const scrollMarginTop = parseFloat(style.scrollMarginTop) || 0;
 
@@ -181,7 +181,7 @@ function setActiveIndex(value: number) {
 
 function onTabClick(value: number, event: MouseEvent) {
     if (props.activationMode === "manual") {
-        // Manual mode handled by Trigger
+        // 手动模式由 Trigger 处理
     }
     emit("click-tab", value, event);
 }
@@ -207,7 +207,7 @@ provide('TabsContext', {
     onTabClick,
     ui,
     uiOverrides,
-    direction // Provide direction to context
+    direction // 向上下文提供方向
 });
 
 defineExpose({

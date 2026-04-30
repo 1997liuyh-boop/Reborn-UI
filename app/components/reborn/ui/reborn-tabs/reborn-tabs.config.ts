@@ -8,7 +8,7 @@ export default {
     root: "flex flex-col gap-2 min-w-0",
     list: "relative flex max-w-full box-border gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
     trigger:
-      "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap px-3 py-2 text-title-md font-medium text-gray-7 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1",
+      "relative z-10 inline-flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap px-3 py-2 text-title-md font-medium text-gray-7 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1",
     leadingIcon: "flex items-center text-body-base",
     leadingAvatar: "flex items-center overflow-hidden rounded-full",
     leadingAvatarSize: "h-6 w-6",
@@ -106,7 +106,7 @@ export default {
     },
     scrollspy: {
       true: {
-        // Base scrollspy styles
+        // 基础滚动监听样式
       },
     },
   },

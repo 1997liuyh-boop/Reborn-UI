@@ -18,25 +18,25 @@ function handleClick(event: MouseEvent) {
 
     if (context.scrollspy.value) {
         context.scrollToContent(localIndex.value);
-        // We still set active index, but scroll handling might trigger intersection observer
-        // which sets active index again. That's fine.
+        // 我们仍然设置激活索引，但滚动处理可能会触发交叉观察器
+        // 从而再次设置激活索引。这没关系。
         context.setActiveIndex(localIndex.value);
     } else {
         context.setActiveIndex(localIndex.value);
     }
     context.onTabClick(localIndex.value, event);
 
-    // native scrollIntoView causes page to jump, handled in TabsList instead
+    // 原生 scrollIntoView 会导致页面跳动，改在 TabsList 中处理
 }
 
 function handleKeydown(event: KeyboardEvent) {
     if (props.disabled) return
 
-    // Basic keyboard support could normally go here (Arrow keys), 
-    // but typically requires managing focus across the list.
-    // Given the constraints and usage, we might rely on default browser behavior + click.
-    // For Reka parity, focusing next/prev ref in list would be needed.
-    // For now, implementing basic focus triggering for 'automatic' mode if we were managing focus.
+    // 通常可以在这里添加基础键盘支持（方向键），
+    // 但通常需要管理整个列表的焦点。
+    // 考虑到约束和用法，我们可能会依赖默认的浏览器行为 + 点击。
+    // 为了与 Reka 保持一致，需要聚焦列表中的上一个/下一个引用。
+    // 目前，如果我们管理焦点，将为“自动”模式实现基础焦点触发。
 }
 </script>
 

@@ -1,10 +1,10 @@
 import type { DefinedCollection } from "@nuxt/content";
 import { defineCollection, defineContentConfig, z } from "@nuxt/content";
 import { useNuxt } from "@nuxt/kit";
-import { joinURL } from "ufo";
+import { resolve } from "pathe";
 
 const { options } = useNuxt();
-const cwd = joinURL(options.rootDir, "content");
+const cwd = resolve(options.rootDir, "content");
 
 const createDocsSchema = () =>
   z.object({

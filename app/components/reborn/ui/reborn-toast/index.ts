@@ -1,22 +1,7 @@
 import type { Ref } from 'vue';
 import { createVNode, getCurrentInstance, inject, provide, ref, render } from 'vue';
-import RebornToast from './RebornToast.vue';
-
-export interface ToastOptions {
-  msg?: string;
-  duration?: number;
-  iconName?: 'success' | 'error' | 'warning' | 'loading' | 'info';
-  position?: 'top' | 'middle-top' | 'middle' | 'bottom';
-  show?: boolean;
-  zIndex?: number;
-  cover?: boolean;
-  color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' | '';
-  direction?: 'horizontal' | 'vertical';
-}
-
-const toastDefaultOptionKey = '__REBORN_TOAST_OPTION__';
-export const defaultOptions: ToastOptions = { duration: 2000, show: false };
-export const getToastOptionKey = (selector = '') => (selector ? `${toastDefaultOptionKey}${selector}` : toastDefaultOptionKey);
+import { RebornToast } from '#components';
+import { type ToastOptions, defaultOptions, getToastOptionKey } from './reborn-toast.config';
 
 let toastContainer: HTMLElement | null = null;
 let globalTimer: ReturnType<typeof setTimeout> | null = null;
@@ -43,32 +28,27 @@ export function useToast(selector = '') {
 
   provide(key, optionRef);
 
-  const close = () => {
+  const show = (options: ToastOptions) => {
+    optionRef.value = { ...defaultOptions, ...options, show: true };
     if (globalTimer) clearTimeout(globalTimer);
-    optionRef.value = { ...optionRef.value, show: false };
-  };
-
-  const show = (option: ToastOptions | string) => {
-    const next = typeof option === 'string' ? { msg: option } : option;
-    optionRef.value = { ...defaultOptions, ...next, show: true };
-
-    if (globalTimer) clearTimeout(globalTimer);
-    if ((optionRef.value.duration || 0) > 0) {
-      globalTimer = setTimeout(close, optionRef.value.duration);
+    if (optionRef.value.duration! > 0) {
+      globalTimer = setTimeout(() => {
+        optionRef.value.show = false;
+      }, optionRef.value.duration);
     }
   };
 
-  const build = (base: ToastOptions) => (options: ToastOptions | string) => show({ ...base, ...(typeof options === 'string' ? { msg: options } : options) });
+  const hide = () => {
+    optionRef.value.show = false;
+  };
 
   return {
     show,
-    close,
-    loading: build({ iconName: 'loading', duration: 0, cover: true }),
-    success: build({ iconName: 'success', duration: 1500 }),
-    error: build({ iconName: 'error' }),
-    warning: build({ iconName: 'warning' }),
-    info: build({ iconName: 'info' }),
+    hide,
+    success: (msg: string, duration?: number, opts?: Partial<ToastOptions>) => show({ msg, duration, iconName: 'success', ...opts }),
+    error: (msg: string, duration?: number, opts?: Partial<ToastOptions>) => show({ msg, duration, iconName: 'error', ...opts }),
+    warning: (msg: string, duration?: number, opts?: Partial<ToastOptions>) => show({ msg, duration, iconName: 'warning', ...opts }),
+    info: (msg: string, duration?: number, opts?: Partial<ToastOptions>) => show({ msg, duration, iconName: 'info', ...opts }),
+    loading: (msg: string, duration = 0, opts?: Partial<ToastOptions>) => show({ msg, duration, iconName: 'loading', ...opts }),
   };
 }
-
-export { RebornToast };

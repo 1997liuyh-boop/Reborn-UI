@@ -18,7 +18,10 @@
       "mcp__playwright__browser_run_code",
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_wait_for"
+      "mcp__playwright__browser_wait_for",
+      "PowerShell(Get-Content *)",
+      "Bash(sed -i 's|  </RebornSelectTrigger>$|  </RebornSelectTrigger>\\\\n  </div>|' app/components/reborn/ui/reborn-dropdown/RebornDropdown.vue)",
+      "Bash(sed -i 's|^    :bordered|      :bordered|' app/components/reborn/ui/reborn-dropdown/RebornDropdown.vue)"
     ]
   }
 }

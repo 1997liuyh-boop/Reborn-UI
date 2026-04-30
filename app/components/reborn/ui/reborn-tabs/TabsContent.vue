@@ -12,9 +12,9 @@ const context = inject("TabsContext") as any;
 const localIndex = ref<number>(context.registerContent(props.index));
 const contentRef = ref<HTMLElement | null>(null);
 
-// Direction logic:
-// Horizontal: Next -> Slide Left (Enter from Right)
-// Vertical: Next -> Slide Up (Enter from Bottom)
+// 方向逻辑：
+// 水平：下一个 -> 向左滑动（从右侧进入）
+// 垂直：下一个 -> 向上滑动（从底部进入）
 
 const transitionName = computed(() => {
     if (isScrollspy.value) return undefined;
@@ -28,10 +28,10 @@ const transitionName = computed(() => {
     return dir === 'next' ? 'tabs-slide-left' : 'tabs-slide-right';
 });
 
-// Fix overflow flashing by ensuring the parent container clips content.
-// Ideally, this should be on the TabsRoot, but we can try to enforce it here or suggest it.
-// Since we can't easily change the parent, we'll try to rely on the global config change for overflow.
-// However, ensuring the leaving element is absolute is key.
+// 通过确保父容器裁剪内容来修复溢出闪烁。
+// 理想情况下，这应该在 TabsRoot 上，但我们可以尝试在这里强制执行或提出建议。
+// 由于我们无法轻易更改父级，我们将尝试依赖全局配置更改来处理溢出。
+// 然而，确保离开的元素是绝对定位是关键。
 
 
 const isActive = computed(() => context.activeIndex.value === localIndex.value);
@@ -50,29 +50,29 @@ const { distanceX, distanceY } = usePointerSwipe(contentRef, {
         const maxIndex = context.contentCounter.value;
         const currentIndex = context.activeIndex.value;
 
-        // Define threshold for swipe (e.g., 50px)
+        // 定义滑动手势阈值（例如 50px）
         const threshold = 50;
 
         if (isHorizontal) {
             if (direction === 'left' && Math.abs(distanceX.value) > threshold) {
-                // Swiping Left -> Next Tab
+                // 向左滑动 -> 下一个选项卡
                 if (currentIndex < maxIndex - 1) {
                     context.setActiveIndex(currentIndex + 1);
                 }
             } else if (direction === 'right' && Math.abs(distanceX.value) > threshold) {
-                // Swiping Right -> Prev Tab
+                // 向右滑动 -> 上一个选项卡
                 if (currentIndex > 0) {
                     context.setActiveIndex(currentIndex - 1);
                 }
             }
         } else if (isVertical) {
             if (direction === 'up' && Math.abs(distanceY.value) > threshold) {
-                // Swiping Up -> Next Tab
+                // 向上滑动 -> 下一个选项卡
                 if (currentIndex < maxIndex - 1) {
                     context.setActiveIndex(currentIndex + 1);
                 }
             } else if (direction === 'down' && Math.abs(distanceY.value) > threshold) {
-                // Swiping Down -> Prev Tab
+                // 向下滑动 -> 上一个选项卡
                 if (currentIndex > 0) {
                     context.setActiveIndex(currentIndex - 1);
                 }
@@ -81,7 +81,7 @@ const { distanceX, distanceY } = usePointerSwipe(contentRef, {
     },
 });
 
-// Helper to find scroll parent
+// 用于查找滚动父元素的辅助函数
 function getScrollParent(node: HTMLElement | null): HTMLElement | Document | null {
     if (typeof window === 'undefined' || !node) return null;
     let parent = node.parentElement;
@@ -93,7 +93,7 @@ function getScrollParent(node: HTMLElement | null): HTMLElement | Document | nul
         }
         parent = parent.parentElement;
     }
-    return document; // Use document/viewport if no scroll parent
+    return document; // 如果没有滚动父元素，则使用 document/viewport
 }
 
 watch(
@@ -108,7 +108,7 @@ watch(
         await nextTick();
         if (!contentRef.value) return;
 
-        // Find the scroll container (the wrapper div)
+        // 查找滚动容器（包装器 div）
         const scrollParent = getScrollParent(contentRef.value);
 
         const { stop } = useIntersectionObserver(
@@ -121,8 +121,8 @@ watch(
             },
             {
                 root: scrollParent === document ? null : scrollParent as HTMLElement,
-                threshold: [0, 0.1, 0.2, 1], // Better threshold as requested
-                rootMargin: "-40% 0px -55% 0px" // Adjusted margin as requested
+                threshold: [0, 0.1, 0.2, 1], // 根据要求提供更好的阈值
+                rootMargin: "-40% 0px -55% 0px" // 根据要求调整边距
             }
         );
 
