@@ -206,7 +206,14 @@ defineExpose({
         <Icon :name="isPassword ? 'lucide:eye' : 'lucide:eye-off'" :class="ui.icon()" />
       </div>
 
-      <div v-if="separator && password && $slots.trailing" :class="ui.separator()" />
+      <!-- 分割线 B: 只有在有后缀，且没有密码开关（如果有密码开关，上面的分割线A或者密码和后缀间的线会处理）的情况下，且前面没有因为showClear产生的线，我们如何处理？
+           最简单的避免重复线的逻辑是：
+           1. clear 和 后面的元素 之间的线（由上面处理）
+           2. password 和 trailing 之间的线（由于 password 是固定占位的，如果有 password 和 trailing，就始终给一条线）
+           3. 如果没有 clear 也没有 password，但有 trailing，那么 trailing 前面需要一条线吗？（看设计需求，通常需要用来和输入文本分隔）
+      -->
+      <!-- 修正为：如果有 trailing 且 开启了分割线，并且 (没有密码开关) 或者 (有密码开关，用来分隔密码和trailing) -->
+      <div v-if="separator && $slots.trailing && (!showClear || password)" :class="ui.separator()" />
 
       <div v-if="$slots.trailing" :class="ui.trailing()">
         <slot name="trailing" :ui="ui" />

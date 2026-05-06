@@ -7,12 +7,11 @@ function showToast(type: 'info' | 'success' | 'error' | 'warning' | 'loading') {
     if (type === 'loading') {
         toast.loading({
             msg: '3s后自动关闭',
-            duration: 0,
-            cover: true
+            duration: 3000
         })
-        setTimeout(() => {
-            toast.close()
-        }, 3000)
+        // setTimeout(() => {
+        //     toast.close()
+        // }, 3000)
     } else {
         toast[type]({ msg: 'This is ' + type, duration: 1500 })
     }
@@ -50,8 +49,7 @@ function showLoadingToast() {
 function showLoadingToast2() {
     toast.loading({
         msg: '自定义Loading Toast',
-        duration: 0,
-        cover: true
+        duration: 0
     })
     setTimeout(() => {
         toast.close()

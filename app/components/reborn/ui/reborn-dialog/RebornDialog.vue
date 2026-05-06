@@ -518,12 +518,15 @@ watch(
         const scrollbarWidth = window.innerWidth - html.clientWidth;
         initialPaddingState.right = body.style.paddingRight;
         initialPaddingState.overflow = body.style.overflow;
-        initialPaddingState.htmlOverflow = html.style.overflow;
+        // 不再锁定 html.style.overflow，因为这会破坏 Nuxt 中 position: sticky 的侧边栏/菜单布局
+
         if (scrollbarWidth > 0) {
-          body.style.paddingRight = `${scrollbarWidth}px`;
+          const computedPadding = window.getComputedStyle(body).paddingRight;
+          const currentPadding = parseFloat(computedPadding) || 0;
+          body.style.paddingRight = `${currentPadding + scrollbarWidth}px`;
+          body.style.setProperty('--reborn-scrollbar-width', `${scrollbarWidth}px`);
         }
         body.style.overflow = "hidden";
-        html.style.overflow = "hidden";
         body.setAttribute("data-scroll-locked", "1");
       } else {
         const lockCount = Number.parseInt(body.getAttribute("data-scroll-locked") || "1", 10);
@@ -541,7 +544,7 @@ watch(
       if (lockCount <= 0) {
         body.style.paddingRight = initialPaddingState.right;
         body.style.overflow = initialPaddingState.overflow;
-        html.style.overflow = initialPaddingState.htmlOverflow;
+        body.style.removeProperty('--reborn-scrollbar-width');
         body.removeAttribute("data-scroll-locked");
       } else {
         body.setAttribute("data-scroll-locked", `${lockCount}`);
@@ -580,13 +583,12 @@ onBeforeUnmount(() => {
 
     if (props.lockScroll && mounted.value) {
       const body = document.body;
-      const html = document.documentElement;
       if (body.hasAttribute("data-scroll-locked")) {
         const lockCount = Number.parseInt(body.getAttribute("data-scroll-locked") || "1", 10) - 1;
         if (lockCount <= 0) {
           body.style.paddingRight = initialPaddingState.right;
           body.style.overflow = initialPaddingState.overflow;
-          html.style.overflow = initialPaddingState.htmlOverflow;
+          body.style.removeProperty('--reborn-scrollbar-width');
           body.removeAttribute("data-scroll-locked");
         } else {
           body.setAttribute("data-scroll-locked", `${lockCount}`);
@@ -631,7 +633,7 @@ defineExpose({
               </slot>
             </div>
 
-            <img v-if="close" src="~/assets/images/icon/close.png" alt="" :class="ui.close()" @click="onCloseClick" />
+            <Icon v-if="close" :class="ui.close()" :name="props.closeIcon" @click="onCloseClick" />
           </div>
 
           <div :class="ui.body()">

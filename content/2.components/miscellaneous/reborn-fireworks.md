@@ -13,7 +13,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="FireworksDemo.vue" config="FireworksConfig" componentId="fireworks" :componentFiles='["Fireworks.vue"]'}
+::ComponentViewer{demoFile="RebornFireworksDemo.vue" config="RebornFireworksConfig" componentId="reborn-fireworks" :componentFiles='["RebornFireworks.vue"]'}
 
 #api
 

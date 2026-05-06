@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
-import RebornOverlay from '~/components/reborn-overlay/RebornOverlay.vue';
-import RebornTransition from '~/components/reborn-transition/RebornTransition.vue';
-import { toastTheme, type ToastOptions, defaultOptions, getToastOptionKey } from './reborn-toast.config';
+import RebornOverlay from '../reborn-overlay/RebornOverlay.vue';
+import RebornTransition from '../reborn-transition/RebornTransition.vue';
+import { toastTheme, type ToastOptions, defaultOptions, getToastOptionKey, globalOptionRef } from './reborn-toast.config';
 
 const props = withDefaults(defineProps<{ selector?: string }>(), { selector: '' });
 const key = getToastOptionKey(props.selector);
 
-const optionRef = inject(key, ref<ToastOptions>({ ...defaultOptions }));
+const optionRef = inject(key, props.selector ? ref<ToastOptions>({ ...defaultOptions }) : globalOptionRef);
 const state = ref<ToastOptions>({ ...defaultOptions });
 watch(() => optionRef.value, (v) => { state.value = { ...v }; }, { immediate: true, deep: true });
 

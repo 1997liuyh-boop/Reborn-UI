@@ -65,9 +65,12 @@ const b = tv(theme);
 
 const wrapperRef = ref<HTMLElement | null>(null);
 
+const contentRef = ref<HTMLElement | null>(null);
+
 // 使用 VueUse 获取滚动位置和元素边界数据
 const { y: scrollTop } = useWindowScroll();
-const { top: wrapperTop, height: wrapperHeight, width: wrapperWidth, left: wrapperLeft, update: updateRect } = useElementBounding(wrapperRef);
+const { top: wrapperTop, width: wrapperWidth, left: wrapperLeft, update: updateRect } = useElementBounding(wrapperRef);
+const { height: contentHeight } = useElementBounding(contentRef);
 
 // 响应式对象，用于存储吸顶开始时的包装器尺寸信息
 const rect = reactive({
@@ -98,7 +101,8 @@ const isSticky = computed(() => {
  */
 const updateDimensions = () => {
     updateRect();
-    rect.height = wrapperHeight.value;
+    // 使用 content 的真实高度，防止 wrapper 在吸顶后高度塌陷为0
+    rect.height = contentHeight.value || (contentRef.value ? contentRef.value.getBoundingClientRect().height : 0);
     rect.width = wrapperWidth.value;
     rect.left = wrapperLeft.value;
     rect.top = wrapperTop.value + scrollTop.value;
