@@ -115,7 +115,7 @@ const config = {
       left: {
         root: 'flex-row-reverse items-stretch',
         board: 'w-auto flex-1',
-        toolbar: 'w-[92rpx] shrink-0 flex-col flex-nowrap items-stretch justify-center gap-[8rpx]',
+        toolbar: 'w-[190rpx] shrink-0 flex-col flex-nowrap items-stretch justify-center gap-[8rpx]',
         action: 'h-[44rpx] w-full min-w-0 gap-[2rpx] px-[4rpx]',
         actionIcon: 'size-[20rpx]',
         actionText: 'text-[20rpx]',
@@ -123,7 +123,7 @@ const config = {
       right: {
         root: 'flex-row items-stretch',
         board: 'w-auto flex-1',
-        toolbar: 'w-[92rpx] shrink-0 flex-col flex-nowrap items-stretch justify-center gap-[8rpx]',
+        toolbar: 'w-[190rpx] shrink-0 flex-col flex-nowrap items-stretch justify-center gap-[8rpx]',
         action: 'h-[44rpx] w-full min-w-0 gap-[2rpx] px-[4rpx]',
         actionIcon: 'size-[20rpx]',
         actionText: 'text-[20rpx]',

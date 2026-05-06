@@ -36,22 +36,68 @@ const popupSignaturePath = ref('')
 const landscapeSignaturePath = ref('')
 const landscapeToolbarPosition = ref<'left' | 'right' | 'bottom'>('right')
 const landscapeToolbarPositions = ['left', 'right', 'bottom'] as const
-const landscapeSignatureHeight = computed(() =>
-    landscapeToolbarPosition.value === 'bottom' ? 'calc(100vh - 116rpx)' : 'calc(100vh - 24rpx)'
-)
+// 运行时平台判断：微信小程序使用 CSS 旋转模拟横屏，APP 端使用系统级横屏锁定
+const IS_MP_WEIXIN = uni.getSystemInfoSync().uniPlatform === 'mp-weixin'
+
+
+// 两端均使用 CSS 旋转模拟横屏，可视高度对应 100vw（竖屏视口宽度）
+const landscapeSignatureHeight = computed(() => {
+    const isBottom = landscapeToolbarPosition.value === 'bottom'
+
+    return isBottom ? 'calc(100vw - 120rpx)' : 'calc(100vw - 24rpx)'
+})
 const landscapeSignatureUi = {
-    toolbar: 'gap-[8rpx]',
-    action: 'h-[44rpx] min-w-[92rpx] gap-[2rpx] px-[8rpx]',
-    actionIcon: 'size-[20rpx]',
-    actionText: 'text-[20rpx]',
+    toolbar: 'gap-[12rpx]',
+    action: 'h-[72rpx] min-w-[184rpx] gap-[2rpx] px-[10rpx]',
+    actionIcon: 'size-[32rpx]',
+    actionText: 'text-[30rpx]',
 }
-const landscapeExitButtonBaseClass = 'absolute top-[16rpx] z-[5] flex h-[48rpx] flex-row items-center justify-center gap-[4rpx] rounded-full border border-solid border-gray-3 bg-white/95 px-[14rpx] text-gray-7 shadow-sm'
+
+const windowInfo = uni.getWindowInfo()
+const h5SafeLeft = computed(() => {
+    // #ifdef H5
+    return windowInfo.safeAreaInsets?.top || 0
+    // #endif
+    return 0
+})
+console.log(h5SafeLeft.value)
+
+
+// 微信小程序端：使用 CSS transform 旋转容器模拟横屏，保持导航栏不变
+// 旋转后容器的 CSS 逻辑尺寸为 width:100vh, height:100vw（短边为高），视觉上填满横屏
+const landscapeContainerStyle = computed(() => {
+    const safeLeft = h5SafeLeft.value
+    return {
+        position: 'fixed' as const,
+        width: '100vh',
+        height: '100vw',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%) rotate(90deg)',
+        transformOrigin: 'center center',
+        backgroundColor: '#fff',
+        boxSizing: 'border-box' as const,
+        // paddingLeft: '100rpx',
+        // #ifdef H5
+        paddingLeft: 'calc(var(--window-top) + 16rpx)',
+        // #endif
+    }
+})
+const landscapeExitButtonBaseClass = 'absolute top-[20rpx] z-[5] flex h-[64rpx] flex-row items-center justify-center gap-[6rpx] rounded-full border border-solid border-gray-3 bg-white/95 px-[30rpx] text-gray-7 shadow-sm'
 const landscapeExitButtonPositionClass = computed(() => {
     if (landscapeToolbarPosition.value === 'right') {
         return 'left-[16rpx]'
     }
-
     return 'right-[16rpx]'
+})
+// 新增：H5 端退出按钮的补偿 style
+const landscapeExitButtonPositionStyle = computed(() => {
+    if (landscapeToolbarPosition.value === 'right') {
+        // #ifdef H5
+        return { left: 'calc(var(--window-top) + 20rpx)' }
+        // #endif
+    }
+    return {}
 })
 
 const actionClass = 'h-[64rpx] min-w-[128rpx] flex flex-row items-center justify-center gap-[8rpx] rounded-full border border-solid border-transparent bg-primary/10 px-[24rpx] text-primary transition-all duration-200'
@@ -67,7 +113,6 @@ const statusText = computed(() => {
     if (!signaturePath.value) {
         return '未保存'
     }
-
     return '已保存'
 })
 
@@ -155,27 +200,11 @@ function resetPopupSignature() {
 }
 
 function lockLandscape() {
-    // #ifdef APP-PLUS
-    plus?.screen?.lockOrientation?.('landscape-primary')
-        // #endif
-
-        // #ifdef MP-WEIXIN
-        ; (uni as any).setPageOrientation?.({
-            orientation: 'landscape',
-        })
-    // #endif
+    // 两端均使用 CSS transform 旋转容器模拟横屏，无需锁定系统方向
 }
 
 function unlockLandscape() {
-    // #ifdef APP-PLUS
-    plus?.screen?.lockOrientation?.('portrait-primary')
-        // #endif
-
-        // #ifdef MP-WEIXIN
-        ; (uni as any).setPageOrientation?.({
-            orientation: 'portrait',
-        })
-    // #endif
+    // 无需解锁
 }
 
 function openLandscapeSignature() {
@@ -339,17 +368,19 @@ function resetLandscapeSignature() {
         </RebornPopup>
 
         <view v-if="showLandscapePopup" class="fixed inset-0 z-[60] bg-white" @touchmove.stop.prevent>
-            <view class="relative box-border flex h-[100vh] w-[100vw] bg-white p-[12rpx]">
+            <!-- 两端均使用 CSS transform 旋转容器模拟横屏，导航栏不受影响 -->
+            <view class="relative box-border flex bg-white p-[12rpx]" :style="landscapeContainerStyle">
                 <view :class="[landscapeExitButtonBaseClass, landscapeExitButtonPositionClass]"
-                    @tap="closeLandscapeSignature">
-                    <view class="i-lucide-log-out size-[22rpx]" />
-                    <text class="text-[22rpx] font-medium">退出</text>
+                    :style="landscapeExitButtonPositionStyle" @tap="closeLandscapeSignature">
+                    <view class="i-lucide-log-out size-[32rpx]" />
+                    <text class="text-[30rpx] font-medium">退出</text>
                 </view>
                 <RebornSignature ref="landscapeSignatureRef" v-model="landscapeSignaturePath" class="size-full"
                     size="sm" :show-pen-colors="false" :pen-color="selectedPenColor" :pen-pressure="enablePenPressure"
                     :line-width="5" :min-line-width="1.2" :max-line-width="7" :show-undo="showUndoButton"
                     :show-redo="showRedoButton" :toolbar-position="landscapeToolbarPosition"
-                    :height="landscapeSignatureHeight" :ui="landscapeSignatureUi" @save="onLandscapeSave" />
+                    :height="landscapeSignatureHeight" :ui="landscapeSignatureUi" :rotate="90"
+                    @save="onLandscapeSave" />
             </view>
         </view>
     </RebornPage>

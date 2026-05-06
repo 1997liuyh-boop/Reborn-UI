@@ -93,6 +93,11 @@ export interface RebornSignatureProps {
   destScale?: number
   /** 记录触点的最小移动距离 */
   minDistance?: number
+  /**
+   * 外部通过 CSS transform rotate 旋转组件时传入的角度（顺时针）。
+   * 用于修正触点坐标与画布坐标系的偏差，微信小程序横屏签名场景下需传入 90。
+   */
+  rotate?: 0 | 90 | 180 | 270
 }
 
 const props = withDefaults(defineProps<RebornSignatureProps>(), {
@@ -122,6 +127,7 @@ const props = withDefaults(defineProps<RebornSignatureProps>(), {
   quality: 1,
   destScale: 3,
   minDistance: 2,
+  rotate: 0,
 })
 
 const modelValue = defineModel<string>({ default: '' })
@@ -252,6 +258,7 @@ const canvasStyle = computed(() => ({
 }))
 
 function toUnit(value: number | string) {
+  console.warn('[RebornSignature] height 属性建议使用数字，单位默认为 rpx', typeof value === 'number' ? `${value}rpx` : value)
   return typeof value === 'number' ? `${value}rpx` : value
 }
 
@@ -452,8 +459,11 @@ function refreshCanvasRect(): Promise<any> {
       .boundingClientRect((rect: any) => {
         if (rect) {
           canvasRect.value = rect
-          canvasWidth.value = rect.width
-          canvasHeight.value = rect.height
+          // 外部 CSS rotate(90deg/270deg) 旋转后，bounding rect 的宽高相对组件本地坐标已互换。
+          // 还原为组件本地坐标系的真实画布尺寸，保证 clearCanvas/initCanvas 正确。
+          const isSwapped = props.rotate === 90 || props.rotate === 270
+          canvasWidth.value = isSwapped ? rect.height : rect.width
+          canvasHeight.value = isSwapped ? rect.width : rect.height
         }
         resolve(rect)
       })
@@ -468,25 +478,25 @@ async function initCanvas() {
   // #ifdef MP-WEIXIN
   await new Promise<void>((resolve) => {
     const query = uni.createSelectorQuery().in(proxy)
-    ;(query.select(`#${canvasId.value}`) as any)
-      .fields({ node: true, size: true }, (res: any) => {
-        if (res?.node) {
-          const dpr = uni.getSystemInfoSync().pixelRatio || 1
-          const canvas = res.node
-          canvas.width = canvasWidth.value * dpr
-          canvas.height = canvasHeight.value * dpr
-          const ctx = canvas.getContext('2d')
-          if (ctx.setTransform) {
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ; (query.select(`#${canvasId.value}`) as any)
+        .fields({ node: true, size: true }, (res: any) => {
+          if (res?.node) {
+            const dpr = uni.getSystemInfoSync().pixelRatio || 1
+            const canvas = res.node
+            canvas.width = canvasWidth.value * dpr
+            canvas.height = canvasHeight.value * dpr
+            const ctx = canvas.getContext('2d')
+            if (ctx.setTransform) {
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+            }
+            else {
+              ctx.scale(dpr, dpr)
+            }
+            canvasContext.value = ctx
           }
-          else {
-            ctx.scale(dpr, dpr)
-          }
-          canvasContext.value = ctx
-        }
-        resolve()
-      })
-      .exec()
+          resolve()
+        })
+        .exec()
   })
   // #endif
 
@@ -503,8 +513,36 @@ function getPoint(event: any): SignaturePoint | null {
 
   const clientX = touch.clientX ?? touch.x ?? 0
   const clientY = touch.clientY ?? touch.y ?? 0
-  const x = Math.max(0, Math.min(clientX - rect.left, canvasWidth.value))
-  const y = Math.max(0, Math.min(clientY - rect.top, canvasHeight.value))
+  // dx/dy 是触点在屏幕坐标系中相对于 bounding rect 左上角的偏移
+  const dx = clientX - rect.left
+  const dy = clientY - rect.top
+
+  // 根据外部 CSS 旋转角度，将屏幕坐标逆变换为画布本地坐标
+  // 旋转 90° 时 rect.width = 原始高度，rect.height = 原始宽度
+  let x: number
+  let y: number
+  switch (props.rotate) {
+    case 90:
+      // 顺时针 90°：screen-Y → canvas-X，screen-X（反向）→ canvas-Y
+      x = dy
+      y = rect.width - dx
+      break
+    case 270:
+      // 逆时针 90°（顺时针 270°）
+      x = rect.height - dy
+      y = dx
+      break
+    case 180:
+      x = rect.width - dx
+      y = rect.height - dy
+      break
+    default:
+      x = dx
+      y = dy
+  }
+
+  x = Math.max(0, Math.min(x, canvasWidth.value))
+  y = Math.max(0, Math.min(y, canvasHeight.value))
 
   return {
     x,
@@ -688,30 +726,30 @@ function toPng(options?: { allowEmpty?: boolean }): Promise<string> {
 
       // #ifdef MP-WEIXIN
       const query = uni.createSelectorQuery().in(proxy)
-      ;(query.select(`#${canvasId.value}`) as any)
-        .fields({ node: true }, (res: any) => {
-          if (!res?.node) {
-            const error = createError('未找到签名画布')
-            reject(error)
-            return
-          }
-
-          ;(uni.canvasToTempFilePath as any)({
-            canvas: res.node,
-            fileType: props.fileType,
-            quality: props.quality,
-            destWidth,
-            destHeight,
-            success: (result: any) => {
-              resolve(result.tempFilePath)
-            },
-            fail: (error: any) => {
-              createError(error?.errMsg || '签名导出失败')
+        ; (query.select(`#${canvasId.value}`) as any)
+          .fields({ node: true }, (res: any) => {
+            if (!res?.node) {
+              const error = createError('未找到签名画布')
               reject(error)
-            },
+              return
+            }
+
+            ; (uni.canvasToTempFilePath as any)({
+              canvas: res.node,
+              fileType: props.fileType,
+              quality: props.quality,
+              destWidth,
+              destHeight,
+              success: (result: any) => {
+                resolve(result.tempFilePath)
+              },
+              fail: (error: any) => {
+                createError(error?.errMsg || '签名导出失败')
+                reject(error)
+              },
+            })
           })
-        })
-        .exec()
+          .exec()
       // #endif
 
       // #ifndef MP-WEIXIN
@@ -796,37 +834,16 @@ defineExpose({
 
 <template>
   <view :class="ui.root()" :style="customStyle">
-    <view
-      class="reborn-signature__board"
-      :class="ui.board()"
-      :style="boardStyle"
-      @touchstart.stop.prevent="onTouchStart"
-      @touchmove.stop.prevent="onTouchMove"
-      @touchend.stop.prevent="onTouchEnd"
-      @touchcancel.stop.prevent="onTouchEnd"
-      @mousedown.stop.prevent="onMouseStart"
-      @mousemove.stop.prevent="onMouseMove"
-      @mouseup.stop.prevent="onMouseEnd"
-      @mouseleave.stop.prevent="onMouseEnd"
-    >
+    <view class="reborn-signature__board" :class="ui.board()" :style="boardStyle"
+      @touchstart.stop.prevent="onTouchStart" @touchmove.stop.prevent="onTouchMove" @touchend.stop.prevent="onTouchEnd"
+      @touchcancel.stop.prevent="onTouchEnd" @mousedown.stop.prevent="onMouseStart"
+      @mousemove.stop.prevent="onMouseMove" @mouseup.stop.prevent="onMouseEnd" @mouseleave.stop.prevent="onMouseEnd">
       <!-- #ifdef MP-WEIXIN -->
-      <canvas
-        type="2d"
-        :id="canvasId"
-        :class="ui.canvas()"
-        :style="canvasStyle"
-        :disable-scroll="true"
-      />
+      <canvas type="2d" :id="canvasId" :class="ui.canvas()" :style="canvasStyle" :disable-scroll="true" />
       <!-- #endif -->
 
       <!-- #ifndef MP-WEIXIN -->
-      <canvas
-        :id="canvasId"
-        :canvas-id="canvasId"
-        :class="ui.canvas()"
-        :style="canvasStyle"
-        :disable-scroll="true"
-      />
+      <canvas :id="canvasId" :canvas-id="canvasId" :class="ui.canvas()" :style="canvasStyle" :disable-scroll="true" />
       <!-- #endif -->
 
       <slot v-if="isEmpty" name="placeholder" :is-empty="isEmpty">
@@ -836,58 +853,31 @@ defineExpose({
       </slot>
     </view>
 
-    <slot
-      name="toolbar"
-      :is-empty="isEmpty"
-      :disabled="isDisabled"
-      :readonly="isReadonly"
-      :clear="clear"
-      :undo="undo"
-      :redo="redo"
-      :save="save"
-      :pen-color="currentPenColor"
-      :pen-colors="selectablePenColors"
-      :select-pen-color="selectPenColor"
-      :toolbar-position="toolbarPosition"
-      :can-undo="canUndo"
-      :can-redo="canRedo"
-    >
-      <view v-if="showToolbar" :class="ui.toolbar()">
+
+
+    <slot name="toolbar" :is-empty="isEmpty" :disabled="isDisabled" :readonly="isReadonly" :clear="clear" :undo="undo"
+      :redo="redo" :save="save" :pen-color="currentPenColor" :pen-colors="selectablePenColors"
+      :select-pen-color="selectPenColor" :toolbar-position="toolbarPosition" :can-undo="canUndo" :can-redo="canRedo">
+      <view v-if="showToolbar" :class="ui.toolbar()" style="background-color: ;">
         <view v-if="showPenColors && selectablePenColors.length > 0" :class="ui.colorBar()">
-          <view
-            v-for="item in selectablePenColors"
-            :key="item"
-            :class="ui.colorSwatch({
-              class: currentPenColor === item ? 'border-primary ring-2 ring-primary/20' : '',
-            })"
-            @tap="selectPenColor(item)"
-          >
+          <view v-for="item in selectablePenColors" :key="item" :class="ui.colorSwatch({
+            class: currentPenColor === item ? 'border-primary ring-2 ring-primary/20' : '',
+          })" @tap="selectPenColor(item)">
             <view :class="ui.colorSwatchInner()" :style="{ backgroundColor: item }" />
           </view>
         </view>
 
-        <view
-          v-if="showUndo"
-          :class="ui.action({ class: getHistoryActionClass(canUndo) })"
-          @tap="handleUndo"
-        >
+        <view v-if="showUndo" :class="ui.action({ class: getHistoryActionClass(canUndo) })" @tap="handleUndo">
           <view :class="ui.actionIcon({ class: 'i-lucide-undo-2' })" />
           <text :class="ui.actionText()">撤销</text>
         </view>
 
-        <view
-          v-if="showRedo"
-          :class="ui.action({ class: getHistoryActionClass(canRedo) })"
-          @tap="handleRedo"
-        >
+        <view v-if="showRedo" :class="ui.action({ class: getHistoryActionClass(canRedo) })" @tap="handleRedo">
           <view :class="ui.actionIcon({ class: 'i-lucide-redo-2' })" />
           <text :class="ui.actionText()">恢复</text>
         </view>
 
-        <view
-          :class="ui.action({ class: isEmpty && 'opacity-50' })"
-          @tap="handleClear"
-        >
+        <view :class="ui.action({ class: isEmpty && 'opacity-50' })" @tap="handleClear">
           <view :class="ui.actionIcon({ class: 'i-lucide-eraser' })" />
           <text :class="ui.actionText()">清空</text>
         </view>
