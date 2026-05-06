@@ -29,9 +29,9 @@ const config = {
     canvas: 'absolute left-0 top-0 z-[1]',
     placeholder: 'pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-[32rpx] text-center text-[28rpx] text-gray-4',
     colorBar: 'flex flex-row items-center gap-[12rpx]',
-    colorSwatch: 'size-[52rpx] flex items-center justify-center rounded-full border border-solid border-gray-3 bg-white transition-all duration-200',
-    colorSwatchInner: 'size-[34rpx] rounded-full',
-    toolbar: 'flex flex-row flex-wrap items-center justify-end gap-[16rpx]',
+    colorSwatch: 'size-[52rpx] rounded-full ring-2 ring-transparent ring-offset-[4rpx] ring-offset-white transition-all duration-200',
+    colorSwatchInner: 'size-full rounded-full',
+    toolbar: 'flex flex-row flex-wrap items-center  gap-[20rpx]',
     action: 'h-[64rpx] min-w-[128rpx] flex flex-row items-center justify-center gap-[8rpx] rounded-full border border-solid border-transparent px-[24rpx] transition-all duration-200',
     actionIcon: 'size-[30rpx]',
     actionText: 'text-[26rpx] font-medium',
@@ -41,7 +41,7 @@ const config = {
       sm: {
         colorBar: 'gap-[10rpx]',
         colorSwatch: 'size-[46rpx]',
-        colorSwatchInner: 'size-[30rpx]',
+        colorSwatchInner: '',
         toolbar: 'gap-[12rpx]',
         action: 'h-[56rpx] min-w-[108rpx] px-[20rpx]',
         actionIcon: 'size-[26rpx]',
@@ -51,7 +51,7 @@ const config = {
       lg: {
         colorBar: 'gap-[14rpx]',
         colorSwatch: 'size-[58rpx]',
-        colorSwatchInner: 'size-[38rpx]',
+        colorSwatchInner: '',
         toolbar: 'gap-[20rpx]',
         action: 'h-[72rpx] min-w-[148rpx] px-[28rpx]',
         actionIcon: 'size-[34rpx]',
@@ -110,7 +110,7 @@ const config = {
       bottom: {
         root: 'flex-col',
         board: 'w-full',
-        toolbar: 'flex-row flex-wrap items-center justify-end',
+        toolbar: 'flex-row flex-wrap items-center ',
       },
       left: {
         root: 'flex-row-reverse items-stretch',
