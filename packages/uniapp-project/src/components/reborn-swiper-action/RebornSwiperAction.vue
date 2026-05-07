@@ -1,5 +1,5 @@
 <script lang="ts">
-type ActiveSwiperAction = {
+interface ActiveSwiperAction {
   id: number
   close: () => void
 }
@@ -38,6 +38,15 @@ export interface SwiperActionItem {
   disabled?: boolean
   customClass?: string
   customStyle?: string
+  triggerRemove?: boolean
+}
+
+export interface SwiperActionClickPayload {
+  item: SwiperActionItem
+  index: number
+  side: SwiperActionSide
+  close: () => void
+  remove: () => void
 }
 
 export interface SwiperActionProps {
@@ -66,7 +75,6 @@ export interface SwiperActionProps {
   ui?: SwiperActionUI
 }
 
-
 const props = withDefaults(defineProps<SwiperActionProps>(), {
   leftActions: () => [],
   rightActions: () => [],
@@ -74,7 +82,7 @@ const props = withDefaults(defineProps<SwiperActionProps>(), {
   threshold: 0.35,
   maxThreshold: 120,
   closeThreshold: 96,
-  duration: 220,
+  duration: 80,
   closeDuration: 300,
   dragDamping: 50,
   damping: 0.05,
@@ -99,8 +107,9 @@ const emit = defineEmits<{
   (e: 'change', value: SwiperActionSide | ''): void
   (e: 'open', value: SwiperActionSide): void
   (e: 'close'): void
-  (e: 'click', payload: { item: SwiperActionItem, index: number, side: SwiperActionSide, close: () => void }): void
+  (e: 'click', payload: SwiperActionClickPayload): void
   (e: 'content-click', payload: { openSide: SwiperActionSide | '', close: () => void }): void
+  (e: 'remove', payload: { item: SwiperActionItem, index: number, side: SwiperActionSide }): void
 }>()
 
 defineSlots<{
@@ -135,6 +144,7 @@ const startTranslateX = ref(0)
 const dragTargetX = ref(0)
 const translateX = ref(0)
 const rootWidth = ref(0)
+const rootLeft = ref(0)
 const isDragging = ref(false)
 const isHorizontalMoving = ref(false)
 const isTapClosing = ref(false)
@@ -143,10 +153,12 @@ const suppressNextTap = ref(false)
 const isScrollLocked = ref(false)
 const lockDirection = ref<'x' | 'y' | ''>('')
 const dragStartOpenedSide = ref<SwiperActionSide | ''>('')
+const ACTION_TOUCH_DEDUPLICATE_MS = 350
 let scrollLockTimer: ReturnType<typeof setTimeout> | undefined
 let dragStartSideResetTimer: ReturnType<typeof setTimeout> | undefined
 let touchMoveCount = 0
 let verticalLockMoveCount = 0
+let lastActionTouchTime = 0
 let pageScrollWatcherTimer: ReturnType<typeof setInterval> | undefined
 let pageScrollWatcherPending = false
 let pageScrollTopBaseline = 0
@@ -156,6 +168,11 @@ let h5GestureGuarding = false
 let h5TouchStartX = 0
 let h5TouchStartY = 0
 let h5ScrollPositionLocked = false
+
+const REMOVE_DURATION = 220
+const isRemoving = ref(false)
+const isRemoveCollapsed = ref(false)
+const removingMaxHeight = ref<number | null>(null)
 
 const leftRawWidth = computed(() => getActionsWidth(props.leftActions))
 const rightRawWidth = computed(() => getActionsWidth(props.rightActions))
@@ -183,6 +200,25 @@ const contentStyle = computed(() => {
 })
 
 const touchThresholdPx = computed(() => toPx(props.touchThreshold))
+
+const removeAnimStyle = computed(() => {
+  if (isRemoveCollapsed.value) {
+    return `display: none;`
+  }
+  const transition = `max-height ${REMOVE_DURATION}ms cubic-bezier(0.4,0,0.9,1), opacity ${REMOVE_DURATION}ms cubic-bezier(0.4,0,0.9,1)`
+  if (removingMaxHeight.value !== null) {
+    if (isRemoving.value) {
+      return `max-height: 0px; opacity: 0; transition: ${transition};`
+    }
+    return `max-height: ${removingMaxHeight.value}px; transition: ${transition};`
+  }
+  return ''
+})
+
+const rootStyle = computed(() => {
+  if (!removeAnimStyle.value) return props.customStyle
+  return [props.customStyle, removeAnimStyle.value].filter(Boolean).join('; ')
+})
 
 /**
  * 将 rpx 宽度转换为当前平台像素值，保持手势位移和视觉宽度一致。
@@ -217,6 +253,9 @@ function updateRootWidth() {
       const rect = data as UniApp.NodeInfo
       if (rect?.width) {
         rootWidth.value = rect.width
+      }
+      if (rect?.left !== undefined) {
+        rootLeft.value = rect.left
       }
     })
     .exec()
@@ -646,7 +685,6 @@ function lockHorizontalGesture() {
   isTapClosing.value = false
   suppressNextTap.value = true
   lockPageScroll()
-  closeOtherInGroup()
 }
 
 function applyHorizontalMove(diffX: number) {
@@ -911,6 +949,10 @@ function onTouchStart(event: any) {
     return
   }
 
+  if (openedSide.value && suppressNextTap.value) {
+    suppressNextTap.value = false
+  }
+
   isTapClosing.value = false
   isSmoothClosing.value = false
   updateRootWidth()
@@ -999,9 +1041,29 @@ function onTouchMove(event: any) {
 }
 
 /**
+ * App 端滑动后的 tap 不稳定时，用轻触内容块的 touchend 作为收起兜底。
+ */
+function shouldCloseByContentTouchEnd(event: any) {
+  if (!openedSide.value || !props.closeOnContentClick || props.contentTapNavigate || lockDirection.value) {
+    return false
+  }
+
+  const touch = event?.changedTouches?.[0] || event?.touches?.[0]
+  if (!touch) {
+    return touchMoveCount === 0
+  }
+
+  const diffX = Math.abs(touch.clientX - startX.value)
+  const diffY = Math.abs(touch.clientY - startY.value)
+  const tapTolerance = Math.max(6, touchThresholdPx.value * 0.8)
+
+  return diffX <= tapTolerance && diffY <= tapTolerance
+}
+
+/**
  * 触摸结束后按阈值吸附到打开或关闭状态。
  */
-function onTouchEnd() {
+function onTouchEnd(event: any) {
   if (!isDragging.value) {
     isHorizontalMoving.value = false
     releasePageScroll()
@@ -1015,10 +1077,18 @@ function onTouchEnd() {
   isHorizontalMoving.value = false
 
   if (lockDirection.value !== 'x') {
-    syncTranslate(openedSide.value)
+    const shouldCloseByTouchEnd = shouldCloseByContentTouchEnd(event)
+
     lockDirection.value = ''
     releasePageScroll()
     clearDragStartOpenedSide()
+    if (shouldCloseByTouchEnd) {
+      suppressNextTap.value = false
+      closeByContentTap()
+      return
+    }
+
+    syncTranslate(openedSide.value)
     return
   }
 
@@ -1097,18 +1167,70 @@ function onContentTap() {
 }
 
 /**
+ * 查询根元素实际高度后钉住 max-height，再折叠到 0。
+ * 动画结束后立即设置 display:none 消除父容器 gap 残留，再 emit remove。
+ */
+function triggerRemoveAnimation(item: SwiperActionItem, actionIndex: number, side: SwiperActionSide) {
+  uni.createSelectorQuery()
+    .in(proxy)
+    .select('.reborn-swiper-action')
+    .boundingClientRect((data) => {
+      const rect = data as UniApp.NodeInfo
+      removingMaxHeight.value = rect?.height ?? 120
+      setTimeout(() => {
+        isRemoving.value = true
+        setTimeout(() => {
+          isRemoveCollapsed.value = true
+          setTimeout(() => {
+            emit('remove', { item, index: actionIndex, side })
+          }, 32)
+        }, REMOVE_DURATION)
+      }, 30)
+    })
+    .exec()
+}
+
+/**
  * 点击操作按钮。
  */
-function onActionTap(item: SwiperActionItem, index: number, side: SwiperActionSide) {
+function triggerAction(item: SwiperActionItem, index: number, side: SwiperActionSide) {
   if (props.disabled || item.disabled) {
     return
   }
 
-  emit('click', { item, index, side, close })
+  function remove() {
+    close()
+    setTimeout(() => {
+      triggerRemoveAnimation(item, index, side)
+    }, Math.round(props.closeDuration * 0.6))
+  }
+
+  emit('click', { item, index, side, close, remove })
+
+  if (item.triggerRemove) {
+    remove()
+    return
+  }
 
   if (props.closeOnActionClick) {
     close()
   }
+}
+
+function onActionTap(item: SwiperActionItem, index: number, side: SwiperActionSide) {
+  if (Date.now() - lastActionTouchTime < ACTION_TOUCH_DEDUPLICATE_MS) {
+    return
+  }
+
+  triggerAction(item, index, side)
+}
+
+/**
+ * App 端滑动后的首个 tap 可能被手势吞掉，用 touchend 兜底并去重后续 tap。
+ */
+function onActionTouchEnd(item: SwiperActionItem, index: number, side: SwiperActionSide) {
+  lastActionTouchTime = Date.now()
+  triggerAction(item, index, side)
 }
 
 function getActionClass(item: SwiperActionItem) {
@@ -1153,6 +1275,30 @@ function getActionStyle(item: SwiperActionItem, side: SwiperActionSide, index: n
   return `width: ${getActionWidth(item, side)}px; ${getActionOuterRadiusStyle(index, side)} ${item.customStyle || ''}`
 }
 
+/**
+ * App 端透明点击代理层的绝对定位样式。
+ * 代理层不在 transform 容器内，命中区域始终与视觉位置一致。
+ */
+function getActionOverlayStyle(index: number, side: SwiperActionSide): string {
+  const actions = side === 'right' ? props.rightActions : props.leftActions
+  const w = getActionWidth(actions[index], side)
+
+  if (side === 'right') {
+    let rightOffset = 0
+    for (let i = actions.length - 1; i > index; i--) {
+      rightOffset += getActionWidth(actions[i], 'right')
+    }
+    return `position: absolute; top: 0; bottom: 0; right: ${rightOffset}px; width: ${w}px; z-index: 30;`
+  }
+  else {
+    let leftOffset = 0
+    for (let i = 0; i < index; i++) {
+      leftOffset += getActionWidth(actions[i], 'left')
+    }
+    return `position: absolute; top: 0; bottom: 0; left: ${leftOffset}px; width: ${w}px; z-index: 30;`
+  }
+}
+
 watch(
   () => openedSide.value,
   (side) => {
@@ -1195,48 +1341,6 @@ defineExpose({
   close,
 })
 </script>
-
-<template>
-  <view :class="ui.root()" :style="customStyle" :data-instance-id="instanceId" :data-swiping="isHorizontalMoving"
-    :data-scroll-locked="isScrollLocked" :data-disabled="disabled" :data-has-left-actions="hasLeftActions"
-    :data-has-right-actions="hasRightActions" :data-opened-side="openedSide" :data-touch-threshold="touchThresholdPx"
-    :data-direction-ratio="directionRatio" @touchstart="swipeWxs.touchstart" @touchmove="swipeWxs.touchmove"
-    @touchend="swipeWxs.touchend" @touchcancel="swipeWxs.touchcancel">
-    <view v-if="shouldShowLeftActions" :class="cn(ui.actions(), ui.leftActions())" :style="`width: ${leftWidth}px;`">
-      <view v-for="(item, index) in leftActions" :key="item.key || index" :class="getActionClass(item)"
-        :style="getActionStyle(item, 'left', index)" @tap.stop="onActionTap(item, index, 'left')">
-        <slot name="left-action" :item="item" :index="index" side="left" :ui="ui">
-          <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
-          <text :class="ui.text()">{{ item.text }}</text>
-        </slot>
-      </view>
-    </view>
-
-    <view v-if="shouldShowRightActions" :class="cn(ui.actions(), ui.rightActions())" :style="`width: ${rightWidth}px;`">
-      <view v-for="(item, index) in rightActions" :key="item.key || index" :class="getActionClass(item)"
-        :style="getActionStyle(item, 'right', index)" @tap.stop="onActionTap(item, index, 'right')">
-        <slot name="right-action" :item="item" :index="index" side="right" :ui="ui">
-          <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
-          <text :class="ui.text()">{{ item.text }}</text>
-        </slot>
-      </view>
-    </view>
-
-    <view :class="ui.content()" :style="contentStyle" @tap="onContentTap" @touchstart="onTouchStart"
-      @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchCancel"
-      @contextmenu="preventContentDefault" @dragstart="preventContentDefault" @selectstart="preventContentDefault">
-      <slot :open-side="openedSide" :close="close">
-        <view class="flex min-h-[112rpx] flex-row items-center justify-between px-[32rpx]">
-          <view class="flex flex-col gap-[8rpx]">
-            <text class="text-[30rpx] font-medium text-gray-9 dark:text-gray-1">滑动操作</text>
-            <text class="text-[24rpx] text-gray-5 dark:text-gray-4">向左或向右滑动显示操作</text>
-          </view>
-          <view class="i-lucide-chevron-left-right text-[36rpx] text-gray-4" />
-        </view>
-      </slot>
-    </view>
-  </view>
-</template>
 
 <script module="swipeWxs" lang="wxs">
 var gestureStates = {}
@@ -1507,3 +1611,93 @@ module.exports = {
   }
 }
 </script>
+
+<template>
+  <view
+    :class="ui.root()" :style="rootStyle" :data-instance-id="instanceId" :data-swiping="isHorizontalMoving"
+    :data-scroll-locked="isScrollLocked" :data-disabled="disabled" :data-has-left-actions="hasLeftActions"
+    :data-has-right-actions="hasRightActions" :data-opened-side="openedSide" :data-touch-threshold="touchThresholdPx"
+    :data-direction-ratio="directionRatio" @touchstart="swipeWxs.touchstart" @touchmove="swipeWxs.touchmove"
+    @touchend="swipeWxs.touchend" @touchcancel="swipeWxs.touchcancel"
+  >
+    <view v-if="shouldShowLeftActions" :class="cn(ui.actions(), ui.leftActions())" :style="`width: ${leftWidth}px;`">
+      <view
+        v-for="(item, index) in leftActions" :key="item.key || index" :class="getActionClass(item)"
+        :style="getActionStyle(item, 'left', index)" @tap.stop="onActionTap(item, index, 'left')"
+      >
+        <slot name="left-action" :item="item" :index="index" side="left" :ui="ui">
+          <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
+          <text :class="ui.text()">{{ item.text }}</text>
+        </slot>
+      </view>
+    </view>
+
+    <view v-if="shouldShowRightActions" :class="cn(ui.actions(), ui.rightActions())" :style="`width: ${rightWidth}px;`">
+      <view
+        v-for="(item, index) in rightActions" :key="item.key || index" :class="getActionClass(item)"
+        :style="getActionStyle(item, 'right', index)" @tap.stop="onActionTap(item, index, 'right')"
+      >
+        <slot name="right-action" :item="item" :index="index" side="right" :ui="ui">
+          <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
+          <text :class="ui.text()">{{ item.text }}</text>
+        </slot>
+      </view>
+    </view>
+
+    <view
+      :class="ui.content()" :style="contentStyle" @tap="onContentTap" @touchstart="onTouchStart"
+      @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchCancel" @contextmenu="preventContentDefault"
+      @dragstart="preventContentDefault" @selectstart="preventContentDefault"
+    >
+      <slot :open-side="openedSide" :close="close">
+        <view
+          class="
+            flex min-h-[112rpx] flex-row items-center justify-between px-[32rpx]
+          "
+        >
+          <view class="flex flex-col gap-[8rpx]">
+            <text
+              class="
+                text-gray-9 text-[30rpx] font-medium
+                dark:text-gray-1
+              "
+            >
+              滑动操作
+            </text>
+            <text
+              class="
+                text-[24rpx] text-gray-5
+                dark:text-gray-4
+              "
+            >
+              向左或向右滑动显示操作
+            </text>
+          </view>
+          <view class="i-lucide-chevron-left-right text-[36rpx] text-gray-4" />
+        </view>
+      </slot>
+    </view>
+
+    <!-- #ifdef APP-PLUS -->
+    <!-- App 端透明点击代理层：不在 transform 容器内，命中区域始终与视觉位置准确对齐 -->
+    <template v-if="openedSide === 'right' && shouldShowRightActions">
+      <view
+        v-for="(item, index) in rightActions"
+        :key="`overlay-right-${index}`"
+        :style="getActionOverlayStyle(index, 'right')"
+        @touchend.stop.prevent="onActionTouchEnd(item, index, 'right')"
+        @tap.stop="onActionTap(item, index, 'right')"
+      />
+    </template>
+    <template v-if="openedSide === 'left' && shouldShowLeftActions">
+      <view
+        v-for="(item, index) in leftActions"
+        :key="`overlay-left-${index}`"
+        :style="getActionOverlayStyle(index, 'left')"
+        @touchend.stop.prevent="onActionTouchEnd(item, index, 'left')"
+        @tap.stop="onActionTap(item, index, 'left')"
+      />
+    </template>
+    <!-- #endif -->
+  </view>
+</template>
