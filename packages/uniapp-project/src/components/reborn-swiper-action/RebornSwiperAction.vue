@@ -99,7 +99,7 @@ const emit = defineEmits<{
   (e: 'change', value: SwiperActionSide | ''): void
   (e: 'open', value: SwiperActionSide): void
   (e: 'close'): void
-  (e: 'click', payload: { item: SwiperActionItem, index: number, side: SwiperActionSide }): void
+  (e: 'click', payload: { item: SwiperActionItem, index: number, side: SwiperActionSide, close: () => void }): void
   (e: 'content-click', payload: { openSide: SwiperActionSide | '', close: () => void }): void
 }>()
 
@@ -1104,7 +1104,7 @@ function onActionTap(item: SwiperActionItem, index: number, side: SwiperActionSi
     return
   }
 
-  emit('click', { item, index, side })
+  emit('click', { item, index, side, close })
 
   if (props.closeOnActionClick) {
     close()
