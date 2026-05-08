@@ -282,6 +282,12 @@
       "style": {
         "navigationBarTitleText": "SwiperAction Demo"
       }
+    },
+    {
+      "path": "pages/reborn-slide-verify/RebornSlideVerifyDemo",
+      "style": {
+        "navigationBarTitleText": "SlideVerify Demo"
+      }
     }
   ],
 
