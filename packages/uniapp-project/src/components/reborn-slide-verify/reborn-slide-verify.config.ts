@@ -18,12 +18,12 @@ export type SlideVerifyUI = Partial<{
 
 export default {
     slots: {
-        root: 'reborn-slide-verify relative w-full select-none overflow-hidden rounded-[999rpx]',
-        track: 'relative w-full overflow-hidden rounded-[999rpx] border border-solid border-gray-2 bg-gray-1 dark:border-gray-7 dark:bg-gray-8',
+        root: 'reborn-slide-verify relative w-full select-none overflow-visible rounded-[999rpx] touch-pan-y overscroll-x-contain',
+        track: 'relative w-full touch-pan-y overflow-hidden rounded-[999rpx] border border-solid border-gray-2 bg-gray-1 dark:border-gray-7 dark:bg-gray-8',
         progress: 'absolute left-0 top-0 h-full rounded-[999rpx] transition-colors duration-200',
         content: 'absolute inset-0 z-0 flex flex-row items-center justify-center px-[112rpx] ',
         text: 'truncate font-medium text-gray-5 transition-colors duration-200 dark:text-gray-3',
-        thumb: 'reborn-slide-verify__thumb absolute left-0 top-0 z-10 flex items-center justify-center rounded-full border border-solid border-white bg-white text-gray-5 shadow-[0_8rpx_24rpx_rgba(15,23,42,0.16)] transition-colors duration-200 active:scale-95 dark:border-gray-6 dark:bg-gray-7 dark:text-gray-2',
+        thumb: 'reborn-slide-verify__thumb absolute left-0 top-1/2 z-10 flex touch-none items-center justify-center rounded-full border border-solid border-white bg-white text-gray-5 shadow-[0_8rpx_24rpx_rgba(15,23,42,0.16)] transition-colors duration-200 active:scale-95 dark:border-gray-6 dark:bg-gray-7 dark:text-gray-2',
         thumbIcon: 'leading-none',
     },
     variants: {
@@ -31,19 +31,19 @@ export default {
             sm: {
                 track: 'h-[72rpx]',
                 text: 'text-[24rpx]',
-                thumb: 'h-[72rpx] w-[72rpx]',
+                thumb: 'h-[68rpx] w-[68rpx]',
                 thumbIcon: 'text-[30rpx]',
             },
             md: {
                 track: 'h-[88rpx]',
                 text: 'text-[28rpx]',
-                thumb: 'h-[88rpx] w-[88rpx]',
+                thumb: 'h-[84rpx] w-[84rpx]',
                 thumbIcon: 'text-[36rpx]',
             },
             lg: {
                 track: 'h-[104rpx]',
                 text: 'text-[30rpx]',
-                thumb: 'h-[104rpx] w-[104rpx]',
+                thumb: 'h-[100rpx] w-[100rpx]',
                 thumbIcon: 'text-[42rpx]',
             },
         },
@@ -81,7 +81,7 @@ export default {
             true: {
                 track: 'border-success/30 bg-success/10',
                 progress: 'bg-success',
-                text: 'text-success',
+                text: 'text-white',
                 thumb: 'border-success bg-success text-white shadow-[0_8rpx_24rpx_rgba(34,197,94,0.24)]',
                 thumbIcon: 'text-white',
             },
