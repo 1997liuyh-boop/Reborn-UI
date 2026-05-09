@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
-import RebornSwiperAction, { type SwiperActionItem } from '@/components/reborn-swiper-action/RebornSwiperAction.vue'
+import RebornSwiperAction, { type SwiperActionItem, type SwiperActionClickPayload } from '@/components/reborn-swiper-action/RebornSwiperAction.vue'
 
 const opened = ref('')
 const controlledOpened = ref('')
@@ -17,49 +17,87 @@ const rightActions: SwiperActionItem[] = [
   { text: '删除', key: 'delete', icon: 'i-lucide-trash-2', color: 'error', width: 124 },
 ]
 
+const rightActionsWithRemove: SwiperActionItem[] = [
+  { text: '收藏', key: 'star', icon: 'i-lucide-star', color: 'warning', width: 124 },
+  { text: '删除', key: 'delete', icon: 'i-lucide-trash-2', color: 'error', width: 124, triggerRemove: true },
+]
+
 const compactActions: SwiperActionItem[] = [
   { text: '更多', key: 'more', icon: 'i-lucide-more-horizontal', color: 'info', width: 96 },
   { text: '收藏', key: 'star', icon: 'i-lucide-star', color: 'warning', width: 144 },
   { text: '删除', key: 'delete', icon: 'i-lucide-trash-2', color: 'error', width: 196 },
 ]
 
-const messageList = [
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
-  { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
-  { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
-  { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+
+
+const messageList = ref(
+  [
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+    { title: '交互评审', desc: '滑开其中一条，再滑另一条，上一条会自动关闭', iconClass: 'i-lucide-message-square text-primary' },
+    { title: '版本计划', desc: '同一个 group 下只保留一个打开项', iconClass: 'i-lucide-calendar-days text-info' },
+    { title: '关注提醒', desc: '列表、消息、联系人这类场景会更清爽', iconClass: 'i-lucide-bell text-warning' },
+  ].map((item, i) => ({ ...item, id: i }))
+)
+
+const confirmList = ref(
+  [
+    { title: '重要邮件', desc: '点击删除将弹出确认框，swiper 保持展开等待操作', iconClass: 'i-lucide-mail text-primary' },
+    { title: '项目文档', desc: '确认后 swiper 关闭，再触发折叠动画', iconClass: 'i-lucide-file-text text-info' },
+    { title: '会议记录', desc: '取消则调用 close() 回弹，不产生任何副作用', iconClass: 'i-lucide-clipboard text-warning' },
+    { title: '联系人', desc: 'close() 来自 @click payload，无需维护组件 ref', iconClass: 'i-lucide-user text-success' },
+  ].map((item, i) => ({ ...item, id: i + 1000 }))
+)
+
+const confirmDeleteActions: SwiperActionItem[] = [
+  { text: '删除', key: 'delete', icon: 'i-lucide-trash-2', color: 'error' },
 ]
 
-function handleAction(payload: { item: SwiperActionItem, index: number, side: string }) {
+function handleAction(payload: SwiperActionClickPayload) {
   uni.showToast({
     title: `${payload.side === 'left' ? '左侧' : '右侧'}-${payload.item.text}`,
     icon: 'none',
+  })
+}
+
+function handleConfirmAction(payload: SwiperActionClickPayload) {
+  if (payload.item.key !== 'delete') return
+
+  uni.showModal({
+    title: '确认删除',
+    content: '删除后无法恢复，是否继续？',
+    success: (res) => {
+      if (res.confirm) {
+        payload.remove()
+      } else {
+        payload.close()
+      }
+    },
   })
 }
 
@@ -174,8 +212,9 @@ function handleContentClick() {
 
     <RebornCard title="列表互斥" :border="false" overflow-visible>
       <view class="flex flex-col gap-[16rpx]">
-        <RebornSwiperAction v-for="(item, index) in messageList" :key="`${item.title}-${index}`" group="message-list"
-          :right-actions="rightActions" :ui="{ action: 'px-[16rpx]' }" @click="handleAction">
+        <RebornSwiperAction v-for="(item, index) in messageList" :key="item.id" group="message-list"
+          :right-actions="rightActionsWithRemove" :ui="{ action: 'px-[16rpx]' }" @click="handleAction"
+          @remove="messageList.splice(index, 1)">
           <view class="flex min-h-[120rpx] flex-row items-center gap-[24rpx] px-[32rpx]">
             <view class="flex size-[68rpx] shrink-0 items-center justify-center rounded-full bg-gray-1 dark:bg-gray-7">
               <view :class="[item.iconClass, 'text-[32rpx]']" />
@@ -192,6 +231,24 @@ function handleContentClick() {
       </view>
     </RebornCard>
 
+
+    <RebornCard title="确认删除" :border="false" overflow-visible>
+      <view class="flex flex-col gap-[16rpx]">
+        <RebornSwiperAction v-for="(item, index) in confirmList" :key="item.id" group="confirm-list"
+          :right-actions="confirmDeleteActions" :close-on-action-click="false" :ui="{ action: 'px-[16rpx]' }"
+          @click="handleConfirmAction" @remove="confirmList.splice(index, 1)">
+          <view class="flex min-h-[120rpx] flex-row items-center gap-[24rpx] px-[32rpx]">
+            <view class="flex size-[68rpx] shrink-0 items-center justify-center rounded-full bg-gray-1 dark:bg-gray-7">
+              <view :class="[item.iconClass, 'text-[32rpx]']" />
+            </view>
+            <view class="flex min-w-0 flex-1 flex-col gap-[8rpx]">
+              <text class="truncate text-[30rpx] font-medium text-gray-9 dark:text-gray-1">{{ item.title }}</text>
+              <text class="truncate text-[24rpx] text-gray-5 dark:text-gray-4">{{ item.desc }}</text>
+            </view>
+          </view>
+        </RebornSwiperAction>
+      </view>
+    </RebornCard>
 
     <RebornCard title="禁用状态" :border="false" overflow-visible>
       <RebornSwiperAction :right-actions="rightActions" disabled>
