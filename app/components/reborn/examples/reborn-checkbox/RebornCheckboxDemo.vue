@@ -13,7 +13,7 @@ const defaultValue = ref(false);
 const checkedValue = ref(true);
 const disabledValue = ref(true);
 
-const selectedGroup = ref<string[]>(["系统更新"]);
+const selectedGroup = ref("系统更新");
 const groupOptions = ["系统更新", "产品迭代", "活动通知"];
 
 const selectedGroup2 = ref<string[]>(["Apple"]);
@@ -68,8 +68,12 @@ const plans = [
         <h3 class="text-base font-medium text-gray-400">基础用法</h3>
         {{ selectedGroup }}
         <div class="grid gap-4 md:grid-cols-3">
-          <RebornCheckbox v-for="option in groupOptions" :key="option" v-model="selectedGroup" :size="size"
-            :color="color" :value="option" :label="option" />
+          <RebornCheckbox v-model="selectedGroup" :size="size" :color="color" true-value="系统更新" false-value="系统不更新"
+            label="系统更新" />
+          <RebornCheckbox v-model="selectedGroup" :size="size" :color="color" true-value="产品迭代" false-value="产品不迭代"
+            label="产品迭代" />
+          <RebornCheckbox v-model="selectedGroup" :size="size" :color="color" true-value="活动通知" false-value="活动不通知"
+            label="活动通知" />
         </div>
       </div>
 
@@ -78,7 +82,8 @@ const plans = [
         {{ selectedGroup2 }}
         <div class="grid gap-4">
           <RebornCheckboxGroup v-model="selectedGroup2" :size="size" :color="color">
-            <RebornCheckbox v-for="option in groupOptions2" :key="option" :value="option" :label="option" />
+            <RebornCheckbox v-for="option in groupOptions2" :key="option" :value="option" :true-value="`${option}111`"
+              :false-value="`不${option}`" :label="option" />
           </RebornCheckboxGroup>
         </div>
       </div>
@@ -122,4 +127,3 @@ const plans = [
     </div>
   </div>
 </template>
-

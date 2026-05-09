@@ -3,7 +3,7 @@ export const LoadingColors = ['primary', 'secondary', 'success', 'info', 'warnin
 
 const config = {
     slots: {
-        root: 'inline-flex items-center justify-center align-middle rb-loading shrink-0',
+        root: 'inline-flex items-center justify-center rb-loading shrink-0',
         container: 'w-full h-full relative',
         indicator: 'rb-loading-indicator origin-center',
         outlineTrack: 'opacity-20',

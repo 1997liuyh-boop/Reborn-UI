@@ -52,16 +52,8 @@ const loadingColor = computed(() => {
 })
 
 const loadingSize = computed(() => {
-    const sizeMap: Record<string, number> = {
-        'xs': 14,
-        'sm': 16,
-        'default': 18,
-        'md': 18,
-        'lg': 20,
-        'xl': 22,
-        '2xl': 24,
-    }
-    return sizeMap[size.value] || 18
+    // 使用相对单位，使其跟随当前文字大小
+    return '1.25em'
 })
 
 const isIconOnly = computed(() => {
@@ -91,7 +83,7 @@ const ui = computed(() => {
                 uiOverrides.value.base
             )
         }),
-        label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, uiOverrides.value.label) }),
+        label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, 'leading-none', uiOverrides.value.label) }),
         leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
         leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(opts?.class, uiOverrides.value.leadingAvatar) }),
         leadingAvatarSize: (opts?: { class?: any }) => styles.leadingAvatarSize({ class: cn(opts?.class, uiOverrides.value.leadingAvatarSize) }),
@@ -102,23 +94,27 @@ const ui = computed(() => {
 
 <template>
     <button :disabled="isDisabled" :class="ui.base({ class: props.class })" v-bind="$attrs">
-        <!-- Leading / Spinner -->
-        <template v-if="props.loading">
-            <RebornLoading :color="loadingColor" :size="loadingSize" :class="ui.leadingIcon()" />
-        </template>
-        <slot v-else name="leading" :ui="ui" />
+        <div class="flex items-center justify-center gap-2 h-full w-full">
+            <!-- Leading / Spinner -->
+            <template v-if="props.loading">
+                <RebornLoading :color="loadingColor" :size="loadingSize" :ui="{
+                    root: ui.leadingIcon(),
+                }" />
+            </template>
+            <slot v-else name="leading" :ui="ui" />
 
-        <!-- Content -->
-        <template v-if="!isIconOnly || !props.loading">
-            <slot :ui="ui">
-                <span v-if="label" :class="ui.label()">
-                    {{ label }}
-                </span>
-                <slot v-else :ui="ui" />
-            </slot>
-        </template>
+            <!-- Content -->
+            <template v-if="!isIconOnly || !props.loading">
+                <slot :ui="ui">
+                    <span v-if="label" :class="ui.label()">
+                        {{ label }}
+                    </span>
+                    <slot v-else :ui="ui" />
+                </slot>
+            </template>
 
-        <!-- Trailing -->
-        <slot v-if="!props.loading" name="trailing" :ui="ui.trailingIcon()" />
+            <!-- Trailing -->
+            <slot v-if="!props.loading" name="trailing" :ui="ui.trailingIcon()" />
+        </div>
     </button>
 </template>

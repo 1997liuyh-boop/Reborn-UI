@@ -17,7 +17,7 @@ export { color as buttonColors, variant as buttonVariants, size as buttonSizes }
 export default {
   slots: {
     base: "reborn-button inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-    label: "truncate",
+    label: "truncate leading-none",
     leadingIcon: "shrink-0",
     leadingAvatar: "shrink-0",
     leadingAvatarSize: "",
@@ -55,10 +55,18 @@ export default {
       default: {
         base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3",
       },
-      md: { base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3" },
-      lg: { base: "h-button-lg text-title-md leading-[1.5] px-5 has-[>svg]:px-4" },
-      xl: { base: "h-button-xl text-title-lg leading-[1.5] px-6 has-[>svg]:px-4" },
-      "2xl": { base: "h-button-2xl text-title-xl leading-[1.5] px-6 has-[>svg]:px-4" },
+      md: {
+        base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3",
+      },
+      lg: {
+        base: "h-button-lg text-title-md leading-[1.5] px-5 has-[>svg]:px-4",
+      },
+      xl: {
+        base: "h-button-xl text-title-lg leading-[1.5] px-6 has-[>svg]:px-4",
+      },
+      "2xl": {
+        base: "h-button-2xl text-title-xl leading-[1.5] px-6 has-[>svg]:px-4",
+      },
     },
     gap: {
       true: {
