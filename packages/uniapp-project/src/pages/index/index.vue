@@ -82,6 +82,7 @@ const menuItems = [
       { label: '取色器', icon: 'i-lucide-palette', path: '/pages/reborn-color-picker/RebornColorPickerDemo' },
       { label: '签名', icon: 'i-lucide-pen-tool', path: '/pages/reborn-signature/RebornSignatureDemo' },
       { label: '滑动操作', icon: 'i-lucide-panel-right-open', path: '/pages/reborn-swiper-action/RebornSwiperActionDemo' },
+      { label: '滑块验证', icon: 'i-lucide-shield-check', path: '/pages/reborn-slide-verify/RebornSlideVerifyDemo' },
     ],
   },
 ]
