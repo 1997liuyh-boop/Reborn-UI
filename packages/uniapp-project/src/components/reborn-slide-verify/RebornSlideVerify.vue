@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {
   SlideVerifyColor,
+  SlideVerifyShape,
   SlideVerifySize,
   SlideVerifyUI,
 } from './reborn-slide-verify.config'
@@ -20,9 +21,12 @@ const props = withDefaults(defineProps<RebornSlideVerifyProps>(), {
   ui: () => ({}),
   size: 'md',
   color: 'primary',
+  shape: 'pill',
   disabled: false,
   loading: false,
   threshold: 0.92,
+  showThresholdText: false,
+  thresholdText: '拖动超过 {threshold}% 完成验证',
   duration: 220,
   defaultText: '向右滑动完成验证',
   successText: '验证通过',
@@ -39,6 +43,7 @@ const props = withDefaults(defineProps<RebornSlideVerifyProps>(), {
   defaultVerified: false,
   showToast: false,
   toastText: '',
+  width: '',
 })
 
 const emit = defineEmits<{
@@ -52,7 +57,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   default: (props: { verified: boolean, loading: boolean, progress: number, text: string, ui: any }) => any
-  thumb: (props: { verified: boolean, loading: boolean, progress: number, ui: any }) => any
+  thumb: (props: { verified: boolean, loading: boolean, progress: number, icon: string, ui: any }) => any
 }>()
 
 const verified = defineModel<boolean>({ default: false })
@@ -82,12 +87,18 @@ export interface RebornSlideVerifyProps {
   size?: SlideVerifySize
   /** 主题色 */
   color?: SlideVerifyColor
+  /** 滑动容器形态，pill 为胶囊形，square 为项目规范圆角的方形 */
+  shape?: SlideVerifyShape
   /** 是否禁用 */
   disabled?: boolean
   /** 是否加载中 */
   loading?: boolean
   /** 通过阈值，0.92 表示滑到 92% 即通过 */
   threshold?: number
+  /** 是否根据通过阈值自动生成默认提示文案 */
+  showThresholdText?: boolean
+  /** 阈值提示文案模板，使用 {threshold} 插入百分比 */
+  thresholdText?: string
   /** 回弹与通过动画时长，单位 ms */
   duration?: number
   /** 默认提示文案 */
@@ -120,6 +131,8 @@ export interface RebornSlideVerifyProps {
   showToast?: boolean
   /** Toast 提示文案，默认使用 successText */
   toastText?: string
+  /** 滑动容器宽度，支持任意 CSS 单位（如 '600rpx'、'80%'），默认撑满父容器 */
+  width?: string
 }
 
 const { proxy } = getCurrentInstance()!
@@ -128,6 +141,20 @@ const slots = useSlots()
 const b = tv(theme)
 
 const uiOverrides = computed(() => props.ui || {})
+
+const rootStyle = computed(() => {
+  if (!props.width) {
+    return props.customStyle
+  }
+  if (typeof props.customStyle === 'string') {
+    return `${props.customStyle};width:${props.width}`
+  }
+  const base = typeof props.customStyle === 'object' && props.customStyle !== null
+    ? props.customStyle
+    : {}
+  return { ...base, width: props.width }
+})
+
 const isDragging = ref(false)
 const isBouncing = ref(false)
 const failVisible = ref(false)
@@ -154,7 +181,11 @@ const progressRatio = computed(() => {
   return Math.max(0, Math.min(1, translateX.value / maxTranslate.value))
 })
 const progress = computed(() => Math.round(progressRatio.value * 100))
-const verifyThreshold = computed(() => Math.max(0.5, Math.min(1, props.threshold)))
+const verifyThreshold = computed(() => {
+  const normalized = props.threshold > 1 ? props.threshold / 100 : props.threshold
+  return Math.max(0.5, Math.min(1, normalized))
+})
+const thresholdPercent = computed(() => Math.round(verifyThreshold.value * 100))
 const transitionDuration = computed(() => isDragging.value ? '0ms' : `${props.duration}ms`)
 const transitionEasing = computed(() => {
   if (isDragging.value) {
@@ -164,6 +195,13 @@ const transitionEasing = computed(() => {
     return 'cubic-bezier(0.22, 1, 0.36, 1)'
   }
   return 'cubic-bezier(0.4, 0, 0.2, 1)'
+})
+
+const defaultDisplayText = computed(() => {
+  if (!props.showThresholdText) {
+    return props.defaultText
+  }
+  return props.thresholdText.replace(/\{threshold\}/g, String(thresholdPercent.value))
 })
 
 const displayText = computed(() => {
@@ -176,7 +214,7 @@ const displayText = computed(() => {
   if (failVisible.value) {
     return props.failText
   }
-  return props.defaultText
+  return defaultDisplayText.value
 })
 
 const currentIcon = computed(() => {
@@ -241,6 +279,7 @@ const ui = computed(() => {
   const styles = b({
     size: currentSize.value,
     color: props.color,
+    shape: props.shape,
     verified: verified.value,
     loading: props.loading,
     disabled: isDisabled.value,
@@ -248,12 +287,22 @@ const ui = computed(() => {
 
   return {
     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, uiOverrides.value.root) }),
-    track: (opts?: { class?: any }) => styles.track({ class: cn(opts?.class, uiOverrides.value.track) }),
-    progress: (opts?: { class?: any }) => styles.progress({ class: cn(opts?.class, uiOverrides.value.progress) }),
+    track: (opts?: { class?: any }) => styles.track({
+      class: cn(opts?.class, verified.value ? uiOverrides.value.verifiedTrack : uiOverrides.value.track),
+    }),
+    progress: (opts?: { class?: any }) => styles.progress({
+      class: cn(opts?.class, verified.value ? uiOverrides.value.verifiedProgress : uiOverrides.value.progress),
+    }),
     content: (opts?: { class?: any }) => styles.content({ class: cn(opts?.class, uiOverrides.value.content) }),
-    text: (opts?: { class?: any }) => styles.text({ class: cn(opts?.class, uiOverrides.value.text) }),
-    thumb: (opts?: { class?: any }) => styles.thumb({ class: cn(opts?.class, uiOverrides.value.thumb) }),
-    thumbIcon: (opts?: { class?: any }) => styles.thumbIcon({ class: cn(opts?.class, uiOverrides.value.thumbIcon) }),
+    text: (opts?: { class?: any }) => styles.text({
+      class: cn(opts?.class, verified.value ? uiOverrides.value.verifiedText : uiOverrides.value.text),
+    }),
+    thumb: (opts?: { class?: any }) => styles.thumb({
+      class: cn(opts?.class, verified.value ? uiOverrides.value.verifiedThumb : uiOverrides.value.thumb),
+    }),
+    thumbIcon: (opts?: { class?: any }) => styles.thumbIcon({
+      class: cn(opts?.class, verified.value ? uiOverrides.value.verifiedThumbIcon : uiOverrides.value.thumbIcon),
+    }),
   }
 })
 
@@ -511,6 +560,7 @@ watch([
   currentSize,
   () => props.customClass,
   () => props.ui,
+  () => props.width,
 ], refreshTrackMeasure, { deep: true })
 
 watch(() => props.showFailText, (value) => {
@@ -541,7 +591,7 @@ defineExpose({
 </script>
 
 <template>
-  <view :class="ui.root()" :style="customStyle">
+  <view :class="ui.root()" :style="rootStyle">
     <view :class="ui.track()">
       <view :class="ui.progress()" :style="progressStyle" />
 
@@ -570,14 +620,14 @@ defineExpose({
         :style="revealRemainderOverlayStyle">
         <view :class="revealContentClass">
           <text :class="ui.text()">
-            {{ defaultText }}
+            {{ defaultDisplayText }}
           </text>
         </view>
       </view>
 
       <view :class="ui.thumb()" :style="thumbStyle" @touchstart.stop.prevent="handleTouchStart" @touchmove.stop.prevent="handleTouchMove"
         @touchend.stop="handleTouchEnd" @touchcancel.stop="handleTouchEnd">
-        <slot name="thumb" :verified="verified" :loading="loading" :progress="progress" :ui="ui">
+        <slot name="thumb" :verified="verified" :loading="loading" :progress="progress" :icon="currentIcon" :ui="ui">
           <view :class="[ui.thumbIcon(), currentIcon]" />
         </slot>
       </view>

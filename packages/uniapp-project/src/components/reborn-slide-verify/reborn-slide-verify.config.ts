@@ -2,18 +2,35 @@ import type { ClassValue } from 'clsx'
 
 export const slideVerifyColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 export const slideVerifySizes = ['sm', 'md', 'lg'] as const
+export const slideVerifyShapes = ['pill', 'square'] as const
 
 export type SlideVerifyColor = (typeof slideVerifyColors)[number]
 export type SlideVerifySize = (typeof slideVerifySizes)[number]
+export type SlideVerifyShape = (typeof slideVerifyShapes)[number]
 
 export type SlideVerifyUI = Partial<{
     root: ClassValue
+    /** 未完成态轨道样式 */
     track: ClassValue
+    /** 未完成态左侧进度区域样式 */
     progress: ClassValue
     content: ClassValue
+    /** 未完成态文案样式 */
     text: ClassValue
+    /** 未完成态滑块样式 */
     thumb: ClassValue
+    /** 未完成态滑块图标样式 */
     thumbIcon: ClassValue
+    /** 完成态轨道样式，不传时使用默认成功态 */
+    verifiedTrack: ClassValue
+    /** 完成态左侧进度区域样式，不传时使用默认成功态 */
+    verifiedProgress: ClassValue
+    /** 完成态文案样式，不传时使用默认成功态 */
+    verifiedText: ClassValue
+    /** 完成态滑块样式，不传时使用默认成功态 */
+    verifiedThumb: ClassValue
+    /** 完成态滑块图标样式，不传时使用默认成功态 */
+    verifiedThumbIcon: ClassValue
 }>
 
 export default {
@@ -24,7 +41,7 @@ export default {
         content: 'absolute inset-0 z-0 flex flex-row items-center justify-center px-[112rpx] ',
         text: 'truncate font-medium text-gray-5 transition-colors duration-200 dark:text-gray-3',
         thumb: 'reborn-slide-verify__thumb absolute left-0 top-1/2 z-10 flex touch-none items-center justify-center rounded-full border border-solid border-white bg-white text-gray-5 shadow-[0_8rpx_24rpx_rgba(15,23,42,0.16)] transition-colors duration-200 active:scale-95 dark:border-gray-6 dark:bg-gray-7 dark:text-gray-2',
-        thumbIcon: 'leading-none',
+        thumbIcon: 'flex shrink-0 items-center justify-center leading-none',
     },
     variants: {
         size: {
@@ -77,6 +94,14 @@ export default {
                 thumbIcon: 'text-neutral',
             },
         },
+        shape: {
+            pill: '',
+            square: {
+                track: 'rounded-[24rpx]',
+                progress: 'rounded-[24rpx]',
+                thumb: 'rounded-[12rpx]',
+            },
+        },
         verified: {
             true: {
                 track: 'border-success/30 bg-success/10',
@@ -105,6 +130,7 @@ export default {
     defaultVariants: {
         size: 'md' as SlideVerifySize,
         color: 'primary' as SlideVerifyColor,
+        shape: 'pill' as SlideVerifyShape,
         verified: false,
         loading: false,
         disabled: false,
