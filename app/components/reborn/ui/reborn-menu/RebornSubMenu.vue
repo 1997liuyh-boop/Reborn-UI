@@ -161,6 +161,54 @@ onBeforeUnmount(() => {
     closeTimer = null;
   }
 });
+
+const popupRef = ref<HTMLElement | null>(null);
+const popupStyle = ref<Record<string, string>>({});
+
+async function updatePopupPosition() {
+  if (!popupRef.value) return;
+  // 先重置样式，以便测量真实的 DOM 尺寸
+  popupStyle.value = {};
+  await nextTick();
+  
+  const rect = popupRef.value.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+  
+  let translateY = 0;
+  const padding = 8;
+
+  // 底部溢出处理
+  if (rect.bottom > viewportHeight) {
+    const overflowY = rect.bottom - viewportHeight + padding;
+    const maxShiftUp = rect.top - padding; // 避免向上偏移过度导致顶部溢出
+    translateY = -Math.min(overflowY, maxShiftUp);
+  }
+
+  const style: Record<string, string> = {};
+  
+  if (translateY !== 0) {
+    style.transform = `translateY(${translateY}px)`;
+  }
+  
+  // 右侧溢出处理，改为向左展开
+  if (rect.right > viewportWidth) {
+    style.left = 'auto';
+    style.right = '100%';
+    style.marginLeft = '0';
+    style.marginRight = '0.5rem';
+  }
+
+  popupStyle.value = style;
+}
+
+watch(isOpened, (val) => {
+  if (val && effectiveExpandType.value === 'popup') {
+    updatePopupPosition();
+  } else {
+    popupStyle.value = {};
+  }
+});
 </script>
 
 <template>
@@ -198,10 +246,12 @@ onBeforeUnmount(() => {
     <div
       v-if="effectiveExpandType === 'popup'"
       v-show="isOpened"
+      ref="popupRef"
       :class="subMenuUi.subMenuPopup()"
       :style="{
         backgroundColor: menuContext?.backgroundColor.value,
         color: menuContext?.textColor.value,
+        ...popupStyle
       }"
     >
       <ul :class="subMenuUi.subMenuContent()" role="menu">
