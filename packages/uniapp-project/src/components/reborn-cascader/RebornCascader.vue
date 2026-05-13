@@ -99,6 +99,9 @@ const listScrollIntoViewId = ref('') // 列表区域滚动 ID
 const loadingNodes = ref<Record<string, boolean>>({}) // 记录加载状态
 const internalOptions = ref<CascaderOption[]>([])
 
+/** 与列上 RebornTransition 进入时长一致，scroll-into-view 略晚于进入动画，减轻与 fade-right 抢布局 */
+const COLUMN_ENTER_MS = 300
+
 // 监听当前层级变化进行辅助对齐（居中显示）
 watch(current, (val) => {
     nextTick(() => {
@@ -107,7 +110,7 @@ watch(current, (val) => {
             const scrollIndex = Math.max(0, val - 1)
             tabScrollIntoViewId.value = `tab-${scrollIndex}`
             listScrollIntoViewId.value = `column-${scrollIndex}`
-        }, 100)
+        }, COLUMN_ENTER_MS + 40)
     })
 })
 
@@ -115,15 +118,21 @@ watch(() => props.options, (val) => {
     internalOptions.value = JSON.parse(JSON.stringify(val || []))
 }, { immediate: true, deep: true })
 
-// 监听外界 modelValue 变化
-watch(() => props.modelValue, (val) => {
+/** 根据 v-model（已保存的值）重置面板内的浏览与多选勾选，丢弃上次打开未确认的修改 */
+function syncInternalFromModel() {
+    const val = props.modelValue
     if (props.multiple) {
-        selectedPaths.value = JSON.parse(JSON.stringify(val || []))
+        selectedPaths.value = JSON.parse(JSON.stringify(val ?? []))
         activePath.value = selectedPaths.value[0] ? [...selectedPaths.value[0]] : []
     } else {
-        activePath.value = [...(val as (string | number)[] || [])]
+        activePath.value = [...((val as (string | number)[]) ?? [])]
     }
-}, { immediate: true })
+}
+
+// 监听外界 modelValue 变化
+watch(() => props.modelValue, () => {
+    syncInternalFromModel()
+}, { immediate: true, deep: true })
 
 // 计算属性：各级选项列表
 const lists = computed<CascaderOption[][]>(() => {
@@ -147,11 +156,14 @@ const lists = computed<CascaderOption[][]>(() => {
     return result
 })
 
+/**
+ * 1～3 列：按列数均分整屏；第 4 列起单列宽度仍为一屏的 1/3，总宽超过一屏则横向滚动。
+ */
 const columnWidthClass = computed(() => {
     const len = lists.value.filter(l => l && l.length > 0).length
-    if (len === 1) return 'w-full'
-    if (len === 2) return 'w-1/2'
-    return 'w-1/3'
+    if (len <= 1) return 'w-full min-w-0 box-border'
+    if (len === 2) return 'shrink-0 basis-1/2 w-1/2 min-w-0 box-border'
+    return 'shrink-0 basis-1/3 w-1/3 min-w-0 box-border'
 })
 
 // 计算属性：当前页面的标签
@@ -214,6 +226,8 @@ const triggerText = computed(() => {
 const open = async () => {
     if (props.disabled) return
     visible.value = true
+    // 每次打开都恢复到当前已提交的 modelValue（关闭前未确认的浏览/勾选不保留）
+    syncInternalFromModel()
 
     // 懒加载初始化
     if (props.lazy && internalOptions.value.length === 0) {

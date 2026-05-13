@@ -363,7 +363,8 @@ defineExpose({
       <!-- #endif -->
     </template>
   </RebornSelectTrigger>
-  <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi">
+  <RebornPopup ref="popupRef" v-model="visible" :title="title" :ui="popupUi"
+    :swipe-close-threshold="noOptions ? 90 : undefined">
     <view @touchmove.stop.prevent @wheel.stop.prevent>
       <slot name="prepend" />
 

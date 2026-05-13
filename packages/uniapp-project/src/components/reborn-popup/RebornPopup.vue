@@ -64,7 +64,7 @@ interface PopupProps {
   size?: number | string;
   /** 是否开启手势滑动关闭 (仅限底部位置) */
   swipeClose?: boolean;
-  /** 手势滑动关闭的触发阈值 */
+  /** 手势滑动关闭的触发阈值（手指竖直位移 px，不与阻尼位移混用） */
   swipeCloseThreshold?: number
   /** 自定义 UI 配置 */
   ui?: any
@@ -100,7 +100,7 @@ const props = withDefaults(defineProps<PopupProps>(), {
   showClose: true,
   size: '30%',
   swipeClose: true,
-  swipeCloseThreshold: 150,
+  swipeCloseThreshold: 120,
   rootPortal: false,
   enablePortal: false,
   color: 'neutral',
@@ -145,6 +145,8 @@ const swipe = reactive({
   isTouch: false,
   startY: 0,
   offsetY: 0,
+  /** 当前手势下手指相对 touchstart 向下的位移（不受阻尼缩放），用于关闭阈值判定 */
+  rawOffsetY: 0,
   lastY: 0,
   lastTime: 0,
   velocityY: 0,   // 瞬时速度 px/ms，用于检测 flick 手势
@@ -172,8 +174,14 @@ const FLICK_VELOCITY_THRESHOLD = 1
 /** EMA 速度平滑系数：越小越平滑，越大越灵敏 */
 const VELOCITY_EMA_ALPHA = 0.25
 
-/** 拖拽跟手 / 回弹共用的 spring 曲线，保持视觉风格统一 */
-const SPRING_EASING = 'cubic-bezier(0.34, 1.3, 0.64, 1)'
+/**
+ * 拖拽跟手时的短过渡：略带回弹感，但控制点 y≤1，避免位移出现负值（整体上移露缝）。
+ */
+const DRAG_TOUCH_EASING = 'cubic-bezier(0.34, 1, 0.64, 1)'
+/**
+ * 松手回弹：不用 y>1 的「过冲」贝塞尔，否则 translateY 会短暂 <0，底部与遮罩之间出现缝隙。
+ */
+const RELEASE_EASING = 'cubic-bezier(0.25, 0.82, 0.25, 1)'
 
 /** 退场滑出动画时长（ms），需与 onTouchEnd 里的 setTimeout 保持一致 */
 const EXIT_DURATION = 220
@@ -194,12 +202,12 @@ const style = computed(() => {
     return `${base} transition: transform ${EXIT_DURATION}ms ease-in; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
   }
   if (swipe.isTouch) {
-    // 拖拽中：100ms spring 过渡，每帧位移都带弹簧感，与回弹风格统一
-    return `${base} transition: transform 100ms ${SPRING_EASING}; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
+    // 拖拽中：短过渡跟手，曲线无过冲，避免与最终 translateY(0) 衔接时出现整体上移
+    return `${base} transition: transform 100ms ${DRAG_TOUCH_EASING}; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
   }
   if (swipe.releasing) {
-    // 回弹：以当前 offsetY 为起点播 spring 动画，由 JS 将 offsetY 归零来驱动
-    return `${base} transition: transform 0.45s ${SPRING_EASING}; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
+    // 回弹：由 JS 将 offsetY 归零，曲线需严格无过冲，否则会露出遮罩缝隙
+    return `${base} transition: transform 0.45s ${RELEASE_EASING}; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
   }
   return `${base} ${props.customStyle}`
 })
@@ -336,6 +344,7 @@ function onTouchStart(e: any) {
   swipe.lastTime = Date.now()
   swipe.velocityY = 0
   swipe.offsetY = 0
+  swipe.rawOffsetY = 0
 }
 
 /**
@@ -345,6 +354,7 @@ function onTouchMove(e: any) {
   if (!swipe.isTouch) return
   const touch = e.touches[0]
   const rawOffset = touch.clientY - swipe.startY
+  swipe.rawOffsetY = Math.max(0, rawOffset)
 
   // EMA 平滑速度：避免相邻帧距离过小导致速度值噪声大
   const now = Date.now()
@@ -374,7 +384,8 @@ function onTouchEnd() {
   swipe.isTouch = false
 
   const isFlick = swipe.velocityY > FLICK_VELOCITY_THRESHOLD
-  const isThresholdReached = swipe.offsetY > props.swipeCloseThreshold
+  // 必须与手指真实位移比较：offsetY 经分段阻尼后会远小于同向手指距离，旧逻辑导致需下拉极长才可关闭
+  const isThresholdReached = swipe.rawOffsetY >= props.swipeCloseThreshold
 
   if (isFlick || isThresholdReached) {
     // 退场两步触发，兼容微信小程序的 JS/渲染双线程模型：
@@ -398,8 +409,8 @@ function onTouchEnd() {
     })
   } else if (swipe.offsetY > 0) {
     // 有实际位移才触发回弹；纯点击（offsetY === 0）不处理，让 click 事件正常触发
-    // 叠加松手惯性：按释放速度顺势多推一段距离，再由 spring 拉回，手感更连贯
-    const inertia = Math.max(0, Math.min(swipe.velocityY * 60, 40))
+    // 叠加松手惯性（仅向下）：幅度略小，避免与回弹衔接时位移过大、放大过冲观感
+    const inertia = Math.max(0, Math.min(swipe.velocityY * 50, 24))
     swipe.offsetY = swipe.offsetY + inertia
     swipe.releasing = true
     // 等下一帧渲染出惯性位置后，再将 offsetY 归零触发 spring 动画
