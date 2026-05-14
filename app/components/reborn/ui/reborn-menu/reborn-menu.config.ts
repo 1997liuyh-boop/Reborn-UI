@@ -144,6 +144,55 @@ const theme = tv({
         menuItemArrow: "rotate-90",
       },
     },
+    {
+      opened: true,
+      color: "primary",
+      class: {
+        menuItemTitle: "text-primary bg-gradient-to-r from-primary/50 via-primary to-primary/50 reborn-menu-shimmer-text",
+      },
+    },
+    {
+      opened: true,
+      color: "secondary",
+      class: {
+        menuItemTitle: "text-secondary bg-gradient-to-r from-secondary/50 via-secondary to-secondary/50 reborn-menu-shimmer-text",
+      },
+    },
+    {
+      opened: true,
+      color: "success",
+      class: {
+        menuItemTitle: "text-success bg-gradient-to-r from-success/50 via-success to-success/50 reborn-menu-shimmer-text",
+      },
+    },
+    {
+      opened: true,
+      color: "info",
+      class: {
+        menuItemTitle: "text-info bg-gradient-to-r from-info/50 via-info to-info/50 reborn-menu-shimmer-text",
+      },
+    },
+    {
+      opened: true,
+      color: "warning",
+      class: {
+        menuItemTitle: "text-warning bg-gradient-to-r from-warning/50 via-warning to-warning/50 reborn-menu-shimmer-text",
+      },
+    },
+    {
+      opened: true,
+      color: "error",
+      class: {
+        menuItemTitle: "text-error bg-gradient-to-r from-error/50 via-error to-error/50 reborn-menu-shimmer-text",
+      },
+    },
+    {
+      opened: true,
+      color: "neutral",
+      class: {
+        menuItemTitle: "text-neutral bg-gradient-to-r from-neutral/50 via-neutral to-neutral/50 reborn-menu-shimmer-text",
+      },
+    },
   ],
   defaultVariants: {
     mode: "vertical" as (typeof menuModes)[number],

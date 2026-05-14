@@ -121,6 +121,8 @@ const openedMenus = ref<MenuValue[]>(
 const openedMenuPaths = ref<Record<string, string[]>>({});
 /** 记录延时关闭的定时器，用于防抖或平滑过渡 */
 const closeTimers = ref<Set<ReturnType<typeof setTimeout>>>(new Set());
+/** 记录所有 teleport 的 popup 元素，防止点击外部误判 */
+const popupRefs = ref<Set<HTMLElement>>(new Set());
 
 // --- 辅助方法 ---
 
@@ -138,6 +140,14 @@ function clearCloseTimers() {
  */
 function registerCloseTimer(timer: ReturnType<typeof setTimeout>) {
   closeTimers.value.add(timer);
+}
+
+function registerPopup(el: HTMLElement) {
+  popupRefs.value.add(el);
+}
+
+function unregisterPopup(el: HTMLElement) {
+  popupRefs.value.delete(el);
 }
 
 /**
@@ -353,6 +363,11 @@ function handleClickOutside(event: MouseEvent) {
   // 点击在菜单内部则不处理
   if (rootRef.value.contains(target)) return;
 
+  // 检查是否在任何浮层内部
+  for (const popup of popupRefs.value) {
+    if (popup.contains(target)) return;
+  }
+
   // 关闭所有展开的子菜单
   openedMenus.value = [];
   openedMenuPaths.value = {};
@@ -392,8 +407,10 @@ provide("reborn-menu", {
   toggleSubMenu,
   clearCloseTimer: clearCloseTimers,
   registerCloseTimer,
+  registerPopup,
+  unregisterPopup,
   /** 通知父级需要重新计算高度（根级无需操作） */
-  notifyResize: () => {},
+  notifyResize: () => { },
 });
 
 /**
@@ -422,3 +439,21 @@ defineExpose({
     </ul>
   </div>
 </template>
+
+<style>
+@keyframes rebornMenuShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+.reborn-menu-shimmer-text {
+  background-size: 200% auto !important;
+  animation: rebornMenuShimmer 2.5s linear infinite;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+</style>

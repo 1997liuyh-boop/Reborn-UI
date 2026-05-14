@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch } from 'vue';
+import { computed, ref, reactive, watch, nextTick, onMounted } from 'vue';
 import { tv } from 'tailwind-variants';
 import { useWindowScroll, useElementBounding, useResizeObserver, useEventListener } from '@vueuse/core';
 import theme from './reborn-sticky.config';
@@ -52,13 +52,16 @@ export interface RebornStickyProps {
     isNeedNavbarHeight?: boolean;
     // 导航栏高度
     navbarHeight?: number;
+    // 目标容器，CSS选择器或DOM元素。吸顶元素将始终保持在该容器内，超过范围则隐藏
+    target?: string | HTMLElement;
 }
 
 const props = withDefaults(defineProps<RebornStickyProps>(), {
     offsetTop: 0,
     zIndex: 100,
     isNeedNavbarHeight: true,
-    navbarHeight: 0 // Web 端默认值通常为 0，除非存在固定的导航栏
+    navbarHeight: 0, // Web 端默认值通常为 0，除非存在固定的导航栏
+    target: undefined
 });
 
 const b = tv(theme);
@@ -70,7 +73,30 @@ const contentRef = ref<HTMLElement | null>(null);
 // 使用 VueUse 获取滚动位置和元素边界数据
 const { y: scrollTop } = useWindowScroll();
 const { top: wrapperTop, width: wrapperWidth, left: wrapperLeft, update: updateRect } = useElementBounding(wrapperRef);
-const { height: contentHeight } = useElementBounding(contentRef);
+const { height: contentHeight, update: updateContentRect } = useElementBounding(contentRef);
+
+const targetElement = ref<HTMLElement | null>(null);
+const { bottom: targetBottom, update: updateTargetRect } = useElementBounding(targetElement);
+
+const initTarget = () => {
+    if (!props.target) {
+        targetElement.value = null;
+        return;
+    }
+    if (typeof props.target === 'string') {
+        targetElement.value = document.querySelector(props.target) as HTMLElement | null;
+    } else {
+        targetElement.value = props.target;
+    }
+};
+
+onMounted(() => {
+    initTarget();
+});
+
+watch(() => props.target, () => {
+    initTarget();
+});
 
 // 响应式对象，用于存储吸顶开始时的包装器尺寸信息
 const rect = reactive({
@@ -101,12 +127,25 @@ const isSticky = computed(() => {
  */
 const updateDimensions = () => {
     updateRect();
+    updateContentRect();
+    if (targetElement.value) {
+        updateTargetRect();
+    }
     // 使用 content 的真实高度，防止 wrapper 在吸顶后高度塌陷为0
     rect.height = contentHeight.value || (contentRef.value ? contentRef.value.getBoundingClientRect().height : 0);
     rect.width = wrapperWidth.value;
     rect.left = wrapperLeft.value;
     rect.top = wrapperTop.value + scrollTop.value;
     emit('resize', { ...rect });
+};
+
+/**
+ * 强制刷新尺寸信息
+ * 用于处理 v-if 切换导致的 DOM 变化
+ */
+const forceUpdate = async () => {
+    await nextTick();
+    updateDimensions();
 };
 
 // 监听吸顶状态变化，更新尺寸
@@ -123,7 +162,9 @@ if (import.meta.client) {
 }
 
 // 监听内容尺寸变化，实时更新占位高度
+// 同时监听 wrapper 和 content，确保 v-if 切换时能捕获变化
 useResizeObserver(wrapperRef, updateDimensions);
+useResizeObserver(contentRef, updateDimensions);
 
 /**
  * 样式管理
@@ -142,7 +183,16 @@ const ui = computed(() => {
  * 计算吸顶时的顶距位置
  */
 const stickyTop = computed(() => {
-    return isSticky.value ? stickyThreshold.value : 0;
+    if (!isSticky.value) return 0;
+    let top = stickyThreshold.value;
+    if (targetElement.value) {
+        // 当目标元素的底部滑动到无法容纳整个吸顶元素时，吸顶元素跟随目标元素一起向上滑动
+        const maxTop = targetBottom.value - rect.height;
+        if (maxTop < top) {
+            top = maxTop;
+        }
+    }
+    return top;
 });
 
 /**
@@ -154,7 +204,9 @@ defineExpose({
     /** 是否处于吸顶状态 */
     isSticky,
     /** 位置和尺寸矩形对象 */
-    rect
+    rect,
+    /** 强制刷新尺寸信息 */
+    forceUpdate
 });
 
 </script>

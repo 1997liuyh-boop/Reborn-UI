@@ -113,13 +113,32 @@ function updateValue(value: number) {
 
 function handleInput(event: Event) {
   const target = event.target as HTMLInputElement;
+  if (target.value === "") return;
   const parsed = Number(target.value);
 
   if (Number.isNaN(parsed)) {
     return;
   }
 
+  // 输入过程中不强制截断，以允许用户输入中间过程（如 min 为 10 时输入 1）
+  if (props.modelValue === undefined) {
+    localValue.value = parsed;
+  }
+  emit("update:modelValue", parsed);
+}
+
+function handleChange(event: Event) {
+  const target = event.target as HTMLInputElement;
+  let parsed = Number(target.value);
+
+  if (target.value === "" || Number.isNaN(parsed)) {
+    parsed = props.min ?? 0;
+  }
+
+  // 校验并修正值
   updateValue(parsed);
+  // 强制同步 DOM 的显示值，确保大于最大值或小于最小值时被修正
+  target.value = String(clampValue(parsed));
 }
 
 function increase() {
@@ -153,7 +172,8 @@ watch(
     <span :class="ui.divider()" aria-hidden="true" />
 
     <input v-bind="inputAttrs" type="number" inputmode="decimal" :min="props.min" :max="props.max" :step="props.step"
-      :value="currentValue" :disabled="props.disabled" :class="ui.input()" @input="handleInput" />
+      :value="currentValue" :disabled="props.disabled" :class="ui.input()" @input="handleInput" @change="handleChange"
+      @blur="handleChange" />
 
     <span :class="ui.divider()" aria-hidden="true" />
 
