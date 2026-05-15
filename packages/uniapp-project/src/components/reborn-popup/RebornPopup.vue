@@ -352,6 +352,10 @@ function onTouchStart(e: any) {
  */
 function onTouchMove(e: any) {
   if (!swipe.isTouch) return
+  // 由这里按需阻止默认滚动，避免在模板层全局 .prevent 误伤微信小程序 picker-view 等可滚动内容
+  if (typeof e?.preventDefault === 'function' && e.cancelable) {
+    e.preventDefault()
+  }
   const touch = e.touches[0]
   const rawOffset = touch.clientY - swipe.startY
   swipe.rawOffsetY = Math.max(0, rawOffset)
@@ -438,11 +442,27 @@ defineExpose({
       <reborn-transition :lazy-render="lazyRender" :custom-class="rootClass.base()" :custom-style="style"
         :duration="effectiveDuration" :show="modelValue" :name="transitionName" @before-enter="onBeforeEnter"
         @enter="onEnter" @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave"
-        @after-leave="onAfterLeave" @touchstart="onTouchStart" @touchmove.stop.prevent="onTouchMove"
-        @touchend="onTouchEnd" @touchcancel="onTouchEnd">
+        @after-leave="onAfterLeave">
         <view :class="rootClass.inner()">
-          <view v-if="isSwipeClose" :class="rootClass.draw()" />
-          <view v-if="showHeader" :class="rootClass.header()">
+          <!-- 手势滑动关闭仅绑定在拖条/标题区，避免整块弹层抢占 touchmove 导致微信小程序 picker-view 无法滚动 -->
+          <view
+            v-if="isSwipeClose"
+            class="flex w-full justify-center py-2"
+            @touchstart="onTouchStart"
+            @touchmove.stop.prevent="onTouchMove"
+            @touchend="onTouchEnd"
+            @touchcancel="onTouchEnd"
+          >
+            <view :class="rootClass.draw()" />
+          </view>
+          <view
+            v-if="showHeader"
+            :class="rootClass.header()"
+            @touchstart="onTouchStart"
+            @touchmove.stop.prevent="onTouchMove"
+            @touchend="onTouchEnd"
+            @touchcancel="onTouchEnd"
+          >
             <slot name="header">
               <text :class="rootClass.title()">{{ title }}</text>
             </slot>
@@ -462,11 +482,26 @@ defineExpose({
     <reborn-transition :lazy-render="lazyRender" :custom-class="rootClass.base()" :custom-style="style"
       :duration="effectiveDuration" :show="modelValue" :name="transitionName" @before-enter="onBeforeEnter"
       @enter="onEnter" @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave"
-      @after-leave="onAfterLeave" @touchstart="onTouchStart" @touchmove.stop.prevent="onTouchMove"
-      @touchend="onTouchEnd" @touchcancel="onTouchEnd">
+      @after-leave="onAfterLeave">
       <view :class="rootClass.inner()">
-        <view v-if="isSwipeClose" :class="rootClass.draw()" />
-        <view v-if="showHeader" :class="rootClass.header()">
+        <view
+          v-if="isSwipeClose"
+          class="flex w-full justify-center py-2"
+          @touchstart="onTouchStart"
+          @touchmove.stop.prevent="onTouchMove"
+          @touchend="onTouchEnd"
+          @touchcancel="onTouchEnd"
+        >
+          <view :class="rootClass.draw()" />
+        </view>
+        <view
+          v-if="showHeader"
+          :class="rootClass.header()"
+          @touchstart="onTouchStart"
+          @touchmove.stop.prevent="onTouchMove"
+          @touchend="onTouchEnd"
+          @touchcancel="onTouchEnd"
+        >
           <slot name="header">
             <text :class="rootClass.title()">{{ title }}</text>
           </slot>
@@ -477,3 +512,13 @@ defineExpose({
     </reborn-transition>
   </view>
 </template>
+
+<!-- #ifdef H5 -->
+<style lang="scss">
+/* 避免弹层手势与浏览器下拉刷新 / overscroll 串联 */
+.rb-popup-wrapper {
+  overscroll-behavior: none;
+}
+</style>
+<!-- #endif -->
+

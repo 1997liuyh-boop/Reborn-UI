@@ -34,7 +34,8 @@ export default {
     },
     block: {
       true: {
-        base: 'flex'
+        // 小程序列布局下 inline-flex 常无法像 H5 一样被 align-items: stretch 拉满宽，显式占满一行
+        base: 'flex w-full min-w-0',
       },
       false: {
         base: 'inline-flex',

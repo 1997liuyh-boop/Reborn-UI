@@ -364,28 +364,28 @@ const clear = () => {
 }
 
 const isItemSelected = (item: CascaderOption, listIndex: number) => {
-    const path = [...activePath.value.slice(0, listIndex), item[props.valueKey]]
     if (props.multiple) {
-        const leaves = getLeafPaths(item, activePath.value.slice(0, listIndex))
+        const col = lists.value[listIndex]
+        // 切换同级（如换城市）时，端上可能一帧内仍带着上一支的 item，与当前列数据引用不一致，错用新 prefix 算 getLeafPaths 会闪勾
+        if (!col?.length || !col.includes(item)) {
+            return false
+        }
+        const prefix = activePath.value.slice(0, listIndex)
+        // 当前列必须与 activePath 前缀对齐，避免小程序端重绘时列与路径短暂不同步导致误判（含 getLeafPaths 异常结果）
+        if (prefix.length !== listIndex) {
+            return false
+        }
+        const leaves = getLeafPaths(item, prefix)
+        // [].every(...) 恒为 true，会导致未选却短暂显示为勾选
+        if (leaves.length === 0) {
+            return false
+        }
         return leaves.every(p => {
             const pStr = JSON.stringify(p)
             return selectedPaths.value.some(sp => JSON.stringify(sp) === pStr)
         })
     }
     return activePath.value[listIndex] === item[props.valueKey]
-}
-
-const isItemIndeterminate = (item: CascaderOption, listIndex: number) => {
-    if (!props.multiple) return false
-    const leaves = getLeafPaths(item, activePath.value.slice(0, listIndex))
-    if (leaves.length <= 1) return false
-
-    const selectedCount = leaves.filter(p => {
-        const pStr = JSON.stringify(p)
-        return selectedPaths.value.some(sp => JSON.stringify(sp) === pStr)
-    }).length
-
-    return selectedCount > 0 && selectedCount < leaves.length
 }
 
 defineExpose({ open, close, clear })
@@ -426,20 +426,20 @@ defineExpose({ open, close, clear })
                     <scroll-view v-else scroll-x :class="ui.listScroll()" :scroll-into-view="listScrollIntoViewId"
                         scroll-with-animation>
                         <view :class="ui.listInner()">
-                            <view v-for="(listData, listIndex) in lists" :key="listIndex" :id="`column-${listIndex}`"
-                                :class="ui.column({ class: columnWidthClass })">
+                            <view v-for="(listData, listIndex) in lists"
+                                :key="`col-${listIndex}-${activePath.slice(0, listIndex).join('\u001f')}`"
+                                :id="`column-${listIndex}`" :class="ui.column({ class: columnWidthClass })">
                                 <RebornTransition :show="true" name="fade-right" :duration="300" custom-class="h-full">
                                     <scroll-view scroll-y :class="ui.columnScroll()">
-                                        <view v-for="(item, itemIndex) in listData"
-                                            :key="`${listIndex}-${item[valueKey]}`" :class="[
+                                        <view v-for="item in listData"
+                                            :key="`${listIndex}-${item[valueKey]}-${activePath.slice(0, listIndex).join('\u001f')}`" :class="[
                                                 ui.item(),
                                                 activePath[listIndex] === item[valueKey] ? ui.itemActive() : ''
                                             ]" @tap="onItemTap(item, listIndex)">
                                             <view :class="ui.itemInner()">
                                                 <view v-if="props.multiple" :class="ui.checkbox()"
                                                     @tap.stop="onItemTap(item, listIndex, true)">
-                                                    <RebornCheckbox :modelValue="isItemSelected(item, listIndex)"
-                                                        :indeterminate="isItemIndeterminate(item, listIndex)" />
+                                                    <RebornCheckbox read-only :modelValue="isItemSelected(item, listIndex)" />
                                                 </view>
                                                 <slot name="item" :item="item" :listIndex="listIndex"
                                                     :active="activePath[listIndex] === item[valueKey]">
