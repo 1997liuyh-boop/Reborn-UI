@@ -171,7 +171,7 @@ watch(popupRef, (newVal, oldVal) => {
 async function updatePopupPosition() {
   if (!popupRef.value || !liRef.value) return;
   // 先重置样式，以便测量真实的 DOM 尺寸
-  popupStyle.value = { visibility: 'hidden' };
+  popupStyle.value = { visibility: "hidden" };
   await nextTick();
 
   const liRect = liRef.value.getBoundingClientRect();
@@ -201,23 +201,72 @@ async function updatePopupPosition() {
   popupStyle.value = {
     top: `${top}px`,
     left: `${left}px`,
-    visibility: 'visible'
+    visibility: "visible"
   };
 }
 
+/** 手动拦截滚轮事件，防止滚动穿透 */
+function handleWheel(e: WheelEvent) {
+  const el = e.currentTarget as HTMLElement;
+  if (!el) return;
+
+  const { deltaY } = e;
+  const isScrollable = el.scrollHeight > el.clientHeight;
+
+  // 1. 如果内容没超过最大高度（不可滚动），直接拦截滚轮事件，防止背景页面滚动
+  if (!isScrollable) {
+    if (e.cancelable) e.preventDefault();
+    return;
+  }
+
+  // 2. 如果内容可滚动，拦截边界溢出
+  // 向上滚动且已达顶部
+  if (deltaY < 0 && el.scrollTop <= 0) {
+    if (e.cancelable) e.preventDefault();
+  }
+  // 向下滚动且已达底部
+  else if (deltaY > 0 && Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight) {
+    if (e.cancelable) e.preventDefault();
+  }
+}
+
 watch(isOpened, (val) => {
-  if (val && effectiveExpandType.value === 'popup') {
+  if (val && effectiveExpandType.value === "popup") {
     updatePopupPosition();
   } else {
     popupStyle.value = {};
   }
 });
 
-// 当弹窗打开时，监听滚动事件以实时更新位置
+// 当弹窗打开时，监听滚动事件
 // 使用 capture 确保能捕获到局部滚动容器的滚动
-useEventListener(window, "scroll", () => {
+useEventListener(window, "scroll", (e) => {
   if (isOpened.value && effectiveExpandType.value === "popup") {
-    updatePopupPosition();
+    const target = e.target as HTMLElement;
+    if (!popupRef.value) return;
+
+    // 1. 如果是在当前弹出层内部滚动，更新位置并返回
+    if (popupRef.value.contains(target)) {
+      updatePopupPosition();
+      return;
+    }
+
+    // 2. 如果是在子级弹出层（已被 Teleport 到 body）内部滚动，也不应该关闭当前层
+    // 通过 data-menu-path 属性判断层级关系
+    const targetPopup = target.closest?.("[data-menu-path]") as HTMLElement;
+    if (targetPopup) {
+      const path = targetPopup.getAttribute("data-menu-path")?.split(",") || [];
+      const myPath = indexPath.value;
+      // 如果目标弹出层的路径包含了当前菜单的完整路径，说明它是当前菜单的后代
+      const isDescendant = myPath.length <= path.length && myPath.every((seg, i) => path[i] === seg);
+      if (isDescendant) {
+        updatePopupPosition();
+        return;
+      }
+    }
+
+    // 3. 否则说明是父级容器或页面其他部分在滚动，关闭当前菜单
+    menuContext?.handleClose(props.index, indexPath.value);
   }
 }, { capture: true, passive: true });
 </script>
@@ -244,15 +293,15 @@ useEventListener(window, "scroll", () => {
 
     <!-- 浮层展开：保持 v-show -->
     <Teleport to="body" v-if="effectiveExpandType === 'popup'">
-      <div v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()" @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave" :style="{
+      <div v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()" :data-menu-path="indexPath.join(',')"
+        @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :style="{
           position: 'fixed',
           margin: 0,
           backgroundColor: menuContext?.backgroundColor.value,
           color: menuContext?.textColor.value,
           ...popupStyle
         }">
-        <ul :class="subMenuUi.subMenuContent()" role="menu">
+        <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
           <slot />
         </ul>
       </div>
@@ -265,7 +314,7 @@ useEventListener(window, "scroll", () => {
       color: menuContext?.textColor.value
     }">
       <div class="min-h-0">
-        <ul :class="subMenuUi.subMenuContent()" role="menu">
+        <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
           <slot />
         </ul>
       </div>

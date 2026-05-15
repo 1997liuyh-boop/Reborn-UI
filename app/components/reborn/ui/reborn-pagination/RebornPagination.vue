@@ -14,14 +14,11 @@ import theme, {
     type PaginationUI
 } from './reborn-pagination.config'
 
-const b = tv(theme as any)
 
 /**
  * 组件属性接口定义
  */
 export interface PaginationProps {
-    /** 当前页码 */
-    modelValue?: number
     /** 数据总数 */
     total?: number
     /** 每页条数 */
@@ -49,7 +46,6 @@ export interface PaginationProps {
 }
 
 const props = withDefaults(defineProps<PaginationProps>(), {
-    modelValue: 1,
     total: 0,
     pageSize: 10,
     mode: 'multi',
@@ -64,8 +60,6 @@ const props = withDefaults(defineProps<PaginationProps>(), {
 })
 
 const emit = defineEmits<{
-    /** 页码更新事件 */
-    (e: 'update:modelValue', value: number): void
     /** 页码改变事件 */
     (e: 'change', value: number): void
 }>()
@@ -73,7 +67,7 @@ const emit = defineEmits<{
 /**
  * 当前页码双向绑定
  */
-const currentPage = defineModel<number>({ default: 1 })
+const modelValue = defineModel<number>({ default: 1 })
 
 /**
  * 计算总页数
@@ -88,7 +82,7 @@ const totalPages = computed(() => {
  */
 const pageList = computed(() => {
     const total = totalPages.value
-    const current = currentPage.value
+    const current = modelValue.value
     const list: { type: 'page' | 'ellipsis', value: number | string, key: string }[] = []
 
     if (total <= 1) return [{ type: 'page', value: 1, key: 'page-1' }]
@@ -114,6 +108,7 @@ const pageList = computed(() => {
     return list
 })
 
+const b = tv(theme)
 /**
  * 自定义 UI 覆盖
  */
@@ -122,44 +117,49 @@ const uiOverrides = computed(() => props.ui || {})
 /**
  * 基础样式对象
  */
-const ui = computed(() => b({
-    mode: props.mode,
-    color: props.color,
-    size: props.size,
-    background: props.background,
-    disabled: props.disabled
-}))
-
-/**
- * 生成页码项样式类
- * @param active 是否选中
- * @param disabled 是否禁用
- * @param slotName 插槽名称 (item, prev, next)
- */
-const getItemClass = (active = false, disabled = false, slotName: 'item' | 'prev' | 'next' = 'item') => {
-    return b({
+const ui = computed(() => {
+    const styles = b({
         mode: props.mode,
         color: props.color,
         size: props.size,
         background: props.background,
-        active,
-        disabled
-    })[slotName]({ class: uiOverrides.value[slotName] })
-}
+        disabled: props.disabled
+    })
 
-/**
- * 根容器类名
- */
-const rootClasses = computed(() => ui.value.root({
-    class: cn(uiOverrides.value.root, props.class)
-}))
+    return {
+        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.class, uiOverrides.value.root) }),
+        list: (opts?: { class?: any }) => styles.list({ class: cn(opts?.class, uiOverrides.value.list) }),
+        item: (opts?: { class?: any, active?: boolean, disabled?: boolean }) => styles.item({ active: opts?.active, disabled: opts?.disabled, class: cn(opts?.class, uiOverrides.value.item) }),
+        itemLabel: (opts?: { class?: any }) => styles.itemLabel({ class: cn(opts?.class, uiOverrides.value.itemLabel) }),
+        prev: (opts?: { class?: any, active?: boolean, disabled?: boolean }) => styles.prev({ active: opts?.active, disabled: opts?.disabled, class: cn(opts?.class, uiOverrides.value.prev) }),
+        prevIcon: (opts?: { class?: any }) => styles.prevIcon({ class: cn(opts?.class, uiOverrides.value.prevIcon) }),
+        prevLabel: (opts?: { class?: any }) => styles.prevLabel({ class: cn(opts?.class, uiOverrides.value.prevLabel) }),
+        next: (opts?: { class?: any, active?: boolean, disabled?: boolean }) => styles.next({ active: opts?.active, disabled: opts?.disabled, class: cn(opts?.class, uiOverrides.value.next) }),
+        nextIcon: (opts?: { class?: any }) => styles.nextIcon({ class: cn(opts?.class, uiOverrides.value.nextIcon) }),
+        nextLabel: (opts?: { class?: any }) => styles.nextLabel({ class: cn(opts?.class, uiOverrides.value.nextLabel) }),
+        ellipsis: (opts?: { class?: any }) => styles.ellipsis({ class: cn(opts?.class, uiOverrides.value.ellipsis) }),
+        ellipsisText: (opts?: { class?: any }) => styles.ellipsisText({ class: cn(opts?.class, uiOverrides.value.ellipsisText) }),
+        simpleContent: (opts?: { class?: any }) => styles.simpleContent({ class: cn(opts?.class, uiOverrides.value.simpleContent) }),
+        simpleCurrent: (opts?: { class?: any }) => styles.simpleCurrent({ class: cn(opts?.class, uiOverrides.value.simpleCurrent) }),
+        simpleSeparator: (opts?: { class?: any }) => styles.simpleSeparator({ class: cn(opts?.class, uiOverrides.value.simpleSeparator) }),
+        simpleTotal: (opts?: { class?: any }) => styles.simpleTotal({ class: cn(opts?.class, uiOverrides.value.simpleTotal) }),
+        pageListItem: (opts?: { class?: any }) => styles.pageListItem({ class: cn(opts?.class, uiOverrides.value.pageListItem) }),
+        pageListMove: (opts?: { class?: any }) => styles.pageListMove({ class: cn(opts?.class, uiOverrides.value.pageListMove) }),
+        pageListEnterActive: (opts?: { class?: any }) => styles.pageListEnterActive({ class: cn(opts?.class, uiOverrides.value.pageListEnterActive) }),
+        pageListLeaveActive: (opts?: { class?: any }) => styles.pageListLeaveActive({ class: cn(opts?.class, uiOverrides.value.pageListLeaveActive) }),
+        pageListEnterFrom: (opts?: { class?: any }) => styles.pageListEnterFrom({ class: cn(opts?.class, uiOverrides.value.pageListEnterFrom) }),
+        pageListEnterTo: (opts?: { class?: any }) => styles.pageListEnterTo({ class: cn(opts?.class, uiOverrides.value.pageListEnterTo) }),
+        pageListLeaveFrom: (opts?: { class?: any }) => styles.pageListLeaveFrom({ class: cn(opts?.class, uiOverrides.value.pageListLeaveFrom) }),
+        pageListLeaveTo: (opts?: { class?: any }) => styles.pageListLeaveTo({ class: cn(opts?.class, uiOverrides.value.pageListLeaveTo) })
+    }
+})
 
 /**
  * 处理页码点击
  */
 function handlePageClick(page: number | string) {
-    if (props.disabled || typeof page === 'string' || page === currentPage.value) return
-    currentPage.value = page as number
+    if (props.disabled || typeof page === 'string' || page === modelValue.value) return
+    modelValue.value = page as number
     emit('change', page as number)
 }
 
@@ -167,62 +167,57 @@ function handlePageClick(page: number | string) {
  * 跳转至上一页
  */
 function prev() {
-    if (props.disabled || currentPage.value <= 1) return
-    handlePageClick(currentPage.value - 1)
+    if (props.disabled || modelValue.value <= 1) return
+    handlePageClick(modelValue.value - 1)
 }
 
 /**
  * 跳转至下一页
  */
 function next() {
-    if (props.disabled || currentPage.value >= totalPages.value) return
-    handlePageClick(currentPage.value + 1)
+    if (props.disabled || modelValue.value >= totalPages.value) return
+    handlePageClick(modelValue.value + 1)
 }
 
 defineExpose({ prev, next })
 </script>
 
 <template>
-    <nav v-if="!(hideOnSinglePage && totalPages <= 1)" :class="rootClasses" aria-label="分页导航">
+    <nav v-if="!(hideOnSinglePage && totalPages <= 1)" :class="ui.root()" aria-label="分页导航">
         <!-- 上一页插槽 -->
-        <slot name="prev" :currentPage="currentPage" :totalPages="totalPages" :prev="prev"
-            :disabled="disabled || currentPage <= 1">
-            <div :class="[
-                getItemClass(false, disabled || currentPage <= 1, 'prev'),
-                !prevText ? '!aspect-square !p-0' : '',
-                'cursor-pointer'
-            ]" :disabled="disabled || currentPage <= 1" @click="prev">
-                <Icon v-if="!prevText" name="lucide:chevron-left"
-                    :class="ui.prevIcon({ class: uiOverrides.prevIcon })" />
-                <span v-else :class="ui.prevLabel({ class: uiOverrides.prevLabel })">{{ prevText }}</span>
+        <slot name="prev" :currentPage="modelValue" :totalPages="totalPages" :prev="prev"
+            :disabled="disabled || modelValue <= 1">
+            <div :class="ui.prev({
+                active: false,
+                disabled: disabled || modelValue <= 1,
+                class: [!prevText ? '!aspect-square !p-0' : '', 'cursor-pointer']
+            })" :disabled="disabled || modelValue <= 1" @click="prev">
+                <Icon v-if="!prevText" name="lucide:chevron-left" :class="ui.prevIcon()" />
+                <span v-else :class="ui.prevLabel()">{{ prevText }}</span>
             </div>
         </slot>
 
         <!-- 页码列表 (Multi 模式) -->
         <template v-if="mode === 'multi'">
-            <div :class="ui.list({ class: uiOverrides.list })">
-                <TransitionGroup :move-class="ui.pageListMove({ class: uiOverrides.pageListMove })"
-                    :enter-active-class="ui.pageListEnterActive({ class: uiOverrides.pageListEnterActive })"
-                    :leave-active-class="ui.pageListLeaveActive({ class: uiOverrides.pageListLeaveActive })"
-                    :enter-from-class="ui.pageListEnterFrom({ class: uiOverrides.pageListEnterFrom })"
-                    :enter-to-class="ui.pageListEnterTo({ class: uiOverrides.pageListEnterTo })"
-                    :leave-from-class="ui.pageListLeaveFrom({ class: uiOverrides.pageListLeaveFrom })"
-                    :leave-to-class="ui.pageListLeaveTo({ class: uiOverrides.pageListLeaveTo })">
-                    <div v-for="item in pageList" :key="item.key"
-                        :class="ui.pageListItem({ class: uiOverrides.pageListItem })">
+            <div :class="ui.list()">
+                <TransitionGroup :move-class="ui.pageListMove()" :enter-active-class="ui.pageListEnterActive()"
+                    :leave-active-class="ui.pageListLeaveActive()" :enter-from-class="ui.pageListEnterFrom()"
+                    :enter-to-class="ui.pageListEnterTo()" :leave-from-class="ui.pageListLeaveFrom()"
+                    :leave-to-class="ui.pageListLeaveTo()">
+                    <div v-for="(item, index) in pageList" :key="index" :class="ui.pageListItem()">
                         <!-- 省略号显示 -->
-                        <div v-if="item.type === 'ellipsis'" :class="ui.ellipsis({ class: uiOverrides.ellipsis })">
-                            <span :class="ui.ellipsisText({ class: uiOverrides.ellipsisText })">•••</span>
+                        <div v-if="item.type === 'ellipsis'" :class="ui.ellipsis()">
+                            <span :class="ui.ellipsisText()">•••</span>
                         </div>
                         <!-- 页码按钮插槽 -->
-                        <slot v-else name="page" :page="item.value" :active="currentPage === item.value"
+                        <slot v-else name="page" :page="item.value" :active="modelValue === item.value"
                             :handlePageClick="handlePageClick" :disabled="disabled">
-                            <div :class="[
-                                getItemClass(currentPage === item.value, disabled),
-                                '!aspect-square !p-0',
-                                'cursor-pointer'
-                            ]" :disabled="disabled" @click="handlePageClick(item.value as number)">
-                                <span :class="ui.itemLabel({ class: uiOverrides.itemLabel })">{{ item.value }}</span>
+                            <div :class="ui.item({
+                                active: modelValue === item.value,
+                                disabled: disabled,
+                                class: ['!aspect-square !p-0', 'cursor-pointer']
+                            })" :disabled="disabled" @click="handlePageClick(item.value as number)">
+                                <span :class="ui.itemLabel()">{{ item.value }}</span>
                             </div>
                         </slot>
                     </div>
@@ -231,26 +226,25 @@ defineExpose({ prev, next })
         </template>
 
         <!-- 简易显示模式 (Simple 模式) -->
-        <slot v-else name="simpleContent" :currentPage="currentPage" :totalPages="totalPages"
+        <slot v-else name="simpleContent" :currentPage="modelValue" :totalPages="totalPages"
             :handlePageClick="handlePageClick" :disabled="disabled">
-            <div :class="ui.simpleContent({ class: uiOverrides.simpleContent })">
-                <span :class="ui.simpleCurrent({ class: uiOverrides.simpleCurrent })">{{ currentPage }}</span>
-                <span :class="ui.simpleSeparator({ class: uiOverrides.simpleSeparator })">/</span>
-                <span :class="ui.simpleTotal({ class: uiOverrides.simpleTotal })">{{ totalPages }}</span>
+            <div :class="ui.simpleContent()">
+                <span :class="ui.simpleCurrent()">{{ modelValue }}</span>
+                <span :class="ui.simpleSeparator()">/</span>
+                <span :class="ui.simpleTotal()">{{ totalPages }}</span>
             </div>
         </slot>
 
         <!-- 下一页插槽 -->
-        <slot name="next" :currentPage="currentPage" :totalPages="totalPages" :next="next"
-            :disabled="disabled || currentPage >= totalPages">
-            <div :class="[
-                getItemClass(false, disabled || currentPage >= totalPages, 'next'),
-                !nextText ? '!aspect-square !p-0' : '',
-                'cursor-pointer'
-            ]" :disabled="disabled || currentPage >= totalPages" @click="next">
-                <Icon v-if="!nextText" name="lucide:chevron-right"
-                    :class="ui.nextIcon({ class: uiOverrides.nextIcon })" />
-                <span v-else :class="ui.nextLabel({ class: uiOverrides.nextLabel })">{{ nextText }}</span>
+        <slot name="next" :currentPage="modelValue" :totalPages="totalPages" :next="next"
+            :disabled="disabled || modelValue >= totalPages">
+            <div :class="ui.next({
+                active: false,
+                disabled: disabled || modelValue >= totalPages,
+                class: [!nextText ? '!aspect-square !p-0' : '', 'cursor-pointer']
+            })" :disabled="disabled || modelValue >= totalPages" @click="next">
+                <Icon v-if="!nextText" name="lucide:chevron-right" :class="ui.nextIcon()" />
+                <span v-else :class="ui.nextLabel()">{{ nextText }}</span>
             </div>
         </slot>
     </nav>

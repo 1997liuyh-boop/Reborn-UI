@@ -252,11 +252,11 @@ const ui = computed(() => {
       styles.associateItem({ class: cn(opts?.class, uiOverrides.associateItem) }),
 
     leadingWrapper: (opts?: { class?: any }) =>
-      styles.leadingWrapper({ class: cn(opts?.class) }),
+      styles.leadingWrapper({ class: cn(opts?.class, uiOverrides.leadingWrapper) }),
     trailingWrapper: (opts?: { class?: any }) =>
-      styles.trailingWrapper({ class: cn(opts?.class) }),
+      styles.trailingWrapper({ class: cn(opts?.class, uiOverrides.trailingWrapper) }),
     separator: (opts?: { class?: any }) =>
-      styles.separator({ class: cn(opts?.class) }),
+      styles.separator({ class: cn(opts?.class, uiOverrides.separator) }),
     searchIconInner: (opts?: { class?: any }) =>
       styles.searchIconInner({ class: cn(opts?.class, uiOverrides.searchIconInner) }),
     emptyText: (opts?: { class?: any }) =>

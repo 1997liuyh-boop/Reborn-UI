@@ -186,28 +186,28 @@ export default {
      */
     compoundVariants: [
         // 激活状态且有背景时的高亮样式
-        { active: true, background: true, color: 'primary', class: { item: 'bg-primary text-white border-primary shadow-md shadow-primary/20 hover:bg-primary' } },
-        { active: true, background: true, color: 'success', class: { item: 'bg-success text-white border-success shadow-md shadow-success/20 hover:bg-success' } },
-        { active: true, background: true, color: 'warning', class: { item: 'bg-warning text-white border-warning shadow-md shadow-warning/20 hover:bg-warning' } },
-        { active: true, background: true, color: 'error', class: { item: 'bg-error text-white border-error shadow-md shadow-error/20 hover:bg-error' } },
-        { active: true, background: true, color: 'info', class: { item: 'bg-info text-white border-info shadow-md shadow-info/20 hover:bg-info' } },
-        { active: true, background: true, color: 'neutral', class: { item: 'bg-gray-6 text-white border-gray-6 shadow-md shadow-gray-6/20 hover:bg-gray-6' } },
+        { active: true, background: true, color: 'primary' as PaginationColor, class: { item: 'bg-primary text-white border-primary shadow-md shadow-primary/20 hover:bg-primary' } },
+        { active: true, background: true, color: 'success' as PaginationColor, class: { item: 'bg-success text-white border-success shadow-md shadow-success/20 hover:bg-success' } },
+        { active: true, background: true, color: 'warning' as PaginationColor, class: { item: 'bg-warning text-white border-warning shadow-md shadow-warning/20 hover:bg-warning' } },
+        { active: true, background: true, color: 'error' as PaginationColor, class: { item: 'bg-error text-white border-error shadow-md shadow-error/20 hover:bg-error' } },
+        { active: true, background: true, color: 'info' as PaginationColor, class: { item: 'bg-info text-white border-info shadow-md shadow-info/20 hover:bg-info' } },
+        { active: true, background: true, color: 'neutral' as PaginationColor, class: { item: 'bg-gray-6 text-white border-gray-6 shadow-md shadow-gray-6/20 hover:bg-gray-6' } },
 
         // 激活状态且无背景时的高亮样式 (仅文字加粗)
-        { active: true, background: false, color: 'primary', class: { item: 'text-primary font-black' } },
-        { active: true, background: false, color: 'success', class: { item: 'text-success font-black' } },
-        { active: true, background: false, color: 'warning', class: { item: 'text-warning font-black' } },
-        { active: true, background: false, color: 'error', class: { item: 'text-error font-black' } },
-        { active: true, background: false, color: 'info', class: { item: 'text-info font-black' } },
-        { active: true, background: false, color: 'neutral', class: { item: 'text-gray-9 dark:text-gray-1 font-black underline underline-offset-4 decoration-2' } }
+        { active: true, background: false, color: 'primary' as PaginationColor, class: { item: 'text-primary font-black' } },
+        { active: true, background: false, color: 'success' as PaginationColor, class: { item: 'text-success font-black' } },
+        { active: true, background: false, color: 'warning' as PaginationColor, class: { item: 'text-warning font-black' } },
+        { active: true, background: false, color: 'error' as PaginationColor, class: { item: 'text-error font-black' } },
+        { active: true, background: false, color: 'info' as PaginationColor, class: { item: 'text-info font-black' } },
+        { active: true, background: false, color: 'neutral' as PaginationColor, class: { item: 'text-gray-9 dark:text-gray-1 font-black underline underline-offset-4 decoration-2' } }
     ],
     /**
      * 默认变体
      */
     defaultVariants: {
-        mode: 'multi',
-        color: 'primary',
-        size: 'md',
+        mode: 'multi' as PaginationMode,
+        color: 'primary' as PaginationColor,
+        size: 'md' as PaginationSize,
         active: false,
         disabled: false
     }
