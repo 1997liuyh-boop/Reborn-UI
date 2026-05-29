@@ -97,11 +97,12 @@ function handleClose(e: any) {
         <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
       </slot>
 
-      <text v-if="props.label || slots.default" :class="ui.label()">
+      <!-- 微信小程序中 text 内不得再嵌套 text/slot 文本节点，否则子内容不渲染只剩占位；用 view 包住 -->
+      <view v-if="props.label || slots.default" :class="ui.label()">
         <slot>
           <text v-if="props.label">{{ props.label }}</text>
         </slot>
-      </text>
+      </view>
 
       <slot name="trailing" />
 

@@ -98,7 +98,6 @@ function clear() {
   emit('clear')
 }
 
-const slot = useSlots()
 // 打开
 function open() {
   if (isDisabled.value) { return }
@@ -110,18 +109,11 @@ function open() {
   <view :class="ui.wrapper({ class: props.customClass })" @tap="open">
     <view :class="ui.content()">
 
-      <!-- #ifndef MP-WEIXIN -->
-      <slot>
-        <text v-if="showText" :class="ui.text()">{{ text }}</text>
-        <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
-      </slot>
-      <!-- #endif -->
-      <!-- #ifdef MP-WEIXIN -->
+      <!-- 与 RebornSelect 等父组件的 #default 解构一致：非微信端也必须传入作用域插槽参数，否则 H5 等端 showText/text/placeholder/ui 均为 undefined，触发区文案会空白。 -->
       <slot :showText="showText" :text="text" :placeholder="placeholder" :ui="ui">
         <text v-if="showText" :class="ui.text()">{{ text }}</text>
         <text v-else :class="ui.placeholder()">{{ placeholder }}</text>
       </slot>
-      <!-- #endif -->
     </view>
 
     <!-- 清空按钮 -->

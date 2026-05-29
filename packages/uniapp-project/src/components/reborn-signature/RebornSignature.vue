@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { uuid } from '@/lib/file'
 import { tv } from '@/lib/tv'
@@ -71,6 +71,8 @@ export interface RebornSignatureProps {
   placeholder?: string
   /** 是否显示默认操作栏 */
   showToolbar?: boolean
+  /** 是否显示退出按钮 */
+  showClose?: boolean
   /** 横屏签名时操作按钮位置 */
   toolbarPosition?: SignatureToolbarPosition
   /** 是否显示撤销按钮 */
@@ -116,6 +118,7 @@ const props = withDefaults(defineProps<RebornSignatureProps>(), {
   backgroundColor: '#FFFFFF',
   placeholder: '请在此处签名',
   showToolbar: true,
+  showClose: false,
   toolbarPosition: 'bottom',
   showUndo: true,
   showRedo: true,
@@ -171,12 +174,14 @@ const { disabled: formDisabled, isError, validate } = useFormInject(props)
 const canvasId = ref(`reborn-signature-${uuid()}`)
 const canvasWidth = ref(0)
 const canvasHeight = ref(0)
-const canvasRect = ref<any>(null)
-const strokes = ref<SignatureStroke[]>([])
-const undoneStrokes = ref<SignatureStroke[]>([])
+const canvasRect = shallowRef<any>(null)
+const strokes = shallowRef<SignatureStroke[]>([])
+const undoneStrokes = shallowRef<SignatureStroke[]>([])
 const drawing = ref(false)
-const currentStroke = ref<SignatureStroke | null>(null)
-const canvasContext = ref<any>(null)
+const currentStroke = shallowRef<SignatureStroke | null>(null)
+const canvasContext = shallowRef<any>(null)
+const canvasNode = shallowRef<any>(null)
+const pointCount = ref(0)
 const b = tv(theme)
 const isDisabled = computed(() => formDisabled.value || props.disabled)
 const isReadonly = computed(() => props.readonly)
@@ -248,15 +253,23 @@ const boardStyle = computed(() => ({
   backgroundColor: props.backgroundColor || 'transparent',
 }))
 
-const canvasStyle = computed(() => ({
-  width: canvasWidth.value ? `${canvasWidth.value}px` : '100%',
-  height: canvasHeight.value ? `${canvasHeight.value}px` : toUnit(props.height),
-}))
+const canvasStyle = computed(() => {
+  if (props.rotate) {
+    return {
+      width: '100%',
+      height: '100%',
+    }
+  }
+
+  return {
+    width: canvasWidth.value ? `${canvasWidth.value}px` : '100%',
+    height: canvasHeight.value ? `${canvasHeight.value}px` : toUnit(props.height),
+  }
+})
 
 const canUndo = computed(() => strokes.value.length > 0)
 const canRedo = computed(() => undoneStrokes.value.length > 0)
 const strokeCount = computed(() => strokes.value.length)
-const pointCount = computed(() => strokes.value.reduce((total, s) => total + s.points.length, 0))
 
 function toUnit(value: number | string) {
   if (typeof value === 'number') {
@@ -391,6 +404,16 @@ function drawPressureStroke(ctx: any, stroke: SignatureStroke) {
   }
 }
 
+function drawSegment(ctx: any, stroke: SignatureStroke, prevPoint: SignaturePoint, point: SignaturePoint) {
+  const width = getSegmentWidth(prevPoint, point, stroke)
+
+  setContextStyle(ctx, { ...stroke, width })
+  ctx.beginPath()
+  ctx.moveTo(prevPoint.x, prevPoint.y)
+  ctx.lineTo(point.x, point.y)
+  ctx.stroke()
+}
+
 function drawStroke(ctx: any, stroke: SignatureStroke) {
   const points = stroke.points
 
@@ -432,6 +455,40 @@ function drawStroke(ctx: any, stroke: SignatureStroke) {
   ctx.stroke()
 }
 
+function createIncrementalContext() {
+  // #ifdef MP-WEIXIN
+  return canvasContext.value
+  // #endif
+
+  // #ifndef MP-WEIXIN
+  return uni.createCanvasContext(canvasId.value, proxy)
+  // #endif
+}
+
+function flushIncrementalContext(ctx: any) {
+  if (ctx?.draw) {
+    ctx.draw(true)
+  }
+}
+
+function drawLatestStrokePart(stroke: SignatureStroke) {
+  const ctx = createIncrementalContext()
+  const points = stroke.points
+
+  if (!ctx || points.length === 0) {
+    return
+  }
+
+  if (points.length === 1) {
+    drawDot(ctx, points[0], stroke)
+    flushIncrementalContext(ctx)
+    return
+  }
+
+  drawSegment(ctx, stroke, points[points.length - 2], points[points.length - 1])
+  flushIncrementalContext(ctx)
+}
+
 function drawAll() {
   if (!canvasWidth.value || !canvasHeight.value) {
     return
@@ -454,21 +511,25 @@ function drawAll() {
   // #endif
 }
 
-function refreshCanvasRect(): Promise<any> {
+function refreshCanvasRect(): Promise<boolean> {
   return new Promise((resolve) => {
     uni.createSelectorQuery()
       .in(proxy)
       .select('.reborn-signature__board')
       .boundingClientRect((rect: any) => {
         if (rect) {
+          const prevWidth = canvasWidth.value
+          const prevHeight = canvasHeight.value
           canvasRect.value = rect
           // 外部 CSS rotate(90deg/270deg) 旋转后，bounding rect 的宽高相对组件本地坐标已互换。
           // 还原为组件本地坐标系的真实画布尺寸，保证 clearCanvas/initCanvas 正确。
           const isSwapped = props.rotate === 90 || props.rotate === 270
           canvasWidth.value = isSwapped ? rect.height : rect.width
           canvasHeight.value = isSwapped ? rect.width : rect.height
+          resolve(prevWidth !== canvasWidth.value || prevHeight !== canvasHeight.value)
+          return
         }
-        resolve(rect)
+        resolve(false)
       })
       .exec()
   })
@@ -476,7 +537,7 @@ function refreshCanvasRect(): Promise<any> {
 
 async function initCanvas() {
   await nextTick()
-  await refreshCanvasRect()
+  const sizeChanged = await refreshCanvasRect()
 
   // #ifdef MP-WEIXIN
   await new Promise<void>((resolve) => {
@@ -484,18 +545,21 @@ async function initCanvas() {
       ; (query.select(`#${canvasId.value}`) as any)
         .fields({ node: true, size: true }, (res: any) => {
           if (res?.node) {
-            const dpr = uni.getSystemInfoSync().pixelRatio || 1
             const canvas = res.node
-            canvas.width = canvasWidth.value * dpr
-            canvas.height = canvasHeight.value * dpr
-            const ctx = canvas.getContext('2d')
-            if (ctx.setTransform) {
-              ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+            if (!canvasContext.value || canvasNode.value !== canvas || sizeChanged) {
+              const dpr = uni.getSystemInfoSync().pixelRatio || 1
+              canvas.width = canvasWidth.value * dpr
+              canvas.height = canvasHeight.value * dpr
+              const ctx = canvas.getContext('2d')
+              if (ctx.setTransform) {
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+              }
+              else {
+                ctx.scale(dpr, dpr)
+              }
+              canvasNode.value = canvas
+              canvasContext.value = ctx
             }
-            else {
-              ctx.scale(dpr, dpr)
-            }
-            canvasContext.value = ctx
           }
           resolve()
         })
@@ -504,6 +568,27 @@ async function initCanvas() {
   // #endif
 
   drawAll()
+}
+
+async function prepareCanvasForStroke() {
+  await nextTick()
+  const sizeChanged = await refreshCanvasRect()
+
+  // #ifdef MP-WEIXIN
+  if (!canvasContext.value || sizeChanged) {
+    if (sizeChanged) {
+      canvasContext.value = null
+      canvasNode.value = null
+    }
+    await initCanvas()
+  }
+  // #endif
+
+  // #ifndef MP-WEIXIN
+  if (sizeChanged) {
+    drawAll()
+  }
+  // #endif
 }
 
 function getPoint(event: any): SignaturePoint | null {
@@ -565,9 +650,8 @@ async function onTouchStart(event: any) {
     return
   }
 
-  // 弹窗、横屏和动画场景下，初次挂载时拿到的画布位置可能不准确。
-  // 每次落笔前重新测量一次，确保触点坐标和当前画布位置一致。
-  await initCanvas()
+  // 横屏弹窗打开后布局可能变化，落笔前只同步坐标和必要的画布尺寸，避免反复重绘历史笔迹。
+  await prepareCanvasForStroke()
 
   const point = getPoint(event)
   if (!point) {
@@ -588,8 +672,9 @@ async function onTouchStart(event: any) {
   point.width = getPointWidth(point, undefined, stroke)
   stroke.points.push(point)
   currentStroke.value = stroke
-  strokes.value.push(currentStroke.value)
-  drawAll()
+  strokes.value = [...strokes.value, stroke]
+  pointCount.value += 1
+  drawLatestStrokePart(stroke)
   emit('start', point)
 }
 
@@ -616,7 +701,8 @@ function onTouchMove(event: any) {
 
   point.width = getPointWidth(point, prevPoint, currentStroke.value)
   points.push(point)
-  drawAll()
+  pointCount.value += 1
+  drawLatestStrokePart(currentStroke.value)
   emit('draw', point)
 }
 
@@ -642,6 +728,7 @@ function clear() {
   undoneStrokes.value = []
   currentStroke.value = null
   drawing.value = false
+  pointCount.value = 0
   modelValue.value = ''
   drawAll()
   emit('clear')
@@ -650,12 +737,15 @@ function clear() {
 }
 
 function undo() {
-  const stroke = strokes.value.pop()
+  const nextStrokes = strokes.value.slice()
+  const stroke = nextStrokes.pop()
   if (!stroke) {
     return
   }
 
-  undoneStrokes.value.push(stroke)
+  strokes.value = nextStrokes
+  undoneStrokes.value = [...undoneStrokes.value, stroke]
+  pointCount.value = Math.max(0, pointCount.value - stroke.points.length)
   modelValue.value = ''
   drawAll()
   emit('undo', stroke)
@@ -664,12 +754,15 @@ function undo() {
 }
 
 function redo() {
-  const stroke = undoneStrokes.value.pop()
+  const nextUndoneStrokes = undoneStrokes.value.slice()
+  const stroke = nextUndoneStrokes.pop()
   if (!stroke) {
     return
   }
 
-  strokes.value.push(stroke)
+  undoneStrokes.value = nextUndoneStrokes
+  strokes.value = [...strokes.value, stroke]
+  pointCount.value += stroke.points.length
   modelValue.value = ''
   drawAll()
   emit('redo', stroke)
@@ -703,6 +796,14 @@ function handleSave() {
     return
   }
   save()
+}
+
+function handleClose() {
+  if (!isInteractive.value) {
+    return
+  }
+  clear()
+  emit('close')
 }
 
 function toPng(options?: { allowEmpty?: boolean }): Promise<string> {
@@ -861,6 +962,11 @@ defineExpose({
         </view>
 
         <view class="flex flex-row flex-wrap items-center justify-end gap-1 w-full">
+          <view v-if="showClose" :class="ui.action({ class: 'border-gray-3 bg-gray-2 text-gray-8' })" @tap="handleClose">
+            <view :class="ui.actionIcon({ class: 'i-lucide-log-out' })" />
+            <text :class="ui.actionText()">退出</text>
+          </view>
+
           <view v-if="showUndo" :class="ui.action({ class: getHistoryActionClass(canUndo) })" @tap="handleUndo">
             <view :class="ui.actionIcon({ class: 'i-lucide-undo-2' })" />
             <text :class="ui.actionText()">撤销</text>

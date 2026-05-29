@@ -81,10 +81,44 @@ watch(() => toastOption.value, (val) => reset(val), { immediate: true, deep: tru
 watch(() => iconName.value, buildSvg, { immediate: true })
 
 const b = tv(theme)
-const transitionStyle = computed(() => `z-index:${zIndex.value};position:fixed;left:0;top:50%;width:100%;transform:translate(0,-50%);text-align:center;pointer-events:none;`)
+const transitionStyle = computed(() => {
+    const z = `z-index:${zIndex.value};position:fixed;left:0;width:100%;text-align:center;pointer-events:none;`
+    const pos = position.value
+    // #ifdef H5
+    // iOS Safari 中 position:fixed 的 top/bottom 参照的是 visual viewport，
+    // 而 vh 单位参照的是 layout viewport（最大视口），两者在底部标签栏收起/展开时不一致。
+    // 因此对 top/bottom 位置直接用 top/bottom 定位而非从 50% 偏移，避免 iOS Safari 错位。
+    if (pos === 'top') {
+        return z + 'top:0;transform:none;padding-top:env(safe-area-inset-top,0px);'
+    }
+    if (pos === 'bottom') {
+        return z + 'bottom:0;transform:none;padding-bottom:env(safe-area-inset-bottom,0px);'
+    }
+    // #endif
+    return z + 'top:50%;transform:translate(0,-50%);'
+})
 const ui = computed(() => {
+    const pos = position.value as typeof toastPositions[number]
+    // #ifdef H5
+    // iOS Safari 的 position:fixed 和 vh 单位参照不同视口，在底部标签栏收起/展开时会错位。
+    // H5 端 top/bottom 由外层容器的 top:0/bottom:0 控制，内层改用 margin 提供视觉间距。
+    {
+        const h5TopBottomClass = pos === 'top' ? 'mt-12' : pos === 'bottom' ? 'mb-12' : undefined
+        const resolvedPos = (pos === 'top' || pos === 'bottom') ? 'middle' : pos
+        const styles = b({
+            position: resolvedPos as typeof toastPositions[number],
+            direction: direction.value as typeof toastDirections[number],
+            withIcon: Boolean(iconName.value && (iconName.value !== 'loading' || msg.value)),
+            color: (color.value || 'default') as typeof toastColors[number],
+        })
+        return {
+            root: (opts?: { class?: any }) => styles.root({ class: cn(h5TopBottomClass, opts?.class) }),
+            msg: (opts?: { class?: any }) => styles.msg({ class: cn(opts?.class) }),
+        }
+    }
+    // #endif
     const styles = b({
-        position: position.value as typeof toastPositions[number],
+        position: pos,
         direction: direction.value as typeof toastDirections[number],
         withIcon: Boolean(iconName.value && (iconName.value !== 'loading' || msg.value)),
         color: (color.value || 'default') as typeof toastColors[number],

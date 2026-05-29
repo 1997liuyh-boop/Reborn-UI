@@ -22,6 +22,7 @@ const props = withDefaults(defineProps<PickerViewProps>(), {
 })
 
 const emit = defineEmits<{
+  (e: 'update:value', indexes: number[]): void
   (e: 'change-value', values: any[]): void
   (e: 'change-index', indexes: number[]): void
   (e: 'change-item', item: any): void
@@ -121,6 +122,7 @@ function onChange(e: any) {
   const select = props.columns.map((c, i) => {
     return c?.[indexs[i]] ?? null
   })
+  emit('update:value', indexs)
   emit('change-value', values)
   emit('change-index', indexs)
   emit('change-item', select)

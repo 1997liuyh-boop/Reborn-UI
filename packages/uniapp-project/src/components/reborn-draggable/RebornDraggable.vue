@@ -18,7 +18,7 @@
             (event: UniTouchEvent) => {
                 onTouchStart(event, index, 'longpress');
             }
-        " @touchmove="onTouchMove" @touchend="onTouchEnd">
+        " @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchEnd">
             <slot name="item" :item="item" :index="index" :dragging="dragging" :dragIndex="dragIndex"
                 :insertIndex="insertIndex">
             </slot>
@@ -145,6 +145,12 @@ const sortingStarted = ref(false);
  */
 function h5PreventScroll(e: TouchEvent) {
     if (dragging.value) {
+        e.preventDefault();
+    }
+}
+
+function h5PreventNativeGesture(e: any) {
+    if (e?.cancelable !== false && typeof e?.preventDefault == "function") {
         e.preventDefault();
     }
 }
@@ -542,15 +548,22 @@ function checkMovedToOtherElement(): boolean {
  * @param index 触摸的项目索引
  */
 async function onTouchStart(event: any, index: number, type: string) {
+    // 检查是否禁用或索引无效
+    if (props.disabled) return;
+    if (index < 0 || index >= list.value.length) return;
+    if (getItemDisabled(index)) return;
+
+    // H5 端长按触发拖拽时，先阻止浏览器原生长按菜单、文本选择等手势
+    // #ifdef H5
+    if (props.longPress) {
+        h5PreventNativeGesture(event);
+    }
+    // #endif
+
     // 如果是长按触发，但未开启长按功能，则直接返回
     if (type == "longpress" && !props.longPress) return;
     // 如果是普通触摸触发，但已开启长按功能，则直接返回
     if (type == "touch" && props.longPress) return;
-
-    // 检查是否禁用或索引无效
-    if (props.disabled) return;
-    if (getItemDisabled(index)) return;
-    if (index < 0 || index >= list.value.length) return;
 
     // 获取触摸点
     const touch = event.touches[0];
@@ -589,9 +602,14 @@ async function onTouchStart(event: any, index: number, type: string) {
         event.stopPropagation();
     }
     // 阻止默认行为
+    // #ifdef H5
+    h5PreventNativeGesture(event);
+    // #endif
+    // #ifndef H5
     if (event.cancelable !== false && event.preventDefault) {
         event.preventDefault();
     }
+    // #endif
 }
 
 /**
@@ -736,7 +754,23 @@ module.exports = {
 
 <style lang="scss" scoped>
 .reborn-draggable {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+
     &__item {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-user-drag: none;
+
+        :deep(*) {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
+        }
+
         &--dragging {
             @apply opacity-95 z-20 scale-105 shadow-md;
         }

@@ -120,9 +120,22 @@ function isHalf(index: number): boolean {
 // 防止 touchstart 和 tap 重复触发
 let touchHandled = false
 
+/** iOS H5：touchstart 上 preventDefault 会阻断 tap；横向滑动超过阈值后再 preventDefault */
+const DRAG_SLOP_PX = 12
+let touchStartX = 0
+let touchStartY = 0
+let dragActive = false
+let suppressNextTap = false
+
 // 点击事件
 function onTap(index: number) {
   if (!isInteractive.value) { return }
+
+  if (suppressNextTap) {
+    suppressNextTap = false
+    touchHandled = false
+    return
+  }
 
   // 如果 touchStart 已处理（半星模式），跳过 tap
   if (touchHandled) {
@@ -148,6 +161,49 @@ function onTap(index: number) {
   }
 
   updateValue(newValue)
+}
+
+function onStarTouchStart(e: TouchEvent, index: number) {
+  if (!isInteractive.value) { return }
+  e.stopPropagation()
+  const t = e.touches[0]
+  if (t) {
+    touchStartX = t.clientX
+    touchStartY = t.clientY
+  }
+  dragActive = false
+  suppressNextTap = false
+  onTouchStart(e, index)
+}
+
+function onStarTouchMove(e: TouchEvent, index: number) {
+  if (!isInteractive.value) { return }
+  const t = e.touches[0]
+  if (!t) { return }
+
+  const dx = Math.abs(t.clientX - touchStartX)
+  const dy = Math.abs(t.clientY - touchStartY)
+
+  if (!dragActive) {
+    if (dx < DRAG_SLOP_PX && dy < DRAG_SLOP_PX) {
+      return
+    }
+    if (dy >= dx) {
+      return
+    }
+    dragActive = true
+  }
+
+  e.stopPropagation()
+  e.preventDefault()
+  onTouchMove(e, index)
+}
+
+function onStarTouchEnd() {
+  if (dragActive) {
+    suppressNextTap = true
+  }
+  dragActive = false
 }
 
 // 触摸开始 — 用于半星判断
@@ -248,8 +304,12 @@ watch(
 
 <template>
   <view :class="ui.wrapper({ class: props.customClass })">
-    <view v-for="index in count" :key="index" class="reborn-rate__star" :class="ui.star()" @tap="onTap(index)"
-      @touchstart="onTouchStart($event, index)" @touchmove="onTouchMove($event, index)">
+    <view
+      v-for="index in count" :key="index" class="reborn-rate__star"
+      :class="[ui.star(), isInteractive && 'touch-none overscroll-x-contain']" @tap="onTap(index)"
+      @touchstart="onStarTouchStart($event, index)" @touchmove="onStarTouchMove($event, index)"
+      @touchend="onStarTouchEnd" @touchcancel="onStarTouchEnd"
+    >
       <!-- 未激活图标 -->
       <view :class="ui.icon()" class="opacity-30">
         <slot name="icon" :index="index" :active="false">

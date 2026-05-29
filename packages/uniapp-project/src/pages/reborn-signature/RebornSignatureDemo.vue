@@ -19,6 +19,7 @@ const enablePenPressure = ref(true)
 const showUndoButton = ref(true)
 const showRedoButton = ref(true)
 const showSignaturePopup = ref(false)
+const popupSignaturePath = ref('')
 const showLandscapePopup = ref(false)
 const landscapeToolbarPosition = ref<'left' | 'right' | 'bottom'>('right')
 const landscapeToolbarPositions = ['left', 'right', 'bottom'] as const
@@ -44,6 +45,20 @@ function onClear() {
     savedAt.value = ''
     signatureImageJson.value = ''
     signatureTraceJson.value = ''
+}
+
+function openSignaturePopup() {
+    popupSignaturePath.value = signaturePath.value
+    showSignaturePopup.value = true
+}
+
+function closeSignaturePopup() {
+    showSignaturePopup.value = false
+}
+
+function updatePopupSignatureRecord(payload: SignatureSavePayload) {
+    popupSignaturePath.value = payload.tempFilePath
+    updateSignatureRecord(payload)
 }
 </script>
 
@@ -137,7 +152,7 @@ function onClear() {
         </RebornCard>
 
         <RebornCard title="弹窗签名" custom-class="gap-[20rpx]">
-            <RebornButton color="primary" @tap="showSignaturePopup = true">
+            <RebornButton color="primary" @tap="openSignaturePopup">
                 打开签名板
             </RebornButton>
         </RebornCard>
@@ -151,10 +166,10 @@ function onClear() {
         <RebornPopup v-model="showSignaturePopup" position="bottom" title="签名板" size="78%" color="primary"
             :close-on-click-modal="false" :swipe-close="false">
             <view class="flex h-full flex-col gap-[24rpx] bg-white px-[28rpx] pb-[32rpx] pt-[12rpx]">
-                <RebornSignature v-model="signaturePath" v-model:pen-color="selectedPenColor" :show-pen-colors="false"
+                <RebornSignature v-model="popupSignaturePath" v-model:pen-color="selectedPenColor" :show-pen-colors="false"
                     :pen-pressure="enablePenPressure" :line-width="5" :min-line-width="1.2" :max-line-width="7"
                     :show-undo="showUndoButton" :show-redo="showRedoButton" height="420rpx" :close-on-save="true"
-                    @save="updateSignatureRecord" @close="showSignaturePopup = false" />
+                    @save="updatePopupSignatureRecord" @close="closeSignaturePopup" />
             </view>
         </RebornPopup>
 

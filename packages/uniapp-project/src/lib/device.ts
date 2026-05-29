@@ -38,6 +38,15 @@ export function isMp(): boolean {
   return false
 }
 
+/** 当前构建是否为微信小程序（编译期常量） */
+export function isMpWeixin(): boolean {
+  // #ifdef MP-WEIXIN
+  return true
+  // #endif
+
+  return false
+}
+
 /**
  * 检查是否为App环境
  * @returns 是否为App环境
@@ -177,4 +186,45 @@ export function getSystemInfo(): SystemInfo {
   systemInfo = uni.getSystemInfoSync()
   // #endif
   return systemInfo
+}
+
+/**
+ * 底部安全区域高度（刘海屏 home 指示条等）。
+ * App 上 `getSystemInfoSync` 的 `safeAreaInsets` 可能为 0，但 `getWindowInfo` 或
+ * `screenHeight - safeArea.bottom`（与旧逻辑里误用的 `windowHeight - safeArea.bottom` 相对）仍可得到正确 inset。
+ */
+export function getSafeAreaBottomInset(): number {
+  try {
+    const wi = uni.getWindowInfo()
+    let inset = wi.safeAreaInsets?.bottom ?? 0
+    if (inset > 0)
+      return inset
+
+    const sh = wi.screenHeight
+    const sa = wi.safeArea
+    if (sa && typeof sa.bottom === 'number' && typeof sh === 'number' && sh > 0) {
+      const fromRect = sh - sa.bottom
+      if (fromRect > 0)
+        return fromRect
+    }
+
+    const sys = getSystemInfo()
+    inset = sys.safeAreaInsets?.bottom ?? 0
+    if (inset > 0)
+      return inset
+
+    if (sys.safeArea && typeof sys.safeArea.bottom === 'number') {
+      const h = sys.screenHeight ?? sh
+      if (h) {
+        const fromSysRect = h - sys.safeArea.bottom
+        if (fromSysRect > 0)
+          return fromSysRect
+      }
+    }
+
+    return getSafeAreaHeight('bottom')
+  }
+  catch {
+    return getSafeAreaHeight('bottom')
+  }
 }

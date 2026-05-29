@@ -50,7 +50,6 @@ export interface SwiperActionClickPayload {
 }
 
 export interface SwiperActionProps {
-  leftActions?: SwiperActionItem[]
   rightActions?: SwiperActionItem[]
   actionWidth?: number
   threshold?: number
@@ -70,13 +69,15 @@ export interface SwiperActionProps {
   closeOnPageScroll?: boolean
   contentTapNavigate?: boolean
   group?: string | number | false
+  mode?: 'push' | 'overlay'
+  actionRadius?: 'none' | 'right' | 'both'
+  touchHint?: boolean
   customClass?: string
   customStyle?: string
   ui?: SwiperActionUI
 }
 
 const props = withDefaults(defineProps<SwiperActionProps>(), {
-  leftActions: () => [],
   rightActions: () => [],
   actionWidth: 144,
   threshold: 0.35,
@@ -95,6 +96,9 @@ const props = withDefaults(defineProps<SwiperActionProps>(), {
   closeOnContentClick: true,
   closeOnPageScroll: true,
   contentTapNavigate: false,
+  mode: 'push',
+  actionRadius: 'right',
+  touchHint: false,
   group: 'default',
   customClass: '',
   customStyle: '',
@@ -114,7 +118,6 @@ const emit = defineEmits<{
 
 defineSlots<{
   default(props: { openSide: SwiperActionSide | '', close: () => void }): any
-  'left-action'(props: { item: SwiperActionItem, index: number, side: 'left', ui: typeof ui.value }): any
   'right-action'(props: { item: SwiperActionItem, index: number, side: 'right', ui: typeof ui.value }): any
 }>()
 
@@ -129,7 +132,6 @@ const ui = computed(() => {
   return {
     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, uiOverrides.value.root) }),
     actions: (opts?: { class?: any }) => styles.actions({ class: cn(opts?.class, uiOverrides.value.actions) }),
-    leftActions: (opts?: { class?: any }) => styles.leftActions({ class: cn(opts?.class, uiOverrides.value.leftActions) }),
     rightActions: (opts?: { class?: any }) => styles.rightActions({ class: cn(opts?.class, uiOverrides.value.rightActions) }),
     content: (opts?: { class?: any }) => styles.content({ class: cn(opts?.class, uiOverrides.value.content) }),
     action: (opts?: { class?: any }) => styles.action({ class: cn(opts?.class, uiOverrides.value.action) }),
@@ -150,6 +152,8 @@ const isHorizontalMoving = ref(false)
 const isTapClosing = ref(false)
 const isSmoothClosing = ref(false)
 const suppressNextTap = ref(false)
+/** 非小程序端：滑动结束后阻止紧随其后的 @tap 误触 */
+const blockContentTapByGesture = ref(false)
 const isScrollLocked = ref(false)
 const lockDirection = ref<'x' | 'y' | ''>('')
 const dragStartOpenedSide = ref<SwiperActionSide | ''>('')
@@ -158,6 +162,15 @@ let scrollLockTimer: ReturnType<typeof setTimeout> | undefined
 let dragStartSideResetTimer: ReturnType<typeof setTimeout> | undefined
 let touchMoveCount = 0
 let verticalLockMoveCount = 0
+let maxTouchDeltaX = 0
+let maxTouchDeltaY = 0
+
+// #ifdef MP-WEIXIN
+const isMpWeixin = true
+// #endif
+// #ifndef MP-WEIXIN
+const isMpWeixin = false
+// #endif
 let lastActionTouchTime = 0
 let pageScrollWatcherTimer: ReturnType<typeof setInterval> | undefined
 let pageScrollWatcherPending = false
@@ -173,8 +186,8 @@ const REMOVE_DURATION = 220
 const isRemoving = ref(false)
 const isRemoveCollapsed = ref(false)
 const removingMaxHeight = ref<number | null>(null)
+const isSnapping = ref(false)
 
-const leftRawWidth = computed(() => getActionsWidth(props.leftActions))
 const rightRawWidth = computed(() => getActionsWidth(props.rightActions))
 const maxRevealWidth = computed(() => {
   if (rootWidth.value <= 0) {
@@ -184,19 +197,97 @@ const maxRevealWidth = computed(() => {
   const ratio = Math.max(0.1, Math.min(props.maxRevealRatio, 1))
   return rootWidth.value * ratio
 })
-const leftWidth = computed(() => Math.min(leftRawWidth.value, maxRevealWidth.value))
 const rightWidth = computed(() => Math.min(rightRawWidth.value, maxRevealWidth.value))
-const hasLeftActions = computed(() => props.leftActions.length > 0)
 const hasRightActions = computed(() => props.rightActions.length > 0)
-const shouldShowLeftActions = computed(() => hasLeftActions.value && !(isDragging.value && dragStartOpenedSide.value === 'right'))
-const shouldShowRightActions = computed(() => hasRightActions.value && !(isDragging.value && dragStartOpenedSide.value === 'left'))
+const shouldShowRightActions = computed(() => hasRightActions.value)
+const isOverlayMode = computed(() => props.mode === 'overlay')
+
+/**
+ * 收起态不挂载彩色操作区，避免 iOS 纵向滚动时底层色块拖影。
+ * 关合动画期间保持挂载，避免滚动触发收起时操作区瞬间消失。
+ *
+ * overlay 模式正常情况下不含 isDragging 条件（touchHint=false 时）：
+ * onTouchStart 会立即置 isDragging=true，但此时 translateX 仍为 0，
+ * 操作区容器会被 translate3d 推到右侧屏外。部分渲染环境（小程序/App）
+ * overflow:hidden 无法裁剪经 transform 的绝对定位子元素，导致容器左边缘
+ * 以细竖线形式在内容右侧短暂可见。
+ * 当 touchHint=true 时，该行为被作为操作提示保留，两种模式均支持。
+ */
+const shouldExposeActions = computed(() => {
+  const baseCondition = !!openedSide.value || translateX.value !== 0 || isTapClosing.value || isSmoothClosing.value
+  if (isOverlayMode.value) {
+    return (props.touchHint && isDragging.value) || baseCondition
+  }
+  return isDragging.value || baseCondition
+})
+
+/**
+ * touchHint 模式下，push 模式触摸时对内容施加微小负偏移，
+ * 露出背后操作区的左边缘色条，给用户可滑动的视觉提示。
+ * overlay 模式的提示来自操作区容器自身的边缘出血，内容无需移动。
+ */
+const touchHintOffset = computed(() => {
+  if (
+    !props.touchHint
+    || !isDragging.value
+    || !!openedSide.value
+    || translateX.value !== 0
+    || !hasRightActions.value
+    || isOverlayMode.value
+  ) {
+    return 0
+  }
+  return -4
+})
 
 const contentStyle = computed(() => {
+  const tx = translateX.value + touchHintOffset.value
   const isClosing = isTapClosing.value || isSmoothClosing.value
-  const timingFunction = isClosing ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.22, 1, 0.36, 1)'
-  const duration = isDragging.value ? 0 : (isClosing ? props.closeDuration : props.duration)
+  const timingFunction = isClosing
+    ? 'cubic-bezier(0.16, 1, 0.3, 1)'
+    : (isSnapping.value && !isOverlayMode.value)
+      ? 'cubic-bezier(0.34, 1.18, 0.64, 1)'
+      : 'cubic-bezier(0.22, 1, 0.36, 1)'
+  const duration = isDragging.value ? 0 : isClosing ? props.closeDuration : isSnapping.value ? 300 : props.duration
+  const layerHint = shouldExposeActions.value
+    ? 'will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden;'
+    : ''
 
-  return `transform: translate3d(${translateX.value}px, 0, 0); transition: transform ${duration}ms ${timingFunction}; will-change: transform; touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; backface-visibility: hidden; -webkit-backface-visibility: hidden; contain: paint;`
+  return `transform: translate3d(${tx}px, 0, 0); transition: transform ${duration}ms ${timingFunction}; ${layerHint}touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;`
+})
+
+/**
+ * overlay 模式：
+ * 1. z-index: 20 —— 高于内容层（z-10），操作区覆盖在内容之上
+ * 2. 容器整体从右侧屏外滑入，translateX 从 +rightWidth（隐藏）到 0（完全进入）
+ *    公式：offsetX = rightWidth * (1 - progress)
+ * 3. 多按钮初始叠放在容器左端，随进度向右舒展到各自位置，overflow:hidden 始终不超界。
+ */
+const actionsContainerStyle = computed(() => {
+  const width = `width: ${rightWidth.value}px;`
+  if (!isOverlayMode.value) {
+    return width
+  }
+
+  const progress = rightWidth.value > 0
+    ? Math.min(1, Math.abs(translateX.value) / rightWidth.value)
+    : 0
+  const offsetX = rightWidth.value * (1 - progress)
+  // 已完全展开后继续左滑时，以容器右边缘为基点横向拉伸，
+  // 右侧固定不动、左侧弹性延伸，产生各按钮被独立向左拉拽的橡皮筋感
+  const overflow = Math.max(0, -(translateX.value + rightWidth.value))
+  const scaleFactor = rightWidth.value > 0 && overflow > 0
+    ? (rightWidth.value + overflow) / rightWidth.value
+    : 1
+  const isClosing = isTapClosing.value || isSmoothClosing.value
+  const duration = isDragging.value ? 0 : isClosing ? props.closeDuration : isSnapping.value ? 300 : props.duration
+  const timingFunction = isClosing
+    ? 'cubic-bezier(0.16, 1, 0.3, 1)'
+    : isSnapping.value
+      ? 'cubic-bezier(0.34, 1.18, 0.64, 1)'
+      : 'cubic-bezier(0.22, 1, 0.36, 1)'
+
+  return `${width} z-index: 20; transform-origin: right center; transform: translate3d(${offsetX}px, 0, 0) scaleX(${scaleFactor}); transition: transform ${duration}ms ${timingFunction};`
 })
 
 const touchThresholdPx = computed(() => toPx(props.touchThreshold))
@@ -293,7 +384,11 @@ function resistTranslate(value: number) {
     return value
   }
 
-  const sideWidth = value > 0 ? leftWidth.value : rightWidth.value
+  if (value > 0) {
+    return 0
+  }
+
+  const sideWidth = rightWidth.value
   if (sideWidth <= 0) {
     return 0
   }
@@ -346,7 +441,6 @@ function normalizeDamping(value: number) {
  */
 function dampTranslate(value: number) {
   const min = hasRightActions.value ? -rightWidth.value : 0
-  const max = hasLeftActions.value ? leftWidth.value : 0
   const ratio = Math.max(0, Math.min(props.damping, 1))
   const maxDistance = toPx(props.dampingDistance)
 
@@ -355,9 +449,9 @@ function dampTranslate(value: number) {
     return min + overflow
   }
 
-  if (value > max) {
-    const overflow = Math.min(maxDistance, (value - max) * ratio)
-    return max + overflow
+  if (value > 0) {
+    const overflow = Math.min(maxDistance, value * ratio)
+    return overflow
   }
 
   return value
@@ -366,10 +460,6 @@ function dampTranslate(value: number) {
 function constrainOpenedSideTranslate(value: number) {
   const crossSideLimit = Math.max(2, Math.min(8, touchThresholdPx.value * 0.5))
   const crossSideDamping = 0.18
-
-  if (startTranslateX.value > 0 && value < 0) {
-    return Math.max(-crossSideLimit, value * crossSideDamping)
-  }
 
   if (startTranslateX.value < 0 && value > 0) {
     return Math.min(crossSideLimit, value * crossSideDamping)
@@ -383,10 +473,9 @@ function constrainOpenedSideTranslate(value: number) {
  */
 function isAtRevealBoundary(value: number) {
   const min = hasRightActions.value ? -rightWidth.value : 0
-  const max = hasLeftActions.value ? leftWidth.value : 0
   const tolerance = 1
 
-  return (hasRightActions.value && value <= min + tolerance) || (hasLeftActions.value && value >= max - tolerance)
+  return hasRightActions.value && value <= min + tolerance
 }
 
 /**
@@ -404,7 +493,7 @@ function hasSwipeIntent(diffX: number, diffY = 0) {
     return true
   }
 
-  if (diffX > 0 && (hasLeftActions.value || openedSide.value === 'right')) {
+  if (diffX > 0 && openedSide.value === 'right') {
     return true
   }
 
@@ -435,7 +524,7 @@ function isSwipeSlopeAllowed(absX: number, diffY: number) {
 
 function hasSwipeDirection(diffX: number) {
   return (diffX < 0 && (hasRightActions.value || openedSide.value === 'left'))
-    || (diffX > 0 && (hasLeftActions.value || openedSide.value === 'right'))
+    || (diffX > 0 && openedSide.value === 'right')
 }
 
 function shouldPreferOpenedSideSwipe(diffX: number) {
@@ -831,11 +920,6 @@ function clearActiveInGroup() {
  * 根据打开方向同步内容位移。
  */
 function syncTranslate(side: SwiperActionSide | '') {
-  if (side === 'left' && hasLeftActions.value) {
-    translateX.value = leftWidth.value
-    return
-  }
-
   if (side === 'right' && hasRightActions.value) {
     translateX.value = -rightWidth.value
     return
@@ -856,6 +940,7 @@ function updateOpenedSide(side: SwiperActionSide | '') {
     closeOtherInGroup()
   }
 
+  isInternalUpdate = true
   openedSide.value = side
   syncTranslate(side)
 
@@ -924,6 +1009,23 @@ function open(side: SwiperActionSide = 'right') {
   }
 
   updateOpenedSide(side)
+
+  isSmoothClosing.value = true
+  setTimeout(() => {
+    isSmoothClosing.value = false
+  }, props.closeDuration)
+}
+
+/**
+ * 拖拽未达阈值时平滑吸附回关闭状态，避免使用快速 snap 动画。
+ */
+function snapClose() {
+  isTapClosing.value = false
+  isSmoothClosing.value = true
+  setTimeout(() => {
+    isSmoothClosing.value = false
+  }, props.closeDuration)
+  updateOpenedSide('')
 }
 
 /**
@@ -941,6 +1043,67 @@ function close() {
   updateOpenedSide('')
 }
 
+function getContentTapTolerance() {
+  return Math.max(6, touchThresholdPx.value * 0.8)
+}
+
+function resetTouchGestureMetrics() {
+  maxTouchDeltaX = 0
+  maxTouchDeltaY = 0
+}
+
+function recordTouchGestureDelta(diffX: number, diffY: number) {
+  maxTouchDeltaX = Math.max(maxTouchDeltaX, Math.abs(diffX))
+  maxTouchDeltaY = Math.max(maxTouchDeltaY, Math.abs(diffY))
+}
+
+/**
+ * 判断本次手势是否为点按（位移在容差内），用于与横向滑动区分。
+ */
+function isContentTapGesture(event: any) {
+  const tolerance = getContentTapTolerance()
+  const touch = event?.changedTouches?.[0]
+  const endDeltaX = touch ? Math.abs(touch.clientX - startX.value) : 0
+  const endDeltaY = touch ? Math.abs(touch.clientY - startY.value) : 0
+  const translateDelta = Math.abs(dragTargetX.value - startTranslateX.value)
+
+  return endDeltaX <= tolerance
+    && endDeltaY <= tolerance
+    && maxTouchDeltaX <= tolerance
+    && maxTouchDeltaY <= tolerance
+    && translateDelta <= tolerance
+}
+
+function markGestureSwipe() {
+  suppressNextTap.value = true
+  blockContentTapByGesture.value = true
+}
+
+function runContentTapHandler() {
+  if (props.contentTapNavigate) {
+    emit('content-click', {
+      openSide: openedSide.value,
+      close,
+    })
+    return
+  }
+
+  if (openedSide.value && props.closeOnContentClick) {
+    closeByContentTap()
+  }
+}
+
+/**
+ * 微信小程序端在 touchend 判定为点按后再触发内容点击，避免与滑动手势冲突。
+ */
+function triggerContentTapFromTouchEnd(event: any, wasHorizontalSwipe: boolean) {
+  if (!isMpWeixin || wasHorizontalSwipe || !isContentTapGesture(event)) {
+    return
+  }
+
+  runContentTapHandler()
+}
+
 /**
  * 触摸开始时记录初始位置，后续根据移动方向判断是否进入横向滑动。
  */
@@ -955,6 +1118,8 @@ function onTouchStart(event: any) {
 
   isTapClosing.value = false
   isSmoothClosing.value = false
+  blockContentTapByGesture.value = false
+  resetTouchGestureMetrics()
   updateRootWidth()
 
   const touch = event.touches?.[0]
@@ -964,7 +1129,7 @@ function onTouchStart(event: any) {
 
   registerH5ScrollLock()
   h5TouchActive = true
-  h5GestureGuarding = canUseH5TouchLock() && (hasLeftActions.value || hasRightActions.value || !!openedSide.value)
+  h5GestureGuarding = canUseH5TouchLock() && (hasRightActions.value || !!openedSide.value)
   h5TouchStartX = touch.clientX
   h5TouchStartY = touch.clientY
   if (h5GestureGuarding) {
@@ -998,6 +1163,7 @@ function onTouchMove(event: any) {
   const diffX = touch.clientX - startX.value
   const diffY = touch.clientY - startY.value
   touchMoveCount += 1
+  recordTouchGestureDelta(diffX, diffY)
 
   if (!lockDirection.value) {
     if (shouldLockHorizontal(diffX, diffY)) {
@@ -1053,11 +1219,7 @@ function shouldCloseByContentTouchEnd(event: any) {
     return touchMoveCount === 0
   }
 
-  const diffX = Math.abs(touch.clientX - startX.value)
-  const diffY = Math.abs(touch.clientY - startY.value)
-  const tapTolerance = Math.max(6, touchThresholdPx.value * 0.8)
-
-  return diffX <= tapTolerance && diffY <= tapTolerance
+  return isContentTapGesture(event)
 }
 
 /**
@@ -1083,11 +1245,12 @@ function onTouchEnd(event: any) {
     releasePageScroll()
     clearDragStartOpenedSide()
     if (shouldCloseByTouchEnd) {
-      suppressNextTap.value = false
+      consumeBlockedContentTap()
       closeByContentTap()
       return
     }
 
+    triggerContentTapFromTouchEnd(event, false)
     syncTranslate(openedSide.value)
     return
   }
@@ -1097,9 +1260,7 @@ function onTouchEnd(event: any) {
   clearDragStartOpenedSide(props.duration)
 
   if (wasHorizontalMoving) {
-    setTimeout(() => {
-      suppressNextTap.value = false
-    }, 300)
+    markGestureSwipe()
   }
 
   const releaseX = dragTargetX.value
@@ -1107,25 +1268,23 @@ function onTouchEnd(event: any) {
 
   if (startTranslateX.value < 0 && hasRightActions.value) {
     const threshold = getCloseThreshold(rightWidth.value)
-    updateOpenedSide(dragDistance >= threshold ? '' : 'right')
-    return
-  }
-
-  if (startTranslateX.value > 0 && hasLeftActions.value) {
-    const threshold = getCloseThreshold(leftWidth.value)
-    updateOpenedSide(dragDistance <= -threshold ? '' : 'left')
-    return
-  }
-
-  if (releaseX > 0 && hasLeftActions.value) {
-    const threshold = getTriggerThreshold(leftWidth.value)
-    updateOpenedSide(releaseX >= threshold ? 'left' : '')
+    if (dragDistance >= threshold) {
+      snapClose()
+    } else {
+      updateOpenedSide('right')
+    }
     return
   }
 
   if (releaseX < 0 && hasRightActions.value) {
     const threshold = getTriggerThreshold(rightWidth.value)
-    updateOpenedSide(Math.abs(releaseX) >= threshold ? 'right' : '')
+    if (Math.abs(releaseX) >= threshold) {
+      isSnapping.value = true
+      updateOpenedSide('right')
+      setTimeout(() => { isSnapping.value = false }, 320)
+    } else {
+      snapClose()
+    }
     return
   }
 
@@ -1135,35 +1294,49 @@ function onTouchEnd(event: any) {
 /**
  * 手势被系统取消时不按阈值吸附，避免误触发完整展开。
  */
+function hadGestureMovement() {
+  const tolerance = getContentTapTolerance()
+  const translateDelta = Math.abs(dragTargetX.value - startTranslateX.value)
+
+  return maxTouchDeltaX > tolerance || maxTouchDeltaY > tolerance || translateDelta > tolerance
+}
+
 function onTouchCancel() {
+  if (isDragging.value && hadGestureMovement()) {
+    markGestureSwipe()
+  }
+
   isDragging.value = false
   isHorizontalMoving.value = false
   releasePageScroll()
   lockDirection.value = ''
+  isSmoothClosing.value = true
   syncTranslate(openedSide.value)
+  setTimeout(() => {
+    isSmoothClosing.value = false
+  }, props.closeDuration)
   clearDragStartOpenedSide()
 }
 
+function consumeBlockedContentTap() {
+  suppressNextTap.value = false
+  blockContentTapByGesture.value = false
+}
+
 /**
- * 点击主体区域时，如果操作区已打开，则优先关闭。
+ * 非微信小程序端通过 @tap 触发；需排除滑动后的幽灵点击。
  */
 function onContentTap() {
-  if (suppressNextTap.value) {
-    suppressNextTap.value = false
+  if (isMpWeixin) {
     return
   }
 
-  if (props.contentTapNavigate) {
-    emit('content-click', {
-      openSide: openedSide.value,
-      close,
-    })
+  if (suppressNextTap.value || blockContentTapByGesture.value) {
+    consumeBlockedContentTap()
     return
   }
 
-  if (openedSide.value && props.closeOnContentClick) {
-    closeByContentTap()
-  }
+  runContentTapHandler()
 }
 
 /**
@@ -1241,63 +1414,122 @@ function getActionClass(item: SwiperActionItem) {
 /**
  * 操作项过多时按可展开宽度均分，避免主体内容被推离可视区域。
  */
-function getActionWidth(item: SwiperActionItem, side: SwiperActionSide) {
-  const actions = side === 'left' ? props.leftActions : props.rightActions
-  const rawWidth = side === 'left' ? leftRawWidth.value : rightRawWidth.value
-  const revealWidth = side === 'left' ? leftWidth.value : rightWidth.value
-
-  if (actions.length > 0 && rawWidth > revealWidth) {
-    return revealWidth / actions.length
+function getActionWidth(item: SwiperActionItem, _side?: SwiperActionSide) {
+  if (props.rightActions.length > 0 && rightRawWidth.value > rightWidth.value) {
+    return rightWidth.value / props.rightActions.length
   }
 
   return toPx(item.width || props.actionWidth)
 }
 
 /**
- * 仅给操作区外侧按钮补圆角，内侧保持直角，保证三端表现一致。
+ * 按 actionRadius 决定操作区外侧按钮的圆角策略：
+ *   'none'  — 所有按钮不补圆角
+ *   'right' — 仅最右侧按钮补右边圆角（默认）
+ *   'both'  — 最左侧按钮补左边圆角、最右侧按钮补右边圆角
  */
-function getActionOuterRadiusStyle(index: number, side: SwiperActionSide) {
+function getActionOuterRadiusStyle(index: number) {
+  if (props.actionRadius === 'none') {
+    return ''
+  }
+
   const radius = `${toPx(14)}px`
-  const actions = side === 'left' ? props.leftActions : props.rightActions
+  const actions = props.rightActions
+  let style = ''
 
-  if (side === 'left' && index === 0 && actions.length > 0) {
-    return `border-top-left-radius: ${radius}; border-bottom-left-radius: ${radius};`
+  if (index === actions.length - 1 && actions.length > 0) {
+    style += `border-top-right-radius: ${radius}; border-bottom-right-radius: ${radius};`
   }
 
-  if (side === 'right' && index === actions.length - 1 && actions.length > 0) {
-    return `border-top-right-radius: ${radius}; border-bottom-right-radius: ${radius};`
+  if (props.actionRadius === 'both' && index === 0) {
+    style += `border-top-left-radius: ${radius}; border-bottom-left-radius: ${radius};`
   }
 
-  return ''
+  return style
 }
 
-function getActionStyle(item: SwiperActionItem, side: SwiperActionSide, index: number) {
-  return `width: ${getActionWidth(item, side)}px; ${getActionOuterRadiusStyle(index, side)} ${item.customStyle || ''}`
+/**
+ * overlay 模式的展开动画：所有按钮初始堆叠在容器左端（位置 0），
+ * 随手势进度逐渐向右舒展到各自的最终位置。
+ *
+ * 公式：
+ *   stackedLeft = 0                              （所有按钮初始均叠放在左端）
+ *   finalLeft[i] = sum(width[0..i-1])           （第 i 个按钮的最终左边界）
+ *   translateX[i] = -finalLeft[i] * (1 - progress)
+ *
+ * 验证（2 个宽 124 的按钮，rightWidth=248）：
+ *   progress=0：收藏 left=0、删除 left=0 → 完全重叠在左端
+ *   progress=1：收藏 left=0、删除 left=124 → 完全展开
+ *
+ * z-index = index，最右侧按钮值最大，始终在最顶层。
+ */
+function getStackButtonTransform(index: number): string {
+  const actions = props.rightActions
+  const N = actions.length
+  if (N <= 1 || rightWidth.value <= 0) {
+    return ''
+  }
+
+  let leftAccum = 0
+  for (let j = 0; j < index; j++) {
+    leftAccum += getActionWidth(actions[j])
+  }
+
+  const progress = Math.min(1, Math.abs(translateX.value) / rightWidth.value)
+  const tx = -leftAccum * (1 - progress)
+
+  const isClosing = isTapClosing.value || isSmoothClosing.value
+  const duration = isDragging.value ? 0 : isClosing ? props.closeDuration : isSnapping.value ? 300 : props.duration
+  // overlay 模式下各按钮行程不同，弹簧过冲量不等会产生缝隙，改用普通缓动
+  const timingFunction = isClosing
+    ? 'cubic-bezier(0.16, 1, 0.3, 1)'
+    : 'cubic-bezier(0.22, 1, 0.36, 1)'
+
+  return `z-index: ${index}; transform: translateX(${tx}px); transition: transform ${duration}ms ${timingFunction};`
+}
+
+function getActionStyle(item: SwiperActionItem, index: number) {
+  const w = getActionWidth(item)
+  const radius = getActionOuterRadiusStyle(index)
+  const custom = item.customStyle || ''
+
+  if (!isOverlayMode.value) {
+    return `width: ${w}px; ${radius} ${custom}`
+  }
+
+  let leftAccum = 0
+  for (let j = 0; j < index; j++) {
+    leftAccum += getActionWidth(props.rightActions[j])
+  }
+
+  const stackTransform = getStackButtonTransform(index)
+  return `position: absolute; top: 0; bottom: 0; left: ${leftAccum}px; width: ${w}px; ${radius} ${stackTransform} ${custom}`
 }
 
 /**
  * App 端透明点击代理层的绝对定位样式。
  * 代理层不在 transform 容器内，命中区域始终与视觉位置一致。
  */
-function getActionOverlayStyle(index: number, side: SwiperActionSide): string {
-  const actions = side === 'right' ? props.rightActions : props.leftActions
-  const w = getActionWidth(actions[index], side)
+function getActionOverlayStyle(index: number): string {
+  const actions = props.rightActions
+  const w = getActionWidth(actions[index])
 
-  if (side === 'right') {
-    let rightOffset = 0
-    for (let i = actions.length - 1; i > index; i--) {
-      rightOffset += getActionWidth(actions[i], 'right')
-    }
-    return `position: absolute; top: 0; bottom: 0; right: ${rightOffset}px; width: ${w}px; z-index: 30;`
+  let rightOffset = 0
+  for (let i = actions.length - 1; i > index; i--) {
+    rightOffset += getActionWidth(actions[i])
   }
-  else {
-    let leftOffset = 0
-    for (let i = 0; i < index; i++) {
-      leftOffset += getActionWidth(actions[i], 'left')
-    }
-    return `position: absolute; top: 0; bottom: 0; left: ${leftOffset}px; width: ${w}px; z-index: 30;`
-  }
+
+  return `position: absolute; top: 0; bottom: 0; right: ${rightOffset}px; width: ${w}px; z-index: 30;`
 }
+
+/**
+ * 区分外部 prop 变更与内部手势/API 触发的更新。
+ * - isInternalUpdate：updateOpenedSide 调用时置 true，watch 消费后清除。
+ *   内部更新已在 updateOpenedSide 内调用过 syncTranslate，watch 无需重复调用。
+ * - watchInitialized：首次 immediate 触发时需同步初始位置，之后跳过内部更新。
+ */
+let isInternalUpdate = false
+let watchInitialized = false
 
 watch(
   () => openedSide.value,
@@ -1310,13 +1542,26 @@ watch(
     }
 
     if (!isDragging.value) {
-      syncTranslate(side)
+      if (!watchInitialized) {
+        watchInitialized = true
+        syncTranslate(side)
+      }
+      else if (isInternalUpdate) {
+        isInternalUpdate = false
+      }
+      else {
+        isSmoothClosing.value = true
+        syncTranslate(side)
+        setTimeout(() => {
+          isSmoothClosing.value = false
+        }, props.closeDuration)
+      }
     }
   },
   { immediate: true },
 )
 
-watch([leftWidth, rightWidth], () => {
+watch(rightWidth, () => {
   syncTranslate(openedSide.value)
 })
 
@@ -1423,7 +1668,6 @@ function hasSwipeIntent(diffX, diffY, dataset) {
   var absX = Math.abs(diffX)
   var intentThreshold = getSwipeIntentThreshold(dataset)
   var openedSide = dataset.openedSide || dataset.openedside || ''
-  var hasLeftActions = isTruthy(dataset.hasLeftActions || dataset.hasleftactions)
   var hasRightActions = isTruthy(dataset.hasRightActions || dataset.hasrightactions)
 
   if (absX < intentThreshold || !isSwipeSlopeAllowed(absX, diffY, dataset)) {
@@ -1434,7 +1678,7 @@ function hasSwipeIntent(diffX, diffY, dataset) {
     return true
   }
 
-  if (diffX > 0 && (hasLeftActions || openedSide === 'right')) {
+  if (diffX > 0 && openedSide === 'right') {
     return true
   }
 
@@ -1443,11 +1687,10 @@ function hasSwipeIntent(diffX, diffY, dataset) {
 
 function hasSwipeDirection(diffX, dataset) {
   var openedSide = dataset.openedSide || dataset.openedside || ''
-  var hasLeftActions = isTruthy(dataset.hasLeftActions || dataset.hasleftactions)
   var hasRightActions = isTruthy(dataset.hasRightActions || dataset.hasrightactions)
 
   return (diffX < 0 && (hasRightActions || openedSide === 'left'))
-    || (diffX > 0 && (hasLeftActions || openedSide === 'right'))
+    || (diffX > 0 && openedSide === 'right')
 }
 
 function shouldPreferOpenedSideSwipe(diffX, dataset) {
@@ -1613,30 +1856,15 @@ module.exports = {
 </script>
 
 <template>
-  <view
-    :class="ui.root()" :style="rootStyle" :data-instance-id="instanceId" :data-swiping="isHorizontalMoving"
-    :data-scroll-locked="isScrollLocked" :data-disabled="disabled" :data-has-left-actions="hasLeftActions"
-    :data-has-right-actions="hasRightActions" :data-opened-side="openedSide" :data-touch-threshold="touchThresholdPx"
-    :data-direction-ratio="directionRatio" @touchstart="swipeWxs.touchstart" @touchmove="swipeWxs.touchmove"
-    @touchend="swipeWxs.touchend" @touchcancel="swipeWxs.touchcancel"
-  >
-    <view v-if="shouldShowLeftActions" :class="cn(ui.actions(), ui.leftActions())" :style="`width: ${leftWidth}px;`">
-      <view
-        v-for="(item, index) in leftActions" :key="item.key || index" :class="getActionClass(item)"
-        :style="getActionStyle(item, 'left', index)" @tap.stop="onActionTap(item, index, 'left')"
-      >
-        <slot name="left-action" :item="item" :index="index" side="left" :ui="ui">
-          <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
-          <text :class="ui.text()">{{ item.text }}</text>
-        </slot>
-      </view>
-    </view>
-
-    <view v-if="shouldShowRightActions" :class="cn(ui.actions(), ui.rightActions())" :style="`width: ${rightWidth}px;`">
-      <view
-        v-for="(item, index) in rightActions" :key="item.key || index" :class="getActionClass(item)"
-        :style="getActionStyle(item, 'right', index)" @tap.stop="onActionTap(item, index, 'right')"
-      >
+  <view :class="ui.root()" :style="rootStyle" :data-instance-id="instanceId" :data-swiping="isHorizontalMoving"
+    :data-scroll-locked="isScrollLocked" :data-disabled="disabled" :data-has-right-actions="hasRightActions"
+    :data-opened-side="openedSide" :data-touch-threshold="touchThresholdPx" :data-direction-ratio="directionRatio"
+    @touchstart="swipeWxs.touchstart" @touchmove="swipeWxs.touchmove" @touchend="swipeWxs.touchend"
+    @touchcancel="swipeWxs.touchcancel">
+    <view v-if="shouldShowRightActions && shouldExposeActions" :class="cn(ui.actions(), ui.rightActions())"
+      :style="actionsContainerStyle">
+      <view v-for="(item, index) in rightActions" :key="item.key || index" :class="getActionClass(item)"
+        :style="getActionStyle(item, index)" @tap.stop="onActionTap(item, index, 'right')">
         <slot name="right-action" :item="item" :index="index" side="right" :ui="ui">
           <view v-if="item.icon" :class="cn(ui.icon(), item.icon)" />
           <text :class="ui.text()">{{ item.text }}</text>
@@ -1644,33 +1872,25 @@ module.exports = {
       </view>
     </view>
 
-    <view
-      :class="ui.content()" :style="contentStyle" @tap="onContentTap" @touchstart="onTouchStart"
+    <view :class="ui.content()" :style="contentStyle" @tap="onContentTap" @touchstart="onTouchStart"
       @touchmove="onTouchMove" @touchend="onTouchEnd" @touchcancel="onTouchCancel" @contextmenu="preventContentDefault"
-      @dragstart="preventContentDefault" @selectstart="preventContentDefault"
-    >
+      @dragstart="preventContentDefault" @selectstart="preventContentDefault">
       <slot :open-side="openedSide" :close="close">
-        <view
-          class="
+        <view class="
             flex min-h-[112rpx] flex-row items-center justify-between px-[32rpx]
-          "
-        >
+          ">
           <view class="flex flex-col gap-[8rpx]">
-            <text
-              class="
+            <text class="
                 text-gray-9 text-[30rpx] font-medium
                 dark:text-gray-1
-              "
-            >
+              ">
               滑动操作
             </text>
-            <text
-              class="
+            <text class="
                 text-[24rpx] text-gray-5
                 dark:text-gray-4
-              "
-            >
-              向左或向右滑动显示操作
+              ">
+              向左滑动显示操作
             </text>
           </view>
           <view class="i-lucide-chevron-left-right text-[36rpx] text-gray-4" />
@@ -1680,23 +1900,9 @@ module.exports = {
 
     <!-- #ifdef APP-PLUS -->
     <!-- App 端透明点击代理层：不在 transform 容器内，命中区域始终与视觉位置准确对齐 -->
-    <template v-if="openedSide === 'right' && shouldShowRightActions">
-      <view
-        v-for="(item, index) in rightActions"
-        :key="`overlay-right-${index}`"
-        :style="getActionOverlayStyle(index, 'right')"
-        @touchend.stop.prevent="onActionTouchEnd(item, index, 'right')"
-        @tap.stop="onActionTap(item, index, 'right')"
-      />
-    </template>
-    <template v-if="openedSide === 'left' && shouldShowLeftActions">
-      <view
-        v-for="(item, index) in leftActions"
-        :key="`overlay-left-${index}`"
-        :style="getActionOverlayStyle(index, 'left')"
-        @touchend.stop.prevent="onActionTouchEnd(item, index, 'left')"
-        @tap.stop="onActionTap(item, index, 'left')"
-      />
+    <template v-if="openedSide === 'right' && shouldShowRightActions && shouldExposeActions">
+      <view v-for="(item, index) in rightActions" :key="`overlay-right-${index}`" :style="getActionOverlayStyle(index)"
+        @touchend.stop.prevent="onActionTouchEnd(item, index, 'right')" @tap.stop="onActionTap(item, index, 'right')" />
     </template>
     <!-- #endif -->
   </view>

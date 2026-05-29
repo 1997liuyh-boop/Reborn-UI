@@ -7,7 +7,7 @@ import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
-import { fabColors, fabDirections, fabPositions } from '@/components/reborn-fab/reborn-fab.config'
+import { fabColors, fabDirections, fabPositions, type FabActionItem } from '@/components/reborn-fab/reborn-fab.config'
 
 const active1 = ref(false)
 const defaultActive = ref(false)
@@ -16,6 +16,12 @@ const useTriggerSlot = ref(false)
 const demoColor = ref<any>('primary')
 const demoDirection = ref<any>('top')
 const demoPosition = ref<any>('right-bottom')
+
+const fabDemoItems: FabActionItem[] = [
+    { name: '分享', icon: 'i-lucide-share-2', color: 'primary' },
+    { name: '收藏', icon: 'i-lucide-star', color: 'warning' },
+    { name: '下载', icon: 'i-lucide-download', color: 'success' },
+]
 
 function handleClick() {
     uni.showToast({ title: '点击了主按钮', icon: 'none' })
@@ -38,7 +44,7 @@ function handleAction(name: string) {
             <view class="flex flex-wrap gap-2">
                 <view v-for="c in fabColors" :key="c"
                     class="size-6 rounded-full border-2 border-transparent transition-all"
-                    :class="[demoColor === c ? 'scale-110 !border-slate-400' : '', `bg-${c}`]"
+                    :class="[demoColor === c ? 'scale-110' : '', `bg-${c}`]"
                     :style="{ backgroundColor: `var(--color-${c})` }" @tap="demoColor = c" />
             </view>
 
@@ -74,22 +80,8 @@ function handleAction(name: string) {
 
         <!-- 演示组件 -->
         <RebornFab v-if="!useTriggerSlot" v-model="active1" :active="defaultActive" :color="demoColor"
-            :draggable="draggable" :direction="demoDirection" expandable :position="demoPosition" @click="handleClick">
-            <template #default>
-                <view class="flex items-center justify-center size-12 rounded-full shadow-md bg-primary text-white"
-                    @tap="handleAction('分享')">
-                    <view class="i-lucide-share-2 text-32" />
-                </view>
-                <view class="flex items-center justify-center size-12 rounded-full shadow-md bg-warning text-white"
-                    @tap="handleAction('收藏')">
-                    <view class="i-lucide-star text-32" />
-                </view>
-                <view class="flex items-center justify-center size-12 rounded-full shadow-md bg-success text-white"
-                    @tap="handleAction('下载')">
-                    <view class="i-lucide-download text-32" />
-                </view>
-            </template>
-        </RebornFab>
+            :draggable="draggable" :direction="demoDirection" expandable :position="demoPosition" :items="fabDemoItems"
+            @click="handleClick" @action="({ name }) => handleAction(name)" />
 
         <RebornFab v-else :draggable="draggable" :expandable="false" :position="demoPosition">
             <template #trigger>

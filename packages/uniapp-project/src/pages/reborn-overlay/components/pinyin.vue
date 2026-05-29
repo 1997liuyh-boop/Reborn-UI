@@ -112,10 +112,10 @@ const linesTokens = computed(() =>
     <!-- 正文（居中或左对齐，这里采用诗歌常见居中/Padding布局） -->
     <view class="mt-6 flex flex-col items-center gap-y-2">
       <view v-for="(lineTokens, i) in linesTokens" :key="i" class="
-          flex flex-wrap justify-center gap-x-1
+          flex flex-wrap justify-center gap-x-0.5
         ">
         <view v-for="(t, j) in lineTokens" :key="j" class="
-            flex w-6 flex-col items-center
+            flex w-5 flex-col items-center
           ">
           <!-- 拼音 -->
           <view class="
