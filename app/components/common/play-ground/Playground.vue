@@ -160,9 +160,11 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                 </h2>
                 <p :class="ui.headerDesc()">{{ description }}</p>
             </div>
-            <span :class="ui.headerTag()">
-                Playground
-            </span>
+            <slot name="tag">
+                <span :class="ui.headerTag()">
+                    Playground
+                </span>
+            </slot>
         </div>
 
         <!-- 主体容器 -->
