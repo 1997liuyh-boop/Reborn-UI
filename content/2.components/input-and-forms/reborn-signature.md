@@ -39,6 +39,7 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `backgroundColor` | `string`                                                                               | `'#FFFFFF'`                                                          | 画布背景色；**空字符串可导出透明背景**                                        |
 | `placeholder`     | `string`                                                                               | `'请在此处签名'`                                                     | 无笔迹时的占位文案                                                            |
 | `showToolbar`     | `boolean`                                                                              | `true`                                                               | 是否显示默认底部工具栏                                                        |
+| `showClose`       | `boolean`                                                                              | `false`                                                              | 是否显示退出按钮；点击后会清空画布并触发 `close` 事件                         |
 | `toolbarPosition` | `'left' \| 'right' \| 'bottom'`                                                        | `'bottom'`                                                           | 工具栏相对画布布局（横屏常用 left/right）                                     |
 | `showUndo`        | `boolean`                                                                              | `true`                                                               | 是否显示撤销                                                                  |
 | `showRedo`        | `boolean`                                                                              | `true`                                                               | 是否显示恢复                                                                  |
@@ -90,7 +91,7 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | `canUndo`        | `ComputedRef<boolean>`                                    | 是否可撤销                                 |
 | `canRedo`        | `ComputedRef<boolean>`                                    | 是否可恢复                                 |
 | `strokeCount`    | `ComputedRef<number>`                                     | 笔画数量                                   |
-| `pointCount`     | `ComputedRef<number>`                                     | 触点总数                                   |
+| `pointCount`     | `Ref<number>`                                             | 触点总数                                   |
 
 ### Slots（模板）
 
