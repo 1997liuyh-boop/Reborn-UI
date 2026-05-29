@@ -89,41 +89,41 @@ function showLoadingToast3() {
 <template>
     <RebornPage title="Toast 轻提示" description="用于轻量级反馈或提示，不会打断用户操作。">
         <RebornCard title="类型toast" custom-class="grid grid-cols-3 gap-2">
-            <ReButton color="success" @click="showToast('success')">
+            <ReButton block color="success" @click="showToast('success')">
                 成功
             </ReButton>
-            <ReButton color="info" @click="showToast('info')">
+            <ReButton block color="info" @click="showToast('info')">
                 常规
             </ReButton>
-            <ReButton color="error" @click="showToast('error')">
+            <ReButton block color="error" @click="showToast('error')">
                 错误
             </ReButton>
-            <ReButton color="warning" @click="showToast('warning')">
+            <ReButton block color="warning" @click="showToast('warning')">
                 警告
             </ReButton>
-            <ReButton color="neutral" @click="showToast('loading')">
+            <ReButton block color="neutral" @click="showToast('loading')">
                 加载
             </ReButton>
         </RebornCard>
         <RebornCard title="类型toast" custom-class="grid grid-cols-3 gap-2">
-            <ReButton color="success" @click="showTopToast">
+            <ReButton block color="success" @click="showTopToast">
                 顶部toast
             </ReButton>
-            <ReButton color="info" @click="showMiddletoast">
+            <ReButton block color="info" @click="showMiddletoast">
                 中间toast
             </ReButton>
-            <ReButton color="error" @click="showBottomToast">
+            <ReButton block color="error" @click="showBottomToast">
                 底部toast
             </ReButton>
         </RebornCard>
         <RebornCard title="loading toast" custom-class="grid grid-cols-3 gap-2">
-            <ReButton color="success" @click="showLoadingToast">
+            <ReButton block color="success" @click="showLoadingToast">
                 基础环形
             </ReButton>
-            <ReButton color="info" @click="showLoadingToast2">
+            <ReButton block color="info" @click="showLoadingToast2">
                 白色环形
             </ReButton>
-            <ReButton color="error" @click="showLoadingToast3">
+            <ReButton block color="error" @click="showLoadingToast3">
                 纵向环形
             </ReButton>
         </RebornCard>

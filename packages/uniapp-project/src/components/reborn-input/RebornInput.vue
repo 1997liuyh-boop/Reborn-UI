@@ -99,6 +99,8 @@ const emit = defineEmits([
 ])
 const slots = useSlots()
 
+const inputRef = ref<any>(null)
+
 const localValue = ref(props.defaultValue ?? '')
 
 // 是否聚焦（样式作用）
@@ -112,6 +114,46 @@ const isProgrammaticFocus = ref(false)
 
 // 是否显示密码
 const isPassword = ref(props.password)
+
+function getNativeInputElement() {
+  const input = inputRef.value
+
+  if (!input) { return null }
+  if (input instanceof HTMLInputElement) { return input }
+  if (input.$el instanceof HTMLInputElement) { return input.$el }
+  if (input.$el?.querySelector) { return input.$el.querySelector('input') as HTMLInputElement | null }
+
+  return null
+}
+
+function focusNativeInputToEnd() {
+  // #ifdef H5
+  const input = getNativeInputElement()
+  if (!input) { return false }
+
+  input.focus({ preventScroll: true })
+  isFocus.value = true
+
+  const valueLength = `${input.value ?? ''}`.length
+  const setCursorToEnd = () => {
+    if (document.activeElement !== input) { return }
+
+    try {
+      input.setSelectionRange(valueLength, valueLength)
+    }
+    catch {
+      // 部分 input type 不支持 selection range，保持聚焦即可。
+    }
+  }
+
+  setCursorToEnd()
+  requestAnimationFrame(setCursorToEnd)
+
+  return true
+  // #endif
+
+  return false
+}
 
 const inputValue = computed(() =>
   props.modelValue !== undefined ? props.modelValue : localValue.value,
@@ -212,6 +254,8 @@ function focus() {
     return
   };
 
+  if (focusNativeInputToEnd()) { return }
+
   // 标记为程序主动触焦，防止 isFocusing 切换时产生的 blur 事件破坏样式状态
   isProgrammaticFocus.value = true
   setTimeout(() => {
@@ -260,13 +304,14 @@ function showPassword() {
 
 function handleFocus(e: any) {
   if (fieldGroupDisabled.value || props.readonly) { return }
-  if (isFocus.value) {
-    // input 已聚焦时，阻止 touchstart 默认行为，防止 input 失焦导致键盘闪烁
-    e.preventDefault()
-  }
-  else {
-    focus()
-  }
+  const input = getNativeInputElement()
+
+  // #ifdef H5
+  if (e.target === input) { return }
+  // #endif
+
+  if (isFocus.value) { e.preventDefault() }
+  else { focus() }
 }
 
 // 清除方法

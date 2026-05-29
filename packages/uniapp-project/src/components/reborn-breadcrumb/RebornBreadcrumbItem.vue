@@ -67,7 +67,9 @@ function handleClick() {
       <slot name="separator">
         <template v-if="context.separatorIcon">
           <view v-if="typeof context.separatorIcon === 'string'" :class="context.separatorIcon" />
+          <!-- #ifdef H5 || APP-PLUS -->
           <component :is="context.separatorIcon" v-else />
+          <!-- #endif -->
         </template>
         <template v-else>
           <text>{{ context.separator }}</text>

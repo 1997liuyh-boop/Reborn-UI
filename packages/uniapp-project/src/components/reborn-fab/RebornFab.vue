@@ -345,48 +345,54 @@ const triggerWrapperStyle = computed(() => ({
 }))
 
 // 外层：仅负责定位与 transform 动画（与 flex 拆开，避免微信小程序上横向展开异常）
+// iOS Safari 优化说明：
+//   - transition:all 会把 bottom/top/left/right 也纳入过渡，触发 layout→paint，导致主线程卡顿。
+//   - 修复方式：几何锚点固定不变，动画只走 transform(scale) + opacity，两者均可走 GPU 合成层。
+//   - transformOrigin 设置为靠近触发按钮的一侧，使 scale 从触发按钮方向弹出，视觉自然。
 const actionsShellStyle = computed(() => {
     const isVisible = isActive.value
-    const offset = isVisible ? 'calc(100% + 12px)' : '0px'
     const opacity = isVisible ? 1 : 0
     const scale = isVisible ? 1 : 0.3
 
     const base: Record<string, string | number> = {
         opacity,
-        transformOrigin: 'center center',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        // 祖先 .actions 为 pointer-events-none 时，H5 上子节点若未显式写 pointer-events:auto 会命中穿透；
-        // 展开时让动作条整体参与命中，避免 Toast 不触发、点击落到下层页面。
+        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: 'opacity, transform',
         pointerEvents: isVisible ? 'auto' : 'none'
     }
 
     switch (fabDirection.value) {
         case 'top':
+            // 锚点贴在触发按钮上方 12px，transformOrigin bottom 使 scale 从底部（触发按钮侧）弹出
             return {
                 ...base,
-                bottom: offset,
+                bottom: 'calc(100% + 12px)',
                 left: '50%',
+                transformOrigin: 'center bottom',
                 transform: `translateX(-50%) scale(${scale})`
             }
         case 'bottom':
             return {
                 ...base,
-                top: offset,
+                top: 'calc(100% + 12px)',
                 left: '50%',
+                transformOrigin: 'center top',
                 transform: `translateX(-50%) scale(${scale})`
             }
         case 'left':
             return {
                 ...base,
-                right: offset,
+                right: 'calc(100% + 12px)',
                 top: '50%',
+                transformOrigin: 'right center',
                 transform: `translateY(-50%) scale(${scale})`
             }
         case 'right':
             return {
                 ...base,
-                left: offset,
+                left: 'calc(100% + 12px)',
                 top: '50%',
+                transformOrigin: 'left center',
                 transform: `translateY(-50%) scale(${scale})`
             }
         default:
