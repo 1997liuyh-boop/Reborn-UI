@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { tv } from '@/lib/tv'
 import { isHarmony } from '@/lib/device'
 import theme from './reborn-sticky.config'
@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<RebornStickyProps>(), {
   scrollTop: 0,
   isNeedNavbarHeight: true,
   navbarHeight: 44,
+  stickyTriggerLead: 0,
 })
 
 defineSlots<{
@@ -31,6 +32,8 @@ export interface RebornStickyProps {
   isNeedNavbarHeight?: boolean
   // 导航栏高度
   navbarHeight?: number
+  // 吸顶判定提前 (px)，用于根节点上方还有标题等与测量 top 不对齐时
+  stickyTriggerLead?: number
 }
 
 const { proxy } = getCurrentInstance()!
@@ -64,7 +67,8 @@ const isSticky = computed(() => {
   if (rect.height == 0) { return false }
 
   // 添加1px的容差，避免微信小程序滚动精度问题
-  return scrollTop.value + 1 >= rect.top
+  const triggerTop = Math.max(0, rect.top - props.stickyTriggerLead)
+  return scrollTop.value + 1 >= triggerTop
 })
 
 const ui = computed(() => {
@@ -170,10 +174,21 @@ onMounted(() => {
       immediate: true,
     },
   )
+
+  // 吸顶状态切换后布局会变（如 fixed），下一帧重测宽高，避免占位与小程序端错位
+  watch(
+    () => isSticky.value,
+    () => {
+      nextTick(() => {
+        getRect()
+      })
+    },
+  )
 })
 
 defineExpose({
   getRect,
+  isSticky,
 })
 </script>
 

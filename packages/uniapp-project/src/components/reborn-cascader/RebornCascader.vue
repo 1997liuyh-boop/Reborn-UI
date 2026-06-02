@@ -13,10 +13,7 @@ import RebornText from '../reborn-text/RebornText.vue'
 import RebornPopup from '../reborn-popup/RebornPopup.vue'
 import RebornBadge from '../reborn-badge/RebornBadge.vue'
 import RebornButton from '../reborn-button/RebornButton.vue'
-import RebornCheckbox from '../reborn-checkbox/RebornCheckbox.vue'
 import RebornLoading from '../reborn-loading/RebornLoading.vue'
-
-import RebornTransition from '../reborn-transition/RebornTransition.vue'
 
 defineOptions({
     name: 'RebornCascader',
@@ -98,32 +95,27 @@ const tabScrollIntoViewId = ref('') // 顶部标签滚动 ID
 const listScrollIntoViewId = ref('') // 列表区域滚动 ID
 const loadingNodes = ref<Record<string, boolean>>({}) // 记录加载状态
 const internalOptions = ref<CascaderOption[]>([])
-
-// 监听当前层级变化进行辅助对齐（居中显示）
-watch(current, (val) => {
-    nextTick(() => {
-        setTimeout(() => {
-            // 设置 ID 时让其滚动到前一个索引节点，形成“居中”显示效果（让当前/新节点在中间）
-            const scrollIndex = Math.max(0, val - 1)
-            tabScrollIntoViewId.value = `tab-${scrollIndex}`
-            listScrollIntoViewId.value = `column-${scrollIndex}`
-        }, 100)
-    })
-})
+let scrollAlignTimers: ReturnType<typeof setTimeout>[] = []
 
 watch(() => props.options, (val) => {
     internalOptions.value = JSON.parse(JSON.stringify(val || []))
 }, { immediate: true, deep: true })
 
-// 监听外界 modelValue 变化
-watch(() => props.modelValue, (val) => {
+/** 根据 v-model（已保存的值）重置面板内的浏览与多选勾选，丢弃上次打开未确认的修改 */
+function syncInternalFromModel() {
+    const val = props.modelValue
     if (props.multiple) {
-        selectedPaths.value = JSON.parse(JSON.stringify(val || []))
+        selectedPaths.value = JSON.parse(JSON.stringify(val ?? []))
         activePath.value = selectedPaths.value[0] ? [...selectedPaths.value[0]] : []
     } else {
-        activePath.value = [...(val as (string | number)[] || [])]
+        activePath.value = [...((val as (string | number)[]) ?? [])]
     }
-}, { immediate: true })
+}
+
+// 监听外界 modelValue 变化
+watch(() => props.modelValue, () => {
+    syncInternalFromModel()
+}, { immediate: true, deep: true })
 
 // 计算属性：各级选项列表
 const lists = computed<CascaderOption[][]>(() => {
@@ -147,12 +139,65 @@ const lists = computed<CascaderOption[][]>(() => {
     return result
 })
 
+/**
+ * 1～3 列：按列数均分整屏；第 4 列起单列宽度仍为一屏的 1/3，总宽超过一屏则横向滚动。
+ */
 const columnWidthClass = computed(() => {
     const len = lists.value.filter(l => l && l.length > 0).length
-    if (len === 1) return 'w-full'
-    if (len === 2) return 'w-1/2'
-    return 'w-1/3'
+    if (len <= 1) return 'w-full min-w-0 box-border'
+    if (len === 2) return 'shrink-0 basis-1/2 w-1/2 min-w-0 box-border'
+    return 'shrink-0 basis-1/3 w-1/3 min-w-0 box-border'
 })
+
+function clearScrollAlignTimers() {
+    scrollAlignTimers.forEach(timer => clearTimeout(timer))
+    scrollAlignTimers = []
+}
+
+function alignCurrentColumn(val = current.value, force = false) {
+    clearScrollAlignTimers()
+    const align = () => {
+        // 设置 ID 时让标签滚动到前一个索引节点，形成“居中”显示效果（让当前/新节点在中间）
+        const tabIndex = Math.max(0, val - 1)
+        tabScrollIntoViewId.value = `tab-${tabIndex}`
+
+        // 列表区域滚到当前列本身；4 列时 column-2 已在可视区内，H5/App 不会继续右移。
+        const columnIndex = Math.min(val, lists.value.length - 1)
+        listScrollIntoViewId.value = lists.value.length > 3 ? `column-${columnIndex}` : ''
+    }
+
+    if (force) {
+        // 只清空目标 ID，不重置横向位置，避免已在最右侧时先向左滑动。
+        tabScrollIntoViewId.value = ''
+        listScrollIntoViewId.value = ''
+    }
+
+    nextTick(() => {
+        const delays = force ? [60, 180, 360] : [40]
+        delays.forEach((delay) => {
+            const timer = setTimeout(() => {
+                align()
+                scrollAlignTimers = scrollAlignTimers.filter(item => item !== timer)
+            }, delay)
+            scrollAlignTimers.push(timer)
+        })
+    })
+}
+
+// 监听当前层级变化进行辅助对齐（居中显示）
+watch(current, (val) => {
+    alignCurrentColumn(val)
+})
+
+watch(visible, (val) => {
+    if (!val) {
+        clearScrollAlignTimers()
+    }
+})
+
+const onPopupOpened = () => {
+    alignCurrentColumn(current.value, true)
+}
 
 // 计算属性：当前页面的标签
 const labels = computed(() => {
@@ -214,6 +259,8 @@ const triggerText = computed(() => {
 const open = async () => {
     if (props.disabled) return
     visible.value = true
+    // 每次打开都恢复到当前已提交的 modelValue（关闭前未确认的浏览/勾选不保留）
+    syncInternalFromModel()
 
     // 懒加载初始化
     if (props.lazy && internalOptions.value.length === 0) {
@@ -235,16 +282,17 @@ const open = async () => {
         }
     }
 
-    // 定位到最后一级
-    if (activePath.value.length > 0) {
-        current.value = Math.min(activePath.value.length, lists.value.length - 1)
-    } else {
-        current.value = 0
-    }
+    // 定位到最后一级；打开动画结束后会再次强制对齐，兼容 H5/App 渲染时序。
+    const nextCurrent = activePath.value.length > 0
+        ? Math.min(activePath.value.length, lists.value.length - 1)
+        : 0
+    current.value = nextCurrent
+    alignCurrentColumn(nextCurrent, true)
 }
 
 const close = () => {
     visible.value = false
+    clearScrollAlignTimers()
 }
 
 const onLabelTap = (index: number) => {
@@ -281,6 +329,16 @@ const isLeafNode = (item: CascaderOption, listIndex: number) => {
         (!props.lazy && (!item[childrenKey] || item[childrenKey].length === 0)) ||
         (props.leafLevel > 0 && listIndex + 1 >= props.leafLevel)
 }
+
+const getItemRenderKey = (item: CascaderOption, listIndex: number) => {
+    const prefix = activePath.value.slice(0, listIndex).join('\u001f')
+    return `${listIndex}-${String(item[props.valueKey])}-${prefix}`
+}
+
+const checkboxControlClass = (checked: boolean) => cn(
+    'flex items-center justify-center size-5 rounded-md border border-gray-4 bg-white text-white ring-1 ring-transparent',
+    checked ? 'border-primary bg-primary' : ''
+)
 
 const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox = false) => {
     if (props.disabled) return
@@ -350,28 +408,28 @@ const clear = () => {
 }
 
 const isItemSelected = (item: CascaderOption, listIndex: number) => {
-    const path = [...activePath.value.slice(0, listIndex), item[props.valueKey]]
     if (props.multiple) {
-        const leaves = getLeafPaths(item, activePath.value.slice(0, listIndex))
+        const col = lists.value[listIndex]
+        // 切换同级（如换城市）时，端上可能一帧内仍带着上一支的 item，与当前列数据引用不一致，错用新 prefix 算 getLeafPaths 会闪勾
+        if (!col?.length || !col.includes(item)) {
+            return false
+        }
+        const prefix = activePath.value.slice(0, listIndex)
+        // 当前列必须与 activePath 前缀对齐，避免小程序端重绘时列与路径短暂不同步导致误判（含 getLeafPaths 异常结果）
+        if (prefix.length !== listIndex) {
+            return false
+        }
+        const leaves = getLeafPaths(item, prefix)
+        // [].every(...) 恒为 true，会导致未选却短暂显示为勾选
+        if (leaves.length === 0) {
+            return false
+        }
         return leaves.every(p => {
             const pStr = JSON.stringify(p)
             return selectedPaths.value.some(sp => JSON.stringify(sp) === pStr)
         })
     }
     return activePath.value[listIndex] === item[props.valueKey]
-}
-
-const isItemIndeterminate = (item: CascaderOption, listIndex: number) => {
-    if (!props.multiple) return false
-    const leaves = getLeafPaths(item, activePath.value.slice(0, listIndex))
-    if (leaves.length <= 1) return false
-
-    const selectedCount = leaves.filter(p => {
-        const pStr = JSON.stringify(p)
-        return selectedPaths.value.some(sp => JSON.stringify(sp) === pStr)
-    }).length
-
-    return selectedCount > 0 && selectedCount < leaves.length
 }
 
 defineExpose({ open, close, clear })
@@ -383,7 +441,7 @@ defineExpose({ open, close, clear })
             :focus="visible" :color="color" :size="size" @open="open" @clear="clear" />
 
         <RebornPopup v-model="visible" :lazy-render="false" :title="title" position="bottom" round @close="close"
-            :color="color" rootPortal>
+            @opened="onPopupOpened" :color="color" rootPortal>
             <view :class="ui.popup()">
                 <!-- 顶部标签页 -->
                 <scroll-view v-if="!multiple" scroll-x :class="ui.tabsScroll()" :scroll-into-view="tabScrollIntoViewId"
@@ -412,37 +470,38 @@ defineExpose({ open, close, clear })
                     <scroll-view v-else scroll-x :class="ui.listScroll()" :scroll-into-view="listScrollIntoViewId"
                         scroll-with-animation>
                         <view :class="ui.listInner()">
-                            <view v-for="(listData, listIndex) in lists" :key="listIndex" :id="`column-${listIndex}`"
-                                :class="ui.column({ class: columnWidthClass })">
-                                <RebornTransition :show="true" name="fade-right" :duration="300" custom-class="h-full">
-                                    <scroll-view scroll-y :class="ui.columnScroll()">
-                                        <view v-for="(item, itemIndex) in listData"
-                                            :key="`${listIndex}-${item[valueKey]}`" :class="[
-                                                ui.item(),
-                                                activePath[listIndex] === item[valueKey] ? ui.itemActive() : ''
-                                            ]" @tap="onItemTap(item, listIndex)">
-                                            <view :class="ui.itemInner()">
-                                                <view v-if="props.multiple" :class="ui.checkbox()"
-                                                    @tap.stop="onItemTap(item, listIndex, true)">
-                                                    <RebornCheckbox :modelValue="isItemSelected(item, listIndex)"
-                                                        :indeterminate="isItemIndeterminate(item, listIndex)" />
+                            <view v-for="(listData, listIndex) in lists"
+                                :key="`col-${listIndex}-${activePath.slice(0, listIndex).join('\u001f')}`"
+                                :id="`column-${listIndex}`" :class="ui.column({ class: columnWidthClass })">
+                                <scroll-view scroll-y :class="ui.columnScroll()">
+                                    <view v-for="item in listData" :key="getItemRenderKey(item, listIndex)"
+                                        :class="[
+                                            ui.item(),
+                                            activePath[listIndex] === item[valueKey] ? ui.itemActive() : ''
+                                        ]" @tap="onItemTap(item, listIndex)">
+                                        <view :class="ui.itemInner()">
+                                            <view v-if="props.multiple" :class="ui.checkbox()"
+                                                @tap.stop="onItemTap(item, listIndex, true)">
+                                                <view :class="checkboxControlClass(isItemSelected(item, listIndex))">
+                                                    <view v-if="isItemSelected(item, listIndex)"
+                                                        class="i-lucide-check size-4 text-white" />
                                                 </view>
-                                                <slot name="item" :item="item" :listIndex="listIndex"
-                                                    :active="activePath[listIndex] === item[valueKey]">
-                                                    <RebornText
-                                                        :custom-class="activePath[listIndex] === item[valueKey] ? ui.itemTextActive() : ui.itemText()"
-                                                        :ellipsis="ellipsis" :lines="lines">
-                                                        {{ item[labelKey] }}
-                                                    </RebornText>
-                                                </slot>
                                             </view>
-                                            <view v-if="loadingNodes[String(item[valueKey])]" :class="ui.nodeLoading()">
-                                                <RebornLoading type="outline" :color="color" size="32rpx" />
-                                            </view>
-                                            <view v-else-if="!isLeafNode(item, listIndex)" :class="ui.nodeArrow()" />
+                                            <slot name="item" :item="item" :listIndex="listIndex"
+                                                :active="activePath[listIndex] === item[valueKey]">
+                                                <RebornText
+                                                    :custom-class="activePath[listIndex] === item[valueKey] ? ui.itemTextActive() : ui.itemText()"
+                                                    :ellipsis="ellipsis" :lines="lines">
+                                                    {{ item[labelKey] }}
+                                                </RebornText>
+                                            </slot>
                                         </view>
-                                    </scroll-view>
-                                </RebornTransition>
+                                        <view v-if="loadingNodes[String(item[valueKey])]" :class="ui.nodeLoading()">
+                                            <RebornLoading type="outline" :color="color" size="32rpx" />
+                                        </view>
+                                        <view v-else-if="!isLeafNode(item, listIndex)" :class="ui.nodeArrow()" />
+                                    </view>
+                                </scroll-view>
                             </view>
                         </view>
                     </scroll-view>

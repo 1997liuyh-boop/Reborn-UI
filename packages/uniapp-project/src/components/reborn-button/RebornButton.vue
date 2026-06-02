@@ -131,6 +131,7 @@ const ui = computed(() => {
     disabled: fieldGroupDisabled.value,
     loading: props.loading,
     gap: props.gap,
+    block: props.block,
     round: props.round,
     circle: props.circle
   })

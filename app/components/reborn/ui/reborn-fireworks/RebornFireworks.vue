@@ -35,6 +35,11 @@ const props = defineProps({
         type: Number,
         default: 25,
     },
+    // 粒子尺寸的整体缩放比例（1 为默认大小，>1 变大，<1 变小）
+    particleScale: {
+        type: Number,
+        default: 1,
+    },
 });
 
 // 容器和画布的引用
@@ -90,10 +95,10 @@ function makeParticle(cx, cy) {
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
         type,
 
-        // 尺寸设定：稍微放大以确保在各种屏幕上都清晰可见
-        w: type === "ribbon" ? 4 + Math.random() * 4 : 7 + Math.random() * 10,
-        h: type === "ribbon" ? 14 + Math.random() * 16 : 4 + Math.random() * 5,
-        r: 4 + Math.random() * 5, // 圆形半径
+        // 尺寸设定：稍微放大以确保在各种屏幕上都清晰可见，并乘以缩放系数
+        w: (type === "ribbon" ? 4 + Math.random() * 4 : 7 + Math.random() * 10) * props.particleScale,
+        h: (type === "ribbon" ? 14 + Math.random() * 16 : 4 + Math.random() * 5) * props.particleScale,
+        r: (4 + Math.random() * 5) * props.particleScale, // 圆形半径
 
         // 透明度与衰减率（降低衰减率，延长在144Hz等高刷屏上的存活时间）
         opacity: 1,

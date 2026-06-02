@@ -3,7 +3,7 @@
 <template>
     <ComponentPlayground>
         <template #component>
-            <FireworksDemo />
+            <RebornFireworksDemo />
         </template>
     </ComponentPlayground>
 </template>

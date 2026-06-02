@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { checkboxColors, checkboxSizes } from './reborn-checkbox.config'
-import { computed, ref, useAttrs, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -13,6 +13,7 @@ defineOptions({
 
 const props = withDefaults(defineProps<CheckboxProps>(), {
   disabled: false,
+  readOnly: false,
   size: 'md',
   color: 'primary',
 })
@@ -31,6 +32,8 @@ export interface CheckboxProps {
   value?: CheckboxValue
   label?: string
   disabled?: boolean
+  /** 仅展示状态，不响应点击（由外层接管，避免与父级多次触发；微信小程序等与 v-model 叠加易闪勾） */
+  readOnly?: boolean
   size?: typeof checkboxSizes[number]
   color?: typeof checkboxColors[number]
   customClass?: any
@@ -84,7 +87,7 @@ function updateValue(nextValue: boolean | CheckboxValue[]) {
 }
 
 function toggle() {
-  if (props.disabled) { return }
+  if (props.disabled || props.readOnly) { return }
 
   if (Array.isArray(currentValue.value)) {
     const next = new Set(currentValue.value)
@@ -112,10 +115,12 @@ watch(
 </script>
 
 <template>
-  <view :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', fieldGroupDisabled && `
+  <view
+    :class="cn(ui.wrapper({ class: customClass }), isChecked && 'is-checked', fieldGroupDisabled && `
       is-disabled
     `)" :data-disabled="fieldGroupDisabled" hover-class="none" style="-webkit-tap-highlight-color: transparent;"
-    @tap="toggle">
+    @tap="toggle"
+  >
     <view :class="ui.control()">
       <slot name="icon" :checked="isChecked">
         <view class="i-lucide-check" :class="ui.icon()" />
