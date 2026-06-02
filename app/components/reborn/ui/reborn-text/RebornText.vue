@@ -23,6 +23,8 @@ export interface RebornTextProps {
     mask?: boolean;
     /** 金额货币符号 */
     currency?: string;
+    /** 货币符号位置 */
+    currencyPosition?: "before" | "after";
     /** 金额小数位数 */
     precision?: number;
     /** 脱敏起始位置 */
@@ -104,6 +106,9 @@ function formatAmount(amount: string | number): string {
     const formatted = num.toFixed(props.precision);
     const parts = formatted.split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    if (props.currencyPosition === "after") {
+        return parts.join(".") + props.currency;
+    }
     return props.currency + parts.join(".");
 }
 
@@ -197,7 +202,7 @@ watch(() => [content.value, props.lines, props.size, props.ellipsis, props.toolt
         <span ref="textRef"
             :class="cn(ui.base({ class: props.class }), { 'cursor-pointer': props.tooltip && isEllipsisActive })"
             :style="textStyle">
-            <slot>{{ content }}</slot>
+            <slot :content="content">{{ content }}</slot>
         </span>
     </RebornTooltip>
 </template>

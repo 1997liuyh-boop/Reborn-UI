@@ -5,6 +5,7 @@ import {
   Comment,
   Fragment,
   Text,
+  cloneVNode,
   computed,
   defineComponent,
   nextTick,
@@ -18,89 +19,114 @@ import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
 import theme from "./reborn-carousel.config";
 
+/** 轮播图控制箭头的显示模式：'hover' (悬浮时显示) | 'always' (始终显示) | 'never' (不显示) */
 type CarouselArrowMode = "hover" | "always" | "never";
+/** 轮播滚动方向：'horizontal' (水平) | 'vertical' (垂直) */
 type CarouselDirection = "horizontal" | "vertical";
+/** 分页指示器的位置：'inside' (轨道内部) | 'outside' (轨道外部) | 'none' (不显示) */
 type CarouselIndicatorPosition = "inside" | "outside" | "none";
+/** 缩略图导航面板的位置：'top' (上方) | 'bottom' (下方) | 'left' (左侧) | 'right' (右侧) */
 type CarouselThumbsPosition = "top" | "bottom" | "left" | "right";
+/** 触发切换幻灯片的手势或操作：'hover' (悬停) | 'click' (点击) */
 type CarouselTrigger = "hover" | "click";
+/** 轮播展现风格：'default' (标准平面) | 'card' (立体卡片式) */
 type CarouselType = "default" | "card";
 
+/** 自动播放参数配置接口 */
 interface CarouselAutoplay {
+  /** 每一帧幻灯片停留的时间 (毫秒) */
   delay?: number;
 }
 
+/** 分页指示器个性化配置接口 */
 interface CarouselPagination {
+  /** 指示器是否支持点击进行切换 */
   clickable?: boolean;
+  /** 指示器类型风格：'line' (线段型) | 'dot' (小圆点) | 'fraction' (数字分式 '1/3') | 'button' (带有数字编码的按钮) */
   type?: "line" | "dot" | "fraction" | "button";
 }
 
+/** 缩略图面板配置参数接口 */
 interface CarouselThumbs {
+  /** 缩略图放置的位置方位 */
   position?: CarouselThumbsPosition;
+  /** 缩略图本身是否允许无限循环轮转 */
   loop?: boolean;
+  /** 缩略图导航箭头的展示模式 */
   arrow?: CarouselArrowMode;
 }
 
+/** 响应式媒介断点独立配置接口 */
 export interface RebornCarouselBreakpoint {
+  /** 对应宽度下每屏显示的幻灯片张数，'auto' 代表根据幻灯片元素自身宽度决定 */
   slidesPerview?: number | "auto";
+  /** 幻灯片之间的间隔距离 (像素 px) */
   spaceBetween?: number;
+  /** 是否将活动项强制居中展示 */
   centeredSlides?: boolean;
+  /** 对应宽度下的控制箭头显示模式 */
   arrow?: CarouselArrowMode;
+  /** 对应宽度下分页器指示器的显示位置 */
   indicatorPosition?: CarouselIndicatorPosition;
+  /** 滚动转场时是否开启边缘动态模糊视觉动效 */
   motionBlur?: boolean;
+  /** 整个容器在当前断点下的指定高度值 */
   height?: string;
-  /**轮播类型 (默认或卡片) */
+  /** 轮播风格类型 (默认平面或立体卡片) */
   type?: CarouselType;
-  /** 滚动方向 */
+  /** 滚动过渡方向 (水平或垂直) */
   direction?: CarouselDirection;
-  /** 是否启用抓取手势光标 */
+  /** 是否在此宽度下启用拖拽抓取的手势鼠标指针 */
   grabCursor?: boolean;
-  /** 是否由元素内容自身决定宽高（禁用强行拉伸） */
+  /** 是否完全由幻灯片自身内容决定尺寸大小（不强行拉伸填充） */
   autoSize?: boolean;
 }
 
+/** RebornCarousel 组件的主属性定义接口 */
 export interface RebornCarouselProps {
-  /** 每屏显示的幻灯片数量，或 'auto' (根据内容宽度) */
+  /** 每屏可见的幻灯片数量，或指定为 'auto' 根据内容内在尺寸决定 */
   slidesPerview?: number | "auto";
-  /** 幻灯片之间的间距 (px) */
+  /** 幻灯片之间的横向/纵向间距 (px) */
   spaceBetween?: number;
-  /** 是否居中展示活动项 */
+  /** 是否将当前活动的幻灯片居中对齐展示 */
   centeredSlides?: boolean;
-  /** 是否无限循环 */
+  /** 是否开启无限循环无缝无障碍滚动 */
   loop?: boolean;
-  /** 自动播放配置，可直接传 boolean 或 { delay: number } */
+  /** 是否自动播放：可直接传布尔值，或传包含 delay 时延的配置对象 */
   autoplay?: boolean | CarouselAutoplay;
-  /** 分页器配置 */
+  /** 分页器配置对象，为 null 时不显示任何分页元素 */
   pagination?: CarouselPagination | null;
-  /** 指示器触发方式 */
+  /** 指示器交互触发方式 (鼠标 hover 或鼠标 click) */
   trigger?: CarouselTrigger;
-  /** 指示器位置 */
+  /** 分页指示器在布局中的摆放位置 */
   indicatorPosition?: CarouselIndicatorPosition;
-  /** 箭头显示模式 */
+  /** 控制箭头的显隐交互模式 */
   arrow?: CarouselArrowMode;
-  /** 是否启用动态模糊 */
+  /** 在滑动转场动画期间是否启用动态的高级运动模糊视觉特效 */
   motionBlur?: boolean;
-  /** 容器高度 */
+  /** 轮播图主体容器的外观高度 */
   height?: string;
-  /** 轮播类型 (默认或卡片) */
+  /** 轮播图结构展现风格：'default' 标准平面 | 'card' 3D卡片堆叠 */
   type?: CarouselType;
-  /** 滚动方向 */
+  /** 转场滚动的主轴轴线方向 (水平或垂直) */
   direction?: CarouselDirection;
-  /** 初始显示的幻灯片索引 */
+  /** 初始加载时首先渲染定位在第几张幻灯片 (从 0 开始计数) */
   initialSlide?: number;
-  /** 响应式断点配置 */
+  /** 响应式断点控制映射映射表，Key 为最小视口宽度 (px)，Value 为断点配置 */
   breakpoints?: Record<number, RebornCarouselBreakpoint>;
-  /** 是否启用抓取手势光标 */
+  /** 当鼠标悬浮在轮播图区域时，是否展示为可抓取抓紧的手势光标 */
   grabCursor?: boolean;
-  /** 是否由元素内容自身决定宽高（禁用强行拉伸） */
+  /** 是否禁止强行将幻灯片等宽拉伸，完全使用其内在元素宽高尺寸 */
   autoSize?: boolean;
-  /** 指示器偏移量 (px) */
+  /** 指示器相对于底边界或右边界的自定义偏移间距 (px) */
   indicatorOffset?: number;
+  /** 底部或侧边联动缩略图面板的特定配置 */
   thumbs?: CarouselThumbs | null;
-  /** 默认主题颜色 */
+  /** 预设的主题配色，用于指示器及操作按钮的色彩 */
   color?: "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
-  /** 自定义根节点类名 */
+  /** 自定义挂载在组件最外层根节点的 CSS 类名 */
   class?: any;
-  /** 内置 UI 部件的类名覆盖 */
+  /** 组件内置各个细分 UI 元素块的样式类名覆盖集，支持高度定制化 */
   ui?: Partial<{
     wrapper: ClassValue;
     root: ClassValue;
@@ -131,6 +157,7 @@ export interface RebornCarouselProps {
   }>;
 }
 
+// 统一应用默认值
 const props = withDefaults(defineProps<RebornCarouselProps>(), {
   slidesPerview: 1,
   spaceBetween: 0,
@@ -155,14 +182,18 @@ const props = withDefaults(defineProps<RebornCarouselProps>(), {
   ui: () => ({}),
 });
 
+/** 双向绑定外部传入的当前激活索引值 modelValue */
 const modelValue = defineModel<number>("modelValue", {
   default: 0,
 });
 
+// 组件声明的抛出事件
 const emit = defineEmits<{
+  /** 幻灯片当前活动索引发生实质性改变时触发此事件 */
   (e: "change", value: number): void;
 }>();
 
+/** 内部辅助组件：动态挂载和管理单个幻灯片插槽内容的渲染，以规避 Fragment 节点带来的不确定性 */
 const CarouselSlotItem = defineComponent({
   name: "CarouselSlotItem",
   props: {
@@ -177,20 +208,30 @@ const CarouselSlotItem = defineComponent({
   },
   setup(localProps) {
     return () => {
+      // 规范化获取插槽的所有虚拟节点列表
       const nodes = normalizeNodes(localProps.slotFn?.() ?? []);
-      return nodes[localProps.index] ?? null;
+      const node = nodes[localProps.index];
+      // 使用 cloneVNode 创建全新的虚拟节点拷贝，避免同一个 VNode 实例在 VDOM 树的多个分支中被二次卸载导致 Null exposed 异常
+      return node ? cloneVNode(node) : null;
     };
   },
 });
 
+/**
+ * 虚拟节点规范化过滤器：
+ * 过滤空节点、清理空文本节点，并展开 Vue 的 Fragment 片段，
+ * 从而准确无误地统计出插槽下真实的幻灯片数量和内容节点。
+ */
 function normalizeNodes(nodes: VNode[] = []): VNode[] {
   const normalized: VNode[] = [];
 
   for (const node of nodes) {
+    // 忽略无效或注释节点
     if (!node || node.type === Comment) {
       continue;
     }
 
+    // 过滤无实质意义的空白纯文本节点
     if (node.type === Text) {
       const content = typeof node.children === "string" ? node.children.trim() : "";
       if (!content) {
@@ -198,6 +239,7 @@ function normalizeNodes(nodes: VNode[] = []): VNode[] {
       }
     }
 
+    // 递归展开嵌套的 Fragment 节点片段
     if (node.type === Fragment && Array.isArray(node.children)) {
       normalized.push(...normalizeNodes(node.children as VNode[]));
       continue;
@@ -209,42 +251,77 @@ function normalizeNodes(nodes: VNode[] = []): VNode[] {
   return normalized;
 }
 
+/** 注入当前组件内的插槽数据 */
 const slots = useSlots();
+/** 默认匿名插槽节点计算属性 */
 const defaultSlotFn = computed(() => slots.default ?? (() => []));
+/** 获取基于 Tailwind-Variants 构建的主题样式解析器 */
 const b = tv(theme);
+
+/** 视口滚动容器 DOM 引用 */
 const viewportRef = ref<HTMLDivElement | any>(null);
+/** 轨道容器 DOM 引用 */
 const trackRef = ref<HTMLDivElement | null>(null);
+/** 缩略图滚动视口容器 DOM 引用 */
 const thumbsViewportRef = ref<HTMLDivElement | null>(null);
+/** 轮播图主视觉根级 DOM 引用 */
 const mainRootRef = ref<HTMLDivElement | null>(null);
+/** 存储所有幻灯片 DOM 元素的数组引用 */
 const slideRefs = ref<HTMLElement[]>([]);
+/** 存储所有缩略图 DOM 元素的数组引用 */
 const thumbRefs = ref<HTMLElement[]>([]);
+
+/** 外部逻辑所知的当前激活真实索引值（对应 props 数据量） */
 const currentIndex = ref(0);
+/** 视口中当前所处的位置索引值（在 loop 复制后包含克隆项的渲染索引） */
 const currentRenderIndex = ref(0);
+/** 当前设备/窗口视口的实时宽度 */
 const viewportWidth = ref(0);
+/** 视口在滚动方向（主轴）上的实际像素尺寸 */
 const viewportMainSize = ref(0);
+
+/** 鼠标是否正悬浮于轮播图整体容器上方 */
 const isHovering = ref(false);
+/** 焦点是否聚焦在轮播图区域内 */
 const isFocused = ref(false);
+/** 用户是否正按住鼠标/手势拖拽当前轨道 */
 const isDragging = ref(false);
-// loop 模式：防止滚动事件处理（静默跳转期间使用）
+
+/** 环形克隆 (loop) 模式下：正处于静默首尾跨越跳转定位中，期间屏蔽并锁死二次滚动同步 */
 const isJumping = ref(false);
-// loop 平滑滚动期间，锁定滚动驱动索引同步，避免 wrap 时出现 4->3->2->1 的快速闪动
+/** 环形克隆 (loop) 模式下：处于平滑转场动画执行的生命周期中，锁定驱动同步以规避索引闪烁跳跃 */
 const isLoopTransitioning = ref(false);
+/** loop 模式下，当有极其快速的连续触发（如 hover 滑过多个指示点）时，用于缓存最初的物理视觉起点，以优化最短路径滚动路径 */
+let loopTransitionStartIndex: number | null = null;
+/** 连续指令迭代计数器，抛弃掉同帧微任务中积攒的过期 nextTick 响应 */
+let loopGoToGeneration = 0;
+
+/** 窗口尺寸变化时的 Resize 处理句柄 */
 let resizeHandler: (() => void) | null = null;
+/** 监听视口容器尺寸变化的观察者实例 */
 let resizeObserver: ResizeObserver | null = null;
+/** 滚动位置检查的渲染帧句柄 */
 let scrollFrame = 0;
+/** 自动播放的间隔执行定时器 */
 let autoplayTimer: any = null;
+/** 布局防重入状态锁 */
 let isUpdatingLayout = false;
+/** 滚动执行中防干扰状态锁 */
 let isApplyingIndex = false;
+/** 布局批处理更新的 RequestAnimationFrame 帧标记 */
 let layoutFrame = 0;
 
-/** 自动高度模式下的当前像素高度 */
+/** 自动高度 (height="auto") 模式下，组件当前依据活动项动态计算的像素高度 */
 const currentSlideHeight = ref(0);
-/** 主图区域实际渲染尺寸，用于同步缩略图面板 */
+/** 主图区域在视口中的物理宽高，用于联动计算并对齐缩略图面板 */
 const mainRootSize = ref({ width: 0, height: 0 });
+/** 针对主图最外层根节点的尺寸变化观察器 */
 let mainRootObserver: ResizeObserver | null = null;
 
 /**
- * 更新自动高度：计算当前活动项的实际高度并应用
+ * 动态高度自适应计算：
+ * 在自动高度配置下，提取当前幻灯片真实的 scrollHeight 并更新，
+ * 触发根容器带 transition 的柔和高度平滑形变，避免高度突变影响内容排版。
  */
 function updateAutoHeight() {
   if (effectiveHeight.value !== "auto" || !import.meta.client) {
@@ -255,7 +332,7 @@ function updateAutoHeight() {
   const slide = slideRefs.value[renderIdx];
 
   if (slide) {
-    // 强制先重设为 auto 以获取内容真实高度
+    // 读取内部首个子元素的实际滚动高度
     const slideInner = slide.firstElementChild as HTMLElement;
     if (slideInner) {
       currentSlideHeight.value = slideInner.scrollHeight;
@@ -263,20 +340,22 @@ function updateAutoHeight() {
   }
 }
 
-/** 规范化后的幻灯片 VNode 列表 */
+/** 规范化处理后，插槽内有效商品或图片幻灯片虚拟节点的只读列表 */
 const slideNodes = computed(() => normalizeNodes(slots.default?.() ?? []));
-/** 真实幻灯片总数 */
+/** 主插槽下真实的幻灯片总张数 */
 const slideCount = computed(() => slideNodes.value.length);
 
 
 
 // ============================
-// loop 克隆逻辑
+// loop 循环滚动克隆缓冲机制
 // ============================
 
 /**
- * 前后需要克隆的幻灯片数量。
- * 取 slidesPerView（数字值）或 slideCount，以较小者为准，保证两端有足够的克隆来实现无缝过渡。
+ * 确定在轮播头部和尾部分别需要复制/克隆的节点数量。
+ * 原理：若开启 loop 模式，则需要保证两端有足够的克隆缓冲带。
+ * 克隆数取 slidesPerView（在 auto 模式下算作 1）或 slideCount 的较小者，
+ * 保证拖拽缓冲和首尾跨越对齐拥有足够的可视过渡边界。
  */
 const cloneCount = computed(() => {
   if (!props.loop || slideCount.value <= 1) {
@@ -285,15 +364,14 @@ const cloneCount = computed(() => {
 
   const perView =
     effectiveSlidesPerView.value === "auto" ? 1 : Number(effectiveSlidesPerView.value);
-  // 增加克隆数量以提供更大的拖拽缓冲区
-  // 保证两端至少有 slideCount 处理或至少 2 倍 perView
+  // 确保两端至少有 slideCount 或是 visibleCount 的两倍以上，确保横向/纵向均不留白
   const minClones = Math.max(Math.ceil(perView) * 2, 4);
   return Math.min(slideCount.value, minClones);
 });
 
 /**
- * 渲染列表 = 前克隆 + 真实节点 + 后克隆。
- * 每个元素带 { node, realIndex, renderIndex, isClone }。
+ * 构建包含了前置克隆集、真实节点集、后置克隆集的混合渲染幻灯片列表。
+ * 输出每个项携带 { realIndex, renderIndex, isClone } 以便 v-for 准确映射。
  */
 const renderSlides = computed(() => {
   const count = slideCount.value;
@@ -304,6 +382,7 @@ const renderSlides = computed(() => {
 
   const clones = cloneCount.value;
 
+  // 未开启无限循环，真实节点即为渲染列表
   if (clones === 0) {
     return Array.from({ length: count }, (_, i) => ({
       realIndex: i,
@@ -318,7 +397,7 @@ const renderSlides = computed(() => {
     isClone: boolean;
   }> = [];
 
-  // 前克隆（从尾部取 clones 个）
+  // 1. 前置克隆区：将尾部的 clones 个真实节点复制并放置到最前端
   for (let i = 0; i < clones; i++) {
     const realIdx = ((count - clones + i) % count + count) % count;
     result.push({
@@ -328,7 +407,7 @@ const renderSlides = computed(() => {
     });
   }
 
-  // 真实节点
+  // 2. 中间真实节点区：原样输出所有商品或图片幻灯片
   for (let i = 0; i < count; i++) {
     result.push({
       realIndex: i,
@@ -337,7 +416,7 @@ const renderSlides = computed(() => {
     });
   }
 
-  // 后克隆（从头部取 clones 个）
+  // 3. 后置克隆区：将最头部的 clones 个真实节点复制并放置到最尾端
   for (let i = 0; i < clones; i++) {
     const realIdx = i % count;
     result.push({
@@ -351,14 +430,16 @@ const renderSlides = computed(() => {
 });
 
 /**
- * 将真实索引转为渲染列表中对应真实节点的索引。
+ * 转换算法：将组件所知的商品真实物理索引转换为包含克隆项在内的真实 DOM 渲染索引。
  */
 function realToRenderIndex(realIndex: number): number {
   return cloneCount.value + realIndex;
 }
 
 /**
- * 计算当前视口宽度下的响应式属性
+ * 响应式布局自适应计算：
+ * 遍历 breakpoints 列表并依据当前 viewportWidth 进行实时匹配，
+ * 取得匹配的最新响应式配置参数项。
  */
 const responsiveProps = computed(() => {
   const entries = Object.entries(props.breakpoints || {})
@@ -374,81 +455,89 @@ const responsiveProps = computed(() => {
   }, {});
 });
 
-/** 当前生效的每屏显示数量 */
+/** 实时生效的单屏显示幻灯片张数 */
 const effectiveSlidesPerView = computed(
   () => responsiveProps.value.slidesPerview ?? props.slidesPerview,
 );
-/** 当前生效的项目间距 */
+/** 实时生效的项目间距 */
 const effectiveSpaceBetween = computed(
   () => responsiveProps.value.spaceBetween ?? props.spaceBetween,
 );
-/** 当前生效的居中模式 */
+/** 实时生效的居中展示对齐模式 */
 const effectiveCenteredSlides = computed(
   () => responsiveProps.value.centeredSlides ?? props.centeredSlides,
 );
-/** 当前生效的箭头模式 */
+/** 实时生效的控制箭头显隐交互模式 */
 const effectiveArrow = computed(() => responsiveProps.value.arrow ?? props.arrow);
-/** 当前生效的指示器位置 */
+/** 实时生效的分页器展示位置 */
 const effectiveIndicatorPosition = computed(
   () => responsiveProps.value.indicatorPosition ?? props.indicatorPosition,
 );
-/** 当前生效的动态模糊 */
+/** 实时生效的运动模糊效果 */
 const effectiveMotionBlur = computed(() => responsiveProps.value.motionBlur ?? props.motionBlur);
-/** 当前生效的容器高度 */
+/** 实时生效的轮播容器高度 */
 const effectiveHeight = computed(() => responsiveProps.value.height ?? props.height);
-/** 当前生效的轮播类型 */
+/** 实时生效的展现风格 */
 const effectiveType = computed(() => responsiveProps.value.type ?? props.type);
-/** 当前生效的滚动方向 */
+/** 实时生效的滚动方向线 */
 const effectiveDirection = computed(() => responsiveProps.value.direction ?? props.direction);
-/** 当前生效的抓取光标 */
+/** 实时生效的手势拖拽抓取 */
 const effectiveGrabCursor = computed(() => responsiveProps.value.grabCursor ?? props.grabCursor);
-/** 当前生效的自动尺寸（完全自适应内部元素） */
+/** 实时生效的元素自适应尺寸 */
 const effectiveAutoSize = computed(() => responsiveProps.value.autoSize ?? props.autoSize);
 
-/** 是否为垂直滚动 */
+/** 当前运行是否为垂直单轴滚动 */
 const isVertical = computed(() => effectiveDirection.value === "vertical");
-/** 是否使用内在尺寸 (自动宽度或卡片模式) */
+/** 是否使用商品内容原生尺寸（卡片展现、自适应 auto 尺寸或自定尺寸等） */
 const usesIntrinsicSlideSize = computed(
   () => effectiveType.value === "card" || effectiveSlidesPerView.value === "auto" || effectiveAutoSize.value,
 );
-/** 指示器是否可点击 */
+/** 分页指示小点是否允许点击 */
 const isIndicatorClickable = computed(() => props.pagination?.clickable !== false);
-/** 是否显示指示器 */
+/** 是否应该在视口中绘制分页指示器组件 */
 const showIndicators = computed(
   () =>
     props.pagination !== null &&
     effectiveIndicatorPosition.value !== "none" &&
     slideCount.value > 1,
 );
-/** 是否显示箭头 */
+/** 是否需要激活并输出上一张/下一张切换控制按钮 */
 const showArrows = computed(() => effectiveArrow.value !== "never" && slideCount.value > 1);
-const showThumbs = computed(() => !!props.thumbs && slideCount.value > 1);
+/** 是否配置并准许展示缩略图导航面板 */
+const showThumbs = computed(() => !!props.thumbs && slideCount.value >= 1);
+/** 缩略图面板的物理就绪判定（确保对应的宽度或高度已经在客户端成功测量并渲染） */
 const isThumbsReady = computed(() => {
   if (!showThumbs.value) return false;
   if (isThumbsVertical.value) {
-    // left/right 模式：等待高度获取到
+    // 垂直侧边排布：等待高度计算出
     return mainRootSize.value.height > 0;
   }
-  // top/bottom 模式：等待宽度获取到
+  // 水平底部排布：等待宽度测量出
   return mainRootSize.value.width > 0;
 });
+/** 联动缩略图面板当前摆放的具体方位 */
 const thumbsPosition = computed<CarouselThumbsPosition>(() => props.thumbs?.position ?? "bottom");
+/** 联动缩略图面板箭头的显隐交互形式 */
 const thumbsArrow = computed<CarouselArrowMode>(() => props.thumbs?.arrow ?? "never");
+/** 缩略图栏本身是否开启循环无尽轮转 */
 const thumbsLoop = computed(() => props.thumbs?.loop ?? false);
+/** 缩略图当前是否属于侧边纵向摆放模式 */
 const isThumbsVertical = computed(
   () => thumbsPosition.value === "left" || thumbsPosition.value === "right",
 );
+/** 是否在缩略图栏上显式绘制小箭头操作按钮 */
 const showThumbArrows = computed(
   () => showThumbs.value && thumbsArrow.value !== "never" && slideCount.value > 1,
 );
+/** 缩略图是否在视觉主图之前展示（如放置在 top 或 left） */
 const isThumbsBeforeMain = computed(
   () => thumbsPosition.value === "top" || thumbsPosition.value === "left",
 );
 
-/** 指示器是否为分页分数模式 */
+/** 分页指示器类型是否属于数字分式 */
 const isFractionPagination = computed(() => props.pagination?.type === "fraction");
 
-/** 指示器包装容器样式，用于应用自定义偏移值 */
+/** 动态指示器浮层容器样式，支持用户配置偏移量 */
 const indicatorWrapperStyle = computed(() => {
   const offset = props.indicatorOffset ?? 16;
 
@@ -477,6 +566,7 @@ const indicatorWrapperStyle = computed(() => {
   return {};
 });
 
+/** 缩略图宿主框的 Class 集合 */
 const thumbsShellClass = computed(() => {
   if (!showThumbs.value) {
     return "w-full";
@@ -489,10 +579,12 @@ const thumbsShellClass = computed(() => {
   });
 });
 
+/** 主播放区的 CSS 布局类名 */
 const mainPaneClass = computed(() =>
   cn("min-w-0", showThumbs.value && isThumbsVertical.value ? "flex-1" : "w-full"),
 );
 
+/** 联动缩略图面板背景盒的 CSS 类名 */
 const thumbsPanelClass = computed(() =>
   ui.value.thumbsPanel({
     class: cn(
@@ -502,46 +594,48 @@ const thumbsPanelClass = computed(() =>
   }),
 );
 
+/** 联动缩略图面板的动态自适应 CSS 高度/宽度样式 */
 const thumbsPanelStyle = computed(() => {
   if (!showThumbs.value) {
     return undefined;
   }
 
   if (isThumbsVertical.value) {
-    // left/right：缩略图高度跟随主图高度
+    // 侧边定位：缩略图容器高度必须精确锁定为主轮播图测量的实时高度
     const h = mainRootSize.value.height;
-    // 如果主图高度还未计算出来，使用最小高度避免全部显示
     return h > 0 ? { height: `${h}px` } : { minHeight: '100px' };
   }
 
-  // top/bottom：缩略图宽度跟随主图宽度
+  // 底部/顶部定位：缩略图容器宽度必须精确锁定为主轮播图测量的实时宽度
   const w = mainRootSize.value.width;
-  // 如果主图宽度还未计算出来，使用最小宽度避免全部显示
   return w > 0 ? { width: `${w}px` } : { minWidth: '100px' };
 });
 
+/** 缩略图可视窗口的可滚动区域 CSS 控制类名 */
 const thumbsViewportClass = computed(() =>
   ui.value.thumbsViewport({
     class: cn(
       isThumbsVertical.value ? "flex-1 overflow-y-auto overflow-x-hidden" : "overflow-x-auto overflow-y-hidden",
-      "overflow-hidden", // 确保初始化时就隐藏溢出内容
+      "overflow-hidden",
     ),
   }),
 );
 
+/** 缩略图内部横向/纵向排布轨道的 CSS 类名 */
 const thumbsTrackClass = computed(() =>
   ui.value.thumbsTrack({
     class: cn(
-      isThumbsVertical.value ? "flex-col w-full" : "flex-row", // 移除 min-w-max，使用 flex-1 或固定宽度
+      isThumbsVertical.value ? "flex-col w-full" : "flex-row",
     ),
   }),
 );
 
+/** 缩略图栏操作箭头按键组的 CSS 类名 */
 const thumbsArrowGroupClass = computed(() =>
   ui.value.thumbsArrowGroup(),
 );
 
-/** 计算后的自动播放延迟时间 */
+/** 精确测算的自动播放停留毫秒时间，最小下限保护为 800ms */
 const autoplayDelay = computed(() => {
   if (props.autoplay === false) {
     return 0;
@@ -554,39 +648,37 @@ const autoplayDelay = computed(() => {
   return Math.max(800, props.autoplay.delay ?? 3000);
 });
 
-/** 根容器样式 */
+/** 主根容器的动态样式，包含自动高度的平滑缓动渐变效果 */
 const rootStyle = computed(() => {
   const isAuto = effectiveHeight.value === "auto";
   return {
     height: isAuto ? (currentSlideHeight.value ? `${currentSlideHeight.value}px` : "auto") : effectiveHeight.value,
-    // 自动高度模式下增加平滑过渡，放在根容器避免影响视口滚动
     transition: isAuto ? "height 300ms cubic-bezier(0.4, 0, 0.2, 1)" : undefined,
   };
 });
 
-/** 视口容器样式 */
+/** 视口容器的核心滚动样式控制 */
 const viewportStyle = computed(() => {
   const isAuto = effectiveHeight.value === "auto";
   const base: Record<string, any> = {
-    // 关键点：自动高度模式下视口随内容长，不由父级容器 100% 裁切，由 root 容器裁切
+    // 自动高度模式下视口随内容长，不由父级容器 100% 裁切，由 root 容器裁切
     height: isAuto ? "auto" : "100%",
-    // loop 模式也使用 CSS scroll-snap，浏览器原生处理每次滑动 ±1 slide
+    // 激活浏览器原生的 CSS Scroll Snap 特性，实现顺滑且无任何卡顿的滑移锁定
     scrollSnapType: isVertical.value ? "y mandatory" : "x mandatory",
-    // 强制禁用 CSS 的 scroll-behavior，确保 jumpToRealPosition 的 behavior: 'auto' 是瞬时的
+    // 强制禁用 CSS 的默认 scroll-behavior，确保 loop 首尾衔接瞬时跳转毫无闪烁和感知
     scrollBehavior: "auto !important" as any,
   };
 
   return base;
 });
 
-/** 轨道容器样式 */
+/** 轨道容器的核心样式 */
 const trackStyle = computed(() => ({
   gap: `${effectiveSpaceBetween.value}px`,
-  // 轨道高度跟随内容，由 root 容器裁切
   height: effectiveHeight.value === "auto" ? "auto" : "100%",
 }));
 
-/** 幻灯片尺寸样式 (当非 auto 宽度时计算) */
+/** 自定义每屏多图展示下，依据间距和显示张数计算出的每张幻灯片的主轴伸缩尺寸样式 */
 const slideSizeStyle = computed(() => {
   if (usesIntrinsicSlideSize.value) {
     return {};
@@ -611,9 +703,9 @@ const slideSizeStyle = computed(() => {
     };
 });
 
-/** UI 覆盖配置 */
+/** 混入用户传递的自定义 ui 样式配置 */
 const overrides = computed(() => props.ui || {});
-/** 最终生成的 UI 类名集 */
+/** 整合由 tv 组件主题配置与覆盖样式合成的各个核心节点最终使用的样式名列表 */
 const ui = computed(() => {
   const styles = b({
     direction: effectiveDirection.value,
@@ -731,7 +823,9 @@ const ui = computed(() => {
 });
 
 /**
- * 确保索引在有效范围内 [0, count-1]
+ * 索引安全约束：
+ * 保证计算出来的活动项索引严格落在 [0, slideCount - 1] 的真实合法有效范围内。
+ * 在无限循环模式下对超出区域取模运算以保持平顺。
  */
 function clampIndex(index: number) {
   if (slideCount.value <= 0) {
@@ -746,7 +840,7 @@ function clampIndex(index: number) {
 }
 
 /**
- * 更新响应式宽度参考
+ * 更新响应式参考宽度（当前浏览器真实的 window 宽度）
  */
 function updateViewportWidth() {
   if (!import.meta.client) {
@@ -757,7 +851,7 @@ function updateViewportWidth() {
 }
 
 /**
- * 更新视口主轴尺寸 (宽度或高度)
+ * 更新滚动轴视口物理尺寸（水平模式为 width，垂直模式为 height）
  */
 function updateViewportMainSize() {
   const viewport = viewportRef.value;
@@ -771,7 +865,7 @@ function updateViewportMainSize() {
 }
 
 /**
- * 注册幻灯片 DOM 引用
+ * 幻灯片渲染回调句柄，用于提取并缓存所有真实的幻灯片原生 DOM 对象引用
  */
 function setSlideRef(el: any, index: number) {
   if (!el) {
@@ -782,6 +876,9 @@ function setSlideRef(el: any, index: number) {
   slideRefs.value[index] = element;
 }
 
+/**
+ * 缩略图渲染回调句柄，用于提取并缓存所有联动缩略图原生 DOM 对象引用
+ */
 function setThumbRef(el: any, index: number) {
   if (!el) {
     return;
@@ -792,7 +889,9 @@ function setThumbRef(el: any, index: number) {
 }
 
 /**
- * 批量执行布局更新，使用 rAF 防抖并防止 ResizeObserver 反馈循环。
+ * 重新规划并安全批量触发一次轨道排版布局计算。
+ * 运用 RequestAnimationFrame 对布局回调防反洗和防抖，
+ * 规避因频繁高度测量造成的重绘排版损耗。
  */
 function scheduleLayoutUpdate() {
   if (layoutFrame) {
@@ -807,14 +906,16 @@ function scheduleLayoutUpdate() {
 
     isUpdatingLayout = true;
     updateViewportMainSize();
+    // 强制视口回滚对齐当前激活项的 DOM 位置
     scrollToRenderIndex(realToRenderIndex(currentIndex.value), "auto");
     isUpdatingLayout = false;
   });
 }
 
 /**
- * 获取渲染列表中第 renderIdx 个 slide 的滚动目标（居中对齐）。
- * 改动 3：始终居中对齐激活的 slide。
+ * 定位计算核心算法：
+ * 计算渲染列表中指定 renderIdx 幻灯片在当前视口下最理想的滚动偏移值（支持活动项居中对齐）。
+ * @param renderIdx 目标项在渲染列表中的索引位置（包含克隆部分）
  */
 function getSlideTarget(renderIdx: number) {
   const viewport = viewportRef.value;
@@ -831,7 +932,7 @@ function getSlideTarget(renderIdx: number) {
     ? Math.max(0, viewport.scrollHeight - viewport.clientHeight)
     : Math.max(0, viewport.scrollWidth - viewport.clientWidth);
 
-  // 根据 centeredSlides 决定对齐方式：居中或左对齐
+  // 核心：若 centeredSlides 开启，则将活动项放置在视口最中央；否则采用标准的左对齐/上对齐
   const rawTarget = effectiveCenteredSlides.value
     ? slideStart - (viewportSize - slideSize) / 2
     : slideStart;
@@ -954,10 +1055,11 @@ function jumpToRealPosition(realIndex: number) {
   const renderIdx = realToRenderIndex(realIndex);
   const target = getSlideTarget(renderIdx);
 
+  // 使用 "instant" 而非 "auto"：前者强制瞬时，不受 CSS scroll-behavior: smooth 影响
   viewport.scrollTo({
     left: isVertical.value ? 0 : target,
     top: isVertical.value ? target : 0,
-    behavior: "auto",
+    behavior: "instant",
   });
 
   // 同步渲染索引到真实位置，防止下次拖拽使用过期的克隆索引
@@ -1046,6 +1148,16 @@ function next(isManual: boolean | any = true) {
     return;
   }
 
+  // 转场进行中：自动播放让位给手动转场；手动操作则中止当前转场，立即开始新一次，
+  // 避免快速点击被静默丢弃造成的"卡顿"体感
+  const wasLoopTransitioning = props.loop && isLoopTransitioning.value;
+  if (wasLoopTransitioning) {
+    if (isManual === false) {
+      return;
+    }
+    abortLoopTransition();
+  }
+
   if (isManual !== false) {
     startAutoplay();
   }
@@ -1059,6 +1171,10 @@ function next(isManual: boolean | any = true) {
     setActiveIndex(nextReal, { emitChange: true, syncModel: true });
 
     nextTick(() => {
+      // 中途打断后先瞬时对齐到当前真实起点，避免视口停在克隆区引发回退动画
+      if (wasLoopTransitioning) {
+        scrollToRenderIndex(currentRenderIdx, "instant");
+      }
       // 平滑滚动到克隆位置
       scrollToRenderIndex(nextRenderIdx, "smooth");
 
@@ -1080,6 +1196,12 @@ function prev() {
     return;
   }
 
+  // 手动转场进行中：中止当前转场以接收新指令，避免快速连点被丢弃
+  const wasLoopTransitioning = props.loop && isLoopTransitioning.value;
+  if (wasLoopTransitioning) {
+    abortLoopTransition();
+  }
+
   // 手动跳转重置自动播放计时
   startAutoplay();
 
@@ -1092,6 +1214,10 @@ function prev() {
     setActiveIndex(prevReal, { emitChange: true, syncModel: true });
 
     nextTick(() => {
+      // 中途打断后先瞬时对齐到当前真实起点，避免视口停在克隆区引发回退动画
+      if (wasLoopTransitioning) {
+        scrollToRenderIndex(currentRenderIdx, "instant");
+      }
       scrollToRenderIndex(prevRenderIdx, "smooth");
 
       waitForScrollEnd(() => {
@@ -1107,11 +1233,32 @@ function prev() {
 }
 
 /**
- * loop 模式下的 goTo（指示器点击等场景）。
- * 如果目标距离当前位置不超过 slideCount/2，直接滚动到克隆位置再跳回。
+ * loop 模式下的 goTo（指示器点击/悬停等场景）。
+ * - 取最短路径：在直接路径与通过克隆区的反向路径之间取绝对值更小的一侧，
+ *   避免诸如"从尾页点回首页要反向滚多张"的体验问题。
+ * - 转场进行中：中止当前转场以接收新指令，避免连续点击被丢弃。
  */
 function loopGoTo(targetReal: number) {
   if (targetReal === currentIndex.value) {
+    return;
+  }
+
+  // 连续触发（如 hover 扫过中间指示器）时，继续使用最初的视觉起点计算最短路径，
+  // 避免 currentIndex 已被前一次覆盖导致算出"绕远路"
+  const wasTransitioning = isLoopTransitioning.value;
+  const originIndex =
+    wasTransitioning && loopTransitionStartIndex !== null
+      ? loopTransitionStartIndex
+      : currentIndex.value;
+
+  if (wasTransitioning) {
+    abortLoopTransition();
+  }
+
+  if (targetReal === originIndex) {
+    // 新目标正是视觉起点（hover 回退），无需滚动
+    setActiveIndex(targetReal, { emitChange: true, syncModel: true });
+    loopTransitionStartIndex = null;
     return;
   }
 
@@ -1119,26 +1266,55 @@ function loopGoTo(targetReal: number) {
   startAutoplay();
 
   isLoopTransitioning.value = true;
-  const currentRenderIdx = realToRenderIndex(currentIndex.value);
-  const diff = targetReal - currentIndex.value;
-  const targetRenderIdx = currentRenderIdx + diff;
+  loopTransitionStartIndex = originIndex;
+  const generation = ++loopGoToGeneration;
+  const total = slideCount.value;
+  const directDiff = targetReal - originIndex;
+  // 通过克隆区绕行的差值（与直接路径方向相反）
+  const altDiff = directDiff > 0 ? directDiff - total : directDiff + total;
+  // 选择绝对值更小的方向；相等时优先正向
+  const diff = Math.abs(directDiff) <= Math.abs(altDiff) ? directDiff : altDiff;
+  const originRenderIdx = realToRenderIndex(originIndex);
+  const targetRenderIdx = originRenderIdx + diff;
 
   setActiveIndex(targetReal, { emitChange: true, syncModel: true });
 
   nextTick(() => {
+    // 过期的回调直接丢弃（快速 hover 导致同一微任务内堆积多个 nextTick）
+    if (generation !== loopGoToGeneration) {
+      return;
+    }
+    // 连触发前，视口可能停在前一次转场的中间位置；先瞬时对齐到视觉起点再平滑滚动，
+    // 确保动画方向与最短路径一致
+    if (wasTransitioning) {
+      scrollToRenderIndex(originRenderIdx, "instant");
+    }
     scrollToRenderIndex(targetRenderIdx, "smooth");
 
     waitForScrollEnd(() => {
+      if (generation !== loopGoToGeneration) {
+        return;
+      }
+      loopTransitionStartIndex = null;
       jumpToRealPosition(targetReal);
     });
   });
 }
 
+/** 当前未触发的 waitForScrollEnd 等待句柄，用于在中止转场时清理 */
+let pendingScrollEndCleanup: (() => void) | null = null;
+
 /**
  * 等待滚动结束后执行回调。
  * 使用 scrollend 事件（现代浏览器支持），降级为 setTimeout。
+ * 同时记录清理函数，避免被 abortLoopTransition 中断后回调仍然触发，
+ * 否则会导致后续手动切换被误重置。
  */
 function waitForScrollEnd(callback: () => void) {
+  // 进入新一轮等待前，先清掉前一次尚未触发的等待，避免叠加触发
+  pendingScrollEndCleanup?.();
+  pendingScrollEndCleanup = null;
+
   const viewport = viewportRef.value;
 
   if (!viewport) {
@@ -1149,14 +1325,37 @@ function waitForScrollEnd(callback: () => void) {
   // 优先使用 scrollend 事件
   if ("onscrollend" in viewport) {
     const handler = () => {
-      viewport.removeEventListener("scrollend", handler);
+      pendingScrollEndCleanup = null;
       callback();
     };
     viewport.addEventListener("scrollend", handler, { once: true });
+    pendingScrollEndCleanup = () => {
+      viewport.removeEventListener("scrollend", handler);
+    };
   } else {
     // 降级方案：等待足够长时间（考虑 transition-all 500ms）
-    setTimeout(callback, 600);
+    const timeoutId = setTimeout(() => {
+      pendingScrollEndCleanup = null;
+      callback();
+    }, 600);
+    pendingScrollEndCleanup = () => {
+      clearTimeout(timeoutId);
+    };
   }
+}
+
+/**
+ * 中止当前正在进行的 loop 转场。
+ * 仅由"手动切换在转场进行中再次触发"的场景调用：
+ * 取消挂起的 scrollend 等待并解锁状态机，让新一次切换能立即开始；
+ * 当前浏览器原生 smooth scroll 会被随后的 scrollTo 平滑接续，无需手动归位。
+ */
+function abortLoopTransition() {
+  pendingScrollEndCleanup?.();
+  pendingScrollEndCleanup = null;
+  isLoopTransitioning.value = false;
+  isJumping.value = false;
+  loopTransitionStartIndex = null;
 }
 
 /**
@@ -1556,6 +1755,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   /** 彻底清理所有异步资源：定时器、动画帧、事件监听器和观察者 */
   stopAutoplay();
+  // 清理可能挂起的 scrollend 等待回调，避免组件销毁后仍触发逻辑
+  pendingScrollEndCleanup?.();
+  pendingScrollEndCleanup = null;
   if (scrollFrame) {
     cancelAnimationFrame(scrollFrame);
   }
@@ -1598,14 +1800,10 @@ defineExpose({
         <!-- 缩略图箭头使用绝对定位 -->
         <div v-if="showThumbArrows" :class="thumbsArrowGroupClass">
           <button type="button" :disabled="!canGoPrevThumb" :class="ui.thumbsArrow()" @click="prevThumb">
-            <Icon
-              :name="isThumbsVertical ? 'material-symbols:keyboard-arrow-up-rounded' : 'material-symbols:arrow-back-ios-new-rounded'"
-              class="size-4.5" />
+            <Icon :name="isThumbsVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'" class="size-4.5" />
           </button>
           <button type="button" :disabled="!canGoNextThumb" :class="ui.thumbsArrow()" @click="nextThumb">
-            <Icon
-              :name="isThumbsVertical ? 'material-symbols:keyboard-arrow-down-rounded' : 'material-symbols:arrow-forward-ios-rounded'"
-              class="size-4.5" />
+            <Icon :name="isThumbsVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="size-4.5" />
           </button>
         </div>
       </div>
@@ -1656,16 +1854,14 @@ defineExpose({
           <div v-if="showArrows" :class="ui.arrowGroup()">
             <slot name="prev" :prev="prev">
               <button type="button" aria-label="上一项" :disabled="!canGoPrev" :class="ui.arrow()" @click="prev">
-                <Icon
-                  :name="isVertical ? 'material-symbols:keyboard-arrow-up-rounded' : 'material-symbols:arrow-back-ios-new-rounded'"
+                <Icon :name="isVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'"
                   :class="cn('size-5 transition-colors duration-200', !!canGoPrev && `active:text-${props.color}`)" />
               </button>
             </slot>
             <slot name="next" :next="next">
               <button type="button" aria-label="下一项" :disabled="!canGoNext" :class="ui.arrow()"
                 @click="() => next(true)">
-                <Icon
-                  :name="isVertical ? 'material-symbols:keyboard-arrow-down-rounded' : 'material-symbols:arrow-forward-ios-rounded'"
+                <Icon :name="isVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'"
                   :class="cn('size-5 transition-colors duration-200', !!canGoNext && `active:text-${props.color}`)" />
               </button>
             </slot>
