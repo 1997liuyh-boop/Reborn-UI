@@ -18,6 +18,15 @@ export default defineAppConfig({
         root: "justify-end",
       },
     },
+    /**
+     * 文档页有主顶栏 + AppHeaderNav 二级导航（lg 下 top-16），
+     * 默认仅 offset 一层 header，会导致 On This Page 被遮住。
+     */
+    contentToc: {
+      slots: {
+        root: "sticky top-(--ui-header-height) z-10 bg-default/75 lg:bg-[initial] backdrop-blur -mx-4 px-4 sm:px-6 sm:-mx-6 lg:ms-0 overflow-y-auto max-h-[calc(100vh-var(--ui-header-height))] lg:top-[calc(var(--ui-header-height)*2)] lg:max-h-[calc(100vh-var(--ui-header-height)*2)]",
+      },
+    },
   },
 
   header: {
