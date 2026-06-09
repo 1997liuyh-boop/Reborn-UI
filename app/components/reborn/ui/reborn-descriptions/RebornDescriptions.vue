@@ -8,13 +8,10 @@ import type {
   DescriptionsSize,
 } from "./reborn-descriptions.config";
 import { useResizeObserver } from "@vueuse/core";
-import { computed, Fragment, provide, ref, useSlots } from "vue";
+import { computed, Fragment, ref, useSlots } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
-import theme, {
-  DescriptionsInjectionKey,
-  isDescriptionsLineHeightPreset,
-} from "./reborn-descriptions.config";
+import theme, { isDescriptionsLineHeightPreset } from "./reborn-descriptions.config";
 
 // ─── 类型定义 ───────────────────────────────────────────────────
 
@@ -218,19 +215,6 @@ const ui = computed(() => {
     content: (opts?: any) => styles.content({ class: cn(opts?.class, overrides.content) }),
     colon: (opts?: any) => styles.colon({ class: cn(opts?.class, overrides.colon) }),
   };
-});
-
-// ─── 向子组件提供响应式上下文 ─────────────────────────────────────
-
-provide(DescriptionsInjectionKey, {
-  get column() { return props.column; },
-  get border() { return borderMode.value; },
-  get size() { return props.size; },
-  get direction() { return props.direction; },
-  get colon() { return props.colon; },
-  get labelWidth() { return props.labelWidth; },
-  get labelAlign() { return props.labelAlign; },
-  get contentAlign() { return props.contentAlign; },
 });
 
 // ─── VNode 解析：从默认插槽提取 RebornDescriptionsItem ────────────

@@ -1,17 +1,17 @@
 <script setup lang="ts">
+import type {
+  TransferCheckShape,
+  TransferItem,
+} from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
+
 import { computed, ref } from "vue";
 import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
-import RebornTransfer from "~/components/reborn/ui/reborn-transfer/RebornTransfer.vue";
 import {
   transferCheckShapes,
   transferSizes,
 } from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
-import type { TransferCheckShape } from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
-import type { TransferItem } from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
+import RebornTransfer from "~/components/reborn/ui/reborn-transfer/RebornTransfer.vue";
 import { cn } from "~/lib/utils";
-
-/** 演示页统一的中间撤回按钮图标 */
-const transferUndoIcon = "lucide:rotate-ccw";
 
 /** Playground 固定高度选项 */
 const transferHeightPresetOptions = [
@@ -26,8 +26,7 @@ const defaultPlaygroundState = {
   size: "md",
   disabled: false,
   showSearch: false,
-  showHeaderCheckbox: true,
-  showHeaderSelectMenu: false,
+  headerSelect: "checkbox",
   oneWay: false,
   showUndo: false,
   checkShape: "rounded" as TransferCheckShape,
@@ -96,20 +95,22 @@ const controls: any = [
   {
     title: "交互控制",
     children: [
+      {
+        label: "头部选择控件",
+        key: "headerSelect",
+        component: "select" as const,
+        defaultValue: "checkbox",
+        props: {
+          options: [
+            { label: "全选复选框", value: "checkbox" },
+            { label: "扩展下拉菜单", value: "menu" },
+            { label: "复选框 + 菜单", value: "both" },
+            { label: "隐藏", value: "none" },
+          ],
+        },
+      },
       { label: "禁用整体", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "显示搜索", key: "showSearch", component: "checkbox" as const, defaultValue: false },
-      {
-        label: "头部全选框",
-        key: "showHeaderCheckbox",
-        component: "checkbox" as const,
-        defaultValue: true,
-      },
-      {
-        label: "头部扩展勾选",
-        key: "showHeaderSelectMenu",
-        component: "checkbox" as const,
-        defaultValue: false,
-      },
       { label: "单向模式", key: "oneWay", component: "checkbox" as const, defaultValue: false },
       { label: "显示撤回", key: "showUndo", component: "checkbox" as const, defaultValue: false },
     ],
@@ -141,11 +142,9 @@ const codeString = computed(() => {
   :size='${state.value.size}'
   :disabled='${state.value.disabled}'
   :show-search='${state.value.showSearch}'
-  :show-header-checkbox='${state.value.showHeaderCheckbox}'
-  :show-header-select-menu='${state.value.showHeaderSelectMenu}'
+  header-select='${state.value.headerSelect}'
   :one-way='${state.value.oneWay}'
   :show-undo='${state.value.showUndo}'
-  undo-icon='${transferUndoIcon}'
   check-shape='${state.value.checkShape}'${heightAttr}
 />`;
 });
@@ -240,10 +239,6 @@ const memberData: TransferItem[] = [
 
 /** 自定义条目示例：右侧默认已穿梭成员 */
 const memberDefaultTargetKeys = ["u2", "u4", "u6"];
-/** 左侧默认勾选（待移入项目组） */
-const memberDefaultLeftSelectedKeys = ["u1", "u5"];
-/** 右侧默认勾选（已入组、可批量移回） */
-const memberDefaultRightSelectedKeys = ["u4"];
 
 /** 根据姓名生成头像色 */
 function getAvatarColor(name: string): string {
@@ -269,7 +264,7 @@ function getRankClass(description: string): string {
 </script>
 
 <template>
-  <div class="flex flex-col gap-16 pb-24">
+  <div class="flex flex-col gap-16">
     <!-- 第一部分：交互式游乐场 -->
     <Playground
       v-model="state"
@@ -300,11 +295,9 @@ function getRankClass(description: string): string {
         :height="playgroundHeight"
         :disabled="state.disabled"
         :show-search="state.showSearch"
-        :show-header-checkbox="state.showHeaderCheckbox"
-        :show-header-select-menu="state.showHeaderSelectMenu"
+        :header-select="state.headerSelect"
         :one-way="state.oneWay"
         :show-undo="state.showUndo"
-        :undo-icon="transferUndoIcon"
         :check-shape="state.checkShape"
         class="mt-6 w-full"
         @change="handleChange"
@@ -332,10 +325,11 @@ function getRankClass(description: string): string {
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
                 >show-search</code
               >
-              组合：搜索会重置到第 1 页；若同时开启
+              组合：搜索会重置到第 1 页；配合
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >show-header-select-menu</code
-              >：「全选当页」仅勾选当前分页页；「全选所有」勾选当前侧全部条目（跨分页页），点击穿梭按钮会将所有已勾选项一并移入另一侧。
+                >header-select="menu"</code
+              >
+              使用时，「全选当页」仅勾选当前分页；「全选所有」则跨页勾选当前侧全部条目，点击穿梭按钮会将所有已勾选项一并移入另一侧。
             </p>
           </div>
 
@@ -347,11 +341,9 @@ function getRankClass(description: string): string {
               :data-source="paginationDemoData"
               :titles="['组织全员', '项目组已选']"
               :pagination="{ pageSize: 8 }"
-              :undo-icon="transferUndoIcon"
+              header-select="menu"
               show-search
               show-undo
-              show-header-select-menu
-              :show-header-checkbox="false"
               search-placeholder="按姓名或工号搜索"
               class="w-full"
             />
@@ -386,7 +378,6 @@ function getRankClass(description: string): string {
               v-model="withDisabledTargetKeys"
               :data-source="withDisabledData"
               :titles="['全部角色', '已授权角色']"
-              :undo-icon="transferUndoIcon"
               class="w-full"
             />
           </div>
@@ -413,9 +404,8 @@ function getRankClass(description: string): string {
               v-model="oneWayTargetKeys"
               :data-source="oneWayData"
               :titles="['待办任务', '进行中']"
-              :undo-icon="transferUndoIcon"
               :one-way="oneWayEnabled"
-              show-header-select-menu
+              header-select="menu"
               class="w-full"
             />
           </div>
@@ -433,23 +423,20 @@ function getRankClass(description: string): string {
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
                 >operation-buttons</code
               >
-              可配置前置/后置图标、文案与样式；也可用
+              可统一配置三个操作按钮的图标（leadingIcon /
+              trailingIcon）、文案（label）与悬停提示（title）；如需完全自定义按钮结构，可使用
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >operation-to-right-trailing</code
-              >
-              等插槽自由组合。仍兼容
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >operations</code
-              >
-              与
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >undo-title</code
+                >operation-to-right</code
               >
               /
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >undo-icon</code
+                >operation-to-left</code
               >
-              。
+              /
+              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
+                >operation-undo</code
+              >
+              插槽整体替换。
             </p>
           </div>
 
@@ -502,18 +489,11 @@ function getRankClass(description: string): string {
             <p class="mt-1 text-sm text-gray-500">
               通过
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800">#item</code>
-              插槽可完全自定义每个条目的渲染内容，插槽作用域提供当前条目数据。可配合
+              插槽可完全自定义每个条目的渲染内容，插槽作用域提供当前条目的原始数据对象。可配合
               <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
                 >default-target-keys</code
-              >、
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >default-left-selected-keys</code
               >
-              与
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >default-right-selected-keys</code
-              >
-              预设左右两侧的默认内容与勾选状态。
+              预设右侧初始内容。
             </p>
           </div>
 
@@ -523,10 +503,7 @@ function getRankClass(description: string): string {
             <RebornTransfer
               :data-source="memberData"
               :default-target-keys="memberDefaultTargetKeys"
-              :default-left-selected-keys="memberDefaultLeftSelectedKeys"
-              :default-right-selected-keys="memberDefaultRightSelectedKeys"
               :titles="['全部成员', '项目组成员']"
-              :undo-icon="transferUndoIcon"
               class="w-full"
             >
               <template #item="{ item }">

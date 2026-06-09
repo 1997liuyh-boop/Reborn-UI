@@ -1,6 +1,6 @@
 ---
 title: 描述列表
-description:
+description: 以键值对形式展示内容的容器组件，常用于详情页、信息面板等场景。支持有/无边框、水平/垂直方向、多列布局及富内容插槽。
 category: 杂项
 navigation:
   badges:
@@ -16,11 +16,11 @@ navigation:
 ::ComponentViewer{demoFile="RebornDescriptionsDemo.vue" config="RebornDescriptionsConfig" componentId="reborn-descriptions" :componentFiles='["RebornDescriptions.vue", "reborn-descriptions.config.ts"]'}
 ::
 
-# API
+## API
+
+### RebornDescriptions
 
 支持两种数据来源：`items` 数组（数据驱动）或 `RebornDescriptionsItem` 子组件（声明式）。
-
-## RebornDescriptions
 
 ### Props
 
@@ -118,7 +118,7 @@ const items = [
 | `content`      | 内容单元格                   |
 | `colon`        | 标签后的冒号                 |
 
-## RebornDescriptionsItem
+### RebornDescriptionsItem
 
 作为 `RebornDescriptions` 的子组件，用于声明式地逐项定义标签与内容。
 

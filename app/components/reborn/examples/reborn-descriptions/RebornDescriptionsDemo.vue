@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { useColorMode } from "@vueuse/core";
 import type {
   DescriptionsAlign,
   DescriptionsBorderMode,
   DescriptionsLineHeight,
   DescriptionsSize,
 } from "~/components/reborn/ui/reborn-descriptions/reborn-descriptions.config";
+import { useColorMode } from "@vueuse/core";
+import RebornCollapse from "~/components/reborn/ui/reborn-collapse/RebornCollapse.vue";
+import RebornColorPicker from "~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue";
 import {
   descriptionsAligns,
   descriptionsBorderModes,
   descriptionsLineHeights,
   descriptionsSizes,
 } from "~/components/reborn/ui/reborn-descriptions/reborn-descriptions.config";
-import RebornCollapse from "~/components/reborn/ui/reborn-collapse/RebornCollapse.vue";
-import RebornColorPicker from "~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue";
 import RebornDescriptions from "~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue";
 import RebornDescriptionsItem from "~/components/reborn/ui/reborn-descriptions/RebornDescriptionsItem.vue";
 import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
@@ -227,24 +227,7 @@ const itemsCodeExpanded = ref(false);
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-12 pt-4">
-    <!-- ═══ 标题头 ═══ -->
-    <div class="flex flex-col gap-3">
-      <h2
-        class="flex items-center gap-3 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white"
-      >
-        Descriptions 描述列表
-        <span
-          class="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold tracking-widest uppercase"
-        >
-          Stable
-        </span>
-      </h2>
-      <p class="max-w-3xl text-xl text-gray-500 dark:text-gray-400">
-        以键值对形式展示内容的容器组件，常用于详情页、信息面板等场景。支持有/无边框、水平/垂直方向、多列布局及富内容插槽。
-      </p>
-    </div>
-
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-12">
     <!-- ═══ 交互配置演示（上下布局） ═══ -->
     <section>
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">

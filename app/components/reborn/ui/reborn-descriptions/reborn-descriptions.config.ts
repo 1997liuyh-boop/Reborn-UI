@@ -1,5 +1,3 @@
-import type { InjectionKey } from 'vue'
-
 export const descriptionsSizes = ['sm', 'md', 'lg'] as const
 export type DescriptionsSize = (typeof descriptionsSizes)[number]
 
@@ -21,19 +19,6 @@ export type DescriptionsLineHeightValue = DescriptionsLineHeight | string
 export function isDescriptionsLineHeightPreset(value: string): value is DescriptionsLineHeight {
   return (descriptionsLineHeights as readonly string[]).includes(value)
 }
-
-export interface DescriptionsContext {
-  column: number
-  border: DescriptionsBorderMode
-  size: DescriptionsSize
-  direction: 'horizontal' | 'vertical'
-  colon: boolean
-  labelWidth?: string
-  labelAlign: DescriptionsAlign
-  contentAlign: DescriptionsAlign
-}
-
-export const DescriptionsInjectionKey: InjectionKey<DescriptionsContext> = Symbol('RebornDescriptions')
 
 const config = {
   slots: {
