@@ -20,6 +20,14 @@ export default <RouterConfig>{
     if (savedPosition) return savedPosition;
 
     if (to.hash) {
+      if (import.meta.client) {
+        const windowWithAnchorState = window as Window & { __REBORN_SKIP_NEXT_HASH_SCROLL__?: string };
+        if (windowWithAnchorState.__REBORN_SKIP_NEXT_HASH_SCROLL__ === to.hash) {
+          delete windowWithAnchorState.__REBORN_SKIP_NEXT_HASH_SCROLL__;
+          return false;
+        }
+      }
+
       const offset = getAnchorScrollOffset();
 
       return new Promise((resolve) => {
