@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { getSafeAreaBottomInset } from '@/lib/device'
 import RebornSignature, {
     type SignatureSavePayload,
 } from './RebornSignature.vue'
@@ -126,38 +127,9 @@ watch(show, (visible) => {
 })
 // #endif
 
-// #ifdef MP-WEIXIN
-interface MiniProgramWindowInfo {
-    screenHeight: number
-    safeArea?: {
-        bottom?: number
-    }
-    safeAreaInsets?: {
-        bottom?: number
-    }
-}
-
-declare const uni: {
-    getWindowInfo: () => MiniProgramWindowInfo
-}
-
-function getDeviceBottomSafeAreaInset() {
-    const windowInfo = uni.getWindowInfo()
-    const inset = windowInfo.safeAreaInsets?.bottom ?? 0
-    if (inset > 0) {
-        return inset
-    }
-
-    const safeArea = windowInfo.safeArea
-    if (safeArea && typeof safeArea.bottom === 'number') {
-        return Math.max(0, windowInfo.screenHeight - safeArea.bottom)
-    }
-
-    return 0
-}
-
+// #ifndef H5
 function syncDeviceSafeArea() {
-    deviceBottomSafeAreaInset.value = getDeviceBottomSafeAreaInset()
+    deviceBottomSafeAreaInset.value = getSafeAreaBottomInset()
 }
 
 onMounted(() => {
@@ -214,8 +186,8 @@ const containerStyle = computed(() => {
     style.paddingLeft = 'calc(var(--window-top, 0px) + 16rpx)'
     // #endif
 
-    // #ifdef MP-WEIXIN
-    // 旋转 90° 后本地右侧会落到手机物理底部，left/bottom 布局需要避开 iPhone Home 指示条。
+    // #ifndef H5
+    // 旋转 90° 后本地右侧会落到手机物理底部，left/bottom 布局需要避开 iPhone Home 指示条（微信小程序 / App 等端）。
     if (props.toolbarPosition !== 'right' && deviceBottomSafeAreaInset.value > 0) {
         style.paddingRight = `calc(${deviceBottomSafeAreaInset.value}px + 16rpx)`
     }
