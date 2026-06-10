@@ -20,7 +20,7 @@ navigation:
 
 ### Props
 
-| 属性名                   | 类型                                                        | 默认值                   | 说明                                                                                                                                                     |
+| 属性名                   | 类型                                                        | 默认值                   | 描述                                                                                                                                                     |
 | :----------------------- | :---------------------------------------------------------- | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `v-model` / `modelValue` | `string[]`                                                  | `[]`                     | 当前位于**目标列表（右侧）**的条目 key 集合，与 `dataSource` 中条目的唯一标识对应                                                                        |
 | `dataSource`             | `TransferDataRecord[]`                                      | `[]`                     | 数据源，包含所有可选条目；字段名可通过 `field-names` 映射                                                                                                |
@@ -37,7 +37,7 @@ navigation:
 | `check-shape`            | `'square' \| 'rounded' \| 'circle'`                         | `'rounded'`              | 选中框外观：`square` 方形、`rounded` 圆角、`circle` 圆形                                                                                                 |
 | `one-way`                | `boolean`                                                   | `false`                  | 单向模式：仅允许从左向右移动；右侧为只读展示，每条目提供独立撤回按钮                                                                                     |
 | `show-undo`              | `boolean`                                                   | `false`                  | 是否显示中间撤回按钮（撤销上一次穿梭操作）                                                                                                               |
-| `pagination`             | `boolean \| TransferPaginationConfig`                       | `false`                  | 是否开启列表分页；传 `true` 使用默认每页 10 条，或传入 `pageSize` 等配置                                                                                 |
+| `pagination`             | `boolean \| TransferPaginationConfig`                       | `false`                  | 是否开启列表分页；传 `true` 默认每页 10 条；传对象时可配置 `pageSize`（`number`，默认 `10`）指定每页条数                                                 |
 | `width`                  | `string \| number`                                          | `-`                      | 组件整体宽度，支持数字（px）或 CSS 长度，如 `640`、`'100%'`                                                                                              |
 | `height`                 | `string \| number`                                          | `-`                      | 组件整体高度；设置后列表区域在固定高度内滚动（头部、搜索、分页栏固定不滚动）                                                                             |
 | `class`                  | `any`                                                       | `-`                      | 根节点自定义类名                                                                                                                                         |
@@ -45,25 +45,25 @@ navigation:
 
 ### Emits
 
-| 事件名              | 说明                                              | 回调参数                                                                                    |
-| :------------------ | :------------------------------------------------ | :------------------------------------------------------------------------------------------ |
-| `update:modelValue` | 目标列表 key 集合变化时触发（`v-model` 双向绑定） | `(nextTargetKeys: string[])`                                                                |
-| `change`            | 条目在两列之间转移时触发                          | `(nextTargetKeys: string[], direction: 'right' \| 'left', moveKeys: string[])`              |
-| `selectChange`      | 任意面板的勾选状态发生变化时触发                  | `(sourceSelectedKeys: string[], targetSelectedKeys: string[])`                              |
-| `undo`              | 点击撤回按钮，恢复至上一次穿梭前的目标列表        | `(nextTargetKeys: string[], payload: { direction: 'right' \| 'left', moveKeys: string[] })` |
+| 事件名              | 参数                                                                                        | 描述                                              |
+| :------------------ | :------------------------------------------------------------------------------------------ | :------------------------------------------------ |
+| `update:modelValue` | `(nextTargetKeys: string[])`                                                                | 目标列表 key 集合变化时触发（`v-model` 双向绑定） |
+| `change`            | `(nextTargetKeys: string[], direction: 'right' \| 'left', moveKeys: string[])`              | 条目在两列之间转移时触发                          |
+| `selectChange`      | `(sourceSelectedKeys: string[], targetSelectedKeys: string[])`                              | 任意面板的勾选状态发生变化时触发                  |
+| `undo`              | `(nextTargetKeys: string[], payload: { direction: 'right' \| 'left', moveKeys: string[] })` | 点击撤回按钮，恢复至上一次穿梭前的目标列表        |
 
 ### Slots
 
-| 插槽名               | 说明                       | 作用域参数                                                    |
-| :------------------- | :------------------------- | :------------------------------------------------------------ |
-| `item`               | 自定义列表条目内容         | `{ item: TransferDataRecord }` — 原始数据对象，字段名未归一化 |
-| `operation-to-right` | 完全自定义「移至右侧」按钮 | `TransferOperationSlotProps`                                  |
-| `operation-to-left`  | 完全自定义「移回左侧」按钮 | `TransferOperationSlotProps`                                  |
-| `operation-undo`     | 完全自定义「撤回」按钮     | `TransferOperationSlotProps`                                  |
+| 插槽名               | 参数                                                             | 描述                       |
+| :------------------- | :--------------------------------------------------------------- | :------------------------- |
+| `item`               | `{ item: TransferDataRecord }` — 原始数据对象，字段名未归一化    | 自定义列表条目内容         |
+| `operation-to-right` | [`TransferOperationSlotProps`](#transferoperationslotprops-包含) | 完全自定义「移至右侧」按钮 |
+| `operation-to-left`  | [`TransferOperationSlotProps`](#transferoperationslotprops-包含) | 完全自定义「移回左侧」按钮 |
+| `operation-undo`     | [`TransferOperationSlotProps`](#transferoperationslotprops-包含) | 完全自定义「撤回」按钮     |
 
-`TransferOperationSlotProps` 包含：
+#### `TransferOperationSlotProps` 包含：
 
-| 字段       | 类型                                                 | 说明                                                            |
+| 字段       | 类型                                                 | 描述                                                            |
 | :--------- | :--------------------------------------------------- | :-------------------------------------------------------------- |
 | `ui`       | `Record<string, (opts?: { class?: any }) => string>` | 组件内部样式函数集合，可在插槽内复用                            |
 | `config`   | `ResolvedOperationButton`                            | 解析后的按钮配置（`title`、`label`、`icon`、`trailingIcon` 等） |
@@ -71,7 +71,7 @@ navigation:
 
 ### 字段映射
 
-当后端字段名与默认的 `key` / `label` / `description` / `disabled` 不一致时，通过 `field-names` 配置别名：
+当`后端字段名`与`默认字段结构`不一致时，通过 `field-names` 配置别名：
 
 ```vue
 <RebornTransfer
@@ -86,9 +86,9 @@ navigation:
 />
 ```
 
-默认字段结构（`TransferItem`）：
+**默认字段结构**
 
-| 字段          | 类型      | 说明                                 |
+| 字段          | 类型      | 描述                                 |
 | :------------ | :-------- | :----------------------------------- |
 | `key`         | `string`  | 唯一标识                             |
 | `label`       | `string`  | 显示文字                             |
@@ -99,7 +99,7 @@ navigation:
 
 `operation-buttons` 支持分别配置 `toRight`、`toLeft`、`undo`：
 
-| 字段                             | 类型      | 说明                                                                    |
+| 字段                             | 类型      | 描述                                                                    |
 | :------------------------------- | :-------- | :---------------------------------------------------------------------- |
 | `title`                          | `string`  | 悬停提示（`title` 属性）                                                |
 | `label`                          | `string`  | 按钮可见文案，位于前置图标与后置图标之间                                |
@@ -111,19 +111,9 @@ navigation:
 | `showIcon`                       | `boolean` | 是否显示前置图标，默认 `true`                                           |
 | `showTrailingIcon`               | `boolean` | 是否显示后置图标，默认在配置了 `trailingIcon` 时为 `true`               |
 
-### 分页配置
-
-`pagination` 为对象时可传入：
-
-| 字段       | 类型     | 默认值 | 说明     |
-| :--------- | :------- | :----- | :------- |
-| `pageSize` | `number` | `10`   | 每页条数 |
-
 ### 自定义样式（`ui` 属性）
 
-穿梭框在内部被拆成多块 DOM 区域（例如左侧面板、搜索框、列表项、中间按钮等），每块区域在 `reborn-transfer.config.ts` 里都有**默认的 Tailwind 样式**。
-
-`ui` 用来**只改其中某一块的外观**，而不用去改组件源码。（会与默认 class 合并，而不是整段替换掉默认样式）。
+下面示例中：`panel` 只影响左右两个列表面板的外框；`panelTitle` 只影响面板标题文字；`searchInput` 只影响搜索输入框；`operationBtn` 只影响中间三个箭头/撤回按钮。
 
 ```vue
 <RebornTransfer
@@ -138,15 +128,9 @@ navigation:
 />
 ```
 
-上面示例中：`panel` 只影响左右两个列表面板的外框；`panelTitle` 只影响面板标题文字；`searchInput` 只影响搜索输入框；`operationBtn` 只影响中间三个箭头/撤回按钮。
+**整体与面板(ui)**
 
-### 可用的区域键名 (`ui` 属性可选值)
-
-键名与组件内部结构一一对应，可按需选用（未传入的键名保持默认样式）：
-
-**整体与面板**
-
-| 键名             | 对应区域                                         |
+| 名称             | 对应区域                                         |
 | :--------------- | :----------------------------------------------- |
 | `root`           | 最外层横向容器（包住左面板 + 中间按钮 + 右面板） |
 | `panel`          | 单个列表面板（左/右各一块，改一次两边都生效）    |
@@ -155,9 +139,9 @@ navigation:
 | `panelTitle`     | 面板标题文字                                     |
 | `panelCount`     | 「已选/总数」计数文字                            |
 
-**头部扩展勾选菜单**（需 `header-select="menu"` 或 `header-select="both"`）
+**头部扩展勾选菜单(ui)**（需 `header-select="menu"` 或 `header-select="both"`）
 
-| 键名                        | 对应区域                                 |
+| 名称                        | 对应区域                                 |
 | :-------------------------- | :--------------------------------------- |
 | `headerSelectControls`      | 全选框与下拉菜单所在的一行               |
 | `headerSelectMenu`          | 下拉菜单定位容器                         |
@@ -167,9 +151,9 @@ navigation:
 | `headerSelectDropdownInner` | 下拉浮层内边距容器                       |
 | `headerSelectItem`          | 「全选所有 / 全选当页 / 反选当页」菜单项 |
 
-**搜索与列表**
+**搜索与列表(ui)**
 
-| 键名               | 对应区域                            |
+| 名称               | 对应区域                            |
 | :----------------- | :---------------------------------- |
 | `panelSearch`      | 搜索框所在横条（含底边线）          |
 | `searchWrapper`    | 搜索图标 + 输入框的横向布局         |
@@ -182,9 +166,9 @@ navigation:
 | `panelFooter`      | 底部分页栏                          |
 | `panelEmpty`       | 无数据时的空状态占位                |
 
-**条目与勾选**
+**条目与勾选(ui)**
 
-| 键名           | 对应区域                                          |
+| 名称           | 对应区域                                          |
 | :------------- | :------------------------------------------------ |
 | `checkAll`     | 头部「全选」复选框                                |
 | `itemCheck`    | 每一行的条目复选框                                |
@@ -195,9 +179,9 @@ navigation:
 | `itemUndoBtn`  | 单向模式下，右侧每行旁的撤回按钮                  |
 | `itemUndoIcon` | 撤回按钮内的图标                                  |
 
-**中间操作区**
+**中间操作区(ui)**
 
-| 键名                  | 对应区域                   |
+| 名称                  | 对应区域                   |
 | :-------------------- | :------------------------- |
 | `operations`          | 三个按钮的纵向容器         |
 | `operationBtn`        | 单个操作按钮（箭头、撤回） |

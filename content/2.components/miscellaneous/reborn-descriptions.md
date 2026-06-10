@@ -61,7 +61,7 @@ navigation:
 
 ### items 数据驱动
 
-通过 `items` 传入描述项数组，适合接口数据直接渲染。有 `slot` / `labelSlot` 时走命名插槽，否则显示 `label` / `value`。
+通过 `items` 传入描述项数组，适合接口数据直接渲染。有 `slot` / `labelSlot` 时走命名插槽。
 
 ```vue
 <script setup lang="ts">
