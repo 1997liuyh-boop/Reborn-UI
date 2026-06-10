@@ -56,6 +56,8 @@ const emit = defineEmits<{
   (e: "toggle"): void;
   (e: "clear", event: Event): void;
   (e: "keydown", event: KeyboardEvent): void;
+  (e: "enter"): void;
+  (e: "afterEnter"): void;
 }>();
 
 const isOpening = ref(false);
@@ -144,14 +146,27 @@ function handleClear(event: Event) {
   emit("clear", event);
 }
 
-function onBeforeEnter() {
-  nextTick(() => {
+/**
+ * enter：外层高度已展开，内层列表可测量，在此同步定位已选项（首帧即正确）
+ */
+function onEnter() {
+  const alignActive = () => {
     try {
       props.scrollToActive?.(true);
     } catch (e) {
       console.error("[RebornSelectTrigger] Error in scrollToActive:", e);
     }
+  };
+  emit("enter");
+  nextTick(() => {
+    alignActive();
+    requestAnimationFrame(alignActive);
   });
+}
+
+function onAfterEnter() {
+  isOpening.value = false;
+  emit("afterEnter");
 }
 
 defineExpose({
@@ -162,31 +177,79 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" tabindex="0" @keydown="emit('keydown', $event)">
-    <div :class="ui.trigger()" :data-state="isOpen ? 'open' : 'closed'" @click="emit('toggle')">
-      <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="ui"
-        v-if="$slots.cover" />
+  <div
+    ref="wrapperRef"
+    :class="ui.wrapper({ class: props.class })"
+    tabindex="0"
+    @keydown="emit('keydown', $event)"
+  >
+    <div
+      :class="ui.trigger()"
+      :data-state="isOpen ? 'open' : 'closed'"
+      @click="emit('toggle')"
+    >
+      <slot
+        name="cover"
+        :displayText="displayText"
+        :placeholder="placeholder"
+        :isOpen="isOpen"
+        :ui="ui"
+        v-if="$slots.cover"
+      />
       <template v-else>
-        <slot :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="ui">
-          <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
-          <span v-else :class="ui.placeholder()">
+        <slot
+          :displayText="displayText"
+          :placeholder="placeholder"
+          :isOpen="isOpen"
+          :ui="ui"
+        >
+          <span
+            v-if="displayText"
+            :class="ui.triggerText()"
+            >{{ displayText }}</span
+          >
+          <span
+            v-else
+            :class="ui.placeholder()"
+          >
             {{ placeholder }}
           </span>
         </slot>
 
         <div :class="ui.triggerIconWrapper()">
-          <span v-if="clearable" :class="ui.clearBtn()" @click.stop="handleClear">
-            <Icon name="lucide:x" class="size-full" />
+          <span
+            v-if="clearable"
+            :class="ui.clearBtn()"
+            @click.stop="handleClear"
+          >
+            <Icon
+              name="lucide:x"
+              class="size-full"
+            />
           </span>
-          <Icon v-else-if="showArrow" :name="icon" :class="ui.arrow()" />
+          <Icon
+            v-else-if="showArrow"
+            :name="icon"
+            :class="ui.arrow()"
+          />
         </div>
       </template>
     </div>
 
-    <RebornTransition ref="transitionRef" :show="isOpen" :duration="{ enter: 300, leave: 200 }"
-      @before-enter="onBeforeEnter" @after-enter="isOpening = false" @after-leave="isOpening = false"
-      :custom-class="ui.dropdown()" name="select-collapse">
-      <div ref="dropdownInnerRef" :class="ui.dropdownInner()">
+    <RebornTransition
+      ref="transitionRef"
+      :show="isOpen"
+      :duration="{ enter: 300, leave: 200 }"
+      @enter="onEnter"
+      @after-enter="onAfterEnter"
+      @after-leave="isOpening = false"
+      :custom-class="ui.dropdown()"
+      name="select-collapse"
+    >
+      <div
+        ref="dropdownInnerRef"
+        :class="ui.dropdownInner()"
+      >
         <slot name="content" />
       </div>
     </RebornTransition>
