@@ -32,6 +32,12 @@
       }
     },
     {
+      "path": "pages/reborn-variant-tag/RebornVariantTagDemo",
+      "style": {
+        "navigationBarTitleText": "Variant Tag"
+      }
+    },
+    {
       "path": "pages/reborn-input/RebornInputDemo",
       "style": {
         "navigationBarTitleText": "Input"
