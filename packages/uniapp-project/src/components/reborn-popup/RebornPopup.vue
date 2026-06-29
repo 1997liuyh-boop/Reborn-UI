@@ -154,6 +154,15 @@ const swipe = reactive({
   exiting: false, // 触发关闭后的退场滑出阶段，保持 transform 避免闪现
 })
 
+let releaseTimer: ReturnType<typeof setTimeout> | null = null
+
+function clearReleaseTimer() {
+  if (releaseTimer) {
+    clearTimeout(releaseTimer)
+    releaseTimer = null
+  }
+}
+
 /**
  * 拖拽滑动触发关闭时，由本组件接管退场动画（ease-in 滑出屏幕），
  * 动画结束后以 duration=0 静默调用 close，跳过 RebornTransition 的离场效果。
@@ -167,17 +176,13 @@ const effectiveDuration = computed(() =>
 
 const isSwipeClose = computed(() => actualPosition.value === 'bottom' && props.swipeClose)
 
-/** 跟手阻尼系数（0~1，越小阻力越大） */
-const DRAG_DAMPING = 0.9
+/** 超过关闭阈值后的橡皮筋阻尼（0~1，越小阻力越大） */
+const DRAG_OVERFLOW_DAMPING = 0.55
 /** flick 轻扫关闭的速度阈值（px/ms） */
 const FLICK_VELOCITY_THRESHOLD = 1
 /** EMA 速度平滑系数：越小越平滑，越大越灵敏 */
 const VELOCITY_EMA_ALPHA = 0.25
 
-/**
- * 拖拽跟手时的短过渡：略带回弹感，但控制点 y≤1，避免位移出现负值（整体上移露缝）。
- */
-const DRAG_TOUCH_EASING = 'cubic-bezier(0.34, 1, 0.64, 1)'
 /**
  * 松手回弹：不用 y>1 的「过冲」贝塞尔，否则 translateY 会短暂 <0，底部与遮罩之间出现缝隙。
  */
@@ -202,8 +207,8 @@ const style = computed(() => {
     return `${base} transition: transform ${EXIT_DURATION}ms ease-in; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
   }
   if (swipe.isTouch) {
-    // 拖拽中：短过渡跟手，曲线无过冲，避免与最终 translateY(0) 衔接时出现整体上移
-    return `${base} transition: transform 100ms ${DRAG_TOUCH_EASING}; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
+    // 真机触摸需即时跟手；CSS transition 滞后易触发 touchcancel（鼠标无此事件，故电脑正常）
+    return `${base} transition: none; transform: translateY(${swipe.offsetY}px); ${props.customStyle}`
   }
   if (swipe.releasing) {
     // 回弹：由 JS 将 offsetY 归零，曲线需严格无过冲，否则会露出遮罩缝隙
@@ -336,6 +341,14 @@ function onAfterLeave() {
  */
 function onTouchStart(e: any) {
   if (!isSwipeClose.value) return
+  if (swipe.exiting) return
+  if (swipe.isTouch) {
+    if (Date.now() - swipe.lastTime > 80) {
+      finishDrag()
+    }
+    return
+  }
+  clearReleaseTimer()
   const touch = e.touches[0]
   swipe.isTouch = true
   swipe.releasing = false
@@ -352,6 +365,8 @@ function onTouchStart(e: any) {
  */
 function onTouchMove(e: any) {
   if (!swipe.isTouch) return
+  clearReleaseTimer()
+  swipe.releasing = false
   // 由这里按需阻止默认滚动，避免在模板层全局 .prevent 误伤微信小程序 picker-view 等可滚动内容
   if (typeof e?.preventDefault === 'function' && e.cancelable) {
     e.preventDefault()
@@ -370,20 +385,21 @@ function onTouchMove(e: any) {
   swipe.lastY = touch.clientY
   swipe.lastTime = now
 
-  // 分段阻尼：前 80px 近乎 1:1 跟手，超出后阻力逐渐增加
+  // 阈值内 1:1 跟手；超出阈值后施加橡皮筋阻尼，避免拉得过远
+  const threshold = props.swipeCloseThreshold
   if (rawOffset <= 0) {
     swipe.offsetY = 0
-  } else if (rawOffset <= 80) {
-    swipe.offsetY = rawOffset * DRAG_DAMPING
+  } else if (rawOffset <= threshold) {
+    swipe.offsetY = rawOffset
   } else {
-    swipe.offsetY = 80 * DRAG_DAMPING + (rawOffset - 80) * DRAG_DAMPING * 0.5
+    swipe.offsetY = threshold + (rawOffset - threshold) * DRAG_OVERFLOW_DAMPING
   }
 }
 
 /**
- * 触摸释放处理 (手势滑动关闭)
+ * 结束拖拽：仅手指真正抬起时判定关闭或回弹
  */
-function onTouchEnd() {
+function finishDrag() {
   if (!swipe.isTouch) return
   swipe.isTouch = false
 
@@ -420,9 +436,23 @@ function onTouchEnd() {
     // 等下一帧渲染出惯性位置后，再将 offsetY 归零触发 spring 动画
     nextTick(() => {
       swipe.offsetY = 0
-      setTimeout(() => { swipe.releasing = false }, 500)
+      clearReleaseTimer()
+      releaseTimer = setTimeout(() => {
+        swipe.releasing = false
+        releaseTimer = null
+      }, 500)
     })
   }
+}
+
+function onTouchEnd(e: any) {
+  if (e?.touches?.length > 0) return
+  finishDrag()
+}
+
+/** 真机专属事件：误触发时不能当作松手，否则手指还在屏幕上弹窗就回弹 */
+function onTouchCancel() {
+  // intentionally noop
 }
 
 defineExpose({
@@ -444,25 +474,25 @@ defineExpose({
         @enter="onEnter" @after-enter="onAfterEnter" @before-leave="onBeforeLeave" @leave="onLeave"
         @after-leave="onAfterLeave">
         <view :class="rootClass.inner()">
-          <!-- 手势滑动关闭仅绑定在拖条/标题区，避免整块弹层抢占 touchmove 导致微信小程序 picker-view 无法滚动 -->
           <view
             v-if="isSwipeClose"
-            class="flex w-full justify-center py-2"
+            class="rb-popup-drag-zone"
             @touchstart="onTouchStart"
-            @touchmove.stop.prevent="onTouchMove"
+            @touchmove.stop="onTouchMove"
             @touchend="onTouchEnd"
-            @touchcancel="onTouchEnd"
+            @touchcancel="onTouchCancel"
           >
-            <view :class="rootClass.draw()" />
+            <view class="flex w-full justify-center py-2">
+              <view :class="rootClass.draw()" />
+            </view>
+            <view v-if="showHeader" :class="rootClass.header()">
+              <slot name="header">
+                <text :class="rootClass.title()">{{ title }}</text>
+              </slot>
+              <text v-if="showClose" :class="rootClass.closeIcon()" class="i-lucide-x" @click.stop="close" />
+            </view>
           </view>
-          <view
-            v-if="showHeader"
-            :class="rootClass.header()"
-            @touchstart="onTouchStart"
-            @touchmove.stop.prevent="onTouchMove"
-            @touchend="onTouchEnd"
-            @touchcancel="onTouchEnd"
-          >
+          <view v-else-if="showHeader" :class="rootClass.header()">
             <slot name="header">
               <text :class="rootClass.title()">{{ title }}</text>
             </slot>
@@ -486,22 +516,23 @@ defineExpose({
       <view :class="rootClass.inner()">
         <view
           v-if="isSwipeClose"
-          class="flex w-full justify-center py-2"
+          class="rb-popup-drag-zone"
           @touchstart="onTouchStart"
-          @touchmove.stop.prevent="onTouchMove"
+          @touchmove.stop="onTouchMove"
           @touchend="onTouchEnd"
-          @touchcancel="onTouchEnd"
+          @touchcancel="onTouchCancel"
         >
-          <view :class="rootClass.draw()" />
+          <view class="flex w-full justify-center py-2">
+            <view :class="rootClass.draw()" />
+          </view>
+          <view v-if="showHeader" :class="rootClass.header()">
+            <slot name="header">
+              <text :class="rootClass.title()">{{ title }}</text>
+            </slot>
+            <text v-if="showClose" :class="rootClass.closeIcon()" class="i-lucide-x" @click.stop="close" />
+          </view>
         </view>
-        <view
-          v-if="showHeader"
-          :class="rootClass.header()"
-          @touchstart="onTouchStart"
-          @touchmove.stop.prevent="onTouchMove"
-          @touchend="onTouchEnd"
-          @touchcancel="onTouchEnd"
-        >
+        <view v-else-if="showHeader" :class="rootClass.header()">
           <slot name="header">
             <text :class="rootClass.title()">{{ title }}</text>
           </slot>
@@ -513,12 +544,17 @@ defineExpose({
   </view>
 </template>
 
-<!-- #ifdef H5 -->
 <style lang="scss">
 /* 避免弹层手势与浏览器下拉刷新 / overscroll 串联 */
+/* #ifdef H5 */
 .rb-popup-wrapper {
   overscroll-behavior: none;
 }
+/* #endif */
+
+/* 真机触摸：禁止浏览器接管纵向滑动手势 */
+.rb-popup-drag-zone {
+  touch-action: none;
+}
 </style>
-<!-- #endif -->
 
