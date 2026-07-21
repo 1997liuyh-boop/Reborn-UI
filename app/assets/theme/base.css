@@ -90,8 +90,8 @@
 }
 
 :root {
-  /* 容器限制 */
-  --ui-container: min(90rem, 100%);
+  /* 容器限制：加宽至 100rem，为组件 demo 提供更大画布（header 与正文共用，保持对齐） */
+  --ui-container: min(100rem, 100%);
 }
 
 /* 常用工具类 (Utilities) */

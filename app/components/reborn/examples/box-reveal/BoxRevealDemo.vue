@@ -1,5 +1,5 @@
 <template>
-  <div class="size-full max-w-lg items-center justify-center overflow-hidden p-8">
+  <div class="size-full items-center justify-center overflow-hidden p-8 w-full">
     <BoxReveal color="#E1251B">
       <p class="text-[3.5rem] font-semibold">Reborn UI<span class="text-[#E1251B]">.</span></p>
     </BoxReveal>

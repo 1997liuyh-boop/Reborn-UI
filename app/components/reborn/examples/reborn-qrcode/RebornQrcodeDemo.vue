@@ -146,7 +146,7 @@ const toggleBackgroundGradient = () => {
 </script>
 
 <template>
-  <div class="p-6 max-w-7xl mx-auto grid grid-cols-7 gap-4">
+  <div class="p-6 grid grid-cols-7 gap-4 w-full">
 
     <!-- 左侧：配置区 -->
     <div class="col-span-4 space-y-6">

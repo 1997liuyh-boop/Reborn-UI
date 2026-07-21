@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <div class="p-4 sm:p-6 lg:p-8">
     <!-- Usage instructions -->
     <div class="mb-12 rounded-xl bg-gray-50 p-6 sm:mb-16 sm:p-8 dark:bg-gray-900">
       <h3 class="mb-4 text-lg font-semibold sm:text-xl">How to Use</h3>

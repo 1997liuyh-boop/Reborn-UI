@@ -59,7 +59,7 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-12 w-full max-w-6xl mx-auto pb-20">
+  <div class="flex flex-col gap-12 w-full pb-20">
     <div class="flex flex-col gap-2">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
         NoticeBar 通知栏

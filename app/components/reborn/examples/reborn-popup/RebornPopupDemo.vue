@@ -31,7 +31,7 @@ const closeAll = () => {
 </script>
 
 <template>
-  <div class="p-4 md:p-8 space-y-10 max-w-5xl mx-auto">
+  <div class="p-4 md:p-8 space-y-10 w-full">
     <!-- Header Section -->
     <header class="space-y-2">
       <h1 class="text-3xl font-extrabold tracking-tight">Popup 弹出层</h1>

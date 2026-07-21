@@ -76,7 +76,7 @@ const placementOptions = [
 </script>
 
 <template>
-  <div class="p-8 max-w-5xl mx-auto">
+  <div class="p-8 w-full">
     <!-- 页面头部 -->
     <header ref="headerRef" class="mb-12 text-center">
       <h1 class="text-3xl font-bold text-gray-9 dark:text-gray-1 mb-2">

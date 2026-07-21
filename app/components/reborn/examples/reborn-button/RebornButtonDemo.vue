@@ -23,7 +23,7 @@ function onClick() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-10 w-full max-w-6xl mx-auto pb-20">
+  <div class="flex flex-col gap-10 w-full pb-20">
     <div class="flex flex-col gap-2">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Button 按钮</h2>
       <p class="text-lg text-gray-500 dark:text-gray-400">用于触发特定操作的交互组件。</p>

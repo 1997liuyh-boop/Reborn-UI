@@ -52,7 +52,7 @@ function scrollToBio() {
 </script>
 
 <template>
-    <div class="space-y-6 max-w-4xl mx-auto p-4">
+    <div class="space-y-6 p-4 w-full">
         <!-- 控制面板 -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
             <div class="flex items-center justify-between mb-6">

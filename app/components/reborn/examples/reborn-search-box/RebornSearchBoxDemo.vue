@@ -113,7 +113,7 @@ const handleSelectSku = (attr: any) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-12 p-8 max-w-3xl mx-auto">
+  <div class="flex flex-col gap-12 p-8 w-full">
 
     <!-- 基础用法 -->
     <section class="flex flex-col gap-4 relative z-10">

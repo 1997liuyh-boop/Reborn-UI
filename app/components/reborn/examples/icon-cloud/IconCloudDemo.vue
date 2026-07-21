@@ -42,7 +42,7 @@ const imageUrls = slugs.map((slug) => `https://cdn.simpleicons.org/${slug}/${slu
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-10 pb-20">
+  <div class="flex w-full flex-col gap-10 pb-20">
     <div class="flex flex-col gap-2">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Icon Cloud 图标云</h2>
       <p class="text-lg text-gray-500 dark:text-gray-400">

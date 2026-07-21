@@ -101,15 +101,22 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
 </script>
 
 <template>
-  <UTabs size="lg" variant="pill" :items="items" class="min-h-[60vh] w-full" :ui="{
-    list: 'w-fit max-sm:w-full bg-transparent gap-4 self-start overflow-auto',
+  <!--
+    Tab 栏吸顶：<lg 单 sticky 头（AppHeader 64px），lg+ 双头（AppHeader + AppHeaderNav 共 128px）。
+    z-index 约定：header z-50 > 悬浮目录 z-40 > 吸顶 Tab 栏 z-20 > 内容
+  -->
+  <UTabs size="lg" variant="pill" :items="items" class="w-full" :ui="{
+    list: 'sticky top-16 lg:top-32 z-20 w-fit max-sm:w-full bg-default/75 backdrop-blur-xl rounded-xl gap-4 self-start overflow-auto',
     trigger: 'w-fit min-w-fit outline outline-neutral-200 dark:outline-neutral-800',
     content: 'py-4',
   }" :unmount-on-hide="false">
     <template #preview>
-      <ClientOnly>
-        <component :is="config" />
-      </ClientOnly>
+      <!-- 统一展示舞台：视口切换（375/768/全宽）+ 全屏预览入口 -->
+      <DemoStage :demo-name="demoFile.replace('.vue', '')">
+        <ClientOnly>
+          <component :is="config" />
+        </ClientOnly>
+      </DemoStage>
 
       <slot name="api" class="my-4" />
     </template>

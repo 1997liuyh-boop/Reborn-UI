@@ -120,7 +120,7 @@ const screenshotSets = [
 </script>
 
 <template>
-    <div class="mx-auto max-w-4xl space-y-12 pb-24">
+    <div class="space-y-12 pb-24 w-full">
         <!-- Main Playground -->
         <Playground v-model="state" :controls="controls" component-name="RebornMarquee" title="交互演示"
             description="带有品牌卡片的跑马灯示例。">

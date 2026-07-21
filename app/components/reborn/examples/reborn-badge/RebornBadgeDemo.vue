@@ -33,7 +33,7 @@ const beforeCloseVerify = () => {
 </script>
 
 <template>
-    <div class="flex flex-col gap-12 w-full max-w-6xl mx-auto pb-24">
+    <div class="flex flex-col gap-12 w-full pb-24">
         <!-- Header Section -->
         <div class="flex flex-col gap-3">
             <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">

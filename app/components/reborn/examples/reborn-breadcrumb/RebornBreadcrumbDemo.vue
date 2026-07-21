@@ -17,7 +17,7 @@ const separatorOptions = [
 </script>
 
 <template>
-  <div class="flex flex-col gap-12 w-full max-w-6xl mx-auto pb-24 px-4">
+  <div class="flex flex-col gap-12 w-full pb-24 px-4">
     <!-- Header -->
     <div class="flex flex-col gap-3">
       <h2 class="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Breadcrumb 面包屑</h2>

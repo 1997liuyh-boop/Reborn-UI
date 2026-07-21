@@ -30,8 +30,9 @@ const computedUrl = computed(() => {
 
 <template>
   <div class="flex w-full flex-col items-start justify-start gap-4">
+    <!-- 内边距收口：外层 DemoStage / 文档列已提供留白，避免画布被双重收窄 -->
     <UPageCard variant="outline" class="bg-default/15 w-full min-w-0" :ui="{
-      container: 'w-full min-w-0'
+      container: 'w-full min-w-0 p-3 sm:p-4'
     }">
       <UTabs v-if="uniapp" :items="items" class="w-full">
         <template #web>

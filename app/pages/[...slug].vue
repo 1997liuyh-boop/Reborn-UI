@@ -9,7 +9,6 @@ definePageMeta({
 });
 
 const route = useRoute();
-const appConfig = useAppConfig();
 const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 
 const collectionName = computed(() => "docs");
@@ -69,77 +68,9 @@ watch(
 defineOgImageComponent("Docs", {
     headline: headline.value,
 });
-
-const github = computed(() => (appConfig.github ? appConfig.github : null));
-
-const editLink = computed(() => {
-    if (!github.value) {
-        return;
-    }
-
-    return [
-        github.value.url,
-        "edit",
-        github.value.branch,
-        github.value.rootDir,
-        "content",
-        `${page.value?.stem}.${page.value?.extension}`,
-    ]
-        .filter(Boolean)
-        .join("/");
-});
 </script>
 
 <template>
-    <UPage v-if="page">
-        <UPageHeader :title="page.title" :description="page.description" :headline="headline" :ui="{
-            wrapper: 'flex-row items-center flex-wrap justify-between',
-        }">
-            <div class="mt-4 flex flex-wrap items-center gap-2">
-                <UBadge v-for="tag in page.tags" :key="page.path + tag" :label="tag" variant="soft"
-                    class="px-3 py-1 font-normal" />
-            </div>
-            <template #links>
-                <UButton v-for="(link, index) in (page as DocsCollectionItem).links" :key="index" size="sm"
-                    v-bind="link" />
-
-                <DocsPageHeaderLinks />
-            </template>
-        </UPageHeader>
-
-        <UPageBody>
-            <ContentRenderer v-if="page" :value="page" />
-
-            <USeparator>
-                <div v-if="github" class="text-muted flex items-center gap-2 text-sm">
-                    <UButton variant="link" color="neutral" :to="editLink" target="_blank" icon="i-lucide-pen"
-                        :ui="{ leadingIcon: 'size-4' }">
-                        Edit this page
-                    </UButton>
-                    <span>or</span>
-                    <UButton variant="link" color="neutral" :to="`${github.url}/issues/new/choose`" target="_blank"
-                        icon="i-lucide-alert-circle" :ui="{ leadingIcon: 'size-4' }">
-                        Report an issue
-                    </UButton>
-                </div>
-            </USeparator>
-            <UContentSurround :surround="surround" />
-        </UPageBody>
-
-        <template v-if="page?.body?.toc?.links?.length" #right>
-            <UContentToc highlight :title="appConfig.toc?.title || 'Table of Contents'" :links="page.body?.toc?.links">
-                <template #bottom>
-                    <DocsAsideRightBottom />
-                </template>
-            </UContentToc>
-        </template>
-        <template v-else #right>
-            <div class="flex h-full w-full flex-col gap-8 max-md:items-center">
-                <DocsAsideRightBottom />
-
-                <USeparator orientation="horizontal" />
-
-            </div>
-        </template>
-    </UPage>
+    <!-- 文档页共享模板：布局细节统一收敛在 DocsPage（四个 i18n 页面共用） -->
+    <DocsPage v-if="page" :page="page" :surround="surround" :headline="headline" />
 </template>

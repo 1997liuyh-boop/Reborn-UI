@@ -77,7 +77,7 @@ const controls = [
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-12 pt-4 pb-24">
+  <div class="flex w-full flex-col gap-12 pt-4 pb-24">
 
     <!-- Header -->
     <div class="flex flex-col gap-3">

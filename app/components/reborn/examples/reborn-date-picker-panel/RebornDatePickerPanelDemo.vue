@@ -129,7 +129,7 @@ function formatDisplay(val: any) {
 </script>
 
 <template>
-    <div class="space-y-16 mx-auto pb-32">
+    <div class="space-y-16 pb-32">
         <!-- Playground -->
         <Playground v-model="state" :controls="controls" component-name="RebornDatePickerPanel"
             title="交互演练场 (Playground)" description="实时调节 12 种模式、颜色、形状及尺寸，感受最直观的视觉反馈。">

@@ -211,7 +211,7 @@ async function openCustomIconDialog() {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-6 py-12 space-y-16">
+  <div class="px-6 py-12 space-y-16 w-full">
     <!-- Header -->
     <header class="space-y-4">
       <div class="flex items-center gap-3">
