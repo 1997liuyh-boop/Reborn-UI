@@ -230,7 +230,6 @@ function getWaveDelay(index: number) {
 /* 3. 动画逻辑应用 */
 .rb-loading :deep(.rb-loading-indicator) {
     animation: rb-rotate 0.8s linear infinite;
-    will-change: transform;
 }
 
 .rb-loading :deep(.rb-loading-spinnerItem) {

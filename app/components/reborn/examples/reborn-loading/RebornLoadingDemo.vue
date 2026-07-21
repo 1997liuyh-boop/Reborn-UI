@@ -13,7 +13,7 @@ const size = ref('40px')
 </script>
 
 <template>
-  <div class="flex flex-col gap-10 w-full max-w-6xl mx-auto pb-20">
+  <div class="flex flex-col gap-10 w-full pb-20">
     <div class="flex flex-col gap-2">
       <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Loading 加载</h2>
       <p class="text-lg text-gray-500 dark:text-gray-400">用于展示加载状态、处理中或同步过程的视觉反馈。</p>
