@@ -8,8 +8,10 @@
 
 - **ComponentViewer**: 使用 `::ComponentViewer` 宏进行渲染。
     - `uniappFiles`: 必须显式列出相关的组件文件和配置文件名称。
-- **API 表格**: 完整列出所有 Props（包含类型、默认值、描述）。
-- **Event 表格**: 详细说明触发条件及传参。
+- **API 表格**: 完整列出所有 Props（包含类型、默认值、描述）。默认值必须与代码实际一致（例如 RebornText 的 `currency` 默认值已由 `'¥'` 调整为 `''`）。
+- **Event 表格**: 详细说明触发条件及传参（如 Collapse 的 `toggle`、Sticky 的 `change`/`resize`）。
+- **Slot 表格**: 列出所有插槽及其作用域参数（如 Collapse 默认插槽的 `{ open }`、Sticky 默认插槽的 `{ isSticky }`）。
+- **Expose 表格**: 列出 `defineExpose` 暴露的方法与只读状态（如 `show`/`hide`/`toggle`/`forceUpdate`/`isSticky`）。
 - **UI 对象说明**: 列出 `ui` 属性支持的所有可覆盖键名。
 
 ## 3. 跨端差异标注

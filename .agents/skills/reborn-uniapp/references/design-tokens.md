@@ -28,6 +28,13 @@
 | `info` | Blue-6 | 信息、提示 |
 | `neutral` | Gray-6 | 中性、辅助 |
 
+## 特殊场景色（与 Web 端对齐）
+
+| 场景 | 取值 | 说明 |
+|---|---|---|
+| warning 浅底色 | `#FFF7F3` | Web 端 Badge 的 warning 各变体（solid/soft/subtle）背景已统一采用该浅底色，UniApp 端同场景须保持一致 |
+| 深色浮层背景 | Gray-9 加透明度（如 `bg-gray-9/90`，箭头 `bg-gray-9/75`） | Web 端 Tooltip 深色主题采用半透明深灰而非纯黑，UniApp 端 Tooltip/Popover 同步 |
+
 ## 辅助规范
 
 ### 圆角 (Radius)

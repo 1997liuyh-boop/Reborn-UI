@@ -2,7 +2,7 @@
 name: reborn-uniapp
 description: 指导创建 reborn-ui 的 UniApp 组件。包含路径规范、设计标准、配置要求和跨端一致性。
 metadata:
-  version: "2026.3.10"
+  version: "2026.7.20"
 ---
 
 # Reborn UI (UniApp)
@@ -25,6 +25,6 @@ Reborn UI 是一个遵循现代设计规范的高性能组件库。在 UniApp �
 ## 核心原则
 
 1. **严禁英文注释**: 代码中所有逻辑说明、Prop 说明等必须使用中文。
-2. **跨端一致性**: 在开发前必须检索 Web 端（Next.js 版）是否存在同名组件。如果有，Props 参数、事件名称（Emit）和插槽命名必须尽量保持一致，以降低开发者的学习成本。
+2. **跨端一致性**: 在开发前必须检索 Web 端（Nuxt 版，位于本仓库 `app/components/reborn/ui/reborn-[name]/`）是否存在同名组件。如果有，Props 参数、事件名称（Emit）、插槽命名以及 `defineExpose` 暴露的方法必须尽量保持一致，以降低开发者的学习成本。最新的对齐基线见 [component-implementation](references/component-implementation.md) 的「跨端 API 对齐基线」章节。
 3. **样式优先原则**: 涉及尺寸的样式必须优先使用 `rpx` 单位，确保在不同屏幕密度下的表现一致。
 4. **语法现代化**: 必须使用 `defineModel` 语法糖和接口式 `defineProps` 宏，保持代码简洁、类型完备。

@@ -21,7 +21,30 @@
       "mcp__playwright__browser_wait_for",
       "PowerShell(Get-Content *)",
       "Bash(sed -i 's|  </RebornSelectTrigger>$|  </RebornSelectTrigger>\\\\n  </div>|' app/components/reborn/ui/reborn-dropdown/RebornDropdown.vue)",
-      "Bash(sed -i 's|^    :bordered|      :bordered|' app/components/reborn/ui/reborn-dropdown/RebornDropdown.vue)"
+      "Bash(sed -i 's|^    :bordered|      :bordered|' app/components/reborn/ui/reborn-dropdown/RebornDropdown.vue)",
+      "Read(//c/Users/Administrator/.claude/skills/**)",
+      "Read(//d/demo2/**)",
+      "Bash(grep -E \"^[+-].*\\(defineProps|interface|Props|/\\\\*\\\\*|defineModel|withDefaults\\)\")",
+      "Bash(grep -qE \"Local:.*3211|ready in|Vite server built\" dev-loading-test.log)",
+      "Bash(break)",
+      "mcp__playwright__browser_close",
+      "Bash(netstat -ano)",
+      "PowerShell(netstat *)",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_run_code_unsafe",
+      "Bash(tasklist //FI \"PID eq 14824\")",
+      "Bash(tasklist)",
+      "Bash(awk '{print $2}')",
+      "Bash(grep -oE ':[0-9]+$')",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s -o /dev/null --max-time 2 http://localhost:3000/)",
+      "Bash(git ls-tree *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 60 http://localhost:3000/components/button/reborn-button)",
+      "Bash(node *)",
+      "Bash(pnpm oxlint *)",
+      "Bash(git reset *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
