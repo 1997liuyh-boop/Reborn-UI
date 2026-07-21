@@ -49,7 +49,8 @@ const theme = tv({
     },
     active: {
       true: {
-        menuItem: "font-semibold shadow-sm",
+        menuItem: "shadow-sm",
+        menuItemTitle: "font-semibold"
       },
       false: {},
     },

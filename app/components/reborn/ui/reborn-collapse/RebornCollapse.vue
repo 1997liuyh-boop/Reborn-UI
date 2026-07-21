@@ -1,20 +1,28 @@
 <script lang="ts">
+import type { ClassValue } from 'tailwind-variants'
+
 export interface RebornCollapseProps {
-    customClass?: any
+    disabled?: boolean
+    position?: 'bottom' | 'top'
+    absolute?: boolean
+    customClass?: ClassValue
     ui?: {
-        root?: any
-        trigger?: any
-        content?: any
+        root?: ClassValue
+        trigger?: ClassValue
+        content?: ClassValue
     }
 }
 </script>
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { cn } from '@/lib/utils'
 import { tv } from '@/lib/tv'
 import theme from './reborn-collapse.config'
 
 const props = withDefaults(defineProps<RebornCollapseProps>(), {
+    disabled: false,
+    position: 'bottom',
+    absolute: false,
     customClass: '',
     ui: () => ({})
 })
@@ -23,79 +31,65 @@ const collapse = defineModel("modelValue", {
     type: Boolean,
     default: false
 })
+const emit = defineEmits<{
+    (e: 'toggle', value: boolean): void
+}>()
 
 const b = tv(theme)
-const ui = computed(() => b())
+const ui = computed(() => b({
+    open: collapse.value,
+    position: props.position,
+    absolute: props.absolute,
+    animating: isAnimating.value
+}))
 const overrides = computed(() => props.ui || {})
 
-const contentRef = ref<HTMLElement | null>(null)
-const height = ref(0)
-const isOpened = ref(false)
+const isAnimating = ref(false)
+let animatingTimer: ReturnType<typeof setTimeout> | null = null
+const ANIMATION_DURATION = 300
 
-function updateHeight() {
-    if (contentRef.value) {
-        height.value = contentRef.value.scrollHeight
-    }
+function markAnimating() {
+    isAnimating.value = true
+    if (animatingTimer) clearTimeout(animatingTimer)
+    animatingTimer = setTimeout(() => {
+        isAnimating.value = false
+        animatingTimer = null
+    }, ANIMATION_DURATION)
 }
 
-function show() {
-    isOpened.value = true
-    // Wait for display:block (if inherent) or just ensuring Ref is ready
-    nextTick(() => {
-        updateHeight()
-    })
-}
-
-function hide() {
-    isOpened.value = false
-    height.value = 0
-}
+function show() { collapse.value = true; markAnimating() }
+function hide() { collapse.value = false; markAnimating() }
 
 function toggle() {
-    if (isOpened.value) {
-        hide()
-    } else {
-        show()
-    }
+    if (props.disabled) return
+    if (collapse.value) { hide() } else { show() }
+    emit('toggle', collapse.value)
 }
 
-watch(
-    () => collapse.value,
-    (val) => {
-        if (val) show()
-        else hide()
-    },
-    { immediate: true }
-)
+function resize() { }
 
-// Optional: ResizeObserver to update height if content changes while open
-onMounted(() => {
-    if (contentRef.value) {
-        const resizeObserver = new ResizeObserver(() => {
-            if (isOpened.value) {
-                updateHeight()
-            }
-        })
-        resizeObserver.observe(contentRef.value)
-    }
+onBeforeUnmount(() => {
+    if (animatingTimer) clearTimeout(animatingTimer)
 })
 
-defineExpose({
-    show,
-    hide,
-    toggle,
-    resize: updateHeight
-})
+defineExpose({ show, hide, toggle, resize, isAnimating })
 </script>
 
 <template>
     <div :class="ui.root({ class: cn(props.customClass, overrides?.root) })">
-        <div @click="toggle">
-            <slot :open="isOpened" />
+        <div v-if="position === 'top'" :class="ui.trigger({ class: overrides?.trigger })">
+            <div :class="cn(ui.content({ class: overrides?.content }))">
+                <slot name="content" />
+            </div>
         </div>
-        <div :class="ui.trigger({ class: overrides?.trigger })" :style="{ height: isOpened ? height + 'px' : '0px' }">
-            <div ref="contentRef" class="reborn-collapse__content" :class="ui.content({ class: overrides?.content })">
-                <slot name="content"></slot>
+
+        <div @click="toggle">
+            <slot :open="collapse" />
+        </div>
+
+        <div v-if="position === 'bottom'" :class="ui.trigger({ class: overrides?.trigger })">
+            <div :class="cn(ui.content({ class: overrides?.content }))">
+                <slot name="content" />
             </div>
         </div>
     </div>

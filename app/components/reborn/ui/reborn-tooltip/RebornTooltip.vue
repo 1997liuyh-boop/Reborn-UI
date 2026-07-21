@@ -3,6 +3,7 @@ import {
   computed,
   nextTick,
   onBeforeUnmount,
+  onMounted,
   ref,
   useSlots,
   watch,
@@ -60,6 +61,12 @@ interface Overflow {
   left: number;
 }
 
+/** 仅包含 width/height 的尺寸描述，避免与 DOMRect 耦合 */
+interface ContentSize {
+  width: number;
+  height: number;
+}
+
 const props = withDefaults(defineProps<RebornTooltipProps>(), {
   content: '',
   placement: 'bottom',
@@ -85,6 +92,9 @@ const tooltipId = `tooltip-${useId()}`;
 const VIEWPORT_PADDING = 8;
 const TRIGGER_GAP = 8;
 const ARROW_SIZE = 8;
+
+const isMounted = ref(false);
+onMounted(() => { isMounted.value = true; });
 
 const wrapperRef = ref<HTMLElement | null>(null);
 const triggerRef = ref<HTMLElement | null>(null);
@@ -130,8 +140,8 @@ const shouldRender = computed(
 /** 是否有内容可显示 */
 const hasContent = computed(() => Boolean(props.content) || hasContentSlot.value);
 
-/** 计算触发元素与提示层之间的间距 */
-const getOffset = () => TRIGGER_GAP + (props.arrow ? ARROW_SIZE / 2 : 0);
+/** 计算触发元素与提示层之间的间距，箭头正好填充这段距离 */
+const getOffset = () => props.arrow ? ARROW_SIZE : TRIGGER_GAP;
 
 /** 清理显隐定时器，避免快速移入移出时状态错乱 */
 const clearTimers = () => {
@@ -149,7 +159,7 @@ const clearTimers = () => {
 /** 根据方向与对齐方式计算初始坐标 */
 const getPosition = (
   triggerRect: DOMRect,
-  contentRect: DOMRect,
+  contentRect: ContentSize,
   side: TooltipSide,
   align: TooltipAlign,
 ): Position => {
@@ -203,7 +213,7 @@ const getPosition = (
 };
 
 /** 计算提示层相对视口的溢出量 */
-const getOverflow = (position: Position, contentRect: DOMRect): Overflow => ({
+const getOverflow = (position: Position, contentRect: ContentSize): Overflow => ({
   top: VIEWPORT_PADDING - position.top,
   right:
     position.left + contentRect.width - (window.innerWidth - VIEWPORT_PADDING),
@@ -213,7 +223,7 @@ const getOverflow = (position: Position, contentRect: DOMRect): Overflow => ({
 });
 
 /** 将提示层位置钳制在可视区域内 */
-const clampPosition = (position: Position, contentRect: DOMRect): Position => ({
+const clampPosition = (position: Position, contentRect: ContentSize): Position => ({
   top: Math.min(
     Math.max(position.top, VIEWPORT_PADDING),
     window.innerHeight - contentRect.height - VIEWPORT_PADDING,
@@ -227,7 +237,7 @@ const clampPosition = (position: Position, contentRect: DOMRect): Position => ({
 /** 根据实际位置同步箭头坐标，保证箭头尽量指向触发元素中心 */
 const syncArrowPosition = (
   triggerRect: DOMRect,
-  contentRect: DOMRect,
+  contentRect: ContentSize,
   position: Position,
   side: TooltipSide,
 ) => {
@@ -247,20 +257,20 @@ const syncArrowPosition = (
     );
 
     if (side === 'top') {
+      // 箭头在内容下方，base 紧贴内容底部，尖端向下指向触发器
+      // -1px 重叠：消除 clipPath 抗锯齿在边缘产生的半透明像素缝隙
       arrowStyle.value = {
         left: `${arrowLeft - halfArrow}px`,
-        top: `calc(100% - ${halfArrow + 1}px)`,
-        clipPath: 'polygon(100% 100%, 100% 0, 0 100%)',
-        borderTopWidth: '0',
-        borderLeftWidth: '0',
+        top: `${contentRect.height - 1}px`,
+        clipPath: "path('M 0 0 L 12 0 L 7.5 10.5 Q 6 12 4.5 10.5 L 0 0 Z')",
       };
     } else {
+      // 箭头在内容上方，base 紧贴内容顶部，尖端向上指向触发器
+      // +1px 重叠：消除 clipPath 抗锯齿在边缘产生的半透明像素缝隙
       arrowStyle.value = {
         left: `${arrowLeft - halfArrow}px`,
-        top: `${-halfArrow + 1}px`,
-        clipPath: 'polygon(0 0, 100% 0, 0 100%)',
-        borderBottomWidth: '0',
-        borderRightWidth: '0',
+        top: `${-(ARROW_SIZE - 1)}px`,
+        clipPath: "path('M 0 12 L 4.5 1.5 Q 6 0 7.5 1.5 L 12 12 Z')",
       };
     }
     return;
@@ -273,20 +283,20 @@ const syncArrowPosition = (
   );
 
   if (side === 'left') {
+    // 箭头在内容右侧，base 紧贴内容右边，尖端向右指向触发器
+    // -1px 重叠：消除 clipPath 抗锯齿缝隙
     arrowStyle.value = {
       top: `${arrowTop - halfArrow}px`,
-      left: `calc(100% - ${halfArrow + 1}px)`,
-      clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
-      borderBottomWidth: '0',
-      borderLeftWidth: '0',
+      left: `${contentRect.width - 1}px`,
+      clipPath: "path('M 0 0 L 10.5 4.5 Q 12 6 10.5 7.5 L 0 12 Z')",
     };
   } else {
+    // 箭头在内容左侧，base 紧贴内容左边，尖端向左指向触发器
+    // +1px 重叠：消除 clipPath 抗锯齿缝隙
     arrowStyle.value = {
       top: `${arrowTop - halfArrow}px`,
-      left: `${-halfArrow + 1}px`,
-      clipPath: 'polygon(0 100%, 0 0, 100% 100%)',
-      borderTopWidth: '0',
-      borderRightWidth: '0',
+      left: `${-(ARROW_SIZE - 1)}px`,
+      clipPath: "path('M 12 0 L 1.5 4.5 Q 0 6 1.5 7.5 L 12 12 Z')",
     };
   }
 };
@@ -298,8 +308,11 @@ const updatePosition = (el?: Element) => {
     return;
   }
 
+  const htmlEl = currentContent as HTMLElement;
   const triggerRect = triggerRef.value.getBoundingClientRect();
-  const contentRect = (currentContent as HTMLElement).getBoundingClientRect();
+  // offsetWidth/offsetHeight 不受 CSS transform（如 zoom-in 动画的 scale-90）影响，
+  // 避免在 onBeforeEnter 期间测量到缩放后的错误尺寸
+  const contentRect: ContentSize = { width: htmlEl.offsetWidth, height: htmlEl.offsetHeight };
   const initialPosition = getPosition(
     triggerRect,
     contentRect,
@@ -505,8 +518,8 @@ onBeforeUnmount(() => {
       <slot />
     </span>
 
-    <Teleport to="body">
-      <RebornTransition ref="contentRefComponent" :show="shouldRender" name="zoom-in"
+    <Teleport to="body" :disabled="!isMounted">
+      <RebornTransition ref="contentRefComponent" :show="shouldRender" name="fade"
         :custom-class="styles.contentWrapper()" :custom-style="contentStyle" @before-enter="onBeforeEnter"
         @enter="onEnter" @mouseenter="openTooltip" @mouseleave="closeTooltip">
         <div :id="tooltipId" ref="contentRef" :class="styles.content()" role="tooltip">

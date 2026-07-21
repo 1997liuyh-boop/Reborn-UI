@@ -167,9 +167,7 @@ function togglePassword() {
 watch(
   () => props.modelValue,
   (value) => {
-    if (value !== undefined) {
-      localValue.value = value;
-    }
+    localValue.value = value ?? "";
   },
 );
 

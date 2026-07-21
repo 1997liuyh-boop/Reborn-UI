@@ -1,7 +1,7 @@
 export default {
     slots: {
         wrapper: "reborn-sticky-wrapper relative",
-        content: "w-full relative transition-[top] duration-200",
+        content: "w-full",
     },
     variants: {
         sticky: {

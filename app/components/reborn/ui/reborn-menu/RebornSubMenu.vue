@@ -39,7 +39,7 @@ const menuContext = inject<{
   backgroundColor: ComputedRef<string>;
   textColor: ComputedRef<string>;
   activeTextColor: ComputedRef<string>;
-  color: ComputedRef<string>;
+  color: ComputedRef<any>;
   expandType: ComputedRef<"normal" | "popup">;
   expandMutex: ComputedRef<boolean>;
   ui: any;
@@ -51,6 +51,8 @@ const menuContext = inject<{
   registerCloseTimer?: (timer: ReturnType<typeof setTimeout>) => void;
   registerPopup?: (el: HTMLElement) => void;
   unregisterPopup?: (el: HTMLElement) => void;
+  scheduleCloseAll?: () => void;
+  cancelCloseAll?: () => void;
   notifyResize?: () => void;
 }>("reborn-menu");
 
@@ -88,7 +90,9 @@ const subMenuUi = computed(() => {
     collapse: menuContext?.collapse.value ?? false,
     color: menuContext?.color.value ?? "primary",
     expandType: effectiveExpandType.value,
-    opened: isOpened.value
+    opened: isOpened.value,
+    active: isActive.value,
+    disabled: props.disabled
   });
 
   const localOverrides = props.ui || {};
@@ -130,6 +134,8 @@ function handleMouseEnter() {
   if (props.disabled) return;
 
   menuContext?.clearCloseTimer?.();
+  // 任意菜单元素被进入时，取消全局兜底关闭
+  menuContext?.cancelCloseAll?.();
 
   if (menuContext?.menuTrigger.value === "hover") {
     menuContext.handleOpen(props.index, indexPath.value);
@@ -147,6 +153,16 @@ function handleMouseLeave() {
 
     menuContext?.registerCloseTimer?.(closeTimer);
   }
+}
+
+/**
+ * popup 边界离开处理：在每层 close 之外，额外触发全局兜底关闭。
+ * 兄弟 li 之间的切换不会触发 popup mouseleave，因此不会误关闭父菜单；
+ * 当鼠标真正离开整个菜单体系时，没有任何 mouseenter 会取消该定时器。
+ */
+function handlePopupMouseLeave() {
+  handleMouseLeave();
+  menuContext?.scheduleCloseAll?.();
 }
 
 onBeforeUnmount(() => {
@@ -286,7 +302,7 @@ useEventListener(window, "scroll", (e) => {
           <slot name="title">{{ index }}</slot>
         </div>
         <div v-if="!isRootHorizontal" :class="subMenuUi.menuItemArrow({ opened: isOpened })">
-          <Icon name="lucide:chevron-right" class="size-4" />
+          <img src="~/assets/images/icon/right.png" class="size-4" />
         </div>
       </div>
     </div>
@@ -294,7 +310,7 @@ useEventListener(window, "scroll", (e) => {
     <!-- 浮层展开：保持 v-show -->
     <Teleport to="body" v-if="effectiveExpandType === 'popup'">
       <div v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()" :data-menu-path="indexPath.join(',')"
-        @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :style="{
+        @mouseenter="handleMouseEnter" @mouseleave="handlePopupMouseLeave" :style="{
           position: 'fixed',
           margin: 0,
           backgroundColor: menuContext?.backgroundColor.value,

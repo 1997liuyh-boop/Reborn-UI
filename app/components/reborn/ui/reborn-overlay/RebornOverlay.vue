@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import RebornTransition from '../reborn-transition/RebornTransition.vue';
-import theme from './reborn-overlay.config';
+import { computed, watch, onUnmounted } from "vue";
+import RebornTransition from "../reborn-transition/RebornTransition.vue";
+import { useGlobalScrollLock } from "~/composables/useGlobalScrollLock";
+import theme from "./reborn-overlay.config";
 
 interface Props {
   modelValue?: boolean;
@@ -21,51 +22,55 @@ const props = withDefaults(defineProps<Props>(), {
   zIndex: 100,
   closeOnClickOverlay: true,
   absolute: false,
-  customClass: '',
-  customStyle: ''
+  customClass: "",
+  customStyle: ""
 });
-const emit = defineEmits(['update:modelValue', 'close', 'afterLeave']);
 
-let initialPaddingState = { right: '', overflow: '' };
-let lockTimeout: any;
+const emit = defineEmits<{
+  (e: "update:modelValue", value: boolean): void;
+  (e: "close"): void;
+  (e: "afterLeave"): void;
+}>();
 
-watch(() => props.modelValue && props.lockScroll, (locked) => {
-  if (typeof document === 'undefined') return;
-  const body = document.body;
-  clearTimeout(lockTimeout);
-  if (locked) {
-    if (!body.hasAttribute('data-scroll-locked')) {
-      const scrollbarWidth = window.innerWidth - body.clientWidth;
-      initialPaddingState.right = body.style.paddingRight;
-      initialPaddingState.overflow = body.style.overflow;
-      if (scrollbarWidth > 0) {
-        body.style.paddingRight = `${scrollbarWidth}px`;
-      }
-      body.style.overflow = 'hidden';
-      body.setAttribute('data-scroll-locked', '1');
+// 全局滚动锁：与 v-loading / useLoading 共享同一个引用计数器（useGlobalScrollLock），避免多套锁互相踩踏
+const { acquire: acquireLock, release: releaseLock, isHolding } = useGlobalScrollLock();
+
+let lockTimeout: ReturnType<typeof setTimeout> | undefined;
+
+watch(
+  () => props.modelValue && props.lockScroll,
+  (locked) => {
+    if (typeof document === "undefined") return;
+    clearTimeout(lockTimeout);
+
+    if (locked) {
+      acquireLock();
     } else {
-      const lockCount = parseInt(body.getAttribute('data-scroll-locked') || '1', 10);
-      body.setAttribute('data-scroll-locked', (lockCount + 1).toString());
-    }
-  } else {
-    lockTimeout = setTimeout(() => {
-      if (body.hasAttribute('data-scroll-locked')) {
-        const lockCount = parseInt(body.getAttribute('data-scroll-locked') || '1', 10) - 1;
-        if (lockCount <= 0) {
-          body.style.paddingRight = initialPaddingState.right;
-          body.style.overflow = initialPaddingState.overflow;
-          body.removeAttribute('data-scroll-locked');
-        } else {
-          body.setAttribute('data-scroll-locked', lockCount.toString());
-        }
+      // 只有当前实例持有锁时，才启动延时释放
+      if (isHolding()) {
+        lockTimeout = setTimeout(() => {
+          releaseLock();
+        }, props.duration);
       }
-    }, props.duration);
-  }
-}, { immediate: true });
+    }
+  },
+  { immediate: true }
+);
 
-const overlayClass = computed(() => `${props.absolute ? 'absolute' : 'fixed'} ${theme.base} ${props.customClass}`);
+onUnmounted(() => {
+  clearTimeout(lockTimeout);
+  releaseLock();
+});
+
+const overlayClass = computed(() => `${props.absolute ? "absolute" : "fixed"} ${theme.base} ${props.customClass}`);
 const overlayStyle = computed(() => `z-index:${props.zIndex};${props.customStyle}`);
-const onClick = () => { if (props.closeOnClickOverlay) { emit('update:modelValue', false); emit('close'); } };
+
+const onClick = () => {
+  if (props.closeOnClickOverlay) {
+    emit("update:modelValue", false);
+    emit("close");
+  }
+};
 </script>
 <template>
   <RebornTransition :show="props.modelValue" :appear="true" name="fade" :duration="props.duration"

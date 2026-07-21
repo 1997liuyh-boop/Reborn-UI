@@ -42,14 +42,16 @@ export interface RebornTextProps {
     /** 是否保留空白 */
     preWrap?: boolean;
     class?: any;
-    ui?: Partial<{ base: ClassValue }>;
+    /** 是否开启千分位符 */
+    thousandsIcon?: string;
+    ui?: Partial<{ base: ClassValue; currency: ClassValue }>;
 }
 
 const props = withDefaults(defineProps<RebornTextProps>(), {
     value: null,
     type: "default",
     mask: false,
-    currency: "¥",
+    currency: "",
     precision: 2,
     maskStart: 3,
     maskEnd: 4,
@@ -71,6 +73,8 @@ const ui = computed(() => {
     return {
         base: (opts?: { class?: any }) =>
             styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
+        currency: (opts?: { class?: any }) =>
+            cn(opts?.class, uiOverrides.value.currency),
     };
 });
 
@@ -103,13 +107,12 @@ function formatName(name: string): string {
 
 function formatAmount(amount: string | number): string {
     const num = typeof amount === "number" ? amount : parseFloat(amount);
+    if (isNaN(num)) return typeof amount === "string" ? amount : "";
     const formatted = num.toFixed(props.precision);
     const parts = formatted.split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    if (props.currencyPosition === "after") {
-        return parts.join(".") + props.currency;
-    }
-    return props.currency + parts.join(".");
+    // 千位符
+    const integerPart = (parts[0] ?? "").replace(/\B(?=(\d{3})+(?!\d))/g, props.thousandsIcon || "");
+    return [integerPart, ...parts.slice(1)].join(".");
 }
 
 function formatCard(card: string): string {
@@ -198,11 +201,31 @@ watch(() => [content.value, props.lines, props.size, props.ellipsis, props.toolt
 </script>
 
 <template>
-    <RebornTooltip :disabled="!props.tooltip || !isEllipsisActive" :content="tooltipText" placement="top">
-        <span ref="textRef"
-            :class="cn(ui.base({ class: props.class }), { 'cursor-pointer': props.tooltip && isEllipsisActive })"
+    <RebornTooltip v-if="props.tooltip" :disabled="!isEllipsisActive" :content="tooltipText" placement="top">
+        <span ref="textRef" :class="cn(ui.base({ class: props.class }), { 'cursor-pointer': isEllipsisActive })"
             :style="textStyle">
-            <slot :content="content">{{ content }}</slot>
+            <slot :content="content">
+                <template v-if="props.currency">
+                    <span v-if="props.currencyPosition !== 'after'" :class="ui.currency()">{{ props.currency }}</span>
+                    <span>{{ content }}</span>
+                    <span v-if="props.currencyPosition === 'after'" :class="ui.currency()">{{ props.currency }}</span>
+                </template>
+                <template v-else>
+                    {{ content }}
+                </template>
+            </slot>
         </span>
     </RebornTooltip>
+    <span v-else ref="textRef" :class="ui.base({ class: props.class })" :style="textStyle">
+        <slot :content="content">
+            <template v-if="props.currency">
+                <span v-if="props.currencyPosition !== 'after'" :class="ui.currency()">{{ props.currency }}</span>
+                <span>{{ content }}</span>
+                <span v-if="props.currencyPosition === 'after'" :class="ui.currency()">{{ props.currency }}</span>
+            </template>
+            <template v-else>
+                {{ content }}
+            </template>
+        </slot>
+    </span>
 </template>

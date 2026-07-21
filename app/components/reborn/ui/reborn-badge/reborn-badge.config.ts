@@ -9,8 +9,8 @@ const config = {
   /** 徽章插槽样式配置 */
   slots: {
     root: 'reborn-badge cursor-pointer',
-    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color]',
-    label: 'inline-flex items-center justify-center truncate',
+    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color] max-w-full min-w-0',
+    label: 'inline-flex items-center justify-center truncate max-w-full min-w-0',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
     closeButton: 'inline-flex items-center justify-center rounded-full transition-colors hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer focus:outline-none',
@@ -44,24 +44,24 @@ const config = {
     size: {
       sm: {
         base: 'h-badge-sm px-2 rounded-ui-xs gap-1',
-        label: 'text-caption-lg leading-none',
+        label: 'leading-none',
         leadingIcon: 'size-3.5',
         trailingIcon: 'size-3.5',
-        closeIcon: 'text-caption-lg',
+        closeIcon: 'size-4',
       },
       md: {
         base: 'h-badge-md px-2 rounded-ui-sm gap-1',
-        label: 'text-body-base leading-normal',
+        label: 'leading-normal',
         leadingIcon: 'size-4',
         trailingIcon: 'size-4',
-        closeIcon: 'text-body-base'
+        closeIcon: 'size-5'
       },
       lg: {
-        base: 'h-badge-lg px-2 rounded-ui-md gap-1',
-        label: 'text-title-md leading-normal',
+        base: 'h-badge-lg px-[16px] rounded-ui-md gap-1',
+        label: 'leading-normal',
         leadingIcon: 'size-4',
         trailingIcon: 'size-4',
-        closeIcon: 'text-title-md'
+        closeIcon: 'size-6'
       }
     },
     /** 是否为正方形（等宽高） */
@@ -81,7 +81,7 @@ const config = {
     { color: 'secondary' as any, variant: 'solid' as any, class: 'bg-secondary border-secondary text-inverted' },
     { color: 'success' as any, variant: 'solid' as any, class: 'bg-success border-success text-inverted' },
     { color: 'info' as any, variant: 'solid' as any, class: 'bg-info border-info text-inverted' },
-    { color: 'warning' as any, variant: 'solid' as any, class: 'bg-warning border-warning text-inverted' },
+    { color: 'warning' as any, variant: 'solid' as any, class: 'bg-[#FFF7F3] border-warning text-inverted' },
     { color: 'error' as any, variant: 'solid' as any, class: 'bg-error border-error text-inverted' },
     { color: 'neutral' as any, variant: 'solid' as any, class: 'bg-neutral border-neutral text-inverted' },
 
@@ -99,7 +99,7 @@ const config = {
     { color: 'secondary' as any, variant: 'soft' as any, class: 'bg-secondary/10 text-secondary' },
     { color: 'success' as any, variant: 'soft' as any, class: 'bg-success/10 text-success' },
     { color: 'info' as any, variant: 'soft' as any, class: 'bg-info/10 text-info' },
-    { color: 'warning' as any, variant: 'soft' as any, class: 'bg-warning/10 text-warning' },
+    { color: 'warning' as any, variant: 'soft' as any, class: 'bg-[#FFF7F3] text-warning' },
     { color: 'error' as any, variant: 'soft' as any, class: 'bg-error/10 text-error' },
     { color: 'neutral' as any, variant: 'soft' as any, class: 'bg-neutral/10 text-neutral' },
 
@@ -108,7 +108,7 @@ const config = {
     { color: 'secondary' as any, variant: 'subtle' as any, class: 'bg-secondary/10 border-secondary/20 text-secondary' },
     { color: 'success' as any, variant: 'subtle' as any, class: 'bg-success/10 border-success/20 text-success' },
     { color: 'info' as any, variant: 'subtle' as any, class: 'bg-info/10 border-info/20 text-info' },
-    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-warning/10 border-warning/20 text-warning' },
+    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-[#FFF7F3] border-warning/20 text-warning' },
     { color: 'error' as any, variant: 'subtle' as any, class: 'bg-error/10 border-error/20 text-error' },
     { color: 'neutral' as any, variant: 'subtle' as any, class: 'bg-neutral/10 border-neutral/20 text-neutral' },
   ],

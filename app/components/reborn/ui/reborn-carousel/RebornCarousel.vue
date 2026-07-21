@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ClassValue } from "clsx";
 import type { PropType, VNode } from "vue";
 import {
   Comment,
@@ -12,150 +11,20 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  unref,
   useSlots,
   watch,
 } from "vue";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
 import theme from "./reborn-carousel.config";
-
-/** 轮播图控制箭头的显示模式：'hover' (悬浮时显示) | 'always' (始终显示) | 'never' (不显示) */
-type CarouselArrowMode = "hover" | "always" | "never";
-/** 轮播滚动方向：'horizontal' (水平) | 'vertical' (垂直) */
-type CarouselDirection = "horizontal" | "vertical";
-/** 分页指示器的位置：'inside' (轨道内部) | 'outside' (轨道外部) | 'none' (不显示) */
-type CarouselIndicatorPosition = "inside" | "outside" | "none";
-/** 缩略图导航面板的位置：'top' (上方) | 'bottom' (下方) | 'left' (左侧) | 'right' (右侧) */
-type CarouselThumbsPosition = "top" | "bottom" | "left" | "right";
-/** 触发切换幻灯片的手势或操作：'hover' (悬停) | 'click' (点击) */
-type CarouselTrigger = "hover" | "click";
-/** 轮播展现风格：'default' (标准平面) | 'card' (立体卡片式) */
-type CarouselType = "default" | "card";
-
-/** 自动播放参数配置接口 */
-interface CarouselAutoplay {
-  /** 每一帧幻灯片停留的时间 (毫秒) */
-  delay?: number;
-}
-
-/** 分页指示器个性化配置接口 */
-interface CarouselPagination {
-  /** 指示器是否支持点击进行切换 */
-  clickable?: boolean;
-  /** 指示器类型风格：'line' (线段型) | 'dot' (小圆点) | 'fraction' (数字分式 '1/3') | 'button' (带有数字编码的按钮) */
-  type?: "line" | "dot" | "fraction" | "button";
-}
-
-/** 缩略图面板配置参数接口 */
-interface CarouselThumbs {
-  /** 缩略图放置的位置方位 */
-  position?: CarouselThumbsPosition;
-  /** 缩略图本身是否允许无限循环轮转 */
-  loop?: boolean;
-  /** 缩略图导航箭头的展示模式 */
-  arrow?: CarouselArrowMode;
-}
-
-/** 响应式媒介断点独立配置接口 */
-export interface RebornCarouselBreakpoint {
-  /** 对应宽度下每屏显示的幻灯片张数，'auto' 代表根据幻灯片元素自身宽度决定 */
-  slidesPerview?: number | "auto";
-  /** 幻灯片之间的间隔距离 (像素 px) */
-  spaceBetween?: number;
-  /** 是否将活动项强制居中展示 */
-  centeredSlides?: boolean;
-  /** 对应宽度下的控制箭头显示模式 */
-  arrow?: CarouselArrowMode;
-  /** 对应宽度下分页器指示器的显示位置 */
-  indicatorPosition?: CarouselIndicatorPosition;
-  /** 滚动转场时是否开启边缘动态模糊视觉动效 */
-  motionBlur?: boolean;
-  /** 整个容器在当前断点下的指定高度值 */
-  height?: string;
-  /** 轮播风格类型 (默认平面或立体卡片) */
-  type?: CarouselType;
-  /** 滚动过渡方向 (水平或垂直) */
-  direction?: CarouselDirection;
-  /** 是否在此宽度下启用拖拽抓取的手势鼠标指针 */
-  grabCursor?: boolean;
-  /** 是否完全由幻灯片自身内容决定尺寸大小（不强行拉伸填充） */
-  autoSize?: boolean;
-}
-
-/** RebornCarousel 组件的主属性定义接口 */
-export interface RebornCarouselProps {
-  /** 每屏可见的幻灯片数量，或指定为 'auto' 根据内容内在尺寸决定 */
-  slidesPerview?: number | "auto";
-  /** 幻灯片之间的横向/纵向间距 (px) */
-  spaceBetween?: number;
-  /** 是否将当前活动的幻灯片居中对齐展示 */
-  centeredSlides?: boolean;
-  /** 是否开启无限循环无缝无障碍滚动 */
-  loop?: boolean;
-  /** 是否自动播放：可直接传布尔值，或传包含 delay 时延的配置对象 */
-  autoplay?: boolean | CarouselAutoplay;
-  /** 分页器配置对象，为 null 时不显示任何分页元素 */
-  pagination?: CarouselPagination | null;
-  /** 指示器交互触发方式 (鼠标 hover 或鼠标 click) */
-  trigger?: CarouselTrigger;
-  /** 分页指示器在布局中的摆放位置 */
-  indicatorPosition?: CarouselIndicatorPosition;
-  /** 控制箭头的显隐交互模式 */
-  arrow?: CarouselArrowMode;
-  /** 在滑动转场动画期间是否启用动态的高级运动模糊视觉特效 */
-  motionBlur?: boolean;
-  /** 轮播图主体容器的外观高度 */
-  height?: string;
-  /** 轮播图结构展现风格：'default' 标准平面 | 'card' 3D卡片堆叠 */
-  type?: CarouselType;
-  /** 转场滚动的主轴轴线方向 (水平或垂直) */
-  direction?: CarouselDirection;
-  /** 初始加载时首先渲染定位在第几张幻灯片 (从 0 开始计数) */
-  initialSlide?: number;
-  /** 响应式断点控制映射映射表，Key 为最小视口宽度 (px)，Value 为断点配置 */
-  breakpoints?: Record<number, RebornCarouselBreakpoint>;
-  /** 当鼠标悬浮在轮播图区域时，是否展示为可抓取抓紧的手势光标 */
-  grabCursor?: boolean;
-  /** 是否禁止强行将幻灯片等宽拉伸，完全使用其内在元素宽高尺寸 */
-  autoSize?: boolean;
-  /** 指示器相对于底边界或右边界的自定义偏移间距 (px) */
-  indicatorOffset?: number;
-  /** 底部或侧边联动缩略图面板的特定配置 */
-  thumbs?: CarouselThumbs | null;
-  /** 预设的主题配色，用于指示器及操作按钮的色彩 */
-  color?: "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
-  /** 自定义挂载在组件最外层根节点的 CSS 类名 */
-  class?: any;
-  /** 组件内置各个细分 UI 元素块的样式类名覆盖集，支持高度定制化 */
-  ui?: Partial<{
-    wrapper: ClassValue;
-    root: ClassValue;
-    viewport: ClassValue;
-    track: ClassValue;
-    slide: ClassValue;
-    slideInner: ClassValue;
-    slideActive: ClassValue;
-    slideInactive: ClassValue;
-    arrowGroup: ClassValue;
-    arrow: ClassValue;
-    indicatorWrapper: ClassValue;
-    indicators: ClassValue;
-    indicator: ClassValue;
-    indicatorActive: ClassValue;
-    indicatorInactive: ClassValue;
-    thumbsShell: ClassValue;
-    thumbsPanel: ClassValue;
-    thumbsViewport: ClassValue;
-    thumbsTrack: ClassValue;
-    thumbsArrowGroup: ClassValue;
-    thumbsArrow: ClassValue;
-    thumb: ClassValue;
-    thumbActive: ClassValue;
-    thumbInactive: ClassValue;
-    thumbPreview: ClassValue;
-    thumbOverlay: ClassValue;
-  }>;
-}
+import type {
+  CarouselArrowMode,
+  CarouselRenderSlide,
+  CarouselThumbsPosition,
+  RebornCarouselBreakpoint,
+  RebornCarouselProps,
+} from "./types";
 
 // 统一应用默认值
 const props = withDefaults(defineProps<RebornCarouselProps>(), {
@@ -295,6 +164,8 @@ const isLoopTransitioning = ref(false);
 let loopTransitionStartIndex: number | null = null;
 /** 连续指令迭代计数器，抛弃掉同帧微任务中积攒的过期 nextTick 响应 */
 let loopGoToGeneration = 0;
+/** 主箭头转场迭代计数器，用于丢弃快速点击产生的过期异步回调 */
+let loopArrowGeneration = 0;
 
 /** 窗口尺寸变化时的 Resize 处理句柄 */
 let resizeHandler: (() => void) | null = null;
@@ -310,6 +181,11 @@ let isUpdatingLayout = false;
 let isApplyingIndex = false;
 /** 布局批处理更新的 RequestAnimationFrame 帧标记 */
 let layoutFrame = 0;
+
+/** 判断当前是否仍处于一次切换流程中，避免重复点击或自动播放叠加推进 */
+function isNavigationLocked() {
+  return isJumping.value || isApplyingIndex || (props.loop && isLoopTransitioning.value);
+}
 
 /** 自动高度 (height="auto") 模式下，组件当前依据活动项动态计算的像素高度 */
 const currentSlideHeight = ref(0);
@@ -391,11 +267,7 @@ const renderSlides = computed(() => {
     }));
   }
 
-  const result: Array<{
-    realIndex: number;
-    renderIndex: number;
-    isClone: boolean;
-  }> = [];
+  const result: CarouselRenderSlide[] = [];
 
   // 1. 前置克隆区：将尾部的 clones 个真实节点复制并放置到最前端
   for (let i = 0; i < clones; i++) {
@@ -505,22 +377,24 @@ const showIndicators = computed(
 const showArrows = computed(() => effectiveArrow.value !== "never" && slideCount.value > 1);
 /** 是否配置并准许展示缩略图导航面板 */
 const showThumbs = computed(() => !!props.thumbs && slideCount.value >= 1);
-/** 缩略图面板的物理就绪判定（确保对应的宽度或高度已经在客户端成功测量并渲染） */
+/** 缩略图面板的物理就绪判定（确保主图区域已在客户端成功测量并渲染） */
 const isThumbsReady = computed(() => {
   if (!showThumbs.value) return false;
-  if (isThumbsVertical.value) {
-    // 垂直侧边排布：等待高度计算出
-    return mainRootSize.value.height > 0;
-  }
-  // 水平底部排布：等待宽度测量出
-  return mainRootSize.value.width > 0;
+  /** 只要主图区域的宽或高任一维度已测量到，即视为就绪；
+   *  避免 thumbsPosition 在 left/bottom 之间切换时，
+   *  因判断维度从 width 变为 height（或反之）导致短暂为 false，
+   *  从而引起缩略图面板被 v-if 移除再重建的闪烁问题 */
+  return mainRootSize.value.width > 0 || mainRootSize.value.height > 0;
 });
-/** 联动缩略图面板当前摆放的具体方位 */
-const thumbsPosition = computed<CarouselThumbsPosition>(() => props.thumbs?.position ?? "bottom");
+const thumbsPosition = computed<CarouselThumbsPosition>(() => {
+  const t = unref(props.thumbs);
+  if (!t) return "bottom";
+  return unref(t.position) ?? "bottom";
+});
 /** 联动缩略图面板箭头的显隐交互形式 */
-const thumbsArrow = computed<CarouselArrowMode>(() => props.thumbs?.arrow ?? "never");
+const thumbsArrow = computed<CarouselArrowMode>(() => unref(props.thumbs?.arrow) ?? "never");
 /** 缩略图栏本身是否开启循环无尽轮转 */
-const thumbsLoop = computed(() => props.thumbs?.loop ?? false);
+const thumbsLoop = computed(() => unref(props.thumbs?.loop) ?? false);
 /** 缩略图当前是否属于侧边纵向摆放模式 */
 const isThumbsVertical = computed(
   () => thumbsPosition.value === "left" || thumbsPosition.value === "right",
@@ -589,7 +463,9 @@ const thumbsPanelClass = computed(() =>
   ui.value.thumbsPanel({
     class: cn(
       isThumbsBeforeMain.value ? "order-first" : "order-last",
-      isThumbsVertical.value ? "w-24 flex-col self-stretch md:w-28" : "w-full flex-col",
+      /** 布局方向和尺寸由 tv variant 的 thumbsPosition 变体控制，
+       *  此处仅补充 flex-col 以确保面板内部纵向排列缩略图 */
+      "flex-col test-4",
     ),
   }),
 );
@@ -1052,6 +928,9 @@ function jumpToRealPosition(realIndex: number) {
   }
 
   isJumping.value = true;
+  // 记录本次跳转所属的转场代次：若期间被手动连点中止（abortLoopTransition 会自增该代次），
+  // 则本次挂起的解锁回调必须失效，避免误把「新转场」的锁清掉
+  const jumpGeneration = loopArrowGeneration;
   const renderIdx = realToRenderIndex(realIndex);
   const target = getSlideTarget(renderIdx);
 
@@ -1068,6 +947,10 @@ function jumpToRealPosition(realIndex: number) {
   // 等待浏览器完成滚动后解除锁定
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      // 期间发生了中止或新转场，交由新流程管理状态，不再回写，避免误清锁
+      if (jumpGeneration !== loopArrowGeneration) {
+        return;
+      }
       isJumping.value = false;
       if (props.loop) {
         isLoopTransitioning.value = false;
@@ -1124,6 +1007,10 @@ function navigateToSlide(index: number, allowWrap = false) {
     return;
   }
 
+  if (!props.loop && isNavigationLocked()) {
+    return;
+  }
+
   const targetIndex = allowWrap
     ? ((index % slideCount.value) + slideCount.value) % slideCount.value
     : Math.min(Math.max(index, 0), slideCount.value - 1);
@@ -1148,14 +1035,14 @@ function next(isManual: boolean | any = true) {
     return;
   }
 
-  // 转场进行中：自动播放让位给手动转场；手动操作则中止当前转场，立即开始新一次，
-  // 避免快速点击被静默丢弃造成的"卡顿"体感
-  const wasLoopTransitioning = props.loop && isLoopTransitioning.value;
-  if (wasLoopTransitioning) {
-    if (isManual === false) {
-      return;
-    }
+  // 平滑转场（含末尾静默跳转窗口）进行中再次触发：中止当前转场并接受新指令（连点即快速前进），
+  // 避免因转场锁把点击静默丢弃而出现"需要点两次才切换"。
+  // 此刻视口已停在目标张（或转场途中），从当前位置续接新的平滑滚动即可，无视觉突兀。
+  if (props.loop && isLoopTransitioning.value) {
     abortLoopTransition();
+  } else if (isJumping.value || isApplyingIndex) {
+    // 非 loop 的瞬时跳转 / applyIndex 窗口：期间改写会导致状态错乱，忽略
+    return;
   }
 
   if (isManual !== false) {
@@ -1164,24 +1051,41 @@ function next(isManual: boolean | any = true) {
 
   if (props.loop) {
     isLoopTransitioning.value = true;
+    const generation = ++loopArrowGeneration;
     const nextReal = (currentIndex.value + 1) % slideCount.value;
+    const crossingSeam = currentIndex.value === slideCount.value - 1;
     const currentRenderIdx = realToRenderIndex(currentIndex.value);
-    const nextRenderIdx = currentRenderIdx + 1;
+    const targetRenderIdx = realToRenderIndex(nextReal);
 
     setActiveIndex(nextReal, { emitChange: true, syncModel: true });
 
-    nextTick(() => {
-      // 中途打断后先瞬时对齐到当前真实起点，避免视口停在克隆区引发回退动画
-      if (wasLoopTransitioning) {
-        scrollToRenderIndex(currentRenderIdx, "instant");
+    // 平滑滚动到真实位并在结束后同步索引；接缝时提前用瞬跳换到同图克隆位，
+    // 使这段平滑滚动落在「已绘制的真实张」上，避免滑入未绘制克隆张时的绘制卡顿
+    const runSmooth = () => {
+      if (generation !== loopArrowGeneration) {
+        return;
       }
-      // 平滑滚动到克隆位置
-      scrollToRenderIndex(nextRenderIdx, "smooth");
-
-      // 滚动结束后静默跳转到真实位置
+      scrollToRenderIndex(targetRenderIdx, "smooth");
       waitForScrollEnd(() => {
+        if (generation !== loopArrowGeneration) {
+          return;
+        }
         jumpToRealPosition(nextReal);
       });
+    };
+
+    nextTick(() => {
+      if (generation !== loopArrowGeneration) {
+        return;
+      }
+      if (crossingSeam) {
+        // 瞬跳到与当前同图的前置克隆相邻位（视觉无感知），
+        // 并把随后的平滑滚动放到下一帧，避免瞬跳与平滑在同一帧被合并成硬跳
+        scrollToRenderIndex(currentRenderIdx - slideCount.value, "instant");
+        requestAnimationFrame(runSmooth);
+      } else {
+        runSmooth();
+      }
     });
   } else {
     if (currentIndex.value >= slideCount.value - 1) {
@@ -1196,10 +1100,13 @@ function prev() {
     return;
   }
 
-  // 手动转场进行中：中止当前转场以接收新指令，避免快速连点被丢弃
-  const wasLoopTransitioning = props.loop && isLoopTransitioning.value;
-  if (wasLoopTransitioning) {
+  // 平滑转场（含末尾静默跳转窗口）进行中再次触发：中止当前转场并接受新指令（连点即快速后退），
+  // 避免因转场锁把点击静默丢弃而出现"需要点两次才切换"。
+  if (props.loop && isLoopTransitioning.value) {
     abortLoopTransition();
+  } else if (isJumping.value || isApplyingIndex) {
+    // 非 loop 的瞬时跳转 / applyIndex 窗口：期间改写会导致状态错乱，忽略
+    return;
   }
 
   // 手动跳转重置自动播放计时
@@ -1207,22 +1114,41 @@ function prev() {
 
   if (props.loop) {
     isLoopTransitioning.value = true;
+    const generation = ++loopArrowGeneration;
     const prevReal = (currentIndex.value - 1 + slideCount.value) % slideCount.value;
+    const crossingSeam = currentIndex.value === 0;
     const currentRenderIdx = realToRenderIndex(currentIndex.value);
-    const prevRenderIdx = currentRenderIdx - 1;
+    const targetRenderIdx = realToRenderIndex(prevReal);
 
     setActiveIndex(prevReal, { emitChange: true, syncModel: true });
 
-    nextTick(() => {
-      // 中途打断后先瞬时对齐到当前真实起点，避免视口停在克隆区引发回退动画
-      if (wasLoopTransitioning) {
-        scrollToRenderIndex(currentRenderIdx, "instant");
+    // 平滑滚动到真实位并在结束后同步索引；接缝时提前用瞬跳换到同图克隆位，
+    // 使这段平滑滚动落在「已绘制的真实张」上，避免滑入未绘制克隆张时的绘制卡顿
+    const runSmooth = () => {
+      if (generation !== loopArrowGeneration) {
+        return;
       }
-      scrollToRenderIndex(prevRenderIdx, "smooth");
-
+      scrollToRenderIndex(targetRenderIdx, "smooth");
       waitForScrollEnd(() => {
+        if (generation !== loopArrowGeneration) {
+          return;
+        }
         jumpToRealPosition(prevReal);
       });
+    };
+
+    nextTick(() => {
+      if (generation !== loopArrowGeneration) {
+        return;
+      }
+      if (crossingSeam) {
+        // 瞬跳到与当前同图的后置克隆相邻位（视觉无感知），
+        // 并把随后的平滑滚动放到下一帧，避免瞬跳与平滑在同一帧被合并成硬跳
+        scrollToRenderIndex(currentRenderIdx + slideCount.value, "instant");
+        requestAnimationFrame(runSmooth);
+      } else {
+        runSmooth();
+      }
     });
   } else {
     if (currentIndex.value <= 0) {
@@ -1351,6 +1277,7 @@ function waitForScrollEnd(callback: () => void) {
  * 当前浏览器原生 smooth scroll 会被随后的 scrollTo 平滑接续，无需手动归位。
  */
 function abortLoopTransition() {
+  loopArrowGeneration++;
   pendingScrollEndCleanup?.();
   pendingScrollEndCleanup = null;
   isLoopTransitioning.value = false;
@@ -1359,10 +1286,70 @@ function abortLoopTransition() {
 }
 
 /**
+ * 拖拽开始时统一中止未完成的 loop 转场，避免遗留 scrollend 回调继续改写索引
+ */
+function handleDragStart() {
+  isDragging.value = true;
+
+  if (props.loop && isLoopTransitioning.value) {
+    abortLoopTransition();
+    return;
+  }
+
+  isJumping.value = false;
+}
+
+function handleMouseDragStart() {
+  if (effectiveGrabCursor.value) {
+    handleDragStart();
+  }
+}
+
+function handlePointerEnter(event: PointerEvent) {
+  // 仅真实鼠标悬停才暂停自动播放。
+  // 触屏轻点（tap）会派发合成的 mouseenter 且触屏上永远不会再来 mouseleave，
+  // 若直接监听 mouse 事件，点一下箭头 isHovering 就永久为 true，自动播放从此停摆。
+  // pointer 事件带 pointerType，可精确区分：mouse=悬停暂停，touch/pen=忽略。
+  if (event.pointerType === "mouse") isHovering.value = true;
+}
+
+function handlePointerLeave(event: PointerEvent) {
+  if (event.pointerType === "mouse") isHovering.value = false;
+}
+
+function handleFocusIn(event: FocusEvent) {
+  // 仅「键盘可见焦点」（:focus-visible）才视为聚焦暂停自动播放。
+  // 鼠标点击箭头/指示点同样会给按钮设置焦点，且点击后焦点会一直留在按钮上不自动移出；
+  // 若不区分来源，点一次切换按钮 isFocused 就永久为 true，自动播放从此停摆。
+  // 键盘 Tab 进入时 :focus-visible 为 true，保留无障碍场景的暂停行为。
+  const target = event.target as HTMLElement | null;
+  try {
+    isFocused.value = !!target?.matches(":focus-visible");
+  } catch {
+    // 极旧浏览器不支持 :focus-visible 选择器时回退为原有行为（聚焦即暂停）
+    isFocused.value = true;
+  }
+}
+
+function handleFocusOut(event: FocusEvent) {
+  const nextTarget = event.relatedTarget as Node | null;
+
+  if (nextTarget && mainRootRef.value?.contains(nextTarget)) {
+    return;
+  }
+
+  isFocused.value = false;
+}
+
+/**
  * 处理自动播放的主步进逻辑
  */
 function handleAutoplayStep() {
   if (slideCount.value <= 1 || autoplayDelay.value <= 0) {
+    return;
+  }
+
+  if (isHovering.value || isFocused.value || isDragging.value || isNavigationLocked()) {
     return;
   }
 
@@ -1400,8 +1387,6 @@ function startAutoplay() {
 
   autoplayTimer = window.setInterval(handleAutoplayStep, autoplayDelay.value);
 }
-
-let scrollTimeout: any = null;
 
 /**
  * 处理滚动事件触发的索引同步
@@ -1452,13 +1437,6 @@ function handleScrollEnd() {
 }
 
 /**
- * 限制渲染索引在有效范围内
- */
-function clampRenderIndex(index: number) {
-  return Math.min(Math.max(index, 0), renderSlides.value.length - 1);
-}
-
-/**
  * 处理键盘导航
  */
 function handleKeydown(event: KeyboardEvent) {
@@ -1484,19 +1462,6 @@ function handleKeydown(event: KeyboardEvent) {
     event.preventDefault();
     goTo(slideCount.value - 1);
   }
-}
-
-/**
- * 计算幻灯片在循环列表下的视觉距离
- */
-function getVisualDistance(realIndex: number) {
-  const directDistance = Math.abs(realIndex - currentIndex.value);
-
-  if (!props.loop) {
-    return directDistance;
-  }
-
-  return Math.min(directDistance, slideCount.value - directDistance);
 }
 
 /**
@@ -1679,6 +1644,22 @@ watch(
   },
 );
 
+/** 监听缩略图位置变化，重新测量主图区域尺寸并排期布局更新 */
+watch(
+  thumbsPosition,
+  () => {
+    nextTick(() => {
+      /** 位置切换后主图区域尺寸可能变化（如从底部全宽变为左侧固定宽度），
+       *  需要重新测量以正确计算缩略图面板的尺寸约束 */
+      if (mainRootRef.value) {
+        const { width, height } = mainRootRef.value.getBoundingClientRect();
+        mainRootSize.value = { width, height };
+      }
+      scheduleLayoutUpdate();
+    });
+  },
+);
+
 /** 当前索引变化时，同步更新自动高度 */
 watch(
   () => currentIndex.value,
@@ -1809,27 +1790,18 @@ defineExpose({
       </div>
 
       <div :class="mainPaneClass">
-        <div ref="mainRootRef" :class="ui.root()" :style="rootStyle" @mouseenter="isHovering = true"
-          @mouseleave="isHovering = false">
+        <div ref="mainRootRef" :class="ui.root()" :style="rootStyle" @pointerenter="handlePointerEnter"
+          @pointerleave="handlePointerLeave" @focusin="handleFocusIn" @focusout="handleFocusOut">
           <div ref="viewportRef" :class="[
             ui.viewport(),
             effectiveGrabCursor && 'cursor-grab',
             effectiveGrabCursor && isDragging && 'cursor-grabbing'
-          ]" :style="viewportStyle" :data-direction="effectiveDirection" tabindex="0" @mousedown="() => {
-            if (effectiveGrabCursor) {
-              isDragging = true;
-              isJumping = false;
-              isLoopTransitioning = false;
-            }
-          }" @mouseup="isDragging = false" @touchstart="() => {
-            isDragging = true;
-            isJumping = false;
-            isLoopTransitioning = false;
-          }" @touchend="isDragging = false" @mouseleave="isHovering = false; isDragging = false"
-            @focusin="isFocused = true" @focusout="isFocused = false" @keydown="handleKeydown" @scroll="handleScroll"
-            @scrollend="handleScrollEnd" @wheel="(e) => {
+          ]" :style="viewportStyle" :data-direction="effectiveDirection" tabindex="0"
+            @mousedown="handleMouseDragStart" @mouseup="isDragging = false" @touchstart="handleDragStart"
+            @touchend="isDragging = false" @mouseleave="isDragging = false" @keydown="handleKeydown"
+            @scroll="handleScroll" @scrollend="handleScrollEnd" @wheel="(e) => {
               // 防止垂直模式下滚动穿透到父容器
-              if (isVertical.value) {
+              if (isVertical) {
                 e.stopPropagation();
               }
             }">

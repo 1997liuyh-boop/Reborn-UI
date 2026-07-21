@@ -33,7 +33,7 @@ const menuContext = inject<{
   parentIndexPath: ComputedRef<string[]>;
   mode: ComputedRef<"horizontal" | "vertical">;
   collapse: ComputedRef<boolean>;
-  color: ComputedRef<string>;
+  color: ComputedRef<any>;
   backgroundColor: ComputedRef<string>;
   textColor: ComputedRef<string>;
   activeTextColor: ComputedRef<string>;
@@ -57,6 +57,8 @@ const itemUi = computed(() => {
     mode: menuContext?.mode.value ?? "vertical",
     collapse: menuContext?.collapse.value ?? false,
     color: menuContext?.color.value ?? "primary",
+    active: isActive.value,
+    disabled: props.disabled,
   });
 
   const localOverrides = props.ui || {};
@@ -90,13 +92,8 @@ function handleClick() {
 </script>
 
 <template>
-  <li
-    :class="itemUi.menuItem({ class: props.class })"
-    :style="itemStyle"
-    role="menuitem"
-    :aria-current="isActive ? 'page' : undefined"
-    @click.stop="handleClick"
-  >
+  <li :class="itemUi.menuItem({ class: props.class })" :style="itemStyle" role="menuitem"
+    :aria-current="isActive ? 'page' : undefined" @click.stop="handleClick">
     <div :class="itemUi.menuItemContent()">
       <div v-if="$slots.icon" :class="itemUi.menuItemIcon()">
         <slot name="icon" />
