@@ -8,8 +8,12 @@ const isRoot = isRootPage();
     <div class="dark:pattern-background-d pattern-background-l absolute inset-0 z-[-1]" />
     <AppHeaderNav />
     <UContainer>
-      <UPage :key="route.fullPath">
-        <template v-if="!isRoot" #left>
+      <!-- <UPage :key="route.fullPath"> -->
+      <UPage :key="route.path">
+        <template
+          v-if="!isRoot"
+          #left
+        >
           <UPageAside>
             <DocsAsideLeftTop />
             <DocsAsideLeftBody />

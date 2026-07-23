@@ -45,6 +45,7 @@ export default defineNuxtConfig({
   plugins: [
     { src: "./plugins/clarity.js", mode: "client" },
     { src: "./plugins/track.client.ts", mode: "client" },
+    { src: "./plugins/anchor-scroll.client.ts", mode: "client" },
     { src: "./plugins/prettier.ts", mode: "client" },
   ],
 
