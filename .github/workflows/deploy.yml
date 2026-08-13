@@ -23,16 +23,22 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      # 直接读取 package.json 的 packageManager 字段安装 pnpm，
+      # 规避 Node 20 自带 corepack 无法校验新版 pnpm 签名的问题（Cannot find matching keyid）
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+
       - name: 安装 Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
-      - name: 构建应用
-        run: |
-          corepack enable
-          pnpm install --no-frozen-lockfile
-          pnpm run build
+      - name: 安装依赖
+        run: pnpm install --no-frozen-lockfile
+
+      - name: 构建应用（uniapp H5 + Nuxt）
+        run: pnpm run build
 
       - name: 部署到腾讯云服务器
         env:
