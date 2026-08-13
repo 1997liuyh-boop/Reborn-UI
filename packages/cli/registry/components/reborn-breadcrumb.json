@@ -1,0 +1,48 @@
+{
+  "name": "reborn-breadcrumb",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "index.ts",
+      "content": "export { default as RebornBreadcrumb } from './RebornBreadcrumb.vue'\nexport { default as RebornBreadcrumbItem } from './RebornBreadcrumbItem.vue'\nexport { default as rebornBreadcrumbConfig } from './reborn-breadcrumb.config'\n",
+      "target": "web"
+    },
+    {
+      "path": "reborn-breadcrumb.config.ts",
+      "content": "export default {\n  slots: {\n    root: \"flex items-center flex-wrap gap-x-1.5 text-sm leading-none\",\n    item: \"reborn-breadcrumb-item flex items-center gap-x-1.5 group\",\n    link: \"text-gray-7 transition-colors flex items-center gap-1 group-first:text-gray-8 group-first:font-semibold group-last:font-medium group-last:cursor-default group-last:pointer-events-none\",\n    separator: \"text-gray-4 select-none flex items-center justify-center text-xs group-last:hidden\",\n  },\n  variants: {\n    active: {\n      true: {\n        link: \"hover:text-primary cursor-pointer\",\n      },\n      false: {\n        link: \"cursor-default pointer-events-none\",\n      },\n    },\n  },\n};\n",
+      "target": "web"
+    },
+    {
+      "path": "RebornBreadcrumb.vue",
+      "content": "<script setup lang=\"ts\">\nimport { provide, computed, reactive } from 'vue'\nimport { tv } from '@/lib/tv'\nimport { cn } from '@/lib/utils'\nimport theme from './reborn-breadcrumb.config'\n\nexport interface RebornBreadcrumbProps {\n    separator?: string\n    separatorIcon?: any\n    customClass?: any\n    ui?: any\n}\n\nconst props = withDefaults(defineProps<RebornBreadcrumbProps>(), {\n    separator: '/',\n    ui: () => ({})\n})\n\nconst b = tv(theme)\nconst ui = computed(() => {\n    const styles = b()\n    return {\n        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, props.ui?.root) }),\n    }\n})\n\nconst context = reactive({\n    separator: computed(() => props.separator),\n    separatorIcon: computed(() => props.separatorIcon),\n    ui: theme.slots\n})\n\nprovide('breadcrumb', context)\n</script>\n\n<template>\n    <nav :class=\"ui.root()\" aria-label=\"Breadcrumb\">\n        <slot />\n    </nav>\n</template>\n",
+      "target": "web"
+    },
+    {
+      "path": "RebornBreadcrumbItem.vue",
+      "content": "<script setup lang=\"ts\">\nimport { inject, computed } from 'vue'\nimport { tv } from '@/lib/tv'\nimport { cn } from '@/lib/utils'\nimport theme from './reborn-breadcrumb.config'\n\nexport interface RebornBreadcrumbItemProps {\n    to?: string | object\n    replace?: 'push' | 'replace' | 'blank'\n    customClass?: any\n    ui?: any\n}\n\nconst props = withDefaults(defineProps<RebornBreadcrumbItemProps>(), {\n    replace: 'push',\n    ui: () => ({})\n})\n\nconst context = inject<any>('breadcrumb', {\n    separator: '/',\n    ui: theme.slots\n})\n\nconst b = tv(theme)\nconst ui = computed(() => {\n    const styles = b({\n        active: !!props.to\n    })\n    return {\n        item: (opts?: { class?: any }) => styles.item({ class: cn(opts?.class, props.ui?.item) }),\n        link: (opts?: { class?: any }) => styles.link({ class: cn(opts?.class, props.ui?.link, props.customClass) }),\n        separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class, props.ui?.separator) }),\n    }\n})\n\n</script>\n\n<template>\n    <div :class=\"ui.item()\">\n        <NuxtLink \n            v-if=\"props.to\"\n            :to=\"props.to\"\n            :replace=\"props.replace === 'replace'\"\n            :target=\"props.replace === 'blank' ? '_blank' : undefined\"\n            :class=\"ui.link({ class: 'reborn-breadcrumb-item__link' })\"\n        >\n            <slot />\n        </NuxtLink>\n        <span v-else :class=\"ui.link({ class: 'reborn-breadcrumb-item__link' })\">\n            <slot />\n        </span>\n        <span :class=\"ui.separator()\" aria-hidden=\"true\">\n            <slot name=\"separator\">\n                <template v-if=\"context.separatorIcon\">\n                    <component :is=\"context.separatorIcon\" v-if=\"typeof context.separatorIcon !== 'string'\" />\n                    <Icon :name=\"context.separatorIcon\" v-else />\n                </template>\n                <template v-else>\n                    {{ context.separator }}\n                </template>\n            </slot>\n        </span>\n    </div>\n</template>\n",
+      "target": "web"
+    },
+    {
+      "path": "index.ts",
+      "content": "export { default as RebornBreadcrumb } from './RebornBreadcrumb.vue'\nexport { default as RebornBreadcrumbItem } from './RebornBreadcrumbItem.vue'\nexport { default as rebornBreadcrumbConfig } from './reborn-breadcrumb.config'\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "reborn-breadcrumb.config.ts",
+      "content": "export default {\n  slots: {\n    root: \"flex flex-row items-center flex-wrap gap-x-1.5 text-28 leading-none\",\n    item: \"reborn-breadcrumb-item flex flex-row items-center gap-x-1.5 group\",\n    link: \"text-gray-500 transition-colors flex flex-row items-center gap-1 group-first:text-gray-8 group-last:font-medium group-last:pointer-events-none\",\n    separator: \"text-gray-400 select-none flex flex-row items-center justify-center text-24 group-last:hidden\",\n  },\n  variants: {\n    active: {\n      true: {\n        link: \"hover:text-primary cursor-pointer\",\n      },\n      false: {\n        link: \"cursor-default pointer-events-none\",\n      },\n    },\n  },\n};\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "RebornBreadcrumb.vue",
+      "content": "<script setup lang=\"ts\">\nimport { provide, computed, reactive } from 'vue'\nimport { tv } from '@/lib/tv'\nimport { cn } from '@/lib/utils'\nimport theme from './reborn-breadcrumb.config'\n\nexport interface RebornBreadcrumbProps {\n  separator?: string\n  separatorIcon?: any\n  customClass?: any\n  ui?: any\n}\n\nconst props = withDefaults(defineProps<RebornBreadcrumbProps>(), {\n  separator: '/',\n  ui: () => ({})\n})\n\nconst b = tv(theme)\nconst ui = computed(() => {\n  const styles = b()\n  return {\n    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.customClass, props.ui?.root) }),\n  }\n})\n\nconst context = reactive({\n  separator: computed(() => props.separator),\n  separatorIcon: computed(() => props.separatorIcon),\n  ui: theme.slots\n})\n\nprovide('breadcrumb', context)\n</script>\n\n<template>\n  <view :class=\"ui.root()\">\n    <slot />\n  </view>\n</template>\n",
+      "target": "uniapp"
+    },
+    {
+      "path": "RebornBreadcrumbItem.vue",
+      "content": "<script setup lang=\"ts\">\r\nimport { inject, computed } from 'vue'\r\nimport { tv } from '@/lib/tv'\r\nimport { cn } from '@/lib/utils'\r\nimport theme from './reborn-breadcrumb.config'\r\n\r\nexport interface RebornBreadcrumbItemProps {\r\n  to?: string | object\r\n  replace?: 'navigate' | 'redirect' | 'switchTab' | 'reLaunch'\r\n  target?: string\r\n  customClass?: any\r\n  ui?: any\r\n}\r\n\r\nconst props = withDefaults(defineProps<RebornBreadcrumbItemProps>(), {\r\n  replace: 'navigate',\r\n  ui: () => ({})\r\n})\r\n\r\nconst context = inject<any>('breadcrumb', {\r\n  separator: '/',\r\n  ui: theme.slots\r\n})\r\n\r\nconst b = tv(theme)\r\nconst ui = computed(() => {\r\n  const styles = b({\r\n    active: !!props.to\r\n  })\r\n  return {\r\n    item: (opts?: { class?: any }) => styles.item({ class: cn(opts?.class, props.ui?.item) }),\r\n    link: (opts?: { class?: any }) => styles.link({ class: cn(opts?.class, props.ui?.link, props.customClass) }),\r\n    separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class, props.ui?.separator) }),\r\n  }\r\n})\r\n\r\nfunction handleClick() {\r\n  if (!props.to) { return }\r\n\r\n  let url = ''\r\n  if (typeof props.to === 'string') {\r\n    url = props.to\r\n  } else if (typeof props.to === 'object') {\r\n    url = (props.to as any).path || ''\r\n  }\r\n\r\n  if (!url) { return }\r\n\r\n  const navMap = {\r\n    navigate: uni.navigateTo,\r\n    redirect: uni.redirectTo,\r\n    switchTab: uni.switchTab,\r\n    reLaunch: uni.reLaunch\r\n  }\r\n\r\n  const navFn = navMap[props.replace] || uni.navigateTo\r\n  navFn({ url })\r\n}\r\n</script>\r\n\r\n<template>\r\n  <view :class=\"ui.item()\">\r\n    <view :class=\"ui.link({ class: 'reborn-breadcrumb-item__link' })\" @tap=\"handleClick\">\r\n      <slot />\r\n    </view>\r\n    <view :class=\"ui.separator()\">\r\n      <slot name=\"separator\">\r\n        <template v-if=\"context.separatorIcon\">\r\n          <view v-if=\"typeof context.separatorIcon === 'string'\" :class=\"context.separatorIcon\" />\r\n          <!-- #ifdef H5 || APP-PLUS -->\r\n          <component :is=\"context.separatorIcon\" v-else />\r\n          <!-- #endif -->\r\n        </template>\r\n        <template v-else>\r\n          <text>{{ context.separator }}</text>\r\n        </template>\r\n      </slot>\r\n    </view>\r\n  </view>\r\n</template>\r\n",
+      "target": "uniapp"
+    }
+  ],
+  "fileCount": 8,
+  "contentHash": "2fc014c0b243c2aa1ce2ce2e27c1052d03d92eec"
+}

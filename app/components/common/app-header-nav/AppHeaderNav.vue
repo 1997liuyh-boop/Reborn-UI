@@ -17,7 +17,8 @@ const items = computed(() =>
 </script>
 
 <template>
-  <UHeader title="" class="top-16 hidden items-center justify-between border-none lg:flex">
+  <!-- 管理台外壳：二级导航底部保留一条弱化的 hairline，界定头部区与工作区 -->
+  <UHeader title="" class="border-default/50 top-16 hidden items-center justify-between border-b lg:flex">
     <UNavigationMenu :items="items" variant="pill" highlight />
   </UHeader>
 </template>

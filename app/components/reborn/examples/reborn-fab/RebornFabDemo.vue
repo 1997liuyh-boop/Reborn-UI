@@ -46,7 +46,8 @@ const state = ref({
     customCoord: true,
     useTriggerSlot: false,
     expandable: true,
-    attract: true
+    attract: true,
+    peekOnScroll: true
 })
 
 // 控制面板配置
@@ -83,6 +84,12 @@ const controls = [
             {
                 label: "自动吸边",
                 key: "attract",
+                component: "checkbox" as const,
+                defaultValue: true
+            },
+            {
+                label: "滚动半隐藏",
+                key: "peekOnScroll",
                 component: "checkbox" as const,
                 defaultValue: true
             }
@@ -165,7 +172,7 @@ function handleAction(name: string) {
             <template v-if="!state.useTriggerSlot">
                 <!-- 浮动模式演示 (支持 Linear 与 Radial 切换) -->
                 <RebornFab v-if="state.variant === 'float'" v-model="state.isActive" :color="state.color"
-                    variant="float" :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                    variant="float" :draggable="state.draggable" :attract="state.attract" :peek-on-scroll="state.peekOnScroll" :direction="state.direction"
                     :position="state.position" :trigger="state.trigger" :top="state.customCoord ? '40vh' : undefined"
                     :expandable="state.expandable" :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
                     <template #default>
@@ -179,7 +186,7 @@ function handleAction(name: string) {
 
                 <!-- 胶囊模式演示 -->
                 <RebornFab v-else-if="state.variant === 'capsule'" v-model="state.isActive" :color="state.color"
-                    variant="capsule" :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                    variant="capsule" :draggable="state.draggable" :attract="state.attract" :peek-on-scroll="state.peekOnScroll" :direction="state.direction"
                     :position="state.position" :trigger="state.trigger" :top="state.customCoord ? '65vh' : undefined"
                     :expandable="state.expandable" divider :gap="{ top: 32, bottom: 32, left: 32, right: 32 }"
                     :z-index="500">
@@ -191,7 +198,7 @@ function handleAction(name: string) {
 
                 <!-- 环形模式演示 -->
                 <RebornFab v-else-if="state.variant === 'circle'" v-model="state.isActive" :color="state.color"
-                    variant="circle" :draggable="state.draggable" :attract="state.attract" :direction="state.direction"
+                    variant="circle" :draggable="state.draggable" :attract="state.attract" :peek-on-scroll="state.peekOnScroll" :direction="state.direction"
                     :position="state.position" :trigger="state.trigger" :top="state.customCoord ? '20vh' : undefined"
                     :expandable="state.expandable" :gap="{ top: 32, bottom: 32, left: 32, right: 32 }" :z-index="500">
                     <template #default>
@@ -206,7 +213,7 @@ function handleAction(name: string) {
 
             <!-- 自定义触发器演示 -->
             <RebornFab v-else position="right-bottom" :draggable="state.draggable" :expandable="false"
-                :attract="state.attract" :trigger="state.trigger" :bottom="state.customCoord ? 150 : undefined"
+                :attract="state.attract" :peek-on-scroll="state.peekOnScroll" :trigger="state.trigger" :bottom="state.customCoord ? 150 : undefined"
                 :color="state.color" :z-index="500" @click="handleAction('自定义触发器')">
                 <template #trigger>
                     <div

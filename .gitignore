@@ -61,3 +61,20 @@ public/r
 # !.cnb.yml           # 主配置文件（已在上面列出，但这里澄清）
 # !.cnb/README.md     # 如果有说明文档
 # !.cnb/LICENSE       # 如果有许可证文件
+
+# ================================
+# 本地工具产物（不提交）
+# ================================
+
+# pnpm 本地缓存仓库
+.pnpm-store/
+
+# Playwright MCP 运行产物
+.playwright-mcp/
+
+# 代码库索引/记忆（本地生成）
+.codebase-memory/
+
+# Claude Code 本地个人配置
+.claude/settings.local.json
+.claude/launch.json

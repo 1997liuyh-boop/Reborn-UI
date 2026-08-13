@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, ref } from "vue";
+import { computed, onBeforeUnmount, provide, ref } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
 import theme, { dropdownSizes, dropdownColors } from "./reborn-dropdown.config";
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
+import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -27,6 +28,11 @@ export interface DropdownProps {
   color?: (typeof dropdownColors)[number];
   /** 弹出位置 */
   placement?: "bottom-start" | "bottom" | "bottom-end" | "top-start" | "top" | "top-end";
+  /**
+   * 浮层是否传送到 body（默认 true）。
+   * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
+   */
+  portal?: SelectTriggerProps["portal"];
   /** 自定义类名 */
   class?: any;
   /** UI 局部重写 */
@@ -53,6 +59,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
   size: "md",
   color: "primary",
   placement: "bottom-start",
+  portal: true,
 });
 
 const emit = defineEmits<{
@@ -66,7 +73,6 @@ const emit = defineEmits<{
 const { disabled: formDisabled, size: formSize } = useFormInject(props);
 const isDisabled = computed(() => formDisabled.value || props.disabled);
 const isOpen = ref(false);
-const triggerRef = ref<any>(null);
 
 let openTimer: ReturnType<typeof setTimeout> | null = null
 let closeTimer: ReturnType<typeof setTimeout> | null = null
@@ -146,20 +152,17 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-function onClickOutside(e: MouseEvent) {
+/**
+ * 收起菜单。外部点击的判定归 RebornSelectTrigger：
+ * 菜单已随浮层传送到 body，本组件根节点不再包含它，
+ * 自己在捕获阶段判 $el.contains 会把「点击菜单项」当成外部点击、抢在 command 之前收起。
+ */
+function onOutsideClose() {
   if (!isOpen.value) return;
-  const el = triggerRef.value?.$el
-  if (el && !el.contains(e.target as Node)) {
-    close(true);
-  }
+  close(true);
 }
 
-onMounted(() => {
-  document.addEventListener("click", onClickOutside, true);
-});
-
 onBeforeUnmount(() => {
-  document.removeEventListener("click", onClickOutside, true);
   clearAllTimers();
 });
 
@@ -211,12 +214,12 @@ defineExpose({
 
 <template>
   <div :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-    <RebornSelectTrigger ref="triggerRef" :is-open="isOpen" :disabled="isDisabled" :size="formSize || size"
-      :color="color" :bordered="false" :show-arrow="false" :ui="{
+    <RebornSelectTrigger :is-open="isOpen" :disabled="isDisabled" :size="formSize || size"
+      :color="color" :bordered="false" :show-arrow="false" :portal="portal" :ui="{
         /* 覆盖底层组件的默认样式，仅保留定位能力，具体样式由内部插槽决定 */
         trigger: 'bg-transparent p-0',
         dropdown: 'w-auto!',
-      }" @toggle="onTriggerClick" @keydown="onKeydown">
+      }" @toggle="onTriggerClick" @keydown="onKeydown" @close="onOutsideClose">
       <!-- 使用 cover 完全接管触发器样式 -->
       <template #cover>
         <div v-if="splitButton" class="flex h-full w-full items-center overflow-hidden">

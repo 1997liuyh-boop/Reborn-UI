@@ -10,6 +10,20 @@ const open = ref(false);
 
 const isDesktop = useMediaQuery("(min-width: 768px)");
 
+// 注册移动端 demo 到页面级状态：2xl+ 由右侧 DocsMobilePanel 常驻展示
+if (props.uniapp && props.url) {
+  const { register } = useUniDemoPanel()
+  register({ url: props.url })
+}
+
+/**
+ * 2xl+ 右侧面板可见（阈值与 DocsMobilePanel 严格一致）：
+ * 内层不再渲染 Web/UniApp Tabs（避免同屏双 iframe），直接输出 Web demo；
+ * <2xl 无右栏，保留原有 UniApp Tab 作为移动端预览的回退入口。
+ */
+const isPanelViewport = useMediaQuery("(min-width: 1536px)");
+const showInnerTabs = computed(() => props.uniapp && !isPanelViewport.value)
+
 const items = [{
   label: 'Web',
   icon: 'i-lucide-globe',
@@ -31,10 +45,13 @@ const computedUrl = computed(() => {
 <template>
   <div class="flex w-full flex-col items-start justify-start gap-4">
     <!-- 内边距收口：外层 DemoStage / 文档列已提供留白，避免画布被双重收窄 -->
-    <UPageCard variant="outline" class="bg-default/15 w-full min-w-0" :ui="{
-      container: 'w-full min-w-0 p-3 sm:p-4'
-    }">
-      <UTabs v-if="uniapp" :items="items" class="w-full">
+    <!-- 演示舞台：近实底 + 轻投影，在点阵背景上凸显为「画布」层 -->
+    <UPageCard
+      variant="outline" class="bg-default/85 shadow-xs shadow-zinc-950/[0.04] dark:shadow-none w-full min-w-0" :ui="{
+        container: 'w-full min-w-0 p-3 sm:p-4'
+      }"
+    >
+      <UTabs v-if="showInnerTabs" :items="items" class="w-full">
         <template #web>
           <div class="pt-4">
             <slot name="component" />
@@ -53,15 +70,17 @@ const computedUrl = computed(() => {
     </UPageCard>
 
     <div v-if="$slots.config" class="flex w-full flex-row items-center justify-between">
-      <div class="flex flex-col items-start gap-2">
-        <span class="text-2xl font-semibold">Playground</span>
-        <span class="text-muted italic">Play with props and customize the component.</span>
+      <div class="flex flex-col items-start gap-1.5">
+        <span class="text-highlighted text-xl font-semibold tracking-tight">Playground</span>
+        <span class="text-muted text-sm">Play with props and customize the component.</span>
       </div>
-      <UDrawer v-model:open="open" :direction="isDesktop ? 'right' : 'bottom'" :overlay="!isDesktop"
+      <UDrawer
+        v-model:open="open" :direction="isDesktop ? 'right' : 'bottom'" :overlay="!isDesktop"
         :dismissible="!isDesktop" :handle="false" :modal="!isDesktop" :inset="isDesktop" :ui="{
           header: 'flex items-center justify-between',
           content: 'bg-default/35 backdrop-blur-3xl md:min-w-md',
-        }">
+        }"
+      >
         <UButton label="Customize" variant="solid" trailing-icon="tabler:chevron-right" size="xl" />
 
         <template #header>

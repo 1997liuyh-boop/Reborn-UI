@@ -141,10 +141,9 @@ const activeCode = computed(() => {
     return parts.join("\n");
 });
 
-/** 装饰色轮换 */
-const accentColors = ["bg-primary", "bg-info", "bg-success", "bg-warning", "bg-error"];
-function getAccentColor(index: number) {
-    return accentColors[index % accentColors.length];
+/** 分组标识条：统一主色，避免彩虹式多色干扰视觉焦点 */
+function getAccentColor(_index: number) {
+    return "bg-primary/80";
 }
 
 const ui = computed(() => tv(config)({ direction: props.direction }));

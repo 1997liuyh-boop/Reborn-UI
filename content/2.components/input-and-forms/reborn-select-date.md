@@ -48,6 +48,7 @@ navigation:
 | `bordered` | `boolean` | `true` | 是否显示边框。 |
 | `showArrow` | `boolean` | `true` | 是否显示右侧箭头图标。 |
 | `arrowAnimation` | `boolean` | `true` | 展开时箭头是否旋转动画。 |
+| `portal` | `boolean` | `true` | 浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。 |
 | `triggerUi` | `Partial<SelectTriggerUI>` | `{}` | 用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。 |
 
 ## Emits

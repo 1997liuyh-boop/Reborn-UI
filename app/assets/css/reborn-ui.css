@@ -11,8 +11,44 @@
 }
 
 .dark {
-  --ui-bg: black;
+  /* 站点暗色基底：避免纯黑 #000 的生硬感，取 zinc-950 与 neutral: zinc 配置同族 */
+  --ui-bg: #09090b;
   --ui-primary: white;
+}
+
+/* 文本选区：随黑白主色反色，选中文字有明确的「站点态度」 */
+::selection {
+  background-color: rgba(24, 24, 27, 0.9);
+  color: #fafafa;
+}
+
+.dark ::selection {
+  background-color: rgba(244, 244, 245, 0.9);
+  color: #18181b;
+}
+
+/* 站点滚动条：细窄圆角、zinc 基调，替代系统默认的粗滚动条 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(113, 113, 122, 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: rgba(113, 113, 122, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(113, 113, 122, 0.5);
 }
 
 .form-field {
@@ -25,10 +61,19 @@
     radial-gradient(circle at 70% 30%, rgba(255, 182, 193, 0.4), transparent 60%);
 }
 
+/*
+ * 站点浅色背景：中性顶部光晕 + 细点阵网格（设计工具画布质感），
+ * 与 neutral: zinc / primary: black 的整体色调保持同族，替代原先的粉蓝渐变。
+ */
 @utility pattern-background-l {
   background:
-    radial-gradient(circle at 30% 70%, rgba(173, 216, 230, 0.35), transparent 60%),
-    radial-gradient(circle at 70% 30%, rgba(255, 182, 193, 0.4), transparent 60%);
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(24, 24, 27, 0.055), transparent 70%),
+    radial-gradient(circle, rgba(24, 24, 27, 0.05) 1px, transparent 1px),
+    #fcfcfc;
+  background-size:
+    100% 100%,
+    22px 22px,
+    auto;
 }
 
 @utility pattern-background-d1 {
@@ -38,9 +83,16 @@
     linear-gradient(120deg, #0f0e17 0%, #1a1b26 100%);
 }
 
+/* 站点暗色背景：与浅色同构（顶部光晕 + 点阵），基底与 --ui-bg 的 zinc-950 一致 */
 @utility pattern-background-d {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(226, 232, 240, 0.15), transparent 70%), #000000;
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(226, 232, 240, 0.12), transparent 70%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    #09090b;
+  background-size:
+    100% 100%,
+    22px 22px,
+    auto;
 }
 
 @theme inline {

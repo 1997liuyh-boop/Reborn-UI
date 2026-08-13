@@ -20,8 +20,7 @@ const links = computed(() =>
 </script>
 
 <template>
-  <UHeader :ui="{ center: 'flex-1' }" to="/" :title="appConfig.header?.title || site.name" mode="drawer"
-    class="bg-default/15">
+  <UHeader :ui="{ center: 'flex-1' }" to="/" :title="appConfig.header?.title || site.name" mode="drawer">
     <AppHeaderCenter />
 
     <template #title>

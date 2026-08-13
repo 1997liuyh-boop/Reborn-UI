@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
@@ -60,6 +60,11 @@ export interface TimePickerProps {
   showArrow?: boolean;
   /** 展开时箭头是否旋转 */
   arrowAnimation?: boolean;
+  /**
+   * 浮层是否传送到 body（默认 true）。
+   * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
+   */
+  portal?: SelectTriggerProps["portal"];
   /** 触发器 (Trigger) 的 UI 微调配置 */
   triggerUi?: SelectTriggerProps["ui"];
   /** 时间选择器内部组件的 UI 微调配置 */
@@ -88,6 +93,7 @@ const props = withDefaults(defineProps<TimePickerProps>(), {
   bordered: true,
   showArrow: true,
   arrowAnimation: true,
+  portal: true,
   disabledHours: () => [],
   disabledMinutes: () => [],
   disabledSeconds: () => [],
@@ -106,8 +112,6 @@ const modelValue = defineModel<string | string[]>({ default: "" });
 
 /** 下拉是否展开 */
 const isOpen = ref(false);
-/** 触发器组件引用 */
-const triggerRef = ref<any>(null);
 
 /**
  * 生成及管理样式映射表
@@ -203,23 +207,22 @@ function handlePanelChange(value: string | string[]) {
 }
 
 /**
- * 外部点击关闭
+ * 收起面板。外部点击的判定归 RebornSelectTrigger：
+ * 浮层传送到 body 后不再是本组件根节点的后代，自己判 $el.contains 会把
+ * 「点击面板里的时/分/秒」误判成外部点击。
  */
-function onClickOutside(event: MouseEvent) {
-  if (triggerRef.value?.$el && !triggerRef.value.$el.contains(event.target as Node)) {
-    isOpen.value = false;
-  }
+function onOutsideClose() {
+  if (!isOpen.value) return;
+  isOpen.value = false;
 }
-
-onMounted(() => document.addEventListener("click", onClickOutside));
-onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 </script>
 
 <template>
-  <RebornSelectTrigger ref="triggerRef" :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
+  <RebornSelectTrigger :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
     :disabled="disabled" :clearable="clearable && hasValue" :size="size" :color="color"
     :icon="arrowControl ? 'lucide:chevrons-up-down' : 'lucide:clock-3'" :ui="triggerUi" :bordered="bordered"
-    :show-arrow="showArrow" :arrow-animation="arrowAnimation" @toggle="toggle" @clear="clear">
+    :show-arrow="showArrow" :arrow-animation="arrowAnimation" :portal="portal" @toggle="toggle" @clear="clear"
+    @close="onOutsideClose">
     <template #cover v-if="$slots.cover">
       <slot name="cover" :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue"
         :rangeDisplay="rangeDisplay" :singleDisplay="singleDisplay" />

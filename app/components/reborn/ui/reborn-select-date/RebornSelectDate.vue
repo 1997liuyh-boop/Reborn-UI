@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 
@@ -41,6 +41,11 @@ export interface SelectDateProps {
     showArrow?: boolean;
     /** 展开时箭头是否旋转 */
     arrowAnimation?: boolean;
+    /**
+     * 浮层是否传送到 body（默认 true）。
+     * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
+     */
+    portal?: SelectTriggerProps["portal"];
     /** 触发器 (Trigger) 的 UI 微调配置 */
     triggerUi?: SelectTriggerProps["ui"];
     /** 日期选择器内部组件的 UI 微调配置 */
@@ -74,6 +79,7 @@ const props = withDefaults(defineProps<SelectDateProps>(), {
     bordered: true,
     showArrow: true,
     arrowAnimation: true,
+    portal: true,
     labelFormat: "YYYY-MM-DD",
 });
 
@@ -85,8 +91,6 @@ const modelValue = defineModel<any>({ default: "" });
 
 /** 下拉是否展开 */
 const isOpen = ref(false);
-/** 触发器引用 */
-const triggerRef = ref<any>(null);
 
 /** 外部传入的 UI 配置 */
 const {
@@ -247,25 +251,24 @@ function clear(e: Event) {
     validate("change");
 }
 
-function onClickOutside(e: MouseEvent) {
-    if (triggerRef.value?.$el && !triggerRef.value.$el.contains(e.target as Node)) {
-        if (isOpen.value) {
-            isOpen.value = false;
-            validate("blur");
-        }
-    }
+/**
+ * 收起面板。判定「是否点在触发器或面板外」的职责归 RebornSelectTrigger：
+ * 浮层已传送到 body，本组件根节点不再包含它，自己用 $el.contains 判定会把
+ * 「点击面板内的日期」误判成外部点击。
+ */
+function onOutsideClose() {
+    if (!isOpen.value) return;
+    isOpen.value = false;
+    validate("blur");
 }
-
-onMounted(() => document.addEventListener("click", onClickOutside));
-onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 </script>
 
 <template>
-    <RebornSelectTrigger ref="triggerRef" :class="props.class" :display-text="displayText" :placeholder="placeholder"
+    <RebornSelectTrigger :class="props.class" :display-text="displayText" :placeholder="placeholder"
         :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size" :color="color"
         :clearable="clearable && (Array.isArray(modelValue) ? modelValue.length > 0 : !!modelValue)"
         :ui="selectTriggerUi" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation"
-        icon="lucide:calendar" :error="isError" @toggle="toggle" @clear="clear">
+        icon="lucide:calendar" :error="isError" :portal="portal" @toggle="toggle" @clear="clear" @close="onOutsideClose">
         <template #cover="{ displayText, placeholder, isOpen, ui: triggerUi }" v-if="$slots.cover">
             <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi" />
         </template>

@@ -47,6 +47,7 @@ interface Props {
   disabled?: boolean; // 是否禁用
   draggable?: boolean; // 是否可拖拽
   attract?: boolean; // 是否开启自动吸边
+  peekOnScroll?: boolean; // 滚动时是否自动贴边并半隐藏
   expandable?: boolean; // 是否可展开
   gap?: { top?: number; left?: number; right?: number; bottom?: number }; // 拖拽的安全间距
   inactiveIcon?: string; // 未展开时的图标
@@ -72,6 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   draggable: false,
   attract: true,
+  peekOnScroll: false,
   expandable: true,
   gap: () => ({ top: 32, left: 32, right: 32, bottom: 32 }),
   inactiveIcon: "lucide:plus",
@@ -286,6 +288,65 @@ onUnmounted(() => {
 });
 
 /**
+ * 把可能带单位的坐标值归一成像素数值
+ */
+function toPixel(val: string | number): number {
+  return typeof val === "number" ? val : Number.parseFloat(String(val)) || 0;
+}
+
+/**
+ * 拖拽后的「语义位置」。
+ * 只记绝对像素的话，视口变大时无法还原贴边关系（原本贴右边的按钮会悬在画面中间），
+ * 因此这里存停靠侧与可用区间内的相对比例，尺寸变化时据此重建坐标。
+ */
+const anchor = reactive({
+  captured: false,
+  side: null as "left" | "right" | null,
+  xRatio: 0,
+  yRatio: 0,
+});
+
+function boundingSpan() {
+  return {
+    x: bounding.maxLeft - bounding.minLeft,
+    y: bounding.maxTop - bounding.minTop,
+  };
+}
+
+/**
+ * 以当前坐标反推语义位置
+ */
+function captureAnchor(side: "left" | "right" | null) {
+  const span = boundingSpan();
+  anchor.captured = true;
+  anchor.side = side;
+  anchor.xRatio = span.x > 0 ? (toPixel(leftPos.value) - bounding.minLeft) / span.x : 0;
+  anchor.yRatio = span.y > 0 ? (toPixel(topPos.value) - bounding.minTop) / span.y : 0;
+}
+
+/**
+ * 按语义位置重建绝对坐标，用于视口尺寸变化后的复位
+ */
+function applyAnchor() {
+  // 兜底：语义位置尚未记录（如拖拽中途被 disabled 打断），退化为越界修正
+  if (!anchor.captured) {
+    leftPos.value = Math.max(bounding.minLeft, Math.min(toPixel(leftPos.value), bounding.maxLeft));
+    topPos.value = Math.max(bounding.minTop, Math.min(toPixel(topPos.value), bounding.maxTop));
+    return;
+  }
+
+  const span = boundingSpan();
+
+  if (anchor.side) {
+    leftPos.value = anchor.side === "left" ? bounding.minLeft : bounding.maxLeft;
+  } else {
+    leftPos.value = span.x > 0 ? bounding.minLeft + span.x * anchor.xRatio : bounding.minLeft;
+  }
+
+  topPos.value = span.y > 0 ? bounding.minTop + span.y * anchor.yRatio : bounding.minTop;
+}
+
+/**
  * 更新屏幕和按钮尺寸，并重新计算可拖拽的边界范围
  * 在组件挂载、窗口缩放或属性变化时调用，确保按钮位置合法
  */
@@ -317,10 +378,30 @@ function updateBounding() {
     initPosition();
     inited.value = true;
   } else {
-    // 如果已经手动拖动过，仅在 Resize 时做越界修正，防止按钮消失在视口外
-    leftPos.value = Math.max(bounding.minLeft, Math.min(Number(leftPos.value), bounding.maxLeft));
-    topPos.value = Math.max(bounding.minTop, Math.min(Number(topPos.value), bounding.maxTop));
+    // 已手动拖拽过：按语义位置重建，保证贴边关系在视口放大后不丢失
+    applyAnchor();
   }
+}
+
+// 视口尺寸变化：rAF 合并高频 resize；
+// 分辨率切换、显示器切换、移动端旋转后，首帧读到的 clientWidth 与按钮尺寸可能仍是旧值，
+// 因此稍后再补一次校正。
+const RESIZE_SETTLE_DELAY = 200;
+let resizeFrame: number | null = null;
+let resizeSettleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function handleResize() {
+  if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
+  resizeFrame = window.requestAnimationFrame(() => {
+    resizeFrame = null;
+    updateBounding();
+  });
+
+  if (resizeSettleTimer) clearTimeout(resizeSettleTimer);
+  resizeSettleTimer = setTimeout(() => {
+    resizeSettleTimer = null;
+    updateBounding();
+  }, RESIZE_SETTLE_DELAY);
 }
 
 /**
@@ -428,7 +509,10 @@ function flushDragPosition() {
  * 记录初始位置并开启全局事件监听
  */
 function handlePointerDown(e: PointerEvent) {
-  if (!props.draggable || props.disabled) return;
+  if (props.disabled) return;
+  // 半隐藏状态下的触碰意在唤回按钮
+  restoreFromPeek();
+  if (!props.draggable) return;
 
   // 适配多端捕获：防止滑动过快导致指针脱离元素
   const target = e.currentTarget as HTMLElement;
@@ -441,10 +525,8 @@ function handlePointerDown(e: PointerEvent) {
   hasMoved.value = false;
   attractTransition.value = false;
 
-  const currentLeft =
-    typeof leftPos.value === "number" ? leftPos.value : Number.parseFloat(String(leftPos.value));
-  const currentTop =
-    typeof topPos.value === "number" ? topPos.value : Number.parseFloat(String(topPos.value));
+  const currentLeft = toPixel(leftPos.value);
+  const currentTop = toPixel(topPos.value);
   pendingDragPosition.x = currentLeft;
   pendingDragPosition.y = currentTop;
 
@@ -547,25 +629,21 @@ function handlePointerUp(e: PointerEvent) {
   if (props.attract) {
     attractTransition.value = true;
     const centerX = screen.width / 2;
-    const currentLeft =
-      typeof leftPos.value === "number" ? leftPos.value : Number.parseFloat(String(leftPos.value));
-    const fabX = currentLeft + fabSize.width / 2;
-
+    const fabX = toPixel(leftPos.value) + fabSize.width / 2;
     // 根据中心点位置决定向左或向右边缘吸附
-    if (fabX < centerX) {
-      leftPos.value = bounding.minLeft;
-    } else {
-      leftPos.value = bounding.maxLeft;
-    }
+    const side = fabX < centerX ? "left" : "right";
+
+    leftPos.value = side === "left" ? bounding.minLeft : bounding.maxLeft;
+    captureAnchor(side);
+  } else {
+    captureAnchor(null);
   }
 
   // --- 动态方向调整 ---
   // 根据抬起后的位置与屏幕边界的距离，判断展开空间是否充足
   // 如果空间不足 (小于 safeZone)，则自动切换到相反的方向（例如靠右时由 right 变为 left）
-  const currentTopAfter =
-    typeof topPos.value === "number" ? topPos.value : Number.parseFloat(String(topPos.value));
-  const currentLeftAfter =
-    typeof leftPos.value === "number" ? leftPos.value : Number.parseFloat(String(leftPos.value));
+  const currentTopAfter = toPixel(topPos.value);
+  const currentLeftAfter = toPixel(leftPos.value);
 
   const safeZone = 140;
   let nextDir = props.direction;
@@ -588,6 +666,7 @@ function handlePointerUp(e: PointerEvent) {
  */
 function handleClick() {
   if (props.disabled || props.trigger === "hover" || hasMoved.value) return;
+  restoreFromPeek();
   if (props.expandable) {
     isActive.value = !isActive.value;
   } else {
@@ -610,7 +689,10 @@ function getHoverCloseDelay() {
  * 鼠标进入：Hover 模式下展开
  */
 function handleMouseEnter() {
-  if (props.disabled || props.trigger !== "hover" || isDragging.value) return;
+  if (props.disabled) return;
+  // 悬停即唤回，不受 trigger 模式限制
+  restoreFromPeek();
+  if (props.trigger !== "hover" || isDragging.value) return;
   clearHoverCloseTimer();
   isActive.value = true;
 }
@@ -629,20 +711,107 @@ function handleMouseLeave() {
   }, getHoverCloseDelay());
 }
 
+// 滑动半隐藏（peek）
+// 由 peekOnScroll 单独开启，与 attract（拖拽后吸边）互不依赖。
+// 页面滚动期间把按钮推到最近的屏幕侧边、只露出一半，滚动停止后自动复位。
+const PEEK_RESTORE_DELAY = 1000;
+const ATTRACT_EASE = "cubic-bezier(0.18, 0.89, 0.32, 1.28)";
+
+const isPeeking = ref(false);
+let peekRestoreTimer: ReturnType<typeof setTimeout> | null = null;
+let scrollFrame: number | null = null;
+
+/**
+ * 按钮当前停靠在屏幕哪一侧，判定基准与拖拽吸边一致（按钮中心 vs 屏幕中线）
+ */
+const dockSide = computed<"left" | "right">(() =>
+  toPixel(leftPos.value) + fabSize.width / 2 < screen.width / 2 ? "left" : "right",
+);
+
+/**
+ * 半隐藏位移：一步到位挪到「贴紧屏幕边缘且只露一半」的位置。
+ * 走 transform 而非改写 leftPos，是为了不污染拖拽/吸边得到的停靠坐标——
+ * 复位时只需归零，无需记录并回溯原始位置。
+ */
+const peekTranslateX = computed(() => {
+  if (!isPeeking.value) return 0;
+
+  const half = fabSize.width / 2;
+  const left = toPixel(leftPos.value);
+  return dockSide.value === "left" ? -half - left : screen.width - half - left;
+});
+
+/**
+ * 位置过渡：拖拽中必须无过渡才能跟手；
+ * transform 的过渡在非拖拽态常驻，否则退出半隐藏时会瞬移。
+ */
+const positionTransition = computed(() => {
+  if (isDragging.value) return undefined;
+
+  const parts = [`transform 0.3s ${ATTRACT_EASE}`];
+  if (attractTransition.value) {
+    parts.unshift(`top 0.3s ${ATTRACT_EASE}`, `left 0.3s ${ATTRACT_EASE}`);
+  }
+  return parts.join(", ");
+});
+
+function clearPeekRestoreTimer() {
+  if (!peekRestoreTimer) return;
+
+  clearTimeout(peekRestoreTimer);
+  peekRestoreTimer = null;
+}
+
+/**
+ * 退出半隐藏，回到正常停靠位置
+ */
+function restoreFromPeek() {
+  clearPeekRestoreTimer();
+  isPeeking.value = false;
+}
+
+/**
+ * 页面滚动：进入半隐藏，并在滚动停止后延时复位
+ */
+function handleScroll() {
+  if (!props.peekOnScroll || props.disabled || !inited.value || isDragging.value) return;
+  if (scrollFrame !== null) return;
+
+  scrollFrame = window.requestAnimationFrame(() => {
+    scrollFrame = null;
+
+    if (!isPeeking.value) {
+      isActive.value = false;
+      isPeeking.value = true;
+    }
+
+    clearPeekRestoreTimer();
+    peekRestoreTimer = setTimeout(restoreFromPeek, PEEK_RESTORE_DELAY);
+  });
+}
+
+watch(
+  () => props.peekOnScroll,
+  (val) => {
+    if (!val) restoreFromPeek();
+  },
+);
+
 // 按钮根元素样式计算：处理位置定位、层级以及拖拽/吸边时的过渡效果
 const rootStyle = computed<CSSProperties>(() => {
   const style: CSSProperties = {
     position: "fixed",
     zIndex: props.zIndex,
-    // 如果处于吸边动画中，应用平滑位移过渡
-    ...(attractTransition.value
-      ? {
-        transition:
-          "top 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), left 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)",
-      }
-      : {}),
-    // 拖拽时开启 will-change 提示浏览器进行硬件加速优化
-    ...(isDragging.value ? { willChange: "top, left" } : {}),
+    // 吸边位移与半隐藏位移共用一条过渡
+    ...(positionTransition.value ? { transition: positionTransition.value } : {}),
+    // 半隐藏位移（常驻输出，保证归零时也走过渡而非瞬移）
+    transform: `translateX(${peekTranslateX.value}px)`,
+    // 拖拽/半隐藏时提示浏览器进行硬件加速优化
+    ...(isDragging.value
+      ? { willChange: "top, left" }
+      : isPeeking.value
+        ? { willChange: "transform" }
+        : {}),
     ...props.customStyle,
   };
 
@@ -684,14 +853,24 @@ onMounted(() => {
   // 初始化时测量一次宽度，并校准位置
   nextTick(() => measureCapsuleWidth());
   updateBounding();
-  window.addEventListener("resize", updateBounding);
+  window.addEventListener("resize", handleResize);
+  // 移动端旋转：部分浏览器 orientationchange 比 resize 更早且更可靠
+  window.addEventListener("orientationchange", handleResize);
+  // capture 阶段监听：scroll 不冒泡，捕获才能覆盖内部滚动容器
+  window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
 });
 
 onUnmounted(() => {
   // 销毁监听器，防止内存泄漏
   if (capsuleRo) capsuleRo.disconnect();
   clearHoverCloseTimer();
-  window.removeEventListener("resize", updateBounding);
+  clearPeekRestoreTimer();
+  if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame);
+  if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
+  if (resizeSettleTimer) clearTimeout(resizeSettleTimer);
+  window.removeEventListener("resize", handleResize);
+  window.removeEventListener("orientationchange", handleResize);
+  window.removeEventListener("scroll", handleScroll, { capture: true });
   window.removeEventListener("pointermove", handlePointerMove);
   window.removeEventListener("pointerup", handlePointerUp);
   window.removeEventListener("pointercancel", handlePointerUp);
@@ -702,6 +881,7 @@ onUnmounted(() => {
 defineExpose({
   open: () => (isActive.value = true),
   close: () => (isActive.value = false),
+  restore: restoreFromPeek,
 });
 </script>
 
@@ -714,7 +894,7 @@ defineExpose({
         <div v-show="expandable" :class="uiClasses.capsuleActions()" :style="capsuleActionsStyle">
           <div ref="capsuleInnerRef" class="reborn-capsule-inner" :class="uiClasses.capsuleInner()">
             <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
-              :is-attracting="attractTransition" />
+              :is-attracting="attractTransition" :is-peeking="isPeeking" />
           </div>
         </div>
         <div v-show="isActive && divider" :class="uiClasses.divider()">
@@ -724,7 +904,7 @@ defineExpose({
         <div ref="triggerRef" class="pointer-events-auto w-max shrink-0" :class="[{ 'touch-none': draggable }]"
           @click.stop="handleClick" @pointerdown="handlePointerDown">
           <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
-            :is-dragging="isDragging" :is-attracting="attractTransition">
+            :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
             <div :class="uiClasses.trigger()">
               <Icon :name="isActive ? activeIcon : inactiveIcon" :class="uiClasses.icon()" />
             </div>
@@ -739,14 +919,14 @@ defineExpose({
       <div v-show="expandable || variant === 'circle'" ref="actionsRef" class="reborn-fab-actions-container"
         :class="[uiClasses.actions(), { 'is-active': isActive }]">
         <slot :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating" :is-dragging="isDragging"
-          :is-attracting="attractTransition" />
+          :is-attracting="attractTransition" :is-peeking="isPeeking" />
       </div>
 
       <!-- 主按钮触发区域 -->
       <div ref="triggerRef" class="pointer-events-auto w-max" :class="[{ 'touch-none': draggable }]"
         @click.stop="handleClick" @pointerdown="handlePointerDown">
         <slot name="trigger" :is-active="isActive" :is-expanded="isExpanded" :is-animating="isAnimating"
-          :is-dragging="isDragging" :is-attracting="attractTransition">
+          :is-dragging="isDragging" :is-attracting="attractTransition" :is-peeking="isPeeking">
           <div :class="uiClasses.trigger()">
             <Icon :name="isActive ? activeIcon : inactiveIcon" :class="uiClasses.icon()" />
           </div>

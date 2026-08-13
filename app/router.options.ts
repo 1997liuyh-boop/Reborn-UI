@@ -39,12 +39,17 @@ export default <RouterConfig>{
         // 等待正文渲染后再滚动（ContentRenderer / 标题 id 就绪）
         requestAnimationFrame(() => {
           setTimeout(() => {
-            const el = document.querySelector(to.hash);
+            // 中文标题的 hash 是百分号编码（#%E5%88...），不是合法 CSS 选择器，
+            // 必须解码后按 id 查找；直接 querySelector(to.hash) 会抛 SyntaxError
+            const rawId = to.hash.slice(1);
+            const el = document.getElementById(decodeURIComponent(rawId)) ?? document.getElementById(rawId);
             if (!el) {
               resolve({ top: 0 });
               return;
             }
-            resolve({ el: to.hash, top: offset, behavior: "smooth" });
+            // 减弱动效环境下 smooth 会被静默丢弃，回退为即时滚动
+            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            resolve({ el, top: offset, behavior: prefersReducedMotion ? "auto" : "smooth" });
           }, 0);
         });
       });

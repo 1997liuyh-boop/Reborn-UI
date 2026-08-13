@@ -6,7 +6,10 @@ export { sizes as selectDateSizes, colors as selectDateColors };
 export default {
     slots: {
         wrapper: "",
-        dropdown: "",
+        // 与触发器同宽。不能用 w-full：浮层传送到 body 后是 fixed 定位，
+        // 百分比宽度会以视口为参照而非触发器。变量由 RebornSelectTrigger 下发，
+        // 回退值 100% 让关闭 portal 时退化为原来的 w-full 行为。
+        dropdown: "w-[var(--rb-trigger-width,100%)]",
         content: "w-full",
         calHeader: "flex items-center justify-between mb-2",
         calNavBtn: "p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3",

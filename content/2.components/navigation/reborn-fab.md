@@ -33,6 +33,8 @@ navigation:
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 主题颜色。 | 通用 |
 | `disabled` | `boolean` | `false` | 是否禁用。 | 通用 |
 | `draggable` | `boolean` | `false` | 是否可拖拽。拖拽结束后如果靠左侧会自动吸附到左边并向右展开，同理右侧吸附。 | 通用 |
+| `attract` | `boolean` | `true` | 拖拽结束后是否自动吸附到最近的屏幕侧边。 | 通用 |
+| `peekOnScroll` | `boolean` | `false` | 页面滚动时是否自动贴紧最近的屏幕侧边并只露出一半（滚动停止约 1s 后复位；点击、按下或悬停也会立即复位）。与 `attract` 相互独立。 | Web |
 | `expandable` | `boolean` | `false` | 是否可展开显示动作面板。如果为 false 将直接触发 click。 | 通用 |
 | `gap` | `{ top?: number; left?: number; right?: number; bottom?: number }` | `{ top: 32, left: 32, right: 32, bottom: 32 }` | 限制拖拽边界与快捷定位计算偏移值的间距计算。 | 通用 |
 | `inactiveIcon` | `string` | `'lucide:plus'` | 非激活状态图标（Web 版默认依赖 nuxt-icon）。 | 通用 |
@@ -52,8 +54,16 @@ navigation:
 
 | 名称 | 参数 | 描述 |
 | --- | --- | --- |
-| `default` | `{ isActive: boolean }` | 动作面板内容。可通过解构获取展开状态。 |
-| `trigger` | - | 自定义主触发按钮的渲染内容。 |
+| `default` | `{ isActive, isExpanded, isAnimating, isDragging, isAttracting, isPeeking }` | 动作面板内容。可解构获取展开与位移状态。 |
+| `trigger` | `{ isActive, isExpanded, isAnimating, isDragging, isAttracting, isPeeking }` | 自定义主触发按钮的渲染内容。 |
+
+## Expose
+
+| 方法 | 描述 | 平台 |
+| --- | --- | --- |
+| `open()` | 展开动作面板。 | 通用 |
+| `close()` | 收起动作面板。 | 通用 |
+| `restore()` | 从 `peekOnScroll` 的半隐藏状态立即复位。 | Web |
 
 ## UI
 

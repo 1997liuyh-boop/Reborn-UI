@@ -94,6 +94,15 @@
   --ui-container: min(100rem, 100%);
 }
 
+/*
+ * 后台管理式全宽外壳：docs 布局的非 root 页面在 body 上挂此类，
+ * 页内所有 UContainer / UHeader（含 AppHeader、AppHeaderNav）随变量一起放开到全宽，
+ * 头部与正文天然保持对齐；root 落地页不挂此类，维持 100rem 居中版式。
+ */
+body.layout-admin-shell {
+  --ui-container: 100%;
+}
+
 /* 常用工具类 (Utilities) */
 @utility scrollbar-hide {
   scrollbar-width: none;

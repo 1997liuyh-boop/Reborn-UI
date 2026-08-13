@@ -29,6 +29,16 @@ const config = {
             'rounded-lg px-2 py-1.5 text-[13px] leading-snug text-gray-500 transition-colors hover:bg-gray-100/80 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
     },
     variants: {
+        /**
+         * 右栏避让：文档页存在移动端 demo 面板（2xl+ fixed 贴视口右缘、宽 420px）时，
+         * 刻度条左移到正文列与面板之间的分缝处，避免压在手机模拟器上。
+         * 偏移量 = 面板宽 420px + 分缝间隙 12px = 27rem（面板 fixed 后与容器宽度无关）。
+         */
+        inset: {
+            true: {
+                root: '2xl:right-[27rem]',
+            },
+        },
         /** 刻度线 / 链接的激活态：跟随滚动位置高亮当前章节 */
         active: {
             true: {

@@ -68,9 +68,12 @@ function scrollToHash(hash: string) {
   const offset = getAnchorScrollOffset();
   const top = target.getBoundingClientRect().top + window.scrollY - offset;
 
+  // 减弱动效环境下 smooth 会被静默丢弃（点击后完全不滚动），必须回退为即时滚动
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   window.scrollTo({
     top,
-    behavior: "smooth",
+    behavior: prefersReducedMotion ? "auto" : "smooth",
   });
 }
 

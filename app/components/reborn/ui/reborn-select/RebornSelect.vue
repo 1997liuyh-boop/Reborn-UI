@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import theme, { selectColors, selectSizes } from "./reborn-select.config";
@@ -53,6 +53,17 @@ export interface SelectProps {
   showArrow?: boolean;
   /** 展开时箭头是否旋转 */
   arrowAnimation?: boolean;
+  /**
+   * 关闭下拉的时机（透传给 RebornSelectTrigger）：
+   * - 'click'：在触发器外完成一次点击后才收起（默认）
+   * - 'mousedown'：在触发器外发生任意按下类鼠标事件立即收起
+   */
+  closeOn?: SelectTriggerProps["closeOn"];
+  /**
+   * 浮层是否传送到 body（默认 true）。
+   * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
+   */
+  portal?: SelectTriggerProps["portal"];
   /** 触发器 UI 配置 */
   triggerUi?: SelectTriggerProps["ui"];
   /** 下拉列表内部组件的 UI 微调配置 */
@@ -80,6 +91,8 @@ const props = withDefaults(defineProps<SelectProps>(), {
   bordered: true,
   showArrow: true,
   arrowAnimation: true,
+  closeOn: "click",
+  portal: true,
 });
 
 /**
@@ -103,8 +116,6 @@ const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
 
 /** 下拉框是否展开 */
 const isOpen = ref(false);
-/** 触发器组件引用 */
-const triggerRef = ref<any>(null);
 /** 当前高亮（焦点）选项的索引 */
 const highlightIndex = ref(-1);
 /** 选项列表滚动容器 */
@@ -157,6 +168,12 @@ const isSelected = (value: any) => {
   return value === props.modelValue;
 };
 
+const showClearButton = computed(() => {
+  const isEmpty = props.modelValue === null || props.modelValue === undefined || props.modelValue === "";
+  return props.clearable && (props.multiple ? props.modelValue?.length > 0 : !isEmpty);
+});
+
+
 /**
  * 获取当前已选中的选项对象列表
  */
@@ -193,23 +210,15 @@ function getAnchorIndex() {
  * 切换下拉列表的展开与收起
  */
 function toggle() {
-  if (props.disabled) return;
+  if (isDisabled.value) return;
   const opening = !isOpen.value;
-  if (opening) {
-    dropdownReady.value = false;
-    highlightIndex.value = getAnchorIndex();
-  } else {
-    dropdownReady.value = false;
-  }
-  isOpen.value = !isOpen.value;
+  dropdownReady.value = false;
+  if (opening) highlightIndex.value = getAnchorIndex();
+  isOpen.value = opening;
 }
 
-/** enter 后列表已可见，即可响应鼠标高亮 */
+/** 展开动画一开始列表就已可见，此后才允许鼠标接管高亮，避免展开瞬间指针位置抢走锚点 */
 function onDropdownEnter() {
-  dropdownReady.value = true;
-}
-
-function onDropdownAfterEnter() {
   dropdownReady.value = true;
 }
 
@@ -265,14 +274,12 @@ function clear(e: Event) {
 }
 
 /**
- * 点击外部时关闭下拉列表
+ * 触发器外部事件（由 RebornSelectTrigger 按 closeOn 时机上报）关闭下拉列表
  */
-function onClickOutside(e: MouseEvent) {
-  if (triggerRef.value?.$el && !triggerRef.value.$el.contains(e.target as Node)) {
-    if (isOpen.value) {
-      isOpen.value = false;
-      validate("blur");
-    }
+function onOutsideClose() {
+  if (isOpen.value) {
+    isOpen.value = false;
+    validate("blur");
   }
 }
 
@@ -333,94 +340,41 @@ function scrollToActive(instant = false) {
   }
 }
 
-onMounted(() => document.addEventListener("click", onClickOutside));
-onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 </script>
 
 <template>
-  <RebornSelectTrigger
-    ref="triggerRef"
-    :class="props.class"
-    :display-text="displayText"
-    :placeholder="placeholder"
-    :is-open="isOpen"
-    :disabled="isDisabled"
-    :size="fieldGroupSize || size"
-    :color="color"
-    :clearable="clearable && (multiple ? modelValue?.length > 0 : modelValue != null)"
-    :ui="triggerUi"
-    :bordered="bordered"
-    :show-arrow="showArrow"
-    :arrow-animation="arrowAnimation"
-    :scroll-to-active="scrollToActive"
-    :error="isError"
-    @toggle="toggle"
-    @clear="clear"
-    @keydown="onKeydown"
-    @enter="onDropdownEnter"
-    @after-enter="onDropdownAfterEnter"
-  >
-    <template
-      #cover="{ displayText, placeholder, isOpen, ui: triggerUi }"
-      v-if="$slots.cover"
-    >
-      <slot
-        name="cover"
-        :displayText="displayText"
-        :placeholder="placeholder"
-        :isOpen="isOpen"
-        :ui="triggerUi"
-      />
+  <RebornSelectTrigger :class="props.class" :display-text="displayText" :placeholder="placeholder"
+    :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size" :color="color" :clearable="showClearButton"
+    :ui="triggerUi" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation"
+    :scroll-to-active="scrollToActive" :error="isError" :close-on="closeOn" :portal="portal" @toggle="toggle"
+    @clear="clear" @keydown="onKeydown" @enter="onDropdownEnter" @close="onOutsideClose">
+    <template #cover="{ displayText, placeholder, isOpen, ui: triggerUi }" v-if="$slots.cover">
+      <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi" />
     </template>
 
     <template #default="{ displayText, placeholder, isOpen, ui: triggerUi }">
-      <slot
-        :displayText="displayText"
-        :placeholder="placeholder"
-        :isOpen="isOpen"
-        :ui="triggerUi"
-      >
+      <slot :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi">
         <span :class="triggerUi.triggerText()">{{ displayText }}</span>
       </slot>
     </template>
 
     <template #content>
-      <div
-        ref="listRef"
-        :class="ui.dropdown()"
-      >
-        <div
-          v-for="(option, index) in options"
-          :key="index"
-          :class="[
-            ui.option(),
-            isSelected(option.value) ? ui.optionActive() : '',
-            highlightIndex === index ? ui.optionHighlight() : '',
-          ]"
-          :data-disabled="option.disabled ? 'true' : 'false'"
-          @click="selectOption(option)"
-          @mouseenter="onOptionMouseEnter(index)"
-        >
-          <slot
-            name="option"
-            :option="option"
-            :active="isSelected(option.value)"
-          >
+      <div ref="listRef" :class="ui.dropdown()">
+        <div v-for="(option, index) in options" :key="index" :class="[
+          ui.option(),
+          isSelected(option.value) ? ui.optionActive() : '',
+          highlightIndex === index ? ui.optionHighlight() : '',
+        ]" :data-disabled="option.disabled ? 'true' : 'false'" @click="selectOption(option)"
+          @mouseenter="onOptionMouseEnter(index)">
+          <slot name="option" :option="option" :active="isSelected(option.value)">
             <div :class="ui.optionContent()">
               <span :class="ui.optionLabel()">{{ option.label }}</span>
-              <Icon
-                v-if="multiple && isSelected(option.value)"
-                name="lucide:check"
-                :class="ui.optionActiveIcon()"
-              />
+              <Icon v-if="multiple && isSelected(option.value)" name="lucide:check" :class="ui.optionActiveIcon()" />
             </div>
           </slot>
         </div>
 
-        <div
-          v-if="options.length === 0"
-          :class="ui.empty()"
-        >
+        <div v-if="options.length === 0" :class="ui.empty()">
           暂无数据
         </div>
       </div>

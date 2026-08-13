@@ -27,6 +27,7 @@ navigation:
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 下拉菜单尺寸规格 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 下拉菜单主题颜色 |
 | `placement` | `'bottom-start' \| 'bottom' \| 'bottom-end' \| 'top-start' \| 'top' \| 'top-end'` | `'bottom-start'` | 下拉面板的弹出位置 |
+| `portal` | `boolean` | `true` | 浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪 |
 | `ui` | `Partial<{...}>` | `{}` | UI 局部重写配置，详见下方 UI 对象说明 |
 
 ## Dropdown Events

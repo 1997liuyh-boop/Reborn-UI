@@ -3,7 +3,7 @@
  * RebornCascader 级联选择器
  * 用于多层级的数据选择，如省市区、分类层级等。
  */
-import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
+import { ref, computed, watch, onBeforeUnmount } from "vue";
 import type { ClassValue } from "clsx";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
@@ -69,6 +69,11 @@ export interface CascaderProps {
   showTrigger?: boolean;
   /** 自定义类名 */
   class?: any;
+  /**
+   * 浮层是否传送到 body（默认 true）。
+   * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
+   */
+  portal?: SelectTriggerProps["portal"];
   /** 触发器 UI 配置 */
   triggerUi?: SelectTriggerProps["ui"];
   /** 级联选择器内部组件的 UI 微调配置 */
@@ -97,6 +102,7 @@ const props = withDefaults(defineProps<CascaderProps>(), {
   bordered: true,
   showArrow: true,
   arrowAnimation: true,
+  portal: true,
   labelKey: "label",
   valueKey: "value",
   childrenKey: "children",
@@ -120,8 +126,6 @@ const modelValue = defineModel<any[]>({ default: () => [] });
 
 /** 下拉是否展开 */
 const isOpen = ref(false);
-/** 触发器组件引用 */
-const triggerRef = ref<any>(null);
 /** 当前 hover 的路径 */
 const activePath = ref<CascaderOption[]>([]);
 /** 已选中的路径 */
@@ -322,13 +326,14 @@ function onPanelMouseLeave() {
 }
 
 /**
- * 外部点击关闭
+ * 收起面板。外部点击的判定归 RebornSelectTrigger：
+ * 级联面板已随浮层传送到 body，本组件根节点不再包含它，
+ * 自己判 $el.contains 会把「点击某一级选项」误判成外部点击、导致选到一半就收起。
  */
-function onClickOutside(event: MouseEvent) {
-  if (triggerRef.value?.$el && !triggerRef.value.$el.contains(event.target as Node)) {
-    isOpen.value = false;
-    activePath.value = [];
-  }
+function onOutsideClose() {
+  if (!isOpen.value) return;
+  isOpen.value = false;
+  activePath.value = [];
 }
 
 /**
@@ -391,9 +396,7 @@ watch(
   { deep: true },
 );
 
-onMounted(() => document.addEventListener("click", onClickOutside));
 onBeforeUnmount(() => {
-  document.removeEventListener("click", onClickOutside);
   hoverTimers.value.forEach((timer) => clearTimeout(timer));
   hoverTimers.value.clear();
 });
@@ -402,9 +405,10 @@ defineExpose({ open, close, clear });
 </script>
 
 <template>
-  <RebornSelectTrigger v-if="showTrigger" ref="triggerRef" :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
+  <RebornSelectTrigger v-if="showTrigger" :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
     :disabled="disabled" :clearable="clearable && hasValue" :size="size" :color="color" :bordered="bordered"
-    :show-arrow="showArrow" :arrow-animation="arrowAnimation" :ui="triggerUi" @toggle="toggle" @clear="clear">
+    :show-arrow="showArrow" :arrow-animation="arrowAnimation" :ui="triggerUi" :portal="portal" @toggle="toggle" @clear="clear"
+    @close="onOutsideClose">
     <template #default>
       <slot :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue" :displayText="displayText">
         <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
