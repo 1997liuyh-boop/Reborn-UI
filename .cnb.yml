@@ -7,15 +7,16 @@ main:
       runner:
         tags: cnb:arch:default
       env:
-        # 服务器连接配置
-        SERVER_IP: "110.42.242.107"
-        SERVER_USER: "root"
-        DEPLOY_PATH: "/www/wwwroot/re-ui"
-        # SSH私钥（从密钥仓库导入）
+        # 服务器连接配置与 SSH 私钥全部来自 CNB 私有密钥仓库（见 imports），
+        # 严禁在本文件或本仓库任何被跟踪文件中写明文密钥/IP/账号
+        SERVER_IP: $DEPLOY_SERVER_IP
+        SERVER_USER: $DEPLOY_SERVER_USER
+        DEPLOY_PATH: $DEPLOY_TARGET_PATH
         SSH_PRIVATE_KEY: $DEPLOY_SSH_PRIVATE_KEY
       imports:
-        # 引用密钥配置文件
-        - .cnb/secrets/deploy.yml
+        # 私有密钥仓库：需在 CNB 上创建（建议名 secrets，仅授权本仓库 CI 读取），
+        # 文件内容模板见本地 .cnb/secrets/deploy.yml（该文件已不入库）
+        - https://cnb.cool/isLiuyinghao/secrets/-/blob/main/reborn-ui-deploy.yml
       stages:
         # 第一阶段：构建Nuxt.js应用
         - name: "build-stage"

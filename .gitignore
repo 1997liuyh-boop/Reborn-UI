@@ -47,7 +47,6 @@ public/r
 .cnb/temp/
 .cnb/cache/
 .cnb/logs/
-.cnb.yml
 
 # 忽略可能的本地CNB配置文件（如果有）
 .cnb/local.yml
@@ -57,10 +56,8 @@ public/r
 .cnb/.temp/
 .cnb/.cache/
 
-# 注意：以下文件应该保留在仓库中，不要忽略！
-# !.cnb.yml           # 主配置文件（已在上面列出，但这里澄清）
-# !.cnb/README.md     # 如果有说明文档
-# !.cnb/LICENSE       # 如果有许可证文件
+# 注意：.cnb.yml 为 CI 主配置文件，保留在仓库中（不忽略）；
+# 敏感变量一律放入 CNB 私有密钥仓库，通过 imports 引用，严禁写入本仓库任何被跟踪的文件
 
 # ================================
 # 本地工具产物（不提交）
