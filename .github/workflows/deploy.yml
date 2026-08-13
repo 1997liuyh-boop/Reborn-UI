@@ -1,0 +1,61 @@
+# GitHub Actions 自动部署配置
+# 功能：push 到 main 分支时自动构建 Nuxt 应用并部署到腾讯云服务器
+# 与 .cnb.yml 的 CNB 流水线保持同构；敏感信息全部来自仓库的 Actions Secrets：
+#   DEPLOY_SERVER_IP / DEPLOY_SERVER_USER / DEPLOY_TARGET_PATH / DEPLOY_SSH_PRIVATE_KEY
+#   （配置入口：GitHub 仓库 Settings → Secrets and variables → Actions → New repository secret）
+name: deploy-to-tencent-cloud
+
+on:
+  push:
+    branches: [main]
+  # 允许在 Actions 页面手动触发一次部署
+  workflow_dispatch:
+
+# 同一时间只跑一次部署，新的 push 会取消进行中的旧部署
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 构建应用
+        run: |
+          corepack enable
+          pnpm install --no-frozen-lockfile
+          pnpm run build
+
+      - name: 部署到腾讯云服务器
+        env:
+          SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
+          SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_TARGET_PATH }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        run: |
+          # 配置 SSH 连接（私钥仅存在于本次运行的临时环境中）
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
+
+          # 同步构建产物到服务器
+          rsync -avz --delete .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
+
+          # 重启应用服务（与 CNB 流水线一致）
+          ssh "$SERVER_USER@$SERVER_IP" "
+            cd $DEPLOY_PATH &&
+            export PATH=\$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin &&
+            pm2 delete re-ui 2>/dev/null || true &&
+            pm2 start server/index.mjs --name re-ui || npx pm2 start server/index.mjs --name re-ui
+          "
+
+          echo "🎉 GitHub Actions 自动部署完成！"
