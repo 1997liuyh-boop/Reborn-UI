@@ -59,12 +59,13 @@ jobs:
           # 同步构建产物到服务器
           rsync -avz --delete .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
 
-          # 重启应用服务（与 CNB 流水线一致）
+          # 重启宝塔面板托管的 index 进程——nginx 将站点反代到它监听的 3000 端口。
+          # 严禁再启动第二个进程（如旧方案的 re-ui）：会与 index 抢 3000 端口（EADDRINUSE），
+          # 造成"部署成功但线上仍是旧代码"的假象，只能靠手动在宝塔重启才生效
           ssh "$SERVER_USER@$SERVER_IP" "
             cd $DEPLOY_PATH &&
             export PATH=\$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin &&
-            pm2 delete re-ui 2>/dev/null || true &&
-            pm2 start server/index.mjs --name re-ui || npx pm2 start server/index.mjs --name re-ui
+            pm2 restart index || pm2 start server/index.mjs --name index || npx pm2 start server/index.mjs --name index
           "
 
           echo "🎉 GitHub Actions 自动部署完成！"
