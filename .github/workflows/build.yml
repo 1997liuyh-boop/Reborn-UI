@@ -1,9 +1,9 @@
 name: Build and Package
 
+# main 分支的构建与部署由 deploy.yml 负责，此流水线仅为 feature 分支打包产物，避免重复构建
 on:
   push:
     branches:
-      - main
       - "feature/**"
       - "feature-*"
 
@@ -28,6 +28,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        # 构建模块量大，默认 4GB 堆上限会 OOM，与 deploy.yml 保持一致
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: pnpm run build
 
       - name: Package build output

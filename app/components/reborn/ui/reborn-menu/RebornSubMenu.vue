@@ -302,7 +302,7 @@ useEventListener(window, "scroll", (e) => {
           <slot name="title">{{ index }}</slot>
         </div>
         <div v-if="!isRootHorizontal" :class="subMenuUi.menuItemArrow({ opened: isOpened })">
-          <img src="~/assets/images/icon/right.png" class="size-4" />
+          <Icon name="lucide:chevron-right" class="size-4" />
         </div>
       </div>
     </div>

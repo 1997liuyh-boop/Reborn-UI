@@ -14,9 +14,8 @@ const b = tv(theme);
 import type { ClassValue } from "clsx";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { CSSProperties } from "vue";
-import { useEventListener, useIntersectionObserver } from "@vueuse/core";
+import { useBreakpoints, useEventListener, useIntersectionObserver } from "@vueuse/core";
 import { cn } from "@/lib/utils";
-import { useAppBreakpoints } from "~/composables/useAppUtils";
 
 export interface ImageProps {
 	customClass?: ClassValue;
@@ -66,7 +65,9 @@ const props = withDefaults(defineProps<ImageProps>(), {
 // 事件定义
 const emit = defineEmits(["load", "error"]);
 
-const { widescreenUp } = useAppBreakpoints();
+// 宽屏判定：视口 ≥1024px 才启用放大镜（SSR 期为 false，挂载后按实际视口计算）
+const breakpoints = useBreakpoints({ widescreen: 1024 });
+const widescreenUp = breakpoints.greaterOrEqual("widescreen");
 const isMagnifierActive = computed(() => props.magnifier && widescreenUp.value);
 
 const uiOverrides = computed(() => props.ui || {});
@@ -632,9 +633,7 @@ function onMouseLeave() {
 
 		<div v-if="isError" :class="ui.error()">
 			<slot name="error">
-				<div :class="ui.errorIcon()">
-					<img src="~/assets/images/error.png" />
-				</div>
+				<div :class="ui.errorIcon()"></div>
 			</slot>
 		</div>
 
