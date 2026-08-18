@@ -1,57 +1,81 @@
-export interface DependencyInfo {
-    components?: string[];
-    npmDependencies?: string[];
+import type { RegistryComponent } from "../types.js";
+import { extractNpmDependenciesFromText } from "./imports.js";
+
+export interface ResolvedDependencies {
+    components: string[]; // 需要一并安装的前置组件（按发现顺序）
+    npmDependencies: string[]; // 需要安装的 npm 依赖
 }
 
-export const DEPENDENCY_MAP: Record<string, DependencyInfo> = {
-    // UniApp 版本的 Reborn Select 需要特定的前置组件和 lodash-es
-    "reborn-select/uniapp": {
-        components: ["reborn-button", "reborn-picker-view", "reborn-popup", "reborn-select-trigger"],
-        npmDependencies: ["lodash-es", "@types/lodash-es"],
-    },
-    "reborn-select-date/uniapp": {
-        components: ["reborn-button", "reborn-picker-view", "reborn-popup", "reborn-select-trigger"],
-        npmDependencies: ["lodash-es", "@types/lodash-es"],
-    },
-    // 在此处添加其他已知的依赖映射
+// 无法从 import 语句推断的补充依赖（如运行时包对应的类型包）
+const EXTRA_NPM_DEPS: Record<string, string[]> = {
+    "lodash-es": ["@types/lodash-es"],
 };
 
+// 匹配组件间引用，两种写法：
+// 1. 别名形式：@/components/<组件名>/...
+// 2. 相对形式：../<组件名>/...（组件目录互为兄弟目录）
+const COMPONENT_IMPORT_RE = /["'](?:@\/components|\.\.)\/([a-zA-Z0-9-]+)\//g;
+
 /**
- * 递归解析组件和 npm 依赖
- * @param componentName 例如 "reborn-select/web" 或 "reborn-select/uniapp"
- * @param platform 例如 "web" | "uniapp"
+ * 取出组件在指定平台下会被安装的文件
+ * 规则与 add 的写盘过滤一致：无 target 视为通用文件，两个平台都算
  */
-export function getDependencies(componentName: string, platform?: "web" | "uniapp"): DependencyInfo {
-    const result: DependencyInfo = { components: [], npmDependencies: [] };
-    const visited = new Set<string>();
+function filesForPlatform(component: RegistryComponent, platform: "web" | "uniapp") {
+    return component.files.filter((f) => !f.target || f.target === platform);
+}
 
-    function resolve(name: string) {
-        const keyWithPlatform = platform ? `${name}/${platform}` : name;
+/**
+ * 基于 registry 内容解析依赖（替代旧的手写映射表）
+ * - 组件依赖：扫描平台内文件的 `@/components/xxx` 引用，递归收集
+ * - npm 依赖：对平台内文件重新抽取 import，避免 registry 里 web/uniapp 依赖混在一起
+ */
+export function resolveDependencies(params: {
+    registryComponents: RegistryComponent[];
+    targets: string[];
+    platform: "web" | "uniapp";
+}): ResolvedDependencies {
+    const { registryComponents, targets, platform } = params;
+    const byName = new Map(registryComponents.map((c) => [c.name, c]));
 
-        // 首先检查是否存在特定平台的映射
-        const deps = DEPENDENCY_MAP[keyWithPlatform] || DEPENDENCY_MAP[name];
-        if (!deps) return;
+    const visited = new Set<string>(targets);
+    const components: string[] = [];
+    const npmDeps = new Set<string>();
 
-        if (deps.components) {
-            for (const comp of deps.components) {
-                if (!visited.has(comp)) {
-                    visited.add(comp);
-                    result.components!.push(comp);
-                    resolve(comp); // 递归解析依赖
+    const queue = [...targets];
+    while (queue.length > 0) {
+        const name = queue.shift()!;
+        const component = byName.get(name);
+        if (!component) continue; // 不存在的组件由 add 的主流程报错，这里跳过
+
+        for (const f of filesForPlatform(component, platform)) {
+            const ext = f.path.slice(f.path.lastIndexOf(".")).toLowerCase();
+            if (![".ts", ".js", ".vue"].includes(ext)) continue;
+
+            // 组件间引用 → 前置组件
+            for (const match of f.content.matchAll(COMPONENT_IMPORT_RE)) {
+                const dep = match[1];
+                if (!dep || dep === name || !byName.has(dep)) continue;
+                if (!visited.has(dep)) {
+                    visited.add(dep);
+                    components.push(dep);
+                    queue.push(dep); // 递归解析前置组件自身的依赖
                 }
             }
-        }
 
-        if (deps.npmDependencies) {
-            for (const npmDep of deps.npmDependencies) {
-                if (!result.npmDependencies!.includes(npmDep)) {
-                    result.npmDependencies!.push(npmDep);
-                }
+            // npm 依赖（按平台文件重新抽取，比 registry 的全平台并集更精确）
+            for (const dep of extractNpmDependenciesFromText(f.content)) {
+                npmDeps.add(dep);
             }
         }
     }
 
-    resolve(componentName);
+    // 补充类型包等无法从 import 推断的依赖（先快照，避免边遍历边插入）
+    const snapshot = Array.from(npmDeps);
+    for (const dep of snapshot) {
+        for (const extra of EXTRA_NPM_DEPS[dep] ?? []) {
+            npmDeps.add(extra);
+        }
+    }
 
-    return result;
+    return { components, npmDependencies: [...npmDeps].sort() };
 }

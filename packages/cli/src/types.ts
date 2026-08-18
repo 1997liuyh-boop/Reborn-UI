@@ -7,6 +7,7 @@ export interface CliConfig {
   composablesDir: string; // composables 目录
   registry: string;
   aliasSymbol?: string;
+  platform?: "web" | "uniapp"; // init 时选择的默认目标平台
 }
 
 export interface RegistryFile {

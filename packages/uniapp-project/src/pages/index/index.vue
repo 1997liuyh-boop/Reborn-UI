@@ -47,7 +47,6 @@ const menuItems = [
   {
     label: '布局组件',
     children: [
-      { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/tabs/index' },
       { label: '标签页', icon: 'i-lucide-gallery-horizontal-end', path: '/pages/reborn-tabs/index' },
       { label: '折叠', icon: 'i-lucide-chevrons-down-up', path: '/pages/reborn-collapse/RebornCollapseDemo' },
       { label: '图钉', icon: 'i-lucide-pin', path: '/pages/reborn-affix/RebornAffixDemo' },

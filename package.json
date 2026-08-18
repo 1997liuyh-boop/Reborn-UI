@@ -12,7 +12,8 @@
     "format": "prettier . --check",
     "format:fix": "prettier . --write",
     "lint": "oxlint . && eslint .",
-    "lint:fix": "oxlint . --fix && eslint . --fix"
+    "lint:fix": "oxlint . --fix && eslint . --fix",
+    "registry:build": "pnpm --filter ./packages/cli run registry:build"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",

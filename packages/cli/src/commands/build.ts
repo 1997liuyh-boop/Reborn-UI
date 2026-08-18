@@ -212,6 +212,9 @@ export function buildCommand() {
         );
         await writeJsonFile(targetRegistryPath, registry);
 
+        // 先清空 components 目录再重建，避免已删除组件的 JSON 残留成孤儿
+        await fs.rm(outComponentsDir, { recursive: true, force: true });
+
         // 额外输出每个组件的 json，方便调试/按需读取
         await fs.mkdir(outComponentsDir, { recursive: true });
         for (const c of components) {

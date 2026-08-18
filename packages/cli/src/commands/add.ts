@@ -9,7 +9,7 @@ import {
   getMissingDeps,
   installDeps,
 } from "../utils/pm.js";
-import { getDependencies } from "../utils/dependencies.js";
+import { resolveDependencies } from "../utils/dependencies.js";
 import { defaultConfig, loadConfigCompat, loadRegistry } from "../utils/registry.js";
 import cliProgress from "cli-progress";
 import chalk from "chalk";
@@ -133,21 +133,15 @@ export function addCommand() {
         throw new Error("已取消");
       }
 
-      const allComponentsToInstall = new Set<string>(targets);
-      const allNpmDependencies = new Set<string>();
+      // 基于 registry 内容解析前置组件与 npm 依赖（替代旧的手写映射表）
+      const deps = resolveDependencies({
+        registryComponents: registry.components,
+        targets,
+        platform: platform as "web" | "uniapp",
+      });
 
-      for (const target of targets) {
-        const deps = getDependencies(target, platform as "web" | "uniapp");
-        if (deps.components) {
-          for (const c of deps.components) allComponentsToInstall.add(c);
-        }
-        if (deps.npmDependencies) {
-          for (const d of deps.npmDependencies) allNpmDependencies.add(d);
-        }
-      }
-
-      const additionalComponents = Array.from(allComponentsToInstall).filter(c => !targets.includes(c));
-      const npmDependenciesArray = Array.from(allNpmDependencies);
+      const additionalComponents = deps.components.filter(c => !targets.includes(c));
+      const npmDependenciesArray = deps.npmDependencies;
 
       // Prompt for NPM dependencies
       if (npmDependenciesArray.length > 0) {

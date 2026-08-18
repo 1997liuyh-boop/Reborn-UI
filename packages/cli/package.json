@@ -28,7 +28,7 @@
     "prepare": "tsup",
     "publish:version": "tsx src/scripts/prepare-publish-version.ts",
     "templates:sync": "tsx src/scripts/sync-templates.ts",
-    "registry:build": "tsx src/index.ts build --root ../.. --uniapp-source packages/uniapp-project/src/components",
+    "registry:build": "tsx src/index.ts build --root ../.. --uniapp-source packages/uniapp-project/src/components --also-out packages/module/registry/registry.json",
     "prepack": "npm run templates:sync && npm run build && npm run registry:build",
     "prepublishOnly": "npm run publish:version && npm run templates:sync && npm run build && npm run registry:build"
   },
