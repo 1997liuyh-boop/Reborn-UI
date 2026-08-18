@@ -1,0 +1,91 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "container-scroll",
+  "title": "容器滚动",
+  "description": "根据滚动进度变换内部内容的滚动效果，包含缩放与旋转的平滑过渡。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "rotate",
+      "type": "number",
+      "default": "0",
+      "required": false,
+      "description": "控制滚动时内层内容的旋转。"
+    },
+    {
+      "name": "scale",
+      "type": "number",
+      "default": "1",
+      "required": false,
+      "description": "控制滚动时内容的缩放。"
+    },
+    {
+      "name": "translate",
+      "type": "number",
+      "default": "0",
+      "required": false,
+      "description": "控制标题的垂直位移。"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "title",
+      "description": ""
+    },
+    {
+      "name": "card",
+      "description": ""
+    },
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex flex-col overflow-hidden\">\r\n    <ContainerScroll>\r\n      <template #title>\r\n        <h1 class=\"text-4xl font-semibold text-black dark:text-white\">\r\n          Unleash the power of <br />\r\n          <span class=\"mt-1 text-4xl leading-none font-bold md:text-[6rem]\">\r\n            Scroll Animations\r\n          </span>\r\n        </h1>\r\n      </template>\r\n      <template #card>\r\n        <img src=\"https://cdn.reborn-ui.com/images/linear.webp\"\r\n          class=\"mx-auto h-full rounded-2xl object-cover object-left-top\" alt=\"hero\" height=\"720\" width=\"1400\" />\r\n      </template>\r\n    </ContainerScroll>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add container-scroll"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/container-scroll/ContainerScroll.vue",
+      "app/components/reborn/ui/container-scroll/ContainerScrollCard.vue",
+      "app/components/reborn/ui/container-scroll/ContainerScrollTitle.vue",
+      "app/components/reborn/ui/container-scroll/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/container-scroll.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e72c2f3ca997e8ba112ea8519655c10820c5c6a7",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

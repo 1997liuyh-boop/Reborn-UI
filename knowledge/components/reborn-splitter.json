@@ -1,0 +1,171 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-splitter",
+  "title": "分隔面板 Splitter",
+  "description": "可将区域水平或垂直分隔，并可自由拖动以调整各个区域的大小。",
+  "category": "layout",
+  "tags": [
+    "css",
+    "tailwind",
+    "splitter",
+    "layout"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "layout",
+      "type": "'horizontal' | 'vertical'",
+      "required": false,
+      "description": "分隔面板的布局方向。可选值: `horizontal`, `vertical`。",
+      "default": "'horizontal'",
+      "options": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    {
+      "name": "lazy",
+      "type": "boolean",
+      "required": false,
+      "description": "是否使用懒加载（拖动结束后才更新面板大小）。",
+      "default": "false"
+    },
+    {
+      "name": "class",
+      "type": "ClassValue",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\n    root: ClassValue\n    panel: ClassValue\n    bar: ClassValue\n    collapseButton: ClassValue\n  }>",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "size",
+      "type": "string | number",
+      "required": false,
+      "description": "-",
+      "default": "number"
+    },
+    {
+      "name": "min",
+      "type": "string | number",
+      "required": false,
+      "description": "-",
+      "default": "number"
+    },
+    {
+      "name": "max",
+      "type": "string | number",
+      "required": false,
+      "description": "-",
+      "default": "number"
+    },
+    {
+      "name": "resizable",
+      "type": "boolean",
+      "required": false,
+      "description": "是否可以调整面板大小。",
+      "default": "true"
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean",
+      "required": false,
+      "description": "面板是否可折叠。",
+      "default": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "resize-start",
+      "payload": "(e: 'resize-start', index: number): void",
+      "description": "开始调整面板大小时触发，index 是拖拽条的索引。"
+    },
+    {
+      "name": "resize",
+      "payload": "(e: 'resize', index: number): void",
+      "description": "调整面板大小时触发，index 是拖拽条的索引。"
+    },
+    {
+      "name": "resize-end",
+      "payload": "(e: 'resize-end', index: number): void",
+      "description": "面板调整大小结束时触发，index 是拖拽条的索引。"
+    },
+    {
+      "name": "collapse",
+      "payload": "(e: 'collapse', index: number): void",
+      "description": "当面板折叠时触发，index 是拖拽条的索引。"
+    },
+    {
+      "name": "update:size",
+      "payload": "(e: 'update:size', value: string | number): void",
+      "description": "number)"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": "面板的默认内容。"
+    },
+    {
+      "name": "bar",
+      "description": "自定义拖拽条内容。"
+    },
+    {
+      "name": "start-collapsible",
+      "description": "自定义起始折叠按钮的内容。"
+    },
+    {
+      "name": "end-collapsible",
+      "description": "结束可折叠按钮的自定义内容。"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "splitterRef",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst size1 = ref(50)\nconst size2 = ref(30)\n</script>\n\n<template>\n  <div class=\"space-y-8\">\n    <!-- 基础用法 -->\n    <div>\n      <h3 class=\"text-lg font-semibold mb-4\">基础用法</h3>\n      <p class=\"text-sm text-gray-600 mb-4\">最基本的用法，如果未传入默认尺寸，将自动平均分配。</p>\n      <div class=\"h-64 border border-gray-200 rounded-lg\">\n        <RebornSplitter>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-blue-50 p-4 flex items-center justify-center\">\n              面板 1\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-green-50 p-4 flex items-center justify-center\">\n              面板 2\n            </div>\n          </RebornSplitterPanel>\n        </RebornSplitter>\n      </div>\n    </div>\n\n    <!-- 垂直布局 -->\n    <div>\n      <h3 class=\"text-lg font-semibold mb-4\">垂直布局</h3>\n      <p class=\"text-sm text-gray-600 mb-4\">使用垂直方向。</p>\n      <div class=\"h-64 border border-gray-200 rounded-lg\">\n        <RebornSplitter layout=\"vertical\">\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-blue-50 p-4 flex items-center justify-center\">\n              面板 1\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-green-50 p-4 flex items-center justify-center\">\n              面板 2\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-yellow-50 p-4 flex items-center justify-center\">\n              面板 3\n            </div>\n          </RebornSplitterPanel>\n        </RebornSplitter>\n      </div>\n    </div>\n\n    <!-- 可折叠 -->\n    <div>\n      <h3 class=\"text-lg font-semibold mb-4\">可折叠</h3>\n      <p class=\"text-sm text-gray-600 mb-4\">\n        配置 collapsible 可提供快速收缩功能。可以使用 min 属性来防止折叠后通过拖拽进行扩展。\n      </p>\n      <div class=\"h-64 border border-gray-200 rounded-lg\">\n        <RebornSplitter>\n          <RebornSplitterPanel collapsible :min=\"50\">\n            <div class=\"h-full bg-blue-50 p-4 flex items-center justify-center\">\n              可折叠面板 1\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel collapsible :min=\"50\">\n            <div class=\"h-full bg-green-50 p-4 flex items-center justify-center\">\n              可折叠面板 2\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-yellow-50 p-4 flex items-center justify-center\">\n              面板 3\n            </div>\n          </RebornSplitterPanel>\n        </RebornSplitter>\n      </div>\n    </div>\n\n    <!-- 禁用拖动 -->\n    <div>\n      <h3 class=\"text-lg font-semibold mb-4\">禁用拖动</h3>\n      <p class=\"text-sm text-gray-600 mb-4\">\n        当任一面板禁用 resizable 时，拖拽功能将被禁用。\n      </p>\n      <div class=\"h-64 border border-gray-200 rounded-lg\">\n        <RebornSplitter>\n          <RebornSplitterPanel :resizable=\"false\" :size=\"30\">\n            <div class=\"h-full bg-blue-50 p-4 flex items-center justify-center\">\n              禁用拖动面板 1\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel :size=\"40\">\n            <div class=\"h-full bg-green-50 p-4 flex items-center justify-center\">\n              面板 2\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-yellow-50 p-4 flex items-center justify-center\">\n              面板 3\n            </div>\n          </RebornSplitterPanel>\n        </RebornSplitter>\n      </div>\n    </div>\n\n    <!-- 面板大小 -->\n    <div>\n      <h3 class=\"text-lg font-semibold mb-4\">面板大小</h3>\n      <p class=\"text-sm text-gray-600 mb-4\">\n        v-model:size 可以获取面板的大小。\n      </p>\n      <div class=\"h-64 border border-gray-200 rounded-lg\">\n        <RebornSplitter>\n          <RebornSplitterPanel v-model:size=\"size1\">\n            <div class=\"h-full bg-blue-50 p-4 flex flex-col items-center justify-center\">\n              <span>面板 1</span>\n              <span class=\"text-sm text-gray-600 mt-2\">大小: {{ size1 }}%</span>\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel v-model:size=\"size2\">\n            <div class=\"h-full bg-green-50 p-4 flex flex-col items-center justify-center\">\n              <span>面板 2</span>\n              <span class=\"text-sm text-gray-600 mt-2\">大小: {{ size2 }}%</span>\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-yellow-50 p-4 flex items-center justify-center\">\n              面板 3\n            </div>\n          </RebornSplitterPanel>\n        </RebornSplitter>\n      </div>\n    </div>\n\n    <!-- 延迟 -->\n    <div>\n      <h3 class=\"text-lg font-semibold mb-4\">延迟</h3>\n      <p class=\"text-sm text-gray-600 mb-4\">\n        当启用 lazy 时，面板大小将不会在拖动时实时更新，只能在拖动结束后更新。\n      </p>\n      <div class=\"h-64 border border-gray-200 rounded-lg\">\n        <RebornSplitter lazy>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-blue-50 p-4 flex items-center justify-center\">\n              面板 1 (延迟更新)\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-green-50 p-4 flex items-center justify-center\">\n              面板 2 (延迟更新)\n            </div>\n          </RebornSplitterPanel>\n          <RebornSplitterPanel>\n            <div class=\"h-full bg-yellow-50 p-4 flex items-center justify-center\">\n              面板 3 (延迟更新)\n            </div>\n          </RebornSplitterPanel>\n        </RebornSplitter>\n      </div>\n    </div>\n  </div>\n</template>",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-splitter"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-splitter/RebornSplitter.vue",
+      "app/components/reborn/ui/reborn-splitter/RebornSplitterPanel.vue",
+      "app/components/reborn/ui/reborn-splitter/index.ts",
+      "app/components/reborn/ui/reborn-splitter/reborn-splitter.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/layout/reborn-splitter.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "1bb86fe2448b6bcc2aa3b9b47cee9e129eafcb08",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

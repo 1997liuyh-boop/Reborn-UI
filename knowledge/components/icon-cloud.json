@@ -1,0 +1,66 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "icon-cloud",
+  "title": "图标云",
+  "description": "基于 Canvas 的 3D 图标云组件，支持拖拽旋转与节点聚焦，适合展示技术栈、品牌矩阵或功能集合。",
+  "category": "misc",
+  "tags": [
+    "canvas",
+    "interactive",
+    "tailwind"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "作用于画布容器的额外类名。"
+    },
+    {
+      "name": "images",
+      "type": "string[]",
+      "required": false,
+      "description": "图标图片地址列表，会自动映射到球面节点。",
+      "default": "() => []"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport { computed, ref } from \"vue\";\nimport IconCloud from \"~/components/reborn/ui/icon-cloud/IconCloud.vue\";\nimport RebornButton from \"~/components/reborn/ui/reborn-button/RebornButton.vue\";\nimport RebornSelect from \"~/components/reborn/ui/reborn-select/RebornSelect.vue\";\n\nconst slugs = [\n  \"typescript\",\n  \"javascript\",\n  \"dart\",\n  \"java\",\n  \"react\",\n  \"flutter\",\n  \"android\",\n  \"html5\",\n  \"css3\",\n  \"nodedotjs\",\n  \"express\",\n  \"nextdotjs\",\n  \"prisma\",\n  \"amazonaws\",\n  \"postgresql\",\n  \"firebase\",\n  \"nginx\",\n  \"vercel\",\n  \"testinglibrary\",\n  \"jest\",\n  \"cypress\",\n  \"docker\",\n  \"git\",\n  \"jira\",\n  \"github\",\n  \"gitlab\",\n  \"visualstudiocode\",\n  \"androidstudio\",\n  \"sonarqube\",\n  \"figma\",\n];\n\n\nconst imageUrls = slugs.map((slug) => `https://cdn.simpleicons.org/${slug}/${slug}`);\n</script>\n\n<template>\n  <div class=\"flex w-full flex-col gap-10 pb-20\">\n    <div class=\"flex flex-col gap-2\">\n      <h2 class=\"text-3xl font-bold tracking-tight text-gray-900 dark:text-white\">Icon Cloud 图标云</h2>\n      <p class=\"text-lg text-gray-500 dark:text-gray-400\">\n        基于 Canvas 的 3D 图标云组件，适合做技术栈、能力矩阵或品牌集合的轻量展示。\n      </p>\n    </div>\n\n    <section class=\"flex flex-col gap-4\">\n      <h3 class=\"text-xl font-semibold text-gray-800 dark:text-gray-200\">交互演练场</h3>\n      <div\n        class=\"flex flex-col rounded-3xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-950 md:flex-row\">\n\n\n        <div class=\"relative flex min-h-[440px] flex-1 items-center justify-center overflow-hidden p-10\">\n          <div\n            class=\"absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.16),_transparent_36%),radial-gradient(circle_at_bottom,_rgba(236,72,153,0.14),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,1),_rgba(241,245,249,0.92))] dark:bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_30%),radial-gradient(circle_at_bottom,_rgba(168,85,247,0.16),_transparent_26%),linear-gradient(135deg,_rgba(2,6,23,1),_rgba(15,23,42,0.94))]\" />\n          <div class=\"relative flex flex-col items-center gap-6\">\n            <IconCloud :images=\"imageUrls\" />\n            <p class=\"max-w-md text-center text-sm leading-6 text-gray-500 dark:text-gray-400\">\n              点击任意节点会自动旋转到正前方，拖拽画布可以手动调整视角。\n            </p>\n          </div>\n        </div>\n      </div>\n    </section>\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add icon-cloud"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/icon-cloud/IconCloud.vue",
+      "app/components/reborn/ui/icon-cloud/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/icon-cloud.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "5a06e08e7403b87e511c626db035ac429dc50347",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

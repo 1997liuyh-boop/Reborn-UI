@@ -1,0 +1,91 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-sku",
+  "title": "reborn-sku",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "options",
+      "type": "SkuOption[]",
+      "required": false,
+      "description": "",
+      "default": "() => []"
+    },
+    {
+      "name": "modelValue",
+      "type": "Record<string, any>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "SkuUi",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "payload": "(e: \"update:modelValue\", value: Record<string, any>): void;",
+      "description": ""
+    },
+    {
+      "name": "change",
+      "payload": "(e: \"change\", key: string, value: any): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "option.slots",
+      "description": ""
+    },
+    {
+      "name": "item",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [],
+  "related": [
+    "reborn-badge"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-sku"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-sku/RebornSku.vue",
+      "app/components/reborn/ui/reborn-sku/reborn-sku.config.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "0778671216e84066f1cf6ae669ff73af8d9b927b",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "missing"
+    }
+  }
+}

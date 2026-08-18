@@ -1,0 +1,326 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-search-box",
+  "title": "搜索框",
+  "description": "仿 MasterGo 设计的高级搜索框组件，支持目录选择、图片搜索及自定义按钮。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "search",
+    "reborn"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "string",
+      "required": false,
+      "description": "搜索框的绑定值，支持 `v-model`。",
+      "default": "''"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "占位文本。",
+      "default": "'请输入搜索内容'"
+    },
+    {
+      "name": "size",
+      "type": "SearchBoxSize",
+      "required": false,
+      "description": "\"lg\"",
+      "default": "'sm'"
+    },
+    {
+      "name": "color",
+      "type": "SearchBoxColor",
+      "required": false,
+      "description": "\"green\" \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "mode",
+      "type": "'associate' | 'sku'",
+      "required": false,
+      "description": "\"associate\"",
+      "default": "'associate'"
+    },
+    {
+      "name": "showDropdown",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示下拉面板。",
+      "default": "true"
+    },
+    {
+      "name": "skuAttributes",
+      "type": "SkuAttribute[]",
+      "required": false,
+      "description": "SKU 模式下的属性列表。",
+      "default": "() => []"
+    },
+    {
+      "name": "saveHistory",
+      "type": "(history: string[]) => void",
+      "required": false,
+      "description": "自定义保存历史记录的方法。",
+      "default": "undefined"
+    },
+    {
+      "name": "removeHistory",
+      "type": "() => void",
+      "required": false,
+      "description": "自定义清空历史记录的方法。",
+      "default": "undefined"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "placeholderClass",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'text-gray-5'"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "rounded",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "border",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "showHistory",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "额外样式类。",
+      "default": "undefined"
+    },
+    {
+      "name": "ui",
+      "type": "SearchBoxUi",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "inputUi",
+      "type": "InputUi",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "selectUi",
+      "type": "SelectUi",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "selectAttrs",
+      "type": "SelectProps",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "recommendKeywords",
+      "type": "string[]",
+      "required": false,
+      "description": "",
+      "default": "() => []"
+    },
+    {
+      "name": "historyTitle",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"历史记录\""
+    },
+    {
+      "name": "emptyHistoryLabel",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"暂无最近的搜索记录\""
+    },
+    {
+      "name": "recommendTitle",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"推荐搜索\""
+    },
+    {
+      "name": "clearAllLabel",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"清空全部\""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "当输入内容变化时触发。"
+    },
+    {
+      "name": "search",
+      "description": "当用户点击搜索按钮或按下回车时触发。"
+    },
+    {
+      "name": "clickCamera",
+      "description": ""
+    },
+    {
+      "name": "selectSku",
+      "description": ""
+    },
+    {
+      "name": "focus",
+      "description": ""
+    },
+    {
+      "name": "blur",
+      "description": ""
+    },
+    {
+      "name": "click-camera",
+      "payload": "(e: \"click-camera\"): void;",
+      "description": "当用户点击相机图标时触发。"
+    },
+    {
+      "name": "select-sku",
+      "payload": "(e: \"select-sku\", attr: { label: string, value: string | number }): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    },
+    {
+      "name": "select-trigger",
+      "description": ""
+    },
+    {
+      "name": "trailing",
+      "description": "自定义后置图标区域（默认包含相机图标）。"
+    },
+    {
+      "name": "search-button",
+      "description": "自定义搜索按钮内容（默认包含搜索图标）。"
+    },
+    {
+      "name": "dropdown",
+      "description": ""
+    },
+    {
+      "name": "sku-list",
+      "description": ""
+    },
+    {
+      "name": "name",
+      "description": ""
+    },
+    {
+      "name": "history",
+      "description": ""
+    },
+    {
+      "name": "recommend-list",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\nimport type { SearchBoxModelValue } from \"~/components/reborn/ui/reborn-search-box/RebornSearchBox.vue\";\r\nimport type { SkuOption } from \"~/components/reborn/ui/reborn-sku/RebornSku.vue\";\r\n\r\n/** 基础搜索绑定值 */\r\nconst searchValue = ref<SearchBoxModelValue>({\r\n  inputValue: \"\",\r\n  selectValue: \"1\",\r\n});\r\n\r\n/** SKU 搜索绑定值 */\r\nconst skuSearchValue = ref<SearchBoxModelValue>({\r\n  inputValue: \"\",\r\n  selectValue: \"1\",\r\n  language: 'cn',\r\n  origin: ['jp', 'us'],\r\n  platform: 'mercari',\r\n  price: [1000, 5000],\r\n});\r\n\r\n/** SKU 属性列表 */\r\nconst skuAttributes = ref<SkuOption[]>([\r\n  {\r\n    key: 'language',\r\n    title: '语言',\r\n    slots: 'language',\r\n    slotsCover: true,\r\n  },\r\n  {\r\n    title: \"发货地\",\r\n    key: \"origin\",\r\n    labelKey: \"label\",\r\n    valueKey: \"value\",\r\n    multiple: true,\r\n    children: [\r\n      { label: \"日本\", value: \"jp\" },\r\n      { label: \"美国\", value: \"us\" },\r\n    ]\r\n  },\r\n  {\r\n    title: \"平台\",\r\n    key: \"platform\",\r\n    labelKey: \"label\",\r\n    valueKey: \"value\",\r\n    multiple: false,\r\n    children: [\r\n      { label: \"Mercari\", value: \"mercari\" },\r\n      { label: \"Yahoo\", value: \"yahoo\" },\r\n    ]\r\n  },\r\n  {\r\n    title: \"价格区间\",\r\n    key: \"price\",\r\n    labelKey: \"label\",\r\n    valueKey: \"value\",\r\n    multiple: false,\r\n    slots: 'price',\r\n    slotsCover: false,\r\n    children: [\r\n      { label: \"1000-5000 JPY\", value: [1000, 5000] },\r\n      { label: \"5000-10000 JPY\", value: [5000, 10000] },\r\n    ]\r\n  },\r\n  {\r\n    title: \"型号\",\r\n    key: \"model\",\r\n    labelKey: \"label\",\r\n    valueKey: \"value\",\r\n    multiple: false,\r\n    children: [\r\n      { label: \"iPhone 15 Pro\", value: \"iphone15pro\" },\r\n      { label: \"iPhone 15\", value: \"iphone15\" },\r\n    ]\r\n  },\r\n  {\r\n    title: \"操作系统\",\r\n    key: \"os\",\r\n    labelKey: \"label\",\r\n    valueKey: \"value\",\r\n    multiple: true,\r\n    children: [\r\n      { label: \"iOS 17\", value: \"ios17\" },\r\n      { label: \"Android 14\", value: \"android14\" },\r\n    ]\r\n  }\r\n]);\r\n\r\n/** 下拉选择配置 */\r\nconst selectOptions = [\r\n  { label: \"Mercari\", value: \"1\" },\r\n  { label: \"JDirectltems Auction\", value: \"2\" },\r\n  { label: \"駿河屋\", value: \"3\" },\r\n  { label: \"JDirectltems Fleamarket\", value: \"4\" },\r\n  { label: \"Animate\", value: \"5\" },\r\n  { label: \"Lashinbang\", value: \"6\" },\r\n];\r\n\r\n/** 推荐搜索词 */\r\nconst recommendKeywords = [\"iPhone 15 Pro\", \"MacBook Air M3\", \"AirPods Pro\", \"Apple Watch Ultra\"];\r\n\r\nconst handleSearch = (val: SearchBoxModelValue) => {\r\n  console.log(\"搜索:\", val);\r\n};\r\n\r\nconst handleCameraClick = () => {\r\n  console.log(\"点击相机\");\r\n};\r\n\r\nconst handleSelectSku = (attr: any) => {\r\n  console.log(\"选择 SKU:\", attr);\r\n};\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex flex-col gap-12 p-8 w-full\">\r\n\r\n    <!-- 基础用法 -->\r\n    <section class=\"flex flex-col gap-4 relative z-10\">\r\n      <h2 class=\"text-2xl font-bold\">基础用法</h2>\r\n      <RebornSearchBox v-model=\"searchValue\" placeholder=\"搜索您感兴趣的内容...\" :select-attrs=\"{ options: selectOptions }\"\r\n        :recommend-keywords=\"recommendKeywords\" history-title=\"Search History\" recommend-title=\"Popular Searches\"\r\n        clear-all-label=\"Clear All\" @search=\"handleSearch\" @click-camera=\"handleCameraClick\">\r\n      </RebornSearchBox>\r\n\r\n      <div class=\"rounded-xl bg-gray-1 dark:bg-gray-8 px-4 py-3 text-xs text-gray-6 dark:text-gray-3 font-mono\">\r\n        <span class=\"text-gray-4\">modelValue: </span>{{ JSON.stringify(searchValue) }}\r\n      </div>\r\n    </section>\r\n\r\n    <!-- SKU 属性搜索模式 -->\r\n    <section class=\"flex flex-col gap-4 relative z-1\">\r\n      <h2 class=\"text-2xl font-bold\">SKU 属性搜索模式</h2>\r\n      <RebornSearchBox v-model=\"skuSearchValue\" mode=\"sku\" placeholder=\"搜索商品属性...\"\r\n        :select-attrs=\"{ options: selectOptions }\" :sku-attributes=\"skuAttributes\" :show-history=\"true\"\r\n        @search=\"handleSearch\" @select-sku=\"handleSelectSku\">\r\n        <template #language>\r\n          <RebornRadioGroup v-model=\"skuSearchValue.language\" variant=\"circle\">\r\n            <RebornRadio value=\"cn\">直接搜索</RebornRadio>\r\n            <RebornRadio value=\"en\">翻译成日文搜索</RebornRadio>\r\n          </RebornRadioGroup>\r\n        </template>\r\n        <template #price>\r\n          <div class=\"flex gap-2 w-full\">\r\n            <RebornInput v-model=\"skuSearchValue.price[0]\" placeholder=\"价格区间\" size=\"sm\" />\r\n            <div\r\n              class=\"relative content:'~' before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-2 before:h-px before:bg-gray-6 dark:before:bg-gray-3\">\r\n            </div>\r\n            <RebornInput v-model=\"skuSearchValue.price[1]\" placeholder=\"价格区间\" size=\"sm\" />\r\n          </div>\r\n        </template>\r\n      </RebornSearchBox>\r\n      <div class=\"rounded-xl bg-gray-1 dark:bg-gray-8 px-4 py-3 text-xs text-gray-6 dark:text-gray-3 font-mono\">\r\n        <span class=\"text-gray-4\">modelValue: </span>{{ JSON.stringify(skuSearchValue) }}\r\n      </div>\r\n    </section>\r\n\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\nimport { ref, reactive } from 'vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornSearchBox from '@/components/reborn-search-box/RebornSearchBox.vue'\nimport RebornSelect from '@/components/reborn-select/RebornSelect.vue'\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\nimport { searchBoxColors, searchBoxSizes, type SearchBoxSize, type SearchBoxColor } from '@/components/reborn-search-box/reborn-search-box.config'\n\n// 1. 交互演练场状态\nconst state = reactive({\n  value: '',\n  placeholder: '关键词/商品ID/网址',\n  size: 'sm' as SearchBoxSize,\n  color: 'primary' as SearchBoxColor,\n  border: false,\n  disabled: false\n})\n\n// 默认搜索值\nconst searchQuery = ref('')\nconst customSlotQuery = ref('')\n\n// 颜色选项转换\nconst colorOptions: { label: string, value: SearchBoxColor }[] = searchBoxColors.map(c => ({\n  label: c.charAt(0).toUpperCase() + c.slice(1),\n  value: c as SearchBoxColor\n}))\n\n// 尺寸选项转换\nconst sizeOptions: { label: string, value: SearchBoxSize }[] = [\n  { label: '小 (sm)', value: 'sm' },\n  { label: '中 (md)', value: 'md' },\n  { label: '大 (lg)', value: 'lg' }\n]\n\nconst handleSearch = (value: string) => {\n  uni.showToast({\n    title: `搜索: ${value || '空内容'}`,\n    icon: 'none',\n  })\n}\n</script>\n\n<template>\n  <RebornPage title=\"SearchBox 搜索框\" description=\"支持多端适配、翻译切换及高度自定义插槽的搜索核心。\">\n\n    <!-- 交互预览区 (直接平铺) -->\n    <view class=\"mb-6\">\n      <view class=\"text-xs text-gray-400 mb-3 px-1 font-bold uppercase tracking-widest\">LIVE PREVIEW</view>\n      <RebornSearchBox v-model=\"state.value\" :placeholder=\"state.placeholder\" :size=\"state.size\" :color=\"state.color\"\n        :border=\"state.border\" :disabled=\"state.disabled\" @search=\"handleSearch\" />\n    </view>\n\n    <!-- 配置面板 -->\n    <RebornCard padding custom-class=\"mb-8\">\n      <view class=\"grid grid-cols-1 gap-6\">\n        <view class=\"grid grid-cols-2 gap-4\">\n          <view class=\"flex flex-col gap-2\">\n            <text class=\"text-[22rpx] text-gray-400 uppercase font-bold px-1\">尺寸规格</text>\n            <RebornSelect v-model=\"state.size\" :options=\"sizeOptions\" size=\"sm\" placeholder=\"选择尺寸\" title=\"切换尺寸\" />\n          </view>\n          <view class=\"flex flex-col gap-2\">\n            <text class=\"text-[22rpx] text-gray-400 uppercase font-bold px-1\">主题颜色</text>\n            <RebornSelect v-model=\"state.color\" :options=\"colorOptions\" size=\"sm\" placeholder=\"选择颜色\" title=\"切换主题颜色\" />\n          </view>\n        </view>\n\n        <view class=\"flex items-center justify-start gap-12 px-1\">\n          <RebornSwitch v-model=\"state.border\" size=\"sm\" active-label=\"显示边框\"\n            :ui=\"{ activeLabel: 'text-sm text-gray-500', inactiveLabel: 'text-sm text-gray-500' }\" />\n          <RebornSwitch v-model=\"state.disabled\" size=\"sm\" active-label=\"禁用状态\"\n            :ui=\"{ activeLabel: 'text-sm text-gray-500', inactiveLabel: 'text-sm text-gray-500' }\" />\n        </view>\n      </view>\n    </RebornCard>\n\n    <!-- 分隔标题样式 -->\n    <view class=\"flex items-center gap-4 mb-4 mt-2\">\n      <view class=\"w-1 h-6 bg-primary rounded-full\"></view>\n      <text class=\"text-28 font-bold text-gray-800 dark:text-gray-200\">各尺寸对比</text>\n    </view>\n    <view class=\"flex flex-col gap-5 mb-8\">\n      <view v-for=\"size in sizeOptions\" :key=\"size.value\" class=\"flex flex-col gap-2\">\n        <text class=\"text-22 text-gray-400 px-1\">{{ size.label }}</text>\n        <RebornSearchBox :size=\"size.value\" :placeholder=\"`${size.label} 搜索框预览`\" border />\n      </view>\n    </view>\n\n    <view class=\"flex items-center gap-4 mb-4 mt-2\">\n      <view class=\"w-1 h-6 bg-secondary rounded-full\"></view>\n      <text class=\"text-28 font-bold text-gray-800 dark:text-gray-200\">色彩风格</text>\n    </view>\n    <view class=\"grid grid-cols-1 gap-5 mb-8\">\n      <view v-for=\"color in colorOptions.slice(0, 4)\" :key=\"color.value\" class=\"flex flex-col gap-2\">\n        <text class=\"text-22 text-gray-400 px-1\">{{ color.label }}</text>\n        <RebornSearchBox :color=\"color.value\" :placeholder=\"`${color.label} 主题色展示`\" border />\n      </view>\n    </view>\n\n    <view class=\"flex items-center gap-4 mb-4 mt-2\">\n      <view class=\"w-1 h-6 bg-success rounded-full\"></view>\n      <text class=\"text-28 font-bold text-gray-800 dark:text-gray-200\">高度自定义 (Slots)</text>\n    </view>\n    <view class=\"flex flex-col gap-5 mb-10\">\n      <view class=\"flex flex-col gap-2\">\n        <text class=\"text-22 text-gray-400 px-1\">识图搜索场景 (Slot: default)</text>\n        <RebornSearchBox v-model=\"customSlotQuery\" color=\"success\" placeholder=\"点击右侧图标试试\">\n          <view\n            class=\"flex items-center gap-1.5 px-2.5 py-1 bg-success/10 rounded-full text-success active:scale-95 transition-all\">\n            <view class=\"i-lucide-scan-line text-28\" />\n            <text class=\"text-22 font-bold\">识图</text>\n          </view>\n        </RebornSearchBox>\n      </view>\n\n      <view class=\"flex flex-col gap-2\">\n        <text class=\"text-22 text-gray-400 px-1\">默认相机样式</text>\n        <RebornSearchBox placeholder=\"不传入插槽时的默认表现\" />\n      </view>\n    </view>\n\n    <!-- 提示区 -->\n    <view\n      class=\"p-6 bg-gray-100/50 dark:bg-gray-800/30 rounded-2xl text-center border border-gray-100 dark:border-gray-800\">\n      <text class=\"text-22 text-gray-500\">\n        💡 提示：点击组件右侧的“源/译”按钮，可体验平滑的切换动效。该功能已内置于组件核心。\n      </text>\n    </view>\n    <view class=\"h-10\"></view>\n  </RebornPage>\n</template>\n\n<style scoped></style>\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-badge",
+    "reborn-button",
+    "reborn-image",
+    "reborn-input",
+    "reborn-popup",
+    "reborn-select",
+    "reborn-sku"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-search-box"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-search-box/RebornSearchBox.vue",
+      "app/components/reborn/ui/reborn-search-box/reborn-search-box.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-search-box/RebornSearchBox.vue",
+      "packages/uniapp-project/src/components/reborn-search-box/reborn-search-box.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-search-box.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "9ed7711145fa25f3f89d85a81b9b31d852399ba9",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

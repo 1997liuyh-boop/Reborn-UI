@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "tracing-beam",
+  "title": "跟踪光束",
+  "description": "渲染跟踪光束效果的组件，支持动态滚动动画与渐变描边。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "default": "\"\"",
+      "required": false,
+      "description": "用于自定义样式的额外 CSS 类。"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\n// Dummy content data\r\nconst dummyContent = [\r\n  {\r\n    title: \"Lorem Ipsum Dolor Sit Amet\",\r\n    description: [\r\n      \"Sit duis est minim proident non nisi velit non consectetur. Esse adipisicing laboris consectetur enim ipsum reprehenderit eu deserunt Lorem ut aliqua anim do. Duis cupidatat qui irure cupidatat incididunt incididunt enim magna id est qui sunt fugiat. Laboris do duis pariatur fugiat Lorem aute sit ullamco. Qui deserunt non reprehenderit dolore nisi velit exercitation Lorem qui do enim culpa. Aliqua eiusmod in occaecat reprehenderit laborum nostrud fugiat voluptate do Lorem culpa officia sint labore. Tempor consectetur excepteur ut fugiat veniam commodo et labore dolore commodo pariatur.\",\r\n      \"Dolor minim irure ut Lorem proident. Ipsum do pariatur est ad ad veniam in commodo id reprehenderit adipisicing. Proident duis exercitation ad quis ex cupidatat cupidatat occaecat adipisicing.\",\r\n      \"Tempor quis dolor veniam quis dolor. Sit reprehenderit eiusmod reprehenderit deserunt amet laborum consequat adipisicing officia qui irure id sint adipisicing. Adipisicing fugiat aliqua nulla nostrud. Amet culpa officia aliquip deserunt veniam deserunt officia adipisicing aliquip proident officia sunt.\",\r\n    ],\r\n    badge: \"Vue\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=3540&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\r\n  },\r\n  {\r\n    title: \"Lorem Ipsum Dolor Sit Amet\",\r\n    description: [\r\n      \"Ex irure dolore veniam ex velit non aute nisi labore ipsum occaecat deserunt cupidatat aute. Enim cillum dolor et nulla sunt exercitation non voluptate qui aliquip esse tempor. Ullamco ut sunt consectetur sint qui qui do do qui do. Labore laborum culpa magna reprehenderit ea velit id esse adipisicing deserunt amet dolore. Ipsum occaecat veniam commodo proident aliqua id ad deserunt dolor aliquip duis veniam sunt.\",\r\n      \"In dolore veniam excepteur eu est et sunt velit. Ipsum sint esse veniam fugiat esse qui sint ad sunt reprehenderit do qui proident reprehenderit. Laborum exercitation aliqua reprehenderit ea sint cillum ut mollit.\",\r\n    ],\r\n    badge: \"Nuxt\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&q=80&w=3540&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\r\n  },\r\n  {\r\n    title: \"Lorem Ipsum Dolor Sit Amet\",\r\n    description: [\r\n      \"Ex irure dolore veniam ex velit non aute nisi labore ipsum occaecat deserunt cupidatat aute. Enim cillum dolor et nulla sunt exercitation non voluptate qui aliquip esse tempor. Ullamco ut sunt consectetur sint qui qui do do qui do. Labore laborum culpa magna reprehenderit ea velit id esse adipisicing deserunt amet dolore. Ipsum occaecat veniam commodo proident aliqua id ad deserunt dolor aliquip duis veniam sunt.\",\r\n    ],\r\n    badge: \"Reborn UI\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=3506&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"w-full items-center justify-center px-8\">\r\n    <TracingBeam class=\"px-6\">\r\n      <div class=\"relative mx-auto max-w-2xl pt-4 antialiased\">\r\n        <div v-for=\"(item, index) in dummyContent\" :key=\"`content-${index}`\" class=\"mb-10\">\r\n          <div class=\"mb-4 w-fit rounded-full bg-black px-2 text-sm text-white dark:bg-white dark:text-black\">\r\n            {{ item.badge }}\r\n          </div>\r\n\r\n          <p class=\"mb-4 text-xl\">\r\n            {{ item.title }}\r\n          </p>\r\n\r\n          <div class=\"prose prose-sm dark:prose-invert text-sm\">\r\n            <img v-if=\"item.image\" :src=\"item.image\" alt=\"blog thumbnail\" class=\"mb-10 rounded-lg object-cover\" />\r\n            <div>\r\n              <p v-for=\"(paragraph, idx) in item.description\" :key=\"`desc-${idx}`\">\r\n                {{ paragraph }}\r\n              </p>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </TracingBeam>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v",
+    "vue-use-spring"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add tracing-beam"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/tracing-beam/TracingBeam.vue",
+      "app/components/reborn/ui/tracing-beam/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/tracing-beam.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "9cecde676c302e3f60df568b73e61e3c0ce0c28c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

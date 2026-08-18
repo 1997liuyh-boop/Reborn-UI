@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "testimonial-slider",
+  "title": "评价滑块",
+  "description": "轻量的评价滑块，包含图片旋转、文字过渡与可选自动轮播。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "testimonials",
+      "type": "Testimonial[]",
+      "required": false,
+      "description": "滑块中显示的评价对象数组。",
+      "default": "() => []"
+    },
+    {
+      "name": "autoRotate",
+      "type": "boolean",
+      "required": false,
+      "description": "若为 `true`，滑块每隔 `duration` 秒自动切换。",
+      "default": "true"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "启用自动轮播时的切换间隔（秒）。",
+      "default": "5"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { rand } from \"@vueuse/core\";\r\n\r\nconst testimonials = [\r\n  {\r\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"Reborn UI is sleeker than my star cruiser. Launch-ready in seconds. Zero crashes, zero gravity.\",\r\n    name: \"Buzz Lightyear\",\r\n    role: \"Intergalactic Interface Command\",\r\n  },\r\n  {\r\n    img: `https://randomuser.me/api/portraits/women/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"Clickin' around this thing feels like ridin' a horse with turbo boosters. reborn’s got giddyup!\",\r\n    name: \"Jessie\",\r\n    role: \"Yeehaw Engagement & Barnyard UX\",\r\n  },\r\n  {\r\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"I’ve seen some clunky UIs in my day... but this one? Smoother than a tumbleweed on Tuesday.\",\r\n    name: \"Woody\",\r\n    role: \"Sheriff\",\r\n  },\r\n  {\r\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"I was terrified. Then I clicked. Nothing exploded. Reborn UI is a safe space. I’m thriving.\",\r\n    name: \"Rex\",\r\n    role: \"Senior Panic Tester, Dinosaur Usability Lab\",\r\n  },\r\n];\r\n\r\nfunction getRandomNumber() {\r\n  return rand(1, 99);\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div class=\"bg-background relative h-[500px] w-full overflow-hidden rounded-lg border\">\r\n    <div class=\"mt-[64px] flex justify-center px-12\">\r\n      <TestimonialSlider :testimonials=\"testimonials\" />\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add testimonial-slider"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/testimonial-slider/TestimonialSlider.vue",
+      "app/components/reborn/ui/testimonial-slider/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/testimonial-slider.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "7e9b96a1c56996a9e0dc481f93b38ff8b0d73389",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

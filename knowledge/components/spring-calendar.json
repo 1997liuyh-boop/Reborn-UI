@@ -1,0 +1,102 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "spring-calendar",
+  "title": "弹性日历",
+  "description": "带弹簧动画的日历组件，可展开查看事件，使用 Motion-V 实现平滑过渡。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "motion-v"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "calendarData",
+      "type": "CalendarDay[]",
+      "required": true,
+      "description": "定义每一天及可选事件的数组。_必填。_",
+      "default": "**—**"
+    },
+    {
+      "name": "initialIndex",
+      "type": "number",
+      "required": false,
+      "description": "初始选中的日期索引。",
+      "default": "0"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "text",
+      "type": "string",
+      "required": true,
+      "description": ""
+    },
+    {
+      "name": "morphTime",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "1.5"
+    },
+    {
+      "name": "coolDownTime",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0.5"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:activeIndex",
+      "payload": "(e: \"update:activeIndex\", value: number): void;",
+      "description": "当点击日期按钮时触发，返回新的激活索引。"
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nconst calendarData = [\r\n  { month: \"APRIL\", date: 22, day: \"TUE\" },\r\n  { month: \"APRIL\", date: 23, day: \"WED\" },\r\n  {\r\n    month: \"APRIL\",\r\n    date: 24,\r\n    day: \"THU\",\r\n    events: [\r\n      { title: \"Team Meeting\", day: \"Today\", time: \"2:00 PM\" },\r\n      { title: \"Project Deliver\", day: \"Tomorrow\", time: \"4:00 PM\" },\r\n    ],\r\n  },\r\n  {\r\n    month: \"APRIL\",\r\n    date: 25,\r\n    day: \"FRI\",\r\n    events: [{ title: \"Party\", day: \"Tomorrow\", time: \"5:00 PM\" }],\r\n  },\r\n  { month: \"APRIL\", date: 26, day: \"SAT\" },\r\n  { month: \"APRIL\", date: 27, day: \"SUN\" },\r\n  {\r\n    month: \"APRIL\",\r\n    date: 28,\r\n    day: \"MON\",\r\n    events: [{ title: \"Cry for Monday Blue\", day: \"Next Week\", time: \"10:00 AM\" }],\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex min-h-[32rem] w-full items-center justify-center py-4\">\r\n    <SpringCalendar :calendar-data=\"calendarData\" />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add spring-calendar"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/spring-calendar/SpringCalendar.vue",
+      "app/components/reborn/ui/spring-calendar/TextMorph.vue",
+      "app/components/reborn/ui/spring-calendar/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/special-effects/spring-calendar.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "a0d85b16574167004acea4bedeb64c9bf58c79a2",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

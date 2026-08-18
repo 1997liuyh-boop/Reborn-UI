@@ -1,0 +1,125 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "card-3d",
+  "title": "3D 卡片效果",
+  "description": "具有透视效果的卡片，悬停时可让卡片元素提升。",
+  "category": "data-display",
+  "tags": [
+    "css",
+    "tailwind",
+    "card",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "用于内层容器的额外样式类。",
+      "default": "null"
+    },
+    {
+      "name": "containerClass",
+      "type": "string",
+      "required": false,
+      "description": "用于外层容器的额外样式类。",
+      "default": "null"
+    },
+    {
+      "name": "as",
+      "type": "string",
+      "required": false,
+      "description": "渲染该元素使用的 HTML 标签或组件。",
+      "default": "\"div\""
+    },
+    {
+      "name": "translateX",
+      "type": "number",
+      "required": false,
+      "description": "X 轴平移（像素）。",
+      "default": "0"
+    },
+    {
+      "name": "translateY",
+      "type": "number",
+      "required": false,
+      "description": "Y 轴平移（像素）。",
+      "default": "0"
+    },
+    {
+      "name": "translateZ",
+      "type": "number",
+      "required": false,
+      "description": "Z 轴平移（像素），用于控制纵深效果。",
+      "default": "0"
+    },
+    {
+      "name": "rotateX",
+      "type": "number",
+      "required": false,
+      "description": "绕 X 轴旋转角度（度）。",
+      "default": "0"
+    },
+    {
+      "name": "rotateY",
+      "type": "number",
+      "required": false,
+      "description": "绕 Y 轴旋转角度（度）。",
+      "default": "0"
+    },
+    {
+      "name": "rotateZ",
+      "type": "number",
+      "required": false,
+      "description": "绕 Z 轴旋转角度（度）。",
+      "default": "0"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { CardBody, CardContainer, CardItem } from \"~/components/reborn/ui/card-3d\";\r\n\r\ninterface Props {\r\n  title?: {\r\n    translateX?: number;\r\n    translateY?: number;\r\n    translateZ?: number;\r\n    rotateX?: number;\r\n    rotateY?: number;\r\n    rotateZ?: number;\r\n  };\r\n  description?: {\r\n    translateX?: number;\r\n    translateY?: number;\r\n    translateZ?: number;\r\n    rotateX?: number;\r\n    rotateY?: number;\r\n    rotateZ?: number;\r\n  };\r\n  image?: {\r\n    translateX?: number;\r\n    translateY?: number;\r\n    translateZ?: number;\r\n    rotateX?: number;\r\n    rotateY?: number;\r\n    rotateZ?: number;\r\n  };\r\n  btnLeft?: {\r\n    translateX?: number;\r\n    translateY?: number;\r\n    translateZ?: number;\r\n    rotateX?: number;\r\n    rotateY?: number;\r\n    rotateZ?: number;\r\n  };\r\n  btnRight?: {\r\n    translateX?: number;\r\n    translateY?: number;\r\n    translateZ?: number;\r\n    rotateX?: number;\r\n    rotateY?: number;\r\n    rotateZ?: number;\r\n  };\r\n}\r\n\r\nconst props = withDefaults(defineProps<Props>(), {\r\n  title: () => ({\r\n    translateX: 0,\r\n    translateY: 0,\r\n    translateZ: 50,\r\n    rotateX: 0,\r\n    rotateY: 0,\r\n    rotateZ: 0,\r\n  }),\r\n  description: () => ({\r\n    translateX: 0,\r\n    translateY: 0,\r\n    translateZ: 60,\r\n    rotateX: 0,\r\n    rotateY: 0,\r\n    rotateZ: 0,\r\n  }),\r\n  image: () => ({\r\n    translateX: 0,\r\n    translateY: 0,\r\n    translateZ: 100,\r\n    rotateX: 0,\r\n    rotateY: 0,\r\n    rotateZ: 0,\r\n  }),\r\n  btnLeft: () => ({\r\n    translateX: 0,\r\n    translateY: 0,\r\n    translateZ: 20,\r\n    rotateX: 0,\r\n    rotateY: 0,\r\n    rotateZ: 0,\r\n  }),\r\n  btnRight: () => ({\r\n    translateX: 0,\r\n    translateY: 0,\r\n    translateZ: 20,\r\n    rotateX: 0,\r\n    rotateY: 0,\r\n    rotateZ: 0,\r\n  }),\r\n});\r\n</script>\r\n\r\n<template>\r\n  <CardContainer>\r\n    <CardBody\r\n      class=\"group/card relative h-auto w-fit rounded-xl border border-black/[0.1] bg-gray-50 p-6 sm:w-[30rem] dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]\">\r\n      <CardItem v-bind=\"props.title\" class=\"text-xl font-bold text-neutral-600 dark:text-white\">\r\n        Make things float in air\r\n      </CardItem>\r\n      <CardItem as=\"p\" v-bind=\"props.description\" class=\"mt-2 max-w-sm text-sm text-neutral-500 dark:text-neutral-300\">\r\n        Hover over this card to unleash the power of CSS perspective\r\n      </CardItem>\r\n      <CardItem v-bind=\"props.image\" class=\"mt-4 w-full\">\r\n        <img\r\n          src=\"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\r\n          height=\"1000\" width=\"1000\" class=\"h-60 w-full rounded-xl object-cover group-hover/card:shadow-xl\"\r\n          alt=\"thumbnail\" />\r\n      </CardItem>\r\n      <div class=\"mt-12 flex items-center justify-between\">\r\n        <CardItem v-bind=\"props.btnLeft\" as=\"a\" href=\"https://rahulv.dev\" target=\"__blank\"\r\n          class=\"rounded-xl px-4 py-2 text-xs font-normal dark:text-white\">\r\n          Visit →\r\n        </CardItem>\r\n        <CardItem v-bind=\"props.btnRight\" as=\"button\"\r\n          class=\"rounded-xl bg-black px-4 py-2 text-xs font-bold text-white dark:bg-white dark:text-black\">\r\n          Get Started\r\n        </CardItem>\r\n      </div>\r\n    </CardBody>\r\n  </CardContainer>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add card-3d"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/card-3d/CardBody.vue",
+      "app/components/reborn/ui/card-3d/CardContainer.vue",
+      "app/components/reborn/ui/card-3d/CardItem.vue",
+      "app/components/reborn/ui/card-3d/index.ts",
+      "app/components/reborn/ui/card-3d/useMouseState.ts"
+    ]
+  },
+  "docPath": "content/2.components/cards/3d-card.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "c152cb2fcb4712ce33d4a869ec57f1b8a1191c2c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

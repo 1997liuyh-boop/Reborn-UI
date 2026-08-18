@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "dock",
+  "title": "Dock",
+  "description": "类似 macOS 的 Dock，悬停时放大图标。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "Dock 容器的额外类名。"
+    },
+    {
+      "name": "magnification",
+      "type": "number",
+      "required": false,
+      "description": "悬停时图标的放大倍数（默认 60）。",
+      "default": "60"
+    },
+    {
+      "name": "distance",
+      "type": "number",
+      "required": false,
+      "description": "放大作用的图标中心距离。",
+      "default": "140"
+    },
+    {
+      "name": "direction",
+      "type": "Direction",
+      "required": false,
+      "description": "图标对齐方式（`top`、`middle`、`bottom`，默认 middle）。",
+      "default": "\"middle\""
+    },
+    {
+      "name": "orientation",
+      "type": "DataOrientation",
+      "required": false,
+      "description": "Dock 的方向（`vertical` 或 `horizontal`，默认 horizontal）。",
+      "default": "\"horizontal\""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": "Dock 图标或其他子组件。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <Dock class=\"mb-6\">\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"mdi:github\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n    <DockSeparator />\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"logos:google-drive\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"logos:notion-icon\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"logos:whatsapp-icon\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n  </Dock>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add dock"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/dock/Dock.vue",
+      "app/components/reborn/ui/dock/DockIcon.vue",
+      "app/components/reborn/ui/dock/DockSeparator.vue",
+      "app/components/reborn/ui/dock/index.ts",
+      "app/components/reborn/ui/dock/injectionKeys.ts",
+      "app/components/reborn/ui/dock/types.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/dock.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "1a3f16e02e713584da72ac1990a630d55c536acf",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

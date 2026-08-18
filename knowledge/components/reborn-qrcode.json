@@ -1,0 +1,290 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-qrcode",
+  "title": "二维码 Qrcode",
+  "description": "二维码组件，支持颜色、样式、Logo 与纠错级别配置。",
+  "category": "misc",
+  "tags": [
+    "qrcode",
+    "canvas",
+    "svg",
+    "uniapp",
+    "web"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "size",
+      "type": "number",
+      "required": false,
+      "description": "二维码尺寸（px）。",
+      "default": "200"
+    },
+    {
+      "name": "foreground",
+      "type": "string",
+      "required": false,
+      "description": "前景色（码点颜色）。",
+      "default": "\"#131313\""
+    },
+    {
+      "name": "background",
+      "type": "string",
+      "required": false,
+      "description": "背景色。",
+      "default": "\"#FFFFFF\""
+    },
+    {
+      "name": "pdColor",
+      "type": "string | null",
+      "required": false,
+      "description": "null",
+      "default": "null"
+    },
+    {
+      "name": "pdRadius",
+      "type": "number",
+      "required": false,
+      "description": "码眼圆角半径（兼容参数）。",
+      "default": "10"
+    },
+    {
+      "name": "text",
+      "type": "string",
+      "required": false,
+      "description": "二维码内容。",
+      "default": "\"https://cool-js.com/\""
+    },
+    {
+      "name": "logo",
+      "type": "string",
+      "required": false,
+      "description": "中央 Logo 图片地址。",
+      "default": "\"\""
+    },
+    {
+      "name": "logoSize",
+      "type": "number",
+      "required": false,
+      "description": "Logo 尺寸（px）。",
+      "default": "40"
+    },
+    {
+      "name": "padding",
+      "type": "number",
+      "required": false,
+      "description": "二维码内边距（px）。",
+      "default": "5"
+    },
+    {
+      "name": "mode",
+      "type": "ClQrcodeMode",
+      "required": false,
+      "description": "'line' \\",
+      "default": "\"circular\""
+    },
+    {
+      "name": "ecc",
+      "type": "eccLevel",
+      "required": false,
+      "description": "'Q' \\",
+      "default": "eccLevel.H"
+    },
+    {
+      "name": "pdOuterRadius",
+      "type": "number",
+      "required": false,
+      "description": "undefined",
+      "default": "undefined"
+    },
+    {
+      "name": "pdInnerRadius",
+      "type": "number",
+      "required": false,
+      "description": "undefined",
+      "default": "undefined"
+    },
+    {
+      "name": "dotsGradient",
+      "type": "any",
+      "required": false,
+      "description": "预留参数，保持与 UniApp 一致。"
+    },
+    {
+      "name": "dotsImage",
+      "type": "string | null",
+      "required": false,
+      "description": "-",
+      "default": "null"
+    },
+    {
+      "name": "backgroundGradient",
+      "type": "any",
+      "required": false,
+      "description": "预留参数，保持与 UniApp 一致。"
+    },
+    {
+      "name": "backgroundTransparent",
+      "type": "boolean",
+      "required": false,
+      "description": "是否背景透明。"
+    },
+    {
+      "name": "logoOptions",
+      "type": "any",
+      "required": false,
+      "description": "Logo 细节配置（预留参数）。"
+    },
+    {
+      "name": "cornersSquareGradient",
+      "type": "any",
+      "required": false,
+      "description": "预留参数。"
+    },
+    {
+      "name": "cornersDotGradient",
+      "type": "any",
+      "required": false,
+      "description": "预留参数。"
+    },
+    {
+      "name": "cornersSquareOptions",
+      "type": "any",
+      "required": false,
+      "description": "预留参数。"
+    },
+    {
+      "name": "cornersDotOptions",
+      "type": "any",
+      "required": false,
+      "description": "预留参数。"
+    },
+    {
+      "name": "dotsColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "backgroundColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "logoImage",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "margin",
+      "type": "number | string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "logoMargin",
+      "type": "number | string",
+      "required": false,
+      "description": "",
+      "default": "4"
+    },
+    {
+      "name": "logoHideBackgroundDots",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "logoShadow",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "logoShape",
+      "type": "'circle' | 'square'",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "dotsType",
+      "type": "ClQrcodeMode",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "cornersSquareType",
+      "type": "'rect' | 'dot' | 'square' | 'extra-rounded'",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "cornersDotType",
+      "type": "'rect' | 'dot' | 'square'",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [
+    {
+      "name": "toPng",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornButton from \"~/components/reborn/ui/reborn-button/RebornButton.vue\"\r\nimport type { ClQrcodeMode } from '../../ui/reborn-qrcode'\r\nimport { eccLevel } from '../../ui/reborn-qrcode'\r\nimport RebornSwitch from \"../../ui/reborn-switch/RebornSwitch.vue\"\r\n\r\nconst qrConfig = ref({\r\n  text: 'https://www.leyifan.com/',\r\n  margin: 1,\r\n  ecc: eccLevel.H,\r\n  dotsType: 'circular' as ClQrcodeMode,\r\n  dotsColor: '#131313',\r\n  dotsImage: undefined as string | undefined,\r\n  dotsGradient: undefined as any,\r\n  backgroundColor: '#FFFFFF',\r\n  backgroundTransparent: false,\r\n  backgroundGradient: undefined as any,\r\n  logoImage: 'https://cms-image.leyifan.cn/img_reborn/index/icon-calculator.png',\r\n  logoSize: 40,\r\n  logoMargin: 4,\r\n  logoShape: 'circle',\r\n  logoHideBackgroundDots: true,\r\n  logoShadow: false,\r\n  cornersSquareType: 'extra-rounded',\r\n  cornersDotType: 'dot',\r\n})\r\n\r\nconst tabs = [\r\n  { label: '基础', value: 'basic', icon: 'i-lucide-settings' },\r\n  { label: '颜色', value: 'color', icon: 'i-lucide-palette' },\r\n  { label: '形状', value: 'shape', icon: 'i-lucide-shapes' },\r\n  { label: 'Logo', value: 'logo', icon: 'i-lucide-image' },\r\n  { label: '预设', value: 'preset', icon: 'i-lucide-code' },\r\n]\r\n\r\nconst activeTab = ref('basic')\r\n\r\nconst presets = [\r\n  {\r\n    name: '极简黑白',\r\n    config: { dotsColor: '#000000', backgroundColor: '#FFFFFF', dotsType: 'rect', cornersSquareType: 'dot', cornersDotType: 'dot' }\r\n  },\r\n  {\r\n    name: '圆润天蓝',\r\n    config: { dotsColor: '#3b82f6', backgroundColor: '#eff6ff', dotsType: 'circular', cornersSquareType: 'extra-rounded', cornersDotType: 'dot' }\r\n  },\r\n  {\r\n    name: '优雅暗红',\r\n    config: { dotsColor: '#991b1b', backgroundColor: '#fef2f2', dotsType: 'line', cornersSquareType: 'rounded', cornersDotType: 'rect' }\r\n  },\r\n  {\r\n    name: '落日渐变',\r\n    config: {\r\n      dotsGradient: {\r\n        type: 'linear',\r\n        direction: 'diagonal',\r\n        colorStops: [\r\n          { offset: 0, color: '#f59e0b' },\r\n          { offset: 1, color: '#ef4444' }\r\n        ]\r\n      },\r\n      backgroundColor: '#fffbeb',\r\n      dotsType: 'circular'\r\n    }\r\n  },\r\n  {\r\n    name: '星空纹理',\r\n    config: {\r\n      dotsImage: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1000&auto=format&fit=crop',\r\n      backgroundColor: '#000000',\r\n      dotsType: 'rectSmall',\r\n      cornersSquareType: 'rounded',\r\n      cornersDotType: 'extra-rounded'\r\n    }\r\n  }\r\n]\r\n\r\nconst applyPreset = (preset: any) => {\r\n  // Reset conflicting properties\r\n  qrConfig.value.dotsImage = undefined\r\n  qrConfig.value.dotsGradient = undefined\r\n  qrConfig.value.backgroundGradient = undefined\r\n  Object.assign(qrConfig.value, preset.config)\r\n}\r\n\r\nconst copyParams = async () => {\r\n  const payload = JSON.stringify(qrConfig.value, null, 2)\r\n  await navigator.clipboard.writeText(payload)\r\n  // Use a simple alert or toast if available\r\n  alert('配置参数已复制到剪贴板')\r\n}\r\n\r\nconst modeOptions = [\r\n  { label: '圆点', value: 'circular' },\r\n  { label: '直角', value: 'rect' },\r\n  { label: '小直角', value: 'rectSmall' },\r\n  { label: '条纹', value: 'line' }\r\n]\r\n\r\nconst eccOptions = [\r\n  { label: 'L (7%)', value: eccLevel.L },\r\n  { label: 'M (15%)', value: eccLevel.M },\r\n  { label: 'Q (25%)', value: eccLevel.Q },\r\n  { label: 'H (30%)', value: eccLevel.H }\r\n]\r\n\r\nconst cornerOptions = [\r\n  { label: '默认', value: 'none' },\r\n  { label: '直角', value: 'rect' },\r\n  { label: '圆角', value: 'rounded' },\r\n  { label: '极圆', value: 'extra-rounded' },\r\n  { label: '圆点', value: 'dot' }\r\n]\r\n\r\nconst toggleDotsGradient = () => {\r\n  if (qrConfig.value.dotsGradient) {\r\n    qrConfig.value.dotsGradient = undefined\r\n  } else {\r\n    qrConfig.value.dotsImage = undefined\r\n    qrConfig.value.dotsGradient = {\r\n      type: 'linear',\r\n      direction: 'horizontal',\r\n      colorStops: [\r\n        { offset: 0, color: '#3b82f6' },\r\n        { offset: 1, color: '#8b5cf6' }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\nconst toggleBackgroundGradient = () => {\r\n  if (qrConfig.value.backgroundGradient) {\r\n    qrConfig.value.backgroundGradient = undefined\r\n  } else {\r\n    qrConfig.value.backgroundTransparent = false\r\n    qrConfig.value.backgroundGradient = {\r\n      type: 'linear',\r\n      direction: 'vertical',\r\n      colorStops: [\r\n        { offset: 0, color: '#f8fafc' },\r\n        { offset: 1, color: '#e2e8f0' }\r\n      ]\r\n    }\r\n  }\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div class=\"p-6 grid grid-cols-7 gap-4 w-full\">\r\n\r\n    <!-- 左侧：配置区 -->\r\n    <div class=\"col-span-4 space-y-6\">\r\n      <UCard :ui=\"{ root: 'overflow-visible!', body: 'p-0! py-2!' }\">\r\n        <UTabs v-model=\"activeTab\" :items=\"tabs\" class=\"w-full\" variant=\"link\" size=\"xs\">\r\n          <template #content=\"{ item }\">\r\n            <div class=\"px-2 space-y-6 min-h-[400px]\">\r\n              <!-- 基础配置 -->\r\n              <div v-if=\"item.value === 'basic'\" class=\"space-y-4\">\r\n                <UFormField label=\"内容\" description=\"输入二维码包含的链接或文本\">\r\n                  <RebornTextarea v-model=\"qrConfig.text\" placeholder=\"https://...\" :rows=\"3\" />\r\n                </UFormField>\r\n\r\n                <UFormField label=\"边距\">\r\n                  <RebornInputNumber v-model=\"qrConfig.margin\" type=\"number\" :min=\"0\" :max=\"10\" size=\"md\" />\r\n                </UFormField>\r\n                <UFormField label=\"纠错级别\">\r\n                  <RebornSelect v-model=\"qrConfig.ecc\" :options=\"eccOptions\" />\r\n                </UFormField>\r\n              </div>\r\n\r\n              <!-- 颜色与视觉配置 -->\r\n              <div v-if=\"item.value === 'color'\" class=\"space-y-6\">\r\n                <UFormField label=\"主体基准色\" description=\"当不使用渐变或图片时生效\">\r\n                  <div class=\"flex items-center gap-2\">\r\n                    <RebornColorPicker v-model=\"qrConfig.dotsColor\" />\r\n                  </div>\r\n                </UFormField>\r\n                <UFormField label=\"背景颜色\">\r\n                  <div class=\"flex items-center gap-2\">\r\n                    <RebornColorPicker v-model=\"qrConfig.backgroundColor\" :disabled=\"qrConfig.backgroundTransparent\" />\r\n                  </div>\r\n                </UFormField>\r\n\r\n                <UFormField label=\"透明背景\">\r\n                  <RebornSwitch v-model=\"qrConfig.backgroundTransparent\" active-label=\"透明背景\" inactive-label=\"不透明背景\"\r\n                    :ui=\"{ track: 'rounded-md', thumb: 'rounded-sm' }\" />\r\n                </UFormField>\r\n\r\n                <!-- 图片纹理配置 -->\r\n                <UFormField label=\"前景图片纹理 (URL)\" description=\"覆盖颜色和渐变\">\r\n                  <UInput v-model=\"qrConfig.dotsImage\" placeholder=\"https://images.unsplash.com/...\" />\r\n                </UFormField>\r\n                <div class=\"flex items-center justify-between\">\r\n                  <span class=\"text-sm font-medium\">主体视觉特效</span>\r\n                  <div class=\"flex gap-2\">\r\n                    <RebornButton size=\"xs\" :color=\"qrConfig.dotsGradient ? 'primary' : 'neutral'\" variant=\"soft\"\r\n                      @click=\"toggleDotsGradient\">\r\n                      {{ qrConfig.dotsGradient ? '关闭渐变' : '开启渐变' }}\r\n                    </RebornButton>\r\n                  </div>\r\n                </div>\r\n\r\n                <!-- 主体渐变配置 -->\r\n                <div v-if=\"qrConfig.dotsGradient\"\r\n                  class=\"p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-4 border border-gray-100 dark:border-gray-700\">\r\n                  <UFormField label=\"起始颜色\">\r\n                    <RebornColorPicker v-model=\"qrConfig.dotsGradient.colorStops[0].color\" size=\"sm\" />\r\n                  </UFormField>\r\n                  <UFormField label=\"结束颜色\">\r\n                    <RebornColorPicker v-model=\"qrConfig.dotsGradient.colorStops[1].color\" size=\"sm\" />\r\n                  </UFormField>\r\n                  <UFormField label=\"方向\">\r\n                    <RebornSelect v-model=\"qrConfig.dotsGradient.direction\"\r\n                      :options=\"['horizontal', 'vertical', 'diagonal']\" />\r\n                  </UFormField>\r\n                </div>\r\n\r\n                <div class=\"flex items-center justify-between\">\r\n                  <span class=\"text-sm font-medium\">背景视觉特效</span>\r\n                  <div class=\"flex gap-2\">\r\n                    <RebornButton size=\"xs\" :color=\"qrConfig.backgroundGradient ? 'primary' : 'neutral'\" variant=\"soft\"\r\n                      @click=\"toggleBackgroundGradient\">\r\n                      {{ qrConfig.backgroundGradient ? '关闭渐变' : '开启背景渐变' }}\r\n                    </RebornButton>\r\n                  </div>\r\n                </div>\r\n\r\n                <div v-if=\"qrConfig.backgroundGradient\"\r\n                  class=\"p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-4 border border-gray-100 dark:border-gray-700\">\r\n                  <UFormField label=\"背景起始色\">\r\n                    <RebornColorPicker v-model=\"qrConfig.backgroundGradient.colorStops[0].color\" size=\"sm\" />\r\n                  </UFormField>\r\n                  <UFormField label=\"背景结束色\">\r\n                    <RebornColorPicker v-model=\"qrConfig.backgroundGradient.colorStops[1].color\" size=\"sm\" />\r\n                  </UFormField>\r\n                  <UFormField label=\"渐变方向\">\r\n                    <RebornSelect v-model=\"qrConfig.backgroundGradient.direction\"\r\n                      :options=\"['horizontal', 'vertical', 'diagonal']\" />\r\n                  </UFormField>\r\n                </div>\r\n              </div>\r\n\r\n              <!-- 形状配置 -->\r\n              <div v-if=\"item.value === 'shape'\" class=\"space-y-6\">\r\n                <UFormField label=\"码点形状\">\r\n                  <RebornSelect v-model=\"qrConfig.dotsType\" :options=\"modeOptions\" />\r\n                </UFormField>\r\n\r\n                <UFormField label=\"定位点外框\">\r\n                  <RebornSelect v-model=\"qrConfig.cornersSquareType\" :options=\"cornerOptions\" />\r\n                </UFormField>\r\n                <UFormField label=\"定位点中心\">\r\n                  <RebornSelect v-model=\"qrConfig.cornersDotType\" :options=\"cornerOptions\" />\r\n                </UFormField>\r\n              </div>\r\n\r\n              <!-- Logo 配置 -->\r\n              <div v-if=\"item.value === 'logo'\" class=\"space-y-4\">\r\n                <UFormField label=\"Logo 链接\" description=\"输入图片 URL 或选择预设（暂不支持上传）\">\r\n                  <UInput v-model=\"qrConfig.logoImage\" placeholder=\"https://...\" />\r\n                </UFormField>\r\n\r\n                <UFormField label=\"Logo 大小\">\r\n                  <RebornInputNumber v-model=\"qrConfig.logoSize\" :min=\"20\" :max=\"100\" />\r\n                </UFormField>\r\n                <UFormField label=\"Logo 边距\">\r\n                  <RebornInputNumber v-model=\"qrConfig.logoMargin\" :min=\"0\" :max=\"20\" />\r\n                </UFormField>\r\n\r\n                <UFormField label=\"Logo 下方码点\">\r\n                  <RebornSwitch v-model=\"qrConfig.logoHideBackgroundDots\" active-label=\"隐藏\" inactive-label=\"显示\" />\r\n                </UFormField>\r\n                <UFormField label=\"Logo 投影\">\r\n                  <RebornSwitch v-model=\"qrConfig.logoShadow\" active-label=\"开启\" inactive-label=\"关闭\" />\r\n                </UFormField>\r\n              </div>\r\n\r\n              <!-- 预设配置 -->\r\n              <div v-if=\"item.value === 'preset'\" class=\"space-y-6\">\r\n                <RebornButton v-for=\"preset in presets\" :key=\"preset.name\" variant=\"solid\" size=\"lg\"\r\n                  class=\"rounded-full\" @click=\"applyPreset(preset)\">\r\n                  <span class=\"text-xs\">{{ preset.name }}</span>\r\n                </RebornButton>\r\n              </div>\r\n            </div>\r\n          </template>\r\n        </UTabs>\r\n      </UCard>\r\n    </div>\r\n\r\n    <!-- 右侧：预览区 -->\r\n    <div class=\"col-span-3 sticky top-6 space-y-6\">\r\n      <UCard>\r\n        <template #header>\r\n          <div class=\"flex items-center justify-between\">\r\n            <h3 class=\"font-semibold\">实时预览</h3>\r\n            <div class=\"flex gap-2\">\r\n              <UButton size=\"xs\" color=\"primary\" @click=\"copyParams\">复制参数</UButton>\r\n            </div>\r\n          </div>\r\n        </template>\r\n\r\n        <div\r\n          class=\"flex flex-col items-center justify-center py-10 bg-gray-50 dark:bg-gray-900 rounded-lg border border-dashed border-gray-300 dark:border-gray-700\">\r\n          <RebornQrcode :text=\"qrConfig.text\" :foreground=\"qrConfig.dotsColor\" :background=\"qrConfig.backgroundColor\"\r\n            :pd-color=\"qrConfig.dotsColor\" :padding=\"qrConfig.margin * 5\" :mode=\"qrConfig.dotsType\" :ecc=\"qrConfig.ecc\"\r\n            :logo=\"qrConfig.logoImage\" :logo-size=\"qrConfig.logoSize\" :logo-margin=\"qrConfig.logoMargin\"\r\n            :logo-hide-background-dots=\"qrConfig.logoHideBackgroundDots\" :logo-shadow=\"qrConfig.logoShadow\"\r\n            :pd-outer-radius=\"qrConfig.cornersSquareType === 'rect' ? 0 : qrConfig.cornersSquareType === 'rounded' ? 8 : qrConfig.cornersSquareType === 'extra-rounded' ? 15 : qrConfig.cornersSquareType === 'dot' ? 25 : undefined\"\r\n            :pd-inner-radius=\"qrConfig.cornersDotType === 'rect' ? 0 : qrConfig.cornersDotType === 'rounded' ? 4 : qrConfig.cornersDotType === 'extra-rounded' ? 8 : qrConfig.cornersDotType === 'dot' ? 15 : undefined\"\r\n            :background-transparent=\"qrConfig.backgroundTransparent\" :dots-gradient=\"qrConfig.dotsGradient\"\r\n            :dots-image=\"qrConfig.dotsImage\" :background-gradient=\"qrConfig.backgroundGradient\" />\r\n          <div class=\"mt-8 text-center\">\r\n            <p class=\"text-sm text-gray-400 font-mono break-all px-4 max-w-xs\">{{ qrConfig.text }}</p>\r\n          </div>\r\n        </div>\r\n      </UCard>\r\n    </div>\r\n  </div>\r\n</template>",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref, computed } from 'vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornTabs from '@/components/reborn-tabs/RebornTabs.vue'\r\nimport { eccLevel } from '@/components/reborn-qrcode/draw'\r\n\r\n// Sub-components\r\nimport PreviewSection from './components/PreviewSection.vue'\r\nimport ConfigBasic from './components/ConfigBasic.vue'\r\nimport ConfigColor from './components/ConfigColor.vue'\r\nimport ConfigShape from './components/ConfigShape.vue'\r\nimport ConfigBackground from './components/ConfigBackground.vue'\r\nimport ConfigLogo from './components/ConfigLogo.vue'\r\nimport ConfigData from './components/ConfigData.vue'\r\nimport EditorModals from './components/EditorModals.vue'\r\n\r\nimport bg1 from '@/static/1.jpeg'\r\nimport bg2 from '@/static/2.jpeg'\r\nimport bg3 from '@/static/3.jpeg'\r\nimport bg4 from '@/static/4.jpeg'\r\nimport bg5 from '@/static/5.jpeg'\r\nimport bg6 from '@/static/6.jpeg'\r\n\r\nconst qrcodeRef = ref<any>(null)\r\nconst activeTab = ref('basic')\r\nconst isGenerating = ref(false)\r\n\r\nconst qrConfig = ref({\r\n    text: 'https://www.leyifan.com/',\r\n    margin: 1,\r\n    ecc: eccLevel.H,\r\n    // Dots\r\n    dotsType: 'square',\r\n    dotsColor: '#000000',\r\n    dotsImage: null as string | null,\r\n    dotsGradient: null as any,\r\n    // Background\r\n    backgroundColor: '#ffffff',\r\n    backgroundTransparent: false,\r\n    backgroundGradient: null as any,\r\n    // Corners\r\n    cornersSquareType: 0,\r\n    cornersSquareGradient: null as any,\r\n    cornersDotType: 0,\r\n    cornersDotGradient: null as any,\r\n    // Logo\r\n    logoImage: null as string | null,\r\n    logoSize: 'medium',\r\n    logoMargin: 'small',\r\n    logoShape: 'rectangle',\r\n    logoHideBackgroundDots: true,\r\n    logoShadow: false\r\n})\r\n\r\nconst tabs = ref([\r\n    { label: '基础', value: 'basic' },\r\n    { label: '颜色', value: 'color' },\r\n    { label: '形状', value: 'shape' },\r\n    { label: '背景', value: 'background' },\r\n    { label: 'Logo', value: 'logo' },\r\n    { label: '数据', value: 'data' }\r\n])\r\n\r\n// Options\r\nconst marginOptions = ref([\r\n    { value: 0, name: '无' }, { value: 1, name: '小' }, { value: 2, name: '中' }, { value: 3, name: '大' }\r\n])\r\nconst errorLevels = ref([\r\n    { value: eccLevel.L, name: 'L (7%)' }, { value: eccLevel.M, name: 'M (15%)' }, { value: eccLevel.Q, name: 'Q (25%)' }, { value: eccLevel.H, name: 'H (30%)' }\r\n])\r\nconst dotsStyles = ref([\r\n    { type: 'rect', name: '普通' }, { type: 'circular', name: '圆形' }, { type: 'rectSmall', name: '瓷砖' }, { type: 'line', name: '线性' }\r\n])\r\nconst cornersSquareStyles = ref([\r\n    { type: 0, name: '方形' }, { type: 20, name: '圆形' }, { type: 10, name: '圆角' }\r\n])\r\nconst cornersDotStyles = ref([\r\n    { type: 0, name: '方形' }, { type: 5, name: '圆角' }, { type: 10, name: '圆形' }\r\n])\r\nconst logoSizeOptions = ref([\r\n    { value: 'small', name: '小' }, { value: 'medium', name: '中' }, { value: 'large', name: '大' }\r\n])\r\nconst logoMarginOptions = ref([\r\n    { value: 'none', name: '无' }, { value: 'small', name: '小' }, { value: 'medium', name: '中' }, { value: 'large', name: '大' }\r\n])\r\n\r\nconst exportSizeOptions = ref([\r\n    { label: '500×500', width: 500, height: 500 },\r\n    { label: '750×750', width: 750, height: 750 },\r\n    { label: '1000×1000', width: 1000, height: 1000 }\r\n])\r\nconst dropdownOptions = computed(() => exportSizeOptions.value.map((item, index) => ({\r\n    label: item.label, value: index\r\n})))\r\nconst exportSizeIndex = ref(0)\r\nconst modalOpen = computed(() =>\r\n    showColorPickerModal.value || showGradientEditorModal.value || showForegroundImageModal.value\r\n)\r\n\r\n// Modal States\r\nconst showColorPickerModal = ref(false)\r\nconst showGradientEditorModal = ref(false)\r\nconst showForegroundImageModal = ref(false)\r\nconst selectedColor = ref('#000000')\r\nconst colorPickerType = ref('')\r\nconst colorPalette = ref([\r\n    '#000000', '#333333', '#666666', '#999999', '#cccccc', '#ffffff',\r\n    '#ff4d4f', '#ff7a45', '#ffa940', '#ffec3d', '#bae637', '#52c41a',\r\n    '#13c2c2', '#1890ff', '#2f54eb', '#722ed1', '#eb2f96', '#f759ab'\r\n])\r\n\r\n// Gradient Editor States\r\nconst gradientType = ref('linear')\r\nconst gradientDirection = ref('horizontal')\r\nconst gradientDirectionOptions = ref([\r\n    { value: 'horizontal', name: '水平' }, { value: 'vertical', name: '垂直' },\r\n    { value: 'diagonal', name: '对角' }, { value: 'center', name: '中心' }\r\n])\r\nconst gradientColors = ref([{ offset: 0, color: '#000000' }, { offset: 1, color: '#666666' }])\r\nconst currentGradientColorIndex = ref(-1)\r\nconst currentGradientTarget = ref('')\r\n\r\nconst predefinedForegroundImages = ref([\r\n    { id: 1, name: '纹理1', path: bg1 }, { id: 2, name: '纹理2', path: bg2 },\r\n    { id: 3, name: '纹理3', path: bg3 }, { id: 4, name: '纹理4', path: bg4 },\r\n    { id: 5, name: '纹理5', path: bg5 }, { id: 6, name: '纹理6', path: bg6 }\r\n])\r\n\r\n// Methods\r\nconst showColorPicker = (type: string) => {\r\n    colorPickerType.value = type\r\n    selectedColor.value = type === 'foreground' ? qrConfig.value.dotsColor : qrConfig.value.backgroundColor\r\n    showColorPickerModal.value = true\r\n}\r\n\r\nconst selectColor = (color: string) => {\r\n    if (currentGradientColorIndex.value >= 0) {\r\n        gradientColors.value[currentGradientColorIndex.value].color = color\r\n        showColorPickerModal.value = false\r\n        currentGradientColorIndex.value = -1\r\n        return\r\n    }\r\n\r\n    if (colorPickerType.value === 'foreground') {\r\n        qrConfig.value.dotsColor = color\r\n        qrConfig.value.dotsImage = null\r\n        qrConfig.value.dotsGradient = null\r\n    } else {\r\n        qrConfig.value.backgroundColor = color\r\n        qrConfig.value.backgroundTransparent = false\r\n        qrConfig.value.backgroundGradient = null\r\n    }\r\n    showColorPickerModal.value = false\r\n}\r\n\r\nconst showGradientEditor = (target: string) => {\r\n    currentGradientTarget.value = target\r\n    const gradient = target === 'foreground' ? qrConfig.value.dotsGradient : qrConfig.value.backgroundGradient\r\n    if (gradient) {\r\n        gradientType.value = gradient.type\r\n        gradientDirection.value = gradient.direction\r\n        gradientColors.value = JSON.parse(JSON.stringify(gradient.colorStops))\r\n    } else {\r\n        gradientColors.value = target === 'background'\r\n            ? [{ offset: 0, color: '#ffffff' }, { offset: 1, color: '#f0f8ff' }]\r\n            : [{ offset: 0, color: '#000000' }, { offset: 1, color: '#666666' }]\r\n    }\r\n    showGradientEditorModal.value = true\r\n}\r\n\r\nconst applyGradient = () => {\r\n    const gradient = {\r\n        type: gradientType.value,\r\n        direction: gradientDirection.value,\r\n        colorStops: JSON.parse(JSON.stringify(gradientColors.value))\r\n    }\r\n    if (currentGradientTarget.value === 'foreground') {\r\n        qrConfig.value.dotsGradient = gradient\r\n        qrConfig.value.dotsColor = '#000000'\r\n        qrConfig.value.dotsImage = null\r\n    } else {\r\n        qrConfig.value.backgroundGradient = gradient\r\n        qrConfig.value.backgroundColor = '#ffffff'\r\n        qrConfig.value.backgroundTransparent = false\r\n    }\r\n    showGradientEditorModal.value = false\r\n}\r\n\r\nconst resetConfig = () => {\r\n    qrConfig.value = {\r\n        text: 'https://www.leyifan.com/', margin: 1, ecc: eccLevel.H,\r\n        dotsType: 'square', dotsColor: '#000000', dotsImage: null, dotsGradient: null,\r\n        backgroundColor: '#ffffff', backgroundTransparent: false, backgroundGradient: null,\r\n        cornersSquareType: 0, cornersSquareGradient: null, cornersDotType: 0, cornersDotGradient: null,\r\n        logoImage: null, logoSize: 'medium', logoMargin: 'small', logoShape: 'rectangle', logoHideBackgroundDots: true, logoShadow: false\r\n    }\r\n}\r\n\r\nconst saveQRCode = async () => {\r\n    try {\r\n        isGenerating.value = true\r\n        if (qrcodeRef.value) {\r\n            const path = await qrcodeRef.value.toPng()\r\n            // #ifdef MP-WEIXIN || APP-PLUS\r\n            uni.saveImageToPhotosAlbum({\r\n                filePath: path,\r\n                success: () => uni.showToast({ title: '保存成功', icon: 'success' })\r\n            })\r\n            // #endif\r\n            // #ifdef H5\r\n            const a = document.createElement('a'); a.href = path; a.download = 'qrcode.png'; a.click()\r\n            // #endif\r\n        }\r\n    } catch (e) {\r\n        uni.showToast({ title: '保存失败', icon: 'error' })\r\n    } finally {\r\n        isGenerating.value = false\r\n    }\r\n}\r\n\r\nconst shareQRCode = async () => {\r\n    try {\r\n        isGenerating.value = true\r\n        if (qrcodeRef.value) {\r\n            const path = await qrcodeRef.value.toPng()\r\n            // #ifdef MP-WEIXIN\r\n            uni.showShareImageMenu({ path })\r\n            // #endif\r\n            // #ifdef H5\r\n            uni.showToast({ title: '长按保存或复制', icon: 'none' })\r\n            // #endif\r\n        }\r\n    } catch (e) {\r\n        uni.showToast({ title: '分享失败', icon: 'error' })\r\n    } finally {\r\n        isGenerating.value = false\r\n    }\r\n}\r\n\r\nconst uploadLogo = () => {\r\n    uni.chooseImage({\r\n        count: 1,\r\n        success: (res: any) => {\r\n            qrConfig.value.logoImage = res.tempFilePaths[0]\r\n        }\r\n    })\r\n}\r\n\r\nconst uploadForegroundImage = () => {\r\n    uni.chooseImage({\r\n        count: 1,\r\n        success: (res: any) => {\r\n            qrConfig.value.dotsImage = res.tempFilePaths[0]\r\n            qrConfig.value.dotsGradient = null\r\n        }\r\n    })\r\n}\r\n\r\nconst selectPredefinedLogo = (logo: string) => {\r\n    qrConfig.value.logoImage = logo\r\n    uni.showToast({ title: '已选择', icon: 'success' })\r\n}\r\n</script>\r\n\r\n<template>\r\n    <RebornPage title=\"二维码\">\r\n        <view class=\"flex flex-col w-full\">\r\n            <!-- 预览区域 -->\r\n            <PreviewSection v-model=\"qrConfig\" v-model:qrcodeRef=\"qrcodeRef\" v-model:exportSizeIndex=\"exportSizeIndex\"\r\n                :isGenerating=\"isGenerating\" :dropdownOptions=\"dropdownOptions\" :modalOpen=\"modalOpen\" @save=\"saveQRCode\"\r\n                @share=\"shareQRCode\" @reset=\"resetConfig\" />\r\n\r\n            <!-- 配置面板 -->\r\n            <view class=\"bg-white rounded-xl shadow-[0_4rpx_20rpx_rgba(0,0,0,0.08)] overflow-hidden mt-6\">\r\n                <!-- 标签页导航 -->\r\n                <view class=\"flex bg-[#f8f9fa] border-b border-[#e8e8e8] overflow-x-scroll\">\r\n                    <RebornTabs v-model=\"activeTab\" :list=\"tabs\" fill show-slider size=\"md\" />\r\n                </view>\r\n\r\n                <!-- 标签页内容 -->\r\n                <view class=\"p-4\">\r\n                    <ConfigBasic v-if=\"activeTab === 'basic'\" v-model=\"qrConfig\" :marginOptions=\"marginOptions\"\r\n                        :errorLevels=\"errorLevels\" />\r\n\r\n                    <ConfigColor v-if=\"activeTab === 'color'\" v-model=\"qrConfig\" @showColorPicker=\"showColorPicker\"\r\n                        @showGradientEditor=\"showGradientEditor\" @showImagePicker=\"showForegroundImageModal = true\" />\r\n\r\n                    <ConfigShape v-if=\"activeTab === 'shape'\" v-model=\"qrConfig\" :dotsStyles=\"dotsStyles\"\r\n                        :cornersSquareStyles=\"cornersSquareStyles\" :cornersDotStyles=\"cornersDotStyles\" />\r\n\r\n                    <ConfigBackground v-if=\"activeTab === 'background'\" v-model=\"qrConfig\"\r\n                        @showColorPicker=\"showColorPicker\" @showGradientEditor=\"showGradientEditor\"\r\n                        @setTransparent=\"() => { qrConfig.backgroundTransparent = true; qrConfig.backgroundColor = 'transparent' }\" />\r\n\r\n                    <ConfigLogo v-if=\"activeTab === 'logo'\" v-model=\"qrConfig\" :logoSizeOptions=\"logoSizeOptions\"\r\n                        :logoMarginOptions=\"logoMarginOptions\" @uploadLogo=\"uploadLogo\"\r\n                        @removeLogo=\"qrConfig.logoImage = null\" @selectPredefinedLogo=\"selectPredefinedLogo\" />\r\n\r\n                    <ConfigData v-if=\"activeTab === 'data'\" v-model=\"qrConfig\" />\r\n                </view>\r\n            </view>\r\n        </view>\r\n\r\n        <!-- 弹窗集 -->\r\n        <EditorModals v-model:selectedColor=\"selectedColor\" :showColorPickerModal=\"showColorPickerModal\"\r\n            :showGradientEditorModal=\"showGradientEditorModal\" :showForegroundImageModal=\"showForegroundImageModal\"\r\n            :colorPalette=\"colorPalette\" :gradientType=\"gradientType\" :gradientDirection=\"gradientDirection\"\r\n            :gradientDirectionOptions=\"gradientDirectionOptions\" :gradientColors=\"gradientColors\"\r\n            :predefinedForegroundImages=\"predefinedForegroundImages\" :qrConfig=\"qrConfig\"\r\n            @hideColorPicker=\"showColorPickerModal = false\" @selectColor=\"selectColor\"\r\n            @onCustomColorInput=\"(e) => selectColor(e)\" @hideGradientEditor=\"showGradientEditorModal = false\"\r\n            @switchGradientType=\"(type) => gradientType = type\"\r\n            @onGradientDirectionChange=\"(dir) => gradientDirection = dir\"\r\n            @showGradientColorPicker=\"(idx) => { currentGradientColorIndex = idx; selectedColor = gradientColors[idx].color; showColorPickerModal = true }\"\r\n            @applyGradient=\"applyGradient\" @hideForegroundImagePicker=\"showForegroundImageModal = false\"\r\n            @selectForegroundImage=\"(path) => { qrConfig.dotsImage = path; qrConfig.dotsGradient = null }\"\r\n            @uploadForegroundImage=\"uploadForegroundImage\"\r\n            @clearForegroundImage=\"() => { qrConfig.dotsImage = null; qrConfig.dotsColor = '#000000' }\" />\r\n    </RebornPage>\r\n</template>\r\n\r\n<style scoped>\r\n/* 保持原有布局微调 */\r\n.overflow-x-scroll {\r\n    overflow-x: auto;\r\n    white-space: nowrap;\r\n    -webkit-overflow-scrolling: touch;\r\n}\r\n\r\n.overflow-x-scroll::-webkit-scrollbar {\r\n    display: none;\r\n}\r\n</style>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-qrcode"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-qrcode/RebornQrcode.vue",
+      "app/components/reborn/ui/reborn-qrcode/index.ts",
+      "app/components/reborn/ui/reborn-qrcode/qrcode.ts",
+      "app/components/reborn/ui/reborn-qrcode/reborn-qrcode.config.ts",
+      "app/components/reborn/ui/reborn-qrcode/types.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-qrcode/RebornQrcode.vue",
+      "packages/uniapp-project/src/components/reborn-qrcode/draw.ts",
+      "packages/uniapp-project/src/components/reborn-qrcode/qrcode.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-qrcode.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "4b4d804c183c5d86d611b2616d02293d7a29113b",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

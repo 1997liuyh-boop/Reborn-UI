@@ -1,0 +1,128 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-3d",
+  "title": "3D 文字",
+  "description": "时尚的 3D 文字组件，可自定义颜色、阴影与动画选项。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "3d"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "textColor",
+      "type": "string",
+      "required": false,
+      "description": "主文字颜色。",
+      "default": "\"white\""
+    },
+    {
+      "name": "letterSpacing",
+      "type": "number",
+      "required": false,
+      "description": "字符间距，单位为 `ch`。",
+      "default": "-0.1"
+    },
+    {
+      "name": "strokeColor",
+      "type": "string",
+      "required": false,
+      "description": "描边颜色。",
+      "default": "\"black\""
+    },
+    {
+      "name": "shadowColor",
+      "type": "string",
+      "required": false,
+      "description": "阴影颜色。",
+      "default": "\"yellow\""
+    },
+    {
+      "name": "strokeSize",
+      "type": "number",
+      "required": false,
+      "description": "描边厚度（像素）。",
+      "default": "20"
+    },
+    {
+      "name": "shadow1Size",
+      "type": "number",
+      "required": false,
+      "description": "第一层阴影尺寸（像素）。",
+      "default": "7"
+    },
+    {
+      "name": "shadow2Size",
+      "type": "number",
+      "required": false,
+      "description": "第二层阴影尺寸（像素）。",
+      "default": "10"
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "用于自定义样式的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "animate",
+      "type": "boolean",
+      "required": false,
+      "description": "为 `true` 时启用晃动动画。",
+      "default": "true"
+    },
+    {
+      "name": "animationDuration",
+      "type": "number",
+      "required": false,
+      "description": "晃动动画时长（毫秒）。",
+      "default": "1500"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div\r\n    class=\"font-heading flex flex-col items-center justify-center overflow-hidden bg-black px-4 py-16\"\r\n  >\r\n    <Text3d\r\n      class=\"text-8xl font-bold max-md:text-7xl\"\r\n      shadow-color=\"red\"\r\n    >\r\n      3D\r\n    </Text3d>\r\n    <Text3d\r\n      class=\"text-8xl font-black max-md:text-7xl\"\r\n      shadow-color=\"skyblue\"\r\n      :animate=\"false\"\r\n    >\r\n      IS\r\n    </Text3d>\r\n    <Text3d class=\"text-8xl font-bold max-md:text-7xl\">AWESOME</Text3d>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-3d"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-3d/Text3d.vue",
+      "app/components/reborn/ui/text-3d/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/3d-text.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "1e3e838cbba14d49db6e852132328e444053dba1",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

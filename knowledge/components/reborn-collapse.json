@@ -1,0 +1,153 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-collapse",
+  "title": "折叠面板",
+  "description": "用于展示和隐藏内容区域，支持平滑的展开收起动画效果。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "collapse",
+    "accordion",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": "根节点的自定义样式类。",
+      "default": "''"
+    },
+    {
+      "name": "ui",
+      "type": "{\r\n    root?: any\r\n    trigger?: any\r\n    content?: any\r\n  }",
+      "required": false,
+      "description": "自定义内部插槽样式的配置对象。",
+      "default": "() => ({})"
+    },
+    {
+      "name": "modelValue",
+      "type": "unknown",
+      "required": false,
+      "description": "双向绑定值",
+      "vModel": true,
+      "default": "false"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "position",
+      "type": "'bottom' | 'top'",
+      "required": false,
+      "description": "",
+      "default": "'bottom'"
+    },
+    {
+      "name": "absolute",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "modelValue 变化时触发（v-model 同步）"
+    },
+    {
+      "name": "toggle",
+      "payload": "(e: 'toggle', value: boolean): void",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": "触发区域的内容。"
+    },
+    {
+      "name": "content",
+      "description": "折叠展示的内容区域。"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "show",
+      "description": ""
+    },
+    {
+      "name": "hide",
+      "description": ""
+    },
+    {
+      "name": "toggle",
+      "description": ""
+    },
+    {
+      "name": "resize",
+      "description": ""
+    },
+    {
+      "name": "isAnimating",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornCollapse from '~/components/reborn/ui/reborn-collapse/RebornCollapse.vue'\r\n\r\nconst visible = ref(false)\r\n</script>\r\n\r\n<template>\r\n    <div class=\"flex flex-col gap-2 items-center\">\r\n        <RebornCollapse v-model=\"visible\" customClass=\"w-full\">\r\n            <template #default=\"{ open }\">\r\n                <div\r\n                    class=\"flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700\">\r\n                    <span class=\"font-medium\">Click to Toggle</span>\r\n                    <Icon name=\"lucide:chevron-down\" class=\"w-4 h-4 transition-transform duration-200\"\r\n                        :class=\"{ 'rotate-180': open }\" />\r\n                </div>\r\n            </template>\r\n            <template #content>\r\n                <div class=\"p-4 text-slate-600 dark:text-slate-400 bg-white mt-1 rounded-2xl space-y-2 indent-4\">\r\n                    <div>\r\n                        张若虚（约公元660—约公元720），唐代诗人，扬州（今属江苏）人。曾任兖州兵曹。生卒年、字号均不详。事迹略见于《旧唐书·贺知章传》。\r\n                    </div>\r\n                    <div>\r\n                        唐中宗神龙年间（公元705～公元707），张若虚与贺知章、贺朝、万齐融、邢巨、包融俱以文词俊秀驰名于京都，张若虚与贺知章、张旭、包融并称“吴中四士”。唐玄宗开元时张若虚还尚在世。\r\n                    </div>\r\n                    <div>\r\n                        张若虚的诗仅存二首于《全唐诗》中。其中《春江花月夜》是一篇脍炙人口的名作，它沿用陈隋乐府旧题，抒写真挚动人的离情别绪及富有哲理意味的人生感慨，表现了一种迥绝的宇宙意识，创造了一个深沉、寥廓、宁静的境界。\r\n                    </div>\r\n                    <div>\r\n                        全诗共三十六句，每四句一换韵，通篇融诗情、画意、哲理为一体，意境空明，想象奇特，语言自然隽永，韵律宛转悠扬，洗去了宫体的浓脂艳粉，给人以澄澈空明、清丽自然的感觉。具有极高的审美价值，素有“孤篇盖全唐”之誉。\r\n                    </div>\r\n                    <img src=\"https://q7.itc.cn/q_70/images01/20240301/bf4c154b04334b3b955139dd1f06ba53.jpeg\" alt=\"\" />\r\n                </div>\r\n            </template>\r\n        </RebornCollapse>\r\n\r\n        <RebornCollapse v-model=\"visible\" customClass=\"flex flex-col gap-2 w-3/4\">\r\n            <template #default=\"{ open }\">\r\n                <div\r\n                    class=\"flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700\">\r\n                    <span class=\"font-medium\">Click to Toggle</span>\r\n                    <Icon name=\"lucide:chevron-down\" class=\"w-4 h-4 transition-transform duration-200\"\r\n                        :class=\"{ 'rotate-180': open }\" />\r\n                </div>\r\n            </template>\r\n            <template #content>\r\n                <div class=\"p-4 text-slate-600 dark:text-slate-400 bg-white mt-1 rounded-2xl space-y-2 indent-4\">\r\n                    <div>\r\n                        张若虚（约公元660—约公元720），唐代诗人，扬州（今属江苏）人。曾任兖州兵曹。生卒年、字号均不详。事迹略见于《旧唐书·贺知章传》。\r\n                    </div>\r\n                    <div>\r\n                        唐中宗神龙年间（公元705～公元707），张若虚与贺知章、贺朝、万齐融、邢巨、包融俱以文词俊秀驰名于京都，张若虚与贺知章、张旭、包融并称“吴中四士”。唐玄宗开元时张若虚还尚在世。\r\n                    </div>\r\n                    <div>\r\n                        张若虚的诗仅存二首于《全唐诗》中。其中《春江花月夜》是一篇脍炙人口的名作，它沿用陈隋乐府旧题，抒写真挚动人的离情别绪及富有哲理意味的人生感慨，表现了一种迥绝的宇宙意识，创造了一个深沉、寥廓、宁静的境界。\r\n                    </div>\r\n                    <div>\r\n                        全诗共三十六句，每四句一换韵，通篇融诗情、画意、哲理为一体，意境空明，想象奇特，语言自然隽永，韵律宛转悠扬，洗去了宫体的浓脂艳粉，给人以澄澈空明、清丽自然的感觉。具有极高的审美价值，素有“孤篇盖全唐”之誉。\r\n                    </div>\r\n                    <img src=\"https://q7.itc.cn/q_70/images01/20240301/bf4c154b04334b3b955139dd1f06ba53.jpeg\" alt=\"\" />\r\n                </div>\r\n            </template>\r\n        </RebornCollapse>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { ref } from 'vue'\r\n\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornCollapse from '@/components/reborn-collapse/RebornCollapse.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\n// demo组件\r\nimport Pinyin from './components/pinyin.vue'\r\n\r\nconst visible = ref(false)\r\nconst collapseRef = ref<InstanceType<typeof RebornCollapse> | null>(null)\r\n\r\nfunction toggle() {\r\n  collapseRef.value?.toggle?.()\r\n}\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Collapse\" description=\"折叠面板组件用于展示和隐藏内容区域，支持平滑的展开收起动画效果，常用于 FAQ、详情展示等场景。\">\r\n    <RebornCard title=\"基本用法\">\r\n      <RebornCollapse v-model=\"visible\">\r\n        <template #default=\"{ open }\">\r\n          <view\r\n            class=\"\r\n              flex select-none items-center justify-between rounded-lg\r\n              bg-slate-50 p-4 transition-colors\r\n              active:bg-slate-100\r\n              dark:bg-slate-800\r\n              dark:active:bg-slate-700\r\n            \"\r\n          >\r\n            <text\r\n              class=\"\r\n                text-sm font-semibold text-slate-700\r\n                dark:text-white\r\n              \"\r\n            >\r\n              春江花月夜\r\n            </text>\r\n            <view\r\n              class=\"\r\n                i-lucide-chevron-down size-5 text-slate-500 transition-transform\r\n                duration-200\r\n              \"\r\n              :class=\"{ 'rotate-180': open }\"\r\n            />\r\n          </view>\r\n        </template>\r\n        <template #content>\r\n          <Pinyin />\r\n        </template>\r\n      </RebornCollapse>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"ref 方式调用\">\r\n      <RebornButton @click=\"toggle\">\r\n        切换状态\r\n      </RebornButton>\r\n\r\n      <RebornCollapse ref=\"collapseRef\" :ui=\"{ content: 'pt-4' }\">\r\n        <template #content>\r\n          <Pinyin />\r\n        </template>\r\n      </RebornCollapse>\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "tailwind-variants"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-collapse"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-collapse/RebornCollapse.vue",
+      "app/components/reborn/ui/reborn-collapse/index.ts",
+      "app/components/reborn/ui/reborn-collapse/reborn-collapse.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-collapse/RebornCollapse.vue",
+      "packages/uniapp-project/src/components/reborn-collapse/index.ts",
+      "packages/uniapp-project/src/components/reborn-collapse/reborn-collapse.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-collapse.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "a1c2276e144b1b89a75db9f08945d7fba08e7802",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

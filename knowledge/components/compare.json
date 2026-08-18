@@ -1,0 +1,202 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "compare",
+  "title": "对比",
+  "description": "通过滑动比较两组内容——图像、设计、代码或自定义元素。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "firstImage",
+      "type": "string",
+      "required": false,
+      "description": "第一张图片的 URL。",
+      "default": "\"\""
+    },
+    {
+      "name": "secondImage",
+      "type": "string",
+      "required": false,
+      "description": "第二张图片的 URL。",
+      "default": "\"\""
+    },
+    {
+      "name": "firstImageAlt",
+      "type": "string",
+      "required": false,
+      "description": "第一张图片的替代文本。",
+      "default": "\"First image\""
+    },
+    {
+      "name": "secondImageAlt",
+      "type": "string",
+      "required": false,
+      "description": "第二张图片的替代文本。",
+      "default": "\"Second image\""
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "组件的额外类名。",
+      "default": "\"\""
+    },
+    {
+      "name": "firstContentClass",
+      "type": "string",
+      "required": false,
+      "description": "应用于第一侧内容包装器的类。",
+      "default": "\"\""
+    },
+    {
+      "name": "secondContentClass",
+      "type": "string",
+      "required": false,
+      "description": "应用于第二侧内容包装器的类。",
+      "default": "\"\""
+    },
+    {
+      "name": "initialSliderPercentage",
+      "type": "number",
+      "required": false,
+      "description": "滑块初始位置（0-100）。",
+      "default": "50"
+    },
+    {
+      "name": "slideMode",
+      "type": "\"hover\" | \"drag\"",
+      "required": false,
+      "description": "\"hover\"",
+      "default": "\"hover\""
+    },
+    {
+      "name": "showHandlebar",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示手柄。",
+      "default": "true"
+    },
+    {
+      "name": "autoplay",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用自动播放。",
+      "default": "false"
+    },
+    {
+      "name": "autoplayDuration",
+      "type": "number",
+      "required": false,
+      "description": "自动播放周期（毫秒）。",
+      "default": "5000"
+    },
+    {
+      "name": "starsCount",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "130"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:percentage",
+      "payload": "(e: \"update:percentage\", value: number): void;",
+      "description": "滑块位置变化时触发（0-100）。"
+    },
+    {
+      "name": "drag:start",
+      "payload": "(e: \"drag:start\"): void;",
+      "description": "开始拖动时触发。"
+    },
+    {
+      "name": "drag:end",
+      "payload": "(e: \"drag:end\"): void;",
+      "description": "结束拖动时触发。"
+    },
+    {
+      "name": "hover:enter",
+      "payload": "(e: \"hover:enter\"): void;",
+      "description": "鼠标进入组件时触发。"
+    },
+    {
+      "name": "hover:leave",
+      "payload": "(e: \"hover:leave\"): void;",
+      "description": "鼠标离开组件时触发。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "handle",
+      "description": "自定义滑块手柄，需自行使用绝对定位放在分割线处。"
+    },
+    {
+      "name": "first-content",
+      "description": "左/第一侧展示的内容，拥有容器的全部宽高。"
+    },
+    {
+      "name": "second-content",
+      "description": "右/第二侧展示的内容，拥有容器的全部宽高。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div\r\n    class=\"flex h-[60vh] w-full items-center justify-center px-1 [perspective:800px] [transform-style:preserve-3d] md:px-8\">\r\n    <div :style=\"{\r\n      transform: 'rotateX(15deg) translateZ(80px)',\r\n    }\"\r\n      class=\"mx-auto h-1/2 w-3/4 rounded-3xl border border-neutral-200 bg-neutral-100 p-1 md:h-3/4 md:p-4 dark:border-neutral-800 dark:bg-neutral-900\">\r\n      <Compare first-image=\"https://cdn.reborn-ui.com/images/reborn-light.png\"\r\n        second-image=\"https://cdn.reborn-ui.com/images/reborn-dark.png\"\r\n        first-content-class=\"object-cover object-left-center w-full h-96\"\r\n        second-content-class=\"object-cover object-left-center w-full h-96\"\r\n        class=\"size-full rounded-[22px] md:rounded-xl\" slide-mode=\"hover\" :autoplay=\"true\" />\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex w-full justify-center\">\r\n    <Compare\r\n      class=\"rounded-xl shadow-lg\"\r\n      :autoplay=\"true\"\r\n      :autoplay-duration=\"3000\"\r\n      slide-mode=\"hover\"\r\n    >\r\n      <template #first-content>\r\n        <div class=\"flex size-full items-center justify-center bg-blue-500\">\r\n          <div class=\"text-4xl font-bold text-white\">☀️ Day</div>\r\n        </div>\r\n      </template>\r\n      <template #second-content>\r\n        <div class=\"flex size-full items-center justify-center bg-gray-900\">\r\n          <div class=\"text-4xl font-bold text-white\">🌙 Night</div>\r\n        </div>\r\n      </template>\r\n    </Compare>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex w-full justify-center\">\r\n    <div\r\n      class=\"rounded-3xl border border-neutral-200 bg-neutral-100 p-4 dark:border-neutral-800 dark:bg-neutral-900\"\r\n    >\r\n      <Compare\r\n        first-image=\"https://images.vscodethemes.com/antfu.theme-vitesse/vitesse-light-soft-js-preview-4JM.svg\"\r\n        second-image=\"https://images.vscodethemes.com/antfu.theme-vitesse/vitesse-dark-soft-js-preview-4JM.svg\"\r\n        first-content-class=\"object-cover object-left-top rounded-xl overflow-hidden\"\r\n        second-content-class=\"object-cover object-left-top rounded-xl overflow-hidden\"\r\n        class=\"h-[250px] w-[200px] md:h-96 md:w-[500px]\"\r\n        slide-mode=\"hover\"\r\n      />\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { firstCode, secondCode } from \"./code/index\";\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex w-full justify-center\">\r\n    <Compare\r\n      slide-mode=\"drag\"\r\n      class=\"rounded-xl !bg-zinc-950\"\r\n    >\r\n      <template #first-content>\r\n        <div class=\"size-full overflow-auto bg-zinc-900 p-8\">\r\n          <pre\r\n            class=\"font-mono text-red-400\"\r\n            v-text=\"firstCode\"\r\n          />\r\n        </div>\r\n      </template>\r\n      <template #second-content>\r\n        <div class=\"size-full overflow-auto bg-zinc-900 p-8\">\r\n          <pre\r\n            class=\"font-mono text-green-400\"\r\n            v-text=\"secondCode\"\r\n          />\r\n        </div>\r\n      </template>\r\n    </Compare>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add compare"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/compare/Compare.vue",
+      "app/components/reborn/ui/compare/StarField.vue",
+      "app/components/reborn/ui/compare/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/compare.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "c6f2b64ca1755e6ff8f22d1ea725499ea064c55d",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

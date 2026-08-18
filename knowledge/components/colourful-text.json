@@ -1,0 +1,83 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "colourful-text",
+  "title": "彩色文字",
+  "description": "多彩文字组件，带滤镜与缩放效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "text",
+      "type": "string",
+      "required": true,
+      "description": "要渲染的文字，每个字符都会单独进行颜色和动效动画。",
+      "default": "\"black\""
+    },
+    {
+      "name": "colors",
+      "type": "string[]",
+      "required": false,
+      "description": "文字使用的颜色列表。",
+      "default": "() => [\r\n    \"rgb(131, 179, 32)\",\r\n    \"rgb(47, 195, 106)\",\r\n    \"rgb(42, 169, 210)\",\r\n    \"rgb(4, 112, 202)\",\r\n    \"rgb(107, 10, 255)\",\r\n    \"rgb(183, 0, 218)\",\r\n    \"rgb(218, 0, 171)\",\r\n    \"rgb(230, 64, 92)\",\r\n    \"rgb(232, 98, 63)\",\r\n    \"rgb(249, 129, 47)\",\r\n  ]"
+    },
+    {
+      "name": "startColor",
+      "type": "string",
+      "required": false,
+      "description": "字符的初始颜色。",
+      "default": "\"rgb(255,255,255)\""
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "动画持续时间（秒）。",
+      "default": "0.5"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { Motion } from \"motion-v\";\r\n</script>\r\n\r\n<template>\r\n  <div class=\"relative flex h-screen w-full items-center justify-center overflow-hidden bg-black\">\r\n    <Motion\r\n      as=\"img\"\r\n      src=\"https://assets.aceternity.com/linear-demo.webp\"\r\n      class=\"pointer-events-none absolute inset-0 size-full [mask-image:radial-gradient(circle,transparent,black_80%)] object-cover\"\r\n      :initial=\"{ opacity: 0 }\"\r\n      :while-in-view=\"{\r\n        opacity: 0.5,\r\n      }\"\r\n      :transition=\"{\r\n        duration: 1,\r\n      }\"\r\n    />\r\n    <div>\r\n      <h1\r\n        class=\"relative z-2 text-center font-sans text-2xl font-bold text-white md:text-5xl lg:text-7xl\"\r\n      >\r\n        The best <ColourfulText text=\"components\" />\r\n        <br />\r\n        you will ever find\r\n      </h1>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add colourful-text"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/colourful-text/ColourfulText.vue",
+      "app/components/reborn/ui/colourful-text/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/colorful-text.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "a9b69b706f302cdf1f461a31c0de2be8004be1f5",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

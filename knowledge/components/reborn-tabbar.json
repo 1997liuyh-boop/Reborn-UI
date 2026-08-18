@@ -1,0 +1,236 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-tabbar",
+  "title": "Tabbar 底部标签栏",
+  "description": "uniapp 单独展示。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "number | string",
+      "required": false,
+      "description": "",
+      "default": "0"
+    },
+    {
+      "name": "fixed",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "bordered",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "safeAreaInsetBottom",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "pureIcon",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "shape",
+      "type": "(typeof tabbarShapes)[number]",
+      "required": false,
+      "description": "",
+      "default": "'normal'"
+    },
+    {
+      "name": "animation",
+      "type": "(typeof tabbarAnimations)[number] | null",
+      "required": false,
+      "description": "",
+      "default": "null"
+    },
+    {
+      "name": "ballColors",
+      "type": "string[]",
+      "required": false,
+      "description": "",
+      "default": "() => ['#ff6675', '#ffb03b', '#35b6f2', '#3ac29e']"
+    },
+    {
+      "name": "activeColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "inactiveColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "placeholder",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "zIndex",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "99"
+    },
+    {
+      "name": "color",
+      "type": "(typeof tabbarColors)[number]",
+      "required": false,
+      "description": "",
+      "default": "'primary'"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "customStyle",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<Record<'root' | 'base' | 'dropBall' | 'flyBallsContainer' | 'flyBallItem', string>>",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ballShiftY",
+      "type": "number",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "beforeChange",
+      "type": "(params: { name: string | number }, done: (shouldProceed?: boolean) => void) => boolean | Promise<boolean> | void",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "name",
+      "type": "number | string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "inactive",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "imageSize",
+      "type": "number",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "change",
+      "description": ""
+    },
+    {
+      "name": "update:modelValue",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\">web端暂时不需要</div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { computed, ref } from 'vue'\r\nimport RebornTabbar from '@/components/reborn-tabbar/RebornTabbar.vue'\r\nimport RebornTabbarTrigger from '@/components/reborn-tabbar/RebornTabbarTrigger.vue'\r\nimport { tabbarAnimations, tabbarShapes, tabbarColors } from '@/components/reborn-tabbar/reborn-tabbar.config'\r\n\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'\r\nimport RebornRadio from '@/components/reborn-radio/RebornRadio.vue'\r\nimport RebornText from '@/components/reborn-text/RebornText.vue'\r\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\r\n\r\nconst tabbar = ref('home')\r\nconst tabbar1 = ref(1)\r\nconst tabbar2 = ref(3)\r\nconst tabbar3 = ref(1)\r\nconst animation = ref<typeof tabbarAnimations[number] | null>(null)\r\nconst shape = ref<typeof tabbarShapes[number]>('normal')\r\nconst fixed = ref(false)\r\nconst demoColor = ref<typeof tabbarColors[number]>(tabbarColors[0])\r\nconst onlyIcon = ref(false)\r\n\r\nconst tabbarList = computed(() => {\r\n    const obj = {\r\n        home: '首页',\r\n        site: '分类',\r\n        shopping: '购物车',\r\n        my: '我的',\r\n    }\r\n    return Object.entries(obj).map(([key, value]) => {\r\n        return {\r\n            name: key,\r\n            title: value,\r\n            icon: `https://mall.leyifan.cn/static/h5/new_images/${key}_active.png`,\r\n            inactive: `https://mall.leyifan.cn/static/h5/new_images/${key}.png`,\r\n        }\r\n    })\r\n\r\n})\r\n\r\nfunction handleChange(event: any) {\r\n    console.log(event)\r\n}\r\n\r\n\r\nfunction handleChange1({ value }: { value: string }) {\r\n    uni.showToast({ title: '选中标签: ' + value, icon: 'none' })\r\n}\r\n\r\nfunction beforeChangeHook({ name }: { name: string | number }, done: (shouldProceed?: boolean) => void) {\r\n    uni.showLoading({ title: '校验中' })\r\n    setTimeout(() => {\r\n        uni.hideLoading()\r\n        if (name === 2) {\r\n            uni.showToast({ title: '请登录', icon: 'error' })\r\n            done(false)\r\n            return\r\n        }\r\n        done()\r\n    }, 500)\r\n}\r\n</script>\r\n\r\n<template>\r\n    <RebornPage title=\"Tabbar 标签栏\" description=\"页面底部标签栏，用于页面级路由跳转或内容区域切换。\" :ui=\"{ body: 'p-0' }\">\r\n\r\n        <RebornTabbar bordered :animation=\"animation\" :shape=\"shape\" v-model=\"tabbar\" :fixed=\"fixed\" :color=\"demoColor\"\r\n            :pure-icon=\"onlyIcon\" @change=\"handleChange\" :ball-shift-y=\"-10\">\r\n            <RebornTabbarTrigger v-for=\"item in tabbarList\" :key=\"item.name\" :name=\"item.name\" :title=\"item.title\"\r\n                :image-size=\"52\" :icon=\"item.icon\" :inactive=\"item.inactive\" />\r\n        </RebornTabbar>\r\n\r\n        <RebornCard title=\"参数配置\" customClass=\"flex flex-col gap-4 mx-4\">\r\n            <view class=\"space-y-3\">\r\n                <RebornText color=\"neutral\" customClass=\"text-26 font-bold\">颜色</RebornText>\r\n                <view class=\"flex flex-wrap gap-2\">\r\n                    <view v-for=\"c in tabbarColors\" :key=\"c\" class=\"\r\n                  size-4 cursor-pointer rounded-full ring-2 ring-transparent\r\n                  ring-offset-2 transition-all\r\n                \" :class=\"[\r\n                    `\r\n                    bg-${c}\r\n                  `,\r\n                    demoColor === c ? 'scale-110 ring-slate-400' : `\r\n                    hover:scale-110\r\n                  `,\r\n                ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n                        @click=\"demoColor = c\" />\r\n                </view>\r\n            </view>\r\n            <view class=\"flex flex-col gap-2\">\r\n                <RebornText color=\"neutral\" customClass=\"text-26 font-bold\">动画</RebornText>\r\n                <RebornRadioGroup v-model=\"animation\">\r\n                    <RebornRadio v-for=\"item in tabbarAnimations\" :key=\"item\" :value=\"item\">{{ item }}</RebornRadio>\r\n                </RebornRadioGroup>\r\n            </view>\r\n            <view class=\"flex flex-col gap-2\">\r\n                <RebornText color=\"neutral\" customClass=\"text-26 font-bold\">类型</RebornText>\r\n                <RebornRadioGroup v-model=\"shape\">\r\n                    <RebornRadio v-for=\"item in tabbarShapes\" :key=\"item\" :value=\"item\">{{ item }}</RebornRadio>\r\n                </RebornRadioGroup>\r\n            </view>\r\n            <view class=\"flex flex-col gap-2\">\r\n                <RebornText color=\"neutral\" customClass=\"text-26 font-bold\">纯图标标签栏</RebornText>\r\n                <RebornSwitch v-model=\"onlyIcon\" size=\"sm\" />\r\n            </view>\r\n            <view class=\"flex flex-col gap-2\">\r\n                <RebornText color=\"neutral\" customClass=\"text-26 font-bold\">是否固定底部</RebornText>\r\n                <RebornSwitch v-model=\"fixed\" size=\"sm\" />\r\n            </view>\r\n        </RebornCard>\r\n\r\n\r\n        <!-- 自定义图标 -->\r\n        <view class=\"text-26 font-bold mt-4 mb-2\">自定义图标</view>\r\n        <view class=\"relative w-full bg-gray-2 rounded-md\">\r\n            <RebornTabbar v-model=\"tabbar1\" @change=\"handleChange\" animation=\"flip\" active-color=\"#409EFF\"\r\n                inactive-color=\"#909399\">\r\n                <RebornTabbarTrigger title=\"首页\" icon=\"i-lucide-home\" />\r\n                <RebornTabbarTrigger title=\"分类\" icon=\"https://letaoyifan.com/images/svg/quickPurchase.svg\"\r\n                    inactive=\"https://letaoyifan.com/images/svg/wx.svg\" />\r\n                <RebornTabbarTrigger title=\"我的\" icon=\"i-lucide-user\" />\r\n            </RebornTabbar>\r\n        </view>\r\n\r\n        <!-- 自定义颜色 -->\r\n        <view class=\"text-26 font-bold mt-4 mb-2\">自定义颜色</view>\r\n        <view class=\"relative w-full bg-gray-2 rounded-md \">\r\n            <RebornTabbar v-model=\"tabbar2\" @change=\"handleChange\">\r\n                <RebornTabbarTrigger title=\"首页\" icon=\"i-lucide-home\" color=\"success\" />\r\n                <RebornTabbarTrigger title=\"分类\" icon=\"i-lucide-shopping-cart\" color=\"warning\" />\r\n                <RebornTabbarTrigger title=\"我的\" icon=\"i-lucide-user\" color=\"error\" />\r\n                <RebornTabbarTrigger title=\"最大值\" icon=\"i-lucide-image\" color=\"info\" />\r\n                <RebornTabbarTrigger title=\"客服\" icon=\"i-lucide-message-circle\" color=\"primary\" />\r\n            </RebornTabbar>\r\n        </view>\r\n\r\n        <!-- 监听切换事件 -->\r\n        <view class=\"text-26 font-bold mt-4 mb-2\">监听切换事件+固定底部</view>\r\n        <view class=\"relative w-full bg-gray-2 rounded-md \">\r\n            <RebornTabbar bordered :animation=\"animation\" :shape=\"shape\" v-model=\"tabbar\" :fixed=\"true\"\r\n                :color=\"demoColor\" :pure-icon=\"onlyIcon\" @change=\"handleChange1\" :ball-shift-y=\"-10\">\r\n                <RebornTabbarTrigger v-for=\"item in tabbarList\" :key=\"item.name\" :name=\"item.name\" :title=\"item.title\"\r\n                    :image-size=\"52\" :icon=\"item.icon\" :inactive=\"item.inactive\" />\r\n            </RebornTabbar>\r\n        </view>\r\n\r\n    </RebornPage>\r\n</template>",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-image"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-tabbar"
+  },
+  "sourceRefs": {
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-tabbar/RebornTabbar.vue",
+      "packages/uniapp-project/src/components/reborn-tabbar/RebornTabbarTrigger.vue",
+      "packages/uniapp-project/src/components/reborn-tabbar/index.ts",
+      "packages/uniapp-project/src/components/reborn-tabbar/reborn-tabbar-trigger.config.ts",
+      "packages/uniapp-project/src/components/reborn-tabbar/reborn-tabbar.config.ts",
+      "packages/uniapp-project/src/components/reborn-tabbar/types.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-tabbar.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "0d36659c4161b3442d92b541d9d54c004cda8ff4",
+    "hasOverride": false,
+    "extractors": {
+      "web": "absent",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

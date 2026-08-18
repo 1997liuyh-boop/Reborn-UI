@@ -1,0 +1,145 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-overlay",
+  "title": "Overlay 遮罩",
+  "description": "全屏遮罩层，支持点击关闭和滚动锁定。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "customClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": "组件自定义类名"
+    },
+    {
+      "name": "customStyle",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": "组件自定义样式"
+    },
+    {
+      "name": "modelValue",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否展示遮罩层，支持通过 `v-model` 双向绑定"
+    },
+    {
+      "name": "duration",
+      "type": "[object, number, boolean] as proptype<record<string, number> | number | boolean>",
+      "default": "300",
+      "required": false,
+      "description": "动画持续时间，单位毫秒"
+    },
+    {
+      "name": "lockScroll",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": "背景是否锁定滚动"
+    },
+    {
+      "name": "zIndex",
+      "type": "number",
+      "default": "10",
+      "required": false,
+      "description": "遮罩层的 z-index"
+    },
+    {
+      "name": "closeOnClickOverlay",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": "是否允许点击遮罩层关闭"
+    },
+    {
+      "name": "absolute",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否绝对定位。开启后将在祖先元素(position非static)内展示，用于指定节点的部分遮罩"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "遮罩层状态变化时触发",
+      "payload": "(val: Boolean)"
+    },
+    {
+      "name": "close",
+      "description": "关闭时触发",
+      "payload": "-"
+    },
+    {
+      "name": "click",
+      "description": ""
+    },
+    {
+      "name": "afterLeave",
+      "payload": "(e: \"afterLeave\"): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornOverlay from '@/components/reborn/ui/reborn-overlay/RebornOverlay.vue'\r\n\r\nconst show = ref(false)\r\nconst showTarget = ref(false)\r\nconst closeOnClickOverlay = ref(true)\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-6\">\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">基本使用 (全屏遮罩)</h3>\r\n            <div class=\"rounded-xl border bg-card text-card-foreground shadow p-4 flex gap-4\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"show = true\">打开全局遮罩</RebornButton>\r\n                <div class=\"flex items-center gap-2\">\r\n                    <UCheckbox v-model=\"closeOnClickOverlay\" label=\"允许点击背景关闭\" />\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">指定节点遮罩 (绝对定位)</h3>\r\n            <div class=\"rounded-xl border bg-card text-card-foreground shadow p-4\">\r\n                <div\r\n                    class=\"relative h-[300px] w-full bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center overflow-hidden\">\r\n                    <RebornButton color=\"primary\" variant=\"solid\" @click=\"showTarget = true\">在此区域打开遮罩</RebornButton>\r\n                    <div class=\"absolute bottom-4 right-4 text-sm text-gray-500\">此容器的 position 必须为 relative、absolute 或\r\n                        fixed</div>\r\n\r\n                    <RebornOverlay v-model=\"showTarget\" absolute :closeOnClickOverlay=\"closeOnClickOverlay\">\r\n                        <div class=\"flex items-center justify-center h-full\">\r\n                            <div\r\n                                class=\"bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl relative z-10 w-[250px] text-center\">\r\n                                <h4 class=\"text-base font-medium mb-4\">区域内的遮罩内容</h4>\r\n                                <RebornButton color=\"neutral\" variant=\"solid\" @click=\"showTarget = false\" block>\r\n                                    关闭\r\n                                </RebornButton>\r\n                            </div>\r\n                        </div>\r\n                    </RebornOverlay>\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <RebornOverlay v-model=\"show\" :closeOnClickOverlay=\"closeOnClickOverlay\">\r\n            <div class=\"flex items-center justify-center h-full\">\r\n                <div class=\"bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl relative z-10 w-[300px] text-center\">\r\n                    <h4 class=\"text-lg font-medium mb-4\">全局遮罩内容</h4>\r\n                    <p class=\"text-sm text-gray-500 mb-6\">点击四周背景关闭 (如果允许)</p>\r\n                    <RebornButton color=\"primary\" variant=\"solid\" @click=\"show = false\" block>我知道了</RebornButton>\r\n                </div>\r\n            </div>\r\n        </RebornOverlay>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport ReButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornOverlay from '@/components/reborn-overlay/RebornOverlay.vue'\r\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\r\nimport pinyin from './components/pinyin.vue'\r\nimport { ref } from 'vue'\r\nconst show = ref(false)\r\nconst show2 = ref(false)\r\nconst closeOnClickOverlay = ref(true)\r\n</script>\r\n<template>\r\n    <RebornPage title=\"Overlay 遮罩层\" description=\"创建一个遮罩层，用于强调特定的页面元素，并阻止用户进行其他操作。\">\r\n        <RebornCard custom-class=\"flex flex-col gap-4\">\r\n            <RebornSwitch v-model=\"closeOnClickOverlay\" active-label=\"允许直接关闭\" inactive-label=\"不允许直接关闭\" />\r\n            <ReButton v-if=\"closeOnClickOverlay\" block @click=\"show = true\">显示遮罩层</ReButton>\r\n            <ReButton block @click=\"show2 = true\">嵌入内容</ReButton>\r\n        </RebornCard>\r\n        <reborn-overlay v-model=\"show\" :closeOnClickOverlay=\"closeOnClickOverlay\" />\r\n        <reborn-overlay v-model=\"show2\" :closeOnClickOverlay=\"closeOnClickOverlay\">\r\n            <view class=\"h-full w-full flex justify-center items-center\">\r\n                <scroll-view\r\n                    scroll-y\r\n                    class=\"relative box-border h-3/4 w-3/4 mx-auto rounded-xl bg-white shadow-2xl\"\r\n                    @touchmove.stop>\r\n                    <view\r\n                        class=\"absolute right-4 top-4 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full bg-gray-100 transition-all active:scale-95 hover:bg-gray-200\"\r\n                        @click=\"show2 = false\">\r\n                        <view class=\"i-lucide-x size-6 text-gray-600\" />\r\n                    </view>\r\n                    <view class=\"p-6\">\r\n                        <pinyin />\r\n                    </view>\r\n                </scroll-view>\r\n            </view>\r\n        </reborn-overlay>\r\n    </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-transition"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-overlay"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-overlay/RebornOverlay.vue",
+      "app/components/reborn/ui/reborn-overlay/index.ts",
+      "app/components/reborn/ui/reborn-overlay/reborn-overlay.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-overlay/RebornOverlay.vue",
+      "packages/uniapp-project/src/components/reborn-overlay/index.ts",
+      "packages/uniapp-project/src/components/reborn-overlay/reborn-overlay.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-overlay.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "195546d81586d1620e38dda22f75fb1f67db1234",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

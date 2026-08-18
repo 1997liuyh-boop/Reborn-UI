@@ -1,0 +1,157 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-input-otp",
+  "title": "验证码输入",
+  "description": "用于短信验证码、OTP Token 输入的分格输入组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "otp",
+    "input",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "ui",
+      "type": "any",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "modelValue",
+      "type": "string",
+      "required": false,
+      "description": "输入值。",
+      "default": "''"
+    },
+    {
+      "name": "autofocus",
+      "type": "boolean",
+      "required": false,
+      "description": "是否自动聚焦。",
+      "default": "false"
+    },
+    {
+      "name": "length",
+      "type": "number",
+      "required": false,
+      "description": "验证码位数。",
+      "default": "4"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用。",
+      "default": "false"
+    },
+    {
+      "name": "inputType",
+      "type": "'text' | 'number' | 'digit'",
+      "required": false,
+      "description": "\"number\"",
+      "default": "'number'"
+    },
+    {
+      "name": "size",
+      "type": "typeof inputOtpSizes[number]",
+      "required": false,
+      "description": "\"lg\"",
+      "default": "'md'"
+    },
+    {
+      "name": "color",
+      "type": "typeof inputOtpColors[number]",
+      "required": false,
+      "description": "\"success\" \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "输入值变化。"
+    },
+    {
+      "name": "done",
+      "description": "输入完成（达到指定位数）。"
+    },
+    {
+      "name": "focus",
+      "description": "输入框获焦。"
+    },
+    {
+      "name": "blur",
+      "description": "输入框失焦。"
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornInputOtp from \"~/components/reborn/ui/reborn-input-otp/RebornInputOtp.vue\";\r\nimport { inputOtpColors, inputOtpSizes } from \"~/components/reborn/ui/reborn-input-otp/reborn-input-otp.config\";\r\n\r\nconst size = ref<any>(\"md\");\r\nconst color = ref<any>(\"primary\");\r\nconst value1 = ref(\"\");\r\nconst value2 = ref(\"\");\r\nconst disabled = ref(false);\r\n</script>\r\n\r\n<template>\r\n    <div class=\"flex w-full flex-col gap-10\">\r\n        <div\r\n            class=\"flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40\">\r\n            <div class=\"flex items-center gap-2\">\r\n                <span class=\"text-sm font-medium text-gray-500 dark:text-gray-400\">尺寸</span>\r\n                <USelect v-model=\"size\" :items=\"[...inputOtpSizes]\" class=\"w-28\" />\r\n            </div>\r\n            <div class=\"flex items-center gap-2\">\r\n                <span class=\"text-sm font-medium text-gray-500 dark:text-gray-400\">颜色</span>\r\n                <USelect v-model=\"color\" :items=\"[...inputOtpColors]\" class=\"w-28\" />\r\n            </div>\r\n            <UCheckbox v-model=\"disabled\" label=\"禁用\" />\r\n        </div>\r\n\r\n        <div class=\"grid gap-8\">\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">基础</h3>\r\n                <RebornInputOtp v-model=\"value1\" :size=\"size\" :color=\"color\" :disabled=\"disabled\" />\r\n                <p class=\"text-sm text-gray-500\">当前值: {{ value1 || '空' }}</p>\r\n            </div>\r\n\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">6位验证码</h3>\r\n                <RebornInputOtp v-model=\"value2\" :length=\"6\" :size=\"size\" :color=\"color\" />\r\n            </div>\r\n\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">颜色</h3>\r\n                <div class=\"flex flex-wrap gap-4\">\r\n                    <RebornInputOtp v-for=\"c in inputOtpColors\" :key=\"c\" :color=\"c\" :size=\"size\" :length=\"4\" />\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport { inputOtpColors, inputOtpSizes } from '@/components/reborn-input-otp/reborn-input-otp.config'\r\nimport RebornInputOtp from '@/components/reborn-input-otp/RebornInputOtp.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\n\r\nconst demoColor = ref<typeof inputOtpColors[number]>('primary')\r\nconst demoSize = ref<typeof inputOtpSizes[number]>('md')\r\nconst value1 = ref('')\r\nconst value2 = ref('')\r\nconst value3 = ref('')\r\nconst value11 = ref('12')\r\nconst value12 = ref('1234')\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"OTP 验证码输入\" description=\"验证码输入组件，用于输入一次性密码（OTP）或验证码，支持自定义位数、自动聚焦等\">\r\n    <RebornCard title=\"基础用法\" custom-class=\"flex flex-col gap-3\">\r\n      <view class=\"\r\n            text-sm font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \">\r\n        按钮颜色\r\n      </view>\r\n      <view class=\"flex flex-wrap gap-2\">\r\n        <view v-for=\"c in inputOtpColors\" :key=\"c\" class=\"\r\n              size-6 cursor-pointer rounded-full ring-2 ring-transparent\r\n              ring-offset-2 transition-all\r\n            \" :class=\"[\r\n              `\r\n                bg-${c}\r\n              `,\r\n              demoColor === c ? 'scale-110 ring-slate-400' : `hover:scale-110`,\r\n            ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n          @click=\"demoColor = c\" />\r\n      </view>\r\n      <view class=\"\r\n            text-sm font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \">\r\n        按钮大小\r\n      </view>\r\n      <view class=\"flex flex-wrap\">\r\n        <RebornButton v-for=\"s in inputOtpSizes\" :key=\"s\" variant=\"outline\"\r\n          :color=\"demoSize === s ? 'primary' : 'neutral'\" size=\"sm\" :square=\"false\" custom-class=\"rounded-full\"\r\n          @click=\"demoSize = s\" gap>\r\n          {{ s }}\r\n        </RebornButton>\r\n      </view>\r\n      <RebornInputOtp v-model=\"value1\" :color=\"demoColor\" :size=\"demoSize\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自动聚焦\">\r\n      <RebornInputOtp v-model=\"value2\" :autofocus=\"true\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自定义长度\">\r\n      <RebornInputOtp v-model=\"value3\" :length=\"6\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自定义样式\">\r\n      <RebornInputOtp v-model=\"value11\" :ui=\"{\r\n        item: 'bg-gray-100 rounded-full border-gray-200 !h-[90rpx] !w-[90rpx]',\r\n        value: 'text-primary font-bold',\r\n      }\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"禁用\">\r\n      <RebornInputOtp v-model=\"value12\" disabled />\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-input"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-input-otp"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-input-otp/RebornInputOtp.vue",
+      "app/components/reborn/ui/reborn-input-otp/index.ts",
+      "app/components/reborn/ui/reborn-input-otp/reborn-input-otp.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-input-otp/RebornInputOtp.vue",
+      "packages/uniapp-project/src/components/reborn-input-otp/index.ts",
+      "packages/uniapp-project/src/components/reborn-input-otp/reborn-input-otp.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-input-otp.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "2c5c0a8ac7b25023d374c0f73d6537f8ec09db99",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

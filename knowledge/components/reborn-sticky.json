@@ -1,0 +1,189 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-sticky",
+  "title": "Sticky 吸顶",
+  "description": "Sticky 组件用于将元素固定在页面顶部，当页面滚动时，被包裹的内容会始终保持在可视区域的顶部。常用于导航栏、标题栏等需要始终可见的内容。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "offsetTop",
+      "type": "number",
+      "required": false,
+      "description": "吸顶偏移量 (px)。",
+      "default": "0"
+    },
+    {
+      "name": "zIndex",
+      "type": "number",
+      "required": false,
+      "description": "吸顶后的层级。",
+      "default": "100"
+    },
+    {
+      "name": "scrollTop",
+      "type": "number",
+      "required": false,
+      "description": "当前页面的滚动距离。通常通过 `onPageScroll` 传入。",
+      "default": "0"
+    },
+    {
+      "name": "isNeedNavbarHeight",
+      "type": "boolean",
+      "required": false,
+      "description": "是否自动叠加导航栏高度 (H5端)。",
+      "default": "true"
+    },
+    {
+      "name": "navbarHeight",
+      "type": "number",
+      "required": false,
+      "description": "导航栏高度 (px)。",
+      "default": "44"
+    },
+    {
+      "name": "stickyTriggerLead",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0"
+    },
+    {
+      "name": "target",
+      "type": "string | HTMLElement",
+      "required": false,
+      "description": "",
+      "default": "undefined"
+    },
+    {
+      "name": "sticky",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "position",
+      "type": "'top' | 'bottom'",
+      "required": false,
+      "description": "",
+      "default": "'top'"
+    },
+    {
+      "name": "bottomBoundary",
+      "type": "'parent' | 'target'",
+      "required": false,
+      "description": "",
+      "default": "'parent'"
+    },
+    {
+      "name": "bottomPlaceholder",
+      "type": "'auto' | 'keep' | 'none'",
+      "required": false,
+      "description": "",
+      "default": "'auto'"
+    },
+    {
+      "name": "ui",
+      "type": "{ wrapper?: string, content?: string }",
+      "required": false,
+      "description": "",
+      "default": "undefined"
+    }
+  ],
+  "events": [
+    {
+      "name": "change",
+      "payload": "(e: 'change', isSticky: boolean): void;",
+      "description": ""
+    },
+    {
+      "name": "resize",
+      "payload": "(e: 'resize', rect: { height: number; width: number; left: number; top: number }): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "props": "(props: { isSticky: boolean }) => any",
+      "description": "自定义内容。Slot Props: `{ isSticky: boolean }`。"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "getRect",
+      "description": ""
+    },
+    {
+      "name": "isSticky",
+      "description": ""
+    },
+    {
+      "name": "height",
+      "description": ""
+    },
+    {
+      "name": "position",
+      "description": ""
+    },
+    {
+      "name": "rect",
+      "description": ""
+    },
+    {
+      "name": "forceUpdate",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n    <div class=\"space-y-4\">\r\n        <div class=\"p-4 border border-gray-200 dark:border-gray-800 rounded-lg\">\r\n            <h2 class=\"text-xl font-bold mb-4\">Sticky 吸顶 Demo</h2>\r\n            <p class=\"text-gray-500 mb-8\">\r\n                该组件与CSS中position: sticky属性实现的效果一致，当组件达到预设的到顶部距离时， 就会固定在指定位置。\r\n            </p>\r\n\r\n            <div class=\"space-y-4\">\r\n                <RebornSticky>\r\n                    <div class=\"bg-primary p-3 h-[40px] text-white flex flex-row items-center rounded shadow-sm\">\r\n                        Header - Default (Offset 0)\r\n                    </div>\r\n                </RebornSticky>\r\n\r\n                <div v-for=\"item in 10\" :key=\"`a-${item}`\"\r\n                    class=\"p-3 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded shadow-sm\">\r\n                    Item A - {{ item }}\r\n                </div>\r\n\r\n                <RebornSticky :offset-top=\"40\">\r\n                    <div class=\"bg-amber-500 p-3 h-[40px] text-white flex flex-row items-center rounded shadow-sm\">\r\n                        Header - Offset 40px\r\n                    </div>\r\n                </RebornSticky>\r\n\r\n                <div v-for=\"item in 10\" :key=\"`b-${item}`\"\r\n                    class=\"p-3 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded shadow-sm\">\r\n                    Item B - {{ item }}\r\n                </div>\r\n\r\n                <RebornSticky :offset-top=\"80\">\r\n                    <div class=\"bg-green-500 p-3 h-[40px] text-white flex flex-row items-center rounded shadow-sm\">\r\n                        Header - Offset 80px\r\n                    </div>\r\n                </RebornSticky>\r\n\r\n                <div v-for=\"item in 30\" :key=\"`c-${item}`\"\r\n                    class=\"p-3 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded shadow-sm\">\r\n                    Item C - {{ item }}\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <RebornBackTop />\r\n    </div>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\nimport RebornSticky from \"~/components/reborn/ui/reborn-sticky/RebornSticky.vue\"\r\nimport RebornBackTop from \"~/components/reborn/ui/reborn-back-top/RebornBackTop.vue\"\r\n</script>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport type { backTopColors, backTopSizes } from '@/components/reborn-back-top/reborn-back-top.config'\r\nimport RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornSticky from '@/components/reborn-sticky/RebornSticky.vue'\r\n\r\nconst items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`)\r\nconst scrollTop = ref(0)\r\n\r\nconst color = ref<typeof backTopColors[number]>('primary')\r\nconst size = ref<typeof backTopSizes[number]>('md')\r\n\r\nonPageScroll((e) => {\r\n  scrollTop.value = e.scrollTop\r\n})\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Sticky 吸顶\"\r\n    description=\"该组件与CSS中position: sticky属性实现的效果一致，当组件达到预设的到顶部距离时， 就会固定在指定位置，组件位置大于预设的顶部距离时，会重新按照正常的布局排列。\"\r\n    custom-class=\"space-y-2\">\r\n    <RebornSticky :scroll-top=\"scrollTop\">\r\n      <view class=\"rounded flex h-[40px] flex-row items-center bg-primary p-3 text-white\">\r\n        Header - 1\r\n      </view>\r\n    </RebornSticky>\r\n\r\n    <view v-for=\"(item, index) in items\" :key=\"item\" class=\"\r\n        rounded bg-white p-3 shadow\r\n        dark:bg-gray-800 dark:text-white mb-2\r\n      \" :class=\"[index == 0 ? 'mt-2' : '']\">\r\n      {{ item }}\r\n    </view>\r\n\r\n    <RebornSticky :scroll-top=\"scrollTop\" :offset-top=\"40\">\r\n      <view class=\"rounded flex h-[40px] flex-row items-center bg-warning p-3 text-white\">\r\n        Header - 2\r\n      </view>\r\n    </RebornSticky>\r\n\r\n    <view v-for=\"(item, index) in items\" :key=\"item\" class=\"\r\n        rounded bg-white p-3 shadow\r\n        dark:bg-gray-800 dark:text-white mb-2 \r\n      \" :class=\"[index == 0 ? 'mt-2' : '']\">\r\n      {{ item }}\r\n    </view>\r\n\r\n    <RebornSticky :scroll-top=\"scrollTop\" :offset-top=\"80\">\r\n      <view class=\"rounded flex h-[40px] flex-row items-center bg-success p-3 text-white\">\r\n        Header - 3\r\n      </view>\r\n    </RebornSticky>\r\n\r\n    <view v-for=\"(item, index) in items\" :key=\"item\" class=\"\r\n        rounded bg-white p-3 shadow\r\n        dark:bg-gray-800 dark:text-white mb-2 \r\n      \" :class=\"[index == 0 ? 'mt-2' : '']\">\r\n      {{ item }}\r\n    </view>\r\n\r\n    <!-- 基础用法 -->\r\n    <RebornBackTop :color=\"color\" :size=\"size\" :scroll-top=\"scrollTop\" />\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-sticky"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-sticky/RebornSticky.vue",
+      "app/components/reborn/ui/reborn-sticky/reborn-sticky.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-sticky/RebornSticky.vue",
+      "packages/uniapp-project/src/components/reborn-sticky/index.ts",
+      "packages/uniapp-project/src/components/reborn-sticky/reborn-sticky.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-sticky.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "f6fbd98e021b9a33a5571a6dc68e1f89edddd293",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

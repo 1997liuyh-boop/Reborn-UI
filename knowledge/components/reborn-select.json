@@ -1,0 +1,314 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-select",
+  "title": "下拉选择",
+  "description": "自定义下拉选择组件，支持键盘导航和动画过渡。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "select",
+    "dropdown",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "SelectValue",
+      "required": false,
+      "description": "(string \\",
+      "default": "null"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "弹出层的标题。",
+      "default": "'请选择'"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "选择器的占位符文本。",
+      "default": "'请选择'"
+    },
+    {
+      "name": "options",
+      "type": "SelectOption[]",
+      "required": false,
+      "description": "选择器的数据源选项。`SelectOption` 包含 `label`、`value`、`disabled` 等字段。",
+      "default": "() => []"
+    },
+    {
+      "name": "showTrigger",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示默认的触发器。",
+      "default": "true"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用选择器。UniApp 版本兼容 `reborn-form`。",
+      "default": "false"
+    },
+    {
+      "name": "columnCount",
+      "type": "number",
+      "required": false,
+      "description": "数据源的列数，用于多列选择。",
+      "default": "1"
+    },
+    {
+      "name": "splitor",
+      "type": "string",
+      "required": false,
+      "description": "多选或多列数据在触发器中的分隔符文本。",
+      "default": "' - '"
+    },
+    {
+      "name": "confirmText",
+      "type": "string",
+      "required": false,
+      "description": "弹出层确认按钮文本。",
+      "default": "'确定'"
+    },
+    {
+      "name": "showConfirm",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示弹出层确认按钮。",
+      "default": "true"
+    },
+    {
+      "name": "cancelText",
+      "type": "string",
+      "required": false,
+      "description": "弹出层取消按钮文本。",
+      "default": "'取消'"
+    },
+    {
+      "name": "showCancel",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示弹出层取消按钮。",
+      "default": "true"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示清空按钮。",
+      "default": "true"
+    },
+    {
+      "name": "color",
+      "type": "typeof selectColors[number]",
+      "required": false,
+      "description": "'success' \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "size",
+      "type": "typeof selectSizes[number]",
+      "required": false,
+      "description": "'lg'` (Web) / `'sm' \\",
+      "default": "'lg'"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    empty: ClassValue\r\n    buttons: ClassValue\r\n    emptyText: ClassValue\r\n    cancel: ClassValue\r\n    cancelButton: ClassValue\r\n    confirm: ClassValue\r\n    confirmButton: ClassValue\r\n  }>",
+      "required": false,
+      "description": "用于覆盖 `RebornSelect` 内部（如选项列表）样式的 UI 配置对象。",
+      "default": "{}"
+    },
+    {
+      "name": "triggerUi",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    content: ClassValue\r\n    text: ClassValue\r\n    placeholder: ClassValue\r\n    iconWrapper: ClassValue\r\n    clearIcon: ClassValue\r\n    arrowIcon: ClassValue\r\n  }>",
+      "required": false,
+      "description": "用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。",
+      "default": "{}"
+    },
+    {
+      "name": "popupUi",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    mask: ClassValue\r\n    popup: ClassValue\r\n    inner: ClassValue\r\n    draw: ClassValue\r\n    header: ClassValue\r\n    title: ClassValue\r\n    container: ClassValue\r\n  }>",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "pickerUi",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    header: ClassValue\r\n    headerText: ClassValue\r\n    pickerContainer: ClassValue\r\n    item: ClassValue\r\n    itemText: ClassValue\r\n    indicator: ClassValue\r\n  }>",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "required": false,
+      "description": "是否为多选模式。开启后 `modelValue` 为数组格式。",
+      "default": "false"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "自定义样式类名。"
+    },
+    {
+      "name": "bordered",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示边框。",
+      "default": "true"
+    },
+    {
+      "name": "showArrow",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示右侧箭头图标。",
+      "default": "true"
+    },
+    {
+      "name": "arrowAnimation",
+      "type": "boolean",
+      "required": false,
+      "description": "展开时箭头是否旋转动画。",
+      "default": "true"
+    },
+    {
+      "name": "closeOn",
+      "type": "SelectTriggerProps[\"closeOn\"]",
+      "required": false,
+      "description": "'click'",
+      "default": "\"click\""
+    },
+    {
+      "name": "portal",
+      "type": "SelectTriggerProps[\"portal\"]",
+      "required": false,
+      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受任何祖先 `overflow` / `transform` 裁剪（如 `RebornDialog` 内）；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。",
+      "default": "true"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "payload": "(e: 'update:modelValue', value: SelectValue): void",
+      "description": "更新绑定值。"
+    },
+    {
+      "name": "change",
+      "payload": "(e: 'change', value: SelectValue, select: any): void",
+      "description": "选择值改变时触发。Web 版本在选择时立即触发，UniApp 版本在确认后触发。"
+    },
+    {
+      "name": "changing",
+      "payload": "(e: 'changing', value: SelectValue): void",
+      "description": "滚动列表选项正在改变时触发（未确认）。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "tag",
+      "props": "(props: { selectItem: any[] }) => any",
+      "description": "自定义选择后在触发器中显示的标签内容。`selectItem` 为当前选中的完整选项对象数组。"
+    },
+    {
+      "name": "prepend",
+      "props": "() => any",
+      "description": "在选择列表上方插入自定义内容，位于 `RebornPickerView` 之前。"
+    },
+    {
+      "name": "append",
+      "props": "() => any",
+      "description": "在选择列表下方插入自定义内容，位于 `RebornPickerView` 之后、按钮区域之前。"
+    },
+    {
+      "name": "option",
+      "props": "(props: { item: SelectOption, index: number }) => any",
+      "description": "自定义选项渲染内容。Web 版本提供 `option` 对象和 `active` 状态。"
+    },
+    {
+      "name": "empty",
+      "props": "() => any",
+      "description": "自定义数据为空时的显示内容，默认显示\"暂无数据\"。"
+    },
+    {
+      "name": "cover",
+      "description": "覆盖整个触发器内容的插槽，完全替代文本和图标。"
+    },
+    {
+      "name": "default",
+      "description": "自定义触发器内容。"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "open",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { reactive } from \"vue\";\r\nimport { z } from \"zod\";\r\nimport RebornSelect from \"~/components/reborn/ui/reborn-select/RebornSelect.vue\";\r\nimport type { SelectOption } from \"~/components/reborn/ui/reborn-select/RebornSelect.vue\";\r\nimport RebornForm from \"~/components/reborn/ui/reborn-form/RebornForm.vue\";\r\nimport RebornFormItem from \"~/components/reborn/ui/reborn-form/RebornFormItem.vue\";\r\nimport { selectColors, selectSizes } from \"~/components/reborn/ui/reborn-select/reborn-select.config\";\r\n\r\n// --- 数据源 ---\r\n\r\n/** 主数据源：含禁用项，用于演示选项级别的禁用态 */\r\nconst frameworkOptions: SelectOption[] = [\r\n    { label: \"Vue.js\", value: \"vue\", icon: \"logos:vue\", desc: \"渐进式框架\" },\r\n    { label: \"React\", value: \"react\", icon: \"logos:react\", desc: \"UI 构建库\" },\r\n    { label: \"Svelte\", value: \"svelte\", icon: \"logos:svelte-icon\", desc: \"编译时框架\" },\r\n    { label: \"Solid.js\", value: \"solid\", icon: \"logos:solidjs-icon\", desc: \"细粒度响应式\" },\r\n    { label: \"Angular（暂不可选）\", value: \"angular\", icon: \"logos:angular-icon\", desc: \"全功能框架\", disabled: true },\r\n];\r\n\r\n/** 长列表数据源：用于演示展开时自动定位已选项、以及滚动时的浮层跟随 */\r\nconst cityOptions: SelectOption[] = Array.from({ length: 60 }, (_, i) => ({\r\n    label: `城市站点 ${String(i + 1).padStart(2, \"0\")}`,\r\n    value: `city-${i + 1}`,\r\n}));\r\n\r\n// --- Playground 状态 ---\r\n\r\nconst defaultState: Record<string, any> = {\r\n    value: \"city-30\",\r\n    size: \"md\",\r\n    color: \"primary\",\r\n    multiple: false,\r\n    clearable: true,\r\n    disabled: false,\r\n    bordered: true,\r\n    showArrow: true,\r\n    arrowAnimation: true,\r\n    closeOn: \"click\",\r\n    portal: true,\r\n    placeholder: \"请选择站点\",\r\n};\r\n\r\nconst state = ref<Record<string, any>>({ ...defaultState });\r\n\r\nfunction resetState() {\r\n    state.value = { ...defaultState };\r\n}\r\n\r\n// 单选与多选的 modelValue 语义不同（标量 vs 数组），切换时若不收敛类型，\r\n// 会出现「已选中却显示占位符」这类脏状态。\r\nwatch(\r\n    () => state.value.multiple,\r\n    (isMultiple) => {\r\n        const current = state.value.value;\r\n        state.value.value = isMultiple\r\n            ? (current === null || current === undefined || current === \"\" ? [] : [current])\r\n            : (Array.isArray(current) ? (current[0] ?? null) : current);\r\n    },\r\n);\r\n\r\nconst controls: any = [\r\n    {\r\n        title: \"基础属性\",\r\n        children: [\r\n            {\r\n                label: \"尺寸规格\",\r\n                key: \"size\",\r\n                component: \"select\" as const,\r\n                defaultValue: \"md\",\r\n                props: { options: selectSizes.map((s) => ({ label: s, value: s })) },\r\n            },\r\n            {\r\n                label: \"配色方案\",\r\n                key: \"color\",\r\n                component: \"select\" as const,\r\n                defaultValue: \"primary\",\r\n                props: { options: selectColors.map((c) => ({ label: c, value: c })) },\r\n            },\r\n            { label: \"占位文字\", key: \"placeholder\", component: \"input\" as const, defaultValue: \"请选择站点\" },\r\n        ],\r\n    },\r\n    {\r\n        title: \"交互控制\",\r\n        children: [\r\n            { label: \"多选模式\", key: \"multiple\", component: \"checkbox\" as const, defaultValue: false },\r\n            { label: \"可清空\", key: \"clearable\", component: \"checkbox\" as const, defaultValue: true },\r\n            {\r\n                label: \"关闭时机\",\r\n                key: \"closeOn\",\r\n                component: \"select\" as const,\r\n                defaultValue: \"click\",\r\n                props: {\r\n                    options: [\r\n                        { label: \"click（外部完成点击）\", value: \"click\" },\r\n                        { label: \"mousedown（外部按下即收）\", value: \"mousedown\" },\r\n                    ],\r\n                },\r\n            },\r\n            { label: \"浮层传送到 body\", key: \"portal\", component: \"checkbox\" as const, defaultValue: true },\r\n        ],\r\n    },\r\n    {\r\n        title: \"外观状态\",\r\n        children: [\r\n            { label: \"显示边框\", key: \"bordered\", component: \"checkbox\" as const, defaultValue: true },\r\n            { label: \"显示箭头\", key: \"showArrow\", component: \"checkbox\" as const, defaultValue: true },\r\n            { label: \"箭头旋转动画\", key: \"arrowAnimation\", component: \"checkbox\" as const, defaultValue: true },\r\n            { label: \"禁用状态\", key: \"disabled\", component: \"checkbox\" as const, defaultValue: false },\r\n        ],\r\n    },\r\n];\r\n\r\n// --- 各展示区块的独立状态 ---\r\n\r\nconst coloredValue = ref(\"vue\");\r\nconst sizeValue = ref(\"vue\");\r\n\r\n/** 多选：初始给两项，验证展开时不会因为点击选项而收起 */\r\nconst multipleValue = ref<string[]>([\"vue\", \"react\"]);\r\nconst multipleSelected = computed(() =>\r\n    frameworkOptions.filter((o) => multipleValue.value.includes(o.value)),\r\n);\r\nfunction removeSelected(value: string) {\r\n    multipleValue.value = multipleValue.value.filter((v) => v !== value);\r\n}\r\n\r\n/** 浮层定位：分别放在滚动容器内与页面流中 */\r\nconst scrollBoxValue = ref(\"city-20\");\r\nconst followValue = ref(\"city-45\");\r\n/** portal 关闭后的对照组：浮层留在触发器内，会被容器 overflow 裁掉 */\r\nconst clippedValue = ref(\"city-20\");\r\n\r\n/** 关闭时机 */\r\nconst closeOnClickValue = ref(\"vue\");\r\nconst closeOnMousedownValue = ref(\"vue\");\r\n\r\n/** 选项状态 */\r\nconst disabledItemValue = ref(\"vue\");\r\nconst emptyValue = ref(null);\r\nconst plainValue = ref(\"vue\");\r\n\r\n/** 插槽定制 */\r\nconst slotOptionValue = ref(\"react\");\r\nconst coverValue = ref(\"svelte\");\r\n\r\n/** 深度样式定制 */\r\nconst customUiValue = ref(\"solid\");\r\n\r\n// --- 表单集成 ---\r\n\r\n/**\r\n * 表单场景：size / disabled 由 RebornForm 下发，校验失败时触发器自动进入错误态，\r\n * 收起面板（blur）与选中（change）都会触发校验。\r\n */\r\nconst formModel = reactive({ framework: null as string | null, stack: [] as string[] });\r\nconst formRef = ref<any>(null);\r\n\r\nconst formRules = z.object({\r\n    framework: z.string({ message: \"请选择主框架\" }).min(1, \"请选择主框架\"),\r\n    stack: z.array(z.string()).min(2, \"技术栈至少选择 2 项\"),\r\n});\r\n\r\nasync function submitForm() {\r\n    const valid = await formRef.value?.validate();\r\n    console.log(\"[RebornSelect] 表单校验结果：\", valid, formModel);\r\n}\r\n\r\nfunction resetForm() {\r\n    formRef.value?.resetFields();\r\n}\r\n\r\nconst sizeSections = [\r\n    { label: \"小尺寸 (sm)\", size: \"sm\" as const },\r\n    { label: \"标准尺寸 (md)\", size: \"md\" as const },\r\n    { label: \"大尺寸 (lg)\", size: \"lg\" as const },\r\n];\r\n\r\nfunction onChange(value: any) {\r\n    console.log(\"[RebornSelect] 选中值变化：\", value);\r\n}\r\n</script>\r\n\r\n<template>\r\n    <div class=\"flex w-full flex-col gap-12 pt-4 pb-24\">\r\n        <!-- 1. 交互演练场 -->\r\n        <Playground v-model=\"state\" :controls=\"controls\" component-name=\"RebornSelect\" title=\"交互体验\"\r\n            description=\"通过左侧面板实时调节组件属性，在右侧查看视觉反馈。数据源为 60 个站点，展开时会自动定位到已选项\">\r\n            <template #tag>\r\n                <button\r\n                    class=\"flex cursor-pointer items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-widest text-primary uppercase transition-all hover:bg-primary/20 active:scale-95\"\r\n                    @click=\"resetState\">\r\n                    <Icon name=\"lucide:rotate-ccw\" size=\"12\" />\r\n                    重置配置\r\n                </button>\r\n            </template>\r\n\r\n            <RebornSelect v-model=\"state.value\" :options=\"cityOptions\" :size=\"state.size\" :color=\"state.color\"\r\n                :multiple=\"state.multiple\" :clearable=\"state.clearable\" :disabled=\"state.disabled\"\r\n                :bordered=\"state.bordered\" :show-arrow=\"state.showArrow\" :arrow-animation=\"state.arrowAnimation\"\r\n                :close-on=\"state.closeOn\" :portal=\"state.portal\" :placeholder=\"state.placeholder\" class=\"min-w-64\"\r\n                @change=\"onChange\" />\r\n        </Playground>\r\n\r\n        <!-- 2. 核心色彩 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">核心色彩</h3>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n            <div class=\"grid gap-4 sm:grid-cols-2\">\r\n                <div v-for=\"c in selectColors\" :key=\"c\"\r\n                    class=\"flex items-center justify-between rounded-2xl border border-gray-100/80 bg-white/60 p-4 backdrop-blur-2xl transition-all hover:border-gray-200 hover:shadow-sm dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <span class=\"text-xs font-bold tracking-tighter text-gray-400 uppercase\">{{ c }}</span>\r\n                    <RebornSelect v-model=\"coloredValue\" :color=\"c\" :options=\"frameworkOptions\" size=\"sm\"\r\n                        class=\"w-40\" />\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 3. 尺寸规范 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">尺寸规范</h3>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n            <div\r\n                class=\"flex flex-col items-center justify-center gap-8 rounded-2xl border border-gray-100 bg-gray-50/30 p-8 sm:flex-row dark:border-gray-800 dark:bg-gray-900/30\">\r\n                <div v-for=\"s in sizeSections\" :key=\"s.size\" class=\"flex flex-col items-center gap-4\">\r\n                    <RebornSelect v-model=\"sizeValue\" :size=\"s.size\" color=\"info\" :options=\"frameworkOptions\"\r\n                        class=\"w-44\" />\r\n                    <span class=\"text-caption-sm font-black tracking-widest text-gray-400 uppercase\">{{ s.label }}</span>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 4. 多选模式 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">多选模式</h3>\r\n                <p class=\"text-sm text-gray-500\">面板保持展开，可连续勾选多项</p>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n\r\n            <div class=\"grid gap-6 md:grid-cols-2\">\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">连续勾选</h4>\r\n                    <p class=\"text-xs text-gray-500\">\r\n                        <code class=\"text-violet-500\">multiple</code>\r\n                        模式下点击选项只切换勾选状态，只有点击面板外部才会收起；已选项右侧带对勾标记\r\n                    </p>\r\n                    <RebornSelect v-model=\"multipleValue\" :options=\"frameworkOptions\" multiple color=\"success\"\r\n                        placeholder=\"可多选框架\" class=\"w-full\" @change=\"onChange\" />\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">选中结果</h4>\r\n                    <p class=\"text-xs text-gray-500\">与上方选择器共享同一份 modelValue，可单独移除某一项</p>\r\n                    <div class=\"flex min-h-10 flex-wrap items-center gap-2\">\r\n                        <span v-for=\"item in multipleSelected\" :key=\"item.value\"\r\n                            class=\"group flex items-center gap-1.5 rounded-full bg-success/10 py-1.5 pr-2 pl-3 text-xs font-medium text-success transition-all hover:bg-success/20\">\r\n                            {{ item.label }}\r\n                            <button class=\"cursor-pointer opacity-60 transition-all hover:opacity-100 active:scale-90\"\r\n                                @click=\"removeSelected(item.value)\">\r\n                                <Icon name=\"lucide:x\" size=\"12\" />\r\n                            </button>\r\n                        </span>\r\n                        <span v-if=\"multipleSelected.length === 0\" class=\"text-xs text-gray-400\">尚未选择任何项</span>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 5. 浮层定位 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">浮层定位</h3>\r\n                <p class=\"text-sm text-gray-500\">浮层传送至 body，始终锚定触发器</p>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n\r\n            <div class=\"grid gap-6 md:grid-cols-2\">\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">滚动容器内</h4>\r\n                    <p class=\"text-xs text-gray-500\">\r\n                        展开后滚动灰色区域：浮层实时跟随触发器，且不会被容器的\r\n                        <code class=\"text-violet-500\">overflow-hidden</code> 裁掉\r\n                    </p>\r\n                    <div\r\n                        class=\"h-56 overflow-y-auto rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-4 dark:border-gray-700 dark:bg-gray-900/50\">\r\n                        <p class=\"pb-4 text-xs text-gray-400\">向下滚动一段距离后再展开选择器 ↓</p>\r\n                        <div class=\"h-24\" />\r\n                        <RebornSelect v-model=\"scrollBoxValue\" :options=\"cityOptions\" color=\"info\" class=\"w-full\" />\r\n                        <div class=\"h-72\" />\r\n                        <p class=\"text-xs text-gray-400\">容器底部</p>\r\n                    </div>\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">\r\n                        对照组：<code class=\"text-violet-500\">:portal=\"false\"</code>\r\n                    </h4>\r\n                    <p class=\"text-xs text-gray-500\">\r\n                        浮层留在触发器内，只能在容器内绘制，因此被 overflow 截断。\r\n                        需要浮层随父容器一起滚动、一起裁剪时才关掉 portal\r\n                    </p>\r\n                    <div\r\n                        class=\"h-56 overflow-y-auto rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-4 dark:border-gray-700 dark:bg-gray-900/50\">\r\n                        <p class=\"pb-4 text-xs text-gray-400\">展开后与左侧对比 ↓</p>\r\n                        <div class=\"h-24\" />\r\n                        <RebornSelect v-model=\"clippedValue\" :options=\"cityOptions\" color=\"error\" :portal=\"false\"\r\n                            class=\"w-full\" />\r\n                        <div class=\"h-72\" />\r\n                        <p class=\"text-xs text-gray-400\">容器底部</p>\r\n                    </div>\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl md:col-span-2 dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">自动翻转与定位</h4>\r\n                    <p class=\"text-xs text-gray-500\">\r\n                        下方空间不足时自动向上展开；60 项长列表在展开瞬间即滚动到已选项，无需手动查找\r\n                    </p>\r\n                    <RebornSelect v-model=\"followValue\" :options=\"cityOptions\" color=\"warning\" class=\"w-full max-w-md\" />\r\n                    <ul class=\"grid gap-2 pt-2 text-xs text-gray-500 sm:grid-cols-3\">\r\n                        <li class=\"flex gap-2\">\r\n                            <span class=\"font-black text-gray-300 dark:text-gray-600\">01</span>\r\n                            展开方向在展开瞬间锁定，滚动中不会翻转，浮层始终贴住触发器\r\n                        </li>\r\n                        <li class=\"flex gap-2\">\r\n                            <span class=\"font-black text-gray-300 dark:text-gray-600\">02</span>\r\n                            浮层最小宽度对齐触发器，内容更宽时向右扩展并留出视口边距\r\n                        </li>\r\n                        <li class=\"flex gap-2\">\r\n                            <span class=\"font-black text-gray-300 dark:text-gray-600\">03</span>\r\n                            支持 <code class=\"text-violet-500\">↑ ↓</code> 移动高亮、\r\n                            <code class=\"text-violet-500\">Enter</code> 选中、\r\n                            <code class=\"text-violet-500\">Esc</code> 收起\r\n                        </li>\r\n                    </ul>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 6. 选项与外观状态 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">状态矩阵</h3>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n\r\n            <div class=\"grid gap-6 sm:grid-cols-2 lg:grid-cols-4\">\r\n                <div\r\n                    class=\"space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-xs font-bold tracking-widest text-gray-400 uppercase\">禁用单项</h4>\r\n                    <p class=\"text-xs text-gray-500\">选项自带 <code class=\"text-violet-500\">disabled</code></p>\r\n                    <RebornSelect v-model=\"disabledItemValue\" :options=\"frameworkOptions\" class=\"w-full\" />\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-xs font-bold tracking-widest text-gray-400 uppercase\">空数据</h4>\r\n                    <p class=\"text-xs text-gray-500\">无选项时展示兜底文案</p>\r\n                    <RebornSelect v-model=\"emptyValue\" :options=\"[]\" placeholder=\"暂无可选项\" class=\"w-full\" />\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-xs font-bold tracking-widest text-gray-400 uppercase\">无边框</h4>\r\n                    <p class=\"text-xs text-gray-500\">嵌入工具栏等紧凑场景</p>\r\n                    <RebornSelect v-model=\"plainValue\" :options=\"frameworkOptions\" :bordered=\"false\" :clearable=\"false\"\r\n                        class=\"w-full\" />\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-xs font-bold tracking-widest text-gray-400 uppercase\">整体禁用</h4>\r\n                    <p class=\"text-xs text-gray-500\">不可展开、不可清空</p>\r\n                    <RebornSelect v-model=\"plainValue\" :options=\"frameworkOptions\" disabled class=\"w-full\" />\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 7. 关闭时机 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">关闭时机</h3>\r\n                <p class=\"text-sm text-gray-500\">closeOn</p>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n            <div\r\n                class=\"grid gap-6 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl sm:grid-cols-2 dark:border-white/5 dark:bg-slate-900/40\">\r\n                <div class=\"flex flex-col gap-2\">\r\n                    <span class=\"text-caption-sm font-black tracking-widest text-gray-400 uppercase\">closeOn: click</span>\r\n                    <p class=\"pb-1 text-xs text-gray-500\">在外部完成一次完整点击后才收起</p>\r\n                    <RebornSelect v-model=\"closeOnClickValue\" :options=\"frameworkOptions\" close-on=\"click\"\r\n                        class=\"w-full\" />\r\n                </div>\r\n                <div class=\"flex flex-col gap-2\" data-demo=\"close-on-mousedown\">\r\n                    <span class=\"text-caption-sm font-black tracking-widest text-gray-400 uppercase\">closeOn:\r\n                        mousedown</span>\r\n                    <p class=\"pb-1 text-xs text-gray-500\">在外部按下鼠标（含右键）立即收起</p>\r\n                    <RebornSelect v-model=\"closeOnMousedownValue\" :options=\"frameworkOptions\" close-on=\"mousedown\"\r\n                        class=\"w-full\" />\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 8. 插槽定制 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">插槽定制</h3>\r\n                <p class=\"text-sm text-gray-500\">接管选项与触发器的渲染</p>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n\r\n            <div class=\"grid gap-6 md:grid-cols-2\">\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">option 插槽</h4>\r\n                    <p class=\"text-xs text-gray-500\">在选项内渲染图标与副标题，作用域提供 option 与 active</p>\r\n                    <RebornSelect v-model=\"slotOptionValue\" :options=\"frameworkOptions\" :ui=\"{ option: 'h-auto py-2.5' }\"\r\n                        class=\"w-full\">\r\n                        <template #option=\"{ option, active }\">\r\n                            <div class=\"flex w-full items-center gap-3\">\r\n                                <Icon :name=\"option.icon\" class=\"size-5 shrink-0\" />\r\n                                <div class=\"flex min-w-0 flex-1 flex-col\">\r\n                                    <span class=\"truncate text-sm font-medium\">{{ option.label }}</span>\r\n                                    <span class=\"truncate text-xs text-gray-400\">{{ option.desc }}</span>\r\n                                </div>\r\n                                <Icon v-if=\"active\" name=\"lucide:check\" class=\"size-4 shrink-0 text-primary\" />\r\n                            </div>\r\n                        </template>\r\n                    </RebornSelect>\r\n                </div>\r\n\r\n                <div\r\n                    class=\"space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                    <h4 class=\"text-sm font-bold tracking-widest text-gray-400 uppercase\">cover 插槽</h4>\r\n                    <p class=\"text-xs text-gray-500\">完全接管触发器内容，自带箭头与状态样式由业务决定</p>\r\n                    <RebornSelect v-model=\"coverValue\" :options=\"frameworkOptions\"\r\n                        :trigger-ui=\"{ trigger: 'h-auto p-0 border-none bg-transparent' }\" class=\"w-full\">\r\n                        <template #cover=\"{ displayText, placeholder, isOpen }\">\r\n                            <div\r\n                                class=\"flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white shadow-lg shadow-violet-500/25 transition-all hover:shadow-violet-500/40 active:scale-[0.98]\">\r\n                                <Icon name=\"lucide:sparkles\" class=\"size-4 shrink-0\" />\r\n                                <span class=\"flex-1 truncate text-sm font-semibold\">\r\n                                    {{ displayText || placeholder }}\r\n                                </span>\r\n                                <Icon name=\"lucide:chevron-down\"\r\n                                    :class=\"['size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-180']\" />\r\n                            </div>\r\n                        </template>\r\n                    </RebornSelect>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 9. 表单集成 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">表单集成</h3>\r\n                <p class=\"text-sm text-gray-500\">尺寸、禁用与校验态由 RebornForm 下发</p>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n\r\n            <div\r\n                class=\"space-y-6 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40\">\r\n                <p class=\"text-xs text-gray-500\">\r\n                    选择器不需要自己接错误状态：<code class=\"text-violet-500\">size</code>、\r\n                    <code class=\"text-violet-500\">disabled</code>、<code class=\"text-violet-500\">error</code>\r\n                    都从表单上下文注入。选中触发 change 校验，收起面板触发 blur 校验\r\n                </p>\r\n\r\n                <RebornForm ref=\"formRef\" :model-value=\"formModel\" :rules=\"formRules\" label-width=\"100px\"\r\n                    label-position=\"left\" size=\"md\" :trigger=\"['change', 'blur']\">\r\n                    <RebornFormItem prop=\"framework\" label=\"主框架\" required>\r\n                        <RebornSelect v-model=\"formModel.framework\" :options=\"frameworkOptions\" placeholder=\"请选择主框架\" />\r\n                    </RebornFormItem>\r\n\r\n                    <RebornFormItem prop=\"stack\" label=\"技术栈\" required>\r\n                        <RebornSelect v-model=\"formModel.stack\" :options=\"frameworkOptions\" multiple\r\n                            placeholder=\"至少选择 2 项\" />\r\n                    </RebornFormItem>\r\n                </RebornForm>\r\n\r\n                <div class=\"flex gap-3\">\r\n                    <button\r\n                        class=\"cursor-pointer rounded-full bg-primary px-5 py-2 text-xs font-bold tracking-widest text-white uppercase transition-all hover:opacity-90 active:scale-95\"\r\n                        @click=\"submitForm\">\r\n                        校验并提交\r\n                    </button>\r\n                    <button\r\n                        class=\"cursor-pointer rounded-full bg-gray-100 px-5 py-2 text-xs font-bold tracking-widest text-gray-500 uppercase transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700\"\r\n                        @click=\"resetForm\">\r\n                        重置\r\n                    </button>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <!-- 10. 深度样式定制 -->\r\n        <section class=\"space-y-6\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">深度样式定制</h3>\r\n                <p class=\"text-sm text-gray-500\">triggerUi / ui</p>\r\n                <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\r\n            </div>\r\n            <div\r\n                class=\"rounded-3xl border-2 border-indigo-100 bg-indigo-50/30 p-8 dark:border-indigo-900/50 dark:bg-indigo-950/10\">\r\n                <h4 class=\"mb-2 text-sm font-bold tracking-widest text-indigo-400 uppercase\">Custom Styling</h4>\r\n                <p class=\"mb-6 text-xs text-indigo-500/70\">\r\n                    triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并\r\n                </p>\r\n                <RebornSelect v-model=\"customUiValue\" :options=\"frameworkOptions\" :trigger-ui=\"{\r\n                    trigger: 'border-dashed border-2 rounded-xl bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 px-4 h-14',\r\n                }\" :ui=\"{\r\n                    dropdown: 'rounded-xl shadow-2xl shadow-indigo-500/10 border-indigo-100 dark:border-indigo-900 bg-white/90 dark:bg-gray-800/90 backdrop-blur',\r\n                    optionHighlight: 'bg-indigo-50 dark:bg-indigo-900/40',\r\n                }\" class=\"w-full max-w-md\" />\r\n            </div>\r\n        </section>\r\n    </div>\r\n</template>",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport type { SelectOption } from '@/components/reborn-picker-view/RebornPickerView.vue'\r\nimport { reactive, ref } from 'vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornInput from '@/components/reborn-input/RebornInput.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport { selectColors, selectSizes } from '@/components/reborn-select/reborn-select.config'\r\nimport RebornSelect from '@/components/reborn-select/RebornSelect.vue'\r\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\r\n\r\nconst isShowCancel = ref(true)\r\nconst isButtonText = ref(false)\r\nconst isDisabled = ref(false)\r\nconst isShowClear = ref(true)\r\nconst splitor = ref('-')\r\nconst currentColor = ref<typeof selectColors[number]>(selectColors[0])\r\nconst currentSize = ref<typeof selectSizes[number]>(selectSizes[1])\r\n\r\ninterface Form {\r\n  selected: number | null\r\n  selected2: string\r\n  selected3: number[]\r\n}\r\n\r\nconst form = reactive<Form>({\r\n  selected: 3,\r\n  selected2: '#FF6600',\r\n  selected3: [1, 3, 4],\r\n})\r\n\r\nconst selectRef2 = ref<InstanceType<typeof RebornSelect> | null>(null)\r\n\r\nconst options = ref<SelectOption[]>([\r\n  { label: 'HTML', value: 1 },\r\n  { label: 'CSS', value: 2 },\r\n  { label: 'JavaScript', value: 3 },\r\n  { label: 'Node', value: 4 },\r\n  { label: 'Vite', value: 5 },\r\n  { label: 'Webpack', value: 6 },\r\n])\r\n\r\nconst options2 = ref<SelectOption[]>([\r\n  {\r\n    value: '#E63415',\r\n    label: 'red',\r\n  },\r\n  {\r\n    value: '#FF6600',\r\n    label: 'orange',\r\n  },\r\n  {\r\n    value: '#FFDE0A',\r\n    label: 'yellow',\r\n  },\r\n  {\r\n    value: '#1EC79D',\r\n    label: 'green',\r\n  },\r\n  {\r\n    value: '#14CCCC',\r\n    label: 'cyan',\r\n  },\r\n  {\r\n    value: '#4167F0',\r\n    label: 'blue',\r\n  },\r\n  {\r\n    value: '#6222C9',\r\n    label: 'purple',\r\n  },\r\n])\r\n\r\nconst options3 = ref<SelectOption[]>([\r\n  {\r\n    label: '福建省',\r\n    value: 1,\r\n    children: [\r\n      {\r\n        label: '福州市',\r\n        value: 1,\r\n        children: [\r\n          { label: '鼓楼区', value: 1 },\r\n          { label: '台江区', value: 2 },\r\n          { label: '仓山区', value: 3 },\r\n          { label: '马尾区', value: 4 },\r\n        ],\r\n      },\r\n      {\r\n        label: '厦门市',\r\n        value: 2,\r\n        children: [\r\n          { label: '思明区', value: 1 },\r\n          { label: '湖里区', value: 2 },\r\n          { label: '集美区', value: 3 },\r\n          { label: '海沧区', value: 4 },\r\n        ],\r\n      },\r\n      {\r\n        label: '泉州市',\r\n        value: 3,\r\n        children: [\r\n          { label: '鲤城区', value: 1 },\r\n          { label: '丰泽区', value: 2 },\r\n          { label: '洛江区', value: 3 },\r\n          { label: '泉港区', value: 4 },\r\n        ],\r\n      },\r\n    ],\r\n  },\r\n  {\r\n    label: '浙江省',\r\n    value: 2,\r\n    children: [\r\n      {\r\n        label: '杭州市',\r\n        value: 1,\r\n        children: [\r\n          { label: '上城区', value: 1 },\r\n          { label: '下城区', value: 2 },\r\n          { label: '江干区', value: 3 },\r\n          { label: '拱墅区', value: 4 },\r\n        ],\r\n      },\r\n      {\r\n        label: '宁波市',\r\n        value: 2,\r\n        children: [\r\n          { label: '海曙区', value: 1 },\r\n          { label: '江北区', value: 2 },\r\n          { label: '北仑区', value: 3 },\r\n        ],\r\n      },\r\n    ],\r\n  },\r\n  {\r\n    label: '湖南省',\r\n    value: 3,\r\n    children: [\r\n      {\r\n        label: '长沙市',\r\n        value: 1,\r\n        children: [\r\n          { label: '芙蓉区', value: 1 },\r\n          { label: '天心区', value: 2 },\r\n          { label: '岳麓区', value: 3 },\r\n        ],\r\n      },\r\n      {\r\n        label: '株洲市',\r\n        value: 2,\r\n        children: [\r\n          { label: '荷塘区', value: 1 },\r\n          { label: '芦淞区', value: 2 },\r\n        ],\r\n      },\r\n    ],\r\n  },\r\n  {\r\n    label: '江西省',\r\n    value: 4,\r\n    children: [\r\n      {\r\n        label: '南昌市',\r\n        value: 1,\r\n        children: [\r\n          { label: '东湖区', value: 1 },\r\n          { label: '西湖区', value: 2 },\r\n          { label: '青云谱区', value: 3 },\r\n        ],\r\n      },\r\n      {\r\n        label: '九江市',\r\n        value: 2,\r\n        children: [\r\n          { label: '浔阳区', value: 1 },\r\n          { label: '濂溪区', value: 2 },\r\n        ],\r\n      },\r\n    ],\r\n  },\r\n])\r\n\r\nconst options4 = ref<SelectOption[]>([])\r\n\r\nfunction openSelect2() {\r\n  selectRef2.value?.open((value: any) => {\r\n    const d = options2.value.find(item => item.value == value)\r\n    uni.showToast({ title: `你选择了 ${d?.label}`, icon: 'none' })\r\n  })\r\n}\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"选择器\" description=\"用于从一组选项中选择一个值的组件。\">\r\n    <RebornCard title=\"基础用法\" overflow-visible>\r\n      <view class=\"text-xs\">\r\n        基础配置\r\n      </view>\r\n      <RebornSelect v-model=\"form.selected\" :options=\"options\" :disabled=\"isDisabled\" :show-cancel=\"isShowCancel\"\r\n        :clearable=\"isShowClear\" :size=\"currentSize\" :color=\"currentColor\" :confirm-text=\"isButtonText ? '下一步' : '确定'\"\r\n        :cancel-text=\"isButtonText ? '关闭' : '取消'\" />\r\n\r\n      <view class=\"text-xs\">\r\n        插槽\r\n      </view>\r\n      <RebornSelect v-model=\"form.selected2\" :options=\"options2\" :disabled=\"isDisabled\" :show-cancel=\"isShowCancel\"\r\n        :clearable=\"isShowClear\" :size=\"currentSize\" :color=\"currentColor\" :confirm-text=\"isButtonText ? '下一步' : '确定'\"\r\n        :cancel-text=\"isButtonText ? '关闭' : '取消'\">\r\n        <template #tag=\"{ selectItem }\">\r\n          <view v-for=\"value in selectItem\" :key=\"value.value\" class=\"\r\n              flex items-center\r\n            \">\r\n            <view class=\"mr-1 size-3 rounded-full\" :style=\"{ backgroundColor: value.value }\" />\r\n            <text :style=\"{ color: value.value }\">{{ value.label }}</text>\r\n          </view>\r\n        </template>\r\n        <template #option=\"{ item, index }\">\r\n          <view class=\"mr-1 size-3 rounded-full\" :style=\"{ backgroundColor: item.value }\" />\r\n          <text :style=\"{ color: item.value }\">{{ item.label }}</text>\r\n        </template>\r\n      </RebornSelect>\r\n\r\n      <view class=\"text-xs\">\r\n        自定义样式\r\n      </view>\r\n      <RebornSelect v-model=\"form.selected3\" :options=\"options3\" :column-count=\"3\" :size=\"currentSize\"\r\n        :color=\"currentColor\" :splitor=\"splitor\" :triggerUi=\"{ text: 'text-red-5' }\" />\r\n    </RebornCard>\r\n    <RebornCard title=\"控制器\" overflow-visible>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">尺寸 (Size)</text>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view v-for=\"size in selectSizes\" :key=\"size\">\r\n            <RebornButton size=\"xs\" :variant=\"currentSize === size ? 'solid' : 'outline'\"\r\n              :color=\"currentSize === size ? 'primary' : 'neutral'\" @tap=\"currentSize = size\">\r\n              {{ size }}\r\n            </RebornButton>\r\n          </view>\r\n        </view>\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">颜色 (Color)</text>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view v-for=\"c in selectColors\" :key=\"c\" class=\"\r\n              size-4 cursor-pointer rounded-full ring-2 ring-transparent\r\n              ring-offset-2 transition-all\r\n            \" :class=\"[\r\n              `\r\n                bg-${c}\r\n              `,\r\n              currentColor === c ? 'scale-110 ring-slate-400' : `\r\n                hover:scale-110\r\n              `,\r\n            ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n            @click=\"currentColor = c\" />\r\n        </view>\r\n      </view>\r\n      <view class=\"mt-2 flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">显示取消按钮</text>\r\n        <RebornSwitch v-model=\"isShowCancel\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">显示清空按钮</text>\r\n        <RebornSwitch v-model=\"isShowClear\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">修改按钮文案</text>\r\n        <RebornSwitch v-model=\"isButtonText\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">禁用</text>\r\n        <RebornSwitch v-model=\"isDisabled\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">分割符号</text>\r\n        <view>\r\n          <RebornInput v-model=\"splitor\" size=\"sm\" />\r\n        </view>\r\n      </view>\r\n    </RebornCard>\r\n    <!-- 自定义触发器 -->\r\n    <RebornCard title=\"自定义触发器\" overflow-visible>\r\n      <view class=\"text-xs text-gray-4\">\r\n        通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开\r\n      </view>\r\n      <RebornButton variant=\"outline\" color=\"primary\" @tap=\"openSelect2\">\r\n        打开选择器\r\n      </RebornButton>\r\n      <RebornSelect ref=\"selectRef2\" v-model=\"form.selected2\" :options=\"options2\" :show-trigger=\"false\" />\r\n    </RebornCard>\r\n\r\n    <!-- 空数据 -->\r\n    <RebornCard title=\"空数据\" overflow-visible>\r\n      <RebornSelect v-model=\"form.selected\" :options=\"options4\" />\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-button",
+    "reborn-picker-view",
+    "reborn-popup",
+    "reborn-select-trigger"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx",
+    "lodash-es"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-select"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-select/RebornSelect.vue",
+      "app/components/reborn/ui/reborn-select/index.ts",
+      "app/components/reborn/ui/reborn-select/reborn-select.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-select/RebornSelect.vue",
+      "packages/uniapp-project/src/components/reborn-select/index.ts",
+      "packages/uniapp-project/src/components/reborn-select/reborn-select.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-select.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "5105c7604e2c1b20dd83c66feaf06a8591697191",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

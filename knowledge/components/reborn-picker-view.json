@@ -1,0 +1,127 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-picker-view",
+  "title": "reborn-picker-view",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "color",
+      "type": "typeof pickerColors[number]",
+      "required": false,
+      "description": "",
+      "default": "'primary'"
+    },
+    {
+      "name": "headers",
+      "type": "string[]",
+      "required": false,
+      "description": "",
+      "default": "() => []"
+    },
+    {
+      "name": "value",
+      "type": "number[]",
+      "required": false,
+      "description": "",
+      "default": "() => []"
+    },
+    {
+      "name": "columns",
+      "type": "SelectOption[][]",
+      "required": false,
+      "description": "",
+      "default": "() => []"
+    },
+    {
+      "name": "itemHeight",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "isAppIOS() ? 50 : 42"
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "300"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    header: ClassValue\r\n    headerText: ClassValue\r\n    pickerContainer: ClassValue\r\n    item: ClassValue\r\n    itemText: ClassValue\r\n    indicator: ClassValue\r\n  }>",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:value",
+      "payload": "(e: 'update:value', indexes: number[]): void",
+      "description": ""
+    },
+    {
+      "name": "change-value",
+      "payload": "(e: 'change-value', values: any[]): void",
+      "description": ""
+    },
+    {
+      "name": "change-index",
+      "payload": "(e: 'change-index', indexes: number[]): void",
+      "description": ""
+    },
+    {
+      "name": "change-item",
+      "payload": "(e: 'change-item', item: any): void",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPickerView from '@/components/reborn-picker-view/RebornPickerView.vue'\r\n\r\nconst columns = ref([\r\n  [\r\n    { label: '周一', value: 1 },\r\n    { label: '周二', value: 2 },\r\n    { label: '周三', value: 3 },\r\n    { label: '周四', value: 4 },\r\n    { label: '周五', value: 5 },\r\n  ],\r\n  [\r\n    { label: '上午', value: 1 },\r\n    { label: '下午', value: 2 },\r\n  ],\r\n])\r\n\r\nconst value = ref([0, 0])\r\nconst selectedValues = ref([1, 1])\r\n\r\nfunction onChange(vals: any[]) {\r\n  selectedValues.value = vals\r\n}\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"PickerView 选择器视图\">\r\n    <RebornCard title=\"基础用法\">\r\n      <view class=\"h-[300px] w-full bg-white rounded-lg overflow-hidden\">\r\n        <RebornPickerView\r\n          :columns=\"columns\"\r\n          v-model:value=\"value\"\r\n          @change-value=\"onChange\"\r\n        />\r\n      </view>\r\n      <view class=\"mt-4 text-sm text-gray-500\">\r\n        当前选中值: {{ selectedValues }}\r\n      </view>\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx",
+    "lodash-es"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-picker-view"
+  },
+  "sourceRefs": {
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-picker-view/RebornPickerView.vue",
+      "packages/uniapp-project/src/components/reborn-picker-view/index.ts",
+      "packages/uniapp-project/src/components/reborn-picker-view/reborn-picker-view.config.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "3227a3691bf1ee72a9c75cbd4a22297e78755184",
+    "hasOverride": false,
+    "extractors": {
+      "web": "absent",
+      "uniapp": "ok",
+      "docs": "missing"
+    }
+  }
+}

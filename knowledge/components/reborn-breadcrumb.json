@@ -1,0 +1,122 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-breadcrumb",
+  "title": "面包屑",
+  "description": "显示当前页面的路径，快速返回之前的任意页面。",
+  "category": "navigation",
+  "tags": [
+    "navigation",
+    "breadcrumb"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "separator",
+      "type": "string",
+      "required": false,
+      "description": "分隔符",
+      "default": "'/'"
+    },
+    {
+      "name": "separatorIcon",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "any",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "to",
+      "type": "string | object",
+      "required": false,
+      "description": "路由跳转目标，同 vue-router 的 to 属性",
+      "default": "—"
+    },
+    {
+      "name": "replace",
+      "type": "'navigate' | 'redirect' | 'switchTab' | 'reLaunch'",
+      "required": false,
+      "description": "导航跳转模式。**Web:** `push`, `replace`, `blank` (新窗口)；**UniApp:** `navigate`, `redirect`, `switchTab`, `reLaunch",
+      "default": "'navigate'"
+    },
+    {
+      "name": "target",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": "自定义默认内容"
+    },
+    {
+      "name": "separator",
+      "description": "自定义分隔符内容"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport RebornBreadcrumb from \"~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue\"\nimport RebornBreadcrumbItem from \"~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumbItem.vue\"\nimport RebornSelect from \"~/components/reborn/ui/reborn-select/RebornSelect.vue\"\nimport RebornInput from \"~/components/reborn/ui/reborn-input/RebornInput.vue\"\n\nconst separator = ref('/')\nconst separatorIcon = ref('')\n\nconst separatorOptions = [\n  { label: 'Slash (/)', value: '/' },\n  { label: 'Arrow (>)', value: '>' },\n  { label: 'Dash (-)', value: '-' },\n  { label: 'Double Arrow (»)', value: '»' },\n  { label: 'Dot (•)', value: '•' },\n]\n</script>\n\n<template>\n  <div class=\"flex flex-col gap-12 w-full pb-24 px-4\">\n    <!-- Header -->\n    <div class=\"flex flex-col gap-3\">\n      <h2 class=\"text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white\">Breadcrumb 面包屑</h2>\n      <p class=\"text-xl text-gray-500 dark:text-gray-400 max-w-3xl\">\n        导航辅助工具，显示当前页面在层级结构中的位置，允许用户快速返回上级页面。\n      </p>\n    </div>\n\n    <!-- Interactive Playground -->\n    <section class=\"flex flex-col gap-6\">\n      <div class=\"flex items-center gap-2\">\n        <div class=\"w-1 h-6 bg-primary rounded-full\"></div>\n        <h3 class=\"text-2xl font-bold text-gray-800 dark:text-gray-200\">交互演练场</h3>\n      </div>\n      <div\n        class=\"grid grid-cols-1 lg:grid-cols-4 gap-0 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-2xl overflow-hidden\">\n        <div class=\"col-span-1 p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-900 flex flex-col gap-8\">\n          <div class=\"flex flex-col gap-3\">\n            <span class=\"text-xs font-bold uppercase tracking-widest text-gray-400\">分隔符类型</span>\n            <RebornSelect v-model=\"separator\" :options=\"separatorOptions\" />\n          </div>\n          <div class=\"flex flex-col gap-3\">\n            <span class=\"text-xs font-bold uppercase tracking-widest text-gray-400\">图标分隔符</span>\n            <RebornInput v-model=\"separatorIcon\" placeholder=\"如: lucide:chevron-right\" />\n            <p class=\"text-[10px] text-gray-400\">输入 Iconify 图标名称，将覆盖文本分隔符</p>\n          </div>\n        </div>\n        <div class=\"col-span-3 p-12 flex items-center justify-center bg-white dark:bg-gray-950 min-h-[300px]\">\n          <RebornBreadcrumb :separator=\"separator\" :separator-icon=\"separatorIcon\">\n            <RebornBreadcrumbItem to=\"/\">首页</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem to=\"/components\">组件库</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem to=\"/components/navigation\">导航组件</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem>面包屑</RebornBreadcrumbItem>\n          </RebornBreadcrumb>\n        </div>\n      </div>\n    </section>\n\n    <!-- Examples Grid -->\n    <div class=\"grid grid-cols-1 md:grid-cols-2 gap-8\">\n      <!-- Base Usage -->\n      <section class=\"flex flex-col gap-4 p-8 border border-gray-200 dark:border-gray-800 rounded-3xl bg-white dark:bg-gray-950/50\">\n        <h4 class=\"text-lg font-bold\">基础用法</h4>\n        <p class=\"text-sm text-gray-500 mb-4\">最简单的用法，通过 <code>separator</code> 定义分隔符。</p>\n        <div class=\"py-4 px-6 bg-gray-50 dark:bg-gray-900/50 rounded-2xl\">\n          <RebornBreadcrumb separator=\">\">\n            <RebornBreadcrumbItem to=\"/\">首页</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem to=\"/promotion\">活动管理</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem>活动详情</RebornBreadcrumbItem>\n          </RebornBreadcrumb>\n        </div>\n      </section>\n\n      <!-- Icon Separator -->\n      <section class=\"flex flex-col gap-4 p-8 border border-gray-200 dark:border-gray-800 rounded-3xl bg-white dark:bg-gray-950/50\">\n        <h4 class=\"text-lg font-bold\">图标分隔符</h4>\n        <p class=\"text-sm text-gray-500 mb-4\">使用 <code>separator-icon</code> 来设置自定义图标。</p>\n        <div class=\"py-4 px-6 bg-gray-50 dark:bg-gray-900/50 rounded-2xl\">\n          <RebornBreadcrumb separator-icon=\"lucide:arrow-right\">\n            <RebornBreadcrumbItem to=\"/\">首页</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem to=\"/user\">用户中心</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem>设置</RebornBreadcrumbItem>\n          </RebornBreadcrumb>\n        </div>\n      </section>\n\n      <!-- External Links -->\n      <section class=\"flex flex-col gap-4 p-8 border border-gray-200 dark:border-gray-800 rounded-3xl bg-white dark:bg-gray-950/50\">\n        <h4 class=\"text-lg font-bold\">外部链接与新窗口</h4>\n        <p class=\"text-sm text-gray-500 mb-4\">支持 <code>target</code> 参数，可以控制打开方式。</p>\n        <div class=\"py-4 px-6 bg-gray-50 dark:bg-gray-900/50 rounded-2xl\">\n          <RebornBreadcrumb separator=\"/\">\n            <RebornBreadcrumbItem to=\"/\">首页</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem to=\"https://github.com\" target=\"_blank\">\n              GitHub (新窗口)\n            </RebornBreadcrumbItem>\n            <RebornBreadcrumbItem>项目详情</RebornBreadcrumbItem>\n          </RebornBreadcrumb>\n        </div>\n      </section>\n\n      <!-- Custom Separator Slot -->\n      <section class=\"flex flex-col gap-4 p-8 border border-gray-200 dark:border-gray-800 rounded-3xl bg-white dark:bg-gray-950/50\">\n        <h4 class=\"text-lg font-bold\">自定义分隔符插槽</h4>\n        <p class=\"text-sm text-gray-500 mb-4\">通过 <code>separator</code> 插槽可以为每一项定义不同的分隔符。</p>\n        <div class=\"py-4 px-6 bg-gray-50 dark:bg-gray-900/50 rounded-2xl\">\n          <RebornBreadcrumb>\n            <RebornBreadcrumbItem to=\"/\">首页</RebornBreadcrumbItem>\n            <RebornBreadcrumbItem to=\"/shop\">\n              商城\n              <template #separator>\n                <span class=\"text-primary mx-1\">~</span>\n              </template>\n            </RebornBreadcrumbItem>\n            <RebornBreadcrumbItem>购物车</RebornBreadcrumbItem>\n          </RebornBreadcrumb>\n        </div>\n      </section>\n    </div>\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { RebornBreadcrumb, RebornBreadcrumbItem } from '@/components/reborn-breadcrumb'\n\nconst separator = ref('/')\nconst separatorIcon = ref('')\n\nconst handleItemClick = (item: string) => {\n  console.log('Clicked:', item)\n}\n</script>\n\n<template>\n  <view class=\"p-4 bg-gray-50 min-h-screen\">\n    <view class=\"mb-8\">\n      <view class=\"text-32 font-bold mb-2\">Breadcrumb 面包屑</view>\n      <view class=\"text-28 text-gray-500\">显示当前页面的路径，快速返回之前的任意页面。</view>\n    </view>\n\n    <view class=\"space-y-6\">\n      <!-- 基础用法 -->\n      <view class=\"bg-white p-4 rounded-xl shadow-sm\">\n        <view class=\"text-28 font-bold mb-4\">基础用法</view>\n        <RebornBreadcrumb separator=\"/\">\n          <RebornBreadcrumbItem to=\"/pages/index/index\">首页</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>活动管理</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>活动列表</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>活动详情</RebornBreadcrumbItem>\n        </RebornBreadcrumb>\n      </view>\n\n      <!-- 图标分隔符 -->\n      <view class=\"bg-white p-4 rounded-xl shadow-sm\">\n        <view class=\"text-28 font-bold mb-4\">图标分隔符</view>\n        <RebornBreadcrumb separator-icon=\"i-lucide-chevron-right\">\n          <RebornBreadcrumbItem to=\"/pages/index/index\">首页</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>推广管理</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>推广列表</RebornBreadcrumbItem>\n        </RebornBreadcrumb>\n      </view>\n\n      <!-- 自定义分隔符 -->\n      <view class=\"bg-white p-4 rounded-xl shadow-sm\">\n        <view class=\"text-28 font-bold mb-4\">自定义分隔符</view>\n        <RebornBreadcrumb separator=\">\">\n          <RebornBreadcrumbItem to=\"/pages/index/index\">首页</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>设置</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>个人信息</RebornBreadcrumbItem>\n        </RebornBreadcrumb>\n      </view>\n\n      <!-- 路由跳转 -->\n      <view class=\"bg-white p-4 rounded-xl shadow-sm\">\n        <view class=\"text-28 font-bold mb-4\">路由跳转 (Replace)</view>\n        <RebornBreadcrumb separator=\"/\">\n          <RebornBreadcrumbItem to=\"/pages/index/index\" replace>首页 (Replace)</RebornBreadcrumbItem>\n          <RebornBreadcrumbItem>当前页</RebornBreadcrumbItem>\n        </RebornBreadcrumb>\n      </view>\n    </view>\n  </view>\n</template>\n\n<style scoped>\n.space-y-6 > view + view {\n  margin-top: 1.5rem;\n}\n</style>\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-breadcrumb"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue",
+      "app/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumbItem.vue",
+      "app/components/reborn/ui/reborn-breadcrumb/index.ts",
+      "app/components/reborn/ui/reborn-breadcrumb/reborn-breadcrumb.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-breadcrumb/RebornBreadcrumb.vue",
+      "packages/uniapp-project/src/components/reborn-breadcrumb/RebornBreadcrumbItem.vue",
+      "packages/uniapp-project/src/components/reborn-breadcrumb/index.ts",
+      "packages/uniapp-project/src/components/reborn-breadcrumb/reborn-breadcrumb.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-breadcrumb.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "2041bc8beb8cde65064df407edd08cb614e6d2f5",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "balance-slider",
+  "title": "平衡滑块",
+  "description": "具备可调颜色、限制和交互提示的动态平衡滑块。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "initialValue",
+      "type": "number",
+      "required": false,
+      "description": "滑块的初始位置（0-100）。",
+      "default": "50"
+    },
+    {
+      "name": "leftColor",
+      "type": "string",
+      "required": false,
+      "description": "滑块左侧的背景色。",
+      "default": "\"#e68a00\""
+    },
+    {
+      "name": "rightColor",
+      "type": "string",
+      "required": false,
+      "description": "滑块右侧的背景色。",
+      "default": "\"#ffffff\""
+    },
+    {
+      "name": "minShiftLimit",
+      "type": "number",
+      "required": false,
+      "description": "启动位移动画的最小阈值。",
+      "default": "40"
+    },
+    {
+      "name": "maxShiftLimit",
+      "type": "number",
+      "required": false,
+      "description": "关闭位移动画的最大阈值。",
+      "default": "68"
+    },
+    {
+      "name": "leftContent",
+      "type": "string",
+      "required": false,
+      "description": "左侧提示中显示的文本。",
+      "default": "\"LEFT\""
+    },
+    {
+      "name": "rightContent",
+      "type": "string",
+      "required": false,
+      "description": "右侧提示中显示的文本。",
+      "default": "\"RIGHT\""
+    },
+    {
+      "name": "indicatorColor",
+      "type": "string",
+      "required": false,
+      "description": "滑块中央指示器的颜色。",
+      "default": "\"#FFFFFF\""
+    },
+    {
+      "name": "borderRadius",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "8"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst isDark = computed(() => useColorMode().value == \"dark\");\r\nconst rightColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\r\nconst indicatorColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"w-full p-4\">\r\n    <BalanceSlider\r\n      :right-color=\"rightColor\"\r\n      left-content=\"COFFEE\"\r\n      right-content=\"MILK\"\r\n      :indicator-color=\"indicatorColor\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add balance-slider"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/balance-slider/BalanceSlider.vue",
+      "app/components/reborn/ui/balance-slider/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/balance-slider.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "f0e763584c8163d8aee94e087fce3fd390cf1fb4",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

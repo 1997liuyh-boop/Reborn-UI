@@ -1,0 +1,137 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-draggable",
+  "title": "Draggable 拖拽排序",
+  "description": "支持列表拖拽排序的容器组件。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "className",
+      "type": "string",
+      "default": "\"\"",
+      "required": false,
+      "description": "组件自定义类名"
+    },
+    {
+      "name": "ui",
+      "type": "object as proptype<any>",
+      "default": "() => ({})",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "modelValue",
+      "type": "array as proptype<any[]>",
+      "default": "() => []",
+      "required": false,
+      "description": "绑定的数据列表，支持通过 `v-model` 双向绑定"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否禁用整体拖拽功能"
+    },
+    {
+      "name": "columns",
+      "type": "number",
+      "default": "1",
+      "required": false,
+      "description": "**(仅UniApp)** 列数：1为单列布局，>1为网格布局"
+    },
+    {
+      "name": "longPress",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": "**(仅UniApp)** 是否需要长按触发"
+    },
+    {
+      "name": "gap",
+      "type": "number",
+      "default": "4",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "绑定的数据列表发生变化时触发",
+      "payload": "(val: Array)` 最新数据列表"
+    },
+    {
+      "name": "change",
+      "description": "列表项顺序改变时触发",
+      "payload": "(val: Array)` 最新数据列表"
+    },
+    {
+      "name": "start",
+      "description": "拖拽开始时触发",
+      "payload": "(index: Number\\"
+    },
+    {
+      "name": "end",
+      "description": "拖拽结束时触发",
+      "payload": "(index: Number)` 最终落点元素索引"
+    }
+  ],
+  "slots": [
+    {
+      "name": "item",
+      "props": "",
+      "description": "自定义列表项内容"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { ref } from \"vue\";\r\n\r\n// 基础数据\r\nconst list1 = ref([\r\n    { name: \"项目 1\", color: \"bg-red-500\" },\r\n    { name: \"项目 2\", color: \"bg-blue-500\" },\r\n    { name: \"项目 3\", color: \"bg-green-500\" },\r\n    { name: \"项目 4\", color: \"bg-yellow-500\" },\r\n]);\r\n\r\n// 网格数据\r\nconst list2 = ref([\r\n    { name: \"A\", color: \"bg-purple-500\" },\r\n    { name: \"B\", color: \"bg-pink-500\", disabled: true },\r\n    { name: \"C\", color: \"bg-indigo-500\" },\r\n    { name: \"D\", color: \"bg-cyan-500\", disabled: true },\r\n    { name: \"E\", color: \"bg-teal-500\" },\r\n    { name: \"F\", color: \"bg-orange-500\" },\r\n]);\r\n\r\nfunction onStart(payload: any) {\r\n    console.log(\"开始拖拽:\", payload);\r\n}\r\n\r\nfunction onEnd(index?: number) {\r\n    console.log(\"结束拖拽:\", index);\r\n}\r\n\r\nfunction onChange(newList: any[]) {\r\n    console.log(\"数据已更新:\", newList);\r\n}\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-6\">\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">基本使用</h3>\r\n            <div class=\"rounded-xl border bg-card text-card-foreground shadow p-4\">\r\n                <RebornDraggable v-model=\"list1\" @start=\"onStart\" @end=\"onEnd\" @change=\"onChange\">\r\n                    <template #item=\"{ item }\">\r\n                        <div class=\"flex h-16 items-center rounded-lg px-4 text-white shadow-sm\" :class=\"item.color\">\r\n                            {{ item.name }}\r\n                        </div>\r\n                    </template>\r\n                </RebornDraggable>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">禁用部分项目 (网格)</h3>\r\n            <div class=\"rounded-xl border bg-card text-card-foreground shadow p-4\">\r\n                <!-- 注意：在 Web 端我们用 CSS 网格实现多列，可以在 config 中调整 root class，这里我们直接传递自定义 class 也可以 -->\r\n                <RebornDraggable v-model=\"list2\" className=\"flex flex-wrap gap-2\">\r\n                    <template #item=\"{ item }\">\r\n                        <div class=\"flex h-16 w-16 items-center justify-center rounded-lg text-white shadow-sm\" :class=\"[\r\n                            { 'opacity-50 cursor-not-allowed': item.disabled },\r\n                            item.color\r\n                        ]\">\r\n                            {{ item.name }}\r\n                        </div>\r\n                    </template>\r\n                </RebornDraggable>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">全部禁用</h3>\r\n            <div class=\"rounded-xl border bg-card text-card-foreground shadow p-4\">\r\n                <RebornDraggable v-model=\"list1\" disabled>\r\n                    <template #item=\"{ item }\">\r\n                        <div class=\"mb-2 flex h-16 items-center rounded-lg px-4 text-white shadow-sm opacity-60\"\r\n                            :class=\"item.color\">\r\n                            {{ item.name }} (禁用)\r\n                        </div>\r\n                    </template>\r\n                </RebornDraggable>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script lang=\"ts\" setup>\r\n/**\r\n * reborn-draggable 拖拽排序组件演示页面\r\n */\r\nimport { ref } from \"vue\";\r\nimport RebornDraggable from \"@/components/reborn-draggable/RebornDraggable.vue\";\r\nimport RebornPage from \"@/components/reborn-page/RebornPage.vue\";\r\nimport RebornCard from \"@/components/reborn-card/RebornCard.vue\";\r\n\r\n// 基础数据\r\nconst list1 = ref([\r\n    { name: \"项目 1\", color: \"bg-red-500\" },\r\n    { name: \"项目 2\", color: \"bg-blue-500\" },\r\n    { name: \"项目 3\", color: \"bg-green-500\" },\r\n    { name: \"项目 4\", color: \"bg-yellow-500\" },\r\n]);\r\n\r\n// 网格数据\r\nconst list2 = ref([\r\n    { name: \"A\", color: \"bg-purple-500\" },\r\n    { name: \"B\", color: \"bg-pink-500\" },\r\n    { name: \"C\", color: \"bg-indigo-500\" },\r\n    { name: \"D\", color: \"bg-cyan-500\", disabled: true },\r\n    { name: \"E\", color: \"bg-teal-500\" },\r\n    { name: \"F\", color: \"bg-orange-500\" },\r\n]);\r\n\r\n/**\r\n * 拖拽开始说明\r\n */\r\nfunction onStart(index: number) {\r\n    console.log(\"开始拖拽:\", index);\r\n    \r\n}\r\n\r\n/**\r\n * 拖拽结束说明\r\n */\r\nfunction onEnd(index: number) {\r\n    console.log(\"结束拖拽:\", index);\r\n    \r\n}\r\n\r\n/**\r\n * 数据变化说明\r\n */\r\nfunction onChange(newList: any[]) {\r\n    console.log(\"数据已更新:\", newList);\r\n}\r\n</script>\r\n\r\n<template>\r\n    <reborn-page title=\"Draggable\" description=\"拖拽排序组件，支持列表和网格布局。\">\r\n        <reborn-card title=\"单列排序 (长按触发)\">\r\n            <view class=\"p-4\">\r\n                <reborn-draggable v-model=\"list1\" @start=\"onStart\" @end=\"onEnd\" @change=\"onChange\">\r\n                    <template #item=\"{ item }\">\r\n                        <view class=\"flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm\"\r\n                            :class=\"item.color\">\r\n                            {{ item.name }}\r\n                        </view>\r\n                    </template>\r\n                </reborn-draggable>\r\n            </view>\r\n        </reborn-card>\r\n\r\n        <reborn-card title=\"单列排序 (不需要长按)\">\r\n            <view class=\"p-4\">\r\n                <reborn-draggable v-model=\"list2\" :long-press=\"false\">\r\n                    <template #item=\"{ item }\">\r\n                        <view class=\"flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm\" :class=\"[\r\n                            { 'opacity-50': item['disabled'] },\r\n                            item.color\r\n                        ]\">\r\n                            {{ item.name }}\r\n                        </view>\r\n                    </template>\r\n                </reborn-draggable>\r\n            </view>\r\n        </reborn-card>\r\n\r\n        <reborn-card title=\"多列排序\">\r\n            <view class=\"p-4\">\r\n                <reborn-draggable v-model=\"list2\" :columns=\"3\" :long-press=\"false\">\r\n                    <template #item=\"{ item }\">\r\n                        <view class=\"flex flex-row items-center justify-center p-3 rounded-lg text-white\" :class=\"[\r\n                            { 'opacity-50': item['disabled'] },\r\n                            item.color\r\n                        ]\">\r\n                            {{ item.name }}\r\n                        </view>\r\n                    </template>\r\n                </reborn-draggable>\r\n            </view>\r\n        </reborn-card>\r\n\r\n        <!-- 禁用状态 -->\r\n        <reborn-card title=\"禁用状态\">\r\n            <view class=\"p-4\">\r\n                <reborn-draggable v-model=\"list1\" disabled>\r\n                    <template #item=\"{ item }\">\r\n                        <view class=\"flex h-[80rpx] items-center rounded-lg px-4 text-white shadow-sm\"\r\n                            :class=\"item.color\">\r\n                            {{ item.name }} (禁用)\r\n                        </view>\r\n                    </template>\r\n                </reborn-draggable>\r\n            </view>\r\n        </reborn-card>\r\n    </reborn-page>\r\n</template>\r\n\r\n<style scoped>\r\n/* 页面特定样式 */\r\n</style>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-draggable"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-draggable/RebornDraggable.vue",
+      "app/components/reborn/ui/reborn-draggable/index.ts",
+      "app/components/reborn/ui/reborn-draggable/reborn-draggable.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-draggable/RebornDraggable.vue",
+      "packages/uniapp-project/src/components/reborn-draggable/reborn-draggable.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-draggable.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "82b63087947910d11b43c800d6cac61cf91afde3",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

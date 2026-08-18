@@ -1,0 +1,86 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-scroll-reveal",
+  "title": "滚动文字揭示",
+  "description": "在滚动时逐词显现的文字组件，可自定义内容与样式。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "word",
+      "type": "string",
+      "required": true,
+      "description": ""
+    },
+    {
+      "name": "progress",
+      "type": "number",
+      "required": true,
+      "description": ""
+    },
+    {
+      "name": "range",
+      "type": "Array<number>",
+      "required": true,
+      "description": ""
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于组件的额外 CSS 类，便于自定义。",
+      "default": "\"\""
+    },
+    {
+      "name": "text",
+      "type": "string",
+      "required": true,
+      "description": "在滚动时逐词显示的文本内容。",
+      "default": "N/A"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"z-10 flex min-h-64 items-center justify-center rounded-lg bg-white dark:bg-black\">\r\n    <TextScrollReveal text=\"Making UI beautiful using Reborn UI.\" />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-scroll-reveal"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-scroll-reveal/ScrollWord.vue",
+      "app/components/reborn/ui/text-scroll-reveal/TextScrollReveal.vue",
+      "app/components/reborn/ui/text-scroll-reveal/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/text-scroll-reveal.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "3b43d7d1a3139a9f2c88018abb88f6e5cd4000e8",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

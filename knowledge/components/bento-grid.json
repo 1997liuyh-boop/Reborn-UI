@@ -1,0 +1,117 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "bento-grid",
+  "title": "Bento 网格",
+  "description": "炫酷的 Bento 网格布局，可放置不同子组件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "bento",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "description": "卡片上显示的名称。"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "required": false,
+      "description": "卡片上显示的图标。"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "required": true,
+      "description": "卡片的描述内容。"
+    },
+    {
+      "name": "href",
+      "type": "string",
+      "required": true,
+      "description": "CTA 对应的链接。"
+    },
+    {
+      "name": "cta",
+      "type": "string",
+      "required": true,
+      "description": "CTA 上显示的文字。"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    },
+    {
+      "name": "background",
+      "description": "显示在背景的组件。"
+    },
+    {
+      "name": "header",
+      "description": "作为页眉显示的组件。"
+    },
+    {
+      "name": "icon",
+      "description": "作为图标显示的组件。"
+    },
+    {
+      "name": "title",
+      "description": "作为标题显示的组件。"
+    },
+    {
+      "name": "description",
+      "description": "作为描述显示的组件。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nconst items = [\r\n  {\r\n    title: \"The Dawn of Innovation\",\r\n    description: \"Explore the birth of groundbreaking ideas and inventions.\",\r\n  },\r\n  {\r\n    title: \"The Digital Revolution\",\r\n    description: \"Dive into the transformative power of technology.\",\r\n  },\r\n  {\r\n    title: \"The Art of Design\",\r\n    description: \"Discover the beauty of thoughtful and experience design.\",\r\n  },\r\n  {\r\n    title: \"The Power of Communication\",\r\n    description: \"Understand the impact of effective communication in our lives.\",\r\n  },\r\n  {\r\n    title: \"The Pursuit of Knowledge\",\r\n    description: \"Join the quest for understanding and enlightenment.\",\r\n  },\r\n  {\r\n    title: \"The Joy of Creation\",\r\n    description: \"Experience the thrill of bringing ideas to life.\",\r\n  },\r\n  {\r\n    title: \"The Spirit of Adventure\",\r\n    description: \"Embark on exciting journeys and thrilling discoveries.\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <BentoGrid class=\"mx-auto max-w-4xl\">\r\n    <BentoGridItem\r\n      v-for=\"(item, index) in items\"\r\n      :key=\"index\"\r\n      :class=\"index === 3 || index === 6 ? 'md:col-span-2' : ''\"\r\n    >\r\n      <template #header>\r\n        <div class=\"flex size-full animate-pulse space-x-4\">\r\n          <div class=\"flex size-full flex-1 rounded-md bg-zinc-800\" />\r\n        </div>\r\n      </template>\r\n\r\n      <template #title>\r\n        <strong>{{ item.title }}</strong>\r\n      </template>\r\n\r\n      <template #icon />\r\n\r\n      <template #description>\r\n        <p>{{ item.description }}</p>\r\n      </template>\r\n    </BentoGridItem>\r\n  </BentoGrid>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add bento-grid"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/bento-grid/BentoGrid.vue",
+      "app/components/reborn/ui/bento-grid/BentoGridCard.vue",
+      "app/components/reborn/ui/bento-grid/BentoGridItem.vue",
+      "app/components/reborn/ui/bento-grid/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/bento-grid.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "788ed60e97ed37122a46d2a9ac682ab8746b0716",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

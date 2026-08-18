@@ -1,0 +1,81 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-page",
+  "title": "reborn-page",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "title",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "customClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "object as proptype<pageui>",
+      "default": "() => ({})",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "header",
+      "description": ""
+    },
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [],
+  "related": [
+    "reborn-toast"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-page"
+  },
+  "sourceRefs": {
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-page/RebornPage.vue",
+      "packages/uniapp-project/src/components/reborn-page/reborn-page.config.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "dfaef7640ad307fdee9e91056c7a4df9641aa646",
+    "hasOverride": false,
+    "extractors": {
+      "web": "absent",
+      "uniapp": "ok",
+      "docs": "missing"
+    }
+  }
+}

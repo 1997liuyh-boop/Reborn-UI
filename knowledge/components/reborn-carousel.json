@@ -1,0 +1,256 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-carousel",
+  "title": "走马灯 Carousel",
+  "description": "自研的走马灯轮播组件，支持多项显示、自动播放、指示器、箭头控制、卡片模式、纵向布局和响应式配置。",
+  "category": "navigation",
+  "tags": [
+    "css",
+    "tailwind",
+    "carousel",
+    "slider",
+    "motion"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "slidesPerview",
+      "type": "number | \"auto\"",
+      "required": false,
+      "description": "",
+      "default": "1"
+    },
+    {
+      "name": "spaceBetween",
+      "type": "number",
+      "required": false,
+      "description": "轮播项之间的间距，单位 `px`。",
+      "default": "0"
+    },
+    {
+      "name": "centeredSlides",
+      "type": "boolean",
+      "required": false,
+      "description": "是否让当前激活项居中显示。",
+      "default": "false"
+    },
+    {
+      "name": "loop",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用循环切换。",
+      "default": "false"
+    },
+    {
+      "name": "autoplay",
+      "type": "boolean | CarouselAutoplay",
+      "required": false,
+      "description": "false",
+      "default": "false"
+    },
+    {
+      "name": "pagination",
+      "type": "CarouselPagination | null",
+      "required": false,
+      "description": "'dot' \\",
+      "default": "null"
+    },
+    {
+      "name": "trigger",
+      "type": "CarouselTrigger",
+      "required": false,
+      "description": "\"hover\"",
+      "default": "\"hover\""
+    },
+    {
+      "name": "indicatorPosition",
+      "type": "CarouselIndicatorPosition",
+      "required": false,
+      "description": "\"none\"",
+      "default": "\"inside\""
+    },
+    {
+      "name": "arrow",
+      "type": "CarouselArrowMode",
+      "required": false,
+      "description": "\"never\"",
+      "default": "\"hover\""
+    },
+    {
+      "name": "motionBlur",
+      "type": "boolean",
+      "required": false,
+      "description": "是否对非激活项增加动态模糊效果。",
+      "default": "false"
+    },
+    {
+      "name": "height",
+      "type": "string",
+      "required": false,
+      "description": "轮播容器高度；设为 `\"auto\"` 时随内容自适应。",
+      "default": "\"auto\""
+    },
+    {
+      "name": "type",
+      "type": "CarouselType",
+      "required": false,
+      "description": "\"default\"",
+      "default": "\"default\""
+    },
+    {
+      "name": "direction",
+      "type": "CarouselDirection",
+      "required": false,
+      "description": "\"horizontal\"",
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "initialSlide",
+      "type": "number",
+      "required": false,
+      "description": "初始激活项索引；当 `modelValue` 为空时生效。",
+      "default": "0"
+    },
+    {
+      "name": "breakpoints",
+      "type": "Record<number, RebornCarouselBreakpoint>",
+      "required": false,
+      "description": "响应式配置；可在断点中覆盖 `slidesPerView`、`spaceBetween`、`type`、`direction` 等参数。",
+      "default": "() => ({})"
+    },
+    {
+      "name": "grabCursor",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用抓取光标。",
+      "default": "false"
+    },
+    {
+      "name": "autoSize",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "indicatorOffset",
+      "type": "number",
+      "required": false,
+      "description": "指示器偏移量 (px)；垂直模式下为侧边间距，水平模式下为底部/外部间距。",
+      "default": "undefined"
+    },
+    {
+      "name": "thumbs",
+      "type": "CarouselThumbs | null",
+      "required": false,
+      "description": "",
+      "default": "null"
+    },
+    {
+      "name": "color",
+      "type": "\"primary\" | \"secondary\" | \"success\" | \"info\" | \"warning\" | \"error\" | \"neutral\"",
+      "required": false,
+      "description": "\"neutral\"",
+      "default": "\"primary\""
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "追加到根节点的自定义类名。"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\n    wrapper: ClassValue;\n    root: ClassValue;\n    viewport: ClassValue;\n    track: ClassValue;\n    slide: ClassValue;\n    slideInner: ClassValue;\n    slideActive: ClassValue;\n    slideInactive: ClassValue;\n    arrowGroup: ClassValue;\n    arrow: ClassValue;\n    indicatorWrapper: ClassValue;\n    indicators: ClassValue;\n    indicator: ClassValue;\n    indicatorActive: ClassValue;\n    indicatorInactive: ClassValue;\n    thumbsShell: ClassValue;\n    thumbsPanel: ClassValue;\n    thumbsViewport: ClassValue;\n    thumbsTrack: ClassValue;\n    thumbsArrowGroup: ClassValue;\n    thumbsArrow: ClassValue;\n    thumb: ClassValue;\n    thumbActive: ClassValue;\n    thumbInactive: ClassValue;\n    thumbPreview: ClassValue;\n    thumbOverlay: ClassValue;\n  }>",
+      "required": false,
+      "description": "细粒度样式覆盖对象，用于重写各个 UI 区域的样式。",
+      "default": "() => ({})"
+    },
+    {
+      "name": "modelValue",
+      "type": "number",
+      "required": false,
+      "description": "双向绑定值",
+      "vModel": true,
+      "default": "null"
+    }
+  ],
+  "events": [
+    {
+      "name": "change",
+      "payload": "(e: \"change\", value: number): void;",
+      "description": "轮播项切换完成后触发。"
+    },
+    {
+      "name": "update:modelValue",
+      "description": "modelValue 变化时触发（v-model 同步）"
+    }
+  ],
+  "slots": [
+    {
+      "name": "prev",
+      "description": "自定义上一页箭头。"
+    },
+    {
+      "name": "next",
+      "description": "自定义下一页箭头。"
+    },
+    {
+      "name": "indicators",
+      "description": "自定义指示器区域。"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "next",
+      "description": ""
+    },
+    {
+      "name": "prev",
+      "description": ""
+    },
+    {
+      "name": "goTo",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport HeroBanner from './components/HeroBanner.vue';\nconst slidesPerView = ref<1 | 2 | 3 | \"auto\">(2);\nconst spaceBetween = ref(20);\nconst arrow = ref<\"hover\" | \"always\" | \"never\">(\"hover\");\nconst indicatorPosition = ref<\"inside\" | \"outside\" | \"none\">(\"inside\");\nconst autoplay = ref(true);\nconst motionBlur = ref(true);\nconst activeIndex = ref(0);\nconst loop = ref(true);\nconst centeredSlides = ref(false);\nconst direction = ref<\"horizontal\" | \"vertical\">(\"horizontal\");\nconst carouselType = ref<\"default\" | \"card\">(\"default\");\nconst grabCursor = ref(true);\nconst color = ref<\"primary\" | \"secondary\" | \"success\" | \"info\" | \"warning\" | \"error\" | \"neutral\">(\"primary\");\nconst paginationType = ref<\"line\" | \"dot\" | \"fraction\" | \"button\">(\"line\");\nconst indicatorOffset = ref<number>(16);\nconst thumbsPosition = ref<\"top\" | \"bottom\" | \"left\" | \"right\">(\"bottom\");\nconst thumbsArrow = ref<\"hover\" | \"always\" | \"never\">(\"always\");\nconst thumbsLoop = ref(true);\nconst thumbsShowcaseIndex = ref(0);\n\nconst featureSlides = [\n  {\n    eyebrow: \"智能体验\",\n    title: \"把轮播做成展示层，而不是简单的图片切页。\",\n    description:\n      \"支持多项显示、自动播放、居中展示和响应式布局，适合首页头图、专题入口和推荐内容位。\",\n    tone: \"from-[#0f172a] via-[#1d4ed8] to-[#38bdf8]\",\n  },\n  {\n    eyebrow: \"卡片焦点\",\n    title: \"用卡片模式突出当前内容，顺带保留两侧预览。\",\n    description: \"更适合精选内容、活动推荐、封面流和需要「中心舞台感」的展示区块。\",\n    tone: \"from-[#1f2937] via-[#7c3aed] to-[#ec4899]\",\n  },\n  {\n    eyebrow: \"自研能力\",\n    title: \"不依赖第三方轮播库，交互和 API 都按业务语义设计。\",\n    description: \"内部基于原生滚动与状态控制构建，便于后续扩展手势、虚拟化和平台差异策略。\",\n    tone: \"from-[#052e16] via-[#0f766e] to-[#34d399]\",\n  },\n  {\n    eyebrow: \"团队效率\",\n    title: \"把箭头、指示器、动态模糊和纵向布局直接做成组件能力。\",\n    description: \"使用者只需要关注内容本身，不必每次都重复拼装交互和动画细节。\",\n    tone: \"from-[#431407] via-[#ea580c] to-[#fbbf24]\",\n  },\n];\n\nconst cardSlides = [\n  {\n    label: \"精选专题\",\n    title: \"Midnight Archive\",\n    copy: \"用更强的视觉层次组织长内容入口，让推荐区块不再像普通列表。\",\n    tone: \"from-[#111827] via-[#1d4ed8] to-[#60a5fa]\",\n  },\n  {\n    label: \"限时活动\",\n    title: \"Spring Drop\",\n    copy: \"卡片模式适合承接主题活动、限时专题和品牌故事页的视觉入口。\",\n    tone: \"from-[#3b0764] via-[#c026d3] to-[#f9a8d4]\",\n  },\n  {\n    label: \"内容推荐\",\n    title: \"Editor Pick\",\n    copy: \"两侧预览会自然强化「还有更多内容」的感知，减少轮播常见的死板感。\",\n    tone: \"from-[#082f49] via-[#0891b2] to-[#67e8f9]\",\n  },\n  {\n    label: \"视觉实验\",\n    title: \"Liquid Frames\",\n    copy: \"配合动态模糊和柔和阴影，可以做出更偏杂志化、封面化的展示效果。\",\n    tone: \"from-[#312e81] via-[#7c3aed] to-[#c4b5fd]\",\n  },\n];\n\nconst timelineSlides = [\n  {\n    title: \"阶段一\",\n    copy: \"先确定轮播容器尺寸和内容节奏，再决定是一屏多卡还是卡片居中。\",\n  },\n  {\n    title: \"阶段二\",\n    copy: \"根据场景选择箭头、分页器和自动播放，不要默认全开。\",\n  },\n  {\n    title: \"阶段三\",\n    copy: \"只有在展示型场景里再加动态模糊，避免信息密集页面过度花哨。\",\n  },\n];\n\nconst thumbsConfig = computed(() => ({\n  position: thumbsPosition.value,\n  loop: thumbsLoop.value,\n  arrow: thumbsArrow.value,\n}));\n\nconst carouselCode = computed(() => {\n  const props = [];\n  if (carouselType.value !== \"default\") props.push(`type=\"${carouselType.value}\"`);\n  if (slidesPerView.value !== 1)\n    props.push(`:slides-perview=\"${typeof slidesPerView.value === \"string\" ? `'${slidesPerView.value}'` : slidesPerView.value}\"`);\n  if (spaceBetween.value !== 0) props.push(`:space-between=\"${spaceBetween.value}\"`);\n  if (autoplay.value) props.push(':autoplay=\"{ delay: 2600 }\"');\n  if (!motionBlur.value) props.push(':motion-blur=\"false\"');\n  if (arrow.value !== \"hover\") props.push(`arrow=\"${arrow.value}\"`);\n  if (indicatorPosition.value !== \"inside\") props.push(`indicator-position=\"${indicatorPosition.value}\"`);\n  if (direction.value !== \"horizontal\") props.push(`direction=\"${direction.value}\"`);\n  if (centeredSlides.value) props.push(\":centered-slides=\\\"true\\\"\");\n  if (loop.value) props.push(\"loop\");\n  if (grabCursor.value) props.push(\"grab-cursor\");\n  if (color.value !== \"primary\") props.push(`color=\"${color.value}\"`);\n  if (paginationType.value !== \"line\") props.push(`:pagination=\"{ clickable: true, type: '${paginationType.value}' }\"`);\n  if (indicatorOffset.value !== 16) props.push(`:indicator-offset=\"${indicatorOffset.value}\"`);\n  props.push(`:thumbs=\"{ position: '${thumbsPosition.value}', loop: ${thumbsLoop.value}, arrow: '${thumbsArrow.value}' }\"`);\n\n  const propsStr = props.length > 0 ? \"\\n  \" + props.join(\"\\n  \") : \"\";\n  return `<RebornCarousel v-model=\"activeIndex\"${propsStr}\\n>\\n  <!-- slides content -->\\n</RebornCarousel>`;\n});\n\nconst copyToClipboard = () => {\n  if (import.meta.client) {\n    navigator.clipboard.writeText(carouselCode.value);\n  }\n};\n</script>\n\n<template>\n  <section class=\"max-w-full overflow-hidden space-y-6\">\n    <div\n      class=\"relative z-10 flex flex-col gap-8  border border-slate-200/50 bg-white/60 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40 dark:shadow-none\">\n\n      <!-- Layout Settings -->\n      <div class=\"space-y-5\">\n        <div class=\"flex items-center justify-between\">\n          <div class=\"flex items-center gap-3 text-slate-900 dark:text-white\">\n            <div class=\"flex size-8 items-center justify-center rounded-xl bg-slate-900/5 dark:bg-white/5\">\n              <Icon name=\"lucide:layout-template\" class=\"size-4.5 opacity-70\" />\n            </div>\n            <h4 class=\"text-xs font-bold uppercase tracking-[0.2em] opacity-80\">布局配置</h4>\n          </div>\n\n          <RebornPopover :content=\"{ side: 'left' }\" arrow portal>\n            <template #default=\"{ open }\">\n              <RebornButton>\n                <Icon name=\"lucide:code-2\" class=\"size-4\" />\n                <span>实时代码</span>\n              </RebornButton>\n            </template>\n            <template #content>\n              <div class=\"w-[420px] p-1\">\n                <div\n                  class=\"relative overflow-hidden rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 dark:border-white/5 dark:bg-black/20 backdrop-blur-sm\">\n                  <div class=\"flex items-center justify-between mb-4\">\n                    <div class=\"flex items-center gap-2\">\n                      <div class=\"size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]\" />\n                      <span class=\"text-caption-sm font-bold uppercase tracking-[0.2em] text-slate-400\">实时代码演示</span>\n                    </div>\n                    <button @click=\"copyToClipboard\"\n                      class=\"text-caption-sm font-bold uppercase tracking-wider text-blue-500 hover:text-blue-600 transition-colors\">\n                      复制代码\n                    </button>\n                  </div>\n                  <pre\n                    class=\"overflow-x-auto text-xs leading-relaxed text-slate-600 dark:text-slate-400 font-mono\"><code>{{ carouselCode }}</code></pre>\n                </div>\n              </div>\n            </template>\n          </RebornPopover>\n        </div>\n        <div class=\"grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4\">\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">显示项目</span>\n            <RebornSelect v-model=\"slidesPerView\" :options=\"[\n              { label: '1 项 / 屏', value: 1 },\n              { label: '2 项 / 屏', value: 2 },\n              { label: '3 项 / 屏', value: 3 },\n              { label: '自动宽度', value: 'auto' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">Thumbs Position</span>\n            <RebornSelect v-model=\"thumbsPosition\" :options=\"[\n              { label: 'Bottom', value: 'bottom' },\n              { label: 'Top', value: 'top' },\n              { label: 'Left', value: 'left' },\n              { label: 'Right', value: 'right' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">Thumbs Arrow</span>\n            <RebornSelect v-model=\"thumbsArrow\" :options=\"[\n              { label: 'Always', value: 'always' },\n              { label: 'Hover', value: 'hover' },\n              { label: 'Never', value: 'never' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">项目间距</span>\n            <RebornInputNumber v-model=\"spaceBetween\" :min=\"0\" :max=\"100\" :step=\"4\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">容器方向</span>\n            <RebornSelect v-model=\"direction\" :options=\"[\n              { label: '水平滚动', value: 'horizontal' },\n              { label: '垂直滚动', value: 'vertical' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">展示模式</span>\n            <RebornSelect v-model=\"carouselType\" :options=\"[\n              { label: '默认模式', value: 'default' },\n              { label: '卡片聚焦', value: 'card' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">箭头显示</span>\n            <RebornSelect v-model=\"arrow\" :options=\"[\n              { label: '悬停时显示', value: 'hover' },\n              { label: '始终显示', value: 'always' },\n              { label: '隐藏箭头', value: 'never' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">指示器位置</span>\n            <RebornSelect v-model=\"indicatorPosition\" :options=\"[\n              { label: '内置 (Inside)', value: 'inside' },\n              { label: '外置 (Outside)', value: 'outside' },\n              { label: '隐藏指示器', value: 'none' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">指示器偏移 (px)</span>\n            <RebornInputNumber v-model=\"indicatorOffset\" :min=\"0\" :max=\"100\" :step=\"4\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">指示器类型</span>\n            <RebornSelect v-model=\"paginationType\" :options=\"[\n              { label: '线条 (Line)', value: 'line' },\n              { label: '圆点 (Dot)', value: 'dot' },\n              { label: '分数 (Fraction)', value: 'fraction' },\n              { label: '按钮 (Button)', value: 'button' }\n            ]\" size=\"md\" />\n          </div>\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">主题颜色</span>\n            <RebornSelect v-model=\"color\" :options=\"[\n              { label: 'Primary', value: 'primary' },\n              { label: 'Secondary', value: 'secondary' },\n              { label: 'Success', value: 'success' },\n              { label: 'Info', value: 'info' },\n              { label: 'Warning', value: 'warning' },\n              { label: 'Error', value: 'error' },\n              { label: 'Neutral', value: 'neutral' }\n            ]\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">居中模式</span>\n            <RebornSwitch v-model=\"centeredSlides\" active-label=\"开启\" inactive-label=\"关闭\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">自动播放 (2.6s)</span>\n            <RebornSwitch v-model=\"autoplay\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">动态模糊</span>\n            <RebornSwitch v-model=\"motionBlur\" size=\"md\" />\n          </div>\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">无限循环</span>\n            <RebornSwitch v-model=\"loop\" size=\"md\" />\n          </div>\n\n          <div class=\"flex flex-col gap-1\">\n            <span class=\"text-caption-md font-semibold text-slate-400 uppercase tracking-wider\">Thumbs Loop</span>\n            <RebornSwitch v-model=\"thumbsLoop\" size=\"md\" />\n          </div>\n\n        </div>\n      </div>\n    </div>\n\n    <RebornCarousel v-model=\"activeIndex\" :type=\"carouselType\" :slides-perview=\"slidesPerView\"\n      :space-between=\"spaceBetween\" :autoplay=\"autoplay ? { delay: 2600 } : false\" :motion-blur=\"motionBlur\"\n      :pagination=\"{ clickable: true, type: paginationType }\" :arrow=\"arrow\" :indicator-position=\"indicatorPosition\"\n      :direction=\"direction\" :centered-slides=\"centeredSlides\" :loop=\"loop\" :grab-cursor=\"grabCursor\" :color=\"color\"\n      :indicator-offset=\"indicatorOffset\" :thumbs=\"thumbsConfig\">\n      <div v-for=\"slide in featureSlides\" :key=\"slide.title\"\n        :class=\"`flex h-full flex-col justify-between bg-linear-to-br ${slide.tone} p-7 text-white`\">\n        <div class=\"space-y-3\">\n          <p class=\"text-xs font-medium tracking-[0.28em] text-white/70 uppercase\">\n            {{ slide.eyebrow }}\n          </p>\n          <h3 class=\"max-w-[14ch] text-2xl leading-tight font-semibold md:text-[2rem]\">\n            {{ slide.title }}\n          </h3>\n        </div>\n\n        <p class=\"max-w-[36ch] text-sm leading-6 text-white/80 md:text-base\">\n          {{ slide.description }}\n        </p>\n      </div>\n\n    </RebornCarousel>\n  </section>\n\n  <section class=\"max-w-full overflow-hidden space-y-4\">\n    <div class=\"space-y-2\">\n      <p class=\"text-sm font-medium tracking-[0.28em] text-slate-400 uppercase\">Thumbs Mode</p>\n      <h3 class=\"text-2xl font-semibold text-slate-900 dark:text-white\">Left-side thumbs work well for galleries and\n        modular content flows</h3>\n    </div>\n\n    <RebornCarousel v-model=\"thumbsShowcaseIndex\" :slides-perview=\"1\" :space-between=\"24\"\n      :pagination=\"{ clickable: true, type: 'fraction' }\" arrow=\"always\" :indicator-position=\"indicatorPosition\"\n      :thumbs=\"{ position: 'right', loop: true, arrow: 'hover' }\" height=\"auto\" loop color=\"warning\">\n      <div v-for=\"(slide, index) in featureSlides\" :key=\"`${slide.title}-thumbs`\"\n        :class=\"`flex h-full flex-col justify-between  bg-linear-to-br ${slide.tone} p-8 text-white`\">\n        <div class=\"flex items-start justify-between gap-4\">\n          <div class=\"space-y-3\">\n            <p class=\"text-xs font-medium tracking-[0.28em] text-white/70 uppercase\">\n              {{ slide.eyebrow }}\n            </p>\n            <h3 class=\"max-w-[14ch] text-3xl leading-tight font-semibold md:text-[2.25rem]\">\n              {{ slide.title }}\n            </h3>\n          </div>\n          <span class=\"rounded-full border border-white/20 px-3 py-1 text-xs text-white/80\">\n            0{{ index + 1 }}\n          </span>\n        </div>\n\n        <div class=\"grid gap-4 md:grid-cols-[1.2fr_0.8fr]\">\n          <p class=\"max-w-[38ch] text-sm leading-7 text-white/82 md:text-base\">\n            {{ slide.description }}\n          </p>\n          <div class=\"rounded-[28px] border border-white/15 bg-white/10 p-5 backdrop-blur-md\">\n            <p class=\"text-xs uppercase tracking-[0.24em] text-white/55\">Preview Notes</p>\n            <p class=\"mt-3 text-lg leading-7 text-white/88\">\n              The thumbs rail stays synchronized with the main slide, which makes it useful for media galleries,\n              campaign\n              decks, and content-heavy showcases.\n            </p>\n          </div>\n        </div>\n      </div>\n    </RebornCarousel>\n  </section>\n\n  <section class=\"max-w-full overflow-hidden space-y-4\">\n    <div class=\"space-y-2\">\n      <p class=\"text-sm font-medium tracking-[0.28em] text-slate-400 uppercase\">基础卡片模式</p>\n      <h3 class=\"text-2xl font-semibold text-slate-900 dark:text-white\">\n        中心项更强，边缘项保留预览\n      </h3>\n    </div>\n\n    <RebornCarousel type=\"card\" :slides-perview=\"'auto'\" :space-between=\"20\"\n      :pagination=\"{ clickable: true, type: 'dot' }\" arrow=\"always\" indicator-position=\"outside\" :motion-blur=\"true\"\n      :centered-slides=\"true\" :autoplay=\"false\" height=\"26rem\" loop color=\"secondary\">\n      <div v-for=\"card in cardSlides\" :key=\"card.title\"\n        :class=\"`flex h-full w-full flex-col justify-between  bg-linear-to-br ${card.tone} p-7 text-white`\">\n        <div class=\"space-y-3\">\n          <span class=\"inline-flex w-fit rounded-full border border-white/20 px-3 py-1 text-xs text-white/80\">\n            {{ card.label }}\n          </span>\n          <h4 class=\"text-3xl font-semibold\">\n            {{ card.title }}\n          </h4>\n        </div>\n        <p class=\"text-sm leading-6 text-white/80 md:text-base\">\n          {{ card.copy }}\n        </p>\n      </div>\n    </RebornCarousel>\n  </section>\n\n  <HeroBanner />\n\n  <section class=\"max-w-full overflow-hidden space-y-4\">\n    <div class=\"space-y-2\">\n      <p class=\"text-sm font-medium tracking-[0.28em] text-slate-400 uppercase\">纵向布局</p>\n      <h3 class=\"text-2xl font-semibold text-slate-900 dark:text-white\">也可以做时间线式轮播</h3>\n    </div>\n\n    <RebornCarousel direction=\"vertical\" :slides-perview=\"1\" :space-between=\"18\"\n      :pagination=\"{ clickable: true, type: 'button' }\" arrow=\"always\" indicator-position=\"inside\" height=\"22rem\"\n      color=\"info\" :ui=\"{ arrowGroup: 'px-10' }\">\n      <div v-for=\"(item, index) in timelineSlides\" :key=\"item.title\"\n        class=\"flex h-full flex-col justify-between rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.16),transparent_34%),linear-gradient(135deg,#ffffff,#f8fafc)] p-7 text-slate-900 shadow-sm dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,41,59,0.98))] dark:text-white\">\n        <div class=\"flex items-center justify-between\">\n          <span class=\"text-sm text-slate-400 dark:text-slate-500\">0{{ index + 1 }}</span>\n          <span class=\"rounded-full bg-slate-900 px-3 py-1 text-xs text-white dark:bg-white dark:text-slate-900\">\n            {{ item.title }}\n          </span>\n        </div>\n        <p class=\"max-w-[34ch] text-lg leading-8 text-slate-700 dark:text-slate-200\">\n          {{ item.copy }}\n        </p>\n      </div>\n    </RebornCarousel>\n  </section>\n\n  <section class=\"max-w-full overflow-hidden space-y-4\">\n    <div class=\"space-y-2\">\n      <p class=\"text-sm font-medium tracking-[0.28em] text-slate-400 uppercase\">插槽自定义</p>\n      <h3 class=\"text-2xl font-semibold text-slate-900 dark:text-white\">你可以自由控制导航 UI</h3>\n    </div>\n\n    <RebornCarousel slides-per-view=\"auto\" :space-between=\"20\" loop>\n      <div v-for=\"slide in featureSlides.slice(0, 3)\" :key=\"slide.title\"\n        :class=\"`flex flex-col justify-center items-center rounded-3xl bg-linear-to-br ${slide.tone} p-12 text-white text-center`\">\n        <h4 class=\"text-4xl font-bold mb-4\">{{ slide.title }}</h4>\n        <p class=\"opacity-80\">{{ slide.description }}</p>\n      </div>\n\n      <!-- 自定义箭头 -->\n      <template #prev=\"{ prev }\">\n        <button @click=\"prev\"\n          class=\"pointer-events-auto size-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95\">\n          <Icon name=\"tabler:chevrons-left\" class=\"size-6\" />\n        </button>\n      </template>\n      <template #next=\"{ next }\">\n        <button @click=\"next\"\n          class=\"pointer-events-auto size-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95\">\n          <Icon name=\"tabler:chevrons-right\" class=\"size-6\" />\n        </button>\n      </template>\n\n      <!-- 自定义指示器 -->\n      <template #indicators=\"{ activeIndex, count, goTo }\">\n        <div\n          class=\"pointer-events-auto absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3 p-1.5 rounded-2xl bg-black/20 backdrop-blur-md\">\n          <button v-for=\"i in count\" :key=\"i\" @click=\"goTo(i - 1)\" class=\"h-1 transition-all duration-500 rounded-full\"\n            :class=\"[activeIndex === i - 1 ? 'w-8 bg-white' : 'w-2 bg-white/30']\" />\n        </div>\n      </template>\n    </RebornCarousel>\n  </section>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-carousel"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-carousel/RebornCarousel.vue",
+      "app/components/reborn/ui/reborn-carousel/index.ts",
+      "app/components/reborn/ui/reborn-carousel/reborn-carousel.config.ts",
+      "app/components/reborn/ui/reborn-carousel/types.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-carousel.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "dbb6aad22cb6bfb24c3c5120b05dd0875c0c51a9",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

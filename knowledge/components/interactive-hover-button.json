@@ -1,0 +1,68 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "interactive-hover-button",
+  "title": "交互悬停按钮",
+  "description": "一款视觉效果出色的按钮组件，悬停时呈现动态过渡，能在明暗模式下平滑适配，提升交互体验。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "button",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "text",
+      "type": "string",
+      "required": false,
+      "description": "按钮内部显示的文字。",
+      "default": "\"Button\""
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "用于样式的额外类名。",
+      "default": "\"\""
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup></script>\r\n\r\n<template>\r\n  <div class=\"flex w-full items-center justify-center p-4\">\r\n    <InteractiveHoverButton />\r\n  </div>\r\n</template>\r\n\r\n<style></style>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add interactive-hover-button"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/interactive-hover-button/InteractiveHoverButton.vue",
+      "app/components/reborn/ui/interactive-hover-button/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/button/interactive-hover-button.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e466662877d4568598664737251442307b93454b",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

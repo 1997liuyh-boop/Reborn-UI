@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "halo-search",
+  "title": "光晕搜索框",
+  "description": "具有多重发光环与细微动画光晕的未来感搜索输入，为界面带来沉浸式体验。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "ui-verse"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "根容器的额外 CSS 类。",
+      "default": "\"\""
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"relative z-0 flex h-96 w-full flex-col items-center justify-center\">\r\n    <HaloSearch />\r\n\r\n    <span class=\"text-muted-foreground mt-24 font-light\">\r\n      Try hovering over component and typing in it.\r\n    </span>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add halo-search"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/halo-search/HaloSearch.vue",
+      "app/components/reborn/ui/halo-search/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/halo-search.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "7394617b8f0fa32539c304b12f3305a69226bfc0",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

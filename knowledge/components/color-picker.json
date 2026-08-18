@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "color-picker",
+  "title": "取色器",
+  "description": "全功能的取色组件，支持多种颜色格式、无障碍特性与自定义色板。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "color-picker",
+    "uplusion23"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "value",
+      "type": "`#${string}` | HsvaColor | HslaColor | RgbaColor",
+      "required": false,
+      "description": "HslaColor \\",
+      "default": "HsvaColor \\"
+    },
+    {
+      "name": "type",
+      "type": "\"hsl\" | \"hsla\" | \"rgb\" | \"rgba\" | \"hex\"",
+      "required": false,
+      "description": "'rgb' \\",
+      "default": "\"hsl\""
+    },
+    {
+      "name": "swatches",
+      "type": "HexColor[]",
+      "required": false,
+      "description": "预设色板数组。",
+      "default": "() => []"
+    },
+    {
+      "name": "hideContrastRatio",
+      "type": "boolean",
+      "required": false,
+      "description": "隐藏无障碍对比度区域。",
+      "default": "false"
+    },
+    {
+      "name": "hideDefaultSwatches",
+      "type": "boolean",
+      "required": false,
+      "description": "隐藏默认色板。",
+      "default": "false"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "用于弹出内容的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "description": "控制取色器的打开/关闭状态。",
+      "default": "false"
+    },
+    {
+      "name": "color",
+      "type": "HsvaColor",
+      "required": true,
+      "description": ""
+    },
+    {
+      "name": "label",
+      "type": "\"hsl\" | \"hsla\" | \"rgb\" | \"rgba\"",
+      "required": true,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "value-change",
+      "payload": "[value: ColorPickerValue]",
+      "description": "当所选颜色变化时触发。"
+    },
+    {
+      "name": "update:open",
+      "payload": "[value: boolean]",
+      "description": "当弹出层打开状态改变时触发。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport type { ColorPickerValue } from \"@/components/content/reborn/ui/color-picker\";\r\nimport { ref } from \"vue\";\r\n\r\nconst color = ref<ColorPickerValue>({\r\n  hex: \"#A35fFF\",\r\n  hsl: { h: 265.5, s: 100, l: 67, a: 1 },\r\n  hsla: { h: 265.5, s: 100, l: 67, a: 1 },\r\n  rgb: { r: 163, g: 95, b: 255, a: 1 },\r\n  rgba: { r: 163, g: 95, b: 255, a: 1 },\r\n});\r\n\r\nfunction setColor(newColor: ColorPickerValue) {\r\n  color.value = newColor;\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex flex-col items-center justify-center gap-6 p-6\">\r\n    <div class=\"flex items-center justify-center\">\r\n      <ColorPicker :value=\"color.hsl\" type=\"hsla\" :swatches=\"['#AEDEAE', '#FFD3B6', '#FFB6B9', '#FFC0CB', '#FFD1DC']\"\r\n        @value-change=\"setColor\">\r\n        <button\r\n          class=\"ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50\">\r\n          <div class=\"mr-2 h-4 w-4 rounded border\" :style=\"{\r\n            backgroundColor: `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`,\r\n          }\" />\r\n          Pick Color\r\n          <Icon name=\"lucide:chevron-down\" :size=\"16\" />\r\n        </button>\r\n      </ColorPicker>\r\n    </div>\r\n\r\n    <div class=\"w-full max-w-lg\">\r\n      <pre class=\"bg-muted overflow-x-auto rounded-md p-4 text-sm\">\r\n        <code class=\"text-muted-foreground\">\r\n<span class=\"text-foreground\">&#123;</span>\r\n  <span class=\"text-blue-400\">\"hex\"</span>: <span class=\"text-red-400\">\"{{ color.hex }}\"</span>,\r\n  <span class=\"text-blue-400\">\"hsl\"</span>: &#123;\r\n    <span class=\"text-blue-400\">\"h\"</span>: <span class=\"text-red-400\">{{ Math.round(color.hsl.h) }}</span>,\r\n    <span class=\"text-blue-400\">\"s\"</span>: <span class=\"text-red-400\">{{ Math.round(color.hsl.s) }}</span>,\r\n    <span class=\"text-blue-400\">\"l\"</span>: <span class=\"text-red-400\">{{ Math.round(color.hsl.l) }}</span>\r\n  &#125;,\r\n  <span class=\"text-blue-400\">\"hsla\"</span>: &#123;\r\n    <span class=\"text-blue-400\">\"h\"</span>: <span class=\"text-red-400\">{{ Math.round(color.hsl.h) }}</span>,\r\n    <span class=\"text-blue-400\">\"s\"</span>: <span class=\"text-red-400\">{{ Math.round(color.hsl.s) }}</span>,\r\n    <span class=\"text-blue-400\">\"l\"</span>: <span class=\"text-red-400\">{{ Math.round(color.hsl.l) }}</span>,\r\n    <span class=\"text-blue-400\">\"a\"</span>: <span class=\"text-red-400\">{{ color.hsl.a }}</span>\r\n  &#125;,\r\n  <span class=\"text-blue-400\">\"rgb\"</span>: &#123;\r\n    <span class=\"text-blue-400\">\"r\"</span>: <span class=\"text-red-400\">{{ Math.round(color.rgb.r) }}</span>,\r\n    <span class=\"text-blue-400\">\"g\"</span>: <span class=\"text-red-400\">{{ Math.round(color.rgb.g) }}</span>,\r\n    <span class=\"text-blue-400\">\"b\"</span>: <span class=\"text-red-400\">{{ Math.round(color.rgb.b) }}</span>\r\n  &#125;,\r\n  <span class=\"text-blue-400\">\"rgba\"</span>: &#123;\r\n    <span class=\"text-blue-400\">\"r\"</span>: <span class=\"text-red-400\">{{ Math.round(color.rgb.r) }}</span>,\r\n    <span class=\"text-blue-400\">\"g\"</span>: <span class=\"text-red-400\">{{ Math.round(color.rgb.g) }}</span>,\r\n    <span class=\"text-blue-400\">\"b\"</span>: <span class=\"text-red-400\">{{ Math.round(color.rgb.b) }}</span>,\r\n    <span class=\"text-blue-400\">\"a\"</span>: <span class=\"text-red-400\">{{ color.rgb.a }}</span>\r\n  &#125;\r\n<span class=\"text-foreground\">&#125;</span>\r\n        </code>\r\n      </pre>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@uiw/color-convert"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add color-picker"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/color-picker/ColorPicker.vue",
+      "app/components/reborn/ui/color-picker/ContrastRatio.vue",
+      "app/components/reborn/ui/color-picker/ObjectColorInput.vue",
+      "app/components/reborn/ui/color-picker/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/color-picker.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "767582e012b0212c4a229e0d8185e469cd4593ae",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

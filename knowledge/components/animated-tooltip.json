@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "animated-tooltip",
+  "title": "动画提示",
+  "description": "炫酷的提示气泡，悬停时揭示并跟随鼠标。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "items",
+      "type": "Item[]",
+      "required": true,
+      "description": "项目数组，每个对象需包含 id、name、designation、image 字段。",
+      "default": "[]"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nconst people = [\r\n  {\r\n    id: 1,\r\n    name: \"John Doe\",\r\n    designation: \"Software Engineer\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3387&q=80\",\r\n  },\r\n  {\r\n    id: 2,\r\n    name: \"Robert Johnson\",\r\n    designation: \"Product Manager\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60\",\r\n  },\r\n  {\r\n    id: 3,\r\n    name: \"Jane Smith\",\r\n    designation: \"Data Scientist\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXZhdGFyfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60\",\r\n  },\r\n  {\r\n    id: 4,\r\n    name: \"Emily Davis\",\r\n    designation: \"UX Designer\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGF2YXRhcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60\",\r\n  },\r\n  {\r\n    id: 5,\r\n    name: \"Tyler Durden\",\r\n    designation: \"Soap Developer\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3540&q=80\",\r\n  },\r\n  {\r\n    id: 6,\r\n    name: \"Dora\",\r\n    designation: \"The Explorer\",\r\n    image:\r\n      \"https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3534&q=80\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"mb-10 flex min-h-96 w-full flex-row items-center justify-center\">\r\n    <AnimatedTooltip :items=\"people\" />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add animated-tooltip"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/animated-tooltip/AnimatedTooltip.vue",
+      "app/components/reborn/ui/animated-tooltip/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/animated-tooltip.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "c0f1bffb205b04e1b510062fbfaec8d2d46e5a7a",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

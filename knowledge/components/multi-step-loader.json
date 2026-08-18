@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "multi-step-loader",
+  "title": "多步加载器",
+  "description": "多步骤加载组件，支持异步条件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "steps",
+      "type": "Step[]",
+      "required": true,
+      "description": "定义加载序列的步骤数组。",
+      "default": "[]"
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "required": false,
+      "description": "控制加载器可见性，为 `true` 时显示。",
+      "default": "false"
+    },
+    {
+      "name": "defaultDuration",
+      "type": "number",
+      "required": false,
+      "description": "每个步骤的持续时间（毫秒）。",
+      "default": "1500"
+    },
+    {
+      "name": "preventClose",
+      "type": "boolean",
+      "required": false,
+      "description": "若为 `true`，不显示关闭按钮。",
+      "default": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "state-change",
+      "payload": "[number]",
+      "description": "当前步骤变化时触发，返回新步骤索引。"
+    },
+    {
+      "name": "complete",
+      "payload": "[]",
+      "description": "所有步骤完成时触发。"
+    },
+    {
+      "name": "close",
+      "payload": "[]",
+      "description": "点击按钮关闭加载器时触发。"
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { computed, reactive } from \"vue\";\r\n\r\ninterface Step {\r\n  text: string; // Display text for the step\r\n  afterText?: string; // Text to show after step completion\r\n  async?: boolean; // If true, waits for external trigger to proceed\r\n  duration?: number; // Duration in ms before proceeding (default: 2000)\r\n  action?: () => void; // Function to execute when step is active\r\n}\r\n// State management\r\nconst loaderStates = reactive({\r\n  isProcessing: false,\r\n  isSavingOrder: false,\r\n  sendingMails: false,\r\n});\r\n\r\nconst uiState = reactive({\r\n  isSimpleLoading: false,\r\n  isAfterTextLoading: false,\r\n  closeSimple: () => {\r\n    uiState.isSimpleLoading = false;\r\n  },\r\n  closeAsync: () => {\r\n    uiState.isAfterTextLoading = false;\r\n  },\r\n});\r\n\r\n// Simple loading steps configuration\r\nconst simpleLoadingSteps = computed<Step[]>(() => [\r\n  {\r\n    text: \"Checking Payment\",\r\n    duration: 2000,\r\n  },\r\n  {\r\n    text: \"Saving Order\",\r\n    duration: 1500,\r\n  },\r\n  {\r\n    text: \"Sending Confirmation Email\",\r\n    duration: 2500,\r\n  },\r\n  {\r\n    text: \"Processing Request\",\r\n    duration: 1800,\r\n  },\r\n  {\r\n    text: \"Finalizing\",\r\n    duration: 1000,\r\n  },\r\n  {\r\n    text: \"Redirecting\",\r\n    duration: 1000,\r\n    action: handleSimpleLoadingComplete,\r\n  },\r\n]);\r\n\r\n// Async loading steps configuration\r\nconst asyncLoadingSteps = computed<Step[]>(() => [\r\n  {\r\n    text: \"Checking Payment\",\r\n    async: loaderStates.isProcessing,\r\n    afterText: \"Payment Verified\",\r\n  },\r\n  {\r\n    text: \"Saving Order\",\r\n    async: loaderStates.isSavingOrder,\r\n    afterText: \"Order Saved\",\r\n  },\r\n  {\r\n    text: \"Sending Confirmation Email\",\r\n    async: loaderStates.sendingMails,\r\n    afterText: \"Email Sent\",\r\n  },\r\n  {\r\n    text: \"Redirecting\",\r\n    duration: 1000,\r\n    action: handleAsyncLoadingComplete,\r\n  },\r\n]);\r\n\r\n// Event handlers\r\nfunction handleStateChange(state: number) {\r\n  // Handle Loading State Change\r\n}\r\n\r\nfunction handleComplete() {\r\n  // Handle Loading Complete\r\n}\r\n\r\nfunction handleSimpleLoadingComplete() {\r\n  alert(\"Simple loading complete, redirecting...\");\r\n  uiState.isSimpleLoading = false;\r\n}\r\n\r\nfunction handleAsyncLoadingComplete() {\r\n  alert(\"Async loading complete, redirecting...\");\r\n  uiState.isAfterTextLoading = false;\r\n}\r\n\r\n// Action handlers\r\nfunction toggleSimpleLoading() {\r\n  uiState.isSimpleLoading = !uiState.isSimpleLoading;\r\n}\r\n\r\nasync function startAsyncLoading() {\r\n  // Reset states\r\n  uiState.isAfterTextLoading = true;\r\n  loaderStates.isProcessing = true;\r\n  loaderStates.isSavingOrder = true;\r\n  loaderStates.sendingMails = true;\r\n\r\n  // Simulate async operations\r\n  function simulateAsyncStep(stateProp: keyof typeof loaderStates, delay: number) {\r\n    return new Promise<void>((resolve) => {\r\n      setTimeout(() => {\r\n        loaderStates[stateProp] = false;\r\n        resolve();\r\n      }, delay);\r\n    });\r\n  }\r\n\r\n  try {\r\n    await simulateAsyncStep(\"isProcessing\", 2000);\r\n    await simulateAsyncStep(\"isSavingOrder\", 3000);\r\n    await simulateAsyncStep(\"sendingMails\", 2500);\r\n  } catch (error) {\r\n    uiState.isAfterTextLoading = false;\r\n  }\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex flex-col items-start gap-4\">\r\n    <!-- Simple Loading Demo -->\r\n    <section class=\"flex w-full flex-col items-center justify-center\">\r\n      <h2 class=\"mb-2 text-lg font-semibold\">Simple Loading Demo (prevent close)</h2>\r\n      <MultiStepLoader\r\n        :steps=\"simpleLoadingSteps\"\r\n        :loading=\"uiState.isSimpleLoading\"\r\n        :prevent-close=\"true\"\r\n        @state-change=\"handleStateChange\"\r\n        @complete=\"handleComplete\"\r\n      />\r\n      <button\r\n        class=\"mt-4 rounded-md bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black\"\r\n        @click=\"toggleSimpleLoading\"\r\n      >\r\n        {{ uiState.isSimpleLoading ? \"Stop Loading\" : \"Start Simple Loading\" }}\r\n      </button>\r\n    </section>\r\n    <hr class=\"my-4 h-px w-full bg-gray-200\" />\r\n    <!-- Async Loading Demo -->\r\n    <section class=\"flex w-full flex-col items-center justify-center\">\r\n      <h2 class=\"mb-2 text-lg font-semibold\">Async Loading Demo</h2>\r\n      <MultiStepLoader\r\n        :steps=\"asyncLoadingSteps\"\r\n        :loading=\"uiState.isAfterTextLoading\"\r\n        @state-change=\"handleStateChange\"\r\n        @complete=\"handleComplete\"\r\n        @close=\"uiState.closeAsync\"\r\n      />\r\n      <button\r\n        class=\"mt-4 rounded-md bg-black px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black\"\r\n        :disabled=\"uiState.isAfterTextLoading\"\r\n        @click=\"startAsyncLoading\"\r\n      >\r\n        Start Async Loading\r\n      </button>\r\n    </section>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add multi-step-loader"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/multi-step-loader/MultiStepLoader.vue",
+      "app/components/reborn/ui/multi-step-loader/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/multi-step-loader.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "b0a72cf874fb05149a918d7953768de77b6346bd",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

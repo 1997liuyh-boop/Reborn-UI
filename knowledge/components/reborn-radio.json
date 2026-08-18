@@ -1,0 +1,194 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-radio",
+  "title": "单选框",
+  "description": "用于在一组选项中选择一项的单选按钮组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "radio",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "any",
+      "required": false,
+      "description": "当前选中值。"
+    },
+    {
+      "name": "value",
+      "type": "any",
+      "required": false,
+      "description": "该选项的值。"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "description": "选项文案。",
+      "default": "\"\""
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用。",
+      "default": "false"
+    },
+    {
+      "name": "size",
+      "type": "typeof radioSizes[number]",
+      "required": false,
+      "description": "\"lg\"",
+      "default": "'md'"
+    },
+    {
+      "name": "color",
+      "type": "typeof radioColors[number]",
+      "required": false,
+      "description": "\"success\" \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "activeIcon",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'i-lucide-check'"
+    },
+    {
+      "name": "inactiveIcon",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "showIcon",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "isRound",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "ui",
+      "type": "{\r\n    root?: string\r\n    wrapper?: string\r\n    activeIcon?: string\r\n    inactiveIcon?: string\r\n    label?: string\r\n  }",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "fill",
+      "type": "string",
+      "required": false,
+      "description": "Support fill as an alias for color or custom color if needed, but for now map to color logic if it matches"
+    },
+    {
+      "name": "variant",
+      "type": "\"simple\" | \"circle\"",
+      "required": false,
+      "description": "",
+      "default": "\"simple\""
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "额外样式类。",
+      "default": "\"\""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "选中值变化。"
+    },
+    {
+      "name": "change",
+      "description": "选中值变化时触发。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "active-icon",
+      "description": ""
+    },
+    {
+      "name": "inactive-icon",
+      "description": ""
+    },
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornRadio from \"~/components/reborn/ui/reborn-radio/RebornRadio.vue\";\r\nimport RebornRadioGroup from \"~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue\";\r\nimport { radioColors, radioSizes } from \"~/components/reborn/ui/reborn-radio/reborn-radio.config\";\r\n\r\n/** \r\n * 1. 交互演练场状态对象\r\n * 所有可实时修改的属性统一放在 state 中\r\n */\r\nconst state = ref<Record<string, any>>({\r\n    value: \"apple\",\r\n    size: \"md\",\r\n    color: \"primary\",\r\n    variant: \"circle\",\r\n    disabled: false,\r\n    label: \"苹果\",\r\n});\r\n\r\n/**\r\n * 2. 交互控制面板配置\r\n * component 需加 as const 确保类型正确\r\n */\r\nconst controls = [\r\n    {\r\n        title: \"基础配置\",\r\n        children: [\r\n            {\r\n                label: \"选择变体\",\r\n                key: \"variant\",\r\n                component: \"select\" as const,\r\n                defaultValue: \"circle\",\r\n                props: {\r\n                    options: [\r\n                        { label: \"Check (Simple)\", value: \"simple\" },\r\n                        { label: \"Circle (Variant 1)\", value: \"circle\" },\r\n                    ]\r\n                },\r\n            },\r\n            {\r\n                label: \"尺寸规格\",\r\n                key: \"size\",\r\n                component: \"select\" as const,\r\n                defaultValue: \"md\",\r\n                props: {\r\n                    options: radioSizes.map(s => ({ label: s.toUpperCase(), value: s }))\r\n                },\r\n            },\r\n            {\r\n                label: \"品牌色彩\",\r\n                key: \"color\",\r\n                component: \"select\" as const,\r\n                defaultValue: \"primary\",\r\n                props: {\r\n                    options: radioColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))\r\n                },\r\n            },\r\n            {\r\n                label: \"显示标签\",\r\n                key: \"label\",\r\n                component: \"input\" as const,\r\n                defaultValue: \"苹果\",\r\n            },\r\n            {\r\n                label: \"禁用状态\",\r\n                key: \"disabled\",\r\n                component: \"checkbox\" as const,\r\n                defaultValue: false,\r\n            },\r\n        ],\r\n    },\r\n];\r\n\r\n// 其他示例状态\r\nconst selectedColor = ref(\"primary\");\r\nconst selectedSize = ref(\"md\");\r\nconst selectedTheme = ref(\"sun\");\r\nconst selectedEmoji = ref(\"🤔\");\r\n\r\nconst fruits = [\r\n    { value: \"apple\", label: \"苹果\" },\r\n    { value: \"banana\", label: \"香蕉\" },\r\n    { value: \"orange\", label: \"橘子\" },\r\n    { value: \"grape\", label: \"葡萄\" },\r\n];\r\n\r\nconst emojis = [\r\n    { value: \"😀\", label: \"开心\" },\r\n    { value: \"😍\", label: \"喜欢\" },\r\n    { value: \"🤔\", label: \"思考\" },\r\n    { value: \"🎉\", label: \"庆祝\" },\r\n];\r\n\r\nconst themes = [\r\n    { value: \"sun\", label: \"浅色\", icon: \"lucide:sun\" },\r\n    { value: \"moon\", label: \"深色\", icon: \"lucide:moon\" },\r\n    { value: \"monitor\", label: \"系统\", icon: \"lucide:monitor\" },\r\n];\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-16 pb-20\">\r\n        <!-- 标题头 -->\r\n        <header class=\"space-y-2\">\r\n            <h1 class=\"text-3xl font-bold tracking-tight\">单选框 Radio</h1>\r\n            <p class=\"text-lg text-muted-foreground\">\r\n                用于在多个互斥选项中选择其中之一。支持自定义图标、颜色分支及极致的交互状态。\r\n            </p>\r\n        </header>\r\n\r\n        <!-- 交互演练场 -->\r\n        <Playground v-model=\"state\" :controls=\"controls\" component-name=\"RebornRadio\">\r\n            <RebornRadio v-model=\"state.value\" value=\"apple\" :label=\"state.label\" :size=\"state.size\"\r\n                :color=\"state.color\" :variant=\"state.variant\" :disabled=\"state.disabled\" />\r\n        </Playground>\r\n\r\n        <!-- 更多演示 -->\r\n        <div class=\"grid grid-cols-1 lg:grid-cols-2 gap-8\">\r\n            <!-- 选项框架变体 (Circle Variant) -->\r\n            <section\r\n                class=\"rounded-3xl border border-gray-2/60 dark:border-gray-8/50 p-8 space-y-6 bg-white/50 dark:bg-gray-9/20 shadow-sm transition-all hover:shadow-md\">\r\n                <div class=\"space-y-1\">\r\n                    <h3 class=\"text-lg font-semibold text-gray-8 dark:text-gray-2\">选项框架 (Circle Style)</h3>\r\n                    <p class=\"text-sm text-gray-500\">经典圆点风格，未选中时为空心圆，选中后为带实心圆点的彩色圆环。</p>\r\n                </div>\r\n                <div class=\"flex flex-wrap gap-x-6 gap-y-4 pt-2\">\r\n                    <RebornRadio v-for=\"fruit in fruits\" :key=\"fruit.value\" v-model=\"state.value\" :value=\"fruit.value\"\r\n                        :label=\"fruit.label\" variant=\"circle\" color=\"primary\" />\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 品牌色彩矩阵 -->\r\n            <section\r\n                class=\"rounded-3xl border border-gray-2/60 dark:border-gray-8/50 p-8 space-y-6 bg-white/50 dark:bg-gray-9/20 shadow-sm transition-all hover:shadow-md\">\r\n                <div class=\"space-y-1\">\r\n                    <h3 class=\"text-lg font-semibold text-gray-8 dark:text-gray-2\">品牌色彩 (Colors)</h3>\r\n                    <p class=\"text-sm text-gray-500\">内置多套预设色彩体系，适配各类业务场景。</p>\r\n                </div>\r\n                <div class=\"flex flex-wrap gap-x-6 gap-y-4 pt-2\">\r\n                    <RebornRadio v-for=\"c in radioColors\" :key=\"c\" v-model=\"selectedColor\" :value=\"c\" :label=\"c\"\r\n                        :color=\"c\" />\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 尺寸规格 -->\r\n            <section\r\n                class=\"rounded-3xl border border-gray-2/60 dark:border-gray-8/50 p-8 space-y-6 bg-white/50 dark:bg-gray-9/20 shadow-sm transition-all hover:shadow-md\">\r\n                <div class=\"space-y-1\">\r\n                    <h3 class=\"text-lg font-semibold text-gray-8 dark:text-gray-2\">尺寸规格 (Sizes)</h3>\r\n                    <p class=\"text-sm text-gray-500\">从精致的辅助项到核心操作，尺寸任君选择。</p>\r\n                </div>\r\n                <div class=\"flex flex-wrap items-center gap-x-8 gap-y-4 pt-2\">\r\n                    <RebornRadio v-for=\"s in radioSizes\" :key=\"s\" v-model=\"selectedSize\" :value=\"s\"\r\n                        :label=\"s.toUpperCase()\" :size=\"s\" />\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 自定义图标 -->\r\n            <section\r\n                class=\"rounded-3xl border border-gray-2/60 dark:border-gray-8/50 p-8 space-y-6 bg-white/50 dark:bg-gray-9/20 shadow-sm transition-all hover:shadow-md\">\r\n                <div class=\"space-y-1\">\r\n                    <h3 class=\"text-lg font-semibold text-gray-8 dark:text-gray-2\">自定义图标 (Custom Icons)</h3>\r\n                    <p class=\"text-sm text-gray-500\">通过 activeIcon/inactiveIcon 属性定制选中后的视觉表现。</p>\r\n                </div>\r\n                <div class=\"flex flex-wrap gap-x-6 gap-y-4 pt-2\">\r\n                    <RebornRadio v-for=\"t in themes\" :key=\"t.value\" v-model=\"selectedTheme\" :value=\"t.value\"\r\n                        :label=\"t.label\" :active-icon=\"t.icon\" :inactive-icon=\"t.icon\" color=\"secondary\" />\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 插槽深度定制 -->\r\n            <section\r\n                class=\"rounded-3xl border border-gray-2/60 dark:border-gray-8/50 p-8 space-y-6 bg-white/50 dark:bg-gray-9/20 shadow-sm transition-all hover:shadow-md\">\r\n                <div class=\"space-y-1\">\r\n                    <h3 class=\"text-lg font-semibold text-gray-8 dark:text-gray-2\">插槽深度定制 (Slots)</h3>\r\n                    <p class=\"text-sm text-gray-500\">利用插槽渲染 Emoji 或复杂图形，创造沉浸式交互。</p>\r\n                </div>\r\n                <div class=\"flex flex-wrap gap-x-8 gap-y-4 pt-2\">\r\n                    <RebornRadioGroup v-model=\"selectedEmoji\">\r\n                        <RebornRadio v-for=\"e in emojis\" :key=\"e.value\" :value=\"e.value\" :label=\"e.label\" size=\"lg\"\r\n                            color=\"warning\">\r\n                            <template #active-icon>\r\n                                <span class=\"text-xl drop-shadow-sm\">{{ e.value }}</span>\r\n                            </template>\r\n                            <template #inactive-icon>\r\n                                <span class=\"text-lg opacity-30 grayscale saturate-0\">{{ e.value }}</span>\r\n                            </template>\r\n                        </RebornRadio>\r\n                    </RebornRadioGroup>\r\n                </div>\r\n            </section>\r\n        </div>\r\n    </div>\r\n</template>\r\n\r\n<style scoped>\r\n/* 可以在这里添加一些针对 Demo 特有的精美微动效 */\r\nsection {\r\n    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);\r\n}\r\n\r\nsection:hover {\r\n    transform: translateY(-2px);\r\n}\r\n</style>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornRadio from '@/components/reborn-radio/RebornRadio.vue'\r\nimport RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'\r\n\r\nconst v1 = ref('1')\r\nconst v2 = ref('primary')\r\nconst v3 = ref('md')\r\nconst v4 = ref('2')\r\nconst v5 = ref('1')\r\nconst v6 = ref('1')\r\nconst v7 = ref('😀')\r\nconst radioGroupValue = ref('New York')\r\n\r\nconst emojis = [\r\n  { value: '😀', label: '开心' },\r\n  { value: '😍', label: '喜欢' },\r\n  { value: '🤔', label: '思考' },\r\n  { value: '🎉', label: '庆祝' },\r\n]\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Radio 单选框\" description=\"单选框组件，用于从多个选项中选择一个。\">\r\n    <RebornCard title=\"基础用法\" custom-class=\"space-y-4\">\r\n      <view class=\"flex gap-4\">\r\n        <RebornRadio v-model=\"v1\" label=\"苹果\" value=\"1\" />\r\n        <RebornRadio v-model=\"v1\" label=\"香蕉\" value=\"2\" />\r\n      </view>\r\n      <text class=\"text-sm text-gray-500\">当前值: {{ v1 }}</text>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"颜色\" custom-class=\"space-y-4\">\r\n      <view class=\"flex flex-wrap gap-4\">\r\n        <RebornRadio v-model=\"v2\" label=\"Primary\" value=\"primary\" color=\"primary\" />\r\n        <RebornRadio v-model=\"v2\" label=\"Success\" value=\"success\" color=\"success\" />\r\n        <RebornRadio v-model=\"v2\" label=\"Warning\" value=\"warning\" color=\"warning\" />\r\n        <RebornRadio v-model=\"v2\" label=\"Error\" value=\"error\" color=\"error\" />\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"尺寸\" custom-class=\"space-y-4\">\r\n      <view class=\"flex items-center gap-4\">\r\n        <RebornRadio v-model=\"v3\" label=\"Small\" value=\"sm\" size=\"sm\" />\r\n        <RebornRadio v-model=\"v3\" label=\"Medium\" value=\"md\" size=\"md\" />\r\n        <RebornRadio v-model=\"v3\" label=\"Large\" value=\"lg\" size=\"lg\" />\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"禁用状态\" custom-class=\"space-y-4\">\r\n      <view class=\"flex gap-4\">\r\n        <RebornRadio v-model=\"v4\" label=\"未选中禁用\" value=\"1\" disabled />\r\n        <RebornRadio v-model=\"v4\" label=\"选中禁用\" value=\"2\" disabled />\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自定义图标\" custom-class=\"space-y-4\">\r\n      <RebornRadio v-model=\"v5\" label=\"自定义图标\" value=\"1\" active-icon=\"i-lucide-check-circle-2\"\r\n        inactive-icon=\"i-lucide-circle\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自定义样式 (UI Prop)\" custom-class=\"space-y-4\">\r\n      <RebornRadio v-model=\"v6\" label=\"方框样式\" value=\"1\" :ui=\"{\r\n        activeIcon: 'rounded-md',\r\n        inactiveIcon: 'rounded-md',\r\n        label: 'text-primary font-bold',\r\n      }\" active-icon=\"i-lucide-square-check\" inactive-icon=\"i-lucide-square\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自定义插槽 (Slot)\" custom-class=\"space-y-4\">\r\n      <RebornRadioGroup v-model=\"v7\">\r\n        <RebornRadio v-for=\"e in emojis\" :key=\"e.value\" :value=\"e.value\" :label=\"e.label\">\r\n          <template #active-icon>\r\n            <text class=\"text-lg\">{{ e.value }}</text>\r\n          </template>\r\n          <template #inactive-icon>\r\n            <text class=\"text-lg opacity-30\">{{ e.value }}</text>\r\n          </template>\r\n        </RebornRadio>\r\n      </RebornRadioGroup>\r\n      <text class=\"text-sm text-gray-500\">选中: {{ v7 }}</text>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"单选框组 (Radio Group)\" custom-class=\"space-y-4\">\r\n      <RebornRadioGroup v-model=\"radioGroupValue\" size=\"lg\" color=\"primary\">\r\n        <RebornRadio label=\"纽约\" value=\"New York\" />\r\n        <RebornRadio label=\"华盛顿\" value=\"Washington\" />\r\n        <RebornRadio label=\"洛杉矶\" value=\"Los Angeles\" />\r\n        <RebornRadio label=\"芝加哥\" value=\"Chicago\" />\r\n      </RebornRadioGroup>\r\n      <text class=\"text-sm text-gray-500\">选中: {{ radioGroupValue }}</text>\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-radio"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-radio/RebornRadio.vue",
+      "app/components/reborn/ui/reborn-radio/RebornRadioGroup.vue",
+      "app/components/reborn/ui/reborn-radio/index.ts",
+      "app/components/reborn/ui/reborn-radio/reborn-radio.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-radio/RebornRadio.vue",
+      "packages/uniapp-project/src/components/reborn-radio/RebornRadioGroup.vue",
+      "packages/uniapp-project/src/components/reborn-radio/index.ts",
+      "packages/uniapp-project/src/components/reborn-radio/reborn-radio.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-radio.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "0869f3b7f5c45bd78eea59b92a51466178890636",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

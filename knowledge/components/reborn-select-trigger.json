@@ -1,0 +1,261 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-select-trigger",
+  "title": "reborn-select-trigger",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "text",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'请选择'"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "focus",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "size",
+      "type": "(typeof selectTriggerSizes)[number]",
+      "required": false,
+      "description": "",
+      "default": "'md'"
+    },
+    {
+      "name": "color",
+      "type": "(typeof selectTriggerColors)[number]",
+      "required": false,
+      "description": "",
+      "default": "'primary'"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    content: ClassValue\r\n    text: ClassValue\r\n    placeholder: ClassValue\r\n    iconWrapper: ClassValue\r\n    clearIcon: ClassValue\r\n    arrowIcon: ClassValue\r\n  }>",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "displayText",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"\""
+    },
+    {
+      "name": "isOpen",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"lucide:chevron-down\""
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "bordered",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "showArrow",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "arrowAnimation",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "closeOn",
+      "type": "\"click\" | \"mousedown\"",
+      "required": false,
+      "description": "",
+      "default": "\"click\""
+    },
+    {
+      "name": "scrollToActive",
+      "type": "(instant?: boolean) => void",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "error",
+      "type": "boolean",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "portal",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    }
+  ],
+  "events": [
+    {
+      "name": "open",
+      "payload": "(e: 'open'): void",
+      "description": ""
+    },
+    {
+      "name": "clear",
+      "payload": "(e: 'clear'): void",
+      "description": ""
+    },
+    {
+      "name": "toggle",
+      "payload": "(e: \"toggle\"): void;",
+      "description": ""
+    },
+    {
+      "name": "keydown",
+      "payload": "(e: \"keydown\", event: KeyboardEvent): void;",
+      "description": ""
+    },
+    {
+      "name": "enter",
+      "payload": "(e: \"enter\"): void;",
+      "description": ""
+    },
+    {
+      "name": "afterEnter",
+      "payload": "(e: \"afterEnter\"): void;",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "payload": "(e: \"close\"): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    },
+    {
+      "name": "clear-icon",
+      "description": ""
+    },
+    {
+      "name": "arrow-icon",
+      "description": ""
+    },
+    {
+      "name": "cover",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    }
+  ],
+  "exposes": [
+    {
+      "name": "dropdownRef",
+      "description": ""
+    },
+    {
+      "name": "dropdownScrollRef",
+      "description": ""
+    },
+    {
+      "name": "isOpening",
+      "description": ""
+    },
+    {
+      "name": "contains",
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "related": [
+    "reborn-transition"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-select-trigger"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-select-trigger/RebornSelectTrigger.vue",
+      "app/components/reborn/ui/reborn-select-trigger/reborn-select-trigger.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-select-trigger/RebornSelectTrigger.vue",
+      "packages/uniapp-project/src/components/reborn-select-trigger/index.ts",
+      "packages/uniapp-project/src/components/reborn-select-trigger/reborn-select-trigger.config.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "ba39de2ea618b54d07518685a6c6f89f6cf7b574",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "missing"
+    }
+  }
+}

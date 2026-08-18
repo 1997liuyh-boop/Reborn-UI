@@ -1,0 +1,187 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-pagination",
+  "title": "分页",
+  "description": "当数据量过多时，使用分页分解数据。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "number",
+      "required": false,
+      "description": "双向绑定值",
+      "default": "1",
+      "vModel": true
+    },
+    {
+      "name": "total",
+      "type": "number",
+      "required": false,
+      "description": "数据总数",
+      "default": "0"
+    },
+    {
+      "name": "pageSize",
+      "type": "number",
+      "required": false,
+      "description": "每页条目数",
+      "default": "10"
+    },
+    {
+      "name": "mode",
+      "type": "PaginationMode",
+      "required": false,
+      "description": "显示模式 (`multi` / `simple`)",
+      "default": "'multi'"
+    },
+    {
+      "name": "color",
+      "type": "PaginationColor",
+      "required": false,
+      "description": "主题颜色",
+      "default": "'primary'"
+    },
+    {
+      "name": "prevText",
+      "type": "string",
+      "required": false,
+      "description": "上一页按钮文字",
+      "default": "''"
+    },
+    {
+      "name": "nextText",
+      "type": "string",
+      "required": false,
+      "description": "下一页按钮文字",
+      "default": "''"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用",
+      "default": "false"
+    },
+    {
+      "name": "background",
+      "type": "boolean",
+      "required": false,
+      "description": "是否为分页按钮添加背景色",
+      "default": "false"
+    },
+    {
+      "name": "hideOnSinglePage",
+      "type": "boolean",
+      "required": false,
+      "description": "只有一页时是否隐藏",
+      "default": "false"
+    },
+    {
+      "name": "ui",
+      "type": "any",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "size",
+      "type": "PaginationSize",
+      "required": false,
+      "description": "尺寸 (`sm` / `md` / `lg`) **(仅 Web 端支持)**",
+      "default": "'md'"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": ""
+    },
+    {
+      "name": "change",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "prev",
+      "description": "自定义上一页按钮"
+    },
+    {
+      "name": "page",
+      "description": "自定义页码项 (仅 multi 模式)"
+    },
+    {
+      "name": "simpleContent",
+      "description": "自定义简单模式内容"
+    },
+    {
+      "name": "next",
+      "description": "自定义下一页按钮"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "prev",
+      "description": ""
+    },
+    {
+      "name": "next",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { ref } from 'vue'\r\nimport { paginationColors } from '../../ui/reborn-pagination/reborn-pagination.config'\r\n\r\n\r\nconst page1 = ref(1)\r\nconst page3 = ref(1)\r\n\r\nconst demoColor = ref<any>('primary')\r\nconst demoDisabled = ref(false)\r\nconst demoBackground = ref(true)\r\nconst demoSize = ref<'sm' | 'md' | 'lg'>('md')\r\nconst demoMode = ref<'multi' | 'simple'>('multi')\r\n\r\nfunction handleChange(page: number) {\r\n    console.log('Page changed to:', page)\r\n}\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-12\">\r\n        <section>\r\n            <h3 class=\"text-lg font-bold mb-4 border-l-4 border-primary pl-3\">交互配置演示</h3>\r\n            <div\r\n                class=\"grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-800\">\r\n                <div>\r\n                    <p class=\"text-sm text-gray-500 mb-3 font-medium\">主题颜色</p>\r\n                    <RebornRadioGroup v-model=\"demoColor\">\r\n                        <RebornRadio v-for=\"item in paginationColors\" :key=\"item\" :value=\"item\" :showIcon=\"false\">\r\n                            <template #default=\"{ isChecked }\">\r\n                                <div class=\"relative flex size-5\">\r\n                                    <div v-if=\"isChecked\"\r\n                                        class=\"absolute inline-flex h-full w-full animate-ping rounded-full opacity-75\"\r\n                                        :class=\"`bg-${item}`\">\r\n                                    </div>\r\n                                    <div class=\"relative inline-flex size-5 rounded-full\" :class=\"`bg-${item}`\"></div>\r\n                                </div>\r\n                            </template>\r\n                        </RebornRadio>\r\n                    </RebornRadioGroup>\r\n                </div>\r\n\r\n                <div>\r\n                    <p class=\"text-sm text-gray-500 mb-3 font-medium\">尺寸大小</p>\r\n                    <RebornRadioGroup v-model=\"demoSize\">\r\n                        <RebornRadio v-for=\"s in (['sm', 'md', 'lg'] as const)\" :key=\"s\" :value=\"s\" :label=\"s\">\r\n                        </RebornRadio>\r\n                    </RebornRadioGroup>\r\n                </div>\r\n\r\n                <div>\r\n                    <p class=\"text-sm font-medium\">显示模式</p>\r\n                    <RebornSwitch v-model=\"demoMode\" active-label=\"列表\" active-value=\"multi\" inactive-label=\"简易\"\r\n                        inactive-value=\"simple\" />\r\n                </div>\r\n\r\n\r\n                <div>\r\n                    <p class=\"text-sm font-medium\">选项背景</p>\r\n                    <RebornSwitch v-model=\"demoBackground\" active-label=\"有背景\" inactive-label=\"无背景\" />\r\n                </div>\r\n\r\n                <div>\r\n                    <p class=\"text-sm font-medium\">禁用状态</p>\r\n                    <RebornSwitch v-model=\"demoDisabled\" color=\"error\" active-label=\"禁用\" inactive-label=\"启用\" />\r\n                </div>\r\n            </div>\r\n\r\n            <div\r\n                class=\"mt-10 flex flex-col items-center p-10 bg-white dark:bg-gray-800/30 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm\">\r\n                <RebornPagination v-model=\"page1\" :total=\"100\" :mode=\"demoMode\" :color=\"demoColor\" :size=\"demoSize\"\r\n                    :background=\"demoBackground\" :disabled=\"demoDisabled\" @change=\"handleChange\" />\r\n                <div class=\"mt-6 flex items-center gap-2 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full\">\r\n                    <span class=\"text-xs text-gray-400 uppercase tracking-wider font-bold tracking-widest\">Page</span>\r\n                    <span class=\"text-sm font-mono font-bold text-primary\">{{ page1 }}</span>\r\n                    <span class=\"text-xs text-gray-300\">/ 10</span>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <section>\r\n            <h3 class=\"text-lg font-bold mb-4 border-l-4 border-error pl-3 text-error\">特殊场景 (total=0)</h3>\r\n            <div class=\"flex flex-col items-center p-8 bg-error/5 rounded-2xl border border-dashed border-error/20\">\r\n                <RebornPagination :total=\"0\" :color=\"demoColor\" :size=\"demoSize\" :background=\"demoBackground\" />\r\n                <p class=\"mt-4 text-xs text-error/60 italic font-medium\">无数据时强制显示第 1 页并禁用翻页</p>\r\n            </div>\r\n        </section>\r\n\r\n        <section>\r\n            <h3 class=\"text-lg font-bold mb-6 border-l-4 border-success pl-3 text-success\">自定义 Slot 扩展</h3>\r\n            <div class=\"space-y-10\">\r\n                <div class=\"p-6 bg-success/5 rounded-2xl border border-success/10 space-y-4\">\r\n                    <p class=\"text-sm font-bold text-success flex items-center gap-2\">\r\n                        <Icon name=\"lucide:type\" /> 自定义文字与颜色\r\n                    </p>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\" prev-text=\"上一页\" next-text=\"下一页\" color=\"success\"\r\n                        :size=\"demoSize\" :background=\"demoBackground\" />\r\n                </div>\r\n\r\n                <div class=\"p-6 bg-error/5 rounded-2xl border border-error/10 space-y-6\">\r\n                    <p class=\"text-sm font-bold text-error flex items-center gap-2\">\r\n                        <Icon name=\"lucide:palette\" /> 自定义 Slot 图标\r\n                    </p>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\" color=\"error\" :size=\"demoSize\">\r\n                        <template #page=\"{ page, active, handlePageClick }\">\r\n                            <!-- <RebornButton :variant=\"active ? 'solid' : 'subtle'\" :color=\"active ? 'primary' : 'neutral'\"\r\n                                :class=\"[\r\n                                    demoSize === 'sm' ? '!w-7 !h-7 text-xs' : demoSize === 'lg' ? '!w-10 !h-10 text-lg' : '!w-8 !h-8 text-sm',\r\n                                    '!rounded-full !p-0 !min-w-0 font-mono',\r\n                                    active ? 'ring-2 ring-primary/20' : 'bg-gray-100/50 hover:bg-gray-100'\r\n                                ]\" @click=\"handlePageClick(page as number)\">\r\n                                {{ page }}\r\n                            </RebornButton> -->\r\n                            <ContainerTextFlip v-if=\"active\" :words=\"['你猜怎么着', '真没听说过', `现在第${page}集`]\"\r\n                                class=\"text-sm!\" />\r\n                            <RebornButton variant=\"subtle\" color=\"neutral\" v-else>{{ page }}</RebornButton>\r\n                        </template>\r\n                        <template #prev=\"{ prev, disabled }\">\r\n                            <RebornButton color=\"error\" variant=\"subtle\"\r\n                                :class=\"[demoSize === 'sm' ? '!w-7 !h-7' : demoSize === 'lg' ? '!w-10 !h-10' : '!w-8 !h-8', 'bg-error/10 !p-0 !min-w-0']\"\r\n                                :disabled=\"disabled\" @click=\"prev\">\r\n                                <Icon name=\"lucide:arrow-left-circle\"\r\n                                    :class=\"demoSize === 'lg' ? 'text-2xl' : 'text-lg'\" />\r\n                            </RebornButton>\r\n                        </template>\r\n                        <template #next=\"{ next, disabled }\">\r\n                            <RebornButton color=\"error\" variant=\"subtle\"\r\n                                :class=\"[demoSize === 'sm' ? '!w-7 !h-7' : demoSize === 'lg' ? '!w-10 !h-10' : '!w-8 !h-8', 'bg-error/10 !p-0 !min-w-0']\"\r\n                                :disabled=\"disabled\" @click=\"next\">\r\n                                <Icon name=\"lucide:arrow-right-circle\"\r\n                                    :class=\"demoSize === 'lg' ? 'text-2xl' : 'text-lg'\" />\r\n                            </RebornButton>\r\n                        </template>\r\n                    </RebornPagination>\r\n                </div>\r\n\r\n                <div class=\"p-6 bg-primary/5 rounded-2xl border border-primary/10 space-y-6 text-center\">\r\n                    <p class=\"text-sm font-bold text-primary flex items-center justify-center gap-2\">\r\n                        <Icon name=\"lucide:shapes\" /> 自定义形状 (圆形 / Circle)\r\n                    </p>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\" color=\"primary\">\r\n                        <template #page=\"{ page, active, handlePageClick }\">\r\n                            <RebornButton :variant=\"active ? 'solid' : 'subtle'\" :color=\"active ? 'primary' : 'neutral'\"\r\n                                :class=\"[\r\n                                    demoSize === 'sm' ? '!w-7 !h-7 text-xs' : demoSize === 'lg' ? '!w-10 !h-10 text-lg' : '!w-8 !h-8 text-sm',\r\n                                    '!rounded-full !p-0 !min-w-0 font-mono',\r\n                                    active ? 'ring-2 ring-primary/20' : 'bg-gray-100/50 hover:bg-gray-100'\r\n                                ]\" @click=\"handlePageClick(page as number)\">\r\n                                {{ page }}\r\n                            </RebornButton>\r\n                        </template>\r\n                    </RebornPagination>\r\n                </div>\r\n            </div>\r\n        </section>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { ref } from 'vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPagination from '@/components/reborn-pagination/RebornPagination.vue'\r\nimport RebornText from '@/components/reborn-text/RebornText.vue'\r\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\r\nimport { paginationColors } from '@/components/reborn-pagination/reborn-pagination.config'\r\n\r\nconst page1 = ref(1)\r\nconst page3 = ref(1)\r\n\r\nconst demoColor = ref<any>('primary')\r\nconst demoDisabled = ref(false)\r\nconst demoBackground = ref(false)\r\nconst demoMode = ref<'multi' | 'simple'>('multi')\r\n\r\nfunction handleChange(page: number) {\r\n    console.log('Page changed to:', page)\r\n}\r\n</script>\r\n\r\n<template>\r\n    <RebornPage title=\"Pagination 分页\" description=\"当数据量过多时，使用分页分解数据。\">\r\n\r\n        <RebornCard title=\"配置演示\">\r\n            <!-- 颜色切换 -->\r\n            <view>\r\n                <RebornText color=\"neutral\" custom-class=\"mb-2\">主题颜色</RebornText>\r\n                <view class=\"flex flex-wrap gap-2\">\r\n                    <view v-for=\"c in paginationColors\" :key=\"c\"\r\n                        class=\"size-6 rounded-full border-2 border-transparent transition-all\"\r\n                        :class=\"[demoColor === c ? 'scale-110 !border-slate-400' : '', `bg-${c}`]\"\r\n                        :style=\"{ backgroundColor: `var(--color-${c})` }\" @tap=\"demoColor = c\" />\r\n                </view>\r\n            </view>\r\n\r\n            <RebornText color=\"neutral\">显示模式</RebornText>\r\n            <RebornSwitch v-model=\"demoMode\" active-label=\"列表\" active-value=\"multi\" inactive-label=\"简易\"\r\n                inactive-value=\"simple\" />\r\n\r\n            <RebornText color=\"neutral\">禁用状态</RebornText>\r\n            <RebornSwitch v-model=\"demoDisabled\" active-label=\"禁用\" inactive-label=\"启用\" />\r\n\r\n            <RebornText color=\"neutral\">背景状态</RebornText>\r\n            <RebornSwitch v-model=\"demoBackground\" active-label=\"禁用\" inactive-label=\"启用\" />\r\n\r\n        </RebornCard>\r\n\r\n        <RebornCard title=\"动态演示\">\r\n            <view class=\"py-4\">\r\n                <RebornPagination v-model=\"page1\" :total=\"100\" :pageSize=\"10\" :mode=\"demoMode\" :color=\"demoColor\"\r\n                    :disabled=\"demoDisabled\" :background=\"demoBackground\" @change=\"handleChange\" />\r\n                <view class=\"mt-4 text-center text-slate-400 text-sm\">\r\n                    当前页码: {{ page1 }} / 10\r\n                </view>\r\n            </view>\r\n        </RebornCard>\r\n\r\n        <RebornCard title=\"特殊场景 (total=0)\">\r\n            <view class=\"py-4\">\r\n                <RebornPagination :total=\"0\" :color=\"demoColor\" />\r\n                <view class=\"mt-4 text-center text-slate-400 text-sm italic\">无数据时强制显示第 1 页并禁用翻页</view>\r\n            </view>\r\n        </RebornCard>\r\n\r\n        <RebornCard title=\"自定义 Slot 扩展\">\r\n            <view class=\"py-4\">\r\n                <view>\r\n                    <RebornText color=\"neutral\" custom-class=\"mb-2\">自定义文字与颜色</RebornText>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\" prevText=\"上一页\" nextText=\"下一页\" color=\"success\" />\r\n                </view>\r\n\r\n                <view class=\"mt-8\">\r\n                    <RebornText color=\"neutral\" custom-class=\"mb-2\">自定义 Slot 图标</RebornText>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\" color=\"error\">\r\n                        <template #prev=\"{ prev }\">\r\n                            <view\r\n                                class=\"reborn-pagination-item flex items-center justify-center rounded-md size-7 min-w-7 bg-error/10 text-error active:scale-95\"\r\n                                @tap=\"prev\">\r\n                                <view class=\"i-lucide-arrow-left-circle text-24\" />\r\n                            </view>\r\n                        </template>\r\n                        <template #next=\"{ next }\">\r\n                            <view\r\n                                class=\"reborn-pagination-item flex items-center justify-center rounded-md size-7 min-w-7 bg-error/10 text-error active:scale-95\"\r\n                                @tap=\"next\">\r\n                                <view class=\"i-lucide-arrow-right-circle text-24\" />\r\n                            </view>\r\n                        </template>\r\n                    </RebornPagination>\r\n                </view>\r\n\r\n                <view class=\"mt-8\">\r\n                    <RebornText color=\"neutral\" custom-class=\"mb-2\">自定义颜色插槽 (#67C23A & #F56C6C)</RebornText>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\">\r\n                        <template #page=\"{ page, active, handlePageClick }\">\r\n                            <view\r\n                                class=\"flex items-center justify-center rounded-md size-7 min-w-7 transition-all active:scale-95 border\"\r\n                                :style=\"{\r\n                                    backgroundColor: active ? '#F56C6C' : '#67C23A10',\r\n                                    color: active ? '#FFFFFF' : '#67C23A',\r\n                                    borderColor: active ? '#F56C6C' : '#67C23A30'\r\n                                }\" @tap=\"handlePageClick(page as number)\">\r\n                                <text class=\"text-24 font-bold\">{{ page }}</text>\r\n                            </view>\r\n                        </template>\r\n                        <template #prev=\"{ prev }\">\r\n                            <view\r\n                                class=\"flex items-center justify-center rounded-md size-7 min-w-7 bg-slate-100 dark:bg-slate-800\"\r\n                                @tap=\"prev\">\r\n                                <view class=\"i-lucide-chevron-left text-24\" style=\"color: #67C23A\" />\r\n                            </view>\r\n                        </template>\r\n                        <template #next=\"{ next }\">\r\n                            <view\r\n                                class=\"flex items-center justify-center rounded-md size-7 min-w-7 bg-slate-100 dark:bg-slate-800\"\r\n                                @tap=\"next\">\r\n                                <view class=\"i-lucide-chevron-right text-24\" style=\"color: #67C23A\" />\r\n                            </view>\r\n                        </template>\r\n                    </RebornPagination>\r\n                </view>\r\n\r\n                <view class=\"mt-8\">\r\n                    <RebornText color=\"neutral\" custom-class=\"mb-2\">自定义形状 (药丸型)</RebornText>\r\n                    <RebornPagination v-model=\"page3\" :total=\"50\" color=\"warning\">\r\n                        <template #page=\"{ page, active, handlePageClick }\">\r\n                            <view\r\n                                class=\"flex items-center justify-center rounded-full h-7 px-3 min-w-7 transition-all active:scale-95 border\"\r\n                                :class=\"active ? 'bg-orange-500 text-white border-orange-500' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 border-orange-200'\"\r\n                                @tap=\"handlePageClick(page as number)\">\r\n                                <text class=\"text-24 font-medium\">{{ page }}</text>\r\n                            </view>\r\n                        </template>\r\n                    </RebornPagination>\r\n                </view>\r\n            </view>\r\n        </RebornCard>\r\n\r\n    </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-pagination"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-pagination/RebornPagination.vue",
+      "app/components/reborn/ui/reborn-pagination/index.ts",
+      "app/components/reborn/ui/reborn-pagination/reborn-pagination.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-pagination/RebornPagination.vue",
+      "packages/uniapp-project/src/components/reborn-pagination/reborn-pagination.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-pagination.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "f9bdb7872f40bae4842d524569b7602bc74d40b9",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

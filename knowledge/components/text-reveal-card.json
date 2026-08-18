@@ -1,0 +1,86 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-reveal-card",
+  "title": "文字揭示卡片",
+  "description": "鼠标移动时在卡片底部揭示文字的效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "卡片的额外类名。"
+    },
+    {
+      "name": "starsCount",
+      "type": "number",
+      "required": false,
+      "description": "控制生成的星星数量。",
+      "default": "130"
+    },
+    {
+      "name": "starsClass",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "应用于漂浮星星的额外类名。"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "header",
+      "description": "String"
+    },
+    {
+      "name": "text",
+      "description": "卡片未悬停时显示的默认文字。"
+    },
+    {
+      "name": "revealText",
+      "description": "悬停卡片时显示的文字。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <TextRevealCard class=\"mx-auto my-8\">\r\n    <template #header>\r\n      <h2 class=\"mb-2 text-lg font-semibold text-white\">Text Reveal</h2>\r\n      <p class=\"text-sm text-[#a9a9a9]\">Hover over the text to reveal the animation</p>\r\n    </template>\r\n    <template #text>\r\n      <p\r\n        class=\"bg-[#323238] bg-clip-text py-4 text-sm font-bold text-transparent sm:py-6 sm:text-3xl md:py-10 md:text-[3rem]\"\r\n      >\r\n        Get ready to see what's hidden\r\n      </p>\r\n    </template>\r\n    <template #revealText>\r\n      <p\r\n        :style=\"{\r\n          textShadow: '4px 4px 15px rgba(0,0,0,0.5)',\r\n        }\"\r\n        class=\"bg-gradient-to-b from-white to-neutral-300 bg-clip-text py-4 text-sm font-bold text-white sm:py-6 sm:text-3xl md:py-10 md:text-[3rem]\"\r\n      >\r\n        Light reveals what shadows hide\r\n      </p>\r\n    </template>\r\n  </TextRevealCard>\r\n  <TextRevealCard\r\n    :stars-count=\"500\"\r\n    stars-class=\"bg-red-500\"\r\n    class=\"mx-auto my-8\"\r\n  >\r\n    <template #header>\r\n      <h2 class=\"mb-2 text-3xl font-semibold\">Text Reveal</h2>\r\n      <p class=\"text-sm text-[#a9a9a9]\">Hover over the text to reveal the animation</p>\r\n    </template>\r\n    <template #text>\r\n      <p class=\"text-white\">\r\n        A reveal animation smoothly unveils hidden content, enhancing user interaction. It's\r\n        triggered by scrolling, clicking, or viewport entry, adding dynamic transitions to web\r\n        elements.\r\n      </p>\r\n    </template>\r\n    <template #revealText>\r\n      <p class=\"text-red-500\">\r\n        A ɿɘvɘɒl ɒniɱɒʇiou ƨɱoothly unvɘilƨ ʜiddɘn coɴtɘnt, ɘnhɒncing uƨɘɿ intɘɿɒction. It'ƨ\r\n        tɿiggɘɿɘd by ƨcɿolling, clicʞing, oɿ viɘwpoɿt ɘntɿy, ɒdding dynɒmic tɿɒnƨitionƨ to wɘb\r\n        ɘlɘmɘntƨ.\r\n      </p>\r\n    </template>\r\n  </TextRevealCard>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-reveal-card"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-reveal-card/TextRevealCard.vue",
+      "app/components/reborn/ui/text-reveal-card/TextRevealStars.vue",
+      "app/components/reborn/ui/text-reveal-card/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/text-reveal-card.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "057e706d5541733547cc9955ddfc003d75460f4b",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

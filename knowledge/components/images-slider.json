@@ -1,0 +1,144 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "images-slider",
+  "title": "图片滑块",
+  "description": "全屏图片滑块，可使用键盘导航。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "images",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "images",
+      "type": "array as proptype<string[]>",
+      "default": "() => []",
+      "required": false,
+      "description": "要在滑块中展示的图片 URL 数组。"
+    },
+    {
+      "name": "hideOverlay",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否隐藏图片滑块的覆盖层（槽位将不会渲染）。"
+    },
+    {
+      "name": "overlayClass",
+      "type": "string",
+      "default": "\"\"",
+      "required": false,
+      "description": "应用于覆盖层容器的类名。"
+    },
+    {
+      "name": "imageClass",
+      "type": "string",
+      "default": "\"bg-cover bg-center bg-no-repeat\"",
+      "required": false,
+      "description": "应用于每张图片的类名。"
+    },
+    {
+      "name": "enterFromClass",
+      "type": "string",
+      "default": "\"scale-0 origin-center\"",
+      "required": false,
+      "description": "进入过渡的初始类名。"
+    },
+    {
+      "name": "enterActiveClass",
+      "type": "string",
+      "default": "\"transition-transform duration-300 ease-in-out\"",
+      "required": false,
+      "description": "进入过渡的激活类名。"
+    },
+    {
+      "name": "leaveActiveClass",
+      "type": "string",
+      "default": "\"transition-transform duration-300 ease-in-out\"",
+      "required": false,
+      "description": "离开过渡的激活类名。"
+    },
+    {
+      "name": "autoplay",
+      "type": "[boolean, number, string]",
+      "default": "false",
+      "required": false,
+      "description": "false"
+    },
+    {
+      "name": "direction",
+      "type": "string",
+      "default": "\"vertical\"",
+      "required": false,
+      "description": "'vertical'"
+    },
+    {
+      "name": "perspective",
+      "type": "string",
+      "default": "\"1000px\"",
+      "required": false,
+      "description": "应用于滑块容器的透视值。"
+    },
+    {
+      "name": "modelValue",
+      "type": "unknown",
+      "required": false,
+      "description": "双向绑定值",
+      "vModel": true,
+      "default": "0"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "modelValue 变化时触发（v-model 同步）"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nconst images = [\r\n  \"https://picsum.photos/seed/waiting/1920/1080\",\r\n  \"https://picsum.photos/seed/full-collapse/1920/1080\",\r\n  \"https://picsum.photos/seed/five-stories-falling/1920/1080\",\r\n  \"https://picsum.photos/seed/war-all-the-time/1920/1080\",\r\n  \"https://picsum.photos/seed/a-city-by-the-light-divided/1920/1080\",\r\n  \"https://picsum.photos/seed/common-existence/1920/1080\",\r\n  \"https://picsum.photos/seed/no-devolucion/1920/1080\",\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div>\r\n    <ImagesSlider\r\n      :images=\"images\"\r\n      autoplay\r\n    >\r\n      <div\r\n        class=\"flex size-full items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/80 p-8\"\r\n      >\r\n        <div class=\"max-w-prose text-center\">\r\n          <h1 class=\"mb-8 text-5xl max-md:text-2xl\">\r\n            The hero section slide-show nobody asked for\r\n          </h1>\r\n          <button\r\n            class=\"rounded-full border border-emerald-500/20 bg-emerald-300/10 px-4 py-2 text-sm text-white backdrop-blur-sm\"\r\n          >\r\n            Join Now\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </ImagesSlider>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add images-slider"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/images-slider/ImagesSlider.vue",
+      "app/components/reborn/ui/images-slider/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/images-slider.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "13399d2986aa655e8207bcee9b1422367e5c87dd",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "pattern-background",
+  "title": "pattern-background",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "class-variance-authority"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add pattern-background"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/pattern-background/PatternBackground.vue",
+      "app/components/reborn/ui/pattern-background/index.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "371a24c937fa844ec067d7d4eec6dd2b0788694b",
+    "hasOverride": false,
+    "extractors": {
+      "web": "partial",
+      "uniapp": "absent",
+      "docs": "missing"
+    }
+  }
+}

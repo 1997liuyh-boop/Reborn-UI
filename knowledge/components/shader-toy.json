@@ -1,0 +1,119 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "shader-toy",
+  "title": "Shader Toy Viewer",
+  "description": "在浏览器中渲染 ShaderToy GLSL 着色器的强大灵活组件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "shader-toy",
+    "ogl",
+    "webgl"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "mouseMode",
+      "type": "MouseMode",
+      "required": false,
+      "description": "'click'",
+      "default": "\"click\""
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "应用于容器的自定义类。"
+    },
+    {
+      "name": "shaderCode",
+      "type": "string",
+      "required": true,
+      "description": "来自 ShaderToy 的 GLSL 片段着色器源码。"
+    },
+    {
+      "name": "hue",
+      "type": "number",
+      "required": false,
+      "description": "调整着色器输出的色相。",
+      "default": "0"
+    },
+    {
+      "name": "saturation",
+      "type": "number",
+      "required": false,
+      "description": "调整着色器输出的饱和度。",
+      "default": "1"
+    },
+    {
+      "name": "brightness",
+      "type": "number",
+      "required": false,
+      "description": "调整着色器输出的亮度。",
+      "default": "1"
+    },
+    {
+      "name": "speed",
+      "type": "number",
+      "required": false,
+      "description": "调整着色器输出的速度。",
+      "default": "1"
+    },
+    {
+      "name": "mouseSensitivity",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "1"
+    },
+    {
+      "name": "damping",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\n// Source Link: https://www.shadertoy.com/view/XlfGRj\r\nconst starNest = `\r\n\r\n// Star Nest by Pablo Roman Andrioli\r\n// License: MIT\r\n\r\n#define iterations 17\r\n#define formuparam 0.53\r\n\r\n#define volsteps 20\r\n#define stepsize 0.1\r\n\r\n#define zoom   0.800\r\n#define tile   0.850\r\n#define speed  0.010 \r\n\r\n#define brightness 0.0015\r\n#define darkmatter 0.300\r\n#define distfading 0.730\r\n#define saturation 0.850\r\n\r\n\r\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\r\n{\r\n\t//get coords and direction\r\n\tvec2 uv=fragCoord.xy/iResolution.xy-.5;\r\n\tuv.y*=iResolution.y/iResolution.x;\r\n\tvec3 dir=vec3(uv*zoom,1.);\r\n\tfloat time=iTime*speed+.25;\r\n\r\n\t//mouse rotation\r\n\tfloat a1=.5+iMouse.z/iResolution.x*2.;\r\n\tfloat a2=.8+iMouse.w/iResolution.y*2.;\r\n\tmat2 rot1=mat2(cos(a1),sin(a1),-sin(a1),cos(a1));\r\n\tmat2 rot2=mat2(cos(a2),sin(a2),-sin(a2),cos(a2));\r\n\tdir.xz*=rot1;\r\n\tdir.xy*=rot2;\r\n\tvec3 from=vec3(1.,.5,0.5);\r\n\tfrom+=vec3(time*2.,time,-2.);\r\n\tfrom.xz*=rot1;\r\n\tfrom.xy*=rot2;\r\n\t\r\n\t//volumetric rendering\r\n\tfloat s=0.1,fade=1.;\r\n\tvec3 v=vec3(0.);\r\n\tfor (int r=0; r<volsteps; r++) {\r\n\t\tvec3 p=from+s*dir*.5;\r\n\t\tp = abs(vec3(tile)-mod(p,vec3(tile*2.))); // tiling fold\r\n\t\tfloat pa,a=pa=0.;\r\n\t\tfor (int i=0; i<iterations; i++) { \r\n\t\t\tp=abs(p)/dot(p,p)-formuparam; // the magic formula\r\n\t\t\ta+=abs(length(p)-pa); // absolute sum of average change\r\n\t\t\tpa=length(p);\r\n\t\t}\r\n\t\tfloat dm=max(0.,darkmatter-a*a*.001); //dark matter\r\n\t\ta*=a*a; // add contrast\r\n\t\tif (r>6) fade*=1.-dm; // dark matter, don't render near\r\n\t\t//v+=vec3(dm,dm*.5,0.);\r\n\t\tv+=fade;\r\n\t\tv+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; // coloring based on distance\r\n\t\tfade*=distfading; // distance fading\r\n\t\ts+=stepsize;\r\n\t}\r\n\tv=mix(vec3(length(v)),v,saturation); //color adjust\r\n\tfragColor = vec4(v*.01,1.);\t\r\n\t\r\n}\r\n`;\r\n\r\n// Source Link: https://www.shadertoy.com/view/wctXWN\r\nconst vortex = `\r\n/*\r\n\r\n    \"Vortex\" by @XorDev\r\n    \r\n    https://x.com/XorDev/status/1930594981963505793\r\n\r\n    An experiment based on my \"3D Fire\":\r\n    https://www.shadertoy.com/view/3XXSWS\r\n\t\r\n*/\r\nvoid mainImage(out vec4 O, vec2 I)\r\n{\r\n    //Raymarch iterator\r\n    float i,\r\n    //Raymarch depth\r\n    z = fract(dot(I,sin(I))),\r\n    //Raymarch step size\r\n    d;\r\n    //Raymarch loop (100 iterations)\r\n    for(O *= i; i++<1e2;\r\n        //Sample coloring and glow attenuation\r\n        O+=(sin(z+vec4(6,2,4,0))+1.5)/d)\r\n    {\r\n        //Raymarch sample position\r\n        vec3 p = z * normalize(vec3(I+I,0) - iResolution.xyy);\r\n        //Shift camera back\r\n        p.z += 6.;\r\n        //Distortion (turbulence) loop\r\n        for(d=1.; d<9.; d/=.8)\r\n            //Add distortion waves\r\n            p += cos(p.yzx*d-iTime)/d;\r\n        //Compute distorted distance field of hollow sphere\r\n        z += d = .002+abs(length(p)-.5)/4e1;\r\n    }\r\n    //Tanh tonemapping\r\n    //https://www.shadertoy.com/view/ms3BD7\r\n    O = tanh(O/7e3);\r\n}\r\n`;\r\n\r\n// Source Link: https://www.shadertoy.com/view/lcfyDj\r\nconst blackhole = `\r\n  // Ref - https://x.com/cmzw_/status/1787147460772864188 (celestianmaze)\r\n\r\n  vec4 permute_3d(vec4 x){ return mod(((x*34.0)+1.0)*x, 289.0); }\r\n  vec4 taylorInvSqrt3d(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }\r\n\r\n  float simplexNoise3d(vec3 v)\r\n  {\r\n      const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\r\n      const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\r\n\r\n      // First corner\r\n      vec3 i  = floor(v + dot(v, C.yyy) );\r\n      vec3 x0 =   v - i + dot(i, C.xxx) ;\r\n\r\n      // Other corners\r\n      vec3 g = step(x0.yzx, x0.xyz);\r\n      vec3 l = 1.0 - g;\r\n      vec3 i1 = min( g.xyz, l.zxy );\r\n      vec3 i2 = max( g.xyz, l.zxy );\r\n\r\n      //  x0 = x0 - 0. + 0.0 * C\r\n      vec3 x1 = x0 - i1 + 1.0 * C.xxx;\r\n      vec3 x2 = x0 - i2 + 2.0 * C.xxx;\r\n      vec3 x3 = x0 - 1. + 3.0 * C.xxx;\r\n\r\n      // Permutations\r\n      i = mod(i, 289.0 );\r\n      vec4 p = permute_3d( permute_3d( permute_3d( i.z + vec4(0.0, i1.z, i2.z, 1.0 )) + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))  + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\r\n\r\n      // Gradients\r\n      // ( N*N points uniformly over a square, mapped onto an octahedron.)\r\n      float n_ = 1.0/7.0; // N=7\r\n      vec3  ns = n_ * D.wyz - D.xzx;\r\n\r\n      vec4 j = p - 49.0 * floor(p * ns.z *ns.z);  //  mod(p,N*N)\r\n\r\n      vec4 x_ = floor(j * ns.z);\r\n      vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)\r\n\r\n      vec4 x = x_ *ns.x + ns.yyyy;\r\n      vec4 y = y_ *ns.x + ns.yyyy;\r\n      vec4 h = 1.0 - abs(x) - abs(y);\r\n\r\n      vec4 b0 = vec4( x.xy, y.xy );\r\n      vec4 b1 = vec4( x.zw, y.zw );\r\n\r\n      vec4 s0 = floor(b0)*2.0 + 1.0;\r\n      vec4 s1 = floor(b1)*2.0 + 1.0;\r\n      vec4 sh = -step(h, vec4(0.0));\r\n\r\n      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\r\n      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\r\n\r\n      vec3 p0 = vec3(a0.xy,h.x);\r\n      vec3 p1 = vec3(a0.zw,h.y);\r\n      vec3 p2 = vec3(a1.xy,h.z);\r\n      vec3 p3 = vec3(a1.zw,h.w);\r\n\r\n      // Normalise gradients\r\n      vec4 norm = taylorInvSqrt3d(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\r\n      p0 *= norm.x;\r\n      p1 *= norm.y;\r\n      p2 *= norm.z;\r\n      p3 *= norm.w;\r\n\r\n      // Mix final noise value\r\n      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\r\n      m = m * m;\r\n      return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );\r\n  }\r\n\r\n  float fbm3d(vec3 x, const in int it) {\r\n      float v = 0.0;\r\n      float a = 0.5;\r\n      vec3 shift = vec3(100);\r\n\r\n      \r\n      for (int i = 0; i < 32; ++i) {\r\n          if(i<it) {\r\n              v += a * simplexNoise3d(x);\r\n              x = x * 2.0 + shift;\r\n              a *= 0.5;\r\n          }\r\n      }\r\n      return v;\r\n  }\r\n\r\n  vec3 rotateZ(vec3 v, float angle) {\r\n      float cosAngle = cos(angle);\r\n      float sinAngle = sin(angle);\r\n      return vec3(\r\n          v.x * cosAngle - v.y * sinAngle,\r\n          v.x * sinAngle + v.y * cosAngle,\r\n          v.z\r\n      );\r\n  }\r\n\r\n  float facture(vec3 vector) {\r\n      vec3 normalizedVector = normalize(vector);\r\n\r\n      return max(max(normalizedVector.x, normalizedVector.y), normalizedVector.z);\r\n  }\r\n\r\n  vec3 emission(vec3 color, float strength) {\r\n      return color * strength;\r\n  }\r\n\r\n  void mainImage( out vec4 fragColor, in vec2 fragCoord )\r\n  {\r\n      // Normalized pixel coordinates (from 0 to 1) and (from -1 to 1)\r\n      vec2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;\r\n      \r\n\r\n      vec3 color = vec3(uv.xy, 0.0);\r\n      color.z += 0.5;\r\n      \r\n      color = normalize(color);\r\n      color -= 0.2 * vec3(0.0, 0.0, iTime);\r\n      \r\n      float angle = -log2(length(uv)); // log base 0.5\r\n      \r\n      color = rotateZ( color, angle );\r\n      \r\n      float frequency = 1.4;\r\n      float distortion = 0.01;\r\n      color.x = fbm3d(color * frequency + 0.0, 5) + distortion;\r\n      color.y = fbm3d(color * frequency + 1.0, 5) + distortion;\r\n      color.z = fbm3d(color * frequency + 2.0, 5) + distortion;\r\n      vec3 noiseColor = color; // save\r\n      \r\n      noiseColor *= 2.0;\r\n      noiseColor -= 0.1;\r\n      noiseColor *= 0.188;\r\n      noiseColor += vec3(uv.xy, 0.0);\r\n      \r\n      float noiseColorLength = length(noiseColor);\r\n      noiseColorLength = 0.770 - noiseColorLength;\r\n      noiseColorLength *= 4.2;\r\n      noiseColorLength = pow(noiseColorLength, 1.0);\r\n      \r\n      \r\n      vec3 emissionColor = emission(vec3(0.961,0.592,0.078), noiseColorLength * 0.4);\r\n      \r\n      \r\n      float fac = length(uv) - facture(color + 0.32);\r\n      fac += 0.1;\r\n      fac *= 3.0;\r\n      \r\n      color = mix(emissionColor, vec3(fac), fac + 1.2);\r\n      \r\n      //color = mix(color, vec3(0), fac); // black style\r\n\r\n\r\n      // Output to screen\r\n      fragColor = vec4(color, 1.0);\r\n  }\r\n`;\r\n\r\nconst shaderExamples = {\r\n  starNest,\r\n  vortex,\r\n  blackhole,\r\n};\r\n\r\nconst preset = ref(\"starNest\");\r\n\r\nconst selectedExample = computed(() => shaderExamples[preset.value]);\r\n\r\nfunction getName(key: string) {\r\n  const names = {\r\n    starNest: \"Star Nest\",\r\n    vortex: \"Vortex\",\r\n    blackhole: \"Black Hole\",\r\n  };\r\n\r\n  return names[key];\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex h-96 w-full flex-col items-center justify-center gap-4\">\r\n    <ShaderToy\r\n      :key=\"selectedExample\"\r\n      :shader-code=\"selectedExample\"\r\n      class=\"h-full w-full\"\r\n    />\r\n\r\n    <div class=\"flex w-full items-center gap-4\">\r\n      <div>Select Example:</div>\r\n      <Select v-model=\"preset\">\r\n        <SelectTrigger class=\"w-[220px]\">\r\n          <SelectValue placeholder=\"Select example shader\" />\r\n        </SelectTrigger>\r\n        <SelectContent>\r\n          <SelectGroup>\r\n            <SelectItem\r\n              v-for=\"exampleName in Object.keys(shaderExamples)\"\r\n              :key=\"exampleName\"\r\n              :value=\"exampleName\"\r\n            >\r\n              {{ getName(exampleName) }}\r\n            </SelectItem>\r\n          </SelectGroup>\r\n        </SelectContent>\r\n      </Select>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "ogl"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add shader-toy"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/shader-toy/ShaderToy.vue",
+      "app/components/reborn/ui/shader-toy/index.ts",
+      "app/components/reborn/ui/shader-toy/rebornShaderToy.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/shader-toy.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "7b9636267588eb12d02d33afae85d8c435fc98b8",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

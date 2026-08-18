@@ -1,0 +1,80 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-hover-effect",
+  "title": "文字悬停效果",
+  "description": "在悬停时为文字添加渐变描边与动画，灵感来自 x.ai。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "strokeWidth",
+      "type": "number",
+      "required": false,
+      "description": "文字描边宽度。",
+      "default": "0.75"
+    },
+    {
+      "name": "text",
+      "type": "string",
+      "required": true,
+      "description": "应用悬停效果的文字。",
+      "default": "Required"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "蒙版过渡动画的持续时间（秒）。",
+      "default": "200"
+    },
+    {
+      "name": "opacity",
+      "type": "number",
+      "required": false,
+      "description": "文字的不透明度。",
+      "default": "0.75"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <ClientOnly>\r\n    <div class=\"flex h-auto flex-col items-center justify-center gap-4 max-lg:w-full md:flex-1\">\r\n      <span class=\"text-xl font-medium\">Hover below to reveal</span>\r\n      <TextHoverEffect class=\"w-[90%] lg:min-h-64\" text=\"reborn\" />\r\n    </div>\r\n  </ClientOnly>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-hover-effect"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-hover-effect/TextHoverEffect.vue",
+      "app/components/reborn/ui/text-hover-effect/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/text-hover-effect.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "c66c77283efdf533e058be74448e566fee233ae3",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

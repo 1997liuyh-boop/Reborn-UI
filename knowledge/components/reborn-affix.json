@@ -1,0 +1,138 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-affix",
+  "title": "Affix 悬浮",
+  "description": "Affix 组件用于将元素固定在页面上的特定位置，并允许用户在屏幕范围内自由拖拽。当元素被拖拽到屏幕边缘时，它会自动吸附到最近的边缘，方便用户快速定位。常用于悬浮按钮、快捷操作入口等场景。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "zIndex",
+      "type": "number",
+      "required": false,
+      "description": "浮动元素的层级。",
+      "default": "500"
+    },
+    {
+      "name": "size",
+      "type": "number",
+      "required": false,
+      "description": "浮动元素的尺寸（宽/高，单位 px）。",
+      "default": "40"
+    },
+    {
+      "name": "left",
+      "type": "number",
+      "required": false,
+      "description": "初始左边距 (px)。如果未指定 `right`，这是默认水平位置依据。",
+      "default": "10"
+    },
+    {
+      "name": "right",
+      "type": "number",
+      "required": false,
+      "description": "初始右边距 (px)。如果指定，优先级高于 `left`。",
+      "default": "undefined"
+    },
+    {
+      "name": "top",
+      "type": "number",
+      "required": false,
+      "description": "初始上边距 (px)。如果指定，优先级取决于内部实现 (通常结合 gap)。",
+      "default": "undefined"
+    },
+    {
+      "name": "bottom",
+      "type": "number",
+      "required": false,
+      "description": "初始下边距 (px)。如果未指定 `top`，这是默认垂直位置依据。",
+      "default": "10"
+    },
+    {
+      "name": "gap",
+      "type": "number",
+      "required": false,
+      "description": "吸附时的边距 (px)。",
+      "default": "10"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用拖拽交互。",
+      "default": "false"
+    },
+    {
+      "name": "noSnapping",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用自动吸附边缘。",
+      "default": "false"
+    },
+    {
+      "name": "safeArea",
+      "type": "boolean",
+      "required": false,
+      "description": "是否考虑屏幕安全区域（避让刘海屏/底部黑条）。",
+      "default": "true"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": "自定义内容。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornAffix from '@/components/reborn/ui/reborn-affix/RebornAffix.vue'\r\nimport { ref } from 'vue'\r\n\r\nconst isDark = ref(false)\r\nconst toggleDarkMode = () => isDark.value = !isDark.value\r\nconst list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-4\">\r\n        <div class=\"p-6 bg-slate-100 dark:bg-slate-900 rounded-xl space-y-2\">\r\n            <h3 class=\"font-bold text-lg\">RebornAffix Demo</h3>\r\n            <p class=\"text-slate-500\">\r\n                请尝试拖拽右下角的浮动按钮（支持鼠标和触摸）。\r\n            </p>\r\n        </div>\r\n\r\n        <div class=\"h-[200px] border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center\">\r\n            Content Area\r\n        </div>\r\n\r\n\r\n        <RebornAffix :right=\"20\" :bottom=\"400\" disabled>\r\n            <div class=\"w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg cursor-not-allowed\"\r\n                title=\"Disabled\">\r\n                <UIcon name=\"i-lucide-lock\" class=\"size-5\" />\r\n            </div>\r\n        </RebornAffix>\r\n\r\n        <RebornAffix :left=\"100\" :bottom=\"100\" :no-snapping=\"true\">\r\n            <div class=\"w-12 h-12 flex flex-col items-center justify-center rounded-full bg-blue-500 overflow-hidden shadow-xl cursor-move transition-transform active:scale-95\"\r\n                @click=\"toggleDarkMode\">\r\n                <UIcon name=\"i-lucide-sun\" class=\"text-white size-6\" />\r\n            </div>\r\n        </RebornAffix>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornAffix from '@/components/reborn-affix/RebornAffix.vue'\r\n\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport { useDarkMode } from '@/composables/useDarkMode'\r\n\r\nconst { isDark, toggleDarkMode } = useDarkMode()\r\n\r\nconst list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']\r\n</script>\r\n\r\n<template>\r\n  <RebornPage>\r\n    <RebornCard>\r\n      <view class=\"dark:text-white\">\r\n        禁用状态，无法拖拽\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <RebornCard>\r\n      <view class=\"dark:text-white\">\r\n        不吸附边缘，任意位置可拖拽\r\n      </view>\r\n    </RebornCard>\r\n    <RebornAffix disabled :right=\"20\" :bottom=\"150\" :gap=\"10\">\r\n      <view class=\"i-meteocons-hurricane-fill size-10\" />\r\n    </RebornAffix>\r\n    <RebornAffix :left=\"20\" :bottom=\"150\" :no-snapping=\"true\">\r\n      <view\r\n        class=\"\r\n          bg-primary-500 flex size-10 flex-col items-center justify-center\r\n          overflow-hidden rounded-full\r\n        \"\r\n        @tap=\"toggleDarkMode\"\r\n      >\r\n        <view\r\n          class=\"flex flex-col transition-transform duration-300\"\r\n          :class=\"isDark ? '-translate-y-[20px]' : `translate-y-[20px]`\"\r\n        >\r\n          <view\r\n            v-for=\"item in list\" :key=\"item\" :class=\"item\" class=\"\r\n              size-10 text-white\r\n            \"\r\n          />\r\n        </view>\r\n      </view>\r\n    </RebornAffix>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core",
+    "tailwind-variants"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-affix"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-affix/RebornAffix.vue",
+      "app/components/reborn/ui/reborn-affix/reborn-affix.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-affix/RebornAffix.vue",
+      "packages/uniapp-project/src/components/reborn-affix/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-affix.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "d59485e6b2ca14081bbcd52f7dae77b02e4a21b7",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

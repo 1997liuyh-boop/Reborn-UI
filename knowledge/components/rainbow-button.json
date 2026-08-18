@@ -1,0 +1,80 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "rainbow-button",
+  "title": "彩虹按钮",
+  "description": "在按钮上呈现彩虹效果。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "button",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于按钮的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "is",
+      "type": "string",
+      "required": false,
+      "description": "渲染组件时使用的 HTML 标签。",
+      "default": "\"button\""
+    },
+    {
+      "name": "speed",
+      "type": "number",
+      "required": false,
+      "description": "动画持续时间（秒）。",
+      "default": "2"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex min-h-64 items-center justify-center\">\r\n    <RainbowButton> Rainbow Button </RainbowButton>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add rainbow-button"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/rainbow-button/RainbowButton.vue",
+      "app/components/reborn/ui/rainbow-button/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/button/rainbow-button.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "05f397c231ade659c3e14bd2bb3f74a54bb7317e",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

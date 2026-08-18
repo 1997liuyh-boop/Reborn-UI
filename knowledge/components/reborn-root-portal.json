@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-root-portal",
+  "title": "RootPortal 根门户",
+  "description": "将子节点渲染到页面的根节点，脱离当前层级关系。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": "需要移动到根部的内容"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\n// Web 端 Demo：前端加紧开发中\r\n</script>\r\n\r\n<template>\r\n    <div\r\n        class=\"p-6 flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border border-dashed border-slate-300\">\r\n        <div class=\"text-xl font-bold text-slate-900 mb-2\">RebornRootPortal Demo</div>\r\n        <div class=\"text-slate-500 italic\">前端加紧开发中...</div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornRootPortal from '@/components/reborn-root-portal/RebornRootPortal.vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\n\r\nconst showPortal = ref(false)\r\n\r\nconst togglePortal = () => {\r\n    showPortal.value = !showPortal.value\r\n}\r\n</script>\r\n\r\n<template>\r\n    <view class=\"p-4\">\r\n        <view class=\"mb-8 p-4 bg-gray-100 rounded-lg\">\r\n            <view class=\"text-32 font-bold mb-2\">RootPortal 根节点渲染</view>\r\n            <view class=\"text-28 text-gray-600\">\r\n                RootPortal 组件可以将子节点渲染到页面的根节点，从而脱离当前的层级关系。\r\n                常用于弹窗、等需要覆盖全屏的场景。\r\n            </view>\r\n        </view>\r\n\r\n        <view class=\"flex flex-col gap-4\">\r\n            <view class=\"text-28 font-semibold mb-2\">基础用法</view>\r\n            <RebornButton @click=\"togglePortal\">\r\n                {{ showPortal ? '关闭 Portal' : '打开 Portal' }}\r\n            </RebornButton>\r\n\r\n            <view class=\"mt-4 p-4 border border-dashed border-gray-300 rounded\">\r\n                这里是普通文档流中的内容。\r\n            </view>\r\n\r\n            <RebornRootPortal v-if=\"showPortal\">\r\n                <view class=\"fixed inset-0 flex items-center justify-center pointer-events-none\">\r\n                    <view\r\n                        class=\"bg-white p-6 rounded-2xl shadow-2xl pointer-events-auto border border-gray-100 animate-in fade-in zoom-in duration-300\">\r\n                        <view class=\"text-32 font-bold mb-4 text-primary\">Portal 内容</view>\r\n                        <view class=\"text-28 mb-6 text-gray-600\">\r\n                            这段内容被渲染到了页面的根节点。\r\n                            它脱离了原有的 DOM 结构。\r\n                        </view>\r\n                        <RebornButton @click=\"showPortal = false\" size=\"sm\" variant=\"soft\">\r\n                            确定并关闭\r\n                        </RebornButton>\r\n                    </view>\r\n                </view>\r\n            </RebornRootPortal>\r\n        </view>\r\n    </view>\r\n</template>\r\n\r\n<style scoped>\r\n.animate-in {\r\n    animation-fill-mode: both;\r\n}\r\n\r\n@keyframes fade-in {\r\n    from {\r\n        opacity: 0;\r\n    }\r\n\r\n    to {\r\n        opacity: 1;\r\n    }\r\n}\r\n\r\n@keyframes zoom-in {\r\n    from {\r\n        transform: scale(0.95);\r\n    }\r\n\r\n    to {\r\n        transform: scale(1);\r\n    }\r\n}\r\n\r\n.fade-in {\r\n    animation-name: fade-in;\r\n}\r\n\r\n.zoom-in {\r\n    animation-name: zoom-in;\r\n}\r\n</style>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-root-portal"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-root-portal/RebornRootPortal.vue",
+      "app/components/reborn/ui/reborn-root-portal/index.ts",
+      "app/components/reborn/ui/reborn-root-portal/reborn-root-portal.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-root-portal/RebornRootPortal.vue"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-root-portal.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "620f51e2576a97c8a2c910e4e7ef5898ef5a5bb0",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

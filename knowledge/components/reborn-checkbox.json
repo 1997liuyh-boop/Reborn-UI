@@ -1,0 +1,179 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-checkbox",
+  "title": "多选框",
+  "description": "适用于单选或组合选择的多选框组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "checkbox",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "boolean | CheckboxValue[]",
+      "required": false,
+      "description": "number)[]",
+      "default": "(string \\"
+    },
+    {
+      "name": "defaultValue",
+      "type": "boolean | CheckboxValue[]",
+      "required": false,
+      "description": "number)[]",
+      "default": "(string \\"
+    },
+    {
+      "name": "value",
+      "type": "CheckboxValue",
+      "required": false,
+      "description": "\"\"",
+      "default": "number"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "description": "选中状态的值，只有在绑定对象类型为 array 时有效。 如果没有 value， label则作为value使用",
+      "default": "\"\""
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用。",
+      "default": "false"
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "size",
+      "type": "typeof checkboxSizes[number]",
+      "required": false,
+      "description": "\"lg\"",
+      "default": "'md'"
+    },
+    {
+      "name": "color",
+      "type": "typeof checkboxColors[number]",
+      "required": false,
+      "description": "\"success\" \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    input: ClassValue\r\n    control: ClassValue\r\n    icon: ClassValue\r\n    label: ClassValue\r\n  }>",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "trueValue",
+      "type": "any",
+      "required": false,
+      "description": "true",
+      "default": "number"
+    },
+    {
+      "name": "falseValue",
+      "type": "any",
+      "required": false,
+      "description": "false",
+      "default": "number"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "额外样式类。",
+      "default": "\"\""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "payload": "(e: 'update:modelValue', value: boolean | CheckboxValue[]): void",
+      "description": ""
+    },
+    {
+      "name": "change",
+      "payload": "(e: \"change\", value: any): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "icon",
+      "description": ""
+    },
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornCheckbox from \"~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue\";\r\nimport RebornCheckboxGroup from \"~/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue\";\r\nimport type { CheckboxProps } from \"~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue\";\r\nimport { checkboxColors, checkboxSizes } from \"~/components/reborn/ui/reborn-checkbox/reborn-checkbox.config\";\r\n\r\nconst sizes = ref([...checkboxSizes]);\r\nconst colors = ref([...checkboxColors]);\r\nconst size = ref<CheckboxProps[\"size\"]>(\"md\");\r\nconst color = ref<CheckboxProps[\"color\"]>(\"primary\");\r\n\r\nconst defaultValue = ref(false);\r\nconst checkedValue = ref(true);\r\nconst disabledValue = ref(true);\r\n\r\nconst selectedGroup = ref(\"系统更新\");\r\nconst groupOptions = [\"系统更新\", \"产品迭代\", \"活动通知\"];\r\n\r\nconst selectedGroup2 = ref<string[]>([\"Apple\"]);\r\nconst groupOptions2 = [\"Apple\", \"Huawei\", \"Xiaomi\"];\r\n\r\nconst selectedPlans = ref<string[]>([\"标准版\"]);\r\nconst plans = [\r\n  {\r\n    value: \"基础版\",\r\n    title: \"基础版\",\r\n    description: \"适合快速接入的轻量配置。\",\r\n  },\r\n  {\r\n    value: \"标准版\",\r\n    title: \"标准版\",\r\n    description: \"涵盖常用场景的均衡方案。\",\r\n  },\r\n  {\r\n    value: \"旗舰版\",\r\n    title: \"旗舰版\",\r\n    description: \"完整能力组合，满足复杂业务。\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex w-full flex-col gap-10\">\r\n    <div\r\n      class=\"flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 dark:bg-gray-800 p-4 dark:border-gray-800\">\r\n      <div class=\"flex items-center gap-2\">\r\n        <span class=\"text-sm font-medium text-gray-500\">尺寸</span>\r\n        <USelect v-model=\"size\" :items=\"sizes\" class=\"w-28\" />\r\n      </div>\r\n\r\n      <div class=\"flex items-center gap-2\">\r\n        <span class=\"text-sm font-medium text-gray-500\">配色</span>\r\n        <USelect v-model=\"color\" :items=\"colors\" class=\"w-32\" />\r\n      </div>\r\n    </div>\r\n\r\n    <div class=\"grid gap-8\">\r\n      <div class=\"space-y-4\">\r\n        <h3 class=\"text-base font-medium text-gray-400\">状态</h3>\r\n        <div class=\"grid gap-4 md:grid-cols-3\">\r\n          <RebornCheckbox v-model=\"defaultValue\" :size=\"size\" :color=\"color\" label=\"默认\" />\r\n          <RebornCheckbox v-model=\"checkedValue\" :size=\"size\" :color=\"color\" label=\"选中\" />\r\n          <RebornCheckbox v-model=\"disabledValue\" :size=\"size\" :color=\"color\" label=\"禁用\" disabled />\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"space-y-4\">\r\n        <h3 class=\"text-base font-medium text-gray-400\">基础用法</h3>\r\n        {{ selectedGroup }}\r\n        <div class=\"grid gap-4 md:grid-cols-3\">\r\n          <RebornCheckbox v-model=\"selectedGroup\" :size=\"size\" :color=\"color\" true-value=\"系统更新\" false-value=\"系统不更新\"\r\n            label=\"系统更新\" />\r\n          <RebornCheckbox v-model=\"selectedGroup\" :size=\"size\" :color=\"color\" true-value=\"产品迭代\" false-value=\"产品不迭代\"\r\n            label=\"产品迭代\" />\r\n          <RebornCheckbox v-model=\"selectedGroup\" :size=\"size\" :color=\"color\" true-value=\"活动通知\" false-value=\"活动不通知\"\r\n            label=\"活动通知\" />\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"space-y-4\">\r\n        <h3 class=\"text-base font-medium text-gray-400\">Checkbox Group</h3>\r\n        {{ selectedGroup2 }}\r\n        <div class=\"grid gap-4\">\r\n          <RebornCheckboxGroup v-model=\"selectedGroup2\" :size=\"size\" :color=\"color\">\r\n            <RebornCheckbox v-for=\"option in groupOptions2\" :key=\"option\" :value=\"option\" :true-value=\"`${option}111`\"\r\n              :false-value=\"`不${option}`\" :label=\"option\" />\r\n          </RebornCheckboxGroup>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"space-y-4\">\r\n        <h3 class=\"text-base font-medium text-gray-400\">组合视图</h3>\r\n        {{ selectedPlans }}\r\n        <div class=\"grid gap-4 md:grid-cols-2\">\r\n          <label v-for=\"plan in plans\" :key=\"plan.value\"\r\n            class=\"flex cursor-pointer items-start gap-4 rounded-2xl border border-gray-100 bg-white dark:bg-gray-800 p-4 transition-colors hover:border-gray-200 dark:hover:border-gray-700\">\r\n            <RebornCheckbox v-model=\"selectedPlans\" :size=\"size\" :color=\"color\" :value=\"plan.value\" />\r\n            <div class=\"space-y-1\">\r\n              <p class=\"text-sm font-semibold text-gray-900 dark:text-gray-100\">{{ plan.title }}</p>\r\n              <p class=\"text-xs text-gray-500\">{{ plan.description }}</p>\r\n            </div>\r\n          </label>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"space-y-4\">\r\n        <h3 class=\"text-base font-medium text-gray-400\">高级定制</h3>\r\n        <div class=\"grid gap-4 md:grid-cols-2\">\r\n          <!-- Custom UI Style -->\r\n          <div class=\"flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4\">\r\n            <RebornCheckbox v-model=\"checkedValue\" :size=\"size\" :color=\"color\" label=\"完全圆角 (Custom UI)\"\r\n              :ui=\"{ control: 'rounded-full', label: 'font-bold bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent' }\" />\r\n          </div>\r\n\r\n          <!-- Custom Icon Slot -->\r\n          <div class=\"flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4\">\r\n            <RebornCheckbox v-model=\"checkedValue\" :size=\"size\" :color=\"color\" label=\"自定义图标、大小 (Slot)\"\r\n              :ui=\"{ control: 'size-8' }\">\r\n              <template #icon=\"{ checked }\">\r\n                <Icon :name=\"checked ? 'lucide:heart' : 'lucide:heart-crack'\" class=\"size-6 transition-all duration-300\"\r\n                  :class=\"checked ? 'fill-current scale-100' : 'scale-100 text-black opacity-100'\" />\r\n              </template>\r\n            </RebornCheckbox>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornCheckbox from '@/components/reborn-checkbox/RebornCheckbox.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\n\r\nconst checked1 = ref(true)\r\nconst checked2 = ref(false)\r\nconst groupValues = ref(['Option A'])\r\nconst sizes = ['sm', 'md', 'lg'] as const\r\nconst colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"复选框 (Checkbox)\" description=\"交互式复选框组件，支持布尔值或多选。\">\r\n    <!-- Combined View -->\r\n    <RebornCard title=\"组合视图\" custom-class=\"space-y-3\">\r\n      <view class=\"\r\n          text-sm text-slate-600\r\n          dark:text-slate-200\r\n        \">\r\n        已选: {{ groupValues }}\r\n      </view>\r\n      <view class=\"flex flex-col gap-2\">\r\n        <RebornCheckbox v-model=\"groupValues\" value=\"Option A\" label=\"选项 A\" />\r\n        <RebornCheckbox v-model=\"groupValues\" value=\"Option B\" label=\"选项 B\" />\r\n        <RebornCheckbox v-model=\"groupValues\" value=\"Option C\" label=\"选项 C\" />\r\n      </view>\r\n      <view class=\"flex flex-col gap-3\">\r\n        <RebornCheckbox v-model=\"groupValues\" value=\"基础版\" :ui=\"{\r\n          wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',\r\n          label: 'flex-1',\r\n        }\" :customClass=\"groupValues.includes('基础版') ? 'border-primary ring-1 ring-primary' : 'border-slate-200'\">\r\n          <view class=\"flex flex-col gap-1\">\r\n            <text class=\"\r\n                font-bold text-slate-900\r\n                dark:text-slate-100\r\n              \">\r\n              基础版\r\n            </text>\r\n            <text class=\"\r\n                text-sm text-slate-500\r\n                dark:text-slate-200\r\n              \">\r\n              适合快速接入的轻量配置。\r\n            </text>\r\n          </view>\r\n        </RebornCheckbox>\r\n\r\n        <RebornCheckbox v-model=\"groupValues\" value=\"标准版\" color=\"error\" :ui=\"{\r\n          wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',\r\n          label: 'flex-1',\r\n        }\" :customClass=\"groupValues.includes('标准版') ? 'border-error ring-1 ring-error' : 'border-slate-200'\">\r\n          <view class=\"flex flex-col gap-1\">\r\n            <text class=\"\r\n                font-bold text-slate-900\r\n                dark:text-slate-100\r\n              \">\r\n              标准版\r\n            </text>\r\n            <text class=\"\r\n                text-sm text-slate-500\r\n                dark:text-slate-200\r\n              \">\r\n              涵盖常用场景的均衡方案。\r\n            </text>\r\n          </view>\r\n        </RebornCheckbox>\r\n\r\n        <RebornCheckbox v-model=\"groupValues\" value=\"旗舰版\" color=\"neutral\" :ui=\"{\r\n          wrapper: 'w-full bg-white dark:bg-gray-800 p-4 rounded-xl border transition-all items-start',\r\n          label: 'flex-1',\r\n        }\" :customClass=\"groupValues.includes('旗舰版') ? 'border-neutral ring-1 ring-neutral' : 'border-slate-200'\">\r\n          <view class=\"flex flex-col gap-1\">\r\n            <text class=\"\r\n                font-bold text-slate-900\r\n                dark:text-slate-100\r\n              \">\r\n              旗舰版\r\n            </text>\r\n            <text class=\"\r\n                text-sm text-slate-500\r\n                dark:text-slate-200\r\n              \">\r\n              完整能力组合，满足复杂业务。\r\n            </text>\r\n          </view>\r\n        </RebornCheckbox>\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <!-- Advanced Customization -->\r\n    <RebornCard title=\"高级定制\">\r\n      <view class=\"\r\n          grid grid-cols-1 gap-4\r\n          md:grid-cols-2\r\n        \">\r\n        <!-- Custom UI -->\r\n        <RebornCheckbox v-model=\"checked1\" color=\"error\" label=\"完全圆角 (Custom UI)\" :ui=\"{\r\n          control: 'rounded-full size-6',\r\n          icon: 'size-4',\r\n        }\" />\r\n\r\n        <!-- Custom Slot -->\r\n        <RebornCheckbox v-model=\"checked1\" color=\"error\" label=\"自定义图标、大小 (Slot)\" :ui=\"{\r\n          control: 'size-8 rounded-lg group-[.is-checked]:bg-orange-5 group-[.is-checked]:border-green-5',\r\n        }\">\r\n          <template #icon=\"{ checked }\">\r\n            <view class=\"transition-all duration-300\"\r\n              :class=\"[checked ? 'i-lucide-heart text-white' : `i-lucide-heart-crack text-gray-8`]\" />\r\n          </template>\r\n        </RebornCheckbox>\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <!-- Basic Usage -->\r\n    <RebornCard title=\"基础用法\" custom-class=\"space-x-2\">\r\n      <RebornCheckbox v-model=\"checked1\" label=\"接受条款和条件\" />\r\n      <RebornCheckbox v-model=\"checked2\" label=\"订阅通过\" />\r\n    </RebornCard>\r\n\r\n    <!-- States -->\r\n    <RebornCard title=\"状态 (States)\" custom-class=\"flex flex-col gap-2\">\r\n      <RebornCheckbox :model-value=\"true\" label=\"已选中\" />\r\n      <RebornCheckbox :model-value=\"false\" label=\"未选中\" />\r\n      <RebornCheckbox :model-value=\"true\" disabled label=\"禁用且选中\" />\r\n      <RebornCheckbox :model-value=\"false\" disabled label=\"禁用且未选中\" />\r\n    </RebornCard>\r\n\r\n    <!-- Colors -->\r\n    <RebornCard title=\"颜色 (Colors)\" custom-class=\"flex flex-wrap gap-2\">\r\n      <RebornCheckbox v-for=\"color in colors\" :key=\"color\" v-model=\"checked1\" :color=\"color\" :label=\"color\" />\r\n    </RebornCard>\r\n\r\n    <!-- Sizes -->\r\n    <RebornCard title=\"尺寸 (Sizes)\" custom-class=\"flex flex-wrap gap-2\">\r\n      <RebornCheckbox v-for=\"size in sizes\" :key=\"size\" v-model=\"checked1\" :size=\"size\" :label=\"`Size ${size}`\" />\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-checkbox"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue",
+      "app/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue",
+      "app/components/reborn/ui/reborn-checkbox/index.ts",
+      "app/components/reborn/ui/reborn-checkbox/reborn-checkbox.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-checkbox/RebornCheckbox.vue",
+      "packages/uniapp-project/src/components/reborn-checkbox/index.ts",
+      "packages/uniapp-project/src/components/reborn-checkbox/reborn-checkbox.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-checkbox.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "a719f5365e2395e7742c8794823de56d19381e5c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,384 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-select-date",
+  "title": "日期选择",
+  "description": "自定义日历式日期选择组件，支持年、月、日模式以及时间范围选择。",
+  "category": "form",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "string",
+      "required": false,
+      "description": "选择器的值（非范围选择时绑定）。",
+      "default": "''"
+    },
+    {
+      "name": "values",
+      "type": "string[]",
+      "required": false,
+      "description": "选择器的值（范围选择时绑定，包含开始和结束值）。",
+      "default": "() => []"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "弹出层标题。",
+      "default": "'请选择'"
+    },
+    {
+      "name": "headers",
+      "type": "string[]",
+      "required": false,
+      "description": "选择器表头文本。",
+      "default": "() => ['年', '月', '日', '时', '分', '秒']"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "选择器的占位符。",
+      "default": "'请选择'"
+    },
+    {
+      "name": "showTrigger",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示默认的触发器。",
+      "default": "true"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用，同时兼容 `reborn-form`。",
+      "default": "false"
+    },
+    {
+      "name": "confirmText",
+      "type": "string",
+      "required": false,
+      "description": "确认按钮文本。",
+      "default": "'确定'"
+    },
+    {
+      "name": "showConfirm",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示确认按钮。",
+      "default": "true"
+    },
+    {
+      "name": "cancelText",
+      "type": "string",
+      "required": false,
+      "description": "取消按钮文本。",
+      "default": "'取消'"
+    },
+    {
+      "name": "showCancel",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示取消按钮。",
+      "default": "true"
+    },
+    {
+      "name": "labelFormat",
+      "type": "string",
+      "required": false,
+      "description": "触发器文本显示格式模板（如 `YYYY-MM-DD HH:mm:ss`）。如果不传则根据 `type` 自动推导。",
+      "default": "''"
+    },
+    {
+      "name": "valueFormat",
+      "type": "string",
+      "required": false,
+      "description": "绑定值对应的格式模板。如果不传则根据 `type` 自动推导。",
+      "default": "''"
+    },
+    {
+      "name": "start",
+      "type": "string",
+      "required": false,
+      "description": "允许选择的最早时间。",
+      "default": "'1970-01-01 00:00:00'"
+    },
+    {
+      "name": "end",
+      "type": "string",
+      "required": false,
+      "description": "允许选择的最晚时间。",
+      "default": "'2099-12-31 23:59:59'"
+    },
+    {
+      "name": "type",
+      "type": "SelectDateType",
+      "required": false,
+      "description": "'date' \\",
+      "default": "'second'"
+    },
+    {
+      "name": "rangeable",
+      "type": "boolean",
+      "required": false,
+      "description": "是否开启时间范围选择。",
+      "default": "false"
+    },
+    {
+      "name": "startPlaceholder",
+      "type": "string",
+      "required": false,
+      "description": "范围选择时的起始占位符。",
+      "default": "'开始日期'"
+    },
+    {
+      "name": "endPlaceholder",
+      "type": "string",
+      "required": false,
+      "description": "范围选择时的结束占位符。",
+      "default": "'结束日期'"
+    },
+    {
+      "name": "rangeSeparator",
+      "type": "string",
+      "required": false,
+      "description": "触发器中范围值的分隔符。",
+      "default": "'至'"
+    },
+    {
+      "name": "showShortcuts",
+      "type": "boolean",
+      "required": false,
+      "description": "范围选择时是否显示快捷选项区域。",
+      "default": "true"
+    },
+    {
+      "name": "shortcuts",
+      "type": "SelectDateShortcut[]",
+      "required": false,
+      "description": "快捷选项数据列表，如“近7天”、“近30天”等。",
+      "default": "() => []"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示清空按钮。",
+      "default": "true"
+    },
+    {
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "required": false,
+      "description": "'lg'",
+      "default": "'md'",
+      "options": [
+        "sm",
+        "md",
+        "lg"
+      ]
+    },
+    {
+      "name": "color",
+      "type": "'primary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'",
+      "required": false,
+      "description": "'info' \\",
+      "default": "'primary'",
+      "options": [
+        "primary",
+        "success",
+        "info",
+        "warning",
+        "error",
+        "neutral"
+      ]
+    },
+    {
+      "name": "triggerUi",
+      "type": "Partial<TriggerUiShape>",
+      "required": false,
+      "description": "用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。",
+      "default": "() => ({})"
+    },
+    {
+      "name": "popupUi",
+      "type": "Partial<PopupUiShape>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "pickerUi",
+      "type": "Partial<PickerUiShape>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<SelectDateUiShape>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "bordered",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示边框。",
+      "default": "true"
+    },
+    {
+      "name": "showArrow",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示右侧箭头图标。",
+      "default": "true"
+    },
+    {
+      "name": "arrowAnimation",
+      "type": "boolean",
+      "required": false,
+      "description": "展开时箭头是否旋转动画。",
+      "default": "true"
+    },
+    {
+      "name": "portal",
+      "type": "SelectTriggerProps[\"portal\"]",
+      "required": false,
+      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。",
+      "default": "true"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "非范围选择时，更新绑定值。"
+    },
+    {
+      "name": "change",
+      "description": "非范围选择时，确认选择时触发。"
+    },
+    {
+      "name": "update:values",
+      "description": "范围选择时，更新绑定的范围数组。"
+    },
+    {
+      "name": "range-change",
+      "description": "范围选择时，确认选择时触发。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "tag",
+      "description": ""
+    },
+    {
+      "name": "cover",
+      "description": ""
+    },
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [
+    {
+      "name": "open",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "description": ""
+    },
+    {
+      "name": "clear",
+      "description": ""
+    },
+    {
+      "name": "confirm",
+      "description": ""
+    },
+    {
+      "name": "setValue",
+      "description": ""
+    },
+    {
+      "name": "setValues",
+      "description": ""
+    },
+    {
+      "name": "setRange",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\nimport RebornSelectDate from \"~/components/reborn/ui/reborn-select-date/RebornSelectDate.vue\";\r\nimport { selectDateColors, selectDateSizes } from \"~/components/reborn/ui/reborn-select-date/reborn-select-date.config\";\r\nimport dayjs from \"dayjs\";\r\n\r\nconst size = ref<any>(\"md\");\r\nconst color = ref<any>(\"primary\");\r\nconst disabled = ref(false);\r\n\r\nconst dateValue = ref(\"\");\r\nconst datetimeValue = ref(\"\");\r\nconst monthValue = ref(\"\");\r\nconst yearValue = ref(\"\");\r\nconst weekValue = ref<string[]>([]);\r\nconst datesValue = ref<string[]>([]);\r\nconst rangeValue = ref<string[]>([]);\r\nconst dateTimeRangeValue = ref<string[]>([]);\r\n\r\nconst customFormatValue = ref(\"\");\r\n\r\n// 快捷选项示例\r\nconst shortcuts = [\r\n    { text: '今天', value: new Date() },\r\n    { text: '昨天', value: dayjs().subtract(1, 'day').toDate() },\r\n    { text: '一周前', value: dayjs().subtract(1, 'week').toDate() }\r\n];\r\n\r\nconst rangeShortcuts = [\r\n    { text: '最近一周', value: () => [dayjs().subtract(1, 'week').toDate(), new Date()] },\r\n    { text: '最近一月', value: () => [dayjs().subtract(1, 'month').toDate(), new Date()] },\r\n    { text: '最近三月', value: () => [dayjs().subtract(3, 'month').toDate(), new Date()] }\r\n];\r\n</script>\r\n\r\n<template>\r\n    <div class=\"flex w-full flex-col gap-8 p-1\">\r\n        <!-- 控制面板 -->\r\n        <div\r\n            class=\"flex flex-wrap items-center gap-6 rounded-2xl border border-gray-1 bg-white/50 p-6 shadow-sm backdrop-blur-sm dark:border-gray-8 dark:bg-gray-900/50\">\r\n            <div class=\"flex items-center gap-3\">\r\n                <div class=\"flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary\">\r\n                    <Icon name=\"lucide:settings-2\" class=\"size-5\" />\r\n                </div>\r\n                <div>\r\n                    <p class=\"text-caption font-bold uppercase tracking-wider text-gray-400\">全局配置</p>\r\n                    <div class=\"mt-1 flex items-center gap-4\">\r\n                        <div class=\"flex items-center gap-2\">\r\n                            <span class=\"text-xs font-medium text-gray-500\">尺寸</span>\r\n                            <USelect v-model=\"size\" :items=\"[...selectDateSizes]\" class=\"w-24\" />\r\n                        </div>\r\n                        <div class=\"flex items-center gap-2\">\r\n                            <span class=\"text-xs font-medium text-gray-500\">颜色</span>\r\n                            <USelect v-model=\"color\" :items=\"[...selectDateColors]\" class=\"w-28\" />\r\n                        </div>\r\n                        <UCheckbox v-model=\"disabled\" label=\"禁用组件\" />\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"grid gap-6 md:grid-cols-2\">\r\n            <!-- 基础选择 -->\r\n            <section\r\n                class=\"rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900\">\r\n                <div class=\"mb-6 flex items-center gap-3\">\r\n                    <div class=\"flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500\">\r\n                        <Icon name=\"lucide:calendar\" class=\"size-5\" />\r\n                    </div>\r\n                    <h3 class=\"text-lg font-semibold text-gray-800 dark:text-gray-100\">基础日期</h3>\r\n                </div>\r\n\r\n                <div class=\"space-y-6\">\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Date picker</label>\r\n                        <RebornSelectDate v-model=\"dateValue\" type=\"date\" :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" placeholder=\"选择日期\" />\r\n                        <div\r\n                            class=\"flex h-8 items-center rounded-lg bg-gray-50 px-3 text-caption-md text-gray-500 dark:bg-gray-800/50\">\r\n                            Value: <span class=\"ml-2 font-mono text-primary\">{{ dateValue || `undefined` }}</span>\r\n                        </div>\r\n                    </div>\r\n\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">DateTime picker</label>\r\n                        <RebornSelectDate v-model=\"datetimeValue\" type=\"datetime\" :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" placeholder=\"选择日期时间\" />\r\n                        <div\r\n                            class=\"flex h-8 items-center rounded-lg bg-gray-50 px-3 text-caption-md text-gray-500 dark:bg-gray-800/50\">\r\n                            Value: <span class=\"ml-2 font-mono text-primary\">{{ datetimeValue || `undefined` }}</span>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 范围选择 -->\r\n            <section\r\n                class=\"rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900\">\r\n                <div class=\"mb-6 flex items-center gap-3\">\r\n                    <div class=\"flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500\">\r\n                        <Icon name=\"lucide:calendar-range\" class=\"size-5\" />\r\n                    </div>\r\n                    <h3 class=\"text-lg font-semibold text-gray-800 dark:text-gray-100\">范围选择</h3>\r\n                </div>\r\n\r\n                <div class=\"space-y-6\">\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Date Range (Dual Panel)</label>\r\n                        <RebornSelectDate v-model=\"rangeValue\" type=\"daterange\" rangeable :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" :shortcuts=\"rangeShortcuts\" placeholder=\"点击选择日期范围\" />\r\n                        <div\r\n                            class=\"flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-caption-md text-gray-500 dark:bg-gray-800/50\">\r\n                            Value: <span class=\"ml-2 font-mono text-primary\">{{ rangeValue.length ? rangeValue.join(` ~\r\n                                `) : `empty` }}</span>\r\n                        </div>\r\n                    </div>\r\n\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">DateTime Range (Dual Panel)</label>\r\n                        <RebornSelectDate v-model=\"dateTimeRangeValue\" type=\"datetimerange\" rangeable :size=\"size\"\r\n                            :color=\"color\" :disabled=\"disabled\" value-format=\"YYYY-MM-DD HH:mm:ss.SSS\"\r\n                            placeholder=\"选择开始与结束时间\" />\r\n                        <div\r\n                            class=\"flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-caption-md text-gray-500 dark:bg-gray-800/50\">\r\n                            Value: <span class=\"ml-2 font-mono text-primary\">{{ dateTimeRangeValue.length ?\r\n                                dateTimeRangeValue.join(` ~ `) : `empty` }}</span>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 组合选择 (月中、年中) -->\r\n            <section\r\n                class=\"rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900\">\r\n                <div class=\"mb-6 flex items-center gap-3\">\r\n                    <div class=\"flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500\">\r\n                        <Icon name=\"lucide:layout-grid\" class=\"size-5\" />\r\n                    </div>\r\n                    <h3 class=\"text-lg font-semibold text-gray-800 dark:text-gray-100\">特殊维度</h3>\r\n                </div>\r\n\r\n                <div class=\"grid gap-6\">\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Month view</label>\r\n                        <RebornSelectDate v-model=\"monthValue\" type=\"month\" :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" placeholder=\"仅月份\" />\r\n                    </div>\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Year view</label>\r\n                        <RebornSelectDate v-model=\"yearValue\" type=\"year\" :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" placeholder=\"仅年份\" />\r\n                    </div>\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Week selection</label>\r\n                        <RebornSelectDate v-model=\"weekValue\" type=\"week\" rangeable :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" placeholder=\"整周选择\" />\r\n                    </div>\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Multiple dates</label>\r\n                        <RebornSelectDate v-model=\"datesValue\" type=\"dates\" :size=\"size\" :color=\"color\"\r\n                            :disabled=\"disabled\" placeholder=\"选择多天\" />\r\n                    </div>\r\n                </div>\r\n            </section>\r\n\r\n            <!-- 高级自定义 -->\r\n            <section\r\n                class=\"rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900\">\r\n                <div class=\"mb-6 flex items-center gap-3\">\r\n                    <div class=\"flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500\">\r\n                        <Icon name=\"lucide:palette\" class=\"size-5\" />\r\n                    </div>\r\n                    <h3 class=\"text-lg font-semibold text-gray-800 dark:text-gray-100\">高级定制</h3>\r\n                </div>\r\n\r\n                <div class=\"space-y-6\">\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Custom Format</label>\r\n                        <RebornSelectDate v-model=\"customFormatValue\" type=\"date\" labelFormat=\"YYYY年MM月DD日\"\r\n                            valueFormat=\"YYYY/MM/DD\" :size=\"size\" :color=\"color\" placeholder=\"格式化显示与存储\" />\r\n                        <p class=\"text-caption-sm text-gray-400 italic\">Display: YYYY年MM月DD日 | Value: {{\r\n                            customFormatValue\r\n                            || `-` }}</p>\r\n                    </div>\r\n\r\n                    <div class=\"space-y-2\">\r\n                        <label class=\"text-xs font-medium text-gray-400\">Luxury Theme Overwrites</label>\r\n                        <RebornSelectDate type=\"datetime\" :size=\"size\" color=\"info\" :ui=\"{\r\n                            trigger: 'border-2 border-info/30 rounded-2xl bg-info/5 hover:border-info/60 transition-all shadow-inner',\r\n                            dropdown: 'rounded-ui-lg shadow-2xl shadow-info/20 border-info/10 bg-white/95 backdrop-blur-md dark:bg-gray-800/95'\r\n                        }\" placeholder=\"深度重写 UI 样式\" />\r\n                    </div>\r\n                </div>\r\n            </section>\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport type { SelectDateShortcut } from '@/components/reborn-select-date/types'\r\nimport { ref } from 'vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornText from '@/components/reborn-text/RebornText.vue'\r\nimport RebornRadio from '@/components/reborn-radio/RebornRadio.vue'\r\nimport RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'\r\nimport RebornSelectDate from '@/components/reborn-select-date/RebornSelectDate.vue'\r\nimport { selectDateColors, selectDateSizes } from '@/components/reborn-select-date/reborn-select-date.config'\r\n\r\n// 1. 基础用法\r\nconst date1 = ref('')\r\n\r\n// 2. 固定开始、结束日期\r\nconst date2 = ref('')\r\n\r\n// 3. 自定义触发器\r\nconst date3 = ref('')\r\nconst selectDateRef3 = ref<InstanceType<typeof RebornSelectDate> | null>(null)\r\nconst currentSize = ref<typeof selectDateSizes[number]>(selectDateSizes[0])\r\nconst currentColor = ref<typeof selectDateColors[number]>(selectDateColors[0])\r\n\r\nfunction openSelectDate3() {\r\n    selectDateRef3.value?.open((value: any) => {\r\n        uni.showToast({ title: `选择了: ${value}`, icon: 'none' })\r\n    })\r\n}\r\n\r\n// 4. 范围选择\r\nconst rangeValues = ref<string[]>([])\r\n\r\n// 5. 自定义快捷选项\r\nconst rangeValues2 = ref<string[]>([])\r\nconst customShortcuts: SelectDateShortcut[] = [\r\n    { label: '今天', value: ['2026-02-27', '2026-02-27'] },\r\n    { label: '本周', value: ['2026-02-23', '2026-02-27'] },\r\n    { label: '本月', value: ['2026-02-01', '2026-02-28'] },\r\n    { label: '上月', value: ['2026-01-01', '2026-01-31'] },\r\n    { label: '今年', value: ['2026-01-01', '2026-12-31'] },\r\n]\r\n\r\n// 6. 自定义日期格式\r\nconst dateFormat = ref('')\r\nconst currentType = ref<'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'>('date')\r\nconst typeOptions = [\r\n    { label: 'YYYY', value: 'year' },\r\n    { label: 'YYYY-MM', value: 'month' },\r\n    { label: 'YYYY-MM-DD', value: 'date' },\r\n    { label: 'YYYY-MM-DD HH', value: 'hour' },\r\n    { label: 'YYYY-MM-DD HH:mm', value: 'minute' },\r\n    { label: 'YYYY-MM-DD HH:mm:ss', value: 'second' },\r\n] as const\r\n</script>\r\n\r\n<template>\r\n    <RebornPage title=\"日期选择器\" description=\"用于选择日期/时间的组件，支持范围选择和多种日期格式。\">\r\n        <RebornCard title=\"playground\">\r\n            <RebornText color=\"neutral\">\r\n                基础用法\r\n            </RebornText>\r\n            <RebornSelectDate v-model=\"dateFormat\" :type=\"currentType\" placeholder=\"选择日期\" :color=\"currentColor\"\r\n                :size=\"currentSize\" />\r\n            <RebornText color=\"neutral\">\r\n                插槽\r\n            </RebornText>\r\n            <RebornSelectDate v-model=\"dateFormat\" :type=\"currentType\" placeholder=\"选择日期\" :color=\"currentColor\"\r\n                :size=\"currentSize\">\r\n                <template #tag>\r\n                    <RebornText color=\"neutral\">\r\n                        插槽： {{ dateFormat }}\r\n                    </RebornText>\r\n                </template>\r\n            </RebornSelectDate>\r\n        </RebornCard>\r\n        <RebornCard title=\"配置\">\r\n            <RebornText color=\"neutral\">\r\n                尺寸：\r\n            </RebornText>\r\n            <RebornRadioGroup v-model=\"currentSize\">\r\n                <RebornRadio v-for=\"s in selectDateSizes\" :key=\"s\" :value=\"s\" :label=\"s\" />\r\n            </RebornRadioGroup>\r\n            <RebornText color=\"neutral\">\r\n                按钮颜色：\r\n            </RebornText>\r\n            <RebornRadioGroup v-model=\"currentColor\">\r\n                <RebornRadio v-for=\"item in selectDateColors\" :key=\"item\" :value=\"item\" :showIcon=\"false\">\r\n                    <template #default=\"{ isChecked }\">\r\n                        <view class=\"relative flex size-5\">\r\n                            <view v-if=\"isChecked\"\r\n                                class=\"absolute inline-flex h-full w-full animate-ping rounded-full opacity-75\"\r\n                                :class=\"`bg-${item}`\">\r\n                            </view>\r\n                            <view class=\"relative inline-flex size-5 rounded-full\" :class=\"`bg-${item}`\"></view>\r\n                        </view>\r\n                    </template>\r\n                </RebornRadio>\r\n            </RebornRadioGroup>\r\n            <RebornText color=\"neutral\">\r\n                格式化：\r\n            </RebornText>\r\n            <RebornRadioGroup v-model=\"currentType\">\r\n                <RebornRadio v-for=\"item in typeOptions\" :key=\"item.value\" :value=\"item.value\" :label=\"item.label\"\r\n                    size=\"sm\" />\r\n            </RebornRadioGroup>\r\n        </RebornCard>\r\n\r\n        <RebornCard title=\"固定开始、结束日期\" custom-class=\"space-y-4\">\r\n            <view class=\"text-xs text-gray-4\">\r\n                通过 start 和 end 属性限制可选日期范围。\r\n            </view>\r\n            <RebornSelectDate v-model=\"date2\" type=\"date\" start=\"2025-01-01\" end=\"2026-12-31\" :color=\"currentColor\"\r\n                placeholder=\"选择日期 (2025~2026)\" />\r\n            <view class=\"text-xs text-surface-500\">\r\n                当前值：{{ date2 || '未选择' }}\r\n            </view>\r\n        </RebornCard>\r\n\r\n        <RebornCard title=\"自定义触发器\" custom-class=\"space-y-4\">\r\n            <view class=\"text-xs text-gray-4\">\r\n                通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开。\r\n            </view>\r\n            <RebornButton variant=\"outline\" color=\"primary\" @tap=\"openSelectDate3\">\r\n                打开日期选择器\r\n            </RebornButton>\r\n            <RebornSelectDate ref=\"selectDateRef3\" v-model=\"date3\" type=\"date\" :show-trigger=\"false\"\r\n                :color=\"currentColor\" />\r\n            <view class=\"text-xs text-surface-500\">\r\n                当前值：{{ date3 || '未选择' }}\r\n            </view>\r\n        </RebornCard>\r\n\r\n        <!-- 4. 范围选择 -->\r\n        <RebornCard title=\"范围选择\" custom-class=\"space-y-4\">\r\n            <view class=\"text-xs text-gray-4\">\r\n                通过 rangeable 开启范围选择模式，使用 v-model:values 绑定范围值。\r\n            </view>\r\n            <RebornSelectDate v-model:values=\"rangeValues\" type=\"date\" :rangeable=\"true\" start-placeholder=\"开始日期\"\r\n                :color=\"currentColor\" end-placeholder=\"结束日期\" />\r\n            <view class=\"text-xs text-surface-500\">\r\n                当前范围：{{ rangeValues.length > 0 && rangeValues[0] ? `${rangeValues[0]} 至 ${rangeValues[1]}` : '未选择' }}\r\n            </view>\r\n        </RebornCard>\r\n\r\n        <!-- 5. 自定义快捷选项 -->\r\n        <RebornCard title=\"自定义快捷选项\" custom-class=\"space-y-4\">\r\n            <view class=\"text-xs text-gray-4\">\r\n                通过 shortcuts 属性自定义快捷选项，需配合 rangeable 使用。\r\n            </view>\r\n            <RebornSelectDate v-model:values=\"rangeValues2\" type=\"date\" :rangeable=\"true\" :shortcuts=\"customShortcuts\"\r\n                :color=\"currentColor\" :show-shortcuts=\"true\" />\r\n            <view class=\"text-xs text-surface-500\">\r\n                当前范围：{{ rangeValues2.length > 0 && rangeValues2[0] ? `${rangeValues2[0]} 至 ${rangeValues2[1]}` : '未选择'\r\n                }}\r\n            </view>\r\n        </RebornCard>\r\n\r\n    </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-badge",
+    "reborn-button",
+    "reborn-date-picker-panel",
+    "reborn-picker-view",
+    "reborn-popover",
+    "reborn-popup",
+    "reborn-select-trigger",
+    "reborn-text"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx",
+    "dayjs",
+    "lodash-es"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-select-date"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-select-date/RebornSelectDate.vue",
+      "app/components/reborn/ui/reborn-select-date/index.ts",
+      "app/components/reborn/ui/reborn-select-date/reborn-select-date.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-select-date/RebornSelectDate.vue",
+      "packages/uniapp-project/src/components/reborn-select-date/reborn-select-date.config.ts",
+      "packages/uniapp-project/src/components/reborn-select-date/types.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-select-date.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "3d7e0b45c2f0022df4ab20c1bfe8db5e91e8e613",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "morphing-text",
+  "title": "文字变形",
+  "description": "动态在一组文本之间切换，呈现平滑的渐变效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "容器的额外类名。",
+      "default": "\"\""
+    },
+    {
+      "name": "texts",
+      "type": "string[]",
+      "required": true,
+      "description": "需要变换的文本数组。",
+      "default": "[]"
+    },
+    {
+      "name": "morphTime",
+      "type": "number",
+      "required": false,
+      "description": "动画执行时间。",
+      "default": "1.5"
+    },
+    {
+      "name": "coolDownTime",
+      "type": "number",
+      "required": false,
+      "description": "动画停留时间。",
+      "default": "0.5"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nconst texts = [\r\n  \"Hello\",\r\n  \"Morphing\",\r\n  \"Text\",\r\n  \"Animation\",\r\n  \"Vue\",\r\n  \"Component\",\r\n  \"Smooth\",\r\n  \"Transition\",\r\n  \"Engaging\",\r\n];\r\n</script>\r\n\r\n<template>\r\n  <ClientOnly>\r\n    <MorphingText :texts=\"texts\" />\r\n  </ClientOnly>\r\n</template>\r\n\r\n<style></style>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add morphing-text"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/morphing-text/MorphingText.vue",
+      "app/components/reborn/ui/morphing-text/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/morphing-text.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "db040e50d5c0a15c64c429d03e1b4a3440144bfc",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

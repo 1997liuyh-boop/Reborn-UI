@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "letter-pullup",
+  "title": "字符上提",
+  "description": "逐字上提的错落文字动画。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于组件的类名。"
+    },
+    {
+      "name": "words",
+      "type": "string",
+      "required": true,
+      "description": "要做动画的文字。",
+      "default": "Staggered Letter Pull Up"
+    },
+    {
+      "name": "delay",
+      "type": "number",
+      "required": false,
+      "description": "每个字符动画的延迟（秒）。",
+      "default": "0.05"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <LetterPullup\r\n    words=\"Staggered Letter Pull Up\"\r\n    :delay=\"0.05\"\r\n    class=\"text-black dark:text-white\"\r\n  />\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add letter-pullup"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/letter-pullup/LetterPullup.vue",
+      "app/components/reborn/ui/letter-pullup/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/letter-pullup.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "2d091ba155c0ba3a47f3d4749dd4217be45992fd",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

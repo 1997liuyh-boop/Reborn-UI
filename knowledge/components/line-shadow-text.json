@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "line-shadow-text",
+  "title": "线条阴影文字",
+  "description": "为文字添加线条阴影效果，使其更具视觉吸引力。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "shadowColor",
+      "type": "string",
+      "required": false,
+      "description": "阴影效果的颜色。",
+      "default": "\"black\""
+    },
+    {
+      "name": "as",
+      "type": "keyof HTMLElement",
+      "required": false,
+      "description": "渲染文字所用的 HTML 元素。",
+      "default": "\"span\" as keyof HTMLElement"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "用于自定义样式的额外 CSS 类。",
+      "default": "\"\""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst isDark = computed(() => useColorMode().value == \"dark\");\r\nconst shadowColor = computed(() => (isDark.value ? \"white\" : \"black\"));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\r\n    <h1 class=\"text-8xl leading-none font-extrabold tracking-tighter text-balance\">\r\n      Ship\r\n      <LineShadowText\r\n        class=\"italic\"\r\n        :shadow-color=\"shadowColor\"\r\n      >\r\n        Fast\r\n      </LineShadowText>\r\n    </h1>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add line-shadow-text"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/line-shadow-text/LineShadowText.vue",
+      "app/components/reborn/ui/line-shadow-text/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/line-shadow-text.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "8f3fcbf7ee205c580f36c728b2a46eef226e2401",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

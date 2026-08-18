@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-footer",
+  "title": "Footer 底部栏",
+  "description": "固定在页面底部的操作容器组件，支持自动占位、最小高度控制和安全区适配。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "minHeight",
+      "type": "number",
+      "required": false,
+      "description": "最小可见高度阈值。footer 实际高度小于该值（叠加底部安全区）时，不显示 footer。",
+      "default": "30"
+    },
+    {
+      "name": "vt",
+      "type": "number",
+      "required": false,
+      "description": "变化触发值。该值变化会强制重新测量 footer 高度。",
+      "default": "0"
+    },
+    {
+      "name": "height",
+      "type": "number | null",
+      "required": false,
+      "description": "null",
+      "default": "null"
+    },
+    {
+      "name": "ui",
+      "type": "{\r\n    placeholder?: ClassValue\r\n    wrapper?: ClassValue\r\n    base?: ClassValue\r\n    content?: ClassValue\r\n  }",
+      "required": false,
+      "description": "覆盖各个 UI slot 的样式。",
+      "default": "{}"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": "footer 内容区插槽，通常放置提交/取消等底部操作按钮。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\">\r\n    web端暂未开发\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornFooter from '@/components/reborn-footer/RebornFooter.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\n\r\nconst counter = ref(0)\r\nconst fixedHeight = ref<number | null>(null)\r\nconst customBg = ref<boolean>(false)\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Footer 底部栏\" description=\"固定在页面底部，并自动生成占位高度，避免遮挡内容。\">\r\n    <view>\r\n      <RebornCard title=\"控制项\">\r\n        <view class=\"flex flex-wrap items-center gap-2\">\r\n          <RebornButton :fluid=\"true\" @click=\"counter++\">\r\n            触发重算高度(vt)\r\n          </RebornButton>\r\n          <RebornButton :fluid=\"true\" @click=\"fixedHeight = fixedHeight ? null : 56\">\r\n            {{ fixedHeight ? '取消固定高度' : '固定高度 56px' }}\r\n          </RebornButton>\r\n          <RebornButton :fluid=\"true\" @click=\"customBg = !customBg\">\r\n            {{ customBg ? '恢复默认背景' : '设置浅绿色背景' }} ({{ customBg }})\r\n          </RebornButton>\r\n        </view>\r\n      </RebornCard>\r\n\r\n      <RebornCard title=\"内容区\">\r\n        <view class=\"space-y-2 text-sm text-gray-6\">\r\n          <view v-for=\"i in 20\" :key=\"i\" class=\"\r\n            rounded bg-gray-1 p-3\r\n            dark:bg-gray-8\r\n          \">\r\n            列表内容 {{ i }}\r\n          </view>\r\n        </view>\r\n      </RebornCard>\r\n\r\n      <RebornFooter :vt=\"counter\" :height=\"fixedHeight\"\r\n        :ui=\"{ content: 'flex items-center justify-between px-4 py-3', base: `${customBg ? 'bg-green-4' : 'bg-white dark:bg-gray-8'}` }\">\r\n        <text class=\"text-sm font-medium\">当前重算次数：{{ counter }}</text>\r\n        <button class=\"rounded bg-primary px-3 py-1 text-xs text-white\" @click=\"counter++\">\r\n          操作\r\n        </button>\r\n      </RebornFooter>\r\n    </view>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-footer"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-footer/RebornFooter.vue",
+      "app/components/reborn/ui/reborn-footer/index.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-footer/RebornFooter.vue",
+      "packages/uniapp-project/src/components/reborn-footer/index.ts",
+      "packages/uniapp-project/src/components/reborn-footer/offset.ts",
+      "packages/uniapp-project/src/components/reborn-footer/reborn-footer.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-footer.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "574fc650b28d0e5bdaf01f9c5f0908f037893fe8",
+    "hasOverride": false,
+    "extractors": {
+      "web": "partial",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

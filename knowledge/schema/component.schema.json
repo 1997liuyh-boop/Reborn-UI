@@ -1,0 +1,342 @@
+{
+  "$ref": "#/definitions/RebornComponentKnowledge",
+  "definitions": {
+    "RebornComponentKnowledge": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "basic",
+            "form",
+            "layout",
+            "feedback",
+            "navigation",
+            "data-display",
+            "effect",
+            "media",
+            "misc"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "web",
+              "uniapp"
+            ]
+          },
+          "minItems": 1
+        },
+        "props": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "default": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "description": {
+                "type": "string"
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "vModel": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "type",
+              "required",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "payload": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "props": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "exposes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "demo",
+                  "manual"
+                ]
+              },
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "web",
+                  "uniapp"
+                ]
+              }
+            },
+            "required": [
+              "title",
+              "code",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "whenToUse": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "whenNotToUse": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pitfalls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "install": {
+          "type": "object",
+          "properties": {
+            "cli": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cli"
+          ],
+          "additionalProperties": false
+        },
+        "sourceRefs": {
+          "type": "object",
+          "properties": {
+            "web": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "uniapp": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "docPath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_meta": {
+          "type": "object",
+          "properties": {
+            "generatedAt": {
+              "type": "string"
+            },
+            "contentHash": {
+              "type": "string"
+            },
+            "hasOverride": {
+              "type": "boolean"
+            },
+            "extractors": {
+              "type": "object",
+              "properties": {
+                "web": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "partial",
+                    "failed",
+                    "absent"
+                  ]
+                },
+                "uniapp": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "partial",
+                    "failed",
+                    "absent"
+                  ]
+                },
+                "docs": {
+                  "type": "string",
+                  "enum": [
+                    "found",
+                    "missing"
+                  ]
+                }
+              },
+              "required": [
+                "web",
+                "uniapp",
+                "docs"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "generatedAt",
+            "contentHash",
+            "hasOverride",
+            "extractors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "category",
+        "tags",
+        "platforms",
+        "props",
+        "events",
+        "slots",
+        "exposes",
+        "examples",
+        "related",
+        "whenToUse",
+        "whenNotToUse",
+        "pitfalls",
+        "dependencies",
+        "install",
+        "sourceRefs",
+        "docPath",
+        "_meta"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

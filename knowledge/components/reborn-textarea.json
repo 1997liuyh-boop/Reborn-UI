@@ -1,0 +1,337 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-textarea",
+  "title": "多行输入框",
+  "description": "具有自适应高度与多尺寸状态的多行输入组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "textarea",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "color",
+      "type": "typeof textareaColors[number]",
+      "required": false,
+      "description": "",
+      "default": "'primary'"
+    },
+    {
+      "name": "customClass",
+      "type": "string",
+      "required": false,
+      "description": "额外样式类。",
+      "default": "''"
+    },
+    {
+      "name": "ui",
+      "type": "Record<string, any>",
+      "required": false,
+      "description": "UI 配置对象。",
+      "default": "() => ({})"
+    },
+    {
+      "name": "modelValue",
+      "type": "string",
+      "required": true,
+      "description": "输入框的绑定值。",
+      "default": "''"
+    },
+    {
+      "name": "size",
+      "type": "typeof textareaSizes[number]",
+      "required": false,
+      "description": "\"lg\"",
+      "default": "'md'"
+    },
+    {
+      "name": "border",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用。",
+      "default": "false"
+    },
+    {
+      "name": "readonly",
+      "type": "boolean",
+      "required": false,
+      "description": "是否只读。",
+      "default": "false"
+    },
+    {
+      "name": "showWordLimit",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示字数统计（需设置 maxlength）。",
+      "default": "true"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "占位文本。",
+      "default": "() => '请输入'"
+    },
+    {
+      "name": "placeholderClass",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "placeholderStyle",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "maxlength",
+      "type": "number",
+      "required": false,
+      "description": "最大输入长度。",
+      "default": "100"
+    },
+    {
+      "name": "autofocus",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "confirmType",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'done'"
+    },
+    {
+      "name": "cursor",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0"
+    },
+    {
+      "name": "confirmHold",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "height",
+      "type": "number | string",
+      "required": false,
+      "description": "",
+      "default": "140"
+    },
+    {
+      "name": "autoHeight",
+      "type": "boolean",
+      "required": false,
+      "description": "是否自动增高。",
+      "default": "false"
+    },
+    {
+      "name": "fixed",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "cursorSpacing",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "5"
+    },
+    {
+      "name": "cursorColor",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "showConfirmBar",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "selectionStart",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "-1"
+    },
+    {
+      "name": "selectionEnd",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "-1"
+    },
+    {
+      "name": "adjustPosition",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "inputmode",
+      "type": "'none' | 'text' | 'decimal' | 'numeric' | 'tel' | 'search' | 'email' | 'url'",
+      "required": false,
+      "description": "",
+      "default": "'text'"
+    },
+    {
+      "name": "holdKeyboard",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "disableDefaultPadding",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "adjustKeyboardTo",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'cursor'"
+    },
+    {
+      "name": "rows",
+      "type": "number",
+      "required": false,
+      "description": "默认行数。",
+      "default": "4"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": ""
+    },
+    {
+      "name": "input",
+      "description": ""
+    },
+    {
+      "name": "change",
+      "description": ""
+    },
+    {
+      "name": "focus",
+      "description": ""
+    },
+    {
+      "name": "blur",
+      "description": ""
+    },
+    {
+      "name": "confirm",
+      "description": ""
+    },
+    {
+      "name": "linechange",
+      "description": ""
+    },
+    {
+      "name": "keyboardheightchange",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "limit",
+      "description": ""
+    }
+  ],
+  "exposes": [
+    {
+      "name": "isFocus",
+      "description": ""
+    },
+    {
+      "name": "focus",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\nimport RebornTextarea from \"~/components/reborn/ui/reborn-textarea/RebornTextarea.vue\";\r\nimport { textareaColors, textareaSizes } from \"~/components/reborn/ui/reborn-textarea/reborn-textarea.config\";\r\n\r\nconst value = ref('');\r\nconst value1 = ref('轻轻的我走了，正如我轻轻的来；我轻轻的招手，作别西天的云彩。那河畔的金柳，是夕阳中的新娘；波光里的艳影，在我的心头荡漾。软泥上的青荇，油油的在水底招摇；在康河的柔波里，我甘心做一条水草！那榆荫下的一潭，不是清泉，是天上虹；揉碎在浮藻间，沉淀着彩虹似的梦。寻梦？撑一支长篙，向青草更青处漫溯；满载一船星辉，在星辉斑斓里放歌。但我不能放歌，悄悄是别离的笙箫；夏虫也为我沉默，沉默是今晚的康桥！悄悄的我走了，正如我悄悄的来；我挥一挥衣袖，不带走一片云彩。');\r\nconst demoColor = ref<typeof textareaColors[number]>('primary');\r\nconst demoSize = ref<typeof textareaSizes[number]>('md');\r\nconst isBorder = ref(true);\r\nconst isShowCount = ref(true);\r\nconst isDisabled = ref(false);\r\nconst isAutoHeight = ref(false);\r\nconst isShowlimitSlot = ref(false);\r\n</script>\r\n\r\n<template>\r\n    <div class=\"grid grid-cols-2 gap-4\">\r\n        <div>\r\n            <RebornTextarea v-model=\"value\" :border=\"isBorder\" :disabled=\"isDisabled\" :show-word-limit=\"isShowCount\"\r\n                :auto-height=\"isAutoHeight\" placeholder=\"请输入内容...\" :color=\"demoColor\">\r\n                <template v-if=\"isShowlimitSlot\" #limit=\"{ length, max }\">\r\n                    <div\r\n                        class=\"absolute right-3 bottom-3 bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded text-xs text-gray-500\">\r\n                        已输入: {{ length }}/{{ max }}\r\n                    </div>\r\n                </template>\r\n            </RebornTextarea>\r\n        </div>\r\n        <div>\r\n            <RebornTextarea v-model=\"value1\" :size=\"demoSize\" show-word-limit :maxlength=\"1000\" placeholder=\"自定义样式\"\r\n                :rows=\"10\" :ui=\"{\r\n                    root: 'bg-blue-50 dark:bg-blue-950/30 ring-red-3 dark:border-blue-800 focus-within:ring-orange-7',\r\n                    inner: 'text-blue-700 dark:text-blue-300 placeholder:text-blue-400 ',\r\n                    text: 'text-blue-400'\r\n                }\" />\r\n        </div>\r\n        <div class=\"col-span-2 flex flex-col gap-4\">\r\n            <div class=\"space-y-3\">\r\n                <div class=\"text-sm font-medium text-slate-500 dark:text-slate-200\">边框active颜色</div>\r\n                <div class=\"flex flex-wrap gap-2\">\r\n                    <div v-for=\"c in textareaColors\" :key=\"c\"\r\n                        class=\"w-6 h-6 rounded-full cursor-pointer ring-2 ring-offset-2 ring-transparent transition-all\"\r\n                        :class=\"[\r\n                            `bg-${c}`,\r\n                            demoColor === c ? 'ring-slate-400 scale-110' : 'hover:scale-110'\r\n                        ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n                        @click=\"demoColor = c\"></div>\r\n                </div>\r\n            </div>\r\n            <div class=\"space-y-3\">\r\n                <div class=\"text-sm font-medium text-slate-500 dark:text-slate-200\">输入字体颜色</div>\r\n                <div class=\"flex flex-wrap gap-2\">\r\n                    <div v-for=\"s in textareaSizes\" :key=\"s\"\r\n                        class=\"px-3 py-1.5 text-xs rounded-full border cursor-pointer transition-colors\"\r\n                        :class=\"demoSize === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' : 'bg-transparent text-slate-600 border-slate-300 hover:border-slate-400'\"\r\n                        @click=\"demoSize = s\">\r\n                        {{ s }}\r\n                    </div>\r\n                </div>\r\n            </div>\r\n            <RebornSwitch v-model=\"isBorder\" active-label=\"边框\" />\r\n            <RebornSwitch v-model=\"isShowCount\" active-label=\"字数统计\" />\r\n            <RebornSwitch v-model=\"isShowlimitSlot\" active-label=\"自定义字数统计\" />\r\n            <RebornSwitch v-model=\"isDisabled\" active-label=\"禁用\" />\r\n            <RebornSwitch v-model=\"isAutoHeight\" active-label=\"自动增高\" />\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\r\n\r\nimport { textareaColors, textareaSizes } from '@/components/reborn-textarea/reborn-textarea.config'\r\nimport RebornTextarea from '@/components/reborn-textarea/RebornTextarea.vue'\r\n\r\n// Textarea values\r\nconst value = ref('')\r\nconst value1 = ref('轻轻的我走了，正如我轻轻的来；我轻轻的招手，作别西天的云彩。那河畔的金柳，是夕阳中的新娘；波光里的艳影，在我的心头荡漾。软泥上的青荇，油油的在水底招摇；在康河的柔波里，我甘心做一条水草！那榆荫下的一潭，不是清泉，是天上虹；揉碎在浮藻间，沉淀着彩虹似的梦。寻梦？撑一支长篙，向青草更青处漫溯；满载一船星辉，在星辉斑斓里放歌。但我不能放歌，悄悄是别离的笙箫；夏虫也为我沉默，沉默是今晚的康桥！悄悄的我走了，正如我悄悄的来；我挥一挥衣袖，不带走一片云彩。')\r\nconst demoColor = ref<typeof textareaColors[number]>('primary')\r\nconst demoSize = ref<typeof textareaSizes[number]>('md')\r\nconst isBorder = ref(true)\r\nconst isShowCount = ref(true)\r\nconst isDisabled = ref(false)\r\nconst isAutoHeight = ref(false)\r\nconst isShowlimitSlot = ref(false)\r\n\r\n// Global Size Control\r\n// const sizes = ['sm', 'md', 'lg'] as const\r\n// const currentSize = ref<typeof sizes[number]>('md')\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"文本域\" description=\"多行文本输入控件。\">\r\n    <!-- Basic -->\r\n    <RebornCard title=\"自定义\" custom-class=\"flex flex-col gap-2\">\r\n      <RebornTextarea v-model=\"value\" :border=\"isBorder\" :disabled=\"isDisabled\" :show-word-limit=\"isShowCount\"\r\n        :auto-height=\"isAutoHeight\" placeholder=\"请输入内容...\" :color=\"demoColor\">\r\n        <template v-if=\"isShowlimitSlot\" #limit=\"{ length, max }\">\r\n          <view class=\"\r\n              absolute bottom-2 right-2 rounded bg-gray-200 px-2 py-0.5 text-xs\r\n              text-gray-500\r\n              dark:bg-gray-800\r\n            \">\r\n            已输入: {{ length }}/{{ max }}\r\n          </view>\r\n        </template>\r\n      </RebornTextarea>\r\n    </RebornCard>\r\n    <!-- Custom Styles -->\r\n    <RebornCard title=\"自定义样式 (UI Prop)\" custom-class=\"flex flex-col gap-2\">\r\n      <RebornTextarea v-model=\"value1\" :size=\"demoSize\" :maxlength=\"1000\" placeholder=\"自定义样式\" :height=\"500\" :ui=\"{\r\n        root: 'bg-blue-50 dark:bg-blue-950/30 ring-red-3 dark:border-blue-800 focus-within:ring-orange-7',\r\n        inner: 'text-blue-700 dark:text-blue-300 placeholder:text-blue-400 ',\r\n        text: 'text-blue-400',\r\n      }\" />\r\n    </RebornCard>\r\n    <!-- Size Control -->\r\n    <RebornCard title=\"控制\" custom-class=\"flex flex-col gap-4\">\r\n      <view class=\"space-y-3\">\r\n        <view class=\"\r\n            text-28 font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \">\r\n          边框active颜色\r\n        </view>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view v-for=\"c in textareaColors\" :key=\"c\" class=\"\r\n              size-6 cursor-pointer rounded-full ring-2 ring-transparent\r\n              ring-offset-2 transition-all\r\n            \" :class=\"[\r\n              `\r\n                bg-${c}\r\n              `,\r\n              demoColor === c ? 'scale-110 ring-slate-400' : `hover:scale-110`,\r\n            ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n            @click=\"demoColor = c\" />\r\n        </view>\r\n      </view>\r\n      <view class=\"space-y-3\">\r\n        <view class=\"\r\n            text-sm font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \">\r\n          输入字体颜色\r\n        </view>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view v-for=\"s in textareaSizes\" :key=\"s\" class=\"\r\n              cursor-pointer rounded-full border px-3 py-1.5 text-xs\r\n              transition-colors\r\n            \" :class=\"demoSize === s ? `\r\n              border-slate-900 bg-slate-900 text-white\r\n              dark:bg-white dark:text-slate-900\r\n            ` : `\r\n              border-slate-300 bg-transparent text-slate-600\r\n              hover:border-slate-400\r\n            `\" @click=\"demoSize = s\">\r\n            {{ s }}\r\n          </view>\r\n        </view>\r\n      </view>\r\n      <RebornSwitch v-model=\"isBorder\" active-label=\"边框\" />\r\n      <RebornSwitch v-model=\"isShowCount\" active-label=\"字数统计\" />\r\n      <RebornSwitch v-model=\"isShowlimitSlot\" active-label=\"自定义字数统计\" />\r\n      <RebornSwitch v-model=\"isDisabled\" active-label=\"禁用\" />\r\n      <RebornSwitch v-model=\"isAutoHeight\" active-label=\"自动增高\" />\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-textarea"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-textarea/RebornTextarea.vue",
+      "app/components/reborn/ui/reborn-textarea/reborn-textarea.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-textarea/RebornTextarea.vue",
+      "packages/uniapp-project/src/components/reborn-textarea/index.ts",
+      "packages/uniapp-project/src/components/reborn-textarea/reborn-textarea.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-textarea.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "9e6c91cd4464095aa7b28bff691a13210d906b6e",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

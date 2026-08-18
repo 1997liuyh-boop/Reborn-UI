@@ -1,0 +1,273 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-menu",
+  "title": "菜单",
+  "description": "为网站提供导航能力的菜单组件，支持垂直、水平、折叠与子菜单等模式。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "mode",
+      "type": "MenuMode",
+      "required": false,
+      "description": "'vertical'",
+      "default": "\"vertical\""
+    },
+    {
+      "name": "collapse",
+      "type": "boolean",
+      "required": false,
+      "description": "是否折叠菜单，仅在 `mode=\"vertical\"` 时生效",
+      "default": "false"
+    },
+    {
+      "name": "defaultOpeneds",
+      "type": "string[]",
+      "required": false,
+      "description": "默认展开的子菜单 `index` 数组",
+      "default": "() => []"
+    },
+    {
+      "name": "uniqueOpened",
+      "type": "boolean",
+      "required": false,
+      "description": "是否只保持一个子菜单展开",
+      "default": "false"
+    },
+    {
+      "name": "menuTrigger",
+      "type": "MenuTrigger",
+      "required": false,
+      "description": "'hover'",
+      "default": "\"hover\""
+    },
+    {
+      "name": "router",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用 `vue-router` 模式。启用后点击菜单项会使用 `index` 作为 `path` 进行跳转",
+      "default": "false"
+    },
+    {
+      "name": "collapseTransition",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用折叠动画",
+      "default": "true"
+    },
+    {
+      "name": "expandType",
+      "type": "ExpandType",
+      "required": false,
+      "description": "",
+      "default": "\"popup\""
+    },
+    {
+      "name": "expandMutex",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "closeOnClickOutside",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "color",
+      "type": "MenuColor",
+      "required": false,
+      "description": "",
+      "default": "\"primary\""
+    },
+    {
+      "name": "backgroundColor",
+      "type": "string",
+      "required": false,
+      "description": "菜单背景色",
+      "default": "\"\""
+    },
+    {
+      "name": "textColor",
+      "type": "string",
+      "required": false,
+      "description": "普通菜单项文字颜色",
+      "default": "\"\""
+    },
+    {
+      "name": "activeTextColor",
+      "type": "string",
+      "required": false,
+      "description": "激活菜单项文字颜色",
+      "default": "\"\""
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "",
+      "default": "undefined"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    root: ClassValue;\r\n    menu: ClassValue;\r\n    menuItem: ClassValue;\r\n    menuItemContent: ClassValue;\r\n    menuItemTitle: ClassValue;\r\n    menuItemIcon: ClassValue;\r\n    menuItemArrow: ClassValue;\r\n    subMenu: ClassValue;\r\n    subMenuPopup: ClassValue;\r\n    subMenuContent: ClassValue;\r\n    menuItemGroup: ClassValue;\r\n    menuItemGroupTitle: ClassValue;\r\n  }>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "active",
+      "type": "string[]",
+      "required": false,
+      "description": "双向绑定值",
+      "vModel": true,
+      "default": "[]"
+    },
+    {
+      "name": "expanded",
+      "type": "MenuValue[]",
+      "required": false,
+      "description": "双向绑定值",
+      "vModel": true
+    },
+    {
+      "name": "index",
+      "type": "string",
+      "required": true,
+      "description": "唯一标识"
+    },
+    {
+      "name": "route",
+      "type": "string | object",
+      "required": false,
+      "description": "-",
+      "default": "object"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用",
+      "default": "false"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "分组标题",
+      "default": "\"\""
+    },
+    {
+      "name": "popperOffset",
+      "type": "number",
+      "required": false,
+      "description": "弹出层偏移量",
+      "default": "6"
+    }
+  ],
+  "events": [
+    {
+      "name": "select",
+      "payload": "(e: \"select\", index: string, indexPath: string[]): void;",
+      "description": "菜单项被激活时触发"
+    },
+    {
+      "name": "open",
+      "payload": "(e: \"open\", index: string, indexPath: string[]): void;",
+      "description": "子菜单展开时触发"
+    },
+    {
+      "name": "close",
+      "payload": "(e: \"close\", index: string, indexPath: string[]): void;",
+      "description": "子菜单收起时触发"
+    },
+    {
+      "name": "update:active",
+      "description": "active 变化时触发（v-model 同步）",
+      "payload": "(indexPath: string[]) => void"
+    },
+    {
+      "name": "update:expanded",
+      "description": "expanded 变化时触发（v-model 同步）"
+    },
+    {
+      "name": "click",
+      "payload": "(e: \"click\", index: string): void;",
+      "description": "点击菜单项时触发"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": "菜单内容"
+    },
+    {
+      "name": "icon",
+      "description": "子菜单图标"
+    },
+    {
+      "name": "title",
+      "description": "子菜单标题"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "open",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "description": ""
+    },
+    {
+      "name": "updateActive",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref, computed } from \"vue\";\r\nimport {\r\n  RebornMenu,\r\n  RebornSubMenu,\r\n  RebornMenuItem,\r\n  RebornMenuItemGroup,\r\n} from \"~/components/reborn/ui/reborn-menu\";\r\nimport RebornButton from \"~/components/reborn/ui/reborn-button/RebornButton.vue\";\r\nimport { menuModes, menuTriggers, menuColors, expandTypes } from \"~/components/reborn/ui/reborn-menu/reborn-menu.config\";\r\n\r\n// --- Playground 状态 ---\r\nconst state = ref<Record<string, any>>({\r\n  mode: \"vertical\",\r\n  collapse: false,\r\n  menuTrigger: \"hover\",\r\n  uniqueOpened: false,\r\n  expandType: \"popup\",\r\n  expandMutex: false,\r\n  color: \"primary\",\r\n  backgroundColor: \"#ffffff\",\r\n  textColor: \"#303133\",\r\n  activeTextColor: \"#409eff\",\r\n});\r\n\r\nconst expandedMenus = ref<string[]>([]);\r\n\r\n// --- 控制面板配置 ---\r\nconst controls: any = [\r\n  {\r\n    title: \"布局模式\",\r\n    children: [\r\n      {\r\n        label: \"展示模式\",\r\n        key: \"mode\",\r\n        component: \"select\" as const,\r\n        defaultValue: \"vertical\",\r\n        props: {\r\n          options: menuModes.map((m) => ({ label: m === \"horizontal\" ? \"水平\" : \"垂直\", value: m })),\r\n        },\r\n      },\r\n      {\r\n        label: \"触发方式\",\r\n        key: \"menuTrigger\",\r\n        component: \"select\" as const,\r\n        defaultValue: \"hover\",\r\n        props: {\r\n          options: menuTriggers.map((t) => ({ label: t === \"hover\" ? \"悬停\" : \"点击\", value: t })),\r\n        },\r\n      },\r\n      {\r\n        label: \"颜色主题\",\r\n        key: \"color\",\r\n        component: \"select\" as const,\r\n        defaultValue: \"primary\",\r\n        props: {\r\n          options: menuColors.map((c) => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c })),\r\n        },\r\n      },\r\n      {\r\n        label: \"子菜单展开方式\",\r\n        key: \"expandType\",\r\n        component: \"select\" as const,\r\n        defaultValue: \"popup\",\r\n        props: {\r\n          options: expandTypes.map((t) => ({ label: t === \"normal\" ? \"平铺展开\" : \"浮层展开\", value: t })),\r\n        },\r\n      },\r\n    ],\r\n  },\r\n  {\r\n    title: \"交互控制\",\r\n    children: [\r\n      { label: \"折叠菜单\", key: \"collapse\", component: \"checkbox\" as const, defaultValue: false },\r\n      { label: \"单一展开（手风琴）\", key: \"uniqueOpened\", component: \"checkbox\" as const, defaultValue: false },\r\n      { label: \"同级互斥展开\", key: \"expandMutex\", component: \"checkbox\" as const, defaultValue: false },\r\n    ],\r\n  },\r\n];\r\n\r\nconst activePath = ref([\"1\"]);\r\nconst isCollapse = ref(false);\r\n\r\nfunction handleSelect(index: string) {\r\n  console.log(\"select\", index);\r\n}\r\n\r\nfunction handleOpen(index: string) {\r\n  console.log(\"open\", index);\r\n}\r\n\r\nfunction handleClose(index: string) {\r\n  console.log(\"close\", index);\r\n}\r\n\r\nconst codeString = computed(() => `<RebornMenu\r\n  v-model:active='${JSON.stringify(activePath.value)}'\r\n  v-model:expanded='[${expandedMenus.value.join(\", \")}]'\r\n  :mode='${state.value.mode}'\r\n  :collapse='${state.value.collapse}'\r\n  :menu-trigger='${state.value.menuTrigger}'\r\n  :unique-opened='${state.value.uniqueOpened}'\r\n  :expand-type='${state.value.expandType}'\r\n  :expand-mutex='${state.value.expandMutex}'\r\n  color='${state.value.color}'\r\n  background-color='${state.value.backgroundColor}'\r\n  text-color='${state.value.textColor}'\r\n  active-text-color='${state.value.activeTextColor}'\r\n/>`);\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex flex-col gap-16 pb-24\">\r\n    <!-- 第一部分：交互式游乐场 -->\r\n    <Playground v-model=\"state\" :controls=\"controls\" :code=\"codeString\" component-name=\"RebornMenu\" title=\"交互体验\"\r\n      description=\"通过左侧面板实时调节组件属性，在右侧查看视觉反馈\">\r\n      <RebornMenu v-model:active=\"activePath\" v-model:expanded=\"expandedMenus\" :mode=\"state.mode\"\r\n        :collapse=\"state.collapse\" :menu-trigger=\"state.menuTrigger\" :unique-opened=\"state.uniqueOpened\"\r\n        :expand-type=\"state.expandType\" :expand-mutex=\"state.expandMutex\" :color=\"state.color\" class=\"min-h-[400px]\"\r\n        @select=\"handleSelect\" @open=\"handleOpen\" @close=\"handleClose\">\r\n        <RebornMenuItem index=\"1\">\r\n          <template #icon>\r\n            <Icon name=\"lucide:home\" class=\"size-5\" />\r\n          </template>\r\n          首页\r\n        </RebornMenuItem>\r\n\r\n        <RebornSubMenu index=\"2\">\r\n          <template #icon>\r\n            <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n          </template>\r\n          <template #title>系统管理</template>\r\n\r\n          <RebornMenuItem index=\"2-1\">用户管理</RebornMenuItem>\r\n          <RebornMenuItem index=\"2-2\">角色管理</RebornMenuItem>\r\n          <RebornMenuItem index=\"2-3\">权限管理</RebornMenuItem>\r\n          <RebornSubMenu index=\"2-4\">\r\n            <template #title>名单管理</template>\r\n\r\n            <RebornMenuItemGroup title=\"白名单\">\r\n              <RebornMenuItem index=\"2-4-1\">白名单管理</RebornMenuItem>\r\n              <!-- <RebornMenuItem index=\"2-4-2\">白名单IP管理</RebornMenuItem> -->\r\n              <RebornSubMenu index=\"2-4-2\">\r\n                <template #title>白名单IP管理</template>\r\n\r\n                <RebornMenuItemGroup title=\"白名单\">\r\n                  <RebornMenuItem index=\"2-4-2-1\">白名单管理</RebornMenuItem>\r\n                  <RebornMenuItem index=\"2-4-2-2\">白名单IP管理</RebornMenuItem>\r\n                </RebornMenuItemGroup>\r\n              </RebornSubMenu>\r\n            </RebornMenuItemGroup>\r\n\r\n            <RebornMenuItemGroup title=\"黑名单\">\r\n              <RebornMenuItem index=\"2-4-3\">黑名单管理</RebornMenuItem>\r\n              <RebornMenuItem index=\"2-4-4\">黑名单IP管理</RebornMenuItem>\r\n            </RebornMenuItemGroup>\r\n          </RebornSubMenu>\r\n        </RebornSubMenu>\r\n\r\n        <RebornSubMenu index=\"3\">\r\n          <template #icon>\r\n            <Icon name=\"lucide:bar-chart-3\" class=\"size-5\" />\r\n          </template>\r\n          <template #title>数据分析</template>\r\n\r\n          <RebornMenuItemGroup title=\"报表\">\r\n            <RebornMenuItem index=\"3-1\">日报表</RebornMenuItem>\r\n            <RebornMenuItem index=\"3-2\">周报表</RebornMenuItem>\r\n          </RebornMenuItemGroup>\r\n\r\n          <RebornMenuItemGroup title=\"图表\">\r\n            <RebornMenuItem index=\"3-3\">柱状图</RebornMenuItem>\r\n            <RebornMenuItem index=\"3-4\">折线图</RebornMenuItem>\r\n          </RebornMenuItemGroup>\r\n        </RebornSubMenu>\r\n\r\n        <RebornMenuItem index=\"4\" disabled>\r\n          <template #icon>\r\n            <Icon name=\"lucide:lock\" class=\"size-5\" />\r\n          </template>\r\n          禁用项\r\n        </RebornMenuItem>\r\n      </RebornMenu>\r\n    </Playground>\r\n\r\n    <!-- 第二部分：组件变体 -->\r\n    <section class=\"space-y-8\">\r\n      <div class=\"flex items-center gap-3\">\r\n        <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">核心变体</h3>\r\n        <p class=\"text-sm text-gray-500\">展示菜单的多种布局模式</p>\r\n      </div>\r\n\r\n      <div class=\"grid gap-8 lg:grid-cols-2\">\r\n        <!-- 垂直菜单 -->\r\n        <div\r\n          class=\"flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6\">\r\n          <div class=\"flex items-center justify-between\">\r\n            <h4 class=\"font-medium text-gray-700 dark:text-gray-300\">垂直菜单</h4>\r\n            <RebornButton size=\"sm\" variant=\"soft\" @click=\"isCollapse = !isCollapse\">\r\n              {{ isCollapse ? \"展开\" : \"折叠\" }}\r\n            </RebornButton>\r\n          </div>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"vertical\" :collapse=\"isCollapse\" color=\"primary\"\r\n            class=\"min-h-[300px]\" @select=\"handleSelect\">\r\n            <RebornMenuItem index=\"1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n\r\n            <RebornSubMenu index=\"2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>系统管理</template>\r\n\r\n              <RebornMenuItem index=\"2-1\">用户管理</RebornMenuItem>\r\n              <RebornMenuItem index=\"2-2\">角色管理</RebornMenuItem>\r\n              <RebornSubMenu index=\"2-4\">\r\n                <template #title>名单管理</template>\r\n\r\n                <RebornMenuItemGroup title=\"白名单\">\r\n                  <RebornMenuItem index=\"2-4-1\">白名单管理</RebornMenuItem>\r\n                  <!-- <RebornMenuItem index=\"2-4-2\">白名单IP管理</RebornMenuItem> -->\r\n                  <RebornSubMenu index=\"2-4-2\">\r\n                    <template #title>白名单IP管理</template>\r\n\r\n                    <RebornMenuItemGroup title=\"白名单\">\r\n                      <RebornMenuItem index=\"2-4-2-1\">白名单管理</RebornMenuItem>\r\n                      <RebornMenuItem index=\"2-4-2-2\">白名单IP管理</RebornMenuItem>\r\n                    </RebornMenuItemGroup>\r\n                  </RebornSubMenu>\r\n                </RebornMenuItemGroup>\r\n\r\n                <RebornMenuItemGroup title=\"黑名单\">\r\n                  <RebornMenuItem index=\"2-4-3\">黑名单管理</RebornMenuItem>\r\n                  <RebornMenuItem index=\"2-4-4\">黑名单IP管理</RebornMenuItem>\r\n                </RebornMenuItemGroup>\r\n              </RebornSubMenu>\r\n            </RebornSubMenu>\r\n\r\n            <RebornMenuItem index=\"3\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:bar-chart-3\" class=\"size-5\" />\r\n              </template>\r\n              数据分析\r\n            </RebornMenuItem>\r\n          </RebornMenu>\r\n        </div>\r\n\r\n        <!-- 水平菜单 -->\r\n        <div\r\n          class=\"col-span-2 flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6\">\r\n          <h4 class=\"font-medium text-gray-700 dark:text-gray-300\">水平菜单</h4>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"horizontal\" color=\"info\" @select=\"handleSelect\">\r\n            <RebornMenuItem index=\"1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n\r\n            <RebornSubMenu index=\"2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>系统管理</template>\r\n\r\n              <RebornMenuItem index=\"2-1\">用户管理</RebornMenuItem>\r\n              <RebornMenuItem index=\"2-2\">角色管理</RebornMenuItem>\r\n            </RebornSubMenu>\r\n\r\n            <RebornMenuItem index=\"3\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:bar-chart-3\" class=\"size-5\" />\r\n              </template>\r\n              数据分析\r\n            </RebornMenuItem>\r\n          </RebornMenu>\r\n        </div>\r\n      </div>\r\n    </section>\r\n\r\n    <!-- 第三部分：高级定制 -->\r\n    <section class=\"space-y-8\">\r\n      <div class=\"flex items-center gap-3\">\r\n        <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">进阶自定义</h3>\r\n        <p class=\"text-sm text-gray-500\">通过配置实现个性化样式</p>\r\n      </div>\r\n\r\n      <div class=\"grid gap-8 md:grid-cols-2 xl:grid-cols-3\">\r\n        <!-- 深色主题 -->\r\n        <div\r\n          class=\"group relative overflow-hidden rounded-[40px] bg-gray-900 p-8 transition-all hover:shadow-2xl hover:shadow-indigo-500/20\">\r\n          <div class=\"mb-6 flex items-center gap-2 text-indigo-400 font-mono text-sm uppercase tracking-tighter\">\r\n            <Icon name=\"lucide:moon\" class=\"size-4\" />\r\n            <span>Dark Mode</span>\r\n          </div>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"vertical\" color=\"neutral\" background-color=\"#1f2937\"\r\n            text-color=\"#e5e7eb\" active-text-color=\"#818cf8\" class=\"min-h-[280px]\">\r\n            <RebornMenuItem index=\"1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n\r\n            <RebornSubMenu index=\"2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>系统管理</template>\r\n              <RebornMenuItem index=\"2-1\">用户管理</RebornMenuItem>\r\n            </RebornSubMenu>\r\n          </RebornMenu>\r\n        </div>\r\n\r\n        <!-- 极简风格 -->\r\n        <div\r\n          class=\"group flex flex-col justify-center rounded-[40px] border-2 border-dashed border-gray-100 p-8 transition-all hover:border-gray-200 dark:border-gray-800\">\r\n          <div class=\"mb-6 text-sm text-gray-400 font-medium px-2\">Minimalist</div>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"vertical\" color=\"secondary\" :ui=\"{\r\n            root: 'rounded-none shadow-none border-0',\r\n            menuItem: 'rounded-none mx-0',\r\n            menuItemTitle: 'font-normal text-gray-700 dark:text-gray-300',\r\n          }\" class=\"min-h-[280px]\">\r\n            <RebornMenuItem index=\"1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n\r\n            <RebornSubMenu index=\"2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>系统管理</template>\r\n              <RebornMenuItem index=\"2-1\">用户管理</RebornMenuItem>\r\n            </RebornSubMenu>\r\n          </RebornMenu>\r\n        </div>\r\n\r\n        <!-- 彩色主题 -->\r\n        <div\r\n          class=\"group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-8 transition-all hover:shadow-2xl\">\r\n          <div class=\"mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 font-black\">\r\n            <Icon name=\"lucide:sparkles\" class=\"size-5\" />\r\n            <span>Colorful</span>\r\n          </div>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"vertical\" color=\"error\" background-color=\"transparent\"\r\n            text-color=\"#7c3aed\" active-text-color=\"#ec4899\" :ui=\"{\r\n              root: 'rounded-none shadow-none border-0',\r\n              menuItem: 'rounded-full bg-white/50 dark:bg-gray-900/50 mb-2',\r\n            }\" class=\"min-h-[280px]\">\r\n            <RebornMenuItem index=\"1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n\r\n            <RebornSubMenu index=\"2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>系统管理</template>\r\n              <RebornMenuItem index=\"2-1\">用户管理</RebornMenuItem>\r\n            </RebornSubMenu>\r\n          </RebornMenu>\r\n        </div>\r\n      </div>\r\n    </section>\r\n\r\n    <!-- 第四部分：展开模式对比 -->\r\n    <section class=\"space-y-8\">\r\n      <div class=\"flex items-center gap-3\">\r\n        <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">展开模式</h3>\r\n        <p class=\"text-sm text-gray-500\">对比平铺展开 (normal) 与浮层展开 (popup) 的区别</p>\r\n      </div>\r\n\r\n      <div class=\"grid gap-8 lg:grid-cols-2\">\r\n        <!-- 平铺展开 - 垂直 -->\r\n        <div\r\n          class=\"flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6\">\r\n          <h4 class=\"font-medium text-gray-700 dark:text-gray-300\">垂直 · 平铺展开 (normal)</h4>\r\n          <p class=\"text-xs text-gray-400\">子菜单内嵌展开，推动下方内容下移，适合树形导航</p>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"vertical\" expand-type=\"normal\" color=\"success\"\r\n            class=\"min-h-[280px]\">\r\n            <RebornMenuItem index=\"a1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n            <RebornSubMenu index=\"a2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:folder\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>目录管理</template>\r\n              <RebornMenuItem index=\"a2-1\">新增目录</RebornMenuItem>\r\n              <RebornMenuItem index=\"a2-2\">编辑目录</RebornMenuItem>\r\n              <RebornSubMenu index=\"a2-3\">\r\n                <template #title>高级设置</template>\r\n                <RebornMenuItem index=\"a2-3-1\">权限配置</RebornMenuItem>\r\n                <RebornMenuItem index=\"a2-3-2\">排序规则</RebornMenuItem>\r\n              </RebornSubMenu>\r\n            </RebornSubMenu>\r\n            <RebornMenuItem index=\"a3\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:settings\" class=\"size-5\" />\r\n              </template>\r\n              设置\r\n            </RebornMenuItem>\r\n          </RebornMenu>\r\n        </div>\r\n\r\n        <!-- 平铺展开 - 水平 -->\r\n        <div\r\n          class=\"flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6\">\r\n          <h4 class=\"font-medium text-gray-700 dark:text-gray-300\">水平 · 平铺展开 (normal)</h4>\r\n          <p class=\"text-xs text-gray-400\">水平模式下子菜单内嵌展开，适合顶部导航下拉场景</p>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"horizontal\" expand-type=\"normal\" color=\"info\"\r\n            class=\"min-h-[200px]\">\r\n            <RebornMenuItem index=\"b1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:home\" class=\"size-5\" />\r\n              </template>\r\n              首页\r\n            </RebornMenuItem>\r\n            <RebornSubMenu index=\"b2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:package\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>产品</template>\r\n              <RebornMenuItem index=\"b2-1\">产品A</RebornMenuItem>\r\n              <RebornMenuItem index=\"b2-2\">产品B</RebornMenuItem>\r\n            </RebornSubMenu>\r\n            <RebornSubMenu index=\"b3\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:info\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>关于</template>\r\n              <RebornMenuItem index=\"b3-1\">关于我们</RebornMenuItem>\r\n              <RebornMenuItem index=\"b3-2\">联系方式</RebornMenuItem>\r\n            </RebornSubMenu>\r\n          </RebornMenu>\r\n        </div>\r\n      </div>\r\n\r\n      <div class=\"grid gap-8 lg:grid-cols-2\">\r\n        <!-- 浮层展开 + 同级互斥 -->\r\n        <div\r\n          class=\"flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6\">\r\n          <h4 class=\"font-medium text-gray-700 dark:text-gray-300\">浮层展开 + 同级互斥 (expandMutex)</h4>\r\n          <p class=\"text-xs text-gray-400\">开启 expandMutex 后，同级子菜单只有一个展开，其余自动收起</p>\r\n          <RebornMenu v-model:active=\"activePath\" mode=\"vertical\" expand-type=\"popup\" :expand-mutex=\"true\"\r\n            color=\"warning\" class=\"min-h-[280px]\">\r\n            <RebornSubMenu index=\"c1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:folder\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>菜单一</template>\r\n              <RebornMenuItem index=\"c1-1\">选项 1-1</RebornMenuItem>\r\n              <RebornMenuItem index=\"c1-2\">选项 1-2</RebornMenuItem>\r\n            </RebornSubMenu>\r\n            <RebornSubMenu index=\"c2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:folder\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>菜单二</template>\r\n              <RebornMenuItem index=\"c2-1\">选项 2-1</RebornMenuItem>\r\n              <RebornMenuItem index=\"c2-2\">选项 2-2</RebornMenuItem>\r\n            </RebornSubMenu>\r\n            <RebornSubMenu index=\"c3\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:folder\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>菜单三</template>\r\n              <RebornMenuItem index=\"c3-1\">选项 3-1</RebornMenuItem>\r\n              <RebornMenuItem index=\"c3-2\">选项 3-2</RebornMenuItem>\r\n            </RebornSubMenu>\r\n          </RebornMenu>\r\n        </div>\r\n\r\n        <!-- expanded 双向绑定示例 -->\r\n        <div\r\n          class=\"flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6\">\r\n          <h4 class=\"font-medium text-gray-700 dark:text-gray-300\">v-model:expanded 双向绑定</h4>\r\n          <p class=\"text-xs text-gray-400\">\r\n            当前展开菜单：\r\n            <code class=\"rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 text-xs font-mono\">\r\n          {{ expandedMenus.length ? expandedMenus.join(', ') : '（无）' }}\r\n        </code>\r\n          </p>\r\n          <RebornMenu v-model:active=\"activePath\" v-model:expanded=\"expandedMenus\" mode=\"vertical\" color=\"primary\"\r\n            class=\"min-h-[180px]\">\r\n            <RebornSubMenu index=\"d1\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:star\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>收藏</template>\r\n              <RebornMenuItem index=\"d1-1\">链接A</RebornMenuItem>\r\n              <RebornMenuItem index=\"d1-2\">链接B</RebornMenuItem>\r\n            </RebornSubMenu>\r\n            <RebornSubMenu index=\"d2\">\r\n              <template #icon>\r\n                <Icon name=\"lucide:clock\" class=\"size-5\" />\r\n              </template>\r\n              <template #title>历史</template>\r\n              <RebornMenuItem index=\"d2-1\">记录A</RebornMenuItem>\r\n              <RebornMenuItem index=\"d2-2\">记录B</RebornMenuItem>\r\n            </RebornSubMenu>\r\n          </RebornMenu>\r\n        </div>\r\n      </div>\r\n    </section>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core",
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-menu"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-menu/RebornMenu.vue",
+      "app/components/reborn/ui/reborn-menu/RebornMenuItem.vue",
+      "app/components/reborn/ui/reborn-menu/RebornMenuItemGroup.vue",
+      "app/components/reborn/ui/reborn-menu/RebornSubMenu.vue",
+      "app/components/reborn/ui/reborn-menu/index.ts",
+      "app/components/reborn/ui/reborn-menu/reborn-menu.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-menu.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "05ca141c2f7ac0b4fda6afccf11eea96b1e15b94",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "shimmer-button",
+  "title": "闪光按钮",
+  "description": "一款带有闪烁动画效果的按钮。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "button",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "shimmerColor",
+      "type": "string",
+      "required": false,
+      "description": "闪光效果的颜色。",
+      "default": "\"#ffffff\""
+    },
+    {
+      "name": "shimmerSize",
+      "type": "string",
+      "required": false,
+      "description": "闪光效果的尺寸。",
+      "default": "\"0.05em\""
+    },
+    {
+      "name": "borderRadius",
+      "type": "string",
+      "required": false,
+      "description": "按钮的圆角半径。",
+      "default": "\"100px\""
+    },
+    {
+      "name": "shimmerDuration",
+      "type": "string",
+      "required": false,
+      "description": "闪光动画的持续时间。",
+      "default": "\"3s\""
+    },
+    {
+      "name": "background",
+      "type": "string",
+      "required": false,
+      "description": "按钮的背景色，可使用 rgb 或十六进制。",
+      "default": "\"rgba(0, 0, 0, 1)\""
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于按钮的额外 CSS 类。",
+      "default": "\"\""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"z-10 flex min-h-64 items-center justify-center\">\r\n    <ShimmerButton\r\n      class=\"shadow-2xl\"\r\n      shimmer-size=\"2px\"\r\n    >\r\n      <span\r\n        class=\"text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg dark:from-white dark:to-slate-900/10\"\r\n      >\r\n        Cool Button\r\n      </span>\r\n    </ShimmerButton>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add shimmer-button"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/shimmer-button/ShimmerButton.vue",
+      "app/components/reborn/ui/shimmer-button/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/button/shimmer-button.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "39b201a7c1da9a0f04246e8d3604d0fb8b21cd7f",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

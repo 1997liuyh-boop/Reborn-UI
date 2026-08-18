@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-container",
+  "title": "容器",
+  "description": "用于将内容居中并在不同屏幕尺寸下限制最大宽度的布局组件。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "as",
+      "type": "any",
+      "required": false,
+      "description": "",
+      "default": "'div'"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n        root: ClassValue\r\n    }>",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "props": "",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\n\r\n</script>\r\n<template>\r\n    <RebornContainer>\r\n        <div class=\"reborn-container-demo\">\r\n            <h1>RebornContainer Demo</h1>\r\n            <p>This is a demo of the RebornContainer component.</p>\r\n        </div>\r\n    </RebornContainer>\r\n</template>",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-container"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-container/RebornContainer.vue",
+      "app/components/reborn/ui/reborn-container/reborn-container.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-container.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "1d0e2d335bf3174a197d779ba1fc807eadec669e",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

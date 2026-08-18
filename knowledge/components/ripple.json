@@ -1,0 +1,136 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "ripple",
+  "title": "ripple",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "baseCircleSize",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "210"
+    },
+    {
+      "name": "baseCircleOpacity",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0.24"
+    },
+    {
+      "name": "spaceBetweenCircle",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "70"
+    },
+    {
+      "name": "circleOpacityDowngradeRatio",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0.03"
+    },
+    {
+      "name": "circleClass",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "waveSpeed",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "80"
+    },
+    {
+      "name": "numberOfCircles",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "7"
+    },
+    {
+      "name": "size",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "210"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "opacity",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "0.24"
+    },
+    {
+      "name": "animationDelay",
+      "type": "number",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "borderStyle",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div\r\n    class=\"relative flex h-[450px] w-full flex-col items-center justify-center overflow-hidden rounded-lg md:w-full lg:w-full\"\r\n  >\r\n    <p\r\n      class=\"z-10 text-center text-5xl font-medium tracking-tighter whitespace-pre-wrap text-black dark:text-white\"\r\n    >\r\n      Ripple\r\n    </p>\r\n    <Ripple\r\n      class=\"bg-white/5 [mask-image:linear-gradient(to_bottom,white,transparent)]\"\r\n      circle-class=\"border-[hsl(var(--primary))] bg-[#0000]/25 dark:bg-[#fff]/25 rounded-full\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add ripple"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/ripple/Ripple.vue",
+      "app/components/reborn/ui/ripple/RippleCircle.vue",
+      "app/components/reborn/ui/ripple/RippleContainer.vue",
+      "app/components/reborn/ui/ripple/index.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "9e2372ea09cba0d0eba5d5d4205ea7c5101417f8",
+    "hasOverride": false,
+    "extractors": {
+      "web": "partial",
+      "uniapp": "absent",
+      "docs": "missing"
+    }
+  }
+}

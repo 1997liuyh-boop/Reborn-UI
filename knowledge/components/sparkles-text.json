@@ -1,0 +1,81 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "sparkles-text",
+  "title": "闪光文字",
+  "description": "为文字持续生成闪光与平滑过渡，非常适合突出显示的星光效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "text",
+      "type": "string",
+      "required": true,
+      "description": "要显示的文字。"
+    },
+    {
+      "name": "sparklesCount",
+      "type": "number",
+      "required": false,
+      "description": "文字上出现的闪光数量。",
+      "default": "10"
+    },
+    {
+      "name": "colors",
+      "type": "{\r\n    first: string;\r\n    second: string;\r\n  }",
+      "required": false,
+      "description": "闪光的颜色配置。",
+      "default": "() => ({ first: \"#9E7AFF\", second: \"#FE8BBB\" })"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于闪光文字的类名。"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex h-80 items-center justify-center\">\r\n    <SparklesText text=\"Reborn UI\" :colors=\"{ first: '#9E7AFF', second: '#FE8BBB' }\" :sparkles-count=\"10\"\r\n      class=\"my-8\" />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add sparkles-text"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/sparkles-text/SparklesText.vue",
+      "app/components/reborn/ui/sparkles-text/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/sparkles-text.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "d5dbed689a49705ec221c8bd510352823bd6b5c1",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

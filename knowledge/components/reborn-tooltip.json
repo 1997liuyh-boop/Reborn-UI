@@ -1,0 +1,141 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-tooltip",
+  "title": "Tooltip 文字提示",
+  "description": "常用于展示鼠标悬停时的提示信息。",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "content",
+      "type": "string",
+      "required": false,
+      "description": "提示内容",
+      "default": "''"
+    },
+    {
+      "name": "placement",
+      "type": "TooltipPlacement",
+      "required": false,
+      "description": "出现方向与对齐方式",
+      "default": "'bottom'"
+    },
+    {
+      "name": "effect",
+      "type": "TooltipEffect",
+      "required": false,
+      "description": "主题效果",
+      "default": "'dark'"
+    },
+    {
+      "name": "arrow",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示箭头",
+      "default": "true"
+    },
+    {
+      "name": "openDelay",
+      "type": "number",
+      "required": false,
+      "description": "打开延时",
+      "default": "100"
+    },
+    {
+      "name": "closeDelay",
+      "type": "number",
+      "required": false,
+      "description": "关闭延时",
+      "default": "100"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用",
+      "default": "false"
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "required": false,
+      "description": "双向绑定值",
+      "vModel": true
+    }
+  ],
+  "events": [
+    {
+      "name": "open",
+      "payload": "(e: 'open'): void;",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "payload": "(e: 'close'): void;",
+      "description": ""
+    },
+    {
+      "name": "update:open",
+      "description": "open 变化时触发（v-model 同步）"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": "触发提示的元素"
+    },
+    {
+      "name": "content",
+      "description": "自定义提示内容，优先级高于 `content` 属性"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "open",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue';\r\nimport RebornTooltip from '../../ui/reborn-tooltip/RebornTooltip.vue';\r\nimport RebornButton from '../../ui/reborn-button/RebornButton.vue';\r\n\r\nconst placements = [\r\n    'top', 'top-start', 'top-end',\r\n    'bottom', 'bottom-start', 'bottom-end',\r\n    'left', 'left-start', 'left-end',\r\n    'right', 'right-start', 'right-end'\r\n] as const;\r\n\r\nconst effects = ['dark', 'light'] as const;\r\nconst type = ref('dark');\r\n</script>\r\n\r\n<template>\r\n    <div class=\"flex flex-col gap-8 p-8\">\r\n        <section>\r\n            <h3 class=\"text-lg font-bold mb-4\" @click=\"type = type === 'dark' ? 'light' : 'dark'\">基础用法 {{ type }}</h3>\r\n            <div class=\"flex gap-4\">\r\n                <RebornTooltip content=\"这是一个文字提示\">\r\n                    <RebornButton>Dark (Default)</RebornButton>\r\n                </RebornTooltip>\r\n\r\n                <RebornTooltip content=\"这是一个浅色文字提示\" effect=\"light\">\r\n                    <RebornButton variant=\"outline\">Light</RebornButton>\r\n                </RebornTooltip>\r\n            </div>\r\n        </section>\r\n\r\n        <section>\r\n            <h3 class=\"text-lg font-bold mb-4\">不同位置</h3>\r\n            <div class=\"grid grid-cols-3 gap-4 w-fit\">\r\n                <div class=\"col-start-2\">\r\n                    <RebornTooltip placement=\"top-start\" :effect=\"type\">\r\n                        <template #content>\r\n                            Top <br /> Start\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Top Start</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div>\r\n                    <RebornTooltip placement=\"top\" :effect=\"type\">\r\n                        <template #content>\r\n                            Top\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Top</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div>\r\n                    <RebornTooltip placement=\"top-end\" :effect=\"type\">\r\n                        <template #content>\r\n                            Top <br /> End\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Top End</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n\r\n                <div class=\"row-start-2\">\r\n                    <RebornTooltip placement=\"left-start\" :effect=\"type\">\r\n                        <template #content>\r\n                            Left <br /> Start\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Left Start</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div class=\"col-start-3\">\r\n                    <RebornTooltip placement=\"right-start\" :effect=\"type\">\r\n                        <template #content>\r\n                            Right <br /> Start\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Right Start</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n\r\n                <div class=\"row-start-3\">\r\n                    <RebornTooltip content=\"Left\" placement=\"left\" :effect=\"type\">\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Left</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div class=\"col-start-3\">\r\n                    <RebornTooltip content=\"Right\" placement=\"right\" :effect=\"type\">\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Right</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n\r\n                <div class=\"row-start-4\">\r\n                    <RebornTooltip placement=\"left-end\" :effect=\"type\">\r\n                        <template #content>\r\n                            Left <br /> End\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Left End</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div class=\"col-start-3\">\r\n                    <RebornTooltip placement=\"right-end\" :effect=\"type\">\r\n                        <template #content>\r\n                            Right <br /> End\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Right End</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n\r\n                <div class=\"row-start-5 col-start-2\">\r\n                    <RebornTooltip placement=\"bottom-start\" :effect=\"type\">\r\n                        <template #content>\r\n                            Bottom <br /> Start\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Bottom Start</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div>\r\n                    <RebornTooltip placement=\"bottom\" :effect=\"type\">\r\n                        <template #content>\r\n                            Bottom\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Bottom</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n                <div>\r\n                    <RebornTooltip placement=\"bottom-end\" :effect=\"type\">\r\n                        <template #content>\r\n                            Bottom <br /> End\r\n                        </template>\r\n                        <RebornButton size=\"sm\" class=\"w-24\">Bottom End</RebornButton>\r\n                    </RebornTooltip>\r\n                </div>\r\n            </div>\r\n        </section>\r\n\r\n        <section>\r\n            <h3 class=\"text-lg font-bold mb-4\">更多配置</h3>\r\n            <div class=\"flex gap-4\">\r\n                <RebornTooltip content=\"无箭头文字提示\" :arrow=\"false\">\r\n                    <RebornButton variant=\"outline\" color=\"secondary\">No Arrow</RebornButton>\r\n                </RebornTooltip>\r\n\r\n                <RebornTooltip content=\"延时 500ms 显示\" :open-delay=\"500\">\r\n                    <RebornButton variant=\"outline\" color=\"secondary\">Delay 500ms</RebornButton>\r\n                </RebornTooltip>\r\n\r\n                <RebornTooltip content=\"禁用提示\" :disabled=\"true\">\r\n                    <RebornButton variant=\"outline\" color=\"secondary\">Disabled</RebornButton>\r\n                </RebornTooltip>\r\n            </div>\r\n        </section>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [
+    "reborn-transition"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-tooltip"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-tooltip/RebornTooltip.vue",
+      "app/components/reborn/ui/reborn-tooltip/index.ts",
+      "app/components/reborn/ui/reborn-tooltip/reborn-tooltip.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-tooltip.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "86146b0d650cde438014960b7220933ed0574921",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

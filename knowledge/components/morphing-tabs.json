@@ -1,0 +1,93 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "morphing-tabs",
+  "title": "变形标签页",
+  "description": "复刻 Preet 的胶状变形标签交互，包含粘连效果。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "tabs",
+      "type": "string[]",
+      "required": true,
+      "description": "标签集合。",
+      "default": "[]"
+    },
+    {
+      "name": "activeTab",
+      "type": "string",
+      "required": true,
+      "description": "当前激活的标签。",
+      "default": "\"\""
+    },
+    {
+      "name": "margin",
+      "type": "number",
+      "required": false,
+      "description": "激活标签左右的外边距。",
+      "default": "20"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "用于样式的额外类名。",
+      "default": "\"\""
+    },
+    {
+      "name": "blurStdDeviation",
+      "type": "number",
+      "required": false,
+      "description": "SVG 模糊的 stdDeviation 值。",
+      "default": "6"
+    }
+  ],
+  "events": [
+    {
+      "name": "update:activeTab",
+      "payload": "(e: \"update:activeTab\", tab: string): void;",
+      "description": ""
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { ref } from \"vue\";\r\n\r\nconst tabs = [\"Home\", \"Apps\", \"About\", \"My\"];\r\nconst activeTab = ref(tabs[0]);\r\n</script>\r\n\r\n<template>\r\n  <MorphingTabs\r\n    :tabs=\"tabs\"\r\n    :active-tab=\"activeTab\"\r\n    @update:active-tab=\"activeTab = $event\"\r\n  />\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add morphing-tabs"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/morphing-tabs/MorphingTabs.vue",
+      "app/components/reborn/ui/morphing-tabs/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/morphing-tabs.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "73a3821d400813baf8c916cf5d1bd1179c3e48d8",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

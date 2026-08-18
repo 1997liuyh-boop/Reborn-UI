@@ -1,0 +1,122 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-dropdown-select",
+  "title": "reborn-dropdown-select",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "options",
+      "type": "Option[]",
+      "required": false,
+      "description": "",
+      "default": "() => []"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'请选择'"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "size",
+      "type": "typeof dropdownSelectSizes[number]",
+      "required": false,
+      "description": "",
+      "default": "'md'"
+    },
+    {
+      "name": "color",
+      "type": "typeof dropdownSelectColors[number]",
+      "required": false,
+      "description": "",
+      "default": "'primary'"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    wrapper?: string\r\n    trigger?: string\r\n    content?: string\r\n    item?: string\r\n    itemText?: string\r\n    itemIcon?: string\r\n    empty?: string\r\n    mask?: string\r\n  }>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": ""
+    },
+    {
+      "name": "change",
+      "description": ""
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornDropdownSelect from '@/components/reborn-dropdown-select/RebornDropdownSelect.vue'\r\nimport { dropdownSelectColors, dropdownSelectSizes } from '@/components/reborn-dropdown-select/reborn-dropdown-select.config'\r\n\r\nconst demoColor = ref<typeof dropdownSelectColors[number]>('primary')\r\nconst demoSize = ref<typeof dropdownSelectSizes[number]>('md')\r\nconst value1 = ref('')\r\nconst value2 = ref('2')\r\nconst value3 = ref('')\r\nconst value4 = ref('')\r\n\r\nconst options = [\r\n  { label: '选项一', value: '1' },\r\n  { label: '选项二', value: '2' },\r\n  { label: '选项三', value: '3' },\r\n  { label: '选项四', value: '4' },\r\n]\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"DropdownSelect 下拉选择\">\r\n    <RebornCard title=\"基础用法\" custom-class=\"space-y-4\" overflow-visible>\r\n      <view class=\"text-sm font-medium text-slate-500 dark:text-slate-200\">\r\n        颜色\r\n      </view>\r\n      <view class=\"flex flex-wrap gap-2\">\r\n        <view v-for=\"c in dropdownSelectColors\" :key=\"c\" class=\"\r\n              size-6 cursor-pointer rounded-full ring-2 ring-transparent\r\n              ring-offset-2 transition-all\r\n            \" :class=\"[\r\n              `bg-${c}`,\r\n              demoColor === c ? 'scale-110 ring-slate-400' : `hover:scale-110`,\r\n            ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n          @click=\"demoColor = c\" />\r\n      </view>\r\n\r\n      <view class=\"text-sm font-medium text-slate-500 dark:text-slate-200\">\r\n        尺寸\r\n      </view>\r\n      <view>\r\n        <RebornButton v-for=\"s in dropdownSelectSizes\" :key=\"s\" variant=\"outline\" gap\r\n          :color=\"demoSize === s ? 'primary' : 'neutral'\" size=\"sm\" :square=\"false\" custom-class=\"rounded-full\"\r\n          @click=\"demoSize = s\">\r\n          {{ s }}\r\n        </RebornButton>\r\n      </view>\r\n\r\n      <RebornDropdownSelect v-model=\"value1\" :options=\"options\" :color=\"demoColor\" :size=\"demoSize\" placeholder=\"请选择\" />\r\n      <text class=\"text-sm text-gray-500\">当前值: {{ value1 }}</text>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"默认选中\" custom-class=\"space-y-4\" overflow-visible>\r\n      <RebornDropdownSelect v-model=\"value2\" :options=\"options\" />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"禁用状态\" custom-class=\"space-y-4\" overflow-visible>\r\n      <RebornDropdownSelect v-model=\"value3\" :options=\"options\" disabled />\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"可清除\" custom-class=\"space-y-4\" overflow-visible>\r\n      <RebornDropdownSelect v-model=\"value4\" :options=\"options\" clearable />\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-select-trigger",
+    "reborn-transition"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-dropdown-select"
+  },
+  "sourceRefs": {
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-dropdown-select/RebornDropdownSelect.vue",
+      "packages/uniapp-project/src/components/reborn-dropdown-select/reborn-dropdown-select.config.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "4aa978aa8ef73c4dece0e553628f56f7e25018c3",
+    "hasOverride": false,
+    "extractors": {
+      "web": "absent",
+      "uniapp": "ok",
+      "docs": "missing"
+    }
+  }
+}

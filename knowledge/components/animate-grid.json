@@ -1,0 +1,107 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "animate-grid",
+  "title": "动画网格",
+  "description": "倾斜动画网格，带投影效果。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "input"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "自定义样式的额外 Tailwind CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "textGlowStartColor",
+      "type": "string",
+      "required": false,
+      "description": "盒子阴影的起始颜色。",
+      "default": "\"#38ef7d80\""
+    },
+    {
+      "name": "perspective",
+      "type": "number",
+      "required": false,
+      "description": "传递给 CSS `transform` 的透视值。",
+      "default": "600"
+    },
+    {
+      "name": "textGlowEndColor",
+      "type": "string",
+      "required": false,
+      "description": "盒子阴影的结束颜色。",
+      "default": "\"#38ef7d\""
+    },
+    {
+      "name": "cards",
+      "type": "Cards[]",
+      "required": true,
+      "description": "要在网格中展示的卡片。",
+      "default": "\"[{logo: 'src'}]\""
+    },
+    {
+      "name": "rotateX",
+      "type": "number",
+      "required": false,
+      "description": "传递给 CSS `transform` 的 rotateX 值。",
+      "default": "-1"
+    },
+    {
+      "name": "rotateY",
+      "type": "number",
+      "required": false,
+      "description": "传递给 CSS `transform` 的 rotateY 值。",
+      "default": "-15"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "logo",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport cloudflare from \"./cloudflare.svg\";\r\n\r\ninterface Props {\r\n  textGlowStartColor: string;\r\n  perspective: number;\r\n  textGlowEndColor: string;\r\n  rotateX: number;\r\n  rotateY: number;\r\n}\r\n\r\nconst props = defineProps<Props>();\r\n\r\nconst cards = Array.from({ length: 16 }, () => ({\r\n  logo: cloudflare,\r\n}));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex items-center justify-center p-4\">\r\n    <AnimateGrid\r\n      :cards\r\n      v-bind=\"props\"\r\n    >\r\n      <template #logo=\"{ logo }\">\r\n        <img\r\n          class=\"logo mx-auto h-10 w-auto\"\r\n          :src=\"logo\"\r\n        />\r\n      </template>\r\n    </AnimateGrid>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add animate-grid"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/animate-grid/AnimateGrid.vue",
+      "app/components/reborn/ui/animate-grid/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/animate-grid.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "f863dcfc84e62cced3d7124ed4ef4da720c722b1",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

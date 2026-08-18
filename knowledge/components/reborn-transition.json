@@ -1,0 +1,252 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-transition",
+  "title": "Transition 过渡",
+  "description": "过渡动画容器，支持 fade / slide / zoom。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "customClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": "组件自定义类名"
+    },
+    {
+      "name": "customStyle",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": "组件自定义样式"
+    },
+    {
+      "name": "show",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否展示组件"
+    },
+    {
+      "name": "duration",
+      "type": "[object, number, boolean] as proptype<record<string, number> | number | boolean>",
+      "default": "300",
+      "required": false,
+      "description": "Boolean"
+    },
+    {
+      "name": "lazyRender",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否懒加载，为 `true` 时，只有在第一次出现时才会渲染内部元素"
+    },
+    {
+      "name": "name",
+      "type": "[string, array] as proptype<transitionname | transitionname[]>",
+      "default": "'fade'",
+      "required": false,
+      "description": "fade"
+    },
+    {
+      "name": "destroy",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": "是否在隐藏时销毁内容"
+    },
+    {
+      "name": "enterClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "enterActiveClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "enterToClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "leaveClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "leaveActiveClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "leaveToClass",
+      "type": "string",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "disableTouchMove",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "(仅UniApp) 是否禁用触摸移动"
+    },
+    {
+      "name": "appear",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    },
+    {
+      "name": "collapse",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "undefined"
+    },
+    {
+      "name": "enterFromClass",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "leaveFromClass",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "click",
+      "description": "点击组件时触发",
+      "payload": "-"
+    },
+    {
+      "name": "before-enter",
+      "description": "进入前触发",
+      "payload": "-"
+    },
+    {
+      "name": "enter",
+      "description": "进入中触发",
+      "payload": "-"
+    },
+    {
+      "name": "before-leave",
+      "description": "离开前触发",
+      "payload": "-"
+    },
+    {
+      "name": "leave",
+      "description": "离开中触发",
+      "payload": "-"
+    },
+    {
+      "name": "after-leave",
+      "description": "离开后触发",
+      "payload": "-"
+    },
+    {
+      "name": "after-enter",
+      "description": "进入后触发",
+      "payload": "-"
+    },
+    {
+      "name": "beforeEnter",
+      "payload": "(e: 'beforeEnter', el: Element): void;",
+      "description": ""
+    },
+    {
+      "name": "afterEnter",
+      "payload": "(e: 'afterEnter', el: Element): void;",
+      "description": ""
+    },
+    {
+      "name": "beforeLeave",
+      "payload": "(e: 'beforeLeave', el: Element): void;",
+      "description": ""
+    },
+    {
+      "name": "afterLeave",
+      "payload": "(e: 'afterLeave', el: Element): void;",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [
+    {
+      "name": "el",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport { ref } from 'vue'\r\nimport RebornTransition from '@/components/reborn/ui/reborn-transition/RebornTransition.vue'\r\nimport type { TransitionName } from '@/components/reborn/ui/reborn-transition/reborn-transition.config'\r\n\r\nconst show = ref(false)\r\nconst customShow = ref(false)\r\nconst name = ref<TransitionName>('fade-up')\r\n\r\nfunction transition(n: TransitionName) {\r\n    name.value = n\r\n    show.value = true\r\n    setTimeout(() => {\r\n        show.value = false\r\n    }, 1500)\r\n}\r\n\r\nfunction custom() {\r\n    customShow.value = true\r\n    setTimeout(() => {\r\n        customShow.value = false\r\n    }, 1200)\r\n}\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-6\">\r\n        <div\r\n            class=\"h-32 w-full bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center p-4 relative overflow-hidden\">\r\n            <span v-if=\"!show && !customShow\" class=\"text-sm text-gray-400\">点击下方按钮预览动画，1.5s 后自动消失</span>\r\n\r\n            <RebornTransition :show=\"show\" :name=\"name\" :duration=\"500\" class=\"absolute\">\r\n                <div\r\n                    class=\"w-24 h-24 bg-primary flex items-center justify-center text-white rounded-lg shadow-lg text-sm font-medium\">\r\n                    {{ name }}\r\n                </div>\r\n            </RebornTransition>\r\n\r\n            <RebornTransition :show=\"customShow\" :duration=\"{ enter: 700, leave: 1000 }\" enter-class=\"custom-enter\"\r\n                enter-active-class=\"custom-enter-active\" enter-to-class=\"custom-enter-to\" leave-class=\"custom-leave\"\r\n                leave-active-class=\"custom-leave-active\" leave-to-class=\"custom-leave-to\" class=\"absolute\">\r\n                <div\r\n                    class=\"w-24 h-24 bg-red-500 flex items-center justify-center text-white rounded-lg shadow-lg text-sm font-medium\">\r\n                    custom\r\n                </div>\r\n            </RebornTransition>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">Fade 动画</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('fade')\">fade</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('fade-up')\">fade-up</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('fade-down')\">fade-down</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('fade-left')\">fade-left</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('fade-right')\">fade-right\r\n                </RebornButton>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">Slide 动画</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('slide-up')\">slide-up</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('slide-down')\">slide-down\r\n                </RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('slide-left')\">slide-left\r\n                </RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('slide-right')\">slide-right\r\n                </RebornButton>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">Zoom 动画</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('zoom-in')\">zoom-in</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('zoom-out')\">zoom-out</RebornButton>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">折叠 动画</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"transition('select-collapse')\">select-collapse\r\n                </RebornButton>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">自定义 动画</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"custom\">custom</RebornButton>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>\r\n\r\n<style scoped>\r\n:deep(.custom-enter-active),\r\n:deep(.custom-leave-active) {\r\n    transition-property: transform, opacity;\r\n}\r\n\r\n:deep(.custom-enter) {\r\n    transform: translate3d(-100px, -100px, 0) rotate(-180deg);\r\n    opacity: 0;\r\n}\r\n\r\n:deep(.custom-leave-to) {\r\n    transform: translate3d(100px, 100px, 0) rotate(180deg);\r\n    opacity: 0;\r\n}\r\n</style>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\n\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornTransition from '@/components/reborn-transition/RebornTransition.vue'\r\nimport type { TransitionName } from '@/components/reborn-transition/RebornTransition.vue'\r\n\r\nconst show = ref(false)\r\nconst customShow = ref(false)\r\nconst name = ref<TransitionName>('fade-up')\r\n\r\nfunction fade() {\r\n    transition('fade')\r\n}\r\nfunction fadeUp() {\r\n    transition('fade-up')\r\n}\r\nfunction fadeDown() {\r\n    transition('fade-down')\r\n}\r\nfunction fadeLeft() {\r\n    transition('fade-left')\r\n}\r\nfunction fadeRight() {\r\n    transition('fade-right')\r\n}\r\nfunction slideUp() {\r\n    transition('slide-up')\r\n}\r\nfunction slideDown() {\r\n    transition('slide-down')\r\n}\r\nfunction slideLeft() {\r\n    transition('slide-left')\r\n}\r\nfunction slideRight() {\r\n    transition('slide-right')\r\n}\r\nfunction zoomIn() {\r\n    transition('zoom-in')\r\n}\r\nfunction zoomOut() {\r\n    transition('zoom-out')\r\n}\r\nfunction custom() {\r\n    customShow.value = true\r\n    setTimeout(() => {\r\n        customShow.value = false\r\n    }, 1200)\r\n}\r\nfunction transition(n: TransitionName) {\r\n    name.value = n\r\n    show.value = true\r\n    setTimeout(() => {\r\n        show.value = false\r\n    }, 500)\r\n}\r\n</script>\r\n<template>\r\n    <RebornPage title=\"动画\" description=\"用于在元素进入或离开时应用过渡效果。\">\r\n        <view class=\"text-20\">\r\n            1.2s后会消失\r\n        </view>\r\n        <view class=\"h-20 w-full bg-blue-2 rounded-lg\">\r\n            <RebornTransition :show=\"show\" :name=\"name\" :duration=\"500\">\r\n                <view\r\n                    class=\"w-16 h-16 bg-red-500 flex items-center justify-center text-white rounded-lg shadow-lg text-20\">\r\n                    {{ name }}\r\n                </view>\r\n            </RebornTransition>\r\n            <RebornTransition :show=\"customShow\" :duration=\"{ enter: 700, leave: 1000 }\" enter-class=\"custom-enter\"\r\n                enter-active-class=\"custom-enter-active\" enter-to-class=\"custom-enter-to\" leave-class=\"custom-leave\"\r\n                leave-active-class=\"custom-leave-active\" leave-to-class=\"custom-leave-to\" custom-class=\"block\">\r\n                <view\r\n                    class=\"w-16 h-16 bg-red-500 flex items-center justify-center text-white rounded-lg shadow-lg text-20\">\r\n                    {{ name }}\r\n                </view>\r\n            </RebornTransition>\r\n        </view>\r\n        <RebornCard title=\"Fade 动画\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <RebornButton variant=\"soft\" @click=\"fade\" size=\"sm\">fade</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"fadeUp\" size=\"sm\">fade-up</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"fadeDown\" size=\"sm\">fade-down</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"fadeLeft\" size=\"sm\">fade-left</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"fadeRight\" size=\"sm\">fade-right</RebornButton>\r\n        </RebornCard>\r\n        <RebornCard title=\"Slide 动画\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <RebornButton variant=\"soft\" @click=\"slideUp\" size=\"sm\">slide-up</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"slideDown\" size=\"sm\">slide-down</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"slideLeft\" size=\"sm\">slide-left</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"slideRight\" size=\"sm\">slide-right</RebornButton>\r\n        </RebornCard>\r\n        <RebornCard title=\"Zoom 动画\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <RebornButton variant=\"soft\" @click=\"zoomIn\" size=\"sm\">zoom-in</RebornButton>\r\n            <RebornButton variant=\"soft\" @click=\"zoomOut\" size=\"sm\">zoom-out</RebornButton>\r\n        </RebornCard>\r\n        <RebornCard title=\"自定义 动画\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <RebornButton variant=\"soft\" @click=\"custom\" size=\"sm\">custom</RebornButton>\r\n        </RebornCard>\r\n    </RebornPage>\r\n</template>\r\n\r\n<style lang=\"scss\" scoped>\r\n:deep(.custom-enter-active),\r\n:deep(.custom-leave-active) {\r\n    transition-property: transform;\r\n}\r\n\r\n:deep(.custom-enter) {\r\n    transform: translate3d(-100px, -100px, 0) rotate(-180deg);\r\n}\r\n\r\n:deep(.custom-leave-to) {\r\n    transform: translate3d(100px, 100px, 0) rotate(180deg);\r\n}\r\n</style>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-transition"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-transition/RebornTransition.vue",
+      "app/components/reborn/ui/reborn-transition/index.ts",
+      "app/components/reborn/ui/reborn-transition/reborn-transition.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-transition/RebornTransition.vue",
+      "packages/uniapp-project/src/components/reborn-transition/index.ts",
+      "packages/uniapp-project/src/components/reborn-transition/reborn-transition.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-transition.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "d0197f74fc2269a3ec8623cc0437fa8cf947f9ea",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

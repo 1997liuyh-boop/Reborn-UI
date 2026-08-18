@@ -1,0 +1,193 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-toast",
+  "title": "Toast 轻提示",
+  "description": "支持 useToast() 调用的轻提示组件。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "selector",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "msg",
+      "type": "string",
+      "required": false,
+      "description": "提示文字内容",
+      "default": "''"
+    },
+    {
+      "name": "direction",
+      "type": "ToastDirection",
+      "required": false,
+      "description": "",
+      "default": "'horizontal'"
+    },
+    {
+      "name": "iconName",
+      "type": "ToastIconType | ''",
+      "required": false,
+      "description": "图标名称，可选值为 `success` `error` `warning` `loading` `info",
+      "default": "''"
+    },
+    {
+      "name": "iconSize",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "40"
+    },
+    {
+      "name": "loadingType",
+      "type": "ToastLoadingType",
+      "required": false,
+      "description": "",
+      "default": "'outline'"
+    },
+    {
+      "name": "loadingColor",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'#4D80F0'"
+    },
+    {
+      "name": "loadingSize",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "40"
+    },
+    {
+      "name": "position",
+      "type": "ToastPositionType",
+      "required": false,
+      "description": "显示位置，可选值为 `'top'` `'middle-top'` `'middle'` `'bottom'",
+      "default": "'middle-top'"
+    },
+    {
+      "name": "zIndex",
+      "type": "number",
+      "required": false,
+      "description": "设置 Toast 容器和遮罩层的 z-index",
+      "default": "100"
+    },
+    {
+      "name": "cover",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示透明遮罩层（防止触摸穿透）",
+      "default": "false"
+    },
+    {
+      "name": "iconClass",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "classPrefix",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "'rb-icon'"
+    },
+    {
+      "name": "color",
+      "type": "'default' | 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'",
+      "required": false,
+      "description": "",
+      "default": "''",
+      "options": [
+        "default",
+        "primary",
+        "secondary",
+        "success",
+        "info",
+        "warning",
+        "error",
+        "neutral"
+      ]
+    },
+    {
+      "name": "opened",
+      "type": "() => void",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "closed",
+      "type": "() => void",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "customClass",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { useToast } from '@/components/reborn/ui/reborn-toast/index'\r\n\r\nconst toast = useToast()\r\n\r\nfunction showToast(type: 'info' | 'success' | 'error' | 'warning' | 'loading') {\r\n    if (type === 'loading') {\r\n        toast.loading({\r\n            msg: '3s后自动关闭',\r\n            duration: 3000\r\n        })\r\n        // setTimeout(() => {\r\n        //     toast.close()\r\n        // }, 3000)\r\n    } else {\r\n        toast[type]({ msg: 'This is ' + type, duration: 1500 })\r\n    }\r\n}\r\n\r\nfunction showTopToast() {\r\n    toast.show({\r\n        position: 'top',\r\n        msg: '顶部toast',\r\n    })\r\n}\r\n\r\nfunction showMiddletoast() {\r\n    toast.show({\r\n        position: 'middle',\r\n        iconName: 'loading',\r\n        msg: '中间toast',\r\n    })\r\n}\r\n\r\nfunction showBottomToast() {\r\n    toast.show({\r\n        position: 'bottom',\r\n        msg: '底部toast'\r\n    })\r\n}\r\n\r\nfunction showLoadingToast() {\r\n    toast.loading('3s后自动关闭')\r\n    setTimeout(() => {\r\n        toast.close()\r\n    }, 3000)\r\n}\r\n\r\nfunction showLoadingToast2() {\r\n    toast.loading({\r\n        msg: '自定义Loading Toast',\r\n        duration: 0\r\n    })\r\n    setTimeout(() => {\r\n        toast.close()\r\n    }, 3000)\r\n}\r\n\r\nfunction showLoadingToast3() {\r\n    toast.loading({\r\n        msg: '芦叶满汀洲，寒沙带浅流。二十年重过南楼。柳下系船犹未稳，能几日，又中秋。黄鹤断矶头，故人曾到否？旧江山浑是新愁。欲买桂花同载酒，终不似，少年游。',\r\n        duration: 0\r\n    })\r\n    setTimeout(() => {\r\n        toast.close()\r\n    }, 3000)\r\n}\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-6\">\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">类型提示</h3>\r\n            <div\r\n                class=\"rounded-xl border bg-card text-card-foreground shadow p-4 grid grid-cols-2 sm:grid-cols-4 gap-2\">\r\n                <RebornButton color=\"success\" variant=\"solid\" @click=\"showToast('success')\">成功</RebornButton>\r\n                <RebornButton color=\"info\" variant=\"solid\" @click=\"showToast('info')\">常规</RebornButton>\r\n                <RebornButton color=\"error\" variant=\"solid\" @click=\"showToast('error')\">错误</RebornButton>\r\n                <RebornButton color=\"warning\" variant=\"solid\" @click=\"showToast('warning')\">警告</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showToast('loading')\">加载</RebornButton>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">定位提示</h3>\r\n            <div class=\"rounded-xl border bg-card text-card-foreground shadow p-4 grid grid-cols-3 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showTopToast\">顶部toast</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showMiddletoast\">中间toast</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showBottomToast\">底部toast</RebornButton>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <h3 class=\"text-lg font-medium\">加载提示</h3>\r\n            <div\r\n                class=\"rounded-xl border bg-card text-card-foreground shadow p-4 grid grid-cols-1 sm:grid-cols-3 gap-2\">\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showLoadingToast\">基础加载</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showLoadingToast2\">自定义加载</RebornButton>\r\n                <RebornButton color=\"primary\" variant=\"solid\" @click=\"showLoadingToast3\">长文本加载</RebornButton>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport ReButton from '@/components/reborn-button/RebornButton.vue'\r\nimport { useToast } from '@/components/reborn-toast/index'\r\nconst toast = useToast()\r\n\r\nfunction showToast(type: 'info' | 'success' | 'error' | 'warning' | 'loading') {\r\n    if (type === 'loading') {\r\n        toast.loading({\r\n            msg: '3s后自动关闭',\r\n            loadingType: 'ring',\r\n            loadingColor: '#fff',\r\n            duration: 2000,\r\n        })\r\n        setTimeout(() => {\r\n            toast.close()\r\n        }, 3000)\r\n    } else {\r\n        toast[type]({ msg: 'This is ' + type, duration: 1500, direction: 'horizontal' })\r\n    }\r\n}\r\nfunction showTopToast() {\r\n    toast.show({\r\n        position: 'top',\r\n        iconClass: 'star',\r\n        msg: '顶部toast',\r\n        closed() {\r\n            console.log(232)\r\n        },\r\n        opened() {\r\n            console.log(2323232)\r\n        }\r\n    })\r\n}\r\n\r\nfunction showMiddletoast() {\r\n    toast.show({\r\n        position: 'middle',\r\n        iconName: 'loading',\r\n        loadingType: 'spinner',\r\n        loadingColor: '#fff',\r\n        msg: '中间toast',\r\n        closed() {\r\n            console.log(232)\r\n        },\r\n        opened() {\r\n            console.log(2323232)\r\n        }\r\n    })\r\n}\r\n\r\nfunction showBottomToast() {\r\n    toast.show({\r\n        position: 'bottom',\r\n        msg: '底部toast'\r\n    })\r\n}\r\n\r\nfunction showLoadingToast() {\r\n    toast.loading('3s后自动关闭')\r\n    setTimeout(() => {\r\n        toast.close()\r\n    }, 3000)\r\n}\r\n\r\nfunction showLoadingToast2() {\r\n    toast.loading({\r\n        msg: '3s后自动关闭',\r\n        loadingType: 'gooey-balls',\r\n        loadingColor: '#fff'\r\n    })\r\n    setTimeout(() => {\r\n        toast.close()\r\n    }, 3000)\r\n}\r\n\r\nfunction showLoadingToast3() {\r\n    toast.loading({\r\n        msg: '芦叶满汀洲，寒沙带浅流。二十年重过南楼。柳下系船犹未稳，能几日，又中秋。黄鹤断矶头，故人曾到否？旧江山浑是新愁。欲买桂花同载酒，终不似，少年游。',\r\n        direction: 'vertical'\r\n    })\r\n    setTimeout(() => {\r\n        toast.close()\r\n    }, 3000)\r\n}\r\n</script>\r\n\r\n<template>\r\n    <RebornPage title=\"Toast 轻提示\" description=\"用于轻量级反馈或提示，不会打断用户操作。\">\r\n        <RebornCard title=\"类型toast\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <ReButton block color=\"success\" @click=\"showToast('success')\">\r\n                成功\r\n            </ReButton>\r\n            <ReButton block color=\"info\" @click=\"showToast('info')\">\r\n                常规\r\n            </ReButton>\r\n            <ReButton block color=\"error\" @click=\"showToast('error')\">\r\n                错误\r\n            </ReButton>\r\n            <ReButton block color=\"warning\" @click=\"showToast('warning')\">\r\n                警告\r\n            </ReButton>\r\n            <ReButton block color=\"neutral\" @click=\"showToast('loading')\">\r\n                加载\r\n            </ReButton>\r\n        </RebornCard>\r\n        <RebornCard title=\"类型toast\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <ReButton block color=\"success\" @click=\"showTopToast\">\r\n                顶部toast\r\n            </ReButton>\r\n            <ReButton block color=\"info\" @click=\"showMiddletoast\">\r\n                中间toast\r\n            </ReButton>\r\n            <ReButton block color=\"error\" @click=\"showBottomToast\">\r\n                底部toast\r\n            </ReButton>\r\n        </RebornCard>\r\n        <RebornCard title=\"loading toast\" custom-class=\"grid grid-cols-3 gap-2\">\r\n            <ReButton block color=\"success\" @click=\"showLoadingToast\">\r\n                基础环形\r\n            </ReButton>\r\n            <ReButton block color=\"info\" @click=\"showLoadingToast2\">\r\n                白色环形\r\n            </ReButton>\r\n            <ReButton block color=\"error\" @click=\"showLoadingToast3\">\r\n                纵向环形\r\n            </ReButton>\r\n        </RebornCard>\r\n    </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-loading",
+    "reborn-overlay",
+    "reborn-transition"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-toast"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-toast/RebornToast.vue",
+      "app/components/reborn/ui/reborn-toast/index.ts",
+      "app/components/reborn/ui/reborn-toast/reborn-toast.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-toast/RebornToast.vue",
+      "packages/uniapp-project/src/components/reborn-toast/index.ts",
+      "packages/uniapp-project/src/components/reborn-toast/reborn-toast.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-toast.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e559212d6635bde4120431ba0dfbe6840e51dd2e",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

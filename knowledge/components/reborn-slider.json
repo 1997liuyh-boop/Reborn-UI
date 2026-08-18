@@ -1,0 +1,192 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-slider",
+  "title": "滑块",
+  "description": "支持单值和范围选择的滑块组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "slider",
+    "range",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "modelValue",
+      "type": "number",
+      "required": false,
+      "description": "单值模式下绑定值。",
+      "default": "0"
+    },
+    {
+      "name": "values",
+      "type": "number[]",
+      "required": false,
+      "description": "范围模式下绑定值（`v-model:values`）。",
+      "default": "() => [0, 0]"
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "required": false,
+      "description": "最小值。",
+      "default": "0"
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "required": false,
+      "description": "最大值。",
+      "default": "100"
+    },
+    {
+      "name": "step",
+      "type": "number",
+      "required": false,
+      "description": "步长。",
+      "default": "1"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用。",
+      "default": "false"
+    },
+    {
+      "name": "trackHeight",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "4"
+    },
+    {
+      "name": "showValue",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示当前值。",
+      "default": "false"
+    },
+    {
+      "name": "range",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用范围模式。",
+      "default": "false"
+    },
+    {
+      "name": "size",
+      "type": "typeof sliderSizes[number]",
+      "required": false,
+      "description": "\"lg\"",
+      "default": "'md'"
+    },
+    {
+      "name": "color",
+      "type": "typeof sliderColors[number]",
+      "required": false,
+      "description": "\"success\" \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    inner: ClassValue\r\n    picker: ClassValue\r\n    track: ClassValue\r\n    progress: ClassValue\r\n    thumb: ClassValue\r\n    thumbActive: ClassValue\r\n    value: ClassValue\r\n  }>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "description": "单值变化。"
+    },
+    {
+      "name": "update:values",
+      "description": "范围值变化。"
+    },
+    {
+      "name": "change",
+      "description": "number[]"
+    },
+    {
+      "name": "changing",
+      "description": "number[]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "thumb",
+      "description": "自定义滑块。"
+    },
+    {
+      "name": "value",
+      "description": "自定义数值显示。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornSlider from \"~/components/reborn/ui/reborn-slider/RebornSlider.vue\";\r\nimport { sliderColors, sliderSizes } from \"~/components/reborn/ui/reborn-slider/reborn-slider.config\";\r\n\r\nconst size = ref<any>(\"md\");\r\nconst color = ref<any>(\"primary\");\r\nconst value1 = ref(40);\r\nconst rangeValues = ref([20, 80]);\r\nconst disabled = ref(false);\r\n</script>\r\n\r\n<template>\r\n    <div class=\"flex w-full flex-col gap-10\">\r\n        <div\r\n            class=\"flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40\">\r\n            <div class=\"flex items-center gap-2\">\r\n                <span class=\"text-sm font-medium text-gray-500 dark:text-gray-400\">尺寸</span>\r\n                <USelect v-model=\"size\" :items=\"[...sliderSizes]\" class=\"w-28\" />\r\n            </div>\r\n            <div class=\"flex items-center gap-2\">\r\n                <span class=\"text-sm font-medium text-gray-500 dark:text-gray-400\">颜色</span>\r\n                <USelect v-model=\"color\" :items=\"[...sliderColors]\" class=\"w-28\" />\r\n            </div>\r\n            <UCheckbox v-model=\"disabled\" label=\"禁用\" />\r\n        </div>\r\n\r\n        <div class=\"grid gap-8\">\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">基础</h3>\r\n                <RebornSlider v-model=\"value1\" :size=\"size\" :color=\"color\" :disabled=\"disabled\" show-value />\r\n            </div>\r\n\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">步长 (step=10)</h3>\r\n                <RebornSlider v-model=\"value1\" :step=\"10\" :size=\"size\" :color=\"color\" show-value />\r\n            </div>\r\n\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">范围选择</h3>\r\n                <RebornSlider v-model:values=\"rangeValues\" range :size=\"size\" :color=\"color\" show-value />\r\n            </div>\r\n\r\n            <div class=\"space-y-4\">\r\n                <h3 class=\"text-base font-medium text-gray-400 dark:text-gray-500\">颜色</h3>\r\n                <div class=\"flex flex-col gap-4\">\r\n                    <RebornSlider v-for=\"c in sliderColors\" :key=\"c\" :model-value=\"50\" :color=\"c\" :size=\"size\" />\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport ReButton from '@/components/reborn-button/RebornButton.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornInputNumber from '@/components/reborn-input-number/RebornInputNumber.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornSlider from '@/components/reborn-slider/RebornSlider.vue'\r\nimport RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'\r\n\r\nconst val1 = ref(30)\r\nconst val2 = ref([50, 70])\r\nconst isDisabled = ref(false)\r\nconst isLoading = ref(false)\r\nconst isShowValue = ref(true)\r\nconst step = ref(10)\r\nconst max = ref(100)\r\n\r\n// Dynamic Configuration\r\nconst currentSize = ref<any>('md')\r\nconst currentColor = ref<any>('primary')\r\n\r\nconst sizes = ['sm', 'md', 'lg'] as const\r\nconst colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"滑块\" description=\"用于在一定范围内选择数值的滑动组件。\">\r\n    <!-- Basic -->\r\n    <RebornCard title=\"自定义\" custom-class=\"space-y-4\">\r\n      <RebornSlider\r\n        v-model=\"val1\" :size=\"currentSize\" :color=\"currentColor\" :show-value=\"isShowValue\"\r\n        :step=\"step\" :max=\"max\" :disabled=\"isDisabled\" :loading=\"isLoading\"\r\n      />\r\n\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">尺寸 (Size)</text>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view v-for=\"size in sizes\" :key=\"size\">\r\n            <ReButton\r\n              size=\"xs\" :variant=\"currentSize === size ? 'solid' : 'outline'\"\r\n              :color=\"currentSize === size ? 'primary' : 'neutral'\" @tap=\"currentSize = size\"\r\n            >\r\n              {{ size }}\r\n            </ReButton>\r\n          </view>\r\n        </view>\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">颜色 (Color)</text>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view\r\n            v-for=\"c in colors\" :key=\"c\"\r\n            class=\"\r\n              size-4 cursor-pointer rounded-full ring-2 ring-transparent\r\n              ring-offset-2 transition-all\r\n            \"\r\n            :class=\"[\r\n              `\r\n                bg-${c}\r\n              `,\r\n              currentColor === c ? 'scale-110 ring-slate-400' : `\r\n                hover:scale-110\r\n              `,\r\n            ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n            @click=\"currentColor = c\"\r\n          />\r\n        </view>\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">显示值</text>\r\n        <RebornSwitch v-model=\"isShowValue\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">步长值</text>\r\n        <RebornInputNumber v-model=\"step\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">最大值</text>\r\n        <RebornInputNumber v-model=\"max\" :max=\"100\" :min=\"20\" size=\"sm\" />\r\n      </view>\r\n      <view class=\"flex justify-between\">\r\n        <text class=\"text-sm text-slate-500\">禁用</text>\r\n        <RebornSwitch v-model=\"isDisabled\" size=\"sm\" />\r\n      </view>\r\n    </RebornCard>\r\n    <RebornCard title=\"范围选择器\" custom-class=\"space-y-4\">\r\n      {{ val2.join(' ~ ') }}\r\n      <RebornSlider v-model:values=\"val2\" range />\r\n    </RebornCard>\r\n\r\n    <!-- Custom UI -->\r\n    <RebornCard title=\"自定义样式\" custom-class=\"space-y-4\">\r\n      <view class=\"space-y-2\">\r\n        <text class=\"text-sm text-slate-500\">自定义轨道与滑块</text>\r\n        <RebornSlider\r\n          v-model=\"val1\" :ui=\"{\r\n            track: 'bg-purple-100 dark:bg-purple-900',\r\n            progress: 'bg-purple-500',\r\n          }\"\r\n        >\r\n          <template #thumb=\"{ value }\">\r\n            <view\r\n              :style=\"{ ...value.style, width: '30px', height: '20px' }\"\r\n              class=\"\r\n                pointer-events-none absolute z-[1] rounded-full border-2\r\n                border-solid border-white bg-warning text-center text-24\r\n                text-white\r\n              \"\r\n            >\r\n              {{ value.value }}\r\n            </view>\r\n          </template>\r\n        </RebornSlider>\r\n      </view>\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-slider"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-slider/RebornSlider.vue",
+      "app/components/reborn/ui/reborn-slider/index.ts",
+      "app/components/reborn/ui/reborn-slider/reborn-slider.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-slider/RebornSlider.vue",
+      "packages/uniapp-project/src/components/reborn-slider/index.ts",
+      "packages/uniapp-project/src/components/reborn-slider/reborn-slider.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/reborn-slider.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "7e363d86be6c98d57013c76646942bbf3d564dc1",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

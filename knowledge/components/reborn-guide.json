@@ -1,0 +1,232 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-guide",
+  "title": "引导 Guide",
+  "description": "逐步骤进行指引或解释说明的组件，常用于用户不熟悉的或需进行特别强调的页面。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "guide",
+    "tour"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "current",
+      "type": "number",
+      "required": false,
+      "description": "双向绑定值",
+      "default": "undefined",
+      "vModel": true
+    },
+    {
+      "name": "defaultCurrent",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "-1"
+    },
+    {
+      "name": "steps",
+      "type": "GuideStep[]",
+      "required": true,
+      "description": "引导步骤数组",
+      "default": "[]"
+    },
+    {
+      "name": "mode",
+      "type": "\"popup\" | \"dialog\"",
+      "required": false,
+      "description": "'popup'",
+      "default": "\"popup\""
+    },
+    {
+      "name": "hideCounter",
+      "type": "boolean",
+      "required": false,
+      "description": "隐藏计数器",
+      "default": "false"
+    },
+    {
+      "name": "hidePrev",
+      "type": "boolean",
+      "required": false,
+      "description": "隐藏上一步按钮",
+      "default": "false"
+    },
+    {
+      "name": "hideSkip",
+      "type": "boolean",
+      "required": false,
+      "description": "隐藏跳过按钮",
+      "default": "false"
+    },
+    {
+      "name": "finishButtonProps",
+      "type": "ButtonProps",
+      "required": false,
+      "description": "完成按钮属性",
+      "default": "() => ({})"
+    },
+    {
+      "name": "nextButtonProps",
+      "type": "ButtonProps",
+      "required": false,
+      "description": "下一步按钮属性",
+      "default": "() => ({})"
+    },
+    {
+      "name": "prevButtonProps",
+      "type": "ButtonProps",
+      "required": false,
+      "description": "上一步按钮属性",
+      "default": "() => ({})"
+    },
+    {
+      "name": "skipButtonProps",
+      "type": "ButtonProps",
+      "required": false,
+      "description": "跳过按钮属性",
+      "default": "() => ({})"
+    },
+    {
+      "name": "showOverlay",
+      "type": "boolean",
+      "required": false,
+      "description": "是否出现遮罩层",
+      "default": "true"
+    },
+    {
+      "name": "highlightPadding",
+      "type": "number",
+      "required": false,
+      "description": "高亮框内边距",
+      "default": "8"
+    },
+    {
+      "name": "zIndex",
+      "type": "number",
+      "required": false,
+      "description": "提示框层级",
+      "default": "999999"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "",
+      "default": "undefined"
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\n    overlay: ClassValue;\n    highlightMask: ClassValue;\n    guideBox: ClassValue;\n    guideArrow: ClassValue;\n    guideHeader: ClassValue;\n    guideTitle: ClassValue;\n    guideBody: ClassValue;\n    guideFooter: ClassValue;\n    counter: ClassValue;\n    buttonGroup: ClassValue;\n    skipLink: ClassValue;\n    dialogOverlay: ClassValue;\n    dialogBox: ClassValue;\n  }>",
+      "required": false,
+      "description": "",
+      "default": "() => ({})"
+    }
+  ],
+  "events": [
+    {
+      "name": "change",
+      "payload": "(e: \"change\", current: number, context?: { e: MouseEvent; total: number }): void;",
+      "description": "当前步骤变化时触发"
+    },
+    {
+      "name": "finish",
+      "payload": "(e: \"finish\", context: { e: MouseEvent; current: number; total: number }): void;",
+      "description": "点击完成按钮时触发"
+    },
+    {
+      "name": "next-step-click",
+      "payload": "(e: \"next-step-click\", context: { e: MouseEvent; next: number; current: number; total: number }): void;",
+      "description": "点击下一步时触发"
+    },
+    {
+      "name": "prev-step-click",
+      "payload": "(e: \"prev-step-click\", context: { e: MouseEvent; prev: number; current: number; total: number }): void;",
+      "description": "点击上一步时触发"
+    },
+    {
+      "name": "skip",
+      "payload": "(e: \"skip\", context: { e: MouseEvent; current: number; total: number }): void;",
+      "description": "点击跳过按钮时触发"
+    },
+    {
+      "name": "update:current",
+      "description": "current 变化时触发（v-model 同步）"
+    }
+  ],
+  "slots": [
+    {
+      "name": "activeStep.content",
+      "description": ""
+    },
+    {
+      "name": "counter",
+      "description": "自定义计数器"
+    },
+    {
+      "name": "activeStep.highlightContent",
+      "description": ""
+    }
+  ],
+  "exposes": [
+    {
+      "name": "next",
+      "description": ""
+    },
+    {
+      "name": "prev",
+      "description": ""
+    },
+    {
+      "name": "finish",
+      "description": ""
+    },
+    {
+      "name": "skip",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport { ref, computed } from \"vue\";\nimport type { GuideStep } from \"~/components/reborn/ui/reborn-guide/RebornGuide.vue\";\n\nconst current = ref(-1);\nconst mode = ref<\"popup\" | \"dialog\">(\"popup\");\nconst placement = ref(\"bottom\");\n\n/** 目标元素 ref */\nconst headerRef = ref<HTMLElement | null>(null);\nconst card1Ref = ref<HTMLElement | null>(null);\nconst card2Ref = ref<HTMLElement | null>(null);\nconst actionBtnRef = ref<HTMLElement | null>(null);\n\n/** 生成 steps */\nconst steps = computed<GuideStep[]>(() => [\n  {\n    element: () => headerRef.value,\n    title: \"欢迎使用引导组件\",\n    body: '这是 RebornGuide 引导组件，用于逐步骤向用户介绍页面功能。点击「下一步」继续。',\n    placement: \"bottom\" as const,\n  },\n  {\n    element: () => card1Ref.value,\n    title: \"功能卡片一\",\n    body: \"这里展示了主要的功能信息。引导框可以自动定位在高亮元素的周围。\",\n    placement: \"right\" as const,\n    highlightPadding: 12,\n  },\n  {\n    element: () => card2Ref.value,\n    title: \"功能卡片二\",\n    body: \"高亮元素会通过 CSS transition 平滑移动。你可以滚动页面，高亮位置会自动跟随。\",\n    placement: \"left\" as const,\n  },\n  {\n    element: () => actionBtnRef.value,\n    title: \"操作按钮\",\n    body: \"高亮框支持 12 种定位方向：top、bottom、left、right 及其组合。当前步骤可自定义按钮文案。\",\n    placement: placement.value as any,\n    nextButtonProps: { label: \"了解对话框模式\" },\n  },\n  {\n    element: () => actionBtnRef.value,\n    title: \"对话框模式\",\n    body: \"除了浮层高亮模式，Guide 组件还支持对话框模式（dialog），适用于需要用户专注阅读的场景。\",\n    mode: \"dialog\" as const,\n    placement: \"center\" as const,\n  },\n]);\n\nfunction startGuide() {\n  current.value = 0;\n}\n\nfunction restartGuide() {\n  current.value = -1;\n  setTimeout(() => {\n    current.value = 0;\n  }, 300);\n}\n\nfunction onFinish(ctx: { e: MouseEvent; current: number; total: number }) {\n  // 引导完成后隐藏\n}\n\nfunction onChange(step: number) {\n  // 步骤变化\n}\n\nconst placementOptions = [\n  \"top\", \"bottom\", \"left\", \"right\",\n  \"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\",\n  \"left-top\", \"left-bottom\", \"right-top\", \"right-bottom\",\n];\n</script>\n\n<template>\n  <div class=\"p-8 w-full\">\n    <!-- 页面头部 -->\n    <header ref=\"headerRef\" class=\"mb-12 text-center\">\n      <h1 class=\"text-3xl font-bold text-gray-9 dark:text-gray-1 mb-2\">\n        RebornGuide 引导组件\n      </h1>\n      <p class=\"text-gray-5 dark:text-gray-4\">\n        逐步骤引导用户了解页面功能\n      </p>\n    </header>\n\n    <!-- 控制面板 -->\n    <div class=\"mb-8 p-4 rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-gray-1 dark:bg-gray-8\">\n      <div class=\"flex flex-wrap items-center gap-4\">\n        <RebornButton\n          v-if=\"current < 0\"\n          color=\"primary\"\n          @click=\"startGuide\"\n        >\n          开始引导\n        </RebornButton>\n        <RebornButton\n          v-else\n          variant=\"outline\"\n          @click=\"restartGuide\"\n        >\n          重新开始\n        </RebornButton>\n\n        <RebornButton\n          variant=\"subtle\"\n          @click=\"current = -1\"\n        >\n          停止\n        </RebornButton>\n\n        <div class=\"flex items-center gap-2 ml-4\">\n          <span class=\"text-sm text-gray-5\">模式：</span>\n          <RebornButton\n            :variant=\"mode === 'popup' ? 'solid' : 'outline'\"\n            size=\"sm\"\n            @click=\"mode = 'popup'\"\n          >\n            Popup\n          </RebornButton>\n          <RebornButton\n            :variant=\"mode === 'dialog' ? 'solid' : 'outline'\"\n            size=\"sm\"\n            @click=\"mode = 'dialog'\"\n          >\n            Dialog\n          </RebornButton>\n        </div>\n\n        <div class=\"flex items-center gap-2\">\n          <span class=\"text-sm text-gray-5\">默认 Placement：</span>\n          <select\n            v-model=\"placement\"\n            class=\"px-2 py-1 text-sm border border-gray-2 rounded-lg bg-white dark:bg-gray-8\"\n          >\n            <option v-for=\"p in placementOptions\" :key=\"p\" :value=\"p\">{{ p }}</option>\n          </select>\n        </div>\n      </div>\n    </div>\n\n    <!-- 功能卡片区域 -->\n    <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6 mb-8\">\n      <div\n        ref=\"card1Ref\"\n        class=\"rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-9 p-6 shadow-sm\"\n      >\n        <div class=\"w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4\">\n          <Icon name=\"lucide:zap\" class=\"size-6 text-primary\" />\n        </div>\n        <h3 class=\"text-lg font-semibold text-gray-9 dark:text-gray-1 mb-2\">闪电般快速</h3>\n        <p class=\"text-sm text-gray-5 dark:text-gray-4\">\n          基于 Vue 3 Composition API，使用 defineModel 和 TypeScript 构建，开发体验极致流畅。\n        </p>\n      </div>\n\n      <div\n        ref=\"card2Ref\"\n        class=\"rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-9 p-6 shadow-sm\"\n      >\n        <div class=\"w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-4\">\n          <Icon name=\"lucide:shield-check\" class=\"size-6 text-success\" />\n        </div>\n        <h3 class=\"text-lg font-semibold text-gray-9 dark:text-gray-1 mb-2\">类型安全</h3>\n        <p class=\"text-sm text-gray-5 dark:text-gray-4\">\n          完整的 TypeScript 类型定义，所有 Props、Events、Slots 都有智能提示。\n        </p>\n      </div>\n\n      <div\n        class=\"rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-9 p-6 shadow-sm\"\n      >\n        <div class=\"w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mb-4\">\n          <Icon name=\"lucide:palette\" class=\"size-6 text-warning\" />\n        </div>\n        <h3 class=\"text-lg font-semibold text-gray-9 dark:text-gray-1 mb-2\">高度可定制</h3>\n        <p class=\"text-sm text-gray-5 dark:text-gray-4\">\n          支持 ui 属性覆盖任意样式，支持步骤级按钮配置，满足各种业务场景。\n        </p>\n      </div>\n    </div>\n\n    <!-- 操作按钮区 -->\n    <div ref=\"actionBtnRef\" class=\"text-center\">\n      <RebornButton\n        color=\"primary\"\n        size=\"lg\"\n        @click=\"startGuide\"\n      >\n        点击体验引导\n      </RebornButton>\n    </div>\n\n    <!-- 事件日志 -->\n    <div v-if=\"current >= 0\" class=\"mt-8 p-4 rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-gray-1 dark:bg-gray-8\">\n      <h4 class=\"text-sm font-semibold text-gray-7 dark:text-gray-3 mb-2\">事件日志</h4>\n      <div class=\"text-xs text-gray-5\">\n        当前步骤：{{ current + 1 }} / {{ steps.length }}\n        &nbsp;|&nbsp; 模式：{{ steps[current]?.mode || mode }}\n        &nbsp;|&nbsp; Placement：{{ steps[current]?.placement || '-' }}\n      </div>\n    </div>\n\n    <!-- Guide 组件 -->\n    <RebornGuide\n      v-model:current=\"current\"\n      :steps=\"steps\"\n      :mode=\"mode\"\n      :z-index=\"9999\"\n      @finish=\"onFinish\"\n      @change=\"onChange\"\n    >\n      <template #counter=\"{ current: cur, total }\">\n        <span class=\"text-xs text-gray-4\">\n          步骤 {{ cur }} / {{ total }}\n        </span>\n      </template>\n    </RebornGuide>\n  </div>\n</template>\n\n<script lang=\"ts\">\nexport default {\n  name: \"RebornGuideDemo\",\n};\n</script>\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [
+    "reborn-button"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-guide"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-guide/RebornGuide.vue",
+      "app/components/reborn/ui/reborn-guide/index.ts",
+      "app/components/reborn/ui/reborn-guide/reborn-guide.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/button/reborn-guide.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "2edb24ce26783ab2fe7e21f4504169732dfaaa7d",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

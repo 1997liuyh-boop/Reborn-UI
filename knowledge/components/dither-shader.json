@@ -1,0 +1,171 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "dither-shader",
+  "title": "抖动着色器",
+  "description": "用于图像的实时有序抖动效果，非常适合像素艺术和复古风格。",
+  "category": "effect",
+  "tags": [
+    "tailwind",
+    "background",
+    "card",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "src",
+      "type": "string",
+      "required": true,
+      "description": "源图像的 URL。"
+    },
+    {
+      "name": "gridSize",
+      "type": "number",
+      "required": false,
+      "description": "抖动网格单元的尺寸。",
+      "default": "4"
+    },
+    {
+      "name": "ditherMode",
+      "type": "DitheringMode",
+      "required": false,
+      "description": "\"noise\" \\",
+      "default": "\"bayer\""
+    },
+    {
+      "name": "colorMode",
+      "type": "ColorMode",
+      "required": false,
+      "description": "\"duotone\" \\",
+      "default": "\"original\""
+    },
+    {
+      "name": "invert",
+      "type": "boolean",
+      "required": false,
+      "description": "是否反转抖动后的输出颜色。",
+      "default": "false"
+    },
+    {
+      "name": "pixelRatio",
+      "type": "number",
+      "required": false,
+      "description": "像素化倍数（1 表示无像素化，越大越像素化）。",
+      "default": "1"
+    },
+    {
+      "name": "primaryColor",
+      "type": "string",
+      "required": false,
+      "description": "双色调模式下的主色。",
+      "default": "\"#000000\""
+    },
+    {
+      "name": "secondaryColor",
+      "type": "string",
+      "required": false,
+      "description": "双色调模式下的次色。",
+      "default": "\"#ffffff\""
+    },
+    {
+      "name": "customPalette",
+      "type": "string[]",
+      "required": false,
+      "description": "自定义模式下的调色板数组。",
+      "default": "() => [\"#000000\", \"#ffffff\"]"
+    },
+    {
+      "name": "brightness",
+      "type": "number",
+      "required": false,
+      "description": "亮度调节（-1 至 1）。",
+      "default": "0"
+    },
+    {
+      "name": "contrast",
+      "type": "number",
+      "required": false,
+      "description": "对比度调节（0 至 2，1 为正常）。",
+      "default": "1"
+    },
+    {
+      "name": "backgroundColor",
+      "type": "string",
+      "required": false,
+      "description": "抖动图像背后的背景色。",
+      "default": "\"transparent\""
+    },
+    {
+      "name": "objectFit",
+      "type": "\"cover\" | \"contain\" | \"fill\" | \"none\"",
+      "required": false,
+      "description": "\"fill\" \\",
+      "default": "\"cover\""
+    },
+    {
+      "name": "threshold",
+      "type": "number",
+      "required": false,
+      "description": "抖动阈值偏移（0 至 1）。",
+      "default": "0.5"
+    },
+    {
+      "name": "animated",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用动画效果。",
+      "default": "false"
+    },
+    {
+      "name": "animationSpeed",
+      "type": "number",
+      "required": false,
+      "description": "动画速度（数值越小越慢）。",
+      "default": "0.02"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "容器的额外 CSS 类（可用 Tailwind 设置尺寸）。"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\r\nimport type { Props } from \"../../ui/dither-shader/DitherShader.vue\";\r\nimport { DitherShader } from \"../../ui/dither-shader\";\r\n\r\nexport interface DemoProps extends Omit<Props, \"class\" | \"src\"> {}\r\n\r\nconst {\r\n  gridSize = 4,\r\n  ditherMode = \"bayer\",\r\n  colorMode = \"original\",\r\n  invert = false,\r\n  pixelRatio = 1,\r\n  primaryColor = \"#000000\",\r\n  secondaryColor = \"#ffffff\",\r\n  customPalette = [\"#000000\", \"#ffffff\"],\r\n  brightness = 0,\r\n  contrast = 1,\r\n  backgroundColor = \"transparent\",\r\n  objectFit = \"cover\",\r\n  threshold = 0.5,\r\n  animated = false,\r\n  animationSpeed = 0.02,\r\n} = defineProps<DemoProps>();\r\n</script>\r\n\r\n<template>\r\n  <div class=\"relative flex flex-col items-center gap-6 overflow-hidden p-8\">\r\n    <DitherShader\r\n      src=\"https://images.unsplash.com/photo-1555952517-2e8e729e0b44?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\r\n      :invert\r\n      :contrast\r\n      :brightness\r\n      :animated\r\n      :grid-size=\"gridSize\"\r\n      :threshold=\"threshold\"\r\n      :color-mode=\"colorMode\"\r\n      :object-fit=\"objectFit\"\r\n      :dither-mode=\"ditherMode\"\r\n      :pixel-ratio=\"pixelRatio\"\r\n      :primary-color=\"primaryColor\"\r\n      :custom-palette=\"customPalette\"\r\n      :secondary-color=\"secondaryColor\"\r\n      :animation-speed=\"animationSpeed\"\r\n      :background-color=\"backgroundColor\"\r\n      class=\"h-72 w-100 sm:h-80 sm:w-125\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add dither-shader"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/dither-shader/DitherShader.vue",
+      "app/components/reborn/ui/dither-shader/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/special-effects/dither-shader.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "d425f570c9d20b12a79aff5e241a734b008aef37",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

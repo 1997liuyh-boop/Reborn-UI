@@ -1,0 +1,137 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-back-top",
+  "title": "BackTop",
+  "description": "该组件一个用于长页面，滑动一定距离后，出现返回顶部按钮，方便快速返回顶部的场景",
+  "category": "navigation",
+  "tags": [],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "scrollTop",
+      "type": "number",
+      "required": false,
+      "description": "当前页面的滚动距离。通常通过 `onPageScroll` 传入。",
+      "default": "0"
+    },
+    {
+      "name": "threshold",
+      "type": "number",
+      "required": false,
+      "description": "滚动多少距离后显示回到顶部按钮。",
+      "default": "300"
+    },
+    {
+      "name": "bottom",
+      "type": "number",
+      "required": false,
+      "description": "底部距离 (px)。",
+      "default": "20"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "滚动回顶部的动画时长 (ms)。",
+      "default": "300"
+    },
+    {
+      "name": "isTab",
+      "type": "boolean",
+      "required": false,
+      "description": "是否是 TabBar 页面。如果是，组件会自动抬高 50px 以避开 TabBar。",
+      "default": "false"
+    },
+    {
+      "name": "safeArea",
+      "type": "boolean",
+      "required": false,
+      "description": "是否适配安全区域（避让底部黑条）。",
+      "default": "true"
+    },
+    {
+      "name": "color",
+      "type": "typeof backTopColors[number]",
+      "required": false,
+      "description": "按钮颜色。可选值：`primary`, `secondary`, `success`, `info`, `warning`, `error`, `neutral`。",
+      "default": "'primary'"
+    },
+    {
+      "name": "size",
+      "type": "typeof backTopSizes[number]",
+      "required": false,
+      "description": "按钮大小。可选值：`sm`, `md`, `lg`。",
+      "default": "'md'"
+    },
+    {
+      "name": "ui",
+      "type": "{\r\n    wrapper?: ClassValue\r\n    base?: ClassValue\r\n    icon?: ClassValue\r\n  }",
+      "required": false,
+      "description": "覆盖各个 slots 的样式。",
+      "default": "{}"
+    }
+  ],
+  "events": [
+    {
+      "name": "click",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": "自定义内容。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport RebornBackTop from '@/components/reborn/ui/reborn-back-top/RebornBackTop.vue'\r\nimport { backTopColors, backTopSizes } from '@/components/reborn/ui/reborn-back-top/reborn-back-top.config'\r\nimport { ref } from 'vue'\r\n\r\nconst items = Array.from({ length: 40 }, (_, i) => `Item ${i + 1}`)\r\n\r\nconst color = ref<typeof backTopColors[number]>('primary')\r\nconst size = ref<typeof backTopSizes[number]>('md')\r\n</script>\r\n\r\n<template>\r\n    <div class=\"space-y-8\">\r\n        <div class=\"p-6 bg-slate-100 dark:bg-slate-900 rounded-xl space-y-4\">\r\n            <h3 class=\"font-bold text-lg\">RebornBackTop Demo</h3>\r\n            <p class=\"text-slate-500\">\r\n                请向下滑动页面查看右下角返回顶部按钮。\r\n            </p>\r\n\r\n            <!-- Color Picker -->\r\n            <div class=\"space-y-2\">\r\n                <div class=\"text-sm font-medium\">颜色 (Color)</div>\r\n                <div class=\"flex flex-wrap gap-2\">\r\n                    <div v-for=\"c in backTopColors\" :key=\"c\" class=\"w-8 h-8 rounded-full border-2 transition-all\"\r\n                        :class=\"[`bg-${c}`, color === c ? 'ring-slate-400 scale-110' : 'hover:scale-110']\"\r\n                        @click=\"color = c\">\r\n                    </div>\r\n                </div>\r\n            </div>\r\n\r\n            <!-- Size Picker -->\r\n            <div class=\"space-y-2\">\r\n                <div class=\"text-sm font-medium\">大小 (Size)</div>\r\n                <div class=\"flex flex-wrap gap-2\">\r\n                    <button v-for=\"s in backTopSizes\" :key=\"s\"\r\n                        class=\"px-3 py-1 text-sm rounded-md border transition-colors\"\r\n                        :class=\"size === s ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'\"\r\n                        @click=\"size = s\">\r\n                        {{ s }}\r\n                    </button>\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <div class=\"space-y-4\">\r\n            <div v-for=\"item in items\" :key=\"item\"\r\n                class=\"p-4 bg-white dark:bg-gray-800 rounded border border-slate-200 dark:border-slate-700\">\r\n                {{ item }}\r\n            </div>\r\n        </div>\r\n\r\n        <!-- 基础用法 -->\r\n        <RebornBackTop :color=\"color\" :size=\"size\" />\r\n\r\n        <!-- 自定义内容 -->\r\n        <RebornBackTop :bottom=\"100\" :ui=\"{ wrapper: 'z-50' }\" color=\"success\">\r\n            <div\r\n                class=\"flex items-center justify-center w-12 h-12 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transition-colors\">\r\n                <span class=\"text-xs font-bold\">TOP</span>\r\n            </div>\r\n        </RebornBackTop>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { backTopColors, backTopSizes } from '@/components/reborn-back-top/reborn-back-top.config'\r\nimport RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\nimport RebornSticky from '@/components/reborn-sticky/RebornSticky.vue'\r\n\r\nconst items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`)\r\nconst scrollTop = ref(0)\r\n\r\nconst color = ref<typeof backTopColors[number]>('primary')\r\nconst size = ref<typeof backTopSizes[number]>('md')\r\n\r\n/** 吸顶区块上方标题与占位高度（与 RebornSticky sticky-trigger-lead 对齐） */\r\nconst stickySectionLead = 32\r\n\r\nconst colorStickyRef = ref<InstanceType<typeof RebornSticky> | null>(null)\r\nconst isColorSticky = ref(false)\r\n\r\nconst sizeStickyRef = ref<InstanceType<typeof RebornSticky> | null>(null)\r\nconst isSizeSticky = ref(false)\r\n\r\nwatchEffect(() => {\r\n  scrollTop.value\r\n  isColorSticky.value = Boolean(unref((colorStickyRef.value as { isSticky?: unknown } | null)?.isSticky))\r\n  isSizeSticky.value = Boolean(unref((sizeStickyRef.value as { isSticky?: unknown } | null)?.isSticky))\r\n})\r\n\r\nonPageScroll((e) => {\r\n  scrollTop.value = e.scrollTop\r\n})\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Backtop 回到顶部\" description=\"返回页面顶部的操作按钮\">\r\n    <view class=\"flex flex-col\" :class=\"isColorSticky ? '' : 'gap-3'\">\r\n      <view\r\n        v-if=\"!isColorSticky\"\r\n        class=\"\r\n          relative z-0 text-sm font-medium uppercase tracking-wider\r\n          text-slate-500 dark:text-slate-200\r\n        \"\r\n      >\r\n        颜色\r\n      </view>\r\n      <view\r\n        v-else\r\n        class=\"pointer-events-none w-full shrink-0\"\r\n        :style=\"{ height: `${stickySectionLead}px` }\"\r\n        aria-hidden=\"true\"\r\n      />\r\n      <RebornSticky\r\n        ref=\"colorStickyRef\"\r\n        :scroll-top=\"scrollTop\"\r\n        :z-index=\"102\"\r\n        :sticky-trigger-lead=\"stickySectionLead\"\r\n      >\r\n        <template #default>\r\n          <RebornCard>\r\n            <view class=\"flex flex-wrap gap-2\">\r\n              <view v-for=\"c in backTopColors\" :key=\"c\" class=\"\r\n                  size-6 cursor-pointer rounded-full ring-2 ring-transparent\r\n                  ring-offset-2 transition-all\r\n                \" :class=\"[`bg-${c}`, color === c ? 'scale-110 ring-slate-400' : `hover:scale-110`]\"\r\n                :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n                @click=\"color = c\" />\r\n            </view>\r\n          </RebornCard>\r\n        </template>\r\n      </RebornSticky>\r\n    </view>\r\n\r\n    <view class=\"flex flex-col\" :class=\"isSizeSticky ? '' : 'gap-3'\">\r\n      <view\r\n        v-if=\"!isSizeSticky\"\r\n        class=\"\r\n          relative z-0 text-sm font-medium uppercase tracking-wider\r\n          text-slate-500 dark:text-slate-200\r\n        \"\r\n      >\r\n        大小\r\n      </view>\r\n      <view\r\n        v-else\r\n        class=\"pointer-events-none w-full shrink-0\"\r\n        :style=\"{ height: `${stickySectionLead}px` }\"\r\n        aria-hidden=\"true\"\r\n      />\r\n      <RebornSticky\r\n        ref=\"sizeStickyRef\"\r\n        :scroll-top=\"scrollTop\"\r\n        :offset-top=\"66\"\r\n        :z-index=\"103\"\r\n        :sticky-trigger-lead=\"stickySectionLead\"\r\n      >\r\n        <template #default>\r\n          <RebornCard>\r\n            <view class=\"flex flex-wrap gap-2\">\r\n              <view\r\n                v-for=\"s in backTopSizes\"\r\n                :key=\"s\"\r\n                class=\"\r\n                  cursor-pointer rounded-full border px-3 py-1.5 text-xs\r\n                  transition-colors\r\n                \"\r\n                :class=\"size === s ? `\r\n                  border-slate-900 bg-slate-900 text-white\r\n                  dark:bg-white dark:text-slate-900\r\n                ` : `\r\n                  border-slate-300 bg-transparent text-slate-600\r\n                  hover:border-slate-400\r\n                `\"\r\n                @click=\"size = s\"\r\n              >\r\n                {{ s }}\r\n              </view>\r\n            </view>\r\n          </RebornCard>\r\n        </template>\r\n      </RebornSticky>\r\n    </view>\r\n\r\n    <RebornCard title=\"基础用法\">\r\n      <view>请向下滑动页面查看右下角返回顶部按钮。</view>\r\n      <view class=\"mt-2 text-sm text-gray-500\">\r\n        默认阈值为 300px。\r\n      </view>\r\n    </RebornCard>\r\n\r\n    <RebornCard title=\"自定义内容\">\r\n      <view>左下角有一个自定义样式的返回顶部按钮。</view>\r\n    </RebornCard>\r\n\r\n    <view class=\"space-y-4 p-4\">\r\n      <view v-for=\"item in items\" :key=\"item\" class=\"\r\n          rounded bg-white p-4 shadow\r\n          dark:bg-gray-800\r\n        \">\r\n        {{ item }}\r\n      </view>\r\n    </view>\r\n\r\n    <!-- 基础用法 -->\r\n    <RebornBackTop :color=\"color\" :size=\"size\" :scroll-top=\"scrollTop\" />\r\n\r\n    <!-- 自定义内容 & 样式 -->\r\n    <RebornBackTop :scroll-top=\"scrollTop\" :bottom=\"100\" :ui=\"{ wrapper: 'fixed left-5 z-50' }\" color=\"success\">\r\n      <view class=\"\r\n          flex size-12 items-center justify-center rounded-lg bg-success\r\n          text-white shadow-lg\r\n        \">\r\n        <text class=\"text-sm font-bold\">TOP</text>\r\n      </view>\r\n    </RebornBackTop>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core",
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-back-top"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-back-top/RebornBackTop.vue",
+      "app/components/reborn/ui/reborn-back-top/reborn-back-top.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-back-top/RebornBackTop.vue",
+      "packages/uniapp-project/src/components/reborn-back-top/index.ts",
+      "packages/uniapp-project/src/components/reborn-back-top/reborn-back-top.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/navigation/reborn-back-top.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "edf3a29e78a6d69cc0fe47b21045aa208e655ab9",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

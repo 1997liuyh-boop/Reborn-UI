@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "meteors",
+  "title": "流星雨",
+  "description": "展示流星雨动画的组件，可自定义流星数量与样式。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "count",
+      "type": "number",
+      "default": "20",
+      "required": false,
+      "description": "动画中显示的流星数量。"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "default": "\"\"",
+      "required": false,
+      "description": "应用于流星的额外 CSS 类，便于自定义。"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <ClientOnly>\r\n    <div class=\"flex w-full flex-col items-center justify-center py-24\">\r\n      <div class=\"relative w-full max-w-xs\">\r\n        <div\r\n          class=\"absolute inset-0 size-full scale-[0.80] rounded-full bg-red-500 bg-gradient-to-r from-blue-500 to-teal-500 blur-3xl\"\r\n        />\r\n        <div\r\n          class=\"relative flex h-full flex-col items-start justify-end overflow-hidden rounded-2xl border border-gray-800 bg-gray-900 px-4 py-8 shadow-xl\"\r\n        >\r\n          <div\r\n            class=\"mb-4 flex size-5 items-center justify-center rounded-full border border-gray-500\"\r\n          >\r\n            <svg\r\n              xmlns=\"http://www.w3.org/2000/svg\"\r\n              fill=\"none\"\r\n              viewBox=\"0 0 24 24\"\r\n              strokeWidth=\"1.5\"\r\n              stroke=\"currentColor\"\r\n              class=\"size-2 text-gray-300\"\r\n            >\r\n              <path\r\n                strokeLinecap=\"round\"\r\n                strokeLinejoin=\"round\"\r\n                d=\"M4.5 4.5l15 15m0 0V8.25m0 11.25H8.25\"\r\n              />\r\n            </svg>\r\n          </div>\r\n\r\n          <h1 class=\"relative z-50 mb-4 text-xl font-bold text-white\">\r\n            Meteors because they&apos;re cool\r\n          </h1>\r\n\r\n          <p class=\"relative z-50 mb-4 text-base font-normal text-slate-500\">\r\n            I don&apos;t know what to write so I&apos;ll just paste something cool here. One more\r\n            sentence because lorem ipsum is just unacceptable. Won&apos;t ChatGPT the shit out of\r\n            this.\r\n          </p>\r\n\r\n          <button class=\"rounded-lg border border-gray-500 px-4 py-1 text-gray-300\">Explore</button>\r\n          <Meteors />\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </ClientOnly>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add meteors"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/meteors/Meteors.vue",
+      "app/components/reborn/ui/meteors/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/special-effects/meteors.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "c38d9007569caa1c725a83afd711434017145cb1",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

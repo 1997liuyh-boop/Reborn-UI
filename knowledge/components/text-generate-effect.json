@@ -1,0 +1,87 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-generate-effect",
+  "title": "文字生成效果",
+  "description": "炫酷的文字效果，在页面加载时逐字渐显。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "words",
+      "type": "string",
+      "required": true,
+      "description": "要展示并生成的文字。",
+      "default": "Required"
+    },
+    {
+      "name": "filter",
+      "type": "boolean",
+      "required": false,
+      "description": "文字的模糊效果。",
+      "default": "true"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "文字生成动画的持续时间（秒）。",
+      "default": "0.7"
+    },
+    {
+      "name": "delay",
+      "type": "number",
+      "required": false,
+      "description": "动画开始前的延迟（毫秒）。",
+      "default": "0"
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex items-center justify-center py-12 max-lg:w-full md:flex-1\">\r\n    <TextGenerateEffect\r\n      words=\"Nuxt is an open source framework that makes web development intuitive and powerful. Create performant and production-grade full-stack web apps and websites with confidence.\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-generate-effect"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-generate-effect/TextGenerateEffect.vue",
+      "app/components/reborn/ui/text-generate-effect/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/text-generate-effect.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "fbebd5f760c46d8238d813a219f4892fd9c5e465",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

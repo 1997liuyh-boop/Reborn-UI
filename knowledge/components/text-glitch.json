@@ -1,0 +1,86 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-glitch",
+  "title": "文字故障",
+  "description": "为文字添加鲜明的故障效果，可自定义速度、阴影颜色，并可选择仅在悬停时触发。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "text",
+      "type": "string",
+      "required": false,
+      "description": "展示故障效果的文字内容。",
+      "default": "\"\""
+    },
+    {
+      "name": "speed",
+      "type": "number",
+      "required": false,
+      "description": "故障动画的速度（秒）。",
+      "default": "0.5"
+    },
+    {
+      "name": "enableShadows",
+      "type": "boolean",
+      "required": false,
+      "description": "是否开启彩色阴影以增强故障感。",
+      "default": "true"
+    },
+    {
+      "name": "enableOnHover",
+      "type": "boolean",
+      "required": false,
+      "description": "为 `true` 时仅在悬停时启用故障动画。",
+      "default": "false"
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "容器 div 的额外 CSS 类。",
+      "default": "undefined"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex w-full items-center justify-center rounded-lg p-4\">\r\n    <TextGlitch :speed=\"1\" :enable-shadows=\"true\" text=\"Reborn UI\" />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-glitch"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-glitch/TextGlitch.vue"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/text-glitch.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "031b5ce9f680fe952c6003e4fa1bfbd3b43a1cbf",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-card",
+  "title": "reborn-card",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "padding",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "customClass",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "overflowVisible",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "false"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "title",
+      "description": ""
+    },
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-card"
+  },
+  "sourceRefs": {
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-card/RebornCard.vue",
+      "packages/uniapp-project/src/components/reborn-card/index.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e12d5bca86739c03c4b0923e672ed2842544599c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "absent",
+      "uniapp": "ok",
+      "docs": "missing"
+    }
+  }
+}

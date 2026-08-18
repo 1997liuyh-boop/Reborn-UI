@@ -1,0 +1,144 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-chip",
+  "title": "提示点/标记",
+  "description": "轻量级提示点/标记组件。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "chip",
+    "uniapp"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "color",
+      "type": "typeof chipColors[number]",
+      "required": false,
+      "description": "\"success\" \\",
+      "default": "'primary'"
+    },
+    {
+      "name": "size",
+      "type": "typeof chipSizes[number]",
+      "required": false,
+      "description": "\"xs\" \\",
+      "default": "'md'"
+    },
+    {
+      "name": "text",
+      "type": "string | number",
+      "required": false,
+      "description": "-",
+      "default": "number"
+    },
+    {
+      "name": "position",
+      "type": "typeof chipPositions[number]",
+      "required": false,
+      "description": "\"top-left\" \\",
+      "default": "'top-right'"
+    },
+    {
+      "name": "show",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示，可配合 `v-model:show` 使用。",
+      "default": "true"
+    },
+    {
+      "name": "inset",
+      "type": "boolean",
+      "required": false,
+      "description": "是否使用内嵌位置（与 position 组合）。",
+      "default": "false"
+    },
+    {
+      "name": "standalone",
+      "type": "boolean",
+      "required": false,
+      "description": "是否作为独立芯片渲染。",
+      "default": "false"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "any",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:show",
+      "description": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornChip from '~/components/reborn/ui/reborn-chip/RebornChip.vue'\r\nimport { chipColors, chipSizes, chipPositions } from '~/components/reborn/ui/reborn-chip/reborn-chip.config'\r\n\r\nconst state = ref({\r\n  color: 'primary',\r\n  size: 'md',\r\n  position: 'top-right',\r\n  text: '9',\r\n  show: true,\r\n  inset: false,\r\n  standalone: false\r\n})\r\n\r\nconst controls = [\r\n  {\r\n    title: '基础配置',\r\n    children: [\r\n      {\r\n        label: '标签文本',\r\n        key: 'text',\r\n        component: 'input' as const,\r\n        defaultValue: '9'\r\n      },\r\n      {\r\n        label: '显示状态',\r\n        key: 'show',\r\n        component: 'checkbox' as const,\r\n        defaultValue: true\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    title: '样式选项',\r\n    children: [\r\n      {\r\n        label: '颜色主题',\r\n        key: 'color',\r\n        component: 'select' as const,\r\n        defaultValue: 'primary',\r\n        props: {\r\n          items: chipColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))\r\n        }\r\n      },\r\n      {\r\n        label: '尺寸规格',\r\n        key: 'size',\r\n        component: 'select' as const,\r\n        defaultValue: 'md',\r\n        props: {\r\n          items: chipSizes.map(s => ({ label: s.toUpperCase(), value: s }))\r\n        }\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    title: '布局位置',\r\n    children: [\r\n      {\r\n        label: '显示位置',\r\n        key: 'position',\r\n        component: 'select' as const,\r\n        defaultValue: 'top-right',\r\n        props: {\r\n          items: chipPositions.map(p => ({ label: p, value: p }))\r\n        }\r\n      },\r\n      {\r\n        label: '内嵌模式',\r\n        key: 'inset',\r\n        component: 'checkbox' as const,\r\n        defaultValue: false\r\n      },\r\n      {\r\n        label: '独立渲染',\r\n        key: 'standalone',\r\n        component: 'checkbox' as const,\r\n        defaultValue: false\r\n      }\r\n    ]\r\n  }\r\n]\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex flex-col gap-12 w-full pb-20\">\r\n    <!-- Playground Section -->\r\n    <Playground v-model=\"state\" :controls=\"controls\" component-name=\"RebornChip\" title=\"Chip 角标\"\r\n      description=\"用于在元素角落显示状态、通知或计数信息的微型标签。\">\r\n      <div class=\"flex items-center justify-center p-10\">\r\n        <RebornChip v-bind=\"state\">\r\n          <div\r\n            class=\"w-24 h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-700\">\r\n            <Icon name=\"lucide:bell\" class=\"w-8 h-8 text-gray-400\" />\r\n          </div>\r\n        </RebornChip>\r\n      </div>\r\n    </Playground>\r\n\r\n    <!-- Variants Matrix -->\r\n    <section class=\"space-y-6\">\r\n      <div class=\"flex flex-col gap-1 border-l-4 border-primary pl-4\">\r\n        <h3 class=\"text-xl font-bold\">色彩体系</h3>\r\n        <p class=\"text-gray-500 text-sm\">支持丰富的语义化色彩系统，适应不同的视觉反馈需求。</p>\r\n      </div>\r\n\r\n      <div class=\"grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-6 mt-6\">\r\n        <div v-for=\"c in chipColors\" :key=\"c\"\r\n          class=\"flex flex-col items-center gap-3 p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow\">\r\n          <RebornChip :color=\"c\" text=\"8\">\r\n            <div class=\"w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700\" />\r\n          </RebornChip>\r\n          <span class=\"text-xs font-semibold text-gray-400 uppercase tracking-wider\">{{ c }}</span>\r\n        </div>\r\n      </div>\r\n    </section>\r\n\r\n    <!-- Sizes & Creative Examples -->\r\n    <div class=\"grid grid-cols-1 lg:grid-cols-2 gap-12\">\r\n      <!-- Sizes -->\r\n      <section\r\n        class=\"space-y-6 p-8 rounded-3xl bg-gray-50/50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-800 relative overflow-hidden\">\r\n        <div class=\"absolute top-0 right-0 p-4 opacity-10\">\r\n          <Icon name=\"lucide:maximize\" class=\"w-20 h-20\" />\r\n        </div>\r\n        <div class=\"flex flex-col gap-1 relative z-10\">\r\n          <h3 class=\"text-xl font-bold\">尺寸规格</h3>\r\n          <p class=\"text-gray-500 text-sm\">从细微的装饰到醒目的提示，多级尺寸随心切换。</p>\r\n        </div>\r\n\r\n        <div class=\"flex flex-wrap items-end gap-10 py-6 relative z-10\">\r\n          <div v-for=\"s in chipSizes\" :key=\"s\" class=\"flex flex-col items-center gap-4\">\r\n            <RebornChip :size=\"s\" color=\"error\" text=\"NEW\">\r\n              <div\r\n                class=\"w-20 h-12 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center text-[10px] text-primary/40 font-bold uppercase tracking-tighter\">\r\n                {{ s }}\r\n              </div>\r\n            </RebornChip>\r\n            <span class=\"text-[10px] font-bold text-gray-400 tracking-widest\">{{ s.toUpperCase() }}</span>\r\n          </div>\r\n        </div>\r\n      </section>\r\n\r\n      <!-- Typical Usage -->\r\n      <section\r\n        class=\"space-y-6 p-8 rounded-3xl bg-gray-50/50 dark:bg-gray-900/20 border border-gray-100 dark:border-gray-800 relative overflow-hidden\">\r\n        <div class=\"absolute top-0 right-0 p-4 opacity-10\">\r\n          <Icon name=\"lucide:layout\" class=\"w-20 h-20\" />\r\n        </div>\r\n        <div class=\"flex flex-col gap-1 relative z-10\">\r\n          <h3 class=\"text-xl font-bold\">创意应用</h3>\r\n          <p class=\"text-gray-500 text-sm\">结合头像、按钮等组件，打造更加生动的交互界面。</p>\r\n        </div>\r\n\r\n        <div class=\"flex flex-wrap gap-10 items-center py-6 relative z-10\">\r\n          <!-- Avatar Status -->\r\n          <div class=\"group cursor-pointer\">\r\n            <RebornChip color=\"success\" size=\"lg\" inset position=\"bottom-right\">\r\n              <UAvatar src=\"https://github.com/benjamincanac.png\" size=\"xl\"\r\n                class=\"ring-4 ring-white dark:ring-gray-900 group-hover:scale-105 transition-transform\" />\r\n            </RebornChip>\r\n          </div>\r\n\r\n          <!-- Notification Dot -->\r\n          <div class=\"relative\">\r\n            <RebornChip color=\"error\" size=\"sm\" text=\"\">\r\n              <div\r\n                class=\"p-3 bg-gray-100 dark:bg-gray-800 rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors\">\r\n                <Icon name=\"lucide:mail\" class=\"w-6 h-6 text-gray-500\" />\r\n              </div>\r\n            </RebornChip>\r\n          </div>\r\n\r\n          <!-- Badge on Button -->\r\n          <RebornChip color=\"warning\" text=\"SALE\" size=\"md\">\r\n            <button\r\n              class=\"px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full text-sm font-bold hover:scale-105 active:scale-95 transition-all shadow-lg\">\r\n              立即解锁\r\n            </button>\r\n          </RebornChip>\r\n        </div>\r\n      </section>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport { chipColors, chipPositions, chipSizes } from '@/components/reborn-chip/reborn-chip.config'\r\nimport RebornChip from '@/components/reborn-chip/RebornChip.vue'\r\nimport RebornInput from '@/components/reborn-input/RebornInput.vue'\r\n\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\n\r\nconst showChip = ref(true)\r\nconst currentColor = ref<typeof chipColors[number]>('primary')\r\nconst currentSize = ref<typeof chipSizes[number]>('md')\r\nconst currentPosition = ref<typeof chipPositions[number]>('top-right')\r\nconst chipText = ref('100+')\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Chip\" description=\"Chip component for counters and indicators.\">\r\n    <RebornCard title=\"Controls\" custom-class=\"space-y-4\">\r\n      <view class=\"space-y-3\">\r\n        <view\r\n          class=\"\r\n            text-sm font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \"\r\n        >\r\n          Color\r\n        </view>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view\r\n            v-for=\"c in chipColors\" :key=\"c\"\r\n            class=\"\r\n              size-6 cursor-pointer rounded-full ring-2 ring-transparent\r\n              ring-offset-2 transition-all\r\n            \"\r\n            :class=\"[`\r\n              bg-${c}\r\n            `, currentColor === c ? 'scale-110 ring-slate-400' : `\r\n              hover:scale-110\r\n            `]\"\r\n            :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\r\n            @click=\"currentColor = c\"\r\n          />\r\n        </view>\r\n      </view>\r\n\r\n      <view class=\"space-y-3\">\r\n        <view\r\n          class=\"\r\n            text-sm font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \"\r\n        >\r\n          Size\r\n        </view>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view\r\n            v-for=\"s in chipSizes\" :key=\"s\"\r\n            class=\"\r\n              cursor-pointer rounded-full border px-3 py-1.5 text-xs\r\n              transition-colors\r\n            \"\r\n            :class=\"currentSize === s ? `\r\n              border-slate-900 bg-slate-900 text-white\r\n              dark:bg-white dark:text-slate-900\r\n            ` : `\r\n              border-slate-300 bg-transparent text-slate-600\r\n              hover:border-slate-400\r\n            `\"\r\n            @click=\"currentSize = s\"\r\n          >\r\n            {{ s }}\r\n          </view>\r\n        </view>\r\n      </view>\r\n\r\n      <view class=\"space-y-3\">\r\n        <view\r\n          class=\"\r\n            text-sm font-medium text-slate-500\r\n            dark:text-slate-200\r\n          \"\r\n        >\r\n          Position\r\n        </view>\r\n        <view class=\"flex flex-wrap gap-2\">\r\n          <view\r\n            v-for=\"p in chipPositions\" :key=\"p\"\r\n            class=\"\r\n              cursor-pointer rounded-full border px-3 py-1.5 text-xs\r\n              transition-colors\r\n            \"\r\n            :class=\"currentPosition === p ? `\r\n              border-slate-900 bg-slate-900 text-white\r\n              dark:bg-white dark:text-slate-900\r\n            ` : `\r\n              border-slate-300 bg-transparent text-slate-600\r\n              hover:border-slate-400\r\n            `\"\r\n            @click=\"currentPosition = p\"\r\n          >\r\n            {{ p }}\r\n          </view>\r\n        </view>\r\n      </view>\r\n\r\n      <view class=\"flex flex-wrap items-center gap-3\">\r\n        <view class=\"text-sm text-slate-500\">\r\n          Text:\r\n        </view>\r\n        <RebornInput v-model=\"chipText\" :rounded=\"false\" />\r\n        <view class=\"ml-auto\">\r\n          <view class=\"rounded border px-3 py-1 text-sm\" @tap=\"showChip = !showChip\">\r\n            {{ showChip ? 'Hide' : 'Show' }}\r\n          </view>\r\n        </view>\r\n      </view>\r\n    </RebornCard>\r\n    <RebornCard title=\"Preview\" custom-class=\"flex flex-wrap gap-3\">\r\n      <RebornChip\r\n        v-model:show=\"showChip\" :color=\"currentColor\" :size=\"currentSize\" :position=\"currentPosition\"\r\n        :text=\"chipText\"\r\n      >\r\n        <view\r\n          class=\"\r\n            flex size-16 items-center justify-center rounded-lg bg-slate-100\r\n            dark:bg-slate-800\r\n          \"\r\n        >\r\n          <text\r\n            class=\"\r\n              text-xs text-slate-500\r\n              dark:text-slate-200\r\n            \"\r\n          >\r\n            Target\r\n          </text>\r\n        </view>\r\n      </RebornChip>\r\n      <RebornChip\r\n        v-model:show=\"showChip\" :color=\"currentColor\" :size=\"currentSize\" :position=\"currentPosition\"\r\n        :text=\"chipText\" inset\r\n      >\r\n        <image\r\n          src=\"https://github.com/benjamincanac.png\" class=\"\r\n            size-12 rounded-full\r\n          \"\r\n        />\r\n      </RebornChip>\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-chip"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-chip/RebornChip.vue",
+      "app/components/reborn/ui/reborn-chip/index.ts",
+      "app/components/reborn/ui/reborn-chip/reborn-chip.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-chip/RebornChip.vue",
+      "packages/uniapp-project/src/components/reborn-chip/index.ts",
+      "packages/uniapp-project/src/components/reborn-chip/reborn-chip.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/button/reborn-chip.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "ff7f63b72891f3ff60c866ab0e7a0b587678c9f2",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "svg-mask",
+  "title": "SVG 遮罩",
+  "description": "通过悬停与鼠标移动揭示内容的动态 SVG 遮罩组件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "用于自定义样式的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "size",
+      "type": "number",
+      "required": false,
+      "description": "遮罩的初始大小（像素）。",
+      "default": "10"
+    },
+    {
+      "name": "revealSize",
+      "type": "number",
+      "required": false,
+      "description": "悬停时遮罩的大小（像素）。",
+      "default": "600"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "base",
+      "description": ""
+    },
+    {
+      "name": "reveal",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex h-[40rem] w-full items-center justify-center overflow-hidden\">\r\n    <SVGMask class=\"h-[40rem] rounded-md border\">\r\n      <template #base>\r\n        The first rule of <span class=\"text-red-500\">MRR Club</span> is you do not talk about MRR\r\n        Club. The second rule of MRR Club is you DO NOT talk about\r\n        <span class=\"text-red-500\">MRR Club</span>.\r\n      </template>\r\n      <template #reveal>\r\n        <p class=\"mx-auto max-w-4xl text-center text-4xl font-bold text-slate-800\">\r\n          The first rule of MRR Club is you do not talk about MRR Club. The second rule of MRR Club\r\n          is you DO NOT talk about MRR Club.\r\n        </p>\r\n      </template>\r\n    </SVGMask>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add svg-mask"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/svg-mask/SVGMask.vue",
+      "app/components/reborn/ui/svg-mask/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/svg-mask.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "b5af0d2edf27a479837694911423863f448e6b6c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

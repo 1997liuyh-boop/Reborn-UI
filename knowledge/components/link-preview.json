@@ -1,0 +1,57 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "link-preview",
+  "title": "链接预览",
+  "description": "为锚点生成动态链接预览。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\r\n    <p class=\"mx-auto mb-10 max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\r\n      <LinkPreview url=\"https://tailwindcss.com\" class=\"font-bold\">\r\n        Tailwind CSS\r\n      </LinkPreview>\r\n      and\r\n      <LinkPreview url=\"https://motion.unovue.com/\" class=\"font-bold\">\r\n        motion-v\r\n      </LinkPreview>\r\n      are a great way to build modern websites.\r\n    </p>\r\n    <p class=\"mx-auto max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\r\n      Visit\r\n      <LinkPreview url=\"https://reborn-ui.com\" :width=\"400\" :height=\"200\">\r\n        <span class=\"bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text font-bold text-transparent\">\r\n          Reborn UI\r\n        </span>\r\n      </LinkPreview>\r\n      for more cool components\r\n    </p>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add link-preview"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/link-preview/LinkPreview.vue",
+      "app/components/reborn/ui/link-preview/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/link-preview.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "4bd9f133ff700ea078db5f7dbb2b7ff6872bbced",
+    "hasOverride": false,
+    "extractors": {
+      "web": "partial",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

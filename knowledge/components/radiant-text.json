@@ -1,0 +1,78 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "radiant-text",
+  "title": "光辉文字",
+  "description": "为文字添加耀眼的高光效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "duration",
+      "type": "number",
+      "default": "10",
+      "required": false,
+      "description": "动画持续时间（秒）。"
+    },
+    {
+      "name": "radiantWidth",
+      "type": "number",
+      "default": "100",
+      "required": false,
+      "description": "高光动画的宽度。"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <RadiantText\r\n    class=\"inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-600 hover:duration-300 hover:dark:text-neutral-400\"\r\n    :duration=\"5\">\r\n    <span class=\"text-3xl font-bold\">✨ Introducing Reborn UI</span>\r\n  </RadiantText>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add radiant-text"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/radiant-text/RadiantText.vue",
+      "app/components/reborn/ui/radiant-text/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/radiant-text.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e9f198334e523c572baebe9c8ca3b1b0705a4bd1",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

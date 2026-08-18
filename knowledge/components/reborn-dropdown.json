@@ -1,0 +1,193 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-dropdown",
+  "title": "Dropdown 下拉菜单",
+  "description": "将动作或菜单折叠到下拉菜单中，悬停或点击触发元素以展开更多操作。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "splitButton",
+      "type": "boolean",
+      "required": false,
+      "description": "是否呈现为按钮组模式，左侧为功能按钮，右侧为触发下拉的箭头按钮",
+      "default": "false"
+    },
+    {
+      "name": "hideOnClick",
+      "type": "boolean",
+      "required": false,
+      "description": "点击菜单项后是否自动隐藏下拉菜单",
+      "default": "true"
+    },
+    {
+      "name": "trigger",
+      "type": "\"hover\" | \"click\"",
+      "required": false,
+      "description": "'hover'",
+      "default": "\"hover\""
+    },
+    {
+      "name": "openDelay",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "100"
+    },
+    {
+      "name": "closeDelay",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "200"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "required": false,
+      "description": "是否禁用下拉菜单",
+      "default": "false"
+    },
+    {
+      "name": "size",
+      "type": "(typeof dropdownSizes)[number]",
+      "required": false,
+      "description": "'lg'",
+      "default": "\"md\""
+    },
+    {
+      "name": "color",
+      "type": "(typeof dropdownColors)[number]",
+      "required": false,
+      "description": "'success' \\",
+      "default": "\"primary\""
+    },
+    {
+      "name": "placement",
+      "type": "\"bottom-start\" | \"bottom\" | \"bottom-end\" | \"top-start\" | \"top\" | \"top-end\"",
+      "required": false,
+      "description": "'bottom-end' \\",
+      "default": "\"bottom-start\""
+    },
+    {
+      "name": "portal",
+      "type": "SelectTriggerProps[\"portal\"]",
+      "required": false,
+      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪",
+      "default": "true"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\n    wrapper: ClassValue;\n    trigger: ClassValue;\n    splitMain: ClassValue;\n    splitArrow: ClassValue;\n    dropdown: ClassValue;\n    item: ClassValue;\n    divider: ClassValue;\n    icon: ClassValue;\n    label: ClassValue;\n  }>",
+      "required": false,
+      "description": "UI 局部重写配置，详见下方 UI 对象说明",
+      "default": "{}"
+    },
+    {
+      "name": "command",
+      "type": "string",
+      "required": false,
+      "description": "点击时通过 RebornDropdown 的 `command` 事件传递的标识值",
+      "default": "\"\""
+    },
+    {
+      "name": "divided",
+      "type": "boolean",
+      "required": false,
+      "description": "是否在该菜单项上方显示一条分隔线",
+      "default": "false"
+    }
+  ],
+  "events": [
+    {
+      "name": "command",
+      "payload": "(e: \"command\", key: string): void;",
+      "description": "菜单项被点击时触发"
+    },
+    {
+      "name": "visible-change",
+      "payload": "(e: \"visible-change\", visible: boolean): void;",
+      "description": "下拉面板展开/收起状态变化时触发"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": "触发下拉的元素。split-button 模式下为左侧功能按钮的内容"
+    },
+    {
+      "name": "dropdown",
+      "description": "下拉菜单面板内容，通常放入 RebornDropdownItem"
+    },
+    {
+      "name": "icon",
+      "description": "菜单项左侧图标"
+    }
+  ],
+  "exposes": [
+    {
+      "name": "isOpen",
+      "description": ""
+    },
+    {
+      "name": "open",
+      "description": ""
+    },
+    {
+      "name": "close",
+      "description": ""
+    },
+    {
+      "name": "toggle",
+      "description": ""
+    }
+  ],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport RebornDropdown from \"~/components/reborn/ui/reborn-dropdown/RebornDropdown.vue\";\nimport RebornDropdownItem from \"~/components/reborn/ui/reborn-dropdown/RebornDropdownItem.vue\";\nimport RebornButton from \"~/components/reborn/ui/reborn-button/RebornButton.vue\";\nimport { dropdownColors, dropdownSizes } from \"~/components/reborn/ui/reborn-dropdown/reborn-dropdown.config\";\n\n// --- Playground 状态 ---\nconst state = ref<Record<string, any>>({\n  trigger: \"hover\",\n  splitButton: false,\n  hideOnClick: true,\n  size: \"md\",\n  color: \"primary\",\n  disabled: false,\n  placement: \"bottom-start\",\n});\n\nconst lastCommand = ref(\"\");\n\nfunction handleCommand(key: string) {\n  lastCommand.value = key;\n}\n\n// --- 控制面板配置 ---\nconst triggerOptions = [\n  { label: \"Hover 悬浮\", value: \"hover\" },\n  { label: \"Click 点击\", value: \"click\" },\n];\n\nconst placementOptions = [\n  { label: \"左下 (bottom-start)\", value: \"bottom-start\" },\n  { label: \"底部居中 (bottom)\", value: \"bottom\" },\n  { label: \"右下 (bottom-end)\", value: \"bottom-end\" },\n  { label: \"左上 (top-start)\", value: \"top-start\" },\n  { label: \"顶部居中 (top)\", value: \"top\" },\n  { label: \"右上 (top-end)\", value: \"top-end\" },\n];\n\nconst controls: any = [\n  {\n    title: \"基础属性\",\n    children: [\n      {\n        label: \"触发方式\",\n        key: \"trigger\",\n        component: \"select\" as const,\n        defaultValue: \"hover\",\n        props: { options: triggerOptions },\n      },\n      {\n        label: \"尺寸规格\",\n        key: \"size\",\n        component: \"select\" as const,\n        defaultValue: \"md\",\n        props: {\n          options: dropdownSizes.map((s) => ({ label: s.toUpperCase(), value: s })),\n        },\n      },\n      {\n        label: \"配色方案\",\n        key: \"color\",\n        component: \"select\" as const,\n        defaultValue: \"primary\",\n        props: {\n          options: dropdownColors.map((c) => ({\n            label: c.charAt(0).toUpperCase() + c.slice(1),\n            value: c,\n          })),\n        },\n      },\n      {\n        label: \"弹出位置\",\n        key: \"placement\",\n        component: \"select\" as const,\n        defaultValue: \"bottom-start\",\n        props: { options: placementOptions },\n      },\n    ],\n  },\n  {\n    title: \"行为控制\",\n    children: [\n      { label: \"按钮组模式\", key: \"splitButton\", component: \"checkbox\" as const, defaultValue: false },\n      { label: \"点击后隐藏菜单\", key: \"hideOnClick\", component: \"checkbox\" as const, defaultValue: true },\n      { label: \"禁用状态\", key: \"disabled\", component: \"checkbox\" as const, defaultValue: false },\n    ],\n  },\n];\n</script>\n\n<template>\n  <div class=\"flex flex-col gap-16 pb-24\">\n    <!-- 标题头 -->\n    <div class=\"flex flex-col gap-2\">\n      <h2 class=\"text-3xl font-bold tracking-tight text-gray-900 dark:text-white\">Dropdown 下拉菜单</h2>\n      <p class=\"text-lg text-gray-500 dark:text-gray-400\">\n        将操作折叠到下拉菜单中，悬停或点击触发元素以展开更多操作。\n      </p>\n    </div>\n\n    <!-- 交互演练场 -->\n    <Playground\n      v-model=\"state\"\n      :controls=\"controls\"\n      component-name=\"RebornDropdown\"\n      title=\"交互体验\"\n      description=\"通过左侧面板实时调节属性，在右侧预览视觉效果\"\n    >\n      <div class=\"flex flex-col items-center gap-4\">\n        <RebornDropdown\n          :trigger=\"state.trigger\"\n          :split-button=\"state.splitButton\"\n          :hide-on-click=\"state.hideOnClick\"\n          :size=\"state.size\"\n          :color=\"state.color\"\n          :disabled=\"state.disabled\"\n          :placement=\"state.placement\"\n          @command=\"handleCommand\"\n        >\n          <RebornButton :size=\"state.size\" :color=\"state.color\" :disabled=\"state.disabled\">\n            {{ state.splitButton ? \"提交操作\" : \"下拉菜单\" }}\n          </RebornButton>\n          <template #dropdown>\n            <RebornDropdownItem command=\"new\">\n              <template #icon>\n                <Icon name=\"lucide:plus\" class=\"size-4\" />\n              </template>\n              新建文件\n            </RebornDropdownItem>\n            <RebornDropdownItem command=\"edit\">\n              <template #icon>\n                <Icon name=\"lucide:pencil\" class=\"size-4\" />\n              </template>\n              编辑内容\n            </RebornDropdownItem>\n            <RebornDropdownItem command=\"share\" divided>\n              <template #icon>\n                <Icon name=\"lucide:share-2\" class=\"size-4\" />\n              </template>\n              分享链接\n            </RebornDropdownItem>\n            <RebornDropdownItem command=\"download\">\n              <template #icon>\n                <Icon name=\"lucide:download\" class=\"size-4\" />\n              </template>\n              下载文件\n            </RebornDropdownItem>\n            <RebornDropdownItem command=\"delete\" divided disabled>\n              <template #icon>\n                <Icon name=\"lucide:trash-2\" class=\"size-4\" />\n              </template>\n              删除（禁用）\n            </RebornDropdownItem>\n          </template>\n        </RebornDropdown>\n        <p v-if=\"lastCommand\" class=\"text-xs text-gray-400 font-mono\">\n          最后触发: @command=\"{{ lastCommand }}\"\n        </p>\n      </div>\n    </Playground>\n\n    <!-- 变体展示区 -->\n    <section class=\"space-y-12\">\n      <!-- 色彩矩阵 -->\n      <div class=\"space-y-6\">\n        <div class=\"flex items-center gap-3\">\n          <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">核心色彩</h3>\n          <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\n        </div>\n        <div class=\"grid gap-4 sm:grid-cols-2 lg:grid-cols-3\">\n          <div\n            v-for=\"c in dropdownColors\"\n            :key=\"c\"\n            class=\"flex items-center justify-between rounded-2xl border border-gray-50 bg-white p-5 transition-all hover:border-gray-200 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900\"\n          >\n            <span class=\"text-xs font-bold text-gray-400 uppercase tracking-tighter\">{{ c }}</span>\n            <RebornDropdown :color=\"c\" size=\"sm\" @command=\"handleCommand\">\n              <RebornButton :color=\"c\" size=\"sm\">操作</RebornButton>\n              <template #dropdown>\n                <RebornDropdownItem command=\"edit\">编辑</RebornDropdownItem>\n                <RebornDropdownItem command=\"delete\">删除</RebornDropdownItem>\n              </template>\n            </RebornDropdown>\n          </div>\n        </div>\n      </div>\n\n      <!-- 尺寸对比 -->\n      <div class=\"space-y-6\">\n        <div class=\"flex items-center gap-3\">\n          <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">尺寸规范</h3>\n          <div class=\"h-px flex-1 bg-gray-100 dark:bg-gray-800\" />\n        </div>\n        <div\n          class=\"flex h-[180px] items-center justify-center gap-10 rounded-2xl border border-gray-100 bg-gray-50/30 p-8 dark:border-gray-800 dark:bg-gray-900/30\"\n        >\n          <div v-for=\"s in dropdownSizes\" :key=\"s\" class=\"flex flex-col items-center gap-4\">\n            <RebornDropdown :size=\"s\" color=\"info\" @command=\"handleCommand\">\n              <RebornButton :size=\"s\" color=\"info\">{{ s.toUpperCase() }}</RebornButton>\n              <template #dropdown>\n                <RebornDropdownItem command=\"a\">选项 A</RebornDropdownItem>\n                <RebornDropdownItem command=\"b\">选项 B</RebornDropdownItem>\n              </template>\n            </RebornDropdown>\n          </div>\n        </div>\n      </div>\n    </section>\n\n    <!-- 进阶场景 -->\n    <section class=\"space-y-8\">\n      <div class=\"flex items-center gap-3\">\n        <h3 class=\"text-xl font-bold text-gray-900 dark:text-gray-100\">进阶场景</h3>\n        <p class=\"text-sm text-gray-500\">满足复杂业务需求</p>\n      </div>\n\n      <div class=\"grid gap-8 md:grid-cols-2\">\n        <!-- Split Button 模式 -->\n        <div class=\"rounded-3xl bg-gray-50/50 p-8 dark:bg-gray-900/50\">\n          <h4 class=\"mb-4 text-sm font-bold text-gray-400 uppercase tracking-widest\">Split Button</h4>\n          <p class=\"mb-6 text-xs text-gray-500\">\n            split-button 模式下，左侧为功能按钮，右侧箭头触发下拉。\n          </p>\n          <div class=\"flex items-center justify-center\">\n            <RebornDropdown split-button color=\"warning\" @command=\"handleCommand\">\n              更多操作\n              <template #dropdown>\n                <RebornDropdownItem command=\"export\">\n                  <template #icon><Icon name=\"lucide:file-output\" class=\"size-4\" /></template>\n                  导出数据\n                </RebornDropdownItem>\n                <RebornDropdownItem command=\"import\">\n                  <template #icon><Icon name=\"lucide:file-input\" class=\"size-4\" /></template>\n                  导入数据\n                </RebornDropdownItem>\n                <RebornDropdownItem command=\"settings\" divided>\n                  <template #icon><Icon name=\"lucide:settings\" class=\"size-4\" /></template>\n                  设置\n                </RebornDropdownItem>\n              </template>\n            </RebornDropdown>\n          </div>\n        </div>\n\n        <!-- Click 触发 + 分隔线 -->\n        <div class=\"rounded-3xl bg-indigo-50/30 p-8 dark:bg-indigo-950/10 border-2 border-indigo-100 dark:border-indigo-900/50\">\n          <h4 class=\"mb-4 text-sm font-bold text-indigo-400 uppercase tracking-widest\">Click Trigger + Dividers</h4>\n          <p class=\"mb-6 text-xs text-indigo-500/70\">\n            点击触发下拉，通过 divided 属性在项目间插入分隔线，区分操作层级。\n          </p>\n          <div class=\"flex items-center justify-center\">\n            <RebornDropdown trigger=\"click\" color=\"secondary\" :hide-on-click=\"false\" @command=\"handleCommand\">\n              <RebornButton color=\"secondary\" variant=\"outline\">\n                <template #trailing>\n                  <Icon name=\"lucide:chevron-down\" class=\"size-4\" />\n                </template>\n                个人中心\n              </RebornButton>\n              <template #dropdown>\n                <RebornDropdownItem command=\"profile\">个人资料</RebornDropdownItem>\n                <RebornDropdownItem command=\"billing\">账单管理</RebornDropdownItem>\n                <RebornDropdownItem command=\"security\" divided>安全设置</RebornDropdownItem>\n                <RebornDropdownItem command=\"api\">API 密钥</RebornDropdownItem>\n                <RebornDropdownItem command=\"logout\" divided>\n                  <template #icon><Icon name=\"lucide:log-out\" class=\"size-4\" /></template>\n                  退出登录\n                </RebornDropdownItem>\n              </template>\n            </RebornDropdown>\n          </div>\n        </div>\n\n        <!-- 纯文本触发 -->\n        <div class=\"rounded-3xl bg-emerald-50/30 p-8 dark:bg-emerald-950/10 border-2 border-emerald-100 dark:border-emerald-900/50\">\n          <h4 class=\"mb-4 text-sm font-bold text-emerald-400 uppercase tracking-widest\">任意触发元素</h4>\n          <p class=\"mb-6 text-xs text-emerald-500/70\">\n            默认插槽支持任意元素作为触发器，不限于按钮。\n          </p>\n          <div class=\"flex items-center justify-center\">\n            <RebornDropdown trigger=\"click\" @command=\"handleCommand\">\n              <span class=\"cursor-pointer border-b-2 border-dashed border-emerald-400 text-emerald-600 dark:text-emerald-400 font-medium transition-all hover:border-emerald-600 hover:text-emerald-700\">\n                点击这段文字\n              </span>\n              <template #dropdown>\n                <RebornDropdownItem command=\"view\">查看详情</RebornDropdownItem>\n                <RebornDropdownItem command=\"copy\">复制链接</RebornDropdownItem>\n              </template>\n            </RebornDropdown>\n          </div>\n        </div>\n\n        <!-- hover 触发 + 丰富内容 -->\n        <div class=\"rounded-3xl bg-orange-50/30 p-8 dark:bg-orange-950/10 border-2 border-orange-100 dark:border-orange-900/50\">\n          <h4 class=\"mb-4 text-sm font-bold text-orange-400 uppercase tracking-widest\">Hover 悬停菜单</h4>\n          <p class=\"mb-6 text-xs text-orange-500/70\">\n            默认 hover 触发，无需点击即可展开。鼠标移入即显示、移出 120ms 后自动关闭。\n          </p>\n          <div class=\"flex items-center justify-center\">\n            <RebornDropdown color=\"error\" @command=\"handleCommand\">\n              <RebornButton color=\"error\" variant=\"soft\">\n                危险操作\n                <template #trailing>\n                  <Icon name=\"lucide:alert-triangle\" class=\"size-4\" />\n                </template>\n              </RebornButton>\n              <template #dropdown>\n                <RebornDropdownItem command=\"archive\">归档项目</RebornDropdownItem>\n                <RebornDropdownItem command=\"transfer\">转移所有权</RebornDropdownItem>\n                <RebornDropdownItem command=\"delete\" divided disabled>\n                  <template #icon><Icon name=\"lucide:trash-2\" class=\"size-4\" /></template>\n                  永久删除\n                </RebornDropdownItem>\n              </template>\n            </RebornDropdown>\n          </div>\n        </div>\n      </div>\n    </section>\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [
+    "reborn-select-trigger"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "clsx"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-dropdown"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-dropdown/RebornDropdown.vue",
+      "app/components/reborn/ui/reborn-dropdown/RebornDropdownItem.vue",
+      "app/components/reborn/ui/reborn-dropdown/index.ts",
+      "app/components/reborn/ui/reborn-dropdown/reborn-dropdown.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-dropdown.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "fbeebe15f5af8926a3246f5608c729a476554535",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

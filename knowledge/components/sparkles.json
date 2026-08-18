@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "sparkles",
+  "title": "sparkles",
+  "description": "",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "background",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"#0d47a1\""
+    },
+    {
+      "name": "particleColor",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"#ffffff\""
+    },
+    {
+      "name": "minSize",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "1"
+    },
+    {
+      "name": "maxSize",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "3"
+    },
+    {
+      "name": "speed",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "4"
+    },
+    {
+      "name": "particleDensity",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "120"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst particlesColor = computed(() => (useColorMode().value === \"dark\" ? \"#FFFFFF\" : \"#000000\"));\r\n</script>\r\n<template>\r\n  <div\r\n    class=\"flex h-[40rem] w-full flex-col items-center justify-center overflow-hidden rounded-md bg-white dark:bg-black\">\r\n    <h1 class=\"relative z-20 text-center text-3xl font-bold text-black md:text-7xl lg:text-9xl dark:text-white\">\r\n      Reborn UI\r\n    </h1>\r\n    <div class=\"relative h-40 w-[40rem]\">\r\n      <div\r\n        class=\"absolute inset-x-20 top-0 h-[2px] w-3/4 bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-sm\" />\r\n      <div\r\n        class=\"absolute inset-x-20 top-0 h-px w-3/4 bg-gradient-to-r from-transparent via-indigo-500 to-transparent\" />\r\n      <div\r\n        class=\"absolute inset-x-60 top-0 h-[5px] w-1/4 bg-gradient-to-r from-transparent via-sky-500 to-transparent blur-sm\" />\r\n      <div class=\"absolute inset-x-60 top-0 h-px w-1/4 bg-gradient-to-r from-transparent via-sky-500 to-transparent\" />\r\n\r\n      <Sparkles background=\"transparent\" :min-size=\"0.4\" :max-size=\"1.4\" :particle-density=\"1200\" class=\"size-full\"\r\n        :particle-color=\"particlesColor\" />\r\n\r\n      <div\r\n        class=\"absolute inset-0 size-full bg-white [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)] dark:bg-black\" />\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst particlesColor = computed(() => (useColorMode().value === \"dark\" ? \"#FFFFFF\" : \"#000000\"));\r\n</script>\r\n<template>\r\n  <div\r\n    class=\"relative flex h-[40rem] w-full flex-col items-center justify-center overflow-hidden rounded-md bg-white dark:bg-black\"\r\n  >\r\n    <div class=\"absolute inset-0 h-screen w-full\">\r\n      <Sparkles\r\n        background=\"transparent\"\r\n        :min-size=\"0.8\"\r\n        :max-size=\"2\"\r\n        :particle-density=\"800\"\r\n        class=\"size-full\"\r\n        :particle-color=\"particlesColor\"\r\n      />\r\n    </div>\r\n    <h1\r\n      class=\"relative z-20 text-center text-3xl font-bold text-black md:text-7xl lg:text-6xl dark:text-white\"\r\n    >\r\n      Build great products\r\n    </h1>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add sparkles"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/sparkles/Sparkles.vue",
+      "app/components/reborn/ui/sparkles/index.ts"
+    ]
+  },
+  "docPath": null,
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "598815ccddf9564397aad1c76e6e969fa71ac600",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "missing"
+    }
+  }
+}

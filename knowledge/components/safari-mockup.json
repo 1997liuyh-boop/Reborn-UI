@@ -1,0 +1,82 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "safari-mockup",
+  "title": "Safari 模型",
+  "description": "Safari 浏览器的 SVG 模型。",
+  "category": "media",
+  "tags": [
+    "css",
+    "tailwind",
+    "device-mockup",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "url",
+      "type": "string",
+      "required": false,
+      "description": "模型地址栏中显示的 URL。",
+      "default": "null"
+    },
+    {
+      "name": "src",
+      "type": "string",
+      "required": false,
+      "description": "在模型中显示的图片 URL。",
+      "default": "null"
+    },
+    {
+      "name": "width",
+      "type": "number",
+      "required": false,
+      "description": "模型 SVG 的宽度（像素）。",
+      "default": "1203"
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "required": false,
+      "description": "模型 SVG 的高度（像素）。",
+      "default": "753"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"relative p-4\">\r\n    <SafariMockup url=\"reborn-ui.com\" src=\"/\" class=\"size-full\" />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add safari-mockup"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/safari-mockup/SafariMockup.vue",
+      "app/components/reborn/ui/safari-mockup/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/device-mocks/safari-mockup.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "811e63dae64815b8610e56846613a2506ea48dc0",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "input",
+  "title": "输入框",
+  "description": "具有径向悬停效果的多功能动态输入框，适配现代 Web 应用。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "defaultValue",
+      "type": "string | number",
+      "required": false,
+      "description": "\"\"",
+      "default": "number"
+    },
+    {
+      "name": "modelValue",
+      "type": "string | number",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "用于自定义样式的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "containerClass",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "容器的额外 CSS 类，用于自定义样式。",
+      "default": "\"\""
+    }
+  ],
+  "events": [
+    {
+      "name": "update:modelValue",
+      "payload": "(e: \"update:modelValue\", payload: string | number): void;",
+      "description": ""
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\r\n    <label\r\n      for=\"inputDemo\"\r\n      class=\"ml-4 w-full max-w-sm text-sm font-medium text-gray-700 dark:text-gray-200\"\r\n      >Hover over below input</label\r\n    >\r\n    <IInput\r\n      id=\"inputDemo\"\r\n      placeholder=\"Hover over me\"\r\n      container-class=\"w-full max-w-sm\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add input"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/input/IInput.vue",
+      "app/components/reborn/ui/input/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/input.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "bbf7592bbf45e014c28c26aef2eaa4d96c45d9b8",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

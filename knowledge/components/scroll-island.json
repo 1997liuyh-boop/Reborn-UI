@@ -1,0 +1,83 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "scroll-island",
+  "title": "滚动岛",
+  "description": "具备动态动画的交互组件，展示滚动进度，并带可展开的附加内容区域。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "number-flow"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "自定义样式的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "组件头部显示的标题。",
+      "default": "\"Progress\""
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "required": false,
+      "description": "组件高度。",
+      "default": "44"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex items-center justify-center p-8\">\r\n    <span class=\"text-primary text-lg\">\r\n      See the scroll island in action on the top of this page\r\n    </span>\r\n    <ScrollIsland title=\"Scroll Island\">\r\n      <div class=\"my-3 flex flex-col gap-2\">\r\n        <a href=\"#install-using-cli\"># Install using CLI</a>\r\n        <a href=\"#install-manually\"># Install Manually</a>\r\n        <a href=\"#api\"># API</a>\r\n        <a href=\"#features\"># Features</a>\r\n        <a href=\"#credits\"># Credits</a>\r\n      </div>\r\n    </ScrollIsland>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@number-flow/vue",
+    "@vueuse/core",
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add scroll-island"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/scroll-island/ScrollIsland.vue",
+      "app/components/reborn/ui/scroll-island/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/scroll-island.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e791d2dccfa51ed0a627fa1757bd29e13d739de6",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

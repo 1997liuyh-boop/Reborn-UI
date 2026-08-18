@@ -1,0 +1,89 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "blur-reveal",
+  "title": "模糊揭示",
+  "description": "平滑模糊淡入内容的组件。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "模糊淡入动画的持续时间。",
+      "default": "1"
+    },
+    {
+      "name": "delay",
+      "type": "number",
+      "required": false,
+      "description": "子组件依次揭示的延迟。",
+      "default": "2"
+    },
+    {
+      "name": "blur",
+      "type": "string",
+      "required": false,
+      "description": "应用于子组件的模糊量。",
+      "default": "\"20px\""
+    },
+    {
+      "name": "yOffset",
+      "type": "number",
+      "required": false,
+      "description": "入场动画的垂直偏移距离。",
+      "default": "20"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <ClientOnly>\r\n    <BlurReveal\r\n      :delay=\"0.2\"\r\n      :duration=\"0.75\"\r\n      class=\"p-8\"\r\n    >\r\n      <h2 class=\"text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none\">Hey there 👋</h2>\r\n      <span class=\"text-xl tracking-tighter text-pretty sm:text-3xl xl:text-4xl/none\">\r\n        How is it going?\r\n      </span>\r\n    </BlurReveal>\r\n  </ClientOnly>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add blur-reveal"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/blur-reveal/BlurReveal.vue",
+      "app/components/reborn/ui/blur-reveal/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/blur-reveal.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "e0af947dcc92ff64f01b52775763e88c27379759",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

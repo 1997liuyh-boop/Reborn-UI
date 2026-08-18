@@ -1,0 +1,241 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-descriptions",
+  "title": "描述列表",
+  "description": "以键值对形式展示内容的容器组件，常用于详情页、信息面板等场景。支持有/无边框、水平/垂直方向、多列布局及富内容插槽。",
+  "category": "misc",
+  "tags": [],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "标题文字；也可通过 `title` 插槽完全自定义"
+    },
+    {
+      "name": "column",
+      "type": "number",
+      "required": false,
+      "description": "每行显示的列数（一项占一列，含标签 + 内容）",
+      "default": "3"
+    },
+    {
+      "name": "responsive",
+      "type": "boolean",
+      "required": false,
+      "description": "是否根据容器宽度自适应列数。`true`：< 480px 为 1 列，< 640px 最多 2 列，否则使用 `column",
+      "default": "true"
+    },
+    {
+      "name": "size",
+      "type": "DescriptionsSize",
+      "required": false,
+      "description": "'lg'",
+      "default": "\"md\""
+    },
+    {
+      "name": "border",
+      "type": "DescriptionsBorderMode",
+      "required": false,
+      "description": "'none'",
+      "default": "'divider' \\"
+    },
+    {
+      "name": "direction",
+      "type": "\"horizontal\" | \"vertical\"",
+      "required": false,
+      "description": "'horizontal'",
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "colon",
+      "type": "boolean",
+      "required": false,
+      "description": "标签后是否显示中文冒号",
+      "default": "true"
+    },
+    {
+      "name": "rounded",
+      "type": "boolean",
+      "required": false,
+      "description": "表格外层是否圆角",
+      "default": "true"
+    },
+    {
+      "name": "labelBackground",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "contentBackground",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "labelColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "contentColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "labelBold",
+      "type": "boolean",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "contentBold",
+      "type": "boolean",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "labelWidth",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "labelAlign",
+      "type": "DescriptionsAlign",
+      "required": false,
+      "description": "",
+      "default": "\"left\""
+    },
+    {
+      "name": "contentAlign",
+      "type": "DescriptionsAlign",
+      "required": false,
+      "description": "",
+      "default": "\"left\""
+    },
+    {
+      "name": "labelLineHeight",
+      "type": "DescriptionsLineHeightValue",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "contentLineHeight",
+      "type": "DescriptionsLineHeightValue",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "items",
+      "type": "DescriptionsItem[]",
+      "required": false,
+      "description": "数据驱动模式，见下方 [items 数据驱动](#items-数据驱动)"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "根节点自定义类名"
+    },
+    {
+      "name": "ui",
+      "type": "any",
+      "required": false,
+      "description": "内部区域追加 class，见下方 [自定义样式](#自定义样式ui-属性)",
+      "default": "{}"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "required": false,
+      "description": "标签文字"
+    },
+    {
+      "name": "span",
+      "type": "number",
+      "required": false,
+      "description": "占据列数；末项自动延伸以填满当前行剩余列",
+      "default": "1"
+    },
+    {
+      "name": "labelClass",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "contentClass",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "title",
+      "props": "() => any",
+      "description": "标题区（左上角），可覆盖 `title` prop"
+    },
+    {
+      "name": "actions",
+      "props": "() => any",
+      "description": "操作区（右上角），如按钮、链接"
+    },
+    {
+      "name": "default",
+      "props": "() => any",
+      "description": "描述项列表（放置 `RebornDescriptionsItem`）"
+    },
+    {
+      "name": "label",
+      "props": "() => any",
+      "description": "标签区自定义渲染"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport type {\r\n  DescriptionsAlign,\r\n  DescriptionsBorderMode,\r\n  DescriptionsLineHeight,\r\n  DescriptionsSize,\r\n} from \"~/components/reborn/ui/reborn-descriptions/reborn-descriptions.config\";\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport RebornCollapse from \"~/components/reborn/ui/reborn-collapse/RebornCollapse.vue\";\r\nimport RebornColorPicker from \"~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue\";\r\nimport {\r\n  descriptionsAligns,\r\n  descriptionsBorderModes,\r\n  descriptionsLineHeights,\r\n  descriptionsSizes,\r\n} from \"~/components/reborn/ui/reborn-descriptions/reborn-descriptions.config\";\r\nimport RebornDescriptions from \"~/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue\";\r\nimport RebornDescriptionsItem from \"~/components/reborn/ui/reborn-descriptions/RebornDescriptionsItem.vue\";\r\nimport RebornInput from \"~/components/reborn/ui/reborn-input/RebornInput.vue\";\r\nimport RebornRadio from \"~/components/reborn/ui/reborn-radio/RebornRadio.vue\";\r\nimport RebornRadioGroup from \"~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue\";\r\nimport RebornSelect from \"~/components/reborn/ui/reborn-select/RebornSelect.vue\";\r\nimport RebornSwitch from \"~/components/reborn/ui/reborn-switch/RebornSwitch.vue\";\r\n\r\n// ─── 交互配置演示 ─────────────────────────────────────────────────\r\n\r\nconst demoTitle = ref(\"用户信息\");\r\nconst demoColumn = ref(3);\r\nconst demoSize = ref<DescriptionsSize>(\"md\");\r\nconst demoBorder = ref<DescriptionsBorderMode>(\"bordered\");\r\nconst demoDirection = ref<\"horizontal\" | \"vertical\">(\"horizontal\");\r\nconst demoColon = ref(true);\r\nconst demoRounded = ref(true);\r\nconst demoResponsive = ref(true);\r\nconst demoLabelBackground = ref(\"\");\r\nconst demoContentBackground = ref(\"\");\r\nconst demoLabelAlign = ref<DescriptionsAlign>(\"left\");\r\nconst demoContentAlign = ref<DescriptionsAlign>(\"left\");\r\nconst demoLabelLineHeight = ref<DescriptionsLineHeight>(\"relaxed\");\r\nconst demoContentLineHeight = ref<DescriptionsLineHeight>(\"relaxed\");\r\nconst demoLabelLineHeightCustom = ref(\"\");\r\nconst demoContentLineHeightCustom = ref(\"\");\r\n\r\nconst alignLabels: Record<DescriptionsAlign, string> = {\r\n  left: \"左对齐\",\r\n  center: \"居中\",\r\n  right: \"右对齐\",\r\n};\r\n\r\nconst lineHeightLabels: Record<DescriptionsLineHeight, string> = {\r\n  none: \"紧凑 none\",\r\n  tight: \"较紧 tight\",\r\n  snug: \"略紧 snug\",\r\n  normal: \"标准 normal\",\r\n  relaxed: \"宽松 relaxed\",\r\n  loose: \"很松 loose\",\r\n};\r\n\r\nconst effectiveDemoLabelLineHeight = computed(\r\n  () => demoLabelLineHeightCustom.value.trim() || demoLabelLineHeight.value,\r\n);\r\nconst effectiveDemoContentLineHeight = computed(\r\n  () => demoContentLineHeightCustom.value.trim() || demoContentLineHeight.value,\r\n);\r\n\r\nconst borderSelectOptions = descriptionsBorderModes.map((m) => ({\r\n  label: m === \"bordered\" ? \"有边框 bordered\" : m === \"divider\" ? \"分割线 divider\" : \"无边框 none\",\r\n  value: m,\r\n}));\r\n\r\nconst colorMode = useColorMode();\r\n\r\n/** 演练场取色器图标：浅色与边框同色（gray-5），深色用 gray-4 保证可见 */\r\nconst demoColorPickerUi = computed(() => ({\r\n  icon:\r\n    colorMode.value === \"dark\"\r\n      ? \"text-gray-4 transition-transform duration-200\"\r\n      : \"text-gray-5 transition-transform duration-200\",\r\n}));\r\n\r\nfunction resetDemo() {\r\n  demoTitle.value = \"用户信息\";\r\n  demoColumn.value = 3;\r\n  demoSize.value = \"md\";\r\n  demoBorder.value = \"bordered\";\r\n  demoDirection.value = \"horizontal\";\r\n  demoColon.value = true;\r\n  demoRounded.value = true;\r\n  demoResponsive.value = true;\r\n  demoLabelBackground.value = \"\";\r\n  demoContentBackground.value = \"\";\r\n  demoLabelAlign.value = \"left\";\r\n  demoContentAlign.value = \"left\";\r\n  demoLabelLineHeight.value = \"relaxed\";\r\n  demoContentLineHeight.value = \"relaxed\";\r\n  demoLabelLineHeightCustom.value = \"\";\r\n  demoContentLineHeightCustom.value = \"\";\r\n}\r\n\r\n/** 关闭宽度自适应时，按列数估算表格最小宽度，供外层横轴滚动展示 */\r\nconst playgroundMinWidth = computed(() => {\r\n  if (demoResponsive.value) return undefined;\r\n  const cols = Math.max(Number(demoColumn.value) || 1, 1);\r\n  return `${cols * 280}px`;\r\n});\r\n\r\nconst playgroundItems = computed(() => [\r\n  { label: \"用户名\", value: \"阿尔法\" },\r\n  { label: \"手机号\", value: \"186 0000 0000\" },\r\n  { label: \"城市\", value: \"上海市浦东新区\" },\r\n  { label: \"账号状态\", slot: \"pg-status\" },\r\n  { label: \"账户余额\", value: \"¥ 8,888.00\" },\r\n  { label: \"注册时间\", value: \"2024-01-15 09:32\" },\r\n  {\r\n    label: \"个人简介\",\r\n    value: \"热爱开源，专注于构建优雅易用的前端组件库。\",\r\n    span: demoColumn.value,\r\n  },\r\n]);\r\n\r\n// ─── Showcase 数据 ───────────────────────────────────────────────\r\n\r\nconst orderItems = [\r\n  { label: \"订单编号\", value: \"ORD-2025-88190234\" },\r\n  { label: \"下单时间\", value: \"2025-12-01 14:30:08\" },\r\n  { label: \"收货人\", value: \"陈晨 / 186 0000 0000\" },\r\n  { label: \"收货地址\", value: \"上海市浦东新区世纪大道 1000 号\", span: 2 },\r\n  { label: \"商品金额\", value: \"¥ 1,299.00\" },\r\n  { label: \"优惠金额\", value: \"-¥ 100.00\" },\r\n  { label: \"运费\", value: \"¥ 0.00\" },\r\n  { label: \"实付金额\", slot: \"order-total\" },\r\n  { label: \"支付方式\", slot: \"order-payment\" },\r\n  { label: \"订单状态\", slot: \"order-status\" },\r\n];\r\n\r\nconst serverItems = [\r\n  { label: \"CPU\", value: \"Intel Xeon Gold 6348 × 2\" },\r\n  { label: \"内存\", value: \"256 GB DDR4 ECC\" },\r\n  { label: \"存储\", value: \"2 × 1.92TB NVMe SSD (RAID 1)\" },\r\n  { label: \"网络\", value: \"10 Gbps 双路 Bonding\" },\r\n  { label: \"操作系统\", value: \"Ubuntu Server 24.04 LTS\" },\r\n  { label: \"所在区域\", value: \"华东一区 / 上海数据中心\" },\r\n  { label: \"实例 ID\", value: \"i-0a1b2c3d4e5f6789\" },\r\n  { label: \"状态\", slot: \"server-status\" },\r\n  { label: \"创建时间\", value: \"2024-08-10 10:00:00\" },\r\n  { label: \"到期时间\", value: \"2026-08-10 00:00:00\", span: 2 },\r\n];\r\n\r\nconst productItems = [\r\n  { label: \"品牌\", value: \"Reborn Pro\" },\r\n  { label: \"型号\", value: \"R9 Ultra\" },\r\n  { label: \"重量\", value: \"185g\" },\r\n  { label: \"尺寸\", value: \"160 × 75 × 8.2mm\" },\r\n  { label: \"屏幕\", value: \"6.8″ AMOLED · 2K+\" },\r\n  { label: \"芯片\", value: \"Helio X99 Pro\" },\r\n];\r\n\r\nconst memberItems = [\r\n  { label: \"姓名\", value: \"苏木木\", labelSlot: \"member-name\" },\r\n  { label: \"工号\", value: \"RB-0042\", labelSlot: \"member-id\" },\r\n  { label: \"部门\", value: \"前端工程团队\", labelSlot: \"member-dept\" },\r\n  { label: \"职级\", slot: \"member-rank\", labelSlot: \"member-rank-label\" },\r\n  { label: \"联系方式\", value: \"sumuyu@reborn.dev\", labelSlot: \"member-contact\" },\r\n  { label: \"状态\", slot: \"member-status\", labelSlot: \"member-status-label\" },\r\n  { label: \"加入时间\", value: \"2023-03-01\", labelSlot: \"member-joined\" },\r\n  { label: \"技术栈\", slot: \"member-skills\", labelSlot: \"member-skills-label\", span: 2 },\r\n];\r\n\r\nconst skillList = [\"Vue 3\", \"TypeScript\", \"Tailwind CSS\", \"Nuxt 3\", \"Vite\"];\r\nconst certList = [\"官方认证商家\", \"极速发货\", \"七天无理由\", \"品质保证\"];\r\nconst categoryList = [\"电子数码\", \"智能穿戴\", \"配件周边\"];\r\n\r\n/** 逐项背景色 / 字体色 / class / 空值 / 命名插槽示例 */\r\nconst coloredItems = [\r\n  {\r\n    label: \"订单编号\",\r\n    value: \"ORD-2025-88190234\",\r\n    labelBackground: \"#E1F3D8\",\r\n    contentBackground: \"#FDE2E2\",\r\n    labelColor: \"#166534\",\r\n    contentColor: \"#991b1b\",\r\n    contentClass: \"font-mono tracking-wide\",\r\n  },\r\n  {\r\n    label: \"订单状态\",\r\n    value: \"配送中\",\r\n    contentColor: \"#374151\",\r\n  },\r\n  {\r\n    label: \"商品金额\",\r\n    value: \"¥ 1,299.00\",\r\n    contentColor: \"#374151\",\r\n  },\r\n  {\r\n    label: \"实付金额\",\r\n    value: \"¥ 1,199.00\",\r\n    labelBackground: \"#FDE2E2\",\r\n    contentColor: \"#dc2626\",\r\n    contentBold: true,\r\n    labelBold: true,\r\n    labelColor: \"#991b1b\",\r\n  },\r\n  {\r\n    label: \"发票信息\",\r\n    value: null,\r\n    contentColor: \"#9ca3af\",\r\n    contentClass: \"italic\",\r\n  },\r\n  {\r\n    label: \"支付方式\",\r\n    slot: \"colored-payment\",\r\n    labelSlot: \"colored-payment-label\",\r\n    labelBackground: \"#EFF6FF\",\r\n    labelColor: \"#1d4ed8\",\r\n  },\r\n  {\r\n    label: \"收货地址\",\r\n    value: \"上海市浦东新区世纪大道 1000 号\",\r\n    span: 2,\r\n    contentColor: \"#374151\",\r\n    labelClass: \"font-semibold\",\r\n  },\r\n];\r\n\r\n/** items 用法代码示例：默认收起 */\r\nconst itemsCodeExpanded = ref(false);\r\n</script>\r\n\r\n<template>\r\n  <div class=\"mx-auto flex w-full max-w-6xl flex-col gap-12\">\r\n    <!-- ═══ 交互配置演示（上下布局） ═══ -->\r\n    <section>\r\n      <div class=\"mb-4 flex flex-wrap items-center justify-between gap-3\">\r\n        <h3 class=\"border-primary border-l-4 pl-3 text-lg font-bold\">交互配置演示</h3>\r\n        <button\r\n          type=\"button\"\r\n          class=\"bg-primary/10 text-primary hover:bg-primary/20 flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase transition-all active:scale-95\"\r\n          @click=\"resetDemo\"\r\n        >\r\n          <Icon\r\n            name=\"lucide:rotate-ccw\"\r\n            size=\"12\"\r\n          />\r\n          重置配置\r\n        </button>\r\n      </div>\r\n\r\n      <div\r\n        class=\"grid grid-cols-1 gap-8 rounded-2xl border border-gray-100 bg-gray-50 p-6 md:grid-cols-2 lg:grid-cols-3 dark:border-gray-800 dark:bg-gray-900/50\"\r\n      >\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">排列方向</p>\r\n          <RebornRadioGroup v-model=\"demoDirection\">\r\n            <RebornRadio\r\n              value=\"horizontal\"\r\n              label=\"水平\"\r\n            />\r\n            <RebornRadio\r\n              value=\"vertical\"\r\n              label=\"垂直\"\r\n            />\r\n          </RebornRadioGroup>\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">列数</p>\r\n          <RebornRadioGroup v-model=\"demoColumn\">\r\n            <RebornRadio\r\n              v-for=\"n in [1, 2, 3, 4]\"\r\n              :key=\"n\"\r\n              :value=\"n\"\r\n              :label=\"String(n)\"\r\n            />\r\n          </RebornRadioGroup>\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">尺寸</p>\r\n          <RebornRadioGroup v-model=\"demoSize\">\r\n            <RebornRadio\r\n              v-for=\"s in descriptionsSizes\"\r\n              :key=\"s\"\r\n              :value=\"s\"\r\n              :label=\"s.toUpperCase()\"\r\n            />\r\n          </RebornRadioGroup>\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"text-sm font-medium text-gray-500\">宽度自适应</p>\r\n          <RebornSwitch\r\n            v-model=\"demoResponsive\"\r\n            active-label=\"开启\"\r\n            inactive-label=\"关闭\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"text-sm font-medium text-gray-500\">显示冒号</p>\r\n          <RebornSwitch\r\n            v-model=\"demoColon\"\r\n            active-label=\"显示\"\r\n            inactive-label=\"隐藏\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"text-sm font-medium text-gray-500\">表格外圆角</p>\r\n          <RebornSwitch\r\n            v-model=\"demoRounded\"\r\n            active-label=\"圆角\"\r\n            inactive-label=\"直角\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">边框模式</p>\r\n          <RebornSelect\r\n            v-model=\"demoBorder\"\r\n            :options=\"borderSelectOptions\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">标签背景</p>\r\n          <RebornColorPicker\r\n            v-model=\"demoLabelBackground\"\r\n            :ui=\"demoColorPickerUi\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">内容背景</p>\r\n          <RebornColorPicker\r\n            v-model=\"demoContentBackground\"\r\n            :ui=\"demoColorPickerUi\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">标题</p>\r\n          <RebornInput\r\n            v-model=\"demoTitle\"\r\n            placeholder=\"描述列表标题\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">标签对齐</p>\r\n          <RebornRadioGroup v-model=\"demoLabelAlign\">\r\n            <RebornRadio\r\n              v-for=\"align in descriptionsAligns\"\r\n              :key=\"align\"\r\n              :value=\"align\"\r\n              :label=\"alignLabels[align]\"\r\n            />\r\n          </RebornRadioGroup>\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">内容对齐</p>\r\n          <RebornRadioGroup v-model=\"demoContentAlign\">\r\n            <RebornRadio\r\n              v-for=\"align in descriptionsAligns\"\r\n              :key=\"align\"\r\n              :value=\"align\"\r\n              :label=\"alignLabels[align]\"\r\n            />\r\n          </RebornRadioGroup>\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">标签行高</p>\r\n          <RebornSelect\r\n            v-model=\"demoLabelLineHeight\"\r\n            :options=\"\r\n              descriptionsLineHeights.map((h) => ({ label: lineHeightLabels[h], value: h }))\r\n            \"\r\n          />\r\n          <RebornInput\r\n            v-model=\"demoLabelLineHeightCustom\"\r\n            class=\"mt-2\"\r\n            placeholder=\"自定义 CSS，如 1.8 或 28px\"\r\n          />\r\n        </div>\r\n\r\n        <div>\r\n          <p class=\"mb-3 text-sm font-medium text-gray-500\">内容行高</p>\r\n          <RebornSelect\r\n            v-model=\"demoContentLineHeight\"\r\n            :options=\"\r\n              descriptionsLineHeights.map((h) => ({ label: lineHeightLabels[h], value: h }))\r\n            \"\r\n          />\r\n          <RebornInput\r\n            v-model=\"demoContentLineHeightCustom\"\r\n            class=\"mt-2\"\r\n            placeholder=\"自定义 CSS，如 2 或 32px\"\r\n          />\r\n        </div>\r\n      </div>\r\n\r\n      <div\r\n        class=\"mt-10 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800/30\"\r\n      >\r\n        <div\r\n          class=\"w-full\"\r\n          :class=\"[\r\n            !demoResponsive && 'overflow-x-auto pb-3',\r\n            demoDirection === 'vertical' && 'pt-2',\r\n          ]\"\r\n        >\r\n          <RebornDescriptions\r\n            :title=\"demoTitle\"\r\n            :column=\"demoColumn\"\r\n            :size=\"demoSize\"\r\n            :border=\"demoBorder\"\r\n            :direction=\"demoDirection\"\r\n            :colon=\"demoColon\"\r\n            :rounded=\"demoRounded\"\r\n            :responsive=\"demoResponsive\"\r\n            :label-background=\"demoLabelBackground || undefined\"\r\n            :content-background=\"demoContentBackground || undefined\"\r\n            :label-align=\"demoLabelAlign\"\r\n            :content-align=\"demoContentAlign\"\r\n            :label-line-height=\"effectiveDemoLabelLineHeight\"\r\n            :content-line-height=\"effectiveDemoContentLineHeight\"\r\n            :items=\"playgroundItems\"\r\n            :class=\"demoResponsive ? 'w-full' : 'w-full shrink-0'\"\r\n            :style=\"!demoResponsive ? { minWidth: playgroundMinWidth } : undefined\"\r\n          >\r\n            <template #actions>\r\n              <button\r\n                type=\"button\"\r\n                class=\"text-primary hover:text-primary/80 inline-flex cursor-pointer items-center gap-1 text-sm font-medium transition-colors\"\r\n                @click=\"resetDemo\"\r\n              >\r\n                <Icon\r\n                  name=\"lucide:rotate-ccw\"\r\n                  size=\"14\"\r\n                />\r\n                重置\r\n              </button>\r\n            </template>\r\n            <template #content-pg-status>\r\n              <span\r\n                class=\"bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium\"\r\n              >\r\n                <span class=\"bg-success size-1.5 rounded-full\" />\r\n                正常\r\n              </span>\r\n            </template>\r\n          </RebornDescriptions>\r\n        </div>\r\n      </div>\r\n    </section>\r\n\r\n    <!-- ═══ Showcases（一行一个） ═══ -->\r\n    <div class=\"flex flex-col gap-10\">\r\n      <!-- ── 5. 团队成员 · 富内容插槽 ── -->\r\n      <div class=\"flex flex-col gap-4\">\r\n        <div>\r\n          <h4 class=\"text-xl font-bold text-gray-800 dark:text-gray-200\">\r\n            富内容插槽\r\n            <code class=\"text-primary ml-2 text-sm font-normal\">slot</code>\r\n          </h4>\r\n          <p class=\"mt-1 text-sm text-gray-500\">\r\n            通过\r\n            <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">labelSlot</code>\r\n            与\r\n            <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">slot</code>\r\n            配合\r\n            <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">#label-*</code>\r\n            、\r\n            <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">#content-*</code>\r\n            插槽，可在标签区与内容区嵌入图标、徽标等富内容。\r\n          </p>\r\n        </div>\r\n        <div\r\n          class=\"rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40\"\r\n        >\r\n          <RebornDescriptions\r\n            title=\"团队成员\"\r\n            :column=\"2\"\r\n            border=\"bordered\"\r\n            :items=\"memberItems\"\r\n          >\r\n            <template #label-member-name>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:user\"\r\n                  class=\"text-primary size-3.5 shrink-0\"\r\n                />\r\n                姓名\r\n              </span>\r\n            </template>\r\n            <template #label-member-id>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:badge-check\"\r\n                  class=\"size-3.5 shrink-0 text-gray-500\"\r\n                />\r\n                工号\r\n              </span>\r\n            </template>\r\n            <template #label-member-dept>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:building-2\"\r\n                  class=\"size-3.5 shrink-0 text-gray-500\"\r\n                />\r\n                部门\r\n              </span>\r\n            </template>\r\n            <template #label-member-rank-label>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:award\"\r\n                  class=\"text-warning size-3.5 shrink-0\"\r\n                />\r\n                职级\r\n              </span>\r\n            </template>\r\n            <template #label-member-contact>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:mail\"\r\n                  class=\"size-3.5 shrink-0 text-gray-500\"\r\n                />\r\n                联系方式\r\n              </span>\r\n            </template>\r\n            <template #label-member-status-label>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:activity\"\r\n                  class=\"text-success size-3.5 shrink-0\"\r\n                />\r\n                状态\r\n              </span>\r\n            </template>\r\n            <template #label-member-joined>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:calendar\"\r\n                  class=\"size-3.5 shrink-0 text-gray-500\"\r\n                />\r\n                加入时间\r\n              </span>\r\n            </template>\r\n            <template #label-member-skills-label>\r\n              <span class=\"inline-flex items-center gap-1.5\">\r\n                <Icon\r\n                  name=\"lucide:code-2\"\r\n                  class=\"text-primary size-3.5 shrink-0\"\r\n                />\r\n                技术栈\r\n              </span>\r\n            </template>\r\n            <template #content-member-rank>\r\n              <span\r\n                class=\"bg-primary/10 text-primary inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-bold\"\r\n              >\r\n                P6 高级工程师\r\n              </span>\r\n            </template>\r\n            <template #content-member-status>\r\n              <span class=\"inline-flex items-center gap-1.5 text-sm\">\r\n                <span class=\"bg-success size-2 rounded-full\" />\r\n                在线\r\n              </span>\r\n            </template>\r\n            <template #content-member-skills>\r\n              <div class=\"flex flex-wrap gap-1.5\">\r\n                <span\r\n                  v-for=\"skill in skillList\"\r\n                  :key=\"skill\"\r\n                  class=\"rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300\"\r\n                >\r\n                  {{ skill }}\r\n                </span>\r\n              </div>\r\n            </template>\r\n          </RebornDescriptions>\r\n        </div>\r\n      </div>\r\n    </div>\r\n\r\n    <!-- ═══ 子组件插槽写法 · 全宽展示 ═══ -->\r\n    <div class=\"flex flex-col gap-4\">\r\n      <div>\r\n        <h4 class=\"text-xl font-bold text-gray-800 dark:text-gray-200\">子组件语法</h4>\r\n        <p class=\"mt-1 text-sm text-gray-500\">\r\n          除\r\n          <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">items</code>\r\n          数组驱动外，也可直接使用\r\n          <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\"\r\n            >RebornDescriptionsItem</code\r\n          >\r\n          子组件语法，内容插槽支持嵌入任意 Vue 组件。\r\n        </p>\r\n      </div>\r\n      <div\r\n        class=\"rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40\"\r\n      >\r\n        <RebornDescriptions\r\n          title=\"电商店铺概览\"\r\n          :column=\"3\"\r\n          border=\"bordered\"\r\n        >\r\n          <RebornDescriptionsItem label=\"店铺名称\">Reborn Official Store</RebornDescriptionsItem>\r\n          <RebornDescriptionsItem label=\"评分\">\r\n            <span class=\"flex items-center gap-1\">\r\n              <Icon\r\n                v-for=\"i in 5\"\r\n                :key=\"i\"\r\n                name=\"lucide:star\"\r\n                class=\"size-3.5\"\r\n                :class=\"i <= 4 ? 'fill-warning text-warning' : 'text-gray-300'\"\r\n              />\r\n              <span class=\"ml-1 text-sm font-medium text-gray-700 dark:text-gray-300\">4.9</span>\r\n            </span>\r\n          </RebornDescriptionsItem>\r\n          <RebornDescriptionsItem label=\"店铺状态\">\r\n            <span\r\n              class=\"bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium\"\r\n            >\r\n              <span class=\"bg-success size-1.5 rounded-full\" />\r\n              营业中\r\n            </span>\r\n          </RebornDescriptionsItem>\r\n          <RebornDescriptionsItem label=\"累计销量\">129,480 件</RebornDescriptionsItem>\r\n          <RebornDescriptionsItem label=\"好评率\">\r\n            <span class=\"text-success font-semibold\">98.6%</span>\r\n          </RebornDescriptionsItem>\r\n          <RebornDescriptionsItem label=\"粉丝数\">\r\n            <span class=\"font-semibold\">42,311</span>\r\n            <span class=\"ml-1 text-xs text-gray-400\">人</span>\r\n          </RebornDescriptionsItem>\r\n          <RebornDescriptionsItem label=\"主营品类\">\r\n            <div class=\"flex flex-wrap gap-1\">\r\n              <span\r\n                v-for=\"cat in categoryList\"\r\n                :key=\"cat\"\r\n                class=\"bg-info/10 text-info rounded px-2 py-0.5 text-xs font-medium\"\r\n              >\r\n                {{ cat }}\r\n              </span>\r\n            </div>\r\n          </RebornDescriptionsItem>\r\n          <RebornDescriptionsItem\r\n            label=\"认证信息\"\r\n            :span=\"2\"\r\n          >\r\n            <div class=\"flex flex-wrap items-center gap-2\">\r\n              <span\r\n                v-for=\"cert in certList\"\r\n                :key=\"cert\"\r\n                class=\"bg-primary/10 text-primary dark:bg-primary/15 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium\"\r\n              >\r\n                <Icon\r\n                  name=\"lucide:shield-check\"\r\n                  class=\"size-3\"\r\n                />\r\n                {{ cert }}\r\n              </span>\r\n            </div>\r\n          </RebornDescriptionsItem>\r\n        </RebornDescriptions>\r\n      </div>\r\n    </div>\r\n\r\n    <!-- ── 逐项自定义背景色 / 字体色 ── -->\r\n    <div class=\"flex flex-col gap-4\">\r\n      <div>\r\n        <h4 class=\"text-xl font-bold text-gray-800 dark:text-gray-200\">逐项自定义样式</h4>\r\n        <p class=\"mt-1 text-sm text-gray-500\">\r\n          每个描述项可单独指定背景色、字体颜色、加粗、CSS 类名，或通过\r\n          <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">slot</code>\r\n          /\r\n          <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\">labelSlot</code>\r\n          插入富内容。单项字段优先于组件全局\r\n          <code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\"\r\n            >label-background</code\r\n          >\r\n          等属性；<code class=\"rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800\"\r\n            >value: null</code\r\n          >\r\n          表示空值。\r\n        </p>\r\n      </div>\r\n      <div\r\n        class=\"rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40\"\r\n      >\r\n        <RebornDescriptions\r\n          title=\"彩色订单详情\"\r\n          :column=\"2\"\r\n          border=\"bordered\"\r\n          :items=\"coloredItems\"\r\n        >\r\n          <template #label-colored-payment-label>\r\n            <span class=\"inline-flex items-center gap-1.5\">\r\n              <Icon\r\n                name=\"lucide:credit-card\"\r\n                class=\"size-3.5\"\r\n              />\r\n              支付方式\r\n            </span>\r\n          </template>\r\n          <template #content-colored-payment>\r\n            <span class=\"inline-flex items-center gap-1.5 font-medium\">\r\n              <Icon\r\n                name=\"lucide:wallet\"\r\n                class=\"text-primary size-3.5\"\r\n              />\r\n              微信支付\r\n            </span>\r\n          </template>\r\n        </RebornDescriptions>\r\n      </div>\r\n      <div\r\n        class=\"rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40\"\r\n      >\r\n        <RebornCollapse\r\n          v-model=\"itemsCodeExpanded\"\r\n          custom-class=\"w-full\"\r\n        >\r\n          <template #default=\"{ open }\">\r\n            <div class=\"flex cursor-pointer items-center justify-between gap-3\">\r\n              <p class=\"text-xs font-semibold tracking-widest text-gray-400 uppercase\">\r\n                通过 items 数组逐项传入\r\n              </p>\r\n              <span class=\"flex shrink-0 items-center gap-1.5 text-xs text-gray-400\">\r\n                {{ open ? \"收起\" : \"展开查看\" }}\r\n                <Icon\r\n                  name=\"lucide:chevron-down\"\r\n                  class=\"size-4 transition-transform duration-200\"\r\n                  :class=\"{ 'rotate-180': open }\"\r\n                />\r\n              </span>\r\n            </div>\r\n          </template>\r\n          <template #content>\r\n            <div class=\"pt-4\">\r\n              <pre\r\n                class=\"overflow-x-auto rounded-xl bg-gray-900 p-4 font-mono text-xs leading-relaxed text-indigo-300\"\r\n              ><code>{{ `const items = [\r\n  {\r\n    label: \"订单编号\",\r\n    value: \"ORD-2025-88190234\",\r\n    labelBackground: \"#E1F3D8\",\r\n    contentBackground: \"#FDE2E2\",\r\n    labelColor: \"#166534\",\r\n    contentColor: \"#991b1b\",\r\n    contentClass: \"font-mono tracking-wide\",\r\n  },\r\n  {\r\n    label: \"订单状态\",\r\n    value: \"配送中\",\r\n    contentColor: \"#374151\",\r\n  },\r\n  {\r\n    label: \"实付金额\",\r\n    value: \"¥ 1,199.00\",\r\n    labelBackground: \"#FDE2E2\",\r\n    contentColor: \"#dc2626\",\r\n    contentBold: true,\r\n    labelBold: true,\r\n    labelColor: \"#991b1b\",\r\n  },\r\n  {\r\n    label: \"发票信息\",\r\n    value: null, // 空值\r\n    contentColor: \"#9ca3af\",\r\n    contentClass: \"italic\",\r\n  },\r\n  {\r\n    label: \"支付方式\",\r\n    slot: \"payment\",\r\n    labelSlot: \"payment-label\",\r\n    labelBackground: \"#EFF6FF\",\r\n    labelColor: \"#1d4ed8\",\r\n  },\r\n  {\r\n    label: \"收货地址\",\r\n    value: \"上海市浦东新区世纪大道 1000 号\",\r\n    span: 2,\r\n    labelClass: \"font-semibold\",\r\n  },\r\n]` }}</code></pre>\r\n              <pre\r\n                class=\"mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 font-mono text-xs leading-relaxed text-indigo-300\"\r\n              ><code>{{ `<RebornDescriptions border=\"bordered\" :column=\"2\" :items=\"items\">\r\n  <template #label-payment-label>…</template>\r\n  <template #content-payment>…</template>\r\n</RebornDescriptions>\r\n\r\n<!-- 或使用子组件逐项设置 -->\r\n<RebornDescriptions border=\"bordered\" :column=\"2\">\r\n  <RebornDescriptionsItem\r\n    label=\"订单编号\"\r\n    label-background=\"#E1F3D8\"\r\n    label-color=\"#166534\"\r\n    content-background=\"#FDE2E2\"\r\n    content-color=\"#991b1b\"\r\n    content-class=\"font-mono tracking-wide\"\r\n  >\r\n    ORD-2025-88190234\r\n  </RebornDescriptionsItem>\r\n  <RebornDescriptionsItem\r\n    label=\"发票信息\"\r\n    :value=\"null\"\r\n    content-color=\"#9ca3af\"\r\n    content-class=\"italic\"\r\n  />\r\n  <RebornDescriptionsItem\r\n    label=\"实付金额\"\r\n    label-background=\"#FDE2E2\"\r\n    label-color=\"#991b1b\"\r\n    label-bold\r\n    content-color=\"#dc2626\"\r\n    content-bold\r\n  >\r\n    ¥ 1,199.00\r\n  </RebornDescriptionsItem>\r\n</RebornDescriptions>` }}</code></pre>\r\n            </div>\r\n          </template>\r\n        </RebornCollapse>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-descriptions"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-descriptions/RebornDescriptions.vue",
+      "app/components/reborn/ui/reborn-descriptions/RebornDescriptionsItem.vue",
+      "app/components/reborn/ui/reborn-descriptions/index.ts",
+      "app/components/reborn/ui/reborn-descriptions/reborn-descriptions.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-descriptions.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "cc1dbba54ee3cdfc67d33484e4d61b492e33a0da",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

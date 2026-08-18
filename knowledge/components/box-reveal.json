@@ -1,0 +1,88 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "box-reveal",
+  "title": "盒子揭示",
+  "description": "可自定义颜色、时长与延迟的盒子揭示动画。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "color",
+      "type": "string",
+      "required": false,
+      "description": "揭示盒子的背景色。",
+      "default": "\"#5046e6\""
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "揭示动画的持续时间（秒）。",
+      "default": "0.5"
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "用于自定义样式的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "delay",
+      "type": "number",
+      "required": false,
+      "description": "动画开始前的延迟（秒）。",
+      "default": "0.25"
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"size-full items-center justify-center overflow-hidden p-8 w-full\">\r\n    <BoxReveal color=\"#E1251B\">\r\n      <p class=\"text-[3.5rem] font-semibold\">Reborn UI<span class=\"text-[#E1251B]\">.</span></p>\r\n    </BoxReveal>\r\n\r\n    <BoxReveal color=\"#E1251B\" :duration=\"0.8\">\r\n      <h2 class=\"mt-[.5rem] text-[1rem]\">\r\n        Beautiful components for\r\n        <span class=\"text-[#E1251B]\">Vue &amp; Nuxt.</span>\r\n      </h2>\r\n    </BoxReveal>\r\n\r\n    <BoxReveal color=\"#E1251B\" :duration=\"1\">\r\n      <div class=\"mt-6\">\r\n        <p>\r\n          -&gt; Free and open-source animated components built with\r\n          <span class=\"font-semibold text-[#E1251B]\"> Vue/Nuxt</span>,\r\n          <span class=\"font-semibold text-[#E1251B]\"> Typescript</span>,\r\n          <span class=\"font-semibold text-[#E1251B]\"> Tailwind CSS</span>, and\r\n          <span class=\"font-semibold text-[#E1251B]\"> motion-v</span>\r\n          . <br />\r\n          -&gt; 100% open-source, and customizable. <br />\r\n        </p>\r\n      </div>\r\n    </BoxReveal>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add box-reveal"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/box-reveal/BoxReveal.vue",
+      "app/components/reborn/ui/box-reveal/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/box-reveal.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "6da72661c0f25dfd5f95bfe7d0ca90d13f9e70cc",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

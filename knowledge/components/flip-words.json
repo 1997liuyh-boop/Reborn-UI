@@ -1,0 +1,82 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "flip-words",
+  "title": "翻转单词",
+  "description": "循环翻转单词列表的组件。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "words",
+      "type": "string[]",
+      "required": true,
+      "description": "要展示并动画的单词数组。"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "每个单词显示的时间（毫秒），之后翻转到下一个单词。",
+      "default": "3000"
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于组件的额外 CSS 类。",
+      "default": "\"\""
+    }
+  ],
+  "events": [
+    {
+      "name": "animationStart",
+      "description": ""
+    },
+    {
+      "name": "animationComplete",
+      "description": ""
+    }
+  ],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"flex h-[40rem] items-center justify-center px-4\">\r\n    <div class=\"mx-auto text-4xl font-normal text-neutral-600 dark:text-neutral-400\">\r\n      Vuejs: The\r\n      <FlipWords\r\n        :words=\"['Progressive', 'Approachable', 'Performant', 'Versatile']\"\r\n        :duration=\"3000\"\r\n        class=\"!text-primary text-4xl\"\r\n      />\r\n      <div>\r\n        JavaScript Framework for building <br />\r\n        Modern Web Apps\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add flip-words"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/flip-words/FlipWords.vue",
+      "app/components/reborn/ui/flip-words/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/flip-words.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "f8eaf9254217f434ef9864041d2be676d0f31d7f",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

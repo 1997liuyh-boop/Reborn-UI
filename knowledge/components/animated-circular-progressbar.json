@@ -1,0 +1,116 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "animated-circular-progressbar",
+  "title": "动画圆形进度条",
+  "description": "显示百分比的圆形仪表盘动画组件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "max",
+      "type": "number",
+      "required": false,
+      "description": "仪表的最大值。",
+      "default": "100"
+    },
+    {
+      "name": "value",
+      "type": "number",
+      "required": false,
+      "description": "仪表当前值。",
+      "default": "0"
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "required": false,
+      "description": "仪表的最小值。",
+      "default": "0"
+    },
+    {
+      "name": "gaugePrimaryColor",
+      "type": "string",
+      "required": false,
+      "description": "仪表主色。",
+      "default": "\"rgb(79 70 229)\""
+    },
+    {
+      "name": "gaugeSecondaryColor",
+      "type": "string",
+      "required": false,
+      "description": "仪表副色。",
+      "default": "\"rgba(0, 0, 0, 0.1)\""
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于组件的类名。"
+    },
+    {
+      "name": "circleStrokeWidth",
+      "type": "number",
+      "required": false,
+      "description": "圆形进度条宽度。",
+      "default": "10"
+    },
+    {
+      "name": "showPercentage",
+      "type": "boolean",
+      "required": false,
+      "description": "是否在圆内显示数值。",
+      "default": "true"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "动画持续时间（秒）。",
+      "default": "1"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { onBeforeUnmount, onMounted, ref } from \"vue\";\r\n\r\nconst value = ref(0);\r\n\r\nfunction handleIncrement(prev: number) {\r\n  return prev === 100 ? 0 : prev + 10;\r\n}\r\n\r\nlet interval: ReturnType<typeof setInterval>;\r\n\r\nonMounted(() => {\r\n  value.value = handleIncrement(value.value);\r\n  interval = setInterval(() => {\r\n    value.value = handleIncrement(value.value);\r\n  }, 2000);\r\n});\r\n\r\nonBeforeUnmount(() => {\r\n  if (interval) {\r\n    clearInterval(interval);\r\n  }\r\n});\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex items-center justify-center py-1\">\r\n    <AnimatedCircularProgressBar\r\n      :max=\"100\"\r\n      :min=\"0\"\r\n      :value=\"value\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add animated-circular-progressbar"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/animated-circular-progressbar/AnimatedCircularProgressBar.vue",
+      "app/components/reborn/ui/animated-circular-progressbar/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/animated-circular-progressbar.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "3a182dd13d9d436c20bc5f3fdce78d5cb6e3592b",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

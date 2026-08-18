@@ -1,0 +1,239 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "reborn-image",
+  "title": "图片 Image",
+  "description": "增强版图片组件，支持预览、加载状态、错误状态和多种裁剪模式。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "image",
+    "media",
+    "uniapp",
+    "viewerjs"
+  ],
+  "platforms": [
+    "web",
+    "uniapp"
+  ],
+  "props": [
+    {
+      "name": "customClass",
+      "type": "ClassValue",
+      "required": false,
+      "description": "用于自定义根节点的样式类。"
+    },
+    {
+      "name": "src",
+      "type": "string",
+      "required": true,
+      "description": "**必填**。图片地址。"
+    },
+    {
+      "name": "mode",
+      "type": "typeof imageMode[number]",
+      "required": false,
+      "description": "图片裁剪、缩放的模式",
+      "default": "'aspectFill'"
+    },
+    {
+      "name": "preview",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示边框",
+      "default": "false"
+    },
+    {
+      "name": "previewList",
+      "type": "string[]",
+      "required": false,
+      "description": "预览时的图片列表。如果不传，默认预览当前 `src`。",
+      "default": "[]"
+    },
+    {
+      "name": "height",
+      "type": "string | number",
+      "required": false,
+      "description": "120",
+      "default": "120"
+    },
+    {
+      "name": "width",
+      "type": "string | number",
+      "required": false,
+      "description": "120",
+      "default": "120"
+    },
+    {
+      "name": "showLoading",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示加载状态",
+      "default": "true"
+    },
+    {
+      "name": "lazyLoad",
+      "type": "boolean",
+      "required": false,
+      "description": "是否懒加载",
+      "default": "false"
+    },
+    {
+      "name": "fadeShow",
+      "type": "boolean",
+      "required": false,
+      "description": "图片显示动画效果",
+      "default": "false"
+    },
+    {
+      "name": "webp",
+      "type": "boolean",
+      "required": false,
+      "description": "是否解码webp格式",
+      "default": "false"
+    },
+    {
+      "name": "showMenuByLongpress",
+      "type": "boolean",
+      "required": false,
+      "description": "是否长按显示菜单",
+      "default": "false"
+    },
+    {
+      "name": "round",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示圆角",
+      "default": "false"
+    },
+    {
+      "name": "loadingType",
+      "type": "typeof LoadingTypes[number]",
+      "required": false,
+      "description": "",
+      "default": "'outline'"
+    },
+    {
+      "name": "loadingSize",
+      "type": "string | number",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "Partial<{\r\n    root: ClassValue\r\n    error: ClassValue\r\n    errorIcon: ClassValue\r\n    loading: ClassValue\r\n    loadingIcon: ClassValue\r\n    inner: ClassValue\r\n  }>",
+      "required": false,
+      "description": "覆盖子组件样式的 UI 配置对象。"
+    },
+    {
+      "name": "magnifier",
+      "type": "boolean",
+      "required": false,
+      "description": "是否启用放大镜功能",
+      "default": "false"
+    },
+    {
+      "name": "magnifierZoom",
+      "type": "number",
+      "required": false,
+      "description": "放大倍率 (控制透镜部分的放大比例)",
+      "default": "2"
+    },
+    {
+      "name": "magnifierSize",
+      "type": "number",
+      "required": false,
+      "description": "放大镜尺寸 (控制原图上透镜的大小)",
+      "default": "100"
+    },
+    {
+      "name": "magnifierWidth",
+      "type": "number | string",
+      "required": false,
+      "description": "预览窗口宽度 (默认与原图一致)",
+      "default": "\"\""
+    },
+    {
+      "name": "magnifierHeight",
+      "type": "number | string",
+      "required": false,
+      "description": "预览窗口高度 (默认与原图一致)",
+      "default": "\"\""
+    }
+  ],
+  "events": [
+    {
+      "name": "load",
+      "description": "图片加载成功时触发。"
+    },
+    {
+      "name": "error",
+      "description": "图片加载失败时触发。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "error",
+      "description": "自定义错误状态的内容。"
+    },
+    {
+      "name": "loading",
+      "description": "自定义加载状态的内容。"
+    },
+    {
+      "name": "default",
+      "description": "自定义图片上的覆盖内容（如角标）。"
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\n\r\n\r\nconst src = ref(\"https://cms-image.leyifan.cn/img_reborn/ques-4.jpg\");\r\nconst previewList = ref([\"https://cms-image.leyifan.cn/resources/image/2026/01/27/767453852479557.png\", \"https://cms-image.leyifan.cn/resources/image/2026/01/30/768516482351173.png\"]);\r\n</script>\r\n\r\n<template>\r\n    <div class=\"p-10 space-y-10\">\r\n        <div>\r\n            <h3 class=\"mb-2 font-bold\">基础用法</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornImage :src=\"src\" />\r\n            </div>\r\n        </div>\r\n\r\n        <div>\r\n            <h3 class=\"mb-2 font-bold\">预览</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornImage :src=\"src\" preview />\r\n                <RebornImage :src=\"src\" preview :preview-list=\"previewList\" />\r\n            </div>\r\n        </div>\r\n\r\n        <div>\r\n            <h3 class=\"mb-4 text-xl font-bold border-b pb-2\">Taobao 商品详情风格放大镜</h3>\r\n            <div class=\"grid grid-cols-3 gap-10\">\r\n                <div class=\"flex flex-col items-center\">\r\n                    <span class=\"text-sm text-gray-400 mb-2\">默认</span>\r\n                    <RebornImage :src=\"src\" magnifier width=\"200\" height=\"200\" />\r\n                </div>\r\n                <div class=\"flex flex-col items-center\">\r\n                    <span class=\"text-sm text-gray-400 mb-2\">小透镜高倍率</span>\r\n                    <RebornImage :src=\"src\" magnifier :magnifier-size=\"40\" :magnifier-zoom=\"5\" width=\"200\"\r\n                        height=\"200\" />\r\n                </div>\r\n                <div class=\"flex flex-col items-center\">\r\n                    <span class=\"text-sm text-gray-400 mb-2\">自定义视口 </span>\r\n                    <RebornImage :src=\"src\" magnifier :magnifier-size=\"60\" :magnifier-zoom=\"1.5\" :magnifier-width=\"150\"\n                        :magnifier-height=\"300\" width=\"200\" height=\"200\" />\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <div>\r\n            <h3 class=\"mb-2 font-bold\">状态/自定义大小</h3>\r\n            <div class=\"grid grid-cols-3 gap-2\">\r\n                <RebornImage src=\"https://example.com/error.jpg\" width=\"180\" height=\"180\"\r\n                    :ui=\"{ errorIcon: 'size-10 text-red-5' }\" />\r\n                <RebornImage src=\"\" width=\"200\" height=\"200\" :ui=\"{ loadingIcon: 'size-12' }\" />\r\n            </div>\r\n        </div>\r\n        <div>\r\n            <h3 class=\"mb-2 font-bold\">圆角</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornImage :src=\"src\" lazy-load custom-class=\"rounded-lg\" />\r\n                <RebornImage :src=\"src\" lazy-load custom-class=\"rounded-xl\" />\r\n                <RebornImage :src=\"src\" lazy-load custom-class=\"rounded-2xl\" />\r\n                <RebornImage :src=\"src\" lazy-load custom-class=\"rounded-3xl\" />\r\n                <RebornImage :src=\"src\" lazy-load custom-class=\"rounded-full\" />\r\n            </div>\r\n        </div>\r\n        <div>\r\n            <h3 class=\"mb-2 font-bold\">延迟加载</h3>\r\n            <div class=\"grid grid-cols-4 gap-2\">\r\n                <RebornImage src=\"https://picsum.photos/200/200\" lazy-load custom-class=\"rounded-lg\" />\r\n                <RebornImage src=\"https://p.upyun.com/demo/webp/webp/animated-gif-0.webp\" lazy-load\r\n                    custom-class=\"rounded-xl\" />\r\n                <RebornImage\r\n                    src=\"https://img.iplaysoft.com/wp-content/uploads/2019/free-images/free_stock_photo.jpg!0x0.webp\"\r\n                    lazy-load custom-class=\"rounded-2xl\" />\r\n                <RebornImage src=\"https://img.iplaysoft.com/wp-content/uploads/2019/free-images/unsplash.jpg!0x0.webp\"\r\n                    lazy-load custom-class=\"rounded-2xl\" />\r\n            </div>\r\n        </div>\r\n    </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\r\nimport { ref } from 'vue'\r\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\r\nimport { imageMode } from '@/components/reborn-image/reborn-image.config'\r\nimport RebornImage from '@/components/reborn-image/RebornImage.vue'\r\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\r\n\r\nconst src = ref('https://cms-image.leyifan.cn/img_reborn/ques-4.jpg')\r\nconst previewList = ref(['https://cms-image.leyifan.cn/resources/image/2026/01/27/767453852479557.png', 'https://cms-image.leyifan.cn/resources/image/2026/01/30/768516482351173.png'])\r\n</script>\r\n\r\n<template>\r\n  <RebornPage title=\"Image 图片\" description=\"组件是基于 uni-app 原生 image 组件封装的增强版图片组件\">\r\n    <RebornCard title=\"基础用法\">\r\n      <RebornImage :src=\"src\" />\r\n    </RebornCard>\r\n    <RebornCard title=\"不同裁剪\" custom-class=\"grid grid-cols-4 gap-2 text-24 text-gray-7 dark:text-gray-1\">\r\n      <view\r\n        v-for=\"value in imageMode\" :key=\"value\" class=\"\r\n          flex flex-col items-center justify-center\r\n        \"\r\n      >\r\n        <RebornImage :src=\"src\" :mode=\"value\" />\r\n        {{ value }}\r\n      </view>\r\n    </RebornCard>\r\n    <RebornCard title=\"预览图片\" custom-class=\"grid grid-cols-4 gap-2 text-24 text-gray-7 dark:text-gray-1\">\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" preview />\r\n        原图\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" preview :preview-list=\"previewList\" />\r\n        预览列表\r\n      </view>\r\n    </RebornCard>\r\n    <RebornCard title=\"状态\" custom-class=\"grid grid-cols-4 gap-2 text-24 text-gray-7 dark:text-gray-1\">\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage src=\"src\" />\r\n        失败\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage src=\"\" />\r\n        加载中\r\n      </view>\r\n    </RebornCard>\r\n    <RebornCard title=\"自定义圆角\" custom-class=\"grid grid-cols-4 gap-2 text-24 text-gray-7 dark:text-gray-1\">\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" custom-class=\"rounded-full\" />\r\n        rounded-full\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" custom-class=\"rounded-lg\" />\r\n        rounded-lg\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" custom-class=\"rounded-xl\" />\r\n        rounded-xl\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" custom-class=\"rounded-2xl\" />\r\n        rounded-2xl\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" custom-class=\"rounded-3xl\" />\r\n        rounded-3xl\r\n      </view>\r\n      <view class=\"flex flex-col items-center justify-center\">\r\n        <RebornImage :src=\"src\" custom-class=\"rounded-full\" />\r\n        rounded-full\r\n      </view>\r\n    </RebornCard>\r\n  </RebornPage>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
+  "related": [
+    "reborn-loading"
+  ],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "@vueuse/core",
+    "clsx",
+    "viewerjs"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add reborn-image"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/reborn-image/RebornImage.vue",
+      "app/components/reborn/ui/reborn-image/reborn-image.config.ts"
+    ],
+    "uniapp": [
+      "packages/uniapp-project/src/components/reborn-image/RebornImage.vue",
+      "packages/uniapp-project/src/components/reborn-image/index.ts",
+      "packages/uniapp-project/src/components/reborn-image/reborn-image.config.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/reborn-image.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "c187ecb9fdaf70017fffa8833bdaa45d22c0e01c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "ok",
+      "docs": "found"
+    }
+  }
+}

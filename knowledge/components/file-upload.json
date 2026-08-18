@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "file-upload",
+  "title": "文件上传",
+  "description": "现代文件上传组件，带 3D 卡片效果、拖放交互和响应式网格背景。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "用于容器元素的额外样式类。"
+    }
+  ],
+  "events": [
+    {
+      "name": "onChange",
+      "payload": "(e: \"onChange\", files: File[]): void;",
+      "description": "添加/上传文件时触发的回调。"
+    }
+  ],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"space-y-6 p-8 dark:bg-black\">\r\n    <FileUpload class=\"rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800\">\r\n      <FileUploadGrid />\r\n    </FileUpload>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add file-upload"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/file-upload/FileUpload.vue",
+      "app/components/reborn/ui/file-upload/FileUploadGrid.vue",
+      "app/components/reborn/ui/file-upload/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/input-and-forms/file-upload.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "dc1b42a5430615d24ae3f9760cf2c4257a35b08d",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

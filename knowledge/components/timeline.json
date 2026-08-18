@@ -1,0 +1,95 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "timeline",
+  "title": "时间线",
+  "description": "视觉化、交互式的时间线组件，带平滑动画、粘性标签与渐变滚动效果。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "containerClass",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "时间线容器的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "其他样式的额外 CSS 类。",
+      "default": "\"\""
+    },
+    {
+      "name": "items",
+      "type": "{\r\n    id: string;\r\n    label: string;\r\n  }[]",
+      "required": false,
+      "description": "时间线条目列表，每项包含 ID 与标签。",
+      "default": "() => []"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "时间线部分的标题。",
+      "default": "\"\""
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "required": false,
+      "description": "显示在标题下方的描述文字。",
+      "default": "\"\""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "item.id",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nconst data = [\r\n  {\r\n    id: \"version1.0\",\r\n    label: \"Version 1.0\",\r\n  },\r\n  {\r\n    id: \"version2.0\",\r\n    label: \"Version 2.0\",\r\n  },\r\n\r\n  {\r\n    id: \"version3.0\",\r\n    label: \"Version 3.0\",\r\n  },\r\n  {\r\n    id: \"version4.0\",\r\n    label: \"Version 4.0\",\r\n  },\r\n\r\n  {\r\n    id: \"version5.0\",\r\n    label: \"Version 5.0\",\r\n  },\r\n  {\r\n    id: \"version6.0\",\r\n    label: \"Version 6.0\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"h-fit w-full\">\r\n    <Timeline :items=\"data\" title=\"Beam me up\" description=\"Show the timeline in style\">\r\n      <template v-for=\"(item, index) in data\" :key=\"`${item.id}template`\" #[item.id]>\r\n        <div class=\"relative w-full pr-4 pl-20 md:pl-4\">\r\n          <h3 class=\"mb-4 block text-left text-2xl font-bold text-neutral-500 dark:text-neutral-500\">\r\n            {{ `Section ${index + 1}` }}\r\n          </h3>\r\n        </div>\r\n        <p class=\"mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200\">\r\n          Reborn UI gives you the freedom to design awesome website, in less time.\r\n        </p>\r\n      </template>\r\n    </Timeline>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add timeline"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/timeline/Timeline.vue",
+      "app/components/reborn/ui/timeline/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/timeline.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "cb04d8795e03c0aba31f1aa58bf8f8494abf727d",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

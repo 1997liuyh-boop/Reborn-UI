@@ -1,0 +1,104 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "animated-list",
+  "title": "动画列表",
+  "description": "逐个引入的动画列表，适合在落地页展示通知或事件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "delay",
+      "type": "number",
+      "required": false,
+      "description": "在每个项目添加前的延迟（毫秒）。",
+      "default": "1000"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"\""
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"\""
+    },
+    {
+      "name": "time",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"\""
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"\""
+    },
+    {
+      "name": "color",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "\"\""
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\r\nconst notifications = [\r\n  {\r\n    name: \"Payment received\",\r\n    description: \"Reborn UI\",\r\n    time: \"15m ago\",\r\n    icon: \"💸\",\r\n    color: \"#00C9A7\",\r\n  },\r\n  {\r\n    name: \"User signed up\",\r\n    description: \"Reborn UI\",\r\n    time: \"10m ago\",\r\n    icon: \"👤\",\r\n    color: \"#FFB800\",\r\n  },\r\n  {\r\n    name: \"New message\",\r\n    description: \"Reborn UI\",\r\n    time: \"5m ago\",\r\n    icon: \"💬\",\r\n    color: \"#FF3D71\",\r\n  },\r\n  {\r\n    name: \"New event\",\r\n    description: \"Reborn UI\",\r\n    time: \"2m ago\",\r\n    icon: \"🗞️\",\r\n    color: \"#1E86FF\",\r\n  },\r\n  {\r\n    name: \"Task completed\",\r\n    description: \"Reborn UI\",\r\n    time: \"1m ago\",\r\n    icon: \"✅\",\r\n    color: \"#45B26B\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <ClientOnly>\r\n    <div class=\"relative flex h-[500px] w-full flex-col overflow-hidden p-6\">\r\n      <AnimatedList>\r\n        <template #default>\r\n          <Notification v-for=\"(item, idx) in notifications\" :key=\"idx\" :name=\"item.name\"\r\n            :description=\"item.description\" :icon=\"item.icon\" :color=\"item.color\" :time=\"item.time\" />\r\n        </template>\r\n      </AnimatedList>\r\n    </div>\r\n  </ClientOnly>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [
+    "motion-v"
+  ],
+  "install": {
+    "cli": "npx reborn-ui@latest add animated-list"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/animated-list/AnimatedList.vue",
+      "app/components/reborn/ui/animated-list/Notification.vue",
+      "app/components/reborn/ui/animated-list/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/miscellaneous/animated-list.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "06a8f2a2e9b6ec63df925d1b10b47ec24df6b1cd",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}

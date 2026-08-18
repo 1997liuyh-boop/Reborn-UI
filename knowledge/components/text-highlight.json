@@ -1,0 +1,84 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "text-highlight",
+  "title": "文字高亮",
+  "description": "为文字填充背景以突出显示的效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [
+    {
+      "name": "delay",
+      "type": "number",
+      "required": false,
+      "description": "动画开始前的延迟（毫秒）。",
+      "default": "0"
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "description": "动画持续时间（毫秒）。",
+      "default": "2000"
+    },
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "textEndColor",
+      "type": "string",
+      "required": false,
+      "description": ""
+    }
+  ],
+  "events": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\r\n  <div class=\"text-blance flex justify-center p-10\">\r\n    <h1 class=\"text-center text-4xl font-bold text-balance\">\r\n      You are a\r\n      <TextHighlight class=\"bg-gradient-to-r from-indigo-300 to-purple-300\">\r\n        f****ing great developer !\r\n      </TextHighlight>\r\n    </h1>\r\n  </div>\r\n</template>\r\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [],
+  "whenNotToUse": [],
+  "pitfalls": [],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add text-highlight"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/text-highlight/TextHighlight.vue",
+      "app/components/reborn/ui/text-highlight/index.ts"
+    ]
+  },
+  "docPath": "content/2.components/text-animations/text-highlight.md",
+  "_meta": {
+    "generatedAt": "2026-08-18T08:55:51.846Z",
+    "contentHash": "95c9856360e28dd61feab2af234d1d45d2c8c44c",
+    "hasOverride": false,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}
