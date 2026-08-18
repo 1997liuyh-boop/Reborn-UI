@@ -13,7 +13,9 @@
     "format:fix": "prettier . --write",
     "lint": "oxlint . && eslint .",
     "lint:fix": "oxlint . --fix && eslint . --fix",
-    "registry:build": "pnpm --filter ./packages/cli run registry:build"
+    "registry:build": "pnpm --filter ./packages/cli run registry:build",
+    "kb:build": "tsx scripts/kb/build.ts",
+    "kb:check": "tsx scripts/kb/check.ts"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
