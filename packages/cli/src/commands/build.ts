@@ -60,6 +60,11 @@ export function buildCommand() {
       },
       [],
     )
+    .option(
+      "--kb-index <path>",
+      "知识库索引文件路径（相对 root），用于注入 title/description/category/tags",
+      "knowledge/index.json",
+    )
     .action(async (opts) => {
       const rootDir = opts.root
         ? path.resolve(opts.root)
@@ -72,6 +77,31 @@ export function buildCommand() {
       const alsoOutPaths: string[] = (opts.alsoOut ?? [])?.map((p: string) =>
         path.join(rootDir, p),
       );
+
+      // 读取知识库索引，按组件 id 注入 title/description/category/tags
+      // 索引不存在时静默降级（如在无 knowledge/ 的环境单独跑 CLI build）
+      type KbIndexEntry = {
+        id: string;
+        title?: string;
+        description?: string;
+        category?: string;
+        tags?: string[];
+      };
+      const kbMeta = new Map<string, KbIndexEntry>();
+      const kbIndexPath = path.join(rootDir, opts.kbIndex);
+      if (fssync.existsSync(kbIndexPath)) {
+        try {
+          const raw = JSON.parse(await fs.readFile(kbIndexPath, "utf8"));
+          const entries: KbIndexEntry[] = Array.isArray(raw) ? raw : raw.components;
+          for (const e of entries ?? []) {
+            if (e?.id) kbMeta.set(e.id, e);
+          }
+        } catch {
+          // 索引损坏不阻塞 registry 生成，仅提示
+          // eslint-disable-next-line no-console
+          console.warn(`知识库索引解析失败，跳过元数据注入：${kbIndexPath}`);
+        }
+      }
 
       const dirents = await fs.readdir(sourceDir, { withFileTypes: true });
       let componentDirs = dirents
@@ -188,8 +218,14 @@ export function buildCommand() {
           }
         }
 
+        const meta = kbMeta.get(name);
         components.push({
           name,
+          // 知识库缺该组件时字段留空，不阻塞生成
+          ...(meta?.title ? { title: meta.title } : {}),
+          ...(meta?.description ? { description: meta.description } : {}),
+          ...(meta?.category ? { category: meta.category } : {}),
+          ...(meta?.tags?.length ? { tags: meta.tags } : {}),
           dependencies: [...depSet].sort(),
           files,
         });

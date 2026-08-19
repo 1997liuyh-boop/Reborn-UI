@@ -4,7 +4,7 @@ description: 直观的双列数据转移组件，支持搜索过滤、全选/反
 category: 杂项
 navigation:
   badges:
-    - label: WEB
+    - label: Web
       color: info
   chip:
     label: NEW

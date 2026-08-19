@@ -4,7 +4,7 @@ description: 常用于展示鼠标悬停时的提示信息。
 category: 导航
 navigation:
   badges:
-    - label: web
+    - label: Web
       color: info
   chip:
     label: NEW

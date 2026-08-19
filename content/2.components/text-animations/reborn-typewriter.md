@@ -5,7 +5,7 @@ category: 文字动画
 tags: [css, tailwind, animation]
 navigation:
   badges:
-    - label: web
+    - label: Web
       color: info
   chip:
     label: NEW

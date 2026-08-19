@@ -22,6 +22,10 @@ export interface RegistryFile {
 
 export interface RegistryComponent {
   name: string;
+  title?: string; // 中文名（来自知识库 index.json）
+  description?: string; // Agent 友好的一句话描述（来自知识库 index.json）
+  category?: string; // 分类枚举（来自知识库 index.json）
+  tags?: string[]; // 检索标签（来自知识库 index.json）
   dependencies: string[];
   files: Array<{
     path: string; // relative to component root

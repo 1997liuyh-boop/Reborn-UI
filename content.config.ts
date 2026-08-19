@@ -8,6 +8,8 @@ const cwd = resolve(options.rootDir, "content");
 
 const createDocsSchema = () =>
   z.object({
+    // 描述是 Agent 选型与 llms.txt 的第一依据，必填；组件页应遵循知识库描述规范（≤60 字），此处上限放宽以兼容指南类页面
+    description: z.string().min(4).max(120),
     category: z.string(),
     tags: z.array(z.string()),
     badge: z.enum(["New", "Updated"]).optional(),

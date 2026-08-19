@@ -4,7 +4,7 @@ description: 以键值对形式展示内容的容器组件，常用于详情页�
 category: 杂项
 navigation:
   badges:
-    - label: WEB
+    - label: Web
       color: info
   chip:
     label: NEW

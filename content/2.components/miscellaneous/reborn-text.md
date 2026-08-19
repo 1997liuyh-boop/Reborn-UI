@@ -6,7 +6,7 @@ tags: [css, tailwind, text, format, mask, uniapp]
 badge: New
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: NEW

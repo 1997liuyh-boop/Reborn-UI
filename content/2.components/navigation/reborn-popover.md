@@ -5,7 +5,7 @@ category: 导航
 badge: New
 navigation:
   badges:
-    - label: 新
+    - label: NEW
       color: primary
   chip:
     label: NEW

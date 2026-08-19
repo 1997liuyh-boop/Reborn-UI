@@ -4,7 +4,7 @@ description: 支持 useToast() 调用的轻提示组件。
 category: 杂项
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: NEW

@@ -95,8 +95,10 @@ export function addCommand() {
           throw new Error("未指定组件名；请传入组件参数或去掉 --yes 以交互选择。");
         }
         const choices = registry.components?.map((c) => ({
-          title: c.name,
+          // 有中文名时显示「组件名（中文名）」，描述放到 prompts 的 description 灰字
+          title: c.title ? `${c.name}（${c.title}）` : c.name,
           value: c.name,
+          ...(c.description ? { description: c.description } : {}),
         }));
         const res = await prompts(
           [

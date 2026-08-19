@@ -4,7 +4,7 @@ description: 提供颜色选择的组件。
 category: 表单与输入
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
 ---
 

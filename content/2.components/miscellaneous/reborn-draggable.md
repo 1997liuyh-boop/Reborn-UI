@@ -4,7 +4,7 @@ description: 支持列表拖拽排序的容器组件。
 category: 杂项
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: NEW

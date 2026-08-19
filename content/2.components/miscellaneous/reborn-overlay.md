@@ -4,7 +4,7 @@ description: 全屏遮罩层，支持点击关闭和滚动锁定。
 category: 杂项
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: NEW

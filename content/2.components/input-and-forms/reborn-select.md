@@ -6,7 +6,7 @@ tags: [css, tailwind, select, dropdown, uniapp]
 badge: Update
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: UPDATE

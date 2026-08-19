@@ -4,7 +4,7 @@ description: 支持多种形态（缺口、撕线、邮票等）的高度可定�
 category: 杂项
 navigation:
   badges:
-    - label: WEB
+    - label: Web
       color: info
   chip:
     label: NEW

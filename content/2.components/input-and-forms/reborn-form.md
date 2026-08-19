@@ -5,7 +5,7 @@ category: 表单与输入
 badge: New
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: NEW

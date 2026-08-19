@@ -4,7 +4,7 @@ description: 支持无重绘滑动展开的高级弹出面板组件。
 category: 导航
 navigation:
   badges:
-    - label: 通
+    - label: 通用
       color: primary
   chip:
     label: NEW
