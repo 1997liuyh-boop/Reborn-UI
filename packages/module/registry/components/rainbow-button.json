@@ -1,5 +1,14 @@
 {
   "name": "rainbow-button",
+  "title": "彩虹按钮",
+  "description": "在按钮上呈现彩虹效果。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "button",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

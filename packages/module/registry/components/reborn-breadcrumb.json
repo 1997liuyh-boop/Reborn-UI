@@ -1,5 +1,12 @@
 {
   "name": "reborn-breadcrumb",
+  "title": "面包屑",
+  "description": "显示当前页面的路径，快速返回之前的任意页面。",
+  "category": "navigation",
+  "tags": [
+    "navigation",
+    "breadcrumb"
+  ],
   "dependencies": [],
   "files": [
     {

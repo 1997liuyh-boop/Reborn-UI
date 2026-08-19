@@ -1,5 +1,7 @@
 {
   "name": "reborn-select-trigger",
+  "title": "reborn-select-trigger",
+  "category": "misc",
   "dependencies": [
     "clsx"
   ],

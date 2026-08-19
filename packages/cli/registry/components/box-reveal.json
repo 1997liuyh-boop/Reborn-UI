@@ -1,5 +1,13 @@
 {
   "name": "box-reveal",
+  "title": "盒子揭示",
+  "description": "可自定义颜色、时长与延迟的盒子揭示动画。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [
     "motion-v"
   ],

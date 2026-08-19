@@ -1,5 +1,8 @@
 {
   "name": "reborn-slide-verify",
+  "title": "滑块验证",
+  "description": "横向拖动滑块完成人机校验，支持阈值、分层文案、加载 / 禁用态与表单注入；样式可通过 ui 与主题色定制。",
+  "category": "misc",
   "dependencies": [
     "clsx"
   ],

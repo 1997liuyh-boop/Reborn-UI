@@ -1,5 +1,8 @@
 {
   "name": "reborn-root-portal",
+  "title": "RootPortal 根门户",
+  "description": "将子节点渲染到页面的根节点，脱离当前层级关系。",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

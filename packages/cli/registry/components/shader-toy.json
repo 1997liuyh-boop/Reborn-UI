@@ -1,5 +1,15 @@
 {
   "name": "shader-toy",
+  "title": "Shader Toy Viewer",
+  "description": "在浏览器中渲染 ShaderToy GLSL 着色器的强大灵活组件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "shader-toy",
+    "ogl",
+    "webgl"
+  ],
   "dependencies": [
     "ogl"
   ],

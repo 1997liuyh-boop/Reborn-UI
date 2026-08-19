@@ -1,5 +1,14 @@
 {
   "name": "reborn-input-number",
+  "title": "数字输入框",
+  "description": "带有增减按钮的数字输入组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input-number",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

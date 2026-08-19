@@ -1,5 +1,13 @@
 {
   "name": "flip-words",
+  "title": "翻转单词",
+  "description": "循环翻转单词列表的组件。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [],
   "files": [
     {

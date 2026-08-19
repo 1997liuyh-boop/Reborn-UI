@@ -1,5 +1,8 @@
 {
   "name": "reborn-main",
+  "title": "主体布局",
+  "description": "页面主体区域布局组件，自动适配 Header 高度。",
+  "category": "navigation",
   "dependencies": [
     "tailwind-variants"
   ],

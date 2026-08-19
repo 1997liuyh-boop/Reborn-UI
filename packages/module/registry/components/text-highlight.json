@@ -1,5 +1,13 @@
 {
   "name": "text-highlight",
+  "title": "文字高亮",
+  "description": "为文字填充背景以突出显示的效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [],
   "files": [
     {

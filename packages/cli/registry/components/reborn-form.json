@@ -1,5 +1,8 @@
 {
   "name": "reborn-form",
+  "title": "Form",
+  "description": "Under Development",
+  "category": "form",
   "dependencies": [
     "clsx",
     "zod"

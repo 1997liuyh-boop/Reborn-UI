@@ -1,5 +1,7 @@
 {
   "name": "sparkles",
+  "title": "sparkles",
+  "category": "misc",
   "dependencies": [
     "@vueuse/core"
   ],

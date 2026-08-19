@@ -1,5 +1,7 @@
 {
   "name": "reborn-dropdown-select",
+  "title": "reborn-dropdown-select",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

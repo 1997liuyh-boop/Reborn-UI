@@ -1,5 +1,16 @@
 {
   "name": "reborn-rate",
+  "title": "评分",
+  "description": "支持半星和鼠标悬停预览的星级评分组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "rate",
+    "rating",
+    "star",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

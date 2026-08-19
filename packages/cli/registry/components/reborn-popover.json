@@ -1,5 +1,8 @@
 {
   "name": "reborn-popover",
+  "title": "Popover",
+  "description": "点击或悬浮元素，弹出一个可定制内容的气泡区域，默认使用 fade + zoom 复合动画。",
+  "category": "navigation",
   "dependencies": [],
   "files": [
     {

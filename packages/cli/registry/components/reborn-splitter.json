@@ -1,5 +1,14 @@
 {
   "name": "reborn-splitter",
+  "title": "分隔面板 Splitter",
+  "description": "可将区域水平或垂直分隔，并可自由拖动以调整各个区域的大小。",
+  "category": "layout",
+  "tags": [
+    "css",
+    "tailwind",
+    "splitter",
+    "layout"
+  ],
   "dependencies": [
     "clsx"
   ],

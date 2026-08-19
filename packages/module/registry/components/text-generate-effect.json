@@ -1,5 +1,13 @@
 {
   "name": "text-generate-effect",
+  "title": "文字生成效果",
+  "description": "炫酷的文字效果，在页面加载时逐字渐显。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [],
   "files": [
     {

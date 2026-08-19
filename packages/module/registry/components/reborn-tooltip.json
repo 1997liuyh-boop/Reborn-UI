@@ -1,5 +1,8 @@
 {
   "name": "reborn-tooltip",
+  "title": "Tooltip 文字提示",
+  "description": "常用于展示鼠标悬停时的提示信息。",
+  "category": "navigation",
   "dependencies": [],
   "files": [
     {

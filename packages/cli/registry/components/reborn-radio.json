@@ -1,5 +1,14 @@
 {
   "name": "reborn-radio",
+  "title": "单选框",
+  "description": "用于在一组选项中选择一项的单选按钮组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "radio",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

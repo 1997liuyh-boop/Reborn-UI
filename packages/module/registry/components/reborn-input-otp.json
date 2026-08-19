@@ -1,5 +1,15 @@
 {
   "name": "reborn-input-otp",
+  "title": "验证码输入",
+  "description": "用于短信验证码、OTP Token 输入的分格输入组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "otp",
+    "input",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

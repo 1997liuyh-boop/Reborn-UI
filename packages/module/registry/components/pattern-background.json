@@ -1,5 +1,7 @@
 {
   "name": "pattern-background",
+  "title": "pattern-background",
+  "category": "misc",
   "dependencies": [
     "class-variance-authority"
   ],

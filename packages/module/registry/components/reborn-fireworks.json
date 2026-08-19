@@ -1,5 +1,13 @@
 {
   "name": "reborn-fireworks",
+  "title": "礼花",
+  "description": "可为容器内任意元素附加点击烟花特效。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "canvas"
+  ],
   "dependencies": [],
   "files": [
     {

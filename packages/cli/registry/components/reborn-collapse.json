@@ -1,5 +1,15 @@
 {
   "name": "reborn-collapse",
+  "title": "折叠面板",
+  "description": "用于展示和隐藏内容区域，支持平滑的展开收起动画效果。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "collapse",
+    "accordion",
+    "uniapp"
+  ],
   "dependencies": [
     "tailwind-variants"
   ],

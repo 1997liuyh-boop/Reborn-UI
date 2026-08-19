@@ -1,5 +1,13 @@
 {
   "name": "link-preview",
+  "title": "链接预览",
+  "description": "为锚点生成动态链接预览。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [],
   "files": [
     {

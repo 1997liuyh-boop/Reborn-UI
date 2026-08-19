@@ -1,5 +1,15 @@
 {
   "name": "reborn-date-picker-panel",
+  "title": "日期选择面板",
+  "description": "独立的日期/月份/年份选择面板，支持范围选择与多种视图切换，可用于 Popover、Modal 或内嵌展示。",
+  "category": "form",
+  "tags": [
+    "calendar",
+    "date",
+    "select",
+    "panel",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx",
     "dayjs"

@@ -1,5 +1,7 @@
 {
   "name": "reborn-page",
+  "title": "reborn-page",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

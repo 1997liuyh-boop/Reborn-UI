@@ -1,5 +1,13 @@
 {
   "name": "balance-slider",
+  "title": "平衡滑块",
+  "description": "具备可调颜色、限制和交互提示的动态平衡滑块。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input"
+  ],
   "dependencies": [],
   "files": [
     {

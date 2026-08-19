@@ -1,5 +1,8 @@
 {
   "name": "reborn-time-picker",
+  "title": "时间选择器",
+  "description": "支持滚轮选择、箭头调节、禁用时分秒和范围选择的时间选择器。",
+  "category": "form",
   "dependencies": [
     "clsx",
     "dayjs"

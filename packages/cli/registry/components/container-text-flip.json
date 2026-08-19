@@ -1,5 +1,13 @@
 {
   "name": "container-text-flip",
+  "title": "容器文字翻转",
+  "description": "一个循环翻转单词的容器，并随文字宽度动画。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "@vueuse/core",
     "motion-v"

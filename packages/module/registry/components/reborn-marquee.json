@@ -1,5 +1,13 @@
 {
   "name": "reborn-marquee",
+  "title": "跑马灯",
+  "description": "可配置的循环滚动组件，支持横向与纵向滚动、悬停暂停、渐隐遮罩与重复渲染。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

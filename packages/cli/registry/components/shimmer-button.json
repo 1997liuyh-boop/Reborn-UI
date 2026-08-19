@@ -1,5 +1,14 @@
 {
   "name": "shimmer-button",
+  "title": "闪光按钮",
+  "description": "一款带有闪烁动画效果的按钮。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "button",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

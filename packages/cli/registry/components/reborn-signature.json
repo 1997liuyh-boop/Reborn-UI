@@ -1,5 +1,14 @@
 {
   "name": "reborn-signature",
+  "title": "Signature 签名",
+  "description": "基于画布的手写签名，支持笔迹与导出临时图片路径；可与表单上下文联动。",
+  "category": "form",
+  "tags": [
+    "uniapp",
+    "signature",
+    "canvas",
+    "form"
+  ],
   "dependencies": [
     "clsx"
   ],

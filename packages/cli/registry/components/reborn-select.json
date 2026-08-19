@@ -1,5 +1,15 @@
 {
   "name": "reborn-select",
+  "title": "下拉选择",
+  "description": "自定义下拉选择组件，支持键盘导航和动画过渡。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "select",
+    "dropdown",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx",
     "lodash-es"

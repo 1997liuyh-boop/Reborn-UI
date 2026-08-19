@@ -1,5 +1,14 @@
 {
   "name": "images-slider",
+  "title": "图片滑块",
+  "description": "全屏图片滑块，可使用键盘导航。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "images",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],

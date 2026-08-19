@@ -1,5 +1,14 @@
 {
   "name": "input",
+  "title": "输入框",
+  "description": "具有径向悬停效果的多功能动态输入框，适配现代 Web 应用。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],

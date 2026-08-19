@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-18T08:07:21.435Z",
+  "generatedAt": "2026-08-19T01:49:18.913Z",
   "source": {
     "rootDir": "D:/demo2/Reborn-UI",
     "componentsDir": "app/components/reborn/ui"
@@ -8,6 +8,14 @@
   "components": [
     {
       "name": "animate-grid",
+      "title": "动画网格",
+      "description": "倾斜动画网格，带投影效果。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "input"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -23,6 +31,15 @@
     },
     {
       "name": "animated-circular-progressbar",
+      "title": "动画圆形进度条",
+      "description": "显示百分比的圆形仪表盘动画组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -38,6 +55,14 @@
     },
     {
       "name": "animated-list",
+      "title": "动画列表",
+      "description": "逐个引入的动画列表，适合在落地页展示通知或事件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -60,6 +85,14 @@
     },
     {
       "name": "animated-testimonials",
+      "title": "动态评价",
+      "description": "展示用户反馈的动态组件，包含过渡与自动播放功能。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -77,6 +110,14 @@
     },
     {
       "name": "animated-tooltip",
+      "title": "动画提示",
+      "description": "炫酷的提示气泡，悬停时揭示并跟随鼠标。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -94,6 +135,15 @@
     },
     {
       "name": "apple-card-carousel",
+      "title": "Apple 卡片轮播",
+      "description": "一款流畅的 Apple 风格卡片轮播，支持模糊加载图片、模态展开和平滑滚动控制。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "card",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core",
         "motion-v"
@@ -131,6 +181,14 @@
     },
     {
       "name": "balance-slider",
+      "title": "平衡滑块",
+      "description": "具备可调颜色、限制和交互提示的动态平衡滑块。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -146,6 +204,15 @@
     },
     {
       "name": "bento-grid",
+      "title": "Bento 网格",
+      "description": "炫酷的 Bento 网格布局，可放置不同子组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "bento",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -171,6 +238,14 @@
     },
     {
       "name": "blur-reveal",
+      "title": "模糊揭示",
+      "description": "平滑模糊淡入内容的组件。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -188,6 +263,14 @@
     },
     {
       "name": "book",
+      "title": "书本",
+      "description": "可自定义尺寸与渐变的 3D 书本组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "x-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -218,6 +301,14 @@
     },
     {
       "name": "box-reveal",
+      "title": "盒子揭示",
+      "description": "可自定义颜色、时长与延迟的盒子揭示动画。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -235,6 +326,15 @@
     },
     {
       "name": "card-3d",
+      "title": "3D 卡片效果",
+      "description": "具有透视效果的卡片，悬停时可让卡片元素提升。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "card",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -264,6 +364,16 @@
     },
     {
       "name": "color-picker",
+      "title": "取色器",
+      "description": "全功能的取色组件，支持多种颜色格式、无障碍特性与自定义色板。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "color-picker",
+        "uplusion23"
+      ],
       "dependencies": [
         "@uiw/color-convert"
       ],
@@ -291,6 +401,14 @@
     },
     {
       "name": "colourful-text",
+      "title": "彩色文字",
+      "description": "多彩文字组件，带滤镜与缩放效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -308,6 +426,14 @@
     },
     {
       "name": "compare",
+      "title": "对比",
+      "description": "通过滑动比较两组内容——图像、设计、代码或自定义元素。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -328,6 +454,14 @@
     },
     {
       "name": "container-scroll",
+      "title": "容器滚动",
+      "description": "根据滚动进度变换内部内容的滚动效果，包含缩放与旋转的平滑过渡。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core"
       ],
@@ -355,6 +489,14 @@
     },
     {
       "name": "container-text-flip",
+      "title": "容器文字翻转",
+      "description": "一个循环翻转单词的容器，并随文字宽度动画。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core",
         "motion-v"
@@ -373,6 +515,15 @@
     },
     {
       "name": "direction-aware-hover",
+      "title": "方向感知悬停卡片",
+      "description": "方向感知的悬停卡片，在悬停时显示带动态效果的图片，并提供可自定义的内容覆盖层。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "card",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -388,6 +539,15 @@
     },
     {
       "name": "dither-shader",
+      "title": "抖动着色器",
+      "description": "用于图像的实时有序抖动效果，非常适合像素艺术和复古风格。",
+      "category": "effect",
+      "tags": [
+        "tailwind",
+        "background",
+        "card",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -403,6 +563,13 @@
     },
     {
       "name": "dock",
+      "title": "Dock",
+      "description": "类似 macOS 的 Dock，悬停时放大图标。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -436,6 +603,14 @@
     },
     {
       "name": "expandable-gallery",
+      "title": "可扩展画廊",
+      "description": "响应式图片画廊，悬停时动态放大图片。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "gallery"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -451,6 +626,15 @@
     },
     {
       "name": "file-upload",
+      "title": "文件上传",
+      "description": "现代文件上传组件，带 3D 卡片效果、拖放交互和响应式网格背景。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -473,6 +657,14 @@
     },
     {
       "name": "flip-card",
+      "title": "翻转卡片",
+      "description": "一款动态的翻转卡片，沿 X 轴或 Y 轴平滑实现 180 度翻转，带来有趣的交互视觉效果。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "card"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -488,6 +680,14 @@
     },
     {
       "name": "flip-words",
+      "title": "翻转单词",
+      "description": "循环翻转单词列表的组件。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -503,6 +703,14 @@
     },
     {
       "name": "focus",
+      "title": "聚焦",
+      "description": "通过动态模糊和动画框高亮句子中的单词，支持自动循环或悬停手动聚焦模式。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "codepen"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -518,6 +726,15 @@
     },
     {
       "name": "glare-card",
+      "title": "高光卡片",
+      "description": "悬停时出现高光效果的卡片，灵感来自 Linear 网站。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "card",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core"
       ],
@@ -535,6 +752,14 @@
     },
     {
       "name": "gradient-button",
+      "title": "渐变按钮",
+      "description": "一款带有旋转圆锥渐变边框的时尚动效按钮，提供可自定义的属性，呈现活力效果。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "button"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -550,6 +775,15 @@
     },
     {
       "name": "halo-search",
+      "title": "光晕搜索框",
+      "description": "具有多重发光环与细微动画光晕的未来感搜索输入，为界面带来沉浸式体验。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "ui-verse"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -565,6 +799,14 @@
     },
     {
       "name": "hyper-text",
+      "title": "超能文字",
+      "description": "悬停时快速变化的文字动画。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "@vueuse/core",
         "motion-v"
@@ -583,6 +825,14 @@
     },
     {
       "name": "icon-cloud",
+      "title": "图标云",
+      "description": "基于 Canvas 的 3D 图标云组件，支持拖拽旋转与节点聚焦，适合展示技术栈、品牌矩阵或功能集合。",
+      "category": "misc",
+      "tags": [
+        "canvas",
+        "interactive",
+        "tailwind"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -598,6 +848,15 @@
     },
     {
       "name": "images-slider",
+      "title": "图片滑块",
+      "description": "全屏图片滑块，可使用键盘导航。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "images",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core"
       ],
@@ -615,6 +874,15 @@
     },
     {
       "name": "input",
+      "title": "输入框",
+      "description": "具有径向悬停效果的多功能动态输入框，适配现代 Web 应用。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core"
       ],
@@ -632,6 +900,15 @@
     },
     {
       "name": "interactive-hover-button",
+      "title": "交互悬停按钮",
+      "description": "一款视觉效果出色的按钮组件，悬停时呈现动态过渡，能在明暗模式下平滑适配，提升交互体验。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "button",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -647,6 +924,15 @@
     },
     {
       "name": "iphone-mockup",
+      "title": "iPhone 模型",
+      "description": "iPhone 的 SVG 设备模型。",
+      "category": "media",
+      "tags": [
+        "css",
+        "tailwind",
+        "device-mockup",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -662,6 +948,14 @@
     },
     {
       "name": "lens",
+      "title": "放大镜",
+      "description": "用于放大图片、视频或任意元素的镜头组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -679,6 +973,14 @@
     },
     {
       "name": "letter-pullup",
+      "title": "字符上提",
+      "description": "逐字上提的错落文字动画。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -696,6 +998,14 @@
     },
     {
       "name": "line-shadow-text",
+      "title": "线条阴影文字",
+      "description": "为文字添加线条阴影效果，使其更具视觉吸引力。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -711,6 +1021,14 @@
     },
     {
       "name": "link-preview",
+      "title": "链接预览",
+      "description": "为锚点生成动态链接预览。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -726,6 +1044,14 @@
     },
     {
       "name": "liquid-glass",
+      "title": "液态玻璃",
+      "description": "结合位移贴图、通道偏移和模糊折射的液态玻璃效果组件，适合用于浮层、卡片和视觉强调区域。",
+      "category": "effect",
+      "tags": [
+        "svg",
+        "filter",
+        "glassmorphism"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -745,6 +1071,14 @@
     },
     {
       "name": "meteors",
+      "title": "流星雨",
+      "description": "展示流星雨动画的组件，可自定义流星数量与样式。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -760,6 +1094,13 @@
     },
     {
       "name": "morphing-tabs",
+      "title": "变形标签页",
+      "description": "复刻 Preet 的胶状变形标签交互，包含粘连效果。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -775,6 +1116,14 @@
     },
     {
       "name": "morphing-text",
+      "title": "文字变形",
+      "description": "动态在一组文本之间切换，呈现平滑的渐变效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -790,6 +1139,14 @@
     },
     {
       "name": "multi-step-loader",
+      "title": "多步加载器",
+      "description": "多步骤加载组件，支持异步条件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -805,6 +1162,14 @@
     },
     {
       "name": "neon-border",
+      "title": "霓虹边框",
+      "description": "视觉吸引力强的霓虹边框组件，可自定义动画与颜色。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "border"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -820,6 +1185,14 @@
     },
     {
       "name": "number-ticker",
+      "title": "数字滚动",
+      "description": "动画数字向目标值递增或递减。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "@vueuse/core"
       ],
@@ -837,6 +1210,8 @@
     },
     {
       "name": "pattern-background",
+      "title": "pattern-background",
+      "category": "misc",
       "dependencies": [
         "class-variance-authority"
       ],
@@ -854,6 +1229,14 @@
     },
     {
       "name": "photo-gallery",
+      "title": "照片画廊",
+      "description": "用精美的画廊展示团队风采。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "gallery"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -869,6 +1252,14 @@
     },
     {
       "name": "radiant-text",
+      "title": "光辉文字",
+      "description": "为文字添加耀眼的高光效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -884,6 +1275,15 @@
     },
     {
       "name": "rainbow-button",
+      "title": "彩虹按钮",
+      "description": "在按钮上呈现彩虹效果。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "button",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -899,6 +1299,9 @@
     },
     {
       "name": "reborn-affix",
+      "title": "Affix 悬浮",
+      "description": "Affix 组件用于将元素固定在页面上的特定位置，并允许用户在屏幕范围内自由拖拽。当元素被拖拽到屏幕边缘时，它会自动吸附到最近的边缘，方便用户快速定位。常用于悬浮按钮、快捷操作入口等场景。",
+      "category": "navigation",
       "dependencies": [
         "@vueuse/core",
         "tailwind-variants"
@@ -927,6 +1330,9 @@
     },
     {
       "name": "reborn-back-top",
+      "title": "BackTop",
+      "description": "该组件一个用于长页面，滑动一定距离后，出现返回顶部按钮，方便快速返回顶部的场景",
+      "category": "navigation",
       "dependencies": [
         "@vueuse/core",
         "clsx"
@@ -961,6 +1367,16 @@
     },
     {
       "name": "reborn-badge",
+      "title": "徽章 Badge",
+      "description": "用于展示状态、数量或重要标识的微型标签。支持多种色彩、感官风格及跨端适配。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "badge",
+        "uniapp",
+        "cross-platform"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -997,6 +1413,13 @@
     },
     {
       "name": "reborn-breadcrumb",
+      "title": "面包屑",
+      "description": "显示当前页面的路径，快速返回之前的任意页面。",
+      "category": "navigation",
+      "tags": [
+        "navigation",
+        "breadcrumb"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -1043,6 +1466,15 @@
     },
     {
       "name": "reborn-button",
+      "title": "按钮",
+      "description": "显示按钮或看起来像按钮的组件。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "button",
+        "uniapp"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -1079,6 +1511,8 @@
     },
     {
       "name": "reborn-card",
+      "title": "reborn-card",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -1095,6 +1529,16 @@
     },
     {
       "name": "reborn-carousel",
+      "title": "走马灯 Carousel",
+      "description": "自研的走马灯轮播组件，支持多项显示、自动播放、指示器、箭头控制、卡片模式、纵向布局和响应式配置。",
+      "category": "navigation",
+      "tags": [
+        "css",
+        "tailwind",
+        "carousel",
+        "slider",
+        "motion"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -1120,6 +1564,9 @@
     },
     {
       "name": "reborn-cascader",
+      "title": "级联选择器",
+      "description": "在包含多层级的数据结构中进行选择，常用作省市区选择、分类选择等场景。",
+      "category": "form",
       "dependencies": [
         "clsx"
       ],
@@ -1152,6 +1599,15 @@
     },
     {
       "name": "reborn-checkbox",
+      "title": "多选框",
+      "description": "适用于单选或组合选择的多选框组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "checkbox",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -1195,6 +1651,15 @@
     },
     {
       "name": "reborn-chip",
+      "title": "提示点/标记",
+      "description": "轻量级提示点/标记组件。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "chip",
+        "uniapp"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -1231,6 +1696,16 @@
     },
     {
       "name": "reborn-collapse",
+      "title": "折叠面板",
+      "description": "用于展示和隐藏内容区域，支持平滑的展开收起动画效果。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "collapse",
+        "accordion",
+        "uniapp"
+      ],
       "dependencies": [
         "tailwind-variants"
       ],
@@ -1269,6 +1744,9 @@
     },
     {
       "name": "reborn-color-picker",
+      "title": "取色器",
+      "description": "提供颜色选择的组件。",
+      "category": "form",
       "dependencies": [
         "@uiw/color-convert"
       ],
@@ -1317,6 +1795,9 @@
     },
     {
       "name": "reborn-container",
+      "title": "容器",
+      "description": "用于将内容居中并在不同屏幕尺寸下限制最大宽度的布局组件。",
+      "category": "navigation",
       "dependencies": [
         "clsx"
       ],
@@ -1334,6 +1815,9 @@
     },
     {
       "name": "reborn-context-menu",
+      "title": "Context Menu",
+      "description": "在目标区域上通过右键、点击或悬浮弹出上下文操作面板，支持分组、快捷键与多级子菜单。",
+      "category": "navigation",
       "dependencies": [
         "clsx"
       ],
@@ -1359,6 +1843,9 @@
     },
     {
       "name": "reborn-coupon",
+      "title": "卡券 Coupon",
+      "description": "支持多种形态（缺口、撕线、邮票等）的高度可定制化卡券组件。",
+      "category": "misc",
       "dependencies": [
         "@vueuse/core"
       ],
@@ -1380,6 +1867,16 @@
     },
     {
       "name": "reborn-date-picker-panel",
+      "title": "日期选择面板",
+      "description": "独立的日期/月份/年份选择面板，支持范围选择与多种视图切换，可用于 Popover、Modal 或内嵌展示。",
+      "category": "form",
+      "tags": [
+        "calendar",
+        "date",
+        "select",
+        "panel",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx",
         "dayjs"
@@ -1398,6 +1895,9 @@
     },
     {
       "name": "reborn-descriptions",
+      "title": "描述列表",
+      "description": "以键值对形式展示内容的容器组件，常用于详情页、信息面板等场景。支持有/无边框、水平/垂直方向、多列布局及富内容插槽。",
+      "category": "misc",
       "dependencies": [
         "@vueuse/core"
       ],
@@ -1424,6 +1924,9 @@
     },
     {
       "name": "reborn-dialog",
+      "title": "Dialog 对话框",
+      "description": "支持触发器模式、受控模式、遮罩关闭、异步拦截、拖拽与全屏展示的单组件 Dialog。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -1443,6 +1946,9 @@
     },
     {
       "name": "reborn-draggable",
+      "title": "Draggable 拖拽排序",
+      "description": "支持列表拖拽排序的容器组件。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -1473,6 +1979,9 @@
     },
     {
       "name": "reborn-dropdown",
+      "title": "Dropdown 下拉菜单",
+      "description": "将动作或菜单折叠到下拉菜单中，悬停或点击触发元素以展开更多操作。",
+      "category": "misc",
       "dependencies": [
         "clsx"
       ],
@@ -1499,6 +2008,8 @@
     },
     {
       "name": "reborn-dropdown-select",
+      "title": "reborn-dropdown-select",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -1515,6 +2026,9 @@
     },
     {
       "name": "reborn-fab",
+      "title": "悬浮按钮 (Fab)",
+      "description": "提供固定位置的操作按钮，支持拖拽、展开菜单。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -1541,6 +2055,14 @@
     },
     {
       "name": "reborn-fireworks",
+      "title": "礼花",
+      "description": "可为容器内任意元素附加点击烟花特效。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "canvas"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -1556,6 +2078,9 @@
     },
     {
       "name": "reborn-footer",
+      "title": "Footer 底部栏",
+      "description": "固定在页面底部的操作容器组件，支持自动占位、最小高度控制和安全区适配。",
+      "category": "navigation",
       "dependencies": [
         "clsx"
       ],
@@ -1594,6 +2119,9 @@
     },
     {
       "name": "reborn-form",
+      "title": "Form",
+      "description": "Under Development",
+      "category": "form",
       "dependencies": [
         "clsx",
         "zod"
@@ -1648,6 +2176,15 @@
     },
     {
       "name": "reborn-guide",
+      "title": "引导 Guide",
+      "description": "逐步骤进行指引或解释说明的组件，常用于用户不熟悉的或需进行特别强调的页面。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "guide",
+        "tour"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -1669,6 +2206,9 @@
     },
     {
       "name": "reborn-header",
+      "title": "标题",
+      "description": "响应式头部组件。",
+      "category": "navigation",
       "dependencies": [
         "@vueuse/core",
         "tailwind-variants"
@@ -1691,6 +2231,17 @@
     },
     {
       "name": "reborn-image",
+      "title": "图片 Image",
+      "description": "增强版图片组件，支持预览、加载状态、错误状态和多种裁剪模式。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "image",
+        "media",
+        "uniapp",
+        "viewerjs"
+      ],
       "dependencies": [
         "@vueuse/core",
         "clsx",
@@ -1726,6 +2277,15 @@
     },
     {
       "name": "reborn-input",
+      "title": "基础输入框",
+      "description": "具有圆角胶囊样式与多尺寸状态的输入组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "uniapp"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -1762,6 +2322,15 @@
     },
     {
       "name": "reborn-input-number",
+      "title": "数字输入框",
+      "description": "带有增减按钮的数字输入组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input-number",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -1805,6 +2374,16 @@
     },
     {
       "name": "reborn-input-otp",
+      "title": "验证码输入",
+      "description": "用于短信验证码、OTP Token 输入的分格输入组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "otp",
+        "input",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -1843,6 +2422,9 @@
     },
     {
       "name": "reborn-loading",
+      "title": "Loading 加载指令",
+      "description": "v-loading 指令与 useLoading 服务式调用，为任意元素或整页添加加载遮罩。",
+      "category": "misc",
       "dependencies": [
         "tailwind-variants"
       ],
@@ -1885,6 +2467,9 @@
     },
     {
       "name": "reborn-loadmore",
+      "title": "加载更多",
+      "description": "uniapp 单独展示。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -1906,6 +2491,9 @@
     },
     {
       "name": "reborn-main",
+      "title": "主体布局",
+      "description": "页面主体区域布局组件，自动适配 Header 高度。",
+      "category": "navigation",
       "dependencies": [
         "tailwind-variants"
       ],
@@ -1923,6 +2511,14 @@
     },
     {
       "name": "reborn-marquee",
+      "title": "跑马灯",
+      "description": "可配置的循环滚动组件，支持横向与纵向滚动、悬停暂停、渐隐遮罩与重复渲染。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -1942,6 +2538,9 @@
     },
     {
       "name": "reborn-menu",
+      "title": "菜单",
+      "description": "为网站提供导航能力的菜单组件，支持垂直、水平、折叠与子菜单等模式。",
+      "category": "misc",
       "dependencies": [
         "@vueuse/core",
         "clsx"
@@ -1979,6 +2578,9 @@
     },
     {
       "name": "reborn-notice-bar",
+      "title": "NoticeBar 通知栏",
+      "description": "用于循环播放展示一组消息通知，支持多种内容溢出时的处理方式。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -2010,6 +2612,9 @@
     },
     {
       "name": "reborn-overlay",
+      "title": "Overlay 遮罩",
+      "description": "全屏遮罩层，支持点击关闭和滚动锁定。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -2046,6 +2651,8 @@
     },
     {
       "name": "reborn-page",
+      "title": "reborn-page",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -2062,6 +2669,9 @@
     },
     {
       "name": "reborn-pagination",
+      "title": "分页",
+      "description": "当数据量过多时，使用分页分解数据。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -2092,6 +2702,8 @@
     },
     {
       "name": "reborn-picker-view",
+      "title": "reborn-picker-view",
+      "category": "misc",
       "dependencies": [
         "clsx",
         "lodash-es"
@@ -2116,6 +2728,9 @@
     },
     {
       "name": "reborn-popover",
+      "title": "Popover",
+      "description": "点击或悬浮元素，弹出一个可定制内容的气泡区域，默认使用 fade + zoom 复合动画。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -2172,6 +2787,9 @@
     },
     {
       "name": "reborn-popup",
+      "title": "Popup 弹出层",
+      "description": "支持无重绘滑动展开的高级弹出面板组件。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -2208,6 +2826,16 @@
     },
     {
       "name": "reborn-qrcode",
+      "title": "二维码 Qrcode",
+      "description": "二维码组件，支持颜色、样式、Logo 与纠错级别配置。",
+      "category": "misc",
+      "tags": [
+        "qrcode",
+        "canvas",
+        "svg",
+        "uniapp",
+        "web"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -2251,6 +2879,15 @@
     },
     {
       "name": "reborn-radio",
+      "title": "单选框",
+      "description": "用于在一组选项中选择一项的单选按钮组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "radio",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2299,6 +2936,17 @@
     },
     {
       "name": "reborn-rate",
+      "title": "评分",
+      "description": "支持半星和鼠标悬停预览的星级评分组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "rate",
+        "rating",
+        "star",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2337,6 +2985,9 @@
     },
     {
       "name": "reborn-root-portal",
+      "title": "RootPortal 根门户",
+      "description": "将子节点渲染到页面的根节点，脱离当前层级关系。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -2361,6 +3012,16 @@
     },
     {
       "name": "reborn-search-box",
+      "title": "搜索框",
+      "description": "仿 MasterGo 设计的高级搜索框组件，支持目录选择、图片搜索及自定义按钮。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "search",
+        "reborn"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -2387,6 +3048,16 @@
     },
     {
       "name": "reborn-select",
+      "title": "下拉选择",
+      "description": "自定义下拉选择组件，支持键盘导航和动画过渡。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "select",
+        "dropdown",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx",
         "lodash-es"
@@ -2426,6 +3097,9 @@
     },
     {
       "name": "reborn-select-date",
+      "title": "日期选择",
+      "description": "自定义日历式日期选择组件，支持年、月、日模式以及时间范围选择。",
+      "category": "form",
       "dependencies": [
         "clsx",
         "dayjs",
@@ -2465,6 +3139,8 @@
     },
     {
       "name": "reborn-select-trigger",
+      "title": "reborn-select-trigger",
+      "category": "misc",
       "dependencies": [
         "clsx"
       ],
@@ -2498,6 +3174,15 @@
     },
     {
       "name": "reborn-signature",
+      "title": "Signature 签名",
+      "description": "基于画布的手写签名，支持笔迹与导出临时图片路径；可与表单上下文联动。",
+      "category": "form",
+      "tags": [
+        "uniapp",
+        "signature",
+        "canvas",
+        "form"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2526,6 +3211,8 @@
     },
     {
       "name": "reborn-sku",
+      "title": "reborn-sku",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -2541,6 +3228,9 @@
     },
     {
       "name": "reborn-slide-verify",
+      "title": "滑块验证",
+      "description": "横向拖动滑块完成人机校验，支持阈值、分层文案、加载 / 禁用态与表单注入；样式可通过 ui 与主题色定制。",
+      "category": "misc",
       "dependencies": [
         "clsx"
       ],
@@ -2564,6 +3254,16 @@
     },
     {
       "name": "reborn-slider",
+      "title": "滑块",
+      "description": "支持单值和范围选择的滑块组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "slider",
+        "range",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2602,6 +3302,15 @@
     },
     {
       "name": "reborn-splitter",
+      "title": "分隔面板 Splitter",
+      "description": "可将区域水平或垂直分隔，并可自由拖动以调整各个区域的大小。",
+      "category": "layout",
+      "tags": [
+        "css",
+        "tailwind",
+        "splitter",
+        "layout"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2628,6 +3337,9 @@
     },
     {
       "name": "reborn-sticky",
+      "title": "Sticky 吸顶",
+      "description": "Sticky 组件用于将元素固定在页面顶部，当页面滚动时，被包裹的内容会始终保持在可视区域的顶部。常用于导航栏、标题栏等需要始终可见的内容。",
+      "category": "navigation",
       "dependencies": [
         "@vueuse/core"
       ],
@@ -2661,6 +3373,15 @@
     },
     {
       "name": "reborn-swiper-action",
+      "title": "滑动操作",
+      "description": "列表项向左滑出右侧操作按钮，支持 push / overlay 两种展开模式、同组互斥、受控展开与移除动画；内容与手势层与 UniApp 多端对齐。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "uniapp",
+        "swiper"
+      ],
       "dependencies": [
         "@dcloudio/uni-app"
       ],
@@ -2684,6 +3405,15 @@
     },
     {
       "name": "reborn-switch",
+      "title": "开关",
+      "description": "用于控制开关状态的切换组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "switch",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2722,6 +3452,9 @@
     },
     {
       "name": "reborn-tabbar",
+      "title": "Tabbar 底部标签栏",
+      "description": "uniapp 单独展示。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -2758,6 +3491,14 @@
     },
     {
       "name": "reborn-tabs",
+      "title": "标签页 Tabs",
+      "description": "用于在不同的内容区域之间切换。",
+      "category": "navigation",
+      "tags": [
+        "css",
+        "tailwind",
+        "tabs"
+      ],
       "dependencies": [
         "@vueuse/core",
         "clsx"
@@ -2817,6 +3558,17 @@
     },
     {
       "name": "reborn-text",
+      "title": "文本 Text",
+      "description": "支持格式化、脱敏和省略号的增强文本组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "text",
+        "format",
+        "mask",
+        "uniapp"
+      ],
       "dependencies": [
         "clsx"
       ],
@@ -2849,6 +3601,15 @@
     },
     {
       "name": "reborn-textarea",
+      "title": "多行输入框",
+      "description": "具有自适应高度与多尺寸状态的多行输入组件。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "textarea",
+        "uniapp"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -2880,6 +3641,9 @@
     },
     {
       "name": "reborn-time-picker",
+      "title": "时间选择器",
+      "description": "支持滚轮选择、箭头调节、禁用时分秒和范围选择的时间选择器。",
+      "category": "form",
       "dependencies": [
         "clsx",
         "dayjs"
@@ -2911,6 +3675,9 @@
     },
     {
       "name": "reborn-toast",
+      "title": "Toast 轻提示",
+      "description": "支持 useToast() 调用的轻提示组件。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -2947,6 +3714,9 @@
     },
     {
       "name": "reborn-tooltip",
+      "title": "Tooltip 文字提示",
+      "description": "常用于展示鼠标悬停时的提示信息。",
+      "category": "navigation",
       "dependencies": [],
       "files": [
         {
@@ -2966,6 +3736,9 @@
     },
     {
       "name": "reborn-transfer",
+      "title": "穿梭框",
+      "description": "直观的双列数据转移组件，支持搜索过滤、全选/反选、可选头部扩展勾选菜单、禁用条目、单向模式、操作撤回及分页，适用于权限分配、购物选择等场景。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -2985,6 +3758,9 @@
     },
     {
       "name": "reborn-transition",
+      "title": "Transition 过渡",
+      "description": "过渡动画容器，支持 fade / slide / zoom。",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -3021,6 +3797,14 @@
     },
     {
       "name": "reborn-typewriter",
+      "title": "打字机效果",
+      "description": "模拟打字机效果，支持文本删除和重新输入，适用于标题动画、终端效果等场景。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "animation"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3036,6 +3820,8 @@
     },
     {
       "name": "reborn-waterfall",
+      "title": "reborn-waterfall",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -3052,6 +3838,13 @@
     },
     {
       "name": "reborn-watermark",
+      "title": "水印 Watermark",
+      "description": "在页面上添加文本或图片等水印信息。",
+      "category": "data-display",
+      "tags": [
+        "data",
+        "watermark"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3078,6 +3871,8 @@
     },
     {
       "name": "ripple",
+      "title": "ripple",
+      "category": "misc",
       "dependencies": [],
       "files": [
         {
@@ -3103,6 +3898,15 @@
     },
     {
       "name": "ripple-button",
+      "title": "波纹按钮",
+      "description": "一款带有可自定义颜色和动画时长的时尚波纹按钮组件。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "button",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3118,6 +3922,15 @@
     },
     {
       "name": "safari-mockup",
+      "title": "Safari 模型",
+      "description": "Safari 浏览器的 SVG 模型。",
+      "category": "media",
+      "tags": [
+        "css",
+        "tailwind",
+        "device-mockup",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3133,6 +3946,14 @@
     },
     {
       "name": "scratch-to-reveal",
+      "title": "刮刮乐揭示",
+      "description": "互动式刮刮乐效果，可自定义尺寸与动画，在刮开后显示隐藏内容。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -3150,6 +3971,14 @@
     },
     {
       "name": "scroll-island",
+      "title": "滚动岛",
+      "description": "具备动态动画的交互组件，展示滚动进度，并带可展开的附加内容区域。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "number-flow"
+      ],
       "dependencies": [
         "@number-flow/vue",
         "@vueuse/core",
@@ -3169,6 +3998,16 @@
     },
     {
       "name": "shader-toy",
+      "title": "Shader Toy Viewer",
+      "description": "在浏览器中渲染 ShaderToy GLSL 着色器的强大灵活组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "shader-toy",
+        "ogl",
+        "webgl"
+      ],
       "dependencies": [
         "ogl"
       ],
@@ -3190,6 +4029,15 @@
     },
     {
       "name": "shimmer-button",
+      "title": "闪光按钮",
+      "description": "一款带有闪烁动画效果的按钮。",
+      "category": "basic",
+      "tags": [
+        "css",
+        "tailwind",
+        "button",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3205,6 +4053,8 @@
     },
     {
       "name": "sparkles",
+      "title": "sparkles",
+      "category": "misc",
       "dependencies": [
         "@vueuse/core"
       ],
@@ -3222,6 +4072,14 @@
     },
     {
       "name": "sparkles-text",
+      "title": "闪光文字",
+      "description": "为文字持续生成闪光与平滑过渡，非常适合突出显示的星光效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -3239,6 +4097,14 @@
     },
     {
       "name": "spinning-text",
+      "title": "旋转文字",
+      "description": "让文字沿圆周运动的动画组件，可自定义速度、方向、颜色与过渡，打造动态效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -3256,6 +4122,14 @@
     },
     {
       "name": "spring-calendar",
+      "title": "弹性日历",
+      "description": "带弹簧动画的日历组件，可展开查看事件，使用 Motion-V 实现平滑过渡。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "motion-v"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -3278,6 +4152,14 @@
     },
     {
       "name": "svg-mask",
+      "title": "SVG 遮罩",
+      "description": "通过悬停与鼠标移动揭示内容的动态 SVG 遮罩组件。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3293,6 +4175,13 @@
     },
     {
       "name": "testimonial-slider",
+      "title": "评价滑块",
+      "description": "轻量的评价滑块，包含图片旋转、文字过渡与可选自动轮播。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3308,6 +4197,14 @@
     },
     {
       "name": "text-3d",
+      "title": "3D 文字",
+      "description": "时尚的 3D 文字组件，可自定义颜色、阴影与动画选项。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "3d"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3323,6 +4220,14 @@
     },
     {
       "name": "text-generate-effect",
+      "title": "文字生成效果",
+      "description": "炫酷的文字效果，在页面加载时逐字渐显。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3338,6 +4243,13 @@
     },
     {
       "name": "text-glitch",
+      "title": "文字故障",
+      "description": "为文字添加鲜明的故障效果，可自定义速度、阴影颜色，并可选择仅在悬停时触发。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3349,6 +4261,14 @@
     },
     {
       "name": "text-highlight",
+      "title": "文字高亮",
+      "description": "为文字填充背景以突出显示的效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3364,6 +4284,13 @@
     },
     {
       "name": "text-hover-effect",
+      "title": "文字悬停效果",
+      "description": "在悬停时为文字添加渐变描边与动画，灵感来自 x.ai。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3379,6 +4306,14 @@
     },
     {
       "name": "text-reveal",
+      "title": "文字揭示",
+      "description": "使用 GSAP 的 SplitText 实现逐行的文字入场动画。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "gsap"
+      ],
       "dependencies": [
         "gsap"
       ],
@@ -3396,6 +4331,14 @@
     },
     {
       "name": "text-reveal-card",
+      "title": "文字揭示卡片",
+      "description": "鼠标移动时在卡片底部揭示文字的效果。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3416,6 +4359,14 @@
     },
     {
       "name": "text-scroll-reveal",
+      "title": "滚动文字揭示",
+      "description": "在滚动时逐词显现的文字组件，可自定义内容与样式。",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3436,6 +4387,14 @@
     },
     {
       "name": "timeline",
+      "title": "时间线",
+      "description": "视觉化、交互式的时间线组件，带平滑动画、粘性标签与渐变滚动效果。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v"
       ],
@@ -3453,6 +4412,14 @@
     },
     {
       "name": "tracing-beam",
+      "title": "跟踪光束",
+      "description": "渲染跟踪光束效果的组件，支持动态滚动动画与渐变描边。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "motion-v",
         "vue-use-spring"
@@ -3471,6 +4438,15 @@
     },
     {
       "name": "vanishing-input",
+      "title": "占位符滚动与消失输入框",
+      "description": "输入框占位符滑入，并在提交时呈现消失效果。",
+      "category": "form",
+      "tags": [
+        "css",
+        "tailwind",
+        "input",
+        "aceternity-ui"
+      ],
       "dependencies": [],
       "files": [
         {

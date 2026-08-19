@@ -1,5 +1,15 @@
 {
   "name": "reborn-slider",
+  "title": "滑块",
+  "description": "支持单值和范围选择的滑块组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "slider",
+    "range",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

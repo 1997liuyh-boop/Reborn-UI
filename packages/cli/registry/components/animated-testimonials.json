@@ -1,5 +1,13 @@
 {
   "name": "animated-testimonials",
+  "title": "动态评价",
+  "description": "展示用户反馈的动态组件，包含过渡与自动播放功能。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "motion-v"
   ],

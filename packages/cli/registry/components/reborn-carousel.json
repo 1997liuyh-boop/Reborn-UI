@@ -1,5 +1,15 @@
 {
   "name": "reborn-carousel",
+  "title": "走马灯 Carousel",
+  "description": "自研的走马灯轮播组件，支持多项显示、自动播放、指示器、箭头控制、卡片模式、纵向布局和响应式配置。",
+  "category": "navigation",
+  "tags": [
+    "css",
+    "tailwind",
+    "carousel",
+    "slider",
+    "motion"
+  ],
   "dependencies": [
     "clsx"
   ],

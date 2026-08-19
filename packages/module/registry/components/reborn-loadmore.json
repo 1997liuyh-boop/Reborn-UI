@@ -1,5 +1,8 @@
 {
   "name": "reborn-loadmore",
+  "title": "加载更多",
+  "description": "uniapp 单独展示。",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

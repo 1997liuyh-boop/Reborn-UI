@@ -1,5 +1,14 @@
 {
   "name": "safari-mockup",
+  "title": "Safari 模型",
+  "description": "Safari 浏览器的 SVG 模型。",
+  "category": "media",
+  "tags": [
+    "css",
+    "tailwind",
+    "device-mockup",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

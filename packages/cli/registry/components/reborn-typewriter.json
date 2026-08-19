@@ -1,5 +1,13 @@
 {
   "name": "reborn-typewriter",
+  "title": "打字机效果",
+  "description": "模拟打字机效果，支持文本删除和重新输入，适用于标题动画、终端效果等场景。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "animation"
+  ],
   "dependencies": [],
   "files": [
     {

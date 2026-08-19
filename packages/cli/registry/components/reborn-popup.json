@@ -1,5 +1,8 @@
 {
   "name": "reborn-popup",
+  "title": "Popup 弹出层",
+  "description": "支持无重绘滑动展开的高级弹出面板组件。",
+  "category": "navigation",
   "dependencies": [],
   "files": [
     {

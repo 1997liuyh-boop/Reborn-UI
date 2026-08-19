@@ -1,5 +1,13 @@
 {
   "name": "letter-pullup",
+  "title": "字符上提",
+  "description": "逐字上提的错落文字动画。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [
     "motion-v"
   ],

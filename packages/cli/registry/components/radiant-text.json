@@ -1,5 +1,13 @@
 {
   "name": "radiant-text",
+  "title": "光辉文字",
+  "description": "为文字添加耀眼的高光效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

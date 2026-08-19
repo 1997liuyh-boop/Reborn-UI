@@ -1,5 +1,15 @@
 {
   "name": "reborn-badge",
+  "title": "徽章 Badge",
+  "description": "用于展示状态、数量或重要标识的微型标签。支持多种色彩、感官风格及跨端适配。",
+  "category": "basic",
+  "tags": [
+    "css",
+    "tailwind",
+    "badge",
+    "uniapp",
+    "cross-platform"
+  ],
   "dependencies": [],
   "files": [
     {

@@ -1,5 +1,14 @@
 {
   "name": "reborn-input",
+  "title": "基础输入框",
+  "description": "具有圆角胶囊样式与多尺寸状态的输入组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "uniapp"
+  ],
   "dependencies": [],
   "files": [
     {

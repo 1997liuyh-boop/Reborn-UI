@@ -1,5 +1,15 @@
 {
   "name": "reborn-search-box",
+  "title": "搜索框",
+  "description": "仿 MasterGo 设计的高级搜索框组件，支持目录选择、图片搜索及自定义按钮。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "input",
+    "search",
+    "reborn"
+  ],
   "dependencies": [],
   "files": [
     {

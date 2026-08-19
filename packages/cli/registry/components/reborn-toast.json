@@ -1,5 +1,8 @@
 {
   "name": "reborn-toast",
+  "title": "Toast 轻提示",
+  "description": "支持 useToast() 调用的轻提示组件。",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

@@ -1,5 +1,7 @@
 {
   "name": "reborn-card",
+  "title": "reborn-card",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

@@ -1,5 +1,13 @@
 {
   "name": "colourful-text",
+  "title": "彩色文字",
+  "description": "多彩文字组件，带滤镜与缩放效果。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "motion-v"
   ],

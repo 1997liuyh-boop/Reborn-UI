@@ -1,5 +1,16 @@
 {
   "name": "reborn-text",
+  "title": "文本 Text",
+  "description": "支持格式化、脱敏和省略号的增强文本组件。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "text",
+    "format",
+    "mask",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

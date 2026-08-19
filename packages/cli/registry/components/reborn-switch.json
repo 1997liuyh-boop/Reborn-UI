@@ -1,5 +1,14 @@
 {
   "name": "reborn-switch",
+  "title": "开关",
+  "description": "用于控制开关状态的切换组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "switch",
+    "uniapp"
+  ],
   "dependencies": [
     "clsx"
   ],

@@ -1,5 +1,14 @@
 {
   "name": "iphone-mockup",
+  "title": "iPhone 模型",
+  "description": "iPhone 的 SVG 设备模型。",
+  "category": "media",
+  "tags": [
+    "css",
+    "tailwind",
+    "device-mockup",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

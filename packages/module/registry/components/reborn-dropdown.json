@@ -1,5 +1,8 @@
 {
   "name": "reborn-dropdown",
+  "title": "Dropdown 下拉菜单",
+  "description": "将动作或菜单折叠到下拉菜单中，悬停或点击触发元素以展开更多操作。",
+  "category": "misc",
   "dependencies": [
     "clsx"
   ],

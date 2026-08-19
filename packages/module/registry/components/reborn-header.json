@@ -1,5 +1,8 @@
 {
   "name": "reborn-header",
+  "title": "标题",
+  "description": "响应式头部组件。",
+  "category": "navigation",
   "dependencies": [
     "@vueuse/core",
     "tailwind-variants"

@@ -1,5 +1,8 @@
 {
   "name": "reborn-color-picker",
+  "title": "取色器",
+  "description": "提供颜色选择的组件。",
+  "category": "form",
   "dependencies": [
     "@uiw/color-convert"
   ],

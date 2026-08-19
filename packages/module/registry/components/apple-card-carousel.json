@@ -1,5 +1,14 @@
 {
   "name": "apple-card-carousel",
+  "title": "Apple 卡片轮播",
+  "description": "一款流畅的 Apple 风格卡片轮播，支持模糊加载图片、模态展开和平滑滚动控制。",
+  "category": "data-display",
+  "tags": [
+    "css",
+    "tailwind",
+    "card",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "@vueuse/core",
     "motion-v"

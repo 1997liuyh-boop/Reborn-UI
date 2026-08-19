@@ -1,5 +1,8 @@
 {
   "name": "reborn-context-menu",
+  "title": "Context Menu",
+  "description": "在目标区域上通过右键、点击或悬浮弹出上下文操作面板，支持分组、快捷键与多级子菜单。",
+  "category": "navigation",
   "dependencies": [
     "clsx"
   ],

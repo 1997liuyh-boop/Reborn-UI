@@ -1,5 +1,13 @@
 {
   "name": "number-ticker",
+  "title": "数字滚动",
+  "description": "动画数字向目标值递增或递减。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],

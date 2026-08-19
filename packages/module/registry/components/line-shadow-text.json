@@ -1,5 +1,13 @@
 {
   "name": "line-shadow-text",
+  "title": "线条阴影文字",
+  "description": "为文字添加线条阴影效果，使其更具视觉吸引力。",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

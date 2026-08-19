@@ -1,5 +1,7 @@
 {
   "name": "reborn-picker-view",
+  "title": "reborn-picker-view",
+  "category": "misc",
   "dependencies": [
     "clsx",
     "lodash-es"

@@ -1,5 +1,15 @@
 {
   "name": "reborn-qrcode",
+  "title": "二维码 Qrcode",
+  "description": "二维码组件，支持颜色、样式、Logo 与纠错级别配置。",
+  "category": "misc",
+  "tags": [
+    "qrcode",
+    "canvas",
+    "svg",
+    "uniapp",
+    "web"
+  ],
   "dependencies": [],
   "files": [
     {

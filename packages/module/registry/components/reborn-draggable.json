@@ -1,5 +1,8 @@
 {
   "name": "reborn-draggable",
+  "title": "Draggable 拖拽排序",
+  "description": "支持列表拖拽排序的容器组件。",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

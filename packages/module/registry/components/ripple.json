@@ -1,5 +1,7 @@
 {
   "name": "ripple",
+  "title": "ripple",
+  "category": "misc",
   "dependencies": [],
   "files": [
     {

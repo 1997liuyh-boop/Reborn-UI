@@ -1,5 +1,8 @@
 {
   "name": "reborn-container",
+  "title": "容器",
+  "description": "用于将内容居中并在不同屏幕尺寸下限制最大宽度的布局组件。",
+  "category": "navigation",
   "dependencies": [
     "clsx"
   ],

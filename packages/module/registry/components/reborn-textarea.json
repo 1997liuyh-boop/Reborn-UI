@@ -1,5 +1,14 @@
 {
   "name": "reborn-textarea",
+  "title": "多行输入框",
+  "description": "具有自适应高度与多尺寸状态的多行输入组件。",
+  "category": "form",
+  "tags": [
+    "css",
+    "tailwind",
+    "textarea",
+    "uniapp"
+  ],
   "dependencies": [],
   "files": [
     {

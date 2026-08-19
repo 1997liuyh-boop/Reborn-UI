@@ -1,5 +1,13 @@
 {
   "name": "animate-grid",
+  "title": "动画网格",
+  "description": "倾斜动画网格，带投影效果。",
+  "category": "misc",
+  "tags": [
+    "css",
+    "tailwind",
+    "input"
+  ],
   "dependencies": [],
   "files": [
     {

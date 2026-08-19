@@ -1,5 +1,8 @@
 {
   "name": "reborn-fab",
+  "title": "悬浮按钮 (Fab)",
+  "description": "提供固定位置的操作按钮，支持拖拽、展开菜单。",
+  "category": "navigation",
   "dependencies": [],
   "files": [
     {

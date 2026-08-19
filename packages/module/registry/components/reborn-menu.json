@@ -1,5 +1,8 @@
 {
   "name": "reborn-menu",
+  "title": "菜单",
+  "description": "为网站提供导航能力的菜单组件，支持垂直、水平、折叠与子菜单等模式。",
+  "category": "misc",
   "dependencies": [
     "@vueuse/core",
     "clsx"
