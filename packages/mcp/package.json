@@ -1,0 +1,41 @@
+{
+  "name": "reborn-ui-mcp",
+  "version": "0.1.0",
+  "description": "Reborn-UI 组件库查询 MCP Server：让任意 Agent 检索组件、Props、用法示例与使用边界",
+  "author": "1997liuyh-boop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1997liuyh-boop/Reborn-UI.git"
+  },
+  "type": "module",
+  "bin": {
+    "reborn-ui-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "knowledge",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/index.ts --kb-dir ../../knowledge",
+    "clean": "rimraf dist",
+    "kb:snapshot": "tsx src/scripts/snapshot-kb.ts",
+    "prepack": "npm run build && npm run kb:snapshot"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.3"
+  }
+}
