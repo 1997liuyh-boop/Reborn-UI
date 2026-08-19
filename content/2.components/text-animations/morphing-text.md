@@ -1,6 +1,6 @@
 ---
 title: 文字变形
-description: 动态在一组文本之间切换，呈现平滑的渐变效果。
+description: 用于在一组文本间以模糊渐变变形循环切换的文字动画组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

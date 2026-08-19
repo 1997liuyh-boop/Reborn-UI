@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "scratch-to-reveal",
   "title": "刮刮乐揭示",
-  "description": "互动式刮刮乐效果，可自定义尺寸与动画，在刮开后显示隐藏内容。",
+  "description": "用于刮开渐变涂层后显示隐藏内容的互动刮刮乐组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -72,9 +72,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "抽奖、优惠券等需要用户刮开涂层的互动玩法。",
+    "彩蛋内容揭示，刮开比例达标后通过 complete 事件发奖或跳转。",
+    "需要自定义涂层渐变色（gradientColors）的营销区块。"
+  ],
+  "whenNotToUse": [
+    "悬停即揭示内容，改用 svg-mask 或 text-reveal-card。",
+    "无需交互的渐显入场效果，改用 blur-reveal。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "width 与 height 为必填数字，决定刮刮区域大小。",
+    "minScratchPercentage 取值 0-100（默认 50），刮开比例达到后触发 complete 事件。",
+    "隐藏内容通过默认插槽传入。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -89,9 +101,9 @@
   },
   "docPath": "content/2.components/special-effects/scratch-to-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "237755b591bae225f8cb95d09195df8bb350747b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "3980ff445895fa16e15994ae97007ed3db3c7f31",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

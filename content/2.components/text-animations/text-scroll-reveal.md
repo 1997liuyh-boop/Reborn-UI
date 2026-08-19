@@ -1,6 +1,6 @@
 ---
 title: 滚动文字揭示
-description: 在滚动时逐词显现的文字组件，可自定义内容与样式。
+description: 用于随页面滚动进度将一句话逐词由淡变实显现的文字组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

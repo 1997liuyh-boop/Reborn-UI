@@ -1,6 +1,6 @@
 ---
 title: 书本
-description: 可自定义尺寸与渐变的 3D 书本组件。
+description: 用于展示 3D 书本封面并在悬停时播放动画的展示组件。
 category: 杂项
 tags: [css, tailwind, x-ui]
 ---

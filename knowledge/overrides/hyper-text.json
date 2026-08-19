@@ -1,0 +1,17 @@
+{
+  "description": "用于文字以字符快速乱序滚动后定格显现的动画组件，悬停可重播。",
+  "whenToUse": [
+    "标题 / 标语需要科技感的字符乱序入场动画。",
+    "需要悬停重新触发文字动画的交互点缀。"
+  ],
+  "whenNotToUse": [
+    "需要故障抖动风格，改用 text-glitch。",
+    "整词循环切换，改用 flip-words。",
+    "逐字打出效果，改用 reborn-typewriter。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core 与 motion-v。",
+    "text 与 animateOnLoad 标注为必填；animateOnLoad 控制是否在加载时自动播放（默认 true）。",
+    "duration 单位为毫秒（默认 800），控制整段乱序动画的总时长。"
+  ]
+}

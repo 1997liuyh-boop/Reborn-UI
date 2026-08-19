@@ -1,6 +1,6 @@
 ---
 title: 刮刮乐揭示
-description: 互动式刮刮乐效果，可自定义尺寸与动画，在刮开后显示隐藏内容。
+description: 用于刮开渐变涂层后显示隐藏内容的互动刮刮乐组件。
 category: 特效
 tags: [css, tailwind, magic-ui]
 ---

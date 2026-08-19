@@ -1,0 +1,17 @@
+{
+  "description": "用于弹层中选取颜色的取色器组件，支持 hex/hsl/rgb 等格式与预设色板。",
+  "whenToUse": [
+    "主题色、自定义外观等需要精确取色的设置项。",
+    "需要通过 swatches 提供品牌预设色板快速选色。",
+    "需要展示颜色对比度（无障碍）参考的取色场景。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端项目，改用 reborn-color-picker。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @uiw/color-convert。",
+    "默认插槽内容作为触发器（如按钮），弹层开关由 open prop 与 update:open 事件控制。",
+    "选中值通过 value-change 事件获取（payload 为 ColorPickerValue，含 hex/hsl/hsla/rgb/rgba），不是 v-model。",
+    "type prop 控制输入区显示的颜色格式，默认 \"hsl\"；hideContrastRatio / hideDefaultSwatches 可隐藏对应区域。"
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 title: 闪光文字
-description: 为文字持续生成闪光与平滑过渡，非常适合突出显示的星光效果。
+description: 用于在文字周围持续生成双色闪光点缀的标题装饰组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

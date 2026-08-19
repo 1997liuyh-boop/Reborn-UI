@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "blur-reveal",
   "title": "模糊揭示",
-  "description": "平滑模糊淡入内容的组件。",
+  "description": "用于让子元素依次从模糊状态淡入上移进场的揭示动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -60,9 +60,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页标题与副标题依次模糊淡入的首屏动画。",
+    "多个子元素需要按顺序逐个进场的内容区块。",
+    "需要自定义模糊量（blur）与垂直偏移（yOffset）的入场效果。"
+  ],
+  "whenNotToUse": [
+    "需要色块滑开式的揭示效果，改用 box-reveal。",
+    "文字逐词淡入生成，改用 text-generate-effect。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "duration 与 delay 单位为秒（默认 1 和 2），delay 控制子元素间的依次揭示间隔。",
+    "子内容通过默认插槽传入，示例中外层包裹了 ClientOnly。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -77,9 +88,9 @@
   },
   "docPath": "content/2.components/text-animations/blur-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e0af947dcc92ff64f01b52775763e88c27379759",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "61e2873f2b9510413ead261c2bfb50cb76d5333d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

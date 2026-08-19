@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "ripple-button",
   "title": "波纹按钮",
-  "description": "一款带有可自定义颜色和动画时长的时尚波纹按钮组件。",
+  "description": "用于点击时产生可自定义颜色与时长波纹反馈的按钮组件。",
   "category": "basic",
   "tags": [
     "css",
@@ -58,9 +58,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页 CTA 需要点击波纹反馈动效时。",
+    "需要 Material 风格点击涟漪的按钮。",
+    "需要自定义波纹颜色（rippleColor）与动画时长的营销按钮。"
+  ],
+  "whenNotToUse": [
+    "常规业务表单按钮，改用 reborn-button（同时支持 web 与 uniapp）。",
+    "需要持续闪光动画吸引注意，改用 shimmer-button。",
+    "需要渐变边框动效，改用 gradient-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "duration 单位为毫秒（默认 600），控制波纹扩散时长。",
+    "波纹默认颜色为 #ADD8E6，深色背景下需自行调整 rippleColor。",
+    "按钮内容通过默认插槽传入，点击通过 click 事件监听。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add ripple-button"
@@ -73,9 +86,9 @@
   },
   "docPath": "content/2.components/button/ripple-button.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "fb7138394156cd70466908eabad2f95340c0fb88",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "06044c641f0d8d3f2b4831160a419009a55f9038",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

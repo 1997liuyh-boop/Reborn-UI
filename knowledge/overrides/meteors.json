@@ -1,0 +1,17 @@
+{
+  "description": "用于在卡片等容器内渲染划过的流星雨背景动画的装饰组件。",
+  "whenToUse": [
+    "卡片、Hero 区需要流星划过的背景点缀时。",
+    "深色背景区块需要低成本的动态氛围效果时。"
+  ],
+  "whenNotToUse": [
+    "需要闪烁粒子效果，改用 sparkles。",
+    "需要烟花庆祝动效，改用 reborn-fireworks。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "作为装饰层放入目标容器内部，父容器需 relative 且 overflow-hidden（见示例），否则流星会溢出。",
+    "示例外层包裹了 ClientOnly，流星位置为随机生成。",
+    "count 控制流星数量（默认 20），class 追加到每颗流星上。"
+  ]
+}

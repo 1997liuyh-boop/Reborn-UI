@@ -1,6 +1,6 @@
 ---
 title: Tooltip 文字提示
-description: 常用于展示鼠标悬停时的提示信息。
+description: 用于鼠标悬停时在元素旁显示文字提示气泡的组件。
 category: 导航
 navigation:
   badges:

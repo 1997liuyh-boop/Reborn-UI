@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-reveal-card",
   "title": "文字揭示卡片",
-  "description": "鼠标移动时在卡片底部揭示文字的效果。",
+  "description": "用于鼠标滑过卡片时揭示另一段隐藏文字、带星星粒子的卡片组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -58,9 +58,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "深色卡片内做「滑动揭示隐藏文案」的互动彩蛋。",
+    "两段文案的前后对比展示（如乱码与原文、暗示与答案）。"
+  ],
+  "whenNotToUse": [
+    "大面积双层内容的鼠标遮罩揭示，改用 svg-mask。",
+    "刮开涂层式互动，改用 scratch-to-reveal。",
+    "单段文字的悬停描边效果，改用 text-hover-effect。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "内容需分别放入 text（默认显示）与 revealText（揭示后显示）具名插槽，另有 header 插槽放标题区。",
+    "starsCount 控制漂浮星星数量（默认 130），starsClass 自定义星星样式。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-reveal-card"
@@ -74,9 +85,9 @@
   },
   "docPath": "content/2.components/text-animations/text-reveal-card.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "057e706d5541733547cc9955ddfc003d75460f4b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "6bcfd2c569d73ecf305997b08f8a1e4508f1e1a0",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

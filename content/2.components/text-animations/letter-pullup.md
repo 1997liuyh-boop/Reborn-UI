@@ -1,6 +1,6 @@
 ---
 title: 字符上提
-description: 逐字上提的错落文字动画。
+description: 用于让一段文字逐字符错落上提进场的文字动画组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

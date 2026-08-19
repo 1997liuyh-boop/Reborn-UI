@@ -1,6 +1,6 @@
 ---
 title: Form
-description: Under Development
+description: 用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。
 category: 表单与输入
 badge: New
 navigation:

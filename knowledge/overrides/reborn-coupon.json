@@ -1,0 +1,16 @@
+{
+  "description": "用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。",
+  "whenToUse": [
+    "营销页展示优惠券、兑换券等票券样式区块。",
+    "需要按 sm/md/lg/xl/xxl 断点分别覆盖券面参数的响应式卡券。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web），小程序卡券需另行实现。",
+    "普通内容分组卡片，uniapp 端用 reborn-card 即可。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "券面内容通过 left/right 两个插槽传入（分别对应左侧/顶部与右侧/底部区域）。",
+    "sm/md/lg/xl/xxl props 均为 RebornCouponBaseProps 类型的断点覆盖参数，用于在对应屏宽下覆盖基础配置。"
+  ]
+}

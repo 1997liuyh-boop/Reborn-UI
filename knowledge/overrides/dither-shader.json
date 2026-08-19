@@ -1,0 +1,19 @@
+{
+  "description": "用于对图片实时应用有序抖动与像素化处理的复古风着色器组件。",
+  "whenToUse": [
+    "像素风、复古印刷风的图片展示区块。",
+    "用 duotone 双色调或 customPalette 调色板做海报化图片处理。",
+    "需要 animated 噪点动画效果的装饰图。"
+  ],
+  "whenNotToUse": [
+    "普通图片展示（uniapp 场景），改用 reborn-image。",
+    "需要自定义 shader 动画背景而非处理现有图片，改用 shader-toy。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "src 为必填；容器尺寸需通过 class 自行设置（如 Tailwind 尺寸类）。",
+    "primaryColor / secondaryColor 仅在双色调（duotone）模式生效，customPalette 仅在自定义调色板模式生效。",
+    "animated 默认 false；animationSpeed 数值越小越慢（默认 0.02）。",
+    "brightness 取值 -1 至 1，contrast 取值 0 至 2（1 为正常）。"
+  ]
+}

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "apple-card-carousel",
   "title": "Apple 卡片轮播",
-  "description": "一款流畅的 Apple 风格卡片轮播，支持模糊加载图片、模态展开和平滑滚动控制。",
+  "description": "用于以 Apple 官网风格横向滚动卡片、点击展开为模态详情的轮播组件。",
   "category": "data-display",
   "tags": [
     "css",
@@ -102,9 +102,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "产品特性、案例故事的横向卡片陈列。",
+    "图文卡片需要点击放大查看详情内容的场景。",
+    "落地页需要平滑滚动控制与模糊加载图片的轮播。"
+  ],
+  "whenNotToUse": [
+    "两组内容的滑动对比，改用 compare。",
+    "单张卡片的悬停 3D 交互，改用 card-3d。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "需组合 AppleCardCarousel、AppleCarouselItem、AppleCard 多个子组件使用。",
+    "AppleCard 的 card 与 index 为必填 prop，卡片详情内容通过默认插槽传入。"
+  ],
   "dependencies": [
     "@vueuse/core",
     "motion-v"
@@ -124,9 +135,9 @@
   },
   "docPath": "content/2.components/cards/apple-card-carousel.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e37d552bd1f9ec0aaa20a45eb1c39bda9738d25c",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "14f512ae51e8d9317063c3d03c15c83ccf3af17a",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

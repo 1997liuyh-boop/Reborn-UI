@@ -1,0 +1,19 @@
+{
+  "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠与多级子菜单。",
+  "whenToUse": [
+    "后台管理系统侧边导航（mode=\"vertical\"，可配 collapse 折叠）。",
+    "顶部水平导航栏（mode=\"horizontal\"）。",
+    "启用 router 模式后点击菜单项以 index 作为 path 进行路由跳转。",
+    "需要 v-model:active / v-model:expanded 受控管理选中与展开状态时。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端导航（本组件仅 web），底部页签改用 reborn-tabbar。",
+    "点击触发的轻量浮层菜单改用 reborn-dropdown，右键菜单改用 reborn-context-menu。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "collapse 仅在 mode=\"vertical\" 时生效。",
+    "router 模式下菜单项的 index 会被当作路由 path 使用，命名需与路由一致。",
+    "子菜单展开方式由 expandType 控制（默认 popup），触发方式由 menuTrigger 控制（默认 hover）。"
+  ]
+}

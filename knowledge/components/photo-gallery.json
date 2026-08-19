@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "photo-gallery",
   "title": "照片画廊",
-  "description": "用精美的画廊展示团队风采。",
+  "description": "用于以动画展开一组照片的画廊展示组件，图片经 items 传入。",
   "category": "misc",
   "tags": [
     "css",
@@ -47,9 +47,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "团队成员、活动照片等一组图片的集中展示。",
+    "落地页需要照片堆叠/展开的视觉区块时。"
+  ],
+  "whenNotToUse": [
+    "瀑布流布局的大量图片，改用 reborn-waterfall。",
+    "需要点击展开查看的画廊，改用 expandable-gallery。",
+    "全屏轮播图片，改用 images-slider。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "items 为必填数组，元素结构为 { src: string }，不支持插槽自定义每张图片。",
+    "class 作用于图片项，containerClass 作用于外层容器。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add photo-gallery"
@@ -62,9 +73,9 @@
   },
   "docPath": "content/2.components/miscellaneous/photo-gallery.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "822a16a1b2d3f3013721175923f8bed373e5c4e2",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "667cc6049630b067c06f2df0d042358988b7cd28",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

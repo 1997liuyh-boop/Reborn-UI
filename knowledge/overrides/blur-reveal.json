@@ -1,0 +1,17 @@
+{
+  "description": "用于让子元素依次从模糊状态淡入上移进场的揭示动画组件。",
+  "whenToUse": [
+    "落地页标题与副标题依次模糊淡入的首屏动画。",
+    "多个子元素需要按顺序逐个进场的内容区块。",
+    "需要自定义模糊量（blur）与垂直偏移（yOffset）的入场效果。"
+  ],
+  "whenNotToUse": [
+    "需要色块滑开式的揭示效果，改用 box-reveal。",
+    "文字逐词淡入生成，改用 text-generate-effect。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "duration 与 delay 单位为秒（默认 1 和 2），delay 控制子元素间的依次揭示间隔。",
+    "子内容通过默认插槽传入，示例中外层包裹了 ClientOnly。"
+  ]
+}

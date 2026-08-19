@@ -1,6 +1,6 @@
 ---
 title: 3D 文字
-description: 时尚的 3D 文字组件，可自定义颜色、阴影与动画选项。
+description: 用于以描边加双层阴影模拟 3D 立体字并可选晃动动画的文字组件。
 category: 文字动画
 tags: [css, tailwind, 3d]
 ---

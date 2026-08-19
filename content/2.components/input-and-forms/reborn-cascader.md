@@ -1,6 +1,6 @@
 ---
 title: 级联选择器
-description: 在包含多层级的数据结构中进行选择，常用作省市区选择、分类选择等场景。
+description: 用于在树形多层级数据中逐级选择的级联选择器组件，双端可用。
 category: 表单与输入
 badge: New
 navigation:

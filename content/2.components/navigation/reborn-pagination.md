@@ -1,6 +1,6 @@
 ---
 title: 分页
-description: 当数据量过多时，使用分页分解数据。
+description: 用于大数据量列表分页切换的双端分页组件，提供多页码与简洁两种模式。
 category: 导航
 badge: New
 navigation:

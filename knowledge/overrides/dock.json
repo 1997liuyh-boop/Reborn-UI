@@ -1,0 +1,17 @@
+{
+  "description": "用于悬停时邻近图标放大的 macOS 风格 Dock 图标栏组件。",
+  "whenToUse": [
+    "个人主页 / 落地页底部的社交或应用快捷入口栏。",
+    "需要 vertical 纵向排列的侧边图标栏。"
+  ],
+  "whenNotToUse": [
+    "移动端底部导航（uniapp），改用 reborn-tabbar。",
+    "内容分区切换，改用 reborn-tabs 或 morphing-tabs。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "图标必须包在 DockIcon 子组件中，可用 DockSeparator 分隔分组。",
+    "magnification（默认 60）控制悬停放大尺寸，distance（默认 140）控制放大效果的作用距离。",
+    "orientation 支持 horizontal / vertical（默认 horizontal），direction 控制图标对齐（top / middle / bottom）。"
+  ]
+}

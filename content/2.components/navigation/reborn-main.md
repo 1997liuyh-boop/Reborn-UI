@@ -1,6 +1,6 @@
 ---
 title: 主体布局
-description: 页面主体区域布局组件，自动适配 Header 高度。
+description: 用于包裹页面主体内容并自动适配 Header 高度的布局组件。
 category: 导航与布局
 badge: New
 navigation:

@@ -1,6 +1,6 @@
 ---
 title: 面包屑
-description: 显示当前页面的路径，快速返回之前的任意页面。
+description: 用于展示当前页面层级路径并可逐级返回的面包屑导航组件，双端可用。
 category: 导航
 tags: [navigation, breadcrumb]
 badge: New

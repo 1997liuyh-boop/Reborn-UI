@@ -1,6 +1,6 @@
 ---
 title: 水印 Watermark
-description: 在页面上添加文本或图片等水印信息。
+description: 用于在内容容器上平铺文本或图片水印的组件。
 category: 数据
 tags: [data, watermark]
 badge: New

@@ -1,0 +1,19 @@
+{
+  "description": "用于悬停时随鼠标产生透视倾斜、子元素分层浮起的 3D 卡片组件。",
+  "whenToUse": [
+    "产品展示卡需要鼠标跟随的 3D 透视交互。",
+    "卡片内标题、图片、按钮需要不同 translateZ 纵深分层浮起的场景。",
+    "落地页需要强交互感的重点卡片。"
+  ],
+  "whenNotToUse": [
+    "只需悬停高光光泽，改用 glare-card。",
+    "需要正反面翻转展示内容，改用 flip-card。",
+    "根据鼠标进入方向显示覆盖层，改用 direction-aware-hover。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "必须按 CardContainer > CardBody > CardItem 三层结构组合使用，单独使用无效。",
+    "translateX/Y/Z 与 rotateX/Y/Z 是 CardItem 的 props，控制该元素悬停时的位移与旋转；translateZ 越大浮起越明显。",
+    "CardItem 的 as prop 可改渲染标签（如 a、button、p），默认 div。"
+  ]
+}

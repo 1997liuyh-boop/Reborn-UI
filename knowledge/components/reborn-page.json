@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-page",
   "title": "reborn-page",
-  "description": "",
+  "description": "用于 uniapp 页面最外层的页面容器组件，可配置页面标题与描述文案。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -54,9 +54,20 @@
   "related": [
     "reborn-toast"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "uniapp 页面需要统一的根容器与页面级结构时。",
+    "需要通过 header 插槽自定义页面头部区域时。",
+    "需要展示页面标题（title）与描述（description）文案时。"
+  ],
+  "whenNotToUse": [
+    "web 端页面主体布局改用 reborn-main。",
+    "普通内容分区容器（web）改用 reborn-container。"
+  ],
+  "pitfalls": [
+    "仅 uniapp 端可用。",
+    "接口仅含 title/description/customClass/ui 四个 props 与 header/default 两个插槽，无事件。",
+    "知识条目暂无示例与详细描述，复杂用法需参考源码。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-page"
@@ -69,9 +80,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "dfaef7640ad307fdee9e91056c7a4df9641aa646",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "506350842afe14a278c4da98c8aa4e12b509bb4d",
+    "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",

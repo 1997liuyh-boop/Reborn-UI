@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-input",
   "title": "基础输入框",
-  "description": "具有圆角胶囊样式与多尺寸状态的输入组件。",
+  "description": "用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。",
   "category": "form",
   "tags": [
     "css",
@@ -284,9 +284,23 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单中录入文本、密码等单行内容时。",
+    "需要前后缀图标或按钮（leading/trailing 插槽）时。",
+    "通过 as=\"textarea\" 需要多行输入（rows 默认 4）时。",
+    "uniapp 端需要 confirmType、adjustPosition、holdKeyboard 等键盘控制时。"
+  ],
+  "whenNotToUse": [
+    "数字步进增减改用 reborn-input-number。",
+    "验证码分格输入改用 reborn-input-otp。",
+    "带历史记录、推荐词下拉的搜索改用 reborn-search-box。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "maxlength 默认 140，超长内容注意显式调整。",
+    "cursorSpacing、confirmHold、adjustPosition、holdKeyboard、keyboardheightchange 等为 uniapp 端键盘相关能力。",
+    "组件暴露 focus/blur/clear 方法与 isFocus、inputRef，可命令式控制。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-input"
@@ -305,9 +319,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-input.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "77bf324bfbca8ee24ad692b0c055266cf78346af",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "053ed74dd1b490eed6db1a0c6c334739819d94a8",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

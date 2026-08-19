@@ -1,0 +1,16 @@
+{
+  "description": "用于让高光沿插槽文字循环扫过的文字高亮动画组件。",
+  "whenToUse": [
+    "新功能公告、Badge 文案需要流动高光吸引注意时。",
+    "Hero 区标语需要循环扫光效果时。"
+  ],
+  "whenNotToUse": [
+    "需要静态线条阴影装饰，改用 line-shadow-text。",
+    "需要多彩渐变文字，改用 colourful-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "文字通过默认插槽传入，可包含图标等行内元素。",
+    "duration 单位为秒（默认 10），radiantWidth 控制高光带宽度（默认 100）。"
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 title: 跟踪光束
-description: 渲染跟踪光束效果的组件，支持动态滚动动画与渐变描边。
+description: 用于在内容一侧渲染随滚动延伸的渐变光束装饰的容器组件。
 category: 杂项
 tags: [css, tailwind, aceternity-ui]
 ---

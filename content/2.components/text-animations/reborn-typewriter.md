@@ -1,6 +1,6 @@
 ---
 title: 打字机效果
-description: 模拟打字机效果，支持文本删除和重新输入，适用于标题动画、终端效果等场景。
+description: 用于让文本以打字机方式逐字输入与删除的文字动画组件。
 category: 文字动画
 tags: [css, tailwind, animation]
 navigation:

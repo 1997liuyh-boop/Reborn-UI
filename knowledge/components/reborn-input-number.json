@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-input-number",
   "title": "数字输入框",
-  "description": "带有增减按钮的数字输入组件。",
+  "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件。",
   "category": "form",
   "tags": [
     "css",
@@ -176,9 +176,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "购物车、库存等数量增减场景。",
+    "需要限定 min/max 与 step 的数值录入。",
+    "需要自定义加减按钮图标（decrease-icon/increase-icon 插槽）时。"
+  ],
+  "whenNotToUse": [
+    "自由输入长数字或文本改用 reborn-input。",
+    "在连续区间内取值改用 reborn-slider。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "min 默认 0、max 默认 200、step 默认 1，业务范围不同时必须显式传入。",
+    "readonly 默认 true，即中间输入区默认不可直接键入，仅靠按钮增减。",
+    "inputType 仅支持 digit/number 两种。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -200,9 +212,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-input-number.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "d222f6e0424a4b608448208111815c0b666ac840",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "7700784ef9e4286729f58c0e43f0edd953d3fb59",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

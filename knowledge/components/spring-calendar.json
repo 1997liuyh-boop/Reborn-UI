@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "spring-calendar",
   "title": "弹性日历",
-  "description": "带弹簧动画的日历组件，可展开查看事件，使用 Motion-V 实现平滑过渡。",
+  "description": "用于横向选择日期并以弹簧动画展开当日事件的日历条组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -72,9 +72,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "活动、日程页横向展示若干日期并预览当日事件时。",
+    "需要点击日期后以弹性动画展开事件列表的交互。",
+    "需要通过 update:activeIndex 感知选中日期变化的场景。"
+  ],
+  "whenNotToUse": [
+    "表单中选择日期值，改用 reborn-select-date 或 reborn-date-picker-panel。",
+    "需要完整月视图日历时不适用，本组件仅按 calendarData 数组渲染给定的日期条目。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "calendarData 必填，元素含 month/date/day 与可选 events（title/day/time）。",
+    "props 中的 text/morphTime/coolDownTime 来自内部 TextMorph 子组件的提取结果，示例中无需传入，常规用法只传 calendarData 与 initialIndex。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -90,9 +101,9 @@
   },
   "docPath": "content/2.components/special-effects/spring-calendar.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "a0d85b16574167004acea4bedeb64c9bf58c79a2",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "edbe69f95ee66391e4e2e9147f003c3a3238aa30",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

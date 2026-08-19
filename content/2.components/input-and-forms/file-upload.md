@@ -1,6 +1,6 @@
 ---
 title: 文件上传
-description: 现代文件上传组件，带 3D 卡片效果、拖放交互和响应式网格背景。
+description: 用于拖放或点击选择文件、带动效展示区的文件上传入口组件。
 category: 表单与输入
 tags: [css, tailwind, input, aceternity-ui]
 ---

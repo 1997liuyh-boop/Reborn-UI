@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "spinning-text",
   "title": "旋转文字",
-  "description": "让文字沿圆周运动的动画组件，可自定义速度、方向、颜色与过渡，打造动态效果。",
+  "description": "用于让一段文字沿圆形路径持续环绕旋转的动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -72,9 +72,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "圆形徽章、印章式的旋转标语。",
+    "环绕 Logo 或按钮外圈循环转动的文字装饰。",
+    "需要通过 reverse、duration 控制旋转方向与转速的场景。"
+  ],
+  "whenNotToUse": [
+    "一组词轮换切换展示，改用 flip-words 或 morphing-text。",
+    "横向滚动的跑马灯文字，改用 reborn-marquee。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v，示例包裹在 ClientOnly 中使用。",
+    "text 为必填 prop；示例文本以「·」分隔且以其结尾，使环形首尾衔接自然。",
+    "duration 单位为秒（默认 10 秒一圈），radius 控制圆周半径（默认 5）。",
+    "可通过 transition 与 variants 自定义动画细节。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -89,9 +101,9 @@
   },
   "docPath": "content/2.components/text-animations/spinning-text.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "95f24d5ba3e1d389edc91c9f92c97a3c5c04ea55",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "74d779c7c354f48beef6b0ebf39266ffcfd95a14",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

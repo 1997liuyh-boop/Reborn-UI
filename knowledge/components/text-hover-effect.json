@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-hover-effect",
   "title": "文字悬停效果",
-  "description": "在悬停时为文字添加渐变描边与动画，灵感来自 x.ai。",
+  "description": "用于悬停时跟随鼠标以渐变描边揭示文字的悬停效果组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -31,7 +31,7 @@
       "type": "number",
       "required": false,
       "description": "蒙版过渡动画的持续时间（秒）。",
-      "default": "200"
+      "default": "0.2"
     },
     {
       "name": "opacity",
@@ -53,9 +53,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "品牌名、大字标语的悬停互动展示（类 x.ai 效果）。",
+    "Hero 区或页脚需要描边风格装饰文字并带鼠标交互时。"
+  ],
+  "whenNotToUse": [
+    "无需悬停的常驻多彩文字，改用 colourful-text 或 radiant-text。",
+    "悬停故障风格，改用 text-glitch。",
+    "大面积双层内容的鼠标揭示，改用 svg-mask。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，示例包裹在 ClientOnly 中使用。",
+    "文字通过 text prop 传入（必填），不支持插槽。",
+    "strokeWidth 默认 0.75，opacity 默认 0.75。",
+    "duration 单位为秒（默认 0.2），组件内部会转换为毫秒。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-hover-effect"
@@ -68,9 +80,9 @@
   },
   "docPath": "content/2.components/text-animations/text-hover-effect.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "c66c77283efdf533e058be74448e566fee233ae3",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "16552092556de544beb9e395bb03d327640778bc",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

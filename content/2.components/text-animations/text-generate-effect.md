@@ -1,6 +1,6 @@
 ---
 title: 文字生成效果
-description: 炫酷的文字效果，在页面加载时逐字渐显。
+description: 用于让段落文字逐字渐显、可带模糊过渡的入场动画组件。
 category: 文字动画
 tags: [css, tailwind, aceternity-ui]
 ---

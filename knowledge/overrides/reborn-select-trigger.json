@@ -1,0 +1,16 @@
+{
+  "description": "用于各类下拉选择组件复用的触发器与浮层容器内部基础组件。",
+  "whenToUse": [
+    "自研新的下拉类组件时，复用统一的触发器外观（占位符、清空按钮、箭头旋转动画）。",
+    "需要统一控制浮层展开收起行为（open / close / toggle 事件，isOpen 状态）时作为底层容器。"
+  ],
+  "whenNotToUse": [
+    "业务中直接做数据选择时，改用成品组件 reborn-select、reborn-select-date 或 reborn-time-picker。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均有实现，但这是内部基础组件，无独立文档页与演示示例。",
+    "portal 默认 true，浮层传送到 body；closeOn 可选 click / mousedown 控制关闭时机。",
+    "浮层内容经 content 插槽传入，cover 插槽可整体替换触发器显示区。",
+    "知识条目中 props / events 描述大量缺失，使用前建议直接查阅源码（RebornSelectTrigger.vue）。"
+  ]
+}

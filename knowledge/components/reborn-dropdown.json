@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-dropdown",
   "title": "Dropdown 下拉菜单",
-  "description": "将动作或菜单折叠到下拉菜单中，悬停或点击触发元素以展开更多操作。",
+  "description": "用于将一组操作折叠进浮层菜单的下拉组件，悬停或点击展开，仅 web 端。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -162,9 +162,22 @@
   "related": [
     "reborn-select-trigger"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "把「更多操作」收纳到按钮触发的下拉菜单中，通过 command 事件分发点击项。",
+    "需要 splitButton 模式：左侧主操作按钮 + 右侧箭头展开更多操作。",
+    "需要 hover/click 两种触发方式与 6 向 placement 定位的操作菜单。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web），uniapp 下拉选值改用 reborn-dropdown-select。",
+    "表单中选择数据值，改用 reborn-select。",
+    "右键呼出的上下文菜单，改用 reborn-context-menu。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "菜单项需放在 dropdown 插槽内（通常为 RebornDropdownItem），通过 command 属性标识点击项，divided 在项上方加分隔线。",
+    "trigger 默认 hover；hideOnClick 默认 true 点击菜单项后自动收起。",
+    "portal 默认 true 浮层传送到 body，关闭后浮层随父容器裁剪；组件暴露 open/close/toggle/isOpen。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -181,9 +194,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-dropdown.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "fbeebe15f5af8926a3246f5608c729a476554535",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "d76a321bbbfbe4064a668d9b30cf296fa8e01284",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

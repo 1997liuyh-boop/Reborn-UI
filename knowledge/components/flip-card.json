@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "flip-card",
   "title": "翻转卡片",
-  "description": "一款动态的翻转卡片，沿 X 轴或 Y 轴平滑实现 180 度翻转，带来有趣的交互视觉效果。",
+  "description": "用于沿 X 或 Y 轴 180 度翻转、展示正反两面内容的卡片组件。",
   "category": "data-display",
   "tags": [
     "css",
@@ -54,9 +54,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "正面放图片、背面放说明文字的双面信息卡。",
+    "团队成员、产品简介等需要翻面查看详情的卡片。"
+  ],
+  "whenNotToUse": [
+    "需要鼠标跟随的 3D 透视浮起，改用 card-3d。",
+    "文字悬停揭示效果，改用 text-reveal-card。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "正面内容放默认插槽，背面内容放 back 插槽。",
+    "rotate 仅接受 \"x\" 或 \"y\"（默认 \"y\"），决定翻转轴向。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add flip-card"
@@ -69,9 +79,9 @@
   },
   "docPath": "content/2.components/cards/flip-card.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "6fdabec4cd12c3d6eda731a34adcabb5b22ae1d6",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "bfefe5fd7934adcaf5db898c291955a391870f0a",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

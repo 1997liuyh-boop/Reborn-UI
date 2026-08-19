@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "ripple",
   "title": "ripple",
-  "description": "",
+  "description": "用于渲染多圈同心圆扩散水波背景的装饰效果组件。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -107,9 +107,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页 hero 区域的水波纹背景装饰。",
+    "围绕默认插槽中的中心元素（如图标、按钮）制造扩散波纹氛围。"
+  ],
+  "whenNotToUse": [
+    "按钮点击波纹反馈改用 ripple-button。",
+    "点击烟花特效改用 reborn-fireworks。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "波纹圈数由 numberOfCircles 控制（默认 7），外圈透明度按 circleOpacityDowngradeRatio 逐圈递减。",
+    "无文档页与演示示例，props 描述缺失（baseCircleSize、waveSpeed 等含义需查源码 Ripple.vue）。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add ripple"
@@ -124,9 +135,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "9e2372ea09cba0d0eba5d5d4205ea7c5101417f8",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "3cd12eaa3499580007f3726d12aec404a9ecce45",
+    "hasOverride": true,
     "extractors": {
       "web": "partial",
       "uniapp": "absent",

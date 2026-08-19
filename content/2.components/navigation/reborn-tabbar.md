@@ -1,6 +1,6 @@
 ---
 title: Tabbar 底部标签栏
-description: uniapp 单独展示。
+description: 用于 uniapp 页面底部导航切换的自定义标签栏组件，需配合 RebornTabbarTrigger 子项使用。
 category: 导航
 navigation:
   badges:

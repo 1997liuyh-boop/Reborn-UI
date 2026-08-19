@@ -1,0 +1,16 @@
+{
+  "description": "用于悬停时表面扫过高光光泽的展示卡片组件，风格源自 Linear。",
+  "whenToUse": [
+    "落地页 logo 墙、引言卡等需要悬停高光质感的展示卡。",
+    "全幅图片卡片需要光泽扫过效果的场景。"
+  ],
+  "whenNotToUse": [
+    "需要鼠标跟随的 3D 透视与子元素分层，改用 card-3d。",
+    "需要按进入方向滑出覆盖层，改用 direction-aware-hover。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core。",
+    "仅提供 class prop 与默认插槽，内容布局与尺寸需自行用类名控制。",
+    "示例中全幅图片需自行加 absolute inset-0 object-cover 等类铺满卡片。"
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 title: 彩色文字
-description: 多彩文字组件，带滤镜与缩放效果。
+description: 用于让文字逐字符循环变换颜色并动画的标题点缀组件。
 category: 文字动画
 tags: [css, tailwind, aceternity-ui]
 ---

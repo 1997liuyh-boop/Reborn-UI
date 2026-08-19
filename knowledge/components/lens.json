@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "lens",
   "title": "放大镜",
-  "description": "用于放大图片、视频或任意元素的镜头组件。",
+  "description": "用于在图片等插槽内容上叠加圆形放大镜的局部放大组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -78,9 +78,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "商品图、设计稿等需要鼠标悬停局部放大查看细节时。",
+    "需要固定位置的静态放大展示（isStatic + position）。",
+    "需要联动外部 UI（如放大时模糊周边文案）时，配合 hovering 与 hover-update。"
+  ],
+  "whenNotToUse": [
+    "整图点击放大预览，改用 reborn-image。",
+    "两图对比查看，改用 compare。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "isStatic 为 true 时镜头固定在 position 指定坐标，不跟随鼠标。",
+    "hovering 为外部受控 prop，需监听 hover-update 事件回写，否则悬停状态不更新。",
+    "zoomFactor 默认 1.5，lensSize 为镜头直径（默认 170px）。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -95,9 +107,9 @@
   },
   "docPath": "content/2.components/miscellaneous/lens.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "3e51762109cb65a96e852ca55e6c8538e6fa2c2e",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "4c70decc264dd4d6a4c573b3130de65131e54c5e",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

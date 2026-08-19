@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-image",
   "title": "图片 Image",
-  "description": "增强版图片组件，支持预览、加载状态、错误状态和多种裁剪模式。",
+  "description": "用于展示图片并提供预览、加载/错误状态与多种裁剪模式的双端图片组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -203,9 +203,23 @@
   "related": [
     "reborn-loading"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "需要点击放大预览图片（preview + previewList）时。",
+    "需要加载中占位与加载失败占位（showLoading、error 插槽）时。",
+    "商品详情图需要放大镜效果（magnifier 及配套 zoom/size 参数）时。",
+    "uniapp 端需要懒加载、webp 解码、长按菜单等原生 image 能力时。"
+  ],
+  "whenNotToUse": [
+    "仅需在设备外壳中展示截图，改用 iphone-mockup 或 safari-mockup。",
+    "web 端只需悬停局部放大效果，可用 lens。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "src 为必填项；width/height 默认均为 120，mode 默认 aspectFill。",
+    "previewList 不传时默认仅预览当前 src。",
+    "lazyLoad、webp、showMenuByLongpress 等属性对应 uniapp 原生 image 能力。",
+    "magnifier 默认关闭，magnifierZoom 默认 2、magnifierSize 默认 100。"
+  ],
   "dependencies": [
     "@vueuse/core",
     "clsx",
@@ -227,9 +241,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-image.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "c187ecb9fdaf70017fffa8833bdaa45d22c0e01c",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "fb4ae13cc277e844c3e20146c87a3415558703ab",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

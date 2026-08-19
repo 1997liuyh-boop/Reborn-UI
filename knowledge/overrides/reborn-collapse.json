@@ -1,0 +1,17 @@
+{
+  "description": "用于点击触发区展开或收起内容区域的折叠组件，带高度过渡动画，双端可用。",
+  "whenToUse": [
+    "FAQ、说明文字等默认收起、点击展开的内容块。",
+    "筛选面板、更多选项等需要展开收起切换的区域。",
+    "需要程序化控制展开（暴露 show/hide/toggle/resize 方法）的折叠区域。"
+  ],
+  "whenNotToUse": [
+    "内容需要浮层覆盖页面而非推挤布局时，改用 reborn-popup 或 reborn-dialog。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "触发区放默认插槽，被折叠的内容必须放 content 插槽，二者不可混放。",
+    "内容尺寸动态变化后需调用暴露的 resize 方法重新测量高度。",
+    "position 可设 top 使内容向上展开，absolute 控制展开内容是否脱离文档流。"
+  ]
+}

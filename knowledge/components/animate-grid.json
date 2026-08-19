@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "animate-grid",
   "title": "动画网格",
-  "description": "倾斜动画网格，带投影效果。",
+  "description": "用于以 3D 倾斜透视和发光投影展示 logo 卡片阵列的网格组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -80,9 +80,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页展示合作伙伴或客户 logo 墙。",
+    "展示技术栈、集成服务等品牌图标集合。",
+    "需要带透视倾斜与发光效果的卡片阵列装饰区块。"
+  ],
+  "whenNotToUse": [
+    "每格需要标题、描述与 CTA 的功能展示布局，改用 bento-grid。",
+    "常规响应式内容网格，直接用 CSS Grid 即可。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "cards 为必填 prop，每项需提供 logo 字段并通过 #logo 作用域插槽自行渲染。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add animate-grid"
@@ -95,9 +105,9 @@
   },
   "docPath": "content/2.components/miscellaneous/animate-grid.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "f863dcfc84e62cced3d7124ed4ef4da720c722b1",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "085081cf4cd40201e016d732f0b00d780cd89a2d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

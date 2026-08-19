@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-pagination",
   "title": "分页",
-  "description": "当数据量过多时，使用分页分解数据。",
+  "description": "用于大数据量列表分页切换的双端分页组件，提供多页码与简洁两种模式。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -155,9 +155,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表格、列表数据量大需要按页浏览时。",
+    "移动端需要简洁的上一页/下一页翻页（mode=\"simple\"）时。",
+    "只有一页时希望自动隐藏分页器（hideOnSinglePage）时。"
+  ],
+  "whenNotToUse": [
+    "uniapp 滚动触底加载更多改用 reborn-loadmore。",
+    "内容按类别切换改用 reborn-tabs。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用，但 size 属性仅 web 端支持。",
+    "v-model 绑定当前页码（默认 1），需配合 total 与 pageSize 计算页数。",
+    "page 插槽仅在 multi 模式下可用，simple 模式用 simpleContent 插槽。",
+    "组件暴露 prev/next 方法可命令式翻页。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-pagination"
@@ -175,9 +187,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-pagination.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "f9bdb7872f40bae4842d524569b7602bc74d40b9",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "21fb52e622f6b8cca06f420a6f42ad7e44e1ff4f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

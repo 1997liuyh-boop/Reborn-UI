@@ -1,6 +1,6 @@
 ---
 title: 闪光按钮
-description: 一款带有闪烁动画效果的按钮。
+description: 用于呈现环绕闪光流动动画的按钮组件，闪光颜色、速度与背景可配置。
 category: 按钮
 tags: [css, tailwind, button, magic-ui]
 ---

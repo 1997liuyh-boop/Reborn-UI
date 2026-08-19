@@ -1,0 +1,19 @@
+{
+  "description": "用于循环展示多个内容项的轮播组件，支持多项显示、卡片模式与纵向布局，仅 web 端。",
+  "whenToUse": [
+    "首页 banner、图片或卡片列表的自动轮播展示。",
+    "需要一屏显示多项（slidesPerview）并按断点响应式调整的横向滑动列表。",
+    "需要缩略图联动（thumbs）、自定义箭头/指示器插槽的轮播场景。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web），小程序轮播需另行实现。",
+    "苹果卡片风格的展示型轮播，改用 apple-card-carousel。",
+    "轮播用户评价文案，改用 testimonial-slider 或 animated-testimonials。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "modelValue 可 v-model 双向绑定当前索引；modelValue 为空时才使用 initialSlide。",
+    "loop 与 autoplay 默认均为 false，需显式开启；arrow 默认 hover 显示。",
+    "height 默认 \"auto\" 随内容自适应；组件对外暴露 next/prev/goTo 方法可编程控制。"
+  ]
+}

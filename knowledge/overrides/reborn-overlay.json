@@ -1,0 +1,18 @@
+{
+  "description": "用于弹层背后的全屏或局部遮罩组件，支持点击关闭与滚动锁定。",
+  "whenToUse": [
+    "自研弹层需要独立控制的背景遮罩时。",
+    "需要在某个定位容器内做局部遮罩（absolute 模式）时。",
+    "需要自定义遮罩显隐动画时长（duration）时。"
+  ],
+  "whenNotToUse": [
+    "完整弹窗交互直接用自带遮罩的 reborn-popup 或 reborn-dialog。",
+    "加载中的遮罩状态改用 reborn-loading。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "absolute=true 时在最近的非 static 定位祖先内展示，用于局部遮罩。",
+    "zIndex 默认仅 10，与其他弹层（如 reborn-popup 默认 25）叠放时注意层级。",
+    "closeOnClickOverlay 与 lockScroll 默认均为 true。"
+  ]
+}

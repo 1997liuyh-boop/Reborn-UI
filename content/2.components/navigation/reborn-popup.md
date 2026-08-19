@@ -1,6 +1,6 @@
 ---
 title: Popup 弹出层
-description: 支持无重绘滑动展开的高级弹出面板组件。
+description: 用于从上下左右四个方向弹出面板的双端弹出层组件，支持手势滑动关闭与安全区适配。
 category: 导航
 navigation:
   badges:

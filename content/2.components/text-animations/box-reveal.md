@@ -1,6 +1,6 @@
 ---
 title: 盒子揭示
-description: 可自定义颜色、时长与延迟的盒子揭示动画。
+description: 用于内容被色块滑开后显现的揭示入场动画组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

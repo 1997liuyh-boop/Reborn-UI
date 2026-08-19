@@ -1,0 +1,19 @@
+{
+  "description": "用于固定悬浮元素并支持拖拽、自动吸附屏幕边缘的跨端悬浮组件。",
+  "whenToUse": [
+    "悬浮球、快捷操作入口需要用户可拖拽调整位置时。",
+    "悬浮按钮需要拖到边缘后自动吸附（可用 noSnapping 关闭）时。",
+    "刘海屏/底部黑条设备上需要安全区避让（safeArea 默认开启）时。"
+  ],
+  "whenNotToUse": [
+    "固定位置的悬浮操作按钮无需拖拽，改用 reborn-fab。",
+    "滚动到阈值后出现的返回顶部按钮，改用 reborn-back-top。",
+    "元素滚动吸顶，改用 reborn-sticky。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用，依赖 @vueuse/core。",
+    "水平定位 right 优先级高于 left；垂直方向未指定 top 时以 bottom（默认 10）为准。",
+    "disabled 仅禁用拖拽交互，元素仍会显示。",
+    "gap 控制吸附到边缘后的留边距离（默认 10px），size 为浮动元素宽高（默认 40px）。"
+  ]
+}

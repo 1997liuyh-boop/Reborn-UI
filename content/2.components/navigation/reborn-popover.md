@@ -1,6 +1,6 @@
 ---
 title: Popover
-description: 点击或悬浮元素，弹出一个可定制内容的气泡区域，默认使用 fade + zoom 复合动画。
+description: 用于点击或悬停触发气泡浮层的双端组件，可配置定位方向、箭头与遮罩。
 category: 导航
 badge: New
 navigation:

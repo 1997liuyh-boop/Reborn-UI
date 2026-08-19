@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "focus",
   "title": "聚焦",
-  "description": "通过动态模糊和动画框高亮句子中的单词，支持自动循环或悬停手动聚焦模式。",
+  "description": "用于句子逐词聚焦、其余单词模糊并带边框动画的文字强调组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -80,9 +80,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标语中需要逐词轮流强调的自动循环动画。",
+    "manualMode 下由用户悬停选择聚焦单词的交互式文字展示。"
+  ],
+  "whenNotToUse": [
+    "固定文字的静态高亮标注，改用 text-highlight。",
+    "逐字打出文字，改用 reborn-typewriter。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "manualMode 为 true 时仅悬停才聚焦，为 false（默认）时自动循环。",
+    "animationDuration 与 pauseBetweenAnimations 单位为秒；blurAmount 单位为像素（默认 5）。",
+    "句子通过 sentence prop 传入字符串，按空格拆分为单词，无插槽。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add focus"
@@ -95,9 +106,9 @@
   },
   "docPath": "content/2.components/text-animations/focus.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "6b5e67f4dd2576e289f0fd3a87d18fe0db06480f",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "7bb609fd7f83c99c27e78a7f5a795e1351e07432",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

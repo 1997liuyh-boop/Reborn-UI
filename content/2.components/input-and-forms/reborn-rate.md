@@ -1,6 +1,6 @@
 ---
 title: 评分
-description: 支持半星和鼠标悬停预览的星级评分组件。
+description: 用于星级评分录入与展示的双端组件，支持半星与悬停预览。
 category: 表单与输入
 tags: [css, tailwind, rate, rating, star, uniapp]
 badge: New

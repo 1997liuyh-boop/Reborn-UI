@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-slider",
   "title": "滑块",
-  "description": "支持单值和范围选择的滑块组件。",
+  "description": "用于在数值区间内拖动取值的滑块组件，支持单值与范围两种模式。",
   "category": "form",
   "tags": [
     "css",
@@ -157,9 +157,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "音量、进度、价格等连续数值的调节，需要 min / max / step 控制取值。",
+    "区间筛选场景：开启 range 并用 v-model:values 绑定 [起, 止] 数组。",
+    "需要展示当前值（showValue）或用 thumb / value 插槽自定义滑块与数值显示。"
+  ],
+  "whenNotToUse": [
+    "人机滑动验证改用 reborn-slide-verify（仅 uniapp）。",
+    "需要精确键入数字改用 reborn-input-number。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "单值模式用 v-model，范围模式必须同时设置 range=true 并改用 v-model:values 绑定数组。",
+    "除 update:modelValue / update:values 外还提供 change 与 changing 两个事件，回调值为数值或数组。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -180,9 +191,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "7e363d86be6c98d57013c76646942bbf3d564dc1",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "2d86d9182884e1a8776a506b1e047efec4d885f3",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

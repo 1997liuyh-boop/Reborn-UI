@@ -1,6 +1,6 @@
 ---
 title: 徽章 Badge
-description: 用于展示状态、数量或重要标识的微型标签。支持多种色彩、感官风格及跨端适配。
+description: 用于展示状态、数量或标识的跨端徽标组件，支持可关闭与显隐绑定。
 category: 按钮
 tags: [css, tailwind, badge, uniapp, cross-platform]
 badge: New

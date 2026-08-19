@@ -1,0 +1,20 @@
+{
+  "description": "用于展示图片并提供预览、加载/错误状态与多种裁剪模式的双端图片组件。",
+  "whenToUse": [
+    "需要点击放大预览图片（preview + previewList）时。",
+    "需要加载中占位与加载失败占位（showLoading、error 插槽）时。",
+    "商品详情图需要放大镜效果（magnifier 及配套 zoom/size 参数）时。",
+    "uniapp 端需要懒加载、webp 解码、长按菜单等原生 image 能力时。"
+  ],
+  "whenNotToUse": [
+    "仅需在设备外壳中展示截图，改用 iphone-mockup 或 safari-mockup。",
+    "web 端只需悬停局部放大效果，可用 lens。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "src 为必填项；width/height 默认均为 120，mode 默认 aspectFill。",
+    "previewList 不传时默认仅预览当前 src。",
+    "lazyLoad、webp、showMenuByLongpress 等属性对应 uniapp 原生 image 能力。",
+    "magnifier 默认关闭，magnifierZoom 默认 2、magnifierSize 默认 100。"
+  ]
+}

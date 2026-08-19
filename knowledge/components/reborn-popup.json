@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-popup",
   "title": "Popup 弹出层",
-  "description": "支持无重绘滑动展开的高级弹出面板组件。",
+  "description": "用于从上下左右四个方向弹出面板的双端弹出层组件，支持手势滑动关闭与安全区适配。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -432,9 +432,24 @@
     "reborn-root-portal",
     "reborn-transition"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "移动端底部操作面板、半屏弹层（position=\"bottom\"，支持下滑手势关闭）。",
+    "侧边抽屉式面板（position=\"left\"/\"right\"，size 控制宽度）。",
+    "H5/小程序弹层需要顶部或底部安全区适配时。",
+    "需要完整生命周期事件（open/opened/close/closed 等）或 beforeClose 拦截关闭时。"
+  ],
+  "whenNotToUse": [
+    "居中确认对话框改用 reborn-dialog（仅 web）。",
+    "锚定元素的小型气泡浮层改用 reborn-popover。",
+    "只需要背景遮罩改用 reborn-overlay。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "swipeClose 仅在 position=\"bottom\" 时生效，阈值由 swipeCloseThreshold 控制（默认 120）。",
+    "safeAreaInsetBottom/safeAreaInsetTop 默认均开启。",
+    "lazyRender 默认 true，内容首次显示时才渲染；destroyOnClose 默认 false。",
+    "zIndex 默认 25；color 属性仅影响 UniApp 端的滑动手柄颜色。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-popup"
@@ -453,9 +468,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-popup.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "ae7783c754e0e355a85265581d7774a4f5d89477",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "540fc8047f05eb2f279ff6afce9de15a071498f1",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

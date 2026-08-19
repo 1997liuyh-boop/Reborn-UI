@@ -1,0 +1,20 @@
+{
+  "description": "用于列表项左滑露出右侧操作按钮的滑动单元格组件，支持 push / overlay 模式与同组互斥。",
+  "whenToUse": [
+    "消息、待办等列表的左滑删除、置顶操作（rightActions 配置操作条）。",
+    "同一列表内只允许一项展开（group 分组互斥，默认组名 'default'）。",
+    "需要带移除动画的删除（操作项 triggerRemove 或事件 payload 的 remove()，动画结束后触发 remove 事件）。",
+    "列表项点击跳转与滑动操作共存（contentTapNavigate=true 时点击内容触发 content-click 而非收起）。"
+  ],
+  "whenNotToUse": [
+    "web 端项目：platforms 仅 uniapp，web 端无对应实现。",
+    "整块内容轮播切换改用 reborn-carousel（仅 web）。"
+  ],
+  "pitfalls": [
+    "platforms 仅 uniapp 端提供。",
+    "actionWidth / maxThreshold / closeThreshold / dampingDistance / touchThreshold 等数字单位均为 rpx（内部经 uni.upx2px 换算）。",
+    "dragDamping 0–1 按小数、大于 1 按百分比理解（内部除以 100）。",
+    "contentTapNavigate 与 closeOnContentClick 互斥：前者为 true 时点击主内容不再自动收起。",
+    "group 传 false 可关闭同组互斥；closeOnPageScroll 默认 true，页面滚动会收起已展开项。"
+  ]
+}

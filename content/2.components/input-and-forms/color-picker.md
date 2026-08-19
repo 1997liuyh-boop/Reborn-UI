@@ -1,6 +1,6 @@
 ---
 title: 取色器
-description: 全功能的取色组件，支持多种颜色格式、无障碍特性与自定义色板。
+description: 用于弹层中选取颜色的取色器组件，支持 hex/hsl/rgb 等格式与预设色板。
 category: 表单与输入
 tags: [css, tailwind, input, color-picker, uplusion23]
 ---

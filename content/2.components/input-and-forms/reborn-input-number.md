@@ -1,6 +1,6 @@
 ---
 title: 数字输入框
-description: 带有增减按钮的数字输入组件。
+description: 用于在最小最大值范围内按步进增减数值的双端数字输入组件。
 category: 表单与输入
 tags: [css, tailwind, input-number, uniapp]
 badge: New

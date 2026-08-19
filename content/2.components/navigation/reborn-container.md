@@ -1,6 +1,6 @@
 ---
 title: 容器
-description: 用于将内容居中并在不同屏幕尺寸下限制最大宽度的布局组件。
+description: 用于将页面内容水平居中并按屏幕断点限制最大宽度的布局容器组件，仅 web 端。
 category: 导航
 navigation:
   badges:

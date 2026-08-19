@@ -1,6 +1,6 @@
 ---
 title: 动画列表
-description: 逐个引入的动画列表，适合在落地页展示通知或事件。
+description: 用于让列表项按固定延迟逐条进场的通知流列表组件。
 category: 杂项
 tags: [css, tailwind, magic-ui]
 ---

@@ -1,0 +1,18 @@
+{
+  "description": "用于按步骤序列展示加载进度、支持异步等待步骤的全屏加载组件。",
+  "whenToUse": [
+    "下单、支付等多阶段流程需要逐步反馈进度时。",
+    "步骤完成依赖真实异步结果（Step.async 等待外部状态变 false）时。",
+    "步骤完成后需要展示完成态文案（afterText）或执行回调（action）时。"
+  ],
+  "whenNotToUse": [
+    "简单的转圈加载，改用 reborn-loading。",
+    "展示静态流程节点而非加载过程，改用 timeline。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "可见性由 loading prop 控制，所有步骤完成后不会自动关闭，需在 complete 事件或步骤 action 中把 loading 置回 false。",
+    "Step.async 为 true 时该步骤会一直等待，直到对应状态变为 false 才前进；非异步步骤按 duration（缺省用 defaultDuration，默认 1500ms）自动前进。",
+    "preventClose 为 true 时不显示关闭按钮，用户无法手动中断。"
+  ]
+}

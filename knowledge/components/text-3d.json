@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-3d",
   "title": "3D 文字",
-  "description": "时尚的 3D 文字组件，可自定义颜色、阴影与动画选项。",
+  "description": "用于以描边加双层阴影模拟 3D 立体字并可选晃动动画的文字组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -101,9 +101,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页大标题需要漫画、立体风格的装饰字。",
+    "需要自定义描边（strokeColor/strokeSize）与双层阴影颜色尺寸的标题。",
+    "需要逐个单词控制是否晃动动画（animate）的组合标题。"
+  ],
+  "whenNotToUse": [
+    "悬停渐变描边交互，改用 text-hover-effect。",
+    "轻量的线条阴影效果，改用 line-shadow-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "文字通过默认插槽传入。",
+    "animate 默认开启晃动动画，animationDuration 单位为毫秒（默认 1500）。",
+    "letterSpacing 单位是 ch（默认 -0.1），不是像素。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-3d"
@@ -116,9 +128,9 @@
   },
   "docPath": "content/2.components/text-animations/3d-text.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "1e3e838cbba14d49db6e852132328e444053dba1",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "4cc7d426310a972321ca430ebe3b405b7b5f5fcc",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

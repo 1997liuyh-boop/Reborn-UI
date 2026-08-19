@@ -1,6 +1,6 @@
 ---
 title: 线条阴影文字
-description: 为文字添加线条阴影效果，使其更具视觉吸引力。
+description: 用于给插槽文字添加斜线条纹阴影装饰的静态文字效果组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

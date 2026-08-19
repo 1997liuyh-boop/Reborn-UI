@@ -1,6 +1,6 @@
 ---
 title: 二维码 Qrcode
-description: 二维码组件，支持颜色、样式、Logo 与纠错级别配置。
+description: 用于生成二维码的双端组件，支持前景/背景色、码点样式、中央 Logo 与纠错级别。
 category: 杂项
 tags: [qrcode, canvas, svg, uniapp, web]
 badge: New

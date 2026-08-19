@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "morphing-tabs",
   "title": "变形标签页",
-  "description": "复刻 Preet 的胶状变形标签交互，包含粘连效果。",
+  "description": "用于在切换标签时呈现胶体粘连变形效果的字符串标签页组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -66,9 +66,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页或个人站导航需要胶状变形的标签切换动效时。",
+    "少量纯文字标签之间的视觉化切换。"
+  ],
+  "whenNotToUse": [
+    "业务标签页需要内容面板或跨端支持，改用 reborn-tabs。",
+    "底部主导航，改用 reborn-tabbar。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，粘连效果基于 SVG 模糊滤镜（blurStdDeviation 控制 stdDeviation）。",
+    "tabs 只接受 string[]，activeTab 为必填受控 prop，需监听 update:activeTab 回写。",
+    "只负责标签头切换，不含内容面板，需自行根据 activeTab 渲染内容。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add morphing-tabs"
@@ -81,9 +91,9 @@
   },
   "docPath": "content/2.components/miscellaneous/morphing-tabs.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "73a3821d400813baf8c916cf5d1bd1179c3e48d8",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "6fd6ce64f9ee9a352b663b6839ebe58327a0e06b",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

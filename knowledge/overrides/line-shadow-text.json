@@ -1,0 +1,16 @@
+{
+  "description": "用于给插槽文字添加斜线条纹阴影装饰的静态文字效果组件。",
+  "whenToUse": [
+    "大号标题中需要突出个别单词的装饰效果时。",
+    "希望文字效果不含持续动画、渲染开销低的场景。"
+  ],
+  "whenNotToUse": [
+    "需要扫过式高光动画，改用 radiant-text。",
+    "需要闪烁粒子点缀文字，改用 sparkles-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "shadowColor 默认 black，暗色模式下需切换为浅色（示例中根据 useColorMode 动态传入）。",
+    "默认渲染为 span，可用 as prop 改为其他 HTML 标签。"
+  ]
+}

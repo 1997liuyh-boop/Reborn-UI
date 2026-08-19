@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "sparkles",
   "title": "sparkles",
-  "description": "",
+  "description": "用于渲染可配置密度、大小与颜色的闪烁粒子背景层组件。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -70,9 +70,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标题背后或下方铺设星光粒子的装饰背景。",
+    "需要随明暗模式切换 particleColor 的粒子层（示例配合 useColorMode）。",
+    "全屏或局部区域需要粒子氛围背景时。"
+  ],
+  "whenNotToUse": [
+    "只给一段文字加闪光点缀，改用 sparkles-text。",
+    "需要流星雨划过动画，改用 meteors。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "无插槽与事件，前景内容需自行绝对定位叠放在其上。",
+    "background 默认为 #0d47a1，做叠加层时通常需显式设为 transparent。",
+    "particleDensity 默认 120，示例中密集效果用到 800-1200。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -87,9 +99,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "598815ccddf9564397aad1c76e6e969fa71ac600",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "884cbac354653487c352f739a8d26d00992de87d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

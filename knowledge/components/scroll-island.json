@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "scroll-island",
   "title": "滚动岛",
-  "description": "具备动态动画的交互组件，展示滚动进度，并带可展开的附加内容区域。",
+  "description": "用于以灵动岛样式悬浮显示页面滚动进度并可展开附加内容的组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -52,9 +52,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "文章、文档页顶部需要显示阅读滚动进度百分比时。",
+    "需要点击展开显示页内目录等附加导航内容。",
+    "希望以仿 iOS 灵动岛的悬浮胶囊承载页面进度信息。"
+  ],
+  "whenNotToUse": [
+    "需要独立的环形百分比进度展示，改用 animated-circular-progressbar。",
+    "沿内容侧边跟随滚动的装饰光束，改用 tracing-beam。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @number-flow/vue、@vueuse/core、motion-v。",
+    "展开区内容通过默认插槽传入。",
+    "title 默认为 \"Progress\"，height 默认 44。"
+  ],
   "dependencies": [
     "@number-flow/vue",
     "@vueuse/core",
@@ -71,9 +82,9 @@
   },
   "docPath": "content/2.components/miscellaneous/scroll-island.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e791d2dccfa51ed0a627fa1757bd29e13d739de6",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "c8acebe785f2e66ab0dd6073a64382ebd31b55f1",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

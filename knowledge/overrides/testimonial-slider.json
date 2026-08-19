@@ -1,0 +1,17 @@
+{
+  "description": "用于轮播展示用户评价（头像、引言、姓名、职位）的轻量滑块组件。",
+  "whenToUse": [
+    "落地页客户评价、用户推荐语区块。",
+    "需要按固定间隔自动轮播评价内容时（autoRotate + duration）。"
+  ],
+  "whenNotToUse": [
+    "需要更丰富动效的评价展示，改用 animated-testimonials。",
+    "通用内容轮播（图片、卡片等），改用 reborn-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "testimonials 数据项包含 img/quote/name/role 字段。",
+    "duration 单位为秒（默认 5），autoRotate 默认开启。",
+    "无插槽与事件，展示结构不可自定义。"
+  ]
+}

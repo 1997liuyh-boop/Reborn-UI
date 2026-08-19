@@ -1,0 +1,16 @@
+{
+  "description": "用于从 options 列表下拉选择单个值的选择器组件，仅 uniapp 端。",
+  "whenToUse": [
+    "uniapp 页面中需要轻量的下拉单选控件（options + v-model）。",
+    "需要 clearable 清空已选值的筛选条件选择。"
+  ],
+  "whenNotToUse": [
+    "web 端不可用（仅 uniapp），web 端表单选值改用 reborn-select，操作菜单改用 reborn-dropdown。",
+    "多层级数据选择，改用 reborn-cascader。"
+  ],
+  "pitfalls": [
+    "仅 uniapp 端可用，且当前无文档页（docs missing），props 描述不完整。",
+    "options 为 Option[] 数组，选中值通过 v-model 绑定，变更时触发 change 事件。",
+    "clearable 默认 false，需要清空按钮时须显式开启。"
+  ]
+}

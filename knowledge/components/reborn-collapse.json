@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-collapse",
   "title": "折叠面板",
-  "description": "用于展示和隐藏内容区域，支持平滑的展开收起动画效果。",
+  "description": "用于点击触发区展开或收起内容区域的折叠组件，带高度过渡动画，双端可用。",
   "category": "misc",
   "tags": [
     "css",
@@ -118,9 +118,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "FAQ、说明文字等默认收起、点击展开的内容块。",
+    "筛选面板、更多选项等需要展开收起切换的区域。",
+    "需要程序化控制展开（暴露 show/hide/toggle/resize 方法）的折叠区域。"
+  ],
+  "whenNotToUse": [
+    "内容需要浮层覆盖页面而非推挤布局时，改用 reborn-popup 或 reborn-dialog。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "触发区放默认插槽，被折叠的内容必须放 content 插槽，二者不可混放。",
+    "内容尺寸动态变化后需调用暴露的 resize 方法重新测量高度。",
+    "position 可设 top 使内容向上展开，absolute 控制展开内容是否脱离文档流。"
+  ],
   "dependencies": [
     "tailwind-variants"
   ],
@@ -141,9 +152,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-collapse.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "a1c2276e144b1b89a75db9f08945d7fba08e7802",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "221ac293bebfb68a08bac4c47aac6c0e515f7d6b",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

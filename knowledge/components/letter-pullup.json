@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "letter-pullup",
   "title": "字符上提",
-  "description": "逐字上提的错落文字动画。",
+  "description": "用于让一段文字逐字符错落上提进场的文字动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -46,9 +46,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标题、口号需要逐字进场的强调动画时。",
+    "Hero 区文字需要轻量级错落出现效果时。"
+  ],
+  "whenNotToUse": [
+    "需要在多段文本间循环切换，改用 flip-words 或 morphing-text。",
+    "需要打字机逐字输出效果，改用 reborn-typewriter。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "文字通过 words prop（必填字符串）传入，不支持插槽内容。",
+    "delay 为每个字符的动画延迟，单位是秒（默认 0.05）。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -63,9 +73,9 @@
   },
   "docPath": "content/2.components/text-animations/letter-pullup.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "2d091ba155c0ba3a47f3d4749dd4217be45992fd",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "4917f249a4cc5177f50a88974aa2b39d1680791f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

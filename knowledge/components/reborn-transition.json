@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-transition",
   "title": "Transition 过渡",
-  "description": "过渡动画容器，支持 fade / slide / zoom。",
+  "description": "用于控制内容显隐过渡动画的容器组件，内置 fade、slide、zoom 等动画名称。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -219,9 +219,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "自定义弹层、浮层的进出场动画（show 受控显隐）。",
+    "内容首次出现才渲染（lazyRender）或隐藏即销毁（destroy）的显隐容器。",
+    "需要完全自定义动画类名（enterClass / enterActiveClass / leaveToClass 等）。"
+  ],
+  "whenNotToUse": [
+    "web 端简单显隐动画可直接用 Vue 内置 Transition。",
+    "只是给已有弹层加动画时，reborn-popup / reborn-dialog 等组件已内置过渡。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "通过 show prop 受控显隐而非 v-if；destroy 默认 true，隐藏时会销毁内容。",
+    "name 支持传单个动画名或数组组合多个动画。",
+    "disableTouchMove 仅 uniapp 端生效。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-transition"
@@ -240,9 +252,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-transition.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "d0197f74fc2269a3ec8623cc0437fa8cf947f9ea",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "78ac44a671ef4f0181ef87f459cbcacf08b09690",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

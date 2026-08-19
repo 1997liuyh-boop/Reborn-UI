@@ -1,6 +1,6 @@
 ---
 title: 菜单
-description: 为网站提供导航能力的菜单组件，支持垂直、水平、折叠与子菜单等模式。
+description: 用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠与多级子菜单。
 category: 导航
 badge: New
 navigation:

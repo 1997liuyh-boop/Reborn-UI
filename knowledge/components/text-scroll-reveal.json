@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-scroll-reveal",
   "title": "滚动文字揭示",
-  "description": "在滚动时逐词显现的文字组件，可自定义内容与样式。",
+  "description": "用于随页面滚动进度将一句话逐词由淡变实显现的文字组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -58,9 +58,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "长页叙事区块随滚动逐词点亮宣言、标语。",
+    "需要滚动驱动（而非加载即播）的文案强调段落。"
+  ],
+  "whenNotToUse": [
+    "页面加载即逐字渐显，改用 text-generate-effect。",
+    "逐行入场动画，改用 text-reveal。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "使用时只需传 text（必填）；props 中的 word/progress/range 来自内部 ScrollWord 子组件的提取结果，无需手动传入。",
+    "效果由页面滚动进度驱动，需置于可滚动的页面流中。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-scroll-reveal"
@@ -74,9 +84,9 @@
   },
   "docPath": "content/2.components/text-animations/text-scroll-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "3b43d7d1a3139a9f2c88018abb88f6e5cd4000e8",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "a27fe2b7234d63b61f4547fd73524854909d26fc",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

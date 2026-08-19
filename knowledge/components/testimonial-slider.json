@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "testimonial-slider",
   "title": "评价滑块",
-  "description": "轻量的评价滑块，包含图片旋转、文字过渡与可选自动轮播。",
+  "description": "用于轮播展示用户评价（头像、引言、姓名、职位）的轻量滑块组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -46,9 +46,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页客户评价、用户推荐语区块。",
+    "需要按固定间隔自动轮播评价内容时（autoRotate + duration）。"
+  ],
+  "whenNotToUse": [
+    "需要更丰富动效的评价展示，改用 animated-testimonials。",
+    "通用内容轮播（图片、卡片等），改用 reborn-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "testimonials 数据项包含 img/quote/name/role 字段。",
+    "duration 单位为秒（默认 5），autoRotate 默认开启。",
+    "无插槽与事件，展示结构不可自定义。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add testimonial-slider"
@@ -61,9 +72,9 @@
   },
   "docPath": "content/2.components/miscellaneous/testimonial-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "7e9b96a1c56996a9e0dc481f93b38ff8b0d73389",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "e07b5d261a9e8694bc48f2c6eac13c7ba161bb1e",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

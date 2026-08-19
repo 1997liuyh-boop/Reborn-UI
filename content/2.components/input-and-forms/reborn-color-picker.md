@@ -1,6 +1,6 @@
 ---
 title: 取色器
-description: 提供颜色选择的组件。
+description: 用于弹出面板选取颜色并以 v-model 绑定色值字符串的取色器组件，双端可用。
 category: 表单与输入
 navigation:
   badges:

@@ -1,0 +1,18 @@
+{
+  "description": "用于列表底部展示加载中、加载失败与没有更多状态的 uniapp 组件。",
+  "whenToUse": [
+    "分页列表触底加载时展示加载状态。",
+    "加载失败后展示错误文案并通过 reload 事件重试。",
+    "数据加载完毕时展示\"没有更多\"提示（state=finished）。"
+  ],
+  "whenNotToUse": [
+    "web 端页面（本组件仅 uniapp）；容器/整页加载遮罩改用 reborn-loading。",
+    "按页码切换数据改用 reborn-pagination。"
+  ],
+  "pitfalls": [
+    "仅 uniapp 端可用。",
+    "state 仅有 loading/error/finished 三种取值，默认 loading。",
+    "提供 reload 事件用于失败重试。",
+    "内部加载图标通过 loadingProps 透传给 RebornLoading，默认 size 为 40rpx。"
+  ]
+}

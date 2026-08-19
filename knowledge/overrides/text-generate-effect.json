@@ -1,0 +1,19 @@
+{
+  "description": "用于让段落文字逐字渐显、可带模糊过渡的入场动画组件。",
+  "whenToUse": [
+    "页面加载时逐字显示引言、产品介绍等段落。",
+    "模拟 AI 生成回答的逐字浮现效果。",
+    "需要通过 delay 控制入场时机的文案区块。"
+  ],
+  "whenNotToUse": [
+    "打字机式逐字输入并删除重打，改用 reborn-typewriter。",
+    "随滚动进度逐词显现，改用 text-scroll-reveal。",
+    "按行整行入场，改用 text-reveal。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "文字通过 words prop 传入（必填），不支持插槽。",
+    "duration 单位为秒（默认 0.7），delay 单位为毫秒（默认 0），两者单位不一致，易混淆。",
+    "filter 默认开启模糊渐显，可传 false 关闭。"
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 title: 日期选择面板
-description: 独立的日期/月份/年份选择面板，支持范围选择与多种视图切换，可用于 Popover、Modal 或内嵌展示。
+description: 用于内嵌展示的日期/月份/年份选择面板组件，支持范围选择与视图切换，仅 web 端。
 category: 表单与输入
 tags: [calendar, date, select, panel, uniapp]
 badge: New

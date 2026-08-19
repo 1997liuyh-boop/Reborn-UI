@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "morphing-text",
   "title": "文字变形",
-  "description": "动态在一组文本之间切换，呈现平滑的渐变效果。",
+  "description": "用于在一组文本间以模糊渐变变形循环切换的文字动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -54,9 +54,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "Hero 区标题需要在多个关键词间循环变形切换时。",
+    "展示产品的多个卖点词并强调过渡的液态变形感时。"
+  ],
+  "whenNotToUse": [
+    "需要翻转式的词语切换，改用 flip-words 或 container-text-flip。",
+    "只有一段文字的进场动画，改用 letter-pullup 或 text-generate-effect。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，示例中外层包裹了 ClientOnly。",
+    "texts 为必填字符串数组；morphTime 是变形动画时长、coolDownTime 是每个词的停留时间，单位均为秒。",
+    "不支持插槽内容，仅渲染纯文本。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add morphing-text"
@@ -69,9 +79,9 @@
   },
   "docPath": "content/2.components/text-animations/morphing-text.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "db040e50d5c0a15c64c429d03e1b4a3440144bfc",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "7269d0b2379a2b9fc71cd940979748e89cefac57",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

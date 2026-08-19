@@ -1,0 +1,18 @@
+{
+  "description": "用于 uniapp 页面底部导航切换的自定义标签栏组件，需配合 RebornTabbarTrigger 子项使用。",
+  "whenToUse": [
+    "替代原生 tabBar 实现自定义样式的底部导航（shape、动画、小球颜色等可配）。",
+    "需要固定吸底并处理 iOS 底部安全区（fixed + safeAreaInsetBottom，placeholder 自动占位）。",
+    "切换前需要拦截（beforeChange 支持返回 boolean / Promise 或调用 done 回调）。"
+  ],
+  "whenNotToUse": [
+    "web 端项目：platforms 仅 uniapp，web 端无对应实现。",
+    "页面内内容区切换改用 reborn-tabs。"
+  ],
+  "pitfalls": [
+    "platforms 仅 uniapp 端提供。",
+    "子项 RebornTabbarTrigger 必须放在 RebornTabbar 默认插槽内；title / name / icon / inactive / disabled / imageSize 是子项的 props（知识条目中与父组件 props 合并展示）。",
+    "fixed 默认 false，需要吸底须显式开启；safeAreaInsetBottom 默认 false。",
+    "v-model 绑定当前激活项（number 或 string，与子项 name 对应），切换触发 change。"
+  ]
+}

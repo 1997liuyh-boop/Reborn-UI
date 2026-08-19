@@ -1,6 +1,6 @@
 ---
 title: 对比
-description: 通过滑动比较两组内容——图像、设计、代码或自定义元素。
+description: 用于以滑动分割线对比两张图片或两块自定义内容的对比组件。
 category: 杂项
 tags: [css, tailwind, aceternity-ui]
 ---

@@ -1,6 +1,6 @@
 ---
 title: 时间选择器
-description: 支持滚轮选择、箭头调节、禁用时分秒和范围选择的时间选择器。
+description: 用于选择时分秒的时间选择器组件，支持滚轮与箭头两种调节方式及时间范围选择。
 category: 表单与输入
 badge: Update
 navigation:

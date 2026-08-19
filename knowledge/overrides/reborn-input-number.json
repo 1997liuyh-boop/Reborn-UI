@@ -1,0 +1,18 @@
+{
+  "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件。",
+  "whenToUse": [
+    "购物车、库存等数量增减场景。",
+    "需要限定 min/max 与 step 的数值录入。",
+    "需要自定义加减按钮图标（decrease-icon/increase-icon 插槽）时。"
+  ],
+  "whenNotToUse": [
+    "自由输入长数字或文本改用 reborn-input。",
+    "在连续区间内取值改用 reborn-slider。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "min 默认 0、max 默认 200、step 默认 1，业务范围不同时必须显式传入。",
+    "readonly 默认 true，即中间输入区默认不可直接键入，仅靠按钮增减。",
+    "inputType 仅支持 digit/number 两种。"
+  ]
+}

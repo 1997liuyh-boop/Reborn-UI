@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "images-slider",
   "title": "图片滑块",
-  "description": "全屏图片滑块，可使用键盘导航。",
+  "description": "用于全屏轮播一组背景图并叠加覆盖层内容的图片滑块组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -115,9 +115,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "Hero 区需要全屏图片轮播并在图上叠加标题、按钮时。",
+    "需要键盘导航或 autoplay 自动播放的图片背景切换。",
+    "需要通过 v-model 获取或控制当前图片索引时。"
+  ],
+  "whenNotToUse": [
+    "常规卡片式轮播或跨端场景，改用 reborn-carousel。",
+    "卡片内容轮播展示，改用 apple-card-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core。",
+    "图片以背景图方式渲染（默认 imageClass 为 bg-cover bg-center），非 img 标签。",
+    "覆盖层内容通过默认插槽传入；hideOverlay 为 true 时插槽不渲染。",
+    "过渡方向默认 vertical，可通过 direction 与 enterFromClass 等类名自定义动画。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -132,9 +144,9 @@
   },
   "docPath": "content/2.components/miscellaneous/images-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "13399d2986aa655e8207bcee9b1422367e5c87dd",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "ba237163eaee16abee789a3f5f26ed479d164f2e",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

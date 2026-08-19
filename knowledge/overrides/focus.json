@@ -1,0 +1,17 @@
+{
+  "description": "用于句子逐词聚焦、其余单词模糊并带边框动画的文字强调组件。",
+  "whenToUse": [
+    "标语中需要逐词轮流强调的自动循环动画。",
+    "manualMode 下由用户悬停选择聚焦单词的交互式文字展示。"
+  ],
+  "whenNotToUse": [
+    "固定文字的静态高亮标注，改用 text-highlight。",
+    "逐字打出文字，改用 reborn-typewriter。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "manualMode 为 true 时仅悬停才聚焦，为 false（默认）时自动循环。",
+    "animationDuration 与 pauseBetweenAnimations 单位为秒；blurAmount 单位为像素（默认 5）。",
+    "句子通过 sentence prop 传入字符串，按空格拆分为单词，无插槽。"
+  ]
+}

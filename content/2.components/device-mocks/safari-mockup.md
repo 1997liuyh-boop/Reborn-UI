@@ -1,6 +1,6 @@
 ---
 title: Safari 模型
-description: Safari 浏览器的 SVG 模型。
+description: 用于以 Safari 浏览器外框展示产品截图的 SVG 设备模型组件。
 category: 设备模型
 tags: [css, tailwind, device-mockup, magic-ui]
 badge: New

@@ -1,0 +1,18 @@
+{
+  "description": "用于展示状态、数量或标识的跨端徽标组件，支持可关闭与显隐绑定。",
+  "whenToUse": [
+    "标记条目状态（成功/警告/错误等语义色）或数量时。",
+    "标签需要可关闭交互，含关闭前异步确认（beforeClose）时。",
+    "需要 v-model:show 控制徽标显隐时。"
+  ],
+  "whenNotToUse": [
+    "可选中、可交互的筛选标签，改用 reborn-chip。",
+    "独立的按钮操作，改用 reborn-button。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用；closeIcon 默认值双端不同（web 为 i-lucide-x，uniapp 为 i-mdi-close-circle）。",
+    "icon prop 直接传图标类名，web 端建议改用 leading/trailing 插槽。",
+    "uniapp 端为避免原生 class 冲突提供了 customClass；click 事件仅 uniapp 端显式定义。",
+    "默认插槽内容会覆盖 label；gap 用于多个徽标并排时自动加左间距。"
+  ]
+}

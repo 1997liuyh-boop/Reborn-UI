@@ -1,6 +1,6 @@
 ---
 title: 模糊揭示
-description: 平滑模糊淡入内容的组件。
+description: 用于让子元素依次从模糊状态淡入上移进场的揭示动画组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

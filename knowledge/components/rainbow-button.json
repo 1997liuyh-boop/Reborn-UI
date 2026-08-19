@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "rainbow-button",
   "title": "彩虹按钮",
-  "description": "在按钮上呈现彩虹效果。",
+  "description": "用于呈现彩虹渐变流动发光效果的按钮组件，内容经默认插槽传入。",
   "category": "basic",
   "tags": [
     "css",
@@ -53,9 +53,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页主 CTA 需要高辨识度的彩虹发光按钮时。",
+    "需要通过 is prop 渲染为 a 等其他标签的发光跳转入口。"
+  ],
+  "whenNotToUse": [
+    "常规业务按钮或跨端场景，改用 reborn-button。",
+    "单色流光边框效果，改用 shimmer-button。",
+    "悬停过渡动效按钮，改用 interactive-hover-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "speed 为动画周期，单位秒（默认 2）。",
+    "未定义 click 等事件，点击处理依赖原生事件透传；is 默认渲染为 button 标签。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add rainbow-button"
@@ -68,9 +79,9 @@
   },
   "docPath": "content/2.components/button/rainbow-button.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "05f397c231ade659c3e14bd2bb3f74a54bb7317e",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "20c435f79c77f9dc064eb578dfb87b29bac535fc",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

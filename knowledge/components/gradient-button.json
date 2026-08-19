@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "gradient-button",
   "title": "渐变按钮",
-  "description": "一款带有旋转圆锥渐变边框的时尚动效按钮，提供可自定义的属性，呈现活力效果。",
+  "description": "用于带旋转圆锥渐变发光边框的动效按钮组件。",
   "category": "basic",
   "tags": [
     "css",
@@ -80,9 +80,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页主 CTA 需要持续旋转的渐变发光边框吸引注意。",
+    "需要自定义边框颜色数组（colors）与模糊光晕（blur）的按钮。"
+  ],
+  "whenNotToUse": [
+    "常规功能按钮（含 uniapp），改用 reborn-button。",
+    "需要光斑扫过效果，改用 shimmer-button；需要彩虹底色，改用 rainbow-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "bgColor 是按钮内容区背景色（默认 #000），浅色主题下需自行改为浅色，示例中依据明暗模式切换。",
+    "duration 单位为毫秒（默认 2500）；colors 需首尾同色才能无缝旋转（默认数组首尾均为 #FF0000）。",
+    "未定义 click 等事件声明，按钮文字通过默认插槽传入。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add gradient-button"
@@ -95,9 +106,9 @@
   },
   "docPath": "content/2.components/button/gradient-button.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "4842ff545a2554d9edb4d39f661029a4aca98fc5",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "cc615844f72d2d360d829fe8cd19d5626b88341c",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

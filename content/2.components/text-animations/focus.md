@@ -1,6 +1,6 @@
 ---
 title: 聚焦
-description: 通过动态模糊和动画框高亮句子中的单词，支持自动循环或悬停手动聚焦模式。
+description: 用于句子逐词聚焦、其余单词模糊并带边框动画的文字强调组件。
 category: 文字动画
 tags: [css, tailwind, codepen]
 ---

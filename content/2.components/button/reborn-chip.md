@@ -1,6 +1,6 @@
 ---
 title: 提示点/标记
-description: 轻量级提示点/标记组件。
+description: 用于在元素角标位置显示提示点或数字标记的组件，双端可用。
 category: 按钮
 tags: [css, tailwind, chip, uniapp]
 badge: New

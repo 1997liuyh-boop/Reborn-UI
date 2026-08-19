@@ -1,0 +1,18 @@
+{
+  "description": "用于短信验证码、OTP 等固定位数分格输入的双端组件。",
+  "whenToUse": [
+    "登录、注册时输入短信/邮箱验证码。",
+    "支付密码等固定位数的分格输入。",
+    "输入满位后需要自动触发提交（done 事件）时。"
+  ],
+  "whenNotToUse": [
+    "普通文本输入改用 reborn-input。",
+    "数值步进增减改用 reborn-input-number。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "length 默认 4 位；输满指定位数触发 done 事件。",
+    "inputType 默认 number，可选 text/digit。",
+    "无插槽，格子样式通过 ui/size/color 配置。"
+  ]
+}

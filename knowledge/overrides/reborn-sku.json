@@ -1,0 +1,17 @@
+{
+  "description": "用于商品规格（SKU）选择的选项组件，按 options 渲染规格项并以对象形式双向绑定选中结果。",
+  "whenToUse": [
+    "商品详情页选择颜色、尺码等规格组合，需要 v-model 收集选中值。",
+    "需要通过 item 插槽自定义规格选项的渲染。"
+  ],
+  "whenNotToUse": [
+    "多层级联动选择（省市区、分类）改用 reborn-cascader。",
+    "单组互斥选项改用 reborn-radio。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "modelValue 为 Record<string, any> 对象，change 与 update:modelValue 同步选中状态。",
+    "无文档页与演示示例，props 描述缺失，SkuOption 具体结构需查阅源码（RebornSku.vue）。"
+  ]
+}

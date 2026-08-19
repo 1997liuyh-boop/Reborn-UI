@@ -1,0 +1,17 @@
+{
+  "description": "用于鼠标悬停时在元素旁显示文字提示气泡的组件。",
+  "whenToUse": [
+    "悬停解释图标、按钮或缩写的含义（content 属性传入短文本）。",
+    "需要控制提示的方向与主题（placement、effect dark / light）。",
+    "需要受控显示（v-model:open）或用 content 插槽自定义提示内容。"
+  ],
+  "whenNotToUse": [
+    "承载可交互的复杂内容改用 reborn-popover。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "触发元素放在 default 插槽内；content 插槽优先级高于 content 属性。",
+    "openDelay / closeDelay 默认各 100ms；effect 默认 'dark'，placement 默认 'bottom'。"
+  ]
+}

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-glitch",
   "title": "文字故障",
-  "description": "为文字添加鲜明的故障效果，可自定义速度、阴影颜色，并可选择仅在悬停时触发。",
+  "description": "用于给文字叠加彩色错位故障（glitch）动画的文字效果组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -60,9 +60,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "赛博朋克、科技风页面的标题文字。",
+    "404 页或错误提示的风格化文案。",
+    "需要仅在悬停时触发故障动画的交互文字（enableOnHover）。"
+  ],
+  "whenNotToUse": [
+    "悬停时字符快速乱变重排，改用 hyper-text。",
+    "多彩渐变文字，改用 colourful-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "文字通过 text prop 传入，不支持插槽。",
+    "enableOnHover 默认 false（动画常驻），设为 true 后仅悬停触发。",
+    "speed 单位为秒（默认 0.5），enableShadows 控制彩色阴影（默认开启）。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-glitch"
@@ -74,9 +86,9 @@
   },
   "docPath": "content/2.components/text-animations/text-glitch.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "031b5ce9f680fe952c6003e4fa1bfbd3b43a1cbf",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "1a6add0e218cf3b551338cca12eceeda157e9025",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

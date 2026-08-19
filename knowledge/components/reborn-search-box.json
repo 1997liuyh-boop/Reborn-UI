@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-search-box",
   "title": "搜索框",
-  "description": "仿 MasterGo 设计的高级搜索框组件，支持目录选择、图片搜索及自定义按钮。",
+  "description": "用于带下拉面板的双端搜索框组件，支持历史记录、推荐词与 SKU 属性筛选。",
   "category": "form",
   "tags": [
     "css",
@@ -295,9 +295,21 @@
     "reborn-select",
     "reborn-sku"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "电商、文档站搜索框，需要历史记录与推荐搜索下拉面板时。",
+    "SKU 模式按商品属性筛选（mode=\"sku\" + skuAttributes，selectSku 事件）。",
+    "需要图片搜索入口时（trailing 默认含相机图标，clickCamera 事件）。"
+  ],
+  "whenNotToUse": [
+    "普通文本录入改用 reborn-input。",
+    "从固定选项集中选择改用 reborn-select。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "showDropdown 与 showHistory 默认开启，可通过 saveHistory/removeHistory 自定义历史记录的存取。",
+    "相机与 SKU 事件同时存在驼峰与短横线两种命名（clickCamera/click-camera、selectSku/select-sku）。",
+    "内部组合了输入框与选择器，可通过 inputUi/selectUi/selectAttrs 透传定制。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-search-box"
@@ -314,9 +326,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-search-box.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "9ed7711145fa25f3f89d85a81b9b31d852399ba9",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "b2fc71a546dbbbdf5b705fba009a273d98ac3b18",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

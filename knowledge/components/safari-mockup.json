@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "safari-mockup",
   "title": "Safari 模型",
-  "description": "Safari 浏览器的 SVG 模型。",
+  "description": "用于以 Safari 浏览器外框展示产品截图的 SVG 设备模型组件。",
   "category": "media",
   "tags": [
     "css",
@@ -55,9 +55,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页展示 Web 产品界面截图时。",
+    "作品集、文档中需要浏览器窗口外观的演示图。",
+    "需要在模拟地址栏显示自定义 URL 文字的场景。"
+  ],
+  "whenNotToUse": [
+    "展示移动端 App 界面，改用 iphone-mockup。",
+    "需要嵌入真实可交互页面时不适用，src 仅接受图片 URL。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "无插槽与事件，内容只能通过 src 图片传入。",
+    "width/height 单位为像素，默认 1203×753。",
+    "url 仅是地址栏展示文字，不会真正加载该地址。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add safari-mockup"
@@ -70,9 +82,9 @@
   },
   "docPath": "content/2.components/device-mocks/safari-mockup.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "811e63dae64815b8610e56846613a2506ea48dc0",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "ad638fdce5baa76873afa67ca8b02bd1b8156991",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

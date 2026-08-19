@@ -1,0 +1,17 @@
+{
+  "description": "用于轮播展示用户评价（头像、姓名、职称、引言）并支持自动播放的组件。",
+  "whenToUse": [
+    "官网或落地页的客户评价区块。",
+    "需要自动轮播的推荐语、案例引言展示。",
+    "展示带头像与职位信息的团队成员语录。"
+  ],
+  "whenNotToUse": [
+    "只需悬停头像显示姓名职位时，改用 animated-tooltip。",
+    "通用图文卡片轮播，改用 apple-card-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "duration 为自动切换等待时间（毫秒，默认 5000），需开启 autoplay 才会自动轮播。",
+    "testimonials 每项需包含 quote、name、designation、image 字段，示例中外层包裹了 ClientOnly。"
+  ]
+}

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-generate-effect",
   "title": "文字生成效果",
-  "description": "炫酷的文字效果，在页面加载时逐字渐显。",
+  "description": "用于让段落文字逐字渐显、可带模糊过渡的入场动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -60,9 +60,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "页面加载时逐字显示引言、产品介绍等段落。",
+    "模拟 AI 生成回答的逐字浮现效果。",
+    "需要通过 delay 控制入场时机的文案区块。"
+  ],
+  "whenNotToUse": [
+    "打字机式逐字输入并删除重打，改用 reborn-typewriter。",
+    "随滚动进度逐词显现，改用 text-scroll-reveal。",
+    "按行整行入场，改用 text-reveal。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "文字通过 words prop 传入（必填），不支持插槽。",
+    "duration 单位为秒（默认 0.7），delay 单位为毫秒（默认 0），两者单位不一致，易混淆。",
+    "filter 默认开启模糊渐显，可传 false 关闭。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-generate-effect"
@@ -75,9 +88,9 @@
   },
   "docPath": "content/2.components/text-animations/text-generate-effect.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "fbebd5f760c46d8238d813a219f4892fd9c5e465",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "f094c1208a58a16076a1a2b1c4ca40621e36a7e4",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

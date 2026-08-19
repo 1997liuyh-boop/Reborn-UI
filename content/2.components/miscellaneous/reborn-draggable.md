@@ -1,6 +1,6 @@
 ---
 title: Draggable 拖拽排序
-description: 支持列表拖拽排序的容器组件。
+description: 用于列表项拖拽排序并同步 v-model 数据顺序的容器组件，双端可用。
 category: 杂项
 navigation:
   badges:

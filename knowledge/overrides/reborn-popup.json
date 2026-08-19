@@ -1,0 +1,21 @@
+{
+  "description": "用于从上下左右四个方向弹出面板的双端弹出层组件，支持手势滑动关闭与安全区适配。",
+  "whenToUse": [
+    "移动端底部操作面板、半屏弹层（position=\"bottom\"，支持下滑手势关闭）。",
+    "侧边抽屉式面板（position=\"left\"/\"right\"，size 控制宽度）。",
+    "H5/小程序弹层需要顶部或底部安全区适配时。",
+    "需要完整生命周期事件（open/opened/close/closed 等）或 beforeClose 拦截关闭时。"
+  ],
+  "whenNotToUse": [
+    "居中确认对话框改用 reborn-dialog（仅 web）。",
+    "锚定元素的小型气泡浮层改用 reborn-popover。",
+    "只需要背景遮罩改用 reborn-overlay。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "swipeClose 仅在 position=\"bottom\" 时生效，阈值由 swipeCloseThreshold 控制（默认 120）。",
+    "safeAreaInsetBottom/safeAreaInsetTop 默认均开启。",
+    "lazyRender 默认 true，内容首次显示时才渲染；destroyOnClose 默认 false。",
+    "zIndex 默认 25；color 属性仅影响 UniApp 端的滑动手柄颜色。"
+  ]
+}

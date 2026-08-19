@@ -1,6 +1,6 @@
 ---
 title: Dropdown 下拉菜单
-description: 将动作或菜单折叠到下拉菜单中，悬停或点击触发元素以展开更多操作。
+description: 用于将一组操作折叠进浮层菜单的下拉组件，悬停或点击展开，仅 web 端。
 category: 杂项
 navigation:
   badges:

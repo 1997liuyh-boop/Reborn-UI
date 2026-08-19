@@ -1,0 +1,21 @@
+{
+  "description": "用于通过弹出面板选择日期时间的选择器组件，支持年月日时分秒多粒度与范围选择。",
+  "whenToUse": [
+    "表单中需要选择日期或日期时间（type 控制粒度，从 year 到 second）。",
+    "需要选择时间范围（rangeable 配合 v-model:values），并可配 shortcuts 快捷选项。",
+    "需要用 start / end 限制可选时间区间。",
+    "需要隐藏默认触发器、由外部按钮通过 ref 的 open() 打开选择面板（showTrigger=false）。"
+  ],
+  "whenNotToUse": [
+    "只选时分秒时间且在 web 端，改用 reborn-time-picker。",
+    "需要内嵌在页面中的独立日历面板（不带触发器与弹层），web 端改用 reborn-date-picker-panel。",
+    "多层级分类数据选择改用 reborn-cascader。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用，但两端演示写法不同（web 端 type 还支持 daterange / datetimerange / week / dates 等示例用法）。",
+    "非范围模式用 v-model 绑定字符串，范围模式必须同时开启 rangeable 并改用 v-model:values 绑定数组；确认事件分别是 change 与 range-change。",
+    "labelFormat / valueFormat 不传时根据 type 自动推导，两者分别控制触发器显示与绑定值格式。",
+    "portal 默认 true，浮层传送到 body；关闭后浮层留在触发器内，会随父容器滚动与被 overflow 裁剪。",
+    "disabled 兼容 reborn-form 的表单禁用状态。"
+  ]
+}

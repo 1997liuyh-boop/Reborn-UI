@@ -1,0 +1,19 @@
+{
+  "description": "用于手写签名并导出图片的画布组件，支持笔锋模拟、撤销恢复与透明背景导出。",
+  "whenToUse": [
+    "电子协议、单据确认等需要采集手写签名并导出临时图片路径的场景。",
+    "需要撤销 / 恢复笔迹与切换画笔颜色（penColors 色板、undo / redo）。",
+    "需要 png / jpg 导出并控制导出倍数（fileType、quality、destScale），或导出透明背景（backgroundColor 传空字符串）。"
+  ],
+  "whenNotToUse": [
+    "web 端项目：platforms 仅 uniapp，web 端无对应实现。",
+    "普通文字输入改用 reborn-textarea 或 reborn-input。"
+  ],
+  "pitfalls": [
+    "platforms 仅 uniapp 端提供。",
+    "allowEmpty 默认 false，空白画布不允许导出；保存成功触发 save，closeOnSave=true 时额外触发 close。",
+    "backgroundColor 默认 '#FFFFFF'，传空字符串才能导出透明背景。",
+    "showClose 打开的退出按钮点击后会清空画布并触发 close 事件。",
+    "disabled 会与表单注入的禁用状态叠加生效。"
+  ]
+}

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "pattern-background",
   "title": "pattern-background",
-  "description": "",
+  "description": "用于为区块提供图案纹理背景的容器组件，内容经默认插槽传入。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -19,9 +19,18 @@
   "exposes": [],
   "examples": [],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "Hero 区、演示区需要点阵等图案背景衬托内容时。",
+    "其他效果组件（如 liquid-glass 示例）需要图案背景配合展示时。"
+  ],
+  "whenNotToUse": [
+    "纯色或渐变背景用 Tailwind 类即可，无需本组件。",
+    "需要流星划过的动态背景，改用 meteors。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 class-variance-authority。",
+    "知识条目未提取到 props 与文档（extractors 标记 partial/missing），variant、direction、speed、mask 等配置常量定义在 index.ts 中（PATTERN_BACKGROUND_* 常量），使用前建议核对源码 PatternBackground.vue。"
+  ],
   "dependencies": [
     "class-variance-authority"
   ],
@@ -36,9 +45,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "371a24c937fa844ec067d7d4eec6dd2b0788694b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "1c2526d8d535cd7a80799305c38a101eaaa97186",
+    "hasOverride": true,
     "extractors": {
       "web": "partial",
       "uniapp": "absent",

@@ -1,0 +1,17 @@
+{
+  "description": "用于以背景填充动画突出句中重点文字的高亮组件。",
+  "whenToUse": [
+    "标题或段落中强调关键词，配合渐变背景类名使用。",
+    "页面进入后需要延迟（delay）再高亮的重点语句。"
+  ],
+  "whenNotToUse": [
+    "需要闪光点缀文字，改用 sparkles-text。",
+    "需要文字本身的高光扫过效果，改用 radiant-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "高亮背景色不由 prop 控制，通过 class 传入（示例用 Tailwind 渐变类 bg-gradient-to-r）。",
+    "delay 与 duration 单位均为毫秒（duration 默认 2000）。",
+    "文字通过默认插槽传入，可选 textEndColor 设置结束时文字颜色。"
+  ]
+}

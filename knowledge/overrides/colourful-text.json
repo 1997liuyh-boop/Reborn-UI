@@ -1,0 +1,17 @@
+{
+  "description": "用于让文字逐字符循环变换颜色并动画的标题点缀组件。",
+  "whenToUse": [
+    "大标题中需要突出的关键词逐字符变色动画。",
+    "需要自定义颜色列表（colors）循环播放的文字点缀。"
+  ],
+  "whenNotToUse": [
+    "需要发光/光泽扫过的文字，改用 radiant-text。",
+    "需要闪光粒子点缀的文字，改用 sparkles-text。",
+    "整词循环切换而非变色，改用 flip-words。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "text 为必填，动画按单个字符独立进行。",
+    "colors 默认提供 10 个 rgb 颜色；startColor 是字符初始色（默认白色）；duration 单位为秒（默认 0.5）。"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "用于展示 3D 书本封面并在悬停时播放动画的展示组件。",
+  "whenToUse": [
+    "文档、电子书、课程等资源的封面入口展示。",
+    "需要按 zinc 等配色主题与 size / radius / shadowSize 变体快速定制的书本视觉。",
+    "落地页中需要悬停动画点缀的内容卡片。"
+  ],
+  "whenNotToUse": [
+    "常规内容卡片，改用 reborn-card。",
+    "需要正反两面内容切换的卡片，改用 flip-card。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "封面内容需用配套子组件组织：BookHeader、BookTitle、BookDescription。",
+    "isStatic 为 true 时禁用悬停动画；duration 单位为毫秒（默认 1000）。"
+  ]
+}

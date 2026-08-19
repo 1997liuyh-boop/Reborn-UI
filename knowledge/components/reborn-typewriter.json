@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-typewriter",
   "title": "打字机效果",
-  "description": "模拟打字机效果，支持文本删除和重新输入，适用于标题动画、终端效果等场景。",
+  "description": "用于让文本以打字机方式逐字输入与删除的文字动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -135,9 +135,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "首屏标题、口号的动态输入效果。",
+    "模拟终端 / 命令行输出。",
+    "文本内容变化时自动重打动画（resetOnChange 默认 true）。"
+  ],
+  "whenNotToUse": [
+    "循环翻转多个词语改用 flip-words 或 container-text-flip。",
+    "整段文字逐字渐显改用 text-generate-effect。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "文本只能经 text prop 传入，组件无插槽。",
+    "text 变化默认会重置动画（resetOnChange=true），不需要时须显式关闭。",
+    "可通过 exposes 的 startTyping / startDeleting / clear 手动控制流程，isTyping / isDeleting 反映当前状态。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-typewriter"
@@ -150,9 +163,9 @@
   },
   "docPath": "content/2.components/text-animations/reborn-typewriter.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "848bff19e7cc6968c33b3bbfe1aa07aa7da22e0f",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "b154738bdd94428c6a1de2991163b0a936e62721",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-fireworks",
   "title": "礼花",
-  "description": "可为容器内任意元素附加点击烟花特效。",
+  "description": "用于给容器内元素附加点击礼花/烟花粒子特效的组件，仅 web 端。",
   "category": "misc",
   "tags": [
     "css",
@@ -89,9 +89,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "签到成功、支付完成等庆祝反馈的点击礼花效果。",
+    "营销活动页按钮点击时的纸片喷射特效。",
+    "需要通过暴露的 launch 方法编程触发礼花的场景。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web）。",
+    "非点击触发的持续性背景粒子装饰，改用 sparkles 或 meteors。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "需要定位布局的元素必须放在 overlay 插槽中，普通内容放默认插槽。",
+    "teleport 设为 true 时画布覆盖整个浏览器窗口，默认仅限容器内。",
+    "angleSpread 设为 360 即全向烟花扩散；默认 angleCenter 270（向上）、扩散 130 度。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-fireworks"
@@ -104,9 +116,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-fireworks.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "74833ca66852f8bf90415d2aeeee6a8029b27bb3",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "f73f19a06e24b8f6a2f281152e68c9546f8973bc",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

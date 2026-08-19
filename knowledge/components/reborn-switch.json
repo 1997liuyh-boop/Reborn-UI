@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-switch",
   "title": "开关",
-  "description": "用于控制开关状态的切换组件。",
+  "description": "用于在两种状态间切换的开关组件，支持自定义开关值、加载态与切换前拦截。",
   "category": "form",
   "tags": [
     "css",
@@ -156,9 +156,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "设置项的启用 / 停用切换。",
+    "绑定值不是布尔时，用 activeValue / inactiveValue 自定义开与关对应的值。",
+    "切换前需要异步确认或校验：beforeChange 支持返回 boolean 或 Promise<boolean>。",
+    "需要在轨道上显示开关文案（activeLabel / inactiveLabel 属性或同名插槽）。"
+  ],
+  "whenNotToUse": [
+    "一组互斥选项改用 reborn-radio。",
+    "多项勾选组合改用 reborn-checkbox。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "modelValue 为受控值，非受控场景用 defaultValue 设初始值。",
+    "loading 为加载态展示，与 disabled 是两个独立属性。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -179,9 +191,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-switch.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "aa9d640fec66d11a948cba6e6021b8bb94c6a59f",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "c5dfd8b25b64346694ca48ca3f059a10464c462a",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-button",
   "title": "按钮",
-  "description": "显示按钮或看起来像按钮的组件。",
+  "description": "用于触发操作的双端按钮组件，提供颜色、变体、尺寸、加载与禁用状态。",
   "category": "basic",
   "tags": [
     "css",
@@ -346,9 +346,21 @@
   "related": [
     "reborn-loading"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单提交、确认/取消等常规操作触发。",
+    "需要 solid/outline/soft/subtle 变体与 7 种语义色组合的按钮体系。",
+    "小程序开放能力场景（open-type 获取手机号、客服会话等）。",
+    "需要 leading/trailing 插槽放置图标的图文按钮。"
+  ],
+  "whenNotToUse": [
+    "页面固定位置的悬浮操作入口，改用 reborn-fab。",
+    "仅 web 的营销风格按钮特效，可改用 gradient-button、ripple-button 或 shimmer-button。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用；open-type 系列 props（openType/sessionFrom/appParameter 等）与 getphonenumber、contact 等事件仅在小程序开放能力场景生效。",
+    "round 默认 true（胶囊形状），需要直角/自定义圆角时须显式传 :round=\"false\"。",
+    "loading 为 true 时显示加载状态；uniapp 端点击态由 hoverClass/hoverStartTime/hoverStayTime 控制。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-button"
@@ -367,9 +379,9 @@
   },
   "docPath": "content/2.components/button/reborn-button.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "4d44383a87a1d67f6618f41f961b1fa5d319a273",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "3250182b2c3803a0f77cd5d6edc2314dffd3e554",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

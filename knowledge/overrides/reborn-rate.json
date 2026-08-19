@@ -1,0 +1,18 @@
+{
+  "description": "用于星级评分录入与展示的双端组件，支持半星与悬停预览。",
+  "whenToUse": [
+    "商品、服务评价打分（allowHalf 支持半星）。",
+    "只读展示平均评分（readonly）。",
+    "需要在星星旁显示当前分数（showValue）时。"
+  ],
+  "whenNotToUse": [
+    "连续数值取值改用 reborn-slider。",
+    "整数数量增减改用 reborn-input-number。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "icon/activeIcon/halfIcon 仅支持 Nuxt Icon 类名（默认 i-lucide-star）。",
+    "默认主题色为 warning（而非 primary）。",
+    "disabled 与 readonly 是两个独立属性，语义不同。"
+  ]
+}

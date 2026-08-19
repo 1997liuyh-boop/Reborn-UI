@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "liquid-glass",
   "title": "液态玻璃",
-  "description": "结合位移贴图、通道偏移和模糊折射的液态玻璃效果组件，适合用于浮层、卡片和视觉强调区域。",
+  "description": "用于以 SVG 位移贴图与通道偏移模拟液态玻璃折射的容器组件。",
   "category": "effect",
   "tags": [
     "svg",
@@ -148,9 +148,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "悬浮工具条、Dock 等浮层需要玻璃折射质感时。",
+    "卡片或强调区域需要比普通毛玻璃更强的折射效果时。"
+  ],
+  "whenNotToUse": [
+    "普通半透明背景用 Tailwind backdrop-blur 即可，无需本组件。",
+    "需要动态边框强调，改用 neon-border。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，基于 SVG filter（位移贴图 + RGB 通道偏移）。",
+    "position 默认为 fixed，嵌入文档流时需显式改为 relative 或 absolute。",
+    "参数较多（scale、displace、blur、rOffset/gOffset/bOffset 等）且相互影响，建议从默认值微调。",
+    "class 作用于内层插槽容器，containerClass 作用于外层效果容器。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add liquid-glass"
@@ -164,9 +175,9 @@
   },
   "docPath": "content/2.components/special-effects/liquid-glass.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "28ab0b2f7987909eeac70625d173b9531f014ebc",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "f25f5abfb6e98291cc85085a4eef54428582360c",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

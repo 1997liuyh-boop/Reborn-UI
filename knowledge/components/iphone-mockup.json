@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "iphone-mockup",
   "title": "iPhone 模型",
-  "description": "iPhone 的 SVG 设备模型。",
+  "description": "用于以 iPhone SVG 外壳包裹展示截图的设备模型组件。",
   "category": "media",
   "tags": [
     "css",
@@ -48,9 +48,18 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页展示移动端 App 截图或 H5 页面效果时。",
+    "产品介绍中需要 iPhone 设备外观衬托内容时。"
+  ],
+  "whenNotToUse": [
+    "展示桌面端/网页截图，改用 safari-mockup。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "截图通过 src 传图片 URL，没有插槽，无法嵌入交互式内容。",
+    "width/height 为 SVG 像素尺寸（默认 433x882），整体缩放可用外层 class 控制。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add iphone-mockup"
@@ -63,9 +72,9 @@
   },
   "docPath": "content/2.components/device-mocks/iphone-mockup.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "040028f8903caacc3f0454685a02444a8240040b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "fdd204d211a24016c3b968e4aa186770233f9b6d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

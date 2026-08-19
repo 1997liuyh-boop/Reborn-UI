@@ -1,0 +1,20 @@
+{
+  "description": "用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。",
+  "whenToUse": [
+    "多字段数据录入并需要统一校验（rules 传入 z.ZodObject）。",
+    "需要 validate/validateField/resetFields/clearValidate 等程序化表单控制。",
+    "需要统一控制标签位置/宽度、必填星号、尺寸与禁用态的表单。",
+    "校验失败需自动滚动到错误项（scrollToError 默认开启）的长表单。"
+  ],
+  "whenNotToUse": [
+    "单个独立输入控件无需校验时，直接用 reborn-input、reborn-select 等控件即可。",
+    "只读的键值信息展示，web 端改用 reborn-descriptions。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "校验规则基于 zod：rules 须传 z.ZodObject，而非 Element 风格的规则数组。",
+    "表单项须使用配套的 RebornFormItem 且置于 RebornForm 内；使用 validate/resetFields 时表单项的 prop 字段必填。",
+    "trigger 默认 'none' 不自动校验，需设为 'blur'/'change' 或手动调用暴露的 validate。",
+    "labelWidth 默认 '140rpx'（rpx 单位，注意 web 端取值）。"
+  ]
+}

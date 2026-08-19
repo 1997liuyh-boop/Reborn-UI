@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-waterfall",
   "title": "reborn-waterfall",
-  "description": "",
+  "description": "用于 uniapp 中按列分流渲染瀑布流布局的容器组件，数据经实例方法维护、每项由 item 插槽渲染。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -79,9 +79,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "商品、图片等不等高卡片的多列瀑布流展示（column 默认 2 列，gutter 控制列间距）。",
+    "需要增量维护数据的长列表：通过 exposes 的 append / remove / update / clear 操作条目。"
+  ],
+  "whenNotToUse": [
+    "web 端项目：platforms 仅 uniapp，无 web 实现。",
+    "等高条目的规则网格直接用普通 grid 布局即可。"
+  ],
+  "pitfalls": [
+    "platforms 仅 uniapp 端提供。",
+    "props 中没有数据字段，数据须通过 ref 调用 append 等实例方法写入，而非模板传入。",
+    "nodeKey 默认 'id'，条目须有唯一标识，否则 remove / update 无法定位。",
+    "gutter 单位为 px；组件无文档页，知识条目事实较少，细节以源码 RebornWaterfall.vue 为准。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-waterfall"
@@ -94,9 +105,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "b9cdf66f5677f90e7b89bad88436f35efc5800c4",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "483e18271b50ed6277a06dec222f2d053fe653b3",
+    "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",

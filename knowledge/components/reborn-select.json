@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-select",
   "title": "下拉选择",
-  "description": "自定义下拉选择组件，支持键盘导航和动画过渡。",
+  "description": "用于从选项列表中单选或多选的双端下拉选择组件，uniapp 端为弹层滚动选择。",
   "category": "form",
   "tags": [
     "css",
@@ -278,9 +278,22 @@
     "reborn-popup",
     "reborn-select-trigger"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单中从固定选项集（options: SelectOption[]）中选择一项或多项。",
+    "多选场景（multiple 开启后 modelValue 为数组，可用 tag 插槽自定义标签）。",
+    "多列联动选择（columnCount + splitor 分隔符展示）。"
+  ],
+  "whenNotToUse": [
+    "层级数据逐级选择改用 reborn-cascader。",
+    "日期选择改用 reborn-select-date。",
+    "带输入联想、历史记录的搜索改用 reborn-search-box。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用，交互形态不同：Web 为浮层选项列表，UniApp 为弹层 + RebornPickerView 滚动选择并需点确认。",
+    "change 触发时机双端不同：Web 选中即触发，UniApp 在确认后触发；changing 事件为滚动未确认时触发。",
+    "portal 默认 true，浮层传送到 body，不受祖先 overflow/transform 裁剪（如在 RebornDialog 内）；关闭后浮层随父容器滚动与裁剪。",
+    "size 默认值双端不同（Web 默认 'lg'）；uniapp 端 disabled 兼容 reborn-form。"
+  ],
   "dependencies": [
     "clsx",
     "lodash-es"
@@ -302,9 +315,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-select.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "5105c7604e2c1b20dd83c66feaf06a8591697191",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "1d000da42a6c0a0f6e458358677823ac88c5fd08",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

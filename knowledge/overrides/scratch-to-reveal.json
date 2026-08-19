@@ -1,0 +1,18 @@
+{
+  "description": "用于刮开渐变涂层后显示隐藏内容的互动刮刮乐组件。",
+  "whenToUse": [
+    "抽奖、优惠券等需要用户刮开涂层的互动玩法。",
+    "彩蛋内容揭示，刮开比例达标后通过 complete 事件发奖或跳转。",
+    "需要自定义涂层渐变色（gradientColors）的营销区块。"
+  ],
+  "whenNotToUse": [
+    "悬停即揭示内容，改用 svg-mask 或 text-reveal-card。",
+    "无需交互的渐显入场效果，改用 blur-reveal。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "width 与 height 为必填数字，决定刮刮区域大小。",
+    "minScratchPercentage 取值 0-100（默认 50），刮开比例达到后触发 complete 事件。",
+    "隐藏内容通过默认插槽传入。"
+  ]
+}

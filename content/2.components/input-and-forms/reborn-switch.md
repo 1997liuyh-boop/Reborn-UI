@@ -1,6 +1,6 @@
 ---
 title: 开关
-description: 用于控制开关状态的切换组件。
+description: 用于在两种状态间切换的开关组件，支持自定义开关值、加载态与切换前拦截。
 category: 表单与输入
 tags: [css, tailwind, switch, uniapp]
 badge: New

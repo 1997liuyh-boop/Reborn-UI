@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-marquee",
   "title": "跑马灯",
-  "description": "可配置的循环滚动组件，支持横向与纵向滚动、悬停暂停、渐隐遮罩与重复渲染。",
+  "description": "用于横向或纵向无限循环滚动内容的跑马灯组件，支持悬停暂停与渐隐遮罩。",
   "category": "misc",
   "tags": [
     "css",
@@ -88,9 +88,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "品牌 Logo 墙、合作伙伴列表循环滚动。",
+    "用户评价、卡片流的横向循环展示（pauseOnHover 悬停暂停）。",
+    "需要纵向循环滚动条目（orientation=\"vertical\"）时。"
+  ],
+  "whenNotToUse": [
+    "文字公告循环播报改用 reborn-notice-bar（双端可用）。",
+    "分页式轮播图改用 reborn-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "repeat 默认 4，默认插槽内容会被重复渲染多次，勿在插槽内放带唯一 id 的元素。",
+    "vertical 是 orientation=\"vertical\" 的兼容别名，传入后优先生效。",
+    "overlay 默认 true，两端自带渐隐遮罩，可通过 ui 覆盖 overlayStart/overlayEnd。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-marquee"
@@ -104,9 +116,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-marquee.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "1ee444c19b149becd14f4c3ab67df86f9f9fde7b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "0fdb5c306b13202cb3882936bc7a6c2588a7c62f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

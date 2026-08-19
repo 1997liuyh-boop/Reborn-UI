@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-transfer",
   "title": "穿梭框",
-  "description": "直观的双列数据转移组件，支持搜索过滤、全选/反选、可选头部扩展勾选菜单、禁用条目、单向模式、操作撤回及分页，适用于权限分配、购物选择等场景。",
+  "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回与分页。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -204,9 +204,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "权限、角色、人员分配等从候选集中挑选目标集合的场景。",
+    "候选数据量较大，需要搜索过滤（showSearch）或分页（pagination）。",
+    "需要撤回上一次移动操作（showUndo + undo 事件）或单向移动（oneWay）。"
+  ],
+  "whenNotToUse": [
+    "简单多选改用 reborn-checkbox 或 reborn-select。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "v-model 绑定目标列表的 key 数组（string[]），初始值也可用 defaultTargetKeys。",
+    "数据源字段名不匹配时用 fieldNames 映射，不必改造数据。",
+    "headerSelect 控制面板头部勾选形态：none / checkbox / menu / both，默认 checkbox。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-transfer"
@@ -220,9 +232,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-transfer.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "cf36a81c5d82986704495e8ffcbc7e10f2c585ad",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "abf1dc13818a6ff8f89f422f77144f243566cbb2",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

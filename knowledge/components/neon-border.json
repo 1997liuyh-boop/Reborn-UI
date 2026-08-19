@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "neon-border",
   "title": "霓虹边框",
-  "description": "视觉吸引力强的霓虹边框组件，可自定义动画与颜色。",
+  "description": "用于给插槽内容包裹双色霓虹流转边框的装饰容器组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -66,9 +66,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "输入框、卡片等需要霓虹描边强调视觉焦点时。",
+    "需要可配置双色（color1/color2）与流转动画速度的发光边框。"
+  ],
+  "whenNotToUse": [
+    "需要玻璃折射质感的容器，改用 liquid-glass。",
+    "按钮自带流光效果，改用 shimmer-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "animationType 可选 none/half/full（默认 half），none 为静态边框。",
+    "内容通过默认插槽传入，插槽元素常需自行铺满容器（示例中输入框用了 size-full）。",
+    "duration 单位为秒（默认 6）。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add neon-border"
@@ -81,9 +92,9 @@
   },
   "docPath": "content/2.components/special-effects/neon-border.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "289629c830e7f1228e2da0280fc2db4cfcd37d22",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "e4c997c401234c761e52bc422f4ed9400b87d019",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

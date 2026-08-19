@@ -1,0 +1,19 @@
+{
+  "description": "用于人机校验的滑块验证组件，向右拖动超过阈值即通过，支持失败回弹与自动重置。",
+  "whenToUse": [
+    "登录、注册、发送验证码前的轻量级人机校验。",
+    "表单中需要一个「已验证」布尔字段（v-model 绑定，change 与表单校验联动）。",
+    "需要通过 loading / disabled 控制验证时机，或验证通过后自动重置（autoReset + resetDelay）。"
+  ],
+  "whenNotToUse": [
+    "web 端项目：platforms 仅 uniapp，web 端无对应实现。",
+    "在数值区间内取值改用 reborn-slider。"
+  ],
+  "pitfalls": [
+    "platforms 仅 uniapp 端提供。",
+    "threshold 默认 0.92（滑到约 92% 即通过）；若传大于 1 的数（如 92），内部会除以 100 当作比例。",
+    "splitText 默认 true 的左右分层文案，仅在未使用默认插槽、未验证、非加载、非失败展示时生效。",
+    "defaultVerified=true 且 v-model 仍为 false 时，挂载即视为已通过。",
+    "showToast 通过后调用 uni.showToast，toastText 为空时用 successText。"
+  ]
+}

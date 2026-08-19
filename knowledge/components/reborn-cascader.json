@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-cascader",
   "title": "级联选择器",
-  "description": "在包含多层级的数据结构中进行选择，常用作省市区选择、分类选择等场景。",
+  "description": "用于在树形多层级数据中逐级选择的级联选择器组件，双端可用。",
   "category": "form",
   "tags": [],
   "platforms": [
@@ -217,9 +217,22 @@
     "reborn-select-trigger",
     "reborn-text"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "省市区、组织架构等多级联动选择。",
+    "商品分类等树形结构数据的逐级选择。",
+    "需要通过 labelKey/valueKey/childrenKey 适配任意字段名的树形数据源。"
+  ],
+  "whenNotToUse": [
+    "单层扁平选项选择，改用 reborn-select。",
+    "uniapp 端的滚动列选择交互，可改用 reborn-picker-view。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "modelValue 为数组（各层级选中值路径），v-model 绑定时注意类型。",
+    "leafLevel 可限制必选层级，0 表示不限制；textSeparator 控制触发器回显文本的分隔符。",
+    "portal 仅 Web 生效：默认浮层传送到 body 不受祖先 overflow/transform 裁剪，关闭后浮层留在触发器内随父容器裁剪。",
+    "showTrigger 设为 false 可隐藏默认触发器自行触发；组件暴露 open/close/clear 方法。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -239,9 +252,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-cascader.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "9c7ce25ffa5de17ebf9e7ecbef99f9119a924a4f",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "e1ce41d55d429571745487ec0e7ffdeeb4430710",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "partial",

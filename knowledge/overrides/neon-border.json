@@ -1,0 +1,17 @@
+{
+  "description": "用于给插槽内容包裹双色霓虹流转边框的装饰容器组件。",
+  "whenToUse": [
+    "输入框、卡片等需要霓虹描边强调视觉焦点时。",
+    "需要可配置双色（color1/color2）与流转动画速度的发光边框。"
+  ],
+  "whenNotToUse": [
+    "需要玻璃折射质感的容器，改用 liquid-glass。",
+    "按钮自带流光效果，改用 shimmer-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "animationType 可选 none/half/full（默认 half），none 为静态边框。",
+    "内容通过默认插槽传入，插槽元素常需自行铺满容器（示例中输入框用了 size-full）。",
+    "duration 单位为秒（默认 6）。"
+  ]
+}

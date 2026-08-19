@@ -1,6 +1,6 @@
 ---
 title: 翻转单词
-description: 循环翻转单词列表的组件。
+description: 用于句子中一组单词循环翻转切换的内联文字动画组件。
 category: 文字动画
 tags: [css, tailwind, aceternity-ui]
 ---

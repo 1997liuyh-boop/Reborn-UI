@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-toast",
   "title": "Toast 轻提示",
-  "description": "支持 useToast() 调用的轻提示组件。",
+  "description": "用于短暂消息反馈的轻提示组件，通过 useToast() 服务式调用展示成功、失败、加载等状态。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -160,9 +160,22 @@
     "reborn-overlay",
     "reborn-transition"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "操作结果的即时反馈（success / error / warning / info 图标）。",
+    "异步请求过程中的 loading 提示。",
+    "提示期间需要防止触摸穿透时开启 cover 透明遮罩。"
+  ],
+  "whenNotToUse": [
+    "需要用户确认或交互的弹窗改用 reborn-dialog（仅 web）。",
+    "循环播放的消息通知改用 reborn-notice-bar。",
+    "针对某个区域或整页的加载态改用 reborn-loading。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "组件无 events 与 slots，主要通过 useToast() 调用而非模板声明；opened / closed 以回调 prop 形式提供。",
+    "position 默认 'middle-top'，可选 top / middle-top / middle / bottom。",
+    "cover 默认 false，需要防触摸穿透须显式开启。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-toast"
@@ -181,9 +194,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-toast.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e559212d6635bde4120431ba0dfbe6840e51dd2e",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "be64362a7cf0390e84b2a47a391ba18e78d21b42",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

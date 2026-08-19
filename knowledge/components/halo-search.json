@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "halo-search",
   "title": "光晕搜索框",
-  "description": "具有多重发光环与细微动画光晕的未来感搜索输入，为界面带来沉浸式体验。",
+  "description": "用于视觉展示的发光光环搜索输入框组件，无取值 API。",
   "category": "form",
   "tags": [
     "css",
@@ -34,9 +34,18 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页 / 概念页需要未来感搜索入口的视觉区块。",
+    "悬停与输入时有光晕反馈的装饰性搜索框。"
+  ],
+  "whenNotToUse": [
+    "需要绑定输入值并触发搜索的功能性搜索框，改用 reborn-search-box。",
+    "需要占位符轮播与提交动画的输入框，改用 vanishing-input。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "仅有 class 一个 prop，无事件、无插槽、无 v-model，输入内容无法通过组件 API 读取。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add halo-search"
@@ -49,9 +58,9 @@
   },
   "docPath": "content/2.components/input-and-forms/halo-search.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "7394617b8f0fa32539c304b12f3305a69226bfc0",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "c8d8a8166d0ac613bc8d298d7619c03ed7310b01",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

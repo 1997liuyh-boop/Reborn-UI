@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-reveal",
   "title": "文字揭示",
-  "description": "使用 GSAP 的 SplitText 实现逐行的文字入场动画。",
+  "description": "用于基于 GSAP SplitText 将段落按行依次入场的文字动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -64,9 +64,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "Hero 区段落需要逐行升起的入场动画。",
+    "需要用 stagger 控制行与行之间错落节奏的标题动画。"
+  ],
+  "whenNotToUse": [
+    "逐字渐显效果，改用 text-generate-effect。",
+    "随滚动进度逐词显现，改用 text-scroll-reveal。",
+    "逐字上提的错落动画，改用 letter-pullup。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 gsap（SplitText）。",
+    "文字通过默认插槽传入。",
+    "duration（默认 0.6）、delay（默认 0.2）、stagger（默认 0.1）均为 GSAP 时间参数（秒）。",
+    "内外层样式分别用 class 与 containerClass 控制。"
+  ],
   "dependencies": [
     "gsap"
   ],
@@ -81,9 +93,9 @@
   },
   "docPath": "content/2.components/text-animations/text-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "15d15c3d6e75b377cc885e4c048a2e84242b87df",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "a3463dcf3700a93c0f4524f57c5acf22a44c05ad",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

@@ -1,0 +1,19 @@
+{
+  "description": "用于将一组操作折叠进浮层菜单的下拉组件，悬停或点击展开，仅 web 端。",
+  "whenToUse": [
+    "把「更多操作」收纳到按钮触发的下拉菜单中，通过 command 事件分发点击项。",
+    "需要 splitButton 模式：左侧主操作按钮 + 右侧箭头展开更多操作。",
+    "需要 hover/click 两种触发方式与 6 向 placement 定位的操作菜单。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web），uniapp 下拉选值改用 reborn-dropdown-select。",
+    "表单中选择数据值，改用 reborn-select。",
+    "右键呼出的上下文菜单，改用 reborn-context-menu。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "菜单项需放在 dropdown 插槽内（通常为 RebornDropdownItem），通过 command 属性标识点击项，divided 在项上方加分隔线。",
+    "trigger 默认 hover；hideOnClick 默认 true 点击菜单项后自动收起。",
+    "portal 默认 true 浮层传送到 body，关闭后浮层随父容器裁剪；组件暴露 open/close/toggle/isOpen。"
+  ]
+}

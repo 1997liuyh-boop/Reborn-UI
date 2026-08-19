@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-root-portal",
   "title": "RootPortal 根门户",
-  "description": "将子节点渲染到页面的根节点，脱离当前层级关系。",
+  "description": "用于把子节点渲染到页面根节点、脱离当前层级关系的双端传送组件。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -33,9 +33,18 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "自定义浮层被父容器 overflow/transform 裁剪，需要提升到页面根节点时。",
+    "uniapp 端需要脱离当前页面层级的全局浮层内容时。"
+  ],
+  "whenNotToUse": [
+    "组件自带传送能力时无需再包裹，如 reborn-popover 的 portal、reborn-popup 的 appendToBody/rootPortal。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "无任何 props 与事件，仅一个默认插槽。",
+    "内容渲染到根节点后脱离原 DOM 层级，依赖父级定位的样式不再生效。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-root-portal"
@@ -52,9 +61,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-root-portal.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "620f51e2576a97c8a2c910e4e7ef5898ef5a5bb0",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "25f33449ae712ffdf1edb1241cc39de20335d134",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-card",
   "title": "reborn-card",
-  "description": "",
+  "description": "用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -51,9 +51,19 @@
   "exposes": [],
   "examples": [],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "uniapp 页面中将内容按区块分组展示，常与 RebornPage 搭配组织演示/设置页。",
+    "需要统一的标题栏加内容体卡片样式时。"
+  ],
+  "whenNotToUse": [
+    "web 项目中不可用（仅 uniapp 端），web 端直接用样式容器或 reborn-container 布局。",
+    "以键值对形式展示详情数据，web 端改用 reborn-descriptions。"
+  ],
+  "pitfalls": [
+    "仅 uniapp 端可用，web 端无此组件。",
+    "padding 默认 true；内部有超出内容（如下拉浮层）被裁剪时需设置 overflowVisible。",
+    "标题可通过 title prop 或 title 插槽二选一提供。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-card"
@@ -66,9 +76,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e12d5bca86739c03c4b0923e672ed2842544599c",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "578b7c1a28ffe1ee5a056d9fe4eca35bc16ff9fa",
+    "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",

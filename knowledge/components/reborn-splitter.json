@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-splitter",
   "title": "分隔面板 Splitter",
-  "description": "可将区域水平或垂直分隔，并可自由拖动以调整各个区域的大小。",
+  "description": "用于将区域按水平或垂直方向分隔、可拖动调整各面板大小的布局组件。",
   "category": "layout",
   "tags": [
     "css",
@@ -140,9 +140,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "编辑器、控制台等需要用户自由调整左右或上下面板比例的布局。",
+    "需要面板可折叠（collapsible，配合 start-collapsible / end-collapsible 插槽自定义折叠按钮）。",
+    "拖动性能敏感时开启 lazy，拖动结束后才更新面板大小。"
+  ],
+  "whenNotToUse": [
+    "固定比例、无需用户拖拽的布局，直接用普通布局或 reborn-container。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "面板的 size / min / max 支持数字或字符串两种写法。",
+    "resizable 默认 true、collapsible 默认 false；折叠时触发 collapse 事件，index 为拖拽条索引。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -159,9 +170,9 @@
   },
   "docPath": "content/2.components/layout/reborn-splitter.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "1bb86fe2448b6bcc2aa3b9b47cee9e129eafcb08",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "772ce7cd69d6921c9fb852bdd3d1b10ea15f3619",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

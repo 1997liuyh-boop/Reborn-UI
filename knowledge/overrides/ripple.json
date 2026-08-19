@@ -1,0 +1,17 @@
+{
+  "description": "用于渲染多圈同心圆扩散水波背景的装饰效果组件。",
+  "whenToUse": [
+    "落地页 hero 区域的水波纹背景装饰。",
+    "围绕默认插槽中的中心元素（如图标、按钮）制造扩散波纹氛围。"
+  ],
+  "whenNotToUse": [
+    "按钮点击波纹反馈改用 ripple-button。",
+    "点击烟花特效改用 reborn-fireworks。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "波纹圈数由 numberOfCircles 控制（默认 7），外圈透明度按 circleOpacityDowngradeRatio 逐圈递减。",
+    "无文档页与演示示例，props 描述缺失（baseCircleSize、waveSpeed 等含义需查源码 Ripple.vue）。"
+  ]
+}

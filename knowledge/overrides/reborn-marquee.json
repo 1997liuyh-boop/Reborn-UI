@@ -1,0 +1,18 @@
+{
+  "description": "用于横向或纵向无限循环滚动内容的跑马灯组件，支持悬停暂停与渐隐遮罩。",
+  "whenToUse": [
+    "品牌 Logo 墙、合作伙伴列表循环滚动。",
+    "用户评价、卡片流的横向循环展示（pauseOnHover 悬停暂停）。",
+    "需要纵向循环滚动条目（orientation=\"vertical\"）时。"
+  ],
+  "whenNotToUse": [
+    "文字公告循环播报改用 reborn-notice-bar（双端可用）。",
+    "分页式轮播图改用 reborn-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "repeat 默认 4，默认插槽内容会被重复渲染多次，勿在插槽内放带唯一 id 的元素。",
+    "vertical 是 orientation=\"vertical\" 的兼容别名，传入后优先生效。",
+    "overlay 默认 true，两端自带渐隐遮罩，可通过 ui 覆盖 overlayStart/overlayEnd。"
+  ]
+}

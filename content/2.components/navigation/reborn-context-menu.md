@@ -1,6 +1,6 @@
 ---
 title: Context Menu
-description: 在目标区域上通过右键、点击或悬浮弹出上下文操作面板，支持分组、快捷键与多级子菜单。
+description: 用于在目标区域右键、点击或悬浮弹出操作面板的上下文菜单组件，仅 web 端。
 category: 导航
 badge: New
 navigation:

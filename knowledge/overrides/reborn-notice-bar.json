@@ -1,0 +1,18 @@
+{
+  "description": "用于循环播放一组消息通知的通告栏组件，支持水平滚动与垂直轮播。",
+  "whenToUse": [
+    "页面顶部公告、促销信息循环播报。",
+    "多条消息垂直轮播切换（direction=\"vertical\" + interval）。",
+    "单条长文本需要匀速水平滚动展示（speed 控制 px/s）。"
+  ],
+  "whenNotToUse": [
+    "图文卡片类内容的循环滚动（web 营销区块）改用 reborn-marquee。",
+    "操作结果的短暂反馈改用 reborn-toast。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "scrollable 仅在内容溢出且非垂直模式时生效；wrapable 多行仅水平模式生效。",
+    "speed 单位为 px/s（默认 60）；interval 为垂直轮播间隔毫秒（默认 3000）。",
+    "垂直模式下默认插槽提供 { item, index } 作用域参数；组件暴露 pause/resume/replay/goTo 方法。"
+  ]
+}

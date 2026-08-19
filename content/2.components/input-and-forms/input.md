@@ -1,6 +1,6 @@
 ---
 title: 输入框
-description: 具有径向悬停效果的多功能动态输入框，适配现代 Web 应用。
+description: 用于带鼠标径向渐变悬停高亮效果的单行文本输入组件。
 category: 表单与输入
 tags: [css, tailwind, input, aceternity-ui]
 ---

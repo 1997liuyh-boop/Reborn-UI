@@ -1,6 +1,6 @@
 ---
 title: Loading 加载指令
-description: v-loading 指令与 useLoading 服务式调用，为任意元素或整页添加加载遮罩。
+description: 用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。
 category: 杂项
 navigation:
   badges:

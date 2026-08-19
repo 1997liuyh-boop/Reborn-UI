@@ -1,0 +1,16 @@
+{
+  "description": "用于在元素角标位置显示提示点或数字标记的组件，双端可用。",
+  "whenToUse": [
+    "图标、头像或按钮右上角显示未读数量（text 传数字或文本）。",
+    "仅需红点提醒而无文字的消息提示（不传 text 即为小圆点）。",
+    "需要通过 v-model:show 动态控制标记显隐的场景。"
+  ],
+  "whenNotToUse": [
+    "独立展示状态文字标签（非角标叠加），改用 reborn-badge。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "默认以默认插槽内容为锚点定位（position 默认 top-right），无宿主独立使用时需设 standalone。",
+    "inset 使标记内嵌于宿主边缘，与 position 组合调整贴合位置。"
+  ]
+}

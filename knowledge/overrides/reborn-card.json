@@ -1,0 +1,16 @@
+{
+  "description": "用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。",
+  "whenToUse": [
+    "uniapp 页面中将内容按区块分组展示，常与 RebornPage 搭配组织演示/设置页。",
+    "需要统一的标题栏加内容体卡片样式时。"
+  ],
+  "whenNotToUse": [
+    "web 项目中不可用（仅 uniapp 端），web 端直接用样式容器或 reborn-container 布局。",
+    "以键值对形式展示详情数据，web 端改用 reborn-descriptions。"
+  ],
+  "pitfalls": [
+    "仅 uniapp 端可用，web 端无此组件。",
+    "padding 默认 true；内部有超出内容（如下拉浮层）被裁剪时需设置 overflowVisible。",
+    "标题可通过 title prop 或 title 插槽二选一提供。"
+  ]
+}

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-loading",
   "title": "Loading 加载指令",
-  "description": "v-loading 指令与 useLoading 服务式调用，为任意元素或整页添加加载遮罩。",
+  "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -132,9 +132,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "异步请求期间需要在容器或整页显示加载遮罩时。",
+    "需要多种加载图标类型（ring/spinner/bars-scale/gooey-balls 等）时。",
+    "需要通过 useLoading 在逻辑代码中动态开关加载态时。"
+  ],
+  "whenNotToUse": [
+    "uniapp 列表触底的加载状态提示改用 reborn-loadmore。",
+    "操作结果的短暂反馈改用 reborn-toast。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "type 默认 ring，size 默认 30px，zIndex 默认 2000。",
+    "background 可传任意 CSS 颜色，覆盖默认的 bg-white/80（暗色 bg-gray-9/80）遮罩背景。",
+    "afterLeave 事件在遮罩离场动画结束后触发。"
+  ],
   "dependencies": [
     "tailwind-variants"
   ],
@@ -156,9 +168,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-loading-directive.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "4876d168102206f33d73eaf594357e2ee029f97b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "c2c268126aab09e78041eeea4d823ba41fa3c479",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

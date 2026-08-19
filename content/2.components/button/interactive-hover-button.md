@@ -1,6 +1,6 @@
 ---
 title: 交互悬停按钮
-description: 一款视觉效果出色的按钮组件，悬停时呈现动态过渡，能在明暗模式下平滑适配，提升交互体验。
+description: 用于悬停时产生动态过渡效果的文字按钮组件，文字经 text prop 传入。
 category: 按钮
 tags: [css, tailwind, button, magic-ui]
 ---

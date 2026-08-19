@@ -1,6 +1,6 @@
 ---
 title: 抖动着色器
-description: 用于图像的实时有序抖动效果，非常适合像素艺术和复古风格。
+description: 用于对图片实时应用有序抖动与像素化处理的复古风着色器组件。
 category: 特效
 tags: [tailwind, background, card, aceternity-ui]
 ---

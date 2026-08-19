@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-popover",
   "title": "Popover",
-  "description": "点击或悬浮元素，弹出一个可定制内容的气泡区域，默认使用 fade + zoom 复合动画。",
+  "description": "用于点击或悬停触发气泡浮层的双端组件，可配置定位方向、箭头与遮罩。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -157,9 +157,22 @@
   "related": [
     "reborn-transition"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "点击元素弹出操作项或补充说明的小型浮层。",
+    "hover 展示提示内容且需要 openDelay/closeDelay 控制显隐延迟时。",
+    "需要 v-model:open 受控开关或调用暴露的 open/close 方法时。"
+  ],
+  "whenNotToUse": [
+    "纯文字提示改用 reborn-tooltip（仅 web）。",
+    "右键呼出的菜单改用 reborn-context-menu（仅 web）。",
+    "底部/侧边大面积面板改用 reborn-popup。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "portal 默认 true，浮层 Teleport 到 body 或指定节点。",
+    "定位由 content 对象配置（side/align/sideOffset，默认 bottom/center/8）。",
+    "modal 默认 false 无遮罩；hover 模式关闭延迟默认 120ms。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-popover"
@@ -182,9 +195,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-popover.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "b58938f03443018217b6e83e46900bde9a895dd6",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "4748228982f7f13c4a25b5bc9ed31c227ae43eda",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "partial",

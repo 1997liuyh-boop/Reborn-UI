@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-date-picker-panel",
   "title": "日期选择面板",
-  "description": "独立的日期/月份/年份选择面板，支持范围选择与多种视图切换，可用于 Popover、Modal 或内嵌展示。",
+  "description": "用于内嵌展示的日期/月份/年份选择面板组件，支持范围选择与视图切换，仅 web 端。",
   "category": "form",
   "tags": [
     "calendar",
@@ -161,9 +161,20 @@
   "related": [
     "reborn-time-picker"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "在 Popover、Modal 或页面内直接内嵌一个日期选择面板（不带输入框触发器）。",
+    "需要 date/datetime/year/month 等多种类型（type）与快捷选项（shortcuts）的日期选择。",
+    "需要 start/end 限制可选范围或用 disabledHours/Minutes/Seconds 精细禁用时间的场景。"
+  ],
+  "whenNotToUse": [
+    "需要带触发器的完整日期选择控件或 uniapp 端日期选择，改用 reborn-select-date。",
+    "仅选择时间，改用 reborn-time-picker。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用（tags 中虽有 uniapp，platforms 实际只有 web）。",
+    "是无触发器的纯面板：自身没有输入框，需要弹层时须自行包在 Popover/Modal 中。",
+    "valueFormat 控制输出值格式；start 默认 1970-01-01、end 默认 2099-12-31。"
+  ],
   "dependencies": [
     "clsx",
     "dayjs"
@@ -179,9 +190,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-date-picker-panel.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e67770c572522091c940e036789f3df76761a2e0",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "8d98fc95b9cc24accb04095d06ae8169ad7b633c",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

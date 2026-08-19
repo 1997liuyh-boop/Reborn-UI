@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-select-trigger",
   "title": "reborn-select-trigger",
-  "description": "",
+  "description": "用于各类下拉选择组件复用的触发器与浮层容器内部基础组件。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -227,9 +227,19 @@
   "related": [
     "reborn-transition"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "自研新的下拉类组件时，复用统一的触发器外观（占位符、清空按钮、箭头旋转动画）。",
+    "需要统一控制浮层展开收起行为（open / close / toggle 事件，isOpen 状态）时作为底层容器。"
+  ],
+  "whenNotToUse": [
+    "业务中直接做数据选择时，改用成品组件 reborn-select、reborn-select-date 或 reborn-time-picker。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均有实现，但这是内部基础组件，无独立文档页与演示示例。",
+    "portal 默认 true，浮层传送到 body；closeOn 可选 click / mousedown 控制关闭时机。",
+    "浮层内容经 content 插槽传入，cover 插槽可整体替换触发器显示区。",
+    "知识条目中 props / events 描述大量缺失，使用前建议直接查阅源码（RebornSelectTrigger.vue）。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -249,9 +259,9 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "ba39de2ea618b54d07518685a6c6f89f6cf7b574",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "b461c912fa32f0ef7d0a818dc80567789c9c479f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

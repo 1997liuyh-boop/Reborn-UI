@@ -1,6 +1,6 @@
 ---
 title: 走马灯 Carousel
-description: 自研的走马灯轮播组件，支持多项显示、自动播放、指示器、箭头控制、卡片模式、纵向布局和响应式配置。
+description: 用于循环展示多个内容项的轮播组件，支持多项显示、卡片模式与纵向布局，仅 web 端。
 category: 导航
 tags: [css, tailwind, carousel, slider, motion]
 navigation:

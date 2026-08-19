@@ -1,0 +1,17 @@
+{
+  "description": "用于带旋转圆锥渐变发光边框的动效按钮组件。",
+  "whenToUse": [
+    "落地页主 CTA 需要持续旋转的渐变发光边框吸引注意。",
+    "需要自定义边框颜色数组（colors）与模糊光晕（blur）的按钮。"
+  ],
+  "whenNotToUse": [
+    "常规功能按钮（含 uniapp），改用 reborn-button。",
+    "需要光斑扫过效果，改用 shimmer-button；需要彩虹底色，改用 rainbow-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "bgColor 是按钮内容区背景色（默认 #000），浅色主题下需自行改为浅色，示例中依据明暗模式切换。",
+    "duration 单位为毫秒（默认 2500）；colors 需首尾同色才能无缝旋转（默认数组首尾均为 #FF0000）。",
+    "未定义 click 等事件声明，按钮文字通过默认插槽传入。"
+  ]
+}

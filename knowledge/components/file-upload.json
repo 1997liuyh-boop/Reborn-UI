@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "file-upload",
   "title": "文件上传",
-  "description": "现代文件上传组件，带 3D 卡片效果、拖放交互和响应式网格背景。",
+  "description": "用于拖放或点击选择文件、带动效展示区的文件上传入口组件。",
   "category": "form",
   "tags": [
     "css",
@@ -44,9 +44,18 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单中需要拖拽上传文件的交互入口。",
+    "需要配合 FileUploadGrid 网格背景的视觉化上传区块。"
+  ],
+  "whenNotToUse": [
+    "需要上传进度、文件列表增删等受控管理：组件未提供相关 props / exposes。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "所选文件通过 onChange 事件抛出（payload 为 File[]），组件本身不含上传请求逻辑，需在回调中自行处理。",
+    "背景网格是独立子组件 FileUploadGrid，需放入默认插槽。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -62,9 +71,9 @@
   },
   "docPath": "content/2.components/input-and-forms/file-upload.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "dc1b42a5430615d24ae3f9760cf2c4257a35b08d",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "28b5f61551b6c431eff4c7a614494033169e99c9",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

@@ -1,0 +1,18 @@
+{
+  "description": "用于展示文本并内置类型格式化、脱敏与多行省略的增强文本组件。",
+  "whenToUse": [
+    "手机号、姓名、卡号、邮箱等敏感信息脱敏展示（type + mask，可配 maskStart / maskEnd / maskChar）。",
+    "金额格式化展示（type='amount'，currency 符号与 precision 小数位）。",
+    "长文本多行省略（ellipsis + lines）。"
+  ],
+  "whenNotToUse": [
+    "需要用户输入文本改用 reborn-input 或 reborn-textarea。",
+    "打字机等文字动画效果改用 reborn-typewriter（仅 web）。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "脱敏与格式化基于 value prop 与 type（default / phone / name / amount / card / email），mask 默认 false 需显式开启。",
+    "ellipsis 生效时由 lines 控制最大行数，默认 1 行。",
+    "selectable / space / decode 等属性对应 uniapp text 原生能力。"
+  ]
+}

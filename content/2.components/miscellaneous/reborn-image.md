@@ -1,6 +1,6 @@
 ---
 title: 图片 Image
-description: 增强版图片组件，支持预览、加载状态、错误状态和多种裁剪模式。
+description: 用于展示图片并提供预览、加载/错误状态与多种裁剪模式的双端图片组件。
 category: 杂项
 tags: [css, tailwind, image, media, uniapp, viewerjs]
 badge: New

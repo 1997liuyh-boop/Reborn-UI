@@ -1,6 +1,6 @@
 ---
 title: 液态玻璃
-description: 结合位移贴图、通道偏移和模糊折射的液态玻璃效果组件，适合用于浮层、卡片和视觉强调区域。
+description: 用于以 SVG 位移贴图与通道偏移模拟液态玻璃折射的容器组件。
 category: 特效
 tags: [svg, filter, glassmorphism]
 navigation:

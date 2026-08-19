@@ -1,0 +1,16 @@
+{
+  "description": "用于随页面滚动进度将一句话逐词由淡变实显现的文字组件。",
+  "whenToUse": [
+    "长页叙事区块随滚动逐词点亮宣言、标语。",
+    "需要滚动驱动（而非加载即播）的文案强调段落。"
+  ],
+  "whenNotToUse": [
+    "页面加载即逐字渐显，改用 text-generate-effect。",
+    "逐行入场动画，改用 text-reveal。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "使用时只需传 text（必填）；props 中的 word/progress/range 来自内部 ScrollWord 子组件的提取结果，无需手动传入。",
+    "效果由页面滚动进度驱动，需置于可滚动的页面流中。"
+  ]
+}

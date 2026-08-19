@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-carousel",
   "title": "走马灯 Carousel",
-  "description": "自研的走马灯轮播组件，支持多项显示、自动播放、指示器、箭头控制、卡片模式、纵向布局和响应式配置。",
+  "description": "用于循环展示多个内容项的轮播组件，支持多项显示、卡片模式与纵向布局，仅 web 端。",
   "category": "navigation",
   "tags": [
     "css",
@@ -225,9 +225,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "首页 banner、图片或卡片列表的自动轮播展示。",
+    "需要一屏显示多项（slidesPerview）并按断点响应式调整的横向滑动列表。",
+    "需要缩略图联动（thumbs）、自定义箭头/指示器插槽的轮播场景。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web），小程序轮播需另行实现。",
+    "苹果卡片风格的展示型轮播，改用 apple-card-carousel。",
+    "轮播用户评价文案，改用 testimonial-slider 或 animated-testimonials。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "modelValue 可 v-model 双向绑定当前索引；modelValue 为空时才使用 initialSlide。",
+    "loop 与 autoplay 默认均为 false，需显式开启；arrow 默认 hover 显示。",
+    "height 默认 \"auto\" 随内容自适应；组件对外暴露 next/prev/goTo 方法可编程控制。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -244,9 +257,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-carousel.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "dbb6aad22cb6bfb24c3c5120b05dd0875c0c51a9",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "35ca9835152fdd8c3434fbf62291d39736031d1d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

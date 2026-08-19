@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "animated-tooltip",
   "title": "动画提示",
-  "description": "炫酷的提示气泡，悬停时揭示并跟随鼠标。",
+  "description": "用于悬停头像时弹出姓名与职称气泡并跟随鼠标位置的提示组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -33,9 +33,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "团队成员、贡献者头像组的身份提示。",
+    "项目参与者列表需要悬停显示姓名与职位。",
+    "落地页展示用户头像堆叠并附带信息提示。"
+  ],
+  "whenNotToUse": [
+    "需要自定义任意提示内容的通用 tooltip 场景。",
+    "需要完整展示评价内容时，改用 animated-testimonials。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "items 为必填，每项必须包含 id、name、designation、image 字段。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -50,9 +60,9 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-tooltip.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "c0f1bffb205b04e1b510062fbfaec8d2d46e5a7a",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "2a1c17a3c4c252c110b62565f83541e34ce1e2c2",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

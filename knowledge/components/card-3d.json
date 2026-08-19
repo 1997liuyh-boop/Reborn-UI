@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "card-3d",
   "title": "3D 卡片效果",
-  "description": "具有透视效果的卡片，悬停时可让卡片元素提升。",
+  "description": "用于悬停时随鼠标产生透视倾斜、子元素分层浮起的 3D 卡片组件。",
   "category": "data-display",
   "tags": [
     "css",
@@ -95,9 +95,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "产品展示卡需要鼠标跟随的 3D 透视交互。",
+    "卡片内标题、图片、按钮需要不同 translateZ 纵深分层浮起的场景。",
+    "落地页需要强交互感的重点卡片。"
+  ],
+  "whenNotToUse": [
+    "只需悬停高光光泽，改用 glare-card。",
+    "需要正反面翻转展示内容，改用 flip-card。",
+    "根据鼠标进入方向显示覆盖层，改用 direction-aware-hover。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "必须按 CardContainer > CardBody > CardItem 三层结构组合使用，单独使用无效。",
+    "translateX/Y/Z 与 rotateX/Y/Z 是 CardItem 的 props，控制该元素悬停时的位移与旋转；translateZ 越大浮起越明显。",
+    "CardItem 的 as prop 可改渲染标签（如 a、button、p），默认 div。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add card-3d"
@@ -113,9 +126,9 @@
   },
   "docPath": "content/2.components/cards/3d-card.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "c152cb2fcb4712ce33d4a869ec57f1b8a1191c2c",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "ed94155e021b2d3421ed10ffe4563e0dec7762aa",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

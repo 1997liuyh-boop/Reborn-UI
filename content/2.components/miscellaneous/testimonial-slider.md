@@ -1,6 +1,6 @@
 ---
 title: 评价滑块
-description: 轻量的评价滑块，包含图片旋转、文字过渡与可选自动轮播。
+description: 用于轮播展示用户评价（头像、引言、姓名、职位）的轻量滑块组件。
 category: 杂项
 tags: [css, tailwind]
 ---

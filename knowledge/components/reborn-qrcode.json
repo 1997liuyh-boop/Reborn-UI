@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-qrcode",
   "title": "二维码 Qrcode",
-  "description": "二维码组件，支持颜色、样式、Logo 与纠错级别配置。",
+  "description": "用于生成二维码的双端组件，支持前景/背景色、码点样式、中央 Logo 与纠错级别。",
   "category": "misc",
   "tags": [
     "qrcode",
@@ -255,9 +255,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "分享链接、收款码等需要动态生成二维码的场景。",
+    "需要品牌 Logo 居中展示（logo + logoSize/logoMargin）时。",
+    "需要圆点等自定义码点风格（mode/dotsType，默认 circular）时。",
+    "需要导出图片时（暴露 toPng 方法）。"
+  ],
+  "whenNotToUse": [
+    "展示服务端已生成的二维码图片，直接用 reborn-image。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "text 默认值是示例链接（https://cool-js.com/），务必传入实际内容。",
+    "dotsGradient、backgroundGradient、cornersSquareGradient 等多个参数标注为预留参数，传入可能无实际效果。",
+    "ecc 默认 H 级纠错，加 Logo 时保持高纠错级别更稳妥。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-qrcode"
@@ -278,9 +290,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-qrcode.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "4b4d804c183c5d86d611b2616d02293d7a29113b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "74b4ca20b6f584b1297905e08333cb10ff2a7252",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

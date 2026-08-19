@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-context-menu",
   "title": "Context Menu",
-  "description": "在目标区域上通过右键、点击或悬浮弹出上下文操作面板，支持分组、快捷键与多级子菜单。",
+  "description": "用于在目标区域右键、点击或悬浮弹出操作面板的上下文菜单组件，仅 web 端。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -154,9 +154,22 @@
   "related": [
     "reborn-transition"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "文件列表、表格行等需要右键呼出操作菜单的区域。",
+    "需要分组、快捷键展示与多级子菜单的数据驱动菜单（items 传入）。",
+    "需要受控展开（v-model:open）或 hover 触发的浮层菜单。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web）。",
+    "按钮触发的普通下拉操作菜单，改用 reborn-dropdown。",
+    "表单选值场景，改用 reborn-select。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "trigger 默认 contextmenu（右键），hover 模式下 openDelay/closeDelay 才生效。",
+    "portal 默认 true 通过 Teleport 挂载到 body；modal 默认 false 不显示遮罩。",
+    "点击叶子菜单项触发 select 事件；组件暴露 close 方法。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -173,9 +186,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-context-menu.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e466780c1b0649bfbeb1c580efa629e5ca13d1d9",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "8490c79c0c3d99a627858aaf7f263633ebbff7db",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

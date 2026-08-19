@@ -1,6 +1,6 @@
 ---
 title: 动画提示
-description: 炫酷的提示气泡，悬停时揭示并跟随鼠标。
+description: 用于悬停头像时弹出姓名与职称气泡并跟随鼠标位置的提示组件。
 category: 杂项
 tags: [css, tailwind, aceternity-ui]
 ---

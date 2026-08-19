@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "number-ticker",
   "title": "数字滚动",
-  "description": "动画数字向目标值递增或递减。",
+  "description": "用于让数字从起点平滑滚动到目标值的数值动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -74,9 +74,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "数据看板、落地页统计数字需要递增动画时。",
+    "指标数值变化时需要平滑过渡而非跳变。"
+  ],
+  "whenNotToUse": [
+    "需要环形进度可视化，改用 animated-circular-progressbar。",
+    "静态数字展示无需动画时，直接渲染文本即可。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core（过渡基于 useTransition）。",
+    "decimalPlaces 默认 2，展示整数时需显式传 0。",
+    "direction 可选 up/down（默认 up），控制数字递增或递减方向；duration/delay 单位为毫秒。",
+    "transition 接收 vueuse 的过渡预设名（默认 easeOutCubic）。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -91,9 +102,9 @@
   },
   "docPath": "content/2.components/text-animations/number-ticker.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "742bfeea49a1fedcad0c27ddcc3823abcb0be8bb",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "c50d6459ec0b2494e744597da7ca7310daa1daa6",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

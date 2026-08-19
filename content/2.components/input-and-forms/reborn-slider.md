@@ -1,6 +1,6 @@
 ---
 title: 滑块
-description: 支持单值和范围选择的滑块组件。
+description: 用于在数值区间内拖动取值的滑块组件，支持单值与范围两种模式。
 category: 表单与输入
 tags: [css, tailwind, slider, range, uniapp]
 badge: New

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-fab",
   "title": "悬浮按钮 (Fab)",
-  "description": "提供固定位置的操作按钮，支持拖拽、展开菜单。",
+  "description": "用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -279,9 +279,23 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "页面角落固定的快捷操作入口（客服、发布、回到顶部集合等）。",
+    "点击/悬停展开多个子动作（items 或 default 插槽），含环形布局（radius/startAngle/totalAngle）。",
+    "需要可拖拽并自动吸附屏幕左右边（draggable + attract）的悬浮球。",
+    "滚动时自动贴边半隐藏（peekOnScroll）的场景。"
+  ],
+  "whenNotToUse": [
+    "普通文档流中的操作按钮，改用 reborn-button。",
+    "把一组操作折叠为下拉菜单（web），改用 reborn-dropdown。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "expandable 默认 false：此时点击直接触发 click 事件，不会展开动作面板。",
+    "draggable 拖拽结束后按左右侧自动吸附并决定展开方向；attract 默认 true 自动吸边。",
+    "inactiveIcon/activeIcon 在 Web 版默认依赖 nuxt-icon 图标体系。",
+    "展开状态可用 v-model 绑定；variant 支持 float/capsule/circle 三种形态。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-fab"
@@ -298,9 +312,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-fab.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "2309211cf16aaf67996e388b682daf9d4c90dc34",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "f793d6e93a661a122e153d764c4ba3d4e5c12c10",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

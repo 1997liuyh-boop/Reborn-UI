@@ -1,0 +1,15 @@
+{
+  "description": "用于以 iPhone SVG 外壳包裹展示截图的设备模型组件。",
+  "whenToUse": [
+    "落地页展示移动端 App 截图或 H5 页面效果时。",
+    "产品介绍中需要 iPhone 设备外观衬托内容时。"
+  ],
+  "whenNotToUse": [
+    "展示桌面端/网页截图，改用 safari-mockup。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "截图通过 src 传图片 URL，没有插槽，无法嵌入交互式内容。",
+    "width/height 为 SVG 像素尺寸（默认 433x882），整体缩放可用外层 class 控制。"
+  ]
+}

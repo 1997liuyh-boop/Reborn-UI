@@ -1,0 +1,19 @@
+{
+  "description": "用于呈现环绕闪光流动动画的按钮组件，闪光颜色、速度与背景可配置。",
+  "whenToUse": [
+    "落地页主 CTA 需要持续闪光动画吸引注意时。",
+    "深色主题下需要高对比发光效果的按钮。",
+    "需要自定义闪光颜色（shimmerColor）与动画周期（shimmerDuration）的营销按钮。"
+  ],
+  "whenNotToUse": [
+    "常规业务表单按钮，改用 reborn-button（同时支持 web 与 uniapp）。",
+    "需要点击波纹反馈，改用 ripple-button。",
+    "需要彩虹渐变效果，改用 rainbow-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "shimmerDuration（默认 \"3s\"）与 shimmerSize（默认 \"0.05em\"）均为 CSS 字符串，不是数字。",
+    "背景默认为纯黑 rgba(0, 0, 0, 1)，浅色主题需自行传 background。",
+    "按钮内容通过默认插槽传入，知识条目未声明 click 等事件。"
+  ]
+}

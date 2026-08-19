@@ -1,0 +1,18 @@
+{
+  "description": "用于以描边加双层阴影模拟 3D 立体字并可选晃动动画的文字组件。",
+  "whenToUse": [
+    "落地页大标题需要漫画、立体风格的装饰字。",
+    "需要自定义描边（strokeColor/strokeSize）与双层阴影颜色尺寸的标题。",
+    "需要逐个单词控制是否晃动动画（animate）的组合标题。"
+  ],
+  "whenNotToUse": [
+    "悬停渐变描边交互，改用 text-hover-effect。",
+    "轻量的线条阴影效果，改用 line-shadow-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "文字通过默认插槽传入。",
+    "animate 默认开启晃动动画，animationDuration 单位为毫秒（默认 1500）。",
+    "letterSpacing 单位是 ch（默认 -0.1），不是像素。"
+  ]
+}

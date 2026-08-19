@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-dialog",
   "title": "Dialog 对话框",
-  "description": "支持触发器模式、受控模式、遮罩关闭、异步拦截、拖拽与全屏展示的单组件 Dialog。",
+  "description": "用于模态确认与内容展示的对话框组件，支持触发器/受控、拖拽与全屏，仅 web 端。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -229,9 +229,23 @@
     "reborn-button",
     "reborn-transition"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "需要确认/取消按钮的模态操作确认（confirm/cancel 事件）。",
+    "把触发按钮放默认插槽、点击即开的免受控弹窗用法。",
+    "关闭前需要异步拦截（beforeClose 调用 done() 才关闭）的场景。",
+    "需要可拖拽（draggable）或全屏（fullscreen）展示的弹窗。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web），双端弹层改用 reborn-popup。",
+    "轻量操作结果提示，改用 reborn-toast。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "默认插槽是触发器（点击打开），正文必须放 content 插槽，勿混淆。",
+    "点击确认按钮触发 confirm 事件但默认不自动关闭，取消按钮默认会关闭。",
+    "draggable 在 fullscreen 模式下无效；lockScroll 默认 true 打开时锁定页面滚动。",
+    "支持受控（open + update:open）与非受控两种模式，也可用暴露的 open/close 方法。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-dialog"
@@ -245,9 +259,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-dialog.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "b2a00eb34b86375897857d8cc465ca893246dabe",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "a984f4e499b83926d97256305aa9faef9ab694b3",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

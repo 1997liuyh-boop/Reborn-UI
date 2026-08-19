@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "input",
   "title": "输入框",
-  "description": "具有径向悬停效果的多功能动态输入框，适配现代 Web 应用。",
+  "description": "用于带鼠标径向渐变悬停高亮效果的单行文本输入组件。",
   "category": "form",
   "tags": [
     "css",
@@ -60,9 +60,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "登录、注册等营销感较强的表单需要悬停高亮输入框时。",
+    "web 落地页表单想要跟随鼠标的径向边框效果时。"
+  ],
+  "whenNotToUse": [
+    "常规业务表单或跨端场景，改用 reborn-input。",
+    "需要占位文字消失动画的搜索框，改用 vanishing-input。",
+    "多行文本输入，改用 reborn-textarea。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core。",
+    "组件名为 IInput（文件 IInput.vue），与 reborn-input 不是同一组件。",
+    "样式分两层：class 作用于输入框本体，containerClass 作用于外层容器（宽度通常设在 containerClass 上）。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -77,9 +88,9 @@
   },
   "docPath": "content/2.components/input-and-forms/input.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "bbf7592bbf45e014c28c26aef2eaa4d96c45d9b8",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "c2cdbc90dffc258770cb0d6993b60b6351f97374",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

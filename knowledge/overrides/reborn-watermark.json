@@ -1,0 +1,18 @@
+{
+  "description": "用于在内容容器上平铺文本或图片水印的组件。",
+  "whenToUse": [
+    "敏感数据页面添加用户标识水印防泄露。",
+    "文档、图片预览区域叠加版权水印。",
+    "需要多行文本水印（content 传字符串数组）或图片水印（image）。"
+  ],
+  "whenNotToUse": [
+    "元素角标、数量标记改用 reborn-badge。",
+    "全屏遮罩层改用 reborn-overlay。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "被加水印的内容须放在 default 插槽内，水印覆盖该容器。",
+    "image 建议使用 2x 或 3x 图像；知识条目未说明 image 与 content 同时传入时的优先级。",
+    "offset 默认为 gap 的一半，rotate 默认 -22 度。"
+  ]
+}

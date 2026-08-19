@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "meteors",
   "title": "流星雨",
-  "description": "展示流星雨动画的组件，可自定义流星数量与样式。",
+  "description": "用于在卡片等容器内渲染划过的流星雨背景动画的装饰组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -40,9 +40,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "卡片、Hero 区需要流星划过的背景点缀时。",
+    "深色背景区块需要低成本的动态氛围效果时。"
+  ],
+  "whenNotToUse": [
+    "需要闪烁粒子效果，改用 sparkles。",
+    "需要烟花庆祝动效，改用 reborn-fireworks。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "作为装饰层放入目标容器内部，父容器需 relative 且 overflow-hidden（见示例），否则流星会溢出。",
+    "示例外层包裹了 ClientOnly，流星位置为随机生成。",
+    "count 控制流星数量（默认 20），class 追加到每颗流星上。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add meteors"
@@ -55,9 +66,9 @@
   },
   "docPath": "content/2.components/special-effects/meteors.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "c38d9007569caa1c725a83afd711434017145cb1",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "7b1419757e200d17a29f1bbdec85ace4bbeafcde",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

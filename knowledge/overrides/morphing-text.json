@@ -1,0 +1,16 @@
+{
+  "description": "用于在一组文本间以模糊渐变变形循环切换的文字动画组件。",
+  "whenToUse": [
+    "Hero 区标题需要在多个关键词间循环变形切换时。",
+    "展示产品的多个卖点词并强调过渡的液态变形感时。"
+  ],
+  "whenNotToUse": [
+    "需要翻转式的词语切换，改用 flip-words 或 container-text-flip。",
+    "只有一段文字的进场动画，改用 letter-pullup 或 text-generate-effect。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，示例中外层包裹了 ClientOnly。",
+    "texts 为必填字符串数组；morphTime 是变形动画时长、coolDownTime 是每个词的停留时间，单位均为秒。",
+    "不支持插槽内容，仅渲染纯文本。"
+  ]
+}

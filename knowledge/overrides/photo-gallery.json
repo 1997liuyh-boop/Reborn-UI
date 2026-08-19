@@ -1,0 +1,17 @@
+{
+  "description": "用于以动画展开一组照片的画廊展示组件，图片经 items 传入。",
+  "whenToUse": [
+    "团队成员、活动照片等一组图片的集中展示。",
+    "落地页需要照片堆叠/展开的视觉区块时。"
+  ],
+  "whenNotToUse": [
+    "瀑布流布局的大量图片，改用 reborn-waterfall。",
+    "需要点击展开查看的画廊，改用 expandable-gallery。",
+    "全屏轮播图片，改用 images-slider。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "items 为必填数组，元素结构为 { src: string }，不支持插槽自定义每张图片。",
+    "class 作用于图片项，containerClass 作用于外层容器。"
+  ]
+}

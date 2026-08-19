@@ -1,6 +1,6 @@
 ---
 title: Transition 过渡
-description: 过渡动画容器，支持 fade / slide / zoom。
+description: 用于控制内容显隐过渡动画的容器组件，内置 fade、slide、zoom 等动画名称。
 category: 杂项
 navigation:
   badges:

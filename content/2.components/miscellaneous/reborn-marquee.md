@@ -1,6 +1,6 @@
 ---
 title: 跑马灯
-description: 可配置的循环滚动组件，支持横向与纵向滚动、悬停暂停、渐隐遮罩与重复渲染。
+description: 用于横向或纵向无限循环滚动内容的跑马灯组件，支持悬停暂停与渐隐遮罩。
 category: 杂项
 tags: [css, tailwind, magic-ui]
 badge: New

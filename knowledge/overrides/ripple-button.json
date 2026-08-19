@@ -1,0 +1,19 @@
+{
+  "description": "用于点击时产生可自定义颜色与时长波纹反馈的按钮组件。",
+  "whenToUse": [
+    "落地页 CTA 需要点击波纹反馈动效时。",
+    "需要 Material 风格点击涟漪的按钮。",
+    "需要自定义波纹颜色（rippleColor）与动画时长的营销按钮。"
+  ],
+  "whenNotToUse": [
+    "常规业务表单按钮，改用 reborn-button（同时支持 web 与 uniapp）。",
+    "需要持续闪光动画吸引注意，改用 shimmer-button。",
+    "需要渐变边框动效，改用 gradient-button。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "duration 单位为毫秒（默认 600），控制波纹扩散时长。",
+    "波纹默认颜色为 #ADD8E6，深色背景下需自行调整 rippleColor。",
+    "按钮内容通过默认插槽传入，点击通过 click 事件监听。"
+  ]
+}

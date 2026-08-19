@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-sticky",
   "title": "Sticky 吸顶",
-  "description": "Sticky 组件用于将元素固定在页面顶部，当页面滚动时，被包裹的内容会始终保持在可视区域的顶部。常用于导航栏、标题栏等需要始终可见的内容。",
+  "description": "用于页面滚动时将内容吸附在顶部或底部的吸顶组件。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -155,9 +155,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "列表分组标题、筛选栏等滚动到顶部后保持可见。",
+    "uniapp 页面中需要吸顶且能感知页面滚动（通过 onPageScroll 传入 scrollTop）。",
+    "需要根据吸附状态调整内容样式（default 插槽提供 isSticky 作用域参数）。"
+  ],
+  "whenNotToUse": [
+    "固定位置且可拖拽的悬浮元素改用 reborn-affix。",
+    "滚动一定距离后出现的返回顶部按钮改用 reborn-back-top。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "uniapp 页面滚动场景须把 onPageScroll 的滚动距离传给 scrollTop prop，否则无法正确判断吸附。",
+    "isNeedNavbarHeight 默认 true，H5 端会自动叠加 navbarHeight（默认 44px）作为吸顶偏移。",
+    "position 支持 top / bottom，底部吸附还受 bottomBoundary 与 bottomPlaceholder 影响。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -177,9 +189,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-sticky.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "f6fbd98e021b9a33a5571a6dc68e1f89edddd293",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "19fb4e38ff7a873102a3f1f231e70650a0fa054f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

@@ -1,0 +1,17 @@
+{
+  "description": "用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定。",
+  "whenToUse": [
+    "表单中需要勾选一组可多选的选项。",
+    "单个布尔开关确认项（如同意协议），v-model 绑定 boolean。",
+    "需要 trueValue/falseValue 自定义选中/未选中值的场景。"
+  ],
+  "whenNotToUse": [
+    "一组互斥选项只能选一个时，改用 reborn-radio。",
+    "即时生效的开关设置项，改用 reborn-switch。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "modelValue 支持 boolean 或数组两种模式：绑定数组时 value 才作为选中值生效，未提供 value 时以 label 充当 value。",
+    "可通过 icon 插槽自定义选中图标，default 插槽自定义标签内容。"
+  ]
+}

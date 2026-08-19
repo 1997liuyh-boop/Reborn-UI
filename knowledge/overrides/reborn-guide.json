@@ -1,0 +1,19 @@
+{
+  "description": "用于按步骤高亮页面元素并弹出说明的新手引导组件，仅 web 端。",
+  "whenToUse": [
+    "新功能上线或用户首次进入页面时的分步操作指引。",
+    "需要遮罩高亮目标元素并配上一步/下一步/跳过按钮的引导流程。",
+    "需要 v-model:current 受控步骤、监听 finish/skip 事件上报引导完成情况的场景。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web）。",
+    "单个元素的悬浮提示说明，改用 reborn-tooltip 或 reborn-popover。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "defaultCurrent 默认 -1 表示未开始，启动引导需将 current 设为步骤索引。",
+    "mode 支持 popup（贴靠高亮元素）与 dialog 两种展示形态。",
+    "zIndex 默认 999999，注意与其他弹层的层级关系；highlightPadding 控制高亮框内边距（默认 8）。",
+    "步骤内容可用 activeStep.content / activeStep.highlightContent 插槽自定义。"
+  ]
+}

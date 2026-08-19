@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "flip-words",
   "title": "翻转单词",
-  "description": "循环翻转单词列表的组件。",
+  "description": "用于句子中一组单词循环翻转切换的内联文字动画组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -55,9 +55,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标题句式固定、仅关键词轮换的宣传文案（如框架特性词轮播）。",
+    "需要通过 animationStart / animationComplete 事件联动其他动画的场景。"
+  ],
+  "whenNotToUse": [
+    "需要容器宽度随词宽平滑过渡，改用 container-text-flip。",
+    "整段文字形变过渡，改用 morphing-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "words 为必填的字符串数组。",
+    "duration 是每个单词的停留时间，单位毫秒（默认 3000），不是翻转动画时长。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add flip-words"
@@ -70,9 +80,9 @@
   },
   "docPath": "content/2.components/text-animations/flip-words.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "f8eaf9254217f434ef9864041d2be676d0f31d7f",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "069da2d991d2056c109ac9ccdf56cfce20bbf314",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

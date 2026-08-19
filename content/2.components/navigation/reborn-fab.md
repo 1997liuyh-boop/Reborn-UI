@@ -1,6 +1,6 @@
 ---
 title: 悬浮按钮 (Fab)
-description: 提供固定位置的操作按钮，支持拖拽、展开菜单。
+description: 用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。
 category: 导航
 badge: New
 navigation:

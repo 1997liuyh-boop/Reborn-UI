@@ -1,6 +1,6 @@
 ---
 title: 标签页 Tabs
-description: 用于在不同的内容区域之间切换。
+description: 用于在多个内容区之间切换的标签页组件，web 端为组合式子组件、uniapp 端为数据驱动单组件。
 category: 导航
 tags: [css, tailwind, tabs]
 badge: New

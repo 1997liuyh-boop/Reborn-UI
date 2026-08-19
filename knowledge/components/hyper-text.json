@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "hyper-text",
   "title": "超能文字",
-  "description": "悬停时快速变化的文字动画。",
+  "description": "用于文字以字符快速乱序滚动后定格显现的动画组件，悬停可重播。",
   "category": "effect",
   "tags": [
     "css",
@@ -31,7 +31,7 @@
       "name": "duration",
       "type": "number",
       "required": false,
-      "description": "整个动画的持续时间（秒）。",
+      "description": "整个动画的持续时间（毫秒）。",
       "default": "800"
     },
     {
@@ -54,9 +54,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标题 / 标语需要科技感的字符乱序入场动画。",
+    "需要悬停重新触发文字动画的交互点缀。"
+  ],
+  "whenNotToUse": [
+    "需要故障抖动风格，改用 text-glitch。",
+    "整词循环切换，改用 flip-words。",
+    "逐字打出效果，改用 reborn-typewriter。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core 与 motion-v。",
+    "text 与 animateOnLoad 标注为必填；animateOnLoad 控制是否在加载时自动播放（默认 true）。",
+    "duration 单位为毫秒（默认 800），控制整段乱序动画的总时长。"
+  ],
   "dependencies": [
     "@vueuse/core",
     "motion-v"
@@ -72,9 +83,9 @@
   },
   "docPath": "content/2.components/text-animations/hyper-text.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "7890c6da3451fcfbc23ef41c016dd2b41fa0f703",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "3a7674f7b16c1adb1cfac473bd695df0f557076f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

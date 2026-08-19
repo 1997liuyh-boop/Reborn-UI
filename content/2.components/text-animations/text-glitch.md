@@ -1,6 +1,6 @@
 ---
 title: 文字故障
-description: 为文字添加鲜明的故障效果，可自定义速度、阴影颜色，并可选择仅在悬停时触发。
+description: 用于给文字叠加彩色错位故障（glitch）动画的文字效果组件。
 category: 文字动画
 tags: [css, tailwind]
 ---

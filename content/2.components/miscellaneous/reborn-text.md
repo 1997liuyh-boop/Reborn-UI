@@ -1,6 +1,6 @@
 ---
 title: 文本 Text
-description: 支持格式化、脱敏和省略号的增强文本组件。
+description: 用于展示文本并内置类型格式化、脱敏与多行省略的增强文本组件。
 category: 杂项
 tags: [css, tailwind, text, format, mask, uniapp]
 badge: New

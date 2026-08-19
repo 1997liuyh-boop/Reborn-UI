@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-time-picker",
   "title": "时间选择器",
-  "description": "支持滚轮选择、箭头调节、禁用时分秒和范围选择的时间选择器。",
+  "description": "用于选择时分秒的时间选择器组件，支持滚轮与箭头两种调节方式及时间范围选择。",
   "category": "form",
   "tags": [],
   "platforms": [
@@ -219,9 +219,21 @@
     "reborn-button",
     "reborn-select-trigger"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单中选择具体时间（format 默认 HH:mm:ss）。",
+    "选择时间段（isRange，配 startPlaceholder / endPlaceholder / rangeSeparator）。",
+    "需要禁用特定时 / 分 / 秒（disabledHours、disabledMinutes、disabledSeconds 函数）。"
+  ],
+  "whenNotToUse": [
+    "需要选日期或日期加时间改用 reborn-select-date（且其为双端组件）。",
+    "uniapp 端项目：platforms 仅 web，可用 reborn-select-date 的时间粒度替代。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "默认模式用鼠标滚轮切换，arrowControl=true 改为上下箭头调节。",
+    "isRange 时 modelValue 为 string[] 数组，单选时为 string。",
+    "触发器基于 RebornSelectTrigger；portal 默认 true 浮层传送到 body，关闭后随父容器裁剪滚动。"
+  ],
   "dependencies": [
     "clsx",
     "dayjs"
@@ -240,9 +252,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-time-picker.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "bae67b219e4a6d1672cc80b64c31974a60188180",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "258868461c6e684155e7739256a94cd44ed06935",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

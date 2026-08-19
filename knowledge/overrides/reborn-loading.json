@@ -1,0 +1,18 @@
+{
+  "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。",
+  "whenToUse": [
+    "异步请求期间需要在容器或整页显示加载遮罩时。",
+    "需要多种加载图标类型（ring/spinner/bars-scale/gooey-balls 等）时。",
+    "需要通过 useLoading 在逻辑代码中动态开关加载态时。"
+  ],
+  "whenNotToUse": [
+    "uniapp 列表触底的加载状态提示改用 reborn-loadmore。",
+    "操作结果的短暂反馈改用 reborn-toast。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "type 默认 ring，size 默认 30px，zIndex 默认 2000。",
+    "background 可传任意 CSS 颜色，覆盖默认的 bg-white/80（暗色 bg-gray-9/80）遮罩背景。",
+    "afterLeave 事件在遮罩离场动画结束后触发。"
+  ]
+}

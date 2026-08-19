@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "animated-circular-progressbar",
   "title": "动画圆形进度条",
-  "description": "显示百分比的圆形仪表盘动画组件。",
+  "description": "用于以圆形仪表盘动画展示当前数值百分比的进度条组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -89,9 +89,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "展示任务完成度、下载或上传进度。",
+    "仪表盘中展示指标占比，数值变化时需要平滑动画。",
+    "需要在圆环中心直接显示百分比数字的场景。"
+  ],
+  "whenNotToUse": [
+    "需要用户拖动改变数值的输入场景，改用 balance-slider 等表单组件。",
+    "静态展示一个数字即可时，无需引入动画进度条。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "duration 单位为秒（默认 1），与其他组件的毫秒单位不同。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add animated-circular-progressbar"
@@ -104,9 +114,9 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-circular-progressbar.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "3a182dd13d9d436c20bc5f3fdce78d5cb6e3592b",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "00288f9b0d656509075f104db4e3655a34bb89ab",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

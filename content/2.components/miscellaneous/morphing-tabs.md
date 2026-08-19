@@ -1,6 +1,6 @@
 ---
 title: 变形标签页
-description: 复刻 Preet 的胶状变形标签交互，包含粘连效果。
+description: 用于在切换标签时呈现胶体粘连变形效果的字符串标签页组件。
 category: 杂项
 tags: [css, tailwind]
 ---

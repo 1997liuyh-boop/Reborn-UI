@@ -1,6 +1,6 @@
 ---
 title: 数字滚动
-description: 动画数字向目标值递增或递减。
+description: 用于让数字从起点平滑滚动到目标值的数值动画组件。
 category: 文字动画
 tags: [css, tailwind, magic-ui]
 ---

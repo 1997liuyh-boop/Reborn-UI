@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-slide-verify",
   "title": "滑块验证",
-  "description": "横向拖动滑块完成人机校验，支持阈值、分层文案、加载 / 禁用态与表单注入；样式可通过 ui 与主题色定制。",
+  "description": "用于人机校验的滑块验证组件，向右拖动超过阈值即通过，支持失败回弹与自动重置。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -286,9 +286,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "登录、注册、发送验证码前的轻量级人机校验。",
+    "表单中需要一个「已验证」布尔字段（v-model 绑定，change 与表单校验联动）。",
+    "需要通过 loading / disabled 控制验证时机，或验证通过后自动重置（autoReset + resetDelay）。"
+  ],
+  "whenNotToUse": [
+    "web 端项目：platforms 仅 uniapp，web 端无对应实现。",
+    "在数值区间内取值改用 reborn-slider。"
+  ],
+  "pitfalls": [
+    "platforms 仅 uniapp 端提供。",
+    "threshold 默认 0.92（滑到约 92% 即通过）；若传大于 1 的数（如 92），内部会除以 100 当作比例。",
+    "splitText 默认 true 的左右分层文案，仅在未使用默认插槽、未验证、非加载、非失败展示时生效。",
+    "defaultVerified=true 且 v-model 仍为 false 时，挂载即视为已通过。",
+    "showToast 通过后调用 uni.showToast，toastText 为空时用 successText。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -304,9 +317,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-slide-verify.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "09912dd331718e567440a5a3f74664b8241c4140",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "b50cf6d207a6743cb737d31594d830aba521c474",
+    "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",

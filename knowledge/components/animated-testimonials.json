@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "animated-testimonials",
   "title": "动态评价",
-  "description": "展示用户反馈的动态组件，包含过渡与自动播放功能。",
+  "description": "用于轮播展示用户评价（头像、姓名、职称、引言）并支持自动播放的组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -47,9 +47,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "官网或落地页的客户评价区块。",
+    "需要自动轮播的推荐语、案例引言展示。",
+    "展示带头像与职位信息的团队成员语录。"
+  ],
+  "whenNotToUse": [
+    "只需悬停头像显示姓名职位时，改用 animated-tooltip。",
+    "通用图文卡片轮播，改用 apple-card-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "duration 为自动切换等待时间（毫秒，默认 5000），需开启 autoplay 才会自动轮播。",
+    "testimonials 每项需包含 quote、name、designation、image 字段，示例中外层包裹了 ClientOnly。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -64,9 +75,9 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-testimonials.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "b0f90400a9914a95d54d8bd64ea8c60932e55a27",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "ebc92baffbccb517ccdcaab75b7cb533a6f9f5d8",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

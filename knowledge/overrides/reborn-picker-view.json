@@ -1,0 +1,18 @@
+{
+  "description": "用于内嵌页面滚动选择多列选项的 uniapp 选择器视图组件。",
+  "whenToUse": [
+    "需要直接内嵌在页面/弹层中的滚动选择列表（非自带弹层）时。",
+    "多列联动选择，columns 传 SelectOption 二维数组并配 headers 列标题时。",
+    "作为 reborn-select 底层选择视图之外的独立定制场景。"
+  ],
+  "whenNotToUse": [
+    "需要触发器加弹层的完整下拉选择改用 reborn-select。",
+    "日期选择改用 reborn-select-date。"
+  ],
+  "pitfalls": [
+    "仅 uniapp 端可用。",
+    "绑定用 value + update:value（number[] 各列选中索引），而非 modelValue。",
+    "itemHeight 默认值区分平台：iOS App 为 50，其余为 42；整体高度 height 默认 300。",
+    "变化事件有 change-value/change-index/change-item 三种粒度。"
+  ]
+}

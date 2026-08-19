@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-textarea",
   "title": "多行输入框",
-  "description": "具有自适应高度与多尺寸状态的多行输入组件。",
+  "description": "用于多行文本输入的输入框组件，支持自动增高、字数统计与键盘行为配置。",
   "category": "form",
   "tags": [
     "css",
@@ -305,9 +305,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "备注、评论、描述等多行文本录入。",
+    "需要字数统计与上限（maxlength + showWordLimit，limit 插槽可自定义统计区）。",
+    "内容随输入自动增高（autoHeight）。"
+  ],
+  "whenNotToUse": [
+    "单行输入改用 reborn-input。",
+    "短信验证码等分格输入改用 reborn-input-otp。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "maxlength 默认 100，长内容需显式调大；showWordLimit 默认 true 但需设置 maxlength 才有意义。",
+    "confirmType、cursorSpacing、adjustPosition、holdKeyboard、showConfirmBar 等属性对应 uniapp 原生 textarea 能力，主要在小程序 / App 端生效。",
+    "高度由 height（默认 140）与 rows（默认 4）共同影响，开启 autoHeight 后自动增高。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-textarea"
@@ -325,9 +337,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-textarea.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "9e6c91cd4464095aa7b28bff691a13210d906b6e",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "42cadd29a9675b3d61354f0d33de4c6e5636b40f",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

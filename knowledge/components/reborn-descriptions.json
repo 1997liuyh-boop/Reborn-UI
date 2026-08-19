@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-descriptions",
   "title": "描述列表",
-  "description": "以键值对形式展示内容的容器组件，常用于详情页、信息面板等场景。支持有/无边框、水平/垂直方向、多列布局及富内容插槽。",
+  "description": "用于以键值对多列布局展示详情信息的描述列表组件，仅 web 端。",
   "category": "misc",
   "tags": [],
   "platforms": [
@@ -210,9 +210,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "详情页、信息面板中以「标签: 内容」形式罗列字段。",
+    "需要多列（column）、跨列（span）与容器宽度自适应列数（responsive）的信息表格。",
+    "通过 items 数组数据驱动渲染，或用 RebornDescriptionsItem 子组件声明式书写。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web）。",
+    "字段需要编辑与校验时，改用 reborn-form。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "默认插槽内须放置 RebornDescriptionsItem 子组件；也可改用 items prop 数据驱动，二者取其一。",
+    "responsive 默认 true：容器 <480px 强制 1 列、<640px 最多 2 列，需固定列数时应关闭。",
+    "末项会自动延伸填满当前行剩余列（span 行为）。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -229,9 +241,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-descriptions.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "cc1dbba54ee3cdfc67d33484e4d61b492e33a0da",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "ae691929435cf4e6bc032332c1b1e891fb386aab",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

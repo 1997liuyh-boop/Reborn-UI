@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-back-top",
   "title": "BackTop",
-  "description": "该组件一个用于长页面，滑动一定距离后，出现返回顶部按钮，方便快速返回顶部的场景",
+  "description": "用于长页面滚动超过阈值后显示返回顶部按钮的跨端导航组件。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -102,9 +102,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "长列表、长文章页面需要一键回到顶部时。",
+    "uniapp TabBar 页面需要按钮自动抬高避开 TabBar（isTab）时。",
+    "需要预设色彩（primary/success 等）与尺寸（sm/md/lg）的回顶按钮。"
+  ],
+  "whenNotToUse": [
+    "需要可拖拽的悬浮入口，改用 reborn-affix。",
+    "常驻的悬浮操作按钮，改用 reborn-fab。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用；uniapp 端必须通过 onPageScroll 把 scrollTop 传入组件，否则按钮不会随滚动显示。",
+    "threshold 默认 300px，滚动超过该距离才显示按钮。",
+    "isTab 为 true 时组件自动抬高 50px 避开 TabBar；safeArea 默认开启底部安全区适配。",
+    "自定义按钮外观用默认插槽，细粒度样式覆盖用 ui 对象（wrapper/base/icon）。"
+  ],
   "dependencies": [
     "@vueuse/core",
     "clsx"
@@ -125,9 +137,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-back-top.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "edf3a29e78a6d69cc0fe47b21045aa208e655ab9",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "79561f28df34da2571b4026735cab4b0f59571ab",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

@@ -1,6 +1,6 @@
 ---
 title: 图片滑块
-description: 全屏图片滑块，可使用键盘导航。
+description: 用于全屏轮播一组背景图并叠加覆盖层内容的图片滑块组件。
 category: 杂项
 tags: [css, tailwind, images, aceternity-ui]
 ---

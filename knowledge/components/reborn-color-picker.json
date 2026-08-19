@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-color-picker",
   "title": "取色器",
-  "description": "提供颜色选择的组件。",
+  "description": "用于弹出面板选取颜色并以 v-model 绑定色值字符串的取色器组件，双端可用。",
   "category": "form",
   "tags": [],
   "platforms": [
@@ -115,9 +115,20 @@
     "reborn-input",
     "reborn-popover"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "主题色、标签颜色等需要用户自选颜色的设置项。",
+    "表单中需要采集颜色值（字符串）并双向绑定的场景。",
+    "需要通过 content 配置弹出方向与偏移（side/align/sideOffset）的取色入口。"
+  ],
+  "whenNotToUse": [
+    "仅 web 且不需要双端一致时，也可用 web 专用的 color-picker。",
+    "从固定的预设色板中单选，用一组按钮或 reborn-radio 即可。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "modelValue 为颜色字符串，默认 '#000000'；可用 format/defaultFormat 控制输出格式。",
+    "弹出位置默认 side: 'right'，在贴近屏幕边缘时需通过 content 调整（示例中设为 side: 'top'）。"
+  ],
   "dependencies": [
     "@uiw/color-convert"
   ],
@@ -140,9 +151,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-color-picker.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "254ef7de50a9c0ccb2baaa32519752b2e369a66d",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "1c08c1d55402ba17bb242c26bc139d5cfa6f76d3",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

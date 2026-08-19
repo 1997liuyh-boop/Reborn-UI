@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-text",
   "title": "文本 Text",
-  "description": "支持格式化、脱敏和省略号的增强文本组件。",
+  "description": "用于展示文本并内置类型格式化、脱敏与多行省略的增强文本组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -202,9 +202,21 @@
   "related": [
     "reborn-tooltip"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "手机号、姓名、卡号、邮箱等敏感信息脱敏展示（type + mask，可配 maskStart / maskEnd / maskChar）。",
+    "金额格式化展示（type='amount'，currency 符号与 precision 小数位）。",
+    "长文本多行省略（ellipsis + lines）。"
+  ],
+  "whenNotToUse": [
+    "需要用户输入文本改用 reborn-input 或 reborn-textarea。",
+    "打字机等文字动画效果改用 reborn-typewriter（仅 web）。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "脱敏与格式化基于 value prop 与 type（default / phone / name / amount / card / email），mask 默认 false 需显式开启。",
+    "ellipsis 生效时由 lines 控制最大行数，默认 1 行。",
+    "selectable / space / decode 等属性对应 uniapp text 原生能力。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -224,9 +236,9 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-text.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "b1e368911a6a3db2d1c85d880343f315a90af1da",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "340929544131b96412b37bdf5d5abbf7cb540b6d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

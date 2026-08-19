@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-footer",
   "title": "Footer 底部栏",
-  "description": "固定在页面底部的操作容器组件，支持自动占位、最小高度控制和安全区适配。",
+  "description": "用于固定在页面底部放置操作按钮的容器组件，自动占位并适配安全区，双端可用。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -62,9 +62,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单页/详情页底部固定的提交、取消等操作栏。",
+    "需要自动生成占位元素防止内容被固定底栏遮挡的页面。",
+    "需要适配 iPhone 等设备底部安全区的固定底栏。"
+  ],
+  "whenNotToUse": [
+    "底部多页签导航切换，uniapp 端改用 reborn-tabbar。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用（web 端 API 抽取为 partial，字段可能不全）。",
+    "minHeight 是显示阈值：footer 实际高度（叠加底部安全区）小于该值时整个 footer 不显示，默认 30。",
+    "内容动态变化导致高度改变时，需变更 vt 值强制重新测量 footer 高度。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -85,9 +95,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-footer.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "574fc650b28d0e5bdaf01f9c5f0908f037893fe8",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "1ab9a1a2289a1dcf40ee11f61a6ec5d0d97f37d9",
+    "hasOverride": true,
     "extractors": {
       "web": "partial",
       "uniapp": "ok",

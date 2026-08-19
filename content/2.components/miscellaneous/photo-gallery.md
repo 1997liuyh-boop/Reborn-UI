@@ -1,6 +1,6 @@
 ---
 title: 照片画廊
-description: 用精美的画廊展示团队风采。
+description: 用于以动画展开一组照片的画廊展示组件，图片经 items 传入。
 category: 杂项
 tags: [css, tailwind, gallery]
 ---

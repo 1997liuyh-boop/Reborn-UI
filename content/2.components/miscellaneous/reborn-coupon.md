@@ -1,6 +1,6 @@
 ---
 title: 卡券 Coupon
-description: 支持多种形态（缺口、撕线、邮票等）的高度可定制化卡券组件。
+description: 用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。
 category: 杂项
 navigation:
   badges:

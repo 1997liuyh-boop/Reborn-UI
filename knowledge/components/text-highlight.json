@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "text-highlight",
   "title": "文字高亮",
-  "description": "为文字填充背景以突出显示的效果。",
+  "description": "用于以背景填充动画突出句中重点文字的高亮组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -57,9 +57,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标题或段落中强调关键词，配合渐变背景类名使用。",
+    "页面进入后需要延迟（delay）再高亮的重点语句。"
+  ],
+  "whenNotToUse": [
+    "需要闪光点缀文字，改用 sparkles-text。",
+    "需要文字本身的高光扫过效果，改用 radiant-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "高亮背景色不由 prop 控制，通过 class 传入（示例用 Tailwind 渐变类 bg-gradient-to-r）。",
+    "delay 与 duration 单位均为毫秒（duration 默认 2000）。",
+    "文字通过默认插槽传入，可选 textEndColor 设置结束时文字颜色。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add text-highlight"
@@ -72,9 +83,9 @@
   },
   "docPath": "content/2.components/text-animations/text-highlight.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "95c9856360e28dd61feab2af234d1d45d2c8c44c",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "e569d9d21803049c89277769b1850d42965ff325",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

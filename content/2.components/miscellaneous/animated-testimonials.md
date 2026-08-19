@@ -1,6 +1,6 @@
 ---
 title: 动态评价
-description: 展示用户反馈的动态组件，包含过渡与自动播放功能。
+description: 用于轮播展示用户评价（头像、姓名、职称、引言）并支持自动播放的组件。
 category: 杂项
 tags: [css, tailwind, aceternity-ui]
 ---

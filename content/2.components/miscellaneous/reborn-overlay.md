@@ -1,6 +1,6 @@
 ---
 title: Overlay 遮罩
-description: 全屏遮罩层，支持点击关闭和滚动锁定。
+description: 用于弹层背后的全屏或局部遮罩组件，支持点击关闭与滚动锁定。
 category: 杂项
 navigation:
   badges:

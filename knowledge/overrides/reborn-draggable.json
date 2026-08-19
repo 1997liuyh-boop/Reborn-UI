@@ -1,0 +1,17 @@
+{
+  "description": "用于列表项拖拽排序并同步 v-model 数据顺序的容器组件，双端可用。",
+  "whenToUse": [
+    "自定义常用功能、图标宫格等需要用户手动调整顺序的列表。",
+    "需要监听拖拽过程（start/end/change 事件）并持久化新顺序的场景。",
+    "uniapp 端需要多列网格拖拽排序（columns > 1）。"
+  ],
+  "whenNotToUse": [
+    "列表项需要左滑呼出删除等操作而非排序，uniapp 端改用 reborn-swiper-action。",
+    "顺序固定的静态列表，直接用普通列表渲染即可。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "columns（网格列数）与 longPress（长按触发，默认 true）仅 UniApp 端生效。",
+    "列表项内容通过 item 作用域插槽渲染，数据用 v-model 绑定数组。"
+  ]
+}

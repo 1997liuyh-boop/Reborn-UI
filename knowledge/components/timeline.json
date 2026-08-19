@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "timeline",
   "title": "时间线",
-  "description": "视觉化、交互式的时间线组件，带平滑动画、粘性标签与渐变滚动效果。",
+  "description": "用于纵向展示条目、带粘性标签与滚动渐变动画的时间线组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -66,9 +66,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "版本发布历史、更新日志的分段展示。",
+    "公司里程碑、项目进程的长页叙事，需要标签随滚动粘性停留。",
+    "每个节点需要自定义富内容（图文混排）的时间线。"
+  ],
+  "whenNotToUse": [
+    "只需内容侧边的滚动光束装饰，改用 tracing-beam。",
+    "展示多步骤加载状态，改用 multi-step-loader。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 motion-v。",
+    "items 元素需含 id 与 label 字段；每个条目的内容通过以 item.id 命名的动态具名插槽传入（#[item.id]）。",
+    "title 与 description 显示在时间线头部，containerClass 控制外层容器样式。"
+  ],
   "dependencies": [
     "motion-v"
   ],
@@ -83,9 +94,9 @@
   },
   "docPath": "content/2.components/miscellaneous/timeline.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "cb04d8795e03c0aba31f1aa58bf8f8494abf727d",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "81722504cda510e01f2d189da63bdc68896aff3b",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

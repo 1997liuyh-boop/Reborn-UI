@@ -1,0 +1,18 @@
+{
+  "description": "用于大数据量列表分页切换的双端分页组件，提供多页码与简洁两种模式。",
+  "whenToUse": [
+    "表格、列表数据量大需要按页浏览时。",
+    "移动端需要简洁的上一页/下一页翻页（mode=\"simple\"）时。",
+    "只有一页时希望自动隐藏分页器（hideOnSinglePage）时。"
+  ],
+  "whenNotToUse": [
+    "uniapp 滚动触底加载更多改用 reborn-loadmore。",
+    "内容按类别切换改用 reborn-tabs。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用，但 size 属性仅 web 端支持。",
+    "v-model 绑定当前页码（默认 1），需配合 total 与 pageSize 计算页数。",
+    "page 插槽仅在 multi 模式下可用，simple 模式用 simpleContent 插槽。",
+    "组件暴露 prev/next 方法可命令式翻页。"
+  ]
+}

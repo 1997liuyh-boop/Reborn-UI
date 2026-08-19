@@ -1,0 +1,18 @@
+{
+  "description": "用于以键值对多列布局展示详情信息的描述列表组件，仅 web 端。",
+  "whenToUse": [
+    "详情页、信息面板中以「标签: 内容」形式罗列字段。",
+    "需要多列（column）、跨列（span）与容器宽度自适应列数（responsive）的信息表格。",
+    "通过 items 数组数据驱动渲染，或用 RebornDescriptionsItem 子组件声明式书写。"
+  ],
+  "whenNotToUse": [
+    "uniapp 端不可用（仅 web）。",
+    "字段需要编辑与校验时，改用 reborn-form。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "默认插槽内须放置 RebornDescriptionsItem 子组件；也可改用 items prop 数据驱动，二者取其一。",
+    "responsive 默认 true：容器 <480px 强制 1 列、<640px 最多 2 列，需固定列数时应关闭。",
+    "末项会自动延伸填满当前行剩余列（span 行为）。"
+  ]
+}

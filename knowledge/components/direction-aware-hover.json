@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "direction-aware-hover",
   "title": "方向感知悬停卡片",
-  "description": "方向感知的悬停卡片，在悬停时显示带动态效果的图片，并提供可自定义的内容覆盖层。",
+  "description": "用于根据鼠标进入方向滑入内容覆盖层的图片悬停卡片组件。",
   "category": "data-display",
   "tags": [
     "css",
@@ -60,9 +60,20 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "图片墙 / 作品集卡片，悬停时从进入方向滑出标题说明。",
+    "需要在图片上叠加自定义覆盖层内容（文字、按钮）的悬停交互。"
+  ],
+  "whenNotToUse": [
+    "只需高光光泽效果，改用 glare-card。",
+    "需要鼠标跟随的 3D 透视，改用 card-3d。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "imageUrl 为必填；覆盖层内容通过默认插槽传入。",
+    "覆盖层与图片样式分别用 childrenClass / imageClass 定制，class 作用于卡片容器。",
+    "示例说明移动端通过点按（tap）触发覆盖层效果。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add direction-aware-hover"
@@ -75,9 +86,9 @@
   },
   "docPath": "content/2.components/cards/direction-aware-hover.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "511cb753d3bca938d53851b9d100ecdca7d55ec8",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "69dcd0f489574dc945246886c322e505911fafe1",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

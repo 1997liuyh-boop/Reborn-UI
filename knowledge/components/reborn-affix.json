@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-affix",
   "title": "Affix 悬浮",
-  "description": "Affix 组件用于将元素固定在页面上的特定位置，并允许用户在屏幕范围内自由拖拽。当元素被拖拽到屏幕边缘时，它会自动吸附到最近的边缘，方便用户快速定位。常用于悬浮按钮、快捷操作入口等场景。",
+  "description": "用于固定悬浮元素并支持拖拽、自动吸附屏幕边缘的跨端悬浮组件。",
   "category": "navigation",
   "tags": [],
   "platforms": [
@@ -104,9 +104,22 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "悬浮球、快捷操作入口需要用户可拖拽调整位置时。",
+    "悬浮按钮需要拖到边缘后自动吸附（可用 noSnapping 关闭）时。",
+    "刘海屏/底部黑条设备上需要安全区避让（safeArea 默认开启）时。"
+  ],
+  "whenNotToUse": [
+    "固定位置的悬浮操作按钮无需拖拽，改用 reborn-fab。",
+    "滚动到阈值后出现的返回顶部按钮，改用 reborn-back-top。",
+    "元素滚动吸顶，改用 reborn-sticky。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用，依赖 @vueuse/core。",
+    "水平定位 right 优先级高于 left；垂直方向未指定 top 时以 bottom（默认 10）为准。",
+    "disabled 仅禁用拖拽交互，元素仍会显示。",
+    "gap 控制吸附到边缘后的留边距离（默认 10px），size 为浮动元素宽高（默认 40px）。"
+  ],
   "dependencies": [
     "@vueuse/core",
     "tailwind-variants"
@@ -126,9 +139,9 @@
   },
   "docPath": "content/2.components/navigation/reborn-affix.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "d59485e6b2ca14081bbcd52f7dae77b02e4a21b7",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "1a17a21ff84269e09ef71da8b9bd1a8f0b24dd21",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

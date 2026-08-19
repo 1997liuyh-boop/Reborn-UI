@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-input-otp",
   "title": "验证码输入",
-  "description": "用于短信验证码、OTP Token 输入的分格输入组件。",
+  "description": "用于短信验证码、OTP 等固定位数分格输入的双端组件。",
   "category": "form",
   "tags": [
     "css",
@@ -122,9 +122,21 @@
   "related": [
     "reborn-input"
   ],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "登录、注册时输入短信/邮箱验证码。",
+    "支付密码等固定位数的分格输入。",
+    "输入满位后需要自动触发提交（done 事件）时。"
+  ],
+  "whenNotToUse": [
+    "普通文本输入改用 reborn-input。",
+    "数值步进增减改用 reborn-input-number。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "length 默认 4 位；输满指定位数触发 done 事件。",
+    "inputType 默认 number，可选 text/digit。",
+    "无插槽，格子样式通过 ui/size/color 配置。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -145,9 +157,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-input-otp.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "2c5c0a8ac7b25023d374c0f73d6537f8ec09db99",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "f863b49eba5cba87df5c5e6c762389c09739599d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

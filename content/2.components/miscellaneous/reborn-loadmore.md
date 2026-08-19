@@ -1,6 +1,6 @@
 ---
 title:  加载更多
-description: uniapp 单独展示。
+description: 用于列表底部展示加载中、加载失败与没有更多状态的 uniapp 组件。
 category: 杂项
 navigation:
   badges:

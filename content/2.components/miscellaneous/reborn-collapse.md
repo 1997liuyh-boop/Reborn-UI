@@ -1,6 +1,6 @@
 ---
 title: 折叠面板
-description: 用于展示和隐藏内容区域，支持平滑的展开收起动画效果。
+description: 用于点击触发区展开或收起内容区域的折叠组件，带高度过渡动画，双端可用。
 category: 通用
 tags: [css, tailwind, collapse, accordion, uniapp]
 badge: New

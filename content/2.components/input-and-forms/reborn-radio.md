@@ -1,6 +1,6 @@
 ---
 title: 单选框
-description: 用于在一组选项中选择一项的单选按钮组件。
+description: 用于在一组互斥选项中选择单项的双端单选框组件。
 category: 表单与输入
 tags: [css, tailwind, radio, uniapp]
 badge: New

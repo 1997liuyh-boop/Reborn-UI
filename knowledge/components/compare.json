@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "compare",
   "title": "对比",
-  "description": "通过滑动比较两组内容——图像、设计、代码或自定义元素。",
+  "description": "用于以滑动分割线对比两张图片或两块自定义内容的对比组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -174,9 +174,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "明暗主题、改版前后等两张截图的滑动对比。",
+    "通过 first-content / second-content 插槽对比两段代码或任意自定义内容。",
+    "需要 autoplay 自动往返演示对比效果的营销区块。"
+  ],
+  "whenNotToUse": [
+    "多张图片轮播展示，改用 images-slider 或 reborn-carousel。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "slideMode 默认 \"hover\"（悬停即滑动），需要拖动手柄交互时设为 \"drag\"。",
+    "不传 firstImage / secondImage 时必须用 first-content / second-content 插槽提供内容，插槽内容占满容器宽高。",
+    "自定义 handle 插槽需自行用绝对定位放在分割线处。",
+    "滑块位置通过 update:percentage 事件（0-100）监听。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add compare"
@@ -190,9 +202,9 @@
   },
   "docPath": "content/2.components/miscellaneous/compare.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "c6f2b64ca1755e6ff8f22d1ea725499ea064c55d",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "be2d974aa27449435aec34ef4004a123dd72e082",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

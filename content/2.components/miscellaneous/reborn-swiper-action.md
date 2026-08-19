@@ -1,6 +1,6 @@
 ---
 title: 滑动操作
-description: 列表项向左滑出右侧操作按钮，支持 push / overlay 两种展开模式、同组互斥、受控展开与移除动画；内容与手势层与 UniApp 多端对齐。
+description: 用于列表项左滑露出右侧操作按钮的滑动单元格组件，支持 push / overlay 模式与同组互斥。
 category: 杂项
 tags: [css, tailwind, uniapp, swiper]
 badge: New

@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "container-scroll",
   "title": "容器滚动",
-  "description": "根据滚动进度变换内部内容的滚动效果，包含缩放与旋转的平滑过渡。",
+  "description": "用于随页面滚动对卡片内容做旋转缩放过渡的首屏展示组件。",
   "category": "misc",
   "tags": [
     "css",
@@ -60,9 +60,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "落地页首屏产品截图随滚动展开的 hero 动画。",
+    "标题 + 大图卡片组合、由滚动进度驱动的展示区块。"
+  ],
+  "whenNotToUse": [
+    "滚动驱动的文字逐词揭示，改用 text-scroll-reveal。",
+    "沿内容侧边跟随滚动的光束线条，改用 tracing-beam。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core。",
+    "内容通过 title 与 card 插槽传入（配套 ContainerScrollTitle / ContainerScrollCard 子组件）。",
+    "rotate / scale / translate 分别控制内容旋转、缩放与标题位移的幅度，效果由滚动进度驱动。"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],
@@ -79,9 +89,9 @@
   },
   "docPath": "content/2.components/miscellaneous/container-scroll.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "e72c2f3ca997e8ba112ea8519655c10820c5c6a7",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "b111ae12b40457c5eac083aff1acca1f9f1b653d",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

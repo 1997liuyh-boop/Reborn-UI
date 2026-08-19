@@ -1,6 +1,6 @@
 ---
 title: 标题
-description: 响应式头部组件。
+description: 用于站点顶部导航的响应式头部组件，移动端可切换为弹窗菜单。
 category: 导航
 badge: New
 navigation:

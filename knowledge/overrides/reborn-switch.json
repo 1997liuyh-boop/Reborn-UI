@@ -1,0 +1,18 @@
+{
+  "description": "用于在两种状态间切换的开关组件，支持自定义开关值、加载态与切换前拦截。",
+  "whenToUse": [
+    "设置项的启用 / 停用切换。",
+    "绑定值不是布尔时，用 activeValue / inactiveValue 自定义开与关对应的值。",
+    "切换前需要异步确认或校验：beforeChange 支持返回 boolean 或 Promise<boolean>。",
+    "需要在轨道上显示开关文案（activeLabel / inactiveLabel 属性或同名插槽）。"
+  ],
+  "whenNotToUse": [
+    "一组互斥选项改用 reborn-radio。",
+    "多项勾选组合改用 reborn-checkbox。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "modelValue 为受控值，非受控场景用 defaultValue 设初始值。",
+    "loading 为加载态展示，与 disabled 是两个独立属性。"
+  ]
+}

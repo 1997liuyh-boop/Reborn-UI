@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-watermark",
   "title": "水印 Watermark",
-  "description": "在页面上添加文本或图片等水印信息。",
+  "description": "用于在内容容器上平铺文本或图片水印的组件。",
   "category": "data-display",
   "tags": [
     "data",
@@ -113,9 +113,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "敏感数据页面添加用户标识水印防泄露。",
+    "文档、图片预览区域叠加版权水印。",
+    "需要多行文本水印（content 传字符串数组）或图片水印（image）。"
+  ],
+  "whenNotToUse": [
+    "元素角标、数量标记改用 reborn-badge。",
+    "全屏遮罩层改用 reborn-overlay。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "被加水印的内容须放在 default 插槽内，水印覆盖该容器。",
+    "image 建议使用 2x 或 3x 图像；知识条目未说明 image 与 content 同时传入时的优先级。",
+    "offset 默认为 gap 的一半，rotate 默认 -22 度。"
+  ],
   "dependencies": [],
   "install": {
     "cli": "npx reborn-ui@latest add reborn-watermark"
@@ -132,9 +144,9 @@
   },
   "docPath": "content/2.components/data/reborn-watermark.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "170517b9eb504c812fb9ca73d685575cade01a8c",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "07a6980abb23fed5d270d91b7d03873f409e18e4",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

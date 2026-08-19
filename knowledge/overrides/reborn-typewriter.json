@@ -1,0 +1,19 @@
+{
+  "description": "用于让文本以打字机方式逐字输入与删除的文字动画组件。",
+  "whenToUse": [
+    "首屏标题、口号的动态输入效果。",
+    "模拟终端 / 命令行输出。",
+    "文本内容变化时自动重打动画（resetOnChange 默认 true）。"
+  ],
+  "whenNotToUse": [
+    "循环翻转多个词语改用 flip-words 或 container-text-flip。",
+    "整段文字逐字渐显改用 text-generate-effect。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "文本只能经 text prop 传入，组件无插槽。",
+    "text 变化默认会重置动画（resetOnChange=true），不需要时须显式关闭。",
+    "可通过 exposes 的 startTyping / startDeleting / clear 手动控制流程，isTyping / isDeleting 反映当前状态。"
+  ]
+}

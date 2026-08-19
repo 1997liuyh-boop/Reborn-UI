@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "container-text-flip",
   "title": "容器文字翻转",
-  "description": "一个循环翻转单词的容器，并随文字宽度动画。",
+  "description": "用于循环翻转一组单词、容器宽度随词宽平滑过渡的文字组件。",
   "category": "effect",
   "tags": [
     "css",
@@ -71,9 +71,19 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "标题中轮换展示多个卖点词，且词长差异大、需要容器宽度跟随动画。",
+    "需要分别用 class / textClass 控制容器与文字样式的轮换词场景。"
+  ],
+  "whenNotToUse": [
+    "只需句中单词翻转、不需要容器宽度动画，改用 flip-words。",
+    "需要文字形变过渡效果，改用 morphing-text。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用，依赖 @vueuse/core 与 motion-v。",
+    "interval（默认 3000）与 animationDuration（默认 700）单位均为毫秒。",
+    "无事件抛出，切换时机无法在外部监听；需要动画事件时改用 flip-words。"
+  ],
   "dependencies": [
     "@vueuse/core",
     "motion-v"
@@ -89,9 +99,9 @@
   },
   "docPath": "content/2.components/text-animations/container-text-flip.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "b10d8da5b0944770394bffa97642763ee876a14e",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "cc6f39083134795bb81e82f3d3b95d4a28117a2a",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",

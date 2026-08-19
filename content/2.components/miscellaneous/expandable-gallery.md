@@ -1,6 +1,6 @@
 ---
 title: 可扩展画廊
-description: 响应式图片画廊，悬停时动态放大图片。
+description: 用于一行图片悬停时放大当前项的可扩展横向画廊组件。
 category: 杂项
 tags: [css, tailwind, gallery]
 ---

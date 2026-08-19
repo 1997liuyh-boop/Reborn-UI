@@ -1,0 +1,18 @@
+{
+  "description": "用于页面滚动时将内容吸附在顶部或底部的吸顶组件。",
+  "whenToUse": [
+    "列表分组标题、筛选栏等滚动到顶部后保持可见。",
+    "uniapp 页面中需要吸顶且能感知页面滚动（通过 onPageScroll 传入 scrollTop）。",
+    "需要根据吸附状态调整内容样式（default 插槽提供 isSticky 作用域参数）。"
+  ],
+  "whenNotToUse": [
+    "固定位置且可拖拽的悬浮元素改用 reborn-affix。",
+    "滚动一定距离后出现的返回顶部按钮改用 reborn-back-top。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端均可用。",
+    "uniapp 页面滚动场景须把 onPageScroll 的滚动距离传给 scrollTop prop，否则无法正确判断吸附。",
+    "isNeedNavbarHeight 默认 true，H5 端会自动叠加 navbarHeight（默认 44px）作为吸顶偏移。",
+    "position 支持 top / bottom，底部吸附还受 bottomBoundary 与 bottomPlaceholder 影响。"
+  ]
+}

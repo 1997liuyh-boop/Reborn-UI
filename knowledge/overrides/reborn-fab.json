@@ -1,0 +1,20 @@
+{
+  "description": "用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。",
+  "whenToUse": [
+    "页面角落固定的快捷操作入口（客服、发布、回到顶部集合等）。",
+    "点击/悬停展开多个子动作（items 或 default 插槽），含环形布局（radius/startAngle/totalAngle）。",
+    "需要可拖拽并自动吸附屏幕左右边（draggable + attract）的悬浮球。",
+    "滚动时自动贴边半隐藏（peekOnScroll）的场景。"
+  ],
+  "whenNotToUse": [
+    "普通文档流中的操作按钮，改用 reborn-button。",
+    "把一组操作折叠为下拉菜单（web），改用 reborn-dropdown。"
+  ],
+  "pitfalls": [
+    "web 与 uniapp 双端可用。",
+    "expandable 默认 false：此时点击直接触发 click 事件，不会展开动作面板。",
+    "draggable 拖拽结束后按左右侧自动吸附并决定展开方向；attract 默认 true 自动吸边。",
+    "inactiveIcon/activeIcon 在 Web 版默认依赖 nuxt-icon 图标体系。",
+    "展开状态可用 v-model 绑定；variant 支持 float/capsule/circle 三种形态。"
+  ]
+}

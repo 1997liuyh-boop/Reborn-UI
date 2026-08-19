@@ -1,6 +1,6 @@
 ---
 title: 图标云
-description: 基于 Canvas 的 3D 图标云组件，支持拖拽旋转与节点聚焦，适合展示技术栈、品牌矩阵或功能集合。
+description: 用于以可拖拽旋转的 Canvas 3D 球面展示一组图标的展示组件。
 category: 杂项
 badge: New
 tags: [canvas, interactive, tailwind]

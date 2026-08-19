@@ -1,6 +1,6 @@
 ---
 title: 链接预览
-description: 为锚点生成动态链接预览。
+description: 用于悬停链接文字时弹出目标网页预览图的行内链接组件。
 category: 杂项
 tags: [css, tailwind, aceternity-ui]
 ---

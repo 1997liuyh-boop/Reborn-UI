@@ -2,7 +2,7 @@
   "$schema": "../schema/component.schema.json",
   "id": "reborn-radio",
   "title": "单选框",
-  "description": "用于在一组选项中选择一项的单选按钮组件。",
+  "description": "用于在一组互斥选项中选择单项的双端单选框组件。",
   "category": "form",
   "tags": [
     "css",
@@ -157,9 +157,21 @@
     }
   ],
   "related": [],
-  "whenToUse": [],
-  "whenNotToUse": [],
-  "pitfalls": [],
+  "whenToUse": [
+    "表单中单选性别、支付方式等互斥选项。",
+    "需要勾选图标风格（activeIcon 默认 i-lucide-check）或 simple/circle 两种外观时。"
+  ],
+  "whenNotToUse": [
+    "可同时选中多项改用 reborn-checkbox。",
+    "布尔开关切换改用 reborn-switch。",
+    "选项很多时改用 reborn-select。"
+  ],
+  "pitfalls": [
+    "web、uniapp 双端可用。",
+    "选中态由 modelValue 与该项 value 匹配决定，知识库中无独立的 RadioGroup 容器组件，多个选项需绑定同一 modelValue。",
+    "fill 属性是 color 的别名映射。",
+    "isRound 默认 true、showIcon 默认 true，外观变化通过 variant（simple/circle）控制。"
+  ],
   "dependencies": [
     "clsx"
   ],
@@ -182,9 +194,9 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-radio.md",
   "_meta": {
-    "generatedAt": "2026-08-18T08:55:51.846Z",
-    "contentHash": "0869f3b7f5c45bd78eea59b92a51466178890636",
-    "hasOverride": false,
+    "generatedAt": "2026-08-19T02:02:35.486Z",
+    "contentHash": "6451935dc5689a73b1060f6b89e62510ceed20d9",
+    "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",

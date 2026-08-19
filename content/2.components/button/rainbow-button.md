@@ -1,6 +1,6 @@
 ---
 title: 彩虹按钮
-description: 在按钮上呈现彩虹效果。
+description: 用于呈现彩虹渐变流动发光效果的按钮组件，内容经默认插槽传入。
 category: 按钮
 tags: [css, tailwind, button, magic-ui]
 ---
