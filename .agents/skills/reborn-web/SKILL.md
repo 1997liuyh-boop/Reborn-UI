@@ -29,3 +29,13 @@ Reborn UI 是一个遵循现代设计规范的高性能组件库。在 Web 平�
 3. **类型收口**: 将 `color`, `size` 等核心变体定义在 `config.ts` 中，并导出类型；`customClass` 与 `ui` 覆盖项使用 `tailwind-variants` 的 `ClassValue` 类型，禁止裸用 `any`。
 4. **语法现代化**: 必须使用 `defineModel` 应对双向绑定，并采用接口化 `defineProps` 宏；`defineEmits` 必须使用类型化写法。
 5. **根因注释**: 涉及动画、布局抖动、异步竞态等复杂交互的修复，必须在代码注释中写明「根因 → 方案」（可用 `⚠️ 根因` / `✅ 修复` 标记），让后来者不敢轻易删除关键代码。
+
+## 组件知识库（先查库，再看源码）
+
+了解既有组件的 API（Props/Events/Slots/示例/使用边界）时，**优先读结构化知识库**而非翻源码或文档正文：
+
+- 轻量索引：`knowledge/index.json`（id/title/description/category/platforms）
+- 完整条目：`knowledge/components/<id>.json`
+- 外部 Agent 场景可用 `reborn-ui-mcp`（见 `packages/mcp/README.md`）
+
+改动组件源码、文档 API 表格或 `knowledge/overrides/` 后，必须运行 `pnpm kb:build && pnpm registry:build && pnpm kb:check` 并提交生成物，否则 CI 失败。使用侧工作流见 [reborn-ui-usage](../reborn-ui-usage/SKILL.md)。

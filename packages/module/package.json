@@ -1,6 +1,7 @@
 {
   "name": "reborn-ui-registry",
   "version": "0.1.0",
+  "description": "Reborn-UI 组件 registry 数据分发包（纯 JSON，无代码）；在 components.json 中设置 registry: \"reborn-ui-registry\" 即可让 CLI 与数据独立升级",
   "type": "module",
   "files": [
     "registry"

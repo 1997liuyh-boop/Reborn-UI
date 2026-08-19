@@ -1,0 +1,59 @@
+# 知识库与 registry 一致性校验
+# 功能：PR 与分支推送时校验知识库无 drift、registry 生成物与源码一致，
+#       防止「改了组件源码/文档却忘跑 kb:build / registry:build」的脏提交进入主干
+name: kb-and-registry-check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "feature-*"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 安装 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 知识库校验（drift / schema / 集合一致性 / 手改检测）
+        run: pnpm kb:check
+
+      - name: registry 幂等校验（重建后与提交版本对比，忽略时间戳）
+        run: |
+          pnpm registry:build
+          node -e "
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            // generatedAt 每次构建必变，对比前统一抹平
+            const normalize = (s) => {
+              const j = JSON.parse(s);
+              j.generatedAt = '';
+              return JSON.stringify(j);
+            };
+            const read = (p) => normalize(fs.readFileSync(p, 'utf8'));
+            const readHead = (p) => normalize(execSync('git show HEAD:' + p, { maxBuffer: 64 * 1024 * 1024 }).toString());
+            const paths = ['packages/cli/registry/registry.json', 'packages/module/registry/registry.json'];
+            // 校验一：两处 registry 内容一致
+            if (read(paths[0]) !== read(paths[1])) { console.error('两处 registry 内容不一致'); process.exit(1); }
+            // 校验二：重建结果与提交版本一致（不一致 = 提交时忘跑 registry:build）
+            for (const p of paths) {
+              if (read(p) !== readHead(p)) { console.error('registry 与源码脱节，请运行 pnpm registry:build 后重新提交: ' + p); process.exit(1); }
+            }
+          "
+          # 校验三：逐组件 JSON（不含时间戳字段）重建后必须无任何差异
+          git diff --exit-code --stat -- packages/cli/registry/components packages/module/registry/components
