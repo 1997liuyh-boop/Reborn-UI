@@ -1,7 +1,7 @@
 {
   "name": "reborn-toast",
   "title": "Toast 轻提示",
-  "description": "支持 useToast() 调用的轻提示组件。",
+  "description": "用于短暂消息反馈的轻提示组件，通过 useToast() 服务式调用展示成功、失败、加载等状态。",
   "category": "misc",
   "dependencies": [],
   "files": [

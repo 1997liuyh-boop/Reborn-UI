@@ -1,6 +1,7 @@
 {
   "name": "reborn-picker-view",
   "title": "reborn-picker-view",
+  "description": "用于内嵌页面滚动选择多列选项的 uniapp 选择器视图组件。",
   "category": "misc",
   "dependencies": [
     "clsx",

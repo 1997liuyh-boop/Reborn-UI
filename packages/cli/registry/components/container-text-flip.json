@@ -1,7 +1,7 @@
 {
   "name": "container-text-flip",
   "title": "容器文字翻转",
-  "description": "一个循环翻转单词的容器，并随文字宽度动画。",
+  "description": "用于循环翻转一组单词、容器宽度随词宽平滑过渡的文字组件。",
   "category": "effect",
   "tags": [
     "css",

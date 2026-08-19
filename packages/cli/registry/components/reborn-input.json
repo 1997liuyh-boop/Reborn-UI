@@ -1,7 +1,7 @@
 {
   "name": "reborn-input",
   "title": "基础输入框",
-  "description": "具有圆角胶囊样式与多尺寸状态的输入组件。",
+  "description": "用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。",
   "category": "form",
   "tags": [
     "css",

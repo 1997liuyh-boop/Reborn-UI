@@ -1,7 +1,7 @@
 {
   "name": "reborn-search-box",
   "title": "搜索框",
-  "description": "仿 MasterGo 设计的高级搜索框组件，支持目录选择、图片搜索及自定义按钮。",
+  "description": "用于带下拉面板的双端搜索框组件，支持历史记录、推荐词与 SKU 属性筛选。",
   "category": "form",
   "tags": [
     "css",

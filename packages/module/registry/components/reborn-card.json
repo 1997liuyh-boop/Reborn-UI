@@ -1,6 +1,7 @@
 {
   "name": "reborn-card",
   "title": "reborn-card",
+  "description": "用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。",
   "category": "misc",
   "dependencies": [],
   "files": [

@@ -1,7 +1,7 @@
 {
   "name": "reborn-guide",
   "title": "引导 Guide",
-  "description": "逐步骤进行指引或解释说明的组件，常用于用户不熟悉的或需进行特别强调的页面。",
+  "description": "用于按步骤高亮页面元素并弹出说明的新手引导组件，仅 web 端。",
   "category": "basic",
   "tags": [
     "css",

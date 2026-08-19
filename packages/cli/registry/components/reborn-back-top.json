@@ -1,7 +1,7 @@
 {
   "name": "reborn-back-top",
   "title": "BackTop",
-  "description": "该组件一个用于长页面，滑动一定距离后，出现返回顶部按钮，方便快速返回顶部的场景",
+  "description": "用于长页面滚动超过阈值后显示返回顶部按钮的跨端导航组件。",
   "category": "navigation",
   "dependencies": [
     "@vueuse/core",

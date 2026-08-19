@@ -1,6 +1,7 @@
 {
   "name": "reborn-dropdown-select",
   "title": "reborn-dropdown-select",
+  "description": "用于从 options 列表下拉选择单个值的选择器组件，仅 uniapp 端。",
   "category": "misc",
   "dependencies": [],
   "files": [

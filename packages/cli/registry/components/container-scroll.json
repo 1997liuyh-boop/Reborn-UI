@@ -1,7 +1,7 @@
 {
   "name": "container-scroll",
   "title": "容器滚动",
-  "description": "根据滚动进度变换内部内容的滚动效果，包含缩放与旋转的平滑过渡。",
+  "description": "用于随页面滚动对卡片内容做旋转缩放过渡的首屏展示组件。",
   "category": "misc",
   "tags": [
     "css",

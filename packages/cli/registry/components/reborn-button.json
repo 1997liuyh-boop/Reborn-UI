@@ -1,7 +1,7 @@
 {
   "name": "reborn-button",
   "title": "按钮",
-  "description": "显示按钮或看起来像按钮的组件。",
+  "description": "用于触发操作的双端按钮组件，提供颜色、变体、尺寸、加载与禁用状态。",
   "category": "basic",
   "tags": [
     "css",

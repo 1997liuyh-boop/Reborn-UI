@@ -1,7 +1,7 @@
 {
   "name": "lens",
   "title": "放大镜",
-  "description": "用于放大图片、视频或任意元素的镜头组件。",
+  "description": "用于在图片等插槽内容上叠加圆形放大镜的局部放大组件。",
   "category": "misc",
   "tags": [
     "css",

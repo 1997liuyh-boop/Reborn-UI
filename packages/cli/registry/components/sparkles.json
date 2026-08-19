@@ -1,6 +1,7 @@
 {
   "name": "sparkles",
   "title": "sparkles",
+  "description": "用于渲染可配置密度、大小与颜色的闪烁粒子背景层组件。",
   "category": "misc",
   "dependencies": [
     "@vueuse/core"

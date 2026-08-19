@@ -1,7 +1,7 @@
 {
   "name": "reborn-notice-bar",
   "title": "NoticeBar 通知栏",
-  "description": "用于循环播放展示一组消息通知，支持多种内容溢出时的处理方式。",
+  "description": "用于循环播放一组消息通知的通告栏组件，支持水平滚动与垂直轮播。",
   "category": "navigation",
   "dependencies": [],
   "files": [

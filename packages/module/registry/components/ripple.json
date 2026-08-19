@@ -1,6 +1,7 @@
 {
   "name": "ripple",
   "title": "ripple",
+  "description": "用于渲染多圈同心圆扩散水波背景的装饰效果组件。",
   "category": "misc",
   "dependencies": [],
   "files": [

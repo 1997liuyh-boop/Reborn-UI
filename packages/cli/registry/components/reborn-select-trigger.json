@@ -1,6 +1,7 @@
 {
   "name": "reborn-select-trigger",
   "title": "reborn-select-trigger",
+  "description": "用于各类下拉选择组件复用的触发器与浮层容器内部基础组件。",
   "category": "misc",
   "dependencies": [
     "clsx"

@@ -1,7 +1,7 @@
 {
   "name": "reborn-transfer",
   "title": "穿梭框",
-  "description": "直观的双列数据转移组件，支持搜索过滤、全选/反选、可选头部扩展勾选菜单、禁用条目、单向模式、操作撤回及分页，适用于权限分配、购物选择等场景。",
+  "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回与分页。",
   "category": "misc",
   "dependencies": [],
   "files": [

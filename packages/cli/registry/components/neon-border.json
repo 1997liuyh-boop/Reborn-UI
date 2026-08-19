@@ -1,7 +1,7 @@
 {
   "name": "neon-border",
   "title": "霓虹边框",
-  "description": "视觉吸引力强的霓虹边框组件，可自定义动画与颜色。",
+  "description": "用于给插槽内容包裹双色霓虹流转边框的装饰容器组件。",
   "category": "effect",
   "tags": [
     "css",

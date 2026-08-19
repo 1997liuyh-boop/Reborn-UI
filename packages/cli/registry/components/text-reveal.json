@@ -1,7 +1,7 @@
 {
   "name": "text-reveal",
   "title": "文字揭示",
-  "description": "使用 GSAP 的 SplitText 实现逐行的文字入场动画。",
+  "description": "用于基于 GSAP SplitText 将段落按行依次入场的文字动画组件。",
   "category": "effect",
   "tags": [
     "css",

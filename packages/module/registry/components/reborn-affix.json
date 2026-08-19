@@ -1,7 +1,7 @@
 {
   "name": "reborn-affix",
   "title": "Affix 悬浮",
-  "description": "Affix 组件用于将元素固定在页面上的特定位置，并允许用户在屏幕范围内自由拖拽。当元素被拖拽到屏幕边缘时，它会自动吸附到最近的边缘，方便用户快速定位。常用于悬浮按钮、快捷操作入口等场景。",
+  "description": "用于固定悬浮元素并支持拖拽、自动吸附屏幕边缘的跨端悬浮组件。",
   "category": "navigation",
   "dependencies": [
     "@vueuse/core",

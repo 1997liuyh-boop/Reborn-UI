@@ -1,7 +1,7 @@
 {
   "name": "reborn-dialog",
   "title": "Dialog 对话框",
-  "description": "支持触发器模式、受控模式、遮罩关闭、异步拦截、拖拽与全屏展示的单组件 Dialog。",
+  "description": "用于模态确认与内容展示的对话框组件，支持触发器/受控、拖拽与全屏，仅 web 端。",
   "category": "misc",
   "dependencies": [],
   "files": [

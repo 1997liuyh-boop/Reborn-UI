@@ -1,7 +1,7 @@
 {
   "name": "meteors",
   "title": "流星雨",
-  "description": "展示流星雨动画的组件，可自定义流星数量与样式。",
+  "description": "用于在卡片等容器内渲染划过的流星雨背景动画的装饰组件。",
   "category": "effect",
   "tags": [
     "css",
