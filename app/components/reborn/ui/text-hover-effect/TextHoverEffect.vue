@@ -10,7 +10,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   strokeWidth: 0.75,
-  duration: 200,
+  // 单位为秒（下方会 ×1000 转毫秒）；旧默认值 200 会产生 200s 的过渡，属于错误值
+  duration: 0.2,
   opacity: 0.75,
 });
 
@@ -18,7 +19,7 @@ const svgRef = ref<SVGSVGElement | null>(null);
 const cursor = reactive({ x: 0, y: 0 });
 const hovered = ref(false);
 
-// Set transition duration for smoother animation
+// 过渡时长：秒转毫秒，duration 为 0 时回退 200ms
 const transitionDuration = props.duration ? props.duration * 1000 : 200;
 
 // Reactive gradient position
