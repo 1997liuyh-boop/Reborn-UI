@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex flex-col overflow-hidden\">\r\n    <ContainerScroll>\r\n      <template #title>\r\n        <h1 class=\"text-4xl font-semibold text-black dark:text-white\">\r\n          Unleash the power of <br />\r\n          <span class=\"mt-1 text-4xl leading-none font-bold md:text-[6rem]\">\r\n            Scroll Animations\r\n          </span>\r\n        </h1>\r\n      </template>\r\n      <template #card>\r\n        <img src=\"https://cdn.reborn-ui.com/images/linear.webp\"\r\n          class=\"mx-auto h-full rounded-2xl object-cover object-left-top\" alt=\"hero\" height=\"720\" width=\"1400\" />\r\n      </template>\r\n    </ContainerScroll>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex flex-col overflow-hidden\">\n    <ContainerScroll>\n      <template #title>\n        <h1 class=\"text-4xl font-semibold text-black dark:text-white\">\n          Unleash the power of <br />\n          <span class=\"mt-1 text-4xl leading-none font-bold md:text-[6rem]\">\n            Scroll Animations\n          </span>\n        </h1>\n      </template>\n      <template #card>\n        <img src=\"https://cdn.reborn-ui.com/images/linear.webp\"\n          class=\"mx-auto h-full rounded-2xl object-cover object-left-top\" alt=\"hero\" height=\"720\" width=\"1400\" />\n      </template>\n    </ContainerScroll>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -89,8 +89,8 @@
   },
   "docPath": "content/2.components/miscellaneous/container-scroll.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "b111ae12b40457c5eac083aff1acca1f9f1b653d",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d90b802545381587f3fd5d9b4c86ded1de4c760e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

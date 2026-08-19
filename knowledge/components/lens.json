@@ -29,7 +29,7 @@
     },
     {
       "name": "position",
-      "type": "{\r\n    x: number;\r\n    y: number;\r\n  }",
+      "type": "{\n    x: number;\n    y: number;\n  }",
       "required": false,
       "description": "静态模式下镜头的位置。",
       "default": "() => ({ x: 200, y: 150 })"
@@ -66,13 +66,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\n\r\nconst hovering = ref(false);\r\n\r\nfunction setHovering(value: boolean) {\r\n  hovering.value = value;\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"relative my-10 w-full overflow-hidden rounded-3xl bg-gradient-to-r from-[#1D2235] to-[#121318] p-8\"\r\n  >\r\n    <Rays />\r\n    <Beams />\r\n    <div class=\"relative z-10\">\r\n      <Lens\r\n        :hovering=\"hovering\"\r\n        @hover-update=\"setHovering\"\r\n      >\r\n        <img\r\n          src=\"https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\r\n          alt=\"image\"\r\n          width=\"500\"\r\n          height=\"500\"\r\n          class=\"rounded-2xl\"\r\n        />\r\n      </Lens>\r\n      <div\r\n        :style=\"{ filter: hovering ? 'blur(2px)' : 'blur(0px)' }\"\r\n        class=\"relative z-20 py-4\"\r\n      >\r\n        <h2 class=\"text-left text-2xl font-bold text-white\">Apple Vision Pro</h2>\r\n        <p class=\"mt-4 text-left text-neutral-200\">\r\n          The all new apple vision pro was the best thing that happened around 8 months ago, not\r\n          anymore.\r\n        </p>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\nconst hovering = ref(false);\n\nfunction setHovering(value: boolean) {\n  hovering.value = value;\n}\n</script>\n\n<template>\n  <div\n    class=\"relative my-10 w-full overflow-hidden rounded-3xl bg-gradient-to-r from-[#1D2235] to-[#121318] p-8\"\n  >\n    <Rays />\n    <Beams />\n    <div class=\"relative z-10\">\n      <Lens\n        :hovering=\"hovering\"\n        @hover-update=\"setHovering\"\n      >\n        <img\n          src=\"https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n          alt=\"image\"\n          width=\"500\"\n          height=\"500\"\n          class=\"rounded-2xl\"\n        />\n      </Lens>\n      <div\n        :style=\"{ filter: hovering ? 'blur(2px)' : 'blur(0px)' }\"\n        class=\"relative z-20 py-4\"\n      >\n        <h2 class=\"text-left text-2xl font-bold text-white\">Apple Vision Pro</h2>\n        <p class=\"mt-4 text-left text-neutral-200\">\n          The all new apple vision pro was the best thing that happened around 8 months ago, not\n          anymore.\n        </p>\n      </div>\n    </div>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\n\r\nconst hovering = ref(false);\r\n\r\nfunction setHovering(value: boolean) {\r\n  hovering.value = value;\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"relative my-10 w-full overflow-hidden rounded-3xl bg-gradient-to-r from-[#1D2235] to-[#121318] p-8\"\r\n  >\r\n    <Rays />\r\n    <Beams />\r\n    <div class=\"relative z-10\">\r\n      <Lens is-static>\r\n        <img\r\n          src=\"https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\r\n          alt=\"image\"\r\n          width=\"500\"\r\n          height=\"500\"\r\n          class=\"rounded-2xl\"\r\n        />\r\n      </Lens>\r\n      <div\r\n        :style=\"{ filter: hovering ? 'blur(2px)' : 'blur(0px)' }\"\r\n        class=\"relative z-20 py-4\"\r\n      >\r\n        <h2 class=\"text-left text-2xl font-bold text-white\">Apple Vision Pro</h2>\r\n        <p class=\"mt-4 text-left text-neutral-200\">\r\n          The all new apple vision pro was the best thing that happened around 8 months ago, not\r\n          anymore.\r\n        </p>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\nconst hovering = ref(false);\n\nfunction setHovering(value: boolean) {\n  hovering.value = value;\n}\n</script>\n\n<template>\n  <div\n    class=\"relative my-10 w-full overflow-hidden rounded-3xl bg-gradient-to-r from-[#1D2235] to-[#121318] p-8\"\n  >\n    <Rays />\n    <Beams />\n    <div class=\"relative z-10\">\n      <Lens is-static>\n        <img\n          src=\"https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n          alt=\"image\"\n          width=\"500\"\n          height=\"500\"\n          class=\"rounded-2xl\"\n        />\n      </Lens>\n      <div\n        :style=\"{ filter: hovering ? 'blur(2px)' : 'blur(0px)' }\"\n        class=\"relative z-20 py-4\"\n      >\n        <h2 class=\"text-left text-2xl font-bold text-white\">Apple Vision Pro</h2>\n        <p class=\"mt-4 text-left text-neutral-200\">\n          The all new apple vision pro was the best thing that happened around 8 months ago, not\n          anymore.\n        </p>\n      </div>\n    </div>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -107,8 +107,8 @@
   },
   "docPath": "content/2.components/miscellaneous/lens.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "4c70decc264dd4d6a4c573b3130de65131e54c5e",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "89cab60fe78573c01bf15170ede06425ec69c2f6",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

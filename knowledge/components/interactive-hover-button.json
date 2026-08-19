@@ -35,7 +35,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup></script>\r\n\r\n<template>\r\n  <div class=\"flex w-full items-center justify-center p-4\">\r\n    <InteractiveHoverButton />\r\n  </div>\r\n</template>\r\n\r\n<style></style>\r\n",
+      "code": "<script lang=\"ts\" setup></script>\n\n<template>\n  <div class=\"flex w-full items-center justify-center p-4\">\n    <InteractiveHoverButton />\n  </div>\n</template>\n\n<style></style>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -67,8 +67,8 @@
   },
   "docPath": "content/2.components/button/interactive-hover-button.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "eef7d753060d9c94d5b070480a24a79483d1deb6",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "2ec2928ff62521952638b31b7435f9c18929ba84",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

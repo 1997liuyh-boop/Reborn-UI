@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst isDark = computed(() => useColorMode().value == \"dark\");\r\nconst shadowColor = computed(() => (isDark.value ? \"white\" : \"black\"));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\r\n    <h1 class=\"text-8xl leading-none font-extrabold tracking-tighter text-balance\">\r\n      Ship\r\n      <LineShadowText\r\n        class=\"italic\"\r\n        :shadow-color=\"shadowColor\"\r\n      >\r\n        Fast\r\n      </LineShadowText>\r\n    </h1>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst shadowColor = computed(() => (isDark.value ? \"white\" : \"black\"));\n</script>\n\n<template>\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\n    <h1 class=\"text-8xl leading-none font-extrabold tracking-tighter text-balance\">\n      Ship\n      <LineShadowText\n        class=\"italic\"\n        :shadow-color=\"shadowColor\"\n      >\n        Fast\n      </LineShadowText>\n    </h1>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -77,8 +77,8 @@
   },
   "docPath": "content/2.components/text-animations/line-shadow-text.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "7ceb02eb55cee647827c4d98212b9a5b1b2bd93e",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d5a7c4acc9c070f10d52e3d3fcfce2bf8630f8b2",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import YAML from "yaml";
-import type { DocRef } from "./sources.js";
+import { readTextFile, type DocRef } from "./sources.js";
 
 /** 文档抽取结果 */
 export interface DocsExtractResult {
@@ -123,7 +123,7 @@ function rowToApi(table: MarkdownTable, row: string[]): DocApiRow | null {
 
 /** 解析一份组件文档 */
 export function extractDocs(doc: DocRef): DocsExtractResult {
-  const content = fs.readFileSync(doc.absPath, "utf8");
+  const content = readTextFile(doc.absPath);
   const fm = parseFrontmatter(content);
 
   const result: DocsExtractResult = {

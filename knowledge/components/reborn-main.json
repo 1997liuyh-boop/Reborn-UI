@@ -11,7 +11,7 @@
   "props": [
     {
       "name": "ui",
-      "type": "Partial<{\r\n        base: any\r\n    }>",
+      "type": "Partial<{\n        base: any\n    }>",
       "required": false,
       "description": "内部组件 UI 配置对象。",
       "default": "{}"
@@ -34,7 +34,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nimport RebornMain from '../../ui/reborn-main/RebornMain.vue'\r\nimport RebornContainer from '../../ui/reborn-container/RebornContainer.vue'\r\n</script>\r\n\r\n<template>\r\n    <RebornMain class=\"bg-gray-50 dark:bg-gray-900/50 transition-colors duration-300\">\r\n        <RebornContainer class=\"py-12\">\r\n            <div class=\"flex flex-col items-center justify-center space-y-8 text-center\">\r\n                <div class=\"space-y-4\">\r\n                    <h2 class=\"text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl\">\r\n                        Reborn Main Layout\r\n                    </h2>\r\n                    <p class=\"mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400\">\r\n                        A premium main layout component that automatically handles minimum height based on the UI header\r\n                        height variable.\r\n                    </p>\r\n                </div>\r\n\r\n                <div class=\"grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3\">\r\n                    <div v-for=\"i in 6\" :key=\"i\"\r\n                        class=\"flex flex-col items-start p-6 space-y-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200\">\r\n                        <div class=\"h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center\">\r\n                            <Icon name=\"lucide:layout\" class=\"text-primary size-6\" />\r\n                        </div>\r\n                        <h3 class=\"text-xl font-semibold text-gray-900 dark:text-white\">Feature Item {{ i }}</h3>\r\n                        <p class=\"text-gray-500 dark:text-gray-400 leading-relaxed\">\r\n                            Experience the standard of modern web design with Reborn UI's professional layout system.\r\n                        </p>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </RebornContainer>\r\n    </RebornMain>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nimport RebornMain from '../../ui/reborn-main/RebornMain.vue'\nimport RebornContainer from '../../ui/reborn-container/RebornContainer.vue'\n</script>\n\n<template>\n    <RebornMain class=\"bg-gray-50 dark:bg-gray-900/50 transition-colors duration-300\">\n        <RebornContainer class=\"py-12\">\n            <div class=\"flex flex-col items-center justify-center space-y-8 text-center\">\n                <div class=\"space-y-4\">\n                    <h2 class=\"text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl\">\n                        Reborn Main Layout\n                    </h2>\n                    <p class=\"mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400\">\n                        A premium main layout component that automatically handles minimum height based on the UI header\n                        height variable.\n                    </p>\n                </div>\n\n                <div class=\"grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3\">\n                    <div v-for=\"i in 6\" :key=\"i\"\n                        class=\"flex flex-col items-start p-6 space-y-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200\">\n                        <div class=\"h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center\">\n                            <Icon name=\"lucide:layout\" class=\"text-primary size-6\" />\n                        </div>\n                        <h3 class=\"text-xl font-semibold text-gray-900 dark:text-white\">Feature Item {{ i }}</h3>\n                        <p class=\"text-gray-500 dark:text-gray-400 leading-relaxed\">\n                            Experience the standard of modern web design with Reborn UI's professional layout system.\n                        </p>\n                    </div>\n                </div>\n            </div>\n        </RebornContainer>\n    </RebornMain>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -67,8 +67,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-main.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "82f41c8adbff205a93c27f881ba58d2421a18ef3",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "2e787e28a0045757d5f6c062a869d59badc615ef",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -45,7 +45,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <RadiantText\r\n    class=\"inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-600 hover:duration-300 hover:dark:text-neutral-400\"\r\n    :duration=\"5\">\r\n    <span class=\"text-3xl font-bold\">✨ Introducing Reborn UI</span>\r\n  </RadiantText>\r\n</template>\r\n",
+      "code": "<template>\n  <RadiantText\n    class=\"inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-600 hover:duration-300 hover:dark:text-neutral-400\"\n    :duration=\"5\">\n    <span class=\"text-3xl font-bold\">✨ Introducing Reborn UI</span>\n  </RadiantText>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -76,8 +76,8 @@
   },
   "docPath": "content/2.components/text-animations/radiant-text.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "92f49a10c4b3936dc01118821a651d1838e7abdf",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d40f824537f163e07d33cb1c320cb27ddbeef33c",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

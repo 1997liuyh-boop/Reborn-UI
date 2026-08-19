@@ -12,14 +12,14 @@
   "files": [
     {
       "path": "ExpandableGallery.vue",
-      "content": "<script lang=\"ts\" setup>\r\nimport type { HTMLAttributes } from \"vue\";\r\n\r\ninterface Props {\r\n  images: string[];\r\n  class?: HTMLAttributes[\"class\"];\r\n}\r\n\r\nconst props = defineProps<Props>();\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"flex h-96 w-full gap-2\"\r\n    :class=\"[props.class]\"\r\n  >\r\n    <div\r\n      v-for=\"image in images\"\r\n      :key=\"image\"\r\n      class=\"relative flex h-full flex-1 cursor-pointer overflow-hidden rounded-xl transition-all duration-500 ease-in-out hover:flex-[3]\"\r\n    >\r\n      <img\r\n        class=\"relative h-full object-cover\"\r\n        :src=\"image\"\r\n        :alt=\"image\"\r\n      />\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "content": "<script lang=\"ts\" setup>\nimport type { HTMLAttributes } from \"vue\";\n\ninterface Props {\n  images: string[];\n  class?: HTMLAttributes[\"class\"];\n}\n\nconst props = defineProps<Props>();\n</script>\n\n<template>\n  <div\n    class=\"flex h-96 w-full gap-2\"\n    :class=\"[props.class]\"\n  >\n    <div\n      v-for=\"image in images\"\n      :key=\"image\"\n      class=\"relative flex h-full flex-1 cursor-pointer overflow-hidden rounded-xl transition-all duration-500 ease-in-out hover:flex-[3]\"\n    >\n      <img\n        class=\"relative h-full object-cover\"\n        :src=\"image\"\n        :alt=\"image\"\n      />\n    </div>\n  </div>\n</template>\n",
       "target": "web"
     },
     {
       "path": "index.ts",
-      "content": "export { default as ExpandableGallery } from \"./ExpandableGallery.vue\";\r\n"
+      "content": "export { default as ExpandableGallery } from \"./ExpandableGallery.vue\";\n"
     }
   ],
   "fileCount": 2,
-  "contentHash": "1852293739b494e05990c0abcd136abc7a418b45"
+  "contentHash": "496ddce83d3b90e276a51a87f23bf3b35cc4da61"
 }

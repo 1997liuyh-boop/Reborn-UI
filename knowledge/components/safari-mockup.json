@@ -49,7 +49,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"relative p-4\">\r\n    <SafariMockup url=\"reborn-ui.com\" src=\"/\" class=\"size-full\" />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"relative p-4\">\n    <SafariMockup url=\"reborn-ui.com\" src=\"/\" class=\"size-full\" />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,8 @@
   },
   "docPath": "content/2.components/device-mocks/safari-mockup.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "ad638fdce5baa76873afa67ca8b02bd1b8156991",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "f6d663ae7573af4c299f616ce65fd89657a5d8cb",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

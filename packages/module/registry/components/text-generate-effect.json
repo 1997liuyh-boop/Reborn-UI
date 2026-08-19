@@ -12,14 +12,14 @@
   "files": [
     {
       "path": "index.ts",
-      "content": "export { default as TextGenerateEffect } from \"./TextGenerateEffect.vue\";\r\n"
+      "content": "export { default as TextGenerateEffect } from \"./TextGenerateEffect.vue\";\n"
     },
     {
       "path": "TextGenerateEffect.vue",
-      "content": "<script setup lang=\"ts\">\r\nimport type { HTMLAttributes } from \"vue\";\r\nimport { computed, onMounted, ref } from \"vue\";\r\n\r\nconst props = withDefaults(\r\n  defineProps<{\r\n    words: string;\r\n    filter?: boolean;\r\n    duration?: number;\r\n    delay?: number;\r\n    class?: HTMLAttributes[\"class\"];\r\n  }>(),\r\n  { duration: 0.7, delay: 0, filter: true },\r\n);\r\n\r\nconst scope = ref(null);\r\nconst wordsArray = computed(() => props.words.split(\" \"));\r\n\r\nconst spanStyle = computed(() => ({\r\n  opacity: 0,\r\n  filter: props.filter ? \"blur(10px)\" : \"none\",\r\n  transition: `opacity ${props.duration}s, filter ${props.duration}s`,\r\n}));\r\n\r\nonMounted(() => {\r\n  if (scope.value) {\r\n    const spans = (scope.value as HTMLElement).querySelectorAll(\"span\");\r\n\r\n    setTimeout(() => {\r\n      spans.forEach((span: HTMLElement, index: number) => {\r\n        setTimeout(() => {\r\n          span.style.opacity = \"1\";\r\n          span.style.filter = props.filter ? \"blur(0px)\" : \"none\";\r\n        }, index * 200);\r\n      });\r\n    }, props.delay);\r\n  }\r\n});\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"leading-snug tracking-wide\"\r\n    :class=\"[props.class]\"\r\n  >\r\n    <div ref=\"scope\">\r\n      <span\r\n        v-for=\"(word, idx) in wordsArray\"\r\n        :key=\"word + idx\"\r\n        class=\"inline-block\"\r\n        :style=\"spanStyle\"\r\n      >\r\n        {{ word }}&nbsp;\r\n      </span>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "content": "<script setup lang=\"ts\">\nimport type { HTMLAttributes } from \"vue\";\nimport { computed, onMounted, ref } from \"vue\";\n\nconst props = withDefaults(\n  defineProps<{\n    words: string;\n    filter?: boolean;\n    duration?: number;\n    delay?: number;\n    class?: HTMLAttributes[\"class\"];\n  }>(),\n  { duration: 0.7, delay: 0, filter: true },\n);\n\nconst scope = ref(null);\nconst wordsArray = computed(() => props.words.split(\" \"));\n\nconst spanStyle = computed(() => ({\n  opacity: 0,\n  filter: props.filter ? \"blur(10px)\" : \"none\",\n  transition: `opacity ${props.duration}s, filter ${props.duration}s`,\n}));\n\nonMounted(() => {\n  if (scope.value) {\n    const spans = (scope.value as HTMLElement).querySelectorAll(\"span\");\n\n    setTimeout(() => {\n      spans.forEach((span: HTMLElement, index: number) => {\n        setTimeout(() => {\n          span.style.opacity = \"1\";\n          span.style.filter = props.filter ? \"blur(0px)\" : \"none\";\n        }, index * 200);\n      });\n    }, props.delay);\n  }\n});\n</script>\n\n<template>\n  <div\n    class=\"leading-snug tracking-wide\"\n    :class=\"[props.class]\"\n  >\n    <div ref=\"scope\">\n      <span\n        v-for=\"(word, idx) in wordsArray\"\n        :key=\"word + idx\"\n        class=\"inline-block\"\n        :style=\"spanStyle\"\n      >\n        {{ word }}&nbsp;\n      </span>\n    </div>\n  </div>\n</template>\n",
       "target": "web"
     }
   ],
   "fileCount": 2,
-  "contentHash": "a3f6ef017cfbc72fdc2566b22ee4c82af0c37940"
+  "contentHash": "010f17e688f5359d287410eacdfb98825afec659"
 }

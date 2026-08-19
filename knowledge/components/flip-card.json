@@ -42,13 +42,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex items-center justify-center\">\r\n    <FlipCard>\r\n      <template #default>\r\n        <img\r\n          src=\"https://images.unsplash.com/photo-1525373698358-041e3a460346?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3\"\r\n          alt=\"image\" class=\"size-full rounded-2xl object-cover shadow-2xl shadow-black/40\" />\r\n        <div class=\"absolute bottom-4 left-4 text-xl font-bold text-white\">Reborn UI</div>\r\n      </template>\r\n      <template #back>\r\n        <div class=\"flex min-h-full flex-col gap-2\">\r\n          <h1 class=\"text-xl font-bold text-white\">Reborn UI</h1>\r\n          <p class=\"mt-1 border-t border-t-gray-200 py-4 text-base leading-normal font-medium text-gray-100\">\r\n            Reborn UI offers beautifully designed, reusable animation components and includes\r\n            custom components developed by us and contributed by the community.\r\n          </p>\r\n        </div>\r\n      </template>\r\n    </FlipCard>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex items-center justify-center\">\n    <FlipCard>\n      <template #default>\n        <img\n          src=\"https://images.unsplash.com/photo-1525373698358-041e3a460346?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3\"\n          alt=\"image\" class=\"size-full rounded-2xl object-cover shadow-2xl shadow-black/40\" />\n        <div class=\"absolute bottom-4 left-4 text-xl font-bold text-white\">Reborn UI</div>\n      </template>\n      <template #back>\n        <div class=\"flex min-h-full flex-col gap-2\">\n          <h1 class=\"text-xl font-bold text-white\">Reborn UI</h1>\n          <p class=\"mt-1 border-t border-t-gray-200 py-4 text-base leading-normal font-medium text-gray-100\">\n            Reborn UI offers beautifully designed, reusable animation components and includes\n            custom components developed by us and contributed by the community.\n          </p>\n        </div>\n      </template>\n    </FlipCard>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex items-center justify-center\">\r\n    <FlipCard rotate=\"x\">\r\n      <template #default>\r\n        <img\r\n          src=\"https://images.unsplash.com/photo-1525373698358-041e3a460346?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3\"\r\n          alt=\"image\" class=\"size-full rounded-2xl object-cover shadow-2xl shadow-black/40\" />\r\n      </template>\r\n      <template #back>\r\n        <div class=\"flex min-h-full flex-col gap-2\">\r\n          <h1 class=\"text-xl font-bold text-white\">Reborn UI</h1>\r\n          <p class=\"mt-1 border-t border-t-gray-200 py-4 text-base leading-normal font-medium text-gray-100\">\r\n            Reborn UI offers beautifully designed, reusable animation components and includes\r\n            custom components developed by us and contributed by the community.\r\n          </p>\r\n        </div>\r\n      </template>\r\n    </FlipCard>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex items-center justify-center\">\n    <FlipCard rotate=\"x\">\n      <template #default>\n        <img\n          src=\"https://images.unsplash.com/photo-1525373698358-041e3a460346?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3\"\n          alt=\"image\" class=\"size-full rounded-2xl object-cover shadow-2xl shadow-black/40\" />\n      </template>\n      <template #back>\n        <div class=\"flex min-h-full flex-col gap-2\">\n          <h1 class=\"text-xl font-bold text-white\">Reborn UI</h1>\n          <p class=\"mt-1 border-t border-t-gray-200 py-4 text-base leading-normal font-medium text-gray-100\">\n            Reborn UI offers beautifully designed, reusable animation components and includes\n            custom components developed by us and contributed by the community.\n          </p>\n        </div>\n      </template>\n    </FlipCard>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -79,8 +79,8 @@
   },
   "docPath": "content/2.components/cards/flip-card.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "bfefe5fd7934adcaf5db898c291955a391870f0a",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "8ec1379c32bb8041dfdf6bdfd97ac700a2f3bb4a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

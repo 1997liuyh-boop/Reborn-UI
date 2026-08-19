@@ -28,7 +28,7 @@
     },
     {
       "name": "colors",
-      "type": "{\r\n    first: string;\r\n    second: string;\r\n  }",
+      "type": "{\n    first: string;\n    second: string;\n  }",
       "required": false,
       "description": "闪光的颜色配置。",
       "default": "() => ({ first: \"#9E7AFF\", second: \"#FE8BBB\" })"
@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex h-80 items-center justify-center\">\r\n    <SparklesText text=\"Reborn UI\" :colors=\"{ first: '#9E7AFF', second: '#FE8BBB' }\" :sparkles-count=\"10\"\r\n      class=\"my-8\" />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex h-80 items-center justify-center\">\n    <SparklesText text=\"Reborn UI\" :colors=\"{ first: '#9E7AFF', second: '#FE8BBB' }\" :sparkles-count=\"10\"\n      class=\"my-8\" />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -80,8 +80,8 @@
   },
   "docPath": "content/2.components/text-animations/sparkles-text.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "1d8312ab08320cb43a9554f799b1451ff88a9b62",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "5789c5f87884fe9dec848392756f8cd6c9e43e70",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

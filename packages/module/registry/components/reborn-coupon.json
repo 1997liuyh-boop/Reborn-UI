@@ -13,7 +13,7 @@
     },
     {
       "path": "reborn-coupon.config.ts",
-      "content": "export type CouponType = 'notch' | 'ticket' | 'stamp' | 'perforated' | 'combined'\r\nexport type CouponDirection = 'horizontal' | 'vertical'\r\nexport type CouponPosition = 'start' | 'center' | 'end'\r\nexport type CouponSplit = 'dashed' | 'dotted'\r\n\r\nexport default {\r\n    slots: {\r\n        root: 'flex overflow-hidden box-border bg-[#f5f5f5] transition duration-300 ease-in-out cursor-pointer antialiased',\r\n        left: 'shrink-0',\r\n        right: 'grow flex-1',\r\n        center: 'py-2',\r\n    },\r\n    variants: {\r\n        direction: {\r\n            horizontal: {\r\n                root: 'flex-col',\r\n                left: 'w-full',\r\n                right: 'w-full',\r\n                center: 'w-full'\r\n            },\r\n            vertical: {\r\n                root: 'flex-row',\r\n                left: 'h-full',\r\n                right: 'h-full',\r\n                center: 'h-full'\r\n            }\r\n        },\r\n        hoverable: {\r\n            true: {\r\n                root: 'hover:-translate-y-1 hover:shadow-xl will-change-transform'\r\n            }\r\n        }\r\n    }\r\n}\r\n"
+      "content": "export type CouponType = 'notch' | 'ticket' | 'stamp' | 'perforated' | 'combined'\nexport type CouponDirection = 'horizontal' | 'vertical'\nexport type CouponPosition = 'start' | 'center' | 'end'\nexport type CouponSplit = 'dashed' | 'dotted'\n\nexport default {\n    slots: {\n        root: 'flex overflow-hidden box-border bg-[#f5f5f5] transition duration-300 ease-in-out cursor-pointer antialiased',\n        left: 'shrink-0',\n        right: 'grow flex-1',\n        center: 'py-2',\n    },\n    variants: {\n        direction: {\n            horizontal: {\n                root: 'flex-col',\n                left: 'w-full',\n                right: 'w-full',\n                center: 'w-full'\n            },\n            vertical: {\n                root: 'flex-row',\n                left: 'h-full',\n                right: 'h-full',\n                center: 'h-full'\n            }\n        },\n        hoverable: {\n            true: {\n                root: 'hover:-translate-y-1 hover:shadow-xl will-change-transform'\n            }\n        }\n    }\n}\n"
     },
     {
       "path": "RebornCoupon.vue",
@@ -22,5 +22,5 @@
     }
   ],
   "fileCount": 3,
-  "contentHash": "79f75babb9bfb5f74201d36ae40c63d26dd22efc"
+  "contentHash": "677a90c1ec675aee9cc55a71859ae576f8b6f59c"
 }

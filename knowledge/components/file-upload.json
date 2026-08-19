@@ -38,7 +38,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"space-y-6 p-8 dark:bg-black\">\r\n    <FileUpload class=\"rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800\">\r\n      <FileUploadGrid />\r\n    </FileUpload>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"space-y-6 p-8 dark:bg-black\">\n    <FileUpload class=\"rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800\">\n      <FileUploadGrid />\n    </FileUpload>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -71,8 +71,8 @@
   },
   "docPath": "content/2.components/input-and-forms/file-upload.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "28b5f61551b6c431eff4c7a614494033169e99c9",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "1961d2d8121db7da67d7149656c6c0a570083de4",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

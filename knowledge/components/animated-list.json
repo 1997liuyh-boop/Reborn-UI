@@ -68,7 +68,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nconst notifications = [\r\n  {\r\n    name: \"Payment received\",\r\n    description: \"Reborn UI\",\r\n    time: \"15m ago\",\r\n    icon: \"💸\",\r\n    color: \"#00C9A7\",\r\n  },\r\n  {\r\n    name: \"User signed up\",\r\n    description: \"Reborn UI\",\r\n    time: \"10m ago\",\r\n    icon: \"👤\",\r\n    color: \"#FFB800\",\r\n  },\r\n  {\r\n    name: \"New message\",\r\n    description: \"Reborn UI\",\r\n    time: \"5m ago\",\r\n    icon: \"💬\",\r\n    color: \"#FF3D71\",\r\n  },\r\n  {\r\n    name: \"New event\",\r\n    description: \"Reborn UI\",\r\n    time: \"2m ago\",\r\n    icon: \"🗞️\",\r\n    color: \"#1E86FF\",\r\n  },\r\n  {\r\n    name: \"Task completed\",\r\n    description: \"Reborn UI\",\r\n    time: \"1m ago\",\r\n    icon: \"✅\",\r\n    color: \"#45B26B\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <ClientOnly>\r\n    <div class=\"relative flex h-[500px] w-full flex-col overflow-hidden p-6\">\r\n      <AnimatedList>\r\n        <template #default>\r\n          <Notification v-for=\"(item, idx) in notifications\" :key=\"idx\" :name=\"item.name\"\r\n            :description=\"item.description\" :icon=\"item.icon\" :color=\"item.color\" :time=\"item.time\" />\r\n        </template>\r\n      </AnimatedList>\r\n    </div>\r\n  </ClientOnly>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nconst notifications = [\n  {\n    name: \"Payment received\",\n    description: \"Reborn UI\",\n    time: \"15m ago\",\n    icon: \"💸\",\n    color: \"#00C9A7\",\n  },\n  {\n    name: \"User signed up\",\n    description: \"Reborn UI\",\n    time: \"10m ago\",\n    icon: \"👤\",\n    color: \"#FFB800\",\n  },\n  {\n    name: \"New message\",\n    description: \"Reborn UI\",\n    time: \"5m ago\",\n    icon: \"💬\",\n    color: \"#FF3D71\",\n  },\n  {\n    name: \"New event\",\n    description: \"Reborn UI\",\n    time: \"2m ago\",\n    icon: \"🗞️\",\n    color: \"#1E86FF\",\n  },\n  {\n    name: \"Task completed\",\n    description: \"Reborn UI\",\n    time: \"1m ago\",\n    icon: \"✅\",\n    color: \"#45B26B\",\n  },\n];\n</script>\n\n<template>\n  <ClientOnly>\n    <div class=\"relative flex h-[500px] w-full flex-col overflow-hidden p-6\">\n      <AnimatedList>\n        <template #default>\n          <Notification v-for=\"(item, idx) in notifications\" :key=\"idx\" :name=\"item.name\"\n            :description=\"item.description\" :icon=\"item.icon\" :color=\"item.color\" :time=\"item.time\" />\n        </template>\n      </AnimatedList>\n    </div>\n  </ClientOnly>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -103,8 +103,8 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-list.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "cdb2870457ad42cba321439069249f1630a967a9",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "805b4ecc5127dca544146cac7ae10c5ba53543bb",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

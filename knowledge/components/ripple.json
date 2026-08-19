@@ -101,7 +101,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div\r\n    class=\"relative flex h-[450px] w-full flex-col items-center justify-center overflow-hidden rounded-lg md:w-full lg:w-full\"\r\n  >\r\n    <p\r\n      class=\"z-10 text-center text-5xl font-medium tracking-tighter whitespace-pre-wrap text-black dark:text-white\"\r\n    >\r\n      Ripple\r\n    </p>\r\n    <Ripple\r\n      class=\"bg-white/5 [mask-image:linear-gradient(to_bottom,white,transparent)]\"\r\n      circle-class=\"border-[hsl(var(--primary))] bg-[#0000]/25 dark:bg-[#fff]/25 rounded-full\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div\n    class=\"relative flex h-[450px] w-full flex-col items-center justify-center overflow-hidden rounded-lg md:w-full lg:w-full\"\n  >\n    <p\n      class=\"z-10 text-center text-5xl font-medium tracking-tighter whitespace-pre-wrap text-black dark:text-white\"\n    >\n      Ripple\n    </p>\n    <Ripple\n      class=\"bg-white/5 [mask-image:linear-gradient(to_bottom,white,transparent)]\"\n      circle-class=\"border-[hsl(var(--primary))] bg-[#0000]/25 dark:bg-[#fff]/25 rounded-full\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -135,8 +135,8 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "3cd12eaa3499580007f3726d12aec404a9ecce45",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "3f63629a4ed83a2451386f43312c3aa257232662",
     "hasOverride": true,
     "extractors": {
       "web": "partial",

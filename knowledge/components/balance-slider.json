@@ -83,7 +83,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst isDark = computed(() => useColorMode().value == \"dark\");\r\nconst rightColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\r\nconst indicatorColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"w-full p-4\">\r\n    <BalanceSlider\r\n      :right-color=\"rightColor\"\r\n      left-content=\"COFFEE\"\r\n      right-content=\"MILK\"\r\n      :indicator-color=\"indicatorColor\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst rightColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\nconst indicatorColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\n</script>\n\n<template>\n  <div class=\"w-full p-4\">\n    <BalanceSlider\n      :right-color=\"rightColor\"\n      left-content=\"COFFEE\"\n      right-content=\"MILK\"\n      :indicator-color=\"indicatorColor\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -115,8 +115,8 @@
   },
   "docPath": "content/2.components/input-and-forms/balance-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "b152e154de7b32fd202843aed0abf619fc6b67b7",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d2fafe730ae72c06c1c55455d385ca4fa1a8a06d",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

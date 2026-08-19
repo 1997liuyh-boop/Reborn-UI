@@ -11,6 +11,7 @@ import {
   findDemoFiles,
   listComponentFiles,
   loadRegistryDependencies,
+  readTextFile,
   KNOWLEDGE_DIR,
   REPO_ROOT,
 } from "./sources.js";
@@ -198,7 +199,7 @@ export function buildComponent(id: string): { component: ComponentKnowledge; rep
   // 演示代码 → examples
   const examples: ExampleInfo[] = findDemoFiles(id).map((d) => ({
     title: `${d.platform === "web" ? "Web" : "UniApp"} 演示`,
-    code: fs.readFileSync(d.absPath, "utf8"),
+    code: readTextFile(d.absPath),
     source: "demo" as const,
     platform: d.platform,
   }));
@@ -210,7 +211,7 @@ export function buildComponent(id: string): { component: ComponentKnowledge; rep
     if (!side) continue;
     for (const f of listComponentFiles(side)) {
       if (![".vue", ".ts"].includes(path.extname(f))) continue;
-      const content = fs.readFileSync(path.join(side, f), "utf8");
+      const content = readTextFile(path.join(side, f));
       for (const m of content.matchAll(COMPONENT_IMPORT_RE)) {
         if (m[1] !== id) related.add(m[1]);
       }

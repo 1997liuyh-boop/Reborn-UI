@@ -21,6 +21,15 @@ export const KNOWLEDGE_DIR = path.join(REPO_ROOT, "knowledge");
 /** registry 数据（复用 CLI 构建产物中的依赖信息） */
 export const REGISTRY_JSON = path.join(REPO_ROOT, "packages/cli/registry/registry.json");
 
+/**
+ * 读取文本文件并把 CRLF 归一为 LF。
+ * 抽取结果会写进知识库 JSON 并参与 contentHash 比对，
+ * 换行符必须与检出平台无关，否则 Windows 本地生成、Linux CI 校验时会全量误报 drift。
+ */
+export function readTextFile(absPath: string): string {
+  return fs.readFileSync(absPath, "utf8").replace(/\r\n/g, "\n");
+}
+
 /** 文档子目录 → 知识库分类 的映射 */
 const DOC_DIR_TO_CATEGORY: Record<string, Category> = {
   "button": "basic",
@@ -89,7 +98,7 @@ export function buildDocIndex(): Map<string, DocRef> {
         .split(path.sep)
         .join("/");
       const ref: DocRef = { relPath, absPath, dirName: dir.name };
-      const content = fs.readFileSync(absPath, "utf8");
+      const content = readTextFile(absPath);
 
       // 正文中 componentId="xxx" 的显式声明
       for (const m of content.matchAll(/componentId="([a-zA-Z0-9-]+)"/g)) {

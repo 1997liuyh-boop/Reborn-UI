@@ -40,7 +40,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <LetterPullup\r\n    words=\"Staggered Letter Pull Up\"\r\n    :delay=\"0.05\"\r\n    class=\"text-black dark:text-white\"\r\n  />\r\n</template>\r\n",
+      "code": "<template>\n  <LetterPullup\n    words=\"Staggered Letter Pull Up\"\n    :delay=\"0.05\"\n    class=\"text-black dark:text-white\"\n  />\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -73,8 +73,8 @@
   },
   "docPath": "content/2.components/text-animations/letter-pullup.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "4917f249a4cc5177f50a88974aa2b39d1680791f",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "85a52d65e30fa29529c4f80be0e9e0e409528395",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

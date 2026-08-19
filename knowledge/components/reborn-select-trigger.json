@@ -61,7 +61,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<{\r\n    wrapper: ClassValue\r\n    content: ClassValue\r\n    text: ClassValue\r\n    placeholder: ClassValue\r\n    iconWrapper: ClassValue\r\n    clearIcon: ClassValue\r\n    arrowIcon: ClassValue\r\n  }>",
+      "type": "Partial<{\n    wrapper: ClassValue\n    content: ClassValue\n    text: ClassValue\n    placeholder: ClassValue\n    iconWrapper: ClassValue\n    clearIcon: ClassValue\n    arrowIcon: ClassValue\n  }>",
       "required": false,
       "description": ""
     },
@@ -259,8 +259,8 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "b461c912fa32f0ef7d0a818dc80567789c9c479f",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "cabbaf4689dafb1e635a650a96e5d5512b0456aa",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

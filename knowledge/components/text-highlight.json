@@ -51,7 +51,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"text-blance flex justify-center p-10\">\r\n    <h1 class=\"text-center text-4xl font-bold text-balance\">\r\n      You are a\r\n      <TextHighlight class=\"bg-gradient-to-r from-indigo-300 to-purple-300\">\r\n        f****ing great developer !\r\n      </TextHighlight>\r\n    </h1>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"text-blance flex justify-center p-10\">\n    <h1 class=\"text-center text-4xl font-bold text-balance\">\n      You are a\n      <TextHighlight class=\"bg-gradient-to-r from-indigo-300 to-purple-300\">\n        f****ing great developer !\n      </TextHighlight>\n    </h1>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -83,8 +83,8 @@
   },
   "docPath": "content/2.components/text-animations/text-highlight.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "e569d9d21803049c89277769b1850d42965ff325",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "efa7747c66833b1c9a815a75ddd042249f417e3c",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

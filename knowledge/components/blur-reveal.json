@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <ClientOnly>\r\n    <BlurReveal\r\n      :delay=\"0.2\"\r\n      :duration=\"0.75\"\r\n      class=\"p-8\"\r\n    >\r\n      <h2 class=\"text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none\">Hey there 👋</h2>\r\n      <span class=\"text-xl tracking-tighter text-pretty sm:text-3xl xl:text-4xl/none\">\r\n        How is it going?\r\n      </span>\r\n    </BlurReveal>\r\n  </ClientOnly>\r\n</template>\r\n",
+      "code": "<template>\n  <ClientOnly>\n    <BlurReveal\n      :delay=\"0.2\"\n      :duration=\"0.75\"\n      class=\"p-8\"\n    >\n      <h2 class=\"text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none\">Hey there 👋</h2>\n      <span class=\"text-xl tracking-tighter text-pretty sm:text-3xl xl:text-4xl/none\">\n        How is it going?\n      </span>\n    </BlurReveal>\n  </ClientOnly>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -88,8 +88,8 @@
   },
   "docPath": "content/2.components/text-animations/blur-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "61e2873f2b9510413ead261c2bfb50cb76d5333d",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "035a849a4961a2778075737e8757bc97bb412d95",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

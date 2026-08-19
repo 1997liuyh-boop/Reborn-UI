@@ -82,7 +82,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nconst items = [\r\n  {\r\n    title: \"The Dawn of Innovation\",\r\n    description: \"Explore the birth of groundbreaking ideas and inventions.\",\r\n  },\r\n  {\r\n    title: \"The Digital Revolution\",\r\n    description: \"Dive into the transformative power of technology.\",\r\n  },\r\n  {\r\n    title: \"The Art of Design\",\r\n    description: \"Discover the beauty of thoughtful and experience design.\",\r\n  },\r\n  {\r\n    title: \"The Power of Communication\",\r\n    description: \"Understand the impact of effective communication in our lives.\",\r\n  },\r\n  {\r\n    title: \"The Pursuit of Knowledge\",\r\n    description: \"Join the quest for understanding and enlightenment.\",\r\n  },\r\n  {\r\n    title: \"The Joy of Creation\",\r\n    description: \"Experience the thrill of bringing ideas to life.\",\r\n  },\r\n  {\r\n    title: \"The Spirit of Adventure\",\r\n    description: \"Embark on exciting journeys and thrilling discoveries.\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <BentoGrid class=\"mx-auto max-w-4xl\">\r\n    <BentoGridItem\r\n      v-for=\"(item, index) in items\"\r\n      :key=\"index\"\r\n      :class=\"index === 3 || index === 6 ? 'md:col-span-2' : ''\"\r\n    >\r\n      <template #header>\r\n        <div class=\"flex size-full animate-pulse space-x-4\">\r\n          <div class=\"flex size-full flex-1 rounded-md bg-zinc-800\" />\r\n        </div>\r\n      </template>\r\n\r\n      <template #title>\r\n        <strong>{{ item.title }}</strong>\r\n      </template>\r\n\r\n      <template #icon />\r\n\r\n      <template #description>\r\n        <p>{{ item.description }}</p>\r\n      </template>\r\n    </BentoGridItem>\r\n  </BentoGrid>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nconst items = [\n  {\n    title: \"The Dawn of Innovation\",\n    description: \"Explore the birth of groundbreaking ideas and inventions.\",\n  },\n  {\n    title: \"The Digital Revolution\",\n    description: \"Dive into the transformative power of technology.\",\n  },\n  {\n    title: \"The Art of Design\",\n    description: \"Discover the beauty of thoughtful and experience design.\",\n  },\n  {\n    title: \"The Power of Communication\",\n    description: \"Understand the impact of effective communication in our lives.\",\n  },\n  {\n    title: \"The Pursuit of Knowledge\",\n    description: \"Join the quest for understanding and enlightenment.\",\n  },\n  {\n    title: \"The Joy of Creation\",\n    description: \"Experience the thrill of bringing ideas to life.\",\n  },\n  {\n    title: \"The Spirit of Adventure\",\n    description: \"Embark on exciting journeys and thrilling discoveries.\",\n  },\n];\n</script>\n\n<template>\n  <BentoGrid class=\"mx-auto max-w-4xl\">\n    <BentoGridItem\n      v-for=\"(item, index) in items\"\n      :key=\"index\"\n      :class=\"index === 3 || index === 6 ? 'md:col-span-2' : ''\"\n    >\n      <template #header>\n        <div class=\"flex size-full animate-pulse space-x-4\">\n          <div class=\"flex size-full flex-1 rounded-md bg-zinc-800\" />\n        </div>\n      </template>\n\n      <template #title>\n        <strong>{{ item.title }}</strong>\n      </template>\n\n      <template #icon />\n\n      <template #description>\n        <p>{{ item.description }}</p>\n      </template>\n    </BentoGridItem>\n  </BentoGrid>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -117,8 +117,8 @@
   },
   "docPath": "content/2.components/miscellaneous/bento-grid.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "b21f75066a174ecceec643081a0c641a3b60c11d",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "488402f7466f867de705b667376c7bf07090b02e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

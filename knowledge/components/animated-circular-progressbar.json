@@ -83,7 +83,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nimport { onBeforeUnmount, onMounted, ref } from \"vue\";\r\n\r\nconst value = ref(0);\r\n\r\nfunction handleIncrement(prev: number) {\r\n  return prev === 100 ? 0 : prev + 10;\r\n}\r\n\r\nlet interval: ReturnType<typeof setInterval>;\r\n\r\nonMounted(() => {\r\n  value.value = handleIncrement(value.value);\r\n  interval = setInterval(() => {\r\n    value.value = handleIncrement(value.value);\r\n  }, 2000);\r\n});\r\n\r\nonBeforeUnmount(() => {\r\n  if (interval) {\r\n    clearInterval(interval);\r\n  }\r\n});\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex items-center justify-center py-1\">\r\n    <AnimatedCircularProgressBar\r\n      :max=\"100\"\r\n      :min=\"0\"\r\n      :value=\"value\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nimport { onBeforeUnmount, onMounted, ref } from \"vue\";\n\nconst value = ref(0);\n\nfunction handleIncrement(prev: number) {\n  return prev === 100 ? 0 : prev + 10;\n}\n\nlet interval: ReturnType<typeof setInterval>;\n\nonMounted(() => {\n  value.value = handleIncrement(value.value);\n  interval = setInterval(() => {\n    value.value = handleIncrement(value.value);\n  }, 2000);\n});\n\nonBeforeUnmount(() => {\n  if (interval) {\n    clearInterval(interval);\n  }\n});\n</script>\n\n<template>\n  <div class=\"flex items-center justify-center py-1\">\n    <AnimatedCircularProgressBar\n      :max=\"100\"\n      :min=\"0\"\n      :value=\"value\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -114,8 +114,8 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-circular-progressbar.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "00288f9b0d656509075f104db4e3655a34bb89ab",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "7dd8798f629421b394e4eaaf08871c2c9b3d9c36",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

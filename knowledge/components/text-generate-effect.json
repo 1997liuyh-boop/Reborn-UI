@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex items-center justify-center py-12 max-lg:w-full md:flex-1\">\r\n    <TextGenerateEffect\r\n      words=\"Nuxt is an open source framework that makes web development intuitive and powerful. Create performant and production-grade full-stack web apps and websites with confidence.\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex items-center justify-center py-12 max-lg:w-full md:flex-1\">\n    <TextGenerateEffect\n      words=\"Nuxt is an open source framework that makes web development intuitive and powerful. Create performant and production-grade full-stack web apps and websites with confidence.\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -88,8 +88,8 @@
   },
   "docPath": "content/2.components/text-animations/text-generate-effect.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "f094c1208a58a16076a1a2b1c4ca40621e36a7e4",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "b29b184c248ddd6356c525c94f68d7dddc8731e1",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

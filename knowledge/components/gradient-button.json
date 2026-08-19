@@ -25,7 +25,7 @@
       "type": "string[]",
       "required": false,
       "description": "用于圆锥渐变边框的颜色数组。",
-      "default": "() => [\r\n    \"#FF0000\",\r\n    \"#FFA500\",\r\n    \"#FFFF00\",\r\n    \"#008000\",\r\n    \"#0000FF\",\r\n    \"#4B0082\",\r\n    \"#EE82EE\",\r\n    \"#FF0000\",\r\n  ]"
+      "default": "() => [\n    \"#FF0000\",\n    \"#FFA500\",\n    \"#FFFF00\",\n    \"#008000\",\n    \"#0000FF\",\n    \"#4B0082\",\n    \"#EE82EE\",\n    \"#FF0000\",\n  ]"
     },
     {
       "name": "duration",
@@ -74,7 +74,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nimport { useColorMode } from \"@vueuse/core\";\r\nimport { computed } from \"vue\";\r\n\r\nconst isDark = computed(() => useColorMode().value == \"dark\");\r\nconst bgColor = computed(() => (isDark.value ? \"#000\" : \"#fff\"));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"z-10 flex h-56 w-full flex-col items-center justify-center\">\r\n    <GradientButton :bg-color=\"bgColor\">Zooooooooooom 🚀</GradientButton>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst bgColor = computed(() => (isDark.value ? \"#000\" : \"#fff\"));\n</script>\n\n<template>\n  <div class=\"z-10 flex h-56 w-full flex-col items-center justify-center\">\n    <GradientButton :bg-color=\"bgColor\">Zooooooooooom 🚀</GradientButton>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -106,8 +106,8 @@
   },
   "docPath": "content/2.components/button/gradient-button.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "cc615844f72d2d360d829fe8cd19d5626b88341c",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d75d41e5071248384ef7160383e0a0e791c57929",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

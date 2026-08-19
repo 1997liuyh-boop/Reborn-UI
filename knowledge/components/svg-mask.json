@@ -50,7 +50,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex h-[40rem] w-full items-center justify-center overflow-hidden\">\r\n    <SVGMask class=\"h-[40rem] rounded-md border\">\r\n      <template #base>\r\n        The first rule of <span class=\"text-red-500\">MRR Club</span> is you do not talk about MRR\r\n        Club. The second rule of MRR Club is you DO NOT talk about\r\n        <span class=\"text-red-500\">MRR Club</span>.\r\n      </template>\r\n      <template #reveal>\r\n        <p class=\"mx-auto max-w-4xl text-center text-4xl font-bold text-slate-800\">\r\n          The first rule of MRR Club is you do not talk about MRR Club. The second rule of MRR Club\r\n          is you DO NOT talk about MRR Club.\r\n        </p>\r\n      </template>\r\n    </SVGMask>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex h-[40rem] w-full items-center justify-center overflow-hidden\">\n    <SVGMask class=\"h-[40rem] rounded-md border\">\n      <template #base>\n        The first rule of <span class=\"text-red-500\">MRR Club</span> is you do not talk about MRR\n        Club. The second rule of MRR Club is you DO NOT talk about\n        <span class=\"text-red-500\">MRR Club</span>.\n      </template>\n      <template #reveal>\n        <p class=\"mx-auto max-w-4xl text-center text-4xl font-bold text-slate-800\">\n          The first rule of MRR Club is you do not talk about MRR Club. The second rule of MRR Club\n          is you DO NOT talk about MRR Club.\n        </p>\n      </template>\n    </SVGMask>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,8 @@
   },
   "docPath": "content/2.components/miscellaneous/svg-mask.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "a2a7b2e90c6ed5afb0b0ba2a7afc0dfe05c75927",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "b598e61f2df4dd016c9aeea16adf394ffed32d8a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

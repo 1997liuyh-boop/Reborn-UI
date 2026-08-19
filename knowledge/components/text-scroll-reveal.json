@@ -52,7 +52,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"z-10 flex min-h-64 items-center justify-center rounded-lg bg-white dark:bg-black\">\r\n    <TextScrollReveal text=\"Making UI beautiful using Reborn UI.\" />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"z-10 flex min-h-64 items-center justify-center rounded-lg bg-white dark:bg-black\">\n    <TextScrollReveal text=\"Making UI beautiful using Reborn UI.\" />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -84,8 +84,8 @@
   },
   "docPath": "content/2.components/text-animations/text-scroll-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "a27fe2b7234d63b61f4547fd73524854909d26fc",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "70b4ed57a7ef7be1f3e217f64ff38e392656b103",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

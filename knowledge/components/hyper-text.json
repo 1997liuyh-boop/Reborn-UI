@@ -48,7 +48,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex flex-col items-center justify-center space-y-4\">\r\n    <HyperText\r\n      text=\"Hyper Text\"\r\n      class=\"text-4xl font-bold\"\r\n      :duration=\"800\"\r\n      :animate-on-load=\"true\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex flex-col items-center justify-center space-y-4\">\n    <HyperText\n      text=\"Hyper Text\"\n      class=\"text-4xl font-bold\"\n      :duration=\"800\"\n      :animate-on-load=\"true\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -83,8 +83,8 @@
   },
   "docPath": "content/2.components/text-animations/hyper-text.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "3a7674f7b16c1adb1cfac473bd695df0f557076f",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "78d5761858aa0a8aa86063ba72a3a78b94010809",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

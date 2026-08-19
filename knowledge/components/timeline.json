@@ -29,7 +29,7 @@
     },
     {
       "name": "items",
-      "type": "{\r\n    id: string;\r\n    label: string;\r\n  }[]",
+      "type": "{\n    id: string;\n    label: string;\n  }[]",
       "required": false,
       "description": "时间线条目列表，每项包含 ID 与标签。",
       "default": "() => []"
@@ -60,7 +60,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nconst data = [\r\n  {\r\n    id: \"version1.0\",\r\n    label: \"Version 1.0\",\r\n  },\r\n  {\r\n    id: \"version2.0\",\r\n    label: \"Version 2.0\",\r\n  },\r\n\r\n  {\r\n    id: \"version3.0\",\r\n    label: \"Version 3.0\",\r\n  },\r\n  {\r\n    id: \"version4.0\",\r\n    label: \"Version 4.0\",\r\n  },\r\n\r\n  {\r\n    id: \"version5.0\",\r\n    label: \"Version 5.0\",\r\n  },\r\n  {\r\n    id: \"version6.0\",\r\n    label: \"Version 6.0\",\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"h-fit w-full\">\r\n    <Timeline :items=\"data\" title=\"Beam me up\" description=\"Show the timeline in style\">\r\n      <template v-for=\"(item, index) in data\" :key=\"`${item.id}template`\" #[item.id]>\r\n        <div class=\"relative w-full pr-4 pl-20 md:pl-4\">\r\n          <h3 class=\"mb-4 block text-left text-2xl font-bold text-neutral-500 dark:text-neutral-500\">\r\n            {{ `Section ${index + 1}` }}\r\n          </h3>\r\n        </div>\r\n        <p class=\"mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200\">\r\n          Reborn UI gives you the freedom to design awesome website, in less time.\r\n        </p>\r\n      </template>\r\n    </Timeline>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nconst data = [\n  {\n    id: \"version1.0\",\n    label: \"Version 1.0\",\n  },\n  {\n    id: \"version2.0\",\n    label: \"Version 2.0\",\n  },\n\n  {\n    id: \"version3.0\",\n    label: \"Version 3.0\",\n  },\n  {\n    id: \"version4.0\",\n    label: \"Version 4.0\",\n  },\n\n  {\n    id: \"version5.0\",\n    label: \"Version 5.0\",\n  },\n  {\n    id: \"version6.0\",\n    label: \"Version 6.0\",\n  },\n];\n</script>\n\n<template>\n  <div class=\"h-fit w-full\">\n    <Timeline :items=\"data\" title=\"Beam me up\" description=\"Show the timeline in style\">\n      <template v-for=\"(item, index) in data\" :key=\"`${item.id}template`\" #[item.id]>\n        <div class=\"relative w-full pr-4 pl-20 md:pl-4\">\n          <h3 class=\"mb-4 block text-left text-2xl font-bold text-neutral-500 dark:text-neutral-500\">\n            {{ `Section ${index + 1}` }}\n          </h3>\n        </div>\n        <p class=\"mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200\">\n          Reborn UI gives you the freedom to design awesome website, in less time.\n        </p>\n      </template>\n    </Timeline>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -94,8 +94,8 @@
   },
   "docPath": "content/2.components/miscellaneous/timeline.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "81722504cda510e01f2d189da63bdc68896aff3b",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "2754e599a2819ba5eec8b715f964e10ebe74b7d1",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

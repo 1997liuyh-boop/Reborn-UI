@@ -73,7 +73,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"grid place-content-center p-10\">\r\n    <Book>\r\n      <BookHeader>\r\n        <Icon\r\n          name=\"heroicons:book-open-solid\"\r\n          size=\"24\"\r\n        />\r\n      </BookHeader>\r\n      <BookTitle>\r\n        <h1>The Book</h1>\r\n      </BookTitle>\r\n      <BookDescription>\r\n        <p>Hover me to animate!</p>\r\n      </BookDescription>\r\n    </Book>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"grid place-content-center p-10\">\n    <Book>\n      <BookHeader>\n        <Icon\n          name=\"heroicons:book-open-solid\"\n          size=\"24\"\n        />\n      </BookHeader>\n      <BookTitle>\n        <h1>The Book</h1>\n      </BookTitle>\n      <BookDescription>\n        <p>Hover me to animate!</p>\n      </BookDescription>\n    </Book>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -108,8 +108,8 @@
   },
   "docPath": "content/2.components/miscellaneous/book.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "a7830453f40a8ea6bdd2eace233c8d2b0f17a4c4",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "14f64d4a97882f8986c721776425626733b06622",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex items-center justify-center p-8\">\r\n    <span class=\"text-primary text-lg\">\r\n      See the scroll island in action on the top of this page\r\n    </span>\r\n    <ScrollIsland title=\"Scroll Island\">\r\n      <div class=\"my-3 flex flex-col gap-2\">\r\n        <a href=\"#install-using-cli\"># Install using CLI</a>\r\n        <a href=\"#install-manually\"># Install Manually</a>\r\n        <a href=\"#api\"># API</a>\r\n        <a href=\"#features\"># Features</a>\r\n        <a href=\"#credits\"># Credits</a>\r\n      </div>\r\n    </ScrollIsland>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex items-center justify-center p-8\">\n    <span class=\"text-primary text-lg\">\n      See the scroll island in action on the top of this page\n    </span>\n    <ScrollIsland title=\"Scroll Island\">\n      <div class=\"my-3 flex flex-col gap-2\">\n        <a href=\"#install-using-cli\"># Install using CLI</a>\n        <a href=\"#install-manually\"># Install Manually</a>\n        <a href=\"#api\"># API</a>\n        <a href=\"#features\"># Features</a>\n        <a href=\"#credits\"># Credits</a>\n      </div>\n    </ScrollIsland>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,8 @@
   },
   "docPath": "content/2.components/miscellaneous/scroll-island.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "c8acebe785f2e66ab0dd6073a64382ebd31b55f1",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "5634652100b2d82dd2e9374c5cd0628e044312e8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

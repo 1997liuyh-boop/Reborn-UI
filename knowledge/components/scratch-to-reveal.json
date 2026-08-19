@@ -66,7 +66,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nfunction handleComplete() {\r\n  // when scratch is completed do something\r\n}\r\n</script>\r\n\r\n<template>\r\n  <ScratchToReveal\r\n    :width=\"250\"\r\n    :height=\"250\"\r\n    :min-scratch-percentage=\"50\"\r\n    class=\"mx-auto flex items-center justify-center overflow-hidden rounded-2xl border-2 bg-gray-100\"\r\n    :gradient-colors=\"['#A97CF8', '#F38CB8', '#FDCC92']\"\r\n    @complete=\"handleComplete\"\r\n  >\r\n    <div class=\"text-8xl\">🥳</div>\r\n  </ScratchToReveal>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nfunction handleComplete() {\n  // when scratch is completed do something\n}\n</script>\n\n<template>\n  <ScratchToReveal\n    :width=\"250\"\n    :height=\"250\"\n    :min-scratch-percentage=\"50\"\n    class=\"mx-auto flex items-center justify-center overflow-hidden rounded-2xl border-2 bg-gray-100\"\n    :gradient-colors=\"['#A97CF8', '#F38CB8', '#FDCC92']\"\n    @complete=\"handleComplete\"\n  >\n    <div class=\"text-8xl\">🥳</div>\n  </ScratchToReveal>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -101,8 +101,8 @@
   },
   "docPath": "content/2.components/special-effects/scratch-to-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "3980ff445895fa16e15994ae97007ed3db3c7f31",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "66b0e098a6f1669a86478618956ed69ea9b71eab",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

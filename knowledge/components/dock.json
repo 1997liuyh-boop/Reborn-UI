@@ -58,7 +58,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <Dock class=\"mb-6\">\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"mdi:github\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n    <DockSeparator />\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"logos:google-drive\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"logos:notion-icon\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n    <DockIcon>\r\n      <Icon\r\n        name=\"logos:whatsapp-icon\"\r\n        class=\"size-full\"\r\n      />\r\n    </DockIcon>\r\n  </Dock>\r\n</template>\r\n",
+      "code": "<template>\n  <Dock class=\"mb-6\">\n    <DockIcon>\n      <Icon\n        name=\"mdi:github\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n    <DockSeparator />\n    <DockIcon>\n      <Icon\n        name=\"logos:google-drive\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n    <DockIcon>\n      <Icon\n        name=\"logos:notion-icon\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n    <DockIcon>\n      <Icon\n        name=\"logos:whatsapp-icon\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n  </Dock>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -94,8 +94,8 @@
   },
   "docPath": "content/2.components/miscellaneous/dock.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "fda05b768e9b7aab280ccb0f3fc1b275d6a3d3f2",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "6ffa78cdd3219a19d766d0746012719578bcda77",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -14,14 +14,14 @@
   "files": [
     {
       "path": "index.ts",
-      "content": "export { default as LetterPullup } from \"./LetterPullup.vue\";\r\n"
+      "content": "export { default as LetterPullup } from \"./LetterPullup.vue\";\n"
     },
     {
       "path": "LetterPullup.vue",
-      "content": "<script setup lang=\"ts\">\r\nimport { Motion } from \"motion-v\";\r\n\r\ninterface LetterPullupProps {\r\n  class?: string;\r\n  words: string;\r\n  delay?: number;\r\n}\r\n\r\nconst props = defineProps<LetterPullupProps>();\r\n\r\nconst letters = props.words.split(\"\");\r\n\r\nconst pullupVariant = {\r\n  initial: { y: 100, opacity: 0 },\r\n  animate: {\r\n    y: 0,\r\n    opacity: 1,\r\n  },\r\n};\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex justify-center\">\r\n    <div\r\n      v-for=\"(letter, index) in letters\"\r\n      :key=\"letter\"\r\n    >\r\n      <Motion\r\n        as=\"h1\"\r\n        :initial=\"pullupVariant.initial\"\r\n        :animate=\"pullupVariant.animate\"\r\n        :transition=\"{\r\n          delay: index * (props.delay ? props.delay : 0.05),\r\n        }\"\r\n        class=\"font-display text-center text-4xl font-bold tracking-[-0.02em] text-black drop-shadow-sm md:text-4xl md:leading-[5rem]\"\r\n        :class=\"[props.class]\"\r\n      >\r\n        <span v-if=\"letter === ' '\">&nbsp;</span>\r\n        <span v-else>{{ letter }}</span>\r\n      </Motion>\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "content": "<script setup lang=\"ts\">\nimport { Motion } from \"motion-v\";\n\ninterface LetterPullupProps {\n  class?: string;\n  words: string;\n  delay?: number;\n}\n\nconst props = defineProps<LetterPullupProps>();\n\nconst letters = props.words.split(\"\");\n\nconst pullupVariant = {\n  initial: { y: 100, opacity: 0 },\n  animate: {\n    y: 0,\n    opacity: 1,\n  },\n};\n</script>\n\n<template>\n  <div class=\"flex justify-center\">\n    <div\n      v-for=\"(letter, index) in letters\"\n      :key=\"letter\"\n    >\n      <Motion\n        as=\"h1\"\n        :initial=\"pullupVariant.initial\"\n        :animate=\"pullupVariant.animate\"\n        :transition=\"{\n          delay: index * (props.delay ? props.delay : 0.05),\n        }\"\n        class=\"font-display text-center text-4xl font-bold tracking-[-0.02em] text-black drop-shadow-sm md:text-4xl md:leading-[5rem]\"\n        :class=\"[props.class]\"\n      >\n        <span v-if=\"letter === ' '\">&nbsp;</span>\n        <span v-else>{{ letter }}</span>\n      </Motion>\n    </div>\n  </div>\n</template>\n",
       "target": "web"
     }
   ],
   "fileCount": 2,
-  "contentHash": "b80d5bc8b2bd376f88950a014474b2d1a7d8f504"
+  "contentHash": "308e770505e4eee08e6b5e4f613ffe22615e213a"
 }

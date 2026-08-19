@@ -6,6 +6,15 @@ import type { RegistryComponent, RegistryFile } from "../types.js";
 import { listFilesRecursive, sha1, writeJsonFile } from "../utils/fs.js";
 import { extractNpmDependenciesFromText } from "../utils/imports.js";
 
+/**
+ * 读取要嵌入 registry 的源码文本，并把 CRLF 归一为 LF。
+ * registry JSON 参与 CI 幂等校验（重建后与提交版本比对），
+ * 嵌入内容必须与构建平台无关，否则 Windows 本地生成、Linux CI 重建时全量不一致。
+ */
+async function readEmbeddedText(absPath: string): Promise<string> {
+  return (await fs.readFile(absPath, "utf8")).replace(/\r\n/g, "\n");
+}
+
 function isAllowedFile(filePath: string) {
   const ext = path.extname(filePath).toLowerCase();
   return [
@@ -140,7 +149,7 @@ export function buildCommand() {
             .relative(absComponentDir, absFile)
             .split(path.sep)
             .join("/");
-          const content = await fs.readFile(absFile, "utf8");
+          const content = await readEmbeddedText(absFile);
 
           const ext = path.extname(absFile).toLowerCase();
 
@@ -186,7 +195,7 @@ export function buildCommand() {
                 .relative(uniappComponentDir, absFile)
                 .split(path.sep)
                 .join("/");
-              const content = await fs.readFile(absFile, "utf8");
+              const content = await readEmbeddedText(absFile);
               const ext = path.extname(absFile).toLowerCase();
 
               files.push({ path: rel, content, target: "uniapp" });
@@ -208,7 +217,7 @@ export function buildCommand() {
                 .relative(absComponentDir, absFile)
                 .split(path.sep)
                 .join("/");
-              const content = await fs.readFile(absFile, "utf8");
+              const content = await readEmbeddedText(absFile);
               files.push({
                 path: rel,
                 content: transformToUniapp(content),

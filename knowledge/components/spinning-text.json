@@ -55,7 +55,7 @@
     },
     {
       "name": "variants",
-      "type": "{\r\n    container?: Variant;\r\n    item?: Variant;\r\n  }",
+      "type": "{\n    container?: Variant;\n    item?: Variant;\n  }",
       "required": false,
       "description": "容器与子项动画的变体。"
     }
@@ -66,7 +66,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup></script>\r\n\r\n<template>\r\n  <ClientOnly>\r\n    <div class=\"flex min-h-[350px] w-full items-center justify-center\">\r\n      <SpinningText text=\"learn more · earn more · grow more ·\" />\r\n    </div>\r\n  </ClientOnly>\r\n</template>\r\n<style scoped></style>\r\n",
+      "code": "<script lang=\"ts\" setup></script>\n\n<template>\n  <ClientOnly>\n    <div class=\"flex min-h-[350px] w-full items-center justify-center\">\n      <SpinningText text=\"learn more · earn more · grow more ·\" />\n    </div>\n  </ClientOnly>\n</template>\n<style scoped></style>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -101,8 +101,8 @@
   },
   "docPath": "content/2.components/text-animations/spinning-text.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "74d779c7c354f48beef6b0ebf39266ffcfd95a14",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "52d99891bcf757b4b2460636ea5b8457c8f75552",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

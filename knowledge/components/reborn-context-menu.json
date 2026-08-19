@@ -35,7 +35,7 @@
       "type": "RebornContextMenuContentProps",
       "required": false,
       "description": "弹出方向、对齐和偏移配置",
-      "default": "() => ({\r\n    side: \"bottom\",\r\n    align: \"start\",\r\n    sideOffset: 8,\r\n  })"
+      "default": "() => ({\n    side: \"bottom\",\n    align: \"start\",\n    sideOffset: 8,\n  })"
     },
     {
       "name": "open",
@@ -109,7 +109,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<{\r\n    wrapper: ClassValue;\r\n    trigger: ClassValue;\r\n    contentWrapper: ClassValue;\r\n    content: ClassValue;\r\n    group: ClassValue;\r\n    separator: ClassValue;\r\n    item: ClassValue;\r\n    itemLeading: ClassValue;\r\n    itemBody: ClassValue;\r\n    itemLabel: ClassValue;\r\n    itemDescription: ClassValue;\r\n    itemTrailing: ClassValue;\r\n    itemKbd: ClassValue;\r\n    itemArrow: ClassValue;\r\n    empty: ClassValue;\r\n    bridge: ClassValue;\r\n    mask: ClassValue;\r\n  }>",
+      "type": "Partial<{\n    wrapper: ClassValue;\n    trigger: ClassValue;\n    contentWrapper: ClassValue;\n    content: ClassValue;\n    group: ClassValue;\n    separator: ClassValue;\n    item: ClassValue;\n    itemLeading: ClassValue;\n    itemBody: ClassValue;\n    itemLabel: ClassValue;\n    itemDescription: ClassValue;\n    itemTrailing: ClassValue;\n    itemKbd: ClassValue;\n    itemArrow: ClassValue;\n    empty: ClassValue;\n    bridge: ClassValue;\n    mask: ClassValue;\n  }>",
       "required": false,
       "description": "UI 样式覆盖配置",
       "default": "() => ({})"
@@ -186,8 +186,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-context-menu.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "8490c79c0c3d99a627858aaf7f263633ebbff7db",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "f8a27c05335e9bf8bccf28261c01c9348bc94b3a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

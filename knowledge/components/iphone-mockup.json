@@ -42,7 +42,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<!-- eslint-disable check-file/filename-naming-convention -->\r\n<template>\r\n    <div class=\"relative flex w-full flex-col items-center justify-center p-8\">\r\n        <iPhone15ProMockup src=\"/\" class=\"size-full max-w-sm\" />\r\n    </div>\r\n</template>\r\n",
+      "code": "<!-- eslint-disable check-file/filename-naming-convention -->\n<template>\n    <div class=\"relative flex w-full flex-col items-center justify-center p-8\">\n        <iPhone15ProMockup src=\"/\" class=\"size-full max-w-sm\" />\n    </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -72,8 +72,8 @@
   },
   "docPath": "content/2.components/device-mocks/iphone-mockup.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "fdd204d211a24016c3b968e4aa186770233f9b6d",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "a8c302451c899e42b07503f8e3a23df62c8742d3",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

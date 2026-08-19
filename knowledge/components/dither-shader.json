@@ -138,7 +138,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nimport type { Props } from \"../../ui/dither-shader/DitherShader.vue\";\r\nimport { DitherShader } from \"../../ui/dither-shader\";\r\n\r\nexport interface DemoProps extends Omit<Props, \"class\" | \"src\"> {}\r\n\r\nconst {\r\n  gridSize = 4,\r\n  ditherMode = \"bayer\",\r\n  colorMode = \"original\",\r\n  invert = false,\r\n  pixelRatio = 1,\r\n  primaryColor = \"#000000\",\r\n  secondaryColor = \"#ffffff\",\r\n  customPalette = [\"#000000\", \"#ffffff\"],\r\n  brightness = 0,\r\n  contrast = 1,\r\n  backgroundColor = \"transparent\",\r\n  objectFit = \"cover\",\r\n  threshold = 0.5,\r\n  animated = false,\r\n  animationSpeed = 0.02,\r\n} = defineProps<DemoProps>();\r\n</script>\r\n\r\n<template>\r\n  <div class=\"relative flex flex-col items-center gap-6 overflow-hidden p-8\">\r\n    <DitherShader\r\n      src=\"https://images.unsplash.com/photo-1555952517-2e8e729e0b44?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\r\n      :invert\r\n      :contrast\r\n      :brightness\r\n      :animated\r\n      :grid-size=\"gridSize\"\r\n      :threshold=\"threshold\"\r\n      :color-mode=\"colorMode\"\r\n      :object-fit=\"objectFit\"\r\n      :dither-mode=\"ditherMode\"\r\n      :pixel-ratio=\"pixelRatio\"\r\n      :primary-color=\"primaryColor\"\r\n      :custom-palette=\"customPalette\"\r\n      :secondary-color=\"secondaryColor\"\r\n      :animation-speed=\"animationSpeed\"\r\n      :background-color=\"backgroundColor\"\r\n      class=\"h-72 w-100 sm:h-80 sm:w-125\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nimport type { Props } from \"../../ui/dither-shader/DitherShader.vue\";\nimport { DitherShader } from \"../../ui/dither-shader\";\n\nexport interface DemoProps extends Omit<Props, \"class\" | \"src\"> {}\n\nconst {\n  gridSize = 4,\n  ditherMode = \"bayer\",\n  colorMode = \"original\",\n  invert = false,\n  pixelRatio = 1,\n  primaryColor = \"#000000\",\n  secondaryColor = \"#ffffff\",\n  customPalette = [\"#000000\", \"#ffffff\"],\n  brightness = 0,\n  contrast = 1,\n  backgroundColor = \"transparent\",\n  objectFit = \"cover\",\n  threshold = 0.5,\n  animated = false,\n  animationSpeed = 0.02,\n} = defineProps<DemoProps>();\n</script>\n\n<template>\n  <div class=\"relative flex flex-col items-center gap-6 overflow-hidden p-8\">\n    <DitherShader\n      src=\"https://images.unsplash.com/photo-1555952517-2e8e729e0b44?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n      :invert\n      :contrast\n      :brightness\n      :animated\n      :grid-size=\"gridSize\"\n      :threshold=\"threshold\"\n      :color-mode=\"colorMode\"\n      :object-fit=\"objectFit\"\n      :dither-mode=\"ditherMode\"\n      :pixel-ratio=\"pixelRatio\"\n      :primary-color=\"primaryColor\"\n      :custom-palette=\"customPalette\"\n      :secondary-color=\"secondaryColor\"\n      :animation-speed=\"animationSpeed\"\n      :background-color=\"backgroundColor\"\n      class=\"h-72 w-100 sm:h-80 sm:w-125\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -172,8 +172,8 @@
   },
   "docPath": "content/2.components/special-effects/dither-shader.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "f9f201edaa63b83f29150438a7b6a115b5b59680",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "ad0a7d6c947b125c10e0fcffdcce32295c4287fa",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

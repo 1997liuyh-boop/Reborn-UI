@@ -12,14 +12,14 @@
   "files": [
     {
       "path": "index.ts",
-      "content": "export { default as PhotoGallery } from \"./PhotoGallery.vue\";\r\n"
+      "content": "export { default as PhotoGallery } from \"./PhotoGallery.vue\";\n"
     },
     {
       "path": "PhotoGallery.vue",
-      "content": "<script setup lang=\"ts\">\r\ninterface Props {\r\n  containerClass?: string;\r\n  class?: string;\r\n  items: {\r\n    src: string;\r\n  }[];\r\n}\r\nconst props = defineProps<Props>();\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"gallery mb-[var(--size)] grid grid-cols-6 gap-1\"\r\n    :class=\"[props.containerClass]\"\r\n  >\r\n    <img\r\n      v-for=\"(image, index) in props.items\"\r\n      :key=\"index\"\r\n      :src=\"image.src\"\r\n      :alt=\"`image+${index}`\"\r\n      class=\"gallery-img size-[calc(var(--size)*2)] rounded object-cover transition-[clip-path,filter] duration-75\"\r\n      :class=\"[props.class]\"\r\n    />\r\n  </div>\r\n</template>\r\n\r\n<style scoped>\r\n.gallery {\r\n  --size: 100px;\r\n  grid-auto-rows: var(--size);\r\n\r\n  &:has(:hover) img:not(:hover),\r\n  &:has(:focus) img:not(:focus) {\r\n    filter: brightness(0.5) contrast(0.5);\r\n  }\r\n\r\n  img {\r\n    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);\r\n    grid-column: auto / span 2;\r\n\r\n    &:nth-child(5n-1) {\r\n      grid-column: 2 / span 2;\r\n    }\r\n\r\n    &:hover,\r\n    &:focus {\r\n      clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0);\r\n      z-index: 1;\r\n      transition:\r\n        clip-path 0.25s,\r\n        filter 0.25s;\r\n      filter: saturate(150%);\r\n    }\r\n\r\n    &:focus {\r\n      outline: 10px dashed black;\r\n      outline-offset: -5px;\r\n    }\r\n  }\r\n}\r\n</style>\r\n",
+      "content": "<script setup lang=\"ts\">\ninterface Props {\n  containerClass?: string;\n  class?: string;\n  items: {\n    src: string;\n  }[];\n}\nconst props = defineProps<Props>();\n</script>\n\n<template>\n  <div\n    class=\"gallery mb-[var(--size)] grid grid-cols-6 gap-1\"\n    :class=\"[props.containerClass]\"\n  >\n    <img\n      v-for=\"(image, index) in props.items\"\n      :key=\"index\"\n      :src=\"image.src\"\n      :alt=\"`image+${index}`\"\n      class=\"gallery-img size-[calc(var(--size)*2)] rounded object-cover transition-[clip-path,filter] duration-75\"\n      :class=\"[props.class]\"\n    />\n  </div>\n</template>\n\n<style scoped>\n.gallery {\n  --size: 100px;\n  grid-auto-rows: var(--size);\n\n  &:has(:hover) img:not(:hover),\n  &:has(:focus) img:not(:focus) {\n    filter: brightness(0.5) contrast(0.5);\n  }\n\n  img {\n    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);\n    grid-column: auto / span 2;\n\n    &:nth-child(5n-1) {\n      grid-column: 2 / span 2;\n    }\n\n    &:hover,\n    &:focus {\n      clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0);\n      z-index: 1;\n      transition:\n        clip-path 0.25s,\n        filter 0.25s;\n      filter: saturate(150%);\n    }\n\n    &:focus {\n      outline: 10px dashed black;\n      outline-offset: -5px;\n    }\n  }\n}\n</style>\n",
       "target": "web"
     }
   ],
   "fileCount": 2,
-  "contentHash": "e0472881b718f736a34c4c3675818851205f1f9d"
+  "contentHash": "520de50444d88d6e4133e74eb9de87d7f4d9ed42"
 }

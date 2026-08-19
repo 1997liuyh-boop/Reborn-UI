@@ -3,6 +3,7 @@ import path from "node:path";
 import { parse as parseSfc } from "@vue/compiler-sfc";
 import { parseSync } from "@oxc-parser/wasm";
 import type { EventInfo, ExposeInfo, PropInfo, SlotInfo } from "./schema.js";
+import { readTextFile } from "./sources.js";
 
 /** 单个 .vue / config.ts 抽取结果 */
 export interface VueExtractResult {
@@ -101,7 +102,7 @@ function collectTypeDecls(parsed: ParsedScript): Map<string, TypeDeclEntry> {
 /** 收集一个 .ts 文件里的类型定义（用于组件目录下 types.ts 的兜底解析） */
 export function collectTypeDeclsFromTsFile(absPath: string): Map<string, TypeDeclEntry> {
   try {
-    const source = fs.readFileSync(absPath, "utf8");
+    const source = readTextFile(absPath);
     const parsed = parseTs(source, path.basename(absPath));
     if (!parsed) return new Map();
     return collectTypeDecls(parsed);
@@ -408,7 +409,7 @@ export function extractVueFile(absPath: string, externalTypes?: Map<string, Type
 
   let source: string;
   try {
-    source = fs.readFileSync(absPath, "utf8");
+    source = readTextFile(absPath);
   } catch {
     warnings.push(`无法读取文件：${absPath}`);
     return empty;
@@ -489,7 +490,7 @@ export function extractConfigConstants(absPath: string): Map<string, string[]> {
   const map = new Map<string, string[]>();
   let source: string;
   try {
-    source = fs.readFileSync(absPath, "utf8");
+    source = readTextFile(absPath);
   } catch {
     return map;
   }

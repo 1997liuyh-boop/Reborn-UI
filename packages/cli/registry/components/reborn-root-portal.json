@@ -7,15 +7,15 @@
   "files": [
     {
       "path": "index.ts",
-      "content": "import RebornRootPortal from './RebornRootPortal.vue'\r\nimport config from './reborn-root-portal.config'\r\n\r\nexport { RebornRootPortal, config }\r\nexport default RebornRootPortal\r\n"
+      "content": "import RebornRootPortal from './RebornRootPortal.vue'\nimport config from './reborn-root-portal.config'\n\nexport { RebornRootPortal, config }\nexport default RebornRootPortal\n"
     },
     {
       "path": "reborn-root-portal.config.ts",
-      "content": "const config = {\r\n    slots: {\r\n        base: 'fixed inset-0 pointer-events-none z-[999]',\r\n        content: 'pointer-events-auto'\r\n    }\r\n} as const\r\n\r\nexport default config\r\n"
+      "content": "const config = {\n    slots: {\n        base: 'fixed inset-0 pointer-events-none z-[999]',\n        content: 'pointer-events-auto'\n    }\n} as const\n\nexport default config\n"
     },
     {
       "path": "RebornRootPortal.vue",
-      "content": "<template>\r\n    <teleport to=\"body\">\r\n        <slot />\r\n    </teleport>\r\n</template>\r\n\r\n<script setup lang=\"ts\">\r\n// RebornRootPortal Web Implementation\r\n</script>\r\n",
+      "content": "<template>\n    <teleport to=\"body\">\n        <slot />\n    </teleport>\n</template>\n\n<script setup lang=\"ts\">\n// RebornRootPortal Web Implementation\n</script>\n",
       "target": "web"
     },
     {
@@ -25,5 +25,5 @@
     }
   ],
   "fileCount": 4,
-  "contentHash": "9b676448b7d1b2c63e55a2ec8466e5274de8374d"
+  "contentHash": "27f5c621bd74cf0af102694cda2a65d794e9f761"
 }

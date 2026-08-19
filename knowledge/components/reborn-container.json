@@ -24,7 +24,7 @@
     },
     {
       "name": "ui",
-      "type": "Partial<{\r\n        root: ClassValue\r\n    }>",
+      "type": "Partial<{\n        root: ClassValue\n    }>",
       "required": false,
       "description": ""
     }
@@ -41,7 +41,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\n\r\n</script>\r\n<template>\r\n    <RebornContainer>\r\n        <div class=\"reborn-container-demo\">\r\n            <h1>RebornContainer Demo</h1>\r\n            <p>This is a demo of the RebornContainer component.</p>\r\n        </div>\r\n    </RebornContainer>\r\n</template>",
+      "code": "<script setup lang=\"ts\">\n\n</script>\n<template>\n    <RebornContainer>\n        <div class=\"reborn-container-demo\">\n            <h1>RebornContainer Demo</h1>\n            <p>This is a demo of the RebornContainer component.</p>\n        </div>\n    </RebornContainer>\n</template>",
       "source": "demo",
       "platform": "web"
     }
@@ -73,8 +73,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-container.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "266cf768f252a634bbfd753051b70e53c97c6248",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "32bbf747312fb1f8745c32a730bf25b437d767be",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

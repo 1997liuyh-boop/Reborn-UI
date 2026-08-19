@@ -109,7 +109,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nconst images = [\r\n  \"https://picsum.photos/seed/waiting/1920/1080\",\r\n  \"https://picsum.photos/seed/full-collapse/1920/1080\",\r\n  \"https://picsum.photos/seed/five-stories-falling/1920/1080\",\r\n  \"https://picsum.photos/seed/war-all-the-time/1920/1080\",\r\n  \"https://picsum.photos/seed/a-city-by-the-light-divided/1920/1080\",\r\n  \"https://picsum.photos/seed/common-existence/1920/1080\",\r\n  \"https://picsum.photos/seed/no-devolucion/1920/1080\",\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div>\r\n    <ImagesSlider\r\n      :images=\"images\"\r\n      autoplay\r\n    >\r\n      <div\r\n        class=\"flex size-full items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/80 p-8\"\r\n      >\r\n        <div class=\"max-w-prose text-center\">\r\n          <h1 class=\"mb-8 text-5xl max-md:text-2xl\">\r\n            The hero section slide-show nobody asked for\r\n          </h1>\r\n          <button\r\n            class=\"rounded-full border border-emerald-500/20 bg-emerald-300/10 px-4 py-2 text-sm text-white backdrop-blur-sm\"\r\n          >\r\n            Join Now\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </ImagesSlider>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nconst images = [\n  \"https://picsum.photos/seed/waiting/1920/1080\",\n  \"https://picsum.photos/seed/full-collapse/1920/1080\",\n  \"https://picsum.photos/seed/five-stories-falling/1920/1080\",\n  \"https://picsum.photos/seed/war-all-the-time/1920/1080\",\n  \"https://picsum.photos/seed/a-city-by-the-light-divided/1920/1080\",\n  \"https://picsum.photos/seed/common-existence/1920/1080\",\n  \"https://picsum.photos/seed/no-devolucion/1920/1080\",\n];\n</script>\n\n<template>\n  <div>\n    <ImagesSlider\n      :images=\"images\"\n      autoplay\n    >\n      <div\n        class=\"flex size-full items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/80 p-8\"\n      >\n        <div class=\"max-w-prose text-center\">\n          <h1 class=\"mb-8 text-5xl max-md:text-2xl\">\n            The hero section slide-show nobody asked for\n          </h1>\n          <button\n            class=\"rounded-full border border-emerald-500/20 bg-emerald-300/10 px-4 py-2 text-sm text-white backdrop-blur-sm\"\n          >\n            Join Now\n          </button>\n        </div>\n      </div>\n    </ImagesSlider>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -144,8 +144,8 @@
   },
   "docPath": "content/2.components/miscellaneous/images-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "ba237163eaee16abee789a3f5f26ed479d164f2e",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "81227b30462fb4cb2c1b66fefcb5322071137b68",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

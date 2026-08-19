@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\r\n    <label\r\n      for=\"inputDemo\"\r\n      class=\"ml-4 w-full max-w-sm text-sm font-medium text-gray-700 dark:text-gray-200\"\r\n      >Hover over below input</label\r\n    >\r\n    <IInput\r\n      id=\"inputDemo\"\r\n      placeholder=\"Hover over me\"\r\n      container-class=\"w-full max-w-sm\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\n    <label\n      for=\"inputDemo\"\n      class=\"ml-4 w-full max-w-sm text-sm font-medium text-gray-700 dark:text-gray-200\"\n      >Hover over below input</label\n    >\n    <IInput\n      id=\"inputDemo\"\n      placeholder=\"Hover over me\"\n      container-class=\"w-full max-w-sm\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -88,8 +88,8 @@
   },
   "docPath": "content/2.components/input-and-forms/input.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "c2cdbc90dffc258770cb0d6993b60b6351f97374",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "7589876b101770240f823d1d69fdf0f017196bab",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

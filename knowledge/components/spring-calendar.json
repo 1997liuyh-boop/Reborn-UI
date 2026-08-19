@@ -66,7 +66,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nconst calendarData = [\r\n  { month: \"APRIL\", date: 22, day: \"TUE\" },\r\n  { month: \"APRIL\", date: 23, day: \"WED\" },\r\n  {\r\n    month: \"APRIL\",\r\n    date: 24,\r\n    day: \"THU\",\r\n    events: [\r\n      { title: \"Team Meeting\", day: \"Today\", time: \"2:00 PM\" },\r\n      { title: \"Project Deliver\", day: \"Tomorrow\", time: \"4:00 PM\" },\r\n    ],\r\n  },\r\n  {\r\n    month: \"APRIL\",\r\n    date: 25,\r\n    day: \"FRI\",\r\n    events: [{ title: \"Party\", day: \"Tomorrow\", time: \"5:00 PM\" }],\r\n  },\r\n  { month: \"APRIL\", date: 26, day: \"SAT\" },\r\n  { month: \"APRIL\", date: 27, day: \"SUN\" },\r\n  {\r\n    month: \"APRIL\",\r\n    date: 28,\r\n    day: \"MON\",\r\n    events: [{ title: \"Cry for Monday Blue\", day: \"Next Week\", time: \"10:00 AM\" }],\r\n  },\r\n];\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex min-h-[32rem] w-full items-center justify-center py-4\">\r\n    <SpringCalendar :calendar-data=\"calendarData\" />\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nconst calendarData = [\n  { month: \"APRIL\", date: 22, day: \"TUE\" },\n  { month: \"APRIL\", date: 23, day: \"WED\" },\n  {\n    month: \"APRIL\",\n    date: 24,\n    day: \"THU\",\n    events: [\n      { title: \"Team Meeting\", day: \"Today\", time: \"2:00 PM\" },\n      { title: \"Project Deliver\", day: \"Tomorrow\", time: \"4:00 PM\" },\n    ],\n  },\n  {\n    month: \"APRIL\",\n    date: 25,\n    day: \"FRI\",\n    events: [{ title: \"Party\", day: \"Tomorrow\", time: \"5:00 PM\" }],\n  },\n  { month: \"APRIL\", date: 26, day: \"SAT\" },\n  { month: \"APRIL\", date: 27, day: \"SUN\" },\n  {\n    month: \"APRIL\",\n    date: 28,\n    day: \"MON\",\n    events: [{ title: \"Cry for Monday Blue\", day: \"Next Week\", time: \"10:00 AM\" }],\n  },\n];\n</script>\n\n<template>\n  <div class=\"flex min-h-[32rem] w-full items-center justify-center py-4\">\n    <SpringCalendar :calendar-data=\"calendarData\" />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -101,8 +101,8 @@
   },
   "docPath": "content/2.components/special-effects/spring-calendar.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "edbe69f95ee66391e4e2e9147f003c3a3238aa30",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "c3b6e447e2bc33ee8ee59781dfc6649b85bc4b92",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -52,7 +52,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"grid place-content-center p-8\">\r\n    <RippleButton> Click me! </RippleButton>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"grid place-content-center p-8\">\n    <RippleButton> Click me! </RippleButton>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -86,8 +86,8 @@
   },
   "docPath": "content/2.components/button/ripple-button.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "06044c641f0d8d3f2b4831160a419009a55f9038",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "9986b67b9f87cdc74365f7f41b9882000c155326",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

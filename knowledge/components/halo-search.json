@@ -28,7 +28,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"relative z-0 flex h-96 w-full flex-col items-center justify-center\">\r\n    <HaloSearch />\r\n\r\n    <span class=\"text-muted-foreground mt-24 font-light\">\r\n      Try hovering over component and typing in it.\r\n    </span>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"relative z-0 flex h-96 w-full flex-col items-center justify-center\">\n    <HaloSearch />\n\n    <span class=\"text-muted-foreground mt-24 font-light\">\n      Try hovering over component and typing in it.\n    </span>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -58,8 +58,8 @@
   },
   "docPath": "content/2.components/input-and-forms/halo-search.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "c8d8a8166d0ac613bc8d298d7619c03ed7310b01",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d8d71819ee10404f50d9606e7157cb0a75a98ea2",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

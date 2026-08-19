@@ -62,19 +62,19 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <Focus\r\n    sentence=\"Focus is the key\"\r\n    :manual-mode=\"false\"\r\n    :blur-amount=\"5\"\r\n    border-color=\"red\"\r\n    :animation-duration=\"1\"\r\n    :pause-between-animations=\"0.5\"\r\n  />\r\n</template>\r\n",
+      "code": "<template>\n  <Focus\n    sentence=\"Focus is the key\"\n    :manual-mode=\"false\"\n    :blur-amount=\"5\"\n    border-color=\"red\"\n    :animation-duration=\"1\"\n    :pause-between-animations=\"0.5\"\n  />\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"relative flex h-96 w-full flex-col items-center justify-center gap-24 overflow-clip\">\r\n    <FocusAutoDemo />\r\n    <FocusManualDemo />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"relative flex h-96 w-full flex-col items-center justify-center gap-24 overflow-clip\">\n    <FocusAutoDemo />\n    <FocusManualDemo />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <Focus\r\n    sentence=\"Focus Manually\"\r\n    manual-mode\r\n    :blur-amount=\"5\"\r\n    border-color=\"blue\"\r\n    :animation-duration=\"2\"\r\n    :pause-between-animations=\"1\"\r\n  />\r\n</template>\r\n",
+      "code": "<template>\n  <Focus\n    sentence=\"Focus Manually\"\n    manual-mode\n    :blur-amount=\"5\"\n    border-color=\"blue\"\n    :animation-duration=\"2\"\n    :pause-between-animations=\"1\"\n  />\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -106,8 +106,8 @@
   },
   "docPath": "content/2.components/text-animations/focus.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "7bb609fd7f83c99c27e78a7f5a795e1351e07432",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "73f15a0cc1c2c286678623098c17a6c08af4b30f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

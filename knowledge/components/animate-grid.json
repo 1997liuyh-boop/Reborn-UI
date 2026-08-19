@@ -74,7 +74,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nimport cloudflare from \"./cloudflare.svg\";\r\n\r\ninterface Props {\r\n  textGlowStartColor: string;\r\n  perspective: number;\r\n  textGlowEndColor: string;\r\n  rotateX: number;\r\n  rotateY: number;\r\n}\r\n\r\nconst props = defineProps<Props>();\r\n\r\nconst cards = Array.from({ length: 16 }, () => ({\r\n  logo: cloudflare,\r\n}));\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex items-center justify-center p-4\">\r\n    <AnimateGrid\r\n      :cards\r\n      v-bind=\"props\"\r\n    >\r\n      <template #logo=\"{ logo }\">\r\n        <img\r\n          class=\"logo mx-auto h-10 w-auto\"\r\n          :src=\"logo\"\r\n        />\r\n      </template>\r\n    </AnimateGrid>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nimport cloudflare from \"./cloudflare.svg\";\n\ninterface Props {\n  textGlowStartColor: string;\n  perspective: number;\n  textGlowEndColor: string;\n  rotateX: number;\n  rotateY: number;\n}\n\nconst props = defineProps<Props>();\n\nconst cards = Array.from({ length: 16 }, () => ({\n  logo: cloudflare,\n}));\n</script>\n\n<template>\n  <div class=\"flex items-center justify-center p-4\">\n    <AnimateGrid\n      :cards\n      v-bind=\"props\"\n    >\n      <template #logo=\"{ logo }\">\n        <img\n          class=\"logo mx-auto h-10 w-auto\"\n          :src=\"logo\"\n        />\n      </template>\n    </AnimateGrid>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -105,8 +105,8 @@
   },
   "docPath": "content/2.components/miscellaneous/animate-grid.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "085081cf4cd40201e016d732f0b00d780cd89a2d",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "e8da3af7b5588bf0fc229317c7b1019dbae33910",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

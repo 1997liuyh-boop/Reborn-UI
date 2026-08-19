@@ -53,19 +53,19 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex w-full items-center justify-center\">\r\n    <ContainerTextFlip />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex w-full items-center justify-center\">\n    <ContainerTextFlip />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nimport { Motion } from \"motion-v\";\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex w-full items-center justify-center\">\r\n    <Motion\r\n      as=\"h1\"\r\n      :initial=\"{\r\n        opacity: 0,\r\n      }\"\r\n      :while-in-view=\"{\r\n        opacity: 1,\r\n      }\"\r\n      class=\"relative mb-6 max-w-2xl text-left text-4xl leading-normal font-bold tracking-tight text-zinc-700 md:text-7xl dark:text-zinc-100\"\r\n      layout\r\n    >\r\n      <div class=\"inline-block\">\r\n        Make your websites look 10x\r\n        <ContainerTextFlip :words=\"['better', 'modern', 'beautiful', 'awesome']\" />\r\n      </div>\r\n    </Motion>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nimport { Motion } from \"motion-v\";\n</script>\n\n<template>\n  <div class=\"flex w-full items-center justify-center\">\n    <Motion\n      as=\"h1\"\n      :initial=\"{\n        opacity: 0,\n      }\"\n      :while-in-view=\"{\n        opacity: 1,\n      }\"\n      class=\"relative mb-6 max-w-2xl text-left text-4xl leading-normal font-bold tracking-tight text-zinc-700 md:text-7xl dark:text-zinc-100\"\n      layout\n    >\n      <div class=\"inline-block\">\n        Make your websites look 10x\n        <ContainerTextFlip :words=\"['better', 'modern', 'beautiful', 'awesome']\" />\n      </div>\n    </Motion>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex w-full items-center justify-center\">\r\n    <ContainerTextFlip :words=\"['better', 'modern', 'Tyler Durden', 'awesome']\" />\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex w-full items-center justify-center\">\n    <ContainerTextFlip :words=\"['better', 'modern', 'Tyler Durden', 'awesome']\" />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -99,8 +99,8 @@
   },
   "docPath": "content/2.components/text-animations/container-text-flip.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "cc6f39083134795bb81e82f3d3b95d4a28117a2a",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "00bb035083fded9c77cff0150b1798539a97a4b9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

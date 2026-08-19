@@ -17,9 +17,9 @@
     },
     {
       "path": "index.ts",
-      "content": "import type { HTMLAttributes } from \"vue\";\r\n\r\nexport interface SphereIcon {\r\n    x: number;\r\n    y: number;\r\n    z: number;\r\n    scale: number;\r\n    opacity: number;\r\n    id: number;\r\n}\r\n\r\nexport interface IconCloudProps {\r\n    class?: HTMLAttributes[\"class\"];\r\n    images?: string[];\r\n}\r\n\r\nexport { default as IconCloud } from \"./IconCloud.vue\";\r\n\r\n"
+      "content": "import type { HTMLAttributes } from \"vue\";\n\nexport interface SphereIcon {\n    x: number;\n    y: number;\n    z: number;\n    scale: number;\n    opacity: number;\n    id: number;\n}\n\nexport interface IconCloudProps {\n    class?: HTMLAttributes[\"class\"];\n    images?: string[];\n}\n\nexport { default as IconCloud } from \"./IconCloud.vue\";\n\n"
     }
   ],
   "fileCount": 2,
-  "contentHash": "19f07f5cbe4e6a24058862c8cc269cf0c2b5a2df"
+  "contentHash": "7aa809060d9a09e80cd0222da5ee45d3d2bfbd06"
 }

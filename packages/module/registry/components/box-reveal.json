@@ -14,14 +14,14 @@
   "files": [
     {
       "path": "BoxReveal.vue",
-      "content": "<script lang=\"ts\" setup>\r\nimport type { HTMLAttributes } from \"vue\";\r\nimport { Motion } from \"motion-v\";\r\n\r\ninterface BoxRevealProps {\r\n  color?: string;\r\n  duration?: number;\r\n  class?: HTMLAttributes[\"class\"];\r\n  delay?: number;\r\n}\r\n\r\nconst props = withDefaults(defineProps<BoxRevealProps>(), {\r\n  color: \"#5046e6\",\r\n  duration: 0.5,\r\n  delay: 0.25,\r\n});\r\n\r\n// Motion variants\r\nconst initialMainVariants = { opacity: 0, y: 25 };\r\nconst visibleMainVariants = {\r\n  opacity: 1,\r\n  y: 0,\r\n};\r\n\r\nconst initialSlideVariants = { left: \"0%\" };\r\nconst visibleSlideVariants = {\r\n  left: \"100%\",\r\n};\r\n</script>\r\n\r\n<template>\r\n  <div\r\n    class=\"relative\"\r\n    :class=\"[$props.class]\"\r\n  >\r\n    <Motion\r\n      :initial=\"initialMainVariants\"\r\n      :while-in-view=\"visibleMainVariants\"\r\n      :transition=\"{\r\n        duration: props.duration,\r\n        delay: props.delay * 2,\r\n      }\"\r\n    >\r\n      <slot />\r\n    </Motion>\r\n    <Motion\r\n      class=\"box-background absolute inset-0 z-20\"\r\n      :initial=\"initialSlideVariants\"\r\n      :while-in-view=\"visibleSlideVariants\"\r\n      :transition=\"{\r\n        duration: props.duration,\r\n        ease: 'easeIn',\r\n        delay: props.delay,\r\n      }\"\r\n    />\r\n  </div>\r\n</template>\r\n\r\n<style scoped>\r\n.box-background {\r\n  background: v-bind(color);\r\n}\r\n</style>\r\n",
+      "content": "<script lang=\"ts\" setup>\nimport type { HTMLAttributes } from \"vue\";\nimport { Motion } from \"motion-v\";\n\ninterface BoxRevealProps {\n  color?: string;\n  duration?: number;\n  class?: HTMLAttributes[\"class\"];\n  delay?: number;\n}\n\nconst props = withDefaults(defineProps<BoxRevealProps>(), {\n  color: \"#5046e6\",\n  duration: 0.5,\n  delay: 0.25,\n});\n\n// Motion variants\nconst initialMainVariants = { opacity: 0, y: 25 };\nconst visibleMainVariants = {\n  opacity: 1,\n  y: 0,\n};\n\nconst initialSlideVariants = { left: \"0%\" };\nconst visibleSlideVariants = {\n  left: \"100%\",\n};\n</script>\n\n<template>\n  <div\n    class=\"relative\"\n    :class=\"[$props.class]\"\n  >\n    <Motion\n      :initial=\"initialMainVariants\"\n      :while-in-view=\"visibleMainVariants\"\n      :transition=\"{\n        duration: props.duration,\n        delay: props.delay * 2,\n      }\"\n    >\n      <slot />\n    </Motion>\n    <Motion\n      class=\"box-background absolute inset-0 z-20\"\n      :initial=\"initialSlideVariants\"\n      :while-in-view=\"visibleSlideVariants\"\n      :transition=\"{\n        duration: props.duration,\n        ease: 'easeIn',\n        delay: props.delay,\n      }\"\n    />\n  </div>\n</template>\n\n<style scoped>\n.box-background {\n  background: v-bind(color);\n}\n</style>\n",
       "target": "web"
     },
     {
       "path": "index.ts",
-      "content": "export { default as BoxReveal } from \"./BoxReveal.vue\";\r\n"
+      "content": "export { default as BoxReveal } from \"./BoxReveal.vue\";\n"
     }
   ],
   "fileCount": 2,
-  "contentHash": "0799904053ecba0a17f577bc15ee35e4a2c82643"
+  "contentHash": "127349dba25a65e3ed2ec19878cde234faab22f0"
 }

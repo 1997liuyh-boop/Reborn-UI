@@ -53,7 +53,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"size-full items-center justify-center overflow-hidden p-8 w-full\">\r\n    <BoxReveal color=\"#E1251B\">\r\n      <p class=\"text-[3.5rem] font-semibold\">Reborn UI<span class=\"text-[#E1251B]\">.</span></p>\r\n    </BoxReveal>\r\n\r\n    <BoxReveal color=\"#E1251B\" :duration=\"0.8\">\r\n      <h2 class=\"mt-[.5rem] text-[1rem]\">\r\n        Beautiful components for\r\n        <span class=\"text-[#E1251B]\">Vue &amp; Nuxt.</span>\r\n      </h2>\r\n    </BoxReveal>\r\n\r\n    <BoxReveal color=\"#E1251B\" :duration=\"1\">\r\n      <div class=\"mt-6\">\r\n        <p>\r\n          -&gt; Free and open-source animated components built with\r\n          <span class=\"font-semibold text-[#E1251B]\"> Vue/Nuxt</span>,\r\n          <span class=\"font-semibold text-[#E1251B]\"> Typescript</span>,\r\n          <span class=\"font-semibold text-[#E1251B]\"> Tailwind CSS</span>, and\r\n          <span class=\"font-semibold text-[#E1251B]\"> motion-v</span>\r\n          . <br />\r\n          -&gt; 100% open-source, and customizable. <br />\r\n        </p>\r\n      </div>\r\n    </BoxReveal>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"size-full items-center justify-center overflow-hidden p-8 w-full\">\n    <BoxReveal color=\"#E1251B\">\n      <p class=\"text-[3.5rem] font-semibold\">Reborn UI<span class=\"text-[#E1251B]\">.</span></p>\n    </BoxReveal>\n\n    <BoxReveal color=\"#E1251B\" :duration=\"0.8\">\n      <h2 class=\"mt-[.5rem] text-[1rem]\">\n        Beautiful components for\n        <span class=\"text-[#E1251B]\">Vue &amp; Nuxt.</span>\n      </h2>\n    </BoxReveal>\n\n    <BoxReveal color=\"#E1251B\" :duration=\"1\">\n      <div class=\"mt-6\">\n        <p>\n          -&gt; Free and open-source animated components built with\n          <span class=\"font-semibold text-[#E1251B]\"> Vue/Nuxt</span>,\n          <span class=\"font-semibold text-[#E1251B]\"> Typescript</span>,\n          <span class=\"font-semibold text-[#E1251B]\"> Tailwind CSS</span>, and\n          <span class=\"font-semibold text-[#E1251B]\"> motion-v</span>\n          . <br />\n          -&gt; 100% open-source, and customizable. <br />\n        </p>\n      </div>\n    </BoxReveal>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -86,8 +86,8 @@
   },
   "docPath": "content/2.components/text-animations/box-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "5dd8a5b0d26d727e7e5910abcbaba49eb192b455",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "53bc59bafc8fd7f93658c982491e055aa20c99a8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

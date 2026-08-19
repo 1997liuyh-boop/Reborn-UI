@@ -47,7 +47,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex min-h-64 items-center justify-center\">\r\n    <RainbowButton> Rainbow Button </RainbowButton>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex min-h-64 items-center justify-center\">\n    <RainbowButton> Rainbow Button </RainbowButton>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -79,8 +79,8 @@
   },
   "docPath": "content/2.components/button/rainbow-button.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "20c435f79c77f9dc064eb578dfb87b29bac535fc",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "b96927c75ffd75634142800d18d62f8b81fdbb0e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -48,7 +48,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\n\r\nconst placeholders = [\r\n  \"Why is my code always broken?\",\r\n  \"What does 'undefined' even mean?\",\r\n  \"How to center a div (for real this time)\",\r\n  \"Am I smarter than a compiler?\",\r\n  \"Do loops ever get dizzy?\",\r\n];\r\nconst text = ref(\"\");\r\n</script>\r\n\r\n<template>\r\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\r\n    <h2 class=\"mb-10 text-center text-xl text-black sm:mb-20 sm:text-5xl dark:text-white\">\r\n      Ask Anything Silly\r\n    </h2>\r\n    <VanishingInput\r\n      v-model=\"text\"\r\n      :placeholders=\"placeholders\"\r\n    />\r\n  </div>\r\n</template>\r\n",
+      "code": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\nconst placeholders = [\n  \"Why is my code always broken?\",\n  \"What does 'undefined' even mean?\",\n  \"How to center a div (for real this time)\",\n  \"Am I smarter than a compiler?\",\n  \"Do loops ever get dizzy?\",\n];\nconst text = ref(\"\");\n</script>\n\n<template>\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\n    <h2 class=\"mb-10 text-center text-xl text-black sm:mb-20 sm:text-5xl dark:text-white\">\n      Ask Anything Silly\n    </h2>\n    <VanishingInput\n      v-model=\"text\"\n      :placeholders=\"placeholders\"\n    />\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -81,8 +81,8 @@
   },
   "docPath": "content/2.components/input-and-forms/placeholders-and-vanish-input.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "029cf8a8b7ea54e4c203c053dad982a821ffe591",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "c2d99a1d377e24c072ae00dd089fb9b76382e50b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

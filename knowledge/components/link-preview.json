@@ -24,7 +24,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\r\n    <p class=\"mx-auto mb-10 max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\r\n      <LinkPreview url=\"https://tailwindcss.com\" class=\"font-bold\">\r\n        Tailwind CSS\r\n      </LinkPreview>\r\n      and\r\n      <LinkPreview url=\"https://motion.unovue.com/\" class=\"font-bold\">\r\n        motion-v\r\n      </LinkPreview>\r\n      are a great way to build modern websites.\r\n    </p>\r\n    <p class=\"mx-auto max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\r\n      Visit\r\n      <LinkPreview url=\"https://reborn-ui.com\" :width=\"400\" :height=\"200\">\r\n        <span class=\"bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text font-bold text-transparent\">\r\n          Reborn UI\r\n        </span>\r\n      </LinkPreview>\r\n      for more cool components\r\n    </p>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\n    <p class=\"mx-auto mb-10 max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\n      <LinkPreview url=\"https://tailwindcss.com\" class=\"font-bold\">\n        Tailwind CSS\n      </LinkPreview>\n      and\n      <LinkPreview url=\"https://motion.unovue.com/\" class=\"font-bold\">\n        motion-v\n      </LinkPreview>\n      are a great way to build modern websites.\n    </p>\n    <p class=\"mx-auto max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\n      Visit\n      <LinkPreview url=\"https://reborn-ui.com\" :width=\"400\" :height=\"200\">\n        <span class=\"bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text font-bold text-transparent\">\n          Reborn UI\n        </span>\n      </LinkPreview>\n      for more cool components\n    </p>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -55,8 +55,8 @@
   },
   "docPath": "content/2.components/miscellaneous/link-preview.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "bddb6a271ac4644fc459b6a6726f2b7c8058995f",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "d261b96662c440c1541c957b68aec3fe4dbfd947",
     "hasOverride": true,
     "extractors": {
       "web": "partial",

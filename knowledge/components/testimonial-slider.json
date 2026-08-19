@@ -40,7 +40,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\r\nimport { rand } from \"@vueuse/core\";\r\n\r\nconst testimonials = [\r\n  {\r\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"Reborn UI is sleeker than my star cruiser. Launch-ready in seconds. Zero crashes, zero gravity.\",\r\n    name: \"Buzz Lightyear\",\r\n    role: \"Intergalactic Interface Command\",\r\n  },\r\n  {\r\n    img: `https://randomuser.me/api/portraits/women/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"Clickin' around this thing feels like ridin' a horse with turbo boosters. reborn’s got giddyup!\",\r\n    name: \"Jessie\",\r\n    role: \"Yeehaw Engagement & Barnyard UX\",\r\n  },\r\n  {\r\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"I’ve seen some clunky UIs in my day... but this one? Smoother than a tumbleweed on Tuesday.\",\r\n    name: \"Woody\",\r\n    role: \"Sheriff\",\r\n  },\r\n  {\r\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\r\n    quote:\r\n      \"I was terrified. Then I clicked. Nothing exploded. Reborn UI is a safe space. I’m thriving.\",\r\n    name: \"Rex\",\r\n    role: \"Senior Panic Tester, Dinosaur Usability Lab\",\r\n  },\r\n];\r\n\r\nfunction getRandomNumber() {\r\n  return rand(1, 99);\r\n}\r\n</script>\r\n\r\n<template>\r\n  <div class=\"bg-background relative h-[500px] w-full overflow-hidden rounded-lg border\">\r\n    <div class=\"mt-[64px] flex justify-center px-12\">\r\n      <TestimonialSlider :testimonials=\"testimonials\" />\r\n    </div>\r\n  </div>\r\n</template>\r\n",
+      "code": "<script lang=\"ts\" setup>\nimport { rand } from \"@vueuse/core\";\n\nconst testimonials = [\n  {\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\n    quote:\n      \"Reborn UI is sleeker than my star cruiser. Launch-ready in seconds. Zero crashes, zero gravity.\",\n    name: \"Buzz Lightyear\",\n    role: \"Intergalactic Interface Command\",\n  },\n  {\n    img: `https://randomuser.me/api/portraits/women/${getRandomNumber()}.jpg`,\n    quote:\n      \"Clickin' around this thing feels like ridin' a horse with turbo boosters. reborn’s got giddyup!\",\n    name: \"Jessie\",\n    role: \"Yeehaw Engagement & Barnyard UX\",\n  },\n  {\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\n    quote:\n      \"I’ve seen some clunky UIs in my day... but this one? Smoother than a tumbleweed on Tuesday.\",\n    name: \"Woody\",\n    role: \"Sheriff\",\n  },\n  {\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\n    quote:\n      \"I was terrified. Then I clicked. Nothing exploded. Reborn UI is a safe space. I’m thriving.\",\n    name: \"Rex\",\n    role: \"Senior Panic Tester, Dinosaur Usability Lab\",\n  },\n];\n\nfunction getRandomNumber() {\n  return rand(1, 99);\n}\n</script>\n\n<template>\n  <div class=\"bg-background relative h-[500px] w-full overflow-hidden rounded-lg border\">\n    <div class=\"mt-[64px] flex justify-center px-12\">\n      <TestimonialSlider :testimonials=\"testimonials\" />\n    </div>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -72,8 +72,8 @@
   },
   "docPath": "content/2.components/miscellaneous/testimonial-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "e07b5d261a9e8694bc48f2c6eac13c7ba161bb1e",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "1bbbfe64ea2d2d96eeb6dad222a8b090a18cc7d1",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

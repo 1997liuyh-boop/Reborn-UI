@@ -60,7 +60,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex h-96 w-full flex-col items-center justify-center gap-16\">\r\n    <NeonBorder animation-type=\"none\">\r\n      <input\r\n        type=\"text\"\r\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\r\n        placeholder=\"No animation\"\r\n      />\r\n    </NeonBorder>\r\n\r\n    <NeonBorder>\r\n      <input\r\n        type=\"text\"\r\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\r\n        placeholder=\"Half border animation\"\r\n      />\r\n    </NeonBorder>\r\n\r\n    <NeonBorder animation-type=\"full\">\r\n      <input\r\n        type=\"text\"\r\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\r\n        placeholder=\"Full border animation\"\r\n      />\r\n    </NeonBorder>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex h-96 w-full flex-col items-center justify-center gap-16\">\n    <NeonBorder animation-type=\"none\">\n      <input\n        type=\"text\"\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\n        placeholder=\"No animation\"\n      />\n    </NeonBorder>\n\n    <NeonBorder>\n      <input\n        type=\"text\"\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\n        placeholder=\"Half border animation\"\n      />\n    </NeonBorder>\n\n    <NeonBorder animation-type=\"full\">\n      <input\n        type=\"text\"\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\n        placeholder=\"Full border animation\"\n      />\n    </NeonBorder>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -92,8 +92,8 @@
   },
   "docPath": "content/2.components/special-effects/neon-border.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "e4c997c401234c761e52bc422f4ed9400b87d019",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "0681880e8d0eb6e0bc39f716c989827c5deb6412",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

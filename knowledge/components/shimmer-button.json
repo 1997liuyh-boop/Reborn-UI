@@ -68,7 +68,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"z-10 flex min-h-64 items-center justify-center\">\r\n    <ShimmerButton\r\n      class=\"shadow-2xl\"\r\n      shimmer-size=\"2px\"\r\n    >\r\n      <span\r\n        class=\"text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg dark:from-white dark:to-slate-900/10\"\r\n      >\r\n        Cool Button\r\n      </span>\r\n    </ShimmerButton>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"z-10 flex min-h-64 items-center justify-center\">\n    <ShimmerButton\n      class=\"shadow-2xl\"\n      shimmer-size=\"2px\"\n    >\n      <span\n        class=\"text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg dark:from-white dark:to-slate-900/10\"\n      >\n        Cool Button\n      </span>\n    </ShimmerButton>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -102,8 +102,8 @@
   },
   "docPath": "content/2.components/button/shimmer-button.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "49aea287b325eb895e2999c42f4344b81d21c357",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "73abf9da1a873e942723de462d232416cf12486e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

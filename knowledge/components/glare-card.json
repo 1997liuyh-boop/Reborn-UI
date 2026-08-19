@@ -32,13 +32,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"flex items-center justify-center\">\r\n    <GlareCard class=\"flex flex-col items-center justify-center\">\r\n      <img src=\"https://cdn.reborn-ui.com/logo-dark.svg\" />\r\n      <p class=\"mt-4 text-xl font-bold text-white\">Reborn UI</p>\r\n    </GlareCard>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"flex items-center justify-center\">\n    <GlareCard class=\"flex flex-col items-center justify-center\">\n      <img src=\"https://cdn.reborn-ui.com/logo-dark.svg\" />\n      <p class=\"mt-4 text-xl font-bold text-white\">Reborn UI</p>\n    </GlareCard>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\r\n  <div class=\"grid grid-cols-1 gap-10 overflow-scroll md:grid-cols-3\">\r\n    <GlareCard class=\"flex flex-col items-center justify-center\">\r\n      <img src=\"/logo-dark.svg\" />\r\n    </GlareCard>\r\n    <GlareCard class=\"flex flex-col items-center justify-center\">\r\n      <img\r\n        class=\"absolute inset-0 size-full object-cover\"\r\n        src=\"https://images.unsplash.com/photo-1512618831669-521d4b375f5d?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\r\n      />\r\n    </GlareCard>\r\n    <GlareCard class=\"flex flex-col items-start justify-end px-6 py-8\">\r\n      <p class=\"text-lg font-bold text-white\">The greatest trick</p>\r\n      <p class=\"mt-4 text-base font-normal text-neutral-200\">\r\n        The greatest trick the devil ever pulled was to convince the world that he didn&apos;t\r\n        exist.\r\n      </p>\r\n    </GlareCard>\r\n  </div>\r\n</template>\r\n",
+      "code": "<template>\n  <div class=\"grid grid-cols-1 gap-10 overflow-scroll md:grid-cols-3\">\n    <GlareCard class=\"flex flex-col items-center justify-center\">\n      <img src=\"/logo-dark.svg\" />\n    </GlareCard>\n    <GlareCard class=\"flex flex-col items-center justify-center\">\n      <img\n        class=\"absolute inset-0 size-full object-cover\"\n        src=\"https://images.unsplash.com/photo-1512618831669-521d4b375f5d?q=80&w=3388&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n      />\n    </GlareCard>\n    <GlareCard class=\"flex flex-col items-start justify-end px-6 py-8\">\n      <p class=\"text-lg font-bold text-white\">The greatest trick</p>\n      <p class=\"mt-4 text-base font-normal text-neutral-200\">\n        The greatest trick the devil ever pulled was to convince the world that he didn&apos;t\n        exist.\n      </p>\n    </GlareCard>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -71,8 +71,8 @@
   },
   "docPath": "content/2.components/cards/glare-card.md",
   "_meta": {
-    "generatedAt": "2026-08-19T02:02:35.486Z",
-    "contentHash": "60aab5a95d186d9b2ea3f094df6a8fe04138aaf9",
+    "generatedAt": "2026-08-19T10:25:49.445Z",
+    "contentHash": "160b13b2bde0e57ca59d5c9036f5d2b9db1af362",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
