@@ -35,7 +35,9 @@ defineSlots<{
  * @event resize 当组件尺寸或位置发生改变时触发
  */
 const emit = defineEmits<{
+    /** 吸顶/吸底状态切换时触发，isSticky 为切换后的固定状态 */
     (e: 'change', isSticky: boolean): void;
+    /** 组件尺寸或位置变化时触发，rect 为最新的宽高与页面绝对位置（单位 px） */
     (e: 'resize', rect: { height: number; width: number; left: number; top: number }): void;
 }>();
 
@@ -58,6 +60,7 @@ export interface RebornStickyProps {
     bottomBoundary?: 'parent' | 'target';
     // 吸底固定后的占位策略：auto 保持旧逻辑，keep 保留高度，none 不参与页面排版
     bottomPlaceholder?: 'auto' | 'keep' | 'none';
+    // 覆盖内部节点类名：wrapper 为外层占位容器，content 为实际执行吸附定位的内容容器
     ui?: { wrapper?: string, content?: string };
 }
 

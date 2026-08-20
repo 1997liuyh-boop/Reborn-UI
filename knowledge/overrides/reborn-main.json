@@ -1,16 +1,16 @@
 {
-  "description": "用于包裹页面主体内容并自动适配 Header 高度的布局组件。",
+  "description": "用于渲染语义化 main 页面主体区域、默认最小高度撑满一屏的布局组件，仅 web 端。",
   "whenToUse": [
-    "与 reborn-header 搭配组织文档站、官网的页面主体区域。",
-    "需要统一页面主体留白与 Header 高度联动时。"
+    "与 reborn-header / reborn-footer 搭配组织文档站、官网的页面主体区域。",
+    "需要语义化 main 标签并保证主体内容至少撑满一屏时。"
   ],
   "whenNotToUse": [
     "uniapp 页面容器改用 reborn-page。",
-    "与 Header 无关的普通内容容器改用 reborn-container。"
+    "普通的限宽居中内容容器改用 reborn-container。"
   ],
   "pitfalls": [
     "仅 web 端可用。",
     "接口极简：仅 ui.base 与 class 两个配置项，内容全部走默认插槽。",
-    "高度适配针对 RebornHeader，需与其配套使用才有意义。"
+    "默认样式仅 min-h-screen（最小高度撑满视口）；页面存在固定 Header 需扣除其高度时，可用 ui.base 覆盖为 min-h-[calc(100vh-var(--ui-header-height))]。"
   ]
 }

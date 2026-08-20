@@ -70,20 +70,21 @@
       "name": "ui",
       "type": "{\n    wrapper?: ClassValue\n    base?: ClassValue\n    icon?: ClassValue\n  }",
       "required": false,
-      "description": "覆盖各个 slots 的样式。",
+      "description": "覆盖各个 slots 的样式，见下方「自定义样式（ui）」。",
       "default": "{}"
     }
   ],
   "events": [
     {
       "name": "click",
-      "description": ""
+      "description": "点击返回顶部按钮时触发，无参数；组件已先发起回到顶部滚动，无需在回调中重复处理",
+      "payload": "-"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": "自定义内容。"
+      "description": "自定义按钮内容，替换默认的圆形箭头按钮。"
     }
   ],
   "exposes": [],
@@ -137,8 +138,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-back-top.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "9e14956ca87b9fae6a9ba49b969e7e7ba98ca6a1",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "46712422b62836db041a723e7dadcc6ab2a5fc8e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

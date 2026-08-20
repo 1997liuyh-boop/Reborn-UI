@@ -7,8 +7,11 @@ import theme from './reborn-breadcrumb.config'
 export interface RebornBreadcrumbItemProps {
   to?: string | object
   replace?: 'navigate' | 'redirect' | 'switchTab' | 'reLaunch'
+  /** 预留的链接打开方式属性：uniapp 端跳转方式由 replace 决定，当前不参与跳转逻辑 */
   target?: string
+  /** 追加到条目链接节点的自定义类名 */
   customClass?: any
+  /** 细粒度样式覆盖对象，可用键：item / link / separator */
   ui?: any
 }
 

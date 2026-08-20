@@ -19,79 +19,79 @@
       "name": "color",
       "type": "typeof chipColors[number]",
       "required": false,
-      "description": "芯片颜色。",
+      "description": "角标背景色（语义色）。",
       "default": "'primary'"
     },
     {
       "name": "size",
       "type": "typeof chipSizes[number]",
       "required": false,
-      "description": "芯片尺寸。",
+      "description": "角标尺寸，两端档位不同（web 为 px、uniapp 为 rpx 标尺）。",
       "default": "'md'"
     },
     {
       "name": "text",
       "type": "string | number",
       "required": false,
-      "description": "芯片文本内容。"
+      "description": "角标文本内容；不传（或空）时仅显示纯色小圆点。"
     },
     {
       "name": "position",
       "type": "typeof chipPositions[number]",
       "required": false,
-      "description": "相对位置。",
+      "description": "相对宿主的四角定位。",
       "default": "'top-right'"
     },
     {
       "name": "show",
       "type": "boolean",
       "required": false,
-      "description": "是否显示，可配合 `v-model:show` 使用。",
+      "description": "是否显示角标，可配合 `v-model:show` 使用。",
       "default": "true"
     },
     {
       "name": "inset",
       "type": "boolean",
       "required": false,
-      "description": "是否使用内嵌位置（与 position 组合）。",
+      "description": "是否内嵌贴合宿主边缘（默认角标中心压在宿主角上）。",
       "default": "false"
     },
     {
       "name": "standalone",
       "type": "boolean",
       "required": false,
-      "description": "是否作为独立芯片渲染。",
+      "description": "是否作为独立角标渲染（无宿主内容时使用）。",
       "default": "false"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": "自定义样式类。"
+      "description": "**仅 UniApp**。追加到根元素的自定义类名。"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根元素的自定义类名"
     },
     {
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "按内部结构键（root/base/label）覆盖对应节点的样式类"
     }
   ],
   "events": [
     {
       "name": "update:show",
-      "description": ""
+      "description": "显隐状态变化时触发，配合 `v-model:show` 同步"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "宿主内容，作为角标的定位锚点；`standalone` 场景下可为空。"
     }
   ],
   "exposes": [],
@@ -141,8 +141,8 @@
   },
   "docPath": "content/2.components/button/reborn-chip.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "cca24118ecc331748d2704cd642c4ed196d09248",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "9303a2502727aac0c5014e7b22bbb8bedf9bca61",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

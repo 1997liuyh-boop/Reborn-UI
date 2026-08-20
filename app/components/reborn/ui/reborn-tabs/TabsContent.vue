@@ -5,6 +5,7 @@ import { cn } from "~/lib/utils";
 
 const props = defineProps<{
     index?: number
+    /** 追加到内容面板的自定义类名 */
     class?: any
 }>();
 

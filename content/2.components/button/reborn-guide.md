@@ -16,11 +16,90 @@ navigation:
 ::ComponentViewer{demoFile="RebornGuideDemo.vue" config="RebornGuideConfig" componentId="reborn-guide" :componentFiles='["RebornGuide.vue", "reborn-guide.config.ts"]'}
 ::
 
+## 简介
+
+Guide 是 web 端的新手引导组件：传入 `steps` 步骤数组后，按 `v-model:current` 指定的步骤索引依次高亮页面元素（遮罩挖洞 + 平滑过渡），并在其旁弹出带「上一步 / 下一步 / 跳过 / 完成」按钮的说明框。`current` 为 `-1` 表示未开始，设为 `0` 即启动引导；滚动或缩放窗口时高亮位置自动跟随。每一步可用 CSS 选择器或函数定位目标元素，并支持步骤级覆盖 `mode`、`placement`、按钮文案等配置。
+
+适用场景：
+
+- 新功能上线或用户首次进入页面时的分步操作指引。
+- 需要遮罩高亮目标元素并配上一步/下一步/跳过按钮的引导流程。
+- 需要 `v-model:current` 受控步骤、监听 `finish` / `skip` 事件上报引导完成情况的场景。
+
+不适用场景：
+
+- uniapp 端不可用（仅 web）。
+- 单个元素的悬浮提示说明，改用 `reborn-tooltip` 或 `reborn-popover`。
+
+## 用法
+
+### 基础用法
+
+`steps` 定义每一步的目标元素与文案，把 `current` 从 `-1` 置为 `0` 启动引导；引导结束（完成/跳过）后组件会把 `current` 写回 `-1`。
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { GuideStep } from "~/components/reborn/ui/reborn-guide/RebornGuide.vue";
+
+const current = ref(-1);
+
+const steps: GuideStep[] = [
+  { element: "#search", title: "搜索", body: "在这里输入关键词。", placement: "bottom" },
+  { element: "#create-btn", title: "新建", body: "点击创建你的第一个项目。", placement: "right" },
+];
+</script>
+
+<template>
+  <RebornButton @click="current = 0">开始引导</RebornButton>
+  <RebornGuide v-model:current="current" :steps="steps" @finish="current = -1" />
+</template>
+```
+
+### 对话框模式与步骤级配置
+
+`mode` 支持 `popup`（贴靠高亮元素，默认）与 `dialog`（居中对话框）两种形态；步骤对象里的 `mode`、`placement`、`nextButtonProps` 等字段可覆盖组件级配置。
+
+```vue
+<template>
+  <RebornGuide
+    v-model:current="current"
+    mode="dialog"
+    :steps="[
+      { element: '#panel', title: '专注阅读', body: '对话框模式适合需要用户专注阅读的说明。', placement: 'center' },
+      { element: '#panel', title: '混合模式', body: '该步骤单独切回 popup。', mode: 'popup', placement: 'top', nextButtonProps: { label: '知道了' } },
+    ]"
+  />
+</template>
+```
+
+### 自定义计数器与步骤内容插槽
+
+`counter` 插槽（作用域 `{ current, total }`）替换默认的「n / m」计数器。步骤对象的 `content` / `highlightContent` 字段声明的是**插槽名**：为某步骤设置 `content: 'stepFeature'` 后，提供同名插槽即可完全自定义该步骤的弹框正文（`highlightContent` 同理，渲染在高亮框内部）。
+
+```vue
+<template>
+  <RebornGuide
+    v-model:current="current"
+    :steps="[{ element: '#panel', title: '富文本步骤', content: 'stepFeature' }]"
+  >
+    <template #counter="{ current, total }">
+      <span class="text-xs">第 {{ current }} 步，共 {{ total }} 步</span>
+    </template>
+    <template #stepFeature>
+      <img src="/guide/feature.png" class="rounded-lg" />
+      <p>支持任意富内容作为步骤说明。</p>
+    </template>
+  </RebornGuide>
+</template>
+```
+
 ## Props 属性
 
 | 属性名              | 类型                  | 默认值    | 说明                        | 必传 |
 | :------------------ | :-------------------- | :-------- | :-------------------------- | :--- |
 | `v-model:current`   | `number`              | `-1`      | 当前步骤索引，`-1` 隐藏引导 | N    |
+| `defaultCurrent`    | `number`              | `-1`      | 非受控模式下的初始步骤      | N    |
 | `steps`             | `GuideStep[]`         | `[]`      | 引导步骤数组                | Y    |
 | `mode`              | `'popup' \| 'dialog'` | `'popup'` | 引导框类型                  | N    |
 | `hideCounter`       | `boolean`             | `false`   | 隐藏计数器                  | N    |
@@ -31,8 +110,10 @@ navigation:
 | `prevButtonProps`   | `ButtonProps`         | `{}`      | 上一步按钮属性              | N    |
 | `skipButtonProps`   | `ButtonProps`         | `{}`      | 跳过按钮属性                | N    |
 | `showOverlay`       | `boolean`             | `true`    | 是否出现遮罩层              | N    |
-| `highlightPadding`  | `number`              | `8`       | 高亮框内边距                | N    |
+| `highlightPadding`  | `number`              | `8`       | 高亮框内边距（px）          | N    |
 | `zIndex`            | `number`              | `999999`  | 提示框层级                  | N    |
+| `class`             | `any`                 | -         | 追加到引导框的自定义类名    | N    |
+| `ui`                | `object`              | `{}`      | 按内部结构键覆盖样式类      | N    |
 
 ## Events 事件
 
@@ -46,19 +127,45 @@ navigation:
 
 ## Slots 插槽
 
-| 插槽名    | 插槽参数                             | 说明         |
-| :-------- | :----------------------------------- | :----------- |
-| `counter` | `{ current: number, total: number }` | 自定义计数器 |
+| 插槽名                    | 插槽参数                             | 说明                                                                                             |
+| :------------------------ | :----------------------------------- | :----------------------------------------------------------------------------------------------- |
+| `counter`                 | `{ current: number, total: number }` | 自定义计数器                                                                                     |
+| `[step.content]`          | -                                    | 动态具名插槽：步骤对象 `content` 字段声明插槽名，命中该步骤时渲染此插槽作为弹框正文（替代 `body`） |
+| `[step.highlightContent]` | -                                    | 动态具名插槽：步骤对象 `highlightContent` 字段声明插槽名，渲染在该步骤的高亮框内（popup 模式）     |
+
+## Expose 方法
+
+| 方法名     | 说明                                 |
+| :--------- | :----------------------------------- |
+| `next()`   | 进入下一步（已是最后一步时不动作）   |
+| `prev()`   | 退回上一步（已是第一步时不动作）     |
+| `finish()` | 完成引导（`current` 置为 `-1`）      |
+| `skip()`   | 跳过引导（`current` 置为 `-1`）      |
 
 ## GuideStep 步骤类型
 
-| 属性名             | 类型                               | 默认值     | 说明                                | 必传 |
-| :----------------- | :--------------------------------- | :--------- | :---------------------------------- | :--- |
-| `element`          | `string \| () => Element \| null`  | -          | 高亮的节点选择器或函数              | Y    |
-| `body`             | `string`                           | -          | 步骤提示框内容                      | N    |
-| `title`            | `string`                           | -          | 步骤标题                            | N    |
-| `placement`        | `string`                           | `'bottom'` | 引导框位置（12种popup + 2种dialog） | N    |
-| `offset`           | `[number\|string, number\|string]` | `[0, 0]`   | 相对 placement 的偏移               | N    |
-| `mode`             | `'popup' \| 'dialog'`              | -          | 步骤级模式覆盖                      | N    |
-| `highlightPadding` | `number`                           | -          | 步骤级高亮内边距                    | N    |
-| `showOverlay`      | `boolean`                          | -          | 步骤级遮罩覆盖                      | N    |
+| 属性名             | 类型                               | 默认值     | 说明                                     | 必传 |
+| :----------------- | :--------------------------------- | :--------- | :--------------------------------------- | :--- |
+| `element`          | `string \| () => Element \| null`  | -          | 高亮的节点选择器或函数                   | Y    |
+| `body`             | `string`                           | -          | 步骤提示框内容                           | N    |
+| `title`            | `string`                           | -          | 步骤标题                                 | N    |
+| `content`          | `string`                           | -          | 自定义弹框正文的插槽名（优先于 `body`）  | N    |
+| `highlightContent` | `string`                           | -          | 自定义高亮框内容的插槽名                 | N    |
+| `placement`        | `string`                           | `'bottom'` | 引导框位置（12种popup + 2种dialog）      | N    |
+| `offset`           | `[number\|string, number\|string]` | `[0, 0]`   | 相对 placement 的偏移                    | N    |
+| `mode`             | `'popup' \| 'dialog'`              | -          | 步骤级模式覆盖                           | N    |
+| `highlightPadding` | `number`                           | -          | 步骤级高亮内边距                         | N    |
+| `showOverlay`      | `boolean`                          | -          | 步骤级遮罩覆盖                           | N    |
+| `nextButtonProps`  | `ButtonProps`                      | -          | 步骤级下一步按钮配置（如自定义文案）     | N    |
+| `prevButtonProps`  | `ButtonProps`                      | -          | 步骤级上一步按钮配置                     | N    |
+| `skipButtonProps`  | `ButtonProps`                      | -          | 步骤级跳过按钮配置                       | N    |
+| `stepOverlayClass` | `string`                           | -          | 覆盖该步骤遮罩/高亮框的类名              | N    |
+
+## 注意事项
+
+- 仅 web 端可用。
+- `current` 默认 `-1` 表示未开始，启动引导需将其设为步骤索引（通常 `0`）；完成或跳过后组件会写回 `-1`。
+- `mode` 支持 `popup`（贴靠高亮元素）与 `dialog`（居中对话框）两种展示形态，步骤级 `mode` 优先于组件级。
+- `zIndex` 默认 `999999`，注意与其他弹层的层级关系；`highlightPadding` 控制高亮框内边距（默认 8px）。
+- 步骤的 `content` / `highlightContent` 声明的是插槽名而非内容本身，需要在组件标签内提供同名 `<template #名称>`。
+- 步骤目标元素未找到时不会报错，引导框回退到屏幕中央显示（无箭头）。

@@ -75,7 +75,14 @@ import theme from './reborn-popover.config'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 
 const props = defineProps(popoverProps)
-const emit = defineEmits(['update:modelValue', 'update:open', 'menuclick', 'change', 'open', 'close'])
+const emit = defineEmits([
+    'update:modelValue', // 显隐状态变化时触发，参数为最新的显示状态（v-model 同步）
+    'update:open', // 显隐状态变化时触发，参数为最新的 open 值（对应 v-model:open）
+    'menuclick', // menu 模式下点击菜单项时触发，参数为 { item, index }
+    'change', // 显隐状态切换时触发，参数为 { show: boolean }
+    'open', // 气泡打开时触发
+    'close' // 气泡关闭时触发
+])
 const slots = useSlots()
 const useContentSlot = computed(() => !!slots.content)
 
@@ -206,7 +213,7 @@ function updateModelValue(value: boolean) {
 }
 
 defineExpose<PopoverExpose>({
-    open,
-    close
+    open, // 手动打开 Popover
+    close // 手动关闭 Popover
 })
 </script>

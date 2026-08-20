@@ -7,7 +7,9 @@ import theme from './reborn-breadcrumb.config'
 export interface RebornBreadcrumbItemProps {
     to?: string | object
     replace?: 'push' | 'replace' | 'blank'
+    /** 追加到条目链接节点的自定义类名 */
     customClass?: any
+    /** 细粒度样式覆盖对象，可用键：item / link / separator */
     ui?: any
 }
 

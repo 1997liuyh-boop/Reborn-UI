@@ -1,7 +1,7 @@
 {
   "name": "reborn-main",
   "title": "主体布局",
-  "description": "用于包裹页面主体内容并自动适配 Header 高度的布局组件。",
+  "description": "用于渲染语义化 main 页面主体区域、默认最小高度撑满一屏的布局组件，仅 web 端。",
   "category": "navigation",
   "dependencies": [
     "tailwind-variants"

@@ -24,7 +24,7 @@
       "name": "colors",
       "type": "string[]",
       "required": false,
-      "description": "用于圆锥渐变边框的颜色数组。",
+      "description": "用于圆锥渐变边框的颜色数组，首尾同色才能无缝旋转。",
       "default": "() => [\n    \"#FF0000\",\n    \"#FFA500\",\n    \"#FFFF00\",\n    \"#008000\",\n    \"#0000FF\",\n    \"#4B0082\",\n    \"#EE82EE\",\n    \"#FF0000\",\n  ]"
     },
     {
@@ -45,7 +45,7 @@
       "name": "blur",
       "type": "number",
       "required": false,
-      "description": "渐变边框的模糊强度（像素）。",
+      "description": "渐变边框的模糊强度（像素），值越大光晕越柔和。",
       "default": "4"
     },
     {
@@ -59,7 +59,7 @@
       "name": "bgColor",
       "type": "string",
       "required": false,
-      "description": "按钮内容的背景色。",
+      "description": "按钮内容区的背景色，浅色主题下需自行改为浅色。",
       "default": "\"#000\""
     }
   ],
@@ -67,7 +67,7 @@
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "按钮内容，渲染在渐变边框内的内容区中。"
     }
   ],
   "exposes": [],
@@ -106,8 +106,8 @@
   },
   "docPath": "content/2.components/button/gradient-button.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "d75d41e5071248384ef7160383e0a0e791c57929",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "bc63f8033483cf8219f4a81fabc85be235c13814",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

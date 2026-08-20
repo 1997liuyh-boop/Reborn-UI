@@ -20,7 +20,9 @@ export interface ChipProps {
   show?: boolean
   inset?: boolean
   standalone?: boolean
+  /** 追加到根元素的自定义类名 */
   class?: any
+  /** 按内部结构键（root/base/label）覆盖对应节点的样式类 */
   ui?: any
 }
 
@@ -34,6 +36,7 @@ const props = withDefaults(defineProps<ChipProps>(), {
 })
 
 const emit = defineEmits<{
+  /** 显隐状态变化时触发，配合 `v-model:show` 同步 */
   'update:show': [value: boolean]
 }>()
 

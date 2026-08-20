@@ -24,14 +24,14 @@
       "name": "rippleColor",
       "type": "string",
       "required": false,
-      "description": "波纹效果的颜色。",
+      "description": "波纹效果的颜色，支持任意 CSS 颜色值。",
       "default": "\"#ADD8E6\""
     },
     {
       "name": "duration",
       "type": "number",
       "required": false,
-      "description": "波纹动画的持续时间（毫秒）。",
+      "description": "波纹扩散动画的持续时间（毫秒）。",
       "default": "600"
     }
   ],
@@ -39,13 +39,13 @@
     {
       "name": "click",
       "payload": "(e: \"click\", event: MouseEvent): void;",
-      "description": "点击事件"
+      "description": "点击按钮时触发。"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "按钮显示内容，渲染在波纹层之上。"
     }
   ],
   "exposes": [],
@@ -86,8 +86,8 @@
   },
   "docPath": "content/2.components/button/ripple-button.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "9986b67b9f87cdc74365f7f41b9882000c155326",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "df566953bac70b3d46a1aec3fd4c4344964d37b2",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

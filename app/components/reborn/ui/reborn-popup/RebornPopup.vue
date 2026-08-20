@@ -479,6 +479,7 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
+  /** 手动关闭弹出层；配置了 beforeClose 时会先执行拦截回调，未取消才真正关闭 */
   handleClose
 });
 </script>

@@ -19,7 +19,9 @@ const props = withDefaults(defineProps<ChipProps>(), {
   standalone: false,
 })
 
-const emit = defineEmits(['update:show'])
+const emit = defineEmits([
+  'update:show', // 显隐状态变化时触发，配合 `v-model:show` 同步
+])
 
 const b = tv(theme)
 

@@ -70,12 +70,12 @@
     {
       "name": "open",
       "payload": "(e: 'open'): void;",
-      "description": ""
+      "description": "提示层显示后触发（经 openDelay 延时）"
     },
     {
       "name": "close",
       "payload": "(e: 'close'): void;",
-      "description": ""
+      "description": "提示层关闭后触发（经 closeDelay 延时）"
     },
     {
       "name": "update:open",
@@ -95,11 +95,11 @@
   "exposes": [
     {
       "name": "open",
-      "description": ""
+      "description": "手动打开提示层（仍受 disabled 与 openDelay 约束，无内容时不生效）"
     },
     {
       "name": "close",
-      "description": ""
+      "description": "手动关闭提示层（经 closeDelay 延时后隐藏）"
     }
   ],
   "examples": [
@@ -140,8 +140,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-tooltip.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "2a854ee44716262c6d1010173c624aff172dfccb",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "5848e351acec239cfb8c6d4c1314827999aaf1a4",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -12,78 +12,195 @@ navigation:
 ---
 
 ::ComponentViewer{demoFile="RebornPopupDemo.vue" config="RebornPopupConfig" componentId="reborn-popup" :componentFiles='["RebornPopup.vue", "reborn-popup.config.ts", "RebornTransition.vue", "reborn-transition.config.ts", "RebornOverlay.vue", "reborn-overlay.config.ts", "RebornRootPortal.vue", "reborn-root-portal.config.ts"]' :uniappFiles='["RebornPopup.vue", "reborn-popup.config.ts", "RebornTransition.vue", "reborn-transition.config.ts", "RebornOverlay.vue", "reborn-overlay.config.ts", "RebornRootPortal.vue", "reborn-root-portal.config.ts"]'}
+::
 
-#api
-## Props
-| 属性 | 类型 | 默认值 | 说明 | 平台 |
-| :--- | :--- | :--- | :--- | :--- |
-| `v-model` | `boolean` | `false` | 是否显示弹出层 | 通用 |
-| `position` | `'top' \| 'bottom' \| 'left' \| 'right' \| 'center'` | `'bottom'` | 弹出层的位置 | 通用 |
-| `size` | `number \| string` | `'30%'` | 弹出层的大小 (宽度或高度) | 通用 |
-| `title` | `string` | `''` | 弹出层的标题 | 通用 |
-| `showHeader` | `boolean` | `true` | 是否显示头部 | 通用 |
-| `showClose` | `boolean` | `true` | 是否显示关闭按钮 | 通用 |
-| `resizable` | `boolean` | `false` | 是否可以通过拖拽调整大小 | Web |
-| `swipeClose` | `boolean` | `true` | 是否开启手势滑动关闭 (仅限底部位置) | UniApp |
-| `swipeCloseThreshold` | `number` | `150` | 手势滑动关闭的阈值 | UniApp |
-| `rootPortal` / `enablePortal` | `boolean` | `false` | 是否开启插件内部 portal 渲染 (uniapp) | UniApp |
-| `appendToBody` | `boolean` | `false` | 是否将弹出层插入至 `body` 节点 | Web |
-| `lockScroll` | `boolean` | `true` | 是否在出现时锁定 body 滚动 | 通用 |
-| `closeOnClickModal` | `boolean` | `true` | 是否可以通过点击遮罩层关闭 | 通用 |
-| `closeOnPressEscape` | `boolean` | `true` | 是否可以通过按下 ESC 键关闭 | Web |
-| `openDelay` | `number` | `0` | 开启延迟 (ms) | Web |
-| `closeDelay` | `number` | `0` | 关闭延迟 (ms) | Web |
-| `destroyOnClose` | `boolean` | `false` | 关闭时是否销毁内部元素 | Web |
-| `modal` | `boolean` | `true` | 是否需要遮罩层 | 通用 |
-| `transition` | `string` | `''` | 自定义过渡动画名称 | 通用 |
-| `round` | `boolean` | `true` | 是否显示圆角样式 | 通用 |
-| `zIndex` | `number` | `2000` | 弹出层的层级 | 通用 |
-| `duration` | `number` | `350` | 动画时长 (ms) | 通用 |
-| `safeAreaInsetBottom` | `boolean` | `true` | 是否开启底部安全区域适配 | 通用 |
-| `safeAreaInsetTop` | `boolean` | `true` | 是否开启顶部安全区域适配 | 通用 |
-| `lazyRender` | `boolean` | `true` | 是否在显示时才渲染内容 | 通用 |
-| `color` | `string` | `'neutral'` | 主题色 (仅影响 UniApp 滑动手柄) | UniApp |
+## 简介
 
-## Emits
-| 事件名 | 回调参数 | 说明 | 平台 |
-| :--- | :--- | :--- | :--- |
-| `open` | `-` | 开启弹出层时触发 (动画开始) | 通用 |
-| `opened` | `-` | 开启且动画完成时触发 | 通用 |
-| `close` | `-` | 关闭弹出层时触发 | 通用 |
-| `closed` | `-` | 关闭且动画完成时触发 | 通用 |
-| `click-modal` | `-` | 点击遮罩层时触发 | 通用 |
-| `before-enter` | `-` | 过渡开始前触发 | UniApp |
-| `after-enter` | `-` | 过渡结束后触发 | UniApp |
-| `before-leave` | `-` | 离开过渡开始前触发 | UniApp |
-| `after-leave` | `-` | 离开过渡结束后触发 | UniApp |
-| `open-auto-focus` | `-` | 自动聚焦至打开状态 | Web |
-| `close-auto-focus` | `-` | 自动聚焦至关闭状态 | Web |
-| `resize` | `size: number` | 拖拽缩放中触发 | Web |
+Popup 是从屏幕边缘或中央弹出的面板容器，双端可用。`v-model` 控制显隐，`position` 支持 `top` / `bottom` / `left` / `right` / `center` 五个方位并自动匹配滑入动画，`size` 控制面板宽度或高度。内置头部（标题 + 关闭按钮）、遮罩层、滚动锁定与顶部/底部安全区适配；UniApp 端在 `position="bottom"` 时支持带阻尼与回弹的下滑手势关闭，Web 端支持 `resizable` 边缘拖拽调整大小与 `beforeClose` 关闭拦截。
 
-## Expose
-| 方法名 | 说明 | 平台 |
-| :--- | :--- | :--- |
-| `handleClose` | 手动关闭弹出层 | 通用 |
+适用场景：
 
-## UI 配置 (Slots & Variants)
+- 移动端底部操作面板、半屏弹层（`position="bottom"`，支持下滑手势关闭）。
+- 侧边抽屉式面板（`position="left"` / `"right"`，`size` 控制宽度）。
+- H5/小程序弹层需要顶部或底部安全区适配时。
+- 需要完整生命周期事件（`open` / `opened` / `close` / `closed` 等）或 `beforeClose` 拦截关闭时。
+
+不适用场景：
+
+- 居中确认对话框改用 `reborn-dialog`（仅 Web）。
+- 锚定元素的小型气泡浮层改用 `reborn-popover`。
+- 只需要背景遮罩改用 `reborn-overlay`。
+
+## 用法
+
+### 基础用法
+
+`v-model` 控制显隐；`position` 决定弹出方位与默认动画；`title` / `showClose` 配置头部。
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const show = ref(false);
+</script>
+
+<template>
+  <RebornButton @click="show = true">打开底部弹层</RebornButton>
+
+  <RebornPopup v-model="show" position="bottom" title="选择配送方式" size="40%">
+    <view class="p-4">弹层主体内容</view>
+  </RebornPopup>
+</template>
+```
+
+### 手势滑动关闭（UniApp）
+
+`position="bottom"` 时默认开启 `swipeClose`：面板顶部显示滑动手柄，下拉超过 `swipeCloseThreshold`（手指竖直位移，默认 120px）或快速轻扫即关闭，未达阈值则带弹簧回弹；遮罩透明度随拖拽联动。
+
+```vue
+<template>
+  <RebornPopup
+    v-model="show"
+    position="bottom"
+    size="600rpx"
+    :swipe-close="true"
+    :swipe-close-threshold="100"
+  >
+    <view class="p-4">下拉面板顶部手柄可关闭</view>
+  </RebornPopup>
+</template>
+```
+
+### 关闭前拦截与生命周期（Web）
+
+`beforeClose` 在关闭前调用并暂停关闭，回调 `done()` 继续关闭、`done(true)` 取消；`open` / `close` 在动画开始时触发，`opened` / `closed` 在动画结束后触发。
+
+```vue
+<script setup lang="ts">
+function beforeClose(done: (cancel?: boolean) => void) {
+  const ok = window.confirm("确认关闭？");
+  done(!ok);
+}
+</script>
+
+<template>
+  <RebornPopup
+    v-model="show"
+    position="right"
+    size="360px"
+    :before-close="beforeClose"
+    @opened="console.log('动画完成，面板已完全展开')"
+  />
+</template>
+```
+
+### 头部与页脚插槽
+
+`header` 插槽替换默认标题区域；`footer` 插槽（仅 Web）固定在面板底部，常用于操作按钮组。
+
+```vue
+<template>
+  <RebornPopup v-model="show" position="center" size="420px">
+    <template #header>
+      <text class="text-lg font-bold">自定义头部</text>
+    </template>
+    <view class="py-2">主体内容</view>
+    <template #footer>
+      <RebornButton color="primary" @click="show = false">确定</RebornButton>
+    </template>
+  </RebornPopup>
+</template>
+```
+
+## API
+
+### Props
+
+| 属性名                          | 类型                                                  | 默认值                       | 说明                                                                       | 平台   |
+| ------------------------------- | ----------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------- | ------ |
+| `v-model`                       | `boolean`                                             | `false`                      | 是否显示弹出层                                                             | 通用   |
+| `position`                      | `'top' \| 'bottom' \| 'left' \| 'right' \| 'center'`  | `'bottom'`                   | 弹出位置，自动匹配对应方向的滑入动画                                       | 通用   |
+| `size`                          | `number \| string`                                    | `'30%'`                      | 弹出层的大小：左右方向为宽度，上下方向为高度                               | 通用   |
+| `title`                         | `string`                                              | `''`                         | 弹出层的标题                                                               | 通用   |
+| `showHeader`                    | `boolean`                                             | `true`                       | 是否显示头部（包含标题和关闭按钮）                                         | 通用   |
+| `showClose`                     | `boolean`                                             | `true`                       | 是否显示关闭按钮                                                           | 通用   |
+| `round`                         | `boolean`                                             | `true`                       | 是否显示圆角样式                                                           | 通用   |
+| `modal` / `showMask`            | `boolean`                                             | `true`                       | 是否需要遮罩层（两者互为别名）                                             | 通用   |
+| `closeOnClickModal` / `maskClosable` | `boolean`                                        | `true`                       | 是否可以通过点击遮罩层关闭（两者互为别名）                                 | 通用   |
+| `transition`                    | `string`                                              | `''`                         | 自定义过渡动画名称，覆盖 `position` 的默认动画                             | 通用   |
+| `duration`                      | `number \| boolean`                                   | Web `350` / UniApp `300`     | 动画时长（ms）；UniApp 端设为 `false` 可禁用动画                           | 通用   |
+| `zIndex` / `overlayZIndex`      | `number`                                              | Web `2000` / UniApp `25`     | 弹出层的层级 z-index（两者互为别名）                                       | 通用   |
+| `lockScroll`                    | `boolean`                                             | `true`                       | 是否在出现时锁定背景滚动                                                   | 通用   |
+| `lazyRender`                    | `boolean`                                             | `true`                       | 是否在首次显示时才渲染内容                                                 | 通用   |
+| `safeAreaInsetBottom`           | `boolean`                                             | `true`                       | 是否开启底部安全区域适配（`position="bottom"` 时生效）                     | 通用   |
+| `safeAreaInsetTop`              | `boolean`                                             | `true`                       | 是否开启顶部安全区域适配（`position="top"` 时生效）                        | 通用   |
+| `modalStyle`                    | `string`                                              | `''`                         | 遮罩层的自定义样式                                                         | 通用   |
+| `customClass`                   | `string`                                              | `''`                         | 自定义根元素类名                                                           | 通用   |
+| `customStyle`                   | `string`                                              | `''`                         | 自定义根元素样式                                                           | 通用   |
+| `ui`                            | `object`                                              | `{}`                         | 按内部结构键覆盖类名                                                       | 通用   |
+| `swipeClose`                    | `boolean`                                             | `true`                       | 是否开启手势下滑关闭（仅 `position="bottom"` 时生效）                      | UniApp |
+| `swipeCloseThreshold`           | `number`                                              | `120`                        | 手势关闭的触发阈值（手指竖直位移 px，不与阻尼位移混用）                    | UniApp |
+| `rootPortal` / `enablePortal`   | `boolean`                                             | `false`                      | 是否使用 `reborn-root-portal` 渲染，解决小程序原生组件层级问题             | UniApp |
+| `color`                         | `'primary' \| 'success' \| 'warning' \| 'error' \| 'neutral'` | `'neutral'`          | 主题色（仅影响滑动手柄等）                                                 | UniApp |
+| `appendToBody`                  | `boolean`                                             | `false`                      | 是否将弹出层 Teleport 至 `body` 节点                                       | Web    |
+| `appendTo`                      | `string \| HTMLElement`                               | `'body'`                     | 指定弹出层插入的节点（非 `body` 时强制 Teleport）                          | Web    |
+| `beforeClose`                   | `(done: (cancel?: boolean) => void) => void`          | -                            | 关闭前回调，会暂停关闭：`done()` 继续、`done(true)` 取消                   | Web    |
+| `closeOnPressEscape`            | `boolean`                                             | `true`                       | 是否可以通过按下 ESC 键关闭                                                | Web    |
+| `openDelay`                     | `number`                                              | `0`                          | 开启延迟（ms）                                                             | Web    |
+| `closeDelay`                    | `number`                                              | `0`                          | 关闭延迟（ms）                                                             | Web    |
+| `destroyOnClose`                | `boolean`                                             | `false`                      | 关闭后是否销毁内部元素                                                     | Web    |
+| `resizable`                     | `boolean`                                             | `false`                      | 是否可通过边缘拖拽调整大小（`center` 位置不可用）                          | Web    |
+| `modalPenetrable`               | `boolean`                                             | `false`                      | 遮罩层是否可穿透（不处理任何鼠标事件）                                     | Web    |
+| `modalClass`                    | `string`                                              | `''`                         | 遮罩层的自定义类名                                                         | Web    |
+| `headerClass`                   | `string`                                              | `''`                         | 头部的自定义类名                                                           | Web    |
+| `bodyClass`                     | `string`                                              | `''`                         | 内容主体的自定义类名                                                       | Web    |
+| `footerClass`                   | `string`                                              | `''`                         | 底部页脚的自定义类名                                                       | Web    |
+| `headerAriaLevel`               | `string`                                              | `'2'`                        | 头部标题的 aria-level 属性                                                 | Web    |
+| `class`                         | `any`                                                 | -                            | 自定义根元素类名                                                           | Web    |
+
+### Emits
+
+| 事件名              | 回调参数           | 说明                                       | 平台   |
+| ------------------- | ------------------ | ------------------------------------------ | ------ |
+| `update:modelValue` | `(value: boolean)` | 显隐状态变化时触发（`v-model` 同步）       | 通用   |
+| `open`              | `-`                | 开启弹出层时触发（动画开始）               | 通用   |
+| `opened`            | `-`                | 开启且动画完成时触发                       | 通用   |
+| `close`             | `-`                | 关闭弹出层时触发（动画开始）               | 通用   |
+| `closed`            | `-`                | 关闭且动画完成时触发                       | 通用   |
+| `click-modal`       | `-`                | 点击遮罩层时触发                           | 通用   |
+| `before-enter`      | `-`                | 进入过渡开始前触发                         | UniApp |
+| `enter`             | `-`                | 进入过渡进行中触发（面板开始滑入）         | UniApp |
+| `after-enter`       | `-`                | 进入过渡结束后触发                         | UniApp |
+| `before-leave`      | `-`                | 离开过渡开始前触发                         | UniApp |
+| `leave`             | `-`                | 离开过渡进行中触发（面板开始滑出）         | UniApp |
+| `after-leave`       | `-`                | 离开过渡结束后触发                         | UniApp |
+| `open-auto-focus`   | `-`                | 打开后焦点转移进弹层时触发                 | Web    |
+| `close-auto-focus`  | `-`                | 关闭后焦点归还时触发                       | Web    |
+| `resize-start`      | `-`                | 开始拖拽缩放时触发                         | Web    |
+| `resize`            | `(size: number)`   | 拖拽缩放中持续触发，参数为最新尺寸（px）   | Web    |
+| `resize-end`        | `-`                | 结束拖拽缩放时触发                         | Web    |
 
 ### Slots
-- `header`: 头部区域，可自定义标题和操作。 (通用)
-- `default`: 弹窗主体内容。 (通用)
-- `footer`: 底部页脚区域。 (仅 Web)
 
-### Variants
-- **position**: `top`, `bottom`, `left`, `right`, `center` (通用)
-- **round**: `true`, `false` (通用)
-- **color**: `primary`, `success`, `warning`, `error`, `neutral` (仅 UniApp)
+| 插槽名    | 说明                                       | 平台 |
+| --------- | ------------------------------------------ | ---- |
+| `header`  | 头部区域，替换默认的标题文本               | 通用 |
+| `default` | 弹层主体内容                               | 通用 |
+| `footer`  | 底部页脚区域，常用于操作按钮组             | Web  |
 
-## 平台差异说明
+### Expose
 
-### 交互方式
-- **Web 端**: 支持 `resizable` 属性，允许用户通过边缘拖拽调整弹窗宽度/高度。支持 `appendToBody` 将弹窗挂载到 DOM 顶层。
-- **UniApp 端**: 重点优化了移动端手势。当 `position="bottom"` 时支持 `swipeClose`，弹窗顶部会出现滑动手柄，用户可下拉关闭，且带有精细的阻尼感和弹簧回弹效果。
+| 方法            | 说明                                                                     | 平台 |
+| --------------- | ------------------------------------------------------------------------ | ---- |
+| `handleClose()` | 手动关闭弹出层；Web 端配置了 `beforeClose` 时会先执行拦截回调            | 通用 |
 
-### 渲染机制
-- **Web 端**: 使用 Vue 3 原生 `Teleport` 实现挂载。
-- **UniApp 端**: 内置了 `reborn-root-portal` 以解决某些平台（如小程序）中原生组件层级过高的问题。
-::
+## 注意事项
+
+- web、uniapp 双端可用。
+- `swipeClose` 仅在 `position="bottom"` 时生效，阈值 `swipeCloseThreshold` 按手指真实竖直位移判定（默认 120px），快速轻扫（flick）也会触发关闭。
+- `safeAreaInsetBottom` / `safeAreaInsetTop` 默认均开启，仅在对应方位（bottom/top）弹出时注入安全区 padding。
+- `lazyRender` 默认 `true`，内容首次显示时才渲染；`destroyOnClose`（仅 Web）默认 `false`。
+- `zIndex` 默认值双端不同（Web 2000 / UniApp 25）；`color` 仅影响 UniApp 端的滑动手柄颜色。
+- 渲染机制：Web 端用 Vue `Teleport`（`appendToBody` / `appendTo`）挂载；UniApp 端用 `rootPortal` 开启 `reborn-root-portal`，解决小程序中原生组件（map、video）层级过高或被父级 `overflow:hidden` 截断的问题。
+- Web 端 `resizable` 在 `position="center"` 时不可用；拖拽结束尺寸不会持久化，关闭后恢复 `size`。
+- 嵌套使用多层 Popup 时遮罩与层级自动叠加处理，无需手动管理 z-index。

@@ -108,11 +108,11 @@ const props = withDefaults(defineProps<PopupProps>(), {
 })
 
 const emit = defineEmits([
-  'update:modelValue',
+  'update:modelValue', // 显隐状态变化时触发，参数为最新的显示状态（v-model 同步）
   'before-enter',
-  'enter',
+  'enter', // 进入过渡进行中触发（面板开始滑入）
   'before-leave',
-  'leave',
+  'leave', // 离开过渡进行中触发（面板开始滑出）
   'after-leave',
   'after-enter',
   'click-modal',
@@ -456,6 +456,7 @@ function onTouchCancel() {
 }
 
 defineExpose({
+  /** 手动关闭弹出层（等价于把 v-model 置为 false，会正常走关闭事件与动画） */
   handleClose: close
 });
 </script>

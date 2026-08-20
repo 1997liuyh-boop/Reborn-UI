@@ -83,28 +83,28 @@
       "name": "openDelay",
       "type": "number",
       "required": false,
-      "description": "hover` 模式下的展开延迟",
+      "description": "hover` 模式下的展开延迟（毫秒）",
       "default": "40"
     },
     {
       "name": "closeDelay",
       "type": "number",
       "required": false,
-      "description": "hover` 模式下的收起延迟",
+      "description": "hover` 模式下的收起延迟（毫秒）",
       "default": "120"
     },
     {
       "name": "nested",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否为嵌套子菜单实例（组件递归渲染 children 时内部使用，默认贴右侧展开且不锁滚动，业务侧一般无需设置）",
       "default": "false"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "追加到根容器（wrapper）的自定义类名",
       "default": "undefined"
     },
     {
@@ -130,17 +130,17 @@
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "触发区内容，在其上右键/点击/悬浮呼出菜单"
     },
     {
       "name": "content",
-      "description": ""
+      "description": "自定义菜单面板内容（替代 `items` 渲染），`close` 关闭菜单"
     }
   ],
   "exposes": [
     {
       "name": "close",
-      "description": ""
+      "description": "手动关闭当前菜单（同步更新受控/非受控展开状态并触发 update:open）"
     }
   ],
   "examples": [
@@ -186,8 +186,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-context-menu.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "f8a27c05335e9bf8bccf28261c01c9348bc94b3a",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "ccd36679fc940be7b7ac9bd5d98fa10f42f005d8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

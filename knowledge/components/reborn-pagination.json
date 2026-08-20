@@ -105,11 +105,11 @@
   "events": [
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "当前页码变化时触发（v-model 双向同步），参数为新页码"
     },
     {
       "name": "change",
-      "description": ""
+      "description": "页码切换后触发，参数为切换后的页码；点击当前页、省略号或禁用时不触发"
     }
   ],
   "slots": [
@@ -133,11 +133,11 @@
   "exposes": [
     {
       "name": "prev",
-      "description": ""
+      "description": "翻到上一页（当前页 - 1）：禁用或已在第一页时无操作，成功时同步 v-model 并触发 change"
     },
     {
       "name": "next",
-      "description": ""
+      "description": "翻到下一页（当前页 + 1）：禁用或已在最后一页时无操作，成功时同步 v-model 并触发 change"
     }
   ],
   "examples": [
@@ -187,8 +187,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-pagination.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "42c2f61e1cf73354cc33e037f45d9f713cfb6bb7",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "c572e6246e11f7dfbfb8f988248646cd60228b27",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

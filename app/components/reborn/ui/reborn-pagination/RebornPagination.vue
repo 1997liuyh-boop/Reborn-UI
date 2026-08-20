@@ -179,7 +179,12 @@ function next() {
     handlePageClick(modelValue.value + 1)
 }
 
-defineExpose({ prev, next })
+defineExpose({
+    /** 翻到上一页（当前页 - 1）：禁用或已在第一页时无操作，成功时同步 v-model 并触发 change */
+    prev,
+    /** 翻到下一页（当前页 + 1）：禁用或已在最后一页时无操作，成功时同步 v-model 并触发 change */
+    next
+})
 </script>
 
 <template>

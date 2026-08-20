@@ -106,73 +106,79 @@
       "type": "boolean",
       "default": "true",
       "required": false,
-      "description": ""
+      "description": "是否使用 content 插槽自定义气泡内容；组件内部会按是否传入 content 插槽自动判定，通常无需手动设置"
     },
     {
       "name": "displayMode",
       "type": "'normal' | 'menu'",
       "default": "'normal'",
       "required": false,
-      "description": ""
+      "description": "内容展示模式：normal 直接渲染 title 文本，menu 将 title 数组渲染为可点击的菜单列表（点击项触发 menuclick）"
     },
     {
       "name": "mode",
       "type": "\"click\" | \"hover\"",
       "required": false,
-      "description": "触发方式",
+      "description": "触发方式；UniApp 端仅支持点击触发",
       "default": "\"click\""
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根元素（触发器外层容器）的自定义类名"
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "显隐状态变化时触发，参数为最新的显示状态（v-model 同步）",
+      "payload": "(value: boolean)"
     },
     {
       "name": "update:open",
-      "description": ""
+      "description": "显隐状态变化时触发，参数为最新的 open 值（对应 v-model:open）",
+      "payload": "(value: boolean)"
     },
     {
       "name": "menuclick",
-      "description": ""
+      "description": "menu 模式下点击菜单项时触发，参数为 { item, index }",
+      "payload": "({ item, index })"
     },
     {
       "name": "change",
-      "description": ""
+      "description": "显隐状态切换时触发，参数为 { show: boolean }",
+      "payload": "({ show })"
     },
     {
       "name": "open",
-      "description": ""
+      "description": "气泡打开时触发",
+      "payload": "-"
     },
     {
       "name": "close",
-      "description": ""
+      "description": "气泡关闭时触发",
+      "payload": "-"
     }
   ],
   "slots": [
     {
       "name": "content",
-      "description": ""
+      "description": "气泡内容区域；UniApp 端传入后优先于 `title` / `displayMode` 渲染"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "触发器区域；Web 端提供作用域参数 `open` 表示当前显隐状态"
     }
   ],
   "exposes": [
     {
       "name": "open",
-      "description": ""
+      "description": "手动打开 Popover"
     },
     {
       "name": "close",
-      "description": ""
+      "description": "手动关闭 Popover"
     }
   ],
   "examples": [
@@ -230,8 +236,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-popover.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "59256fcb50f71cc3377dbb15ca9fc9734c4a553e",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "dc45cccf52628ea5d717b252b06886d86c18e8ef",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

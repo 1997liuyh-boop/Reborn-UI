@@ -175,7 +175,8 @@
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": "自定义 UI 配置"
+      "description": "自定义 UI 配置",
+      "default": "{}"
     },
     {
       "name": "rootPortal",
@@ -312,34 +313,37 @@
   "events": [
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "显隐状态变化时触发，参数为最新的显示状态（v-model 同步）",
+      "payload": "(value: boolean)"
     },
     {
       "name": "before-enter",
-      "description": "过渡开始前触发",
+      "description": "显隐状态变化时触发，参数为最新的显示状态（v-model 同步）",
       "payload": "-"
     },
     {
       "name": "enter",
-      "description": ""
+      "description": "进入过渡进行中触发（面板开始滑入）",
+      "payload": "-"
     },
     {
       "name": "before-leave",
-      "description": "离开过渡开始前触发",
+      "description": "进入过渡进行中触发（面板开始滑入）",
       "payload": "-"
     },
     {
       "name": "leave",
-      "description": ""
+      "description": "离开过渡进行中触发（面板开始滑出）",
+      "payload": "-"
     },
     {
       "name": "after-leave",
-      "description": "离开过渡结束后触发",
+      "description": "离开过渡进行中触发（面板开始滑出）",
       "payload": "-"
     },
     {
       "name": "after-enter",
-      "description": "过渡结束后触发",
+      "description": "进入过渡结束后触发",
       "payload": "-"
     },
     {
@@ -349,12 +353,12 @@
     },
     {
       "name": "close",
-      "description": "关闭弹出层时触发",
+      "description": "关闭弹出层时触发（动画开始）",
       "payload": "-"
     },
     {
       "name": "open",
-      "description": "开启弹出层时触发 (动画开始)",
+      "description": "开启弹出层时触发（动画开始）",
       "payload": "-"
     },
     {
@@ -396,21 +400,21 @@
   "slots": [
     {
       "name": "header",
-      "description": ""
+      "description": "头部区域，替换默认的标题文本"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "弹层主体内容"
     },
     {
       "name": "footer",
-      "description": ""
+      "description": "底部页脚区域，常用于操作按钮组"
     }
   ],
   "exposes": [
     {
       "name": "handleClose",
-      "description": ""
+      "description": "手动关闭弹出层（等价于把 v-model 置为 false，会正常走关闭事件与动画）"
     }
   ],
   "examples": [
@@ -468,8 +472,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-popup.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "ffd131aa856369b36861d4f9bf206f7cb6cc8732",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "2477622f428278621c31ce356783a3bf56ef91e3",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

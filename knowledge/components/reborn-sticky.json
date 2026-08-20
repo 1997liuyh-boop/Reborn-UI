@@ -91,7 +91,7 @@
       "name": "ui",
       "type": "{ wrapper?: string, content?: string }",
       "required": false,
-      "description": "",
+      "description": "覆盖内部节点类名：wrapper 为外层占位容器，content 为实际执行吸附定位的内容容器",
       "default": "undefined"
     }
   ],
@@ -99,29 +99,29 @@
     {
       "name": "change",
       "payload": "(e: 'change', isSticky: boolean): void;",
-      "description": ""
+      "description": "吸顶/吸底状态切换时触发，isSticky 为切换后的固定状态"
     },
     {
       "name": "resize",
       "payload": "(e: 'resize', rect: { height: number; width: number; left: number; top: number }): void;",
-      "description": ""
+      "description": "组件尺寸或位置变化时触发，rect 为最新的宽高与页面绝对位置（单位 px）"
     }
   ],
   "slots": [
     {
       "name": "default",
       "props": "(props: { isSticky: boolean }) => any",
-      "description": "自定义内容。Slot Props: `{ isSticky: boolean }`。"
+      "description": "自定义内容，`isSticky` 表示当前是否处于吸附状态。"
     }
   ],
   "exposes": [
     {
       "name": "getRect",
-      "description": ""
+      "description": "重新测量组件的位置与尺寸并更新内部 rect（内容或布局变化导致高度改变后可手动调用）"
     },
     {
       "name": "isSticky",
-      "description": ""
+      "description": "当前是否处于吸顶状态"
     },
     {
       "name": "height",
@@ -189,8 +189,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-sticky.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "548e7e7f1ff307337f00591b09a85e74a0fbde85",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "06b59b71b5279c1132f8d7277086477f1e8f0ce4",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

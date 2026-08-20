@@ -1754,8 +1754,11 @@ onBeforeUnmount(() => {
 
 /** 暴露给外部调用的方法 */
 defineExpose({
+  /** 平滑滚动切换到下一张：loop 下可从末张无缝回到首张，非 loop 已在末张时无操作；触发 change 并重置自动播放计时 */
   next,
+  /** 平滑滚动切换到上一张：loop 下可从首张无缝回到末张，非 loop 已在首张时无操作；触发 change 并重置自动播放计时 */
   prev,
+  /** goTo(index)：带平滑滚动动画跳转到指定索引（从 0 起，loop 下越界自动取模），同步 v-model、触发 change 并重置自动播放计时 */
   goTo,
 });
 </script>

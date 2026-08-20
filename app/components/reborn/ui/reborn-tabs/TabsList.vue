@@ -6,6 +6,7 @@ import { cn } from "~/lib/utils";
 const context = inject("TabsContext") as any;
 
 const props = defineProps<{
+    /** 追加到标签列表容器的自定义类名 */
     class?: any
 }>();
 

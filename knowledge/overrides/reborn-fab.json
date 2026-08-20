@@ -12,7 +12,7 @@
   ],
   "pitfalls": [
     "web 与 uniapp 双端可用。",
-    "expandable 默认 false：此时点击直接触发 click 事件，不会展开动作面板。",
+    "expandable 默认值双端不同（web 默认 true、uniapp 默认 false）：为 false 时点击直接触发 click 事件，不会展开动作面板。",
     "draggable 拖拽结束后按左右侧自动吸附并决定展开方向；attract 默认 true 自动吸边。",
     "inactiveIcon/activeIcon 在 Web 版默认依赖 nuxt-icon 图标体系。",
     "展开状态可用 v-model 绑定；variant 支持 float/capsule/circle 三种形态。"

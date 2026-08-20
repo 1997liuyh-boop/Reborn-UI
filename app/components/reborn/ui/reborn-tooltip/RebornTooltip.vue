@@ -82,7 +82,9 @@ const openModel = defineModel<boolean>('open', { default: undefined });
 
 /** 事件定义 */
 const emit = defineEmits<{
+  /** 提示层显示后触发（经 openDelay 延时） */
   (e: 'open'): void;
+  /** 提示层关闭后触发（经 closeDelay 延时） */
   (e: 'close'): void;
 }>();
 
@@ -496,7 +498,9 @@ watch(openModel, (value) => {
 
 /** 暴露方法供外部调用 */
 defineExpose({
+  /** 手动打开提示层（仍受 disabled 与 openDelay 约束，无内容时不生效） */
   open: openTooltip,
+  /** 手动关闭提示层（经 closeDelay 延时后隐藏） */
   close: closeTooltip,
 });
 

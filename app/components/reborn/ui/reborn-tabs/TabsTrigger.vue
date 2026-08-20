@@ -5,6 +5,7 @@ import { cn } from "~/lib/utils";
 const props = defineProps<{
     index?: number
     disabled?: boolean
+    /** 追加到触发器按钮的自定义类名 */
     class?: any
 }>();
 

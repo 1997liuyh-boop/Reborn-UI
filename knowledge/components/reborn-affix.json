@@ -21,56 +21,56 @@
       "name": "size",
       "type": "number",
       "required": false,
-      "description": "浮动元素的尺寸（宽/高，单位 px）。",
+      "description": "浮动元素的尺寸（宽/高，单位 px），参与拖拽边界与吸附位置计算。",
       "default": "40"
     },
     {
       "name": "left",
       "type": "number",
       "required": false,
-      "description": "初始左边距 (px)。如果未指定 `right`，这是默认水平位置依据。",
+      "description": "初始左边距 (px)。未指定 `right` 时作为水平位置依据。",
       "default": "10"
     },
     {
       "name": "right",
       "type": "number",
       "required": false,
-      "description": "初始右边距 (px)。如果指定，优先级高于 `left`。",
+      "description": "初始右边距 (px)。指定后优先级高于 `left`。",
       "default": "undefined"
     },
     {
       "name": "top",
       "type": "number",
       "required": false,
-      "description": "初始上边距 (px)。如果指定，优先级取决于内部实现 (通常结合 gap)。",
+      "description": "初始上边距 (px)。指定后垂直位置按「屏幕高度 − size − top」计算。",
       "default": "undefined"
     },
     {
       "name": "bottom",
       "type": "number",
       "required": false,
-      "description": "初始下边距 (px)。如果未指定 `top`，这是默认垂直位置依据。",
+      "description": "初始下边距 (px)。未指定 `top` 时作为垂直位置依据。",
       "default": "10"
     },
     {
       "name": "gap",
       "type": "number",
       "required": false,
-      "description": "吸附时的边距 (px)。",
+      "description": "吸附到屏幕边缘后的留边距离 (px)。",
       "default": "10"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用拖拽交互。",
+      "description": "是否禁用拖拽交互；元素仍会显示。",
       "default": "false"
     },
     {
       "name": "noSnapping",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用自动吸附边缘。",
+      "description": "是否禁用松手后的自动边缘吸附。",
       "default": "false"
     },
     {
@@ -85,7 +85,7 @@
   "slots": [
     {
       "name": "default",
-      "description": "自定义内容。"
+      "description": "自定义悬浮内容。"
     }
   ],
   "exposes": [],
@@ -139,8 +139,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-affix.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "2a8669e9d3024a1ae046261c354f22e6d0a6fd12",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "3a05f38c6d68a68d2b6198ae07db75829372cd7c",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

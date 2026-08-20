@@ -80,10 +80,16 @@ export const popoverProps = {
         type: [String, Object] as PropType<string | Record<string, any>[]>,
         default: ''
     },
+    /**
+     * 是否使用 content 插槽自定义气泡内容；组件内部会按是否传入 content 插槽自动判定，通常无需手动设置
+     */
     useContentSlot: {
         type: Boolean,
         default: true
     },
+    /**
+     * 内容展示模式：normal 直接渲染 title 文本，menu 将 title 数组渲染为可点击的菜单列表（点击项触发 menuclick）
+     */
     displayMode: {
         type: String as PropType<'normal' | 'menu'>,
         default: 'normal'

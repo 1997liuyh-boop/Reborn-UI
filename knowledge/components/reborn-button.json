@@ -19,13 +19,13 @@
       "name": "label",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "按钮文本内容；提供 default 插槽时被插槽内容覆盖"
     },
     {
       "name": "color",
       "type": "'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'",
       "required": false,
-      "description": "",
+      "description": "语义色：primary/secondary/success/info/warning/error/neutral，默认 primary",
       "default": "'primary'",
       "options": [
         "primary",
@@ -41,7 +41,7 @@
       "name": "variant",
       "type": "'solid' | 'outline' | 'soft' | 'subtle'",
       "required": false,
-      "description": "按钮类型。可选值：`default`, `primary`, `success`, `warning`, `info`, `destructive`, `outline`, `secondary`, `ghost`, `link",
+      "description": "视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边，默认 solid",
       "default": "'solid'",
       "options": [
         "solid",
@@ -54,7 +54,7 @@
       "name": "size",
       "type": "'xs' | 'sm' | 'default' | 'md' | 'lg' | 'xl' | '2xl'",
       "required": false,
-      "description": "按钮大小。可选值：`xs`, `sm`, `default`, `lg`, `xl`, `2xl`, 以及对应的 `icon-*` (如 `icon`, `icon-sm`)",
+      "description": "尺寸：xs/sm/default/md/lg/xl/2xl（default 与 md 等高），默认 md",
       "default": "'md'",
       "options": [
         "xs",
@@ -70,14 +70,14 @@
       "name": "loading",
       "type": "boolean",
       "required": false,
-      "description": "是否显示加载状态。",
+      "description": "是否加载中；显示加载动画并禁用点击",
       "default": "false"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用按钮。",
+      "description": "是否禁用按钮",
       "default": "false"
     },
     {
@@ -105,13 +105,13 @@
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": "是否块级元素"
+      "description": "追加到根节点的自定义类名（对应 Web 端 class）"
     },
     {
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "细粒度样式覆盖对象，键为 base/inner/label/loading"
     },
     {
       "name": "hoverClass",
@@ -129,27 +129,27 @@
       "name": "hoverStartTime",
       "type": "number",
       "required": false,
-      "description": "按钮点击态持续时间",
+      "description": "按住后出现点击态的延迟时间，单位毫秒",
       "default": "20"
     },
     {
       "name": "hoverStayTime",
       "type": "number",
       "required": false,
-      "description": "按钮点击态持续时间",
+      "description": "手指松开后点击态保留时间，单位毫秒",
       "default": "70"
     },
     {
       "name": "formType",
       "type": "string",
       "required": false,
-      "description": "表单提交类型"
+      "description": "表单提交类型（submit/reset），配合 form 组件使用"
     },
     {
       "name": "openType",
       "type": "string",
       "required": false,
-      "description": "开放能力类型"
+      "description": "小程序开放能力类型（contact/getPhoneNumber/openSetting/launchApp/chooseAvatar 等），对应事件见 emits"
     },
     {
       "name": "lang",
@@ -241,91 +241,106 @@
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "用于自定义样式的额外 CSS 类。",
-      "default": "\"\""
+      "description": "追加到根元素的自定义类名"
     }
   ],
   "events": [
     {
       "name": "click",
-      "description": ""
+      "description": "点击按钮时触发；disabled 或 loading 时不触发",
+      "payload": "(e: Event)"
     },
     {
       "name": "tap",
-      "description": ""
+      "description": "与 click 同时派发，便于沿用 uniapp @tap 写法",
+      "payload": "(e: Event)"
     },
     {
       "name": "getuserinfo",
-      "description": ""
+      "description": "open-type=\"getUserInfo\" 时触发，e.detail 含 userInfo 等用户信息",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "contact",
-      "description": ""
+      "description": "open-type=\"contact\" 客服会话回调，e.detail.path/query 为小程序消息参数",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "getphonenumber",
-      "description": ""
+      "description": "open-type=\"getPhoneNumber\" 时触发，e.detail.code 用于服务端换取手机号",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "error",
-      "description": ""
+      "description": "使用开放能力发生错误时触发，e.detail 含错误信息",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "opensetting",
-      "description": ""
+      "description": "open-type=\"openSetting\" 打开授权设置页后回调，e.detail.authSetting 为授权结果",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "launchapp",
-      "description": ""
+      "description": "open-type=\"launchApp\" 打开 APP 成功时触发，参数经 appParameter 传给 APP",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "chooseavatar",
-      "description": ""
+      "description": "open-type=\"chooseAvatar\"（微信）时触发，e.detail.avatarUrl 为所选头像临时路径",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "chooseaddress",
-      "description": ""
+      "description": "open-type=\"chooseAddress\"（QQ）用户选择收货地址后回调，e.detail 含地址信息",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "chooseinvoicetitle",
-      "description": ""
+      "description": "open-type=\"chooseInvoiceTitle\"（QQ）用户选择发票抬头后回调",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "addgroupapp",
-      "description": ""
+      "description": "open-type=\"addGroupApp\"（QQ）添加群应用后回调",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "subscribe",
-      "description": ""
+      "description": "open-type=\"subscribe\"（QQ）订阅号订阅结果回调",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "login",
-      "description": ""
+      "description": "open-type=\"login\"（QQ）登录回调，e.detail 含登录 code",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "getrealtimephonenumber",
-      "description": ""
+      "description": "open-type=\"getRealtimePhoneNumber\"（微信）实时手机号验证回调，e.detail.code 换取手机号",
+      "payload": "(e: UniEvent)"
     },
     {
       "name": "agreeprivacyauthorization",
-      "description": ""
+      "description": "open-type=\"agreePrivacyAuthorization\"（微信）用户同意隐私协议后回调",
+      "payload": "(e: UniEvent)"
     }
   ],
   "slots": [
     {
       "name": "leading",
       "props": "(props: { ui: any, loading: boolean }) => any",
-      "description": ""
+      "description": "前置内容（常放图标），作用域含 loading 状态；loading 时被加载动画替代"
     },
     {
       "name": "default",
       "props": "(props: { ui: any }) => any",
-      "description": ""
+      "description": "按钮主体内容，优先于 label prop 渲染"
     },
     {
       "name": "trailing",
       "props": "(props: { ui: any }) => any",
-      "description": ""
+      "description": "后置内容（常放图标）；loading 时不渲染"
     }
   ],
   "exposes": [],
@@ -379,8 +394,8 @@
   },
   "docPath": "content/2.components/button/reborn-button.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "7ec81c8c4b76d6dd510da0b1dc8c3d054cd4d912",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "724f37bbb90304df4f72ee2bbaad2c2c192e0136",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

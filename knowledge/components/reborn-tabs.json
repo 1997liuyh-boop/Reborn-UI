@@ -18,13 +18,13 @@
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名"
     },
     {
       "name": "list",
       "type": "TabsItem[]",
       "required": true,
-      "description": "modelValue: string | number;",
+      "description": "标签项数据数组，每项含 label / value / disabled",
       "default": "() => []"
     },
     {
@@ -86,33 +86,34 @@
       "name": "index",
       "type": "number",
       "required": false,
-      "description": "该触发器对应的索引。"
+      "description": "该触发器对应的索引，须与目标 `TabsContent` 的 `index` 一致。",
+      "default": "按注册顺序分配"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到内容面板的自定义类名"
     },
     {
       "name": "active",
       "type": "number",
       "required": false,
-      "description": "当前激活的 Tab 索引 (v-model:active)。",
+      "description": "当前激活的 Tab 索引（`v-model:active`）。",
       "default": "0"
     },
     {
       "name": "defaultActive",
       "type": "number",
       "required": false,
-      "description": "默认激活的 Tab 索引。",
+      "description": "非受控模式下默认激活的 Tab 索引。",
       "default": "0"
     },
     {
       "name": "type",
       "type": "'line' | 'card'",
       "required": false,
-      "description": "Tabs 样式类型。可选值: `line`, `card`。",
+      "description": "Tabs 样式类型：`line` 下划线；`card` 圆角卡片。",
       "default": "\"line\"",
       "options": [
         "line",
@@ -123,7 +124,7 @@
       "name": "orientation",
       "type": "'horizontal' | 'vertical'",
       "required": false,
-      "description": "布局方向。可选值: `horizontal`, `vertical`。",
+      "description": "布局方向。",
       "default": "\"horizontal\"",
       "options": [
         "horizontal",
@@ -134,93 +135,93 @@
       "name": "sticky",
       "type": "boolean",
       "required": false,
-      "description": "是否开启吸顶布局。",
+      "description": "是否开启吸顶布局（标签列表随页面滚动吸附在顶部）。",
       "default": "false"
     },
     {
       "name": "swipeable",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否开启滑动手势切换：在内容区滑动超过 50px 时切换到上/下一个标签",
       "default": "false"
     },
     {
       "name": "shrink",
       "type": "boolean",
       "required": false,
-      "description": "是否开启收缩布局（标签向左侧收缩对齐）。",
+      "description": "是否开启收缩布局（标签向左侧收缩对齐，不再平分宽度）。",
       "default": "false"
     },
     {
       "name": "scrollspy",
       "type": "boolean",
       "required": false,
-      "description": "是否开启滚动导航模式（内容平铺展示）。",
+      "description": "是否开启滚动导航模式（内容平铺展示，滚动反向高亮标签）。",
       "default": "false"
     },
     {
       "name": "activationMode",
       "type": "\"automatic\" | \"manual\"",
       "required": false,
-      "description": "",
+      "description": "激活模式：automatic 点击即激活；manual 预留给键盘导航手动确认的场景",
       "default": "\"automatic\""
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "选中值变化时触发（v-model 同步），参数为 (value, item, index)"
     },
     {
       "name": "change",
-      "description": ""
+      "description": "切换标签后触发，参数为 (value, item, index)"
     },
     {
       "name": "update:active",
       "payload": "(e: \"update:active\", value: number): void",
-      "description": ""
+      "description": "激活索引变化时触发（v-model:active 同步），参数为新的标签索引"
     },
     {
       "name": "click-tab",
       "payload": "(e: \"click-tab\", value: number, event: MouseEvent): void",
-      "description": ""
+      "description": "点击某个标签时触发，参数为该标签索引与原生鼠标事件"
     }
   ],
   "slots": [
     {
       "name": "item",
       "props": "(props: { item: Item, active: boolean }) => any",
-      "description": ""
+      "description": "自定义单个标签的内容，作用域参数 { item, active }，item 含 label / value / disabled / isActive"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "**仅 Web**。各子组件的内容插槽：`TabsRoot` 放置 List 与 Content，`TabsList` 放置 Trigger，`TabsTrigger` 为标签文本兜底，`TabsContent` 为面板内容。"
     },
     {
       "name": "indicator",
-      "description": ""
+      "description": "**仅 Web**（TabsList）。自定义激活指示器，`style` 携带 `--radix-tabs-indicator-*` 定位变量。"
     },
     {
       "name": "leading-icon",
-      "description": ""
+      "description": "**仅 Web**（TabsTrigger）。标签文本前的图标区。"
     },
     {
       "name": "leading-avatar",
-      "description": ""
+      "description": "**仅 Web**（TabsTrigger）。标签文本前的头像区（圆形裁剪容器）。"
     },
     {
       "name": "label",
-      "description": ""
+      "description": "**仅 Web**（TabsTrigger）。标签文本区，优先于默认插槽渲染。"
     },
     {
       "name": "trailing-badge",
-      "description": ""
+      "description": "**仅 Web**（TabsTrigger）。标签文本后的徽标区。"
     }
   ],
   "exposes": [
     {
       "name": "activeIndex",
-      "description": ""
+      "description": "当前激活的标签索引（Ref，可读可写，写入即切换标签）"
     }
   ],
   "examples": [
@@ -278,8 +279,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-tabs.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "3db7caf7c434aac793a5e9061ecfa3cdf696f509",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "c8087e81a4ef28139ea0938e76665c6385bba3a8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

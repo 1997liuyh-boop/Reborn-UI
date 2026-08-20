@@ -87,7 +87,14 @@ const props = withDefaults(defineProps<Props>(), {
   }),
 });
 
-const emit = defineEmits(["update:modelValue", "click", "open", "opened", "close", "closed"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "click",
+  "open", // 动作面板开始展开时立即触发（动画启动时刻）
+  "opened", // 动作面板展开动画结束后触发（约 400ms 后，此时 v-model 同步为 true）
+  "close", // 动作面板开始收起时立即触发（动画启动时刻）
+  "closed", // 动作面板收起动画结束后触发（约 400ms 后，此时 v-model 同步为 false）
+]);
 
 // 响应式状态：内部执行动画的关键开关
 const isActive = ref(props.modelValue || props.active);
@@ -879,8 +886,11 @@ onUnmounted(() => {
 
 // 暴露 API
 defineExpose({
+  /** 手动展开动作面板 */
   open: () => (isActive.value = true),
+  /** 手动收起动作面板 */
   close: () => (isActive.value = false),
+  /** 从 peekOnScroll 的半隐藏状态立即复位到正常停靠位置 */
   restore: restoreFromPeek,
 });
 </script>

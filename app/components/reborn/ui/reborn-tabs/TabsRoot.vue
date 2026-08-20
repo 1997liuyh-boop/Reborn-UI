@@ -14,10 +14,13 @@ export interface TabsProps {
     size?: typeof tabsSizes[number]
     orientation?: typeof tabsOrientations[number]
     sticky?: boolean
+    /** 是否开启滑动手势切换：在内容区滑动超过 50px 时切换到上/下一个标签 */
     swipeable?: boolean
     shrink?: boolean
     scrollspy?: boolean
+    /** 激活模式：automatic 点击即激活；manual 预留给键盘导航手动确认的场景 */
     activationMode?: "automatic" | "manual"
+    /** 追加到根元素的自定义类名 */
     class?: ClassValue
     ui?: Partial<{
         root: ClassValue
@@ -48,7 +51,9 @@ const props = withDefaults(defineProps<TabsProps>(), {
 });
 
 const emit = defineEmits<{
+    /** 激活索引变化时触发（v-model:active 同步），参数为新的标签索引 */
     (e: "update:active", value: number): void
+    /** 点击某个标签时触发，参数为该标签索引与原生鼠标事件 */
     (e: "click-tab", value: number, event: MouseEvent): void
 }>();
 
@@ -211,6 +216,7 @@ provide('TabsContext', {
 });
 
 defineExpose({
+    /** 当前激活的标签索引（Ref，可读可写，写入即切换标签） */
     activeIndex
 })
 </script>

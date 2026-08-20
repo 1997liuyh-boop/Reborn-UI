@@ -421,7 +421,9 @@ onMounted(() => {
 })
 
 defineExpose({
+    /** 手动展开动作面板 */
     open: () => (isActive.value = true),
+    /** 手动收起动作面板 */
     close: () => (isActive.value = false)
 })
 </script>

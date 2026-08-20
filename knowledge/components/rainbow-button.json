@@ -25,14 +25,14 @@
       "name": "is",
       "type": "string",
       "required": false,
-      "description": "渲染组件时使用的 HTML 标签。",
+      "description": "渲染根节点使用的 HTML 标签，如 `a`。",
       "default": "\"button\""
     },
     {
       "name": "speed",
       "type": "number",
       "required": false,
-      "description": "动画持续时间（秒）。",
+      "description": "彩虹流动动画周期（秒），值越小流动越快。",
       "default": "2"
     }
   ],
@@ -40,7 +40,7 @@
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "按钮显示内容。"
     }
   ],
   "exposes": [],
@@ -79,8 +79,8 @@
   },
   "docPath": "content/2.components/button/rainbow-button.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "b96927c75ffd75634142800d18d62f8b81fdbb0e",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "e59faff853f3f2a681c7853f279dd8cc17e8d3fb",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

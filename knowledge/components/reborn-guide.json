@@ -208,7 +208,7 @@
     "defaultCurrent 默认 -1 表示未开始，启动引导需将 current 设为步骤索引。",
     "mode 支持 popup（贴靠高亮元素）与 dialog 两种展示形态。",
     "zIndex 默认 999999，注意与其他弹层的层级关系；highlightPadding 控制高亮框内边距（默认 8）。",
-    "步骤内容可用 activeStep.content / activeStep.highlightContent 插槽自定义。"
+    "步骤对象的 content / highlightContent 字段声明的是动态插槽名：提供同名 <template #名称> 即可自定义该步骤的弹框正文（替代 body）或高亮框内容。"
   ],
   "dependencies": [
     "clsx"
@@ -225,8 +225,8 @@
   },
   "docPath": "content/2.components/button/reborn-guide.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "1d5ce367ccf6ccad7180d8300a5968f897ab182b",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "7c17e39aa9181e49cda8a59b1e48e34aeba6ed8e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

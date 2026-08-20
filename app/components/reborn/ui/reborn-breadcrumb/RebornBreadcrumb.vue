@@ -7,7 +7,9 @@ import theme from './reborn-breadcrumb.config'
 export interface RebornBreadcrumbProps {
     separator?: string
     separatorIcon?: any
+    /** 追加到面包屑根节点的自定义类名 */
     customClass?: any
+    /** 细粒度样式覆盖对象，键 root 对应根节点类名 */
     ui?: any
 }
 

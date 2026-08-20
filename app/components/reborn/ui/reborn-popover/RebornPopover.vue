@@ -28,6 +28,7 @@ export interface PopoverProps {
   modal?: boolean;
   openDelay?: number;
   closeDelay?: number;
+  /** 追加到根元素（触发器外层容器）的自定义类名 */
   class?: any;
   ui?: any;
 }
@@ -48,6 +49,7 @@ const props = withDefaults(defineProps<PopoverProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 显隐状态变化时触发，参数为最新的 open 值（对应 v-model:open） */
   (e: "update:open", v: boolean): void;
 }>();
 
@@ -414,6 +416,7 @@ const ui = computed(() => {
 });
 
 defineExpose({
+  /** 手动关闭 Popover */
   close: () => (open.value = false),
 });
 </script>

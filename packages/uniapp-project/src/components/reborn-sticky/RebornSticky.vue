@@ -187,7 +187,9 @@ onMounted(() => {
 })
 
 defineExpose({
+  // 重新测量组件的位置与尺寸并更新内部 rect（内容或布局变化导致高度改变后可手动调用）
   getRect,
+  // 当前是否处于吸顶状态
   isSticky,
 })
 </script>

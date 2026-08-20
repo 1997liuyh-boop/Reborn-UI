@@ -21,7 +21,10 @@ const props = withDefaults(defineProps<BackTopProps>(), {
   size: 'md',
 })
 
-const emit = defineEmits(['click'])
+const emit = defineEmits([
+  /** 点击返回顶部按钮时触发，无参数；组件已先发起回到顶部滚动，无需在回调中重复处理 */
+  'click',
+])
 
 export interface BackTopProps {
   // 当前页面的滚动距离

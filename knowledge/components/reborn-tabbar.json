@@ -4,7 +4,11 @@
   "title": "Tabbar 底部标签栏",
   "description": "用于 uniapp 页面底部导航切换的自定义标签栏组件，需配合 RebornTabbarTrigger 子项使用。",
   "category": "navigation",
-  "tags": [],
+  "tags": [
+    "uniapp",
+    "tabbar",
+    "navigation"
+  ],
   "platforms": [
     "uniapp"
   ],
@@ -13,121 +17,122 @@
       "name": "modelValue",
       "type": "number | string",
       "required": false,
-      "description": "",
+      "description": "当前激活项，对应子项 RebornTabbarTrigger 的 name（子项未设 name 时为其索引），支持 v-model",
       "default": "0"
     },
     {
       "name": "fixed",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否固定在页面底部（fixed 定位吸底，配合 placeholder 自动占位）",
       "default": "false"
     },
     {
       "name": "bordered",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示顶部分隔线（仅 shape 为 normal 时渲染）",
       "default": "true"
     },
     {
       "name": "safeAreaInsetBottom",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否为 iOS 底部安全区追加内边距（仅 fixed 开启时生效）",
       "default": "false"
     },
     {
       "name": "pureIcon",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否仅显示图标不显示标题，开启后标签栏高度降为 90rpx",
       "default": "false"
     },
     {
       "name": "shape",
       "type": "(typeof tabbarShapes)[number]",
       "required": false,
-      "description": "",
+      "description": "标签栏形状：normal 通栏矩形；round 悬浮胶囊（带左右边距与阴影）",
       "default": "'normal'"
     },
     {
       "name": "animation",
       "type": "(typeof tabbarAnimations)[number] | null",
       "required": false,
-      "description": "",
+      "description": "切换动画类型：reveal / flip / creative / glass / fly-balls / drop，null 表示无动画",
       "default": "null"
     },
     {
       "name": "ballColors",
       "type": "string[]",
       "required": false,
-      "description": "",
+      "description": "fly-balls 动画的小球颜色数组，数组长度即小球数量",
       "default": "() => ['#ff6675', '#ffb03b', '#35b6f2', '#3ac29e']"
     },
     {
       "name": "activeColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "选中态图标与标题颜色（内联样式，优先级高于 color 主题色）"
     },
     {
       "name": "inactiveColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "未选中态图标与标题颜色（内联样式）"
     },
     {
       "name": "placeholder",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "fixed 时是否生成等高占位元素，防止页面内容被标签栏遮挡",
       "default": "true"
     },
     {
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "标签栏主体的 z-index 层级",
       "default": "99"
     },
     {
       "name": "color",
       "type": "(typeof tabbarColors)[number]",
       "required": false,
-      "description": "",
+      "description": "主题色，选中项与 drop 指示球随之着色；子项可用自身 color 覆盖",
       "default": "'primary'"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名"
     },
     {
       "name": "customStyle",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "追加到标签栏主体的内联样式字符串",
       "default": "''"
     },
     {
       "name": "ui",
       "type": "Partial<Record<'root' | 'base' | 'dropBall' | 'flyBallsContainer' | 'flyBallItem', string>>",
       "required": false,
-      "description": ""
+      "description": "按 root / base / dropBall / flyBallsContainer / flyBallItem 键覆盖内部节点类名"
     },
     {
       "name": "ballShiftY",
       "type": "number",
       "required": false,
-      "description": ""
+      "description": "fly-balls 小球落点的纵向偏移，单位 rpx，默认 -5",
+      "default": "-5"
     },
     {
       "name": "beforeChange",
       "type": "(params: { name: string | number }, done: (shouldProceed?: boolean) => void) => boolean | Promise<boolean> | void",
       "required": false,
-      "description": ""
+      "description": "切换前拦截钩子：返回 false、Promise 解析为 false 或调用 done(false) 均可阻止本次切换"
     },
     {
       "name": "title",
@@ -139,7 +144,8 @@
       "name": "name",
       "type": "number | string",
       "required": false,
-      "description": "唯一标识符"
+      "description": "唯一标识符",
+      "default": "子项索引"
     },
     {
       "name": "icon",
@@ -164,27 +170,28 @@
       "name": "imageSize",
       "type": "number",
       "required": false,
-      "description": "图片大小"
+      "description": "图片大小",
+      "default": "40"
     }
   ],
   "events": [
     {
       "name": "change",
-      "description": ""
+      "description": "选中项切换后触发，参数为 { value }，value 为新选中项的 name"
     },
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "选中项变化时触发（v-model 同步），参数为新选中项的 name"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "RebornTabbar` 上放置 `RebornTabbarTrigger` 子项；`RebornTabbarTrigger` 上则完全接管该子项的渲染内容。"
     },
     {
       "name": "icon",
-      "description": ""
+      "description": "RebornTabbarTrigger` 的图标区插槽，替代 `icon` / `inactive` 属性自定义图标渲染。"
     }
   ],
   "exposes": [],
@@ -236,8 +243,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-tabbar.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "03a97744a0470fe7f3a3b36fbd6ba3dad028f385",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "c8aee64d2fb6747b6f3af8829d40136fcc6dbdc5",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

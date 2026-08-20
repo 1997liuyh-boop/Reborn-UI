@@ -18,28 +18,28 @@
       "name": "shimmerColor",
       "type": "string",
       "required": false,
-      "description": "闪光效果的颜色。",
+      "description": "闪光光斑的颜色。",
       "default": "\"#ffffff\""
     },
     {
       "name": "shimmerSize",
       "type": "string",
       "required": false,
-      "description": "闪光效果的尺寸。",
+      "description": "流光描边的宽度，CSS 长度字符串。",
       "default": "\"0.05em\""
     },
     {
       "name": "borderRadius",
       "type": "string",
       "required": false,
-      "description": "按钮的圆角半径。",
+      "description": "按钮的圆角半径，CSS 长度字符串。",
       "default": "\"100px\""
     },
     {
       "name": "shimmerDuration",
       "type": "string",
       "required": false,
-      "description": "闪光动画的持续时间。",
+      "description": "一轮流光动画的周期，CSS 时间字符串。",
       "default": "\"3s\""
     },
     {
@@ -61,7 +61,7 @@
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "按钮显示内容，渲染在流光层之上。"
     }
   ],
   "exposes": [],
@@ -102,8 +102,8 @@
   },
   "docPath": "content/2.components/button/shimmer-button.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "73abf9da1a873e942723de462d232416cf12486e",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "018335121fbc42df2ec4ebc46e0eca4271191c4a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

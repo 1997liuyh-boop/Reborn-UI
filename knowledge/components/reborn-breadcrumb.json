@@ -31,13 +31,14 @@
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到面包屑根节点的自定义类名",
+      "default": "—"
     },
     {
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "细粒度样式覆盖对象，键 root 对应根节点类名",
       "default": "() => ({})"
     },
     {
@@ -58,7 +59,8 @@
       "name": "target",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "预留的链接打开方式属性：uniapp 端跳转方式由 replace 决定，当前不参与跳转逻辑",
+      "default": "—"
     }
   ],
   "events": [],
@@ -122,8 +124,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-breadcrumb.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "9fc1600d8ae8b3fc8ffef2213d87d73e148a620b",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "53f8452f8942b048a1331e935b786d4480c1d461",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

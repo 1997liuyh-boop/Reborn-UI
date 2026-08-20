@@ -18,23 +18,41 @@ import { TABBAR_KEY } from './types'
 import type { TabbarItem } from './types'
 
 export interface TabbarProps {
+    /** 当前激活项，对应子项 RebornTabbarTrigger 的 name（子项未设 name 时为其索引），支持 v-model */
     modelValue?: number | string
+    /** 是否固定在页面底部（fixed 定位吸底，配合 placeholder 自动占位） */
     fixed?: boolean
+    /** 是否显示顶部分隔线（仅 shape 为 normal 时渲染） */
     bordered?: boolean
+    /** 是否为 iOS 底部安全区追加内边距（仅 fixed 开启时生效） */
     safeAreaInsetBottom?: boolean
+    /** 是否仅显示图标不显示标题，开启后标签栏高度降为 90rpx */
     pureIcon?: boolean
+    /** 标签栏形状：normal 通栏矩形；round 悬浮胶囊（带左右边距与阴影） */
     shape?: (typeof tabbarShapes)[number]
+    /** 切换动画类型：reveal / flip / creative / glass / fly-balls / drop，null 表示无动画 */
     animation?: (typeof tabbarAnimations)[number] | null
+    /** fly-balls 动画的小球颜色数组，数组长度即小球数量 */
     ballColors?: string[]
+    /** 选中态图标与标题颜色（内联样式，优先级高于 color 主题色） */
     activeColor?: string
+    /** 未选中态图标与标题颜色（内联样式） */
     inactiveColor?: string
+    /** fixed 时是否生成等高占位元素，防止页面内容被标签栏遮挡 */
     placeholder?: boolean
+    /** 标签栏主体的 z-index 层级 */
     zIndex?: number
+    /** 主题色，选中项与 drop 指示球随之着色；子项可用自身 color 覆盖 */
     color?: (typeof tabbarColors)[number]
+    /** 追加到根节点的自定义类名 */
     customClass?: any
+    /** 追加到标签栏主体的内联样式字符串 */
     customStyle?: string
+    /** 按 root / base / dropBall / flyBallsContainer / flyBallItem 键覆盖内部节点类名 */
     ui?: Partial<Record<'root' | 'base' | 'dropBall' | 'flyBallsContainer' | 'flyBallItem', string>>
+    /** fly-balls 小球落点的纵向偏移，单位 rpx，默认 -5 */
     ballShiftY?: number
+    /** 切换前拦截钩子：返回 false、Promise 解析为 false 或调用 done(false) 均可阻止本次切换 */
     beforeChange?: (params: { name: string | number }, done: (shouldProceed?: boolean) => void) => boolean | Promise<boolean> | void
 }
 
@@ -53,7 +71,10 @@ const props = withDefaults(defineProps<TabbarProps>(), {
     ballColors: () => ['#ff6675', '#ffb03b', '#35b6f2', '#3ac29e']
 })
 
-const emit = defineEmits(['change', 'update:modelValue'])
+const emit = defineEmits([
+    'change', // 选中项切换后触发，参数为 { value }，value 为新选中项的 name
+    'update:modelValue', // 选中项变化时触发（v-model 同步），参数为新选中项的 name
+])
 
 const b = tv(theme)
 const { proxy } = getCurrentInstance() as any

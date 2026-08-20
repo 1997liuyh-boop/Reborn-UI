@@ -51,7 +51,12 @@ const props = withDefaults(defineProps<Props>(), {
     ui: () => ({})
 })
 
-const emit = defineEmits(['update:modelValue', 'change'])
+const emit = defineEmits([
+    /** 当前页码变化时触发（v-model 双向同步），参数为新页码 */
+    'update:modelValue',
+    /** 页码切换后触发，参数为切换后的页码；点击当前页、省略号或禁用时不触发 */
+    'change'
+])
 
 const currentPage = defineModel<number>({ default: 1 })
 
@@ -121,7 +126,12 @@ function next() {
     handlePageClick(currentPage.value + 1)
 }
 
-defineExpose({ prev, next })
+defineExpose({
+    /** 翻到上一页（当前页 - 1）：禁用或已在第一页时无操作，成功时同步 v-model 并触发 change */
+    prev,
+    /** 翻到下一页（当前页 + 1）：禁用或已在最后一页时无操作，成功时同步 v-model 并触发 change */
+    next
+})
 </script>
 
 <template>

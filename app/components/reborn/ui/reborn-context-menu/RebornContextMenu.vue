@@ -62,7 +62,9 @@ export interface RebornContextMenuProps {
   disabled?: boolean;
   openDelay?: number;
   closeDelay?: number;
+  /** 是否为嵌套子菜单实例（组件递归渲染 children 时内部使用，默认贴右侧展开且不锁滚动，业务侧一般无需设置） */
   nested?: boolean;
+  /** 追加到根容器（wrapper）的自定义类名 */
   class?: any;
   ui?: Partial<{
     wrapper: ClassValue;
@@ -623,6 +625,7 @@ const bridgeStyle = computed(() => {
 });
 
 defineExpose({
+  /** 手动关闭当前菜单（同步更新受控/非受控展开状态并触发 update:open） */
   close: () => {
     updateOpen(false);
   },

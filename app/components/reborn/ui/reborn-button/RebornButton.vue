@@ -8,16 +8,26 @@ import { cn } from '~/lib/utils'
 
 
 export interface ButtonProps {
+    /** 按钮文本内容；提供 default 插槽时被插槽内容覆盖 */
     label?: string
+    /** 语义色，7 种取值：primary/secondary/success/info/warning/error/neutral，默认 primary */
     color?: typeof buttonColors[number]
+    /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边，默认 solid；颜色由 color 控制 */
     variant?: typeof buttonVariants[number]
+    /** 尺寸，xs/sm/default/md/lg/xl/2xl 共 7 档（default 与 md 等高），默认 md；处于表单组内时被组尺寸覆盖 */
     size?: typeof buttonSizes[number]
+    /** 是否加载中；显示加载动画、降低透明度并禁用点击 */
     loading?: boolean
+    /** 是否禁用按钮 */
     disabled?: boolean
+    /** 是否为胶囊形状（rounded-full），默认 true；需要自定义圆角时显式传 false */
     round?: boolean
+    /** 追加到根元素的自定义类名 */
     class?: any
+    /** 细粒度样式覆盖对象，键为 base/label/leadingIcon/leadingAvatar/leadingAvatarSize/trailingIcon */
     ui?: any
-    gap?: boolean // 是否间隔按钮
+    gap?: boolean // 是否间隔按钮：为相邻的同级按钮自动添加左边距
+    /** 是否为圆形纯图标按钮（宽高相等、内边距归零） */
     circle?: boolean
 }
 
@@ -33,8 +43,11 @@ const props = withDefaults(defineProps<ButtonProps>(), {
 })
 
 const slots = defineSlots<{
+    /** 前置内容（常放图标）；loading 时被加载动画替代 */
     leading(props: { ui: any }): any
+    /** 按钮主体内容，优先于 label prop 渲染 */
     default(props: { ui: any }): any
+    /** 后置内容（常放图标）；loading 时不渲染 */
     trailing(props: { ui: any }): any
 }>()
 

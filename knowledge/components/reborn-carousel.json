@@ -209,15 +209,15 @@
   "exposes": [
     {
       "name": "next",
-      "description": ""
+      "description": "平滑滚动切换到下一张：loop 下可从末张无缝回到首张，非 loop 已在末张时无操作；触发 change 并重置自动播放计时"
     },
     {
       "name": "prev",
-      "description": ""
+      "description": "平滑滚动切换到上一张：loop 下可从首张无缝回到末张，非 loop 已在首张时无操作；触发 change 并重置自动播放计时"
     },
     {
       "name": "goTo",
-      "description": ""
+      "description": "goTo(index)：带平滑滚动动画跳转到指定索引（从 0 起，loop 下越界自动取模），同步 v-model、触发 change 并重置自动播放计时"
     }
   ],
   "examples": [
@@ -261,8 +261,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-carousel.md",
   "_meta": {
-    "generatedAt": "2026-08-20T16:21:11.823Z",
-    "contentHash": "9584c081a1ab9ad949fad60ecc0adf30ccfb3bcc",
+    "generatedAt": "2026-08-20T22:59:47.485Z",
+    "contentHash": "0679d1cd49b1c8812709c5bc2238694b6272bd05",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

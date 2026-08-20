@@ -8,23 +8,23 @@ import theme from './reborn-button.config'
 import RebornLoading from '../reborn-loading/RebornLoading.vue'
 
 export interface ButtonProps {
-  label?: string
-  color?: typeof buttonColors[number]
-  variant?: typeof buttonVariants[number]
-  size?: typeof buttonSizes[number]
-  loading?: boolean
-  disabled?: boolean
+  label?: string // 按钮文本内容；提供 default 插槽时被插槽内容覆盖
+  color?: typeof buttonColors[number] // 语义色：primary/secondary/success/info/warning/error/neutral，默认 primary
+  variant?: typeof buttonVariants[number] // 视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边，默认 solid
+  size?: typeof buttonSizes[number] // 尺寸：xs/sm/default/md/lg/xl/2xl（default 与 md 等高），默认 md
+  loading?: boolean // 是否加载中；显示加载动画并禁用点击
+  disabled?: boolean // 是否禁用按钮
   fluid?: boolean // 是否为 flex-1 布局
   gap?: boolean // 是否间隔按钮
   block?: boolean // 是否块级元素
-  customClass?: any
-  ui?: any
+  customClass?: any // 追加到根节点的自定义类名（对应 Web 端 class）
+  ui?: any // 细粒度样式覆盖对象，键为 base/inner/label/loading
   hoverClass?: string // 按钮点击态样式类
   hoverStopPropagation?: boolean // 是否阻止点击态冒泡
-  hoverStartTime?: number // 按钮点击态持续时间
-  hoverStayTime?: number // 按钮点击态持续时间
-  formType?: string // 表单提交类型
-  openType?: string // 开放能力类型
+  hoverStartTime?: number // 按住后出现点击态的延迟时间，单位毫秒
+  hoverStayTime?: number // 手指松开后点击态保留时间，单位毫秒
+  formType?: string // 表单提交类型（submit/reset），配合 form 组件使用
+  openType?: string // 小程序开放能力类型（contact/getPhoneNumber/openSetting/launchApp/chooseAvatar 等），对应事件见 emits
   lang?: string // 语言
   sessionFrom?: string // 会话来源
   sendMessageTitle?: string // 会话标题
@@ -58,27 +58,30 @@ const props = withDefaults(defineProps<ButtonProps>(), {
 
 // 事件定义
 const emit = defineEmits([
-  'click',
-  'tap',
-  'getuserinfo',
-  'contact',
-  'getphonenumber',
-  'error',
-  'opensetting',
-  'launchapp',
-  'chooseavatar',
-  'chooseaddress',
-  'chooseinvoicetitle',
-  'addgroupapp',
-  'subscribe',
-  'login',
-  'getrealtimephonenumber',
-  'agreeprivacyauthorization',
+  'click', // 点击按钮时触发；disabled 或 loading 时不触发
+  'tap', // 与 click 同时派发，便于沿用 uniapp @tap 写法
+  'getuserinfo', // open-type="getUserInfo" 时触发，e.detail 含 userInfo 等用户信息
+  'contact', // open-type="contact" 客服会话回调，e.detail.path/query 为小程序消息参数
+  'getphonenumber', // open-type="getPhoneNumber" 时触发，e.detail.code 用于服务端换取手机号
+  'error', // 使用开放能力发生错误时触发，e.detail 含错误信息
+  'opensetting', // open-type="openSetting" 打开授权设置页后回调，e.detail.authSetting 为授权结果
+  'launchapp', // open-type="launchApp" 打开 APP 成功时触发，参数经 appParameter 传给 APP
+  'chooseavatar', // open-type="chooseAvatar"（微信）时触发，e.detail.avatarUrl 为所选头像临时路径
+  'chooseaddress', // open-type="chooseAddress"（QQ）用户选择收货地址后回调，e.detail 含地址信息
+  'chooseinvoicetitle', // open-type="chooseInvoiceTitle"（QQ）用户选择发票抬头后回调
+  'addgroupapp', // open-type="addGroupApp"（QQ）添加群应用后回调
+  'subscribe', // open-type="subscribe"（QQ）订阅号订阅结果回调
+  'login', // open-type="login"（QQ）登录回调，e.detail 含登录 code
+  'getrealtimephonenumber', // open-type="getRealtimePhoneNumber"（微信）实时手机号验证回调，e.detail.code 换取手机号
+  'agreeprivacyauthorization', // open-type="agreePrivacyAuthorization"（微信）用户同意隐私协议后回调
 ])
 
 const slots = defineSlots<{
+  /** 前置内容（常放图标），作用域含 loading 状态；loading 时被加载动画替代 */
   leading: (props: { ui: any, loading: boolean }) => any
+  /** 按钮主体内容，优先于 label prop 渲染 */
   default: (props: { ui: any }) => any
+  /** 后置内容（常放图标）；loading 时不渲染 */
   trailing: (props: { ui: any }) => any
 }>()
 

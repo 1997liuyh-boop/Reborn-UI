@@ -19,9 +19,8 @@ interface Item extends TabsItem {
 }
 
 interface Props {
-  customClass?: string
-  // modelValue: string | number;
-  list: TabsItem[]
+  customClass?: string // 追加到根节点的自定义类名
+  list: TabsItem[] // 标签项数据数组，每项含 label / value / disabled
   fill?: boolean // 是否填充标签
   color?: typeof TabsColors[number]
   variant?: typeof TabsVariants[number] // 标签类型
@@ -51,9 +50,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // 定义事件发射器
-const emit = defineEmits(['update:modelValue', 'change'])
+const emit = defineEmits([
+  'update:modelValue', // 选中值变化时触发（v-model 同步），参数为 (value, item, index)
+  'change', // 切换标签后触发，参数为 (value, item, index)
+])
 
 defineSlots<{
+  /** 自定义单个标签的内容，作用域参数 { item, active }，item 含 label / value / disabled / isActive */
   item: (props: { item: Item, active: boolean }) => any
 }>()
 
