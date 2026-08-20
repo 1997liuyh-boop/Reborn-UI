@@ -1,23 +1,83 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "pattern-background",
-  "title": "pattern-background",
+  "title": "图案背景",
   "description": "用于为区块提供图案纹理背景的容器组件，内容经默认插槽传入。",
-  "category": "misc",
-  "tags": [],
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "background"
+  ],
   "platforms": [
     "web"
   ],
-  "props": [],
+  "props": [
+    {
+      "name": "class",
+      "type": "HTMLAttributes[\"class\"]",
+      "required": false,
+      "description": "应用于容器的额外 CSS 类（如高度、圆角、布局）。"
+    },
+    {
+      "name": "animate",
+      "type": "boolean",
+      "required": false,
+      "description": "是否开启背景图案的滚动动画。",
+      "default": "false"
+    },
+    {
+      "name": "direction",
+      "type": "PatternBackgroundDirection",
+      "required": false,
+      "description": "\"left\" \\",
+      "default": "() => PATTERN_BACKGROUND_DIRECTION.Top"
+    },
+    {
+      "name": "variant",
+      "type": "PatternBackgroundVariants[\"variant\"]",
+      "required": false,
+      "description": "\"big-dot\"",
+      "default": "() => PATTERN_BACKGROUND_VARIANT.Grid"
+    },
+    {
+      "name": "size",
+      "type": "PatternBackgroundVariants[\"size\"]",
+      "required": false,
+      "description": "\"md\" \\",
+      "default": "undefined"
+    },
+    {
+      "name": "mask",
+      "type": "PatternBackgroundMaskVariants[\"mask\"]",
+      "required": false,
+      "description": "\"ellipse\"",
+      "default": "undefined"
+    },
+    {
+      "name": "speed",
+      "type": "ObjectValues<typeof PATTERN_BACKGROUND_SPEED>",
+      "required": false,
+      "description": "动画一轮时长（毫秒），预设 5000（快）/ 10000（默认）/ 25000（慢）。",
+      "default": "() => PATTERN_BACKGROUND_SPEED.Default"
+    }
+  ],
   "events": [],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "叠放在图案背景之上展示的内容。"
     }
   ],
   "exposes": [],
-  "examples": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script setup lang=\"ts\">\nimport {\n  PATTERN_BACKGROUND_DIRECTION,\n  PATTERN_BACKGROUND_MASK,\n  PATTERN_BACKGROUND_SPEED,\n  PATTERN_BACKGROUND_VARIANT,\n} from \"../../ui/pattern-background\";\n</script>\n\n<template>\n  <div class=\"flex w-full flex-col gap-6 py-6\">\n    <!-- 网格图案：默认速度向上滚动 -->\n    <PatternBackground\n      :animate=\"true\"\n      :direction=\"PATTERN_BACKGROUND_DIRECTION.Top\"\n      :variant=\"PATTERN_BACKGROUND_VARIANT.Grid\"\n      size=\"md\"\n      :speed=\"PATTERN_BACKGROUND_SPEED.Default\"\n      class=\"flex h-56 w-full items-center justify-center rounded-lg\"\n    >\n      <span class=\"relative z-10 text-xl font-semibold text-black dark:text-white\">\n        Grid / Animate Top\n      </span>\n    </PatternBackground>\n\n    <!-- 点阵图案：静态 + 椭圆遮罩聚焦中心 -->\n    <PatternBackground\n      :variant=\"PATTERN_BACKGROUND_VARIANT.Dot\"\n      size=\"sm\"\n      :mask=\"PATTERN_BACKGROUND_MASK.Ellipse\"\n      class=\"flex h-56 w-full items-center justify-center rounded-lg\"\n    >\n      <span class=\"relative z-10 text-xl font-semibold text-black dark:text-white\">\n        Dot / Ellipse Mask\n      </span>\n    </PatternBackground>\n\n    <!-- 大点阵图案：快速斜向滚动 + 顶部椭圆遮罩 -->\n    <PatternBackground\n      :animate=\"true\"\n      :direction=\"PATTERN_BACKGROUND_DIRECTION.BottomRight\"\n      :variant=\"PATTERN_BACKGROUND_VARIANT.BigDot\"\n      size=\"lg\"\n      :speed=\"PATTERN_BACKGROUND_SPEED.Fast\"\n      :mask=\"PATTERN_BACKGROUND_MASK.EllipseTop\"\n      class=\"flex h-56 w-full items-center justify-center rounded-lg\"\n    >\n      <span class=\"relative z-10 text-xl font-semibold text-black dark:text-white\">\n        Big Dot / Fast\n      </span>\n    </PatternBackground>\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
   "related": [],
   "whenToUse": [
     "Hero 区、演示区需要点阵等图案背景衬托内容时。",
@@ -43,15 +103,15 @@
       "app/components/reborn/ui/pattern-background/index.ts"
     ]
   },
-  "docPath": null,
+  "docPath": "content/2.components/special-effects/pattern-background.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "1c2526d8d535cd7a80799305c38a101eaaa97186",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "8718d574cadf4cacbb18fcbd204b970fcdebecaa",
     "hasOverride": true,
     "extractors": {
-      "web": "partial",
+      "web": "ok",
       "uniapp": "absent",
-      "docs": "missing"
+      "docs": "found"
     }
   }
 }

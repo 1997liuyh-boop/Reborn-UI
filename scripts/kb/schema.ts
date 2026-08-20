@@ -75,6 +75,8 @@ export const componentSchema = z.object({
   category: categoryEnum,
   tags: z.array(z.string()),
   platforms: z.array(z.enum(["web", "uniapp"])).min(1),
+  /** 内部基础组件（被其他组件复用、不面向用户单独使用），不要求有独立文档 */
+  internal: z.boolean().optional(),
   props: z.array(propSchema),
   events: z.array(eventSchema),
   slots: z.array(slotSchema),
@@ -110,6 +112,8 @@ export const indexEntrySchema = z.object({
   category: categoryEnum,
   tags: z.array(z.string()),
   platforms: z.array(z.enum(["web", "uniapp"])),
+  /** 内部基础组件标记（选型时应跳过） */
+  internal: z.boolean().optional(),
 });
 
 export const indexSchema = z.object({

@@ -1,6 +1,6 @@
 {
   "name": "reborn-loading",
-  "title": "Loading 加载指令",
+  "title": "Loading 加载器",
   "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。",
   "category": "misc",
   "dependencies": [

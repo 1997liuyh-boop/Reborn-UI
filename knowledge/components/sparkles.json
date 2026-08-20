@@ -1,10 +1,14 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "sparkles",
-  "title": "sparkles",
+  "title": "闪烁粒子",
   "description": "用于渲染可配置密度、大小与颜色的闪烁粒子背景层组件。",
-  "category": "misc",
-  "tags": [],
+  "category": "effect",
+  "tags": [
+    "canvas",
+    "particles",
+    "aceternity-ui"
+  ],
   "platforms": [
     "web"
   ],
@@ -13,42 +17,42 @@
       "name": "background",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "画布背景色；作为叠加层使用时通常显式设为 `\"transparent\"`。",
       "default": "\"#0d47a1\""
     },
     {
       "name": "particleColor",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "粒子颜色，需为 6 位十六进制值（内部会拼接透明度通道）。",
       "default": "\"#ffffff\""
     },
     {
       "name": "minSize",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "粒子最小半径（px）。",
       "default": "1"
     },
     {
       "name": "maxSize",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "粒子最大半径（px）。",
       "default": "3"
     },
     {
       "name": "speed",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "粒子漂移速度倍率。",
       "default": "4"
     },
     {
       "name": "particleDensity",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "粒子数量；密集星光效果常用 800-1200。",
       "default": "120"
     }
   ],
@@ -97,15 +101,15 @@
       "app/components/reborn/ui/sparkles/index.ts"
     ]
   },
-  "docPath": null,
+  "docPath": "content/2.components/special-effects/sparkles.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "e35f4e0a75d4a9704e87e3b841221009b6f59134",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "57e650fef897871239a2dc0486de9b91897c818b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "absent",
-      "docs": "missing"
+      "docs": "found"
     }
   }
 }

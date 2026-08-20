@@ -47,6 +47,9 @@
           },
           "minItems": 1
         },
+        "internal": {
+          "type": "boolean"
+        },
         "props": {
           "type": "array",
           "items": {

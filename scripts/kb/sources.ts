@@ -1,7 +1,7 @@
-import path from "node:path";
-import fs from "node:fs";
-import { fileURLToPath } from "node:url";
 import type { Category } from "./schema.js";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 /** 仓库根目录（scripts/kb 向上两级） */
 export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -32,14 +32,14 @@ export function readTextFile(absPath: string): string {
 
 /** 文档子目录 → 知识库分类 的映射 */
 const DOC_DIR_TO_CATEGORY: Record<string, Category> = {
-  "button": "basic",
-  "cards": "data-display",
-  "data": "data-display",
+  button: "basic",
+  cards: "data-display",
+  data: "data-display",
   "device-mocks": "media",
   "input-and-forms": "form",
-  "layout": "layout",
-  "miscellaneous": "misc",
-  "navigation": "navigation",
+  layout: "layout",
+  miscellaneous: "misc",
+  navigation: "navigation",
   "special-effects": "effect",
   "text-animations": "effect",
 };
@@ -54,7 +54,10 @@ function listSubdirs(dir: string): string[] {
 
 /** 枚举全部组件 id（两侧源码目录的并集，排序稳定） */
 export function listComponentIds(): string[] {
-  const set = new Set<string>([...listSubdirs(WEB_COMPONENTS_DIR), ...listSubdirs(UNIAPP_COMPONENTS_DIR)]);
+  const set = new Set<string>([
+    ...listSubdirs(WEB_COMPONENTS_DIR),
+    ...listSubdirs(UNIAPP_COMPONENTS_DIR),
+  ]);
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 
@@ -80,34 +83,36 @@ let docIndexCache: Map<string, DocRef> | null = null;
 
 /**
  * 建立 componentId → 文档文件 的索引
- * 匹配规则：正文里 ComponentViewer 的 componentId 属性优先，文件名等于 id 兜底
+ * 匹配规则：文件名等于 id 的文档优先（组件的规范文档），
+ * 其他文件里 ComponentViewer 的 componentId 声明仅作兜底
+ * （如 reborn-loading-directive.md 也声明 componentId="reborn-loading"，不应抢占组件本档）
  */
 export function buildDocIndex(): Map<string, DocRef> {
   if (docIndexCache) return docIndexCache;
   const index = new Map<string, DocRef>();
   if (!fs.existsSync(DOCS_DIR)) return index;
 
+  const claims: { id: string; ref: DocRef }[] = [];
   for (const dir of fs.readdirSync(DOCS_DIR, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
     const dirAbs = path.join(DOCS_DIR, dir.name);
     for (const file of fs.readdirSync(dirAbs)) {
       if (!file.endsWith(".md")) continue;
       const absPath = path.join(dirAbs, file);
-      const relPath = path
-        .relative(REPO_ROOT, absPath)
-        .split(path.sep)
-        .join("/");
+      const relPath = path.relative(REPO_ROOT, absPath).split(path.sep).join("/");
       const ref: DocRef = { relPath, absPath, dirName: dir.name };
       const content = readTextFile(absPath);
 
-      // 正文中 componentId="xxx" 的显式声明
+      // 文件名即 id（如 reborn-switch.md → reborn-switch），最高优先
+      index.set(file.replace(/\.md$/, ""), ref);
+      // 正文中 componentId="xxx" 的显式声明，留待兜底
       for (const m of content.matchAll(/componentId="([a-zA-Z0-9-]+)"/g)) {
-        if (!index.has(m[1])) index.set(m[1], ref);
+        claims.push({ id: m[1], ref });
       }
-      // 文件名兜底（如 reborn-switch.md → reborn-switch）
-      const nameId = file.replace(/\.md$/, "");
-      if (!index.has(nameId)) index.set(nameId, ref);
     }
+  }
+  for (const { id, ref } of claims) {
+    if (!index.has(id)) index.set(id, ref);
   }
   docIndexCache = index;
   return index;

@@ -1,3 +1,5 @@
+import type { ComponentReport } from "./merge.js";
+import type { KnowledgeIndex } from "./schema.js";
 /**
  * 知识库构建入口
  * 用法：
@@ -7,13 +9,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { componentSchema, type KnowledgeIndex } from "./schema.js";
-import { buildComponent, type ComponentReport } from "./merge.js";
+import { buildComponent } from "./merge.js";
+import { componentSchema } from "./schema.js";
 import { KNOWLEDGE_DIR, listComponentIds } from "./sources.js";
 
 function writeJson(absPath: string, data: unknown) {
   fs.mkdirSync(path.dirname(absPath), { recursive: true });
-  fs.writeFileSync(absPath, JSON.stringify(data, null, 2) + "\n", "utf8");
+  fs.writeFileSync(absPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
 function parseArgs() {
@@ -49,6 +51,7 @@ async function main() {
 
   const reports: ComponentReport[] = [];
   const indexEntries: KnowledgeIndex["components"] = [];
+  const internalIds = new Set<string>();
   let failed = 0;
 
   for (const id of targetIds) {
@@ -59,12 +62,15 @@ async function main() {
     const check = componentSchema.safeParse(component);
     if (!check.success) {
       failed++;
-      console.error(`✗ ${id} 校验失败：${check.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`);
+      console.error(
+        `✗ ${id} 校验失败：${check.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`,
+      );
       continue;
     }
 
     writeJson(path.join(componentsDir, `${id}.json`), component);
     reports.push(report);
+    if (component.internal) internalIds.add(component.id);
     indexEntries.push({
       id: component.id,
       title: component.title,
@@ -72,6 +78,7 @@ async function main() {
       category: component.category,
       tags: component.tags,
       platforms: component.platforms,
+      ...(component.internal ? { internal: true } : {}),
     });
   }
 
@@ -82,9 +89,14 @@ async function main() {
 
     // 覆盖率报告
     const okCount = reports.filter(
-      (r) => ["ok", "absent"].includes(r.extractors.web) && ["ok", "absent"].includes(r.extractors.uniapp),
+      (r) =>
+        ["ok", "absent"].includes(r.extractors.web) &&
+        ["ok", "absent"].includes(r.extractors.uniapp),
     ).length;
-    const noDocs = reports.filter((r) => r.extractors.docs === "missing").map((r) => r.id);
+    // 内部基础组件不面向用户，不要求独立文档
+    const noDocs = reports
+      .filter((r) => r.extractors.docs === "missing" && !internalIds.has(r.id))
+      .map((r) => r.id);
     const withDrifts = reports.filter((r) => r.drifts.length > 0);
     const withWarnings = reports.filter((r) => r.warnings.length > 0);
 
@@ -97,8 +109,12 @@ async function main() {
       warnings: Object.fromEntries(withWarnings.map((r) => [r.id, r.warnings])),
     });
 
-    console.log(`知识库已生成：${reports.length} 个组件，抽取干净率 ${((okCount / Math.max(reports.length, 1)) * 100).toFixed(1)}%`);
-    console.log(`  无文档组件：${noDocs.length} 个；有文档偏差：${withDrifts.length} 个；有告警：${withWarnings.length} 个`);
+    console.log(
+      `知识库已生成：${reports.length} 个组件，抽取干净率 ${((okCount / Math.max(reports.length, 1)) * 100).toFixed(1)}%`,
+    );
+    console.log(
+      `  无文档组件：${noDocs.length} 个；有文档偏差：${withDrifts.length} 个；有告警：${withWarnings.length} 个`,
+    );
     console.log(`  详情见 knowledge/report.json`);
   } else {
     console.log(`已重建 ${reports.length} 个组件：${targetIds.join(", ")}`);

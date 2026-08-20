@@ -1,8 +1,13 @@
 {
   "name": "pattern-background",
-  "title": "pattern-background",
+  "title": "图案背景",
   "description": "用于为区块提供图案纹理背景的容器组件，内容经默认插槽传入。",
-  "category": "misc",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "background"
+  ],
   "dependencies": [
     "class-variance-authority"
   ],

@@ -19,7 +19,6 @@ tags: [css, tailwind, aceternity-ui]
 | ---------- | ------ | ------ | ------------------------------------------------ |
 | `rotate`   | Number | `0`    | 控制滚动时内层内容的旋转。                      |
 | `scale`    | Number | `1`    | 控制滚动时内容的缩放。                          |
-| `translateY`| Number | `0`   | 控制滚动时标题的垂直位移。                      |
 
 ### `ContainerScrollTitle`
 

@@ -1,8 +1,13 @@
 {
   "name": "ripple",
-  "title": "ripple",
+  "title": "水波纹",
   "description": "用于渲染多圈同心圆扩散水波背景的装饰效果组件。",
-  "category": "misc",
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "dependencies": [],
   "files": [
     {

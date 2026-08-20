@@ -9,8 +9,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { componentSchema } from "./schema.js";
 import { buildComponent, contentHashOf } from "./merge.js";
+import { componentSchema } from "./schema.js";
 import { KNOWLEDGE_DIR, listComponentIds } from "./sources.js";
 
 function fail(messages: string[]): never {
@@ -56,14 +56,18 @@ function main() {
 
     const parsed = componentSchema.safeParse(disk);
     if (!parsed.success) {
-      problems.push(`${id}: schema 校验失败（${parsed.error.issues[0]?.path.join(".")}: ${parsed.error.issues[0]?.message}）`);
+      problems.push(
+        `${id}: schema 校验失败（${parsed.error.issues[0]?.path.join(".")}: ${parsed.error.issues[0]?.message}）`,
+      );
       continue;
     }
 
     // 磁盘自身哈希完整性（防手改生成文件）
     const selfHash = contentHashOf(disk);
     if (selfHash !== disk._meta?.contentHash) {
-      problems.push(`${id}: 文件疑似被手工修改（contentHash 不匹配），生成文件禁止手改，请改 overrides/`);
+      problems.push(
+        `${id}: 文件疑似被手工修改（contentHash 不匹配），生成文件禁止手改，请改 overrides/`,
+      );
       continue;
     }
 
@@ -91,7 +95,9 @@ function main() {
   } else {
     const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
     const indexIds = (index.components ?? []).map((c: any) => c.id).sort();
-    if (JSON.stringify(indexIds) !== JSON.stringify(diskIds.filter((id) => sourceIds.includes(id)))) {
+    if (
+      JSON.stringify(indexIds) !== JSON.stringify(diskIds.filter((id) => sourceIds.includes(id)))
+    ) {
       problems.push("index.json 与 components/ 目录不一致");
     }
   }

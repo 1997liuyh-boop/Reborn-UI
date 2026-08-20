@@ -68,69 +68,73 @@
       "name": "labelBackground",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "标签列背景色（CSS 颜色值），可被单项覆盖"
     },
     {
       "name": "contentBackground",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "内容列背景色（CSS 颜色值），可被单项覆盖"
     },
     {
       "name": "labelColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "标签列字体颜色，可被单项覆盖"
     },
     {
       "name": "contentColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "内容列字体颜色，可被单项覆盖"
     },
     {
       "name": "labelBold",
       "type": "boolean",
       "required": false,
-      "description": ""
+      "description": "标签列字体加粗，可被单项覆盖",
+      "default": "false"
     },
     {
       "name": "contentBold",
       "type": "boolean",
       "required": false,
-      "description": ""
+      "description": "内容列字体加粗，可被单项覆盖",
+      "default": "false"
     },
     {
       "name": "labelWidth",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "标签单元格最小宽度，如 `'120px'"
     },
     {
       "name": "labelAlign",
       "type": "DescriptionsAlign",
       "required": false,
-      "description": "",
+      "description": "'right'",
       "default": "\"left\""
     },
     {
       "name": "contentAlign",
       "type": "DescriptionsAlign",
       "required": false,
-      "description": "",
+      "description": "'right'",
       "default": "\"left\""
     },
     {
       "name": "labelLineHeight",
       "type": "DescriptionsLineHeightValue",
       "required": false,
-      "description": ""
+      "description": "'relaxed'",
+      "default": "string"
     },
     {
       "name": "contentLineHeight",
       "type": "DescriptionsLineHeightValue",
       "required": false,
-      "description": ""
+      "description": "'relaxed'",
+      "default": "string"
     },
     {
       "name": "items",
@@ -168,13 +172,13 @@
       "name": "labelClass",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "标签单元格追加 CSS 类"
     },
     {
       "name": "contentClass",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "内容单元格追加 CSS 类"
     }
   ],
   "events": [],
@@ -241,8 +245,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-descriptions.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "37de83c82d056ae5fe37fc8c1a13af9d8551c2cf",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "46e34651b317fbb79a455f56c959a97f9333e953",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

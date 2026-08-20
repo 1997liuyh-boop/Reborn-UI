@@ -1,8 +1,14 @@
 {
   "name": "reborn-dropdown-select",
-  "title": "reborn-dropdown-select",
+  "title": "DropdownSelect 下拉选择",
   "description": "用于从 options 列表下拉选择单个值的选择器组件，仅 uniapp 端。",
-  "category": "misc",
+  "category": "form",
+  "tags": [
+    "uniapp",
+    "dropdown",
+    "select",
+    "form"
+  ],
   "dependencies": [],
   "files": [
     {

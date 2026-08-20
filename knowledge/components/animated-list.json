@@ -63,7 +63,12 @@
     }
   ],
   "events": [],
-  "slots": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
   "exposes": [],
   "examples": [
     {
@@ -103,8 +108,8 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-list.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "805b4ecc5127dca544146cac7ae10c5ba53543bb",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "0e2e208c7b3d95bfcc569ab74eae00d02c886419",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

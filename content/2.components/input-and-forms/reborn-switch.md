@@ -23,7 +23,8 @@ navigation:
 | --- | --- | --- | --- |
 | `modelValue` | `boolean` | `false` | 受控开关值。 |
 | `defaultValue` | `boolean` | `false` | 非受控默认值。 |
-| `label` | `string` | `""` | 开关文案。 |
+| `activeLabel` | `string` | `undefined` | 开启状态一侧显示的文案。 |
+| `inactiveLabel` | `string` | `undefined` | 关闭状态一侧显示的文案。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 启用色值。 |

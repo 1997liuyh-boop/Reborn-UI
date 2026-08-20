@@ -26,7 +26,6 @@ navigation:
 | `disabled` | `boolean` | `false` | 是否禁用整个面板。 |
 | `border` | `boolean` | `false` | 是否显示外边框和阴影。 |
 | `shortcuts` | `Array<{text, value}>` | `[]` | 快捷选项配置，支持静态日期或返回日期的函数。 |
-| `rangeable` | `boolean` | `false` | 是否开启日期范围选择 (在 `type="date"` 时等价于 `daterange`)。 |
 | `start` | `string` | `'1970-01-01'` | 可选日期的最早边界（含）。 |
 | `end` | `string` | `'2099-12-31'` | 可选日期的最晚边界（含）。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 整体面板尺寸。 |

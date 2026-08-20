@@ -19,14 +19,14 @@
     },
     {
       "name": "ui",
-      "type": "object as proptype<any>",
+      "type": "any",
       "default": "() => ({})",
       "required": false,
       "description": ""
     },
     {
       "name": "modelValue",
-      "type": "array as proptype<any[]>",
+      "type": "any[]",
       "default": "() => []",
       "required": false,
       "description": "绑定的数据列表，支持通过 `v-model` 双向绑定"
@@ -136,8 +136,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-draggable.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "6d040cb2c1b6018b2e5adecb2b3857c18cbd5695",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "48e66dc55062bde0c0754762a31c9f88d6204a05",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

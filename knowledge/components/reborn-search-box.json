@@ -208,7 +208,7 @@
     },
     {
       "name": "clickCamera",
-      "description": ""
+      "description": "当用户点击相机图标时触发。"
     },
     {
       "name": "selectSku",
@@ -225,7 +225,7 @@
     {
       "name": "click-camera",
       "payload": "(e: \"click-camera\"): void;",
-      "description": "当用户点击相机图标时触发。"
+      "description": ""
     },
     {
       "name": "select-sku",
@@ -240,7 +240,7 @@
     },
     {
       "name": "select-trigger",
-      "description": ""
+      "description": "自定义左侧选择器触发区域的显示内容。"
     },
     {
       "name": "trailing",
@@ -326,8 +326,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-search-box.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "0faba2089ab311c93b68e4398065bdb383b9a204",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "08e73cc39f78aa14d1f764ced100c248ba37f342",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

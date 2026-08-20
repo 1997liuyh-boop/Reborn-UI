@@ -28,7 +28,7 @@
       "name": "modelValue",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示弹出层",
       "default": "false"
     },
     {
@@ -181,7 +181,7 @@
       "name": "rootPortal",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否开启插件内部 portal 渲染 (uniapp)",
       "default": "false"
     },
     {
@@ -468,8 +468,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-popup.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "318e99948f7de83ffd5e690c09baa11b2882a9ee",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "cd50cc430f6cb20a87dc664ec5964af5d6a1944f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

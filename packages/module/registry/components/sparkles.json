@@ -1,8 +1,13 @@
 {
   "name": "sparkles",
-  "title": "sparkles",
+  "title": "闪烁粒子",
   "description": "用于渲染可配置密度、大小与颜色的闪烁粒子背景层组件。",
-  "category": "misc",
+  "category": "effect",
+  "tags": [
+    "canvas",
+    "particles",
+    "aceternity-ui"
+  ],
   "dependencies": [
     "@vueuse/core"
   ],

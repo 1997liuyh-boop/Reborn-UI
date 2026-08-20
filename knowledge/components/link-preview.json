@@ -12,7 +12,57 @@
   "platforms": [
     "web"
   ],
-  "props": [],
+  "props": [
+    {
+      "name": "isStatic",
+      "type": "true",
+      "required": false,
+      "description": "预览图是否为静态图；设为 `true` 使用静态模式。",
+      "default": "false"
+    },
+    {
+      "name": "imageSrc",
+      "type": "string",
+      "required": false,
+      "description": "静态模式下要显示的图片来源（`isStatic` 为 `true` 时必填）。",
+      "default": "\"\""
+    },
+    {
+      "name": "url",
+      "type": "string",
+      "required": false,
+      "description": "optional in static mode",
+      "default": "\"\""
+    },
+    {
+      "name": "class",
+      "type": "string",
+      "required": false,
+      "description": "应用于主元素的自定义类。",
+      "default": "\"\""
+    },
+    {
+      "name": "linkClass",
+      "type": "string",
+      "required": false,
+      "description": "应用于链接元素的自定义类。",
+      "default": "\"\""
+    },
+    {
+      "name": "width",
+      "type": "number",
+      "required": false,
+      "description": "预览图的宽度。",
+      "default": "200"
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "required": false,
+      "description": "预览图的高度。",
+      "default": "125"
+    }
+  ],
   "events": [],
   "slots": [
     {
@@ -55,11 +105,11 @@
   },
   "docPath": "content/2.components/miscellaneous/link-preview.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "d261b96662c440c1541c957b68aec3fe4dbfd947",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "25f288f31d994f31ba1ddcd3790b53323a678959",
     "hasOverride": true,
     "extractors": {
-      "web": "partial",
+      "web": "ok",
       "uniapp": "absent",
       "docs": "found"
     }

@@ -34,10 +34,8 @@ RebornCoupon 提供强大的 CSS Mask 遮罩能力，仅通过配置属性即可
 | `corner` | 四个角的缺口直角半径大小 (对 ticket / combined 生效) | `Number` | `20` |
 | `gap` | 连续半圆缺口/锯齿的间距 (对 stamp / combined 生效) | `Number` | `14` |
 | `split` | 撕拉线的类型：`dotted` (点状), `dashed` (虚线) (仅对 perforated 生效) | `CouponSplit` | `'dotted'` |
-| `splitWidth` | 撕拉线的宽度 / 孔洞直径 (仅对 perforated 生效，不设置则各取 size) | `Number` | — |
-| `splitHeight` | 撕拉线的高度 / 孔洞直径 (仅对 perforated 生效，不设置则各取 size) | `Number` | — |
 | `splitColor` | 撕拉线的颜色 (设置后将渲染可见的虚线/点线覆盖在遮罩之上) | `String` | — |
-| `size` | **已废弃**。请使用 splitWidth/splitHeight，此属性目前仅作为兼容降级使用。 | `Number` | `4` |
+| `size` | 撕拉线尺寸：为数字时表示孔洞直径 / 虚线粗细；为 `[宽, 高]` 数组时专供 dashed 模式精准控制虚线段的长宽 (仅对 perforated 生效) | `Number / [Number, Number]` | `4` |
 | `hoverable` | 开启悬停交互动画 (scale-101 + shadow-lg) | `Boolean` | `false` |
 | `sm` | 小屏幕 (sm: 640px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |
 | `md` | 中屏幕 (md: 768px+) 响应式覆盖参数 | `RebornCouponBaseProps` | — |

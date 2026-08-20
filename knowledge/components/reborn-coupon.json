@@ -43,6 +43,111 @@
       "required": false,
       "description": "2xl 屏幕 (1536px+) 响应式覆盖参数",
       "default": "undefined"
+    },
+    {
+      "name": "type",
+      "type": "CouponType",
+      "required": false,
+      "description": "优惠券形态：<br>`notch` (单侧缺口)<br>`ticket` (四角缺口)<br>`stamp` (邮票锯齿)<br>`perforated` (单缺口+撕拉线)<br>`combined` (四角 + 单缺口)",
+      "default": "\"notch\""
+    },
+    {
+      "name": "width",
+      "type": "string | number",
+      "required": false,
+      "description": "宽度",
+      "default": "\"100%\""
+    },
+    {
+      "name": "height",
+      "type": "string | number",
+      "required": false,
+      "description": "高度",
+      "default": "\"auto\""
+    },
+    {
+      "name": "radius",
+      "type": "number",
+      "required": false,
+      "description": "缺口圆角半径大小 (适用于除 ticket 外的形态)",
+      "default": "10"
+    },
+    {
+      "name": "direction",
+      "type": "CouponDirection",
+      "required": false,
+      "description": "布局方向：`horizontal` (水平), `vertical` (垂直)",
+      "default": "\"horizontal\""
+    },
+    {
+      "name": "position",
+      "type": "CouponPosition",
+      "required": false,
+      "description": "缺口位置：`start` (顶部/左侧), `center` (居中), `end` (底部/右侧)",
+      "default": "\"start\""
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "required": false,
+      "description": "缺口相对起点偏移量 (position 不为 center 时生效)",
+      "default": "50"
+    },
+    {
+      "name": "corner",
+      "type": "number",
+      "required": false,
+      "description": "四个角的缺口直角半径大小 (对 ticket / combined 生效)",
+      "default": "20"
+    },
+    {
+      "name": "gap",
+      "type": "number",
+      "required": false,
+      "description": "连续半圆缺口/锯齿的间距 (对 stamp / combined 生效)",
+      "default": "14"
+    },
+    {
+      "name": "split",
+      "type": "CouponSplit",
+      "required": false,
+      "description": "撕拉线的类型：`dotted` (点状), `dashed` (虚线) (仅对 perforated 生效)",
+      "default": "\"dotted\""
+    },
+    {
+      "name": "size",
+      "type": "number | [number, number]",
+      "required": false,
+      "description": "撕拉线尺寸：为数字时表示孔洞直径 / 虚线粗细；为 `[宽, 高]` 数组时专供 dashed 模式精准控制虚线段的长宽 (仅对 perforated 生效)",
+      "default": "4"
+    },
+    {
+      "name": "splitColor",
+      "type": "string",
+      "required": false,
+      "description": "撕拉线的颜色 (设置后将渲染可见的虚线/点线覆盖在遮罩之上)",
+      "default": "undefined"
+    },
+    {
+      "name": "class",
+      "type": "any",
+      "required": false,
+      "description": "传递给根容器的额外类名",
+      "default": "\"\""
+    },
+    {
+      "name": "ui",
+      "type": "{\n        root?: any;\n        left?: any;\n        right?: any;\n        center?: any;\n    }",
+      "required": false,
+      "description": "深度定制各插槽容器的类名 (root, left, right, center)",
+      "default": "() => ({})"
+    },
+    {
+      "name": "hoverable",
+      "type": "boolean",
+      "required": false,
+      "description": "开启悬停交互动画 (scale-101 + shadow-lg)",
+      "default": "false"
     }
   ],
   "events": [],
@@ -94,8 +199,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-coupon.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "2b1531125ea284eb36b157c375def6faab1eede8",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "1e73ffc3c43d074bf6e23466451044c269eb1a9d",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

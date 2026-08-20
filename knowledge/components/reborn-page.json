@@ -1,10 +1,14 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "reborn-page",
-  "title": "reborn-page",
+  "title": "页面容器 Page",
   "description": "用于 uniapp 页面最外层的页面容器组件，可配置页面标题与描述文案。",
-  "category": "misc",
-  "tags": [],
+  "category": "layout",
+  "tags": [
+    "uniapp",
+    "layout",
+    "page"
+  ],
   "platforms": [
     "uniapp"
   ],
@@ -14,43 +18,56 @@
       "type": "string",
       "default": "''",
       "required": false,
-      "description": ""
+      "description": "页面标题，渲染在默认头部区域"
     },
     {
       "name": "description",
       "type": "string",
       "default": "''",
       "required": false,
-      "description": ""
+      "description": "页面描述文案，渲染在标题下方"
     },
     {
       "name": "customClass",
       "type": "string",
       "default": "''",
       "required": false,
-      "description": ""
+      "description": "追加到页面根容器的自定义类名"
     },
     {
       "name": "ui",
-      "type": "object as proptype<pageui>",
+      "type": "PageUI",
       "default": "() => ({})",
       "required": false,
-      "description": ""
+      "description": "分区样式覆盖对象，键位见下方 PageUI 键位表"
     }
   ],
   "events": [],
   "slots": [
     {
       "name": "header",
-      "description": ""
+      "description": "自定义页面头部区域，提供后完全替换默认的标题/描述渲染"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "页面主体内容（body 区域）"
     }
   ],
   "exposes": [],
-  "examples": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\n  <div\n    class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\"\n  >\n    web端暂时不需要\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\n// RebornPage 演示页：页面根容器，提供标题、描述与内容区布局\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\n</script>\n\n<template>\n  <!-- 页面最外层根容器：title/description 渲染默认头部，页面内容放默认插槽 -->\n  <RebornPage title=\"Page 页面容器\" description=\"统一的页面根容器：标题 + 描述 + 内容区，并内置 Toast 挂载点。\">\n    <RebornCard title=\"页面结构\">\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        header 区域渲染 title 与 description，body 区域承载页面内容，子元素间距由容器统一管理。\n      </view>\n    </RebornCard>\n\n    <RebornCard title=\"样式定制\">\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        通过 ui 属性可按 root / header / title / description / body 分区覆盖样式；customClass 用于给根容器追加类名；需要完全自定义头部时使用 header 插槽。\n      </view>\n    </RebornCard>\n  </RebornPage>\n</template>\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
   "related": [
     "reborn-toast"
   ],
@@ -78,15 +95,15 @@
       "packages/uniapp-project/src/components/reborn-page/reborn-page.config.ts"
     ]
   },
-  "docPath": null,
+  "docPath": "content/2.components/layout/reborn-page.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "506350842afe14a278c4da98c8aa4e12b509bb4d",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "072eac936b1879729b888f47eb92196b03e92187",
     "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",
-      "docs": "missing"
+      "docs": "found"
     }
   }
 }

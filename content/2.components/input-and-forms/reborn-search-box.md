@@ -23,7 +23,6 @@ navigation:
 | --- | --- | --- | --- |
 | `modelValue` | `string` | `""` | 搜索框的绑定值，支持 `v-model`。 |
 | `placeholder` | `string` | `"请输入搜索内容"` | 占位文本。 |
-| `category` | `string` | `"全部"` | 左侧目录显示的文本。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸大小。 |
 | `color` | `"primary" \| "blue" \| "green" \| "orange"` | `"primary"` | 主题颜色。 |
 | `mode` | `"associate" \| "sku"` | `"associate"` | 搜索模式。 |
@@ -39,14 +38,13 @@ navigation:
 | --- | --- | --- |
 | `update:modelValue` | `value: string` | 当输入内容变化时触发。 |
 | `search` | `value: string` | 当用户点击搜索按钮或按下回车时触发。 |
-| `click-category` | `-` | 当用户点击目录区域时触发。 |
 | `click-camera` | `-` | 当用户点击相机图标时触发。 |
 
 ## 插槽
 
 | 插槽名 | 参数 | 描述 |
 | --- | --- | --- |
-| `category` | `{ ui }` | 自定义目录显示区域。 |
+| `select-trigger` | `{ displayText, ui }` | 自定义左侧选择器触发区域的显示内容。 |
 | `trailing` | `{ ui }` | 自定义后置图标区域（默认包含相机图标）。 |
 | `search-button` | `{ ui }` | 自定义搜索按钮内容（默认包含搜索图标）。 |
 

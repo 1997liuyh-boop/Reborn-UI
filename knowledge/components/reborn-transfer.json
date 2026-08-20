@@ -20,14 +20,14 @@
       "name": "fieldNames",
       "type": "TransferFieldNames",
       "required": false,
-      "description": "",
+      "description": "数据源字段别名，见下方 [字段映射](#字段映射)",
       "default": "() => ({})"
     },
     {
       "name": "defaultTargetKeys",
       "type": "string[]",
       "required": false,
-      "description": "",
+      "description": "默认已在目标列表的 key；**仅初始化一次**，且会过滤掉 `dataSource` 中不存在的 key。当未绑定 `v-model` 或目标列表为空时生效",
       "default": "() => []"
     },
     {
@@ -41,7 +41,7 @@
       "name": "operationButtons",
       "type": "TransferOperationButtons",
       "required": false,
-      "description": ""
+      "description": "中间三个操作按钮的自定义配置（图标、文案、无障碍等），见下方 [操作按钮配置](#操作按钮配置)"
     },
     {
       "name": "disabled",
@@ -54,28 +54,28 @@
       "name": "showSearch",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否在两个面板顶部显示搜索框",
       "default": "false"
     },
     {
       "name": "headerSelect",
       "type": "\"none\" | \"checkbox\" | \"menu\" | \"both\"",
       "required": false,
-      "description": "",
+      "description": "'menu' \\",
       "default": "\"checkbox\""
     },
     {
       "name": "searchPlaceholder",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "搜索框占位符文字",
       "default": "\"请输入搜索内容\""
     },
     {
       "name": "filterOption",
       "type": "(inputValue: string, item: TransferDataRecord) => boolean",
       "required": false,
-      "description": ""
+      "description": "自定义过滤函数，返回 `true` 表示条目匹配搜索词（`item` 为原始数据对象）"
     },
     {
       "name": "size",
@@ -88,21 +88,21 @@
       "name": "checkShape",
       "type": "TransferCheckShape",
       "required": false,
-      "description": "",
+      "description": "'circle'",
       "default": "\"rounded\""
     },
     {
       "name": "oneWay",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "单向模式：仅允许从左向右移动；右侧为只读展示，每条目提供独立撤回按钮",
       "default": "false"
     },
     {
       "name": "showUndo",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示中间撤回按钮（撤销上一次穿梭操作）",
       "default": "false"
     },
     {
@@ -144,7 +144,8 @@
       "type": "string[]",
       "required": false,
       "description": "双向绑定值",
-      "vModel": true
+      "vModel": true,
+      "default": "[]"
     }
   ],
   "events": [
@@ -232,8 +233,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-transfer.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "6fb8423764cf1e45337d629a04f23ba2afc3534b",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "daeaa8b2c3d01d2edf78bfc4d5e54887787daca4",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

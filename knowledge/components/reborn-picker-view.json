@@ -1,10 +1,15 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "reborn-picker-view",
-  "title": "reborn-picker-view",
+  "title": "PickerView 选择器视图",
   "description": "用于内嵌页面滚动选择多列选项的 uniapp 选择器视图组件。",
-  "category": "misc",
-  "tags": [],
+  "category": "form",
+  "tags": [
+    "uniapp",
+    "picker",
+    "picker-view",
+    "form"
+  ],
   "platforms": [
     "uniapp"
   ],
@@ -13,81 +18,87 @@
       "name": "color",
       "type": "typeof pickerColors[number]",
       "required": false,
-      "description": "",
+      "description": "'info' \\",
       "default": "'primary'"
     },
     {
       "name": "headers",
       "type": "string[]",
       "required": false,
-      "description": "",
+      "description": "各列顶部标题，超出列数的部分会被截断。",
       "default": "() => []"
     },
     {
       "name": "value",
       "type": "number[]",
       "required": false,
-      "description": "",
+      "description": "各列选中项的索引数组，支持 `v-model:value` 双向绑定。",
       "default": "() => []"
     },
     {
       "name": "columns",
       "type": "SelectOption[][]",
       "required": false,
-      "description": "",
+      "description": "列数据，二维数组的每个子数组渲染为一列。",
       "default": "() => []"
     },
     {
       "name": "itemHeight",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "单个选项行高，单位 px；iOS App 默认 50，其余平台默认 42。",
       "default": "isAppIOS() ? 50 : 42"
     },
     {
       "name": "height",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "选择区域整体高度，单位 px。",
       "default": "300"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    header: ClassValue\n    headerText: ClassValue\n    pickerContainer: ClassValue\n    item: ClassValue\n    itemText: ClassValue\n    indicator: ClassValue\n  }>",
       "required": false,
-      "description": ""
+      "description": "按内部结构键覆盖类名，见下方「自定义样式（ui）」。"
     }
   ],
   "events": [
     {
       "name": "update:value",
       "payload": "(e: 'update:value', indexes: number[]): void",
-      "description": ""
+      "description": "选中索引变化时触发（`v-model:value` 内部事件）。"
     },
     {
       "name": "change-value",
       "payload": "(e: 'change-value', values: any[]): void",
-      "description": ""
+      "description": "选中项变化时触发，参数为各列选中项的 `value` 组成的数组。"
     },
     {
       "name": "change-index",
       "payload": "(e: 'change-index', indexes: number[]): void",
-      "description": ""
+      "description": "选中项变化时触发，参数为各列选中项的索引数组。"
     },
     {
       "name": "change-item",
       "payload": "(e: 'change-item', item: any): void",
-      "description": ""
+      "description": "选中项变化时触发，参数为各列选中的完整选项对象组成的数组。"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "自定义每个选项的渲染内容，默认渲染 `item.label` 文本。"
     }
   ],
   "exposes": [],
   "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\n  <div\n    class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\"\n  >\n    web端暂时不需要\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    },
     {
       "title": "UniApp 演示",
       "code": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornPickerView from '@/components/reborn-picker-view/RebornPickerView.vue'\n\nconst columns = ref([\n  [\n    { label: '周一', value: 1 },\n    { label: '周二', value: 2 },\n    { label: '周三', value: 3 },\n    { label: '周四', value: 4 },\n    { label: '周五', value: 5 },\n  ],\n  [\n    { label: '上午', value: 1 },\n    { label: '下午', value: 2 },\n  ],\n])\n\nconst value = ref([0, 0])\nconst selectedValues = ref([1, 1])\n\nfunction onChange(vals: any[]) {\n  selectedValues.value = vals\n}\n</script>\n\n<template>\n  <RebornPage title=\"PickerView 选择器视图\">\n    <RebornCard title=\"基础用法\">\n      <view class=\"h-[300px] w-full bg-white rounded-lg overflow-hidden\">\n        <RebornPickerView\n          :columns=\"columns\"\n          v-model:value=\"value\"\n          @change-value=\"onChange\"\n        />\n      </view>\n      <view class=\"mt-4 text-sm text-gray-500\">\n        当前选中值: {{ selectedValues }}\n      </view>\n    </RebornCard>\n  </RebornPage>\n</template>\n",
@@ -125,15 +136,15 @@
       "packages/uniapp-project/src/components/reborn-picker-view/reborn-picker-view.config.ts"
     ]
   },
-  "docPath": null,
+  "docPath": "content/2.components/input-and-forms/reborn-picker-view.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "4414c15deb638c7e73f3bdc15cc5b3ac762edadd",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "8d61477680b5ee2624bff02ce8ece8086b95b7be",
     "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",
-      "docs": "missing"
+      "docs": "found"
     }
   }
 }

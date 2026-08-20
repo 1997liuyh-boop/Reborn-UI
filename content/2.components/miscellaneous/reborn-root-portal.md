@@ -18,9 +18,7 @@ navigation:
 
 ## Props
 
-| 属性名 | 类型 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `slots` | `Object` | - | 支持 `default` 插槽 |
+该组件不接收任何 Props，仅通过 `default` 插槽接收需要传送的内容（见下方 Slots）。
 
 ## Slots
 

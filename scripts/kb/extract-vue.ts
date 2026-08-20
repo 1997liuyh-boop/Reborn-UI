@@ -1,8 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
-import { parse as parseSfc } from "@vue/compiler-sfc";
-import { parseSync } from "@oxc-parser/wasm";
 import type { EventInfo, ExposeInfo, PropInfo, SlotInfo } from "./schema.js";
+import path from "node:path";
+import { parseSync } from "@oxc-parser/wasm";
+import { parse as parseSfc } from "@vue/compiler-sfc";
 import { readTextFile } from "./sources.js";
 
 /** 单个 .vue / config.ts 抽取结果 */
@@ -33,7 +32,8 @@ interface ParsedScript {
 function parseTs(source: string, filename: string): ParsedScript | null {
   try {
     const result = parseSync(source, { sourceFilename: filename }) as any;
-    const program = typeof result.program === "string" ? JSON.parse(result.program) : result.program;
+    const program =
+      typeof result.program === "string" ? JSON.parse(result.program) : result.program;
     return { program, comments: result.comments ?? [], source };
   } catch {
     return null;
@@ -76,20 +76,34 @@ function walk(node: any, visit: (n: OxcNode) => boolean | void) {
 
 /** 类型定义条目：AST 节点 + 它所属文件的解析上下文（切片源码/取注释都要用对文件） */
 export interface TypeDeclEntry {
-  body: OxcNode;
+  /** TSInterfaceDeclaration 或 type 别名右侧的类型节点（字面量/联合/交叉/引用） */
+  node: OxcNode;
   ctx: ParsedScript;
 }
 
-/** 收集顶层的 interface / type 字面量定义，供 defineProps<X> 解析引用 */
+/** 运行时常量对象条目（如 export const popoverProps = { ... }） */
+export interface ConstObjEntry {
+  node: OxcNode; // ObjectExpression
+  ctx: ParsedScript;
+}
+
+/** 名称解析上下文：类型定义 + 常量对象 + import 重命名别名 */
+interface ResolveCtx {
+  typeDecls: Map<string, TypeDeclEntry>;
+  constObjs: Map<string, ConstObjEntry>;
+  importAliases: Map<string, string>;
+}
+
+/** 收集顶层的 interface / type 别名定义，供 defineProps<X> 解析引用 */
 function collectTypeDecls(parsed: ParsedScript): Map<string, TypeDeclEntry> {
   const map = new Map<string, TypeDeclEntry>();
   const register = (decl: any) => {
     if (!decl) return;
     if (decl.type === "TSInterfaceDeclaration" && decl.id?.name) {
-      map.set(decl.id.name, { body: decl.body, ctx: parsed }); // TSInterfaceBody
+      map.set(decl.id.name, { node: decl, ctx: parsed });
     }
-    if (decl.type === "TSTypeAliasDeclaration" && decl.id?.name && decl.typeAnnotation?.type === "TSTypeLiteral") {
-      map.set(decl.id.name, { body: decl.typeAnnotation, ctx: parsed });
+    if (decl.type === "TSTypeAliasDeclaration" && decl.id?.name && decl.typeAnnotation) {
+      map.set(decl.id.name, { node: decl.typeAnnotation, ctx: parsed });
     }
   };
   for (const stmt of parsed.program.body ?? []) {
@@ -99,15 +113,62 @@ function collectTypeDecls(parsed: ParsedScript): Map<string, TypeDeclEntry> {
   return map;
 }
 
-/** 收集一个 .ts 文件里的类型定义（用于组件目录下 types.ts 的兜底解析） */
+/** 剥掉 as const / satisfies 包装 */
+function unwrapTsExpression(node: any): any {
+  let cur = node;
+  while (cur?.type === "TSAsExpression" || cur?.type === "TSSatisfiesExpression")
+    cur = cur.expression;
+  return cur;
+}
+
+/** 收集顶层 const X = { ... } 对象字面量（供 defineProps(propsObj) 标识符引用解析） */
+function collectConstObjects(parsed: ParsedScript): Map<string, ConstObjEntry> {
+  const map = new Map<string, ConstObjEntry>();
+  for (const stmt of parsed.program.body ?? []) {
+    const decl = stmt.type === "ExportNamedDeclaration" ? stmt.declaration : stmt;
+    if (decl?.type !== "VariableDeclaration") continue;
+    for (const d of decl.declarations ?? []) {
+      const name = d.id?.name;
+      const init = unwrapTsExpression(d.init);
+      if (name && init?.type === "ObjectExpression") map.set(name, { node: init, ctx: parsed });
+    }
+  }
+  return map;
+}
+
+/** 收集 import { X as Y } 的重命名映射（本地名 → 导出名），供跨文件类型引用解析 */
+function collectImportAliases(parsed: ParsedScript): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const stmt of parsed.program.body ?? []) {
+    if (stmt.type !== "ImportDeclaration") continue;
+    for (const spec of stmt.specifiers ?? []) {
+      if (spec.type !== "ImportSpecifier") continue;
+      const importedName = spec.imported?.name ?? spec.imported?.value;
+      const localName = spec.local?.name;
+      if (importedName && localName && importedName !== localName) map.set(localName, importedName);
+    }
+  }
+  return map;
+}
+
+/** 收集一个 .ts 文件里的类型定义（用于组件目录下 types.ts / config.ts 的兜底解析） */
 export function collectTypeDeclsFromTsFile(absPath: string): Map<string, TypeDeclEntry> {
+  const parsed = parseTsFile(absPath);
+  return parsed ? collectTypeDecls(parsed) : new Map();
+}
+
+/** 收集一个 .ts 文件里的顶层常量对象（用于 defineProps(propsObj) 跨文件解析） */
+export function collectConstObjectsFromTsFile(absPath: string): Map<string, ConstObjEntry> {
+  const parsed = parseTsFile(absPath);
+  return parsed ? collectConstObjects(parsed) : new Map();
+}
+
+/** 读取并解析 .ts 文件，失败返回 null */
+function parseTsFile(absPath: string): ParsedScript | null {
   try {
-    const source = readTextFile(absPath);
-    const parsed = parseTs(source, path.basename(absPath));
-    if (!parsed) return new Map();
-    return collectTypeDecls(parsed);
+    return parseTs(readTextFile(absPath), path.basename(absPath));
   } catch {
-    return new Map();
+    return null;
   }
 }
 
@@ -115,6 +176,61 @@ export function collectTypeDeclsFromTsFile(absPath: string): Map<string, TypeDec
 function typeMembers(body: OxcNode | undefined): OxcNode[] {
   if (!body) return [];
   return (body.body ?? body.members ?? []) as OxcNode[];
+}
+
+/** 带上下文的类型成员（成员可能来自不同文件） */
+interface MemberWithCtx {
+  member: OxcNode;
+  ctx: ParsedScript;
+}
+
+/**
+ * 递归解析类型节点为成员列表：
+ * - interface（含 extends 继承链）
+ * - 类型字面量、联合/交叉类型（成员合并，先出现者优先）
+ * - 类型引用（经 typeDecls 与 import 别名查找，seen 防循环）
+ */
+function resolveTypeMembers(
+  node: OxcNode | undefined,
+  ctx: ParsedScript,
+  resolve: ResolveCtx,
+  seen: Set<string> = new Set(),
+): MemberWithCtx[] {
+  if (!node) return [];
+  if (node.type === "TSInterfaceDeclaration") {
+    const own = typeMembers(node.body).map((m) => ({ member: m, ctx }));
+    // extends 的基接口成员排在自身成员之后（去重时自身优先）
+    for (const heritage of node.extends ?? []) {
+      const baseName = heritage.expression?.name;
+      if (baseName) own.push(...resolveTypeRefByName(baseName, resolve, seen));
+    }
+    return own;
+  }
+  if (node.type === "TSInterfaceBody" || node.type === "TSTypeLiteral") {
+    return typeMembers(node).map((m) => ({ member: m, ctx }));
+  }
+  if (node.type === "TSUnionType" || node.type === "TSIntersectionType") {
+    return (node.types ?? []).flatMap((t: OxcNode) => resolveTypeMembers(t, ctx, resolve, seen));
+  }
+  if (node.type === "TSTypeReference") {
+    const refName = node.typeName?.name;
+    return refName ? resolveTypeRefByName(refName, resolve, seen) : [];
+  }
+  return [];
+}
+
+/** 按名称（支持 import 重命名）查找类型定义并解析其成员 */
+function resolveTypeRefByName(
+  name: string,
+  resolve: ResolveCtx,
+  seen: Set<string>,
+): MemberWithCtx[] {
+  const targetName = resolve.typeDecls.has(name) ? name : (resolve.importAliases.get(name) ?? name);
+  if (seen.has(targetName)) return [];
+  seen.add(targetName);
+  const entry = resolve.typeDecls.get(targetName);
+  if (!entry) return [];
+  return resolveTypeMembers(entry.node, entry.ctx, resolve, seen);
 }
 
 /** 解析类型成员（TSPropertySignature）为 PropInfo */
@@ -138,7 +254,7 @@ function callTypeArg(call: OxcNode): OxcNode | undefined {
 }
 
 /** 解析 defineProps：接口引用式、内联字面量式、对象运行时式 */
-function extractProps(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry>, warnings: string[]): PropInfo[] {
+function extractProps(parsed: ParsedScript, resolve: ResolveCtx, warnings: string[]): PropInfo[] {
   const props: PropInfo[] = [];
   let defaults: Map<string, string> | null = null;
   let found = false;
@@ -153,7 +269,7 @@ function extractProps(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry
       const defaultsObj = node.arguments?.[1];
       if (inner?.type === "CallExpression" && inner.callee?.name === "defineProps") {
         found = true;
-        props.push(...propsFromDefineProps(parsed, inner, typeDecls, warnings));
+        props.push(...propsFromDefineProps(parsed, inner, resolve, warnings));
         if (defaultsObj?.type === "ObjectExpression") {
           defaults = objectToTextMap(parsed, defaultsObj);
         }
@@ -163,7 +279,7 @@ function extractProps(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry
 
     if (calleeName === "defineProps") {
       found = true;
-      props.push(...propsFromDefineProps(parsed, node, typeDecls, warnings));
+      props.push(...propsFromDefineProps(parsed, node, resolve, warnings));
       return true;
     }
   });
@@ -184,37 +300,38 @@ function extractProps(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry
 function propsFromDefineProps(
   parsed: ParsedScript,
   call: OxcNode,
-  typeDecls: Map<string, TypeDeclEntry>,
+  resolve: ResolveCtx,
   warnings: string[],
 ): PropInfo[] {
   const out: PropInfo[] = [];
   const typeArg = callTypeArg(call);
 
   if (typeArg) {
-    // 类型式：defineProps<ButtonProps>() 或 defineProps<{ ... }>()
-    let body: OxcNode | undefined;
-    let ctx = parsed; // 类型定义所在文件的上下文（外部 types.ts 时不同于当前文件）
-    if (typeArg.type === "TSTypeReference") {
-      const refName = typeArg.typeName?.name;
-      const entry = refName ? typeDecls.get(refName) : undefined;
-      if (entry) {
-        body = entry.body;
-        ctx = entry.ctx;
-      } else {
-        warnings.push(`defineProps 引用的类型 ${refName ?? "?"} 未在组件目录中找到`);
-      }
-    } else if (typeArg.type === "TSTypeLiteral") {
-      body = typeArg;
+    // 类型式：defineProps<ButtonProps>() 或 defineProps<{ ... }>()；
+    // 支持联合/交叉/extends 继承与跨文件引用，同名成员先出现者优先
+    const members = resolveTypeMembers(typeArg, parsed, resolve);
+    if (members.length === 0 && typeArg.type === "TSTypeReference") {
+      warnings.push(`defineProps 引用的类型 ${typeArg.typeName?.name ?? "?"} 未在组件目录中找到`);
     }
-    for (const member of typeMembers(body)) {
+    for (const { member, ctx } of members) {
       const prop = memberToProp(ctx, member);
-      if (prop) out.push(prop);
+      if (prop && !out.some((p) => p.name === prop.name)) out.push(prop);
     }
     return out;
   }
 
-  // 运行时对象式：defineProps({ title: { type: String, default: '' } })
-  const objArg = call.arguments?.[0];
+  // 运行时对象式：defineProps({ ... }) 或 defineProps(propsObj)（标识符引用跨文件解析）
+  let objArg = call.arguments?.[0];
+  let objCtx = parsed;
+  if (objArg?.type === "Identifier") {
+    const entry = resolve.constObjs.get(objArg.name);
+    if (entry) {
+      objArg = entry.node;
+      objCtx = entry.ctx;
+    } else {
+      warnings.push(`defineProps 引用的常量 ${objArg.name} 未在组件目录中找到`);
+    }
+  }
   if (objArg?.type === "ObjectExpression") {
     for (const property of objArg.properties ?? []) {
       const name = property.key?.name ?? property.key?.value;
@@ -222,20 +339,40 @@ function propsFromDefineProps(
       let type = "unknown";
       let def: string | undefined;
       let required = false;
-      if (property.value?.type === "ObjectExpression") {
-        for (const inner of property.value.properties ?? []) {
+      const valueNode = unwrapTsExpression(property.value);
+      if (valueNode?.type === "ObjectExpression") {
+        for (const inner of valueNode.properties ?? []) {
           const k = inner.key?.name;
-          if (k === "type") type = sliceNode(parsed.source, inner.value).toLowerCase();
-          if (k === "default") def = sliceNode(parsed.source, inner.value);
-          if (k === "required") required = sliceNode(parsed.source, inner.value) === "true";
+          if (k === "type") type = runtimePropType(objCtx, inner.value);
+          if (k === "default") def = sliceNode(objCtx.source, unwrapTsExpression(inner.value));
+          if (k === "required") required = sliceNode(objCtx.source, inner.value) === "true";
         }
-      } else if (property.value?.type === "Identifier") {
-        type = (property.value.name as string).toLowerCase();
+      } else if (valueNode?.type === "Identifier") {
+        type = (valueNode.name as string).toLowerCase();
       }
-      out.push({ name, type, default: def, required, description: trailingComment(parsed, property) });
+      out.push({
+        name,
+        type,
+        default: def,
+        required,
+        description: trailingComment(objCtx, property),
+      });
     }
   }
   return out;
+}
+
+/** 运行时 prop 的 type 字段文本：String as PropType<X> 优先取 X */
+function runtimePropType(parsed: ParsedScript, valueNode: any): string {
+  if (valueNode?.type === "TSAsExpression") {
+    const anno = valueNode.typeAnnotation;
+    const typeArg = (anno?.typeArguments ?? anno?.typeParameters)?.params?.[0];
+    if (anno?.type === "TSTypeReference" && anno.typeName?.name === "PropType" && typeArg) {
+      return sliceNode(parsed.source, typeArg);
+    }
+    return sliceNode(parsed.source, valueNode.expression).toLowerCase();
+  }
+  return sliceNode(parsed.source, valueNode).toLowerCase();
 }
 
 /** ObjectExpression → 属性名到值源码文本的映射 */
@@ -249,7 +386,7 @@ function objectToTextMap(parsed: ParsedScript, obj: OxcNode): Map<string, string
 }
 
 /** 解析 defineEmits：数组字面量式与类型式 */
-function extractEmits(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry>): EventInfo[] {
+function extractEmits(parsed: ParsedScript, resolve: ResolveCtx): EventInfo[] {
   const events: EventInfo[] = [];
   walk(parsed.program, (node) => {
     if (node.type !== "CallExpression" || node.callee?.name !== "defineEmits") return;
@@ -266,17 +403,7 @@ function extractEmits(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry
 
     const typeArg = callTypeArg(node);
     if (typeArg) {
-      let body: OxcNode | undefined;
-      let ctx = parsed;
-      if (typeArg.type === "TSTypeLiteral") body = typeArg;
-      if (typeArg.type === "TSTypeReference") {
-        const entry = typeDecls.get(typeArg.typeName?.name);
-        if (entry) {
-          body = entry.body;
-          ctx = entry.ctx;
-        }
-      }
-      for (const member of typeMembers(body)) {
+      for (const { member, ctx } of resolveTypeMembers(typeArg, parsed, resolve)) {
         // 形如 (e: 'change', value: string): void 的调用签名
         if (member.type === "TSCallSignatureDeclaration") {
           const first = member.params?.[0] ?? member.parameters?.[0];
@@ -308,22 +435,12 @@ function extractEmits(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry
 }
 
 /** 解析 defineSlots<{ ... }>() */
-function extractSlots(parsed: ParsedScript, typeDecls: Map<string, TypeDeclEntry>): SlotInfo[] {
+function extractSlots(parsed: ParsedScript, resolve: ResolveCtx): SlotInfo[] {
   const slots: SlotInfo[] = [];
   walk(parsed.program, (node) => {
     if (node.type !== "CallExpression" || node.callee?.name !== "defineSlots") return;
     const typeArg = callTypeArg(node);
-    let body: OxcNode | undefined;
-    let ctx = parsed;
-    if (typeArg?.type === "TSTypeLiteral") body = typeArg;
-    if (typeArg?.type === "TSTypeReference") {
-      const entry = typeDecls.get(typeArg.typeName?.name);
-      if (entry) {
-        body = entry.body;
-        ctx = entry.ctx;
-      }
-    }
-    for (const member of typeMembers(body)) {
+    for (const { member, ctx } of resolveTypeMembers(typeArg, parsed, resolve)) {
       const name = member.key?.name ?? member.key?.value;
       if (!name) continue;
       slots.push({
@@ -361,9 +478,10 @@ function extractModels(parsed: ParsedScript): { props: PropInfo[]; events: Event
   walk(parsed.program, (node) => {
     if (node.type !== "CallExpression" || node.callee?.name !== "defineModel") return;
     const firstArg = node.arguments?.[0];
-    const name = firstArg?.type === "StringLiteral" || firstArg?.type === "Literal"
-      ? String(firstArg.value)
-      : "modelValue";
+    const name =
+      firstArg?.type === "StringLiteral" || firstArg?.type === "Literal"
+        ? String(firstArg.value)
+        : "modelValue";
     const typeArg = callTypeArg(node);
     props.push({
       name,
@@ -393,6 +511,29 @@ function slotsFromTemplate(template: string): SlotInfo[] {
   return slots;
 }
 
+/**
+ * 从 useSlots() 的属性访问中识别编程式消费的插槽
+ * （如 Carousel 经 slots.default 手动渲染，模板中无 <slot> 标签）
+ */
+function slotsFromUseSlots(script: string): SlotInfo[] {
+  const slots: SlotInfo[] = [];
+  const seen = new Set<string>();
+  for (const decl of script.matchAll(/(?:const|let|var)\s+(\w+)\s*=\s*useSlots\(\)/g)) {
+    const varName = decl[1];
+    const accessRe = new RegExp(
+      `\\b${varName}(?:\\.|\\?\\.)([a-zA-Z_$][\\w$]*)|\\b${varName}\\[["']([^"']+)["']\\]`,
+      "g",
+    );
+    for (const m of script.matchAll(accessRe)) {
+      const name = m[1] ?? m[2];
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      slots.push({ name, description: "" });
+    }
+  }
+  return slots;
+}
+
 /** SFC 解析失败时的降级方案：正则抠出全部 <script> 块内容 */
 function fallbackScriptBlocks(source: string): string {
   const blocks: string[] = [];
@@ -402,10 +543,21 @@ function fallbackScriptBlocks(source: string): string {
   return blocks.join("\n");
 }
 
-/** 抽取单个 .vue 文件的 API 信息；externalTypes 为同目录 .ts 文件里收集到的类型定义 */
-export function extractVueFile(absPath: string, externalTypes?: Map<string, TypeDeclEntry>): VueExtractResult {
+/** 抽取单个 .vue 文件的 API 信息；externalTypes / externalConsts 为同目录 .ts 文件里收集到的类型与常量对象 */
+export function extractVueFile(
+  absPath: string,
+  externalTypes?: Map<string, TypeDeclEntry>,
+  externalConsts?: Map<string, ConstObjEntry>,
+): VueExtractResult {
   const warnings: string[] = [];
-  const empty: VueExtractResult = { props: [], events: [], slots: [], exposes: [], status: "failed", warnings };
+  const empty: VueExtractResult = {
+    props: [],
+    events: [],
+    slots: [],
+    exposes: [],
+    status: "failed",
+    warnings,
+  };
 
   let source: string;
   try {
@@ -438,37 +590,45 @@ export function extractVueFile(absPath: string, externalTypes?: Map<string, Type
     return { ...empty, slots: slotsFromTemplate(templateContent), status: "partial" };
   }
 
-  const parsed = parseTs(scriptContent, path.basename(absPath) + ".ts");
+  const parsed = parseTs(scriptContent, `${path.basename(absPath)}.ts`);
   if (!parsed) {
     warnings.push("oxc 解析 <script> 失败");
     return empty;
   }
 
   const typeDecls = collectTypeDecls(parsed);
-  // 同目录 .ts 文件的类型作为兜底（如 types.ts 里定义的 Props 接口）
+  // 同目录 .ts 文件的类型作为兜底（如 types.ts / config.ts 里定义的 Props 接口）
   if (externalTypes) {
     for (const [name, entry] of externalTypes) {
       if (!typeDecls.has(name)) typeDecls.set(name, entry);
     }
   }
-  const props = extractProps(parsed, typeDecls, warnings);
-  const events = extractEmits(parsed, typeDecls);
-  const slots = extractSlots(parsed, typeDecls);
+  const constObjs = collectConstObjects(parsed);
+  if (externalConsts) {
+    for (const [name, entry] of externalConsts) {
+      if (!constObjs.has(name)) constObjs.set(name, entry);
+    }
+  }
+  const resolve: ResolveCtx = { typeDecls, constObjs, importAliases: collectImportAliases(parsed) };
+  const props = extractProps(parsed, resolve, warnings);
+  const events = extractEmits(parsed, resolve);
+  const slots = extractSlots(parsed, resolve);
   const exposes = extractExposes(parsed);
   const models = extractModels(parsed);
 
   // defineModel 的 prop / 事件并入（同名去重，defineModel 优先）
   for (const mp of models.props) {
     const idx = props.findIndex((p) => p.name === mp.name);
-    if (idx >= 0) props[idx] = { ...props[idx], ...mp, description: props[idx].description || mp.description };
+    if (idx >= 0)
+      props[idx] = { ...props[idx], ...mp, description: props[idx].description || mp.description };
     else props.push(mp);
   }
   for (const me of models.events) {
     if (!events.some((e) => e.name === me.name)) events.push(me);
   }
 
-  // 模板 <slot> 兜底：补充 defineSlots 没有声明的插槽
-  for (const ts of slotsFromTemplate(templateContent)) {
+  // 模板 <slot> 与 useSlots() 编程式访问兜底：补充 defineSlots 没有声明的插槽
+  for (const ts of [...slotsFromTemplate(templateContent), ...slotsFromUseSlots(scriptContent)]) {
     if (!slots.some((s) => s.name === ts.name)) slots.push(ts);
   }
 
@@ -505,7 +665,8 @@ export function extractConfigConstants(absPath: string): Map<string, string[]> {
       if (!name) continue;
       // 剥掉 as const 包装
       let init = d.init;
-      if (init?.type === "TSAsExpression" || init?.type === "TSSatisfiesExpression") init = init.expression;
+      if (init?.type === "TSAsExpression" || init?.type === "TSSatisfiesExpression")
+        init = init.expression;
       if (init?.type !== "ArrayExpression") continue;
       const values: string[] = [];
       let allString = true;

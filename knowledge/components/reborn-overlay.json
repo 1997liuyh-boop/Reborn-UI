@@ -33,7 +33,7 @@
     },
     {
       "name": "duration",
-      "type": "[object, number, boolean] as proptype<record<string, number> | number | boolean>",
+      "type": "Record<string, number> | number | boolean",
       "default": "300",
       "required": false,
       "description": "动画持续时间，单位毫秒"
@@ -145,8 +145,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-overlay.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "5de2c003a0a7936f9ad9f303f17ea1a696ebdaa7",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "e0516216c23362a08dbdae91df2a026211688965",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

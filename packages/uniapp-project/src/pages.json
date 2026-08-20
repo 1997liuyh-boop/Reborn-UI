@@ -294,6 +294,18 @@
       "style": {
         "navigationBarTitleText": "SlideVerify Demo"
       }
+    },
+    {
+      "path": "pages/reborn-card/RebornCardDemo",
+      "style": {
+        "navigationBarTitleText": "Card Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-page/RebornPageDemo",
+      "style": {
+        "navigationBarTitleText": "Page Demo"
+      }
     }
   ],
 

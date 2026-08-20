@@ -22,7 +22,7 @@ navigation:
 | 属性名              | 类型                                                                          | 默认值         | 描述                                                                                                 |
 | ------------------- | ----------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
 | `modelValue`        | `number \| null`                                                              | `null`         | 当前激活项索引，支持 `v-model`。未传时使用内部状态。                                                 |
-| `slidesPerView`     | `number \| "auto"`                                                            | `1`            | 一屏展示的项目数量；设为 `"auto"` 时根据子项自身宽高决定可见项。                                     |
+| `slidesPerview`     | `number \| "auto"`                                                            | `1`            | 一屏展示的项目数量；设为 `"auto"` 时根据子项自身宽高决定可见项。                                     |
 | `spaceBetween`      | `number`                                                                      | `0`            | 轮播项之间的间距，单位 `px`。                                                                        |
 | `centeredSlides`    | `boolean`                                                                     | `false`        | 是否让当前激活项居中显示。                                                                           |
 | `loop`              | `boolean`                                                                     | `false`        | 是否启用循环切换。                                                                                   |
@@ -38,7 +38,7 @@ navigation:
 | `type`              | `"default" \| "card"`                                                         | `"default"`    | 展示类型；`card` 模式会强化中间项层级，并按子项自身尺寸布局。                                        |
 | `direction`         | `"horizontal" \| "vertical"`                                                  | `"horizontal"` | 轮播方向。                                                                                           |
 | `initialSlide`      | `number`                                                                      | `0`            | 初始激活项索引；当 `modelValue` 为空时生效。                                                         |
-| `breakpoints`       | `Record<number, BreakpointConfig>`                                            | `{}`           | 响应式配置；可在断点中覆盖 `slidesPerView`、`spaceBetween`、`type`、`direction` 等参数。             |
+| `breakpoints`       | `Record<number, BreakpointConfig>`                                            | `{}`           | 响应式配置；可在断点中覆盖 `slidesPerview`、`spaceBetween`、`type`、`direction` 等参数。             |
 | `grabCursor`        | `boolean`                                                                     | `false`        | 是否启用抓取光标。                                                                                   |
 | `class`             | `any`                                                                         | `-`            | 追加到根节点的自定义类名。                                                                           |
 | `ui`                | `object`                                                                      | `{}`           | 细粒度样式覆盖对象，用于重写各个 UI 区域的样式。                                                     |
@@ -47,7 +47,7 @@ navigation:
 
 | 属性名              | 类型                              | 描述                           |
 | ------------------- | --------------------------------- | ------------------------------ |
-| `slidesPerView`     | `number \| "auto"`                | 覆盖当前断点下的一屏显示数量。 |
+| `slidesPerview`     | `number \| "auto"`                | 覆盖当前断点下的一屏显示数量。 |
 | `spaceBetween`      | `number`                          | 覆盖当前断点下的间距。         |
 | `centeredSlides`    | `boolean`                         | 覆盖当前断点下的居中策略。     |
 | `arrow`             | `"hover" \| "always" \| "never"`  | 覆盖箭头显示策略。             |
@@ -103,9 +103,9 @@ navigation:
 
 ## 使用注意事项
 
-- 当 `centeredSlides=true` 且 `slidesPerView` 为数字时，首尾项目会保留部分预览，这是预期行为。
-- 如果你希望卡片模式拥有更明显的“舞台感”，建议使用 `slidesPerView="auto"` 并为子项设置固定宽度。
-- 当 `type="card"` 或 `slidesPerView="auto"` 时，组件不会参与子项宽高计算，建议直接在插槽内容上声明宽度。
+- 当 `centeredSlides=true` 且 `slidesPerview` 为数字时，首尾项目会保留部分预览，这是预期行为。
+- 如果你希望卡片模式拥有更明显的“舞台感”，建议使用 `slidesPerview="auto"` 并为子项设置固定宽度。
+- 当 `type="card"` 或 `slidesPerview="auto"` 时，组件不会参与子项宽高计算，建议直接在插槽内容上声明宽度。
 - `height="auto"` 更适合内容高度差异较大的横向轮播；纵向轮播通常建议给出明确高度。
 - `trigger="hover"` 更适合桌面端；如果场景兼顾触屏，建议使用 `click`。
 
@@ -113,6 +113,6 @@ navigation:
 
 - 当前 Web 版本基于原生滚动和组件内部状态实现，不依赖第三方轮播库。
 - Web 端支持鼠标悬停显示箭头、悬停触发指示器等交互；如果未来补充 UniApp 版本，这类交互需按触屏语义调整。
-- 如果后续需要做跨端统一，建议优先保持以下参数命名一致：`slidesPerView`、`spaceBetween`、`loop`、`autoplay`、`direction`、`initialSlide`。
+- 如果后续需要做跨端统一，建议优先保持以下参数命名一致：`slidesPerview`、`spaceBetween`、`loop`、`autoplay`、`direction`、`initialSlide`。
 
 ::

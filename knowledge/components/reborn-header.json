@@ -83,7 +83,8 @@
       "type": "boolean",
       "required": false,
       "description": "双向绑定值",
-      "vModel": true
+      "vModel": true,
+      "default": "false"
     }
   ],
   "events": [
@@ -181,8 +182,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-header.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "2b45e8c7bd03e22a7e6cc9ea9deafb15ed37d5f0",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "3154ffe0da0cf0b55191619117a6d65e0fa683b3",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

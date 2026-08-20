@@ -28,8 +28,6 @@ web端暂未开发。
 | `minHeight` | `number` | `30` | 最小可见高度阈值。footer 实际高度小于该值（叠加底部安全区）时，不显示 footer。 |
 | `vt` | `number` | `0` | 变化触发值。该值变化会强制重新测量 footer 高度。 |
 | `height` | `number \| null` | `null` | 指定 footer 内容高度（px）。设置后将不再通过选择器自动测量。 |
-| `backgroundColor` | `string \| null` | `null` | footer 背景色。 |
-| `customClass` | `any` | `-` | 追加到 footer 容器的自定义 class。 |
 
 ## Slots
 
@@ -45,7 +43,7 @@ web端暂未开发。
 | --- | --- |
 | `placeholder` | 占位容器样式（用于撑开页面底部空间，避免内容被遮挡）。 |
 | `wrapper` | 固定定位的外层容器样式。 |
-| `footer` | footer 主体容器样式（背景、安全区内边距等）。 |
+| `base` | footer 主体容器样式（背景、安全区内边距等）。 |
 | `content` | footer 内容区样式（内边距、布局等）。 |
 
 ## 说明

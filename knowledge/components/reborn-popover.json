@@ -11,6 +11,111 @@
   ],
   "props": [
     {
+      "name": "content",
+      "type": "PopoverContentProps",
+      "default": "() => ({ side: 'bottom', align: 'center', sideOffset: 0 })",
+      "required": false,
+      "description": "弹出层定位配置"
+    },
+    {
+      "name": "arrow",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": "是否显示小箭头"
+    },
+    {
+      "name": "portal",
+      "type": "boolean | string",
+      "default": "false",
+      "required": false,
+      "description": "是否使用 Teleport 挂载到 `body` 或指定节点"
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": "是否允许点击外部区域关闭"
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "受控状态，对应 `v-model:open"
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "非受控初始状态"
+    },
+    {
+      "name": "modal",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": "是否显示遮罩层"
+    },
+    {
+      "name": "openDelay",
+      "type": "number",
+      "default": "0",
+      "required": false,
+      "description": "hover 模式下的打开延迟"
+    },
+    {
+      "name": "closeDelay",
+      "type": "number",
+      "default": "0",
+      "required": false,
+      "description": "hover 模式下的关闭延迟"
+    },
+    {
+      "name": "customClass",
+      "type": "any",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "ui",
+      "type": "any",
+      "default": "() => ({})",
+      "required": false,
+      "description": "UI 样式覆盖配置"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "title",
+      "type": "string | Record<string, any>[]",
+      "default": "''",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "useContentSlot",
+      "type": "boolean",
+      "default": "true",
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "displayMode",
+      "type": "'normal' | 'menu'",
+      "default": "'normal'",
+      "required": false,
+      "description": ""
+    },
+    {
       "name": "mode",
       "type": "\"click\" | \"hover\"",
       "required": false,
@@ -18,80 +123,10 @@
       "default": "\"click\""
     },
     {
-      "name": "content",
-      "type": "PopoverContentProps",
-      "required": false,
-      "description": "弹出层定位配置",
-      "default": "() => ({\n    side: \"bottom\",\n    align: \"center\",\n    sideOffset: 8,\n  })"
-    },
-    {
-      "name": "arrow",
-      "type": "boolean",
-      "required": false,
-      "description": "是否显示小箭头",
-      "default": "false"
-    },
-    {
-      "name": "portal",
-      "type": "boolean | string",
-      "required": false,
-      "description": "是否使用 Teleport 挂载到 `body` 或指定节点",
-      "default": "true"
-    },
-    {
-      "name": "dismissible",
-      "type": "boolean",
-      "required": false,
-      "description": "是否允许点击外部区域关闭",
-      "default": "true"
-    },
-    {
-      "name": "open",
-      "type": "boolean",
-      "required": false,
-      "description": "受控状态，对应 `v-model:open",
-      "default": "false"
-    },
-    {
-      "name": "defaultOpen",
-      "type": "boolean",
-      "required": false,
-      "description": "非受控初始状态",
-      "default": "false"
-    },
-    {
-      "name": "modal",
-      "type": "boolean",
-      "required": false,
-      "description": "是否显示遮罩层",
-      "default": "false"
-    },
-    {
-      "name": "openDelay",
-      "type": "number",
-      "required": false,
-      "description": "hover 模式下的打开延迟",
-      "default": "0"
-    },
-    {
-      "name": "closeDelay",
-      "type": "number",
-      "required": false,
-      "description": "hover 模式下的关闭延迟",
-      "default": "120"
-    },
-    {
       "name": "class",
       "type": "any",
       "required": false,
       "description": ""
-    },
-    {
-      "name": "ui",
-      "type": "any",
-      "required": false,
-      "description": "UI 样式覆盖配置",
-      "default": "{}"
     }
   ],
   "events": [
@@ -195,12 +230,12 @@
   },
   "docPath": "content/2.components/navigation/reborn-popover.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "886679e2b70b1cc97103962f5e42e7b2b8b0a2c9",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "1c39aa75e3d04e57122d6afbefe43bc696838a20",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
-      "uniapp": "partial",
+      "uniapp": "ok",
       "docs": "found"
     }
   }

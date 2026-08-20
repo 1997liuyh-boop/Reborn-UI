@@ -63,13 +63,13 @@
       "name": "leftIcon",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "左侧图标名称"
     },
     {
       "name": "rightIcon",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "右侧图标名称"
     },
     {
       "name": "direction",
@@ -215,8 +215,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-notice-bar.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "399e22bef986ad88931e09e3d7c57ab4b63189c1",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "d47feb52b5d1af966c51300d00e7e699e79d5539",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

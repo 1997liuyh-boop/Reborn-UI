@@ -33,7 +33,7 @@
     },
     {
       "name": "duration",
-      "type": "[object, number, boolean] as proptype<record<string, number> | number | boolean>",
+      "type": "Record<string, number> | number | boolean",
       "default": "300",
       "required": false,
       "description": "Boolean"
@@ -47,7 +47,7 @@
     },
     {
       "name": "name",
-      "type": "[string, array] as proptype<transitionname | transitionname[]>",
+      "type": "TransitionName | TransitionName[]",
       "default": "'fade'",
       "required": false,
       "description": "fade"
@@ -252,8 +252,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-transition.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "ba73e602db4968d41f5d7b5da353ed85407e9047",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "0b0f37617f6e1f30d333ea30966238fb1f02cb58",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

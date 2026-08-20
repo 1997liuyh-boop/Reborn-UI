@@ -1,8 +1,14 @@
 {
   "name": "reborn-sku",
-  "title": "reborn-sku",
+  "title": "商品规格 Sku",
   "description": "用于商品规格（SKU）选择的选项组件，按 options 渲染规格项并以对象形式双向绑定选中结果。",
-  "category": "misc",
+  "category": "form",
+  "tags": [
+    "web",
+    "sku",
+    "form",
+    "select"
+  ],
   "dependencies": [],
   "files": [
     {

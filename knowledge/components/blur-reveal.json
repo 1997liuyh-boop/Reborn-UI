@@ -49,7 +49,12 @@
     }
   ],
   "events": [],
-  "slots": [],
+  "slots": [
+    {
+      "name": "default",
+      "description": ""
+    }
+  ],
   "exposes": [],
   "examples": [
     {
@@ -88,8 +93,8 @@
   },
   "docPath": "content/2.components/text-animations/blur-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "035a849a4961a2778075737e8757bc97bb412d95",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "2c98f6d7790dec50bbbb93619d7ba381240e3f5e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

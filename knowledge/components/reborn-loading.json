@@ -1,7 +1,7 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "reborn-loading",
-  "title": "Loading 加载指令",
+  "title": "Loading 加载器",
   "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。",
   "category": "misc",
   "tags": [],
@@ -21,7 +21,7 @@
       "name": "type",
       "type": "'outline' | 'ring' | 'spinner' | 'bars-scale' | 'blocks-shuffle' | 'blocks-wave' | 'gooey-balls'",
       "required": false,
-      "description": "加载图标类型。",
+      "description": "",
       "default": "'ring'",
       "options": [
         "outline",
@@ -37,7 +37,7 @@
       "name": "color",
       "type": "'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'",
       "required": false,
-      "description": "图标与文字颜色：预设色名或任意 CSS 颜色。",
+      "description": "",
       "default": "'primary'",
       "options": [
         "primary",
@@ -53,14 +53,14 @@
       "name": "size",
       "type": "string | number",
       "required": false,
-      "description": "'24px'",
+      "description": "",
       "default": "'30px'"
     },
     {
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": "遮罩根节点附加类名。"
+      "description": ""
     },
     {
       "name": "visible",
@@ -80,13 +80,13 @@
       "name": "text",
       "type": "string",
       "required": false,
-      "description": "加载文字（显示在图标下方）。"
+      "description": ""
     },
     {
       "name": "background",
       "type": "string",
       "required": false,
-      "description": "遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-white/80 dark:bg-gray-9/80`）。"
+      "description": ""
     },
     {
       "name": "viewportStyle",
@@ -98,7 +98,7 @@
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "遮罩层级。",
+      "description": "",
       "default": "2000"
     }
   ],
@@ -166,10 +166,10 @@
       "packages/uniapp-project/src/components/reborn-loading/reborn-loading.config.ts"
     ]
   },
-  "docPath": "content/2.components/miscellaneous/reborn-loading-directive.md",
+  "docPath": "content/2.components/miscellaneous/reborn-loading.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "5219687d8efdee650220187b687380be102b3ac4",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "9d80327a9695e283ad7556b7a3c37d0f4c8834a8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -68,7 +68,7 @@
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义样式类。"
     },
     {
       "name": "class",
@@ -142,8 +142,8 @@
   },
   "docPath": "content/2.components/button/reborn-chip.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "f3c220f614902b2d647d493892ba3e597e8eafeb",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "bb48233bcb31b0713a9c79d52ba52b48ae5563ed",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

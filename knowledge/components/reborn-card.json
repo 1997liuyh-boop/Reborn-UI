@@ -1,10 +1,14 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "reborn-card",
-  "title": "reborn-card",
+  "title": "卡片 Card",
   "description": "用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。",
-  "category": "misc",
-  "tags": [],
+  "category": "data-display",
+  "tags": [
+    "uniapp",
+    "card",
+    "container"
+  ],
   "platforms": [
     "uniapp"
   ],
@@ -13,27 +17,28 @@
       "name": "title",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "卡片标题文本，未提供 `title` 插槽时渲染为默认标题",
+      "default": "—"
     },
     {
       "name": "padding",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "内容体是否保留默认内边距，设为 `false` 可让内容通铺卡片",
       "default": "true"
     },
     {
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "追加到内容体容器的自定义类名",
       "default": "''"
     },
     {
       "name": "overflowVisible",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否允许内容溢出卡片显示，默认裁剪超出部分",
       "default": "false"
     }
   ],
@@ -41,15 +46,28 @@
   "slots": [
     {
       "name": "title",
-      "description": ""
+      "description": "自定义标题区域，提供后完全替换 `title` 属性的默认标题渲染"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "卡片内容体"
     }
   ],
   "exposes": [],
-  "examples": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<template>\n  <div\n    class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\"\n  >\n    web端暂时不需要\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    },
+    {
+      "title": "UniApp 演示",
+      "code": "<script setup lang=\"ts\">\n// RebornCard 演示页：标题、标题插槽与内边距控制\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\n</script>\n\n<template>\n  <RebornPage title=\"Card 卡片\" description=\"用于分组展示内容区块的基础卡片容器，常与 Page 搭配组织页面。\">\n    <!-- 基础用法：通过 title 属性渲染标题，内容放默认插槽 -->\n    <RebornCard title=\"基础用法\">\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        卡片由标题与内容体两部分组成，内容体默认带圆角边框、白色背景与内边距。\n      </view>\n      <view class=\"rounded-lg bg-blue-1 p-3 text-[24rpx] text-slate-500\">\n        任意内容都可以放进默认插槽，多个子元素之间自动保持间距。\n      </view>\n    </RebornCard>\n\n    <!-- 标题插槽：使用 title 插槽完全接管标题区域 -->\n    <RebornCard>\n      <template #title>\n        <view class=\"flex items-center gap-2\">\n          <view class=\"i-lucide-sparkles size-[32rpx] text-amber-500\" />\n          <text\n            class=\"\n              font-medium text-[26rpx] text-slate-500\n              dark:text-slate-200\n            \"\n          >\n            标题插槽\n          </text>\n        </view>\n      </template>\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        需要图标、角标等富文本标题时，用 title 插槽替换默认标题渲染。\n      </view>\n    </RebornCard>\n\n    <!-- 无内边距：padding=false 时内容可通铺整个卡片 -->\n    <RebornCard title=\"无内边距\" :padding=\"false\">\n      <view\n        class=\"\n          flex h-[160rpx] items-center justify-center bg-gradient-to-r\n          from-indigo-500 to-purple-500\n        \"\n      >\n        <text class=\"text-[28rpx] text-white\">通铺内容（padding=false）</text>\n      </view>\n    </RebornCard>\n  </RebornPage>\n</template>\n",
+      "source": "demo",
+      "platform": "uniapp"
+    }
+  ],
   "related": [],
   "whenToUse": [
     "uniapp 页面中将内容按区块分组展示，常与 RebornPage 搭配组织演示/设置页。",
@@ -74,15 +92,15 @@
       "packages/uniapp-project/src/components/reborn-card/index.ts"
     ]
   },
-  "docPath": null,
+  "docPath": "content/2.components/cards/reborn-card.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "578b7c1a28ffe1ee5a056d9fe4eca35bc16ff9fa",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "c375048e0de77f841a0933763eebaf882512e271",
     "hasOverride": true,
     "extractors": {
       "web": "absent",
       "uniapp": "ok",
-      "docs": "missing"
+      "docs": "found"
     }
   }
 }

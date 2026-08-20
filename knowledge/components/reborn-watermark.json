@@ -38,7 +38,7 @@
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "水印元素的 z-index 值",
       "default": "9"
     },
     {
@@ -144,8 +144,8 @@
   },
   "docPath": "content/2.components/data/reborn-watermark.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "07a6980abb23fed5d270d91b7d03873f409e18e4",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "fd00a076e5da9032ecf15754f6875fb2bf4eed02",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

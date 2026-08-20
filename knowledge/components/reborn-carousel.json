@@ -19,7 +19,7 @@
       "name": "slidesPerview",
       "type": "number | \"auto\"",
       "required": false,
-      "description": "",
+      "description": "1",
       "default": "1"
     },
     {
@@ -117,7 +117,7 @@
       "name": "breakpoints",
       "type": "Record<number, RebornCarouselBreakpoint>",
       "required": false,
-      "description": "响应式配置；可在断点中覆盖 `slidesPerView`、`spaceBetween`、`type`、`direction` 等参数。",
+      "description": "响应式配置；可在断点中覆盖 `slidesPerview`、`spaceBetween`、`type`、`direction` 等参数。",
       "default": "() => ({})"
     },
     {
@@ -200,6 +200,10 @@
     {
       "name": "indicators",
       "description": "自定义指示器区域。"
+    },
+    {
+      "name": "default",
+      "description": "轮播内容插槽，可放任意卡片、图片、文本块或自定义布局。"
     }
   ],
   "exposes": [
@@ -257,8 +261,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-carousel.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "35ca9835152fdd8c3434fbf62291d39736031d1d",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "a836d901537584b43820893615a0c3e80af67157",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

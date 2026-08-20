@@ -11,6 +11,13 @@
   ],
   "props": [
     {
+      "name": "modelValue",
+      "type": "(string | number)[] | (string | number)[][]",
+      "required": false,
+      "description": "(string \\",
+      "default": "() => []"
+    },
+    {
       "name": "options",
       "type": "CascaderOption[]",
       "required": false,
@@ -18,11 +25,25 @@
       "default": "() => []"
     },
     {
+      "name": "title",
+      "type": "string",
+      "required": false,
+      "description": "弹窗标题",
+      "default": "'请选择'"
+    },
+    {
       "name": "placeholder",
       "type": "string",
       "required": false,
       "description": "触发器占位文本",
-      "default": "\"请选择\""
+      "default": "'请选择'"
+    },
+    {
+      "name": "showTrigger",
+      "type": "boolean",
+      "required": false,
+      "description": "是否显示默认触发器",
+      "default": "true"
     },
     {
       "name": "disabled",
@@ -32,18 +53,115 @@
       "default": "false"
     },
     {
+      "name": "labelKey",
+      "type": "string",
+      "required": false,
+      "description": "选项标签字段名",
+      "default": "'label'"
+    },
+    {
+      "name": "valueKey",
+      "type": "string",
+      "required": false,
+      "description": "选项值字段名",
+      "default": "'value'"
+    },
+    {
+      "name": "textSeparator",
+      "type": "string",
+      "required": false,
+      "description": "触发器文本分隔符",
+      "default": "' / '"
+    },
+    {
+      "name": "height",
+      "type": "number | string",
+      "required": false,
+      "description": "600",
+      "default": "600"
+    },
+    {
       "name": "size",
-      "type": "(typeof cascaderSizes)[number]",
+      "type": "CascaderSize",
       "required": false,
       "description": "尺寸 (sm, md, lg)",
-      "default": "\"md\""
+      "default": "'md'"
     },
     {
       "name": "color",
-      "type": "(typeof cascaderColors)[number]",
+      "type": "CascaderColor",
       "required": false,
       "description": "主题颜色",
-      "default": "\"primary\""
+      "default": "'primary'"
+    },
+    {
+      "name": "customClass",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "customStyle",
+      "type": "string",
+      "required": false,
+      "description": "",
+      "default": "''"
+    },
+    {
+      "name": "ui",
+      "type": "CascaderUI",
+      "required": false,
+      "description": "样式覆盖对象",
+      "default": "() => ({})"
+    },
+    {
+      "name": "lazy",
+      "type": "boolean",
+      "required": false,
+      "description": "是否开启懒加载",
+      "default": "false"
+    },
+    {
+      "name": "lazyLoad",
+      "type": "(node: CascaderOption, resolve: (children: CascaderOption[]) => void, reject: () => void) => void",
+      "required": false,
+      "description": "动态加载方法 `(node, resolve, reject) => void"
+    },
+    {
+      "name": "childrenKey",
+      "type": "string",
+      "required": false,
+      "description": "指定选项的子选项字段",
+      "default": "'children'"
+    },
+    {
+      "name": "leafLevel",
+      "type": "number",
+      "required": false,
+      "description": "限制选择层级 (0为不限制)",
+      "default": "0"
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "required": false,
+      "description": "是否多选",
+      "default": "false"
+    },
+    {
+      "name": "ellipsis",
+      "type": "boolean",
+      "required": false,
+      "description": "",
+      "default": "true"
+    },
+    {
+      "name": "lines",
+      "type": "number",
+      "required": false,
+      "description": "",
+      "default": "1"
     },
     {
       "name": "clearable",
@@ -74,48 +192,6 @@
       "default": "true"
     },
     {
-      "name": "labelKey",
-      "type": "string",
-      "required": false,
-      "description": "选项标签字段名",
-      "default": "\"label\""
-    },
-    {
-      "name": "valueKey",
-      "type": "string",
-      "required": false,
-      "description": "选项值字段名",
-      "default": "\"value\""
-    },
-    {
-      "name": "childrenKey",
-      "type": "string",
-      "required": false,
-      "description": "指定选项的子选项字段",
-      "default": "\"children\""
-    },
-    {
-      "name": "textSeparator",
-      "type": "string",
-      "required": false,
-      "description": "触发器文本分隔符",
-      "default": "\" / \""
-    },
-    {
-      "name": "leafLevel",
-      "type": "number",
-      "required": false,
-      "description": "限制选择层级 (0为不限制)",
-      "default": "0"
-    },
-    {
-      "name": "showTrigger",
-      "type": "boolean",
-      "required": false,
-      "description": "是否显示默认触发器",
-      "default": "true"
-    },
-    {
       "name": "class",
       "type": "any",
       "required": false,
@@ -134,21 +210,6 @@
       "required": false,
       "description": "",
       "default": "() => ({})"
-    },
-    {
-      "name": "ui",
-      "type": "Partial<{\n    wrapper: ClassValue;\n    triggerText: ClassValue;\n    placeholder: ClassValue;\n    panel: ClassValue;\n    column: ClassValue;\n    option: ClassValue;\n    optionActive: ClassValue;\n    optionDisabled: ClassValue;\n    optionLabel: ClassValue;\n    optionIcon: ClassValue;\n    empty: ClassValue;\n  }>",
-      "required": false,
-      "description": "样式覆盖对象",
-      "default": "() => ({})"
-    },
-    {
-      "name": "modelValue",
-      "type": "any[]",
-      "required": false,
-      "description": "双向绑定值",
-      "vModel": true,
-      "default": "number)[] \\"
     }
   ],
   "events": [
@@ -252,12 +313,12 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-cascader.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "c05c59b6e5bae42c45b19d5698161fb7dd6a7149",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "6ab984c068dd54c0c197ba41ac25b1c5c1d73c9b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
-      "uniapp": "partial",
+      "uniapp": "ok",
       "docs": "found"
     }
   }

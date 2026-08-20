@@ -47,13 +47,15 @@
       "name": "activeLabel",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "开启状态一侧显示的文案。",
+      "default": "undefined"
     },
     {
       "name": "inactiveLabel",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "关闭状态一侧显示的文案。",
+      "default": "undefined"
     },
     {
       "name": "disabled",
@@ -191,8 +193,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-switch.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "b33bc619a4b6c0ea733518ae7ebd32a0dc42bc15",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "7192fcbdb94bc02d003b6714f1faf8d0003a0b85",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

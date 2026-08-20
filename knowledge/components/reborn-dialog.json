@@ -13,7 +13,7 @@
       "name": "open",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "控制 Dialog 是否打开，支持外部状态和内部触发器同时参与。",
       "default": "undefined"
     },
     {
@@ -171,12 +171,12 @@
     {
       "name": "openAutoFocus",
       "payload": "(e: \"openAutoFocus\"): void;",
-      "description": ""
+      "description": "Dialog 打开后自动聚焦时触发。"
     },
     {
       "name": "closeAutoFocus",
       "payload": "(e: \"closeAutoFocus\"): void;",
-      "description": ""
+      "description": "Dialog 关闭后焦点返回触发器时触发。"
     },
     {
       "name": "confirm",
@@ -259,8 +259,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-dialog.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "f246c81c62ee968e4dcf7f97c90cc1401b352dbc",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "064170306e1bbac95f73509b0d7cd66c817470e8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

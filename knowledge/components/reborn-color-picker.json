@@ -26,28 +26,28 @@
     },
     {
       "name": "size",
-      "type": "string as proptype<'sm' | 'md' | 'lg'>",
+      "type": "'sm' | 'md' | 'lg'",
       "default": "'md'",
       "required": false,
       "description": "尺寸大小，可选值为 `'sm'` `'md'` `'lg'"
     },
     {
       "name": "defaultFormat",
-      "type": "string as proptype<colorformat | undefined>",
+      "type": "ColorFormat | undefined",
       "default": "undefined",
       "required": false,
       "description": ""
     },
     {
       "name": "format",
-      "type": "string as proptype<colorformat | undefined>",
+      "type": "ColorFormat | undefined",
       "default": "undefined",
       "required": false,
       "description": ""
     },
     {
       "name": "content",
-      "type": "object as proptype<any>",
+      "type": "any",
       "default": "() => ({ side: 'right', align: 'center', sideOffset: 8 })",
       "required": false,
       "description": ""
@@ -61,7 +61,7 @@
     },
     {
       "name": "ui",
-      "type": "object as proptype<any>",
+      "type": "any",
       "default": "() => ({})",
       "required": false,
       "description": "UI 配置覆盖对象"
@@ -151,8 +151,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-color-picker.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "62191da0dce7d6512e5f4bc3771e6570e8a22f68",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "f1d460f5cb6ad13ae6e0d9293025368d4a4a0780",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -96,7 +96,8 @@
       "type": "boolean",
       "required": false,
       "description": "双向绑定值",
-      "vModel": true
+      "vModel": true,
+      "default": "true"
     },
     {
       "name": "as",
@@ -201,8 +202,8 @@
   },
   "docPath": "content/2.components/button/reborn-badge.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "450a5ce217166241d5dba8293b41e847103e831f",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "6c3e6e3eecbe04a78ad6b677e41ce73442a514c3",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

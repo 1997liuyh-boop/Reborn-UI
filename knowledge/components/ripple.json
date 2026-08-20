@@ -1,10 +1,14 @@
 {
   "$schema": "../schema/component.schema.json",
   "id": "ripple",
-  "title": "ripple",
+  "title": "水波纹",
   "description": "用于渲染多圈同心圆扩散水波背景的装饰效果组件。",
-  "category": "misc",
-  "tags": [],
+  "category": "effect",
+  "tags": [
+    "css",
+    "tailwind",
+    "magic-ui"
+  ],
   "platforms": [
     "web"
   ],
@@ -13,88 +17,88 @@
       "name": "baseCircleSize",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "最内圈圆的直径（px）。",
       "default": "210"
     },
     {
       "name": "baseCircleOpacity",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "最内圈圆的初始透明度。",
       "default": "0.24"
     },
     {
       "name": "spaceBetweenCircle",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "相邻两圈之间的直径增量（px）。",
       "default": "70"
     },
     {
       "name": "circleOpacityDowngradeRatio",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "每向外一圈透明度递减的比例。",
       "default": "0.03"
     },
     {
       "name": "circleClass",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "应用于每个波纹圆圈的额外 CSS 类（边框、填充色等）。"
     },
     {
       "name": "waveSpeed",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "相邻圆圈的动画延迟步长（毫秒），决定扩散节奏。",
       "default": "80"
     },
     {
       "name": "numberOfCircles",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "波纹圆圈的数量。",
       "default": "7"
     },
     {
       "name": "size",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "圆圈直径（px）。",
       "default": "210"
     },
     {
       "name": "class",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "应用于波纹容器的额外 CSS 类。"
     },
     {
       "name": "opacity",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "圆圈透明度。",
       "default": "0.24"
     },
     {
       "name": "animationDelay",
       "type": "number",
       "required": false,
-      "description": ""
+      "description": "呼吸动画的延迟（毫秒）。"
     },
     {
       "name": "borderStyle",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "边框样式（`solid` / `dashed`）。"
     }
   ],
   "events": [],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "由辅助组件 `RippleContainer` 提供，放置波纹上层居中的内容。"
     }
   ],
   "exposes": [],
@@ -133,15 +137,15 @@
       "app/components/reborn/ui/ripple/index.ts"
     ]
   },
-  "docPath": null,
+  "docPath": "content/2.components/special-effects/ripple.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "3f63629a4ed83a2451386f43312c3aa257232662",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "0b87f9053d8d6210af50cd581905d88c20e46141",
     "hasOverride": true,
     "extractors": {
       "web": "partial",
       "uniapp": "absent",
-      "docs": "missing"
+      "docs": "found"
     }
   }
 }

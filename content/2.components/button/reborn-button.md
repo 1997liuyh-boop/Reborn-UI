@@ -23,7 +23,6 @@ navigation:
 | ---------- | --------- | --------- | -------------------------------------------------------------------- |
 | `variant`  | `string`  | `default` | 按钮类型。可选值：`default`, `primary`, `success`, `warning`, `info`, `destructive`, `outline`, `secondary`, `ghost`, `link` |
 | `size`     | `string`  | `default` | 按钮大小。可选值：`xs`, `sm`, `default`, `lg`, `xl`, `2xl`, 以及对应的 `icon-*` (如 `icon`, `icon-sm`) |
-| `plain`    | `boolean` | `false`   | 是否为朴素按钮（背景透明，边框和文字带颜色）。                       |
 | `circle`   | `boolean` | `false`   | 是否为圆形按钮。                                                     |
 | `loading`  | `boolean` | `false`   | 是否显示加载状态。                                                   |
 | `disabled` | `boolean` | `false`   | 是否禁用按钮。                                                       |

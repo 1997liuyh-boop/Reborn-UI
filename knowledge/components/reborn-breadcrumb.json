@@ -24,7 +24,8 @@
       "name": "separatorIcon",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "图标分隔符的组件或组件名",
+      "default": "—"
     },
     {
       "name": "customClass",
@@ -121,8 +122,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-breadcrumb.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "079b6d4876893f4f38ded3c9c4a08357f8703202",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "9fc1600d8ae8b3fc8ffef2213d87d73e148a620b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

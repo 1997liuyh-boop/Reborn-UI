@@ -37,7 +37,8 @@
       "name": "textEndColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "动画结束时文字颜色，应符合 WCAG 推荐。",
+      "default": "inherit"
     }
   ],
   "events": [],
@@ -83,8 +84,8 @@
   },
   "docPath": "content/2.components/text-animations/text-highlight.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "efa7747c66833b1c9a815a75ddd042249f417e3c",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "2f09ccd34f4a5ef113c36c9501017ccfe6e6d9dc",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

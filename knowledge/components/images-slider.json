@@ -16,7 +16,7 @@
   "props": [
     {
       "name": "images",
-      "type": "array as proptype<string[]>",
+      "type": "string[]",
       "default": "() => []",
       "required": false,
       "description": "要在滑块中展示的图片 URL 数组。"
@@ -144,8 +144,8 @@
   },
   "docPath": "content/2.components/miscellaneous/images-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "81227b30462fb4cb2c1b66fefcb5322071137b68",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "58363f38a5cb815ed31bacdb96844e929e0394f1",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

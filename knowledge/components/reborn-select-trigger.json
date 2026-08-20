@@ -259,13 +259,14 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-19T10:25:49.445Z",
-    "contentHash": "cabbaf4689dafb1e635a650a96e5d5512b0456aa",
+    "generatedAt": "2026-08-20T15:26:05.324Z",
+    "contentHash": "c9bab6b8350b3f1f5d7c9588f0d27c680202d55e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
       "uniapp": "ok",
       "docs": "missing"
     }
-  }
+  },
+  "internal": true
 }

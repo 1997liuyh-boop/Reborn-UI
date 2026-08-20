@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-19T10:25:56.166Z",
+  "generatedAt": "2026-08-20T15:26:43.523Z",
   "source": {
-    "rootDir": "D:/demo2/Reborn-UI",
+    "rootDir": "D:/Demo/Reborn-UI",
     "componentsDir": "app/components/reborn/ui"
   },
   "components": [
@@ -1210,9 +1210,14 @@
     },
     {
       "name": "pattern-background",
-      "title": "pattern-background",
+      "title": "图案背景",
       "description": "用于为区块提供图案纹理背景的容器组件，内容经默认插槽传入。",
-      "category": "misc",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "background"
+      ],
       "dependencies": [
         "class-variance-authority"
       ],
@@ -1512,9 +1517,14 @@
     },
     {
       "name": "reborn-card",
-      "title": "reborn-card",
+      "title": "卡片 Card",
       "description": "用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。",
-      "category": "misc",
+      "category": "data-display",
+      "tags": [
+        "uniapp",
+        "card",
+        "container"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -2010,9 +2020,15 @@
     },
     {
       "name": "reborn-dropdown-select",
-      "title": "reborn-dropdown-select",
+      "title": "DropdownSelect 下拉选择",
       "description": "用于从 options 列表下拉选择单个值的选择器组件，仅 uniapp 端。",
-      "category": "misc",
+      "category": "form",
+      "tags": [
+        "uniapp",
+        "dropdown",
+        "select",
+        "form"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -2425,7 +2441,7 @@
     },
     {
       "name": "reborn-loading",
-      "title": "Loading 加载指令",
+      "title": "Loading 加载器",
       "description": "用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。",
       "category": "misc",
       "dependencies": [
@@ -2654,9 +2670,14 @@
     },
     {
       "name": "reborn-page",
-      "title": "reborn-page",
+      "title": "页面容器 Page",
       "description": "用于 uniapp 页面最外层的页面容器组件，可配置页面标题与描述文案。",
-      "category": "misc",
+      "category": "layout",
+      "tags": [
+        "uniapp",
+        "layout",
+        "page"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -2706,9 +2727,15 @@
     },
     {
       "name": "reborn-picker-view",
-      "title": "reborn-picker-view",
+      "title": "PickerView 选择器视图",
       "description": "用于内嵌页面滚动选择多列选项的 uniapp 选择器视图组件。",
-      "category": "misc",
+      "category": "form",
+      "tags": [
+        "uniapp",
+        "picker",
+        "picker-view",
+        "form"
+      ],
       "dependencies": [
         "clsx",
         "lodash-es"
@@ -3217,9 +3244,15 @@
     },
     {
       "name": "reborn-sku",
-      "title": "reborn-sku",
+      "title": "商品规格 Sku",
       "description": "用于商品规格（SKU）选择的选项组件，按 options 渲染规格项并以对象形式双向绑定选中结果。",
-      "category": "misc",
+      "category": "form",
+      "tags": [
+        "web",
+        "sku",
+        "form",
+        "select"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3827,9 +3860,15 @@
     },
     {
       "name": "reborn-waterfall",
-      "title": "reborn-waterfall",
+      "title": "Waterfall 瀑布流",
       "description": "用于 uniapp 中按列分流渲染瀑布流布局的容器组件，数据经实例方法维护、每项由 item 插槽渲染。",
-      "category": "misc",
+      "category": "layout",
+      "tags": [
+        "uniapp",
+        "waterfall",
+        "layout",
+        "list"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -3879,9 +3918,14 @@
     },
     {
       "name": "ripple",
-      "title": "ripple",
+      "title": "水波纹",
       "description": "用于渲染多圈同心圆扩散水波背景的装饰效果组件。",
-      "category": "misc",
+      "category": "effect",
+      "tags": [
+        "css",
+        "tailwind",
+        "magic-ui"
+      ],
       "dependencies": [],
       "files": [
         {
@@ -4062,9 +4106,14 @@
     },
     {
       "name": "sparkles",
-      "title": "sparkles",
+      "title": "闪烁粒子",
       "description": "用于渲染可配置密度、大小与颜色的闪烁粒子背景层组件。",
-      "category": "misc",
+      "category": "effect",
+      "tags": [
+        "canvas",
+        "particles",
+        "aceternity-ui"
+      ],
       "dependencies": [
         "@vueuse/core"
       ],
