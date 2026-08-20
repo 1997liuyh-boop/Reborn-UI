@@ -14,28 +14,28 @@
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "自定义根元素类名",
       "default": "''"
     },
     {
       "name": "customStyle",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "自定义根元素样式",
       "default": "''"
     },
     {
       "name": "modelValue",
       "type": "boolean",
       "required": false,
-      "description": "是否显示弹出层",
+      "description": "是否显示弹出层 (v-model)",
       "default": "false"
     },
     {
       "name": "position",
       "type": "PopupPosition",
       "required": false,
-      "description": "'left' \\",
+      "description": "弹出位置：top, bottom, left, right, center",
       "default": "'bottom'"
     },
     {
@@ -56,14 +56,14 @@
       "name": "maskClosable",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否可以通过点击遮罩层关闭 (别名)",
       "default": "true"
     },
     {
       "name": "duration",
       "type": "number | boolean",
       "required": false,
-      "description": "动画时长 (ms)",
+      "description": "动画时长 (单位ms)，设为 false 则禁用动画",
       "default": "300"
     },
     {
@@ -77,28 +77,28 @@
       "name": "showMask",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否需要遮罩层 (别名)",
       "default": "true"
     },
     {
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "弹出层的层级",
+      "description": "弹出层的层级 z-index",
       "default": "25"
     },
     {
       "name": "overlayZIndex",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "弹出层的层级 z-index (别名)",
       "default": "25"
     },
     {
       "name": "modalStyle",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "遮罩层的自定义样式",
       "default": "''"
     },
     {
@@ -126,7 +126,7 @@
       "name": "lockScroll",
       "type": "boolean",
       "required": false,
-      "description": "是否在出现时锁定 body 滚动",
+      "description": "是否在出现时将 body 滚动锁定",
       "default": "true"
     },
     {
@@ -140,7 +140,7 @@
       "name": "showHeader",
       "type": "boolean",
       "required": false,
-      "description": "是否显示头部",
+      "description": "是否显示头部（包含标题和关闭按钮）",
       "default": "true"
     },
     {
@@ -154,7 +154,7 @@
       "name": "size",
       "type": "number | string",
       "required": false,
-      "description": "'30%'",
+      "description": "弹出层的大小 (宽度或高度)",
       "default": "'30%'"
     },
     {
@@ -168,34 +168,34 @@
       "name": "swipeCloseThreshold",
       "type": "number",
       "required": false,
-      "description": "手势滑动关闭的阈值",
+      "description": "手势滑动关闭的触发阈值（手指竖直位移 px，不与阻尼位移混用）",
       "default": "120"
     },
     {
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义 UI 配置"
     },
     {
       "name": "rootPortal",
       "type": "boolean",
       "required": false,
-      "description": "是否开启插件内部 portal 渲染 (uniapp)",
+      "description": "是否使用 reborn-root-portal (别名)",
       "default": "false"
     },
     {
       "name": "enablePortal",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否使用 reborn-root-portal",
       "default": "false"
     },
     {
       "name": "color",
       "type": "PopupColor",
       "required": false,
-      "description": "主题色 (仅影响 UniApp 滑动手柄)",
+      "description": "主题色 (影响手势滑块等)",
       "default": "'neutral'"
     },
     {
@@ -209,21 +209,21 @@
       "name": "appendToBody",
       "type": "boolean",
       "required": false,
-      "description": "是否将弹出层插入至 `body` 节点",
+      "description": "是否将弹出层插入至 body 节点",
       "default": "false"
     },
     {
       "name": "appendTo",
       "type": "string | HTMLElement",
       "required": false,
-      "description": "",
+      "description": "指定弹出层插入的节点",
       "default": "'body'"
     },
     {
       "name": "beforeClose",
       "type": "(done: (cancel?: boolean) => void) => void",
       "required": false,
-      "description": ""
+      "description": "关闭前的回调，会暂停关闭"
     },
     {
       "name": "closeOnPressEscape",
@@ -236,14 +236,14 @@
       "name": "openDelay",
       "type": "number",
       "required": false,
-      "description": "开启延迟 (ms)",
+      "description": "开启延迟，单位毫秒",
       "default": "0"
     },
     {
       "name": "closeDelay",
       "type": "number",
       "required": false,
-      "description": "关闭延迟 (ms)",
+      "description": "关闭延迟，单位毫秒",
       "default": "0"
     },
     {
@@ -257,7 +257,7 @@
       "name": "modalPenetrable",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "遮罩层是否可穿透（即不处理任何鼠标事件）",
       "default": "false"
     },
     {
@@ -271,42 +271,42 @@
       "name": "modalClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "遮罩层的自定义类名",
       "default": "''"
     },
     {
       "name": "headerClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "头部的自定义类名",
       "default": "''"
     },
     {
       "name": "bodyClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "内容主体的自定义类名",
       "default": "''"
     },
     {
       "name": "footerClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "底部页脚的自定义类名",
       "default": "''"
     },
     {
       "name": "headerAriaLevel",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "头部标题的 aria-level 属性",
       "default": "'2'"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义根元素类名"
     }
   ],
   "events": [
@@ -380,17 +380,17 @@
     {
       "name": "resize-start",
       "payload": "(e: 'resize-start'): void;",
-      "description": ""
+      "description": "开始拖拽缩放"
     },
     {
       "name": "resize",
       "payload": "(e: 'resize', size: number): void;",
-      "description": "拖拽缩放中触发"
+      "description": "拖拽缩放中"
     },
     {
       "name": "resize-end",
       "payload": "(e: 'resize-end'): void;",
-      "description": ""
+      "description": "结束拖拽缩放"
     }
   ],
   "slots": [
@@ -468,8 +468,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-popup.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "cd50cc430f6cb20a87dc664ec5964af5d6a1944f",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "ffd131aa856369b36861d4f9bf206f7cb6cc8732",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

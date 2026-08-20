@@ -12,7 +12,7 @@
   "pitfalls": [
     "web、uniapp 双端可用。",
     "length 默认 4 位；输满指定位数触发 done 事件。",
-    "inputType 默认 number，可选 text/digit。",
+    "inputType 默认 number；web 端支持 text/number，uniapp 端额外支持 digit。",
     "无插槽，格子样式通过 ui/size/color 配置。"
   ]
 }

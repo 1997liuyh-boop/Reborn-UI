@@ -25,13 +25,13 @@
     {
       "name": "onChange",
       "payload": "(e: \"onChange\", files: File[]): void;",
-      "description": "添加/上传文件时触发的回调。"
+      "description": "添加/上传文件时触发，回调为累计的完整文件列表。"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "背景装饰层插槽，渲染在上传区域后方的绝对定位容器内（带径向渐变遮罩），通常放置 `FileUploadGrid`。"
     }
   ],
   "exposes": [],
@@ -71,8 +71,8 @@
   },
   "docPath": "content/2.components/input-and-forms/file-upload.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "1961d2d8121db7da67d7149656c6c0a570083de4",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "fdacfd291e3901cb09cbbc9825fd5a9eae692878",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

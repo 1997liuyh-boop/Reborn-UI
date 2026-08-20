@@ -50,6 +50,10 @@ navigation:
 | `arrowAnimation` | `boolean` | `true` | 展开时箭头是否旋转动画。 |
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。 |
 | `triggerUi` | `Partial<SelectTriggerUI>` | `{}` | 用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。 |
+| `class` | `any` | - | 追加到触发器根元素的自定义类名（Web 端）。 |
+| `ui` | `Partial<SelectDateUiShape>` | `{}` | 组件自身样式覆盖对象，两端键位不同：UniApp 端可重写范围选择区、快捷选项、底部按钮等（见下方 `ui`），Web 端可重写日历面板各区域。 |
+| `popupUi` | `Partial<PopupUiShape>` | `{}` | 底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域（UniApp 端，见下方 `popupUi`）。 |
+| `pickerUi` | `Partial<PickerUiShape>` | `{}` | 滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域（UniApp 端，见下方 `pickerUi`）。 |
 
 ## Emits
 
@@ -62,9 +66,25 @@ navigation:
 
 ## Slots
 
+| 名称 | 参数 | 描述 |
+| --- | --- | --- |
 | `default` | `{ displayText, placeholder, isOpen, ui }` | 自定义触发器内容。 |
 | `cover`   | `{ displayText, placeholder, isOpen, ui }` | 覆盖整个触发器内容的插槽，完全替代文本和图标。 |
-| `tag`     | `-`                                        | 自定义选择后的展示标签。 |
+| `tag`     | `-`                                        | 自定义选择后的展示标签（UniApp 端）。 |
+
+## Expose
+
+通过模板 ref 可调用以下方法（UniApp 端）：
+
+| 方法名 | 参数 | 描述 |
+| --- | --- | --- |
+| `open` | `(cb?: (value: string \| string[]) => void)` | 打开底部选择弹出层（禁用状态下无效）；可传入回调，在确认时接收选中值。 |
+| `close` | - | 关闭底部选择弹出层（不触发确认）。 |
+| `clear` | - | 清空已选值并触发 `change` / `range-change` 事件。 |
+| `confirm` | - | 以当前滚轮选中值执行确认逻辑（范围不完整或倒序时会提示并中断），随后关闭弹出层。 |
+| `setValue` | `(val: string)` | 设置非范围模式的当前选中值（空值时重置为当前时间，仅更新内部状态，不触发事件）。 |
+| `setValues` | `(val: string[])` | 设置范围模式的开始/结束值数组（仅更新内部状态，不触发事件）。 |
+| `setRange` | `(index: number)` | 切换范围模式当前编辑项：`0` 为开始时间，`1` 为结束时间。 |
 
 ## UI
 各个内部组件的 UI 样式覆盖参数。

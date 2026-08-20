@@ -13,134 +13,134 @@
       "name": "title",
       "type": "string",
       "required": false,
-      "description": "标题文字；也可通过 `title` 插槽完全自定义"
+      "description": "标题"
     },
     {
       "name": "column",
       "type": "number",
       "required": false,
-      "description": "每行显示的列数（一项占一列，含标签 + 内容）",
+      "description": "每行显示的列数，默认 3",
       "default": "3"
     },
     {
       "name": "responsive",
       "type": "boolean",
       "required": false,
-      "description": "是否根据容器宽度自适应列数。`true`：< 480px 为 1 列，< 640px 最多 2 列，否则使用 `column",
+      "description": "是否根据容器宽度自适应列数，默认 true - true：< 480px 为 1 列，< 640px 最多 2 列，否则使用 column - false：始终使用 column，不随容器宽度变化",
       "default": "true"
     },
     {
       "name": "size",
       "type": "DescriptionsSize",
       "required": false,
-      "description": "'lg'",
+      "description": "尺寸大小",
       "default": "\"md\""
     },
     {
       "name": "border",
       "type": "DescriptionsBorderMode",
       "required": false,
-      "description": "'none'",
-      "default": "'divider' \\"
+      "description": "边框样式 - bordered：有边框（表格外框 + 单元格网格线） - divider：无框（仅行与行之间的分割线，默认） - none：无边框（无任何边线）",
+      "default": "'divider'"
     },
     {
       "name": "direction",
       "type": "\"horizontal\" | \"vertical\"",
       "required": false,
-      "description": "'horizontal'",
+      "description": "排列方向：horizontal（水平）或 vertical（垂直）",
       "default": "\"horizontal\""
     },
     {
       "name": "colon",
       "type": "boolean",
       "required": false,
-      "description": "标签后是否显示中文冒号",
+      "description": "标签后是否显示冒号，默认 true",
       "default": "true"
     },
     {
       "name": "rounded",
       "type": "boolean",
       "required": false,
-      "description": "表格外层是否圆角",
+      "description": "表格外层是否圆角，默认 true",
       "default": "true"
     },
     {
       "name": "labelBackground",
       "type": "string",
       "required": false,
-      "description": "标签列背景色（CSS 颜色值），可被单项覆盖"
+      "description": "标签列背景色（CSS 颜色值，如 '#f9fafb'）"
     },
     {
       "name": "contentBackground",
       "type": "string",
       "required": false,
-      "description": "内容列背景色（CSS 颜色值），可被单项覆盖"
+      "description": "内容列背景色（CSS 颜色值，如 '#ffffff'）"
     },
     {
       "name": "labelColor",
       "type": "string",
       "required": false,
-      "description": "标签列字体颜色，可被单项覆盖"
+      "description": "标签列字体颜色（CSS 颜色值，如 '#6b7280'）"
     },
     {
       "name": "contentColor",
       "type": "string",
       "required": false,
-      "description": "内容列字体颜色，可被单项覆盖"
+      "description": "内容列字体颜色（CSS 颜色值，如 '#111827'）"
     },
     {
       "name": "labelBold",
       "type": "boolean",
       "required": false,
-      "description": "标签列字体加粗，可被单项覆盖",
+      "description": "标签列字体加粗",
       "default": "false"
     },
     {
       "name": "contentBold",
       "type": "boolean",
       "required": false,
-      "description": "内容列字体加粗，可被单项覆盖",
+      "description": "内容列字体加粗",
       "default": "false"
     },
     {
       "name": "labelWidth",
       "type": "string",
       "required": false,
-      "description": "标签单元格最小宽度，如 `'120px'"
+      "description": "标签单元格的最小宽度（CSS 值，如 '120px'）"
     },
     {
       "name": "labelAlign",
       "type": "DescriptionsAlign",
       "required": false,
-      "description": "'right'",
+      "description": "标签单元格水平对齐，默认 left",
       "default": "\"left\""
     },
     {
       "name": "contentAlign",
       "type": "DescriptionsAlign",
       "required": false,
-      "description": "'right'",
+      "description": "内容单元格水平对齐，默认 left",
       "default": "\"left\""
     },
     {
       "name": "labelLineHeight",
       "type": "DescriptionsLineHeightValue",
       "required": false,
-      "description": "'relaxed'",
-      "default": "string"
+      "description": "标签字体行高 - 预设：none / tight / snug / normal / relaxed / loose - 自定义 CSS 值：如 '1.8'、'28px'",
+      "default": "'relaxed'"
     },
     {
       "name": "contentLineHeight",
       "type": "DescriptionsLineHeightValue",
       "required": false,
-      "description": "'relaxed'",
-      "default": "string"
+      "description": "内容字体行高 - 预设：none / tight / snug / normal / relaxed / loose - 自定义 CSS 值：如 '1.8'、'28px'",
+      "default": "'relaxed'"
     },
     {
       "name": "items",
       "type": "DescriptionsItem[]",
       "required": false,
-      "description": "数据驱动模式，见下方 [items 数据驱动](#items-数据驱动)"
+      "description": "数据驱动模式：传入项目列表"
     },
     {
       "name": "class",
@@ -165,20 +165,20 @@
       "name": "span",
       "type": "number",
       "required": false,
-      "description": "占据列数；末项自动延伸以填满当前行剩余列",
+      "description": "占据列数，默认 1",
       "default": "1"
     },
     {
       "name": "labelClass",
       "type": "string",
       "required": false,
-      "description": "标签单元格追加 CSS 类"
+      "description": "自定义标签单元格 CSS 类"
     },
     {
       "name": "contentClass",
       "type": "string",
       "required": false,
-      "description": "内容单元格追加 CSS 类"
+      "description": "自定义内容单元格 CSS 类"
     }
   ],
   "events": [],
@@ -186,22 +186,22 @@
     {
       "name": "title",
       "props": "() => any",
-      "description": "标题区（左上角），可覆盖 `title` prop"
+      "description": "标题区（左上角），可覆盖 title prop"
     },
     {
       "name": "actions",
       "props": "() => any",
-      "description": "操作区（右上角），如按钮、链接"
+      "description": "操作区（右上角），用于放置按钮、链接等操作元素"
     },
     {
       "name": "default",
       "props": "() => any",
-      "description": "描述项列表（放置 `RebornDescriptionsItem`）"
+      "description": "描述项列表（RebornDescriptionsItem 子组件）"
     },
     {
       "name": "label",
       "props": "() => any",
-      "description": "标签区自定义渲染"
+      "description": "标签区自定义插槽"
     }
   ],
   "exposes": [],
@@ -245,8 +245,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-descriptions.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "46e34651b317fbb79a455f56c959a97f9333e953",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "3dcc9b6dc5083e6999d9074abd767a323b4e4939",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

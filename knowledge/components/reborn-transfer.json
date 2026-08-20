@@ -13,35 +13,35 @@
       "name": "dataSource",
       "type": "TransferDataRecord[]",
       "required": false,
-      "description": "数据源，包含所有可选条目；字段名可通过 `field-names` 映射",
+      "description": "数据源，包含所有可选条目（字段名可通过 field-names 映射）",
       "default": "() => []"
     },
     {
       "name": "fieldNames",
       "type": "TransferFieldNames",
       "required": false,
-      "description": "数据源字段别名，见下方 [字段映射](#字段映射)",
+      "description": "数据源字段别名 例如后端返回 { id, name, remark, isDisabled } 时可配置为 { key: 'id', label: 'name', description: 'remark', disabled: 'isDisabled' }",
       "default": "() => ({})"
     },
     {
       "name": "defaultTargetKeys",
       "type": "string[]",
       "required": false,
-      "description": "默认已在目标列表的 key；**仅初始化一次**，且会过滤掉 `dataSource` 中不存在的 key。当未绑定 `v-model` 或目标列表为空时生效",
+      "description": "默认已在目标列表（右侧）的条目 key 未绑定 v-model 或目标列表为空时生效；仅初始化一次，会过滤掉 dataSource 中不存在的 key",
       "default": "() => []"
     },
     {
       "name": "titles",
       "type": "[string, string]",
       "required": false,
-      "description": "两个面板的标题，索引 0 为源列表，1 为目标列表",
+      "description": "两个面板的标题，索引 0 为源列表，索引 1 为目标列表",
       "default": "() => [\"源列表\", \"目标列表\"] as [string, string]"
     },
     {
       "name": "operationButtons",
       "type": "TransferOperationButtons",
       "required": false,
-      "description": "中间三个操作按钮的自定义配置（图标、文案、无障碍等），见下方 [操作按钮配置](#操作按钮配置)"
+      "description": "中间操作区三个按钮的自定义配置（图标、文案、样式等） 如需完全自定义按钮结构，可使用 operation-to-right 等插槽"
     },
     {
       "name": "disabled",
@@ -61,7 +61,7 @@
       "name": "headerSelect",
       "type": "\"none\" | \"checkbox\" | \"menu\" | \"both\"",
       "required": false,
-      "description": "'menu' \\",
+      "description": "面板头部选择控件模式 - 'checkbox'：仅显示全选复选框（默认） - 'menu'：仅显示下拉扩展菜单（全选所有 / 全选当页 / 反选当页） - 'both'：同时显示全选复选框与下拉菜单 - 'none'：隐藏所有选择控件，仅保留标题与计数",
       "default": "\"checkbox\""
     },
     {
@@ -75,56 +75,54 @@
       "name": "filterOption",
       "type": "(inputValue: string, item: TransferDataRecord) => boolean",
       "required": false,
-      "description": "自定义过滤函数，返回 `true` 表示条目匹配搜索词（`item` 为原始数据对象）"
+      "description": "自定义过滤函数，返回 true 表示条目匹配搜索词（item 为原始数据对象）"
     },
     {
       "name": "size",
       "type": "TransferSize",
       "required": false,
-      "description": "'lg'",
+      "description": "组件尺寸",
       "default": "\"md\""
     },
     {
       "name": "checkShape",
       "type": "TransferCheckShape",
       "required": false,
-      "description": "'circle'",
+      "description": "选中框外观 - square：方形（直角） - rounded：圆角（默认） - circle：圆形",
       "default": "\"rounded\""
     },
     {
       "name": "oneWay",
       "type": "boolean",
       "required": false,
-      "description": "单向模式：仅允许从左向右移动；右侧为只读展示，每条目提供独立撤回按钮",
+      "description": "单向模式：仅允许从左向右移动，不可移回 开启后右侧为只读展示，不显示头部全选及条目勾选框",
       "default": "false"
     },
     {
       "name": "showUndo",
       "type": "boolean",
       "required": false,
-      "description": "是否显示中间撤回按钮（撤销上一次穿梭操作）",
+      "description": "是否显示中间撤回按钮（撤销上一次穿梭操作），默认不显示",
       "default": "false"
     },
     {
       "name": "pagination",
       "type": "boolean | TransferPaginationConfig",
       "required": false,
-      "description": "false",
+      "description": "是否开启列表分页；数据量大时建议开启，避免单页渲染过多条目 传 true 使用默认每页 10 条，或传入 { pageSize } 配置",
       "default": "false"
     },
     {
       "name": "width",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "组件整体宽度 支持数字（px）或 CSS 长度，如 640、'100%'、'50vw'"
     },
     {
       "name": "height",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "组件整体高度；设置后列表区域在固定高度内滚动（头部、搜索、分页栏固定不滚动） 支持数字（px）或 CSS 长度，如 320、'20rem'、'50vh'"
     },
     {
       "name": "class",
@@ -152,7 +150,7 @@
     {
       "name": "change",
       "payload": "(e: \"change\", nextTargetKeys: string[], direction: \"right\" | \"left\", moveKeys: string[]): void;",
-      "description": "'left', moveKeys: string[])"
+      "description": "条目在两列之间转移时触发，携带新目标列表、方向和本次移动的 key 数组"
     },
     {
       "name": "selectChange",
@@ -162,7 +160,7 @@
     {
       "name": "undo",
       "payload": "(\n    e: \"undo\",\n    nextTargetKeys: string[],\n    payload: { direction: \"right\" | \"left\"; moveKeys: string[] },\n  ): void;",
-      "description": "'left', moveKeys: string[] })"
+      "description": "点击撤回按钮，恢复至上一次穿梭前的目标列表"
     },
     {
       "name": "update:modelValue",
@@ -173,12 +171,12 @@
     {
       "name": "item",
       "props": "(props: { item: TransferDataRecord }) => any",
-      "description": "自定义列表条目内容"
+      "description": "自定义列表条目内容，作用域参数为 { item }（原始数据对象，字段名未归一化）"
     },
     {
       "name": "operation-to-right",
       "props": "(props: TransferOperationSlotProps) => any",
-      "description": "完全自定义「移至右侧」按钮"
+      "description": "完全自定义按钮内容（替换默认的图标 + 文案结构）"
     },
     {
       "name": "operation-to-left",
@@ -189,10 +187,6 @@
       "name": "operation-undo",
       "props": "(props: TransferOperationSlotProps) => any",
       "description": "完全自定义「撤回」按钮"
-    },
-    {
-      "name": "op.slotName",
-      "description": ""
     }
   ],
   "exposes": [],
@@ -233,8 +227,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-transfer.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "daeaa8b2c3d01d2edf78bfc4d5e54887787daca4",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "ea6f4e2620f99b26e7f0789ad3aaf9bd01a291fa",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

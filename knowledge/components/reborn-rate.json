@@ -21,96 +21,96 @@
       "name": "modelValue",
       "type": "number",
       "required": false,
-      "description": "当前评分值。",
+      "description": "当前评分",
       "default": "0"
     },
     {
       "name": "count",
       "type": "number",
       "required": false,
-      "description": "星星总数。",
+      "description": "星星总数",
       "default": "5"
     },
     {
       "name": "allowHalf",
       "type": "boolean",
       "required": false,
-      "description": "是否允许半星。",
+      "description": "允许半星",
       "default": "false"
     },
     {
       "name": "showValue",
       "type": "boolean",
       "required": false,
-      "description": "是否显示当前分数。",
+      "description": "显示分数",
       "default": "false"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用。",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "readonly",
       "type": "boolean",
       "required": false,
-      "description": "是否只读。",
+      "description": "是否只读",
       "default": "false"
     },
     {
       "name": "icon",
       "type": "string",
       "required": false,
-      "description": "未选中图标类名（仅支持 Nuxt Icon）。",
+      "description": "未选中图标 class",
       "default": "'i-lucide-star'"
     },
     {
       "name": "activeIcon",
       "type": "string",
       "required": false,
-      "description": "选中图标类名（仅支持 Nuxt Icon）。",
+      "description": "选中图标 class",
       "default": "'i-lucide-star'"
     },
     {
       "name": "halfIcon",
       "type": "string",
       "required": false,
-      "description": "半星图标类名（仅支持 Nuxt Icon）。"
+      "description": "半星选中图标 class"
     },
     {
       "name": "size",
       "type": "(typeof rateSizes)[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "(typeof rateColors)[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "颜色",
       "default": "'warning'"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    star: ClassValue\n    icon: ClassValue\n    iconActive: ClassValue\n    value: ClassValue\n  }>",
       "required": false,
-      "description": "自定义类名覆盖。",
+      "description": "样式覆盖",
       "default": "() => ({})"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义 class"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义 class"
     }
   ],
   "events": [
@@ -186,8 +186,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-rate.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "332800f9ba487a431bba38582de188884993138c",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "ef24fa29b27de18be80599281e21b3eac3ee1189",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

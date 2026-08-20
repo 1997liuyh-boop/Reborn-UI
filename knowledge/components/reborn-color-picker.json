@@ -29,70 +29,71 @@
       "type": "'sm' | 'md' | 'lg'",
       "default": "'md'",
       "required": false,
-      "description": "尺寸大小，可选值为 `'sm'` `'md'` `'lg'"
+      "description": "色块触发器尺寸（Web 端额外支持 `'xs'`）"
     },
     {
       "name": "defaultFormat",
       "type": "ColorFormat | undefined",
       "default": "undefined",
       "required": false,
-      "description": ""
+      "description": "初始颜色输出格式，可选 'hex' | 'rgb' | 'rgba'；未设置时根据 modelValue 自动识别，用户仍可在面板中切换"
     },
     {
       "name": "format",
       "type": "ColorFormat | undefined",
       "default": "undefined",
       "required": false,
-      "description": ""
+      "description": "defaultFormat 的别名，同样指定颜色输出格式；两者同时传入时 defaultFormat 优先"
     },
     {
       "name": "content",
       "type": "any",
       "default": "() => ({ side: 'right', align: 'center', sideOffset: 8 })",
       "required": false,
-      "description": ""
+      "description": "Popover content config"
     },
     {
       "name": "arrow",
       "type": "boolean",
       "default": "true",
       "required": false,
-      "description": ""
+      "description": "Whether to show arrow"
     },
     {
       "name": "ui",
       "type": "any",
       "default": "() => ({})",
       "required": false,
-      "description": "UI 配置覆盖对象"
+      "description": "UI 配置覆盖对象，见下方「自定义样式（ui）」"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到面板根节点的自定义类名"
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
-      "description": "颜色值变化时触发",
-      "payload": "(val: string)` 最新颜色值"
+      "description": "颜色值变化时触发（`v-model` 同步），参数为按当前格式序列化后的颜色字符串",
+      "payload": "(val: string)"
     },
     {
       "name": "onChange",
-      "description": ""
+      "description": "用户在面板中选色导致颜色变化时触发，参数为面板输出的颜色字符串",
+      "payload": "(val: string)"
     },
     {
       "name": "update:format",
       "payload": "(e: \"update:format\", value: ColorFormat): void;",
-      "description": ""
+      "description": "用户点击格式切换按钮时触发（v-model:format 同步），参数为新的输出格式"
     }
   ],
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "自定义触发器内容，替换默认的色块按钮。仅 Web 端；UniApp 端不支持"
     }
   ],
   "exposes": [],
@@ -151,8 +152,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-color-picker.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "f1d460f5cb6ad13ae6e0d9293025368d4a4a0780",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "604285606a23c85032cd6114ddba30f2e0d41dbc",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

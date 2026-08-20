@@ -15,6 +15,7 @@
     "校验规则基于 zod：rules 须传 z.ZodObject，而非 Element 风格的规则数组。",
     "表单项须使用配套的 RebornFormItem 且置于 RebornForm 内；使用 validate/resetFields 时表单项的 prop 字段必填。",
     "trigger 默认 'none' 不自动校验，需设为 'blur'/'change' 或手动调用暴露的 validate。",
-    "labelWidth 默认 '140rpx'（rpx 单位，注意 web 端取值）。"
+    "labelWidth 默认值双端不同：web 端 '140px'，uniapp 端 '140rpx'。",
+    "resetFields 恢复的是挂载时的初始值快照，异步回填数据后需调用 setInitialValues 更新快照。"
   ]
 }

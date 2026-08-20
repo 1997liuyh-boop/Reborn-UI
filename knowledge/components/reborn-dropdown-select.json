@@ -45,14 +45,14 @@
       "name": "size",
       "type": "typeof dropdownSelectSizes[number]",
       "required": false,
-      "description": "'lg'",
+      "description": "触发器与选项行的尺寸。",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof dropdownSelectColors[number]",
       "required": false,
-      "description": "'success' \\",
+      "description": "主题色，作用于选中项高亮与勾选图标。",
       "default": "'primary'"
     },
     {
@@ -131,8 +131,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-dropdown-select.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0d02783a27f751451defa85ddfc86128ca2c0d10",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "5720eb100f41614daa505c600eb3845af2aa3720",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

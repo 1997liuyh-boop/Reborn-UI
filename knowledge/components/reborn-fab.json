@@ -14,7 +14,7 @@
       "name": "modelValue",
       "type": "boolean",
       "required": false,
-      "description": "双向绑定值",
+      "description": "绑定值，控制展开状态",
       "default": "false",
       "vModel": true
     },
@@ -22,132 +22,127 @@
       "name": "active",
       "type": "boolean",
       "required": false,
-      "description": "是否默认展开。",
+      "description": "是否默认展开",
       "default": "false"
     },
     {
       "name": "position",
       "type": "FabPosition",
       "required": false,
-      "description": "'left-bottom' \\",
+      "description": "预设位置",
       "default": "'right-bottom'"
     },
     {
       "name": "top",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "自定义位置"
     },
     {
       "name": "bottom",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "自定义底部距离。"
     },
     {
       "name": "left",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "自定义左侧距离。"
     },
     {
       "name": "right",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "自定义右侧距离。"
     },
     {
       "name": "direction",
       "type": "FabDirection",
       "required": false,
-      "description": "'left' \\",
+      "description": "展开方向",
       "default": "'top'"
     },
     {
       "name": "color",
       "type": "FabColor",
       "required": false,
-      "description": "'success' \\",
+      "description": "主题颜色",
       "default": "'primary'"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用。",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "draggable",
       "type": "boolean",
       "required": false,
-      "description": "是否可拖拽。拖拽结束后如果靠左侧会自动吸附到左边并向右展开，同理右侧吸附。",
+      "description": "是否可拖拽",
       "default": "false"
     },
     {
       "name": "expandable",
       "type": "boolean",
       "required": false,
-      "description": "是否可展开显示动作面板。如果为 false 将直接触发 click。",
+      "description": "是否可展开",
       "default": "false"
     },
     {
       "name": "gap",
       "type": "{ top?: number; left?: number; right?: number; bottom?: number }",
       "required": false,
-      "description": "限制拖拽边界与快捷定位计算偏移值的间距计算。",
+      "description": "距离边缘的间距",
       "default": "() => ({ top: 16, left: 16, right: 16, bottom: 16 })"
     },
     {
       "name": "inactiveIcon",
       "type": "string",
       "required": false,
-      "description": "非激活状态图标（Web 版默认依赖 nuxt-icon）。",
+      "description": "非激活状态图标",
       "default": "'i-lucide-plus'"
     },
     {
       "name": "activeIcon",
       "type": "string",
       "required": false,
-      "description": "激活状态图标。",
+      "description": "激活状态图标",
       "default": "'i-lucide-plus'"
     },
     {
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "组件全局层级 z-index。",
+      "description": "层级",
       "default": "99"
     },
     {
       "name": "customStyle",
       "type": "string",
       "required": false,
-      "description": "-",
-      "default": "CSSProperties"
+      "description": "自定义样式"
     },
     {
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": "自定义类名。"
+      "description": "自定义类名"
     },
     {
       "name": "ui",
       "type": "Partial<UiMap>",
       "required": false,
-      "description": "",
+      "description": "UI 配置",
       "default": "() => ({\n        root: '',\n        trigger: '',\n        icon: '',\n        actions: '',\n        action: ''\n    })"
     },
     {
       "name": "items",
       "type": "FabActionItem[]",
       "required": false,
-      "description": "",
+      "description": "动作列表：有数据时由组件内 v-for 渲染（推荐小程序端使用），无数据时回退为默认插槽。",
       "default": "() => []"
     },
     {
@@ -217,7 +212,7 @@
     {
       "name": "action",
       "payload": "[payload: { name: string; index: number }]",
-      "description": ""
+      "description": "点击某条 items 动作"
     },
     {
       "name": "open",
@@ -312,8 +307,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-fab.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "172211a0837c272d5bd4d9a9e5d2504b5932be48",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "451c1be86820aa3a8a77f3ae81d6b524be805768",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

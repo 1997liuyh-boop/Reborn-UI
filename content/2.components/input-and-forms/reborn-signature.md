@@ -80,11 +80,11 @@ Web 端独立组件说明暂不维护；文档站预览通过 UniApp H5 渲染�
 | 名称             | 类型                                                      | 描述                                       |
 | :--------------- | :-------------------------------------------------------- | :----------------------------------------- |
 | `clear`          | `() => void`                                              | 清空并重置模型值                           |
-| `undo`           | `() => void`                                              | 撤销                                       |
-| `redo`           | `() => void`                                              | 恢复                                       |
+| `undo`           | `() => void`                                              | 撤销最近一笔（移入恢复栈）并重置 `v-model` |
+| `redo`           | `() => void`                                              | 恢复最近撤销的一笔并重置 `v-model`         |
 | `save`           | `() => Promise<string>`                                   | 导出并 `emit('save')`，返回临时路径或 `''` |
-| `toPng`          | `(options?: { allowEmpty?: boolean }) => Promise<string>` | 仅导出临时路径                             |
-| `getStrokes`     | `() => SignatureStroke[]`                                 | 当前笔迹拷贝                               |
+| `toPng`          | `(options?: { allowEmpty?: boolean }) => Promise<string>` | 仅导出临时路径，不写 `v-model`、不触发 `save`；`{ allowEmpty }` 可覆盖组件配置 |
+| `getStrokes`     | `() => SignatureStroke[]`                                 | 当前全部笔迹的深拷贝，可用于持久化或回放   |
 | `selectPenColor` | `(color: string) => void`                                 | 切换画笔颜色                               |
 | `penColor`       | `Ref<string>`                                             | 与 `v-model:pen-color` 同步                |
 | `isEmpty`        | `ComputedRef<boolean>`                                    | 是否尚无笔迹                               |

@@ -15,91 +15,91 @@
       "type": "PopoverContentProps",
       "default": "() => ({ side: 'bottom', align: 'center', sideOffset: 0 })",
       "required": false,
-      "description": "弹出层定位配置"
+      "description": "内容位置与偏移配置"
     },
     {
       "name": "arrow",
       "type": "boolean",
       "default": "true",
       "required": false,
-      "description": "是否显示小箭头"
+      "description": "是否显示箭头"
     },
     {
       "name": "portal",
       "type": "boolean | string",
       "default": "false",
       "required": false,
-      "description": "是否使用 Teleport 挂载到 `body` 或指定节点"
+      "description": "是否将 Popover 渲染到指定的 DOM 节点 (对于 UniApp 意义不大，保留作 API 一致性)"
     },
     {
       "name": "dismissible",
       "type": "boolean",
       "default": "true",
       "required": false,
-      "description": "是否允许点击外部区域关闭"
+      "description": "点击外部时是否关闭 Popover"
     },
     {
       "name": "open",
       "type": "boolean",
       "default": "false",
       "required": false,
-      "description": "受控状态，对应 `v-model:open"
+      "description": "受控显示状态"
     },
     {
       "name": "defaultOpen",
       "type": "boolean",
       "default": "false",
       "required": false,
-      "description": "非受控初始状态"
+      "description": "非受控默认显示状态"
     },
     {
       "name": "modal",
       "type": "boolean",
       "default": "false",
       "required": false,
-      "description": "是否显示遮罩层"
+      "description": "是否显示遮罩层并捕获焦点"
     },
     {
       "name": "openDelay",
       "type": "number",
       "default": "0",
       "required": false,
-      "description": "hover 模式下的打开延迟"
+      "description": "延迟打开时间 (ms) - 适用于 hover 模式"
     },
     {
       "name": "closeDelay",
       "type": "number",
       "default": "0",
       "required": false,
-      "description": "hover 模式下的关闭延迟"
+      "description": "延迟关闭时间 (ms) - 适用于 hover 模式，防止意外关闭"
     },
     {
       "name": "customClass",
       "type": "any",
       "default": "''",
       "required": false,
-      "description": ""
+      "description": "额外的类名"
     },
     {
       "name": "ui",
       "type": "any",
       "default": "() => ({})",
       "required": false,
-      "description": "UI 样式覆盖配置"
+      "description": "UI 覆盖配置"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "default": "false",
       "required": false,
-      "description": ""
+      "description": "是否禁用 popover"
     },
     {
       "name": "title",
       "type": "string | Record<string, any>[]",
       "default": "''",
       "required": false,
-      "description": ""
+      "description": "显示的内容，可以通过 prop 也可以通过 slot 传入"
     },
     {
       "name": "useContentSlot",
@@ -230,8 +230,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-popover.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "1c39aa75e3d04e57122d6afbefe43bc696838a20",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "59256fcb50f71cc3377dbb15ca9fc9734c4a553e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

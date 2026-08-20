@@ -38,14 +38,14 @@
       "name": "pauseDuration",
       "type": "number",
       "required": false,
-      "description": "删除后到打字的延迟时间（毫秒）",
+      "description": "删除完成后到开始打字的延迟时间（毫秒）",
       "default": "500"
     },
     {
       "name": "cursor",
       "type": "string",
       "required": false,
-      "description": "\"",
+      "description": "光标字符",
       "default": "\"|\""
     },
     {
@@ -73,7 +73,7 @@
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "自定义类名",
       "default": "\"\""
     }
   ],
@@ -81,22 +81,22 @@
     {
       "name": "typed",
       "payload": "[]",
-      "description": "打字完成时触发"
+      "description": "打字完成事件"
     },
     {
       "name": "deleted",
       "payload": "[]",
-      "description": "删除完成时触发"
+      "description": "删除完成事件"
     },
     {
       "name": "start-typing",
       "payload": "[]",
-      "description": "开始打字时触发"
+      "description": "开始打字事件"
     },
     {
       "name": "start-deleting",
       "payload": "[]",
-      "description": "开始删除时触发"
+      "description": "开始删除事件"
     }
   ],
   "slots": [],
@@ -163,8 +163,8 @@
   },
   "docPath": "content/2.components/text-animations/reborn-typewriter.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "b154738bdd94428c6a1de2991163b0a936e62721",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "530fc6b26cf6a038295854f7322147bb61502571",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

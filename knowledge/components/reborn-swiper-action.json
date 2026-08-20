@@ -144,21 +144,21 @@
       "name": "group",
       "type": "string | number | false",
       "required": false,
-      "description": "false",
+      "description": "同组互斥：同值组件同时只展开一个；**`false`** 关闭互斥",
       "default": "'default'"
     },
     {
       "name": "mode",
       "type": "'push' | 'overlay'",
       "required": false,
-      "description": "'push'",
+      "description": "展开模式：`push` 为内容平移推开操作区（传统）；`overlay` 为操作区从右侧叠加滑入，内容不移动",
       "default": "'push'"
     },
     {
       "name": "actionRadius",
       "type": "'none' | 'right' | 'both'",
       "required": false,
-      "description": "'both'",
+      "description": "操作区外侧圆角策略：`none` 不补圆角；`right` 仅最右侧按钮补右圆角；`both` 最左与最右各补一侧圆角",
       "default": "'right'"
     },
     {
@@ -201,7 +201,7 @@
     {
       "name": "change",
       "payload": "(e: 'change', value: SwiperActionSide | ''): void",
-      "description": "''"
+      "description": "展开侧变化（与 `v-model` 同步）"
     },
     {
       "name": "open",
@@ -237,7 +237,7 @@
     {
       "name": "default",
       "props": "",
-      "description": "'', close: () => void }"
+      "description": "滑动手势覆盖的主内容区"
     },
     {
       "name": "right-action",
@@ -302,8 +302,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-swiper-action.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0e85d32fde3bc2dadddeaeeb9d29149d5cd154f4",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "651766ad9a3f6120efb9892fa9209fe44ba19f58",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

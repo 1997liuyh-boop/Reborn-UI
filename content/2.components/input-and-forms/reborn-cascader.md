@@ -48,9 +48,28 @@ navigation:
 | `update:modelValue` | 选中项改变时触发 (v-model) | `(value: (string \| number)[] \| (string \| number)[][])` |
 | `change` | 选中项改变时触发 | `(value: (string \| number)[] \| (string \| number)[][])` |
 
-## CascaderUI Slots
+## Slots
 
-| 插槽名 | 描述 |
+| 名称 | 参数 | 描述 |
+| :--- | :--- | :--- |
+| `default` | `{ isOpen, open, close, clear, hasValue, displayText }` | 自定义触发器显示内容；`showTrigger` 为 `false` 时整体替换触发区域，作用域提供 `open` / `close` / `clear` 等方法（Web 端） |
+| `option` | `{ option, columnIndex }` | 自定义下拉面板中单个选项的渲染内容，作用域提供选项对象与所在列索引（Web 端） |
+| `tabs` | `{ label, index, current }` | 自定义顶部已选路径导航标签的内容（UniApp 端） |
+| `item` | `{ item, listIndex, active }` | 自定义选项行的内容，作用域提供选项对象、列索引与是否激活（UniApp 端） |
+
+## Expose
+
+通过模板 ref 可调用以下方法：
+
+| 方法名 | 参数 | 描述 |
+| :--- | :--- | :--- |
+| `open` | - | 打开选择面板（禁用状态下无效）；UniApp 端懒加载模式下首次打开会请求根级选项 |
+| `close` | - | 关闭选择面板；关闭前未确认的选择不会提交 |
+| `clear` | - | 清空选中值与展开路径，并触发 `update:modelValue` 与 `change` 事件（空数组） |
+
+## 自定义样式（ui）
+
+| 键名 | 描述 |
 | :--- | :--- |
 | `root` | 根容器样式 |
 | `popup` | 弹窗容器样式 |

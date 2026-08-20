@@ -20,97 +20,97 @@
       "name": "modelValue",
       "type": "number",
       "required": false,
-      "description": "单值模式下绑定值。",
+      "description": "v-model 绑定的值，单值模式使用",
       "default": "0"
     },
     {
       "name": "values",
       "type": "number[]",
       "required": false,
-      "description": "范围模式下绑定值（`v-model:values`）。",
+      "description": "v-model:values 绑定的值，范围模式使用",
       "default": "() => [0, 0]"
     },
     {
       "name": "min",
       "type": "number",
       "required": false,
-      "description": "最小值。",
+      "description": "最小值",
       "default": "0"
     },
     {
       "name": "max",
       "type": "number",
       "required": false,
-      "description": "最大值。",
+      "description": "最大值",
       "default": "100"
     },
     {
       "name": "step",
       "type": "number",
       "required": false,
-      "description": "步长。",
+      "description": "步长",
       "default": "1"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用。",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "trackHeight",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "线的高度",
       "default": "4"
     },
     {
       "name": "showValue",
       "type": "boolean",
       "required": false,
-      "description": "是否显示当前值。",
+      "description": "是否显示当前值",
       "default": "false"
     },
     {
       "name": "range",
       "type": "boolean",
       "required": false,
-      "description": "是否启用范围模式。",
+      "description": "是否启用范围选择",
       "default": "false"
     },
     {
       "name": "size",
       "type": "typeof sliderSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof sliderColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "颜色",
       "default": "'primary'"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    inner: ClassValue\n    picker: ClassValue\n    track: ClassValue\n    progress: ClassValue\n    thumb: ClassValue\n    thumbActive: ClassValue\n    value: ClassValue\n  }>",
       "required": false,
-      "description": "",
+      "description": "样式覆盖",
       "default": "() => ({})"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义 class"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名"
     }
   ],
   "events": [
@@ -124,21 +124,21 @@
     },
     {
       "name": "change",
-      "description": "number[]"
+      "description": "拖拽结束后的最终值。"
     },
     {
       "name": "changing",
-      "description": "number[]"
+      "description": "拖拽中的实时值。"
     }
   ],
   "slots": [
     {
       "name": "thumb",
-      "description": "自定义滑块。"
+      "description": "自定义滑块本体（单值模式生效），需将 `value.style` 应用到自定义节点以保持定位。"
     },
     {
       "name": "value",
-      "description": "自定义数值显示。"
+      "description": "自定义数值显示，`value` 为当前值文本（范围模式为 `起 - 止`）。"
     }
   ],
   "exposes": [],
@@ -191,8 +191,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0f21c4f8bf5e17da6d004bcac6e0bdd0a4346838",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "69415df1a74cab29477ed2fef99a564b2e8aba08",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

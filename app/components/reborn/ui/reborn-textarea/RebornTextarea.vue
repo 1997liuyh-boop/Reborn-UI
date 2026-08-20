@@ -47,9 +47,13 @@ const props = withDefaults(defineProps<RebornTextareaProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 输入内容变化时触发，同步 v-model 绑定值 */
   (e: "update:modelValue", value: string): void;
+  /** 输入内容变化时触发，参数为最新文本 */
   (e: "change", value: string): void;
+  /** 输入框获得焦点时触发 */
   (e: "focus", event: FocusEvent): void;
+  /** 输入框失去焦点时触发，并执行表单 blur 校验 */
   (e: "blur", event: FocusEvent): void;
 }>();
 

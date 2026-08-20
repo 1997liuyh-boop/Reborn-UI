@@ -432,7 +432,14 @@ const isItemSelected = (item: CascaderOption, listIndex: number) => {
     return activePath.value[listIndex] === item[props.valueKey]
 }
 
-defineExpose({ open, close, clear })
+defineExpose({
+    /** 打开底部弹出层（禁用状态下无效）；懒加载模式下首次打开会请求根级选项 */
+    open,
+    /** 关闭底部弹出层；关闭前未确认的浏览/勾选不会提交 */
+    close,
+    /** 清空选中值与展开路径，并触发 update:modelValue 与 change 事件（空数组） */
+    clear,
+})
 </script>
 
 <template>

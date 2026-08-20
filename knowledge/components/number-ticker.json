@@ -24,7 +24,7 @@
       "name": "direction",
       "type": "\"up\" | \"down\"",
       "required": false,
-      "description": "up",
+      "description": "计数方向。",
       "default": "\"up\""
     },
     {
@@ -102,8 +102,8 @@
   },
   "docPath": "content/2.components/text-animations/number-ticker.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "e85e8642c8630d9837d90229ef2ccd013304f903",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "19ea10b70f31af9ce5745a0645b0c4cb1c833f3a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

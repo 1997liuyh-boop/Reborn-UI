@@ -30,28 +30,28 @@
       "name": "direction",
       "type": "PatternBackgroundDirection",
       "required": false,
-      "description": "\"left\" \\",
+      "description": "动画滚动方向，仅在 `animate` 开启时生效。",
       "default": "() => PATTERN_BACKGROUND_DIRECTION.Top"
     },
     {
       "name": "variant",
       "type": "PatternBackgroundVariants[\"variant\"]",
       "required": false,
-      "description": "\"big-dot\"",
+      "description": "图案样式：网格、点阵或大点阵。",
       "default": "() => PATTERN_BACKGROUND_VARIANT.Grid"
     },
     {
       "name": "size",
       "type": "PatternBackgroundVariants[\"size\"]",
       "required": false,
-      "description": "\"md\" \\",
+      "description": "图案单元尺寸（对应 background-size 8px 到 40px）。",
       "default": "undefined"
     },
     {
       "name": "mask",
       "type": "PatternBackgroundMaskVariants[\"mask\"]",
       "required": false,
-      "description": "\"ellipse\"",
+      "description": "遮罩样式，把图案向页面背景色渐隐（居中椭圆或顶部椭圆）。",
       "default": "undefined"
     },
     {
@@ -105,8 +105,8 @@
   },
   "docPath": "content/2.components/special-effects/pattern-background.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "8718d574cadf4cacbb18fcbd204b970fcdebecaa",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "7e5a7e474e1eca84eec0e689404c9273c763bd6b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

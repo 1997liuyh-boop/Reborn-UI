@@ -20,14 +20,14 @@
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "细粒度样式覆盖对象，按 root/inner/list/item/value/cursor 键位重写对应节点类名",
       "default": "() => ({})"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名（等价于 web 端的 class）"
     },
     {
       "name": "modelValue",
@@ -61,28 +61,28 @@
       "name": "inputType",
       "type": "'text' | 'number' | 'digit'",
       "required": false,
-      "description": "\"number\"",
+      "description": "输入类型；number 时自动过滤非数字字符。digit 仅 uniapp 端支持。",
       "default": "'number'"
     },
     {
       "name": "size",
       "type": "typeof inputOtpSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸大小。",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof inputOtpColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "颜色主题。",
       "default": "'primary'"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名"
     }
   ],
   "events": [
@@ -92,7 +92,7 @@
     },
     {
       "name": "done",
-      "description": "输入完成（达到指定位数）。"
+      "description": "输入完成（达到指定位数），并自动收起焦点/键盘。"
     },
     {
       "name": "focus",
@@ -134,7 +134,7 @@
   "pitfalls": [
     "web、uniapp 双端可用。",
     "length 默认 4 位；输满指定位数触发 done 事件。",
-    "inputType 默认 number，可选 text/digit。",
+    "inputType 默认 number；web 端支持 text/number，uniapp 端额外支持 digit。",
     "无插槽，格子样式通过 ui/size/color 配置。"
   ],
   "dependencies": [
@@ -157,8 +157,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-input-otp.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0a9ed9fc249f4bd6701d6fe6351023e0087d6cc4",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "fd42a0d6990d4924f85d0ddca3db4069f4c1d3a5",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

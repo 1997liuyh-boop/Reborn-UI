@@ -15,16 +15,17 @@ defineOptions({
 export interface SwitchProps {
   modelValue?: any
   defaultValue?: any
-  activeValue?: any
-  inactiveValue?: any
+  activeValue?: any // 打开状态对应的绑定值，默认 true；配合 inactiveValue 可绑定字符串/数字等任意值
+  inactiveValue?: any // 关闭状态对应的绑定值，默认 false
   activeLabel?: string
   inactiveLabel?: string
   disabled?: boolean
-  loading?: boolean
+  loading?: boolean // 是否加载中：轨道内显示加载图标且开关不可点击（与 disabled 相互独立）
   size?: typeof switchSizes[number]
   color?: typeof switchColors[number]
-  beforeChange?: () => boolean | Promise<boolean>
-  customClass?: any
+  beforeChange?: () => boolean | Promise<boolean> // 切换前拦截钩子：返回 false、Promise 解析为 false 或 Promise reject 时取消本次切换，常用于二次确认/异步校验
+  customClass?: any // 追加到根节点（wrapper）的自定义类名
+  /** 覆盖内部各区域样式类：wrapper 根容器、track 轨道、thumb 滑块、loading 加载图标、activeLabel/inactiveLabel 两侧文案 */
   ui?: Partial<{
     wrapper: ClassValue
     input: ClassValue
@@ -46,7 +47,9 @@ const props = withDefaults(defineProps<SwitchProps>(), {
 })
 
 const emit = defineEmits<{
+  /** 切换完成后更新绑定值，参数为 activeValue 或 inactiveValue */
   (e: 'update:modelValue', value: any): void
+  /** 状态切换后触发（beforeChange 拦截通过后才会触发），参数与 update:modelValue 相同 */
   (e: 'change', value: any): void
 }>()
 
@@ -125,6 +128,7 @@ watch(
 
 const isFocused = ref(false)
 defineExpose({
+  /** `() => void` 标记聚焦态（为根节点追加 is-focused 类名）；uniapp 端无原生焦点行为 */
   focus: () => {
     isFocused.value = true
   },

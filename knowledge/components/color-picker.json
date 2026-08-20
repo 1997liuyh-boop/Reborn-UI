@@ -19,14 +19,14 @@
       "name": "value",
       "type": "`#${string}` | HsvaColor | HslaColor | RgbaColor",
       "required": false,
-      "description": "HslaColor \\",
-      "default": "HsvaColor \\"
+      "description": "当前颜色值，支持多种格式。",
+      "default": "undefined"
     },
     {
       "name": "type",
       "type": "\"hsl\" | \"hsla\" | \"rgb\" | \"rgba\" | \"hex\"",
       "required": false,
-      "description": "'rgb' \\",
+      "description": "输入中默认显示的颜色格式。",
       "default": "\"hsl\""
     },
     {
@@ -68,13 +68,15 @@
       "name": "color",
       "type": "HsvaColor",
       "required": true,
-      "description": ""
+      "description": "用于计算无障碍对比度的当前颜色（HSVA 对象），变化时自动重新计算 AA/AAA 达标状态",
+      "default": "必填"
     },
     {
       "name": "label",
       "type": "\"hsl\" | \"hsla\" | \"rgb\" | \"rgba\"",
       "required": true,
-      "description": ""
+      "description": "数字输入组的颜色格式：hsl/hsla 显示 H/S/L 通道，rgb/rgba 显示 R/G/B 通道；带 a 的格式追加透明度输入（0-100）",
+      "default": "必填"
     }
   ],
   "events": [
@@ -92,7 +94,7 @@
   "slots": [
     {
       "name": "default",
-      "description": ""
+      "description": "触发器内容（如一个按钮），点击后切换弹层开关；组件自身不渲染默认触发器，必须提供。"
     }
   ],
   "exposes": [],
@@ -135,8 +137,8 @@
   },
   "docPath": "content/2.components/input-and-forms/color-picker.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "3e2247a2b95968091e6d1d9ee3c0abbc03501c4d",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "ddc53aa125e4ec9c66bfb9a954438197b6dd0d66",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

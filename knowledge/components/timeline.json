@@ -50,12 +50,7 @@
     }
   ],
   "events": [],
-  "slots": [
-    {
-      "name": "item.id",
-      "description": ""
-    }
-  ],
+  "slots": [],
   "exposes": [],
   "examples": [
     {
@@ -94,8 +89,8 @@
   },
   "docPath": "content/2.components/miscellaneous/timeline.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "2754e599a2819ba5eec8b715f964e10ebe74b7d1",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "1d93aebb21166e01e925f020f3718e71f07d2fba",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

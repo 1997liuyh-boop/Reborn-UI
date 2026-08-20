@@ -30,7 +30,18 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
   readonly: true,
 })
 
-const emit = defineEmits(['update:modelValue', 'change', 'input', 'blur', 'focus'])
+const emit = defineEmits([
+  /** 数值经 min/max 修正且与旧值不同时触发，回调为最新数值 */
+  'update:modelValue',
+  /** 与 update:modelValue 同时触发，回调为修正后的最新数值 */
+  'change',
+  /** 输入框键入时透传原生 input 事件对象（此时数值尚未经 min/max 修正） */
+  'input',
+  /** 输入框失焦并完成数值修正后触发，透传原生事件对象 */
+  'blur',
+  /** 输入框聚焦事件（当前版本模板未绑定，预留） */
+  'focus',
+])
 
 export interface InputNumberProps {
   modelValue?: number
@@ -41,6 +52,7 @@ export interface InputNumberProps {
   disabled?: boolean
   size?: typeof inputNumberSizes[number]
   color?: typeof inputNumberColors[number]
+  /** 外形轮廓：circle 为胶囊圆角，square 为方角 */
   shape?: typeof inputNumberShapes[number]
   ui?: Partial<{
     wrapper: ClassValue
@@ -49,9 +61,13 @@ export interface InputNumberProps {
     divider: ClassValue
     icon: ClassValue
   }>
+  /** 是否允许直接在输入框键入（与原生 readonly 语义相反）：默认 true 可键入，设为 false 后输入框只读、仅能通过按钮增减 */
   readonly?: boolean
+  /** 输入框占位文本 */
   placeholder?: string
+  /** 键盘类型：number 为整数数字键盘，digit 为带小数点的数字键盘（digit 模式下数值自动保留两位小数） */
   inputType?: 'digit' | 'number'
+  /** 追加到根节点的自定义类名（等价于 web 端的 class） */
   customClass?: any
 }
 

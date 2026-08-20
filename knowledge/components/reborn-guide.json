@@ -18,7 +18,7 @@
       "name": "current",
       "type": "number",
       "required": false,
-      "description": "双向绑定值",
+      "description": "当前步骤（支持 v-model）",
       "default": "undefined",
       "vModel": true
     },
@@ -26,7 +26,7 @@
       "name": "defaultCurrent",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "非受控当前步骤",
       "default": "-1"
     },
     {
@@ -40,28 +40,28 @@
       "name": "mode",
       "type": "\"popup\" | \"dialog\"",
       "required": false,
-      "description": "'popup'",
+      "description": "引导框类型",
       "default": "\"popup\""
     },
     {
       "name": "hideCounter",
       "type": "boolean",
       "required": false,
-      "description": "隐藏计数器",
+      "description": "是否隐藏计数器",
       "default": "false"
     },
     {
       "name": "hidePrev",
       "type": "boolean",
       "required": false,
-      "description": "隐藏上一步按钮",
+      "description": "是否隐藏上一步按钮",
       "default": "false"
     },
     {
       "name": "hideSkip",
       "type": "boolean",
       "required": false,
-      "description": "隐藏跳过按钮",
+      "description": "是否隐藏跳过按钮",
       "default": "false"
     },
     {
@@ -117,14 +117,14 @@
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "自定义类名",
       "default": "undefined"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    overlay: ClassValue;\n    highlightMask: ClassValue;\n    guideBox: ClassValue;\n    guideArrow: ClassValue;\n    guideHeader: ClassValue;\n    guideTitle: ClassValue;\n    guideBody: ClassValue;\n    guideFooter: ClassValue;\n    counter: ClassValue;\n    buttonGroup: ClassValue;\n    skipLink: ClassValue;\n    dialogOverlay: ClassValue;\n    dialogBox: ClassValue;\n  }>",
       "required": false,
-      "description": "",
+      "description": "UI 局部重写",
       "default": "() => ({})"
     }
   ],
@@ -161,34 +161,26 @@
   ],
   "slots": [
     {
-      "name": "activeStep.content",
-      "description": ""
-    },
-    {
       "name": "counter",
       "description": "自定义计数器"
-    },
-    {
-      "name": "activeStep.highlightContent",
-      "description": ""
     }
   ],
   "exposes": [
     {
       "name": "next",
-      "description": ""
+      "description": "进入下一步"
     },
     {
       "name": "prev",
-      "description": ""
+      "description": "退回上一步"
     },
     {
       "name": "finish",
-      "description": ""
+      "description": "完成引导"
     },
     {
       "name": "skip",
-      "description": ""
+      "description": "跳过引导"
     }
   ],
   "examples": [
@@ -233,8 +225,8 @@
   },
   "docPath": "content/2.components/button/reborn-guide.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "2ab34f9fee4c9c7433878a528718c61d032e8658",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "1d5ce367ccf6ccad7180d8300a5968f897ab182b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -18,7 +18,7 @@
       "name": "class",
       "type": "HTMLAttributes[\"class\"]",
       "required": false,
-      "description": "根容器的额外 CSS 类。",
+      "description": "追加到根容器的额外 CSS 类。",
       "default": "\"\""
     }
   ],
@@ -58,8 +58,8 @@
   },
   "docPath": "content/2.components/input-and-forms/halo-search.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "d8d71819ee10404f50d9606e7157cb0a75a98ea2",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "552d5feace34d5a23ade06be7ca4fa5b19a6b37a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -35,6 +35,7 @@ export interface FromProps {
   disabled?: boolean // 是否禁用
   scrollToError?: boolean // 是否滚动到错误信息
   trigger?: 'blur' | 'change' | 'none' | Array<'blur' | 'change'> // 触发验证
+  /** 覆盖内部各区域样式类，目前仅支持 root（根节点） */
   ui?: Partial<{
     root: ClassValue
   }>
@@ -248,13 +249,21 @@ function getField(prop: string) {
 }
 
 defineExpose({
+  /** `(callback?: (valid, errors) => void) => Promise<boolean>` 校验整个表单；Promise 始终 resolve 是否通过（不 reject），失败且 scrollToError 开启时自动滚动到第一个错误字段 */
   validate,
+  /** `(prop: string) => Promise<string | null>` 校验单个字段（支持 `contacts-0-name` 形式的嵌套路径），返回错误信息，通过时为 null */
   validateField,
+  /** `(props?: string | string[]) => void` 清除校验错误提示；不传清除全部字段，传字段名或数组仅清除对应字段（不重置值） */
   clearValidate,
+  /** `() => void` 将所有字段重置为初始值快照（挂载时自动记录）并清除全部校验结果 */
   resetFields,
+  /** `(prop: string) => void` 滚动页面使指定字段进入视口居中位置（H5 平滑滚动，小程序/APP 使用 pageScrollTo） */
   scrollToField,
+  /** 已注册字段名（prop）的 Set 集合，只读，用于检查字段注册情况 */
   fields,
+  /** `(prop: string) => 实例 | undefined` 按 prop 获取已注册的 FormItem 字段实例 */
   getField,
+  /** `(values: any) => void` 重设 resetFields 使用的初始值快照（深拷贝存储，挂载时已自动记录一次） */
   setInitialValues,
 })
 </script>

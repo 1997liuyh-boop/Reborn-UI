@@ -82,7 +82,9 @@ const ui = computed(() => {
 })
 
 defineExpose({
+  /** 当前表单项绑定的字段名，供父级 Form 定位字段实例（validateField/scrollToField 等依赖它） */
   prop: props.prop,
+  /** `(callback: (rect) => void) => void` 以回调返回表单项根节点的位置与尺寸（基于 uni.createSelectorQuery），校验失败滚动定位时使用 */
   getBoundingClientRect,
 })
 </script>

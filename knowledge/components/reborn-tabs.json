@@ -24,7 +24,7 @@
       "name": "list",
       "type": "TabsItem[]",
       "required": true,
-      "description": "",
+      "description": "modelValue: string | number;",
       "default": "() => []"
     },
     {
@@ -38,7 +38,7 @@
       "name": "color",
       "type": "typeof TabsColors[number]",
       "required": false,
-      "description": "",
+      "description": "是否填充标签",
       "default": "TabsColors[0]"
     },
     {
@@ -73,7 +73,7 @@
       "name": "ui",
       "type": "{\n    tabs?: string\n    scrollbar?: string\n    inner?: string\n    item?: string\n    text?: string\n    line?: string\n    slider?: string\n    active?: string\n  }",
       "required": false,
-      "description": ""
+      "description": "对齐方式"
     },
     {
       "name": "modelValue",
@@ -278,8 +278,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-tabs.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "546b2ccbfe93c6d79a94afe30312b1e16fe7b600",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "3db7caf7c434aac793a5e9061ecfa3cdf696f509",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -28,6 +28,10 @@ navigation:
 | `shortcuts` | `Array<{text, value}>` | `[]` | 快捷选项配置，支持静态日期或返回日期的函数。 |
 | `start` | `string` | `'1970-01-01'` | 可选日期的最早边界（含）。 |
 | `end` | `string` | `'2099-12-31'` | 可选日期的最晚边界（含）。 |
+| `disabledHours` | `(role?: 'start' \| 'end', comparingValue?: string \| null) => number[]` | - | 返回需禁用的小时数组；仅含时间的类型（`datetime` / `datetimerange`）生效，范围模式可按 `role` 区分开始/结束面板。 |
+| `disabledMinutes` | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]` | - | 返回需禁用的分钟数组，入参为当前选中的小时；范围模式可按 `role` 区分开始/结束面板。 |
+| `disabledSeconds` | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]` | - | 返回需禁用的秒数组，入参为当前选中的时、分；范围模式可按 `role` 区分开始/结束面板。 |
+| `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]` | - | 返回需禁用的毫秒数组，入参为当前选中的时、分、秒；范围模式可按 `role` 区分开始/结束面板。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 整体面板尺寸。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 交互高亮颜色。 |
 | `shape` | `'square' \| 'circle'` | `'square'` | 选中项的形状。 |

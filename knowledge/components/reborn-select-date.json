@@ -119,7 +119,7 @@
       "name": "type",
       "type": "SelectDateType",
       "required": false,
-      "description": "'date' \\",
+      "description": "时间选择器精度级别。",
       "default": "'second'"
     },
     {
@@ -175,7 +175,7 @@
       "name": "size",
       "type": "'sm' | 'md' | 'lg'",
       "required": false,
-      "description": "'lg'",
+      "description": "尺寸。",
       "default": "'md'",
       "options": [
         "sm",
@@ -187,7 +187,7 @@
       "name": "color",
       "type": "'primary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'",
       "required": false,
-      "description": "'info' \\",
+      "description": "选择器的主题颜色。",
       "default": "'primary'",
       "options": [
         "primary",
@@ -209,55 +209,55 @@
       "name": "popupUi",
       "type": "Partial<PopupUiShape>",
       "required": false,
-      "description": "",
+      "description": "底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域",
       "default": "() => ({})"
     },
     {
       "name": "pickerUi",
       "type": "Partial<PickerUiShape>",
       "required": false,
-      "description": "",
+      "description": "滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域",
       "default": "() => ({})"
     },
     {
       "name": "ui",
       "type": "Partial<SelectDateUiShape>",
       "required": false,
-      "description": "",
+      "description": "组件自身样式覆盖对象，可重写范围选择区、快捷选项、底部按钮等区域",
       "default": "() => ({})"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到触发器根元素的自定义类名"
     },
     {
       "name": "bordered",
       "type": "boolean",
       "required": false,
-      "description": "是否显示边框。",
+      "description": "是否显示边框",
       "default": "true"
     },
     {
       "name": "showArrow",
       "type": "boolean",
       "required": false,
-      "description": "是否显示右侧箭头图标。",
+      "description": "是否显示箭头",
       "default": "true"
     },
     {
       "name": "arrowAnimation",
       "type": "boolean",
       "required": false,
-      "description": "展开时箭头是否旋转动画。",
+      "description": "展开时箭头是否旋转",
       "default": "true"
     },
     {
       "name": "portal",
       "type": "SelectTriggerProps[\"portal\"]",
       "required": false,
-      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。",
+      "description": "浮层是否传送到 body（默认 true）。 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。",
       "default": "true"
     }
   ],
@@ -282,45 +282,45 @@
   "slots": [
     {
       "name": "tag",
-      "description": ""
+      "description": "自定义选择后的展示标签（UniApp 端）。"
     },
     {
       "name": "cover",
-      "description": ""
+      "description": "覆盖整个触发器内容的插槽，完全替代文本和图标。"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "自定义触发器内容。"
     }
   ],
   "exposes": [
     {
       "name": "open",
-      "description": ""
+      "description": "打开底部选择弹出层（禁用状态下无效）；可传入回调，在确认时接收选中值"
     },
     {
       "name": "close",
-      "description": ""
+      "description": "关闭底部选择弹出层（不触发确认）"
     },
     {
       "name": "clear",
-      "description": ""
+      "description": "清空已选值并触发 change / range-change 事件"
     },
     {
       "name": "confirm",
-      "description": ""
+      "description": "以当前滚轮选中值执行确认逻辑（范围不完整或倒序时会提示并中断），随后关闭弹出层"
     },
     {
       "name": "setValue",
-      "description": ""
+      "description": "设置非范围模式的当前选中值（空值时重置为当前时间，仅更新内部状态，不触发事件）"
     },
     {
       "name": "setValues",
-      "description": ""
+      "description": "设置范围模式的开始/结束值数组（仅更新内部状态，不触发事件）"
     },
     {
       "name": "setRange",
-      "description": ""
+      "description": "切换范围模式当前编辑项：0 为开始时间，1 为结束时间"
     }
   ],
   "examples": [
@@ -387,8 +387,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-select-date.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "d97900e5538f0cdd9c679bf3cb5b1f4875681822",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "b90b34aaf115b31d38084adaf9051abf4e942dce",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

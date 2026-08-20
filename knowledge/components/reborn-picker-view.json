@@ -18,49 +18,49 @@
       "name": "color",
       "type": "typeof pickerColors[number]",
       "required": false,
-      "description": "'info' \\",
+      "description": "颜色",
       "default": "'primary'"
     },
     {
       "name": "headers",
       "type": "string[]",
       "required": false,
-      "description": "各列顶部标题，超出列数的部分会被截断。",
+      "description": "表头",
       "default": "() => []"
     },
     {
       "name": "value",
       "type": "number[]",
       "required": false,
-      "description": "各列选中项的索引数组，支持 `v-model:value` 双向绑定。",
+      "description": "当前选中索引",
       "default": "() => []"
     },
     {
       "name": "columns",
       "type": "SelectOption[][]",
       "required": false,
-      "description": "列数据，二维数组的每个子数组渲染为一列。",
+      "description": "列数据",
       "default": "() => []"
     },
     {
       "name": "itemHeight",
       "type": "number",
       "required": false,
-      "description": "单个选项行高，单位 px；iOS App 默认 50，其余平台默认 42。",
+      "description": "每项高度",
       "default": "isAppIOS() ? 50 : 42"
     },
     {
       "name": "height",
       "type": "number",
       "required": false,
-      "description": "选择区域整体高度，单位 px。",
+      "description": "整体高度",
       "default": "300"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    header: ClassValue\n    headerText: ClassValue\n    pickerContainer: ClassValue\n    item: ClassValue\n    itemText: ClassValue\n    indicator: ClassValue\n  }>",
       "required": false,
-      "description": "按内部结构键覆盖类名，见下方「自定义样式（ui）」。"
+      "description": "样式覆盖"
     }
   ],
   "events": [
@@ -138,8 +138,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-picker-view.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "8d61477680b5ee2624bff02ce8ece8086b95b7be",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "7b3406bb3b13a10b3a67f351b89ec93a0e47539d",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

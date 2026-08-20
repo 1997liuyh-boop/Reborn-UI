@@ -103,6 +103,7 @@ export interface SelectProps {
     clearIcon: ClassValue
     arrowIcon: ClassValue
   }>
+  /** 底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域 */
   popupUi?: Partial<{
     wrapper: ClassValue
     mask: ClassValue
@@ -113,6 +114,7 @@ export interface SelectProps {
     title: ClassValue
     container: ClassValue
   }>
+  /** 滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域 */
   pickerUi?: Partial<{
     wrapper: ClassValue
     header: ClassValue
@@ -343,7 +345,9 @@ onMounted(() => {
 })
 
 defineExpose({
+  /** 打开底部选择弹出层；可传入回调，在点击确认时接收选中值 */
   open,
+  /** 关闭底部选择弹出层 */
   close,
 })
 </script>

@@ -44,6 +44,8 @@ navigation:
 | `showConfirm` | `boolean`                                                                                                      | `true`                         | 是否显示弹出层确认按钮。                                                      | UniApp |
 | `cancelText`  | `string`                                                                                                       | `'取消'`                       | 弹出层取消按钮文本。                                                          | UniApp |
 | `showCancel`  | `boolean`                                                                                                      | `true`                         | 是否显示弹出层取消按钮。                                                      | UniApp |
+| `popupUi`     | `Partial<PopupUI>`                                                                                             | -                              | 底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域。键位见下方 UniApp `popupUi`。 | UniApp |
+| `pickerUi`    | `Partial<PickerUI>`                                                                                            | -                              | 滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域。键位见下方 UniApp `pickerUi`。 | UniApp |
 
 ## Emits
 

@@ -4,6 +4,7 @@ import { hsvaToRgba } from "@uiw/color-convert";
 import { computed, ref, watch } from "vue";
 
 export interface ContrastRatioProps {
+  /** 用于计算无障碍对比度的当前颜色（HSVA 对象），变化时自动重新计算 AA/AAA 达标状态 */
   color: HsvaColor;
 }
 

@@ -13,97 +13,97 @@
       "name": "splitButton",
       "type": "boolean",
       "required": false,
-      "description": "是否呈现为按钮组模式，左侧为功能按钮，右侧为触发下拉的箭头按钮",
+      "description": "是否呈现为按钮组（左侧功能按钮 + 右侧触发按钮）",
       "default": "false"
     },
     {
       "name": "hideOnClick",
       "type": "boolean",
       "required": false,
-      "description": "点击菜单项后是否自动隐藏下拉菜单",
+      "description": "点击菜单项后是否自动隐藏下拉",
       "default": "true"
     },
     {
       "name": "trigger",
       "type": "\"hover\" | \"click\"",
       "required": false,
-      "description": "'hover'",
+      "description": "触发方式：hover 悬浮 / click 点击",
       "default": "\"hover\""
     },
     {
       "name": "openDelay",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "hover 模式下打开延迟（ms），避免误触",
       "default": "100"
     },
     {
       "name": "closeDelay",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "hover 模式下关闭延迟（ms），允许鼠标移回",
       "default": "200"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用下拉菜单",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "size",
       "type": "(typeof dropdownSizes)[number]",
       "required": false,
-      "description": "'lg'",
+      "description": "尺寸",
       "default": "\"md\""
     },
     {
       "name": "color",
       "type": "(typeof dropdownColors)[number]",
       "required": false,
-      "description": "'success' \\",
+      "description": "主题颜色",
       "default": "\"primary\""
     },
     {
       "name": "placement",
       "type": "\"bottom-start\" | \"bottom\" | \"bottom-end\" | \"top-start\" | \"top\" | \"top-end\"",
       "required": false,
-      "description": "'bottom-end' \\",
+      "description": "弹出位置",
       "default": "\"bottom-start\""
     },
     {
       "name": "portal",
       "type": "SelectTriggerProps[\"portal\"]",
       "required": false,
-      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪",
+      "description": "浮层是否传送到 body（默认 true）。 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。",
       "default": "true"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义类名"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue;\n    trigger: ClassValue;\n    splitMain: ClassValue;\n    splitArrow: ClassValue;\n    dropdown: ClassValue;\n    item: ClassValue;\n    divider: ClassValue;\n    icon: ClassValue;\n    label: ClassValue;\n  }>",
       "required": false,
-      "description": "UI 局部重写配置，详见下方 UI 对象说明",
+      "description": "UI 局部重写",
       "default": "{}"
     },
     {
       "name": "command",
       "type": "string",
       "required": false,
-      "description": "点击时通过 RebornDropdown 的 `command` 事件传递的标识值",
+      "description": "点击时传递给 command 事件的标识",
       "default": "\"\""
     },
     {
       "name": "divided",
       "type": "boolean",
       "required": false,
-      "description": "是否在该菜单项上方显示一条分隔线",
+      "description": "是否在该项上方显示分隔线",
       "default": "false"
     }
   ],
@@ -111,12 +111,12 @@
     {
       "name": "command",
       "payload": "(e: \"command\", key: string): void;",
-      "description": "菜单项被点击时触发"
+      "description": "菜单项被点击时触发，参数为该项的 command 值"
     },
     {
       "name": "visible-change",
       "payload": "(e: \"visible-change\", visible: boolean): void;",
-      "description": "下拉面板展开/收起状态变化时触发"
+      "description": "下拉展开/收起状态变化"
     }
   ],
   "slots": [
@@ -194,8 +194,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-dropdown.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "d76a321bbbfbe4064a668d9b30cf296fa8e01284",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "bfc74dc207069a3801b30a915a6f27d711274b45",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

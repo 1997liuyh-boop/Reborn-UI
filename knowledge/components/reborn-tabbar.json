@@ -133,38 +133,38 @@
       "name": "title",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "标签页标题"
     },
     {
       "name": "name",
       "type": "number | string",
       "required": false,
-      "description": ""
+      "description": "唯一标识符"
     },
     {
       "name": "icon",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "图标名称或图片链接"
     },
     {
       "name": "inactive",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "未选中时的图标名称或图片链接"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "imageSize",
       "type": "number",
       "required": false,
-      "description": ""
+      "description": "图片大小"
     }
   ],
   "events": [
@@ -236,8 +236,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-tabbar.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "5bbc211e0ad0da55d87a2f1e30f54d686a69fe56",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "03a97744a0470fe7f3a3b36fbd6ba3dad028f385",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

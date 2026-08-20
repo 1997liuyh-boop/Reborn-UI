@@ -14,42 +14,42 @@
       "name": "scrollTop",
       "type": "number",
       "required": false,
-      "description": "当前页面的滚动距离。通常通过 `onPageScroll` 传入。",
+      "description": "当前页面的滚动距离",
       "default": "0"
     },
     {
       "name": "threshold",
       "type": "number",
       "required": false,
-      "description": "滚动多少距离后显示回到顶部按钮。",
+      "description": "滚动多少距离后显示",
       "default": "300"
     },
     {
       "name": "bottom",
       "type": "number",
       "required": false,
-      "description": "底部距离 (px)。",
+      "description": "底部距离 (px)",
       "default": "20"
     },
     {
       "name": "duration",
       "type": "number",
       "required": false,
-      "description": "滚动回顶部的动画时长 (ms)。",
+      "description": "滚动动画时长 (ms)",
       "default": "300"
     },
     {
       "name": "isTab",
       "type": "boolean",
       "required": false,
-      "description": "是否是 TabBar 页面。如果是，组件会自动抬高 50px 以避开 TabBar。",
+      "description": "是否是 TabBar 页面 (如果是，会自动抬高 50px)",
       "default": "false"
     },
     {
       "name": "safeArea",
       "type": "boolean",
       "required": false,
-      "description": "是否适配安全区域（避让底部黑条）。",
+      "description": "是否适配安全区域",
       "default": "true"
     },
     {
@@ -137,8 +137,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-back-top.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "1d1ed29c94298c1557ef32a032c2b4408c34de09",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "9e14956ca87b9fae6a9ba49b969e7e7ba98ca6a1",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

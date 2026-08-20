@@ -10,9 +10,9 @@
     "在连续区间内取值改用 reborn-slider。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用。",
-    "min 默认 0、max 默认 200、step 默认 1，业务范围不同时必须显式传入。",
-    "readonly 默认 true，即中间输入区默认不可直接键入，仅靠按钮增减。",
-    "inputType 仅支持 digit/number 两种。"
+    "web、uniapp 双端可用，但插槽名不同：web 端为 decrement/increment，uniapp 端为 decrease-icon/increase-icon。",
+    "uniapp 端 min 默认 0、max 默认 200（web 端两者无默认值，不传即不限制），step 默认 1，业务范围不同时必须显式传入。",
+    "readonly（仅 uniapp）与原生语义相反：默认 true 表示允许直接键入，设为 false 后输入框只读、仅能通过按钮增减。",
+    "inputType（仅 uniapp）仅支持 digit/number 两种；digit 模式下数值自动保留两位小数。"
   ]
 }

@@ -58,6 +58,33 @@ function trailingComment(parsed: ParsedScript, node: OxcNode): string {
   return "";
 }
 
+/** 工具类注释（lint 指令等）不作为成员描述 */
+function isDirectiveComment(text: string): boolean {
+  return /^(?:eslint-|@ts-|prettier-|oxlint-|v8 )/.test(text);
+}
+
+/** 取节点上方紧邻的注释（JSDoc 块或 // 行注释），与节点之间只允许空白 */
+function leadingComment(parsed: ParsedScript, node: OxcNode): string {
+  let best: ParsedScript["comments"][number] | null = null;
+  for (const c of parsed.comments) {
+    if (c.end <= node.start && (!best || c.end > best.end)) best = c;
+  }
+  if (!best) return "";
+  if (!/^\s*$/.test(parsed.source.slice(best.end, node.start))) return "";
+  const text = best.value
+    .split("\n")
+    .map((line) => line.replace(/^\s*\*+\s?/, "").trim())
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  return isDirectiveComment(text) ? "" : text;
+}
+
+/** 成员描述：优先行尾注释，其次上方紧邻的 JSDoc/行注释 */
+function memberComment(parsed: ParsedScript, node: OxcNode): string {
+  return trailingComment(parsed, node) || leadingComment(parsed, node);
+}
+
 /** 深度遍历 AST，回调返回 true 时不再深入该节点 */
 function walk(node: any, visit: (n: OxcNode) => boolean | void) {
   if (!node || typeof node !== "object") return;
@@ -243,7 +270,7 @@ function memberToProp(parsed: ParsedScript, member: OxcNode): PropInfo | null {
     name,
     type: sliceNode(parsed.source, typeNode) || "unknown",
     required: !member.optional,
-    description: trailingComment(parsed, member),
+    description: memberComment(parsed, member),
   };
 }
 
@@ -355,7 +382,7 @@ function propsFromDefineProps(
         type,
         default: def,
         required,
-        description: trailingComment(objCtx, property),
+        description: memberComment(objCtx, property),
       });
     }
   }
@@ -395,7 +422,7 @@ function extractEmits(parsed: ParsedScript, resolve: ResolveCtx): EventInfo[] {
     if (arrArg?.type === "ArrayExpression") {
       for (const el of arrArg.elements ?? []) {
         if (el?.value !== undefined) {
-          events.push({ name: String(el.value), description: trailingComment(parsed, el) });
+          events.push({ name: String(el.value), description: memberComment(parsed, el) });
         }
       }
       return true;
@@ -412,7 +439,7 @@ function extractEmits(parsed: ParsedScript, resolve: ResolveCtx): EventInfo[] {
             events.push({
               name: String(literal.literal.value),
               payload: sliceNode(ctx.source, member),
-              description: trailingComment(ctx, member),
+              description: memberComment(ctx, member),
             });
           }
         }
@@ -423,7 +450,7 @@ function extractEmits(parsed: ParsedScript, resolve: ResolveCtx): EventInfo[] {
             events.push({
               name,
               payload: sliceNode(ctx.source, member.typeAnnotation?.typeAnnotation),
-              description: trailingComment(ctx, member),
+              description: memberComment(ctx, member),
             });
           }
         }
@@ -446,7 +473,7 @@ function extractSlots(parsed: ParsedScript, resolve: ResolveCtx): SlotInfo[] {
       slots.push({
         name,
         props: sliceNode(ctx.source, member.typeAnnotation?.typeAnnotation),
-        description: trailingComment(ctx, member),
+        description: memberComment(ctx, member),
       });
     }
     return true;
@@ -463,7 +490,7 @@ function extractExposes(parsed: ParsedScript): ExposeInfo[] {
     if (objArg?.type === "ObjectExpression") {
       for (const property of objArg.properties ?? []) {
         const name = property.key?.name ?? property.key?.value;
-        if (name) exposes.push({ name, description: trailingComment(parsed, property) });
+        if (name) exposes.push({ name, description: memberComment(parsed, property) });
       }
     }
     return true;
@@ -502,7 +529,9 @@ function slotsFromTemplate(template: string): SlotInfo[] {
   const seen = new Set<string>();
   for (const m of template.matchAll(/<slot\b([^>]*)>/g)) {
     const attrs = m[1] ?? "";
-    const nameMatch = attrs.match(/\bname="([^"]+)"/);
+    // :name="..." 动态命名插槽（穿透/数据驱动）无法静态识别，整个跳过
+    if (/(?:^|\s)(?::|v-bind:)name=/.test(attrs)) continue;
+    const nameMatch = attrs.match(/(?:^|\s)name="([^"]+)"/);
     const name = nameMatch ? nameMatch[1] : "default";
     if (name.startsWith(":") || seen.has(name)) continue; // 跳过动态插槽名与重复项
     seen.add(name);

@@ -17,118 +17,118 @@
       "name": "radius",
       "type": "number",
       "required": false,
-      "description": "玻璃容器圆角大小。",
+      "description": "圆角大小（px）",
       "default": "16"
     },
     {
       "name": "border",
       "type": "number",
       "required": false,
-      "description": "折射边缘宽度比例。",
+      "description": "边框厚度比例（相对于最短边）",
       "default": "0.07"
     },
     {
       "name": "lightness",
       "type": "number",
       "required": false,
-      "description": "位移贴图亮度。",
+      "description": "位移贴图的亮度（0-100）",
       "default": "50"
     },
     {
       "name": "displace",
       "type": "number",
       "required": false,
-      "description": "最终高斯模糊的位移强度。",
+      "description": "高斯模糊偏移量（feGaussianBlur stdDeviation）",
       "default": "14"
     },
     {
       "name": "blend",
       "type": "string",
       "required": false,
-      "description": "渐变混合模式。",
+      "description": "SVG 渐变混合模式",
       "default": "\"difference\""
     },
     {
       "name": "xChannel",
       "type": "\"R\" | \"G\" | \"B\"",
       "required": false,
-      "description": "\"B\"",
+      "description": "位移贴图 X 通道",
       "default": "\"R\""
     },
     {
       "name": "yChannel",
       "type": "\"R\" | \"G\" | \"B\"",
       "required": false,
-      "description": "\"B\"",
+      "description": "位移贴图 Y 通道",
       "default": "\"B\""
     },
     {
       "name": "alpha",
       "type": "number",
       "required": false,
-      "description": "玻璃主体透明度。",
+      "description": "位移贴图 alpha 透明度",
       "default": "0.93"
     },
     {
       "name": "blur",
       "type": "number",
       "required": false,
-      "description": "位移贴图模糊半径。",
+      "description": "位移贴图模糊半径（px）",
       "default": "11"
     },
     {
       "name": "rOffset",
       "type": "number",
       "required": false,
-      "description": "红色通道偏移量。",
+      "description": "红通道位移偏移量",
       "default": "0"
     },
     {
       "name": "gOffset",
       "type": "number",
       "required": false,
-      "description": "绿色通道偏移量。",
+      "description": "绿通道位移偏移量",
       "default": "10"
     },
     {
       "name": "bOffset",
       "type": "number",
       "required": false,
-      "description": "蓝色通道偏移量。",
+      "description": "蓝通道位移偏移量",
       "default": "20"
     },
     {
       "name": "scale",
       "type": "number",
       "required": false,
-      "description": "位移缩放强度。",
+      "description": "位移强度（负值向内折射）",
       "default": "-180"
     },
     {
       "name": "frost",
       "type": "number",
       "required": false,
-      "description": "玻璃磨砂层透明度。",
+      "description": "磨砂背景透明度",
       "default": "0.05"
     },
     {
       "name": "position",
       "type": "\"fixed\" | \"absolute\" | \"relative\" | \"sticky\"",
       "required": false,
-      "description": "\"relative\" \\",
+      "description": "容器定位方式 - `fixed`：全屏浮层（默认） - `absolute`：相对父容器定位 - `relative`：普通文档流",
       "default": "\"fixed\""
     },
     {
       "name": "class",
       "type": "HTMLAttributes[\"class\"]",
       "required": false,
-      "description": "内层插槽容器类名。"
+      "description": "内层插槽容器的额外 class"
     },
     {
       "name": "containerClass",
       "type": "HTMLAttributes[\"class\"]",
       "required": false,
-      "description": "外层效果容器类名。"
+      "description": "外层效果容器的额外 class"
     }
   ],
   "events": [],
@@ -175,8 +175,8 @@
   },
   "docPath": "content/2.components/special-effects/liquid-glass.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "f25f5abfb6e98291cc85085a4eef54428582360c",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "61bac90ae7cab67938551826dd155f5c5c501499",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

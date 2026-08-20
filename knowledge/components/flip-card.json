@@ -17,7 +17,7 @@
       "name": "rotate",
       "type": "\"x\" | \"y\"",
       "required": false,
-      "description": "y",
+      "description": "传入希望沿哪个轴翻转。",
       "default": "\"y\""
     },
     {
@@ -79,8 +79,8 @@
   },
   "docPath": "content/2.components/cards/flip-card.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "8ec1379c32bb8041dfdf6bdfd97ac700a2f3bb4a",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "302c17b2c59b54fd7fd4098d75acdb440687e831",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

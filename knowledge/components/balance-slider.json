@@ -17,21 +17,21 @@
       "name": "initialValue",
       "type": "number",
       "required": false,
-      "description": "滑块的初始位置（0-100）。",
+      "description": "滑块的初始位置（0-100），仅初始化时生效。",
       "default": "50"
     },
     {
       "name": "leftColor",
       "type": "string",
       "required": false,
-      "description": "滑块左侧的背景色。",
+      "description": "滑块左侧的背景色（六位十六进制）。",
       "default": "\"#e68a00\""
     },
     {
       "name": "rightColor",
       "type": "string",
       "required": false,
-      "description": "滑块右侧的背景色。",
+      "description": "滑块右侧的背景色（六位十六进制）。",
       "default": "\"#ffffff\""
     },
     {
@@ -73,7 +73,7 @@
       "name": "borderRadius",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "左右两块色带的圆角半径，单位 px",
       "default": "8"
     }
   ],
@@ -115,8 +115,8 @@
   },
   "docPath": "content/2.components/input-and-forms/balance-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "d2fafe730ae72c06c1c55455d385ca4fa1a8a06d",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "c41e11e7ed733646ee1d4742bcc230f943e33a6c",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -54,32 +54,32 @@
       "name": "overflow",
       "type": "\"hidden\" | \"visible\"",
       "required": false,
-      "description": "",
+      "description": "尺寸：sm, md, lg",
       "default": "\"visible\""
     },
     {
       "name": "disabledHours",
       "type": "(role?: TimeRangeRole, comparingValue?: string | null) => number[]",
       "required": false,
-      "description": ""
+      "description": "返回需禁用的小时数组；仅含时间的类型（datetime/datetimerange）生效，范围模式可按 role 区分开始/结束面板"
     },
     {
       "name": "disabledMinutes",
       "type": "(hour: number, role?: TimeRangeRole, comparingValue?: string | null) => number[]",
       "required": false,
-      "description": ""
+      "description": "返回需禁用的分钟数组，入参为当前选中的小时；范围模式可按 role 区分开始/结束面板"
     },
     {
       "name": "disabledSeconds",
       "type": "(hour: number, minute: number, role?: TimeRangeRole, comparingValue?: string | null) => number[]",
       "required": false,
-      "description": ""
+      "description": "返回需禁用的秒数组，入参为当前选中的时、分；范围模式可按 role 区分开始/结束面板"
     },
     {
       "name": "disabledMilliseconds",
       "type": "(hour: number, minute: number, second: number, role?: TimeRangeRole, comparingValue?: string | null) => number[]",
       "required": false,
-      "description": ""
+      "description": "返回需禁用的毫秒数组，入参为当前选中的时、分、秒；范围模式可按 role 区分开始/结束面板"
     },
     {
       "name": "color",
@@ -133,19 +133,19 @@
       "name": "ui",
       "type": "Partial<{ // 样式覆盖\n        wrapper: ClassValue;\n        container: ClassValue;\n        shortcuts: ClassValue;\n        shortcut: ClassValue;\n        yearMonthItem: ClassValue;\n        header: ClassValue;\n        navBtn: ClassValue;\n        navBtnHidden: ClassValue;\n        title: ClassValue;\n        weekdays: ClassValue;\n        days: ClassValue;\n        day: ClassValue;\n        dayActive: ClassValue;\n        dayDisabled: ClassValue;\n        dayToday: ClassValue;\n        dayHidden: ClassValue;\n        dayInRange: ClassValue;\n        yearMonthInRange: ClassValue;\n        yearMonthOutside: ClassValue;\n        grid4: ClassValue;\n        grid4Year: ClassValue;\n        grid4Month: ClassValue;\n        dateTimeHeader: ClassValue;\n        dateTimeSegment: ClassValue;\n        dateTimeSegmentActive: ClassValue;\n        dateTimeSegmentDisabled: ClassValue;\n        dateTimeSeparator: ClassValue;\n        headerActions: ClassValue;\n        content: ClassValue;\n        panelLeft: ClassValue;\n        panelRight: ClassValue;\n        icon: ClassValue;\n    }>",
       "required": false,
-      "description": "自定义内部样式覆盖。"
+      "description": "快捷选项"
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
       "payload": "(e: \"update:modelValue\", value: any): void;",
-      "description": "string[])"
+      "description": "更新绑定值。范围选择时，当两个端点都选定后触发。"
     },
     {
       "name": "change",
       "payload": "(e: \"change\", value: any): void;",
-      "description": "string[])"
+      "description": "最终确定选择值时触发。"
     }
   ],
   "slots": [],
@@ -190,8 +190,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-date-picker-panel.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "50ecd54617ce4fc412c47d122f94594266270236",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "1bf64a3393aadd9d425ec1943aa1c8406837868e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

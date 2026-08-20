@@ -37,29 +37,49 @@ export type InputUI = {
 }
 
 export interface InputProps {
+  /** 输入框绑定值（v-model） */
   modelValue?: string | number
+  /** 非受控模式下的初始值，未绑定 modelValue 时生效 */
   defaultValue?: string | number
   placeholder?: string
   disabled?: boolean
   readonly?: boolean
   type?: InputType
+  /** 尺寸：sm/md/lg，影响高度与字号 */
   size?: typeof inputSizes[number]
+  /** 追加到根节点 wrapper 上的自定义类名 */
   customClass?: any
+  /** 是否为密码框：内容掩码显示，并出现明文/密文切换按钮 */
   password?: boolean
+  /** 是否显示清除按钮：有内容且非禁用/只读时出现，点击清空 */
   clearable?: boolean
+  /** 预留的聚焦开关，当前未接入内部逻辑；聚焦请用 autofocus 或实例 focus() 方法 */
   focus?: boolean
+  /** 最大输入字符数，默认 140，设为 -1 不限制 */
   maxlength?: number
+  /** 聚焦时输入框距键盘的距离，单位 px */
   cursorSpacing?: number
+  /** 点击键盘确认按钮时是否保持键盘不收起 */
   confirmHold?: boolean
+  /** 键盘右下角确认按钮文案：done/send/search/next/go */
   confirmType?: string
+  /** 键盘弹起时是否自动上推页面 */
   adjustPosition?: boolean
+  /** 聚焦时点击页面其他区域是否保持键盘不收起 */
   holdKeyboard?: boolean
+  /** 占位文本的样式类，追加在内置 text-gray-4 之后 */
   placeholderClass?: string
+  /** 挂载后自动聚焦并唤起键盘 */
   autofocus?: boolean
+  /** 是否启用尺寸联动圆角：sm/md 为小圆角、lg 为全圆角胶囊；false 时回退基础圆角 */
   rounded?: boolean
+  /** 是否显示边框；开启后聚焦时边框颜色跟随 color */
   border?: boolean
+  /** 聚焦时边框与分割线的高亮颜色，需配合 border 开启才可见 */
   color?: typeof inputColors[number]
+  /** 是否在清除按钮、密码开关与 trailing 插槽之间显示竖分割线 */
   separator?: boolean
+  /** 按 wrapper/input/inputItem/leading/trailing 等键覆盖内部节点类名 */
   ui?: InputUI
 }
 
@@ -88,14 +108,14 @@ const props = withDefaults(defineProps<InputProps>(), {
   separator: true,
 })
 const emit = defineEmits([
-  'update:modelValue',
-  'input',
-  'change',
-  'focus',
-  'blur',
-  'confirm',
-  'clear',
-  'keyboardheightchange',
+  'update:modelValue', // 输入值变化时触发（v-model 同步）
+  'input', // 输入时触发，参数为当前输入值
+  'change', // 输入值变化时触发，与 input 同步；清空时也触发，参数为空字符串
+  'focus', // 输入框获得焦点时触发
+  'blur', // 输入框失去焦点时触发
+  'confirm', // 点击键盘确认/完成按钮时触发
+  'clear', // 点击清除按钮清空内容后触发
+  'keyboardheightchange', // 键盘高度变化时触发，e.detail 含 height（px）与 duration
 ])
 const slots = useSlots()
 
@@ -327,9 +347,9 @@ function clear() {
 }
 
 defineExpose({
-  isFocus,
-  focus,
-  clear,
+  isFocus, // 当前是否处于聚焦态（Ref<boolean>）
+  focus, // 使输入框聚焦（H5 端将光标移至内容末尾）
+  clear, // 清空输入内容并触发 clear 事件
 })
 </script>
 

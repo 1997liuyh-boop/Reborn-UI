@@ -19,7 +19,7 @@
       "name": "mouseMode",
       "type": "MouseMode",
       "required": false,
-      "description": "'click'",
+      "description": "鼠标跟踪模式：点击或持续悬停。",
       "default": "\"click\""
     },
     {
@@ -119,8 +119,8 @@
   },
   "docPath": "content/2.components/miscellaneous/shader-toy.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "b1f89a64fa980075441158020ad7e718f3661c6f",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "9a9fa1aaea66eb6ccaeb68e8270e920a6e953b97",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

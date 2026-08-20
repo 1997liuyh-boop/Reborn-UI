@@ -19,153 +19,153 @@
       "name": "slidesPerview",
       "type": "number | \"auto\"",
       "required": false,
-      "description": "1",
+      "description": "每屏可见的幻灯片数量，或指定为 'auto' 根据内容内在尺寸决定",
       "default": "1"
     },
     {
       "name": "spaceBetween",
       "type": "number",
       "required": false,
-      "description": "轮播项之间的间距，单位 `px`。",
+      "description": "幻灯片之间的横向/纵向间距 (px)",
       "default": "0"
     },
     {
       "name": "centeredSlides",
       "type": "boolean",
       "required": false,
-      "description": "是否让当前激活项居中显示。",
+      "description": "是否将当前活动的幻灯片居中对齐展示",
       "default": "false"
     },
     {
       "name": "loop",
       "type": "boolean",
       "required": false,
-      "description": "是否启用循环切换。",
+      "description": "是否开启无限循环无缝无障碍滚动",
       "default": "false"
     },
     {
       "name": "autoplay",
       "type": "boolean | CarouselAutoplay",
       "required": false,
-      "description": "false",
+      "description": "是否自动播放：可直接传布尔值，或传包含 delay 时延的配置对象",
       "default": "false"
     },
     {
       "name": "pagination",
       "type": "CarouselPagination | null",
       "required": false,
-      "description": "'dot' \\",
+      "description": "分页器配置对象，为 null 时不显示任何分页元素",
       "default": "null"
     },
     {
       "name": "trigger",
       "type": "CarouselTrigger",
       "required": false,
-      "description": "\"hover\"",
+      "description": "指示器交互触发方式 (鼠标 hover 或鼠标 click)",
       "default": "\"hover\""
     },
     {
       "name": "indicatorPosition",
       "type": "CarouselIndicatorPosition",
       "required": false,
-      "description": "\"none\"",
+      "description": "分页指示器在布局中的摆放位置",
       "default": "\"inside\""
     },
     {
       "name": "arrow",
       "type": "CarouselArrowMode",
       "required": false,
-      "description": "\"never\"",
+      "description": "控制箭头的显隐交互模式",
       "default": "\"hover\""
     },
     {
       "name": "motionBlur",
       "type": "boolean",
       "required": false,
-      "description": "是否对非激活项增加动态模糊效果。",
+      "description": "在滑动转场动画期间是否启用动态的高级运动模糊视觉特效",
       "default": "false"
     },
     {
       "name": "height",
       "type": "string",
       "required": false,
-      "description": "轮播容器高度；设为 `\"auto\"` 时随内容自适应。",
+      "description": "轮播图主体容器的外观高度",
       "default": "\"auto\""
     },
     {
       "name": "type",
       "type": "CarouselType",
       "required": false,
-      "description": "\"default\"",
+      "description": "轮播图结构展现风格：'default' 标准平面 | 'card' 3D卡片堆叠",
       "default": "\"default\""
     },
     {
       "name": "direction",
       "type": "CarouselDirection",
       "required": false,
-      "description": "\"horizontal\"",
+      "description": "转场滚动的主轴轴线方向 (水平或垂直)",
       "default": "\"horizontal\""
     },
     {
       "name": "initialSlide",
       "type": "number",
       "required": false,
-      "description": "初始激活项索引；当 `modelValue` 为空时生效。",
+      "description": "初始加载时首先渲染定位在第几张幻灯片 (从 0 开始计数)",
       "default": "0"
     },
     {
       "name": "breakpoints",
       "type": "Record<number, RebornCarouselBreakpoint>",
       "required": false,
-      "description": "响应式配置；可在断点中覆盖 `slidesPerview`、`spaceBetween`、`type`、`direction` 等参数。",
+      "description": "响应式断点控制映射表，Key 为最小视口宽度 (px)，Value 为断点配置",
       "default": "() => ({})"
     },
     {
       "name": "grabCursor",
       "type": "boolean",
       "required": false,
-      "description": "是否启用抓取光标。",
+      "description": "当鼠标悬浮在轮播图区域时，是否展示为可抓取抓紧的手势光标",
       "default": "false"
     },
     {
       "name": "autoSize",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否禁止强行将幻灯片等宽拉伸，完全使用其内在元素宽高尺寸",
       "default": "false"
     },
     {
       "name": "indicatorOffset",
       "type": "number",
       "required": false,
-      "description": "指示器偏移量 (px)；垂直模式下为侧边间距，水平模式下为底部/外部间距。",
+      "description": "指示器相对于底边界或右边界的自定义偏移间距 (px)",
       "default": "undefined"
     },
     {
       "name": "thumbs",
       "type": "CarouselThumbs | null",
       "required": false,
-      "description": "",
+      "description": "底部或侧边联动缩略图面板的特定配置",
       "default": "null"
     },
     {
       "name": "color",
       "type": "\"primary\" | \"secondary\" | \"success\" | \"info\" | \"warning\" | \"error\" | \"neutral\"",
       "required": false,
-      "description": "\"neutral\"",
+      "description": "预设的主题配色，用于指示器及操作按钮的色彩",
       "default": "\"primary\""
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "追加到根节点的自定义类名。"
+      "description": "自定义挂载在组件最外层根节点的 CSS 类名"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue;\n    root: ClassValue;\n    viewport: ClassValue;\n    track: ClassValue;\n    slide: ClassValue;\n    slideInner: ClassValue;\n    slideActive: ClassValue;\n    slideInactive: ClassValue;\n    arrowGroup: ClassValue;\n    arrow: ClassValue;\n    indicatorWrapper: ClassValue;\n    indicators: ClassValue;\n    indicator: ClassValue;\n    indicatorActive: ClassValue;\n    indicatorInactive: ClassValue;\n    thumbsShell: ClassValue;\n    thumbsPanel: ClassValue;\n    thumbsViewport: ClassValue;\n    thumbsTrack: ClassValue;\n    thumbsArrowGroup: ClassValue;\n    thumbsArrow: ClassValue;\n    thumb: ClassValue;\n    thumbActive: ClassValue;\n    thumbInactive: ClassValue;\n    thumbPreview: ClassValue;\n    thumbOverlay: ClassValue;\n  }>",
       "required": false,
-      "description": "细粒度样式覆盖对象，用于重写各个 UI 区域的样式。",
+      "description": "组件内置各个细分 UI 元素块的样式类名覆盖集，支持高度定制化",
       "default": "() => ({})"
     },
     {
@@ -181,7 +181,7 @@
     {
       "name": "change",
       "payload": "(e: \"change\", value: number): void;",
-      "description": "轮播项切换完成后触发。"
+      "description": "幻灯片当前活动索引发生实质性改变时触发此事件"
     },
     {
       "name": "update:modelValue",
@@ -261,8 +261,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-carousel.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "a836d901537584b43820893615a0c3e80af67157",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "9584c081a1ab9ad949fad60ecc0adf30ccfb3bcc",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

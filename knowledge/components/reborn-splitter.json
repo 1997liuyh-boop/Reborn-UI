@@ -48,22 +48,19 @@
       "name": "size",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "面板大小(像素或百分比)。支持 v-model:size。"
     },
     {
       "name": "min",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "面板最小尺寸(像素或百分比)。"
     },
     {
       "name": "max",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "面板的最大尺寸(像素或百分比)。"
     },
     {
       "name": "resizable",
@@ -104,7 +101,7 @@
     {
       "name": "update:size",
       "payload": "(e: 'update:size', value: string | number): void",
-      "description": "number)"
+      "description": "当面板大小改变时触发。"
     }
   ],
   "slots": [
@@ -170,8 +167,8 @@
   },
   "docPath": "content/2.components/layout/reborn-splitter.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "772ce7cd69d6921c9fb852bdd3d1b10ea15f3619",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "977ffd27291533d01a446bdbecb273b9655a1eaa",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

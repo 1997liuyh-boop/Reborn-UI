@@ -13,20 +13,20 @@
       "name": "as",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "容器渲染的 HTML 元素或组件 @defaultValue 'div'",
       "default": "'div'"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "容器自定义类名"
     },
     {
       "name": "ui",
       "type": "Partial<{\n        root: ClassValue\n    }>",
       "required": false,
-      "description": ""
+      "description": "组件 UI 微调配置"
     }
   ],
   "events": [],
@@ -34,7 +34,7 @@
     {
       "name": "default",
       "props": "",
-      "description": ""
+      "description": "容器默认插槽内容"
     }
   ],
   "exposes": [],
@@ -73,8 +73,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-container.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "32bbf747312fb1f8745c32a730bf25b437d767be",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "eee12307c65c518b6a7009d8734b1d7509cc430e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

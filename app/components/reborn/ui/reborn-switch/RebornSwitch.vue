@@ -14,16 +14,17 @@ defineOptions({
 export interface SwitchProps {
   modelValue?: any;
   defaultValue?: any;
-  activeValue?: any;
-  inactiveValue?: any;
+  activeValue?: any; // 打开状态对应的绑定值，默认 true；配合 inactiveValue 可绑定字符串/数字等任意值
+  inactiveValue?: any; // 关闭状态对应的绑定值，默认 false
   activeLabel?: string;
   inactiveLabel?: string;
   disabled?: boolean;
-  loading?: boolean;
+  loading?: boolean; // 是否加载中：轨道内显示旋转图标且开关不可点击（与 disabled 相互独立）
   size?: typeof switchSizes[number];
   color?: typeof switchColors[number];
-  beforeChange?: () => boolean | Promise<boolean>;
+  beforeChange?: () => boolean | Promise<boolean>; // 切换前拦截钩子：返回 false、Promise 解析为 false 或 Promise reject 时取消本次切换，常用于二次确认/异步校验
   class?: any;
+  /** 覆盖内部各区域样式类：wrapper 根容器、track 轨道、thumb 滑块、activeLabel/inactiveLabel 两侧文案 */
   ui?: Partial<{
     wrapper: ClassValue;
     input: ClassValue;
@@ -44,7 +45,9 @@ const props = withDefaults(defineProps<SwitchProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 切换完成后更新绑定值，参数为 activeValue 或 inactiveValue */
   (e: "update:modelValue", value: any): void;
+  /** 状态切换后触发（beforeChange 拦截通过后才会触发），参数与 update:modelValue 相同 */
   (e: "change", value: any): void;
 }>();
 
@@ -130,6 +133,7 @@ watch(
 );
 
 defineExpose({
+  /** `() => void` 使内部隐藏的原生 checkbox 获得键盘焦点 */
   focus: () => inputRef.value?.focus(),
 });
 </script>

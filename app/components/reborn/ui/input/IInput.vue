@@ -9,13 +9,16 @@ defineOptions({
 });
 
 const props = defineProps<{
+  /** 非受控模式下的初始值，未绑定 v-model 时生效 */
   defaultValue?: string | number;
+  /** 输入框绑定值（v-model） */
   modelValue?: string | number;
   class?: HTMLAttributes["class"];
   containerClass?: HTMLAttributes["class"];
 }>();
 
 const emits = defineEmits<{
+  /** 输入值变化时触发（v-model 同步） */
   (e: "update:modelValue", payload: string | number): void;
 }>();
 

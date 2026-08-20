@@ -24,23 +24,35 @@ export interface InputUi {
 }
 
 export interface InputProps {
+  /** 输入框绑定值（v-model） */
   modelValue?: string | number;
+  /** 非受控模式下的初始值，未绑定 modelValue 时生效 */
   defaultValue?: string | number;
   placeholder?: string;
   disabled?: boolean;
   readonly?: boolean;
   type?: string;
+  /** 尺寸：sm/md/lg，影响高度、内边距与字号 */
   size?: typeof inputSizes[number];
+  /** 聚焦时边框与分割线的高亮颜色，需配合 border 开启才可见 */
   color?: typeof inputColors[number];
+  /** 是否圆角：sm/md 尺寸为小圆角，lg 尺寸为全圆角胶囊 */
   rounded?: boolean;
+  /** 是否显示边框；开启后聚焦时边框颜色跟随 color */
   border?: boolean;
+  /** 是否为密码框：内容掩码显示，并出现明文/密文切换按钮 */
   password?: boolean;
+  /** 是否显示清除按钮：有内容且非禁用/只读时出现，点击清空并重新聚焦 */
   clearable?: boolean;
+  /** 是否在清除按钮、密码开关与 trailing 插槽之间显示竖分割线 */
   separator?: boolean;
+  /** 挂载时是否默认处于聚焦高亮样式状态 */
   autofocus?: boolean;
+  /** 渲染为单行 input 还是多行 textarea */
   as?: "input" | "textarea";
   rows?: number;
   class?: any;
+  /** 按 wrapper/input/leading/trailing 等键覆盖内部节点类名 */
   ui?: InputUi;
 }
 
@@ -62,9 +74,13 @@ const props = withDefaults(defineProps<InputProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 输入值变化时触发（v-model 同步） */
   (e: "update:modelValue", value: string | number): void;
+  /** 输入框获得焦点时触发 */
   (e: "focus", event: FocusEvent): void;
+  /** 输入框失去焦点时触发 */
   (e: "blur", event: FocusEvent): void;
+  /** 点击清除按钮清空内容后触发 */
   (e: "clear"): void;
 }>();
 
@@ -172,10 +188,10 @@ watch(
 );
 
 defineExpose({
-  inputRef,
-  focus: () => inputRef.value?.focus(),
-  blur: () => inputRef.value?.blur(),
-  clear,
+  inputRef, // 内部原生 input/textarea 元素引用
+  focus: () => inputRef.value?.focus(), // 使输入框获得焦点
+  blur: () => inputRef.value?.blur(), // 使输入框失去焦点
+  clear, // 清空输入内容并触发 update:modelValue 与 clear 事件
 });
 </script>
 

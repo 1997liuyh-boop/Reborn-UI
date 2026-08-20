@@ -100,8 +100,11 @@ export interface SelectDateProps {
   size?: typeof selectDateSizes[number]
   color?: typeof selectDateColors[number]
   triggerUi?: Partial<TriggerUiShape>
+  /** 底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域 */
   popupUi?: Partial<PopupUiShape>
+  /** 滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域 */
   pickerUi?: Partial<PickerUiShape>
+  /** 组件自身样式覆盖对象，可重写范围选择区、快捷选项、底部按钮等区域 */
   ui?: Partial<SelectDateUiShape>
 }
 
@@ -586,12 +589,19 @@ watch(
 )
 
 defineExpose({
+  /** 打开底部选择弹出层（禁用状态下无效）；可传入回调，在确认时接收选中值 */
   open,
+  /** 关闭底部选择弹出层（不触发确认） */
   close,
+  /** 清空已选值并触发 change / range-change 事件 */
   clear,
+  /** 以当前滚轮选中值执行确认逻辑（范围不完整或倒序时会提示并中断），随后关闭弹出层 */
   confirm,
+  /** 设置非范围模式的当前选中值（空值时重置为当前时间，仅更新内部状态，不触发事件） */
   setValue,
+  /** 设置范围模式的开始/结束值数组（仅更新内部状态，不触发事件） */
   setValues,
+  /** 切换范围模式当前编辑项：0 为开始时间，1 为结束时间 */
   setRange,
 })
 </script>

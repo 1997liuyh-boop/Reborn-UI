@@ -83,7 +83,9 @@ const props = withDefaults(defineProps<CheckboxProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 绑定值更新时触发，参数为最新值：布尔、选中值数组或 trueValue/falseValue 指定的自定义值 */
   (e: "update:modelValue", value: any): void;
+  /** 用户切换选中状态后触发，参数与 update:modelValue 相同 */
   (e: "change", value: any): void;
 }>();
 

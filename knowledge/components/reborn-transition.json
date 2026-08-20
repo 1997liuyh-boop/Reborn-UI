@@ -36,7 +36,7 @@
       "type": "Record<string, number> | number | boolean",
       "default": "300",
       "required": false,
-      "description": "Boolean"
+      "description": "过渡动画持续时间，单位 ms。可传入对象如 `{ enter: 300, leave: 300 }`。传入 `false` 为禁用动画"
     },
     {
       "name": "lazyRender",
@@ -50,7 +50,7 @@
       "type": "TransitionName | TransitionName[]",
       "default": "'fade'",
       "required": false,
-      "description": "fade"
+      "description": "过渡动画名称，可选值为 `fade` `fade-up` `fade-down` `fade-left` `fade-right` `slide-up` `slide-down` `slide-left` `slide-right` `zoom-in` `zoom-out"
     },
     {
       "name": "destroy",
@@ -252,8 +252,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-transition.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0b0f37617f6e1f30d333ea30966238fb1f02cb58",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "199e6d8e9ee6b2086c3883e6fdde404417241e35",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

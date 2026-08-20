@@ -52,10 +52,12 @@ export interface TimePanelProps {
   arrowControl?: boolean;
   size?: (typeof timePickerSizes)[number];
   color?: (typeof timePickerColors)[number];
+  /** 追加到面板根元素的自定义类名 */
   class?: any;
   disabledHours?: DisabledHours;
   disabledMinutes?: DisabledMinutes;
   disabledSeconds?: DisabledSeconds;
+  /** 返回需禁用的毫秒数组，入参为当前时、分、秒；范围模式下可按 role 区分开始/结束面板 */
   disabledMilliseconds?: DisabledMilliseconds;
   ui?: Partial<{
     wrapper: ClassValue;
@@ -93,7 +95,9 @@ const modelValue = defineModel<string | string[]>({ default: "" });
 
 const emit = defineEmits<{
   (e: "change", value: string | string[]): void;
+  /** 点击底部「清空」按钮清空值后触发 */
   (e: "clear"): void;
+  /** 点击底部「确定」按钮时触发，携带当前选中值（范围模式为 [start, end]） */
   (e: "confirm", value: string | string[]): void;
 }>();
 

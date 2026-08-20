@@ -15,49 +15,49 @@
       "type": "string",
       "default": "\"\"",
       "required": false,
-      "description": "组件自定义类名"
+      "description": "PassThrough 样式配置"
     },
     {
       "name": "ui",
       "type": "any",
       "default": "() => ({})",
       "required": false,
-      "description": ""
+      "description": "UI 配置"
     },
     {
       "name": "modelValue",
       "type": "any[]",
       "default": "() => []",
       "required": false,
-      "description": "绑定的数据列表，支持通过 `v-model` 双向绑定"
+      "description": "数据数组，支持双向绑定"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "default": "false",
       "required": false,
-      "description": "是否禁用整体拖拽功能"
+      "description": "是否禁用拖拽功能"
     },
     {
       "name": "columns",
       "type": "number",
       "default": "1",
       "required": false,
-      "description": "**(仅UniApp)** 列数：1为单列布局，>1为网格布局"
+      "description": "列数：1为单列纵向布局，>1为多列网格布局"
     },
     {
       "name": "longPress",
       "type": "boolean",
       "default": "true",
       "required": false,
-      "description": "**(仅UniApp)** 是否需要长按触发"
+      "description": "是否需要长按触发"
     },
     {
       "name": "gap",
       "type": "number",
       "default": "4",
       "required": false,
-      "description": ""
+      "description": "间距"
     }
   ],
   "events": [
@@ -74,7 +74,7 @@
     {
       "name": "start",
       "description": "拖拽开始时触发",
-      "payload": "(index: Number\\"
+      "payload": "(index: Number|Object)` 拖拽元素的索引或信息"
     },
     {
       "name": "end",
@@ -136,8 +136,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-draggable.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "48e66dc55062bde0c0754762a31c9f88d6204a05",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "82c7ad996ece9be020518366ebf025ebc25bf71a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

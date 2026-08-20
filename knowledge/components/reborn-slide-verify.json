@@ -13,196 +13,196 @@
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": "根节点额外 class（与 `ui.root` 合并）",
+      "description": "自定义 class",
       "default": "''"
     },
     {
       "name": "customStyle",
       "type": "any",
       "required": false,
-      "description": "根节点内联样式；与 `width` 同时存在时会合并为同一 style 对象或拼接字符串",
+      "description": "自定义 style",
       "default": "''"
     },
     {
       "name": "ui",
       "type": "SlideVerifyUI",
       "required": false,
-      "description": "各区域 class 覆盖，见下文 **UI**",
+      "description": "样式覆盖",
       "default": "() => ({})"
     },
     {
       "name": "size",
       "type": "SlideVerifySize",
       "required": false,
-      "description": "尺寸：`sm` \\",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "SlideVerifyColor",
       "required": false,
-      "description": "主题色，影响进度条浅色底、滑块图标色及 `splitText` 模式下已通过区标题颜色（`--color-{color}`）",
+      "description": "主题色",
       "default": "'primary'"
     },
     {
       "name": "shape",
       "type": "SlideVerifyShape",
       "required": false,
-      "description": "容器形态：`pill` 胶囊形，`square` 为规范圆角方形",
+      "description": "滑动容器形态，pill 为胶囊形，square 为项目规范圆角的方形",
       "default": "'pill'"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "禁用交互；与表单字段组禁用态合并后为真时不可拖动",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "loading",
       "type": "boolean",
       "required": false,
-      "description": "加载中：展示加载文案与图标，阻止完成验证",
+      "description": "是否加载中",
       "default": "false"
     },
     {
       "name": "threshold",
       "type": "number",
       "required": false,
-      "description": "通过阈值：默认 `0.92` 表示滑到约 92% 即通过；若传 **大于 1** 的数（如 `92`），内部会除以 100 当作比例",
+      "description": "通过阈值，0.92 表示滑到 92% 即通过",
       "default": "0.92"
     },
     {
       "name": "showThresholdText",
       "type": "boolean",
       "required": false,
-      "description": "为 `true` 时用 `thresholdText` 生成默认提示（替换 `defaultText`）",
+      "description": "是否根据通过阈值自动生成默认提示文案",
       "default": "false"
     },
     {
       "name": "thresholdText",
       "type": "string",
       "required": false,
-      "description": "阈值提示模板，`{threshold}` 会替换为百分比整数（如 `92`）",
+      "description": "阈值提示文案模板，使用 {threshold} 插入百分比",
       "default": "'拖动超过 {threshold}% 完成验证'"
     },
     {
       "name": "duration",
       "type": "number",
       "required": false,
-      "description": "非拖拽时位移动画与通过 / 回弹相关过渡时长（ms）",
+      "description": "回弹与通过动画时长，单位 ms",
       "default": "220"
     },
     {
       "name": "defaultText",
       "type": "string",
       "required": false,
-      "description": "未完成时的主提示文案（未开 `showThresholdText` 且未自定义 default 插槽时生效）",
+      "description": "默认提示文案",
       "default": "'向右滑动完成验证'"
     },
     {
       "name": "successText",
       "type": "string",
       "required": false,
-      "description": "验证通过后的文案；`splitText` 时在已滑过区域显示",
+      "description": "通过文案",
       "default": "'验证通过'"
     },
     {
       "name": "loadingText",
       "type": "string",
       "required": false,
-      "description": "loading` 为 `true` 时的文案",
+      "description": "加载文案",
       "default": "'验证中...'"
     },
     {
       "name": "splitText",
       "type": "boolean",
       "required": false,
-      "description": "左右分层文案：仅在**未**使用默认插槽替换、且未验证、非加载、非失败展示时，左侧显示 `successText`，右侧 `defaultText",
+      "description": "是否启用左右分层文案，开启后左侧进度区域展示通过文案，右侧展示默认文案",
       "default": "true"
     },
     {
       "name": "failText",
       "type": "string",
       "required": false,
-      "description": "未达阈值松手后的提示文案（若 `showFailText`）",
+      "description": "未通过文案",
       "default": "'请拖动到最右侧'"
     },
     {
       "name": "showFailText",
       "type": "boolean",
       "required": false,
-      "description": "是否在失败时短暂展示 `failText",
+      "description": "未通过时是否展示失败文案",
       "default": "true"
     },
     {
       "name": "failDuration",
       "type": "number",
       "required": false,
-      "description": "失败文案显示时长（ms）",
+      "description": "未通过文案展示时长，单位 ms",
       "default": "900"
     },
     {
       "name": "autoReset",
       "type": "boolean",
       "required": false,
-      "description": "通过后是否在 `resetDelay` 后自动 `reset",
+      "description": "通过后是否自动重置",
       "default": "false"
     },
     {
       "name": "resetDelay",
       "type": "number",
       "required": false,
-      "description": "自动重置延迟（ms）",
+      "description": "自动重置延迟，单位 ms",
       "default": "1200"
     },
     {
       "name": "thumbIcon",
       "type": "string",
       "required": false,
-      "description": "默认滑块图标（Uno / icon class）",
+      "description": "默认滑块图标",
       "default": "'i-lucide-chevrons-right'"
     },
     {
       "name": "successIcon",
       "type": "string",
       "required": false,
-      "description": "通过后滑块图标",
+      "description": "通过滑块图标",
       "default": "'i-lucide-check'"
     },
     {
       "name": "loadingIcon",
       "type": "string",
       "required": false,
-      "description": "加载态滑块图标",
+      "description": "加载滑块图标",
       "default": "'i-svg-spinners-180-ring-with-bg'"
     },
     {
       "name": "defaultVerified",
       "type": "boolean",
       "required": false,
-      "description": "挂载时若为 `true` 且当前 `v-model` 仍为 `false`，会执行 `updateVerified(true)`，等同初始即为已通过",
+      "description": "初始是否已验证通过，无需外部 ref(true) + v-model",
       "default": "false"
     },
     {
       "name": "showToast",
       "type": "boolean",
       "required": false,
-      "description": "通过后是否调用 `uni.showToast",
+      "description": "验证通过后是否自动弹出 Toast 提示",
       "default": "false"
     },
     {
       "name": "toastText",
       "type": "string",
       "required": false,
-      "description": "Toast 文案；空则用 `successText",
+      "description": "Toast 提示文案，默认使用 successText",
       "default": "''"
     },
     {
       "name": "width",
       "type": "string",
       "required": false,
-      "description": "轨道区域宽度，任意 CSS 单位（如 `'600rpx'`、`'80%'`）；默认不设置则撑满父级",
+      "description": "滑动容器宽度，支持任意 CSS 单位（如 '600rpx'、'80%'），默认撑满父容器",
       "default": "''"
     },
     {
@@ -317,8 +317,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-slide-verify.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "6e037f6242a6b31f2f30fca4e5348500f9175c37",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "65d6a5ef1747c69be16fe5fd8ee0b42452ad4658",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

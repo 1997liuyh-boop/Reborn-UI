@@ -49,10 +49,12 @@ export interface TimePickerProps {
   format?: string;
   size?: (typeof timePickerSizes)[number];
   color?: (typeof timePickerColors)[number];
+  /** 追加到触发器根元素的自定义类名 */
   class?: any;
   disabledHours?: DisabledHours;
   disabledMinutes?: DisabledMinutes;
   disabledSeconds?: DisabledSeconds;
+  /** 返回需禁用的毫秒数组，入参为当前时、分、秒；范围模式下可按 role 区分开始/结束面板 */
   disabledMilliseconds?: DisabledMilliseconds;
   /** 是否显示边框 */
   bordered?: boolean;

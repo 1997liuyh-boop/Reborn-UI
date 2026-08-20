@@ -14,96 +14,96 @@
       "name": "text",
       "type": "string | string[]",
       "required": false,
-      "description": "''",
+      "description": "通知文本内容，支持单条或多条",
       "default": "''"
     },
     {
       "name": "speed",
       "type": "number",
       "required": false,
-      "description": "水平滚动速率，单位 px/s",
+      "description": "滚动速率，单位 px/s（水平滚动时生效）",
       "default": "60"
     },
     {
       "name": "scrollable",
       "type": "boolean",
       "required": false,
-      "description": "是否开启滚动播放，内容溢出且非垂直滚动时生效",
+      "description": "是否开启滚动播放，内容溢出时生效",
       "default": "true"
     },
     {
       "name": "wrapable",
       "type": "boolean",
       "required": false,
-      "description": "是否开启多行展示 (水平模式生效)",
+      "description": "是否开启多行展示",
       "default": "false"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用，禁用后不再滚动且样式变淡",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "color",
       "type": "string",
       "required": false,
-      "description": "文本颜色，支持 Hex、RGB 等 CSS 颜色格式",
+      "description": "文本颜色",
       "default": "'#888A8C'"
     },
     {
       "name": "background",
       "type": "string",
       "required": false,
-      "description": "背景色，支持 Hex、RGB 等 CSS 颜色格式",
+      "description": "背景色",
       "default": "'#F7F7F9'"
     },
     {
       "name": "leftIcon",
       "type": "string",
       "required": false,
-      "description": "左侧图标名称"
+      "description": "左侧图标类名 (e.g. i-lucide-volume-2)"
     },
     {
       "name": "rightIcon",
       "type": "string",
       "required": false,
-      "description": "右侧图标名称"
+      "description": "右侧图标类名 (e.g. i-lucide-chevron-right)"
     },
     {
       "name": "direction",
       "type": "NoticeBarDirection",
       "required": false,
-      "description": "'horizontal'",
+      "description": "滚动方向：horizontal 水平滚动，vertical 垂直滚动",
       "default": "'horizontal'"
     },
     {
       "name": "interval",
       "type": "number",
       "required": false,
-      "description": "垂直滚动时的轮播间隔时间 (ms)",
+      "description": "垂直滚动时的轮播间隔时间，单位 ms",
       "default": "3000"
     },
     {
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "自定义类名",
       "default": "''"
     },
     {
       "name": "customStyle",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "自定义样式",
       "default": "''"
     },
     {
       "name": "ui",
       "type": "NoticeBarUI",
       "required": false,
-      "description": "",
+      "description": "UI 覆盖",
       "default": "() => ({})"
     }
   ],
@@ -215,8 +215,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-notice-bar.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "d47feb52b5d1af966c51300d00e7e699e79d5539",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "1d46f93a90b9cf743fcd4ab52f2b0396229e1680",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -81,14 +81,14 @@ function parseTables(content: string): MarkdownTable[] {
   return tables;
 }
 
-/** 拆分表格行为单元格数组 */
+/** 拆分表格行为单元格数组；转义的 \| 不作为列分隔符（如类型单元格里的 number \| string） */
 function splitRow(line: string): string[] {
   return line
     .trim()
     .replace(/^\|/, "")
     .replace(/\|$/, "")
-    .split("|")
-    .map((c) => c.trim());
+    .split(/(?<!\\)\|/)
+    .map((c) => c.trim().replace(/\\\|/g, "|"));
 }
 
 /**

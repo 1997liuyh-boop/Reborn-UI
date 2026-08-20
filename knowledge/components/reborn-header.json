@@ -27,21 +27,21 @@
       "name": "toggleSide",
       "type": "'left' | 'right'",
       "required": false,
-      "description": "'right'",
+      "description": "移动端菜单切换按钮侧边 (左/右)",
       "default": "'right'"
     },
     {
       "name": "mode",
       "type": "HeaderMode",
       "required": false,
-      "description": "'popup'",
+      "description": "移动端菜单模式",
       "default": "'popup'"
     },
     {
       "name": "as",
       "type": "string",
       "required": false,
-      "description": "自定义根元素的包装标签",
+      "description": "自定义包装标签",
       "default": "'header'"
     },
     {
@@ -62,8 +62,7 @@
       "name": "beforeToggle",
       "type": "() => boolean | Promise<boolean>",
       "required": false,
-      "description": "-",
-      "default": "Promise<boolean>"
+      "description": "菜单展开前的拦截函数"
     },
     {
       "name": "class",
@@ -182,8 +181,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-header.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "3154ffe0da0cf0b55191619117a6d65e0fa683b3",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "39841e46b46a0b3975963e74c1a6fd6ae5b0ae20",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

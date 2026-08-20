@@ -73,7 +73,7 @@
       "name": "slideMode",
       "type": "\"hover\" | \"drag\"",
       "required": false,
-      "description": "\"hover\"",
+      "description": "滑块的交互模式。",
       "default": "\"hover\""
     },
     {
@@ -202,8 +202,8 @@
   },
   "docPath": "content/2.components/miscellaneous/compare.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "7345ec839ebca86de3e0a4c10686182ce175052c",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "9e0050310e1203fac89c3e60152ba98139e2da8a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

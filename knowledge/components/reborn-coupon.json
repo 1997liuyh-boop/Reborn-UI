@@ -125,7 +125,7 @@
       "name": "splitColor",
       "type": "string",
       "required": false,
-      "description": "撕拉线的颜色 (设置后将渲染可见的虚线/点线覆盖在遮罩之上)",
+      "description": "Optional divider color. Falls back to inherited text color when omitted.",
       "default": "undefined"
     },
     {
@@ -199,8 +199,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-coupon.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "1e73ffc3c43d074bf6e23466451044c269eb1a9d",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "35f654fc74f6044b5ea2fbf0fcf9f633f08630c9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

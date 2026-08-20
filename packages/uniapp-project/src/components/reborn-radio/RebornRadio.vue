@@ -30,10 +30,11 @@ interface Props {
   disabled?: boolean
   size?: typeof radioSizes[number]
   color?: typeof radioColors[number]
-  activeIcon?: string
-  inactiveIcon?: string
-  showIcon?: boolean
-  isRound?: boolean
+  activeIcon?: string // 选中态图标类名（iconify class，如 i-lucide-check），默认 i-lucide-check
+  inactiveIcon?: string // 未选中态图标类名，默认为空（只显示空心框/圆）
+  showIcon?: boolean // 是否渲染图标区域，设为 false 时仅显示标签内容（配合插槽做纯文字/卡片式单选）
+  isRound?: boolean // 图标容器是否为圆形（rounded-full），设为 false 后可配合 ui 自定义方形圆角
+  /** 覆盖内部各区域样式类：root 根节点、wrapper 内容行、activeIcon/inactiveIcon 图标容器、label 标签 */
   ui?: {
     root?: string
     wrapper?: string
@@ -41,7 +42,7 @@ interface Props {
     inactiveIcon?: string
     label?: string
   }
-  customClass?: any
+  customClass?: any // 追加到根节点的自定义类名
 }
 
 const slots = useSlots()

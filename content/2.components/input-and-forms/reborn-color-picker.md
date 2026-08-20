@@ -9,24 +9,134 @@ navigation:
 ---
 
 ::ComponentViewer{demoFile="RebornColorPickerDemo.vue" config="RebornColorPickerConfig" componentId="reborn-color-picker" :componentFiles='["RebornColorPicker.vue", "RebornColorPickerPanel.vue", "reborn-color-picker.config.ts", "reborn-color-picker-panel.config.ts"]' :uniappFiles='["RebornColorPicker.vue", "reborn-color-picker.config.ts"]'}
-
-#api
-## Props
-
-| 属性名       | 类型      | 默认值 | 说明                               |
-| :----------- | :-------- | :----- | :--------------------------------- |
-| `modelValue` | `String`   | `'#000000'`   | 绑定的颜色值，支持通过 `v-model` 双向绑定 |
-| `disabled`   | `Boolean` | `false`| 是否禁用整体取色器                 |
-| `size`  | `String`  | `'md'`   | 尺寸大小，可选值为 `'sm'` `'md'` `'lg'` |
-| `ui` | `Object` | `{}` | UI 配置覆盖对象 |
-
-## Emits
-
-| 事件名              | 说明                     | 回调参数                   |
-| :------------------ | :----------------------- | :------------------------- |
-| `update:modelValue` | 颜色值变化时触发          | `(val: string)` 最新颜色值 |
-
-## 差异说明
-- Web 版本支持基于 Popover 的自研色彩选取面板
-- UniApp 版本为精简实现或系统输入组件
 ::
+
+## 简介
+
+ColorPicker 由「色块触发器 + Popover 选色面板」组成：点击色块弹出面板，面板内提供饱和度/明度选区、色相与透明度滑杆、格式化输入框和主题预设色板，选定的颜色以字符串写回 `v-model`。Web 与 UniApp 双端可用；UniApp 端还支持通过 `defaultFormat` 控制输出格式、通过 `content` 配置弹出方向。
+
+适用场景：
+
+- 主题色、标签颜色等需要用户自选颜色的设置项。
+- 表单中需要采集颜色值（字符串）并双向绑定的场景。
+- 需要控制弹出方向与偏移（`content` 的 `side`/`align`/`sideOffset`）的取色入口。
+
+不适用场景：
+
+- 仅 Web 且不需要双端一致时，也可用 Web 专用的 `color-picker`（带对比度参考与色板特性）。
+- 从固定的预设色板中单选，用一组按钮或 `reborn-radio` 即可。
+
+## 用法
+
+### 基础用法
+
+`v-model` 绑定颜色字符串（默认 `'#000000'`），面板中选色后实时回写。
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const color = ref("#4D80F0");
+</script>
+
+<template>
+  <RebornColorPicker v-model="color" />
+</template>
+```
+
+### 尺寸与禁用
+
+`size` 支持 `'sm' | 'md' | 'lg'` 三档色块尺寸（Web 端额外支持 `'xs'`）；`disabled` 禁用后不再弹出面板。
+
+```vue
+<template>
+  <RebornColorPicker v-model="color" size="sm" />
+  <RebornColorPicker v-model="color" size="lg" />
+  <RebornColorPicker v-model="color" disabled />
+</template>
+```
+
+### 输出格式（UniApp）
+
+UniApp 端用 `default-format` 指定回写格式（`'hex' | 'rgb' | 'rgba'`）；未指定时按传入的 `modelValue` 自动识别格式，用户仍可在面板中切换。
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const colorHex = ref("#4D80F0");
+const colorRgba = ref("rgba(244, 63, 94, 0.50)");
+</script>
+
+<template>
+  <view class="flex flex-col gap-[24rpx]">
+    <RebornColorPicker v-model="colorHex" default-format="hex" />
+    <RebornColorPicker v-model="colorRgba" default-format="rgba" />
+  </view>
+</template>
+```
+
+### 弹出配置与自定义触发器
+
+UniApp 端通过 `content` 调整弹出方向与偏移（默认 `{ side: 'right', align: 'center', sideOffset: 8 }`），`:arrow="false"` 可隐藏弹层箭头；Web 端可用默认插槽替换触发器。
+
+```vue
+<template>
+  <!-- UniApp：向上弹出并隐藏箭头 -->
+  <RebornColorPicker v-model="color" :content="{ side: 'top', sideOffset: 12 }" :arrow="false" />
+
+  <!-- Web：自定义触发器 -->
+  <RebornColorPicker v-model="color">
+    <button class="rounded border px-3 py-1 text-sm">选择颜色</button>
+  </RebornColorPicker>
+</template>
+```
+
+## API
+
+### Props
+
+| 属性名          | 类型                     | 默认值                                            | 说明                                                                                            |
+| :-------------- | :----------------------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------- |
+| `modelValue`    | `string`                 | `'#000000'`                                       | 绑定的颜色值，支持通过 `v-model` 双向绑定                                                       |
+| `disabled`      | `boolean`                | `false`                                           | 是否禁用整体取色器                                                                              |
+| `size`          | `'sm' \| 'md' \| 'lg'`   | `'md'`                                            | 色块触发器尺寸（Web 端额外支持 `'xs'`）                                                         |
+| `defaultFormat` | `'hex' \| 'rgb' \| 'rgba'` | `undefined`                                     | 初始颜色输出格式；未设置时根据 `modelValue` 自动识别，用户仍可在面板中切换。仅 UniApp 端        |
+| `format`        | `'hex' \| 'rgb' \| 'rgba'` | `undefined`                                     | `defaultFormat` 的别名，同样指定输出格式；两者同时传入时 `defaultFormat` 优先。仅 UniApp 端     |
+| `content`       | `object`                 | `{ side: 'right', align: 'center', sideOffset: 8 }` | Popover 弹出配置（`side`/`align`/`sideOffset`）。仅 UniApp 端                                 |
+| `arrow`         | `boolean`                | `true`                                            | 是否显示弹层箭头。仅 UniApp 端                                                                  |
+| `ui`            | `object`                 | `{}`                                              | UI 配置覆盖对象，见下方「自定义样式（ui）」                                                     |
+| `class`         | `any`                    | `-`                                               | 追加到选色面板根节点的自定义类名（面板组件 `RebornColorPickerPanel` 的属性）                    |
+
+### Emits
+
+| 事件名              | 回调参数                | 说明                                                                     |
+| :------------------ | :---------------------- | :----------------------------------------------------------------------- |
+| `update:modelValue` | `(val: string)`         | 颜色值变化时触发（`v-model` 同步），参数为按当前格式序列化后的颜色字符串 |
+| `onChange`          | `(val: string)`         | 用户在面板中选色导致颜色变化时触发。仅 UniApp 端                         |
+| `update:format`     | `(val: ColorFormat)`    | 面板中切换输出格式时触发（面板的 `v-model:format` 同步）。仅 UniApp 端   |
+
+### Slots
+
+| 插槽名    | 说明                                                              |
+| :-------- | :---------------------------------------------------------------- |
+| `default` | 自定义触发器内容，替换默认的色块按钮。仅 Web 端；UniApp 端不支持 |
+
+### 自定义样式（ui）
+
+`ui` 属性按以下键覆盖触发器对应节点的类名：
+
+| 键名   | 说明                       |
+| :----- | :------------------------- |
+| `root` | 触发器根容器               |
+| `base` | 色块本体（背景为当前颜色） |
+| `icon` | 色块内的下拉箭头图标       |
+
+## 注意事项
+
+- Web 与 UniApp 双端可用；`modelValue` 为颜色字符串，默认 `'#000000'`。
+- UniApp 端输出格式由 `defaultFormat` / `format` 控制；未指定时按传入色值自动识别（如传入 `rgba(...)` 字符串则回写 `rgba` 格式）。
+- UniApp 端弹出位置默认 `side: 'right'`，取色器贴近屏幕边缘时需通过 `content` 调整（如 `{ side: 'top' }`）。
+- 面板内部以 HSVA 保存颜色以避免格式转换的精度丢失；与当前颜色一致的回写会被跳过，减少重复渲染。
+- 默认插槽替换触发器仅 Web 端支持，UniApp 端触发器为固定的色块按钮。
+- 在小程序等容器内使用时，父级容器需允许溢出（如示例中卡片开启 `overflowVisible`），否则弹层会被裁剪。

@@ -41,7 +41,7 @@
       "name": "pdColor",
       "type": "string | null",
       "required": false,
-      "description": "null",
+      "description": "码眼颜色（不传默认跟随 `foreground`）。",
       "default": "null"
     },
     {
@@ -83,28 +83,28 @@
       "name": "mode",
       "type": "ClQrcodeMode",
       "required": false,
-      "description": "'line' \\",
+      "description": "码点样式。",
       "default": "\"circular\""
     },
     {
       "name": "ecc",
       "type": "eccLevel",
       "required": false,
-      "description": "'Q' \\",
+      "description": "纠错级别。",
       "default": "eccLevel.H"
     },
     {
       "name": "pdOuterRadius",
       "type": "number",
       "required": false,
-      "description": "undefined",
+      "description": "码眼外框圆角。",
       "default": "undefined"
     },
     {
       "name": "pdInnerRadius",
       "type": "number",
       "required": false,
-      "description": "undefined",
+      "description": "码眼内点圆角。",
       "default": "undefined"
     },
     {
@@ -117,8 +117,7 @@
       "name": "dotsImage",
       "type": "string | null",
       "required": false,
-      "description": "-",
-      "default": "null"
+      "description": "预留参数，保持与 UniApp 一致。"
     },
     {
       "name": "backgroundGradient",
@@ -166,70 +165,70 @@
       "name": "dotsColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "别名：前景色"
     },
     {
       "name": "backgroundColor",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "别名：背景颜色"
     },
     {
       "name": "logoImage",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "别名：Logo 图片地址"
     },
     {
       "name": "margin",
       "type": "number | string",
       "required": false,
-      "description": ""
+      "description": "别名：内边距"
     },
     {
       "name": "logoMargin",
       "type": "number | string",
       "required": false,
-      "description": "",
+      "description": "Logo 外部预留边空 (用于遮住背景点点)",
       "default": "4"
     },
     {
       "name": "logoHideBackgroundDots",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否隐藏 Logo 下方的点",
       "default": "false"
     },
     {
       "name": "logoShadow",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "Logo 是否显示阴影",
       "default": "false"
     },
     {
       "name": "logoShape",
       "type": "'circle' | 'square'",
       "required": false,
-      "description": ""
+      "description": "Logo 形状: 'circle' | 'square'"
     },
     {
       "name": "dotsType",
       "type": "ClQrcodeMode",
       "required": false,
-      "description": ""
+      "description": "别名：渲染模式"
     },
     {
       "name": "cornersSquareType",
       "type": "'rect' | 'dot' | 'square' | 'extra-rounded'",
       "required": false,
-      "description": ""
+      "description": "定位点 (Eyes) 外框渲染类型: 'rect' (直角), 'extra-rounded' (圆角), 'dot' (圆形)"
     },
     {
       "name": "cornersDotType",
       "type": "'rect' | 'dot' | 'square'",
       "required": false,
-      "description": ""
+      "description": "定位点 (Eyes) 中央内点渲染类型: 'rect' (直角), 'dot' (圆形)"
     }
   ],
   "events": [],
@@ -290,8 +289,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-qrcode.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "53db1ecf3ad7969092eb16105c9f477710f06654",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "09ceaecb23fda176f0ea5d2c8663d834817aba80",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

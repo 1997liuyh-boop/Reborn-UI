@@ -16,11 +16,12 @@ export interface RadioProps {
     disabled?: boolean;
     size?: (typeof radioSizes)[number];
     color?: (typeof radioColors)[number];
-    variant?: "simple" | "circle";
-    activeIcon?: string;
-    inactiveIcon?: string;
-    showIcon?: boolean;
+    variant?: "simple" | "circle"; // 外观风格：simple 为勾选图标风格；circle 为经典圆点风格（圆环 + 实心圆点，不渲染 activeIcon 图标）
+    activeIcon?: string; // 选中态图标名称（Icon 组件 name），默认 i-lucide-check；仅 variant 为 simple 时渲染
+    inactiveIcon?: string; // 未选中态图标名称，默认为空（只显示空心框/圆）
+    showIcon?: boolean; // 是否渲染图标区域，设为 false 时仅显示标签内容（配合插槽做纯文字/卡片式单选）
     class?: any;
+    /** 覆盖内部各区域样式类：root 根节点、wrapper 内容行、activeIcon/inactiveIcon 图标容器、innerDot 圆点、label 标签 */
     ui?: Partial<{
         root: ClassValue;
         wrapper: ClassValue;

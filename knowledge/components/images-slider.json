@@ -68,14 +68,14 @@
       "type": "[boolean, number, string]",
       "default": "false",
       "required": false,
-      "description": "false"
+      "description": "自动播放间隔（毫秒），或 `false` 禁用。"
     },
     {
       "name": "direction",
       "type": "string",
       "default": "\"vertical\"",
       "required": false,
-      "description": "'vertical'"
+      "description": "滑块运行的轴向。"
     },
     {
       "name": "perspective",
@@ -144,8 +144,8 @@
   },
   "docPath": "content/2.components/miscellaneous/images-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "58363f38a5cb815ed31bacdb96844e929e0394f1",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "91a38be7a8d2f861379bc1f471b4cc1ec0dab639",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

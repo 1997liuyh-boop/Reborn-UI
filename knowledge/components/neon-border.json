@@ -31,7 +31,7 @@
       "name": "animationType",
       "type": "\"none\" | \"half\" | \"full\"",
       "required": false,
-      "description": "\"full\"",
+      "description": "应用于边框的动画类型。",
       "default": "\"half\""
     },
     {
@@ -92,8 +92,8 @@
   },
   "docPath": "content/2.components/special-effects/neon-border.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0681880e8d0eb6e0bc39f716c989827c5deb6412",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "0de0a2eaa80a08a7ad71aebf36a32aeae4d0647b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -18,35 +18,32 @@
       "name": "defaultValue",
       "type": "string | number",
       "required": false,
-      "description": "\"\"",
-      "default": "number"
+      "description": "非受控模式下的初始值，未绑定 v-model 时生效"
     },
     {
       "name": "modelValue",
       "type": "string | number",
       "required": false,
-      "description": ""
+      "description": "输入框绑定值（v-model）"
     },
     {
       "name": "class",
       "type": "HTMLAttributes[\"class\"]",
       "required": false,
-      "description": "用于自定义样式的额外 CSS 类。",
-      "default": "\"\""
+      "description": "输入框本体的额外 CSS 类。"
     },
     {
       "name": "containerClass",
       "type": "HTMLAttributes[\"class\"]",
       "required": false,
-      "description": "容器的额外 CSS 类，用于自定义样式。",
-      "default": "\"\""
+      "description": "外层渐变容器的额外 CSS 类，宽度等布局类通常设在此。"
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
       "payload": "(e: \"update:modelValue\", payload: string | number): void;",
-      "description": ""
+      "description": "输入值变化时触发（v-model 同步）"
     }
   ],
   "slots": [],
@@ -88,8 +85,8 @@
   },
   "docPath": "content/2.components/input-and-forms/input.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "7589876b101770240f823d1d69fdf0f017196bab",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "6ead0725348fbc1ca3242372eeeae656c7040b47",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

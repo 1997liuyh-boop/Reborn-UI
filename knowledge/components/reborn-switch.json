@@ -19,35 +19,35 @@
       "name": "modelValue",
       "type": "any",
       "required": false,
-      "description": "受控开关值。",
+      "description": "受控开关值，与 `activeValue` 严格相等时为开态。",
       "default": "false"
     },
     {
       "name": "defaultValue",
       "type": "any",
       "required": false,
-      "description": "非受控默认值。",
+      "description": "非受控模式下的初始值。",
       "default": "false"
     },
     {
       "name": "activeValue",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "打开状态对应的绑定值，默认 true；配合 inactiveValue 可绑定字符串/数字等任意值",
       "default": "true"
     },
     {
       "name": "inactiveValue",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "关闭状态对应的绑定值，默认 false",
       "default": "false"
     },
     {
       "name": "activeLabel",
       "type": "string",
       "required": false,
-      "description": "开启状态一侧显示的文案。",
+      "description": "关闭状态对应的绑定值，默认 false",
       "default": "undefined"
     },
     {
@@ -68,46 +68,47 @@
       "name": "loading",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否加载中：轨道内显示加载图标且开关不可点击（与 disabled 相互独立）",
       "default": "false"
     },
     {
       "name": "size",
       "type": "typeof switchSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "是否加载中：轨道内显示加载图标且开关不可点击（与 disabled 相互独立）",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof switchColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "启用色值。",
       "default": "'primary'"
     },
     {
       "name": "beforeChange",
       "type": "() => boolean | Promise<boolean>",
       "required": false,
-      "description": ""
+      "description": "切换前拦截钩子：返回 false、Promise 解析为 false 或 Promise reject 时取消本次切换，常用于二次确认/异步校验"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点（wrapper）的自定义类名"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    input: ClassValue\n    track: ClassValue\n    thumb: ClassValue\n    loading: ClassValue\n    activeLabel: ClassValue\n    inactiveLabel: ClassValue\n  }>",
       "required": false,
-      "description": ""
+      "description": "覆盖内部各区域样式类：wrapper 根容器、track 轨道、thumb 滑块、loading 加载图标、activeLabel/inactiveLabel 两侧文案",
+      "default": "{}"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "额外样式类。",
+      "description": "切换前拦截钩子：返回 false、Promise 解析为 false 或 Promise reject 时取消本次切换，常用于二次确认/异步校验",
       "default": "\"\""
     }
   ],
@@ -115,32 +116,32 @@
     {
       "name": "update:modelValue",
       "payload": "(e: 'update:modelValue', value: any): void",
-      "description": ""
+      "description": "切换完成后更新绑定值，参数为 activeValue 或 inactiveValue"
     },
     {
       "name": "change",
       "payload": "(e: 'change', value: any): void",
-      "description": ""
+      "description": "状态切换后触发（beforeChange 拦截通过后才会触发），参数与 update:modelValue 相同"
     }
   ],
   "slots": [
     {
       "name": "inactiveLabel",
-      "description": ""
+      "description": "自定义关闭一侧文案区域，替代 `inactiveLabel` 属性。"
     },
     {
       "name": "thumb",
-      "description": ""
+      "description": "自定义滑块内部内容（如图标、加载动画）。"
     },
     {
       "name": "activeLabel",
-      "description": ""
+      "description": "自定义开启一侧文案区域，替代 `activeLabel` 属性。"
     }
   ],
   "exposes": [
     {
       "name": "focus",
-      "description": ""
+      "description": "`() => void` 标记聚焦态（为根节点追加 is-focused 类名）；uniapp 端无原生焦点行为"
     }
   ],
   "examples": [
@@ -193,8 +194,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-switch.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "7192fcbdb94bc02d003b6714f1faf8d0003a0b85",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "df160a6dda4672d04de15281070abb487448fa8f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

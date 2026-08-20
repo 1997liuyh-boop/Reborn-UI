@@ -10,9 +10,9 @@
     "选项很多时改用 reborn-select。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用。",
-    "选中态由 modelValue 与该项 value 匹配决定，知识库中无独立的 RadioGroup 容器组件，多个选项需绑定同一 modelValue。",
-    "fill 属性是 color 的别名映射。",
-    "isRound 默认 true、showIcon 默认 true，外观变化通过 variant（simple/circle）控制。"
+    "web、uniapp 双端可用；额外类名 web 端用 class，uniapp 端用 customClass。",
+    "选中态由 modelValue === value 严格相等决定（注意类型一致）；多个选项绑定同一 modelValue，或用随组件一同分发的 RebornRadioGroup 统一管理绑定值并下发 size/color/disabled（web 端还支持 variant/activeIcon 等）。",
+    "fill 是 uniapp 端 RadioGroup 上的预留属性，当前未参与任何逻辑，请直接使用 color。",
+    "showIcon 默认 true；variant（simple/circle）仅 web 端，isRound（默认 true）仅 uniapp 端。"
   ]
 }

@@ -18,7 +18,7 @@
       "name": "placeholders",
       "type": "string[]",
       "required": false,
-      "description": "占位文本数组，会在输入框中轮换显示。",
+      "description": "占位文本数组，每 3 秒轮换显示，仅在输入为空时可见。",
       "default": "() => [\"Placeholder 1\", \"Placeholder 2\", \"Placeholder 3\"]"
     },
     {
@@ -26,17 +26,18 @@
       "type": "string",
       "required": false,
       "description": "双向绑定值",
-      "vModel": true
+      "vModel": true,
+      "default": "\"\""
     }
   ],
   "events": [
     {
       "name": "submit",
-      "description": "当提交输入时触发。"
+      "description": "按回车或点击提交按钮时触发，参数为提交时的文本；随后播放消失动画。"
     },
     {
       "name": "change",
-      "description": "当输入值变化时触发。"
+      "description": "输入值变化时触发，参数为模拟的事件对象；动画期间不触发。"
     },
     {
       "name": "update:modelValue",
@@ -81,8 +82,8 @@
   },
   "docPath": "content/2.components/input-and-forms/placeholders-and-vanish-input.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "c2d99a1d377e24c072ae00dd089fb9b76382e50b",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "527a3f06db7f4410060a42697bc4e5daf8397b03",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

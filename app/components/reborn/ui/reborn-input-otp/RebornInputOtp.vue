@@ -17,7 +17,9 @@ export interface InputOtpProps {
     inputType?: "text" | "number";
     size?: (typeof inputOtpSizes)[number];
     color?: (typeof inputOtpColors)[number];
+    /** 追加到根节点的自定义类名 */
     class?: any;
+    /** 细粒度样式覆盖对象，按 root/inner/list/item/value/cursor 键位重写对应节点类名 */
     ui?: Partial<{
         root: ClassValue;
         inner: ClassValue;

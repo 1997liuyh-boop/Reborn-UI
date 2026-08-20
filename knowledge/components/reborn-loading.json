@@ -66,39 +66,39 @@
       "name": "visible",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否可见（false 时走淡出过渡，过渡结束触发 afterLeave）",
       "default": "false"
     },
     {
       "name": "fixed",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否 fixed 定位：全屏遮罩或 body 挂载模式为 true，局部遮罩为 false",
       "default": "false"
     },
     {
       "name": "text",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "加载文字（显示在图标下方）"
     },
     {
       "name": "background",
       "type": "string",
       "required": false,
-      "description": ""
+      "description": "遮罩背景色（任意 CSS 颜色，内联覆盖默认半透明背景类）"
     },
     {
       "name": "viewportStyle",
       "type": "Record<string, string>",
       "required": false,
-      "description": ""
+      "description": "可视区容器内联样式：局部模式下由 useLoading 注入宿主可视区宽高，供 sticky 图标区定位"
     },
     {
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "遮罩层级",
       "default": "2000"
     }
   ],
@@ -106,7 +106,7 @@
     {
       "name": "afterLeave",
       "payload": "(e: 'afterLeave'): void",
-      "description": ""
+      "description": "退场过渡结束（外部据此安全卸载实例）"
     }
   ],
   "slots": [],
@@ -168,8 +168,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-loading.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "9d80327a9695e283ad7556b7a3c37d0f4c8834a8",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "8aa8d95454b9b47fe02d9a882f582614d32cb1e9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

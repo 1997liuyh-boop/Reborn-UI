@@ -18,49 +18,49 @@
       "type": "number",
       "default": "160",
       "required": false,
-      "description": "礼花绽放的纸片数量"
+      "description": "单次发射的粒子数量"
     },
     {
       "name": "teleport",
       "type": "boolean",
       "default": "false",
       "required": false,
-      "description": "为true时画布覆盖整个浏览器窗口"
+      "description": "是否将 canvas 传送到 body 下（解决在特定容器中 z-index 被遮挡的问题）"
     },
     {
       "name": "angleCenter",
       "type": "number",
       "default": "270",
       "required": false,
-      "description": "绽放的中心角度（单位：度）"
+      "description": "发射的中心角度，270度默认向上发射"
     },
     {
       "name": "angleSpread",
       "type": "number",
       "default": "130",
       "required": false,
-      "description": "扩散角度范围（单位：度） 如果填360度就是烟花扩散"
+      "description": "发射角度的散射范围，130度表示一个扇形区域"
     },
     {
       "name": "speedMin",
       "type": "number",
       "default": "8",
       "required": false,
-      "description": "粒子初始速度的最小值"
+      "description": "粒子的最小初速度"
     },
     {
       "name": "speedMax",
       "type": "number",
       "default": "25",
       "required": false,
-      "description": "粒子初始速度的最大值"
+      "description": "粒子的最大初速度"
     },
     {
       "name": "particleScale",
       "type": "number",
       "default": "1",
       "required": false,
-      "description": "粒子尺寸的整体缩放比例（>1 变大，<1 变小）"
+      "description": "粒子尺寸的整体缩放比例（1 为默认大小，>1 变大，<1 变小）"
     }
   ],
   "events": [],
@@ -116,8 +116,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-fireworks.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "1edfa4080c8ba5a20c274c89e7e5b9c9bbd2220e",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "9c39d201a0146b08dead7ab1e5b8d4afcaedc6a7",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

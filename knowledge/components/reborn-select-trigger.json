@@ -14,42 +14,42 @@
       "name": "text",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "显示文本",
       "default": "''"
     },
     {
       "name": "placeholder",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "占位符",
       "default": "'请选择'"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "focus",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否聚焦",
       "default": "false"
     },
     {
       "name": "size",
       "type": "(typeof selectTriggerSizes)[number]",
       "required": false,
-      "description": "",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "(typeof selectTriggerColors)[number]",
       "required": false,
-      "description": "",
+      "description": "颜色",
       "default": "'primary'"
     },
     {
@@ -63,13 +63,13 @@
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    content: ClassValue\n    text: ClassValue\n    placeholder: ClassValue\n    iconWrapper: ClassValue\n    clearIcon: ClassValue\n    arrowIcon: ClassValue\n  }>",
       "required": false,
-      "description": ""
+      "description": "样式覆盖"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义 class"
     },
     {
       "name": "displayText",
@@ -109,21 +109,21 @@
       "name": "showArrow",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示箭头",
       "default": "true"
     },
     {
       "name": "arrowAnimation",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "展开时箭头是否旋转",
       "default": "true"
     },
     {
       "name": "closeOn",
       "type": "\"click\" | \"mousedown\"",
       "required": false,
-      "description": "",
+      "description": "关闭下拉的时机： - 'click'：在触发器（含下拉面板）外完成一次点击后才收起（默认） - 'mousedown'：在触发器（含下拉面板）外发生任意按下类鼠标事件（左键/右键/中键按下）立即收起",
       "default": "\"click\""
     },
     {
@@ -142,7 +142,7 @@
       "name": "portal",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否把浮层传送到 body。 默认开启：浮层留在触发器内时会被任意祖先的 overflow 裁掉 （典型场景：RebornDialog 的 panel 恒为 overflow-hidden，scrollable 时 body 还叠一层 overflow-y-auto）， 而 z-index 只决定绘制顺序、无法突破裁剪。 开启后浮层传送到 body，并使用文档坐标锚定触发器，页面滚动时不依赖 JS 每帧重算。 仅当调用方确实需要浮层随父容器一起滚动、一起被裁剪时才关掉。",
       "default": "true"
     }
   ],
@@ -180,7 +180,7 @@
     {
       "name": "close",
       "payload": "(e: \"close\"): void;",
-      "description": ""
+      "description": "在触发器外发生了 closeOn 指定的鼠标事件，请求父组件收起下拉"
     }
   ],
   "slots": [
@@ -212,7 +212,7 @@
     },
     {
       "name": "dropdownScrollRef",
-      "description": ""
+      "description": "浮层的滚动容器；传送后它是 body 的子节点，不能再从组件根节点里找"
     },
     {
       "name": "isOpening",
@@ -220,7 +220,7 @@
     },
     {
       "name": "contains",
-      "description": ""
+      "description": "供外部做「点击是否落在触发器或浮层内」的判定，传送后不能只判组件根节点"
     }
   ],
   "examples": [],
@@ -259,8 +259,8 @@
   },
   "docPath": null,
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "c9bab6b8350b3f1f5d7c9588f0d27c680202d55e",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "2d100ecc89a8c1c03c60221dab7aa700d103c985",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

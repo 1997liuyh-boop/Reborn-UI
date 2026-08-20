@@ -105,7 +105,7 @@
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "是否块级元素"
     },
     {
       "name": "ui",
@@ -379,8 +379,8 @@
   },
   "docPath": "content/2.components/button/reborn-button.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "6b671c226ad53e87400756dcee93571148c57ace",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "7ec81c8c4b76d6dd510da0b1dc8c3d054cd4d912",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -46,14 +46,14 @@ const props = withDefaults(defineProps<RebornTextareaProps>(), {
 })
 // 事件定义
 const emit = defineEmits([
-  'update:modelValue',
-  'input',
-  'change',
-  'focus',
-  'blur',
-  'confirm',
-  'linechange',
-  'keyboardheightchange',
+  'update:modelValue', // 输入内容变化时触发，同步 v-model 绑定值
+  'input', // 每次输入时触发，参数为原生事件对象（e.detail.value 为当前文本）
+  'change', // 输入内容与上一次不同时触发，参数为最新文本
+  'focus', // 输入框聚焦、键盘弹起时触发
+  'blur', // 输入框失焦、键盘收起时触发，并执行表单 blur 校验
+  'confirm', // 点击键盘右下角确认按钮时触发（按钮文字由 confirmType 决定）
+  'linechange', // 输入行数变化时触发，e.detail 含 height、lineCount 等信息
+  'keyboardheightchange', // 键盘高度变化时触发，e.detail 含 height 与 duration
 ])
 export interface RebornTextareaProps {
   // 颜色
@@ -243,7 +243,9 @@ watch(
 )
 
 defineExpose({
+  /** 当前是否处于聚焦状态（响应式 ref，可读取样式聚焦态） */
   isFocus,
+  /** 让输入框重新聚焦并唤起键盘 */
   focus,
 })
 </script>

@@ -42,48 +42,48 @@
       "name": "size",
       "type": "(typeof timePickerSizes)[number]",
       "required": false,
-      "description": "'lg'",
+      "description": "组件尺寸。",
       "default": "\"md\""
     },
     {
       "name": "color",
       "type": "(typeof timePickerColors)[number]",
       "required": false,
-      "description": "'success' \\",
+      "description": "组件主题色。",
       "default": "\"primary\""
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到面板根元素的自定义类名"
     },
     {
       "name": "disabledHours",
       "type": "DisabledHours",
       "required": false,
-      "description": "null) => number[]",
+      "description": "返回禁用小时列表。范围模式下可按 `role` 区分开始和结束面板。",
       "default": "() => []"
     },
     {
       "name": "disabledMinutes",
       "type": "DisabledMinutes",
       "required": false,
-      "description": "null) => number[]",
+      "description": "返回禁用分钟列表。",
       "default": "() => []"
     },
     {
       "name": "disabledSeconds",
       "type": "DisabledSeconds",
       "required": false,
-      "description": "null) => number[]",
+      "description": "返回禁用秒列表。",
       "default": "() => []"
     },
     {
       "name": "disabledMilliseconds",
       "type": "DisabledMilliseconds",
       "required": false,
-      "description": "",
+      "description": "返回需禁用的毫秒数组，入参为当前时、分、秒；范围模式下可按 role 区分开始/结束面板",
       "default": "() => []"
     },
     {
@@ -139,35 +139,35 @@
       "name": "bordered",
       "type": "boolean",
       "required": false,
-      "description": "是否显示边框。",
+      "description": "是否显示边框",
       "default": "true"
     },
     {
       "name": "showArrow",
       "type": "boolean",
       "required": false,
-      "description": "是否显示右侧箭头图标。",
+      "description": "是否显示箭头",
       "default": "true"
     },
     {
       "name": "arrowAnimation",
       "type": "boolean",
       "required": false,
-      "description": "展开时箭头是否旋转动画。",
+      "description": "展开时箭头是否旋转",
       "default": "true"
     },
     {
       "name": "portal",
       "type": "SelectTriggerProps[\"portal\"]",
       "required": false,
-      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。",
+      "description": "浮层是否传送到 body（默认 true）。 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。",
       "default": "true"
     },
     {
       "name": "triggerUi",
       "type": "SelectTriggerProps[\"ui\"]",
       "required": false,
-      "description": "用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。",
+      "description": "触发器 (Trigger) 的 UI 微调配置",
       "default": "{}"
     }
   ],
@@ -175,17 +175,17 @@
     {
       "name": "change",
       "payload": "(e: \"change\", value: string | string[]): void;",
-      "description": "string[])"
+      "description": "时间变更后触发。"
     },
     {
       "name": "clear",
       "payload": "(e: \"clear\"): void;",
-      "description": ""
+      "description": "点击底部「清空」按钮清空值后触发"
     },
     {
       "name": "confirm",
       "payload": "(e: \"confirm\", value: string | string[]): void;",
-      "description": ""
+      "description": "点击底部「确定」按钮时触发，携带当前选中值（范围模式为 [start, end]）"
     },
     {
       "name": "update:modelValue",
@@ -195,7 +195,7 @@
   "slots": [
     {
       "name": "footer",
-      "description": ""
+      "description": "自定义面板底部操作栏内容，默认渲染「清空」和「确定」按钮（`RebornTimePanel` 插槽）。"
     },
     {
       "name": "cover",
@@ -252,8 +252,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-time-picker.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "258868461c6e684155e7739256a94cd44ed06935",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "b1c5f0ea79186a11eaac8bc66bab3e8570daccf6",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

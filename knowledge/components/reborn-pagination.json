@@ -14,7 +14,7 @@
       "name": "modelValue",
       "type": "number",
       "required": false,
-      "description": "双向绑定值",
+      "description": "当前页码",
       "default": "1",
       "vModel": true
     },
@@ -29,14 +29,14 @@
       "name": "pageSize",
       "type": "number",
       "required": false,
-      "description": "每页条目数",
+      "description": "每页条数",
       "default": "10"
     },
     {
       "name": "mode",
       "type": "PaginationMode",
       "required": false,
-      "description": "显示模式 (`multi` / `simple`)",
+      "description": "显示模式",
       "default": "'multi'"
     },
     {
@@ -50,14 +50,14 @@
       "name": "prevText",
       "type": "string",
       "required": false,
-      "description": "上一页按钮文字",
+      "description": "上一页文字",
       "default": "''"
     },
     {
       "name": "nextText",
       "type": "string",
       "required": false,
-      "description": "下一页按钮文字",
+      "description": "下一页文字",
       "default": "''"
     },
     {
@@ -71,35 +71,35 @@
       "name": "background",
       "type": "boolean",
       "required": false,
-      "description": "是否为分页按钮添加背景色",
+      "description": "是否显示背景",
       "default": "false"
     },
     {
       "name": "hideOnSinglePage",
       "type": "boolean",
       "required": false,
-      "description": "只有一页时是否隐藏",
+      "description": "是否隐藏只有一页时的分页",
       "default": "false"
     },
     {
       "name": "ui",
       "type": "any",
       "required": false,
-      "description": "",
+      "description": "各部分 UI 自定义",
       "default": "() => ({})"
     },
     {
       "name": "size",
       "type": "PaginationSize",
       "required": false,
-      "description": "尺寸 (`sm` / `md` / `lg`) **(仅 Web 端支持)**",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义类名"
     }
   ],
   "events": [
@@ -187,8 +187,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-pagination.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "82c553a9d1541ede37f03bdd156c8aeb97cc96ac",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "42c2f61e1cf73354cc33e037f45d9f713cfb6bb7",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

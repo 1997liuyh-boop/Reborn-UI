@@ -10,6 +10,7 @@ interface Props {
   leftContent?: string;
   rightContent?: string;
   indicatorColor?: string;
+  /** 左右两块色带的圆角半径，单位 px */
   borderRadius?: number;
 }
 

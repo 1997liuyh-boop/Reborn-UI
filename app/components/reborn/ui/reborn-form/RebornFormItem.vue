@@ -16,7 +16,7 @@ export interface FormItemProps {
     labelWidth?: string | number
     labelPosition?: typeof formItemLabelPositions[number]
     trigger?: 'blur' | 'change' | 'none' | Array<'blur' | 'change'>
-    class?: any
+    class?: any // 追加到表单项根节点的自定义类名（uniapp 端对应 customClass）
     ui?: Partial<{
         root: string
         label: string
@@ -81,7 +81,9 @@ const ui = computed(() => {
 })
 
 defineExpose({
+    /** 当前表单项绑定的字段名，供父级 Form 定位字段实例（validateField/scrollToField 等依赖它） */
     prop: props.prop,
+    /** `(callback: (rect: DOMRect) => void) => void` 以回调返回表单项根节点的位置与尺寸，校验失败滚动定位时使用 */
     getBoundingClientRect,
 })
 </script>

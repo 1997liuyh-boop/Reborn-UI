@@ -14,35 +14,35 @@
       "name": "modelValue",
       "type": "(string | number)[] | (string | number)[][]",
       "required": false,
-      "description": "(string \\",
+      "description": "绑定值",
       "default": "() => []"
     },
     {
       "name": "options",
       "type": "CascaderOption[]",
       "required": false,
-      "description": "级联数据源，树形结构",
+      "description": "选项数据",
       "default": "() => []"
     },
     {
       "name": "title",
       "type": "string",
       "required": false,
-      "description": "弹窗标题",
+      "description": "标题",
       "default": "'请选择'"
     },
     {
       "name": "placeholder",
       "type": "string",
       "required": false,
-      "description": "触发器占位文本",
+      "description": "占位提示",
       "default": "'请选择'"
     },
     {
       "name": "showTrigger",
       "type": "boolean",
       "required": false,
-      "description": "是否显示默认触发器",
+      "description": "是否显示触发器",
       "default": "true"
     },
     {
@@ -56,77 +56,77 @@
       "name": "labelKey",
       "type": "string",
       "required": false,
-      "description": "选项标签字段名",
+      "description": "标签字段",
       "default": "'label'"
     },
     {
       "name": "valueKey",
       "type": "string",
       "required": false,
-      "description": "选项值字段名",
+      "description": "值字段",
       "default": "'value'"
     },
     {
       "name": "textSeparator",
       "type": "string",
       "required": false,
-      "description": "触发器文本分隔符",
+      "description": "分隔符",
       "default": "' / '"
     },
     {
       "name": "height",
       "type": "number | string",
       "required": false,
-      "description": "600",
+      "description": "列表高度 (rpx)",
       "default": "600"
     },
     {
       "name": "size",
       "type": "CascaderSize",
       "required": false,
-      "description": "尺寸 (sm, md, lg)",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "CascaderColor",
       "required": false,
-      "description": "主题颜色",
+      "description": "颜色",
       "default": "'primary'"
     },
     {
       "name": "customClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "自定义类名",
       "default": "''"
     },
     {
       "name": "customStyle",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "自定义样式",
       "default": "''"
     },
     {
       "name": "ui",
       "type": "CascaderUI",
       "required": false,
-      "description": "样式覆盖对象",
+      "description": "UI 覆盖",
       "default": "() => ({})"
     },
     {
       "name": "lazy",
       "type": "boolean",
       "required": false,
-      "description": "是否开启懒加载",
+      "description": "是否动态加载子节点",
       "default": "false"
     },
     {
       "name": "lazyLoad",
       "type": "(node: CascaderOption, resolve: (children: CascaderOption[]) => void, reject: () => void) => void",
       "required": false,
-      "description": "动态加载方法 `(node, resolve, reject) => void"
+      "description": "加载动态数据的方法"
     },
     {
       "name": "childrenKey",
@@ -139,7 +139,7 @@
       "name": "leafLevel",
       "type": "number",
       "required": false,
-      "description": "限制选择层级 (0为不限制)",
+      "description": "查询次级菜单层级；为0时候查询所有",
       "default": "0"
     },
     {
@@ -153,62 +153,62 @@
       "name": "ellipsis",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示省略号",
       "default": "true"
     },
     {
       "name": "lines",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "省略号行数",
       "default": "1"
     },
     {
       "name": "clearable",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示清空按钮",
       "default": "true"
     },
     {
       "name": "bordered",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示边框",
       "default": "true"
     },
     {
       "name": "showArrow",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示箭头",
       "default": "true"
     },
     {
       "name": "arrowAnimation",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "展开时箭头是否旋转",
       "default": "true"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "自定义类名"
     },
     {
       "name": "portal",
       "type": "SelectTriggerProps[\"portal\"]",
       "required": false,
-      "description": "（Web）浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪",
+      "description": "浮层是否传送到 body（默认 true）。 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。",
       "default": "true"
     },
     {
       "name": "triggerUi",
       "type": "SelectTriggerProps[\"ui\"]",
       "required": false,
-      "description": "",
+      "description": "触发器 UI 配置",
       "default": "() => ({})"
     }
   ],
@@ -227,33 +227,33 @@
   "slots": [
     {
       "name": "tabs",
-      "description": "顶部导航标签栏样式"
+      "description": "自定义顶部已选路径导航标签的内容（UniApp 端）"
     },
     {
       "name": "item",
-      "description": "选项行容器样式"
+      "description": "自定义选项行的内容，作用域提供选项对象、列索引与是否激活（UniApp 端）"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "自定义触发器显示内容；`showTrigger` 为 `false` 时整体替换触发区域，作用域提供 `open` / `close` / `clear` 等方法（Web 端）"
     },
     {
       "name": "option",
-      "description": ""
+      "description": "自定义下拉面板中单个选项的渲染内容，作用域提供选项对象与所在列索引（Web 端）"
     }
   ],
   "exposes": [
     {
       "name": "open",
-      "description": ""
+      "description": "打开底部弹出层（禁用状态下无效）；懒加载模式下首次打开会请求根级选项"
     },
     {
       "name": "close",
-      "description": ""
+      "description": "关闭底部弹出层；关闭前未确认的浏览/勾选不会提交"
     },
     {
       "name": "clear",
-      "description": ""
+      "description": "清空选中值与展开路径，并触发 update:modelValue 与 change 事件（空数组）"
     }
   ],
   "examples": [
@@ -313,8 +313,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-cascader.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "6ab984c068dd54c0c197ba41ac25b1c5c1d73c9b",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "9b5e7a2213de3675914ecb35562af6090485d5a6",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

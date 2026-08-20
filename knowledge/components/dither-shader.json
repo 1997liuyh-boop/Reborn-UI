@@ -18,118 +18,118 @@
       "name": "src",
       "type": "string",
       "required": true,
-      "description": "源图像的 URL。"
+      "description": "Source image URL"
     },
     {
       "name": "gridSize",
       "type": "number",
       "required": false,
-      "description": "抖动网格单元的尺寸。",
+      "description": "Size of the dithering grid cells",
       "default": "4"
     },
     {
       "name": "ditherMode",
       "type": "DitheringMode",
       "required": false,
-      "description": "\"noise\" \\",
+      "description": "Type of dithering pattern",
       "default": "\"bayer\""
     },
     {
       "name": "colorMode",
       "type": "ColorMode",
       "required": false,
-      "description": "\"duotone\" \\",
+      "description": "Color processing mode",
       "default": "\"original\""
     },
     {
       "name": "invert",
       "type": "boolean",
       "required": false,
-      "description": "是否反转抖动后的输出颜色。",
+      "description": "Invert the dithered output colors",
       "default": "false"
     },
     {
       "name": "pixelRatio",
       "type": "number",
       "required": false,
-      "description": "像素化倍数（1 表示无像素化，越大越像素化）。",
+      "description": "Pixelation multiplier (1 = no pixelation, higher = more pixelated)",
       "default": "1"
     },
     {
       "name": "primaryColor",
       "type": "string",
       "required": false,
-      "description": "双色调模式下的主色。",
+      "description": "Primary color for duotone mode",
       "default": "\"#000000\""
     },
     {
       "name": "secondaryColor",
       "type": "string",
       "required": false,
-      "description": "双色调模式下的次色。",
+      "description": "Secondary color for duotone mode",
       "default": "\"#ffffff\""
     },
     {
       "name": "customPalette",
       "type": "string[]",
       "required": false,
-      "description": "自定义模式下的调色板数组。",
+      "description": "Custom color palette array for custom mode",
       "default": "() => [\"#000000\", \"#ffffff\"]"
     },
     {
       "name": "brightness",
       "type": "number",
       "required": false,
-      "description": "亮度调节（-1 至 1）。",
+      "description": "Brightness adjustment (-1 to 1)",
       "default": "0"
     },
     {
       "name": "contrast",
       "type": "number",
       "required": false,
-      "description": "对比度调节（0 至 2，1 为正常）。",
+      "description": "Contrast adjustment (0 to 2, 1 = normal)",
       "default": "1"
     },
     {
       "name": "backgroundColor",
       "type": "string",
       "required": false,
-      "description": "抖动图像背后的背景色。",
+      "description": "Background color behind the dithered image",
       "default": "\"transparent\""
     },
     {
       "name": "objectFit",
       "type": "\"cover\" | \"contain\" | \"fill\" | \"none\"",
       "required": false,
-      "description": "\"fill\" \\",
+      "description": "Object fit behavior",
       "default": "\"cover\""
     },
     {
       "name": "threshold",
       "type": "number",
       "required": false,
-      "description": "抖动阈值偏移（0 至 1）。",
+      "description": "Threshold bias for dithering (0 to 1)",
       "default": "0.5"
     },
     {
       "name": "animated",
       "type": "boolean",
       "required": false,
-      "description": "是否启用动画效果。",
+      "description": "Enable animation effect",
       "default": "false"
     },
     {
       "name": "animationSpeed",
       "type": "number",
       "required": false,
-      "description": "动画速度（数值越小越慢）。",
+      "description": "Animation speed (lower = slower)",
       "default": "0.02"
     },
     {
       "name": "class",
       "type": "string",
       "required": false,
-      "description": "容器的额外 CSS 类（可用 Tailwind 设置尺寸）。"
+      "description": "Additional CSS classes for the container"
     }
   ],
   "events": [],
@@ -172,8 +172,8 @@
   },
   "docPath": "content/2.components/special-effects/dither-shader.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "ad0a7d6c947b125c10e0fcffdcce32295c4287fa",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "91c6dfb3ef26a8bba9815b31bdf1f17835b3a22f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

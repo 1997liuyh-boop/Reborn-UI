@@ -34,6 +34,7 @@ export interface SelectDateProps {
     valueFormat?: string;
     size?: (typeof selectDateSizes)[number];
     color?: (typeof selectDateColors)[number];
+    /** 追加到触发器根元素的自定义类名 */
     class?: any;
     /** 是否显示边框 */
     bordered?: boolean;

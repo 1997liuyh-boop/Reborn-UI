@@ -77,7 +77,7 @@
       "name": "safeArea",
       "type": "boolean",
       "required": false,
-      "description": "是否考虑屏幕安全区域（避让刘海屏/底部黑条）。",
+      "description": "新增：是否考虑安全区域（默认为 true）",
       "default": "true"
     }
   ],
@@ -139,8 +139,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-affix.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "3138b7e995054002fd400a81470974f3a9372b94",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "2a8669e9d3024a1ae046261c354f22e6d0a6fd12",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

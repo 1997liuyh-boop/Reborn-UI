@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<CheckboxProps>(), {
 })
 
 const emit = defineEmits<{
+  /** 绑定值更新时触发，参数为最新值：布尔或选中值数组 */
   (e: 'update:modelValue', value: boolean | CheckboxValue[]): void
 }>()
 
@@ -36,7 +37,9 @@ export interface CheckboxProps {
   readOnly?: boolean
   size?: typeof checkboxSizes[number]
   color?: typeof checkboxColors[number]
+  /** 追加到根节点（wrapper）的自定义类名 */
   customClass?: any
+  /** 覆盖内部各区域样式类：wrapper 根容器、control 勾选框、icon 勾选图标、label 标签文本 */
   ui?: Partial<{
     wrapper: ClassValue
     input: ClassValue

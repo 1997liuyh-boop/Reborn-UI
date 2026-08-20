@@ -19,28 +19,27 @@
       "name": "color",
       "type": "typeof chipColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "芯片颜色。",
       "default": "'primary'"
     },
     {
       "name": "size",
       "type": "typeof chipSizes[number]",
       "required": false,
-      "description": "\"xs\" \\",
+      "description": "芯片尺寸。",
       "default": "'md'"
     },
     {
       "name": "text",
       "type": "string | number",
       "required": false,
-      "description": "-",
-      "default": "number"
+      "description": "芯片文本内容。"
     },
     {
       "name": "position",
       "type": "typeof chipPositions[number]",
       "required": false,
-      "description": "\"top-left\" \\",
+      "description": "相对位置。",
       "default": "'top-right'"
     },
     {
@@ -142,8 +141,8 @@
   },
   "docPath": "content/2.components/button/reborn-chip.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "bb48233bcb31b0713a9c79d52ba52b48ae5563ed",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "cca24118ecc331748d2704cd642c4ed196d09248",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

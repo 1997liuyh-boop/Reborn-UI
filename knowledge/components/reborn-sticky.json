@@ -14,77 +14,77 @@
       "name": "offsetTop",
       "type": "number",
       "required": false,
-      "description": "吸顶偏移量 (px)。",
+      "description": "吸顶偏移量, 单位px",
       "default": "0"
     },
     {
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "吸顶后的层级。",
+      "description": "层级",
       "default": "100"
     },
     {
       "name": "scrollTop",
       "type": "number",
       "required": false,
-      "description": "当前页面的滚动距离。通常通过 `onPageScroll` 传入。",
+      "description": "滚动位置",
       "default": "0"
     },
     {
       "name": "isNeedNavbarHeight",
       "type": "boolean",
       "required": false,
-      "description": "是否自动叠加导航栏高度 (H5端)。",
+      "description": "是否需要减去导航栏高度",
       "default": "true"
     },
     {
       "name": "navbarHeight",
       "type": "number",
       "required": false,
-      "description": "导航栏高度 (px)。",
+      "description": "导航栏高度",
       "default": "44"
     },
     {
       "name": "stickyTriggerLead",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "吸顶判定提前 (px)，用于根节点上方还有标题等与测量 top 不对齐时",
       "default": "0"
     },
     {
       "name": "target",
       "type": "string | HTMLElement",
       "required": false,
-      "description": "",
+      "description": "目标容器，CSS选择器或DOM元素。吸顶元素将始终保持在该容器内，超过范围则隐藏",
       "default": "undefined"
     },
     {
       "name": "sticky",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "手动控制吸顶状态",
       "default": "true"
     },
     {
       "name": "position",
       "type": "'top' | 'bottom'",
       "required": false,
-      "description": "",
+      "description": "固定位置：top 吸顶，bottom 吸底",
       "default": "'top'"
     },
     {
       "name": "bottomBoundary",
       "type": "'parent' | 'target'",
       "required": false,
-      "description": "",
+      "description": "吸底越界后的边界基准：parent 保持旧逻辑，target 按目标容器底部向上 offsetTop 停靠",
       "default": "'parent'"
     },
     {
       "name": "bottomPlaceholder",
       "type": "'auto' | 'keep' | 'none'",
       "required": false,
-      "description": "",
+      "description": "吸底固定后的占位策略：auto 保持旧逻辑，keep 保留高度，none 不参与页面排版",
       "default": "'auto'"
     },
     {
@@ -125,19 +125,19 @@
     },
     {
       "name": "height",
-      "description": ""
+      "description": "组件当前高度"
     },
     {
       "name": "position",
-      "description": ""
+      "description": "固定位置方向"
     },
     {
       "name": "rect",
-      "description": ""
+      "description": "位置和尺寸矩形对象"
     },
     {
       "name": "forceUpdate",
-      "description": ""
+      "description": "强制刷新尺寸信息"
     }
   ],
   "examples": [
@@ -189,8 +189,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-sticky.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "acfbdb4ac7edcae7c99f20a27e4c7df2ae60165e",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "548e7e7f1ff307337f00591b09a85e74a0fbde85",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -21,7 +21,9 @@ const props = defineProps({
     modelValue: { type: String, default: '#000000' },
     disabled: { type: Boolean, default: false },
     size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'md' },
+    /** 初始颜色输出格式，可选 'hex' | 'rgb' | 'rgba'；未设置时根据 modelValue 自动识别，用户仍可在面板中切换 */
     defaultFormat: { type: String as PropType<ColorFormat | undefined>, default: undefined },
+    /** defaultFormat 的别名，同样指定颜色输出格式；两者同时传入时 defaultFormat 优先 */
     format: { type: String as PropType<ColorFormat | undefined>, default: undefined },
     /** Popover content config */
     content: { type: Object as PropType<any>, default: () => ({ side: 'right', align: 'center', sideOffset: 8 }) },
@@ -30,7 +32,11 @@ const props = defineProps({
     ui: { type: Object as PropType<any>, default: () => ({}) }
 })
 
-const emit = defineEmits(['update:modelValue', 'onChange'])
+const emit = defineEmits([
+    'update:modelValue',
+    /** 用户在面板中选色导致颜色变化时触发，参数为面板输出的颜色字符串 */
+    'onChange',
+])
 const b = tv(theme)
 const showPicker = ref(false)
 const resolvedDefaultFormat = computed<ColorFormat | undefined>(() => props.defaultFormat ?? props.format)

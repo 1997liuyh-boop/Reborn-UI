@@ -18,14 +18,14 @@
       "name": "height",
       "type": "number | string",
       "required": false,
-      "description": "图片自然尺寸",
+      "description": "高度属性；使用 `fill` 时会省略。",
       "default": "undefined"
     },
     {
       "name": "width",
       "type": "number | string",
       "required": false,
-      "description": "图片自然尺寸",
+      "description": "宽度属性；使用 `fill` 时会省略。",
       "default": "undefined"
     },
     {
@@ -135,8 +135,8 @@
   },
   "docPath": "content/2.components/cards/apple-card-carousel.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "acc4c4b15d6d1e73005825c78a25caada79cf73c",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "525961751cac97929fb3148dec8992aab0378546",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

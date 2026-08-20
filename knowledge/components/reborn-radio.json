@@ -19,7 +19,7 @@
       "name": "modelValue",
       "type": "any",
       "required": false,
-      "description": "当前选中值。"
+      "description": "当前选中值，与选项 `value` 严格相等时该项呈选中态。"
     },
     {
       "name": "value",
@@ -31,7 +31,7 @@
       "name": "label",
       "type": "string",
       "required": false,
-      "description": "选项文案。",
+      "description": "选项文案；也可用 `default` 插槽自定义。",
       "default": "\"\""
     },
     {
@@ -45,56 +45,56 @@
       "name": "size",
       "type": "typeof radioSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸大小。",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof radioColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "选中色值。",
       "default": "'primary'"
     },
     {
       "name": "activeIcon",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "选中态图标类名（iconify class，如 i-lucide-check），默认 i-lucide-check",
       "default": "'i-lucide-check'"
     },
     {
       "name": "inactiveIcon",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "未选中态图标类名，默认为空（只显示空心框/圆）",
       "default": "''"
     },
     {
       "name": "showIcon",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否渲染图标区域，设为 false 时仅显示标签内容（配合插槽做纯文字/卡片式单选）",
       "default": "true"
     },
     {
       "name": "isRound",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "图标容器是否为圆形（rounded-full），设为 false 后可配合 ui 自定义方形圆角",
       "default": "true"
     },
     {
       "name": "ui",
       "type": "{\n    root?: string\n    wrapper?: string\n    activeIcon?: string\n    inactiveIcon?: string\n    label?: string\n  }",
       "required": false,
-      "description": "",
+      "description": "覆盖内部各区域样式类：root 根节点、wrapper 内容行、activeIcon/inactiveIcon 图标容器、label 标签",
       "default": "() => ({})"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名"
     },
     {
       "name": "fill",
@@ -106,39 +106,39 @@
       "name": "variant",
       "type": "\"simple\" | \"circle\"",
       "required": false,
-      "description": "",
+      "description": "外观风格：simple 为勾选图标风格；circle 为经典圆点风格（圆环 + 实心圆点，不渲染 activeIcon 图标）",
       "default": "\"simple\""
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "额外样式类。",
+      "description": "是否渲染图标区域，设为 false 时仅显示标签内容（配合插槽做纯文字/卡片式单选）",
       "default": "\"\""
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
-      "description": "选中值变化。"
+      "description": "选中值变化时更新绑定值，参数为该选项的 `value`。"
     },
     {
       "name": "change",
-      "description": "选中值变化时触发。"
+      "description": "选中值变化时触发（点击已选中项不会触发）。"
     }
   ],
   "slots": [
     {
       "name": "active-icon",
-      "description": ""
+      "description": "自定义选中态图标区域，完全替代默认图标/圆点。"
     },
     {
       "name": "inactive-icon",
-      "description": ""
+      "description": "自定义未选中态图标区域。"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "自定义标签内容，替代 `label` 文本。"
     }
   ],
   "exposes": [],
@@ -167,10 +167,10 @@
     "选项很多时改用 reborn-select。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用。",
-    "选中态由 modelValue 与该项 value 匹配决定，知识库中无独立的 RadioGroup 容器组件，多个选项需绑定同一 modelValue。",
-    "fill 属性是 color 的别名映射。",
-    "isRound 默认 true、showIcon 默认 true，外观变化通过 variant（simple/circle）控制。"
+    "web、uniapp 双端可用；额外类名 web 端用 class，uniapp 端用 customClass。",
+    "选中态由 modelValue === value 严格相等决定（注意类型一致）；多个选项绑定同一 modelValue，或用随组件一同分发的 RebornRadioGroup 统一管理绑定值并下发 size/color/disabled（web 端还支持 variant/activeIcon 等）。",
+    "fill 是 uniapp 端 RadioGroup 上的预留属性，当前未参与任何逻辑，请直接使用 color。",
+    "showIcon 默认 true；variant（simple/circle）仅 web 端，isRound（默认 true）仅 uniapp 端。"
   ],
   "dependencies": [
     "clsx"
@@ -194,8 +194,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-radio.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "a4e85100c75150f461bf79c118f05a181d34b36d",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "5a2aaf791119ee0c45767405003a2b9364d6aa87",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -24,11 +24,17 @@ export interface SearchBoxProps {
   skuAttributes?: SkuAttribute[]
   saveHistory?: (history: string[]) => void
   removeHistory?: () => void
+  /** 追加到根节点的自定义类名 */
   customClass?: any
+  /** 透传给内部输入框的占位符样式类 */
   placeholderClass?: string
+  /** 是否禁用输入 */
   disabled?: boolean
+  /** 是否使用圆角（药丸形）外观 */
   rounded?: boolean
+  /** 是否显示一键清空按钮 */
   clearable?: boolean
+  /** 是否显示输入框边框 */
   border?: boolean
 }
 
@@ -48,12 +54,12 @@ const props = withDefaults(defineProps<SearchBoxProps>(), {
 })
 
 const emit = defineEmits([
-  'update:modelValue',
-  'search',
-  'clickCamera',
-  'selectSku',
-  'focus',
-  'blur',
+  'update:modelValue', // 输入内容变化时触发，参数为最新文本
+  'search', // 点击键盘搜索/确认键时触发，参数为当前输入值；非空关键字会写入历史记录
+  'clickCamera', // 点击右侧相机区域时触发（uniapp 端驼峰命名，对应 web 端的 click-camera）
+  'selectSku', // SKU 模式选中属性时触发（uniapp 端驼峰命名，对应 web 端的 select-sku；当前 uniapp 实现声明保留，模板尚未触发）
+  'focus', // 输入框聚焦时触发
+  'blur', // 输入框失焦时触发
 ])
 
 const isTranslated = ref(false)

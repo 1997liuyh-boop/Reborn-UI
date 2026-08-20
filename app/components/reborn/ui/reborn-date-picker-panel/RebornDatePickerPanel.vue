@@ -23,10 +23,10 @@ export interface DatePickerPanelProps {
     end?: string; // 可选范围结束时间
     size?: (typeof datePickerPanelSizes)[number]; // 尺寸：sm, md, lg
     overflow?: "hidden" | "visible";
-    disabledHours?: (role?: TimeRangeRole, comparingValue?: string | null) => number[];
-    disabledMinutes?: (hour: number, role?: TimeRangeRole, comparingValue?: string | null) => number[];
-    disabledSeconds?: (hour: number, minute: number, role?: TimeRangeRole, comparingValue?: string | null) => number[];
-    disabledMilliseconds?: (hour: number, minute: number, second: number, role?: TimeRangeRole, comparingValue?: string | null) => number[];
+    disabledHours?: (role?: TimeRangeRole, comparingValue?: string | null) => number[]; // 返回需禁用的小时数组；仅含时间的类型（datetime/datetimerange）生效，范围模式可按 role 区分开始/结束面板
+    disabledMinutes?: (hour: number, role?: TimeRangeRole, comparingValue?: string | null) => number[]; // 返回需禁用的分钟数组，入参为当前选中的小时；范围模式可按 role 区分开始/结束面板
+    disabledSeconds?: (hour: number, minute: number, role?: TimeRangeRole, comparingValue?: string | null) => number[]; // 返回需禁用的秒数组，入参为当前选中的时、分；范围模式可按 role 区分开始/结束面板
+    disabledMilliseconds?: (hour: number, minute: number, second: number, role?: TimeRangeRole, comparingValue?: string | null) => number[]; // 返回需禁用的毫秒数组，入参为当前选中的时、分、秒；范围模式可按 role 区分开始/结束面板
     color?: (typeof datePickerPanelColors)[number]; // 颜色主题
     shape?: "square" | "circle"; // 形状：方角或圆角
     class?: any; // 自定义类名

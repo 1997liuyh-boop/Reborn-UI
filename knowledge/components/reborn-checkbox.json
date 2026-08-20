@@ -19,28 +19,28 @@
       "name": "modelValue",
       "type": "boolean | CheckboxValue[]",
       "required": false,
-      "description": "number)[]",
-      "default": "(string \\"
+      "description": "受控选中状态（布尔）或选中值数组（多选模式）。",
+      "default": "false"
     },
     {
       "name": "defaultValue",
       "type": "boolean | CheckboxValue[]",
       "required": false,
-      "description": "number)[]",
-      "default": "(string \\"
+      "description": "非受控模式下的初始值。",
+      "default": "false"
     },
     {
       "name": "value",
       "type": "CheckboxValue",
       "required": false,
-      "description": "\"\"",
-      "default": "number"
+      "description": "该项的选中值，仅在绑定数组（或 web 端 CheckboxGroup）时生效。",
+      "default": "\"\""
     },
     {
       "name": "label",
       "type": "string",
       "required": false,
-      "description": "选中状态的值，只有在绑定对象类型为 array 时有效。 如果没有 value， label则作为value使用",
+      "description": "标签文本；数组模式下未传 `value` 时兜底充当选中值。",
       "default": "\"\""
     },
     {
@@ -54,54 +54,55 @@
       "name": "readOnly",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "仅展示状态，不响应点击（由外层接管，避免与父级多次触发；微信小程序等与 v-model 叠加易闪勾）",
       "default": "false"
     },
     {
       "name": "size",
       "type": "typeof checkboxSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸大小。",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof checkboxColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "选中色值。",
       "default": "'primary'"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点（wrapper）的自定义类名"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    input: ClassValue\n    control: ClassValue\n    icon: ClassValue\n    label: ClassValue\n  }>",
       "required": false,
-      "description": ""
+      "description": "覆盖内部各区域样式类：wrapper 根容器、control 勾选框、icon 勾选图标、label 标签文本",
+      "default": "{}"
     },
     {
       "name": "trueValue",
       "type": "any",
       "required": false,
-      "description": "true",
-      "default": "number"
+      "description": "选中时的值 (非数组模式下生效)",
+      "default": "true"
     },
     {
       "name": "falseValue",
       "type": "any",
       "required": false,
-      "description": "false",
-      "default": "number"
+      "description": "未选中时的值 (非数组模式下生效)",
+      "default": "false"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "额外样式类。",
+      "description": "自定义 class",
       "default": "\"\""
     }
   ],
@@ -109,22 +110,22 @@
     {
       "name": "update:modelValue",
       "payload": "(e: 'update:modelValue', value: boolean | CheckboxValue[]): void",
-      "description": ""
+      "description": "绑定值更新时触发，参数为最新值：布尔或选中值数组"
     },
     {
       "name": "change",
       "payload": "(e: \"change\", value: any): void;",
-      "description": ""
+      "description": "用户切换选中状态后触发，参数与 update:modelValue 相同"
     }
   ],
   "slots": [
     {
       "name": "icon",
-      "description": ""
+      "description": "自定义勾选框内的图标，替代默认对勾。"
     },
     {
       "name": "default",
-      "description": ""
+      "description": "自定义标签内容，替代 `label` 文本。"
     }
   ],
   "exposes": [],
@@ -178,8 +179,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-checkbox.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "4a07826ee57fcf2f8f714b4412eb46b488058ac9",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "fae38e20840e8964748095a3745ec651c871b296",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -14,7 +14,9 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<{
+  /** 细粒度样式覆盖对象，按 root/inner/list/item/value/cursor 键位重写对应节点类名 */
   ui?: any
+  /** 追加到根节点的自定义类名（等价于 web 端的 class） */
   customClass?: any
   modelValue?: string
   autofocus?: boolean

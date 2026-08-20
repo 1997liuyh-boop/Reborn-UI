@@ -3,6 +3,7 @@ import type { HslaColor, RgbaColor } from "@uiw/color-convert";
 import { computed } from "vue";
 
 interface ObjectColorInputProps {
+  /** 数字输入组的颜色格式：hsl/hsla 显示 H/S/L 通道，rgb/rgba 显示 R/G/B 通道；带 a 的格式追加透明度输入（0-100） */
   label: "hsl" | "hsla" | "rgb" | "rgba";
   value: HslaColor | RgbaColor;
 }

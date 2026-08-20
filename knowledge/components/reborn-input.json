@@ -19,15 +19,13 @@
       "name": "modelValue",
       "type": "string | number",
       "required": false,
-      "description": "\"\"",
-      "default": "number"
+      "description": "输入框绑定值（v-model）"
     },
     {
       "name": "defaultValue",
       "type": "string | number",
       "required": false,
-      "description": "\"\"",
-      "default": "number"
+      "description": "非受控模式下的初始值，未绑定 modelValue 时生效"
     },
     {
       "name": "placeholder",
@@ -54,219 +52,226 @@
       "name": "type",
       "type": "InputType",
       "required": false,
-      "description": "输入类型（`input` 模式）。",
+      "description": "输入类型；UniApp 端支持 text/number/idcard/digit 等原生键盘类型。",
       "default": "'text'"
     },
     {
       "name": "size",
       "type": "typeof inputSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸：sm/md/lg，影响高度与字号",
       "default": "'sm'"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点 wrapper 上的自定义类名"
     },
     {
       "name": "password",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否为密码框：内容掩码显示，并出现明文/密文切换按钮",
       "default": "false"
     },
     {
       "name": "clearable",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示清除按钮：有内容且非禁用/只读时出现，点击清空",
       "default": "false"
     },
     {
       "name": "focus",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "预留的聚焦开关，当前未接入内部逻辑；聚焦请用 autofocus 或实例 focus() 方法",
       "default": "false"
     },
     {
       "name": "maxlength",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "最大输入字符数，默认 140，设为 -1 不限制",
       "default": "140"
     },
     {
       "name": "cursorSpacing",
       "type": "number",
       "required": false,
-      "description": "",
+      "description": "聚焦时输入框距键盘的距离，单位 px",
       "default": "5"
     },
     {
       "name": "confirmHold",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "点击键盘确认按钮时是否保持键盘不收起",
       "default": "false"
     },
     {
       "name": "confirmType",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "键盘右下角确认按钮文案：done/send/search/next/go",
       "default": "'done'"
     },
     {
       "name": "adjustPosition",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "键盘弹起时是否自动上推页面",
       "default": "true"
     },
     {
       "name": "holdKeyboard",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "聚焦时点击页面其他区域是否保持键盘不收起",
       "default": "false"
     },
     {
       "name": "placeholderClass",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "占位文本的样式类，追加在内置 text-gray-4 之后",
       "default": "''"
     },
     {
       "name": "autofocus",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "挂载后自动聚焦并唤起键盘",
       "default": "false"
     },
     {
       "name": "rounded",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否启用尺寸联动圆角：sm/md 为小圆角、lg 为全圆角胶囊；false 时回退基础圆角",
       "default": "true"
     },
     {
       "name": "border",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否显示边框；开启后聚焦时边框颜色跟随 color",
       "default": "false"
     },
     {
       "name": "color",
       "type": "typeof inputColors[number]",
       "required": false,
-      "description": "",
+      "description": "聚焦时边框与分割线的高亮颜色，需配合 border 开启才可见",
       "default": "'neutral'"
     },
     {
       "name": "separator",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否在清除按钮、密码开关与 trailing 插槽之间显示竖分割线",
       "default": "true"
     },
     {
       "name": "ui",
       "type": "InputUI",
       "required": false,
-      "description": ""
+      "description": "按 wrapper/input/inputItem/leading/trailing 等键覆盖内部节点类名",
+      "default": "{}"
     },
     {
       "name": "as",
       "type": "\"input\" | \"textarea\"",
       "required": false,
-      "description": "\"input\"",
+      "description": "渲染为单行 input 还是多行 textarea",
       "default": "\"input\""
     },
     {
       "name": "rows",
       "type": "number",
       "required": false,
-      "description": "多行输入行数。",
+      "description": "as=\"textarea\"` 时的行数。",
       "default": "4"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "额外样式类。",
-      "default": "\"\""
+      "description": "追加到根节点 wrapper 的额外样式类。"
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "输入值变化时触发（v-model 同步）",
+      "payload": "(value: string / number)"
     },
     {
       "name": "input",
-      "description": ""
+      "description": "输入时触发，参数为当前输入值",
+      "payload": "(value: string / number)"
     },
     {
       "name": "change",
-      "description": ""
+      "description": "输入值变化时触发，与 input 同步；清空时也触发，参数为空字符串",
+      "payload": "(value: string / number)"
     },
     {
       "name": "focus",
-      "description": ""
+      "description": "输入框获得焦点时触发",
+      "payload": "(event)"
     },
     {
       "name": "blur",
-      "description": ""
+      "description": "输入框失去焦点时触发",
+      "payload": "(event)"
     },
     {
       "name": "confirm",
-      "description": ""
+      "description": "点击键盘确认/完成按钮时触发",
+      "payload": "(event)"
     },
     {
       "name": "clear",
-      "description": ""
+      "description": "点击清除按钮清空内容后触发"
     },
     {
       "name": "keyboardheightchange",
-      "description": ""
+      "description": "键盘高度变化时触发，e.detail 含 height（px）与 duration",
+      "payload": "(event)"
     }
   ],
   "slots": [
     {
       "name": "leading",
-      "description": ""
+      "description": "输入框前缀区域，常放搜索图标等；作用域提供 ui 类名生成器。"
     },
     {
       "name": "trailing",
-      "description": ""
+      "description": "输入框后缀区域，位于清除按钮与密码开关之后；作用域提供 ui 类名生成器。"
     }
   ],
   "exposes": [
     {
       "name": "isFocus",
-      "description": ""
+      "description": "当前是否处于聚焦态（Ref<boolean>）"
     },
     {
       "name": "focus",
-      "description": ""
+      "description": "使输入框聚焦（H5 端将光标移至内容末尾）"
     },
     {
       "name": "clear",
-      "description": ""
+      "description": "清空输入内容并触发 clear 事件"
     },
     {
       "name": "inputRef",
-      "description": ""
+      "description": "内部原生 input/textarea 元素引用"
     },
     {
       "name": "blur",
-      "description": ""
+      "description": "使输入框失去焦点"
     }
   ],
   "examples": [
@@ -319,8 +324,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-input.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "1c12781da60c8373ef50822c298c1e551de65a91",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "61037a76ec23c89366cbebd04a8087432f798a92",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

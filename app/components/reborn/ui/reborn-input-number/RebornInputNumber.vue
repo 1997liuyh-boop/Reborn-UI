@@ -21,6 +21,7 @@ export interface InputNumberProps {
   disabled?: boolean;
   size?: typeof inputNumberSizes[number];
   color?: typeof inputNumberColors[number];
+  /** 外形轮廓：circle 为胶囊圆角，square 为方角 */
   shape?: typeof inputNumberShapes[number];
   class?: any;
   ui?: Partial<{
@@ -41,6 +42,7 @@ const props = withDefaults(defineProps<InputNumberProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 数值变化时触发；按钮增减与失焦会先按 min/max 修正，键入过程中回调为原始键入值 */
   (e: "update:modelValue", value: number): void;
 }>();
 

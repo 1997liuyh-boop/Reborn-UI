@@ -18,42 +18,42 @@
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": "根节点额外 class（组件内部会与 `ui` 合并）",
+      "description": "自定义 class",
       "default": "''"
     },
     {
       "name": "customStyle",
       "type": "any",
       "required": false,
-      "description": "根节点内联样式",
+      "description": "自定义 style",
       "default": "''"
     },
     {
       "name": "ui",
       "type": "SignatureUI",
       "required": false,
-      "description": "按 slot 名称覆盖 Tailwind / Uno 类名",
+      "description": "样式覆盖",
       "default": "() => ({})"
     },
     {
       "name": "size",
       "type": "SignatureSize",
       "required": false,
-      "description": "'lg'",
+      "description": "尺寸",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "SignatureColor",
       "required": false,
-      "description": "'success' \\",
+      "description": "主题色",
       "default": "'primary'"
     },
     {
       "name": "height",
       "type": "number | string",
       "required": false,
-      "description": "360",
+      "description": "画布高度，数字使用 rpx",
       "default": "360"
     },
     {
@@ -67,147 +67,147 @@
       "name": "showPenColors",
       "type": "boolean",
       "required": false,
-      "description": "是否显示默认色板",
+      "description": "是否显示默认画笔色板",
       "default": "true"
     },
     {
       "name": "lineWidth",
       "type": "number",
       "required": false,
-      "description": "画笔宽度（px）",
+      "description": "画笔宽度，单位 px",
       "default": "4"
     },
     {
       "name": "penPressure",
       "type": "boolean",
       "required": false,
-      "description": "是否启用笔锋模拟",
+      "description": "是否启用笔锋效果",
       "default": "false"
     },
     {
       "name": "minLineWidth",
       "type": "number",
       "required": false,
-      "description": "笔锋最小宽度（px），未传时由内部推导",
+      "description": "笔锋最小宽度，单位 px",
       "default": "undefined"
     },
     {
       "name": "maxLineWidth",
       "type": "number",
       "required": false,
-      "description": "笔锋最大宽度（px），未传时由内部推导",
+      "description": "笔锋最大宽度，单位 px",
       "default": "undefined"
     },
     {
       "name": "backgroundColor",
       "type": "string",
       "required": false,
-      "description": "画布背景色；**空字符串可导出透明背景**",
+      "description": "背景色，设为空字符串可导出透明背景",
       "default": "'#FFFFFF'"
     },
     {
       "name": "placeholder",
       "type": "string",
       "required": false,
-      "description": "无笔迹时的占位文案",
+      "description": "占位文本",
       "default": "'请在此处签名'"
     },
     {
       "name": "showToolbar",
       "type": "boolean",
       "required": false,
-      "description": "是否显示默认底部工具栏",
+      "description": "是否显示默认操作栏",
       "default": "true"
     },
     {
       "name": "showClose",
       "type": "boolean",
       "required": false,
-      "description": "是否显示退出按钮；点击后会清空画布并触发 `close` 事件",
+      "description": "是否显示退出按钮",
       "default": "false"
     },
     {
       "name": "toolbarPosition",
       "type": "SignatureToolbarPosition",
       "required": false,
-      "description": "'bottom'",
+      "description": "横屏签名时操作按钮位置",
       "default": "'bottom'"
     },
     {
       "name": "showUndo",
       "type": "boolean",
       "required": false,
-      "description": "是否显示撤销",
+      "description": "是否显示撤销按钮",
       "default": "true"
     },
     {
       "name": "showRedo",
       "type": "boolean",
       "required": false,
-      "description": "是否显示恢复",
+      "description": "是否显示恢复按钮",
       "default": "true"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "禁用绘制与工具栏；可与表单注入状态叠加",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "readonly",
       "type": "boolean",
       "required": false,
-      "description": "只读（不可绘制）",
+      "description": "是否只读",
       "default": "false"
     },
     {
       "name": "allowEmpty",
       "type": "boolean",
       "required": false,
-      "description": "是否允许空白画布导出",
+      "description": "空白签名是否允许导出",
       "default": "false"
     },
     {
       "name": "fileType",
       "type": "'png' | 'jpg'",
       "required": false,
-      "description": "'png'",
+      "description": "导出图片类型",
       "default": "'png'"
     },
     {
       "name": "quality",
       "type": "number",
       "required": false,
-      "description": "JPG 导出质量",
+      "description": "jpg 导出质量",
       "default": "1"
     },
     {
       "name": "destScale",
       "type": "number",
       "required": false,
-      "description": "导出相对画布展示尺寸的倍数",
+      "description": "导出图片相对展示尺寸的倍数",
       "default": "3"
     },
     {
       "name": "minDistance",
       "type": "number",
       "required": false,
-      "description": "记录触点的最小移动距离（过滤抖动）",
+      "description": "记录触点的最小移动距离",
       "default": "2"
     },
     {
       "name": "rotate",
       "type": "0 | 90 | 180 | 270",
       "required": false,
-      "description": "180 \\",
+      "description": "外部通过 CSS transform rotate 旋转组件时传入的角度（顺时针）。 用于修正触点坐标与画布坐标系的偏差，微信小程序横屏签名场景下需传入 90。",
       "default": "0"
     },
     {
       "name": "closeOnSave",
       "type": "boolean",
       "required": false,
-      "description": "保存成功后是否额外触发 `close`（便于关弹窗）",
+      "description": "保存后是否触发 close 事件（用于自动关闭弹窗等场景）",
       "default": "false"
     },
     {
@@ -261,12 +261,12 @@
     {
       "name": "undo",
       "payload": "(e: 'undo', stroke: SignatureStroke | undefined): void",
-      "description": "undefined"
+      "description": "撤销一笔时触发，参数为被撤销的笔迹"
     },
     {
       "name": "redo",
       "payload": "(e: 'redo', stroke: SignatureStroke | undefined): void",
-      "description": "undefined"
+      "description": "恢复一笔时触发，参数为被恢复的笔迹"
     },
     {
       "name": "save",
@@ -311,55 +311,55 @@
   "exposes": [
     {
       "name": "clear",
-      "description": ""
+      "description": "清空全部笔迹与恢复栈并重绘画布，同时把 v-model 重置为空字符串，触发 clear 与 change 事件"
     },
     {
       "name": "undo",
-      "description": ""
+      "description": "撤销最近一笔（移入恢复栈）并重绘，重置 v-model 为空字符串，触发 undo 与 change 事件；无笔迹时不做任何事"
     },
     {
       "name": "redo",
-      "description": ""
+      "description": "恢复最近撤销的一笔并重绘，重置 v-model 为空字符串，触发 redo 与 change 事件；恢复栈为空时不做任何事"
     },
     {
       "name": "save",
-      "description": ""
+      "description": "导出画布为临时图片并写入 v-model，触发 save 事件（payload 含 tempFilePath/strokes/isEmpty）；closeOnSave 开启时随后触发 close。返回 Promise<string>（临时文件路径；空白且不允许导出时返回 ''，导出失败时 reject 并触发 error 事件）"
     },
     {
       "name": "toPng",
-      "description": ""
+      "description": "仅导出画布为临时图片路径，不写入 v-model、不触发 save 事件。返回 Promise<string>（fileType 决定 png/jpg 格式的临时文件路径）；可传 { allowEmpty } 覆盖组件的 allowEmpty，空白且不允许导出时返回 ''"
     },
     {
       "name": "getStrokes",
-      "description": ""
+      "description": "返回当前全部笔迹的深拷贝数组（SignatureStroke[]，含每笔颜色、宽度与触点序列），可用于持久化或回放"
     },
     {
       "name": "selectPenColor",
-      "description": ""
+      "description": "切换当前画笔颜色，参数为色值字符串；禁用/只读状态或与当前颜色相同时忽略"
     },
     {
       "name": "penColor",
-      "description": ""
+      "description": "当前画笔颜色（响应式 ref，与 v-model:pen-color 双向同步）"
     },
     {
       "name": "isEmpty",
-      "description": ""
+      "description": "是否尚无任何笔迹（响应式 computed 布尔值）"
     },
     {
       "name": "canUndo",
-      "description": ""
+      "description": "是否有笔迹可撤销（响应式 computed 布尔值）"
     },
     {
       "name": "canRedo",
-      "description": ""
+      "description": "是否有已撤销笔迹可恢复（响应式 computed 布尔值）"
     },
     {
       "name": "strokeCount",
-      "description": ""
+      "description": "当前笔画数量（响应式 computed 数值）"
     },
     {
       "name": "pointCount",
-      "description": ""
+      "description": "已记录的触点采样总数（响应式 ref 数值，随绘制/撤销/清空实时增减）"
     }
   ],
   "examples": [
@@ -409,8 +409,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-signature.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "fe2ceacac316771d52bb7f7a446d7ec414313f19",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "14993802a5eaf759c069c72852ef50412cd4fc34",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

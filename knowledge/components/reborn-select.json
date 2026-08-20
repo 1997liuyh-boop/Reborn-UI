@@ -20,105 +20,105 @@
       "name": "modelValue",
       "type": "SelectValue",
       "required": false,
-      "description": "(string \\",
+      "description": "选择器的值",
       "default": "null"
     },
     {
       "name": "title",
       "type": "string",
       "required": false,
-      "description": "弹出层的标题。",
+      "description": "标题",
       "default": "'请选择'"
     },
     {
       "name": "placeholder",
       "type": "string",
       "required": false,
-      "description": "选择器的占位符文本。",
+      "description": "占位符",
       "default": "'请选择'"
     },
     {
       "name": "options",
       "type": "SelectOption[]",
       "required": false,
-      "description": "选择器的数据源选项。`SelectOption` 包含 `label`、`value`、`disabled` 等字段。",
+      "description": "选项数据",
       "default": "() => []"
     },
     {
       "name": "showTrigger",
       "type": "boolean",
       "required": false,
-      "description": "是否显示默认的触发器。",
+      "description": "是否显示触发器",
       "default": "true"
     },
     {
       "name": "disabled",
       "type": "boolean",
       "required": false,
-      "description": "是否禁用选择器。UniApp 版本兼容 `reborn-form`。",
+      "description": "是否禁用",
       "default": "false"
     },
     {
       "name": "columnCount",
       "type": "number",
       "required": false,
-      "description": "数据源的列数，用于多列选择。",
+      "description": "列数",
       "default": "1"
     },
     {
       "name": "splitor",
       "type": "string",
       "required": false,
-      "description": "多选或多列数据在触发器中的分隔符文本。",
+      "description": "分隔符",
       "default": "' - '"
     },
     {
       "name": "confirmText",
       "type": "string",
       "required": false,
-      "description": "弹出层确认按钮文本。",
+      "description": "确认按钮文本",
       "default": "'确定'"
     },
     {
       "name": "showConfirm",
       "type": "boolean",
       "required": false,
-      "description": "是否显示弹出层确认按钮。",
+      "description": "是否显示确认按钮",
       "default": "true"
     },
     {
       "name": "cancelText",
       "type": "string",
       "required": false,
-      "description": "弹出层取消按钮文本。",
+      "description": "取消按钮文本",
       "default": "'取消'"
     },
     {
       "name": "showCancel",
       "type": "boolean",
       "required": false,
-      "description": "是否显示弹出层取消按钮。",
+      "description": "是否显示取消按钮",
       "default": "true"
     },
     {
       "name": "clearable",
       "type": "boolean",
       "required": false,
-      "description": "是否显示清空按钮。",
+      "description": "是否显示清空按钮",
       "default": "true"
     },
     {
       "name": "color",
       "type": "typeof selectColors[number]",
       "required": false,
-      "description": "'success' \\",
+      "description": "颜色",
       "default": "'primary'"
     },
     {
       "name": "size",
       "type": "typeof selectSizes[number]",
       "required": false,
-      "description": "'lg'` (Web) / `'sm' \\",
+      "description": "尺寸",
       "default": "'lg'"
     },
     {
@@ -132,67 +132,67 @@
       "name": "triggerUi",
       "type": "Partial<{\n    wrapper: ClassValue\n    content: ClassValue\n    text: ClassValue\n    placeholder: ClassValue\n    iconWrapper: ClassValue\n    clearIcon: ClassValue\n    arrowIcon: ClassValue\n  }>",
       "required": false,
-      "description": "用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。",
+      "description": "样式覆盖",
       "default": "{}"
     },
     {
       "name": "popupUi",
       "type": "Partial<{\n    wrapper: ClassValue\n    mask: ClassValue\n    popup: ClassValue\n    inner: ClassValue\n    draw: ClassValue\n    header: ClassValue\n    title: ClassValue\n    container: ClassValue\n  }>",
       "required": false,
-      "description": ""
+      "description": "底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域"
     },
     {
       "name": "pickerUi",
       "type": "Partial<{\n    wrapper: ClassValue\n    header: ClassValue\n    headerText: ClassValue\n    pickerContainer: ClassValue\n    item: ClassValue\n    itemText: ClassValue\n    indicator: ClassValue\n  }>",
       "required": false,
-      "description": ""
+      "description": "滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域"
     },
     {
       "name": "multiple",
       "type": "boolean",
       "required": false,
-      "description": "是否为多选模式。开启后 `modelValue` 为数组格式。",
+      "description": "是否开启多选模式",
       "default": "false"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "自定义样式类名。"
+      "description": "自定义类名"
     },
     {
       "name": "bordered",
       "type": "boolean",
       "required": false,
-      "description": "是否显示边框。",
+      "description": "是否显示边框",
       "default": "true"
     },
     {
       "name": "showArrow",
       "type": "boolean",
       "required": false,
-      "description": "是否显示右侧箭头图标。",
+      "description": "是否显示箭头",
       "default": "true"
     },
     {
       "name": "arrowAnimation",
       "type": "boolean",
       "required": false,
-      "description": "展开时箭头是否旋转动画。",
+      "description": "展开时箭头是否旋转",
       "default": "true"
     },
     {
       "name": "closeOn",
       "type": "SelectTriggerProps[\"closeOn\"]",
       "required": false,
-      "description": "'click'",
+      "description": "关闭下拉的时机（透传给 RebornSelectTrigger）： - 'click'：在触发器外完成一次点击后才收起（默认） - 'mousedown'：在触发器外发生任意按下类鼠标事件立即收起",
       "default": "\"click\""
     },
     {
       "name": "portal",
       "type": "SelectTriggerProps[\"portal\"]",
       "required": false,
-      "description": "浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受任何祖先 `overflow` / `transform` 裁剪（如 `RebornDialog` 内）；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。",
+      "description": "浮层是否传送到 body（默认 true）。 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。",
       "default": "true"
     }
   ],
@@ -251,11 +251,11 @@
   "exposes": [
     {
       "name": "open",
-      "description": ""
+      "description": "打开底部选择弹出层；可传入回调，在点击确认时接收选中值"
     },
     {
       "name": "close",
-      "description": ""
+      "description": "关闭底部选择弹出层"
     }
   ],
   "examples": [
@@ -315,8 +315,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-select.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "a90fee91356a06e21c83239f8e9761331b832a05",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "07c1e540a88627fb4ac71aad4d82ae10bf4a68e9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

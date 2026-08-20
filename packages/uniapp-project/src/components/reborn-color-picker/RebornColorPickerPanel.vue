@@ -19,7 +19,9 @@ import RebornInput from "../reborn-input/RebornInput.vue";
 
 interface Props {
     modelValue?: string;
+    /** 面板当前的颜色输出格式（'hex' | 'rgb' | 'rgba'），支持 v-model:format 双向绑定 */
     format?: ColorFormat;
+    /** 追加到面板根节点的自定义类名 */
     class?: any;
     ui?: {
         root?: string
@@ -48,6 +50,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
     (e: "update:modelValue", value: string): void;
+    /** 用户点击格式切换按钮时触发（v-model:format 同步），参数为新的输出格式 */
     (e: "update:format", value: ColorFormat): void;
 }>();
 

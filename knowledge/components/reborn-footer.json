@@ -14,21 +14,21 @@
       "name": "minHeight",
       "type": "number",
       "required": false,
-      "description": "最小可见高度阈值。footer 实际高度小于该值（叠加底部安全区）时，不显示 footer。",
+      "description": "最小高度，小于该高度时，不显示",
       "default": "30"
     },
     {
       "name": "vt",
       "type": "number",
       "required": false,
-      "description": "变化触发值。该值变化会强制重新测量 footer 高度。",
+      "description": "监听值，触发更新",
       "default": "0"
     },
     {
       "name": "height",
       "type": "number | null",
       "required": false,
-      "description": "null",
+      "description": "内容高度",
       "default": "null"
     },
     {
@@ -95,8 +95,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-footer.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "7479cce254e16ab1473bb593028dd8535300aa6c",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "2d5cfe0eb82322c4c933365e72f4bf9131bab3f3",
     "hasOverride": true,
     "extractors": {
       "web": "partial",

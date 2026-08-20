@@ -32,6 +32,8 @@ navigation:
 | `disabledHours`    | `(role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                               | `() => []`     | 返回禁用小时列表。范围模式下可按 `role` 区分开始和结束面板。                       |
 | `disabledMinutes`  | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                 | `() => []`     | 返回禁用分钟列表。                                                                 |
 | `disabledSeconds`  | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]` | `() => []`     | 返回禁用秒列表。                                                                   |
+| `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]` | `() => []` | 返回禁用毫秒列表，入参为当前时、分、秒。范围模式下可按 `role` 区分开始和结束面板。 |
+| `class`            | `any`                                                                                                  | -              | 追加到触发器根元素的自定义类名。                                                   |
 | `size`             | `'sm' \| 'md' \| 'lg'`                                                                                 | `'md'`         | 组件尺寸。                                                                         |
 | `color`            | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                 | `'primary'`    | 组件主题色。                                                                       |
 | `bordered`         | `boolean`                                                                                              | `true`         | 是否显示边框。                                                                     |
@@ -47,6 +49,8 @@ navigation:
 | ------------------- | ----------------------------- | ---------------------- |
 | `update:modelValue` | `(value: string \| string[])` | 时间变更时更新绑定值。 |
 | `change`            | `(value: string \| string[])` | 时间变更后触发。       |
+| `clear`             | -                             | 点击面板底部「清空」按钮清空值后触发（`RebornTimePanel` 事件）。 |
+| `confirm`           | `(value: string \| string[])` | 点击面板底部「确定」按钮时触发，携带当前选中值并收起面板（`RebornTimePanel` 事件）。 |
 
 ## Slots
 
@@ -54,6 +58,7 @@ navigation:
 | --- | --- | --- |
 | `default` | `{ isOpen, toggle, clear, hasValue, rangeDisplay, singleDisplay }` | 自定义触发器显示内容。 |
 | `cover`   | `{ isOpen, toggle, clear, hasValue, rangeDisplay, singleDisplay }` | 覆盖整个触发器内容的插槽，完全替代文本和图标。 |
+| `footer`  | -                                                                  | 自定义面板底部操作栏内容，默认渲染「清空」和「确定」按钮（`RebornTimePanel` 插槽）。 |
 
 ## UI
 

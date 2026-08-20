@@ -151,11 +151,17 @@ const props = withDefaults(defineProps<SearchBoxProps>(), {
 });
 
 const emit = defineEmits<{
+  /** 输入框、左侧选择器或 SKU 值变化时触发，参数为合并后的完整 modelValue 对象 */
   (e: "update:modelValue", value: SearchBoxModelValue): void;
+  /** 点击搜索按钮、按下回车或选中历史记录时触发，参数为当前 modelValue */
   (e: "search", value: SearchBoxModelValue): void;
+  /** 点击后置相机图标时触发（web 端短横线命名，对应 uniapp 端的 clickCamera） */
   (e: "click-camera"): void;
+  /** 左侧选择器或 SKU 属性变化时触发，label 为属性 key（选择器变更时为 "selectValue"），value 为选中值（web 端短横线命名，对应 uniapp 端的 selectSku） */
   (e: "select-sku", attr: { label: string, value: string | number }): void;
+  /** 输入框获得焦点时触发；showDropdown 开启时同时展开下拉面板 */
   (e: "focus", event: FocusEvent): void;
+  /** 输入框失去焦点时触发；若焦点仍在组件内部则不收起面板 */
   (e: "blur", event: FocusEvent): void;
 }>();
 

@@ -19,6 +19,7 @@ export interface SliderProps {
     range?: boolean;
     size?: (typeof sliderSizes)[number];
     color?: (typeof sliderColors)[number];
+    /** 追加到根节点的自定义类名 */
     class?: any;
     ui?: Partial<{
         wrapper: ClassValue;

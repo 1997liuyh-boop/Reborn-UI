@@ -45,7 +45,7 @@
       "name": "orientation",
       "type": "RebornMarqueeOrientation",
       "required": false,
-      "description": "'horizontal'",
+      "description": "设置滚动方向。",
       "default": "'horizontal'"
     },
     {
@@ -116,8 +116,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-marquee.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "0fdb5c306b13202cb3882936bc7a6c2588a7c62f",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "ade4f0b7b08d7f61944f39f4d052d0ce50fe51b9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -33,14 +33,14 @@
       "name": "min",
       "type": "number",
       "required": false,
-      "description": "最小值。",
+      "description": "最小值；web 端不传即不限制。",
       "default": "0"
     },
     {
       "name": "max",
       "type": "number",
       "required": false,
-      "description": "最大值。",
+      "description": "最大值；web 端不传即不限制。",
       "default": "200"
     },
     {
@@ -61,103 +61,103 @@
       "name": "size",
       "type": "typeof inputNumberSizes[number]",
       "required": false,
-      "description": "\"lg\"",
+      "description": "尺寸大小。",
       "default": "'md'"
     },
     {
       "name": "color",
       "type": "typeof inputNumberColors[number]",
       "required": false,
-      "description": "\"success\" \\",
+      "description": "聚焦与按钮强调色。",
       "default": "'primary'"
     },
     {
       "name": "shape",
       "type": "typeof inputNumberShapes[number]",
       "required": false,
-      "description": "",
+      "description": "外形轮廓：circle 为胶囊圆角，square 为方角",
       "default": "'circle'"
     },
     {
       "name": "ui",
       "type": "Partial<{\n    wrapper: ClassValue\n    button: ClassValue\n    input: ClassValue\n    divider: ClassValue\n    icon: ClassValue\n  }>",
       "required": false,
-      "description": "UI 定制对象，支持 `wrapper`, `button`, `input`, `divider`, `icon`。详见下表。",
+      "description": "UI 定制对象，支持 `wrapper` / `button` / `input` / `divider` / `icon`，详见下表。",
       "default": "() => ({})"
     },
     {
       "name": "readonly",
       "type": "boolean",
       "required": false,
-      "description": "",
+      "description": "是否允许直接在输入框键入（与原生 readonly 语义相反）：默认 true 可键入，设为 false 后输入框只读、仅能通过按钮增减",
       "default": "true"
     },
     {
       "name": "placeholder",
       "type": "string",
       "required": false,
-      "description": "",
+      "description": "输入框占位文本",
       "default": "''"
     },
     {
       "name": "inputType",
       "type": "'digit' | 'number'",
       "required": false,
-      "description": "",
+      "description": "键盘类型：number 为整数数字键盘，digit 为带小数点的数字键盘（digit 模式下数值自动保留两位小数）",
       "default": "'number'"
     },
     {
       "name": "customClass",
       "type": "any",
       "required": false,
-      "description": ""
+      "description": "追加到根节点的自定义类名（等价于 web 端的 class）"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "额外样式类。",
+      "description": "仅 web。追加到根节点的自定义类名。",
       "default": "\"\""
     }
   ],
   "events": [
     {
       "name": "update:modelValue",
-      "description": ""
+      "description": "数值经 min/max 修正且与旧值不同时触发，回调为最新数值"
     },
     {
       "name": "change",
-      "description": ""
+      "description": "与 update:modelValue 同时触发，回调为修正后的最新数值"
     },
     {
       "name": "input",
-      "description": ""
+      "description": "输入框键入时透传原生 input 事件对象（此时数值尚未经 min/max 修正）"
     },
     {
       "name": "blur",
-      "description": ""
+      "description": "输入框失焦并完成数值修正后触发，透传原生事件对象"
     },
     {
       "name": "focus",
-      "description": ""
+      "description": "输入框聚焦事件（当前版本模板未绑定，预留）"
     }
   ],
   "slots": [
     {
       "name": "decrease-icon",
-      "description": ""
+      "description": "仅 uniapp。替换减按钮内的图标，按钮与点击逻辑保留。"
     },
     {
       "name": "increase-icon",
-      "description": ""
+      "description": "仅 uniapp。替换加按钮内的图标，按钮与点击逻辑保留。"
     },
     {
       "name": "decrement",
-      "description": ""
+      "description": "仅 web。替换减按钮内部的图标位内容，`iconClass` 为当前尺寸的图标类名。"
     },
     {
       "name": "increment",
-      "description": ""
+      "description": "仅 web。替换加按钮内部的图标位内容，`iconClass` 为当前尺寸的图标类名。"
     }
   ],
   "exposes": [],
@@ -186,10 +186,10 @@
     "在连续区间内取值改用 reborn-slider。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用。",
-    "min 默认 0、max 默认 200、step 默认 1，业务范围不同时必须显式传入。",
-    "readonly 默认 true，即中间输入区默认不可直接键入，仅靠按钮增减。",
-    "inputType 仅支持 digit/number 两种。"
+    "web、uniapp 双端可用，但插槽名不同：web 端为 decrement/increment，uniapp 端为 decrease-icon/increase-icon。",
+    "uniapp 端 min 默认 0、max 默认 200（web 端两者无默认值，不传即不限制），step 默认 1，业务范围不同时必须显式传入。",
+    "readonly（仅 uniapp）与原生语义相反：默认 true 表示允许直接键入，设为 false 后输入框只读、仅能通过按钮增减。",
+    "inputType（仅 uniapp）仅支持 digit/number 两种；digit 模式下数值自动保留两位小数。"
   ],
   "dependencies": [
     "clsx"
@@ -212,8 +212,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-input-number.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "e08676c980a6e837f6b0629e37605eb6ef4190bd",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "0fc9f136eb939401b24888c63c362f71780022d9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

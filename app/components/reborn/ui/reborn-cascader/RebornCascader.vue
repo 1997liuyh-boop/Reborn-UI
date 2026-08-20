@@ -401,7 +401,14 @@ onBeforeUnmount(() => {
   hoverTimers.value.clear();
 });
 
-defineExpose({ open, close, clear });
+defineExpose({
+  /** 打开下拉面板（禁用状态下无效），并把展开路径同步为当前选中路径 */
+  open,
+  /** 关闭下拉面板并清空临时展开路径 */
+  close,
+  /** 清空选中值与展开路径，并触发 change 事件（空数组） */
+  clear,
+});
 </script>
 
 <template>

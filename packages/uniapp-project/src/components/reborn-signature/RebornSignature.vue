@@ -142,7 +142,9 @@ const emit = defineEmits<{
   (e: 'end', stroke: SignatureStroke): void
   (e: 'change', payload: SignatureChangePayload): void
   (e: 'clear'): void
+  /** 撤销一笔时触发，参数为被撤销的笔迹 */
   (e: 'undo', stroke: SignatureStroke | undefined): void
+  /** 恢复一笔时触发，参数为被恢复的笔迹 */
   (e: 'redo', stroke: SignatureStroke | undefined): void
   (e: 'save', payload: SignatureSavePayload): void
   (e: 'close'): void
@@ -911,18 +913,31 @@ onMounted(() => {
 })
 
 defineExpose({
+  /** 清空全部笔迹与恢复栈并重绘画布，同时把 v-model 重置为空字符串，触发 clear 与 change 事件 */
   clear,
+  /** 撤销最近一笔（移入恢复栈）并重绘，重置 v-model 为空字符串，触发 undo 与 change 事件；无笔迹时不做任何事 */
   undo,
+  /** 恢复最近撤销的一笔并重绘，重置 v-model 为空字符串，触发 redo 与 change 事件；恢复栈为空时不做任何事 */
   redo,
+  /** 导出画布为临时图片并写入 v-model，触发 save 事件（payload 含 tempFilePath/strokes/isEmpty）；closeOnSave 开启时随后触发 close。返回 Promise<string>（临时文件路径；空白且不允许导出时返回 ''，导出失败时 reject 并触发 error 事件） */
   save,
+  /** 仅导出画布为临时图片路径，不写入 v-model、不触发 save 事件。返回 Promise<string>（fileType 决定 png/jpg 格式的临时文件路径）；可传 { allowEmpty } 覆盖组件的 allowEmpty，空白且不允许导出时返回 '' */
   toPng,
+  /** 返回当前全部笔迹的深拷贝数组（SignatureStroke[]，含每笔颜色、宽度与触点序列），可用于持久化或回放 */
   getStrokes,
+  /** 切换当前画笔颜色，参数为色值字符串；禁用/只读状态或与当前颜色相同时忽略 */
   selectPenColor,
+  /** 当前画笔颜色（响应式 ref，与 v-model:pen-color 双向同步） */
   penColor: currentPenColor,
+  /** 是否尚无任何笔迹（响应式 computed 布尔值） */
   isEmpty,
+  /** 是否有笔迹可撤销（响应式 computed 布尔值） */
   canUndo,
+  /** 是否有已撤销笔迹可恢复（响应式 computed 布尔值） */
   canRedo,
+  /** 当前笔画数量（响应式 computed 数值） */
   strokeCount,
+  /** 已记录的触点采样总数（响应式 ref 数值，随绘制/撤销/清空实时增减） */
   pointCount,
 })
 </script>

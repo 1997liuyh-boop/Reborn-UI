@@ -13,14 +13,14 @@
       "name": "ui",
       "type": "Partial<{\n        base: any\n    }>",
       "required": false,
-      "description": "内部组件 UI 配置对象。",
+      "description": "UI 样式调整",
       "default": "{}"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "自定义类名。"
+      "description": "自定义类名"
     }
   ],
   "events": [],
@@ -67,8 +67,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-main.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "2e787e28a0045757d5f6c062a869d59badc615ef",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "a31a876a9a3847c532a0e355399697ed51255bb5",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

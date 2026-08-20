@@ -13,132 +13,132 @@
       "name": "open",
       "type": "boolean",
       "required": false,
-      "description": "控制 Dialog 是否打开，支持外部状态和内部触发器同时参与。",
+      "description": "是否打开对话框 @default undefined",
       "default": "undefined"
     },
     {
       "name": "title",
       "type": "string",
       "required": false,
-      "description": "默认头部标题。",
+      "description": "对话框标题 @default \"\"",
       "default": "\"\""
     },
     {
       "name": "description",
       "type": "string",
       "required": false,
-      "description": "默认头部描述。",
+      "description": "对话框描述 @default \"\"",
       "default": "\"\""
     },
     {
       "name": "close",
       "type": "boolean | ButtonProps",
       "required": false,
-      "description": "{ color: 'primary', variant: 'outline', size: 'sm' }",
+      "description": "关闭按钮配置 @description 可以是布尔值（是否显示默认按钮）或按钮属性对象 @default true",
       "default": "true"
     },
     {
       "name": "closeIcon",
       "type": "string",
       "required": false,
-      "description": "关闭按钮图标。",
+      "description": "关闭按钮图标 @default \"lucide:x\"",
       "default": "\"lucide:x\""
     },
     {
       "name": "overlay",
       "type": "boolean",
       "required": false,
-      "description": "是否显示遮罩层。",
+      "description": "是否显示遮罩层 @default true",
       "default": "true"
     },
     {
       "name": "dismissible",
       "type": "boolean",
       "required": false,
-      "description": "是否允许点击外部或按下 `Esc` 关闭。",
+      "description": "是否可以通过点击遮罩层或按下 Esc 键关闭 @default true",
       "default": "true"
     },
     {
       "name": "scrollable",
       "type": "boolean",
       "required": false,
-      "description": "是否让正文区域在弹层内部滚动。",
+      "description": "内容是否可滚动 @default false",
       "default": "false"
     },
     {
       "name": "fullscreen",
       "type": "boolean",
       "required": false,
-      "description": "是否全屏展示 Dialog。",
+      "description": "是否全屏显示 @default false",
       "default": "false"
     },
     {
       "name": "draggable",
       "type": "boolean",
       "required": false,
-      "description": "是否允许拖拽头部区域移动弹窗，全屏模式下无效。",
+      "description": "是否可拖拽（非全屏模式下有效） @default false",
       "default": "false"
     },
     {
       "name": "cancelBtn",
       "type": "DialogActionButton",
       "required": false,
-      "description": "ButtonProps",
+      "description": "取消按钮配置 @description 可以是字符串（标签）、false（隐藏）或按钮属性对象 @default \"取消\"",
       "default": "\"取消\""
     },
     {
       "name": "confirmBtn",
       "type": "DialogActionButton",
       "required": false,
-      "description": "ButtonProps",
+      "description": "确认按钮配置 @description 可以是字符串（标签）、false（隐藏）或按钮属性对象 @default \"确认\"",
       "default": "\"确认\""
     },
     {
       "name": "beforeClose",
       "type": "(done: () => void) => void",
       "required": false,
-      "description": "关闭前拦截，调用 `done()` 后才会真正关闭。",
+      "description": "关闭前的回调 @param done 调用此函数以完成关闭过程",
       "default": "undefined"
     },
     {
       "name": "openDelay",
       "type": "number",
       "required": false,
-      "description": "打开延时，单位毫秒。",
+      "description": "打开延迟（毫秒） @default 0",
       "default": "0"
     },
     {
       "name": "closeDelay",
       "type": "number",
       "required": false,
-      "description": "关闭延时，单位毫秒。",
+      "description": "关闭延迟（毫秒） @default 0",
       "default": "0"
     },
     {
       "name": "zIndex",
       "type": "number",
       "required": false,
-      "description": "Dialog 根层级。",
+      "description": "层级 @default 2400",
       "default": "2400"
     },
     {
       "name": "lockScroll",
       "type": "boolean",
       "required": false,
-      "description": "打开时是否锁定页面滚动。",
+      "description": "是否锁定背景滚动 @default true",
       "default": "true"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "自定义弹窗面板类名。"
+      "description": "自定义类名（作用于面板）"
     },
     {
       "name": "ui",
       "type": "RebornDialogUi",
       "required": false,
-      "description": "UI 覆盖配置。",
+      "description": "UI 样式透传配置",
       "default": "() => ({})"
     }
   ],
@@ -146,47 +146,47 @@
     {
       "name": "update:open",
       "payload": "(e: \"update:open\", value: boolean): void;",
-      "description": "请求更新 Dialog 的打开状态。"
+      "description": "更新打开状态"
     },
     {
       "name": "open",
       "payload": "(e: \"open\"): void;",
-      "description": "打开流程开始时触发。"
+      "description": "打开事件"
     },
     {
       "name": "opened",
       "payload": "(e: \"opened\"): void;",
-      "description": "打开动画结束后触发。"
+      "description": "打开完成事件"
     },
     {
       "name": "close",
       "payload": "(e: \"close\"): void;",
-      "description": "关闭流程开始时触发。"
+      "description": "关闭事件"
     },
     {
       "name": "closed",
       "payload": "(e: \"closed\"): void;",
-      "description": "关闭动画结束后触发。"
+      "description": "关闭完成事件"
     },
     {
       "name": "openAutoFocus",
       "payload": "(e: \"openAutoFocus\"): void;",
-      "description": "Dialog 打开后自动聚焦时触发。"
+      "description": "打开时自动聚焦事件"
     },
     {
       "name": "closeAutoFocus",
       "payload": "(e: \"closeAutoFocus\"): void;",
-      "description": "Dialog 关闭后焦点返回触发器时触发。"
+      "description": "关闭时自动聚焦事件"
     },
     {
       "name": "confirm",
       "payload": "(e: \"confirm\"): void;",
-      "description": "点击确认按钮时触发，默认不会自动关闭。"
+      "description": "点击确认按钮事件"
     },
     {
       "name": "cancel",
       "payload": "(e: \"cancel\"): void;",
-      "description": "点击取消按钮时触发，默认会自动关闭。"
+      "description": "点击取消按钮事件"
     }
   ],
   "slots": [
@@ -259,8 +259,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-dialog.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "064170306e1bbac95f73509b0d7cd66c817470e8",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "138ec085714c464149abe0461e4634d7680d4604",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

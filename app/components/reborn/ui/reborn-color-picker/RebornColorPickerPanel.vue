@@ -15,6 +15,7 @@ import RebornInput from "../reborn-input/RebornInput.vue";
 
 interface Props {
     modelValue?: string;
+    /** 追加到面板根节点的自定义类名 */
     class?: any;
     ui?: {
         root?: string

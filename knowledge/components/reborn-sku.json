@@ -18,28 +18,28 @@
       "name": "options",
       "type": "SkuOption[]",
       "required": false,
-      "description": "属性组配置列表，结构见下方 SkuOption 字段表",
+      "description": "属性组配置列表",
       "default": "() => []"
     },
     {
       "name": "modelValue",
       "type": "Record<string, any>",
       "required": false,
-      "description": "双向绑定值，key 为 `SkuOption.key`，value 为选中的 `valueKey` 值（多选时为数组）",
+      "description": "双向绑定值，key 为 SkuOption.key，value 为选中的 valueKey 值（多选时为数组）",
       "default": "() => ({})"
     },
     {
       "name": "class",
       "type": "any",
       "required": false,
-      "description": "追加到根容器的自定义类名",
+      "description": "自定义类名",
       "default": "—"
     },
     {
       "name": "ui",
       "type": "SkuUi",
       "required": false,
-      "description": "分区样式覆盖对象，键位见下方 SkuUi 键位表",
+      "description": "UI 覆盖",
       "default": "() => ({})"
     }
   ],
@@ -56,10 +56,6 @@
     }
   ],
   "slots": [
-    {
-      "name": "option.slots",
-      "description": "由属性组 `slots` 字段指定的动态插槽，作用域参数：`option`、`modelValue`；`slotsCover` 为 `true` 时完全替换该属性组渲染，否则追加在选项列表后方"
-    },
     {
       "name": "item",
       "description": "自定义单个选项内容，作用域参数：`item`（选项数据）、`option`（所属属性组）、`selected`（是否选中）"
@@ -103,8 +99,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-sku.md",
   "_meta": {
-    "generatedAt": "2026-08-20T15:26:05.324Z",
-    "contentHash": "ebe026bfb988c38cfde63e587e7b3d04596ee9cd",
+    "generatedAt": "2026-08-20T16:21:11.823Z",
+    "contentHash": "af0b9ec301192144f6e922296dcc8b219abd97f5",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
