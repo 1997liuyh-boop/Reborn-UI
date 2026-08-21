@@ -7,8 +7,13 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 export default defineNitroPlugin(() => {
   const { aiProvider } = useRuntimeConfig();
 
-  // 未配置密钥或端点时不覆盖,保持默认行为(走 AI Gateway)
-  if (!aiProvider?.apiKey || !aiProvider?.baseUrl) return;
+  // 未配置密钥或端点时不覆盖。生产若走到这里,助手会静默回落 Vercel AI Gateway 并秒级空回复。
+  if (!aiProvider?.apiKey || !aiProvider?.baseUrl) {
+    console.warn(
+      "[ai-provider] NUXT_AI_PROVIDER_API_KEY / NUXT_AI_PROVIDER_BASE_URL 未注入,跳过自建网关注册",
+    );
+    return;
+  }
 
   (globalThis as Record<string, unknown>).AI_SDK_DEFAULT_PROVIDER = createOpenAICompatible({
     name: "reborn-ai-gateway",
@@ -16,4 +21,5 @@ export default defineNitroPlugin(() => {
     // 注意:baseURL 需带 /v1 后缀,提供商会在其后拼接 /chat/completions
     baseURL: aiProvider.baseUrl,
   });
+  console.log(`[ai-provider] 已注册自建网关: ${aiProvider.baseUrl}`);
 });

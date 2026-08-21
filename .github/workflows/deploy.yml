@@ -2,6 +2,8 @@
 # 功能：push 到 main 分支时自动构建 Nuxt 应用并部署到腾讯云服务器
 # 与 .cnb.yml 的 CNB 流水线保持同构；敏感信息全部来自仓库的 Actions Secrets：
 #   DEPLOY_SERVER_IP / DEPLOY_SERVER_USER / DEPLOY_TARGET_PATH / DEPLOY_SSH_PRIVATE_KEY
+#   NUXT_AI_PROVIDER_API_KEY / NUXT_AI_PROVIDER_BASE_URL / NUXT_SESSION_PASSWORD
+#   NUXT_FEISHU_APP_ID / NUXT_FEISHU_APP_SECRET
 #   （配置入口：GitHub 仓库 Settings → Secrets and variables → Actions → New repository secret）
 name: deploy-to-tencent-cloud
 
@@ -58,6 +60,22 @@ jobs:
           NUXT_FEISHU_APP_ID: ${{ secrets.NUXT_FEISHU_APP_ID }}
           NUXT_FEISHU_APP_SECRET: ${{ secrets.NUXT_FEISHU_APP_SECRET }}
         run: |
+          set -euo pipefail
+
+          # 部署前先校验关键 Secrets 非空，避免 silent 空注入导致线上 AI 秒级空回复
+          missing=0
+          for key in SERVER_IP SERVER_USER DEPLOY_PATH SSH_PRIVATE_KEY \
+            NUXT_AI_PROVIDER_API_KEY NUXT_AI_PROVIDER_BASE_URL NUXT_SESSION_PASSWORD; do
+            if [ -z "${!key}" ]; then
+              echo "❌ Secret/Env 缺失或为空: $key"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "请到 GitHub 仓库 Settings → Secrets and variables → Actions 补齐上述 Secrets 后重跑。"
+            exit 1
+          fi
+
           # 配置 SSH 连接（私钥仅存在于本次运行的临时环境中）
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
@@ -65,23 +83,85 @@ jobs:
           ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
 
           # 同步构建产物到服务器。
-          # --exclude '.data'：该目录存放 AI 助手聊天记录数据库（SQLite），
-          # 属于服务器上的运行时数据，绝不能被 --delete 清理，否则每次发版都会清空用户记录
-          rsync -avz --delete --exclude '.data' .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
+          # --exclude '.data'：AI 聊天 SQLite；--exclude 'ecosystem.config.cjs'：运行时密钥文件，
+          # 二者都属于服务器本地状态，绝不能被 --delete 清掉。
+          rsync -avz --delete \
+            --exclude '.data' \
+            --exclude 'ecosystem.config.cjs' \
+            .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
+
+          # 在 Actions runner 本地生成 ecosystem 文件，避免 ssh 双引号转义吞掉密钥特殊字符；
+          # 再用 scp 落到服务器，pm2 startOrReload 保证 env 真正进入进程。
+          python3 <<'PY'
+          import json, os
+          env = {
+              "NODE_ENV": "production",
+              "NUXT_AI_PROVIDER_API_KEY": os.environ["NUXT_AI_PROVIDER_API_KEY"],
+              "NUXT_AI_PROVIDER_BASE_URL": os.environ["NUXT_AI_PROVIDER_BASE_URL"],
+              "NUXT_SESSION_PASSWORD": os.environ["NUXT_SESSION_PASSWORD"],
+              "NUXT_FEISHU_APP_ID": os.environ.get("NUXT_FEISHU_APP_ID", ""),
+              "NUXT_FEISHU_APP_SECRET": os.environ.get("NUXT_FEISHU_APP_SECRET", ""),
+          }
+          eco = {
+              "apps": [{
+                  "name": "index",
+                  "script": "server/index.mjs",
+                  "cwd": os.environ["DEPLOY_PATH"],
+                  "instances": 1,
+                  "exec_mode": "fork",
+                  "env": env,
+              }]
+          }
+          with open("/tmp/reborn-ecosystem.config.cjs", "w", encoding="utf-8") as f:
+              f.write("module.exports = ")
+              json.dump(eco, f, ensure_ascii=False, indent=2)
+              f.write(";\n")
+          print("ecosystem generated; ai baseUrl host check:",
+                os.environ["NUXT_AI_PROVIDER_BASE_URL"][:48])
+          PY
+
+          scp /tmp/reborn-ecosystem.config.cjs \
+            "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/ecosystem.config.cjs"
 
           # 重启宝塔面板托管的 index 进程——nginx 将站点反代到它监听的 3000 端口。
-          # 严禁再启动第二个进程（如旧方案的 re-ui）：会与 index 抢 3000 端口（EADDRINUSE），
-          # 造成"部署成功但线上仍是旧代码"的假象，只能靠手动在宝塔重启才生效。
-          # 运行时环境变量在本机 shell 展开后随 ssh 命令下发，pm2 --update-env 刷新进程环境
+          # 严禁再启动第二个进程（如旧方案的 re-ui）：会与 index 抢 3000 端口（EADDRINUSE）。
           ssh "$SERVER_USER@$SERVER_IP" "
-            cd $DEPLOY_PATH &&
-            export PATH=\$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin &&
-            export NUXT_AI_PROVIDER_API_KEY='$NUXT_AI_PROVIDER_API_KEY' &&
-            export NUXT_AI_PROVIDER_BASE_URL='$NUXT_AI_PROVIDER_BASE_URL' &&
-            export NUXT_SESSION_PASSWORD='$NUXT_SESSION_PASSWORD' &&
-            export NUXT_FEISHU_APP_ID='$NUXT_FEISHU_APP_ID' &&
-            export NUXT_FEISHU_APP_SECRET='$NUXT_FEISHU_APP_SECRET' &&
-            pm2 restart index --update-env || pm2 start server/index.mjs --name index || npx pm2 start server/index.mjs --name index
+            set -e
+            cd '$DEPLOY_PATH'
+            export PATH=\$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin
+            chmod 600 ecosystem.config.cjs
+            # delete + start 比 restart --update-env 更可靠：强制加载 ecosystem 内 env
+            pm2 delete index >/dev/null 2>&1 || true
+            pm2 start ecosystem.config.cjs
+            pm2 save
+            pm2 show index | sed -n '1,40p'
           "
 
           echo "🎉 GitHub Actions 自动部署完成！"
+
+      - name: 部署后探针（AI 运行时）
+        env:
+          SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
+        run: |
+          set -euo pipefail
+          # 等进程起来
+          sleep 5
+          echo "---- GET /api/ai/status ----"
+          status="$(curl -fsS --max-time 20 "http://${SERVER_IP}/api/ai/status")"
+          echo "$status"
+          echo "$status" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True, d; assert d.get("hasApiKey") and d.get("hasBaseUrl") and d.get("providerRegistered"), d'
+          echo "---- POST /__docus__/assistant smoke ----"
+          body="$(curl -fsS --max-time 90 -X POST "http://${SERVER_IP}/__docus__/assistant" \
+            -H "Content-Type: application/json" \
+            -H "Accept: text/event-stream" \
+            --data '{"messages":[{"role":"user","parts":[{"type":"text","text":"只回复：你好"}]}]}')"
+          echo "$body" | head -c 800
+          echo
+          # 至少应出现 reasoning 或 text；不允许再出现秒级空 finish(other)
+          echo "$body" | python3 -c '
+          import sys
+          t=sys.stdin.read()
+          assert "text-delta" in t or "reasoning-delta" in t, "assistant 仍无模型输出: "+t[:500]
+          assert not (t.count("finish-step")>=1 and "reasoning-delta" not in t and "text-delta" not in t and "finishReason\":\"other\"" in t), t[:500]
+          print("assistant smoke ok")
+          '
