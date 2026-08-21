@@ -4,17 +4,17 @@ export default defineAppConfig({
       neutral: "zinc",
     },
     /**
-     * 顶部头部（主顶栏与 AppHeaderNav 二级导航共用 UHeader）：
-     * 半透明基底 + 毛玻璃，悬浮在点阵背景之上形成清晰的层次分界。
+     * 顶部头部（分类导航已并入主顶栏）：
+     * Arco 气质——实心底 + 细底边，避免过重毛玻璃造成「悬浮感过强」。
      */
     header: {
       slots: {
-        root: "bg-default/70 backdrop-blur-xl",
+        root: "bg-default/95 backdrop-blur-md border-b border-default/60",
       },
     },
     contentSearch: {
       slots: {
-        modal: "bg-default/25 backdrop-blur-xl",
+        modal: "bg-default/95 backdrop-blur-md",
       },
     },
     switch: {
@@ -25,27 +25,27 @@ export default defineAppConfig({
     /** 文档页头：标题收紧字距并按语义断行，避免孤字悬行 */
     pageHeader: {
       slots: {
-        title: "tracking-tight text-balance",
-        description: "text-pretty",
+        wrapper: "border-b border-default/40 pb-6 mb-2",
+        title: "tracking-tight text-balance text-2xl sm:text-3xl font-semibold",
+        description: "text-pretty text-muted mt-2 text-[15px] leading-relaxed",
       },
     },
     /**
-     * 文档页有主顶栏 + AppHeaderNav 二级导航（lg 下 top-16），
-     * 默认仅 offset 一层 header，会导致 On This Page 被遮住。
+     * 分类导航已并入主顶栏，文档页只剩单层 header；
+     * TOC 吸顶只需补偿一层 --ui-header-height。
      */
     contentToc: {
       slots: {
-        root: "sticky top-(--ui-header-height) z-9 bg-default/75 lg:bg-[initial] backdrop-blur -mx-4 px-4 sm:px-6 sm:-mx-6 lg:ms-0 overflow-y-auto max-h-[calc(100vh-var(--ui-header-height))] lg:top-[calc(var(--ui-header-height)*2)] lg:max-h-[calc(100vh-var(--ui-header-height)*2)]",
+        root: "sticky top-(--ui-header-height) z-9 bg-default/90 lg:bg-[initial] backdrop-blur -mx-4 px-4 sm:px-6 sm:-mx-6 lg:ms-0 overflow-y-auto max-h-[calc(100vh-var(--ui-header-height))]",
       },
     },
     /**
-     * 左侧菜单同理：双头吸顶补偿（lg+ 128px），
-     * 与右侧移动端面板的顶线保持一致；
-     * 2xl+ 管理台外壳下加右分隔线，与右侧 fixed 面板的左分隔线呼应。
+     * 左侧菜单：单层顶栏吸顶；
+     * 2xl+ 细右分隔线，对齐 Arco 侧栏「1px #e5e6eb」式 hairline。
      */
     pageAside: {
       slots: {
-        root: "lg:top-[calc(var(--ui-header-height)*2)] lg:max-h-[calc(100vh-var(--ui-header-height)*2)] 2xl:border-r 2xl:border-default/60 2xl:pr-6",
+        root: "lg:top-(--ui-header-height) lg:max-h-[calc(100vh-var(--ui-header-height))] 2xl:border-r 2xl:border-default/50 2xl:pr-5",
       },
     },
   },
@@ -87,13 +87,15 @@ export default defineAppConfig({
     logo: {
       light: "/logo.svg",
       dark: "/logo-dark.svg",
+      // 圆形徽章为正方形资源，略放大以免环绕细节在 24px 糊掉
+      class: "h-8 w-8",
     },
   },
 
   toc: {
-    title: "On This Page",
+    title: "本页目录",
     bottom: {
-      title: "Community",
+      title: "社区",
       links: [
         {
           label: "Star on Github",

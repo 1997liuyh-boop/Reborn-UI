@@ -167,9 +167,9 @@ const editLink = computed(() => {
       </template>
     </UPageHeader>
 
-    <UPageBody>
+    <UPageBody class="mt-2 space-y-8">
       <!-- 正文容器 ref：DOM 兜底目录的扫描范围（避免收进页脚 / 周边区块的标题） -->
-      <div ref="bodyEl">
+      <div ref="bodyEl" class="docs-prose min-w-0">
         <ContentRenderer :value="page" />
       </div>
 

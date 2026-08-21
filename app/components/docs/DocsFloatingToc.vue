@@ -32,7 +32,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    title: 'On This Page',
+    title: '本页目录',
     inset: false,
 })
 
@@ -59,13 +59,13 @@ const flatLinks = computed<TocLinkItem[]>(() => {
 const activeId = ref('')
 
 /**
- * 滚动跟随：取「视口上缘（含双 sticky 头约 128px + 余量）以上」的最后一个标题作为激活章节。
+ * 滚动跟随：取「视口上缘（单层顶栏 64px + 余量）以上」的最后一个标题作为激活章节。
  * 用 rAF 节流，避免滚动高频触发布局读取。
  */
 let ticking = false
 function updateActive() {
     ticking = false
-    const offset = 160
+    const offset = 96
     let current = ''
     for (const link of flatLinks.value) {
         const el = document.getElementById(link.id)

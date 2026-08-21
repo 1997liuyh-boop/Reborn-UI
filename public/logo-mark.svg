@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" fill="none">
+  <title id="title">Reborn UI Mark</title>
+  <desc id="desc">模块化 mark：圆角容器 + 2×2 网格（Button / Grid / Radius）</desc>
+
+  <!-- 外层容器：Card / Border / Radius -->
+  <rect
+    x="6"
+    y="6"
+    width="52"
+    height="52"
+    rx="12"
+    stroke="currentColor"
+    stroke-width="3.5"
+  />
+
+  <!-- 2×2 网格模块：Grid / Spacing -->
+  <g fill="currentColor">
+    <rect x="18" y="18" width="12" height="12" rx="2.5"/>
+    <rect x="34" y="18" width="12" height="12" rx="2.5" opacity="0.4"/>
+    <rect x="18" y="34" width="12" height="12" rx="2.5" opacity="0.4"/>
+    <rect x="34" y="34" width="12" height="12" rx="2.5"/>
+  </g>
+</svg>

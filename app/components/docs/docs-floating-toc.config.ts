@@ -12,21 +12,21 @@ const config = {
          * 根节点：固定于视口右缘、垂直居中于内容区上部；
          * 仅 lg+ 显示（<lg 由 UPage #right 槽的原生 UContentToc 折叠条负责）
          */
-        root: 'fixed right-3 z-40 hidden lg:flex flex-col items-end top-[calc(var(--ui-header-height)*2+2rem)]',
+        root: 'fixed right-3 z-40 hidden lg:flex flex-col items-end top-[calc(var(--ui-header-height)+2rem)]',
         /** 刻度条：每个标题一条短横线，纵向排列 */
-        rail: 'flex flex-col items-end gap-2 rounded-full px-2 py-3 cursor-pointer',
+        rail: 'flex flex-col items-end gap-2.5 rounded-md px-2 py-3 cursor-pointer',
         /** 刻度线：宽度按标题层级区分，active 高亮加长 */
-        railItem: 'h-0.5 rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-700',
-        /** 展开卡片：半透明磨砂浮层 */
+        railItem: 'h-0.5 rounded-full bg-zinc-300 transition-all duration-200 dark:bg-zinc-600',
+        /** 展开卡片：Arco 式轻边框浮层，弱化重阴影 */
         panel:
-            'flex max-h-[calc(100vh-14rem)] w-72 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-gray-200/60 bg-white/85 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/85 dark:shadow-black/40',
+            'flex max-h-[calc(100vh-14rem)] w-60 flex-col overflow-y-auto overscroll-contain rounded-xl border border-zinc-200/80 bg-white/95 p-4 shadow-lg shadow-zinc-900/5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/95 dark:shadow-black/30',
         /** 卡片标题 */
-        panelTitle: 'mb-3 text-[10px] font-black tracking-[0.2em] text-gray-400 uppercase',
+        panelTitle: 'mb-2 text-xs font-medium tracking-wide text-zinc-400',
         /** 目录链接列表 */
         panelList: 'flex flex-col gap-0.5',
         /** 单条目录链接 */
         panelLink:
-            'rounded-lg px-2 py-1.5 text-[13px] leading-snug text-gray-500 transition-colors hover:bg-gray-100/80 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
+            'rounded-md px-2 py-1.5 text-[13px] leading-snug text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white',
     },
     variants: {
         /**
@@ -42,18 +42,18 @@ const config = {
         /** 刻度线 / 链接的激活态：跟随滚动位置高亮当前章节 */
         active: {
             true: {
-                railItem: 'w-6 bg-primary',
-                panelLink: 'bg-primary/10 font-semibold text-primary hover:bg-primary/15 hover:text-primary dark:hover:text-primary',
+                railItem: 'w-5 bg-primary',
+                panelLink: 'bg-primary/8 font-medium text-primary hover:bg-primary/12 hover:text-primary dark:hover:text-primary',
             },
         },
         /** 子级标题（h3+）：刻度更短、链接缩进 */
         sub: {
             true: {
-                railItem: 'w-2.5',
-                panelLink: 'pl-5',
+                railItem: 'w-2',
+                panelLink: 'pl-4 text-[12px]',
             },
             false: {
-                railItem: 'w-4',
+                railItem: 'w-3.5',
             },
         },
     },

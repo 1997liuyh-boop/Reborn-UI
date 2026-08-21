@@ -1,9 +1,43 @@
 <script setup lang="ts">
+import type { ContentNavigationItem } from "@nuxt/content";
+import { mapContentNavigation } from "@nuxt/ui/utils/content";
+
 const appConfig = useAppConfig();
 const site = useSiteConfig();
+const route = useRoute();
 
 // AI 助手开关:由 Docus assistant 模块提供,构建期存在 AI_GATEWAY_API_KEY 时启用
 const { isEnabled: isAssistantEnabled } = useAssistant();
+
+const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
+
+/**
+ * 顶部分类显示文案：保持英文混排
+ * 入门指南 / Components / Changelogs / Composables
+ */
+const SECTION_LABELS: Record<string, string> = {
+  "/getting-started": "入门指南",
+  "/components": "Components",
+  "/changelogs": "Changelogs",
+  "/composables": "Composables",
+};
+
+/**
+ * 顶部分类导航（对齐 Arco header）：
+ * 分类链放在右侧工具区左侧；原先独立的 AppHeaderNav 二级栏已取消。
+ */
+const sectionItems = computed(() =>
+  mapContentNavigation(
+    navigation?.value?.map((item) => ({ ...item, children: undefined })) ?? [],
+  )?.map((item) => {
+    const to = String(item.to ?? "");
+    return {
+      ...item,
+      label: SECTION_LABELS[to] ?? item.label,
+      active: route.path.startsWith(to),
+    };
+  }) ?? [],
+);
 
 const links = computed(() =>
   appConfig.github && appConfig.github.url
@@ -24,10 +58,38 @@ const links = computed(() =>
     <AppHeaderCenter />
 
     <template #title>
-      <AppHeaderLogo class="h-6 w-auto shrink-0" />
+      <!-- 纯色内联 SVG，跟随 text-default / 明暗主题 -->
+      <AppHeaderLogo />
     </template>
 
     <template #right>
+      <!-- 桌面端：分类导航贴近右侧工具区（Ask AI / 主题 / GitHub） -->
+      <nav
+        v-if="sectionItems.length"
+        class="mr-1 hidden items-center gap-0.5 lg:flex"
+        aria-label="文档分类"
+      >
+        <UButton
+          v-for="item in sectionItems"
+          :key="String(item.to)"
+          :to="item.to"
+          :label="item.label"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          class="px-2.5 font-medium"
+          :class="item.active
+            ? 'text-primary bg-primary/8 hover:bg-primary/12 hover:text-primary'
+            : 'text-muted hover:text-default'"
+        />
+      </nav>
+
+      <USeparator
+        v-if="sectionItems.length"
+        orientation="vertical"
+        class="mx-1 hidden h-5 lg:block"
+      />
+
       <AppHeaderCTA />
 
       <template v-if="isAssistantEnabled">
@@ -58,6 +120,19 @@ const links = computed(() =>
     </template>
 
     <template #body>
+      <!-- 移动端抽屉：分类导航置顶，下面仍是完整内容树 -->
+      <div v-if="sectionItems.length" class="mb-4 flex flex-wrap gap-1 border-b border-default/40 pb-4 lg:hidden">
+        <UButton
+          v-for="item in sectionItems"
+          :key="`m-${String(item.to)}`"
+          :to="item.to"
+          :label="item.label"
+          color="neutral"
+          variant="soft"
+          size="sm"
+          :class="item.active ? 'text-primary' : undefined"
+        />
+      </div>
       <AppHeaderBody />
     </template>
   </UHeader>

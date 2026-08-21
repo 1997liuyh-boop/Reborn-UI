@@ -40,7 +40,8 @@ const controls = [
         component: 'select' as const,
         defaultValue: 'primary',
         props: {
-          items: chipColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))
+          // Playground 的 select 走 RebornSelect，选项字段是 options（不是 items）
+          options: chipColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))
         }
       },
       {
@@ -49,7 +50,7 @@ const controls = [
         component: 'select' as const,
         defaultValue: 'md',
         props: {
-          items: chipSizes.map(s => ({ label: s.toUpperCase(), value: s }))
+          options: chipSizes.map(s => ({ label: s.toUpperCase(), value: s }))
         }
       }
     ]
@@ -63,7 +64,7 @@ const controls = [
         component: 'select' as const,
         defaultValue: 'top-right',
         props: {
-          items: chipPositions.map(p => ({ label: p, value: p }))
+          options: chipPositions.map(p => ({ label: p, value: p }))
         }
       },
       {

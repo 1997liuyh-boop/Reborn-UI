@@ -164,88 +164,90 @@ watch(navWithData, scrollActiveLinkIntoView, { deep: true });
 </script>
 
 <template>
-  <div ref="navContainer" class="space-y-2">
+  <!-- Arco 气质侧栏：分组标题克制、激活态用左侧细条 + 浅底，去掉 Sparkles/HyperText 花哨动效 -->
+  <div ref="navContainer" class="space-y-5 py-1">
     <template v-for="section in navWithData" :key="section.path">
-      <div v-if="section.title" @click="toggleSection(section.path)"
-        class="cursor-pointer w-full px-3 text-[15px] font-semibold text-gray-8 dark:text-gray-1 uppercase tracking-wider flex items-center justify-between group hover:text-gray-900 dark:hover:text-white transition-colors">
-        <ClientOnly>
-          <HyperText :text="section.title" class="font-bold py-0.5!" :duration="800" :animate-on-load="true" />
-          <template #fallback>
-            <span>{{ section.title }}</span>
-          </template>
-        </ClientOnly>
-        <UIcon :name="isSectionCollapsed(section.path) ? 'i-lucide-chevron-left' : 'i-lucide-chevron-down'"
-          class="w-4 h-4 transition-all duration-400 ease-in-out"
-          :class="{ 'rotate-0': !isSectionCollapsed(section.path), '-rotate-90': isSectionCollapsed(section.path) }" />
-      </div>
+      <div>
+        <button
+          v-if="section.title"
+          type="button"
+          class="mb-1.5 flex w-full cursor-pointer items-center justify-between px-3 text-left text-[13px] font-semibold tracking-wide text-zinc-500 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+          @click="toggleSection(section.path)"
+        >
+          <span>{{ section.title }}</span>
+          <UIcon
+            :name="isSectionCollapsed(section.path) ? 'i-lucide-chevron-right' : 'i-lucide-chevron-down'"
+            class="h-3.5 w-3.5 opacity-70 transition-transform duration-200"
+          />
+        </button>
 
-      <!-- Section Items (Collapsible Content with Transition) -->
-      <Transition name="collapse" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave"
-        @after-leave="onAfterLeave">
-        <div v-show="!isSectionCollapsed(section.path)" class="space-y-1 pl-3 overflow-hidden">
-          <template v-for="item in section.children" :key="item.path">
-            <!-- Primary Menu Item -->
-            <NuxtLink :to="item.path" :data-nav-path="item.path"
-              class="group relative flex items-center justify-between gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200 border-l-2"
-              :class="[
-                isActive(item) || hasActiveChild(item)
-                  ? 'font-semibold shadow-sm border-l-primary text-primary bg-[color-mix(in_srgb,var(--color-primary)_5%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100 border-transparent'
-              ]">
-              <ClientOnly v-if="item.chip">
-                <RebornChip :text="item.chip.label" :color="(item.chip.color as any) || 'primary'" position="top-right"
-                  :ui="{ base: 'rounded-ui-2xs px-1 text-xs' }" size="sm">
-                  <SparklesText v-if="isActive(item)" :text="item.title"
-                    :colors="{ first: '#9E7AFF', second: '#FE8BBB' }" :sparkles-count="5" class="text-sm " />
-                  <span v-else class="truncate">{{ item.title }}</span>
-                  <template #fallback>
-                    <span class="truncate">{{ item.title }}</span>
-                  </template>
-                </RebornChip>
-              </ClientOnly>
-              <ClientOnly v-else>
-                <SparklesText v-if="isActive(item)" :text="item.title" :colors="{ first: '#9E7AFF', second: '#FE8BBB' }"
-                  :sparkles-count="5" class="text-sm flex-1" />
-                <span v-else class="flex-1 truncate">{{ item.title }}</span>
-                <template #fallback>
-                  <span class="flex-1 truncate">{{ item.title }}</span>
-                </template>
-              </ClientOnly>
-
-              <!-- Badges -->
-              <div v-if="item.badges && item.badges.length > 0" class="flex items-center gap-1 shrink-0">
-                <UBadge v-for="(badge, index) in item.badges" :key="index" :label="badge.label"
-                  :color="(badge.color as any) || 'primary'" variant="subtle" size="xs" />
-              </div>
-            </NuxtLink>
-
-            <!-- Nested Children (Secondary Menu) -->
-            <div v-if="item.children && item.children.length > 0"
-              class="ml-4 mt-0.5 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700/50 pl-4">
-              <NuxtLink v-for="child in item.children" :key="child.path" :to="child.path" :data-nav-path="child.path"
-                class="group relative flex items-center justify-between gap-2 px-3 py-1.5 rounded-md text-[13px] transition-all duration-200"
+        <Transition
+          name="collapse"
+          @enter="onEnter"
+          @after-enter="onAfterEnter"
+          @leave="onLeave"
+          @after-leave="onAfterLeave"
+        >
+          <div v-show="!isSectionCollapsed(section.path)" class="space-y-0.5 overflow-hidden">
+            <template v-for="item in section.children" :key="item.path">
+              <NuxtLink
+                :to="item.path"
+                :data-nav-path="item.path"
+                class="group relative flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-[13px] transition-colors duration-150"
                 :class="[
-                  isActive(child)
-                    ? 'font-medium text-primary bg-[color-mix(in_srgb,var(--color-primary)_3%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] before:content-[\'\'] before:absolute before:left-[-1rem] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:bg-[var(--color-primary)] before:rounded-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200'
-                ]">
+                  isActive(item) || hasActiveChild(item)
+                    ? 'bg-primary/8 font-medium text-primary before:absolute before:inset-y-1 before:left-0 before:w-[2px] before:rounded-full before:bg-primary before:content-[\'\']'
+                    : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100',
+                ]"
+              >
+                <span class="min-w-0 flex-1 truncate">{{ item.title }}</span>
 
-                <RebornChip v-if="child.chip" :text="child.chip.label" :color="(child.chip.color as any) || 'primary'"
-                  position="top-right" inset class="flex-1">
-                  <span class="flex-1 truncate">{{ child.title }}</span>
-                </RebornChip>
-                <span v-else class="flex-1 truncate">{{ child.title }}</span>
-
-                <!-- Child Badges -->
-                <div v-if="child.badges && child.badges.length > 0" class="flex items-center gap-1 shrink-0">
-                  <UBadge v-for="(badge, index) in child.badges" :key="index" :label="badge.label"
-                    :color="(badge.color as any) || 'primary'" variant="subtle" size="xs" />
+                <div v-if="item.badges?.length" class="flex shrink-0 items-center gap-1">
+                  <UBadge
+                    v-for="(badge, index) in item.badges"
+                    :key="index"
+                    :label="badge.label"
+                    :color="(badge.color as any) || 'primary'"
+                    variant="subtle"
+                    size="xs"
+                  />
                 </div>
               </NuxtLink>
-            </div>
-          </template>
-        </div>
-      </Transition>
+
+              <div
+                v-if="item.children?.length"
+                class="ml-3 space-y-0.5 border-l border-zinc-200 pl-3 dark:border-zinc-700/60"
+              >
+                <NuxtLink
+                  v-for="child in item.children"
+                  :key="child.path"
+                  :to="child.path"
+                  :data-nav-path="child.path"
+                  class="group relative flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-[12.5px] transition-colors duration-150"
+                  :class="[
+                    isActive(child)
+                      ? 'bg-primary/6 font-medium text-primary'
+                      : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-200',
+                  ]"
+                >
+                  <span class="min-w-0 flex-1 truncate">{{ child.title }}</span>
+
+                  <div v-if="child.badges?.length" class="flex shrink-0 items-center gap-1">
+                    <UBadge
+                      v-for="(badge, index) in child.badges"
+                      :key="index"
+                      :label="badge.label"
+                      :color="(badge.color as any) || 'primary'"
+                      variant="subtle"
+                      size="xs"
+                    />
+                  </div>
+                </NuxtLink>
+              </div>
+            </template>
+          </div>
+        </Transition>
+      </div>
     </template>
   </div>
 </template>

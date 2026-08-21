@@ -62,18 +62,13 @@ html {
 }
 
 /*
- * 站点浅色背景：中性顶部光晕 + 细点阵网格（设计工具画布质感），
- * 与 neutral: zinc / primary: black 的整体色调保持同族，替代原先的粉蓝渐变。
+ * 站点浅色背景：Arco 文档气质——近乎纯白 + 极淡顶部光晕，
+ * 点阵降到几乎不可见，避免干扰正文与 demo。
  */
 @utility pattern-background-l {
   background:
-    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(24, 24, 27, 0.055), transparent 70%),
-    radial-gradient(circle, rgba(24, 24, 27, 0.05) 1px, transparent 1px),
-    #fcfcfc;
-  background-size:
-    100% 100%,
-    22px 22px,
-    auto;
+    radial-gradient(ellipse 80% 40% at 50% -8%, rgba(24, 24, 27, 0.03), transparent 65%),
+    #fafafa;
 }
 
 @utility pattern-background-d1 {
@@ -83,16 +78,11 @@ html {
     linear-gradient(120deg, #0f0e17 0%, #1a1b26 100%);
 }
 
-/* 站点暗色背景：与浅色同构（顶部光晕 + 点阵），基底与 --ui-bg 的 zinc-950 一致 */
+/* 站点暗色背景：与浅色同构的极淡顶部光晕，基底贴近 zinc-950 */
 @utility pattern-background-d {
   background:
-    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(226, 232, 240, 0.12), transparent 70%),
-    radial-gradient(circle, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    radial-gradient(ellipse 80% 40% at 50% -8%, rgba(226, 232, 240, 0.06), transparent 65%),
     #09090b;
-  background-size:
-    100% 100%,
-    22px 22px,
-    auto;
 }
 
 @theme inline {

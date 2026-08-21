@@ -66,6 +66,20 @@ function updateField(key: string, value: any) {
     emit("update:modelValue", { ...props.modelValue, [key]: value });
 }
 
+/**
+ * 规范化 select 控件 props。
+ * 历史 demo 曾把选项写成 items（Nuxt UI 习惯），但 RebornSelect 只认 options；
+ * 这里做兼容，避免下拉空列表。
+ */
+function normalizeSelectProps(raw?: Record<string, any>) {
+    if (!raw) return {};
+    const { items, options, ...rest } = raw;
+    return {
+        ...rest,
+        options: options ?? items ?? [],
+    };
+}
+
 /** 从状态对象中获取某个 key 的值 */
 function getField(key: string) {
     return props.modelValue[key];
@@ -197,8 +211,9 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                                             {{ getField(item.key) }}
                                         </span>
                                     </label>
+                                    <!-- 兼容历史 demo 误传 items：RebornSelect 正式字段是 options -->
                                     <RebornSelect v-if="item.component === 'select'" :model-value="getField(item.key)"
-                                        v-bind="item.props" class="w-full" size="sm"
+                                        v-bind="normalizeSelectProps(item.props)" class="w-full" size="sm"
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornInput v-else-if="item.component === 'input'"
                                         :model-value="getField(item.key)" v-bind="item.props" size="sm"

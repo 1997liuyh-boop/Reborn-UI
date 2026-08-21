@@ -4,7 +4,7 @@ const isRoot = isRootPage();
 
 /**
  * 后台管理式全宽外壳：非 root 文档页在 body 上挂 layout-admin-shell，
- * 将 --ui-container 覆盖为 100%（见 base.css）——AppHeader / AppHeaderNav /
+ * 将 --ui-container 覆盖为 100%（见 base.css）——AppHeader /
  * 正文容器全部随变量放开到全宽，无需逐个改容器；root 落地页维持居中版式。
  */
 useHead({
@@ -19,7 +19,8 @@ useHead({
  * Tailwind 按断点升序输出，2xl 类在 lg 类之后声明，媒体查询同时命中时 2xl 生效。
  */
 const threeColUi = {
-    root: "2xl:grid-cols-[220px_minmax(0,1fr)]",
+    // 侧栏略加宽至 248px，贴近 Arco ~260px 的文档导航密度
+    root: "2xl:grid-cols-[248px_minmax(0,1fr)]",
     left: "2xl:col-span-1",
     center: "2xl:col-span-1 min-w-0",
 } as const;
@@ -39,7 +40,7 @@ const { hasDemos } = useUniDemoPanel();
 <template>
   <UMain class="relative -mt-16 pt-16">
     <div class="dark:pattern-background-d pattern-background-l absolute inset-0 z-[-1]" />
-    <AppHeaderNav />
+    <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
     <UContainer>
       <div
         class="min-w-0 transition-[padding] duration-200"

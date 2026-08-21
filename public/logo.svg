@@ -1,87 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="640" viewBox="0 0 1024 320" role="img" aria-labelledby="title desc">
-  <title id="title">reborn-ui tech logo (black)</title>
-  <desc id="desc">Tech-style hexagon circuitry icon with a geometric R monogram, followed by a wide-tracked wordmark.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="336" height="64" viewBox="0 0 168 32" role="img" aria-labelledby="title desc" fill="none">
+  <title id="title">Reborn UI</title>
+  <desc id="desc">几何模块化字标：Reborn + 圆角容器 UI + 2×2 网格，颜色跟随 currentColor</desc>
 
-  <!-- Icon -->
-  <g transform="translate(56,40)" stroke="#000" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Hexagon frame -->
-    <path d="M 120 10
-             L 210 62
-             L 210 166
-             L 120 218
-             L 30 166
-             L 30 62
-             Z" stroke-width="10"/>
+  <text
+    x="0"
+    y="22"
+    fill="currentColor"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    font-size="18"
+    font-weight="700"
+    letter-spacing="-0.4"
+  >Reborn</text>
 
-    <!-- Circuit traces -->
-    <path d="M 210 62 L 252 38" stroke-width="8"/>
-    <path d="M 210 166 L 252 190" stroke-width="8"/>
-    <path d="M 30 62 L -12 38" stroke-width="8"/>
-    <path d="M 30 166 L -12 190" stroke-width="8"/>
-    <path d="M 120 10 L 120 -26" stroke-width="8"/>
-    <path d="M 120 218 L 120 254" stroke-width="8"/>
+  <rect
+    x="78"
+    y="4"
+    width="36"
+    height="24"
+    rx="6"
+    stroke="currentColor"
+    stroke-width="1.75"
+  />
+  <text
+    x="96"
+    y="21"
+    text-anchor="middle"
+    fill="currentColor"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    font-size="13"
+    font-weight="750"
+    letter-spacing="0.8"
+  >UI</text>
 
-    <!-- Nodes -->
-    <circle cx="252" cy="38" r="8" stroke-width="8"/>
-    <circle cx="252" cy="190" r="8" stroke-width="8"/>
-    <circle cx="-12" cy="38" r="8" stroke-width="8"/>
-    <circle cx="-12" cy="190" r="8" stroke-width="8"/>
-    <circle cx="120" cy="-26" r="8" stroke-width="8"/>
-    <circle cx="120" cy="254" r="8" stroke-width="8"/>
-
-    <!-- Inner 'R' monogram (geometric) -->
-    <path d="M 86 170
-             L 86 64
-             L 142 64
-             Q 174 64 174 92
-             Q 174 120 142 120
-             L 86 120"
-          stroke-width="12"/>
-    <path d="M 126 120
-             L 176 170"
-          stroke-width="12"/>
-
-    <!-- Tech cut lines -->
-    <path d="M 54 92 L 66 92" stroke-width="10" opacity="0.55"/>
-    <path d="M 54 146 L 66 146" stroke-width="10" opacity="0.55"/>
-    <path d="M 186 92 L 198 92" stroke-width="10" opacity="0.55"/>
-    <path d="M 186 146 L 198 146" stroke-width="10" opacity="0.55"/>
-  </g>
-
-  <!-- Wordmark -->
-  <g transform="translate(350,0)">
-    <text x="0" y="176"
-          fill="#000"
-          font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-          font-size="96"
-          font-weight="800"
-          letter-spacing="2.8">
-      REBORN
-    </text>
-
-    <text x="510" y="176"
-          fill="#000"
-          opacity="0.82"
-          font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-          font-size="96"
-          font-weight="800"
-          letter-spacing="2.8">
-      ·UI
-    </text>
-
-    <!-- Underline + micro grid -->
-    <path d="M 0 210 L 640 210" stroke="#000" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
-    <g opacity="0.55" stroke="#000" stroke-width="4">
-      <path d="M 0 246 L 640 246"/>
-      <path d="M 40 228 L 40 264"/>
-      <path d="M 120 228 L 120 264"/>
-      <path d="M 200 228 L 200 264"/>
-      <path d="M 280 228 L 280 264"/>
-      <path d="M 360 228 L 360 264"/>
-      <path d="M 440 228 L 440 264"/>
-      <path d="M 520 228 L 520 264"/>
-      <path d="M 600 228 L 600 264"/>
-    </g>
+  <g fill="currentColor">
+    <rect x="124" y="8" width="6" height="6" rx="1.2"/>
+    <rect x="133" y="8" width="6" height="6" rx="1.2" opacity="0.45"/>
+    <rect x="124" y="17" width="6" height="6" rx="1.2" opacity="0.45"/>
+    <rect x="133" y="17" width="6" height="6" rx="1.2"/>
   </g>
 </svg>

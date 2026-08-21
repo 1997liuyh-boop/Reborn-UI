@@ -102,11 +102,11 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
 
 <template>
   <!--
-    Tab 栏吸顶：<lg 单 sticky 头（AppHeader 64px），lg+ 双头（AppHeader + AppHeaderNav 共 128px）。
+    Tab 栏吸顶：分类导航已并入主顶栏，各断点均按单层 header（64px）补偿。
     z-index 约定：header z-50 > 悬浮目录 z-40 > 吸顶 Tab 栏 z-20 > 内容
   -->
   <UTabs size="lg" variant="pill" :items="items" class="w-full" :ui="{
-    list: 'sticky top-16 lg:top-32 z-20 w-fit max-sm:w-full bg-default/75 backdrop-blur-xl rounded-xl gap-4 self-start overflow-auto',
+    list: 'sticky top-16 z-20 w-fit max-sm:w-full bg-default/75 backdrop-blur-xl rounded-xl gap-4 self-start overflow-auto',
     trigger: 'w-fit min-w-fit outline outline-neutral-200 dark:outline-neutral-800',
     content: 'py-4',
   }" :unmount-on-hide="false">

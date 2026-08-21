@@ -6,8 +6,8 @@
  * - 挂在布局层（docs.vue）且位于 UPage :key 之外，文档路由切换时组件实例持久，
  *   iframe 里的 uniapp H5 运行时得以复用；切换 demo 走 same-document 的 hash 导航
  *   （location.replace），不整页重载、不污染父页 history；
- * - fixed 右栏：贴视口右缘、占满双头以下整个高度（管理台式固定侧栏），
- *   不参与文档流，正文的右侧避让由 docs.vue 依据 hasDemos 加 2xl:mr 实现；
+ * - fixed 右栏：贴视口右缘、占满主顶栏以下整个高度（管理台式固定侧栏），
+ *   不参与文档流，正文的右侧避让由 docs.vue 依据 hasDemos 加 2xl:pr 实现；
  * - 仅 2xl+（≥1536px）展示；iframe 挂载由 useMediaQuery 门控（而非纯 CSS 隐藏），
  *   窄屏 / 移动端不会偷跑下载 uniapp H5 包；
  * - 缺 H5 构建产物（纯 pnpm dev 场景）时 HEAD 探测并展示兜底提示，
@@ -56,12 +56,12 @@ const { height: windowHeight } = useWindowSize()
 
 /**
  * 缩放系数：面板可用宽 = 420 - 两侧内边距 32 - 边框，取 384；
- * 可用高 = 视口 - 双头(128) - 工具条与上下留白(约 112)；
+ * 可用高 = 视口 - 主顶栏(64) - 工具条与上下留白(约 112)；
  * iframe 仍按设备逻辑尺寸渲染，保证 rpx / 媒体查询与真机一致。
  */
 const scale = computed(() => {
     const availW = 384
-    const availH = Math.max(360, windowHeight.value - 240)
+    const availH = Math.max(360, windowHeight.value - 176)
     return Math.min(1, availW / frameWidth.value, availH / frameHeight.value)
 })
 
@@ -165,7 +165,7 @@ watch(
   <!-- v-show 保持 iframe 常驻：切到无 demo 页面时仅隐藏，不销毁 uniapp 运行时 -->
   <aside
     v-show="hasDemos"
-    class="border-default bg-default/70 fixed top-[calc(var(--ui-header-height)*2)] right-0 bottom-0 z-30 hidden w-[420px] border-l backdrop-blur-xl 2xl:block"
+    class="border-default bg-default/70 fixed top-(--ui-header-height) right-0 bottom-0 z-30 hidden w-[420px] border-l backdrop-blur-xl 2xl:block"
     aria-label="移动端预览"
   >
     <!-- 面板内容仅客户端渲染：demo 注册与缩放计算都依赖客户端环境，SSR 输出会产生水合不一致 -->

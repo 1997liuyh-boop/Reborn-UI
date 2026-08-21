@@ -17,8 +17,8 @@ const items = computed(() =>
 </script>
 
 <template>
-  <!-- 管理台外壳：二级导航底部保留一条弱化的 hairline，界定头部区与工作区 -->
-  <UHeader title="" class="border-default/50 top-16 hidden items-center justify-between border-b lg:flex">
-    <UNavigationMenu :items="items" variant="pill" highlight />
+  <!-- 二级导航：细底边界定头部区与工作区；去掉过重毛玻璃，贴近 Arco 文档顶栏层次 -->
+  <UHeader title="" class="border-default/40 top-16 hidden items-center justify-between border-b bg-default/95 lg:flex">
+    <UNavigationMenu :items="items" variant="link" highlight class="gap-1" />
   </UHeader>
 </template>
