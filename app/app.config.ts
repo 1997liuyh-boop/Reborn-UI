@@ -50,6 +50,38 @@ export default defineAppConfig({
     },
   },
 
+  /**
+   * Ask AI 助手:空态页的常见问题快捷按钮(点击即代入提问),
+   * 按使用场景分组;问题措辞与知识库口径一致,便于模型命中文档
+   */
+  assistant: {
+    faqQuestions: [
+      {
+        category: "快速上手",
+        items: [
+          "如何在项目中安装并接入 Reborn UI?",
+          "Web 端和 UniApp 端的组件有什么区别?",
+          "如何切换明暗主题?",
+        ],
+      },
+      {
+        category: "组件使用",
+        items: [
+          "reborn-button 支持哪些变体和尺寸?",
+          "如何给按钮添加加载中状态?",
+          "表单组件如何做双向绑定?",
+        ],
+      },
+      {
+        category: "疑难排查",
+        items: [
+          "组件样式不生效可能是什么原因?",
+          "动效组件在移动端卡顿怎么优化?",
+        ],
+      },
+    ],
+  },
+
   header: {
     title: "Reborn UI",
     logo: {

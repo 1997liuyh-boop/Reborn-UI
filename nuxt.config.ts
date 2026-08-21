@@ -14,6 +14,12 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
+  vue: {
+    // 启用 Vue 运行时模板编译器:Playground(/playground)需要在浏览器中
+    // 把用户输入的 template 字符串实时编译为渲染函数
+    runtimeCompiler: true,
+  },
+
   // Ensure we use the local config module instead of the one bundled in the Docus layer.
   hooks: {
     "modules:before": function () {
@@ -81,7 +87,25 @@ export default defineNuxtConfig({
       ignore: ["**/index.ts", "**/shaders.ts", "**/types.ts", "**/*.config.ts"],
     },
   ],
+  // Docus AI 助手配置:模型 ID 经 server/plugins/ai-provider.ts 注册的
+  // OpenAI 兼容提供商解析(端点由 NUXT_AI_PROVIDER_* 环境变量指定),不依赖 Vercel AI Gateway
+  assistant: {
+    model: "deepseek-v4-pro",
+  },
+
   runtimeConfig: {
+    // 服务端专用:AI 模型服务接入配置,值来自环境变量 NUXT_AI_PROVIDER_*(密钥不落库)
+    aiProvider: {
+      apiKey: "",
+      baseUrl: "",
+    },
+    // 飞书登录(NUXT_FEISHU_APP_ID / NUXT_FEISHU_APP_SECRET);未配置时登录入口自动隐藏
+    feishu: {
+      appId: "",
+      appSecret: "",
+    },
+    // 加密 session cookie 的密钥(NUXT_SESSION_PASSWORD,≥32 字符)
+    sessionPassword: "",
     public: {
       NUXT_CLARITY_ID: process.env.NUXT_CLARITY_ID,
       NUXT_ADSENSE_ACCOUNT: process.env.NUXT_ADSENSE_ACCOUNT,

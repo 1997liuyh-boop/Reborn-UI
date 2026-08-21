@@ -41,6 +41,8 @@ jobs:
         # 构建 3000+ 模块内存开销大，默认 4GB 堆上限会 OOM；运行器 7GB 内存，6144MB 为安全值
         env:
           NODE_OPTIONS: --max-old-space-size=6144
+          # Docus AI 助手的构建期开关：构建时存在即启用助手 UI（非密钥，真实模型凭证在运行时注入）
+          AI_GATEWAY_API_KEY: enabled
         run: pnpm run build
 
       - name: 部署到腾讯云服务器
@@ -49,6 +51,12 @@ jobs:
           SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_TARGET_PATH }}
           SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          # ---- 运行时环境变量（生产环境 Nitro 不读 .env，必须经 pm2 进程环境注入）----
+          NUXT_AI_PROVIDER_API_KEY: ${{ secrets.NUXT_AI_PROVIDER_API_KEY }}
+          NUXT_AI_PROVIDER_BASE_URL: ${{ secrets.NUXT_AI_PROVIDER_BASE_URL }}
+          NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
+          NUXT_FEISHU_APP_ID: ${{ secrets.NUXT_FEISHU_APP_ID }}
+          NUXT_FEISHU_APP_SECRET: ${{ secrets.NUXT_FEISHU_APP_SECRET }}
         run: |
           # 配置 SSH 连接（私钥仅存在于本次运行的临时环境中）
           mkdir -p ~/.ssh
@@ -56,16 +64,24 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
 
-          # 同步构建产物到服务器
-          rsync -avz --delete .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
+          # 同步构建产物到服务器。
+          # --exclude '.data'：该目录存放 AI 助手聊天记录数据库（SQLite），
+          # 属于服务器上的运行时数据，绝不能被 --delete 清理，否则每次发版都会清空用户记录
+          rsync -avz --delete --exclude '.data' .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
 
           # 重启宝塔面板托管的 index 进程——nginx 将站点反代到它监听的 3000 端口。
           # 严禁再启动第二个进程（如旧方案的 re-ui）：会与 index 抢 3000 端口（EADDRINUSE），
-          # 造成"部署成功但线上仍是旧代码"的假象，只能靠手动在宝塔重启才生效
+          # 造成"部署成功但线上仍是旧代码"的假象，只能靠手动在宝塔重启才生效。
+          # 运行时环境变量在本机 shell 展开后随 ssh 命令下发，pm2 --update-env 刷新进程环境
           ssh "$SERVER_USER@$SERVER_IP" "
             cd $DEPLOY_PATH &&
             export PATH=\$PATH:/www/server/nodejs/v20.13.0/bin:/usr/local/bin &&
-            pm2 restart index || pm2 start server/index.mjs --name index || npx pm2 start server/index.mjs --name index
+            export NUXT_AI_PROVIDER_API_KEY='$NUXT_AI_PROVIDER_API_KEY' &&
+            export NUXT_AI_PROVIDER_BASE_URL='$NUXT_AI_PROVIDER_BASE_URL' &&
+            export NUXT_SESSION_PASSWORD='$NUXT_SESSION_PASSWORD' &&
+            export NUXT_FEISHU_APP_ID='$NUXT_FEISHU_APP_ID' &&
+            export NUXT_FEISHU_APP_SECRET='$NUXT_FEISHU_APP_SECRET' &&
+            pm2 restart index --update-env || pm2 start server/index.mjs --name index || npx pm2 start server/index.mjs --name index
           "
 
           echo "🎉 GitHub Actions 自动部署完成！"

@@ -1,5 +1,9 @@
 packages:
   - "packages/*"
+# docus 补丁:AI 助手代码块「在 Playground 运行」按钮 + 输出可运行 demo 的提示词
+# (pnpm v10 忽略 package.json 的 pnpm 字段,补丁配置必须放这里才能在 CI 全新安装时生效)
+patchedDependencies:
+  docus: patches/docus.patch
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@tailwindcss/oxide"

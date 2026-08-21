@@ -75,3 +75,6 @@ public/r
 # Claude Code 本地个人配置
 .claude/settings.local.json
 .claude/launch.json
+
+# Playground 补全数据(构建时由 modules/playground-completions.ts 从知识库生成)
+public/playground-completions.json

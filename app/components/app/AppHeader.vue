@@ -2,8 +2,8 @@
 const appConfig = useAppConfig();
 const site = useSiteConfig();
 
-
-
+// AI 助手开关:由 Docus assistant 模块提供,构建期存在 AI_GATEWAY_API_KEY 时启用
+const { isEnabled: isAssistantEnabled } = useAssistant();
 
 const links = computed(() =>
   appConfig.github && appConfig.github.url
@@ -30,7 +30,9 @@ const links = computed(() =>
     <template #right>
       <AppHeaderCTA />
 
-
+      <template v-if="isAssistantEnabled">
+        <AssistantChat />
+      </template>
 
       <UContentSearchButton class="lg:hidden" />
 

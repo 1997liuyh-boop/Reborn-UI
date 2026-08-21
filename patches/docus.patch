@@ -1,0 +1,249 @@
+diff --git a/modules/assistant/runtime/components/AssistantLoading.vue b/modules/assistant/runtime/components/AssistantLoading.vue
+index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..f74829caec03aab79a52d16206d44f07f42915b0 100644
+--- a/modules/assistant/runtime/components/AssistantLoading.vue
++++ b/modules/assistant/runtime/components/AssistantLoading.vue
+@@ -155,7 +155,16 @@ onUnmounted(() => {
+         class="flex items-center gap-1.5"
+       >
+         <span class="size-1 rounded-full bg-current opacity-40" />
+-        <span class="text-[11px] text-dimmed truncate max-w-[200px]">
++        <!-- [Reborn UI 补丁] 读取过的文档条目可点击跳转,悬停高亮(原为无交互纯文本) -->
++        <a
++          v-if="tool.toolName === 'get-page' && tool.args?.path"
++          :href="String(tool.args.path)"
++          target="_blank"
++          class="text-[11px] text-dimmed truncate max-w-[200px] transition-colors hover:text-highlighted hover:underline"
++        >
++          {{ getToolLabel(tool.toolName, tool.args) }}
++        </a>
++        <span v-else class="text-[11px] text-dimmed truncate max-w-[200px]">
+           {{ getToolLabel(tool.toolName, tool.args) }}
+         </span>
+       </motion.div>
+diff --git a/modules/assistant/runtime/components/AssistantPanel.vue b/modules/assistant/runtime/components/AssistantPanel.vue
+index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481de2f69b1 100644
+--- a/modules/assistant/runtime/components/AssistantPanel.vue
++++ b/modules/assistant/runtime/components/AssistantPanel.vue
+@@ -42,14 +42,79 @@ const chat = new Chat({
+       description: message,
+       icon: 'i-lucide-alert-circle',
+       color: 'error',
+-      duration: 0,
++      // [Reborn UI 补丁] 错误提示 6 秒自动消失,避免多次报错时 toast 永久叠加(体感"卡死")
++      duration: 6000,
+     })
+   },
+   onFinish: () => {
+     messages.value = chat.messages
++    // [Reborn UI 补丁] 每轮回复结束后自动保存(仅登录用户)
++    saveHistory()
+   },
+ })
+ 
++// ============ [Reborn UI 补丁] 登录态 + 聊天记录 ============
++interface RebornAuthUser { id: string, name: string, avatar?: string }
++interface RebornConversation { id: string, title: string, updatedAt: string }
++
++const authUser = ref<RebornAuthUser | null>(null)
++const feishuEnabled = ref(false)
++/** 当前会话对应的服务端记录 id;新对话在首次保存时生成 */
++const conversationId = useState<string | undefined>('assistant-conversation-id', () => undefined)
++const historyList = ref<RebornConversation[]>([])
++const historyOpen = ref(false)
++
++async function fetchAuthUser() {
++  try {
++    const res = await $fetch<{ user: RebornAuthUser | null, feishuEnabled: boolean }>('/api/auth/me')
++    authUser.value = res.user
++    feishuEnabled.value = res.feishuEnabled
++  }
++  catch { /* 接口不可用时静默降级为未登录 */ }
++}
++
++async function saveHistory() {
++  if (!authUser.value || chat.messages.length === 0) return
++  try {
++    const res = await $fetch<{ id: string }>('/api/chat/save', {
++      method: 'POST',
++      body: { conversationId: conversationId.value, messages: chat.messages },
++    })
++    conversationId.value = res.id
++  }
++  catch { /* 保存失败不打断对话 */ }
++}
++
++async function loadHistoryList() {
++  if (!authUser.value) return
++  historyList.value = await $fetch<RebornConversation[]>('/api/chat/list').catch(() => [])
++}
++
++// 弹层由 UPopover 触发器自身开合,打开时拉取最新列表
++watch(historyOpen, (open) => {
++  if (open) loadHistoryList()
++})
++
++async function openConversation(id: string) {
++  try {
++    const res = await $fetch<{ messages: UIMessage[] }>(`/api/chat/${id}`)
++    chat.stop()
++    chat.messages.length = 0
++    chat.messages.push(...res.messages)
++    messages.value = chat.messages
++    conversationId.value = id
++    historyOpen.value = false
++  }
++  catch { /* 会话可能已删除 */ }
++}
++
++async function removeConversation(id: string) {
++  await $fetch(`/api/chat/${id}`, { method: 'DELETE' }).catch(() => {})
++  historyList.value = historyList.value.filter(c => c.id !== id)
++  if (conversationId.value === id) conversationId.value = undefined
++}
++// ============ [Reborn UI 补丁] 结束 ============
++
+ watch(pendingMessage, (message: string | undefined) => {
+   if (message) {
+     if (messages.value.length === 0 && chat.messages.length > 0) {
+@@ -109,9 +174,13 @@ function resetChat() {
+   chat.stop()
+   messages.value = []
+   chat.messages.length = 0
++  // [Reborn UI 补丁] 清空即开启新会话,后续保存生成新记录
++  conversationId.value = undefined
+ }
+ 
+ onMounted(() => {
++  // [Reborn UI 补丁] 读取登录态
++  fetchAuthUser()
+   if (pendingMessage.value) {
+     chat.sendMessage({
+       text: pendingMessage.value,
+@@ -130,6 +199,39 @@ onMounted(() => {
+       <div class="flex h-16 shrink-0 items-center justify-between border-b border-default px-4">
+         <span class="font-medium text-highlighted">{{ displayTitle }}</span>
+         <div class="flex items-center gap-1">
++          <!-- [Reborn UI 补丁] 历史会话入口(登录后可见) -->
++          <UPopover v-if="authUser" v-model:open="historyOpen">
++            <UTooltip text="历史记录">
++              <UButton
++                icon="i-lucide-history"
++                color="neutral"
++                variant="ghost"
++                size="sm"
++                class="text-muted hover:text-highlighted"
++              />
++            </UTooltip>
++            <template #content>
++              <div class="max-h-80 w-72 overflow-y-auto p-2">
++                <p v-if="historyList.length === 0" class="p-3 text-xs text-muted">暂无历史会话</p>
++                <div
++                  v-for="c in historyList"
++                  :key="c.id"
++                  class="group flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 hover:bg-elevated"
++                  @click="openConversation(c.id)"
++                >
++                  <span class="flex-1 truncate text-sm text-muted group-hover:text-highlighted">{{ c.title }}</span>
++                  <UButton
++                    icon="i-lucide-trash-2"
++                    size="xs"
++                    color="neutral"
++                    variant="ghost"
++                    class="opacity-0 group-hover:opacity-100"
++                    @click.stop="removeConversation(c.id)"
++                  />
++                </div>
++              </div>
++            </template>
++          </UPopover>
+           <UTooltip
+             v-if="showExpandButton"
+             :text="isExpanded ? t('assistant.collapse') : t('assistant.expand')"
+@@ -289,7 +391,14 @@ onMounted(() => {
+           </template>
+         </UChatPrompt>
+         <div class="mt-1 flex text-xs text-dimmed items-center justify-between">
+-          <span>{{ t('assistant.chatCleared') }}</span>
++          <!-- [Reborn UI 补丁] 登录态提示:已登录自动保存;未登录且配置了飞书时给登录入口 -->
++          <span v-if="authUser">{{ authUser.name }} · 聊天记录自动保存</span>
++          <a
++            v-else-if="feishuEnabled"
++            href="/api/auth/feishu/login"
++            class="transition-colors hover:text-highlighted hover:underline"
++          >飞书登录后自动保存聊天记录</a>
++          <span v-else>{{ t('assistant.chatCleared') }}</span>
+           <span>
+             {{ input.length }}/1000
+           </span>
+diff --git a/modules/assistant/runtime/components/AssistantPreStream.vue b/modules/assistant/runtime/components/AssistantPreStream.vue
+index 1ccc24d8d2f87a943fab293e93d99f0ddddb8a9d..9a0b5ff0d8963c3e2c5bcc16da9e79190d0b83e4 100644
+--- a/modules/assistant/runtime/components/AssistantPreStream.vue
++++ b/modules/assistant/runtime/components/AssistantPreStream.vue
+@@ -31,16 +31,42 @@ const lang = computed(() => {
+ const key = computed(() => {
+   return `${lang.value}-${colorMode.value}`
+ })
++
++// [Reborn UI 补丁] vue/html 代码块可一键送入站内 Playground 实时运行
++const runnable = computed(() => ['vue', 'html'].includes(lang.value))
++
++// [Reborn UI 补丁] 代码经 base64url 编码进哈希,与 app/utils/playgroundCode.ts 的格式保持一致
++function runInPlayground() {
++  const bytes = new TextEncoder().encode(trimmedCode.value)
++  let binary = ''
++  bytes.forEach((b) => {
++    binary += String.fromCharCode(b)
++  })
++  const encoded = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
++  window.open(`/playground#code=${encoded}`, '_blank')
++}
+ </script>
+ 
+ <template>
+-  <ProsePre v-bind="props">
+-    <ShikiCachedRenderer
+-      :key="key"
+-      :highlighter="highlighter"
+-      :code="trimmedCode"
+-      :lang="lang"
+-      :theme="colorMode.value === 'dark' ? 'material-theme-palenight' : 'material-theme-lighter'"
+-    />
+-  </ProsePre>
++  <div class="group/playground relative">
++    <ProsePre v-bind="props">
++      <ShikiCachedRenderer
++        :key="key"
++        :highlighter="highlighter"
++        :code="trimmedCode"
++        :lang="lang"
++        :theme="colorMode.value === 'dark' ? 'material-theme-palenight' : 'material-theme-lighter'"
++      />
++    </ProsePre>
++    <UButton
++      v-if="runnable"
++      icon="i-lucide-play"
++      size="xs"
++      variant="soft"
++      class="absolute right-2 bottom-2 opacity-80 hover:opacity-100"
++      @click="runInPlayground"
++    >
++      在 Playground 运行
++    </UButton>
++  </div>
+ </template>
+diff --git a/modules/assistant/runtime/server/api/search.ts b/modules/assistant/runtime/server/api/search.ts
+index b0fc292e6daf6b8201ced1fa2a7fb1c5a1db4c65..d27dc946d4e6d0096925140def13bfb4d9eeb243 100644
+--- a/modules/assistant/runtime/server/api/search.ts
++++ b/modules/assistant/runtime/server/api/search.ts
+@@ -44,6 +44,11 @@ function getSystemPrompt(siteName: string) {
+ - Use bullet points for lists
+ - Keep code examples focused and minimal
+ 
++**Runnable demos (CRITICAL):**
++- When you provide ${siteName} component demo code, ALWAYS output ONE complete self-contained snippet in a \`\`\`vue fence: a <template> block plus an optional <script setup> block
++- Components are globally registered - do NOT write import statements for them; Vue APIs like ref/computed/watch are also available without imports
++- Users can execute your \`\`\`vue snippet instantly via the "Run in Playground" button under the code block, so it must render as-is
++
+ **Response style:**
+ - Conversational but professional
+ - "Here's how you can do that:" instead of "The documentation shows:"
