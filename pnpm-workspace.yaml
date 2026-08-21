@@ -4,6 +4,11 @@ packages:
 # (pnpm v10 忽略 package.json 的 pnpm 字段,补丁配置必须放这里才能在 CI 全新安装时生效)
 patchedDependencies:
   docus: patches/docus.patch
+# 同上:overrides 也必须放这里,package.json 的 pnpm.overrides 在 pnpm v10 下不生效
+overrides:
+  "@nuxt/content": ^3.11.0
+  zod: ^3.23.8
+  zod-to-json-schema: ^3.23.5
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - "@tailwindcss/oxide"

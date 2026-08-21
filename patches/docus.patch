@@ -1,5 +1,5 @@
 diff --git a/modules/assistant/runtime/components/AssistantLoading.vue b/modules/assistant/runtime/components/AssistantLoading.vue
-index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..f74829caec03aab79a52d16206d44f07f42915b0 100644
+index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..7e4111e6c321adf22028b6fe6753950541cdec9e 100644
 --- a/modules/assistant/runtime/components/AssistantLoading.vue
 +++ b/modules/assistant/runtime/components/AssistantLoading.vue
 @@ -155,7 +155,16 @@ onUnmounted(() => {
@@ -21,10 +21,10 @@ index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..f74829caec03aab79a52d16206d44f07
          </span>
        </motion.div>
 diff --git a/modules/assistant/runtime/components/AssistantPanel.vue b/modules/assistant/runtime/components/AssistantPanel.vue
-index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481de2f69b1 100644
+index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..7738f6693b11c0f873e99ce4eed386ab6d847f31 100644
 --- a/modules/assistant/runtime/components/AssistantPanel.vue
 +++ b/modules/assistant/runtime/components/AssistantPanel.vue
-@@ -42,14 +42,79 @@ const chat = new Chat({
+@@ -42,16 +42,127 @@ const chat = new Chat({
        description: message,
        icon: 'i-lucide-alert-circle',
        color: 'error',
@@ -46,6 +46,9 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481
 +
 +const authUser = ref<RebornAuthUser | null>(null)
 +const feishuEnabled = ref(false)
++/** 登录态是否已从服务端拉取完成(完成前不切换输入区 UI,避免登录用户看到闪烁) */
++const authReady = ref(false)
++const isDev = import.meta.dev
 +/** 当前会话对应的服务端记录 id;新对话在首次保存时生成 */
 +const conversationId = useState<string | undefined>('assistant-conversation-id', () => undefined)
 +const historyList = ref<RebornConversation[]>([])
@@ -58,7 +61,48 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481
 +    feishuEnabled.value = res.feishuEnabled
 +  }
 +  catch { /* 接口不可用时静默降级为未登录 */ }
++  finally {
++    authReady.value = true
++  }
 +}
++
++/** 服务端已对 AI 端点强制鉴权(server/middleware/ai-guard.ts),前端在发送前同步拦截 */
++function ensureLoggedIn(): boolean {
++  if (authUser.value) return true
++  toast.add({
++    description: 'AI 助手需登录后使用',
++    icon: 'i-lucide-lock',
++    color: 'warning',
++    duration: 4000,
++  })
++  return false
++}
++
++/** 本地开发免飞书凭证的模拟登录(生产构建中 /api/auth/dev-login 返回 404) */
++async function devLogin() {
++  try {
++    await $fetch('/api/auth/dev-login', { method: 'POST' })
++    await fetchAuthUser()
++  }
++  catch {
++    toast.add({ description: '本地开发登录失败', icon: 'i-lucide-alert-circle', color: 'error', duration: 4000 })
++  }
++}
++
++// 登录态就绪后补发:未登录期间被拦下的 pending 问题,或上轮以用户消息结尾的续答
++watch(authUser, (user) => {
++  if (!user) return
++  if (pendingMessage.value) {
++    if (messages.value.length === 0 && chat.messages.length > 0) {
++      chat.messages.length = 0
++    }
++    chat.sendMessage({ text: pendingMessage.value })
++    clearPending()
++  }
++  else if (chat.lastMessage?.role === 'user' && chat.status === 'ready') {
++    chat.regenerate()
++  }
++})
 +
 +async function saveHistory() {
 +  if (!authUser.value || chat.messages.length === 0) return
@@ -104,8 +148,31 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481
 +
  watch(pendingMessage, (message: string | undefined) => {
    if (message) {
++    // [Reborn UI 补丁] 未登录时保留 pending 不发送,登录态就绪后由 authUser watch 统一补发
++    if (!authUser.value) return
      if (messages.value.length === 0 && chat.messages.length > 0) {
-@@ -109,9 +174,13 @@ function resetChat() {
+       chat.messages.length = 0
+     }
+@@ -92,6 +203,9 @@ function handleSubmit(event?: Event) {
+     return
+   }
+ 
++  // [Reborn UI 补丁] 发送前登录拦截
++  if (!ensureLoggedIn()) return
++
+   chat.sendMessage({
+     text: input.value,
+   })
+@@ -100,6 +214,8 @@ function handleSubmit(event?: Event) {
+ }
+ 
+ function askQuestion(question: string) {
++  // [Reborn UI 补丁] 发送前登录拦截
++  if (!ensureLoggedIn()) return
+   chat.sendMessage({
+     text: question,
+   })
+@@ -109,18 +225,13 @@ function resetChat() {
    chat.stop()
    messages.value = []
    chat.messages.length = 0
@@ -114,12 +181,21 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481
  }
  
  onMounted(() => {
-+  // [Reborn UI 补丁] 读取登录态
+-  if (pendingMessage.value) {
+-    chat.sendMessage({
+-      text: pendingMessage.value,
+-    })
+-    clearPending()
+-  }
+-  else if (chat.lastMessage?.role === 'user') {
+-    chat.regenerate()
+-  }
++  // [Reborn UI 补丁] 读取登录态;pending 补发与续答改由上方 authUser watch 在登录态就绪后触发
 +  fetchAuthUser()
-   if (pendingMessage.value) {
-     chat.sendMessage({
-       text: pendingMessage.value,
-@@ -130,6 +199,39 @@ onMounted(() => {
+ })
+ </script>
+ 
+@@ -130,6 +241,39 @@ onMounted(() => {
        <div class="flex h-16 shrink-0 items-center justify-between border-b border-default px-4">
          <span class="font-medium text-highlighted">{{ displayTitle }}</span>
          <div class="flex items-center gap-1">
@@ -159,24 +235,65 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..913d4cd14404b25867602ade43563481
            <UTooltip
              v-if="showExpandButton"
              :text="isExpanded ? t('assistant.collapse') : t('assistant.expand')"
-@@ -289,7 +391,14 @@ onMounted(() => {
+@@ -256,7 +400,40 @@ onMounted(() => {
+       </div>
+ 
+       <div class="w-full shrink-0 p-3">
++        <!-- [Reborn UI 补丁] 登录门控:AI 端点已在服务端强制鉴权,未登录时以登录入口替换输入框 -->
++        <div
++          v-if="authReady && !authUser"
++          class="flex flex-col items-center gap-3 rounded-lg border border-default p-4 text-center"
++        >
++          <p class="text-sm text-muted">
++            AI 助手需登录后使用
++          </p>
++          <UButton
++            v-if="feishuEnabled"
++            to="/api/auth/feishu/login"
++            external
++            icon="i-lucide-log-in"
++            size="sm"
++          >
++            飞书登录
++          </UButton>
++          <UButton
++            v-else-if="isDev"
++            icon="i-lucide-log-in"
++            size="sm"
++            @click="devLogin"
++          >
++            本地开发登录
++          </UButton>
++          <p
++            v-else
++            class="text-xs text-dimmed"
++          >
++            未配置登录方式(NUXT_FEISHU_APP_ID),AI 助手暂不可用
++          </p>
++        </div>
+         <UChatPrompt
++          v-else
+           v-model="input"
+           :rows="2"
+           :placeholder="displayPlaceholder"
+@@ -288,8 +465,13 @@ onMounted(() => {
+             />
            </template>
          </UChatPrompt>
-         <div class="mt-1 flex text-xs text-dimmed items-center justify-between">
+-        <div class="mt-1 flex text-xs text-dimmed items-center justify-between">
 -          <span>{{ t('assistant.chatCleared') }}</span>
-+          <!-- [Reborn UI 补丁] 登录态提示:已登录自动保存;未登录且配置了飞书时给登录入口 -->
++        <div
++          v-if="!authReady || authUser"
++          class="mt-1 flex text-xs text-dimmed items-center justify-between"
++        >
++          <!-- [Reborn UI 补丁] 登录态提示:已登录自动保存(未登录时输入区已被上方登录入口替换) -->
 +          <span v-if="authUser">{{ authUser.name }} · 聊天记录自动保存</span>
-+          <a
-+            v-else-if="feishuEnabled"
-+            href="/api/auth/feishu/login"
-+            class="transition-colors hover:text-highlighted hover:underline"
-+          >飞书登录后自动保存聊天记录</a>
 +          <span v-else>{{ t('assistant.chatCleared') }}</span>
            <span>
              {{ input.length }}/1000
            </span>
 diff --git a/modules/assistant/runtime/components/AssistantPreStream.vue b/modules/assistant/runtime/components/AssistantPreStream.vue
-index 1ccc24d8d2f87a943fab293e93d99f0ddddb8a9d..9a0b5ff0d8963c3e2c5bcc16da9e79190d0b83e4 100644
+index 1ccc24d8d2f87a943fab293e93d99f0ddddb8a9d..ecfb5d1aa5fddb145d65c254b8ca9f67e0352d36 100644
 --- a/modules/assistant/runtime/components/AssistantPreStream.vue
 +++ b/modules/assistant/runtime/components/AssistantPreStream.vue
 @@ -31,16 +31,42 @@ const lang = computed(() => {
@@ -232,7 +349,7 @@ index 1ccc24d8d2f87a943fab293e93d99f0ddddb8a9d..9a0b5ff0d8963c3e2c5bcc16da9e7919
 +  </div>
  </template>
 diff --git a/modules/assistant/runtime/server/api/search.ts b/modules/assistant/runtime/server/api/search.ts
-index b0fc292e6daf6b8201ced1fa2a7fb1c5a1db4c65..d27dc946d4e6d0096925140def13bfb4d9eeb243 100644
+index b0fc292e6daf6b8201ced1fa2a7fb1c5a1db4c65..c90bd75d021745e18369746e76a69afa355bcabc 100644
 --- a/modules/assistant/runtime/server/api/search.ts
 +++ b/modules/assistant/runtime/server/api/search.ts
 @@ -44,6 +44,11 @@ function getSystemPrompt(siteName: string) {

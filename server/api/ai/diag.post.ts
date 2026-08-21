@@ -5,13 +5,15 @@ import { normalizeOpenAICompatibleBaseUrl } from "../../utils/aiProviderUrl";
  * AI 链路自检(仅返回错误摘要,不回传密钥)。
  * 用于定位生产"助手空回复":网关出网 / provider 解析 / streamText 哪一步失败。
  *
+ * 鉴权与限流由 server/middleware/ai-guard.ts 统一负责(需登录,每人 5 次/小时)。
+ *
  * POST /api/ai/diag
- * body 可选: { prompt?: string }
+ * body 可选: { prompt?: string }(最长 200 字符,超出截断)
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
   const body = await readBody<{ prompt?: string }>(event).catch(() => ({}));
-  const prompt = body?.prompt || "只回复：你好";
+  const prompt = (body?.prompt || "只回复：你好").slice(0, 200);
 
   const apiKey = String(config.aiProvider?.apiKey || "");
   const rawBaseUrl = String(config.aiProvider?.baseUrl || "");

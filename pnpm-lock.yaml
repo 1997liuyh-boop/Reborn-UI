@@ -11,7 +11,7 @@ overrides:
 
 patchedDependencies:
   docus:
-    hash: 703004170a10afb3890ffa008f3c1a9c755800eff2d4546ed3c111b124d429f6
+    hash: 74ac3d637eb9b28fbc5dc38399e44802abf6d59a3b9f311c5a922368c4b4be32
     path: patches/docus.patch
 
 importers:
@@ -98,7 +98,7 @@ importers:
         version: 1.11.20
       docus:
         specifier: 5.6.1
-        version: 5.6.1(patch_hash=703004170a10afb3890ffa008f3c1a9c755800eff2d4546ed3c111b124d429f6)(2ac27ee61dd3f8ef4d7b45ba8e56480d)
+        version: 5.6.1(patch_hash=74ac3d637eb9b28fbc5dc38399e44802abf6d59a3b9f311c5a922368c4b4be32)(2ac27ee61dd3f8ef4d7b45ba8e56480d)
       dotted-map:
         specifier: ^2.2.3
         version: 2.2.3
@@ -21276,7 +21276,7 @@ snapshots:
 
   dlv@1.1.3: {}
 
-  docus@5.6.1(patch_hash=703004170a10afb3890ffa008f3c1a9c755800eff2d4546ed3c111b124d429f6)(2ac27ee61dd3f8ef4d7b45ba8e56480d):
+  docus@5.6.1(patch_hash=74ac3d637eb9b28fbc5dc38399e44802abf6d59a3b9f311c5a922368c4b4be32)(2ac27ee61dd3f8ef4d7b45ba8e56480d):
     dependencies:
       '@ai-sdk/gateway': 3.0.63(zod@3.25.76)
       '@ai-sdk/mcp': 1.0.23(zod@3.25.76)
