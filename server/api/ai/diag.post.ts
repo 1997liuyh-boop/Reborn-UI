@@ -1,4 +1,5 @@
 import { streamText } from "ai";
+import { normalizeOpenAICompatibleBaseUrl } from "../../utils/aiProviderUrl";
 
 /**
  * AI 链路自检(仅返回错误摘要,不回传密钥)。
@@ -13,7 +14,8 @@ export default defineEventHandler(async (event) => {
   const prompt = body?.prompt || "只回复：你好";
 
   const apiKey = String(config.aiProvider?.apiKey || "");
-  const baseUrl = String(config.aiProvider?.baseUrl || "");
+  const rawBaseUrl = String(config.aiProvider?.baseUrl || "");
+  const baseUrl = rawBaseUrl ? normalizeOpenAICompatibleBaseUrl(rawBaseUrl) : "";
   const model = String(config.assistant?.model || "");
   const provider = (globalThis as Record<string, unknown>).AI_SDK_DEFAULT_PROVIDER;
 
@@ -23,6 +25,7 @@ export default defineEventHandler(async (event) => {
     hasBaseUrl: baseUrl.length > 0,
     providerRegistered: Boolean(provider),
     baseHost: null as string | null,
+    basePath: null as string | null,
     gatewayReachable: false,
     gatewayStatus: null as number | null,
     gatewayError: null as string | null,
@@ -34,9 +37,14 @@ export default defineEventHandler(async (event) => {
   };
 
   try {
-    result.baseHost = baseUrl ? new URL(baseUrl).host : null;
+    if (baseUrl) {
+      const u = new URL(baseUrl);
+      result.baseHost = u.host;
+      result.basePath = u.pathname;
+    }
   } catch {
     result.baseHost = null;
+    result.basePath = null;
   }
 
   // 1) 服务器出网探测:直接请求网关 /models(或根路径)

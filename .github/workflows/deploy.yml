@@ -93,11 +93,20 @@ jobs:
           # 在 Actions runner 本地生成 ecosystem 文件，避免 ssh 双引号转义吞掉密钥特殊字符；
           # 再用 scp 落到服务器，pm2 startOrReload 保证 env 真正进入进程。
           python3 <<'PY'
-          import json, os
+          import json, os, re
+          def normalize_base_url(raw: str) -> str:
+              # openai-compatible SDK 会拼接 /chat/completions，必须带 /v1
+              trimmed = raw.strip().rstrip("/")
+              if not trimmed:
+                  return trimmed
+              if re.search(r"/v\d+[a-z]*$", trimmed, re.I):
+                  return trimmed
+              return trimmed + "/v1"
+          base_url = normalize_base_url(os.environ["NUXT_AI_PROVIDER_BASE_URL"])
           env = {
               "NODE_ENV": "production",
               "NUXT_AI_PROVIDER_API_KEY": os.environ["NUXT_AI_PROVIDER_API_KEY"],
-              "NUXT_AI_PROVIDER_BASE_URL": os.environ["NUXT_AI_PROVIDER_BASE_URL"],
+              "NUXT_AI_PROVIDER_BASE_URL": base_url,
               "NUXT_SESSION_PASSWORD": os.environ["NUXT_SESSION_PASSWORD"],
               "NUXT_FEISHU_APP_ID": os.environ.get("NUXT_FEISHU_APP_ID", ""),
               "NUXT_FEISHU_APP_SECRET": os.environ.get("NUXT_FEISHU_APP_SECRET", ""),
@@ -116,8 +125,7 @@ jobs:
               f.write("module.exports = ")
               json.dump(eco, f, ensure_ascii=False, indent=2)
               f.write(";\n")
-          print("ecosystem generated; ai baseUrl host check:",
-                os.environ["NUXT_AI_PROVIDER_BASE_URL"][:48])
+          print("ecosystem generated; ai baseUrl:", base_url)
           PY
 
           scp /tmp/reborn-ecosystem.config.cjs \
