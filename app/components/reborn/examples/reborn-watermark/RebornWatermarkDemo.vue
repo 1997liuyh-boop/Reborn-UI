@@ -47,7 +47,7 @@ const reset = () => {
     <section class="flex flex-col gap-6">
       <div class="flex items-center justify-between">
         <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200">交互演示与配置</h3>
-        <RebornButton variant="ghost" size="sm" @click="reset">重置配置</RebornButton>
+        <RebornButton variant="soft" color="neutral" size="sm" @click="reset">重置配置</RebornButton>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-0 rounded-[32px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-2xl overflow-hidden">
         <!-- Sidebar Controls -->

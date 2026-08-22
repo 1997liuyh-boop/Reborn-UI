@@ -29,21 +29,21 @@ export default {
         },
         size: {
             sm: {
-                activeIcon: "size-input-sep-sm text-caption-sm",
+                activeIcon: "size-input-sep-sm text-sm",
                 inactiveIcon: "size-input-sep-sm",
-                label: "text-caption-lg",
+                label: "text-sm",
                 innerDot: 'size-[50%]'
             },
             md: {
-                activeIcon: "size-input-sep-md text-caption-lg",
+                activeIcon: "size-input-sep-md text-sm",
                 inactiveIcon: "size-input-sep-md",
-                label: "text-body-base",
+                label: "text-base",
                 innerDot: 'size-[60%]'
             },
             lg: {
-                activeIcon: "size-input-sep-lg text-body-base",
+                activeIcon: "size-input-sep-lg text-base",
                 inactiveIcon: "size-input-sep-lg",
-                label: "text-title-md",
+                label: "text-lg",
                 innerDot: 'size-[70%]'
             },
         },

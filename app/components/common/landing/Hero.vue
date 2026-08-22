@@ -95,12 +95,12 @@ const handlePremiumClick = () => {
 
       <div class="flex flex-wrap items-center justify-center gap-3">
         <NuxtLink :to="componentPath">
-          <RebornButton size="xl" class="min-w-40 shadow-[0_18px_44px_rgba(255,61,88,0.24)]">
+          <RebornButton size="lg" class="min-w-40 shadow-[0_18px_44px_rgba(255,61,88,0.24)]">
             浏览组件
           </RebornButton>
         </NuxtLink>
         <RebornButton
-          size="xl"
+          size="lg"
           variant="outline"
           class="min-w-40 border-white/70 bg-white/35 text-zinc-900 backdrop-blur-xl hover:bg-white/55 dark:border-white/14 dark:bg-white/6 dark:text-white dark:hover:bg-white/10"
           @click="handlePremiumClick"

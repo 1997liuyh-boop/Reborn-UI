@@ -2,15 +2,20 @@
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue"
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue"
-import { buttonColors, buttonVariants, buttonSizes } from "~/components/reborn/ui/reborn-button/reborn-button.config"
+import { buttonColors, buttonVariants, buttonSizes, buttonBorderStyles } from "~/components/reborn/ui/reborn-button/reborn-button.config"
 
 const colorOptions = buttonColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
 const variantOptions = buttonVariants.map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v }));
 const sizeOptions = buttonSizes.map(s => ({ label: s.toUpperCase(), value: s as typeof buttonSizes[number] }));
+const borderStyleOptions = buttonBorderStyles.map(b => ({
+  label: b === 'solid' ? '实线 Solid' : '虚线 Dashed',
+  value: b as typeof buttonBorderStyles[number],
+}));
 
 const color = ref<typeof buttonColors[number]>('primary')
 const variant = ref<typeof buttonVariants[number]>('solid')
 const size = ref<typeof buttonSizes[number]>('md')
+const borderStyle = ref<typeof buttonBorderStyles[number]>('solid')
 
 const disabled = ref(false)
 const loading = ref(false)
@@ -51,6 +56,12 @@ function onClick() {
               <RebornSelect v-model="size" :options="sizeOptions" />
             </div>
 
+            <div class="flex flex-col gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">边框线型</span>
+              <RebornSelect v-model="borderStyle" :options="borderStyleOptions" />
+              <span class="text-xs text-gray-400">1px；对 outline / subtle 变体生效</span>
+            </div>
+
             <div class="pt-4 flex flex-col gap-3">
               <RebornCheckbox v-model="disabled" label="禁用状态" />
               <RebornCheckbox v-model="loading" label="加载状态" />
@@ -69,7 +80,8 @@ function onClick() {
               <Icon name="lucide:sparkles" />
             </RebornButton>
 
-            <RebornButton :color="color" variant="outline" :size="size" :disabled="disabled" :loading="loading">
+            <RebornButton :color="color" variant="outline" :size="size" :border-style="borderStyle"
+              :disabled="disabled" :loading="loading">
               <template #leading>
                 <Icon name="lucide:shopping-cart" />
               </template>
@@ -77,7 +89,7 @@ function onClick() {
             </RebornButton>
           </div>
           <div class="text-xs text-gray-400 font-mono">
-            Props: { color: '{{ color }}', variant: '{{ variant }}', size: '{{ size }}' }
+            Props: { color: '{{ color }}', variant: '{{ variant }}', size: '{{ size }}', borderStyle: '{{ borderStyle }}' }
           </div>
         </div>
       </div>
@@ -100,6 +112,7 @@ function onClick() {
       <section
         class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
         <h4 class="font-medium text-gray-700 dark:text-gray-300">尺寸与图标</h4>
+        <p class="text-xs text-gray-400">三档：高度 24 / 32 / 40px，水平内边距统一 12px。</p>
         <div class="flex flex-col gap-6">
           <div class="flex flex-wrap items-end gap-3">
             <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" color="primary">
@@ -111,6 +124,27 @@ function onClick() {
               variant="soft">
               <Icon name="lucide:star" />
             </RebornButton>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
+        <h4 class="font-medium text-gray-700 dark:text-gray-300">边框线型 (Border Style)</h4>
+        <p class="text-xs text-gray-400">
+          <code>borderStyle</code> 取 <code>solid</code> / <code>dashed</code>，边框宽度固定 1px；
+          对有边框的 <code>outline</code> / <code>subtle</code> 变体生效。
+        </p>
+        <div class="flex flex-col gap-5">
+          <div v-for="v in (['outline', 'subtle'] as const)" :key="v" class="flex flex-col gap-3">
+            <p class="text-xs font-medium text-gray-500">{{ v }}</p>
+            <div v-for="bs in borderStyleOptions" :key="bs.value" class="flex flex-wrap items-center gap-3">
+              <p class="w-20 text-xs text-gray-400 italic">{{ bs.value }}</p>
+              <RebornButton v-for="c in buttonColors" :key="c" :variant="v" :color="c" :border-style="bs.value"
+                size="sm">
+                {{ c }}
+              </RebornButton>
+            </div>
           </div>
         </div>
       </section>

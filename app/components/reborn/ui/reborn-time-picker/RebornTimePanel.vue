@@ -631,8 +631,8 @@ watch(
     <!-- 底部操作栏 -->
     <div :class="ui.footer()">
       <slot name="footer">
-        <RebornButton variant="outline" size="xs" @click="clear">清空</RebornButton>
-        <RebornButton size="xs" @click="confirm">确定</RebornButton>
+        <RebornButton variant="outline" size="sm" @click="clear">清空</RebornButton>
+        <RebornButton size="sm" @click="confirm">确定</RebornButton>
       </slot>
     </div>
   </div>

@@ -2,17 +2,16 @@ const color = ["primary", "secondary", "success", "info", "warning", "error", "n
 
 const variant = ["solid", "outline", "soft", "subtle"] as const;
 
-const size = [
-  "xs",
-  "sm",
-  "default",
-  "md",
-  "lg",
-  "xl",
-  "2xl",
-] as const;
+const size = ["sm", "md", "lg"] as const;
 
-export { color as buttonColors, variant as buttonVariants, size as buttonSizes };
+const borderStyle = ["solid", "dashed"] as const;
+
+export {
+  color as buttonColors,
+  variant as buttonVariants,
+  size as buttonSizes,
+  borderStyle as buttonBorderStyles,
+};
 
 export default {
   slots: {
@@ -45,27 +44,28 @@ export default {
       soft: "",
       subtle: "",
     },
+    // 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）
     size: {
-      xs: {
-        base: "h-button-xs text-caption-lg leading-[1.5] gap-1.5 px-3 has-[>svg]:px-2.5",
-      },
       sm: {
-        base: "h-button-sm text-body-sm leading-[1.5] gap-1.5 px-3 has-[>svg]:px-2.5",
-      },
-      default: {
-        base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3",
+        base: "h-button-sm text-sm leading-[1.5] gap-1.5 px-3",
       },
       md: {
-        base: "h-button-base text-body-base leading-[1.5] px-4 has-[>svg]:px-3",
+        base: "h-button-md text-base leading-[1.5] px-3",
       },
       lg: {
-        base: "h-button-lg text-title-md leading-[1.5] px-5 has-[>svg]:px-4",
+        base: "h-button-lg text-lg leading-[1.5] px-3",
       },
-      xl: {
-        base: "h-button-xl text-title-lg leading-[1.5] px-6 has-[>svg]:px-4",
+    },
+    /**
+     * 边框线型，对渲染了边框的变体生效：outline 与 subtle。
+     * 边框宽度固定 1px，由对应变体的 `border` 提供；solid / soft 无边框，此项不产生视觉效果。
+     */
+    borderStyle: {
+      solid: {
+        base: "border-solid",
       },
-      "2xl": {
-        base: "h-button-2xl text-title-xl leading-[1.5] px-6 has-[>svg]:px-4",
+      dashed: {
+        base: "border-dashed",
       },
     },
     gap: {
@@ -184,7 +184,7 @@ export default {
     {
       variant: "subtle" as (typeof variant)[number],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 ring-1 ring-inset ring-[--color-gray-7] text-gray-4",
+      class: "bg-gray-6 dark:bg-gray-2 border border-gray-7 text-gray-4",
     },
     {
       variant: "outline" as (typeof variant)[number],
@@ -231,43 +231,44 @@ export default {
     {
       color: "primary" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-primary/10 ring-1 ring-inset ring-primary text-primary hover:bg-primary/20",
+      class: "bg-primary/10 border border-primary text-primary hover:bg-primary/20",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
       class:
-        "bg-secondary/10 ring-1 ring-inset ring-secondary text-secondary hover:bg-secondary/20",
+        "bg-secondary/10 border border-secondary text-secondary hover:bg-secondary/20",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-success/10 ring-1 ring-inset ring-success text-success hover:bg-success/20",
+      class: "bg-success/10 border border-success text-success hover:bg-success/20",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-info/10 ring-1 ring-inset ring-info text-info hover:bg-info/20",
+      class: "bg-info/10 border border-info text-info hover:bg-info/20",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-warning/10 ring-1 ring-inset ring-warning text-warning hover:bg-warning/20",
+      class: "bg-warning/10 border border-warning text-warning hover:bg-warning/20",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-error/10 ring-1 ring-inset ring-error text-error hover:bg-error/20",
+      class: "bg-error/10 border border-error text-error hover:bg-error/20",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-neutral/10 ring-1 ring-inset ring-neutral text-neutral hover:bg-neutral/20",
+      class: "bg-neutral/10 border border-neutral text-neutral hover:bg-neutral/20",
     },
   ],
   defaultVariants: {
     color: "primary" as (typeof color)[number],
     variant: "solid" as (typeof variant)[number],
     size: "md" as (typeof size)[number],
+    borderStyle: "solid" as (typeof borderStyle)[number],
   },
 };

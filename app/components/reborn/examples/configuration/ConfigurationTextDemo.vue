@@ -1,66 +1,31 @@
+<script setup lang="ts">
+const scale = [
+  { cls: "text-sm", size: "12px", leading: "20px", rule: "辅助文字 / size=sm" },
+  { cls: "text-base", size: "14px", leading: "22px", rule: "正文 · 默认 / size=default" },
+  { cls: "text-lg", size: "16px", leading: "24px", rule: "标题（主）/ size=lg" },
+  { cls: "text-xl", size: "20px", leading: "28px", rule: "标题（大）" },
+  { cls: "text-2xl", size: "24px", leading: "32px", rule: "标题（特大）" },
+  { cls: "text-3xl", size: "30px", leading: "38px", rule: "展示级标题" },
+  { cls: "text-4xl", size: "38px", leading: "46px", rule: "展示级标题（大）" },
+];
+</script>
+
 <template>
     <ComponentPlayground>
         <template #component>
-            <div class="grid grid-cols-[100px_150px_1fr] gap-y-4 items-center w-full">
+            <div class="grid grid-cols-[110px_130px_180px_1fr] gap-y-4 items-center w-full">
                 <!-- Header -->
-                <div class="font-medium text-muted-foreground text-sm">字体大小</div>
+                <div class="font-medium text-muted-foreground text-sm">类名</div>
+                <div class="font-medium text-muted-foreground text-sm">字号 / 行高</div>
                 <div class="font-medium text-muted-foreground text-sm">应用规则</div>
                 <div class="font-medium text-muted-foreground text-sm">举例</div>
 
-                <!-- text-caption-sm -->
-                <div class="text-sm">text-caption-sm</div>
-                <div class="text-sm text-muted-foreground">辅助文字 10px</div>
-                <div class="truncate"><span class="text-caption-sm">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-caption-md -->
-                <div class="text-sm">text-caption-md</div>
-                <div class="text-sm text-muted-foreground">辅助文字 11px</div>
-                <div class="truncate"><span class="text-caption-md">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-caption-lg -->
-                <div class="text-sm">text-caption-lg</div>
-                <div class="text-sm text-muted-foreground">辅助文字 12px</div>
-                <div class="truncate"><span class="text-caption-lg">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-body-sm -->
-                <div class="text-sm">text-body-sm</div>
-                <div class="text-sm text-muted-foreground">正文小 13px</div>
-                <div class="truncate"><span class="text-body-sm">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-body-base -->
-                <div class="text-sm">text-body-base</div>
-                <div class="text-sm text-muted-foreground">正文 14px</div>
-                <div class="truncate"><span class="text-body-base">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-title-sm -->
-                <div class="text-sm">text-title-sm</div>
-                <div class="text-sm text-muted-foreground">标题（次） 15px</div>
-                <div class="truncate"><span class="text-title-sm">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-title-md -->
-                <div class="text-sm">text-title-md</div>
-                <div class="text-sm text-muted-foreground">标题（主） 16px</div>
-                <div class="truncate"><span class="text-title-md">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-title-lg -->
-                <div class="text-sm">text-title-lg</div>
-                <div class="text-sm text-muted-foreground">标题（大） 18px</div>
-                <div class="truncate"><span class="text-title-lg">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-title-xl -->
-                <div class="text-sm">text-title-xl</div>
-                <div class="text-sm text-muted-foreground">标题（特大） 20px</div>
-                <div class="truncate"><span class="text-title-xl">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-title-2xl -->
-                <div class="text-sm">text-title-2xl</div>
-                <div class="text-sm text-muted-foreground">标题（2*特大） 24px</div>
-                <div class="truncate"><span class="text-title-2xl">Font 乐淘一番切煤神器</span></div>
-
-                <!-- text-title-3xl -->
-                <div class="text-sm">text-title-3xl</div>
-                <div class="text-sm text-muted-foreground">标题（3*特大） 28px</div>
-                <div class="truncate"><span class="text-title-3xl">Font 乐淘一番切煤神器</span></div>
+                <template v-for="item in scale" :key="item.cls">
+                    <div class="text-sm">{{ item.cls }}</div>
+                    <div class="text-sm text-muted-foreground">{{ item.size }} / {{ item.leading }}</div>
+                    <div class="text-sm text-muted-foreground">{{ item.rule }}</div>
+                    <div class="truncate"><span :class="item.cls">Font 乐淘一番切煤神器</span></div>
+                </template>
             </div>
         </template>
     </ComponentPlayground>

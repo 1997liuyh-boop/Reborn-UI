@@ -14,26 +14,26 @@ export default {
     column:
       "min-w-[160px] shrink-0 overflow-y-auto rounded-ui-md border border-gray-2 bg-white py-1 min-h-[280px] shadow-lg",
     option:
-      "relative flex items-center gap-2 px-3 py-2 text-body-md text-gray-900 cursor-pointer transition-colors hover:bg-gray-1",
+      "relative flex items-center gap-2 px-3 py-2 text-base text-gray-900 cursor-pointer transition-colors hover:bg-gray-1",
     optionActive: "font-medium",
     optionDisabled: "cursor-not-allowed opacity-50 hover:bg-transparent",
     optionLabel: "flex-1 truncate",
     optionIcon: "shrink-0 text-gray-5",
     empty:
-      "min-w-[160px] rounded-ui-md border border-gray-2 bg-white px-4 py-6 text-body-md text-gray-5 shadow-lg",
+      "min-w-[160px] rounded-ui-md border border-gray-2 bg-white px-4 py-6 text-base text-gray-5 shadow-lg",
   },
   variants: {
     size: {
       sm: {
         column: "min-w-[140px] max-h-[280px]",
-        option: "px-2 py-1.5 text-body-sm",
+        option: "px-2 py-1.5 text-sm",
       },
       md: {
         column: "max-h-[320px]",
       },
       lg: {
         column: "min-w-[180px] max-h-[360px]",
-        option: "px-4 py-2.5 text-body-lg",
+        option: "px-4 py-2.5 text-lg",
       },
     },
     color: {

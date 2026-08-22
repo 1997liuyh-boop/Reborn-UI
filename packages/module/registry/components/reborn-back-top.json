@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "reborn-back-top.config.ts",
-      "content": "const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const\nconst sizes = [\"sm\", \"md\", \"lg\"] as const;\nexport { color as backTopColors, sizes as backTopSizes };\nexport default {\n    slots: {\n        wrapper: \"fixed right-0 z-50 overflow-visible pointer-none transition-all duration-300 active:scale-95\",\n        base: \"flex flex-row items-center justify-center text-white shadow-lg rounded-full pointer-events-auto cursor-pointer transition-transform duration-300\",\n        icon: \"text-white\"\n    },\n    variants: {\n        color: {\n            primary: { base: 'bg-primary' },\n            secondary: { base: 'bg-secondary' },\n            success: { base: 'bg-success' },\n            info: { base: 'bg-info' },\n            warning: { base: 'bg-warning' },\n            error: { base: 'bg-error' },\n            neutral: { base: 'bg-neutral' }\n        },\n        size: {\n            sm: { base: 'size-8', icon: 'text-body-sm' },\n            md: { base: 'size-10', icon: 'text-body-base' },\n            lg: { base: 'size-12', icon: 'text-title-sm' }\n        },\n    },\n    defaultVariants: {\n        color: 'primary' as const,\n        size: 'md' as const\n    }\n}\n",
+      "content": "const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const\nconst sizes = [\"sm\", \"md\", \"lg\"] as const;\nexport { color as backTopColors, sizes as backTopSizes };\nexport default {\n    slots: {\n        wrapper: \"fixed right-0 z-50 overflow-visible pointer-none transition-all duration-300 active:scale-95\",\n        base: \"flex flex-row items-center justify-center text-white shadow-lg rounded-full pointer-events-auto cursor-pointer transition-transform duration-300\",\n        icon: \"text-white\"\n    },\n    variants: {\n        color: {\n            primary: { base: 'bg-primary' },\n            secondary: { base: 'bg-secondary' },\n            success: { base: 'bg-success' },\n            info: { base: 'bg-info' },\n            warning: { base: 'bg-warning' },\n            error: { base: 'bg-error' },\n            neutral: { base: 'bg-neutral' }\n        },\n        size: {\n            sm: { base: 'size-8', icon: 'text-sm' },\n            md: { base: 'size-10', icon: 'text-base' },\n            lg: { base: 'size-12', icon: 'text-lg' }\n        },\n    },\n    defaultVariants: {\n        color: 'primary' as const,\n        size: 'md' as const\n    }\n}\n",
       "target": "web"
     },
     {
@@ -35,5 +35,5 @@
     }
   ],
   "fileCount": 5,
-  "contentHash": "39005fe00610512fb276e702373dd032faa5e777"
+  "contentHash": "78734c85b8beb6fa01222180525335130aba5e7c"
 }

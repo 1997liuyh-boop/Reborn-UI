@@ -79,7 +79,7 @@ function onChange(key: string, value: any) {
     <div
       class="rounded-ui-lg border-gray-2 border bg-white p-6 dark:border-gray-700 dark:bg-gray-900"
     >
-      <h2 class="text-title-md mb-4 font-semibold text-gray-900 dark:text-gray-100">
+      <h2 class="text-lg mb-4 font-semibold text-gray-900 dark:text-gray-100">
         商品规格选择
       </h2>
       <RebornSku
@@ -88,7 +88,7 @@ function onChange(key: string, value: any) {
         @change="onChange"
       />
       <div
-        class="rounded-ui-lg bg-gray-1 text-body-sm mt-6 p-4 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+        class="rounded-ui-lg bg-gray-1 text-sm mt-6 p-4 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
       >
         当前选中：{{ selected }}
         <template v-if="lastChange"> <br />最近变化：{{ lastChange }} </template>
@@ -99,7 +99,7 @@ function onChange(key: string, value: any) {
     <div
       class="rounded-ui-lg border-gray-2 border bg-white p-6 dark:border-gray-700 dark:bg-gray-900"
     >
-      <h2 class="text-title-md mb-4 font-semibold text-gray-900 dark:text-gray-100">
+      <h2 class="text-lg mb-4 font-semibold text-gray-900 dark:text-gray-100">
         自定义选项渲染
       </h2>
       <RebornSku

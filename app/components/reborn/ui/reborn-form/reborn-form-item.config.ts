@@ -7,7 +7,7 @@ export default {
         wrapper: 'flex-1 min-w-0',
         label: 'text-gray-8 dark:text-gray-1 font-semibold flex items-center shrink-0 min-h-[40px]',
         content: 'relative w-full flex-1',
-        error: 'text-caption-lg text-red-5 mt-1.5 animate-in slide-in-from-top-1 fade-in duration-300',
+        error: 'text-sm text-red-5 mt-1.5 animate-in slide-in-from-top-1 fade-in duration-300',
     },
     variants: {
         size: {

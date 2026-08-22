@@ -229,7 +229,7 @@ function onChange(value: any) {
                 <div v-for="s in sizeSections" :key="s.size" class="flex flex-col items-center gap-4">
                     <RebornSelect v-model="sizeValue" :size="s.size" color="info" :options="frameworkOptions"
                         class="w-44" />
-                    <span class="text-caption-sm font-black tracking-widest text-gray-400 uppercase">{{ s.label }}</span>
+                    <span class="text-sm font-black tracking-widest text-gray-400 uppercase">{{ s.label }}</span>
                 </div>
             </div>
         </section>
@@ -395,13 +395,13 @@ function onChange(value: any) {
             <div
                 class="grid gap-6 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl sm:grid-cols-2 dark:border-white/5 dark:bg-slate-900/40">
                 <div class="flex flex-col gap-2">
-                    <span class="text-caption-sm font-black tracking-widest text-gray-400 uppercase">closeOn: click</span>
+                    <span class="text-sm font-black tracking-widest text-gray-400 uppercase">closeOn: click</span>
                     <p class="pb-1 text-xs text-gray-500">在外部完成一次完整点击后才收起</p>
                     <RebornSelect v-model="closeOnClickValue" :options="frameworkOptions" close-on="click"
                         class="w-full" />
                 </div>
                 <div class="flex flex-col gap-2" data-demo="close-on-mousedown">
-                    <span class="text-caption-sm font-black tracking-widest text-gray-400 uppercase">closeOn:
+                    <span class="text-sm font-black tracking-widest text-gray-400 uppercase">closeOn:
                         mousedown</span>
                     <p class="pb-1 text-xs text-gray-500">在外部按下鼠标（含右键）立即收起</p>
                     <RebornSelect v-model="closeOnMousedownValue" :options="frameworkOptions" close-on="mousedown"

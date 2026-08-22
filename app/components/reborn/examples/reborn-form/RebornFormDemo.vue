@@ -191,7 +191,7 @@ function scrollToBio() {
         <!-- 数据预览 -->
         <div class="bg-gray-900 rounded-2xl p-6 overflow-hidden border border-gray-800">
             <h3 class="text-xs font-bold text-primary-400 uppercase tracking-widest mb-4">Real-time Data Debugger</h3>
-            <pre class="text-caption-sm text-gray-400 font-mono overflow-auto max-h-96 leading-relaxed">{{ JSON.stringify(form,
+            <pre class="text-sm text-gray-400 font-mono overflow-auto max-h-96 leading-relaxed">{{ JSON.stringify(form,
                 null, 4) }}</pre>
         </div>
     </div>

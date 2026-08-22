@@ -49,7 +49,9 @@ Button 是 Web 与 UniApp 双端通用的基础按钮，通过 `color`（7 种�
 
 ### 尺寸与形状
 
-`size` 提供 `xs` / `sm` / `default` / `md` / `lg` / `xl` / `2xl` 七档（`default` 与 `md` 等高）。`round` 默认 `true` 呈胶囊形，传 `:round="false"` 恢复直角以便自定义圆角；`circle` 渲染圆形纯图标按钮。
+Web 端 `size` 提供 `sm` / `md` / `lg` 三档，高度依次 **24 / 32 / 40px**，水平内边距统一 **12px**，字号依次 `text-sm` (12px) / `text-base` (14px) / `text-lg` (16px)，默认 `md`。UniApp 端仍为 `xs` ~ `2xl` 七档。
+
+`round` 默认 `true` 呈胶囊形，传 `:round="false"` 恢复直角以便自定义圆角；`circle` 渲染圆形纯图标按钮。
 
 ```vue
 <template>
@@ -136,7 +138,8 @@ function onGetPhone(e: any) {
 | `label`                   | `string`  | -           | 通用   | 按钮文本内容；提供默认插槽时被插槽内容覆盖。                                                             |
 | `color`                   | `string`  | `'primary'` | 通用   | 语义色。可选值：`primary`, `secondary`, `success`, `info`, `warning`, `error`, `neutral`。               |
 | `variant`                 | `string`  | `'solid'`   | 通用   | 视觉变体。可选值：`solid`（实心）, `outline`（描边）, `soft`（浅底）, `subtle`（浅底加描边）。           |
-| `size`                    | `string`  | `'md'`      | 通用   | 尺寸。可选值：`xs`, `sm`, `default`, `md`, `lg`, `xl`, `2xl`（`default` 与 `md` 等高）。                 |
+| `size`                    | `string`  | `'md'`      | 通用   | 尺寸。Web：`sm`(24px) / `md`(32px) / `lg`(40px)，水平内边距统一 12px；UniApp：`xs`~`2xl` 七档。          |
+| `borderStyle`             | `string`  | `'solid'`   | Web    | 边框线型。可选值：`solid`（实线）/ `dashed`（虚线）；宽度固定 1px，对有边框的 `outline` / `subtle` 变体生效。 |
 | `loading`                 | `boolean` | `false`     | 通用   | 是否加载中；显示加载动画并禁用点击。                                                                     |
 | `disabled`                | `boolean` | `false`     | 通用   | 是否禁用按钮。                                                                                           |
 | `round`                   | `boolean` | `true`      | 通用   | 是否为胶囊形状（rounded-full）；自定义圆角时须显式传 `false`。                                           |
@@ -212,16 +215,26 @@ function onGetPhone(e: any) {
 
 ### CSS 变量
 
-Web 端使用以下 CSS 变量控制各档高度，支持响应式变化（移动端/桌面端）：
+两端各有独立的高度令牌，互不影响。
 
-| 变量名                 | 描述             | 移动端值 (默认) | 桌面端值 (min-width: 768px) |
-| :--------------------- | :--------------- | :-------------- | :-------------------------- |
-| `--button-2xl-height`  | 2xl 尺寸高度     | `96px`          | `48px`                      |
-| `--button-xl-height`   | xl 尺寸高度      | `86px`          | `43px`                      |
-| `--button-lg-height`   | lg 尺寸高度      | `76px`          | `38px`                      |
-| `--button-base-height` | default 尺寸高度 | `64px`          | `32px`                      |
-| `--button-sm-height`   | sm 尺寸高度      | `56px`          | `28px`                      |
-| `--button-xs-height`   | xs 尺寸高度      | `48px`          | `24px`                      |
+**Web 端**（`app/assets/theme/typography.css`，固定 px）：
+
+| 变量名                | 对应 size | 值      |
+| :-------------------- | :-------- | :------ |
+| `--height-button-sm`  | `sm`      | `24px`  |
+| `--height-button-md`  | `md`      | `32px`  |
+| `--height-button-lg`  | `lg`      | `40px`  |
+
+**UniApp 端**（`packages/uniapp-project/src/styles/theme.css`，rpx，随屏宽响应式）：
+
+| 变量名                 | 对应 size | 移动端值 (默认) | 桌面端值 (min-width: 768rpx) |
+| :--------------------- | :-------- | :-------------- | :--------------------------- |
+| `--button-2xl-height`  | `2xl`     | `96rpx`         | `48rpx`                      |
+| `--button-xl-height`   | `xl`      | `86rpx`         | `43rpx`                      |
+| `--button-lg-height`   | `lg`      | `76rpx`         | `38rpx`                      |
+| `--button-md-height`   | `md`      | `64rpx`         | `32rpx`                      |
+| `--button-sm-height`   | `sm`      | `56rpx`         | `28rpx`                      |
+| `--button-xs-height`   | `xs`      | `48rpx`         | `24rpx`                      |
 
 ## 注意事项
 

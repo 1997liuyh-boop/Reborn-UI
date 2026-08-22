@@ -288,9 +288,9 @@ function onOutsideClose() {
                                 class="flex max-w-[280px] flex-col overflow-hidden bg-white dark:bg-gray-8 shadow-xl rounded-xl border border-gray-1 dark:border-gray-7">
                                 <div
                                     class="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-1 dark:border-gray-7 flex justify-between items-center">
-                                    <span class="text-caption-sm font-bold text-gray-400 tracking-wider">已选清单 ({{
+                                    <span class="text-sm font-bold text-gray-400 tracking-wider">已选清单 ({{
                                         selectionList.length }})</span>
-                                    <div class="text-caption-sm text-primary cursor-pointer hover:underline"
+                                    <div class="text-sm text-primary cursor-pointer hover:underline"
                                         @click="clear">全部清空</div>
                                 </div>
                                 <div class="flex flex-wrap gap-2 p-3 overflow-y-auto max-h-[200px]">

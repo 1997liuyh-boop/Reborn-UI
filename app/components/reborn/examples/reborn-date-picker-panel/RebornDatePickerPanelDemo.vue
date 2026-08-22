@@ -145,7 +145,7 @@ function formatDisplay(val: any) {
                     <div class="flex items-center gap-2 mb-2">
                         <span
                             class="w-2.5 h-2.5 rounded-full min-w-2.5 bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--color-primary),0.5)]" />
-                        <span class="text-caption-sm font-bold text-gray-400 uppercase tracking-widest">当前绑定值 (Model
+                        <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">当前绑定值 (Model
                             Value)</span>
                     </div>
                     <div class="font-mono text-sm text-primary font-semibold break-all">
@@ -164,11 +164,11 @@ function formatDisplay(val: any) {
                         <div class="flex flex-col border-l-2 border-primary/20 pl-3">
                             <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ item.label }}</span>
                             <span
-                                class="text-caption-sm font-mono text-gray-400 uppercase tracking-tighter opacity-60">{{
+                                class="text-sm font-mono text-gray-400 uppercase tracking-tighter opacity-60">{{
                                     item.value }}</span>
                         </div>
                         <div
-                            class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-caption-sm font-bold text-gray-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm font-bold text-gray-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300">
                             面板预览</div>
                     </div>
 
@@ -181,7 +181,7 @@ function formatDisplay(val: any) {
                     <div
                         class="mx-1 px-4 py-3 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-transparent group-hover:border-primary/20 transition-all duration-300">
                         <div class="text-[9px] font-black text-gray-400 uppercase tracking-wider mb-1">数据状态</div>
-                        <div class="text-caption-md font-mono text-gray-600 dark:text-gray-400 break-all truncate">
+                        <div class="text-sm font-mono text-gray-600 dark:text-gray-400 break-all truncate">
                             {{ formatDisplay(item.model) }}
                         </div>
                     </div>

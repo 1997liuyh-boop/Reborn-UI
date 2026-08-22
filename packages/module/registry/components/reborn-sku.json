@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "reborn-sku.config.ts",
-      "content": "/** RebornSku 基础样式配置 */\nexport default {\n  slots: {\n    /** 最外层容器 */\n    wrapper: \"flex flex-col gap-6\",\n    /** 单个属性组容器 */\n    group: \"flex flex-col gap-2\",\n    /** 属性组标题 */\n    title: \"text-body-base font-medium text-gray-8 dark:text-gray-1\",\n    /** 属性值列表容器 */\n    list: \"flex flex-wrap gap-2\",\n    /** 单个属性值项 */\n    item: \"cursor-pointer transition-all hover:border-primary hover:text-primary select-none\",\n  },\n} as const;\n"
+      "content": "/** RebornSku 基础样式配置 */\nexport default {\n  slots: {\n    /** 最外层容器 */\n    wrapper: \"flex flex-col gap-6\",\n    /** 单个属性组容器 */\n    group: \"flex flex-col gap-2\",\n    /** 属性组标题 */\n    title: \"text-base font-medium text-gray-8 dark:text-gray-1\",\n    /** 属性值列表容器 */\n    list: \"flex flex-wrap gap-2\",\n    /** 单个属性值项 */\n    item: \"cursor-pointer transition-all hover:border-primary hover:text-primary select-none\",\n  },\n} as const;\n"
     },
     {
       "path": "RebornSku.vue",
@@ -22,5 +22,5 @@
     }
   ],
   "fileCount": 2,
-  "contentHash": "5625cafea25829a72623d7380c0a49cd6e63e1aa"
+  "contentHash": "48cb9ff94691e4dc505cd2a446f9e61de9a265c3"
 }

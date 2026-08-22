@@ -1,32 +1,43 @@
 @theme {
   /* --- 字体大小 (Text Sizes) --- */
-  
-  /* 辅助文字 (Caption) */
-  --text-caption-sm: 10px;
-  --text-caption-md: 11px;
-  --text-caption-lg: 12px;
 
-  /* 正文 (Body) */
-  --text-body-sm: 13px;
-  --text-body-base: 14px;
+  /*
+   * Web / PC 端基础字号阶梯（7 级），覆盖 Tailwind 原生 --text-* 默认值。
+   * 组件 size 锚点：sm → 12px，default → text-base 14px，lg → 16px。
+   * 行高统一取「字号 + 8px」。
+   */
+  --text-sm: 12px;
+  --text-sm--line-height: 20px;
 
-  /* 标题 (Title) */
-  --text-title-sm: 15px;
-  --text-title-md: 16px;
-  --text-title-lg: 18px;
-  --text-title-xl: 20px;
-  --text-title-2xl: 24px;
-  --text-title-3xl: 26px;
+  --text-base: 14px;
+  --text-base--line-height: 22px;
+
+  --text-lg: 16px;
+  --text-lg--line-height: 24px;
+
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+
+  --text-3xl: 30px;
+  --text-3xl--line-height: 38px;
+
+  --text-4xl: 38px;
+  --text-4xl--line-height: 46px;
+
+  /*
+   * text-xs / text-5xl / text-6xl 不属于本规范，保持 Tailwind 原生值。
+   * 仅文档站与落地页可继续使用；reborn 组件一律从上面 7 级中取。
+   */
 
   /* --- 结构化高度 (Structural Heights) --- */
-  
-  /* 按钮高度 (Button) */
-  --height-button-2xl: 48px;
-  --height-button-xl: 43px;
-  --height-button-lg: 38px;
-  --height-button-base: 32px;
-  --height-button-sm: 28px;
-  --height-button-xs: 24px;
+
+  /* 按钮高度 (Button) —— 三档，水平内边距统一 12px */
+  --height-button-sm: 24px;
+  --height-button-md: 32px;
+  --height-button-lg: 40px;
 
   /* 输入框高度 (Input) */
   --height-input-sm: 40px;
@@ -39,7 +50,7 @@
   --height-badge-lg: 38px;
 
   /* --- 间距与对齐 (Spacing) --- */
-  
+
   /* 输入框水平内边距 (Padding X) */
   --spacing-input-px-sm: 10px;
   --spacing-input-px-md: 12px;

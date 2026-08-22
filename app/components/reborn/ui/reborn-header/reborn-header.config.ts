@@ -3,7 +3,7 @@ export default {
         root: "relative top-0 left-0 right-0 z-40 w-full bg-bg-base/80 backdrop-blur-md transition-all duration-300",
         container: "mx-auto h-full flex items-center justify-between gap-4 max-w-(--ui-container) min-h-(--ui-header-height) flex items-center justify-between px-[16px] phablet:px-[32px] desktop:px-[48px] ultra:px-0",
         left: "flex items-center gap-[8px] laptop:gap-[24px] md:flex-1 lg:flex-none",
-        title: "text-title-xl font-bold text-text-primary flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0",
+        title: "text-xl font-bold text-text-primary flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0",
         center: "hidden lg:flex items-center justify-center gap-8 flex-1",
         right: "flex items-center justify-end gap-3 lg:flex-1",
         toggle: "desktop:hidden text-text-secondary hover:bg-bg-sub rounded-lg transition-colors",

@@ -19,20 +19,20 @@ export default {
     size: {
       sm: {
         wrapper: "h-input-sm px-input-px-sm",
-        input: "text-body-sm leading-normal",
-        icon: "text-body-sm",
+        input: "text-sm leading-normal",
+        icon: "text-sm",
         separator: "h-input-sep-sm",
       },
       md: {
         wrapper: "h-input-md px-input-px-md",
-        input: "text-body-base leading-normal",
-        icon: "text-body-base",
+        input: "text-base leading-normal",
+        icon: "text-base",
         separator: "h-input-sep-md",
       },
       lg: {
         wrapper: "h-input-lg px-input-px-lg",
-        input: "text-body-base leading-normal",
-        icon: "text-body-base",
+        input: "text-base leading-normal",
+        icon: "text-base",
         separator: "h-input-sep-lg",
       },
     },

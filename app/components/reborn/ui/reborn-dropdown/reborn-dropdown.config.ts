@@ -18,21 +18,21 @@ export default {
   variants: {
     size: {
       sm: {
-        trigger: "h-input-sm px-2 text-body-sm gap-1 rounded-ui-sm",
+        trigger: "h-input-sm px-2 text-sm gap-1 rounded-ui-sm",
         splitArrow: "px-1.5 h-input-sm rounded-r-ui-sm",
-        item: "h-8 px-3 text-body-sm rounded-md",
+        item: "h-8 px-3 text-sm rounded-md",
         icon: "size-3.5",
       },
       md: {
-        trigger: "h-input-md px-3 text-body-base gap-1.5 rounded-ui-md",
+        trigger: "h-input-md px-3 text-base gap-1.5 rounded-ui-md",
         splitArrow: "px-2 h-input-md rounded-r-ui-md",
-        item: "h-9 px-4 text-body-base rounded-md",
+        item: "h-9 px-4 text-base rounded-md",
         icon: "size-4",
       },
       lg: {
-        trigger: "h-input-lg px-4 text-body-base gap-2 rounded-ui-base",
+        trigger: "h-input-lg px-4 text-base gap-2 rounded-ui-base",
         splitArrow: "px-2.5 h-input-lg rounded-r-ui-base",
-        item: "h-10 px-5 text-body-base rounded-md",
+        item: "h-10 px-5 text-base rounded-md",
         icon: "size-5",
       },
     },

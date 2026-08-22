@@ -173,7 +173,7 @@ const beforeCloseVerify = () => {
                         </RebornBadge>
 
                         <RebornBadge color="neutral" variant="outline" size="md" label="新品・未开封" :closable="closable"
-                            :square="square" class="pl-0" :ui="{ label: 'text-caption-lg' }">
+                            :square="square" class="pl-0" :ui="{ label: 'text-sm' }">
                             <template #leading>
                                 <div
                                     class="bg-gradient-to-b from-[#919191] to-[#3C3C3C] h-full text-white flex flex-col justify-center items-center px-1">

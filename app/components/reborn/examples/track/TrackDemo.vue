@@ -123,7 +123,7 @@ const formatTime = (ts: number) => {
                 <div v-track:view="{ event: 'section_levels', stay: [3000, 10000] }"
                     class="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg text-center">
                     <p class="text-sm text-purple-700 dark:text-purple-400 font-medium">停留分档追踪 (3s & 10s)</p>
-                    <p class="text-caption-sm text-purple-500 mt-1">分次发送埋点并带有 stayed 参数</p>
+                    <p class="text-sm text-purple-500 mt-1">分次发送埋点并带有 stayed 参数</p>
                 </div>
 
                 <div v-track:view="'item_visible_at_once'"
@@ -156,7 +156,7 @@ const formatTime = (ts: number) => {
                                 <span class="text-gray-400 scale-90">{{ formatTime(event.timestamp) }}</span>
                             </div>
                             <div v-if="Object.keys(event.params).length > 0"
-                                class="bg-gray-50 dark:bg-black/20 p-2 rounded border border-gray-100 dark:border-white/5 font-mono text-caption-sm text-gray-600 dark:text-gray-400 scroll-auto overflow-x-auto whitespace-pre">
+                                class="bg-gray-50 dark:bg-black/20 p-2 rounded border border-gray-100 dark:border-white/5 font-mono text-sm text-gray-600 dark:text-gray-400 scroll-auto overflow-x-auto whitespace-pre">
                                 {{ JSON.stringify(event.params, null, 2) }}
                             </div>
                             <div v-else class="text-gray-400 italic py-1">无额外参数</div>

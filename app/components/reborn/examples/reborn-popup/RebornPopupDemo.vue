@@ -191,20 +191,20 @@ const closeAll = () => {
 
           <dl class="grid grid-cols-2 gap-4">
             <div>
-              <dt class="text-caption-sm uppercase font-semibold text-gray-400">Position</dt>
+              <dt class="text-sm uppercase font-semibold text-gray-400">Position</dt>
               <dd class="text-sm font-mono mt-1 capitalize text-primary font-bold">{{ options.position }}</dd>
             </div>
             <div>
-              <dt class="text-caption-sm uppercase font-semibold text-gray-400">Transition</dt>
+              <dt class="text-sm uppercase font-semibold text-gray-400">Transition</dt>
               <dd class="text-sm font-mono mt-1 capitalize text-amber-500 font-bold">{{ options.transition || 'Auto' }}
               </dd>
             </div>
             <div>
-              <dt class="text-caption-sm uppercase font-semibold text-gray-400">Resizable</dt>
+              <dt class="text-sm uppercase font-semibold text-gray-400">Resizable</dt>
               <dd class="text-sm font-mono mt-1">{{ options.resizable ? 'Yes' : 'No' }}</dd>
             </div>
             <div>
-              <dt class="text-caption-sm uppercase font-semibold text-gray-400">Modal</dt>
+              <dt class="text-sm uppercase font-semibold text-gray-400">Modal</dt>
               <dd class="text-sm font-mono mt-1">{{ options.modal ? 'Visible' : 'Hidden' }}</dd>
             </div>
           </dl>

@@ -75,8 +75,8 @@ function onChange(value: any[], selectedOptions: any[]) {
   <div class="min-h-screen bg-gray-1 p-8">
     <div class="mx-auto max-w-4xl space-y-8">
       <div>
-        <h1 class="mb-4 text-title-xl font-semibold text-gray-900">级联选择器 (Cascader)</h1>
-        <p class="mb-6 text-body-md text-gray-600">
+        <h1 class="mb-4 text-xl font-semibold text-gray-900">级联选择器 (Cascader)</h1>
+        <p class="mb-6 text-base text-gray-600">
           鼠标悬停触发多级菜单，点击选中值，使用 RebornSelectTrigger 作为触发器。
         </p>
       </div>
@@ -84,13 +84,13 @@ function onChange(value: any[], selectedOptions: any[]) {
       <div class="space-y-6">
         <!-- 基础用法 -->
         <div class="rounded-ui-lg border border-gray-2 bg-white p-6">
-          <h2 class="mb-4 text-title-md font-semibold text-gray-900">基础用法</h2>
+          <h2 class="mb-4 text-lg font-semibold text-gray-900">基础用法</h2>
           <div class="space-y-4">
             <div>
-              <label class="mb-2 block text-body-sm text-gray-700">选择地区：</label>
+              <label class="mb-2 block text-sm text-gray-700">选择地区：</label>
               <RebornCascader v-model="selectedValue" :options="options" placeholder="请选择地区" @change="onChange" />
             </div>
-            <div class="text-body-sm text-gray-600">
+            <div class="text-sm text-gray-600">
               当前选中值：{{ selectedValue.length > 0 ? selectedValue : "未选择" }}
             </div>
           </div>
@@ -98,18 +98,18 @@ function onChange(value: any[], selectedOptions: any[]) {
 
         <!-- 不同尺寸 -->
         <div class="rounded-ui-lg border border-gray-2 bg-white p-6">
-          <h2 class="mb-4 text-title-md font-semibold text-gray-900">不同尺寸</h2>
+          <h2 class="mb-4 text-lg font-semibold text-gray-900">不同尺寸</h2>
           <div class="space-y-4">
             <div>
-              <label class="mb-2 block text-body-sm text-gray-700">小尺寸：</label>
+              <label class="mb-2 block text-sm text-gray-700">小尺寸：</label>
               <RebornCascader :options="options" size="sm" placeholder="请选择地区" />
             </div>
             <div>
-              <label class="mb-2 block text-body-sm text-gray-700">中等尺寸：</label>
+              <label class="mb-2 block text-sm text-gray-700">中等尺寸：</label>
               <RebornCascader :options="options" size="md" placeholder="请选择地区" />
             </div>
             <div>
-              <label class="mb-2 block text-body-sm text-gray-700">大尺寸：</label>
+              <label class="mb-2 block text-sm text-gray-700">大尺寸：</label>
               <RebornCascader :options="options" size="lg" placeholder="请选择地区" />
             </div>
           </div>
@@ -117,13 +117,13 @@ function onChange(value: any[], selectedOptions: any[]) {
 
         <!-- 禁用状态 -->
         <div class="rounded-ui-lg border border-gray-2 bg-white p-6">
-          <h2 class="mb-4 text-title-md font-semibold text-gray-900">禁用状态</h2>
+          <h2 class="mb-4 text-lg font-semibold text-gray-900">禁用状态</h2>
           <RebornCascader :options="options" disabled placeholder="禁用状态" />
         </div>
 
         <!-- 不可清空 -->
         <div class="rounded-ui-lg border border-gray-2 bg-white p-6">
-          <h2 class="mb-4 text-title-md font-semibold text-gray-900">不可清空</h2>
+          <h2 class="mb-4 text-lg font-semibold text-gray-900">不可清空</h2>
           <RebornCascader :options="options" :clearable="false" placeholder="不可清空" />
         </div>
       </div>

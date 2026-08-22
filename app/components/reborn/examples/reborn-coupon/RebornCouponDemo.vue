@@ -248,23 +248,23 @@ const activeCode = computed(() => {
                 <template #left>
                     <div class="flex h-full flex-col items-center justify-center">
                         <span class="text-4xl font-extrabold tracking-tighter">¥100</span>
-                        <span class="text-caption-sm font-bold tracking-wider uppercase opacity-70">满 ¥1000 可用</span>
+                        <span class="text-sm font-bold tracking-wider uppercase opacity-70">满 ¥1000 可用</span>
                     </div>
                 </template>
                 <template #right>
                     <div class="flex h-full flex-col justify-center px-6 py-2">
                         <div class="flex flex-wrap gap-2">
                             <span
-                                class="text-caption-sm rounded bg-white/20 px-2 py-0.5 font-bold tracking-wider">NEW</span>
+                                class="text-sm rounded bg-white/20 px-2 py-0.5 font-bold tracking-wider">NEW</span>
                             <span
-                                class="text-caption-sm rounded bg-white/20 px-2 py-0.5 font-bold tracking-wider">新人专享</span>
+                                class="text-sm rounded bg-white/20 px-2 py-0.5 font-bold tracking-wider">新人专享</span>
                         </div>
                         <div>
                             <h3 class="text-xl font-black">全球时尚购物周礼券</h3>
                             <p class="text-xs font-medium opacity-80">全平台自营品类通用，不包含电子产品</p>
                         </div>
                         <div class="mt-2 flex items-center justify-between">
-                            <span class="text-caption-sm font-medium opacity-60">有效期至: 2026.12.31</span>
+                            <span class="text-sm font-medium opacity-60">有效期至: 2026.12.31</span>
                             <button
                                 class="rounded-full bg-white px-5 py-1.5 text-xs font-bold transition-all hover:scale-105 active:scale-95"
                                 :style="{ color: state.background.includes('linear') ? '#FF7E5F' : 'inherit' }">
@@ -288,19 +288,19 @@ const activeCode = computed(() => {
                         <div class="flex flex-col items-center gap-y-2">
                             <NuxtImg src="https://www.rakufun.com/images/sites/Mercari.png"
                                 class="mobile:size-[24px] tablet:size-[32px]" />
-                            <p class="text-body-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">
+                            <p class="text-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">
                                 Mercari</p>
                         </div>
                         <div>
                             <p>
-                                <b class="text-title-xl tablet:text-[30px] text-gray-9 leading-[30px]">
+                                <b class="text-xl tablet:text-[30px] text-gray-9 leading-[30px]">
                                     5000
                                 </b>
                                 <sub>
                                     日元
                                 </sub>
                             </p>
-                            <p class="text-[#888A8C] text-caption-lg tablet:text-body-base">
+                            <p class="text-[#888A8C] text-sm tablet:text-base">
                                 滿{{ 1000 * item }}日圓可用
                             </p>
                         </div>
@@ -318,7 +318,7 @@ const activeCode = computed(() => {
                 <div class="flex items-center justify-center gap-x-5 h-full">
                     <div class="flex flex-col items-center gap-y-2">
                         <NuxtImg src="https://www.rakufun.com/images/sites/Mercari.png" class="size-[32px]" />
-                        <p class="text-body-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">Mercari
+                        <p class="text-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">Mercari
                         </p>
                     </div>
                     <div>

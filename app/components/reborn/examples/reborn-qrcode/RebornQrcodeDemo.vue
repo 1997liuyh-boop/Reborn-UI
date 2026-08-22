@@ -193,7 +193,7 @@ const toggleBackgroundGradient = () => {
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium">主体视觉特效</span>
                   <div class="flex gap-2">
-                    <RebornButton size="xs" :color="qrConfig.dotsGradient ? 'primary' : 'neutral'" variant="soft"
+                    <RebornButton size="sm" :color="qrConfig.dotsGradient ? 'primary' : 'neutral'" variant="soft"
                       @click="toggleDotsGradient">
                       {{ qrConfig.dotsGradient ? '关闭渐变' : '开启渐变' }}
                     </RebornButton>
@@ -218,7 +218,7 @@ const toggleBackgroundGradient = () => {
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium">背景视觉特效</span>
                   <div class="flex gap-2">
-                    <RebornButton size="xs" :color="qrConfig.backgroundGradient ? 'primary' : 'neutral'" variant="soft"
+                    <RebornButton size="sm" :color="qrConfig.backgroundGradient ? 'primary' : 'neutral'" variant="soft"
                       @click="toggleBackgroundGradient">
                       {{ qrConfig.backgroundGradient ? '关闭渐变' : '开启背景渐变' }}
                     </RebornButton>

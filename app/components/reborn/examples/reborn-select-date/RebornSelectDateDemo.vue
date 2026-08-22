@@ -76,7 +76,7 @@ const rangeShortcuts = [
                         <RebornSelectDate v-model="dateValue" type="date" :size="size" :color="color"
                             :disabled="disabled" placeholder="选择日期" />
                         <div
-                            class="flex h-8 items-center rounded-lg bg-gray-50 px-3 text-caption-md text-gray-500 dark:bg-gray-800/50">
+                            class="flex h-8 items-center rounded-lg bg-gray-50 px-3 text-sm text-gray-500 dark:bg-gray-800/50">
                             Value: <span class="ml-2 font-mono text-primary">{{ dateValue || `undefined` }}</span>
                         </div>
                     </div>
@@ -86,7 +86,7 @@ const rangeShortcuts = [
                         <RebornSelectDate v-model="datetimeValue" type="datetime" :size="size" :color="color"
                             :disabled="disabled" placeholder="选择日期时间" />
                         <div
-                            class="flex h-8 items-center rounded-lg bg-gray-50 px-3 text-caption-md text-gray-500 dark:bg-gray-800/50">
+                            class="flex h-8 items-center rounded-lg bg-gray-50 px-3 text-sm text-gray-500 dark:bg-gray-800/50">
                             Value: <span class="ml-2 font-mono text-primary">{{ datetimeValue || `undefined` }}</span>
                         </div>
                     </div>
@@ -109,7 +109,7 @@ const rangeShortcuts = [
                         <RebornSelectDate v-model="rangeValue" type="daterange" rangeable :size="size" :color="color"
                             :disabled="disabled" :shortcuts="rangeShortcuts" placeholder="点击选择日期范围" />
                         <div
-                            class="flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-caption-md text-gray-500 dark:bg-gray-800/50">
+                            class="flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-sm text-gray-500 dark:bg-gray-800/50">
                             Value: <span class="ml-2 font-mono text-primary">{{ rangeValue.length ? rangeValue.join(` ~
                                 `) : `empty` }}</span>
                         </div>
@@ -121,7 +121,7 @@ const rangeShortcuts = [
                             :color="color" :disabled="disabled" value-format="YYYY-MM-DD HH:mm:ss.SSS"
                             placeholder="选择开始与结束时间" />
                         <div
-                            class="flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-caption-md text-gray-500 dark:bg-gray-800/50">
+                            class="flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-sm text-gray-500 dark:bg-gray-800/50">
                             Value: <span class="ml-2 font-mono text-primary">{{ dateTimeRangeValue.length ?
                                 dateTimeRangeValue.join(` ~ `) : `empty` }}</span>
                         </div>
@@ -178,7 +178,7 @@ const rangeShortcuts = [
                         <label class="text-xs font-medium text-gray-400">Custom Format</label>
                         <RebornSelectDate v-model="customFormatValue" type="date" labelFormat="YYYY年MM月DD日"
                             valueFormat="YYYY/MM/DD" :size="size" :color="color" placeholder="格式化显示与存储" />
-                        <p class="text-caption-sm text-gray-400 italic">Display: YYYY年MM月DD日 | Value: {{
+                        <p class="text-sm text-gray-400 italic">Display: YYYY年MM月DD日 | Value: {{
                             customFormatValue
                             || `-` }}</p>
                     </div>

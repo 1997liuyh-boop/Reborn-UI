@@ -269,8 +269,8 @@ function selectPreset(color: string) {
         <!-- 输入框与格式 -->
         <div :class="ui.inputs()">
             <div :class="ui.formatToggles()">
-                <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="xs"
-                    :variant="format === f ? 'solid' : 'ghost'" :color="format === f ? 'primary' : 'neutral'"
+                <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="sm"
+                    :variant="format === f ? 'solid' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
                     class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors" @click="format = f">
                     {{ f }}
                 </RebornButton>
@@ -282,7 +282,7 @@ function selectPreset(color: string) {
         <div :class="ui.presets()">
             <div :class="ui.presetTitle()">主题预设</div>
             <div :class="ui.presetGrid()">
-                <RebornButton v-for="color in presets" :key="color" size="xs" square :class="ui.presetSwatch()"
+                <RebornButton v-for="color in presets" :key="color" size="sm" square :class="ui.presetSwatch()"
                     :style="{ backgroundColor: color }" @click="selectPreset(color)" />
             </div>
         </div>

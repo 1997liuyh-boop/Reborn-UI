@@ -17,13 +17,13 @@ export default {
     variants: {
         size: {
             sm: {
-                option: "h-input-sm text-body-sm px-2 leading-none",
+                option: "h-input-sm text-sm px-2 leading-none",
             },
             md: {
-                option: "h-input-md text-body-base px-3",
+                option: "h-input-md text-base px-3",
             },
             lg: {
-                option: "h-input-lg text-body-base  px-4",
+                option: "h-input-lg text-base  px-4",
             },
         },
         color: {

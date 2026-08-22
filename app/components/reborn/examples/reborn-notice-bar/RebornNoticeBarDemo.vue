@@ -102,7 +102,7 @@ function handleClose() {
               background="#f0f9ff" color="#0369a1" left-icon="lucide:shield-check">
               <template #default="{ item, index }">
                 <div class="flex items-center gap-2">
-                  <span class="bg-primary/20 text-primary text-caption-sm px-1.5 py-0.5 rounded uppercase font-bold">
+                  <span class="bg-primary/20 text-primary text-sm px-1.5 py-0.5 rounded uppercase font-bold">
                     {{ index === 0 ? '安全' : index === 1 ? '公告' : '福利' }}
                   </span>
                   <span class="font-medium underline cursor-pointer">{{ item }}</span>
@@ -188,7 +188,7 @@ function handleClose() {
         <div class="space-y-4">
           <RebornNoticeBar text="这条通知栏将停止所有动画并降低淡度程度。" disabled />
           <RebornNoticeBar :text="state.text" :scrollable="false" />
-          <p class="text-caption-sm text-gray-400 font-mono italic mt-2">
+          <p class="text-sm text-gray-400 font-mono italic mt-2">
             Tip: 当内容未溢出时，会自动停止滚动。
           </p>
         </div>

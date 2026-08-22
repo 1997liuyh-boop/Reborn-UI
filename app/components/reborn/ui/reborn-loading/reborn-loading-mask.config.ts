@@ -33,7 +33,7 @@ const config = {
         /** 内容容器：图标在上、文字在下，垂直居中排列 */
         content: 'flex flex-col items-center justify-center gap-2',
         /** 加载文字：正文小号 */
-        text: 'text-body-sm',
+        text: 'text-sm',
     },
     variants: {
         /**

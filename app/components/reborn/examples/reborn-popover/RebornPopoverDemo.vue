@@ -195,8 +195,8 @@ const actions = [
                       <img :src="profile.avatar"
                         class="size-20 rounded-2xl border-4 border-white object-cover dark:border-gray-900" />
                       <div class="flex gap-2">
-                        <RebornButton size="xs" round variant="soft" color="neutral">Message</RebornButton>
-                        <RebornButton size="xs" round color="primary">Follow</RebornButton>
+                        <RebornButton size="sm" round variant="soft" color="neutral">Message</RebornButton>
+                        <RebornButton size="sm" round color="primary">Follow</RebornButton>
                       </div>
                     </div>
                     <div class="mt-4">

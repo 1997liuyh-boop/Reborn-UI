@@ -40,19 +40,19 @@ export default {
         },
         size: {
             sm: {
-                trigger: "h-input-sm px-2 text-body-sm gap-1 rounded-ui-sm leading-none",
+                trigger: "h-input-sm px-2 text-sm gap-1 rounded-ui-sm leading-none",
                 arrow: "size-3",
                 clearBtn: "size-3",
                 dropdown: "rounded-ui-sm",
             },
             md: {
-                trigger: "h-input-md px-3 text-body-base gap-1 rounded-ui-md",
+                trigger: "h-input-md px-3 text-base gap-1 rounded-ui-md",
                 arrow: "size-4",
                 clearBtn: "size-4",
                 dropdown: "rounded-ui-md",
             },
             lg: {
-                trigger: "h-input-lg px-4 text-body-base gap-1 rounded-ui-base",
+                trigger: "h-input-lg px-4 text-base gap-1 rounded-ui-base",
                 arrow: "size-5",
                 clearBtn: "size-5",
                 dropdown: "rounded-ui-base",

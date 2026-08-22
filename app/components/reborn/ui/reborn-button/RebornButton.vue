@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
 import RebornLoading from '../reborn-loading/RebornLoading.vue'
-import theme, { buttonColors, buttonVariants, buttonSizes } from './reborn-button.config'
+import theme, { buttonColors, buttonVariants, buttonSizes, buttonBorderStyles } from './reborn-button.config'
 import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
@@ -14,8 +14,10 @@ export interface ButtonProps {
     color?: typeof buttonColors[number]
     /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边，默认 solid；颜色由 color 控制 */
     variant?: typeof buttonVariants[number]
-    /** 尺寸，xs/sm/default/md/lg/xl/2xl 共 7 档（default 与 md 等高），默认 md；处于表单组内时被组尺寸覆盖 */
+    /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；处于表单组内时被组尺寸覆盖 */
     size?: typeof buttonSizes[number]
+    /** 边框线型：solid 实线 / dashed 虚线，默认 solid；边框宽度固定 1px，对有边框的变体（outline / subtle）生效 */
+    borderStyle?: typeof buttonBorderStyles[number]
     /** 是否加载中；显示加载动画、降低透明度并禁用点击 */
     loading?: boolean
     /** 是否禁用按钮 */
@@ -35,6 +37,7 @@ const props = withDefaults(defineProps<ButtonProps>(), {
     color: 'primary',
     variant: 'solid',
     size: 'md',
+    borderStyle: 'solid',
     loading: false,
     disabled: false,
     round: true,
@@ -81,6 +84,7 @@ const ui = computed(() => {
         color: color.value,
         variant: variant.value,
         size: (fieldGroupSize.value || size.value) as any,
+        borderStyle: props.borderStyle,
         fieldGroup: orientation.value,
         gap: props.gap,
         disabled: props.disabled,

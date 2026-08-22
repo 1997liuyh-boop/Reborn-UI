@@ -15,9 +15,9 @@ export const inputTheme = {
     },
     variants: {
         size: {
-            sm: { wrapper: "rounded-full! px-1!", icon: "!text-title-lg", iconBox: "gap-4!" },
-            md: { wrapper: "rounded-full! px-1!", icon: "!text-title-2xl", iconBox: "gap-6!" },
-            lg: { wrapper: "rounded-full! px-1!", icon: "!text-title-2xl", iconBox: "gap-6!" },
+            sm: { wrapper: "rounded-full! px-1!", icon: "!text-xl", iconBox: "gap-4!" },
+            md: { wrapper: "rounded-full! px-1!", icon: "!text-2xl", iconBox: "gap-6!" },
+            lg: { wrapper: "rounded-full! px-1!", icon: "!text-2xl", iconBox: "gap-6!" },
         }
     }
 } as const;
@@ -57,9 +57,9 @@ export default {
         /** 输入框及按钮包裹层 */
         inputWrapper: "flex-1 transition-all z-20 rounded-full relative",
         /** 基础输入框样式 */
-        input: "w-full bg-transparent border-none outline-none text-body-base text-gray-4 dark:text-gray-1 placeholder:text-gray-7",
+        input: "w-full bg-transparent border-none outline-none text-base text-gray-4 dark:text-gray-1 placeholder:text-gray-7",
         /** 相机识别图标 */
-        cameraIcon: "text-title-2xl text-gray-5 cursor-pointer hover:text-gray-7/80 dark:hover:text-gray-2/80 transition-colors",
+        cameraIcon: "text-2xl text-gray-5 cursor-pointer hover:text-gray-7/80 dark:hover:text-gray-2/80 transition-colors",
 
         // --- 下拿面板相关 ---
         /** 下拉面板外层容器 (负责高度过渡动画，内容淡入由内层控制) */
@@ -69,19 +69,19 @@ export default {
         /** 功能区块 (如：最近搜索、联想列表) */
         section: "flex flex-col gap-3",
         /** 区块标题样式 */
-        sectionTitle: "text-title-md font-bold text-gray-8 dark:text-gray-1 flex items-center justify-between",
+        sectionTitle: "text-lg font-bold text-gray-8 dark:text-gray-1 flex items-center justify-between",
         /** 历史记录标签容器 */
         historyTags: "flex flex-wrap gap-2",
         /** 单条历史记录标签 */
-        historyTag: "flex items-center gap-1 bg-gray-1 dark:bg-gray-8 px-3 py-1.5 rounded-full text-caption-lg text-gray-7 dark:text-gray-2 cursor-pointer hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors",
+        historyTag: "flex items-center gap-1 bg-gray-1 dark:bg-gray-8 px-3 py-1.5 rounded-full text-sm text-gray-7 dark:text-gray-2 cursor-pointer hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors",
         /** 历史记录删除图标 */
-        deleteIcon: "text-caption-sm text-gray-4 hover:text-error transition-colors",
+        deleteIcon: "text-sm text-gray-4 hover:text-error transition-colors",
         /** 清空全部按钮 */
-        clearAll: "text-body-base font-normal text-gray-5 cursor-pointer hover:underline flex items-center gap-1",
+        clearAll: "text-base font-normal text-gray-5 cursor-pointer hover:underline flex items-center gap-1",
         /** 联想列表容器 */
         associateList: "flex flex-col",
         /** 联想项 */
-        associateItem: "flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 dark:hover:bg-gray-8 rounded-ui-sm transition-colors text-body-base text-gray-8 dark:text-gray-1",
+        associateItem: "flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 dark:hover:bg-gray-8 rounded-ui-sm transition-colors text-base text-gray-8 dark:text-gray-1",
         // --- 内部组件及辅助槽位 ---
         /** 选择器与输入框之间的连结包裹 */
         leadingWrapper: "flex items-center h-full",
@@ -101,19 +101,19 @@ export default {
     variants: {
         // size: {
         //     sm: {
-        //         cameraIcon: "text-caption-lg",
-        //         input: "text-caption-lg px-spacing-input-px-sm",
+        //         cameraIcon: "text-sm",
+        //         input: "text-sm px-spacing-input-px-sm",
         //         dropdown: "py-3 px-3 gap-4",
-        //         sectionTitle: "text-caption-sm",
-        //         historyTag: "text-caption-sm px-2.5 py-1",
-        //         associateItem: "text-caption-lg py-2.5",
+        //         sectionTitle: "text-sm",
+        //         historyTag: "text-sm px-2.5 py-1",
+        //         associateItem: "text-sm py-2.5",
         //         searchIconInner: "size-4",
         //     },
         //     md: {
         //         input: "px-spacing-input-px-md",
         //     },
         //     lg: {
-        //         input: "text-title-md px-spacing-input-px-lg",
+        //         input: "text-lg px-spacing-input-px-lg",
         //         searchIconInner: "size-6",
         //     },
         // },
