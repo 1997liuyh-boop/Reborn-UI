@@ -72,7 +72,7 @@ function onClick() {
         <div class="flex-1 p-12 flex flex-col items-center justify-center gap-8 min-h-[300px]">
           <div class="flex flex-wrap items-center justify-center gap-6">
             <RebornButton :color="color" :variant="variant" :size="size" :disabled="disabled" :loading="loading"
-              @click="onClick">
+              @click="onClick" :border-style="borderStyle">
               点我交互 ({{ clickCount }})
             </RebornButton>
 
@@ -80,8 +80,8 @@ function onClick() {
               <Icon name="lucide:sparkles" />
             </RebornButton>
 
-            <RebornButton :color="color" variant="outline" :size="size" :border-style="borderStyle"
-              :disabled="disabled" :loading="loading">
+            <RebornButton :color="color" variant="outline" :size="size" :border-style="borderStyle" :disabled="disabled"
+              :loading="loading">
               <template #leading>
                 <Icon name="lucide:shopping-cart" />
               </template>
@@ -89,7 +89,8 @@ function onClick() {
             </RebornButton>
           </div>
           <div class="text-xs text-gray-400 font-mono">
-            Props: { color: '{{ color }}', variant: '{{ variant }}', size: '{{ size }}', borderStyle: '{{ borderStyle }}' }
+            Props: { color: '{{ color }}', variant: '{{ variant }}', size: '{{ size }}', borderStyle: '{{ borderStyle
+            }}' }
           </div>
         </div>
       </div>
