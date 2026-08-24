@@ -1,3 +1,74 @@
+diff --git a/app/app.vue b/app/app.vue
+index c2f904a38fb3360672bc46133656e0ae9cc3fe33..31a0ba00f0db908cb24493ba4669dbbb6665a22a 100644
+--- a/app/app.vue
++++ b/app/app.vue
+@@ -6,7 +6,8 @@ import { transformNavigation } from './utils/navigation'
+ const { seo } = useAppConfig()
+ const site = useSiteConfig()
+ const { locale, locales, isEnabled, switchLocalePath } = useDocusI18n()
+-const { isEnabled: isAssistantEnabled, panelWidth: assistantPanelWidth, shouldPushContent } = useAssistant()
++// AI 助手面板改为覆盖式,不再需要 panelWidth / shouldPushContent 推挤正文
++const { isEnabled: isAssistantEnabled } = useAssistant()
+ 
+ const nuxtUiLocale = computed(() => nuxtUiLocales[locale.value as keyof typeof nuxtUiLocales] || nuxtUiLocales.en)
+ const lang = computed(() => nuxtUiLocale.value.code)
+@@ -61,10 +62,12 @@ provide('navigation', navigation)
+   <UApp :locale="nuxtUiLocale">
+     <NuxtLoadingIndicator color="var(--ui-primary)" />
+ 
+-    <div
+-      class="transition-[margin-right] duration-200 ease-linear will-change-[margin-right]"
+-      :style="{ marginRight: shouldPushContent ? `${assistantPanelWidth}px` : '0' }"
+-    >
++    <!--
++      原实现在此层加 marginRight = 面板宽度,把整站(顶栏 / 侧栏 / 正文 / 页脚)向左挤。
++      docs 布局的 --ui-container 为 100%,等于整站等比缩窄 360~520px,开合时全量重排,
++      观感上就是"页面被压缩"。面板改为覆盖式后此层不再参与,布局完全静止。
++    -->
++    <div>
+       <AppHeader v-if="$route.meta.header !== false" />
+       <NuxtLayout>
+         <NuxtPage />
+diff --git a/app/pages/[[lang]]/[...slug].vue b/app/pages/[[lang]]/[...slug].vue
+index 3579d89683b9d3f5f53dae6c997b1f02424314a6..d32867b63597bb61e1b5f25239fd264d698232b3 100644
+--- a/app/pages/[[lang]]/[...slug].vue
++++ b/app/pages/[[lang]]/[...slug].vue
+@@ -11,7 +11,6 @@ const route = useRoute()
+ const { locale, isEnabled, t } = useDocusI18n()
+ const appConfig = useAppConfig()
+ const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
+-const { shouldPushContent: shouldHideToc } = useAssistant()
+ 
+ const collectionName = computed(() => isEnabled.value ? `docs_${locale.value}` : 'docs')
+ 
+@@ -71,10 +70,12 @@ addPrerenderPath(`/raw${route.path}.md`)
+ </script>
+ 
+ <template>
+-  <UPage
+-    v-if="page"
+-    :key="`page-${shouldHideToc}`"
+-  >
++  <!--
++    原实现用 :key="page-${shouldHideToc}" 强制 UPage 随 AI 面板开关整体重建,
++    代价是滚动位置与页内组件状态(如 ComponentViewer 的 iframe)全部丢失、肉眼可见闪烁。
++    面板改为覆盖式后无需重算布局,故移除该 key。
++  -->
++  <UPage v-if="page">
+     <UPageHeader
+       :title="page.title"
+       :description="page.description"
+@@ -131,8 +132,9 @@ addPrerenderPath(`/raw${route.path}.md`)
+       <UContentSurround :surround="surround" />
+     </UPageBody>
+ 
++    <!-- TOC 常驻:AI 面板浮在它上层,不再摘除整列,避免三栏塌两栏引发正文重排 -->
+     <template
+-      v-if="page?.body?.toc?.links?.length && !shouldHideToc"
++      v-if="page?.body?.toc?.links?.length"
+       #right
+     >
+       <UContentToc
 diff --git a/modules/assistant/runtime/components/AssistantLoading.vue b/modules/assistant/runtime/components/AssistantLoading.vue
 index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..7e4111e6c321adf22028b6fe6753950541cdec9e 100644
 --- a/modules/assistant/runtime/components/AssistantLoading.vue
@@ -21,7 +92,7 @@ index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..7e4111e6c321adf22028b6fe67539505
          </span>
        </motion.div>
 diff --git a/modules/assistant/runtime/components/AssistantPanel.vue b/modules/assistant/runtime/components/AssistantPanel.vue
-index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..7738f6693b11c0f873e99ce4eed386ab6d847f31 100644
+index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461144f5de0 100644
 --- a/modules/assistant/runtime/components/AssistantPanel.vue
 +++ b/modules/assistant/runtime/components/AssistantPanel.vue
 @@ -42,16 +42,127 @@ const chat = new Chat({
@@ -292,6 +363,22 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..7738f6693b11c0f873e99ce4eed386ab
            <span>
              {{ input.length }}/1000
            </span>
+@@ -298,9 +480,14 @@ onMounted(() => {
+     </div>
+   </DefineChatContent>
+ 
++  <!--
++    面板改为覆盖式后不再推挤正文,故起点从 top-0 下移到顶栏下方:
++    否则 z-50 会盖住顶栏右侧的 Ask AI / 主题 / 明暗按钮(含唤起自身的那颗),
++    与右侧 uni 演示面板(同样使用 --ui-header-height)保持一致。
++  -->
+   <aside
+     v-if="!isMobile"
+-    class="left-auto! fixed top-0 z-50 h-dvh overflow-hidden border-l border-default bg-default/95 backdrop-blur-xl transition-[right,width] duration-200 ease-linear will-change-[right,width]"
++    class="left-auto! fixed top-(--ui-header-height) z-50 h-[calc(100dvh-var(--ui-header-height))] overflow-hidden border-l border-default bg-default/95 backdrop-blur-xl transition-[right,width] duration-200 ease-linear will-change-[right,width]"
+     :style="{
+       width: `${panelWidth}px`,
+       right: isOpen ? '0' : `-${panelWidth}px`,
 diff --git a/modules/assistant/runtime/components/AssistantPreStream.vue b/modules/assistant/runtime/components/AssistantPreStream.vue
 index 1ccc24d8d2f87a943fab293e93d99f0ddddb8a9d..ecfb5d1aa5fddb145d65c254b8ca9f67e0352d36 100644
 --- a/modules/assistant/runtime/components/AssistantPreStream.vue
