@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T22:59:47.485Z",
+  "generatedAt": "2026-08-24T03:43:26.796Z",
   "components": [
     {
       "id": "animate-grid",
@@ -758,7 +758,7 @@
     {
       "id": "reborn-button",
       "title": "按钮",
-      "description": "用于触发操作的双端按钮组件，提供颜色、变体、尺寸、加载与禁用状态。",
+      "description": "双端基础按钮：7 种语义色 × 5 种变体，支持尺寸、形状、加载与禁用状态。",
       "category": "basic",
       "tags": [
         "css",

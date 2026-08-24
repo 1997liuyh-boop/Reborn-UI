@@ -149,7 +149,9 @@ const editLink = computed(() => {
 
 <template>
   <UPage :ui="{ right: 'lg:hidden', center: 'lg:col-span-10' }">
+    <!-- hideHeader：组件总览等自带 Hero 的页面跳过默认页头，避免双标题 -->
     <UPageHeader
+      v-if="!page.hideHeader"
       :title="page.title" :description="page.description" :headline="headline" :ui="{
         wrapper: 'flex-row items-center flex-wrap justify-between',
       }"
@@ -167,7 +169,7 @@ const editLink = computed(() => {
       </template>
     </UPageHeader>
 
-    <UPageBody class="mt-2 space-y-8">
+    <UPageBody :class="page.hideHeader ? 'mt-0 space-y-8' : 'mt-2 space-y-8'">
       <!-- 正文容器 ref：DOM 兜底目录的扫描范围（避免收进页脚 / 周边区块的标题） -->
       <div ref="bodyEl" class="docs-prose min-w-0">
         <ContentRenderer :value="page" />

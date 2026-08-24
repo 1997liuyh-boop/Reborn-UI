@@ -10,7 +10,7 @@ import RebornLoading from '../reborn-loading/RebornLoading.vue'
 export interface ButtonProps {
   label?: string // 按钮文本内容；提供 default 插槽时被插槽内容覆盖
   color?: typeof buttonColors[number] // 语义色：primary/secondary/success/info/warning/error/neutral，默认 primary
-  variant?: typeof buttonVariants[number] // 视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边，默认 solid
+  variant?: typeof buttonVariants[number] // 视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮，默认 solid
   size?: typeof buttonSizes[number] // 尺寸：xs/sm/default/md/lg/xl/2xl（default 与 md 等高），默认 md
   loading?: boolean // 是否加载中；显示加载动画并禁用点击
   disabled?: boolean // 是否禁用按钮

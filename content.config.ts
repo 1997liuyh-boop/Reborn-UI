@@ -13,6 +13,10 @@ const createDocsSchema = () =>
     category: z.string(),
     tags: z.array(z.string()),
     badge: z.enum(["New", "Updated"]).optional(),
+    // 总览等自带 Hero 的页面：跳过 DocsPage 默认 UPageHeader
+    hideHeader: z.boolean().optional(),
+    // 总览卡片缩略 Demo 组件名（如 RebornButtonOverview）；缺省时由 demoFile 约定推导
+    overviewDemo: z.string().optional(),
     links: z
       .array(
         z.object({

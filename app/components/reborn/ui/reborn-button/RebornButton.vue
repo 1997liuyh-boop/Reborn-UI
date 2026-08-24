@@ -12,7 +12,7 @@ export interface ButtonProps {
     label?: string
     /** 语义色，7 种取值：primary/secondary/success/info/warning/error/neutral，默认 primary */
     color?: typeof buttonColors[number]
-    /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边，默认 solid；颜色由 color 控制 */
+    /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边 / text 文字按钮，默认 solid；颜色由 color 控制 */
     variant?: typeof buttonVariants[number]
     /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；处于表单组内时被组尺寸覆盖 */
     size?: typeof buttonSizes[number]

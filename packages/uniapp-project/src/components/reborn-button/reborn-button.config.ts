@@ -1,5 +1,5 @@
 export const buttonColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-export const buttonVariants = ['solid', 'outline', 'soft', 'subtle'] as const
+export const buttonVariants = ['solid', 'outline', 'soft', 'subtle', 'text'] as const
 
 export const buttonSizes = [
   'xs',
@@ -46,6 +46,8 @@ export default {
       outline: '',
       soft: '',
       subtle: '',
+      // 文字按钮：无背景/边框，高度跟随文字（见 compoundVariants 覆盖 size 的固定高度）
+      text: '',
     },
     disabled: {
       true: '',
@@ -283,6 +285,48 @@ export default {
       variant: 'subtle' as (typeof buttonVariants)[number],
       disabled: true,
       class: '!bg-gray-2 !border-gray-4 !text-gray-6 hover:!bg-gray-2 hover:!border-gray-4',
+    },
+
+    // Text Variants：无背景/边框，高度与水平内边距跟随文字
+    {
+      color: 'primary' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-primary hover:text-primary/75 !h-auto !px-0',
+    },
+    {
+      color: 'secondary' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-secondary hover:text-secondary/75 !h-auto !px-0',
+    },
+    {
+      color: 'success' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-success hover:text-success/75 !h-auto !px-0',
+    },
+    {
+      color: 'info' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-info hover:text-info/75 !h-auto !px-0',
+    },
+    {
+      color: 'warning' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-warning hover:text-warning/75 !h-auto !px-0',
+    },
+    {
+      color: 'error' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-error hover:text-error/75 !h-auto !px-0',
+    },
+    {
+      color: 'neutral' as (typeof buttonColors)[number],
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'bg-transparent border-transparent text-neutral hover:text-neutral/75 !h-auto !px-0',
+    },
+    {
+      variant: 'text' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-transparent !border-transparent !text-gray-6 hover:!bg-transparent',
     },
   ],
   defaultVariants: {

@@ -111,6 +111,27 @@ function onClick() {
 
       <section
         class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
+        <h4 class="font-medium text-gray-700 dark:text-gray-300">文字按钮 (text)</h4>
+        <p class="text-xs text-gray-400">
+          <code>variant="text"</code>：无背景/边框，高度与水平内边距跟随文字，适合行内操作入口。
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          <RebornButton v-for="c in buttonColors" :key="c" variant="text" :color="c">
+            {{ c }}
+          </RebornButton>
+        </div>
+        <div class="flex flex-wrap items-baseline gap-3 text-sm text-gray-600 dark:text-gray-300">
+          <span>行内混排示例：</span>
+          <RebornButton variant="text" color="primary">查看详情</RebornButton>
+          <span>/</span>
+          <RebornButton variant="text" color="error">删除</RebornButton>
+          <span>/</span>
+          <RebornButton variant="text" color="neutral">取消</RebornButton>
+        </div>
+      </section>
+
+      <section
+        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
         <h4 class="font-medium text-gray-700 dark:text-gray-300">尺寸与图标</h4>
         <p class="text-xs text-gray-400">三档：高度 24 / 32 / 40px，水平内边距统一 12px。</p>
         <div class="flex flex-col gap-6">

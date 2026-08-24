@@ -1,7 +1,10 @@
 ---
-title: 所有组件
-description: Reborn UI 提供的所有组件的列表。
+title: 组件总览
+description: Reborn UI 组件库总览——按分类浏览全部组件。
 navigation: false
+hideHeader: true
+category: 组件
+tags: []
 ---
 
 ::ComponentsList

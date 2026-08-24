@@ -1,6 +1,6 @@
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 
-const variant = ["solid", "outline", "soft", "subtle"] as const;
+const variant = ["solid", "outline", "soft", "subtle", "text"] as const;
 
 const size = ["sm", "md", "lg"] as const;
 
@@ -43,8 +43,10 @@ export default {
       outline: "",
       soft: "",
       subtle: "",
+      // 文字按钮：无背景/边框，高度跟随文字（见 compoundVariants 覆盖 size 的固定高度）
+      text: "",
     },
-    // 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）
+    // 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）；text 变体另见 compoundVariants
     size: {
       sm: {
         base: "h-button-sm text-sm leading-[1.5] gap-1.5 px-3",
@@ -58,7 +60,7 @@ export default {
     },
     /**
      * 边框线型，对渲染了边框的变体生效：outline 与 subtle。
-     * 边框宽度固定 1px，由对应变体的 `border` 提供；solid / soft 无边框，此项不产生视觉效果。
+     * 边框宽度固定 1px，由对应变体的 `border` 提供；solid / soft / text 无边框，此项不产生视觉效果。
      */
     borderStyle: {
       solid: {
@@ -263,6 +265,48 @@ export default {
       color: "neutral" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
       class: "bg-neutral/10 border border-neutral text-neutral hover:bg-neutral/20",
+    },
+
+    // Text Variants：无背景/边框，高度与水平内边距跟随文字
+    {
+      color: "primary" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-primary hover:text-primary/75 !h-auto !px-0",
+    },
+    {
+      color: "secondary" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-secondary hover:text-secondary/75 !h-auto !px-0",
+    },
+    {
+      color: "success" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-success hover:text-success/75 !h-auto !px-0",
+    },
+    {
+      color: "info" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-info hover:text-info/75 !h-auto !px-0",
+    },
+    {
+      color: "warning" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-warning hover:text-warning/75 !h-auto !px-0",
+    },
+    {
+      color: "error" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-error hover:text-error/75 !h-auto !px-0",
+    },
+    {
+      color: "neutral" as (typeof color)[number],
+      variant: "text" as (typeof variant)[number],
+      class: "bg-transparent text-neutral hover:text-neutral/75 !h-auto !px-0",
+    },
+    {
+      variant: "text" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-transparent text-gray-4 dark:text-gray-6",
     },
   ],
   defaultVariants: {
