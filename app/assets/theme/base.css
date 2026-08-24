@@ -1,65 +1,82 @@
 @theme {
   /* --- 基础色调方案 (Color Palettes) --- */
-  
+
   /* 红色系 (Red) —— 取自设计稿令牌 红色_index_1/red-* */
-  --color-red-1: #ffedeb;  /* tag 填充色 */
-  --color-red-2: #ffcdc7;  /* border 描边色 */
+  --color-red-1: #ffedeb; /* tag 填充色 */
+  --color-red-2: #ffcdc7; /* border 描边色 */
   --color-red-3: #ffa9a3;
   --color-red-4: #ff8380;
-  --color-red-5: #ff6161;  /* hover 悬停 */
-  --color-red-6: #ff383f;  /* default 默认 */
-  --color-red-7: #d22833;  /* active 点击 */
+  --color-red-5: #ff6161; /* hover 悬停 */
+  --color-red-6: #ff383f; /* default 默认 */
+  --color-red-7: #d22833; /* active 点击 */
   --color-red-8: #9f1422;
   --color-red-9: #780817;
   --color-red-10: #4d000d;
 
   /* 橙色系 (Orange) —— 取自设计稿令牌 橙色_index_1/orange-* */
-  --color-orange-1: #fff9eb;  /* tag 填充色 */
-  --color-orange-2: #ffe6b8;  /* border 描边色 */
+  --color-orange-1: #fff9eb; /* tag 填充色 */
+  --color-orange-2: #ffe6b8; /* border 描边色 */
   --color-orange-3: #ffd28a;
   --color-orange-4: #ffbb5c;
-  --color-orange-5: #ffa12e;  /* hover 悬停 */
-  --color-orange-6: #ff8400;  /* default 默认 */
-  --color-orange-7: #d16500;  /* active 点击 */
+  --color-orange-5: #ffa12e; /* hover 悬停 */
+  --color-orange-6: #ff8400; /* default 默认 */
+  --color-orange-7: #d16500; /* active 点击 */
   --color-orange-8: #a84c00;
   --color-orange-9: #7a3300;
   --color-orange-10: #4d1e00;
 
   /* 绿色系 (Green) —— 取自设计稿令牌 绿色_index_1/green-* */
-  --color-green-1: #f8ffeb;  /* tag 填充色 */
-  --color-green-2: #e1f9be;  /* border 描边色 */
+  --color-green-1: #f8ffeb; /* tag 填充色 */
+  --color-green-2: #e1f9be; /* border 描边色 */
   --color-green-3: #cdf49a;
   --color-green-4: #b6ee72;
-  --color-green-5: #9ce84f;  /* hover 悬停 */
-  --color-green-6: #81e22c;  /* default 默认 */
-  --color-green-7: #60bb1b;  /* active 点击 */
+  --color-green-5: #9ce84f; /* hover 悬停 */
+  --color-green-6: #81e22c; /* default 默认 */
+  --color-green-7: #60bb1b; /* active 点击 */
   --color-green-8: #46990f;
   --color-green-9: #296605;
   --color-green-10: #1a4d00;
 
   /* 蓝色系 (Blue) —— 取自设计稿令牌 蓝色_index_1/blue-* */
-  --color-blue-1: #ecfcff;  /* tag 填充色 */
-  --color-blue-2: #b8f3ff;  /* border 描边色 */
+  --color-blue-1: #ecfcff; /* tag 填充色 */
+  --color-blue-2: #b8f3ff; /* border 描边色 */
   --color-blue-3: #8ae8ff;
   --color-blue-4: #5cd9ff;
-  --color-blue-5: #2ec7ff;  /* hover 悬停 */
-  --color-blue-6: #00b2ff;  /* default 默认（稿面标注 #34a7fa 为陈旧样板，以令牌为准） */
-  --color-blue-7: #008dd3;  /* active 点击 */
+  --color-blue-5: #2ec7ff; /* hover 悬停 */
+  --color-blue-6: #00b2ff; /* default 默认（稿面标注 #34a7fa 为陈旧样板，以令牌为准） */
+  --color-blue-7: #008dd3; /* active 点击 */
   --color-blue-8: #006ba8;
   --color-blue-9: #00497a;
   --color-blue-10: #002b4d;
 
   /* 灰色系 (Gray) —— 取自设计稿令牌 中性色_index_1/gray-* */
   --color-gray-1: #ffffff;
-  --color-gray-2: #f2f3f5;  /* 分割线、禁用、填充色 */
+  --color-gray-2: #f2f3f5; /* 分割线、禁用、填充色 */
   --color-gray-3: #e5e6eb;
-  --color-gray-4: #c9cdd4;  /* border 边框 */
-  --color-gray-5: #a9aeb8;  /* placeholder 占位、禁用 */
+  --color-gray-4: #c9cdd4; /* border 边框 */
+  --color-gray-5: #a9aeb8; /* placeholder 占位、禁用 */
   --color-gray-6: #86909c;
   --color-gray-7: #6b7785;
-  --color-gray-8: #4e5969;  /* secondary 辅助文字 */
-  --color-gray-9: #272e3b;  /* primary 正文 */
-  --color-gray-10: #1d2129;  /* title 标题 */
+  --color-gray-8: #4e5969; /* secondary 辅助文字 */
+  --color-gray-9: #272e3b; /* primary 正文 */
+  --color-gray-10: #1d2129; /* title 标题 */
+
+  /*
+   * 辅助色系 (Secondary) —— 薄荷绿，与品牌主色 red-6 配对使用。
+   * 命名维度与上方四族不同：上方按色相命名（red/orange/...），本族按语义命名，
+   * 因为它在设计稿中就是「品牌辅助色」这一固定角色，不复用于其它语义。
+   * 注意与既有 green 系区分：green 承担 success 语义，本族承担品牌辅助语义。
+   */
+  --color-secondary-1: #ebfff2; /* tag 填充色 */
+  --color-secondary-2: #cafcde; /* border 描边色 */
+  --color-secondary-3: #aaf9cc;
+  --color-secondary-4: #80f4b6;
+  --color-secondary-5: #5ff1a8; /* hover 悬停 */
+  --color-secondary-6: #32ec95; /* default 默认 */
+  --color-secondary-7: #1ebe77; /* active 点击 */
+  --color-secondary-8: #0f8f5c;
+  --color-secondary-9: #056642;
+  --color-secondary-10: #004d33;
 
   /* --- 基础样式方案 (Base Schemes) --- */
 
@@ -72,16 +89,18 @@
   --radius-ui-lg: 24px;
 
   /* 字体族 (Font Family) */
-  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Roboto,
+    Helvetica, Arial, sans-serif;
 
   /* --- 语义化颜色 (Semantic Colors) --- */
-  --color-primary: var(--color-red-6);
-  --color-secondary: var(--color-gray-8);
-  --color-success: var(--color-green-6);
-  --color-info: var(--color-blue-6);
-  --color-warning: var(--color-orange-6);
-  --color-error: var(--color-red-6);
-  --color-neutral: var(--color-gray-6);
+  --color-primary: var(--color-red-5);
+  --color-secondary: var(--color-secondary-5);
+  --color-success: var(--color-green-5);
+  --color-info: var(--color-blue-5);
+  --color-warning: var(--color-orange-5);
+  --color-error: var(--color-red-5);
+  --color-neutral: var(--color-gray-5);
 
   --color-inverted: #ffffff;
   --color-default: var(--color-gray-8);
@@ -104,69 +123,88 @@
  */
 .dark {
   /* 红色系 (Red) */
-  --color-red-1: #4d000a;  /* tag 填充色 */
-  --color-red-2: #770611;  /* border 描边色 */
+  --color-red-1: #4d000a; /* tag 填充色 */
+  --color-red-2: #770611; /* border 描边色 */
   --color-red-3: #a1161f;
   --color-red-4: #cb2e34;
-  --color-red-5: #f54e4e;  /* hover 悬停 */
-  --color-red-6: #f76965;  /* default 默认 */
-  --color-red-7: #f98d86;  /* active 点击 */
+  --color-red-5: #f54e4e; /* hover 悬停 */
+  --color-red-6: #f76965; /* default 默认 */
+  --color-red-7: #f98d86; /* active 点击 */
   --color-red-8: #fbb0a7;
   --color-red-9: #fdd1ca;
   --color-red-10: #fff0ec;
 
   /* 橙色系 (Orange) */
-  --color-orange-1: #4d1d00;  /* tag 填充色 */
-  --color-orange-2: #793404;  /* border 描边色 */
+  --color-orange-1: #4d1d00; /* tag 填充色 */
+  --color-orange-2: #793404; /* border 描边色 */
   --color-orange-3: #a6500a;
   --color-orange-4: #d27013;
-  --color-orange-5: #ff931f;  /* hover 悬停 */
-  --color-orange-6: #ff9e26;  /* default 默认 */
-  --color-orange-7: #ffb857;  /* active 点击 */
+  --color-orange-5: #ff931f; /* hover 悬停 */
+  --color-orange-6: #ff9e26; /* default 默认 */
+  --color-orange-7: #ffb857; /* active 点击 */
   --color-orange-8: #ffd287;
   --color-orange-9: #ffe6b8;
   --color-orange-10: #fff8e8;
 
   /* 绿色系 (Green) */
-  --color-green-1: #194d00;  /* tag 填充色 */
-  --color-green-2: #2f7209;  /* border 描边色 */
+  --color-green-1: #194d00; /* tag 填充色 */
+  --color-green-2: #2f7209; /* border 描边色 */
   --color-green-3: #4a9717;
   --color-green-4: #6abd2c;
-  --color-green-5: #8fe247;  /* hover 悬停 */
-  --color-green-6: #a2e85c;  /* default 默认 */
-  --color-green-7: #b9ee7d;  /* active 点击 */
+  --color-green-5: #8fe247; /* hover 悬停 */
+  --color-green-6: #a2e85c; /* default 默认 */
+  --color-green-7: #b9ee7d; /* active 点击 */
   --color-green-8: #cff39f;
   --color-green-9: #e4f9c3;
   --color-green-10: #f7ffe9;
 
   /* 蓝色系 (Blue) */
-  --color-blue-1: #002b4d;  /* tag 填充色 */
-  --color-blue-2: #044a79;  /* border 描边色 */
+  --color-blue-1: #002b4d; /* tag 填充色 */
+  --color-blue-2: #044a79; /* border 描边色 */
   --color-blue-3: #0a6da6;
   --color-blue-4: #1392d2;
-  --color-blue-5: #1fbbff;  /* hover 悬停 */
-  --color-blue-6: #26c5ff;  /* default 默认 */
-  --color-blue-7: #57d8ff;  /* active 点击 */
+  --color-blue-5: #1fbbff; /* hover 悬停 */
+  --color-blue-6: #26c5ff; /* default 默认 */
+  --color-blue-7: #57d8ff; /* active 点击 */
   --color-blue-8: #87e7ff;
   --color-blue-9: #b8f3ff;
   --color-blue-10: #e8fcff;
 
   /* 灰色系 (Gray) —— 纯灰，与浅色板角色一一对应 */
   --color-gray-1: #17171a;
-  --color-gray-2: #2e2e30;  /* 分割线、禁用、填充色 */
+  --color-gray-2: #2e2e30; /* 分割线、禁用、填充色 */
   --color-gray-3: #484849;
-  --color-gray-4: #5f5f60;  /* border 边框 */
-  --color-gray-5: #78787a;  /* placeholder 占位、禁用 */
+  --color-gray-4: #5f5f60; /* border 边框 */
+  --color-gray-5: #78787a; /* placeholder 占位、禁用 */
   --color-gray-6: #929293;
   --color-gray-7: #ababac;
-  --color-gray-8: #c5c5c5;  /* secondary 辅助文字 */
-  --color-gray-9: #dfdfdf;  /* primary 正文 */
-  --color-gray-10: #ffffff;  /* title 标题 */
+  --color-gray-8: #c5c5c5; /* secondary 辅助文字 */
+  --color-gray-9: #dfdfdf; /* primary 正文 */
+  --color-gray-10: #ffffff; /* title 标题 */
+
+  /* 辅助色系 (Secondary) —— 与浅色板一一对偶，色阶方向相反：第 1 阶最深、第 10 阶最浅 */
+  --color-secondary-1: #004d33; /* tag 填充色 */
+  --color-secondary-2: #06744c; /* border 描边色 */
+  --color-secondary-3: #169c66;
+  --color-secondary-4: #2dc483;
+  --color-secondary-5: #4ceca1; /* hover 悬停 */
+  --color-secondary-6: #63f0a9; /* default 默认 */
+  --color-secondary-7: #84f4b8; /* active 点击 */
+  --color-secondary-8: #a6f7ca;
+  --color-secondary-9: #c9fbdd;
+  --color-secondary-10: #eefff4;
 
   /*
    * 反色前景：暗色板的 default 阶是浅色块，白字对比度不足（如 red-6 配白仅 2.4:1），
    * 故翻转为最深的中性色。实测 primary 6.25:1、success 12.4:1、warning 8.9:1、info 9.1:1。
    */
+  --color-primary: var(--color-red-6);
+  --color-secondary: var(--color-secondary-6);
+  --color-success: var(--color-green-6);
+  --color-info: var(--color-blue-6);
+  --color-warning: var(--color-orange-6);
+  --color-error: var(--color-red-6);
+  --color-neutral: var(--color-gray-6);
   --color-inverted: var(--color-gray-1);
 }
 
@@ -191,4 +229,9 @@ body.layout-admin-shell {
   &::-webkit-scrollbar {
     display: none;
   }
+}
+/* 文本选区：随黑白主色反色，选中文字有明确的「站点态度」 */
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-gray-1);
 }
