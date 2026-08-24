@@ -90,15 +90,20 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 两端的尺寸档位不同，这是为适配各自的输入精度与屏幕密度而有意分化的。
 
-**Web 端**三档，高度固定 px，水平内边距统一 12px：
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+三档，高度固定 px，水平内边距统一 12px：
 
 | `size` | 高度 | 字号 |
 | --- | --- | --- |
 | `sm` | 24px | `text-sm`（12px） |
 | `md`（默认） | 32px | `text-base`（14px） |
 | `lg` | 40px | `text-lg`（16px） |
+:::
 
-**UniApp 端**七档，高度用 `rpx` 随屏宽缩放，水平内边距与圆角同步递进：
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+七档，高度用 `rpx` 随屏宽缩放，水平内边距与圆角同步递进：
 
 | `size` | 高度 | 水平内边距 | 字号 | 直角圆角 |
 | --- | --- | --- | --- | --- |
@@ -111,6 +116,9 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 | `2xl` | 96rpx | 24rpx | 32rpx | 14px |
 
 `default` 与 `md` 完全等价，前者保留用于对齐旧代码。
+:::
+
+::
 
 ```vue
 <template>
@@ -265,32 +273,42 @@ function onError(e: any) {
 
 ### Props
 
-#### 通用（Web / UniApp 一致）
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+#### Web 端全部属性
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
 | `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
 | `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text'` | `'solid'` | 视觉变体，含义见「颜色与变体」。 |
-| `size` | Web：`'sm' \| 'md' \| 'lg'`<br>UniApp：`'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'` | `'md'` | 尺寸；处于表单组内时被组尺寸覆盖。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸，三档固定 px；处于表单组内时被组尺寸覆盖。 |
 | `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
 | `round` | `boolean` | `true` | 是否为胶囊形状；自定义圆角时须显式传 `false`。 |
 | `circle` | `boolean` | `false` | 是否为正方形纯图标按钮（内边距归零）。 |
 | `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
 | `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
-
-#### Web 专属
-
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
 | `class` | `any` | - | 追加到根元素的自定义类名。 |
 | `borderStyle` | `'solid' \| 'dashed'` | `'solid'` | 边框线型；宽度固定 1px，仅对 `outline` / `subtle` 生效。 |
+:::
 
-#### UniApp 专属
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+#### UniApp 端全部属性
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
+| `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
+| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
+| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text'` | `'solid'` | 视觉变体，含义见「颜色与变体」。 |
+| `size` | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'` | `'md'` | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。 |
+| `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
+| `disabled` | `boolean` | `false` | 是否禁用。 |
+| `round` | `boolean` | `true` | 是否为胶囊形状；自定义圆角时须显式传 `false`。 |
+| `circle` | `boolean` | `false` | 是否为正方形纯图标按钮（内边距归零）。 |
+| `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
+| `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `customClass` | `any` | - | 追加到根节点的自定义类名（对应 Web 端 `class`）。 |
 | `block` | `boolean` | `false` | 是否占满整行（`flex w-full`），否则为 `inline-flex`。 |
 | `fluid` | `boolean` | `false` | 预留的 flex-1 布局开关，当前版本尚未接入样式，暂无视觉效果。 |
@@ -312,35 +330,68 @@ function onError(e: any) {
 | `publicId` | `string` | - | 公众号 ID（QQ 开放能力）。 |
 | `phoneNumberNoQuotaToast` | `boolean` | - | 获取手机号因额度不足失败时，是否弹出错误提示。 |
 | `createliveactivity` | `boolean` | - | 是否创建直播活动。 |
+:::
+
+::
 
 ### Emits
 
-| 事件名 | 回调参数 | 平台 | 描述 |
-| --- | --- | --- | --- |
-| `click` | `(e: Event)` | 通用 | 点击时触发；`disabled` 或 `loading` 时不触发。Web 端为原生 click 透传。 |
-| `tap` | `(e: UniEvent)` | UniApp | 与 `click` 同时派发，便于沿用 `@tap` 写法。 |
-| `getphonenumber` | `(e: UniEvent)` | UniApp | `openType="getPhoneNumber"`，`e.detail.code` 用于服务端换取手机号。 |
-| `getrealtimephonenumber` | `(e: UniEvent)` | UniApp | `openType="getRealtimePhoneNumber"`（微信）实时手机号验证回调。 |
-| `getuserinfo` | `(e: UniEvent)` | UniApp | `openType="getUserInfo"`，`e.detail` 含 `userInfo` 等。 |
-| `contact` | `(e: UniEvent)` | UniApp | `openType="contact"` 客服会话回调，`e.detail.path` / `query` 为消息参数。 |
-| `opensetting` | `(e: UniEvent)` | UniApp | `openType="openSetting"` 打开授权设置页后回调，`e.detail.authSetting` 为授权结果。 |
-| `launchapp` | `(e: UniEvent)` | UniApp | `openType="launchApp"` 打开 APP 成功时触发。 |
-| `chooseavatar` | `(e: UniEvent)` | UniApp | `openType="chooseAvatar"`（微信），`e.detail.avatarUrl` 为所选头像临时路径。 |
-| `chooseaddress` | `(e: UniEvent)` | UniApp | `openType="chooseAddress"`（QQ）选择收货地址后回调。 |
-| `chooseinvoicetitle` | `(e: UniEvent)` | UniApp | `openType="chooseInvoiceTitle"`（QQ）选择发票抬头后回调。 |
-| `addgroupapp` | `(e: UniEvent)` | UniApp | `openType="addGroupApp"`（QQ）添加群应用后回调。 |
-| `subscribe` | `(e: UniEvent)` | UniApp | `openType="subscribe"`（QQ）订阅号订阅结果回调。 |
-| `login` | `(e: UniEvent)` | UniApp | `openType="login"`（QQ）登录回调，`e.detail` 含登录 code。 |
-| `agreeprivacyauthorization` | `(e: UniEvent)` | UniApp | `openType="agreePrivacyAuthorization"`（微信）用户同意隐私协议后回调。 |
-| `error` | `(e: UniEvent)` | UniApp | 开放能力调用出错时触发，`e.detail` 含错误信息。 |
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+| 事件名 | 回调参数 | 描述 |
+| --- | --- | --- |
+| `click` | `(e: Event)` | 点击时触发；`disabled` 或 `loading` 时不触发。为原生 click 透传。 |
+
+Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的。
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+| 事件名 | 回调参数 | 描述 |
+| --- | --- | --- |
+| `click` | `(e: UniEvent)` | 点击时触发；`disabled` 或 `loading` 时不触发。 |
+| `tap` | `(e: UniEvent)` | 与 `click` 同时派发，便于沿用 `@tap` 写法。 |
+| `getphonenumber` | `(e: UniEvent)` | `openType="getPhoneNumber"`，`e.detail.code` 用于服务端换取手机号。 |
+| `getrealtimephonenumber` | `(e: UniEvent)` | `openType="getRealtimePhoneNumber"`（微信）实时手机号验证回调。 |
+| `getuserinfo` | `(e: UniEvent)` | `openType="getUserInfo"`，`e.detail` 含 `userInfo` 等。 |
+| `contact` | `(e: UniEvent)` | `openType="contact"` 客服会话回调，`e.detail.path` / `query` 为消息参数。 |
+| `opensetting` | `(e: UniEvent)` | `openType="openSetting"` 打开授权设置页后回调，`e.detail.authSetting` 为授权结果。 |
+| `launchapp` | `(e: UniEvent)` | `openType="launchApp"` 打开 APP 成功时触发。 |
+| `chooseavatar` | `(e: UniEvent)` | `openType="chooseAvatar"`（微信），`e.detail.avatarUrl` 为所选头像临时路径。 |
+| `chooseaddress` | `(e: UniEvent)` | `openType="chooseAddress"`（QQ）选择收货地址后回调。 |
+| `chooseinvoicetitle` | `(e: UniEvent)` | `openType="chooseInvoiceTitle"`（QQ）选择发票抬头后回调。 |
+| `addgroupapp` | `(e: UniEvent)` | `openType="addGroupApp"`（QQ）添加群应用后回调。 |
+| `subscribe` | `(e: UniEvent)` | `openType="subscribe"`（QQ）订阅号订阅结果回调。 |
+| `login` | `(e: UniEvent)` | `openType="login"`（QQ）登录回调，`e.detail` 含登录 code。 |
+| `agreeprivacyauthorization` | `(e: UniEvent)` | `openType="agreePrivacyAuthorization"`（微信）用户同意隐私协议后回调。 |
+| `error` | `(e: UniEvent)` | 开放能力调用出错时触发，`e.detail` 含错误信息。 |
+:::
+
+::
 
 ### Slots
 
+两端插槽名一致，仅作用域参数有差异。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
 | 插槽名 | 作用域参数 | 描述 |
 | --- | --- | --- |
 | `default` | `{ ui }` | 按钮主体内容，优先于 `label` prop 渲染。 |
-| `leading` | Web：`{ ui }`<br>UniApp：`{ ui, loading }` | 前置内容，常放图标；`loading` 时被加载动画替代。 |
-| `trailing` | Web：`{ ui }`（当前实现下 `ui` 为 `trailingIcon` 类名字符串）<br>UniApp：`{ ui }` | 后置内容，常放图标；`loading` 时不渲染。 |
+| `leading` | `{ ui }` | 前置内容，常放图标；`loading` 时被加载动画替代。 |
+| `trailing` | `{ ui }` | 后置内容，常放图标；`loading` 时不渲染。当前实现下 `ui` 为 `trailingIcon` 类名字符串。 |
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+| 插槽名 | 作用域参数 | 描述 |
+| --- | --- | --- |
+| `default` | `{ ui }` | 按钮主体内容，优先于 `label` prop 渲染。 |
+| `leading` | `{ ui, loading }` | 前置内容，常放图标；`loading` 时被加载动画替代。 |
+| `trailing` | `{ ui }` | 后置内容，常放图标；`loading` 时不渲染。 |
+:::
+
+::
 
 作用域里的 `ui` 是样式函数集合，可用于让插槽内容复用按钮的内部类名，例如 `:class="ui.label()"`。
 
@@ -348,16 +399,29 @@ function onError(e: any) {
 
 `ui` 按内部结构键覆盖对应节点的类名。两端 DOM 结构不同，可用键位也不同：
 
-| 键名 | 平台 | 说明 |
-| --- | --- | --- |
-| `base` | 通用 | 根元素。 |
-| `label` | 通用 | 文本节点。 |
-| `leadingIcon` | Web | 前置图标区域，同时是加载动画的容器。 |
-| `leadingAvatar` | Web | 前置头像区域。 |
-| `leadingAvatarSize` | Web | 前置头像尺寸。 |
-| `trailingIcon` | Web | 后置图标区域。 |
-| `inner` | UniApp | 覆盖在根节点上的透明原生 `button` 点击层。 |
-| `loading` | UniApp | 加载动画容器。 |
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+| 键名 | 说明 |
+| --- | --- |
+| `base` | 根元素。 |
+| `label` | 文本节点。 |
+| `leadingIcon` | 前置图标区域，同时是加载动画的容器。 |
+| `leadingAvatar` | 前置头像区域。 |
+| `leadingAvatarSize` | 前置头像尺寸。 |
+| `trailingIcon` | 后置图标区域。 |
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+| 键名 | 说明 |
+| --- | --- |
+| `base` | 根元素。 |
+| `inner` | 覆盖在根节点上的透明原生 `button` 点击层。 |
+| `label` | 文本节点。 |
+| `loading` | 加载动画容器。 |
+:::
+
+::
 
 ```vue
 <template>
@@ -373,15 +437,20 @@ function onError(e: any) {
 
 两端各自维护一套独立的高度令牌，互不影响。
 
-**Web 端**（`app/assets/theme/typography.css`，固定 px）：
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+定义在 `app/assets/theme/typography.css`，固定 px：
 
 | 变量名 | 对应 `size` | 值 |
 | --- | --- | --- |
 | `--height-button-sm` | `sm` | `24px` |
 | `--height-button-md` | `md` | `32px` |
 | `--height-button-lg` | `lg` | `40px` |
+:::
 
-**UniApp 端**（`packages/uniapp-project/src/styles/theme.css`，`rpx` 随屏宽缩放）：
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+定义在 `packages/uniapp-project/src/styles/theme.css`，`rpx` 随屏宽缩放：
 
 | 变量名 | 对应 `size` | 值 |
 | --- | --- | --- |
@@ -393,6 +462,9 @@ function onError(e: any) {
 | `--button-2xl-height` | `2xl` | `96rpx` |
 
 `default` 档位不单独设变量，直接复用 `--button-md-height`。UniApp 主题变量挂载在 `:root, body, page` 上（避免 `:root` 在微信小程序下报错），覆盖时请对齐同一选择器。
+:::
+
+::
 
 ## 两端差异对照
 
