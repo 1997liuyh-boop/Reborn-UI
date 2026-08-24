@@ -1,0 +1,103 @@
+/**
+ * ============================================================
+ * Reborn UI 通用滚动条样式（通用 CSS，非组件）
+ * ------------------------------------------------------------
+ * 特性：
+ *  1. 不占宽度：WebKit/Chromium 下通过 `overflow: overlay`（该值已被规范
+ *     废弃，但 Chromium 仍支持）实现浮层式滚动条，滚动条悬浮于内容之上，
+ *     不挤压内容区，有/无滚动条时内容宽度保持一致、无布局抖动；
+ *     不支持 `overlay` 的浏览器会忽略该声明并自动回退到 `overflow: auto`。
+ *  2. 三档尺寸：`.reborn-scrollbar` 默认 6px，另有 `--4` / `--6` / `--8`
+ *     修饰类，全部通过 CSS 变量 `--reborn-scrollbar-size` 驱动，易扩展。
+ *  3. 主题化：尺寸、圆角、轨道 / thumb / hover / 按住颜色均以 CSS 变量
+ *     暴露，内置 `.dark` 暗色适配，可覆盖变量做品牌定制。
+ *  4. Firefox 降级：Firefox 无法精确控制 4/6/8px，使用
+ *     `scrollbar-width: thin` + `scrollbar-color` 合理降级。
+ * ------------------------------------------------------------
+ * 用法：
+ *   <div class="reborn-scrollbar h-40">…</div>                    // 默认 6px
+ *   <div class="reborn-scrollbar reborn-scrollbar--4 h-40">…</div> // 4px
+ *   <div class="reborn-scrollbar reborn-scrollbar--8 h-40">…</div> // 8px
+ *
+ * 自定义颜色（在元素或任意祖先上覆盖变量）：
+ *   .my-box {
+ *     --reborn-scrollbar-thumb: rgb(59 130 246 / 0.5);
+ *     --reborn-scrollbar-thumb-hover: rgb(59 130 246 / 0.8);
+ *   }
+ *
+ * 说明：本类默认开启纵向+横向滚动（overlay）。如需仅纵向滚动，可在元素上
+ * 追加 Tailwind 工具类（如 overflow-x-hidden），工具类层级高于本类。
+ * 刻意不使用 `scrollbar-gutter`：它会为滚动条预留宽度，与“不占宽度”目标
+ * 相悖；若个别场景需要预留空间避免跳动，可自行叠加 `scrollbar-gutter: stable`。
+ * ============================================================
+ */
+
+/* overflow 放在 @layer components 中：Tailwind 工具类（utilities 层）可覆盖，
+   例如追加 overflow-x-hidden 实现仅纵向滚动 */
+@layer components {
+  .reborn-scrollbar {
+    /* 尺寸与颜色统一由 CSS 变量驱动，便于扩展与主题定制 */
+    --reborn-scrollbar-size: 6px;                 /* 滚动条粗细（默认 6px） */
+    --reborn-scrollbar-radius: 999px;             /* thumb 圆角（默认胶囊形） */
+    --reborn-scrollbar-track: transparent;        /* 轨道颜色（透明，悬浮感） */
+    --reborn-scrollbar-thumb: rgb(113 113 122 / 0.35);        /* thumb 颜色 */
+    --reborn-scrollbar-thumb-hover: rgb(113 113 122 / 0.55);  /* 悬停颜色 */
+    --reborn-scrollbar-thumb-active: rgb(113 113 122 / 0.7);  /* 按住颜色 */
+
+    /* 允许滚动；overlay 为渐进增强，不支持时自动回退为 auto */
+    overflow: auto;
+    overflow: overlay;
+
+    /* 旧版 Edge 降级：自动隐藏式滚动条 */
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+
+    /* Firefox 降级：thin 无法精确到 4/6/8px，配合 scrollbar-color 观感接近 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--reborn-scrollbar-thumb) var(--reborn-scrollbar-track);
+  }
+
+  /* 三档尺寸：仅切换尺寸变量，其余样式复用基类 */
+  .reborn-scrollbar--4 { --reborn-scrollbar-size: 4px; }
+  .reborn-scrollbar--6 { --reborn-scrollbar-size: 6px; }
+  .reborn-scrollbar--8 { --reborn-scrollbar-size: 8px; }
+
+  /* 暗色适配：跟随 .dark 祖先（与 @nuxt/ui 的 color-mode 一致），
+     浅色 thumb 在暗底上更清晰 */
+  .dark .reborn-scrollbar {
+    --reborn-scrollbar-thumb: rgb(113 113 122 / 0.55);
+    --reborn-scrollbar-thumb-hover: rgb(113 113 122 / 0.75);
+    --reborn-scrollbar-thumb-active: rgb(113 113 122 / 0.9);
+  }
+}
+
+/*
+ * WebKit / Chromium 自定义滚动条：轨道透明、thumb 悬浮。
+ * 注意：这些伪元素规则必须放在 @layer 之外 —— 站点已有的全局
+ * `::-webkit-scrollbar` 规则是无层样式，按 CSS 级联规则无层样式优先于
+ * 层内样式，若放入 @layer components 会被全局样式覆盖，导致尺寸/颜色失效。
+ */
+.reborn-scrollbar::-webkit-scrollbar {
+  width: var(--reborn-scrollbar-size);
+  height: var(--reborn-scrollbar-size);
+}
+
+.reborn-scrollbar::-webkit-scrollbar-track {
+  background: var(--reborn-scrollbar-track);
+}
+
+.reborn-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: var(--reborn-scrollbar-radius);
+  background-color: var(--reborn-scrollbar-thumb);
+}
+
+.reborn-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--reborn-scrollbar-thumb-hover);
+}
+
+.reborn-scrollbar::-webkit-scrollbar-thumb:active {
+  background-color: var(--reborn-scrollbar-thumb-active);
+}
+
+.reborn-scrollbar::-webkit-scrollbar-corner {
+  background: var(--reborn-scrollbar-track);
+}

@@ -4,6 +4,7 @@
 
 @import "../theme/typography.css";
 @import "../theme/base.css";
+@import "./scrollbar.css";
 
 @theme static {
   --font-sans: "Geist", sans-serif;
@@ -14,17 +15,6 @@
   /* 站点暗色基底：避免纯黑 #000 的生硬感，取 zinc-950 与 neutral: zinc 配置同族 */
   --ui-bg: #09090b;
   --ui-primary: white;
-}
-
-/* 文本选区：随黑白主色反色，选中文字有明确的「站点态度」 */
-::selection {
-  background-color: rgba(24, 24, 27, 0.9);
-  color: #fafafa;
-}
-
-.dark ::selection {
-  background-color: rgba(244, 244, 245, 0.9);
-  color: #18181b;
 }
 
 /* 站点滚动条：细窄圆角、zinc 基调，替代系统默认的粗滚动条 */
@@ -67,8 +57,7 @@ html {
  */
 @utility pattern-background-l {
   background:
-    radial-gradient(ellipse 80% 40% at 50% -8%, rgba(24, 24, 27, 0.03), transparent 65%),
-    #fafafa;
+    radial-gradient(ellipse 80% 40% at 50% -8%, rgba(24, 24, 27, 0.03), transparent 65%), #fafafa;
 }
 
 @utility pattern-background-d1 {
@@ -81,8 +70,7 @@ html {
 /* 站点暗色背景：与浅色同构的极淡顶部光晕，基底贴近 zinc-950 */
 @utility pattern-background-d {
   background:
-    radial-gradient(ellipse 80% 40% at 50% -8%, rgba(226, 232, 240, 0.06), transparent 65%),
-    #09090b;
+    radial-gradient(ellipse 80% 40% at 50% -8%, rgba(226, 232, 240, 0.06), transparent 65%), #09090b;
 }
 
 @theme inline {
