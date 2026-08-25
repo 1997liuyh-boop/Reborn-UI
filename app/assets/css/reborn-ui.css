@@ -4,7 +4,7 @@
 
 @import "../theme/typography.css";
 @import "../theme/base.css";
-@import "./scrollbar.css";
+@import "../../components/reborn/ui/scrollbar/scrollbar.css";
 
 @theme static {
   --font-sans: "Geist", sans-serif;

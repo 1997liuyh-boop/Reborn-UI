@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-24T10:44:38.148Z",
+  "generatedAt": "2026-08-25T02:13:07.365Z",
   "components": [
     {
       "id": "animate-grid",
@@ -1710,6 +1710,21 @@
         "css",
         "tailwind",
         "number-flow"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "scrollbar",
+      "title": "滚动条 Scrollbar",
+      "description": "通用滚动条 CSS 样式，悬浮于内容之上不挤压布局，提供 4/6/8 三档尺寸与颜色变量定制。",
+      "category": "layout",
+      "tags": [
+        "css",
+        "tailwind",
+        "scrollbar",
+        "layout"
       ],
       "platforms": [
         "web"

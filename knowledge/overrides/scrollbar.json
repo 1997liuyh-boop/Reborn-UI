@@ -1,0 +1,17 @@
+{
+  "description": "通用滚动条 CSS 样式，悬浮于内容之上不挤压布局，提供 4/6/8 三档尺寸与颜色变量定制。",
+  "whenToUse": [
+    "需要为容器或页面提供统一、细窄、不占宽度的滚动条时。",
+    "需要 4 / 6 / 8px 多档尺寸，或按品牌色定制 thumb 颜色的场景。",
+    "需要随 .dark 自动切换滚动条对比度的深浅色适配场景。"
+  ],
+  "whenNotToUse": [
+    "需要完全隐藏滚动条时，改用 scrollbar-hide 工具类。",
+    "需要为滚动条预留占位以避免布局跳动（而非悬浮）时，可自行叠加 scrollbar-gutter: stable。"
+  ],
+  "pitfalls": [
+    "纯 CSS 样式而非 Vue 组件，无 props / events / slots，通过 class 与 CSS 变量使用。",
+    "Firefox 无法精确控制 4 / 6 / 8px，降级为 scrollbar-width: thin。",
+    "overflow: overlay 已被规范废弃，Chromium 仍支持，不支持的浏览器自动回退为 overflow: auto。"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "../schema/component.schema.json",
+  "id": "scrollbar",
+  "title": "滚动条 Scrollbar",
+  "description": "通用滚动条 CSS 样式，悬浮于内容之上不挤压布局，提供 4/6/8 三档尺寸与颜色变量定制。",
+  "category": "layout",
+  "tags": [
+    "css",
+    "tailwind",
+    "scrollbar",
+    "layout"
+  ],
+  "platforms": [
+    "web"
+  ],
+  "props": [],
+  "events": [],
+  "slots": [],
+  "exposes": [],
+  "examples": [
+    {
+      "title": "Web 演示",
+      "code": "<script lang=\"ts\" setup>\nimport { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'\nimport Playground from '~/components/common/play-ground/Playground.vue'\n\n// 三档尺寸选项\nconst sizeOptions = [\n  { label: '4px（极细）', value: '4' },\n  { label: '6px（默认）', value: '6' },\n  { label: '8px（加粗）', value: '8' },\n]\n\n// 演示用滚动内容\nconst lines = Array.from({ length: 24 }, (_, i) => `第 ${i + 1} 条滚动内容，用于撑出滚动空间并验证滚动条表现。`)\n\n// 颜色变量自定义示例（品牌色）\nconst customColors = [\n  { name: '靛蓝', thumb: '#6366f1', hover: '#818cf8' },\n  { name: '翠绿', thumb: '#10b981', hover: '#34d399' },\n  { name: '玫红', thumb: '#f43f5e', hover: '#fb7185' },\n]\n\n// 统一状态\nconst state = ref({\n  size: '6',\n  thumbColor: '#71717a',\n  hoverColor: '#a1a1aa',\n  dark: false,\n})\n\n// 默认状态，用于重置\nconst defaultState = {\n  size: '6',\n  thumbColor: '#71717a',\n  hoverColor: '#a1a1aa',\n  dark: false,\n}\n\nfunction resetState() {\n  state.value = { ...defaultState }\n}\n\n// 尺寸修饰类\nconst sizeClass = computed(() => `reborn-scrollbar--${state.value.size}`)\n\n// 颜色变量覆盖\nconst thumbStyle = computed(() => ({\n  '--reborn-scrollbar-thumb': state.value.thumbColor,\n  '--reborn-scrollbar-thumb-hover': state.value.hoverColor,\n}))\n\n// 控制面板配置\nconst controls = [\n  {\n    title: '外观配置',\n    children: [\n      { label: '滚动条尺寸', key: 'size', component: 'select' as const, defaultValue: '6', props: { options: sizeOptions } },\n      { label: 'thumb 颜色', key: 'thumbColor', component: 'color-picker' as const, defaultValue: '#71717a' },\n      { label: '悬停颜色', key: 'hoverColor', component: 'color-picker' as const, defaultValue: '#a1a1aa' },\n      { label: '暗色模式', key: 'dark', component: 'checkbox' as const, defaultValue: false },\n    ],\n  },\n]\n\n// 静态示例代码（纯 CSS 工具类，不生成组件代码）\nconst code = `<div class=\"reborn-scrollbar reborn-scrollbar--6 h-64 overflow-auto rounded-2xl\">\n  <!-- 滚动内容 -->\n</div>`\n\n// 不占宽度对比测量\nconst scrollBox = ref<HTMLElement | null>(null)\nconst plainBox = ref<HTMLElement | null>(null)\nconst widthResult = ref({ scroll: 0, plain: 0, equal: false })\n\nfunction measureWidths() {\n  if (!scrollBox.value || !plainBox.value) return\n  const scrollW = scrollBox.value.clientWidth\n  const plainW = plainBox.value.clientWidth\n  widthResult.value = { scroll: scrollW, plain: plainW, equal: scrollW === plainW }\n}\n\nonMounted(async () => {\n  await nextTick()\n  measureWidths()\n  window.addEventListener('resize', measureWidths)\n})\n\nonBeforeUnmount(() => {\n  window.removeEventListener('resize', measureWidths)\n})\n</script>\n\n<template>\n  <div class=\"mx-auto flex w-full max-w-6xl flex-col gap-12 pt-4 pb-24\">\n\n    <!-- 标题头 -->\n    <div class=\"flex flex-col gap-3\">\n      <h2 class=\"text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white\">滚动条 Scrollbar</h2>\n      <p class=\"text-xl text-gray-500 dark:text-gray-400 max-w-3xl\">\n        通用滚动条样式：滚动条悬浮于内容之上、不挤压布局，提供 4 / 6 / 8 三档尺寸，颜色与暗色均可通过 CSS 变量按需定制。\n      </p>\n    </div>\n\n    <!-- 交互演练场 -->\n    <Playground v-model=\"state\" :controls=\"controls\" component-name=\"Scrollbar\" :code=\"code\"\n      title=\"交互演练场\" description=\"切换尺寸与颜色，右侧滚动条实时响应；勾选暗色模式查看深色下 thumb 的对比。\">\n      <template #tag>\n        <button\n          class=\"flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary transition-all hover:bg-primary/20 active:scale-95 cursor-pointer\"\n          @click=\"resetState\">\n          <Icon name=\"lucide:rotate-ccw\" size=\"12\" />\n          重置配置\n        </button>\n      </template>\n      <div :class=\"state.dark ? 'dark bg-zinc-900' : 'bg-zinc-100'\"\n        class=\"flex items-center justify-center rounded-3xl p-8 transition-colors\">\n        <div class=\"reborn-scrollbar h-64 w-72 rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950\"\n          :class=\"sizeClass\" :style=\"thumbStyle\">\n          <div class=\"space-y-2 px-4 py-4\">\n            <p v-for=\"line in lines\" :key=\"line\" class=\"text-sm text-zinc-600 dark:text-zinc-300\">{{ line }}</p>\n          </div>\n        </div>\n      </div>\n    </Playground>\n\n    <!-- 三档尺寸 -->\n    <section class=\"flex flex-col gap-5\">\n      <div class=\"flex items-center gap-2\">\n        <Icon name=\"lucide:ruler\" class=\"size-5 text-primary\" />\n        <h3 class=\"text-2xl font-bold tracking-tight text-gray-900 dark:text-white\">三档尺寸</h3>\n      </div>\n      <p class=\"text-sm text-gray-500 dark:text-gray-400 max-w-2xl\">\n        通过 size 修饰类切换 4 / 6 / 8 三档，粗细统一由 --reborn-scrollbar-size 变量驱动，方便扩展任意尺寸。\n      </p>\n      <div class=\"grid grid-cols-1 gap-6 sm:grid-cols-3\">\n        <div v-for=\"size in ['4', '6', '8']\" :key=\"size\" class=\"flex flex-col gap-2\">\n          <div class=\"flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-200\">\n            <span>{{ size }}px</span>\n            <span class=\"font-mono text-xs text-gray-400\">.reborn-scrollbar--{{ size }}</span>\n          </div>\n          <div class=\"reborn-scrollbar h-48 rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950\"\n            :class=\"'reborn-scrollbar--' + size\">\n            <div class=\"space-y-1.5 px-3 py-3\">\n              <p v-for=\"line in lines\" :key=\"line\" class=\"text-xs text-zinc-500 dark:text-zinc-400\">{{ line }}</p>\n            </div>\n          </div>\n        </div>\n      </div>\n    </section>\n\n    <!-- 颜色变量自定义 -->\n    <section class=\"flex flex-col gap-5\">\n      <div class=\"flex items-center gap-2\">\n        <Icon name=\"lucide:palette\" class=\"size-5 text-primary\" />\n        <h3 class=\"text-2xl font-bold tracking-tight text-gray-900 dark:text-white\">颜色变量自定义</h3>\n      </div>\n      <p class=\"text-sm text-gray-500 dark:text-gray-400 max-w-2xl\">\n        覆盖 --reborn-scrollbar-thumb 与 --reborn-scrollbar-thumb-hover 两个变量，即可把滚动条换成任意品牌色。\n      </p>\n      <div class=\"grid grid-cols-1 gap-6 sm:grid-cols-3\">\n        <div v-for=\"c in customColors\" :key=\"c.name\" class=\"flex flex-col gap-2\">\n          <span class=\"text-sm font-medium text-gray-700 dark:text-gray-200\">{{ c.name }}</span>\n          <div class=\"reborn-scrollbar h-48 rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950\"\n            :style=\"{ '--reborn-scrollbar-thumb': c.thumb, '--reborn-scrollbar-thumb-hover': c.hover }\">\n            <div class=\"space-y-1.5 px-3 py-3\">\n              <p v-for=\"line in lines\" :key=\"line\" class=\"text-xs text-zinc-500 dark:text-zinc-400\">{{ line }}</p>\n            </div>\n          </div>\n        </div>\n      </div>\n    </section>\n\n    <!-- 暗色适配 -->\n    <section class=\"flex flex-col gap-5\">\n      <div class=\"flex items-center gap-2\">\n        <Icon name=\"lucide:moon\" class=\"size-5 text-primary\" />\n        <h3 class=\"text-2xl font-bold tracking-tight text-gray-900 dark:text-white\">暗色适配</h3>\n      </div>\n      <p class=\"text-sm text-gray-500 dark:text-gray-400 max-w-2xl\">\n        在 .dark 祖先下会自动提升 thumb 对比度，浅色 / 暗色两套可并排对比。\n      </p>\n      <div class=\"grid grid-cols-1 gap-6 sm:grid-cols-2\">\n        <div class=\"reborn-scrollbar h-56 rounded-2xl border border-zinc-200/80 bg-white shadow-sm\">\n          <div class=\"space-y-1.5 px-4 py-4\">\n            <p v-for=\"line in lines\" :key=\"line\" class=\"text-xs text-zinc-500\">{{ line }}</p>\n          </div>\n        </div>\n        <div class=\"dark\">\n          <div class=\"reborn-scrollbar h-56 rounded-2xl border border-white/10 bg-zinc-950 shadow-sm\">\n            <div class=\"space-y-1.5 px-4 py-4\">\n              <p v-for=\"line in lines\" :key=\"line\" class=\"text-xs text-zinc-400\">{{ line }}</p>\n            </div>\n          </div>\n        </div>\n      </div>\n    </section>\n\n    <!-- 不占宽度对比 -->\n    <section class=\"flex flex-col gap-5\">\n      <div class=\"flex items-center gap-2\">\n        <Icon name=\"lucide:panel-right\" class=\"size-5 text-primary\" />\n        <h3 class=\"text-2xl font-bold tracking-tight text-gray-900 dark:text-white\">不占宽度</h3>\n      </div>\n      <p class=\"text-sm text-gray-500 dark:text-gray-400 max-w-2xl\">\n        滚动条悬浮于内容之上，有 / 无滚动条时内容可视宽度一致，不会引起布局抖动。\n      </p>\n      <div class=\"grid grid-cols-1 gap-6 md:grid-cols-2\">\n        <div class=\"flex flex-col gap-2\">\n          <span class=\"text-sm font-medium text-gray-700 dark:text-gray-200\">有滚动条（reborn-scrollbar）</span>\n          <div ref=\"scrollBox\" class=\"reborn-scrollbar h-48 rounded-2xl border border-zinc-200/80 bg-white dark:border-white/10 dark:bg-zinc-950\">\n            <div class=\"space-y-1.5 px-3 py-3\">\n              <p v-for=\"line in lines\" :key=\"line\" class=\"text-xs text-zinc-500 dark:text-zinc-400\">{{ line }}</p>\n            </div>\n          </div>\n          <p class=\"text-xs text-gray-500\">内容可视宽度：{{ widthResult.scroll }}px</p>\n        </div>\n        <div class=\"flex flex-col gap-2\">\n          <span class=\"text-sm font-medium text-gray-700 dark:text-gray-200\">无滚动条（对照）</span>\n          <div ref=\"plainBox\" class=\"h-48 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white dark:border-white/10 dark:bg-zinc-950\">\n            <div class=\"space-y-1.5 px-3 py-3\">\n              <p class=\"text-xs text-zinc-500 dark:text-zinc-400\">内容不足一屏，未出现滚动条。</p>\n            </div>\n          </div>\n          <p class=\"text-xs text-gray-500\">内容可视宽度：{{ widthResult.plain }}px</p>\n        </div>\n      </div>\n      <p class=\"text-sm font-medium\" :class=\"widthResult.equal ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'\">\n        {{ widthResult.equal ? '✓ 两侧可视宽度一致，滚动条未挤压内容。' : '当前浏览器未走 overlay，滚动条占用少量宽度（Firefox 降级为 thin）。' }}\n      </p>\n    </section>\n\n  </div>\n</template>\n",
+      "source": "demo",
+      "platform": "web"
+    }
+  ],
+  "related": [],
+  "whenToUse": [
+    "需要为容器或页面提供统一、细窄、不占宽度的滚动条时。",
+    "需要 4 / 6 / 8px 多档尺寸，或按品牌色定制 thumb 颜色的场景。",
+    "需要随 .dark 自动切换滚动条对比度的深浅色适配场景。"
+  ],
+  "whenNotToUse": [
+    "需要完全隐藏滚动条时，改用 scrollbar-hide 工具类。",
+    "需要为滚动条预留占位以避免布局跳动（而非悬浮）时，可自行叠加 scrollbar-gutter: stable。"
+  ],
+  "pitfalls": [
+    "纯 CSS 样式而非 Vue 组件，无 props / events / slots，通过 class 与 CSS 变量使用。",
+    "Firefox 无法精确控制 4 / 6 / 8px，降级为 scrollbar-width: thin。",
+    "overflow: overlay 已被规范废弃，Chromium 仍支持，不支持的浏览器自动回退为 overflow: auto。"
+  ],
+  "dependencies": [],
+  "install": {
+    "cli": "npx reborn-ui@latest add scrollbar"
+  },
+  "sourceRefs": {
+    "web": [
+      "app/components/reborn/ui/scrollbar/index.ts",
+      "app/components/reborn/ui/scrollbar/scrollbar.css"
+    ]
+  },
+  "docPath": "content/2.components/layout/scrollbar.md",
+  "_meta": {
+    "generatedAt": "2026-08-25T02:13:07.365Z",
+    "contentHash": "36041f88184a5de1bb70e778c4efc240da295ea2",
+    "hasOverride": true,
+    "extractors": {
+      "web": "ok",
+      "uniapp": "absent",
+      "docs": "found"
+    }
+  }
+}
