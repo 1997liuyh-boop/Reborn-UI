@@ -1,9 +1,11 @@
 # 知识库与 registry 一致性校验
-# 功能：PR 与分支推送时校验知识库无 drift，并确认 registry 能从源码干净重建，
-#       防止「改了组件源码/文档却忘跑 kb:build」的脏提交进入主干
+# 功能：PR 与分支推送时确认 registry 与知识库都能从源码干净重建，
+#       并抓出「新增/删除组件或改了元数据却没同步 knowledge/index.json」的脏提交
 #
-# 注意步骤顺序不可颠倒：registry 已不入库（见 .gitignore），
-# 而知识库的依赖信息来自 registry，因此必须先 registry:build 再 kb:check。
+# 注意步骤顺序不可颠倒（两者互为上下游，见 .gitignore 的说明）：
+#   registry:build --strict-kb 读入库的 knowledge/index.json 拿 title/description
+#   kb:build 读刚生成的 registry.json 拿 npm dependencies
+# 因此必须 registry:build → kb:build，即根脚本 pnpm kb:bootstrap 的顺序。
 name: kb-and-registry-check
 
 on:
@@ -62,5 +64,21 @@ jobs:
             console.log('registry 自检通过：' + items.length + ' 个组件，元数据齐全');
           "
 
-      - name: 知识库校验（drift / schema / 集合一致性 / 手改检测）
+      - name: 知识库重建（生成物不入库，此处同为发布链路的预演）
+        run: pnpm kb:build
+
+      # 移出 components/ 后唯一还有增量价值的守卫。
+      # 原理：scripts/kb/build.ts 的 writeJsonStable() 在「除 generatedAt 外内容未变」时
+      # 根本不写文件，所以内容真没变时 diff 必然干净；一旦有人新增/删除组件、或改了
+      # title/description/category/tags 却没提交 index.json，这里就会红。
+      # （kb:check 内部那条 index 一致性检查在 CI 中已恒真——index.json 刚被上一步就地更新过）
+      - name: knowledge/index.json 必须已同步提交
+        run: |
+          if ! git diff --exit-code knowledge/index.json; then
+            echo "❌ knowledge/index.json 与源码不同步"
+            echo "   请在本地运行 pnpm kb:bootstrap，并提交更新后的 knowledge/index.json"
+            exit 1
+          fi
+
+      - name: 知识库校验（schema / 集合一致性 / overrides 悬空引用）
         run: pnpm kb:check

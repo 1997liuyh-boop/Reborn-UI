@@ -1,11 +1,19 @@
 /**
- * 知识库一致性校验（CI 用）
+ * 知识库一致性校验
  * 检查项：
  *   1. 磁盘上的组件 JSON 与内存中重新抽取的结果一致（contentHash 比对，防 drift）
  *   2. 每份 JSON 通过 zod schema 校验
  *   3. 组件集合与源码目录、index.json 三方一致
  *   4. overrides 不引用不存在的组件
  * 任何一项失败即退出码 1
+ *
+ * 关于各检查项在两种场景下的实际效力（knowledge/components 已不入库，见 .gitignore）：
+ *   - 检查项 1（drift）与「磁盘自身 contentHash 完整性」在 CI 中恒真，因为流水线里的
+ *     components/ 是同一次运行刚生成的。保留它们是为本地场景：开发者手上留着上次生成的
+ *     components/，直接跑 pnpm kb:check 仍能抓到「改了源码/文档却没重跑 kb:build」。
+ *   - 检查项 2（schema）、3（集合一致性）、4（overrides 悬空引用）两种场景下均有效。
+ *   - 「新增/删除组件却没同步 index.json」由 CI 的 git diff 守卫负责，
+ *     见 .github/workflows/kb-check.yml。
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +23,10 @@ import { KNOWLEDGE_DIR, listComponentIds } from "./sources.js";
 
 function fail(messages: string[]): never {
   for (const m of messages) console.error(`✗ ${m}`);
-  console.error(`\n共 ${messages.length} 个问题。请运行 pnpm kb:build 重新生成后提交。`);
+  console.error(
+    `\n共 ${messages.length} 个问题。请运行 pnpm kb:bootstrap 重新生成；` +
+      `\ncomponents/ 等生成物不入库，只有 knowledge/overrides/ 与 knowledge/index.json 需要提交。`,
+  );
   process.exit(1);
 }
 
@@ -25,7 +36,7 @@ function main() {
   const sourceIds = listComponentIds();
 
   if (!fs.existsSync(componentsDir)) {
-    fail(["knowledge/components 目录不存在，请先运行 pnpm kb:build"]);
+    fail(["knowledge/components 目录不存在（生成物不入库），请先运行 pnpm kb:bootstrap"]);
   }
 
   const diskIds = fs

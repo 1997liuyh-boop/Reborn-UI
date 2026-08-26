@@ -39,6 +39,12 @@ jobs:
       - name: 安装依赖
         run: pnpm install --no-frozen-lockfile
 
+      # registry 与知识库生成物均不入库（见 .gitignore），必须在 Nuxt 构建前现生成：
+      # modules/playground-completions.ts 要读 knowledge/components 产出 Playground 补全数据，
+      # 该模块在目录缺失时只告警不报错，漏掉这一步会让线上补全静默消失且构建全绿。
+      - name: 构建 registry 与知识库
+        run: pnpm kb:bootstrap
+
       - name: 构建应用（uniapp H5 + Nuxt）
         # 构建 3000+ 模块内存开销大，默认 4GB 堆上限会 OOM；运行器 7GB 内存，6144MB 为安全值
         env:

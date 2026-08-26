@@ -69,14 +69,18 @@ This project is indexed by GitNexus as **Reborn-UI** (11645 symbols, 22907 relat
 ## 修改组件后的必做动作
 
 ```bash
-pnpm kb:build          # 重新生成知识库（改了组件源码/文档 API 表格/overrides 后必跑）
-pnpm registry:build    # 重新生成两处 registry（含知识库元数据注入）
-pnpm kb:check          # 提交前自检：drift / schema / 集合一致性
+pnpm kb:bootstrap      # 新克隆首次执行：registry:build → kb:build（顺序不可颠倒）
+pnpm kb:build          # 日常：改了组件源码/文档 API 表格/overrides 后重新生成知识库
+pnpm kb:check          # 提交前自检：schema / 集合一致性 / overrides 悬空引用
 ```
 
-生成物（`knowledge/components/`、`knowledge/index.json`、`packages/*/registry/`）**必须随代码一并提交**，且禁止手改；人工内容只写 `knowledge/overrides/<id>.json`。
+**生成物不入库**（`knowledge/components/`、`knowledge/report.json`、`knowledge/schema/`、`packages/*/registry/`），部署时由流水线现生成，本地按需构建即可，且一律禁止手改。
+
+需要提交的只有人工源：`knowledge/overrides/<id>.json`，以及内容确有变化时的 `knowledge/index.json`（新增/删除组件、改了 title/description/category/tags 时会变；忘提交会被 CI 拦下）。
 
 ## 如何为用户选组件 / 写页面
+
+> 前提：知识库生成物不入库，新克隆需先跑 `pnpm kb:bootstrap`；只查清单则读入库的 `index.json` 即可。
 
 1. 查 `knowledge/index.json` 按 category/tags 筛选候选组件。
 2. 读 `knowledge/components/<id>.json` 的 `description`、`whenToUse`、`whenNotToUse`、`pitfalls`，确认选型与端支持（`platforms`）。

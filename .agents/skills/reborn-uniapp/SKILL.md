@@ -33,8 +33,8 @@ Reborn UI 是一个遵循现代设计规范的高性能组件库。在 UniApp �
 
 了解既有组件的 API（Props/Events/Slots/示例/使用边界）时，**优先读结构化知识库**而非翻源码或文档正文：
 
-- 轻量索引：`knowledge/index.json`（id/title/description/category/platforms）
-- 完整条目：`knowledge/components/<id>.json`
+- 轻量索引：`knowledge/index.json`（id/title/description/category/platforms，入库文件）
+- 完整条目：`knowledge/components/<id>.json`（生成物不入库，新克隆需先跑 `pnpm kb:bootstrap`）
 - 外部 Agent 场景可用 `reborn-ui-mcp`（见 `packages/mcp/README.md`）
 
-改动组件源码、文档 API 表格或 `knowledge/overrides/` 后，必须运行 `pnpm kb:build && pnpm registry:build && pnpm kb:check` 并提交生成物，否则 CI 失败。使用侧工作流见 [reborn-ui-usage](../reborn-ui-usage/SKILL.md)。
+改动组件源码、文档 API 表格或 `knowledge/overrides/` 后，必须运行 `pnpm kb:build && pnpm kb:check`。生成物不入库（部署时现生成），需要提交的只有 `knowledge/overrides/` 与内容确有变化时的 `knowledge/index.json`，漏提交 index.json 会导致 CI 失败。使用侧工作流见 [reborn-ui-usage](../reborn-ui-usage/SKILL.md)。

@@ -4,23 +4,26 @@
 
 ## 目录结构
 
-| 路径 | 说明 |
-|---|---|
-| `schema/component.schema.json` | 由 `scripts/kb/schema.ts`（zod）生成的 JSON Schema，勿手改 |
-| `components/<id>.json` | 每组件一份知识条目，`pnpm kb:build` 全量重建 |
-| `overrides/<id>.json` | 人工覆盖层：描述、whenToUse、pitfalls、精选示例等 |
-| `index.json` | 轻量索引（id/title/description/category/tags/platforms） |
-| `report.json` | 抽取覆盖率与文档-源码偏差报告 |
+生成物已不入库（见仓库根 `.gitignore`），新克隆或需要本地测试时运行 `pnpm kb:bootstrap` 现生成。
+
+| 路径 | 入库 | 说明 |
+|---|---|---|
+| `overrides/<id>.json` | ✅ | 人工覆盖层：描述、whenToUse、pitfalls、精选示例等，**人工维护的唯一来源** |
+| `index.json` | ✅ | 轻量索引（id/title/description/category/tags/platforms）。机器生成但保留入库：它是 `registry:build --strict-kb` 的元数据源，也是 CI 抓「新增/删除组件却没同步知识库」的守卫 |
+| `components/<id>.json` | ❌ | 每组件一份知识条目，`pnpm kb:build` 全量重建 |
+| `report.json` | ❌ | 抽取覆盖率与文档-源码偏差报告 |
+| `schema/component.schema.json` | ❌ | 由 `scripts/kb/schema.ts`（zod）生成的 JSON Schema，勿手改 |
 
 ## 常用命令
 
 ```bash
-pnpm kb:build              # 全量重建
+pnpm kb:bootstrap          # 新克隆首次执行：registry:build → kb:build（两者互为上下游，顺序不可颠倒）
+pnpm kb:build              # 全量重建（registry 已存在时用这个即可）
 pnpm kb:build --only reborn-button,reborn-input   # 只重建指定组件
-pnpm kb:check              # CI 校验：drift / schema / 集合一致性 / 手改检测
+pnpm kb:check              # 校验：schema / 集合一致性 / overrides 悬空引用（本地还能抓 drift）
 ```
 
-改动组件源码、文档 API 表格或 overrides 后，必须重新运行 `pnpm kb:build` 并提交生成物，否则 `kb:check` 会失败。
+改动组件源码、文档 API 表格或 overrides 后必须重新运行 `pnpm kb:build`。**生成物不需要提交**，需要提交的只有 `overrides/` 与（内容确有变化时的）`index.json`；忘了提交 index.json 会被 CI 的 `git diff` 守卫拦下。
 
 ## 描述规范（Agent 友好）
 

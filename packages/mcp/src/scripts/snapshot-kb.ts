@@ -10,8 +10,10 @@ const repoRoot = path.resolve(pkgRoot, "..", "..");
 const source = path.join(repoRoot, "knowledge");
 const target = path.join(pkgRoot, "knowledge");
 
-if (!fs.existsSync(path.join(source, "index.json"))) {
-  console.error(`知识库不存在或未生成：${source}，请先在仓库根运行 pnpm kb:build`);
+// 必须检查 components/ 而非 index.json：index.json 是入库文件（恒存在），
+// 而 components/ 是不入库的生成物，缺失时下方的 readdirSync 会直接 ENOENT 崩溃
+if (!fs.existsSync(path.join(source, "components"))) {
+  console.error(`知识库尚未生成：${source}/components，请先在仓库根运行 pnpm kb:bootstrap`);
   process.exit(1);
 }
 

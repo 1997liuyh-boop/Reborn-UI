@@ -48,10 +48,12 @@ Reborn-UI 是 Web（Nuxt）+ uniapp 双端组件库，采用 shadcn 式源码分
 
 ## 开发本仓库组件时
 
-改动组件源码 / 文档 API 表格 / `knowledge/overrides/` 后，必须依次运行：
+改动组件源码 / 文档 API 表格 / `knowledge/overrides/` 后，必须运行：
 
 ```bash
-pnpm kb:build && pnpm registry:build && pnpm kb:check
+pnpm kb:build && pnpm kb:check
 ```
 
-并将生成物一并提交（CI 会校验 drift）。规范细节见 `knowledge/README.md` 与仓库根 `AGENTS.md`。
+新克隆的仓库先跑一次 `pnpm kb:bootstrap`（= `registry:build` → `kb:build`，顺序不可颠倒）。
+
+**生成物不入库**，部署时由流水线现生成；需要提交的只有 `knowledge/overrides/` 与内容确有变化时的 `knowledge/index.json`。规范细节见 `knowledge/README.md` 与仓库根 `AGENTS.md`。

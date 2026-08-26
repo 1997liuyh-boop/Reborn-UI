@@ -53,8 +53,12 @@ export default defineNuxtModule({
     try {
       files = (await readdir(kbDir)).filter((f) => f.endsWith(".json"));
     } catch {
-      // 知识库缺失时跳过(不阻塞构建),编辑器自动退化为无组件提示
-      console.warn("[playground-completions] 未找到 knowledge/components,跳过补全数据生成");
+      // 知识库生成物不入库,缺失时跳过(不阻塞构建),编辑器自动退化为无组件提示；
+      // 部署链路由 .github/workflows/{deploy,build}.yml 的 kb:bootstrap 步骤保证不缺
+      console.warn(
+        "[playground-completions] 未找到 knowledge/components,跳过补全数据生成;" +
+          "如需 Playground 组件补全,请先运行 pnpm kb:bootstrap",
+      );
       return;
     }
 

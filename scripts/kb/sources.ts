@@ -167,7 +167,7 @@ export function loadRegistryDependencies(): Map<string, string[]> {
   const map = new Map<string, string[]>();
   if (!fs.existsSync(REGISTRY_JSON)) {
     throw new Error(
-      `registry 尚未生成：${REGISTRY_JSON}\n知识库的依赖信息来自 registry，请先运行 pnpm registry:build`,
+      `registry 尚未生成：${REGISTRY_JSON}\n知识库的依赖信息来自 registry，请先运行 pnpm kb:bootstrap`,
     );
   }
   const registry = JSON.parse(fs.readFileSync(REGISTRY_JSON, "utf8"));

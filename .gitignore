@@ -96,9 +96,19 @@ public/playground-completions.json
 # 两处内容逐字节相同，入库等于把同一份 4MB JSON 存两遍，
 # 且任何组件改动都会带出上百个 JSON diff，纯噪音。
 # 发布链路：packages/cli 与 packages/module 的 prepack 都会重新生成（--strict-kb 保证元数据不缺）。
-# 注意：knowledge/ 仍然入库（含人工维护的 overrides），只有 registry 移出。
 packages/cli/registry/
 packages/module/registry/
+
+# 知识库生成物：由 pnpm kb:build 从组件源码 + 文档 + overrides 三源重建。
+# components/ 145 份共 984K，任何组件改动都会带出上百个 JSON diff，纯噪音。
+# 仍然入库的只有人工源：overrides/（人工维护的覆盖层）、index.json、README.md。
+# index.json 留在库里有两个作用：① 作为 registry:build --strict-kb 的元数据源，
+# 让新克隆无需降级跑即可两趟破环；② 它是移出后唯一还能抓「新增/删除组件却没同步
+# 知识库」的守卫（见 .github/workflows/kb-check.yml 的 git diff 检查）。
+# 新克隆或需要本地测试时运行：pnpm kb:bootstrap
+knowledge/components/
+knowledge/report.json
+knowledge/schema/
 
 # MCP 包内知识库快照：prepack 时由 kb:snapshot 从仓库根 knowledge/ 生成并内联示例源码
 packages/mcp/knowledge/

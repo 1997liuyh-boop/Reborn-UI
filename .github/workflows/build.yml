@@ -27,6 +27,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # registry 与知识库生成物不入库，Nuxt 构建依赖 knowledge/components 产出 Playground
+      # 补全数据，须先现生成（与 deploy.yml 保持一致）
+      - name: Build knowledge base and registry
+        run: pnpm kb:bootstrap
+
       - name: Build
         # 构建模块量大，默认 4GB 堆上限会 OOM，与 deploy.yml 保持一致
         env:

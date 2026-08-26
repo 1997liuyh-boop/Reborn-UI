@@ -14,6 +14,7 @@
     "lint": "oxlint . && eslint .",
     "lint:fix": "oxlint . --fix && eslint . --fix",
     "registry:build": "pnpm --filter ./packages/cli run registry:build",
+    "kb:bootstrap": "pnpm registry:build && pnpm kb:build",
     "kb:build": "tsx scripts/kb/build.ts",
     "kb:check": "tsx scripts/kb/check.ts"
   },
