@@ -95,7 +95,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div\n    class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\"\n  >\n    web端暂时不需要\n  </div>\n</template>\n",
+      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
@@ -138,8 +138,8 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-picker-view.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "7b3406bb3b13a10b3a67f351b89ec93a0e47539d",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "7ec3afcac6e55055e94f7ced95d2fa0774c878c3",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

@@ -1,23 +1,232 @@
 <script setup lang="ts">
-import HeroBanner from './components/HeroBanner.vue';
-const slidesPerView = ref<1 | 2 | 3 | "auto">(2);
-const spaceBetween = ref(20);
-const arrow = ref<"hover" | "always" | "never">("hover");
-const indicatorPosition = ref<"inside" | "outside" | "none">("inside");
-const autoplay = ref(true);
-const motionBlur = ref(true);
+import HeroBanner from "./components/HeroBanner.vue";
+
+// ─── 交互演练场 ─────────────────────────────────────────────────
+
+const state = ref<Record<string, any>>({
+  slidesPerview: 2,
+  spaceBetween: 20,
+  direction: "horizontal",
+  carouselType: "default",
+  arrow: "hover",
+  indicatorPosition: "inside",
+  paginationType: "line",
+  indicatorOffset: 16,
+  color: "primary",
+  autoplay: true,
+  motionBlur: true,
+  loop: true,
+  centeredSlides: false,
+  grabCursor: true,
+  thumbsPosition: "bottom",
+  thumbsArrow: "always",
+  thumbsLoop: true,
+});
+
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "布局",
+    children: [
+      {
+        label: "每屏显示",
+        key: "slidesPerview",
+        component: "select" as const,
+        defaultValue: 2,
+        props: {
+          options: [
+            { label: "1 项 / 屏", value: 1 },
+            { label: "2 项 / 屏", value: 2 },
+            { label: "3 项 / 屏", value: 3 },
+            { label: "自动宽度", value: "auto" },
+          ],
+        },
+      },
+      {
+        label: "项目间距",
+        key: "spaceBetween",
+        component: "slider" as const,
+        defaultValue: 20,
+        props: { min: 0, max: 100, step: 4 },
+      },
+      {
+        label: "容器方向",
+        key: "direction",
+        component: "select" as const,
+        defaultValue: "horizontal",
+        props: {
+          options: [
+            { label: "水平滚动", value: "horizontal" },
+            { label: "垂直滚动", value: "vertical" },
+          ],
+        },
+      },
+      {
+        label: "展示模式",
+        key: "carouselType",
+        component: "select" as const,
+        defaultValue: "default",
+        props: {
+          options: [
+            { label: "默认模式", value: "default" },
+            { label: "卡片聚焦", value: "card" },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    title: "导航与指示器",
+    children: [
+      {
+        label: "箭头显示",
+        key: "arrow",
+        component: "select" as const,
+        defaultValue: "hover",
+        props: {
+          options: [
+            { label: "悬停时显示", value: "hover" },
+            { label: "始终显示", value: "always" },
+            { label: "隐藏箭头", value: "never" },
+          ],
+        },
+      },
+      {
+        label: "指示器位置",
+        key: "indicatorPosition",
+        component: "select" as const,
+        defaultValue: "inside",
+        props: {
+          options: [
+            { label: "内置 (inside)", value: "inside" },
+            { label: "外置 (outside)", value: "outside" },
+            { label: "隐藏 (none)", value: "none" },
+          ],
+        },
+      },
+      {
+        label: "指示器类型",
+        key: "paginationType",
+        component: "select" as const,
+        defaultValue: "line",
+        props: {
+          options: [
+            { label: "线条 (line)", value: "line" },
+            { label: "圆点 (dot)", value: "dot" },
+            { label: "分数 (fraction)", value: "fraction" },
+            { label: "按钮 (button)", value: "button" },
+          ],
+        },
+      },
+      {
+        label: "指示器偏移 (px)",
+        key: "indicatorOffset",
+        component: "slider" as const,
+        defaultValue: 16,
+        props: { min: 0, max: 100, step: 4 },
+      },
+    ],
+  },
+  {
+    title: "交互与外观",
+    children: [
+      {
+        label: "主题颜色",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "primary",
+        props: {
+          options: [
+            { label: "Primary", value: "primary" },
+            { label: "Secondary", value: "secondary" },
+            { label: "Success", value: "success" },
+            { label: "Info", value: "info" },
+            { label: "Warning", value: "warning" },
+            { label: "Error", value: "error" },
+            { label: "Neutral", value: "neutral" },
+          ],
+        },
+      },
+      { label: "自动播放 (2.6s)", key: "autoplay", component: "checkbox" as const, defaultValue: true },
+      { label: "动态模糊", key: "motionBlur", component: "checkbox" as const, defaultValue: true },
+      { label: "无限循环", key: "loop", component: "checkbox" as const, defaultValue: true },
+      { label: "居中模式", key: "centeredSlides", component: "checkbox" as const, defaultValue: false },
+      { label: "抓取光标", key: "grabCursor", component: "checkbox" as const, defaultValue: true },
+    ],
+  },
+  {
+    title: "缩略图",
+    children: [
+      {
+        label: "缩略图位置",
+        key: "thumbsPosition",
+        component: "select" as const,
+        defaultValue: "bottom",
+        props: {
+          options: [
+            { label: "底部 (bottom)", value: "bottom" },
+            { label: "顶部 (top)", value: "top" },
+            { label: "左侧 (left)", value: "left" },
+            { label: "右侧 (right)", value: "right" },
+          ],
+        },
+      },
+      {
+        label: "缩略图箭头",
+        key: "thumbsArrow",
+        component: "select" as const,
+        defaultValue: "always",
+        props: {
+          options: [
+            { label: "始终显示", value: "always" },
+            { label: "悬停时显示", value: "hover" },
+            { label: "隐藏", value: "never" },
+          ],
+        },
+      },
+      { label: "缩略图循环", key: "thumbsLoop", component: "checkbox" as const, defaultValue: true },
+    ],
+  },
+];
+
+/** 演练场当前激活的滑块索引 */
 const activeIndex = ref(0);
-const loop = ref(true);
-const centeredSlides = ref(false);
-const direction = ref<"horizontal" | "vertical">("horizontal");
-const carouselType = ref<"default" | "card">("default");
-const grabCursor = ref(true);
-const color = ref<"primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral">("primary");
-const paginationType = ref<"line" | "dot" | "fraction" | "button">("line");
-const indicatorOffset = ref<number>(16);
-const thumbsPosition = ref<"top" | "bottom" | "left" | "right">("bottom");
-const thumbsArrow = ref<"hover" | "always" | "never">("always");
-const thumbsLoop = ref(true);
+
+/** 由演练场状态拼装的缩略图配置 */
+const thumbsConfig = computed(() => ({
+  position: state.value.thumbsPosition,
+  loop: state.value.thumbsLoop,
+  arrow: state.value.thumbsArrow,
+}));
+
+/** 演练场右上角展示的等价代码 */
+const carouselCode = computed(() => {
+  const s = state.value;
+  const props: string[] = [];
+
+  if (s.carouselType !== "default") props.push(`type="${s.carouselType}"`);
+  if (s.slidesPerview !== 1)
+    props.push(`:slides-perview="${typeof s.slidesPerview === "string" ? `'${s.slidesPerview}'` : s.slidesPerview}"`);
+  if (s.spaceBetween !== 0) props.push(`:space-between="${s.spaceBetween}"`);
+  if (s.autoplay) props.push(':autoplay="{ delay: 2600 }"');
+  if (!s.motionBlur) props.push(':motion-blur="false"');
+  if (s.arrow !== "hover") props.push(`arrow="${s.arrow}"`);
+  if (s.indicatorPosition !== "inside") props.push(`indicator-position="${s.indicatorPosition}"`);
+  if (s.direction !== "horizontal") props.push(`direction="${s.direction}"`);
+  if (s.centeredSlides) props.push(':centered-slides="true"');
+  if (s.loop) props.push("loop");
+  if (s.grabCursor) props.push("grab-cursor");
+  if (s.color !== "primary") props.push(`color="${s.color}"`);
+  if (s.paginationType !== "line") props.push(`:pagination="{ clickable: true, type: '${s.paginationType}' }"`);
+  if (s.indicatorOffset !== 16) props.push(`:indicator-offset="${s.indicatorOffset}"`);
+  props.push(`:thumbs="{ position: '${s.thumbsPosition}', loop: ${s.thumbsLoop}, arrow: '${s.thumbsArrow}' }"`);
+
+  const propsStr = props.length > 0 ? "\n  " + props.join("\n  ") : "";
+  return `<RebornCarousel v-model="activeIndex"${propsStr}\n>\n  <!-- slides content -->\n</RebornCarousel>`;
+});
+
+// ─── 场景演示数据 ───────────────────────────────────────────────
+
 const thumbsShowcaseIndex = ref(0);
 
 const featureSlides = [
@@ -89,366 +298,229 @@ const timelineSlides = [
     copy: "只有在展示型场景里再加动态模糊，避免信息密集页面过度花哨。",
   },
 ];
-
-const thumbsConfig = computed(() => ({
-  position: thumbsPosition.value,
-  loop: thumbsLoop.value,
-  arrow: thumbsArrow.value,
-}));
-
-const carouselCode = computed(() => {
-  const props = [];
-  if (carouselType.value !== "default") props.push(`type="${carouselType.value}"`);
-  if (slidesPerView.value !== 1)
-    props.push(`:slides-perview="${typeof slidesPerView.value === "string" ? `'${slidesPerView.value}'` : slidesPerView.value}"`);
-  if (spaceBetween.value !== 0) props.push(`:space-between="${spaceBetween.value}"`);
-  if (autoplay.value) props.push(':autoplay="{ delay: 2600 }"');
-  if (!motionBlur.value) props.push(':motion-blur="false"');
-  if (arrow.value !== "hover") props.push(`arrow="${arrow.value}"`);
-  if (indicatorPosition.value !== "inside") props.push(`indicator-position="${indicatorPosition.value}"`);
-  if (direction.value !== "horizontal") props.push(`direction="${direction.value}"`);
-  if (centeredSlides.value) props.push(":centered-slides=\"true\"");
-  if (loop.value) props.push("loop");
-  if (grabCursor.value) props.push("grab-cursor");
-  if (color.value !== "primary") props.push(`color="${color.value}"`);
-  if (paginationType.value !== "line") props.push(`:pagination="{ clickable: true, type: '${paginationType.value}' }"`);
-  if (indicatorOffset.value !== 16) props.push(`:indicator-offset="${indicatorOffset.value}"`);
-  props.push(`:thumbs="{ position: '${thumbsPosition.value}', loop: ${thumbsLoop.value}, arrow: '${thumbsArrow.value}' }"`);
-
-  const propsStr = props.length > 0 ? "\n  " + props.join("\n  ") : "";
-  return `<RebornCarousel v-model="activeIndex"${propsStr}\n>\n  <!-- slides content -->\n</RebornCarousel>`;
-});
-
-const copyToClipboard = () => {
-  if (import.meta.client) {
-    navigator.clipboard.writeText(carouselCode.value);
-  }
-};
 </script>
 
 <template>
-  <section class="max-w-full overflow-hidden space-y-6">
-    <div
-      class="relative z-10 flex flex-col gap-8  border border-slate-200/50 bg-white/60 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40 dark:shadow-none">
-
-      <!-- Layout Settings -->
-      <div class="space-y-5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3 text-slate-900 dark:text-white">
-            <div class="flex size-8 items-center justify-center rounded-xl bg-slate-900/5 dark:bg-white/5">
-              <Icon name="lucide:layout-template" class="size-4.5 opacity-70" />
-            </div>
-            <h4 class="text-xs font-bold uppercase tracking-[0.2em] opacity-80">布局配置</h4>
-          </div>
-
-          <RebornPopover :content="{ side: 'left' }" arrow portal>
-            <template #default="{ open }">
-              <RebornButton>
-                <Icon name="lucide:code-2" class="size-4" />
-                <span>实时代码</span>
-              </RebornButton>
-            </template>
-            <template #content>
-              <div class="w-[420px] p-1">
-                <div
-                  class="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 dark:border-white/5 dark:bg-black/20 backdrop-blur-sm">
-                  <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                      <div class="size-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                      <span class="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">实时代码演示</span>
-                    </div>
-                    <button @click="copyToClipboard"
-                      class="text-sm font-bold uppercase tracking-wider text-blue-500 hover:text-blue-600 transition-colors">
-                      复制代码
-                    </button>
-                  </div>
-                  <pre
-                    class="overflow-x-auto text-xs leading-relaxed text-slate-600 dark:text-slate-400 font-mono"><code>{{ carouselCode }}</code></pre>
-                </div>
-              </div>
-            </template>
-          </RebornPopover>
-        </div>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">显示项目</span>
-            <RebornSelect v-model="slidesPerView" :options="[
-              { label: '1 项 / 屏', value: 1 },
-              { label: '2 项 / 屏', value: 2 },
-              { label: '3 项 / 屏', value: 3 },
-              { label: '自动宽度', value: 'auto' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Thumbs Position</span>
-            <RebornSelect v-model="thumbsPosition" :options="[
-              { label: 'Bottom', value: 'bottom' },
-              { label: 'Top', value: 'top' },
-              { label: 'Left', value: 'left' },
-              { label: 'Right', value: 'right' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Thumbs Arrow</span>
-            <RebornSelect v-model="thumbsArrow" :options="[
-              { label: 'Always', value: 'always' },
-              { label: 'Hover', value: 'hover' },
-              { label: 'Never', value: 'never' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">项目间距</span>
-            <RebornInputNumber v-model="spaceBetween" :min="0" :max="100" :step="4" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">容器方向</span>
-            <RebornSelect v-model="direction" :options="[
-              { label: '水平滚动', value: 'horizontal' },
-              { label: '垂直滚动', value: 'vertical' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">展示模式</span>
-            <RebornSelect v-model="carouselType" :options="[
-              { label: '默认模式', value: 'default' },
-              { label: '卡片聚焦', value: 'card' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">箭头显示</span>
-            <RebornSelect v-model="arrow" :options="[
-              { label: '悬停时显示', value: 'hover' },
-              { label: '始终显示', value: 'always' },
-              { label: '隐藏箭头', value: 'never' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">指示器位置</span>
-            <RebornSelect v-model="indicatorPosition" :options="[
-              { label: '内置 (Inside)', value: 'inside' },
-              { label: '外置 (Outside)', value: 'outside' },
-              { label: '隐藏指示器', value: 'none' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">指示器偏移 (px)</span>
-            <RebornInputNumber v-model="indicatorOffset" :min="0" :max="100" :step="4" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">指示器类型</span>
-            <RebornSelect v-model="paginationType" :options="[
-              { label: '线条 (Line)', value: 'line' },
-              { label: '圆点 (Dot)', value: 'dot' },
-              { label: '分数 (Fraction)', value: 'fraction' },
-              { label: '按钮 (Button)', value: 'button' }
-            ]" size="md" />
-          </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">主题颜色</span>
-            <RebornSelect v-model="color" :options="[
-              { label: 'Primary', value: 'primary' },
-              { label: 'Secondary', value: 'secondary' },
-              { label: 'Success', value: 'success' },
-              { label: 'Info', value: 'info' },
-              { label: 'Warning', value: 'warning' },
-              { label: 'Error', value: 'error' },
-              { label: 'Neutral', value: 'neutral' }
-            ]" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">居中模式</span>
-            <RebornSwitch v-model="centeredSlides" active-label="开启" inactive-label="关闭" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">自动播放 (2.6s)</span>
-            <RebornSwitch v-model="autoplay" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">动态模糊</span>
-            <RebornSwitch v-model="motionBlur" size="md" />
-          </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">无限循环</span>
-            <RebornSwitch v-model="loop" size="md" />
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Thumbs Loop</span>
-            <RebornSwitch v-model="thumbsLoop" size="md" />
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <RebornCarousel v-model="activeIndex" :type="carouselType" :slides-perview="slidesPerView"
-      :space-between="spaceBetween" :autoplay="autoplay ? { delay: 2600 } : false" :motion-blur="motionBlur"
-      :pagination="{ clickable: true, type: paginationType }" :arrow="arrow" :indicator-position="indicatorPosition"
-      :direction="direction" :centered-slides="centeredSlides" :loop="loop" :grab-cursor="grabCursor" :color="color"
-      :indicator-offset="indicatorOffset" :thumbs="thumbsConfig">
-      <div v-for="slide in featureSlides" :key="slide.title"
-        :class="`flex h-full flex-col justify-between bg-linear-to-br ${slide.tone} p-7 text-white`">
-        <div class="space-y-3">
-          <p class="text-xs font-medium tracking-[0.28em] text-white/70 uppercase">
-            {{ slide.eyebrow }}
-          </p>
-          <h3 class="max-w-[14ch] text-2xl leading-tight font-semibold md:text-[2rem]">
-            {{ slide.title }}
-          </h3>
-        </div>
-
-        <p class="max-w-[36ch] text-sm leading-6 text-white/80 md:text-base">
-          {{ slide.description }}
-        </p>
-      </div>
-
-    </RebornCarousel>
-  </section>
-
-  <section class="max-w-full overflow-hidden space-y-4">
-    <div class="space-y-2">
-      <p class="text-sm font-medium tracking-[0.28em] text-slate-400 uppercase">Thumbs Mode</p>
-      <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">Left-side thumbs work well for galleries and
-        modular content flows</h3>
-    </div>
-
-    <RebornCarousel v-model="thumbsShowcaseIndex" :slides-perview="1" :space-between="24"
-      :pagination="{ clickable: true, type: 'fraction' }" arrow="always" :indicator-position="indicatorPosition"
-      :thumbs="{ position: 'right', loop: true, arrow: 'hover' }" height="auto" loop color="warning">
-      <div v-for="(slide, index) in featureSlides" :key="`${slide.title}-thumbs`"
-        :class="`flex h-full flex-col justify-between  bg-linear-to-br ${slide.tone} p-8 text-white`">
-        <div class="flex items-start justify-between gap-4">
-          <div class="space-y-3">
-            <p class="text-xs font-medium tracking-[0.28em] text-white/70 uppercase">
-              {{ slide.eyebrow }}
-            </p>
-            <h3 class="max-w-[14ch] text-3xl leading-tight font-semibold md:text-[2.25rem]">
-              {{ slide.title }}
-            </h3>
-          </div>
-          <span class="rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
-            0{{ index + 1 }}
-          </span>
-        </div>
-
-        <div class="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-          <p class="max-w-[38ch] text-sm leading-7 text-white/82 md:text-base">
-            {{ slide.description }}
-          </p>
-          <div class="rounded-[28px] border border-white/15 bg-white/10 p-5 backdrop-blur-md">
-            <p class="text-xs uppercase tracking-[0.24em] text-white/55">Preview Notes</p>
-            <p class="mt-3 text-lg leading-7 text-white/88">
-              The thumbs rail stays synchronized with the main slide, which makes it useful for media galleries,
-              campaign
-              decks, and content-heavy showcases.
-            </p>
-          </div>
-        </div>
-      </div>
-    </RebornCarousel>
-  </section>
-
-  <section class="max-w-full overflow-hidden space-y-4">
-    <div class="space-y-2">
-      <p class="text-sm font-medium tracking-[0.28em] text-slate-400 uppercase">基础卡片模式</p>
-      <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">
-        中心项更强，边缘项保留预览
-      </h3>
-    </div>
-
-    <RebornCarousel type="card" :slides-perview="'auto'" :space-between="20"
-      :pagination="{ clickable: true, type: 'dot' }" arrow="always" indicator-position="outside" :motion-blur="true"
-      :centered-slides="true" :autoplay="false" height="26rem" loop color="secondary">
-      <div v-for="card in cardSlides" :key="card.title"
-        :class="`flex h-full w-full flex-col justify-between  bg-linear-to-br ${card.tone} p-7 text-white`">
-        <div class="space-y-3">
-          <span class="inline-flex w-fit rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
-            {{ card.label }}
-          </span>
-          <h4 class="text-3xl font-semibold">
-            {{ card.title }}
-          </h4>
-        </div>
-        <p class="text-sm leading-6 text-white/80 md:text-base">
-          {{ card.copy }}
-        </p>
-      </div>
-    </RebornCarousel>
-  </section>
-
-  <HeroBanner />
-
-  <section class="max-w-full overflow-hidden space-y-4">
-    <div class="space-y-2">
-      <p class="text-sm font-medium tracking-[0.28em] text-slate-400 uppercase">纵向布局</p>
-      <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">也可以做时间线式轮播</h3>
-    </div>
-
-    <RebornCarousel direction="vertical" :slides-perview="1" :space-between="18"
-      :pagination="{ clickable: true, type: 'button' }" arrow="always" indicator-position="inside" height="22rem"
-      color="info" :ui="{ arrowGroup: 'px-10' }">
-      <div v-for="(item, index) in timelineSlides" :key="item.title"
-        class="flex h-full flex-col justify-between rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.16),transparent_34%),linear-gradient(135deg,#ffffff,#f8fafc)] p-7 text-slate-900 shadow-sm dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_30%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,41,59,0.98))] dark:text-white">
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-slate-400 dark:text-slate-500">0{{ index + 1 }}</span>
-          <span class="rounded-full bg-slate-900 px-3 py-1 text-xs text-white dark:bg-white dark:text-slate-900">
-            {{ item.title }}
-          </span>
-        </div>
-        <p class="max-w-[34ch] text-lg leading-8 text-slate-700 dark:text-slate-200">
-          {{ item.copy }}
-        </p>
-      </div>
-    </RebornCarousel>
-  </section>
-
-  <section class="max-w-full overflow-hidden space-y-4">
-    <div class="space-y-2">
-      <p class="text-sm font-medium tracking-[0.28em] text-slate-400 uppercase">插槽自定义</p>
-      <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">你可以自由控制导航 UI</h3>
-    </div>
-
-    <RebornCarousel slides-per-view="auto" :space-between="20" loop>
-      <div v-for="slide in featureSlides.slice(0, 3)" :key="slide.title"
-        :class="`flex flex-col justify-center items-center rounded-3xl bg-linear-to-br ${slide.tone} p-12 text-white text-center`">
-        <h4 class="text-4xl font-bold mb-4">{{ slide.title }}</h4>
-        <p class="opacity-80">{{ slide.description }}</p>
-      </div>
-
-      <!-- 自定义箭头 -->
-      <template #prev="{ prev }">
-        <button @click="prev"
-          class="pointer-events-auto size-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95">
-          <Icon name="tabler:chevrons-left" class="size-6" />
-        </button>
-      </template>
-      <template #next="{ next }">
-        <button @click="next"
-          class="pointer-events-auto size-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95">
-          <Icon name="tabler:chevrons-right" class="size-6" />
-        </button>
-      </template>
-
-      <!-- 自定义指示器 -->
-      <template #indicators="{ activeIndex, count, goTo }">
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="carouselCode"
+      component-name="RebornCarousel"
+      title="交互演练场"
+      description="调节布局、导航与缩略图配置，实时预览轮播的滚动与切换效果。"
+    >
+      <RebornCarousel
+        v-model="activeIndex"
+        class="w-full"
+        :type="state.carouselType"
+        :slides-perview="state.slidesPerview"
+        :space-between="state.spaceBetween"
+        :autoplay="state.autoplay ? { delay: 2600 } : false"
+        :motion-blur="state.motionBlur"
+        :pagination="{ clickable: true, type: state.paginationType }"
+        :arrow="state.arrow"
+        :indicator-position="state.indicatorPosition"
+        :direction="state.direction"
+        :centered-slides="state.centeredSlides"
+        :loop="state.loop"
+        :grab-cursor="state.grabCursor"
+        :color="state.color"
+        :indicator-offset="state.indicatorOffset"
+        :thumbs="thumbsConfig"
+      >
         <div
-          class="pointer-events-auto absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3 p-1.5 rounded-2xl bg-black/20 backdrop-blur-md">
-          <button v-for="i in count" :key="i" @click="goTo(i - 1)" class="h-1 transition-all duration-500 rounded-full"
-            :class="[activeIndex === i - 1 ? 'w-8 bg-white' : 'w-2 bg-white/30']" />
+          v-for="slide in featureSlides"
+          :key="slide.title"
+          :class="`flex h-full flex-col justify-between bg-linear-to-br ${slide.tone} p-7 text-white`"
+        >
+          <div class="space-y-3">
+            <p class="text-xs font-medium tracking-[0.28em] text-white/70 uppercase">{{ slide.eyebrow }}</p>
+            <h3 class="max-w-[14ch] text-2xl leading-tight font-semibold md:text-[2rem]">{{ slide.title }}</h3>
+          </div>
+          <p class="max-w-[36ch] text-sm leading-6 text-white/80 md:text-base">{{ slide.description }}</p>
         </div>
-      </template>
-    </RebornCarousel>
-  </section>
+      </RebornCarousel>
+    </Playground>
+
+    <DemoSection
+      title="缩略图导航"
+      description="thumbs 支持 top / bottom / left / right 四个方位，缩略图轨道与主轨道保持同步，适合图库与内容流。"
+    >
+      <RebornCarousel
+        v-model="thumbsShowcaseIndex"
+        :slides-perview="1"
+        :space-between="24"
+        :pagination="{ clickable: true, type: 'fraction' }"
+        arrow="always"
+        :thumbs="{ position: 'right', loop: true, arrow: 'hover' }"
+        height="auto"
+        loop
+        color="warning"
+      >
+        <div
+          v-for="(slide, index) in featureSlides"
+          :key="`${slide.title}-thumbs`"
+          :class="`flex h-full flex-col justify-between bg-linear-to-br ${slide.tone} p-8 text-white`"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-3">
+              <p class="text-xs font-medium tracking-[0.28em] text-white/70 uppercase">{{ slide.eyebrow }}</p>
+              <h3 class="max-w-[14ch] text-3xl leading-tight font-semibold md:text-[2.25rem]">{{ slide.title }}</h3>
+            </div>
+            <span class="rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">0{{ index + 1 }}</span>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+            <p class="max-w-[38ch] text-sm leading-7 text-white/80 md:text-base">{{ slide.description }}</p>
+            <!-- 幻灯片内部只描边不填充，避免在渐变底上再叠一层背景 -->
+            <div class="rounded-ui-lg border border-white/25 p-5">
+              <p class="text-xs tracking-[0.24em] text-white/60 uppercase">Preview Notes</p>
+              <p class="mt-3 text-lg leading-7 text-white/90">
+                缩略图轨道始终与主轨道保持同步，因此非常适合媒体图库、活动物料和内容密集的展示页。
+              </p>
+            </div>
+          </div>
+        </div>
+      </RebornCarousel>
+    </DemoSection>
+
+    <DemoSection
+      title="卡片聚焦模式"
+      description="type=&quot;card&quot; 配合 centered-slides，让中心项更突出，两侧保留预览，适合专题与封面流。"
+    >
+      <RebornCarousel
+        type="card"
+        slides-perview="auto"
+        :space-between="20"
+        :pagination="{ clickable: true, type: 'dot' }"
+        arrow="always"
+        indicator-position="outside"
+        :motion-blur="true"
+        :centered-slides="true"
+        :autoplay="false"
+        height="26rem"
+        loop
+        color="secondary"
+      >
+        <div
+          v-for="card in cardSlides"
+          :key="card.title"
+          :class="`flex h-full w-full flex-col justify-between bg-linear-to-br ${card.tone} p-7 text-white`"
+        >
+          <div class="space-y-3">
+            <span class="inline-flex w-fit rounded-full border border-white/20 px-3 py-1 text-xs text-white/80">
+              {{ card.label }}
+            </span>
+            <h4 class="text-3xl font-semibold">{{ card.title }}</h4>
+          </div>
+          <p class="text-sm leading-6 text-white/80 md:text-base">{{ card.copy }}</p>
+        </div>
+      </RebornCarousel>
+    </DemoSection>
+
+    <DemoSection
+      title="商品图廊"
+      description="左侧缩略图 + 主图放大镜的组合，通过 ui 覆盖缩略图各插槽类名即可完成电商详情页的图廊布局。"
+    >
+      <HeroBanner />
+    </DemoSection>
+
+    <DemoSection
+      title="纵向时间线"
+      description="direction=&quot;vertical&quot; 将主轴改为纵向，配合按钮型分页器可用于流程说明与步骤引导。"
+    >
+      <RebornCarousel
+        direction="vertical"
+        :slides-perview="1"
+        :space-between="18"
+        :pagination="{ clickable: true, type: 'button' }"
+        arrow="always"
+        indicator-position="inside"
+        height="22rem"
+        color="info"
+        :ui="{ arrowGroup: 'px-10' }"
+      >
+        <!-- 幻灯片本体即被演示对象，允许一层浅填充作为可视载体 -->
+        <div
+          v-for="(item, index) in timelineSlides"
+          :key="item.title"
+          class="border-default bg-elevated rounded-ui-lg flex h-full flex-col justify-between border p-7"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-dimmed text-sm">0{{ index + 1 }}</span>
+            <RebornBadge
+              :label="item.title"
+              size="sm"
+              variant="soft"
+              color="info"
+            />
+          </div>
+          <p class="text-muted max-w-[34ch] text-lg leading-8">{{ item.copy }}</p>
+        </div>
+      </RebornCarousel>
+    </DemoSection>
+
+    <DemoSection
+      title="导航插槽自定义"
+      description="prev / next / indicators 三个作用域插槽会透出 prev、next、goTo、activeIndex、count，可完全接管导航 UI。"
+    >
+      <RebornCarousel
+        slides-perview="auto"
+        :space-between="20"
+        loop
+      >
+        <div
+          v-for="slide in featureSlides.slice(0, 3)"
+          :key="slide.title"
+          :class="`rounded-ui-lg flex flex-col items-center justify-center bg-linear-to-br ${slide.tone} p-12 text-center text-white`"
+        >
+          <h4 class="mb-4 text-4xl font-bold">{{ slide.title }}</h4>
+          <p class="opacity-80">{{ slide.description }}</p>
+        </div>
+
+        <!-- 自定义箭头 -->
+        <template #prev="{ prev }">
+          <button
+            type="button"
+            class="rounded-ui-sm border-current/40 hover:border-current pointer-events-auto flex size-12 items-center justify-center border bg-black/30 text-white transition-all active:scale-95"
+            @click="prev"
+          >
+            <Icon
+              name="tabler:chevrons-left"
+              class="size-6"
+            />
+          </button>
+        </template>
+        <template #next="{ next }">
+          <button
+            type="button"
+            class="rounded-ui-sm border-current/40 hover:border-current pointer-events-auto flex size-12 items-center justify-center border bg-black/30 text-white transition-all active:scale-95"
+            @click="next"
+          >
+            <Icon
+              name="tabler:chevrons-right"
+              class="size-6"
+            />
+          </button>
+        </template>
+
+        <!-- 自定义指示器 -->
+        <template #indicators="{ activeIndex: current, count, goTo }">
+          <div
+            class="rounded-ui-sm pointer-events-auto absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-3 bg-black/30 p-1.5 text-white"
+          >
+            <button
+              v-for="i in count"
+              :key="i"
+              type="button"
+              class="h-1 rounded-full transition-all duration-500"
+              :class="[current === i - 1 ? 'w-8 bg-current' : 'w-2 bg-current/40']"
+              @click="goTo(i - 1)"
+            />
+          </div>
+        </template>
+      </RebornCarousel>
+    </DemoSection>
+  </div>
 </template>

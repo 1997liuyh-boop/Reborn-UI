@@ -122,11 +122,11 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
     </template>
 
     <template #code>
-      <MDC :key="demoCode" :value="demoCode" class="-mt-12" />
+      <MdcProse :key="demoCode" :value="demoCode" class="-mt-12" />
     </template>
 
     <template v-if="uniapp" #uniapp>
-      <MDC :key="uniappCode" :value="uniappCode" class="-mt-12" />
+      <MdcProse :key="uniappCode" :value="uniappCode" class="-mt-12" />
     </template>
 
     <template v-if="showInstallation" #installation>
@@ -155,11 +155,11 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
 
           <UTabs :items="platformItems">
             <template #web>
-              <MDC v-if="componentCode" :key="componentCode" :value="componentCode" />
+              <MdcProse v-if="componentCode" :key="componentCode" :value="componentCode" />
             </template>
 
             <template v-if="uniapp" #uniapp-platform>
-              <MDC v-if="uniappComponentCode" :key="uniappComponentCode" :value="uniappComponentCode" />
+              <MdcProse v-if="uniappComponentCode" :key="uniappComponentCode" :value="uniappComponentCode" />
             </template>
           </UTabs>
         </template>

@@ -34,7 +34,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <ClientOnly>\n    <div class=\"flex w-full flex-col items-center justify-center py-24\">\n      <div class=\"relative w-full max-w-xs\">\n        <div\n          class=\"absolute inset-0 size-full scale-[0.80] rounded-full bg-red-500 bg-gradient-to-r from-blue-500 to-teal-500 blur-3xl\"\n        />\n        <div\n          class=\"relative flex h-full flex-col items-start justify-end overflow-hidden rounded-2xl border border-gray-800 bg-gray-900 px-4 py-8 shadow-xl\"\n        >\n          <div\n            class=\"mb-4 flex size-5 items-center justify-center rounded-full border border-gray-500\"\n          >\n            <svg\n              xmlns=\"http://www.w3.org/2000/svg\"\n              fill=\"none\"\n              viewBox=\"0 0 24 24\"\n              strokeWidth=\"1.5\"\n              stroke=\"currentColor\"\n              class=\"size-2 text-gray-300\"\n            >\n              <path\n                strokeLinecap=\"round\"\n                strokeLinejoin=\"round\"\n                d=\"M4.5 4.5l15 15m0 0V8.25m0 11.25H8.25\"\n              />\n            </svg>\n          </div>\n\n          <h1 class=\"relative z-50 mb-4 text-xl font-bold text-white\">\n            Meteors because they&apos;re cool\n          </h1>\n\n          <p class=\"relative z-50 mb-4 text-base font-normal text-slate-500\">\n            I don&apos;t know what to write so I&apos;ll just paste something cool here. One more\n            sentence because lorem ipsum is just unacceptable. Won&apos;t ChatGPT the shit out of\n            this.\n          </p>\n\n          <button class=\"rounded-lg border border-gray-500 px-4 py-1 text-gray-300\">Explore</button>\n          <Meteors />\n        </div>\n      </div>\n    </div>\n  </ClientOnly>\n</template>\n",
+      "code": "<template>\n  <ClientOnly>\n    <DemoSection\n      title=\"基础用法\"\n      description=\"Meteors 会在父容器内随机生成流星轨迹，父容器需要 relative 与 overflow-hidden；深色底更能凸显拖尾效果。\"\n    >\n      <DemoBlock\n        layout=\"stack\"\n        align=\"center\"\n      >\n        <!-- 卡片本体即被演示的载体，深色表面是流星效果的一部分 -->\n        <div\n          class=\"rounded-ui-lg border-gray-8/40 relative flex w-full max-w-xs flex-col items-start justify-end overflow-hidden border bg-gray-10 px-4 py-8 dark:bg-gray-1\"\n        >\n          <Icon\n            name=\"lucide:arrow-up-right\"\n            class=\"text-gray-6 mb-4 size-5\"\n          />\n\n          <h3 class=\"relative z-10 mb-4 text-xl font-bold text-white\">流星划过夜空</h3>\n\n          <p class=\"text-gray-6 relative z-10 mb-4 text-base leading-relaxed\">\n            在任意深色区块上叠加一层流星动画，可用于产品首屏、活动页头图或空状态插画，无需额外的图片资源。\n          </p>\n\n          <button\n            type=\"button\"\n            class=\"rounded-ui-2xs border-gray-6 text-gray-6 hover:text-white border px-4 py-1 text-sm transition-colors hover:border-white\"\n          >\n            了解更多\n          </button>\n\n          <Meteors />\n        </div>\n      </DemoBlock>\n    </DemoSection>\n  </ClientOnly>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -66,8 +66,8 @@
   },
   "docPath": "content/2.components/special-effects/meteors.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "7271ebd4156cbdbce40a5974181c26d0d3789b01",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "6f5bd12fd0b8264787b941f1532cf5927e7a001c",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

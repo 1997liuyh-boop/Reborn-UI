@@ -18,7 +18,7 @@ const radiusList = [
                     <div>Border-Radius</div>
                     <div>16px（常规）</div>
                 </div>
-                <div class="relative h-[220px] flex-1 overflow-hidden dark:bg-zinc-950">
+                <div class="relative h-[220px] flex-1 overflow-hidden">
                     <div v-for="(radius, index) in radiusList" :key="radius.variable"
                         :class="['absolute border-l-2 border-t-2 border-gray-4 dark:border-gray-7', radius.variable]"
                         :style="{
@@ -27,7 +27,7 @@ const radiusList = [
                             width: '100%',  // Extend to right
                             height: 'calc(100% - 20px)', // Extend down
                         }">
-                        <div class="p-2 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                        <div class="text-muted p-2 text-xs font-medium">
                             {{ radius.value }}
                         </div>
                         <div

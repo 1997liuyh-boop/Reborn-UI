@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex w-full items-center justify-center rounded-lg p-4\">\n    <TextGlitch :speed=\"1\" :enable-shadows=\"true\" text=\"Reborn UI\" />\n  </div>\n</template>\n",
+      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <TextGlitch\n        :speed=\"1\"\n        :enable-shadows=\"true\"\n        text=\"Reborn UI\"\n      />\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -86,8 +86,8 @@
   },
   "docPath": "content/2.components/text-animations/text-glitch.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "844efae98fc8870fb882a99d3e1e5f11ccf0a41f",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "3e4281992703ebd6b6aca5dc6e4b66758c73634e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

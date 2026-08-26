@@ -1,18 +1,23 @@
 <template>
-  <div class="grid place-content-center p-10">
-    <Book>
-      <BookHeader>
-        <Icon
-          name="heroicons:book-open-solid"
-          size="24"
-        />
-      </BookHeader>
-      <BookTitle>
-        <h1>The Book</h1>
-      </BookTitle>
-      <BookDescription>
-        <p>Hover me to animate!</p>
-      </BookDescription>
-    </Book>
-  </div>
+  <DemoSection title="基础用法">
+    <DemoBlock
+      layout="stack"
+      align="center"
+    >
+      <Book>
+        <BookHeader>
+          <Icon
+            name="heroicons:book-open-solid"
+            size="24"
+          />
+        </BookHeader>
+        <BookTitle>
+          <h1>那本书</h1>
+        </BookTitle>
+        <BookDescription>
+          <p>把鼠标移上来看看动画。</p>
+        </BookDescription>
+      </Book>
+    </DemoBlock>
+  </DemoSection>
 </template>

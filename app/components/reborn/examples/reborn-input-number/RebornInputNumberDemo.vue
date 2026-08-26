@@ -6,7 +6,8 @@ import {
   inputNumberShapes,
 } from "~/components/reborn/ui/reborn-input-number/reborn-input-number.config";
 
-// --- Playground 状态 ---
+// ─── 交互演练场 ─────────────────────────────────────────────────
+
 const state = ref<Record<string, any>>({
   value: 10,
   size: "md",
@@ -19,7 +20,7 @@ const state = ref<Record<string, any>>({
   readonly: false,
 });
 
-// --- 控制面板配置 ---
+/** 演练场控制面板配置 */
 const controls: any = [
   {
     title: "基础属性",
@@ -30,7 +31,7 @@ const controls: any = [
         component: "select" as const,
         defaultValue: "md",
         props: {
-          options: inputNumberSizes.map((s) => ({ label: s, value: s })),
+          options: inputNumberSizes.map((s) => ({ label: s.toUpperCase(), value: s })),
         },
       },
       {
@@ -39,10 +40,7 @@ const controls: any = [
         component: "select" as const,
         defaultValue: "primary",
         props: {
-          options: inputNumberColors.map((c) => ({
-            label: c,
-            value: c,
-          })),
+          options: inputNumberColors.map((c) => ({ label: c, value: c })),
         },
       },
       {
@@ -51,10 +49,7 @@ const controls: any = [
         component: "select" as const,
         defaultValue: "square",
         props: {
-          options: inputNumberShapes.map((s) => ({
-            label: s,
-            value: s,
-          })),
+          options: inputNumberShapes.map((s) => ({ label: s, value: s })),
         },
       },
     ],
@@ -76,125 +71,198 @@ const controls: any = [
   },
 ];
 
-// --- 其他示例状态 ---
+/** 演练场右上角展示的等价代码 */
+const inputNumberCode = computed(() => {
+  const s = state.value;
+  const props: string[] = ['v-model="value"'];
+
+  if (s.size !== "md") props.push(`size="${s.size}"`);
+  if (s.color !== "primary") props.push(`color="${s.color}"`);
+  if (s.shape !== "square") props.push(`shape="${s.shape}"`);
+  props.push(`:min="${s.min}"`, `:max="${s.max}"`, `:step="${s.step}"`);
+  if (s.disabled) props.push("disabled");
+  if (s.readonly) props.push("readonly");
+
+  return `<RebornInputNumber\n  ${props.join("\n  ")}\n/>`;
+});
+
+// ─── 场景演示状态 ───────────────────────────────────────────────
+
 const basicValue = ref(5);
 const coloredValue = ref(20);
 const customValue = ref(8);
-
-const sizeSections = [
-  { label: "小尺寸 (sm)", size: "sm" as const },
-  { label: "标准尺寸 (md)", size: "md" as const },
-  { label: "大尺寸 (lg)", size: "lg" as const },
-];
 </script>
 
 <template>
-  <div class="flex flex-col gap-16 pb-24">
-    <!-- 第一部分：交互式游乐场 -->
-    <Playground v-model="state" :controls="controls" component-name="RebornInputNumber" title="交互体验"
-      description="通过左侧面板实时调节组件属性，在右侧查看视觉反馈">
-      <RebornInputNumber v-model="state.value" :size="state.size" :color="state.color" :shape="state.shape"
-        :min="state.min" :max="state.max" :step="state.step" :disabled="state.disabled" :readonly="state.readonly" />
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="inputNumberCode"
+      component-name="RebornInputNumber"
+      title="交互演练场"
+      description="调节尺寸、配色与数值边界，实时预览步进器的增减行为。"
+    >
+      <RebornInputNumber
+        v-model="state.value"
+        :size="state.size"
+        :color="state.color"
+        :shape="state.shape"
+        :min="state.min"
+        :max="state.max"
+        :step="state.step"
+        :disabled="state.disabled"
+        :readonly="state.readonly"
+      />
     </Playground>
 
-    <!-- 第二部分：组件变体 -->
-    <section>
-      <!-- 色彩预设 -->
-      <div class="space-y-6">
-        <div class="flex items-center gap-3">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">核心色彩</h3>
-          <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-        </div>
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div v-for="c in inputNumberColors" :key="c"
-            class="flex items-center justify-between rounded-2xl border border-gray-50 bg-white p-4 transition-all hover:border-gray-200 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ c }}</span>
-            <RebornInputNumber v-model="coloredValue" :color="c" size="sm" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 尺寸对比 -->
-      <div class="space-y-6 mt-12">
-        <div class="flex items-center gap-3">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">尺寸规范</h3>
-          <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-        </div>
+    <DemoSection
+      title="配色方案"
+      description="color 作用于聚焦态的描边与增减按钮的高亮色。"
+    >
+      <DemoBlock
+        layout="grid"
+        align="center"
+      >
         <div
-          class="flex h-[180px] items-center justify-center gap-8 rounded-2xl border border-gray-100 bg-gray-50/30 p-8 dark:border-gray-800 dark:bg-gray-900/30">
-          <div v-for="s in sizeSections" :key="s.size" class="flex flex-col items-center gap-4">
-            <RebornInputNumber v-model="basicValue" :size="s.size" color="info" />
-            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ s.label }}</span>
-          </div>
+          v-for="c in inputNumberColors"
+          :key="c"
+          class="flex flex-col items-center gap-3"
+        >
+          <span class="text-dimmed text-xs font-medium">{{ c }}</span>
+          <RebornInputNumber
+            v-model="coloredValue"
+            :color="c"
+            size="sm"
+          />
         </div>
-      </div>
-    </section>
+      </DemoBlock>
+    </DemoSection>
 
-    <!-- 第三部分：深度定制 -->
-    <section class="space-y-8">
-      <div class="flex items-center gap-3">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">进阶自定义</h3>
-        <p class="text-sm text-gray-500">通过插槽和配置项实现无限可能</p>
-      </div>
-
-      <div class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-        <!-- 甜美主题 -->
+    <DemoSection
+      title="尺寸规格"
+      description="size 同时决定输入框高度、字号与左右按钮的点击区域。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-10"
+      >
         <div
-          class="group relative overflow-hidden rounded-[40px] bg-rose-50/30 p-8 transition-all hover:bg-rose-50 dark:bg-rose-950/10">
-          <div class="mb-6 flex items-center gap-2 text-rose-500 font-black">
-            <Icon name="lucide:heart" class="size-5 fill-rose-500" />
-            <span>Sweet Love</span>
-          </div>
-          <RebornInputNumber v-model="customValue" class="w-full" :ui="{
-            wrapper: 'bg-white ring-rose-200 focus-within:ring-rose-400 rounded-2xl shadow-sm h-14 border-0',
-            button: 'text-rose-400 hover:bg-rose-50 active:scale-95 transition-all',
-            input: 'text-rose-600 font-black',
-          }">
+          v-for="s in inputNumberSizes"
+          :key="s"
+          class="flex flex-col items-center gap-3"
+        >
+          <span class="text-dimmed text-xs font-medium">{{ s.toUpperCase() }}</span>
+          <RebornInputNumber
+            v-model="basicValue"
+            :size="s"
+            color="info"
+          />
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="形状轮廓"
+      description="shape 控制外框圆角，square 适合表单，round 更适合独立的数量选择。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-10"
+      >
+        <div
+          v-for="s in inputNumberShapes"
+          :key="s"
+          class="flex flex-col items-center gap-3"
+        >
+          <span class="text-dimmed text-xs font-medium">{{ s }}</span>
+          <RebornInputNumber
+            v-model="basicValue"
+            :shape="s"
+            color="secondary"
+          />
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="进阶自定义"
+      description="ui 可逐槽覆盖 wrapper / input / button / divider 的样式，increment、decrement 插槽还能替换增减图标。"
+    >
+      <DemoBlock
+        layout="grid"
+        align="start"
+      >
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">甜美主题 · 插槽换图标</span>
+          <RebornInputNumber
+            v-model="customValue"
+            class="w-full"
+            :ui="{
+              wrapper: 'bg-default ring-rose-200 focus-within:ring-rose-400 rounded-ui-md h-14 border-0',
+              button: 'text-rose-400 hover:bg-rose-50 active:scale-95 transition-all',
+              input: 'text-rose-600 font-black',
+            }"
+          >
             <template #decrement="{ iconClass }">
-              <Icon name="lucide:heart-minus" :class="iconClass" />
+              <Icon
+                name="lucide:heart-minus"
+                :class="iconClass"
+              />
             </template>
             <template #increment="{ iconClass }">
-              <Icon name="lucide:heart-plus" :class="iconClass" />
+              <Icon
+                name="lucide:heart-plus"
+                :class="iconClass"
+              />
             </template>
           </RebornInputNumber>
         </div>
 
-        <!-- 科技霓虹 -->
-        <div
-          class="group relative overflow-hidden rounded-[40px] bg-gray-900 p-8 transition-all hover:shadow-2xl hover:shadow-indigo-500/20">
-          <div class="mb-6 flex items-center gap-2 text-indigo-400 font-mono text-sm uppercase tracking-tighter">
-            <Icon name="lucide:zap" class="size-4 fill-indigo-400" />
-            <span>Cyber Neon</span>
-          </div>
-          <RebornInputNumber v-model="customValue" class="w-full" :ui="{
-            wrapper:
-              'bg-gray-800 ring-indigo-500/50 focus-within:ring-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.1)] rounded-none h-12 border-0',
-            input: 'text-white font-mono leading-none',
-            button: 'text-indigo-400 hover:bg-indigo-500/20 transition-all',
-            divider: 'bg-indigo-500/20',
-          }">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">科技霓虹 · 直角 + 等宽字体</span>
+          <RebornInputNumber
+            v-model="customValue"
+            class="w-full"
+            :ui="{
+              wrapper: 'bg-gray-9 ring-indigo-500/50 focus-within:ring-indigo-400 rounded-none h-12 border-0',
+              input: 'text-white font-mono leading-none',
+              button: 'text-indigo-400 hover:bg-indigo-500/20 transition-all',
+              divider: 'bg-indigo-500/20',
+            }"
+          >
             <template #increment>
-              <Icon name="lucide:arrow-right" class="size-4" />
+              <Icon
+                name="lucide:arrow-right"
+                class="size-4"
+              />
             </template>
             <template #decrement>
-              <Icon name="lucide:arrow-left" class="size-4" />
+              <Icon
+                name="lucide:arrow-left"
+                class="size-4"
+              />
             </template>
           </RebornInputNumber>
         </div>
 
-        <!-- 极简无界 -->
-        <div
-          class="group flex flex-col justify-center rounded-[40px] border-2 border-dashed border-gray-100 p-8 transition-all hover:border-gray-200 dark:border-gray-800">
-          <div class="mb-6 text-sm text-gray-400 font-medium px-2">Minimalist</div>
-          <RebornInputNumber v-model="customValue" class="w-full font-bold" :ui="{
-            wrapper:
-              'bg-transparent ring-0 focus-within:ring-0 border-b-2 border-gray-200 dark:border-gray-700 rounded-none h-12 transition-all focus-within:border-gray-900 dark:focus-within:border-white',
-            button: 'text-gray-300 hover:text-gray-900 dark:hover:text-white',
-            input: 'font-black text-gray-900 dark:text-white',
-            divider: 'hidden',
-          }" />
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">极简无界 · 仅保留下划线</span>
+          <RebornInputNumber
+            v-model="customValue"
+            class="w-full font-bold"
+            :ui="{
+              wrapper:
+                'bg-transparent ring-0 focus-within:ring-0 border-b-2 border-default rounded-none h-12 transition-all focus-within:border-inverted',
+              button: 'text-dimmed hover:text-highlighted',
+              input: 'font-black text-highlighted',
+              divider: 'hidden',
+            }"
+          />
         </div>
-      </div>
-    </section>
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>

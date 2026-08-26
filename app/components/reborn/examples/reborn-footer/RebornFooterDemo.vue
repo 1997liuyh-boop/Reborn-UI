@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300">
-    web端暂未开发
+  <div class="border-default rounded-ui-sm border border-dashed p-6 text-center">
+    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>
   </div>
 </template>

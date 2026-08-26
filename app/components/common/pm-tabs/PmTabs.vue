@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import ProsePre from "~/components/content/ProsePre.vue";
+
 interface Props {
   isDev?: boolean;
   packageName?: string | string[];
@@ -33,12 +35,31 @@ const items = ref([
   },
 ]);
 
-const mdc = `
-::code-group
-${items.value?.map((pm) => `\`\`\`bash [${pm.label}]\n${pm.command}\n\`\`\`\n`).join("\n")}
-::`;
+const mdc = computed(
+  () =>
+    `::code-group\n${items.value
+      ?.map((pm) => `\`\`\`bash [${pm.label}]\n${pm.command}\n\`\`\`\n`)
+      .join("\n")}::`,
+);
+
+// 与 <MDC> 同源的运行时解析，但直接喂给 MDCRenderer 并注入 pre → ProsePre 组件对象：
+// 独立 MDC 场景下标签映射缺失 pre → ProsePre，按字符串名全局解析本地覆盖组件会触发
+// "Failed to resolve component: ProsePre" 警告；这里通过 components prop 注入组件引用，
+// 让 findMappedTag 直接命中组件对象，彻底绕开运行时组件名解析。
+const { data } = await useAsyncData(
+  `pm-tabs-${allPackageName.value}-${isDev ? "dev" : "prod"}`,
+  async () => {
+    const { parseMarkdown } = await import("@nuxtjs/mdc/runtime");
+    return parseMarkdown(mdc.value);
+  },
+);
 </script>
 
 <template>
-  <MDC :value="mdc" />
+  <MDCRenderer
+    v-if="data"
+    :body="data.body"
+    :data="data.data"
+    :components="{ pre: ProsePre }"
+  />
 </template>

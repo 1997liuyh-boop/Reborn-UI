@@ -1,12 +1,5 @@
 <template>
-    <div
-        class="p-6 text-center border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-800 text-slate-500">
-        RebornSelect2 (Web) - Under Development
-    </div>
+  <div class="border-default rounded-ui-sm border border-dashed p-6 text-center">
+    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>
+  </div>
 </template>
-
-<script setup lang="ts">
-defineOptions({
-    name: "RebornSelect2"
-})
-</script>

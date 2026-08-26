@@ -48,7 +48,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { Motion } from \"motion-v\";\n</script>\n\n<template>\n  <div class=\"relative flex h-screen w-full items-center justify-center overflow-hidden bg-black\">\n    <Motion\n      as=\"img\"\n      src=\"https://assets.aceternity.com/linear-demo.webp\"\n      class=\"pointer-events-none absolute inset-0 size-full [mask-image:radial-gradient(circle,transparent,black_80%)] object-cover\"\n      :initial=\"{ opacity: 0 }\"\n      :while-in-view=\"{\n        opacity: 0.5,\n      }\"\n      :transition=\"{\n        duration: 1,\n      }\"\n    />\n    <div>\n      <h1\n        class=\"relative z-2 text-center font-sans text-2xl font-bold text-white md:text-5xl lg:text-7xl\"\n      >\n        The best <ColourfulText text=\"components\" />\n        <br />\n        you will ever find\n      </h1>\n    </div>\n  </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\nimport { Motion } from \"motion-v\";\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"深色舞台是彩色文字效果的一部分，两种模式都保持深色。\"\n  >\n    <div class=\"relative flex h-[28rem] w-full items-center justify-center overflow-hidden rounded-ui-md bg-gray-10 dark:bg-gray-1\">\n      <Motion\n        as=\"img\"\n        src=\"https://assets.aceternity.com/linear-demo.webp\"\n        class=\"pointer-events-none absolute inset-0 size-full [mask-image:radial-gradient(circle,transparent,black_80%)] object-cover\"\n        :initial=\"{ opacity: 0 }\"\n        :while-in-view=\"{\n          opacity: 0.5,\n        }\"\n        :transition=\"{\n          duration: 1,\n        }\"\n      />\n      <div>\n        <h1 class=\"relative z-2 text-center font-sans text-2xl font-bold text-white md:text-5xl\">\n          你能找到的最好的 <ColourfulText text=\"组件\" />\n        </h1>\n      </div>\n    </div>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,8 @@
   },
   "docPath": "content/2.components/text-animations/colorful-text.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "41fcb2191965bc78cea83f711ec2ddc9f891642f",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "f69cee41bab30e107d0e48f87a608b29e48622c5",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

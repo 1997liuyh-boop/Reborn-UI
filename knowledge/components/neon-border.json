@@ -60,7 +60,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex h-96 w-full flex-col items-center justify-center gap-16\">\n    <NeonBorder animation-type=\"none\">\n      <input\n        type=\"text\"\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\n        placeholder=\"No animation\"\n      />\n    </NeonBorder>\n\n    <NeonBorder>\n      <input\n        type=\"text\"\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\n        placeholder=\"Half border animation\"\n      />\n    </NeonBorder>\n\n    <NeonBorder animation-type=\"full\">\n      <input\n        type=\"text\"\n        class=\"bg-background size-full rounded-lg px-4 text-sm\"\n        placeholder=\"Full border animation\"\n      />\n    </NeonBorder>\n  </div>\n</template>\n",
+      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"三种描边动画；内部输入框是被包裹的主体，用 default 表面，不再写 bg-background。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <div class=\"flex w-full flex-col items-center justify-center gap-16 py-8\">\n        <NeonBorder animation-type=\"none\">\n          <input\n            type=\"text\"\n            class=\"bg-default size-full rounded-ui-sm px-4 text-sm\"\n            placeholder=\"无动画\"\n          >\n        </NeonBorder>\n\n        <NeonBorder>\n          <input\n            type=\"text\"\n            class=\"bg-default size-full rounded-ui-sm px-4 text-sm\"\n            placeholder=\"半圈描边动画\"\n          >\n        </NeonBorder>\n\n        <NeonBorder animation-type=\"full\">\n          <input\n            type=\"text\"\n            class=\"bg-default size-full rounded-ui-sm px-4 text-sm\"\n            placeholder=\"全圈描边动画\"\n          >\n        </NeonBorder>\n      </div>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -92,8 +92,8 @@
   },
   "docPath": "content/2.components/special-effects/neon-border.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "0de0a2eaa80a08a7ad71aebf36a32aeae4d0647b",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "8c18e4a37e4e66bc94bbafeb20236036eab1b610",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

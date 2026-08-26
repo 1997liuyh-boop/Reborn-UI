@@ -6,10 +6,10 @@ import {
   RebornMenuItem,
   RebornMenuItemGroup,
 } from "~/components/reborn/ui/reborn-menu";
-import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { menuModes, menuTriggers, menuColors, expandTypes } from "~/components/reborn/ui/reborn-menu/reborn-menu.config";
 
-// --- Playground 状态 ---
+// ─── 交互演练场 ─────────────────────────────────────────────────
+
 const state = ref<Record<string, any>>({
   mode: "vertical",
   collapse: false,
@@ -23,9 +23,10 @@ const state = ref<Record<string, any>>({
   activeTextColor: "#409eff",
 });
 
+/** 演练场里被 v-model:expanded 双向绑定的展开项 */
 const expandedMenus = ref<string[]>([]);
 
-// --- 控制面板配置 ---
+/** 演练场控制面板配置 */
 const controls: any = [
   {
     title: "布局模式",
@@ -78,7 +79,10 @@ const controls: any = [
   },
 ];
 
+// ─── 场景演示状态 ───────────────────────────────────────────────
+
 const activePath = ref(["1"]);
+/** 「垂直菜单」示例的折叠开关 */
 const isCollapse = ref(false);
 
 function handleSelect(index: string) {
@@ -93,6 +97,7 @@ function handleClose(index: string) {
   console.log("close", index);
 }
 
+/** 演练场右上角展示的等价代码 */
 const codeString = computed(() => `<RebornMenu
   v-model:active='${JSON.stringify(activePath.value)}'
   v-model:expanded='[${expandedMenus.value.join(", ")}]'
@@ -110,14 +115,30 @@ const codeString = computed(() => `<RebornMenu
 </script>
 
 <template>
-  <div class="flex flex-col gap-16 pb-24">
-    <!-- 第一部分：交互式游乐场 -->
-    <Playground v-model="state" :controls="controls" :code="codeString" component-name="RebornMenu" title="交互体验"
-      description="通过左侧面板实时调节组件属性，在右侧查看视觉反馈">
-      <RebornMenu v-model:active="activePath" v-model:expanded="expandedMenus" :mode="state.mode"
-        :collapse="state.collapse" :menu-trigger="state.menuTrigger" :unique-opened="state.uniqueOpened"
-        :expand-type="state.expandType" :expand-mutex="state.expandMutex" :color="state.color" class="min-h-[400px]"
-        @select="handleSelect" @open="handleOpen" @close="handleClose">
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="codeString"
+      component-name="RebornMenu"
+      title="交互演练场"
+      description="调节左侧属性，实时预览菜单的布局、展开方式与配色。"
+    >
+      <RebornMenu
+        v-model:active="activePath"
+        v-model:expanded="expandedMenus"
+        :mode="state.mode"
+        :collapse="state.collapse"
+        :menu-trigger="state.menuTrigger"
+        :unique-opened="state.uniqueOpened"
+        :expand-type="state.expandType"
+        :expand-mutex="state.expandMutex"
+        :color="state.color"
+        class="min-h-[400px] w-full"
+        @select="handleSelect"
+        @open="handleOpen"
+        @close="handleClose"
+      >
         <RebornMenuItem index="1">
           <template #icon>
             <Icon name="lucide:home" class="size-5" />
@@ -139,7 +160,6 @@ const codeString = computed(() => `<RebornMenu
 
             <RebornMenuItemGroup title="白名单">
               <RebornMenuItem index="2-4-1">白名单管理</RebornMenuItem>
-              <!-- <RebornMenuItem index="2-4-2">白名单IP管理</RebornMenuItem> -->
               <RebornSubMenu index="2-4-2">
                 <template #title>白名单IP管理</template>
 
@@ -183,25 +203,30 @@ const codeString = computed(() => `<RebornMenu
       </RebornMenu>
     </Playground>
 
-    <!-- 第二部分：组件变体 -->
-    <section class="space-y-8">
-      <div class="flex items-center gap-3">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">核心变体</h3>
-        <p class="text-sm text-gray-500">展示菜单的多种布局模式</p>
-      </div>
-
-      <div class="grid gap-8 lg:grid-cols-2">
-        <!-- 垂直菜单 -->
-        <div
-          class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6">
-          <div class="flex items-center justify-between">
-            <h4 class="font-medium text-gray-700 dark:text-gray-300">垂直菜单</h4>
-            <RebornButton size="sm" variant="soft" @click="isCollapse = !isCollapse">
-              {{ isCollapse ? "展开" : "折叠" }}
-            </RebornButton>
+    <DemoSection
+      title="布局模式"
+      description="mode 决定主轴方向：vertical 适合侧边导航，horizontal 适合顶栏；菜单自带表面样式，无需再包一层卡片。"
+    >
+      <DemoBlock layout="stack" class="gap-8">
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-4">
+            <span class="text-dimmed text-xs font-medium">垂直菜单 · <code>mode="vertical"</code></span>
+            <RebornButton
+              size="sm"
+              variant="soft"
+              color="neutral"
+              :label="isCollapse ? '展开' : '折叠'"
+              @click="isCollapse = !isCollapse"
+            />
           </div>
-          <RebornMenu v-model:active="activePath" mode="vertical" :collapse="isCollapse" color="primary"
-            class="min-h-[300px]" @select="handleSelect">
+          <RebornMenu
+            v-model:active="activePath"
+            mode="vertical"
+            :collapse="isCollapse"
+            color="primary"
+            class="min-h-[300px] w-full max-w-xs"
+            @select="handleSelect"
+          >
             <RebornMenuItem index="1">
               <template #icon>
                 <Icon name="lucide:home" class="size-5" />
@@ -222,15 +247,7 @@ const codeString = computed(() => `<RebornMenu
 
                 <RebornMenuItemGroup title="白名单">
                   <RebornMenuItem index="2-4-1">白名单管理</RebornMenuItem>
-                  <!-- <RebornMenuItem index="2-4-2">白名单IP管理</RebornMenuItem> -->
-                  <RebornSubMenu index="2-4-2">
-                    <template #title>白名单IP管理</template>
-
-                    <RebornMenuItemGroup title="白名单">
-                      <RebornMenuItem index="2-4-2-1">白名单管理</RebornMenuItem>
-                      <RebornMenuItem index="2-4-2-2">白名单IP管理</RebornMenuItem>
-                    </RebornMenuItemGroup>
-                  </RebornSubMenu>
+                  <RebornMenuItem index="2-4-2">白名单IP管理</RebornMenuItem>
                 </RebornMenuItemGroup>
 
                 <RebornMenuItemGroup title="黑名单">
@@ -249,11 +266,15 @@ const codeString = computed(() => `<RebornMenu
           </RebornMenu>
         </div>
 
-        <!-- 水平菜单 -->
-        <div
-          class="col-span-2 flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">水平菜单</h4>
-          <RebornMenu v-model:active="activePath" mode="horizontal" color="info" @select="handleSelect">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">水平菜单 · <code>mode="horizontal"</code></span>
+          <RebornMenu
+            v-model:active="activePath"
+            mode="horizontal"
+            color="info"
+            class="w-full"
+            @select="handleSelect"
+          >
             <RebornMenuItem index="1">
               <template #icon>
                 <Icon name="lucide:home" class="size-5" />
@@ -279,115 +300,24 @@ const codeString = computed(() => `<RebornMenu
             </RebornMenuItem>
           </RebornMenu>
         </div>
-      </div>
-    </section>
+      </DemoBlock>
+    </DemoSection>
 
-    <!-- 第三部分：高级定制 -->
-    <section class="space-y-8">
-      <div class="flex items-center gap-3">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">进阶自定义</h3>
-        <p class="text-sm text-gray-500">通过配置实现个性化样式</p>
-      </div>
-
-      <div class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-        <!-- 深色主题 -->
-        <div
-          class="group relative overflow-hidden rounded-[40px] bg-gray-900 p-8 transition-all hover:shadow-2xl hover:shadow-indigo-500/20">
-          <div class="mb-6 flex items-center gap-2 text-indigo-400 font-mono text-sm uppercase tracking-tighter">
-            <Icon name="lucide:moon" class="size-4" />
-            <span>Dark Mode</span>
-          </div>
-          <RebornMenu v-model:active="activePath" mode="vertical" color="neutral" background-color="#1f2937"
-            text-color="#e5e7eb" active-text-color="#818cf8" class="min-h-[280px]">
-            <RebornMenuItem index="1">
-              <template #icon>
-                <Icon name="lucide:home" class="size-5" />
-              </template>
-              首页
-            </RebornMenuItem>
-
-            <RebornSubMenu index="2">
-              <template #icon>
-                <Icon name="lucide:settings" class="size-5" />
-              </template>
-              <template #title>系统管理</template>
-              <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
-            </RebornSubMenu>
-          </RebornMenu>
-        </div>
-
-        <!-- 极简风格 -->
-        <div
-          class="group flex flex-col justify-center rounded-[40px] border-2 border-dashed border-gray-100 p-8 transition-all hover:border-gray-200 dark:border-gray-800">
-          <div class="mb-6 text-sm text-gray-400 font-medium px-2">Minimalist</div>
-          <RebornMenu v-model:active="activePath" mode="vertical" color="secondary" :ui="{
-            root: 'rounded-none shadow-none border-0',
-            menuItem: 'rounded-none mx-0',
-            menuItemTitle: 'font-normal text-gray-700 dark:text-gray-300',
-          }" class="min-h-[280px]">
-            <RebornMenuItem index="1">
-              <template #icon>
-                <Icon name="lucide:home" class="size-5" />
-              </template>
-              首页
-            </RebornMenuItem>
-
-            <RebornSubMenu index="2">
-              <template #icon>
-                <Icon name="lucide:settings" class="size-5" />
-              </template>
-              <template #title>系统管理</template>
-              <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
-            </RebornSubMenu>
-          </RebornMenu>
-        </div>
-
-        <!-- 彩色主题 -->
-        <div
-          class="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-8 transition-all hover:shadow-2xl">
-          <div class="mb-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 font-black">
-            <Icon name="lucide:sparkles" class="size-5" />
-            <span>Colorful</span>
-          </div>
-          <RebornMenu v-model:active="activePath" mode="vertical" color="error" background-color="transparent"
-            text-color="#7c3aed" active-text-color="#ec4899" :ui="{
-              root: 'rounded-none shadow-none border-0',
-              menuItem: 'rounded-full bg-white/50 dark:bg-gray-900/50 mb-2',
-            }" class="min-h-[280px]">
-            <RebornMenuItem index="1">
-              <template #icon>
-                <Icon name="lucide:home" class="size-5" />
-              </template>
-              首页
-            </RebornMenuItem>
-
-            <RebornSubMenu index="2">
-              <template #icon>
-                <Icon name="lucide:settings" class="size-5" />
-              </template>
-              <template #title>系统管理</template>
-              <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
-            </RebornSubMenu>
-          </RebornMenu>
-        </div>
-      </div>
-    </section>
-
-    <!-- 第四部分：展开模式对比 -->
-    <section class="space-y-8">
-      <div class="flex items-center gap-3">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">展开模式</h3>
-        <p class="text-sm text-gray-500">对比平铺展开 (normal) 与浮层展开 (popup) 的区别</p>
-      </div>
-
-      <div class="grid gap-8 lg:grid-cols-2">
-        <!-- 平铺展开 - 垂直 -->
-        <div
-          class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">垂直 · 平铺展开 (normal)</h4>
-          <p class="text-xs text-gray-400">子菜单内嵌展开，推动下方内容下移，适合树形导航</p>
-          <RebornMenu v-model:active="activePath" mode="vertical" expand-type="normal" color="success"
-            class="min-h-[280px]">
+    <DemoSection
+      title="展开模式"
+      description="expand-type 控制子菜单形态：normal 内嵌下推、popup 浮层弹出；expand-mutex 让同级子菜单互斥展开。"
+    >
+      <DemoBlock layout="grid" align="start">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">垂直 · 平铺展开 <code>normal</code></span>
+          <DemoNote tone="dimmed">子菜单内嵌展开并下推后续内容，适合树形导航。</DemoNote>
+          <RebornMenu
+            v-model:active="activePath"
+            mode="vertical"
+            expand-type="normal"
+            color="success"
+            class="min-h-[280px] w-full"
+          >
             <RebornMenuItem index="a1">
               <template #icon>
                 <Icon name="lucide:home" class="size-5" />
@@ -416,13 +346,16 @@ const codeString = computed(() => `<RebornMenu
           </RebornMenu>
         </div>
 
-        <!-- 平铺展开 - 水平 -->
-        <div
-          class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">水平 · 平铺展开 (normal)</h4>
-          <p class="text-xs text-gray-400">水平模式下子菜单内嵌展开，适合顶部导航下拉场景</p>
-          <RebornMenu v-model:active="activePath" mode="horizontal" expand-type="normal" color="info"
-            class="min-h-[200px]">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">水平 · 平铺展开 <code>normal</code></span>
+          <DemoNote tone="dimmed">水平模式下子菜单内嵌展开，适合顶部导航的下拉场景。</DemoNote>
+          <RebornMenu
+            v-model:active="activePath"
+            mode="horizontal"
+            expand-type="normal"
+            color="info"
+            class="min-h-[200px] w-full"
+          >
             <RebornMenuItem index="b1">
               <template #icon>
                 <Icon name="lucide:home" class="size-5" />
@@ -447,16 +380,18 @@ const codeString = computed(() => `<RebornMenu
             </RebornSubMenu>
           </RebornMenu>
         </div>
-      </div>
 
-      <div class="grid gap-8 lg:grid-cols-2">
-        <!-- 浮层展开 + 同级互斥 -->
-        <div
-          class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">浮层展开 + 同级互斥 (expandMutex)</h4>
-          <p class="text-xs text-gray-400">开启 expandMutex 后，同级子菜单只有一个展开，其余自动收起</p>
-          <RebornMenu v-model:active="activePath" mode="vertical" expand-type="popup" :expand-mutex="true"
-            color="warning" class="min-h-[280px]">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">浮层展开 + 同级互斥 <code>expand-mutex</code></span>
+          <DemoNote tone="dimmed">同级子菜单同时只保留一个展开，其余自动收起。</DemoNote>
+          <RebornMenu
+            v-model:active="activePath"
+            mode="vertical"
+            expand-type="popup"
+            :expand-mutex="true"
+            color="warning"
+            class="min-h-[280px] w-full"
+          >
             <RebornSubMenu index="c1">
               <template #icon>
                 <Icon name="lucide:folder" class="size-5" />
@@ -484,18 +419,18 @@ const codeString = computed(() => `<RebornMenu
           </RebornMenu>
         </div>
 
-        <!-- expanded 双向绑定示例 -->
-        <div
-          class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/20 p-6">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">v-model:expanded 双向绑定</h4>
-          <p class="text-xs text-gray-400">
-            当前展开菜单：
-            <code class="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 text-xs font-mono">
-          {{ expandedMenus.length ? expandedMenus.join(', ') : '（无）' }}
-        </code>
-          </p>
-          <RebornMenu v-model:active="activePath" v-model:expanded="expandedMenus" mode="vertical" color="primary"
-            class="min-h-[180px]">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">双向绑定 · <code>v-model:expanded</code></span>
+          <DemoNote tone="dimmed">
+            当前展开菜单：<code>{{ expandedMenus.length ? expandedMenus.join(", ") : "（无）" }}</code>
+          </DemoNote>
+          <RebornMenu
+            v-model:active="activePath"
+            v-model:expanded="expandedMenus"
+            mode="vertical"
+            color="primary"
+            class="min-h-[180px] w-full"
+          >
             <RebornSubMenu index="d1">
               <template #icon>
                 <Icon name="lucide:star" class="size-5" />
@@ -514,7 +449,73 @@ const codeString = computed(() => `<RebornMenu
             </RebornSubMenu>
           </RebornMenu>
         </div>
-      </div>
-    </section>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="配色与样式自定义"
+      description="background-color / text-color / active-text-color 直接改写菜单自身的表面配色；ui 则用于覆盖各插槽类名。"
+    >
+      <DemoBlock layout="grid" align="start">
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">深色配色 · <code>background-color</code></span>
+          <RebornMenu
+            v-model:active="activePath"
+            mode="vertical"
+            color="neutral"
+            background-color="#1f2937"
+            text-color="#e5e7eb"
+            active-text-color="#818cf8"
+            class="min-h-[280px] w-full"
+          >
+            <RebornMenuItem index="1">
+              <template #icon>
+                <Icon name="lucide:home" class="size-5" />
+              </template>
+              首页
+            </RebornMenuItem>
+
+            <RebornSubMenu index="2">
+              <template #icon>
+                <Icon name="lucide:settings" class="size-5" />
+              </template>
+              <template #title>系统管理</template>
+              <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
+            </RebornSubMenu>
+          </RebornMenu>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">极简无边 · <code>ui.root</code></span>
+          <RebornMenu
+            v-model:active="activePath"
+            mode="vertical"
+            color="secondary"
+            background-color="transparent"
+            :ui="{
+              root: 'rounded-none shadow-none border-0 bg-transparent dark:bg-transparent',
+              menuItem: 'rounded-none mx-0',
+              menuItemTitle: 'font-normal',
+            }"
+            class="min-h-[280px] w-full"
+          >
+            <RebornMenuItem index="1">
+              <template #icon>
+                <Icon name="lucide:home" class="size-5" />
+              </template>
+              首页
+            </RebornMenuItem>
+
+            <RebornSubMenu index="2">
+              <template #icon>
+                <Icon name="lucide:settings" class="size-5" />
+              </template>
+              <template #title>系统管理</template>
+              <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
+            </RebornSubMenu>
+          </RebornMenu>
+        </div>
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>

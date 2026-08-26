@@ -98,7 +98,7 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
             <!-- Right Content: Code Viewer -->
             <div class="relative min-w-0 flex-1 bg-white dark:bg-zinc-950">
                 <div class="h-full overflow-y-auto p-4 custom-scrollbar">
-                    <MDC v-if="selectedFileCode" :key="selectedFileCode" :value="selectedFileCode"
+                    <MdcProse v-if="selectedFileCode" :key="selectedFileCode" :value="selectedFileCode"
                         class="prose-sm prose-zinc dark:prose-invert max-w-none" />
                     <div v-else class="flex h-full items-center justify-center text-gray-400 dark:text-zinc-600">
                         Select a file to view its content

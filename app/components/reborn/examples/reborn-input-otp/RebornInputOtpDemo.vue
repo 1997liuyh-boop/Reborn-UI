@@ -1,47 +1,100 @@
 <script setup lang="ts">
-import RebornInputOtp from "~/components/reborn/ui/reborn-input-otp/RebornInputOtp.vue";
 import { inputOtpColors, inputOtpSizes } from "~/components/reborn/ui/reborn-input-otp/reborn-input-otp.config";
 
-const size = ref<any>("md");
-const color = ref<any>("primary");
+/** 演练场绑定值 */
+const state = ref({
+  size: "md",
+  color: "primary",
+  disabled: false,
+});
+
 const value1 = ref("");
 const value2 = ref("");
-const disabled = ref(false);
+
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "外观",
+    children: [
+      {
+        label: "尺寸",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: inputOtpSizes.map((s) => ({ label: s, value: s })) },
+      },
+      {
+        label: "颜色",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "primary",
+        props: { options: inputOtpColors.map((c) => ({ label: c, value: c })) },
+      },
+      { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+];
 </script>
 
 <template>
-    <div class="flex w-full flex-col gap-10">
-        <div
-            class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">尺寸</span>
-                <USelect v-model="size" :items="[...inputOtpSizes]" class="w-28" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">颜色</span>
-                <USelect v-model="color" :items="[...inputOtpColors]" class="w-28" />
-            </div>
-            <UCheckbox v-model="disabled" label="禁用" />
-        </div>
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      component-name="RebornInputOtp"
+      title="交互演练场"
+      description="切换尺寸与颜色，输入框格实时响应；勾选禁用查看不可编辑态。"
+    >
+      <RebornInputOtp
+        v-model="value1"
+        :size="state.size"
+        :color="state.color"
+        :disabled="state.disabled"
+      />
+    </Playground>
 
-        <div class="grid gap-8">
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">基础</h3>
-                <RebornInputOtp v-model="value1" :size="size" :color="color" :disabled="disabled" />
-                <p class="text-sm text-gray-500">当前值: {{ value1 || '空' }}</p>
-            </div>
+    <DemoSection
+      title="基础用法"
+      description="默认 4 位；当前值会同步到下方说明。"
+    >
+      <DemoBlock layout="stack">
+        <RebornInputOtp
+          v-model="value1"
+          :size="state.size"
+          :color="state.color"
+          :disabled="state.disabled"
+        />
+        <DemoNote tone="dimmed">当前值：{{ value1 || "空" }}</DemoNote>
+      </DemoBlock>
+    </DemoSection>
 
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">6位验证码</h3>
-                <RebornInputOtp v-model="value2" :length="6" :size="size" :color="color" />
-            </div>
+    <DemoSection
+      title="6 位验证码"
+      description="通过 length 指定位数，常用于短信 / 邮箱校验码。"
+    >
+      <DemoBlock>
+        <RebornInputOtp
+          v-model="value2"
+          :length="6"
+          :size="state.size"
+          :color="state.color"
+        />
+      </DemoBlock>
+    </DemoSection>
 
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">颜色</h3>
-                <div class="flex flex-wrap gap-4">
-                    <RebornInputOtp v-for="c in inputOtpColors" :key="c" :color="c" :size="size" :length="4" />
-                </div>
-            </div>
-        </div>
-    </div>
+    <DemoSection
+      title="颜色"
+      description="与全站语义色板对齐，覆盖主色、成功、警告、错误等反馈场景。"
+    >
+      <DemoBlock layout="stack">
+        <RebornInputOtp
+          v-for="c in inputOtpColors"
+          :key="c"
+          :color="c"
+          :size="state.size"
+          :length="4"
+        />
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>

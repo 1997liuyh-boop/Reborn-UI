@@ -132,7 +132,7 @@ async function onToggle(e: TreeItemToggleEvent<TreeItem>, item: any) {
         </div>
 
         <div class="col-span-3">
-            <MDC :key="selectedFileCode" :value="selectedFileCode" />
+            <MdcProse :key="selectedFileCode" :value="selectedFileCode" />
         </div>
     </div>
 </template>

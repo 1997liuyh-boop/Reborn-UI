@@ -16,6 +16,6 @@ watch(() => props.paths, (newPaths) => {
 
 <template>
     <div class="not-prose my-6">
-        <MDC v-if="mdcCode" :value="mdcCode" />
+        <MdcProse v-if="mdcCode" :value="mdcCode" />
     </div>
 </template>

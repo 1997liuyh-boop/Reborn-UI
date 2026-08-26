@@ -1,115 +1,119 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+/**
+ * 方向感知悬停演示
+ *
+ * 卡片本身就是被演示的对象：图片、遮罩、内容层都由组件渲染，
+ * 因此这里不再额外套任何背景盒，只按分组排列。
+ */
+const images = {
+  landscape:
+    "https://images.unsplash.com/photo-1728755833852-2c138c84cfb1?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  city: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80",
+  food: "https://images.unsplash.com/photo-1664710476481-1213c456c56c?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  mountain: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop",
+  forest: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2671&auto=format&fit=crop",
+};
+</script>
 
 <template>
-  <div class="p-4 sm:p-6 lg:p-8">
-    <!-- Usage instructions -->
-    <div class="mb-12 rounded-xl bg-gray-50 p-6 sm:mb-16 sm:p-8 dark:bg-gray-900">
-      <h3 class="mb-4 text-lg font-semibold sm:text-xl">How to Use</h3>
-      <ul class="space-y-2 text-sm text-gray-700 sm:text-base dark:text-gray-300">
-        <li><strong>Desktop:</strong> Hover over the cards to see the direction-aware effect</li>
-        <li><strong>Mobile:</strong> Tap on the cards to trigger the overlay effect</li>
-      </ul>
-    </div>
-
-    <!-- Grid with proper spacing and responsive design -->
-    <div class="grid grid-cols-2 gap-6 sm:gap-8 xl:gap-10">
-      <!-- Basic usage -->
-      <div class="flex justify-center">
-        <DirectionAwareHover
-          image-url="https://images.unsplash.com/photo-1728755833852-2c138c84cfb1?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          class="shadow-lg ring-1 ring-gray-200 dark:ring-gray-800"
-        >
-          <h2 class="text-lg font-semibold sm:text-xl">Beautiful Landscape</h2>
-          <p class="mt-1 text-sm opacity-90 sm:mt-2 sm:text-base">Discover nature's wonders</p>
+  <div class="flex w-full min-w-0 flex-col">
+    <DemoSection
+      title="基础用法"
+      description="桌面端把鼠标移入卡片，遮罩会从鼠标进入的那一侧滑入；移动端改为点击触发，3 秒后自动收起。只需传入 image-url，内容写在默认插槽里。"
+    >
+      <DemoBlock
+        layout="row"
+        align="start"
+      >
+        <DirectionAwareHover :image-url="images.landscape">
+          <h4 class="text-lg font-semibold">
+            自然风光
+          </h4>
+          <p class="mt-1 text-sm opacity-90">
+            探索山野之间的辽阔
+          </p>
         </DirectionAwareHover>
-      </div>
 
-      <!-- Custom styling -->
-      <div class="flex justify-center">
-        <DirectionAwareHover
-          image-url="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80"
-          class="border-2 border-blue-500 shadow-xl ring-2 ring-blue-200 dark:border-blue-400 dark:ring-blue-800"
-          image-class="scale-110 hover:scale-125 transition-transform duration-500"
-          children-class="bg-gradient-to-t from-black/80 to-transparent p-3 sm:p-4 rounded-b-lg backdrop-blur-sm"
-        >
-          <h2 class="text-lg font-semibold sm:text-xl">Urban Adventure</h2>
-          <p class="mt-1 text-sm opacity-90 sm:mt-2 sm:text-base">Explore the city lights</p>
+        <DirectionAwareHover :image-url="images.mountain">
+          <h4 class="text-lg font-semibold">
+            雪山之巅
+          </h4>
+          <p class="mt-1 text-sm opacity-90">
+            触摸云层之上的静谧
+          </p>
         </DirectionAwareHover>
-      </div>
+      </DemoBlock>
+    </DemoSection>
 
-      <!-- With button -->
-      <div class="flex justify-center md:col-span-2 lg:col-span-1">
+    <DemoSection
+      title="自定义样式"
+      description="class 作用在卡片外框，image-class 作用在图片，children-class 作用在内容层；三者都会与组件默认类合并，可用来改圆角、缩放与内容底部的渐变遮罩。"
+    >
+      <DemoBlock
+        layout="row"
+        align="start"
+      >
+        <!-- 改圆角 + 内容层加底部渐变，保证文字在浅色图片上依然可读 -->
         <DirectionAwareHover
-          image-url="https://images.unsplash.com/photo-1664710476481-1213c456c56c?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          class="overflow-hidden rounded-xl shadow-2xl ring-1 ring-gray-300 dark:ring-gray-700"
-          children-class="bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 sm:p-4 rounded-b-xl"
+          :image-url="images.city"
+          class="rounded-ui-lg"
+          children-class="inset-x-0 bottom-0 bg-linear-to-t from-black/80 to-transparent p-4"
         >
-          <h2 class="text-lg font-semibold sm:text-xl">Culinary Delights</h2>
-          <p class="mt-1 text-sm opacity-90 sm:mt-2 sm:text-base">Savor exquisite flavors</p>
-          <button
-            class="mt-3 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black transition-all hover:scale-105 hover:bg-gray-100 active:scale-95 sm:mt-4 sm:px-4 sm:py-2 sm:text-base"
-          >
-            View Recipe
-          </button>
+          <h4 class="text-lg font-semibold">
+            城市夜色
+          </h4>
+          <p class="mt-1 text-sm opacity-90">
+            穿行在霓虹之间
+          </p>
         </DirectionAwareHover>
-      </div>
-    </div>
 
-    <!-- Additional examples section -->
-    <div class="mt-12 sm:mt-16">
-      <h2 class="mb-6 text-xl font-bold sm:text-2xl">More Examples</h2>
+        <!-- 圆形卡片：仅靠 class 即可改变外框形状 -->
+        <DirectionAwareHover
+          :image-url="images.forest"
+          class="rounded-full"
+          image-class="sepia transition-[filter] duration-700 hover:sepia-0"
+          children-class="inset-0 flex items-center justify-center p-4 text-center"
+        >
+          <div>
+            <h4 class="text-lg font-bold">
+              林间小径
+            </h4>
+            <p class="text-sm opacity-90">
+              悬停时褪去复古滤镜
+            </p>
+          </div>
+        </DirectionAwareHover>
+      </DemoBlock>
+    </DemoSection>
 
-      <div class="grid grid-cols-2 gap-6">
-        <!-- Minimalist card -->
-        <div class="flex justify-center">
-          <DirectionAwareHover
-            image-url="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2670&auto=format&fit=crop"
-            class="rounded-2xl shadow-lg"
-            children-class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-center"
-          >
-            <h3 class="text-base font-medium sm:text-lg">Mountain Peak</h3>
-          </DirectionAwareHover>
-        </div>
-
-        <!-- Artistic card -->
-        <div class="flex justify-center">
-          <DirectionAwareHover
-            image-url="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=2624&auto=format&fit=crop"
-            class="rounded-full shadow-2xl ring-4 ring-purple-200 dark:ring-purple-800"
-            children-class="absolute inset-0 bg-purple-600/20 backdrop-blur-[1px] rounded-full flex items-center justify-center text-center p-4"
-          >
-            <div>
-              <h3 class="text-base font-bold sm:text-lg">Abstract Art</h3>
-              <p class="text-xs opacity-90 sm:text-sm">Creative Expression</p>
-            </div>
-          </DirectionAwareHover>
-        </div>
-
-        <!-- Tech card -->
-        <div class="flex justify-center">
-          <DirectionAwareHover
-            image-url="https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?q=80&w=2048&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            class="rounded-lg shadow-lg ring-2 ring-green-400 dark:ring-green-600"
-            children-class="bg-gradient-to-r from-green-600/90 to-blue-600/90 backdrop-blur-sm p-3 rounded-b-lg"
-          >
-            <h3 class="text-base font-semibold sm:text-lg">Technology</h3>
-            <p class="text-xs opacity-90 sm:text-sm">Innovation Hub</p>
-          </DirectionAwareHover>
-        </div>
-
-        <!-- Nature card -->
-        <div class="flex justify-center">
-          <DirectionAwareHover
-            image-url="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2671&auto=format&fit=crop"
-            class="rounded-lg shadow-lg"
-            image-class="scale-110 hover:scale-130 transition-transform duration-700 sepia hover:sepia-0"
-            children-class="bg-gradient-to-t from-emerald-900/90 to-transparent p-3"
-          >
-            <h3 class="text-base font-semibold sm:text-lg">Forest Trail</h3>
-            <p class="text-xs opacity-90 sm:text-sm">Nature's Path</p>
-          </DirectionAwareHover>
-        </div>
-      </div>
-    </div>
+    <DemoSection
+      title="内容层放置交互元素"
+      description="内容层的 z-index 高于遮罩，可以直接放按钮等可点击元素。"
+    >
+      <DemoBlock
+        layout="row"
+        align="start"
+      >
+        <DirectionAwareHover
+          :image-url="images.food"
+          class="rounded-ui-lg"
+          children-class="inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent p-4"
+        >
+          <h4 class="text-lg font-semibold">
+            风味料理
+          </h4>
+          <p class="mt-1 text-sm opacity-90">
+            品味每一道匠心之作
+          </p>
+          <RebornButton
+            class="mt-3"
+            size="sm"
+            color="primary"
+            variant="solid"
+            label="查看菜谱"
+          />
+        </DirectionAwareHover>
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>

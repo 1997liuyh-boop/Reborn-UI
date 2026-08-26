@@ -28,55 +28,46 @@ function onClick() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-10 w-full pb-20">
-    <div class="flex flex-col gap-2">
-      <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Button 按钮</h2>
-      <p class="text-lg text-gray-500 dark:text-gray-400">用于触发特定操作的交互组件。</p>
-    </div>
+  <div class="flex w-full flex-col">
+    <!-- 交互演练场：左侧参数、右侧预览，靠一条竖线分隔，不铺任何底色 -->
+    <DemoSection title="交互演练场" description="调节左侧参数，实时查看按钮表现。">
+      <div class="divide-default grid gap-6 lg:grid-cols-12 lg:gap-0 lg:divide-x">
+        <div class="flex flex-col gap-6 lg:col-span-4 lg:pr-6">
+          <div class="flex flex-col gap-2">
+            <span class="text-muted text-xs font-bold tracking-wider uppercase">颜色</span>
+            <RebornSelect v-model="color" :options="colorOptions" />
+          </div>
 
-    <section class="flex flex-col gap-4">
-      <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200">交互演练场</h3>
-      <div
-        class="flex flex-col md:flex-row rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-1 shadow-2xl">
-        <div
-          class="w-full md:w-80 p-8 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-900 bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm rounded-3xl">
-          <div class="flex flex-col gap-6">
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">颜色</span>
-              <RebornSelect v-model="color" :options="colorOptions" />
-            </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-muted text-xs font-bold tracking-wider uppercase">风格</span>
+            <RebornSelect v-model="variant" :options="variantOptions" />
+          </div>
 
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">风格</span>
-              <RebornSelect v-model="variant" :options="variantOptions" />
-            </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-muted text-xs font-bold tracking-wider uppercase">尺寸</span>
+            <RebornSelect v-model="size" :options="sizeOptions" />
+          </div>
 
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">尺寸</span>
-              <RebornSelect v-model="size" :options="sizeOptions" />
-            </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-muted text-xs font-bold tracking-wider uppercase">边框线型</span>
+            <RebornSelect v-model="borderStyle" :options="borderStyleOptions" />
+            <DemoNote tone="dimmed" class="text-xs">1px；对 outline / subtle 变体生效</DemoNote>
+          </div>
 
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">边框线型</span>
-              <RebornSelect v-model="borderStyle" :options="borderStyleOptions" />
-              <span class="text-xs text-gray-400">1px；对 outline / subtle 变体生效</span>
-            </div>
-
-            <div class="pt-4 flex flex-col gap-3">
-              <RebornCheckbox v-model="disabled" label="禁用状态" />
-              <RebornCheckbox v-model="loading" label="加载状态" />
-            </div>
+          <div class="flex flex-col gap-3 pt-2">
+            <RebornCheckbox v-model="disabled" label="禁用状态" />
+            <RebornCheckbox v-model="loading" label="加载状态" />
           </div>
         </div>
 
-        <div class="flex-1 p-12 flex flex-col items-center justify-center gap-8 min-h-[300px]">
-          <div class="flex flex-wrap items-center justify-center gap-6">
+        <div class="flex min-h-[260px] flex-col items-center justify-center gap-8 lg:col-span-8 lg:pl-6">
+          <DemoBlock align="center" class="justify-center gap-6">
             <RebornButton :color="color" :variant="variant" :size="size" :disabled="disabled" :loading="loading"
-              @click="onClick" :border-style="borderStyle">
+              :border-style="borderStyle" @click="onClick">
               点我交互 ({{ clickCount }})
             </RebornButton>
 
-            <RebornButton :color="color" :variant="variant" :size="size" :disabled="disabled" :loading="loading" circle>
+            <RebornButton :color="color" variant="circle" :size="size" :disabled="disabled" :loading="loading">
               <Icon name="lucide:sparkles" />
             </RebornButton>
 
@@ -87,41 +78,43 @@ function onClick() {
               </template>
               带图标
             </RebornButton>
-          </div>
-          <div class="text-xs text-gray-400 font-mono">
+          </DemoBlock>
+          <DemoNote tone="dimmed" class="font-mono text-xs">
             Props: { color: '{{ color }}', variant: '{{ variant }}', size: '{{ size }}', borderStyle: '{{ borderStyle
             }}' }
-          </div>
+          </DemoNote>
         </div>
       </div>
-    </section>
+    </DemoSection>
 
-    <div class="space-y-8">
-      <section
-        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
-        <h4 class="font-medium text-gray-700 dark:text-gray-300">所有变体展示</h4>
-        <div class="flex flex-col gap-4">
-          <div v-for="v in buttonVariants" :key="v" class="flex flex-wrap items-center gap-3">
-            <p class="w-16 text-xs text-gray-400 italic">{{ v }}</p>
-            <RebornButton v-for="c in buttonColors" :key="c" :variant="v" :color="c" size="sm">
-              {{ c }}
+    <DemoSection title="所有变体展示">
+      <DemoBlock layout="stack" class="gap-4">
+        <div v-for="v in buttonVariants" :key="v" class="flex flex-wrap items-center gap-3">
+          <p class="text-dimmed w-16 text-xs italic">{{ v }}</p>
+          <!-- circle 为纯图标按钮：展示时只放图标，不放文字 -->
+          <template v-if="v === 'circle'">
+            <RebornButton v-for="c in buttonColors" :key="c" variant="circle" :color="c" size="sm">
+              <Icon name="lucide:star" />
             </RebornButton>
-          </div>
+          </template>
+          <RebornButton v-else v-for="c in buttonColors" :key="c" :variant="v" :color="c" size="sm">
+            {{ c }}
+          </RebornButton>
         </div>
-      </section>
+      </DemoBlock>
+    </DemoSection>
 
-      <section
-        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
-        <h4 class="font-medium text-gray-700 dark:text-gray-300">文字按钮 (text)</h4>
-        <p class="text-xs text-gray-400">
-          <code>variant="text"</code>：无背景/边框，高度与水平内边距跟随文字，适合行内操作入口。
-        </p>
+    <DemoSection title="文字按钮 (text)">
+      <template #description>
+        <code>variant="text"</code>：无背景 / 边框，高度与水平内边距跟随文字，适合行内操作入口。
+      </template>
+      <DemoBlock layout="stack" class="gap-6">
         <div class="flex flex-wrap items-center gap-4">
           <RebornButton v-for="c in buttonColors" :key="c" variant="text" :color="c">
             {{ c }}
           </RebornButton>
         </div>
-        <div class="flex flex-wrap items-baseline gap-3 text-sm text-gray-600 dark:text-gray-300">
+        <div class="text-default flex flex-wrap items-baseline gap-3 text-sm">
           <span>行内混排示例：</span>
           <RebornButton variant="text" color="primary">查看详情</RebornButton>
           <span>/</span>
@@ -129,99 +122,80 @@ function onClick() {
           <span>/</span>
           <RebornButton variant="text" color="neutral">取消</RebornButton>
         </div>
-      </section>
+      </DemoBlock>
+    </DemoSection>
 
-      <section
-        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
-        <h4 class="font-medium text-gray-700 dark:text-gray-300">尺寸与图标</h4>
-        <p class="text-xs text-gray-400">三档：高度 24 / 32 / 40px，水平内边距统一 12px。</p>
-        <div class="flex flex-col gap-6">
-          <div class="flex flex-wrap items-end gap-3">
-            <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" color="primary">
-              {{ s.label }}
+    <DemoSection title="尺寸与图标" description="三档：高度 24 / 32 / 40px，水平内边距统一 12px。">
+      <DemoBlock layout="stack" class="gap-6">
+        <div class="flex flex-wrap items-end gap-3">
+          <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" color="primary">
+            {{ s.label }}
+          </RebornButton>
+        </div>
+        <div>
+          <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" variant="circle" color="secondary" gap>
+            <Icon name="lucide:star" />
+          </RebornButton>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="边框线型 (Border Style)">
+      <template #description>
+        <code>borderStyle</code> 取 <code>solid</code> / <code>dashed</code>，边框宽度固定 1px；
+        对有边框的 <code>outline</code> / <code>subtle</code> 变体生效。
+      </template>
+      <DemoBlock layout="stack" class="gap-5">
+        <div v-for="v in (['outline', 'subtle'] as const)" :key="v" class="flex flex-col gap-3">
+          <p class="text-muted text-xs font-medium">{{ v }}</p>
+          <div v-for="bs in borderStyleOptions" :key="bs.value" class="flex flex-wrap items-center gap-3">
+            <p class="text-dimmed w-20 text-xs italic">{{ bs.value }}</p>
+            <RebornButton v-for="c in buttonColors" :key="c" :variant="v" :color="c" :border-style="bs.value" size="sm">
+              {{ c }}
             </RebornButton>
           </div>
-          <div>
-            <RebornButton v-for="s in sizeOptions" :key="s.value" :size="s.value" circle color="secondary" gap
-              variant="soft">
-              <Icon name="lucide:star" />
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="间隔功能 (Gap Handle)" description="自动为同级按钮添加左边距，方便快速布局。">
+      <DemoBlock layout="stack" class="gap-4">
+        <RebornCheckbox v-model="gap" label="开启间隔" />
+        <div class="flex flex-wrap items-center">
+          <RebornButton color="primary" :gap="gap">确认提交</RebornButton>
+          <RebornButton color="neutral" variant="outline" :gap="gap">取消</RebornButton>
+          <RebornButton color="error" variant="soft" :gap="gap">删除</RebornButton>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="组合与编排">
+      <DemoBlock layout="grid" class="sm:grid-cols-2 lg:grid-cols-2">
+        <div class="flex flex-col items-center gap-3">
+          <DemoNote tone="dimmed" class="text-xs">胶囊组</DemoNote>
+          <div class="flex items-center">
+            <RebornButton color="warning" class="w-[110px] rounded-l-full px-6">加入购物车</RebornButton>
+            <RebornButton color="error" class="w-[110px] rounded-r-full px-6">立即购买</RebornButton>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-3">
+          <DemoNote tone="dimmed" class="text-xs">垂直功能</DemoNote>
+          <div class="flex">
+            <RebornButton color="warning" variant="solid" class="h-auto w-16 flex-col gap-1 rounded-r-none py-3">
+              <Icon name="lucide:share-2" size="18" />
+              <span class="text-[10px]">分享</span>
+            </RebornButton>
+            <RebornButton color="secondary" variant="solid" class="h-auto w-16 flex-col gap-1 rounded-none! py-3">
+              <Icon name="lucide:message-square" size="18" />
+              <span class="text-[10px]">咨询</span>
+            </RebornButton>
+            <RebornButton color="error" variant="solid" class="h-auto w-16 flex-col gap-1 rounded-l-none py-3">
+              <Icon name="lucide:heart" size="18" />
+              <span class="text-[10px]">点赞</span>
             </RebornButton>
           </div>
         </div>
-      </section>
-
-      <section
-        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
-        <h4 class="font-medium text-gray-700 dark:text-gray-300">边框线型 (Border Style)</h4>
-        <p class="text-xs text-gray-400">
-          <code>borderStyle</code> 取 <code>solid</code> / <code>dashed</code>，边框宽度固定 1px；
-          对有边框的 <code>outline</code> / <code>subtle</code> 变体生效。
-        </p>
-        <div class="flex flex-col gap-5">
-          <div v-for="v in (['outline', 'subtle'] as const)" :key="v" class="flex flex-col gap-3">
-            <p class="text-xs font-medium text-gray-500">{{ v }}</p>
-            <div v-for="bs in borderStyleOptions" :key="bs.value" class="flex flex-wrap items-center gap-3">
-              <p class="w-20 text-xs text-gray-400 italic">{{ bs.value }}</p>
-              <RebornButton v-for="c in buttonColors" :key="c" :variant="v" :color="c" :border-style="bs.value"
-                size="sm">
-                {{ c }}
-              </RebornButton>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
-        <div class="flex items-center justify-between">
-          <h4 class="font-medium text-gray-700 dark:text-gray-300">间隔功能 (Gap Handle)</h4>
-          <RebornCheckbox v-model="gap" label="开启间隔" />
-        </div>
-        <p class="text-xs text-gray-400 mb-2">自动为同级按钮添加左边距，方便快速布局。</p>
-        <div class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center">
-          <div class="flex flex-wrap items-center">
-            <RebornButton color="primary" :gap="gap">确认提交</RebornButton>
-            <RebornButton color="neutral" variant="outline" :gap="gap">取消</RebornButton>
-            <RebornButton color="error" variant="soft" :gap="gap">删除</RebornButton>
-          </div>
-        </div>
-      </section>
-
-      <section
-        class="flex flex-col gap-4 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 bg-white/50 dark:bg-gray-900/20">
-        <h4 class="font-medium text-gray-700 dark:text-gray-300">组合与编排</h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div
-            class="flex flex-col gap-3 items-center p-4 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
-            <span class="text-xs text-gray-400">胶囊组</span>
-            <div class="flex items-center">
-              <RebornButton color="warning" class="rounded-l-full px-6 w-[110px]" :round="false">加入购物车</RebornButton>
-              <RebornButton color="error" class="rounded-r-full px-6 w-[110px]" :round="false">立即购买</RebornButton>
-            </div>
-          </div>
-          <div
-            class="flex flex-col gap-3 items-center p-4 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
-            <span class="text-xs text-gray-400">垂直功能</span>
-            <div class="flex">
-              <RebornButton color="warning" variant="solid" class="flex-col h-auto py-3 w-16 gap-1 rounded-r-none"
-                :round="false">
-                <Icon name="lucide:share-2" size="18" />
-                <span class="text-[10px]">分享</span>
-              </RebornButton>
-              <RebornButton color="secondary" variant="solid" class="flex-col h-auto py-3 w-16 gap-1 rounded-r-none"
-                :round="false">
-                <Icon name="lucide:message-square" size="18" />
-                <span class="text-[10px]">咨询</span>
-              </RebornButton>
-              <RebornButton color="error" variant="solid" class="flex-col h-auto py-3 w-16 gap-1 rounded-l-none"
-                :round="false">
-                <Icon name="lucide:heart" size="18" />
-                <span class="text-[10px]">点赞</span>
-              </RebornButton>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>

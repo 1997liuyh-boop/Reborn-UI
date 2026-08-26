@@ -78,7 +78,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div\n    class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\"\n  >\n    web端暂时不需要\n  </div>\n</template>\n",
+      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
@@ -116,8 +116,8 @@
   },
   "docPath": "content/2.components/layout/reborn-waterfall.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "8f158294738efa977b00fcd278001864b923a569",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "95c38d3d140a22ede36cf9c0b2262c1637e1084e",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

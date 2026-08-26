@@ -53,7 +53,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"size-full items-center justify-center overflow-hidden p-8 w-full\">\n    <BoxReveal color=\"#E1251B\">\n      <p class=\"text-[3.5rem] font-semibold\">Reborn UI<span class=\"text-[#E1251B]\">.</span></p>\n    </BoxReveal>\n\n    <BoxReveal color=\"#E1251B\" :duration=\"0.8\">\n      <h2 class=\"mt-[.5rem] text-[1rem]\">\n        Beautiful components for\n        <span class=\"text-[#E1251B]\">Vue &amp; Nuxt.</span>\n      </h2>\n    </BoxReveal>\n\n    <BoxReveal color=\"#E1251B\" :duration=\"1\">\n      <div class=\"mt-6\">\n        <p>\n          -&gt; Free and open-source animated components built with\n          <span class=\"font-semibold text-[#E1251B]\"> Vue/Nuxt</span>,\n          <span class=\"font-semibold text-[#E1251B]\"> Typescript</span>,\n          <span class=\"font-semibold text-[#E1251B]\"> Tailwind CSS</span>, and\n          <span class=\"font-semibold text-[#E1251B]\"> motion-v</span>\n          . <br />\n          -&gt; 100% open-source, and customizable. <br />\n        </p>\n      </div>\n    </BoxReveal>\n  </div>\n</template>\n",
+      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <div class=\"w-full overflow-hidden p-8\">\n      <BoxReveal color=\"#E1251B\">\n        <p class=\"text-highlighted text-[3.5rem] font-semibold\">\n          Reborn UI<span class=\"text-[#E1251B]\">.</span>\n        </p>\n      </BoxReveal>\n\n      <BoxReveal\n        color=\"#E1251B\"\n        :duration=\"0.8\"\n      >\n        <h2 class=\"text-muted mt-[.5rem] text-[1rem]\">\n          为\n          <span class=\"text-[#E1251B]\">Vue &amp; Nuxt</span>\n          准备的精美组件。\n        </h2>\n      </BoxReveal>\n\n      <BoxReveal\n        color=\"#E1251B\"\n        :duration=\"1\"\n      >\n        <div class=\"text-muted mt-6\">\n          <p>\n            -&gt; 免费开源的动效组件，基于\n            <span class=\"font-semibold text-[#E1251B]\"> Vue/Nuxt</span>、\n            <span class=\"font-semibold text-[#E1251B]\"> TypeScript</span>、\n            <span class=\"font-semibold text-[#E1251B]\"> Tailwind CSS</span>\n            与\n            <span class=\"font-semibold text-[#E1251B]\"> motion-v</span>\n            构建。<br>\n            -&gt; 100% 开源，可按需定制。<br>\n          </p>\n        </div>\n      </BoxReveal>\n    </div>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -86,8 +86,8 @@
   },
   "docPath": "content/2.components/text-animations/box-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "53bc59bafc8fd7f93658c982491e055aa20c99a8",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "7881e8b2f91c10db2fab2473c0d11515b6f2365d",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

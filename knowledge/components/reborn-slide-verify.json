@@ -274,7 +274,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n    <div\n        class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\">\n        web端暂时不需要</div>\n</template>\n",
+      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
@@ -317,8 +317,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-slide-verify.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "65d6a5ef1747c69be16fe5fd8ee0b42452ad4658",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "4f8c748c3c59c63eda552f55d4b914a75e8a366e",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

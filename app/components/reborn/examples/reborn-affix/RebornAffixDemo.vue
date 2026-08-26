@@ -1,38 +1,63 @@
 <script setup lang="ts">
-import RebornAffix from '@/components/reborn/ui/reborn-affix/RebornAffix.vue'
-import { ref } from 'vue'
+/**
+ * 可拖拽浮动按钮演示
+ *
+ * RebornAffix 自身是 fixed 定位的浮层，脱离文档流悬浮在视口上，
+ * 因此这里不给它套任何容器，只用描边标出「原本会占位的区域」。
+ */
 
-const isDark = ref(false)
-const toggleDarkMode = () => isDark.value = !isDark.value
-const list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']
+/** 记录最近一次拖拽结束后的落点，替代 console 输出 */
+const lastAction = ref("暂无");
+
+function handleDrag() {
+  lastAction.value = "拖拽结束，已自动吸附到最近的一侧边缘";
+}
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div class="p-6 bg-slate-100 dark:bg-slate-900 rounded-xl space-y-2">
-            <h3 class="font-bold text-lg">RebornAffix Demo</h3>
-            <p class="text-slate-500">
-                请尝试拖拽右下角的浮动按钮（支持鼠标和触摸）。
-            </p>
+  <div class="flex w-full min-w-0 flex-col">
+    <DemoSection
+      title="基础用法"
+      description="按住浮动按钮拖动即可移动（同时支持鼠标与触摸）；松手后默认吸附到距离最近的左右边缘，可通过 no-snapping 关闭吸附。"
+    >
+      <DemoBlock layout="stack">
+        <div class="border-default rounded-ui-md text-dimmed flex h-40 w-full items-center justify-center border border-dashed text-sm">
+          浮动按钮悬浮于视口之上，不占据此处的文档流空间
         </div>
 
-        <div class="h-[200px] border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center">
-            Content Area
-        </div>
+        <DemoNote tone="dimmed">
+          最近操作：<code>{{ lastAction }}</code>
+        </DemoNote>
+      </DemoBlock>
+    </DemoSection>
 
+    <!-- 可拖拽：关闭吸附后可停在任意位置 -->
+    <RebornAffix
+      :left="100"
+      :bottom="100"
+      :no-snapping="true"
+      @pointerup="handleDrag"
+    >
+      <div class="bg-primary flex size-12 cursor-move items-center justify-center rounded-full text-white transition-transform active:scale-95">
+        <Icon
+          name="lucide:move"
+          class="size-5"
+        />
+      </div>
+    </RebornAffix>
 
-        <RebornAffix :right="20" :bottom="400" disabled>
-            <div class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg cursor-not-allowed"
-                title="Disabled">
-                <UIcon name="i-lucide-lock" class="size-5" />
-            </div>
-        </RebornAffix>
-
-        <RebornAffix :left="100" :bottom="100" :no-snapping="true">
-            <div class="w-12 h-12 flex flex-col items-center justify-center rounded-full bg-blue-500 overflow-hidden shadow-xl cursor-move transition-transform active:scale-95"
-                @click="toggleDarkMode">
-                <UIcon name="i-lucide-sun" class="text-white size-6" />
-            </div>
-        </RebornAffix>
-    </div>
+    <!-- 禁用态：仅展示，不响应拖拽 -->
+    <RebornAffix
+      :right="20"
+      :bottom="400"
+      disabled
+    >
+      <div class="bg-elevated text-dimmed flex size-10 cursor-not-allowed items-center justify-center rounded-full">
+        <Icon
+          name="lucide:lock"
+          class="size-5"
+        />
+      </div>
+    </RebornAffix>
+  </div>
 </template>

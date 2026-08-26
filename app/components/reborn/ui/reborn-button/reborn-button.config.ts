@@ -1,6 +1,6 @@
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 
-const variant = ["solid", "outline", "soft", "subtle", "text"] as const;
+const variant = ["solid", "outline", "soft", "subtle", "text", "round", "circle"] as const;
 
 const size = ["sm", "md", "lg"] as const;
 
@@ -38,6 +38,22 @@ export default {
       error: "",
       neutral: "",
     },
+    /**
+     * 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）；text 变体另见 compoundVariants。
+     * 直角圆角随尺寸取设计令牌：sm → rounded-ui-2xs(4px) / md → rounded-ui-xs(6px) / lg → rounded-ui-sm(8px)；
+     * round / circle / text 变体在 variant 轴覆盖此圆角（本轴刻意置于 variant 之前，保证后者在 tailwind-merge 中胜出）。
+     */
+    size: {
+      sm: {
+        base: "h-button-sm text-sm leading-[1.5] gap-1.5 px-3 rounded-ui-2xs",
+      },
+      md: {
+        base: "h-button-md text-base leading-[1.5] px-3 rounded-ui-xs",
+      },
+      lg: {
+        base: "h-button-lg text-lg leading-[1.5] px-3 rounded-ui-sm",
+      },
+    },
     variant: {
       solid: "",
       outline: "",
@@ -45,18 +61,12 @@ export default {
       subtle: "",
       // 文字按钮：无背景/边框，高度跟随文字（见 compoundVariants 覆盖 size 的固定高度）
       text: "",
-    },
-    // 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）；text 变体另见 compoundVariants
-    size: {
-      sm: {
-        base: "h-button-sm text-sm leading-[1.5] gap-1.5 px-3",
-      },
-      md: {
-        base: "h-button-md text-base leading-[1.5] px-3",
-      },
-      lg: {
-        base: "h-button-lg text-lg leading-[1.5] px-3",
-      },
+      // 胶囊按钮：形状类，着色复合规则与 solid 一致（见 compoundVariants）
+      // 圆角带 ! 强制：size 轴的 rounded-ui-* 是自定义令牌，tailwind-merge 不会将其与
+      // rounded-full 判为冲突组而合并掉，且生成 CSS 顺序靠后，不加 ! 会反向覆盖形状圆角
+      round: "!rounded-full",
+      // 圆形纯图标按钮：宽高相等、内边距归零，着色复合规则与 solid 一致（见 compoundVariants）
+      circle: "!aspect-square !w-auto !p-0 has-[>svg]:!p-0 !rounded-full",
     },
     /**
      * 边框线型，对渲染了边框的变体生效：outline 与 subtle。
@@ -79,18 +89,6 @@ export default {
     disabled: {
       true: "cursor-not-allowed opacity-70",
       false: ""
-    },
-    round: {
-      true: {
-        base: "rounded-full",
-      },
-      false: "",
-    },
-    circle: {
-      true: {
-        base: "!aspect-square !w-auto !p-0 has-[>svg]:!p-0 rounded-full",
-      },
-      false: "",
     },
   },
   compoundVariants: [
@@ -128,6 +126,80 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "solid" as (typeof variant)[number],
+      class: "bg-neutral text-white hover:bg-neutral/75",
+    },
+
+    // Round Variants：胶囊形状，着色规则与 solid 一致
+    {
+      color: "primary" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-primary text-white hover:bg-primary/75",
+    },
+    {
+      color: "secondary" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-secondary text-white hover:bg-secondary/75",
+    },
+    {
+      color: "success" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-success text-white hover:bg-success/75",
+    },
+    {
+      color: "info" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-info text-white hover:bg-info/75",
+    },
+    {
+      color: "warning" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-warning text-white hover:bg-warning/75",
+    },
+    {
+      color: "error" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-error text-white hover:bg-error/75",
+    },
+    {
+      color: "neutral" as (typeof color)[number],
+      variant: "round" as (typeof variant)[number],
+      class: "bg-neutral text-white hover:bg-neutral/75",
+    },
+
+    // Circle Variants：圆形纯图标按钮，着色规则与 solid 一致
+    {
+      color: "primary" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
+      class: "bg-primary text-white hover:bg-primary/75",
+    },
+    {
+      color: "secondary" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
+      class: "bg-secondary text-white hover:bg-secondary/75",
+    },
+    {
+      color: "success" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
+      class: "bg-success text-white hover:bg-success/75",
+    },
+    {
+      color: "info" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
+      class: "bg-info text-white hover:bg-info/75",
+    },
+    {
+      color: "warning" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
+      class: "bg-warning text-white hover:bg-warning/75",
+    },
+    {
+      color: "error" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
+      class: "bg-error text-white hover:bg-error/75",
+    },
+    {
+      color: "neutral" as (typeof color)[number],
+      variant: "circle" as (typeof variant)[number],
       class: "bg-neutral text-white hover:bg-neutral/75",
     },
 
@@ -175,6 +247,16 @@ export default {
     },
     {
       variant: "solid" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-gray-6 dark:bg-gray-2 text-white/50",
+    },
+    {
+      variant: "round" as (typeof variant)[number],
+      disabled: true,
+      class: "bg-gray-6 dark:bg-gray-2 text-white/50",
+    },
+    {
+      variant: "circle" as (typeof variant)[number],
       disabled: true,
       class: "bg-gray-6 dark:bg-gray-2 text-white/50",
     },
@@ -268,6 +350,11 @@ export default {
     },
 
     // Text Variants：无背景/边框，高度与水平内边距跟随文字
+    {
+      // text 无背景，不参与尺寸圆角令牌：显式归零，避免继承 size 的 rounded-ui-*
+      variant: "text" as (typeof variant)[number],
+      class: "rounded-none",
+    },
     {
       color: "primary" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-25T02:13:07.365Z",
+  "generatedAt": "2026-08-25T10:59:50.149Z",
   "components": [
     {
       "id": "animate-grid",
@@ -758,7 +758,7 @@
     {
       "id": "reborn-button",
       "title": "按钮",
-      "description": "双端基础按钮：7 种语义色 × 5 种变体，支持尺寸、形状、加载与禁用状态。",
+      "description": "双端基础按钮：7 种语义色 × 多变体（Web 7 / UniApp 5），支持尺寸、形状、加载与禁用状态。",
       "category": "basic",
       "tags": [
         "css",
@@ -1718,11 +1718,11 @@
     {
       "id": "scrollbar",
       "title": "滚动条 Scrollbar",
-      "description": "通用滚动条 CSS 样式，悬浮于内容之上不挤压布局，提供 4/6/8 三档尺寸与颜色变量定制。",
+      "description": "浮层式滚动条组件，隐藏原生滚动条并自绘 thumb，悬浮于内容之上不挤压布局；提供 4/6/8 三档尺寸、轨道显形、圆角内缩与带缓动动画的命令式滚动。",
       "category": "layout",
       "tags": [
-        "css",
-        "tailwind",
+        "vue",
+        "component",
         "scrollbar",
         "layout"
       ],

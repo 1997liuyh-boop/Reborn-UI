@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst shadowColor = computed(() => (isDark.value ? \"white\" : \"black\"));\n</script>\n\n<template>\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\n    <h1 class=\"text-8xl leading-none font-extrabold tracking-tighter text-balance\">\n      Ship\n      <LineShadowText\n        class=\"italic\"\n        :shadow-color=\"shadowColor\"\n      >\n        Fast\n      </LineShadowText>\n    </h1>\n  </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst shadowColor = computed(() => (isDark.value ? \"white\" : \"black\"));\n</script>\n\n<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <h1 class=\"text-highlighted text-8xl leading-none font-extrabold tracking-tighter text-balance\">\n        快速\n        <LineShadowText\n          class=\"italic\"\n          :shadow-color=\"shadowColor\"\n        >\n          上线\n        </LineShadowText>\n      </h1>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -77,8 +77,8 @@
   },
   "docPath": "content/2.components/text-animations/line-shadow-text.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "d5a7c4acc9c070f10d52e3d3fcfce2bf8630f8b2",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "32611f1ea2af9bac0f97284feae6a592bac9f7f2",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

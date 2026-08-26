@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
 import type { GuideStep } from "~/components/reborn/ui/reborn-guide/RebornGuide.vue";
 
 const current = ref(-1);
-const mode = ref<"popup" | "dialog">("popup");
-const placement = ref("bottom");
 
 /** 目标元素 ref */
 const headerRef = ref<HTMLElement | null>(null);
@@ -12,12 +9,24 @@ const card1Ref = ref<HTMLElement | null>(null);
 const card2Ref = ref<HTMLElement | null>(null);
 const actionBtnRef = ref<HTMLElement | null>(null);
 
+const placementOptions = [
+  "top", "bottom", "left", "right",
+  "top-left", "top-right", "bottom-left", "bottom-right",
+  "left-top", "left-bottom", "right-top", "right-bottom",
+];
+
+/** 演练场绑定值 */
+const state = ref({
+  mode: "popup" as "popup" | "dialog",
+  placement: "bottom",
+});
+
 /** 生成 steps */
 const steps = computed<GuideStep[]>(() => [
   {
     element: () => headerRef.value,
     title: "欢迎使用引导组件",
-    body: '这是 RebornGuide 引导组件，用于逐步骤向用户介绍页面功能。点击「下一步」继续。',
+    body: "这是 RebornGuide 引导组件，用于逐步骤向用户介绍页面功能。点击「下一步」继续。",
     placement: "bottom" as const,
   },
   {
@@ -37,7 +46,7 @@ const steps = computed<GuideStep[]>(() => [
     element: () => actionBtnRef.value,
     title: "操作按钮",
     body: "高亮框支持 12 种定位方向：top、bottom、left、right 及其组合。当前步骤可自定义按钮文案。",
-    placement: placement.value as any,
+    placement: state.value.placement as any,
     nextButtonProps: { label: "了解对话框模式" },
   },
   {
@@ -60,36 +69,48 @@ function restartGuide() {
   }, 300);
 }
 
-function onFinish(ctx: { e: MouseEvent; current: number; total: number }) {
-  // 引导完成后隐藏
-}
+/** 功能卡片本身是引导的落点，用描边盒标识，不填充 */
+const targetClass = "border-default rounded-ui-md border border-dashed p-6";
 
-function onChange(step: number) {
-  // 步骤变化
-}
-
-const placementOptions = [
-  "top", "bottom", "left", "right",
-  "top-left", "top-right", "bottom-left", "bottom-right",
-  "left-top", "left-bottom", "right-top", "right-bottom",
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "行为",
+    children: [
+      {
+        label: "模式",
+        key: "mode",
+        component: "select" as const,
+        defaultValue: "popup",
+        props: {
+          options: [
+            { label: "浮层 popup", value: "popup" },
+            { label: "对话框 dialog", value: "dialog" },
+          ],
+        },
+      },
+      {
+        label: "默认定位",
+        key: "placement",
+        component: "select" as const,
+        defaultValue: "bottom",
+        props: { options: placementOptions.map((p) => ({ label: p, value: p })) },
+      },
+    ],
+  },
 ];
 </script>
 
 <template>
-  <div class="p-8 w-full">
-    <!-- 页面头部 -->
-    <header ref="headerRef" class="mb-12 text-center">
-      <h1 class="text-3xl font-bold text-gray-9 dark:text-gray-1 mb-2">
-        RebornGuide 引导组件
-      </h1>
-      <p class="text-gray-5 dark:text-gray-4">
-        逐步骤引导用户了解页面功能
-      </p>
-    </header>
-
-    <!-- 控制面板 -->
-    <div class="mb-8 p-4 rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-gray-1 dark:bg-gray-8">
-      <div class="flex flex-wrap items-center gap-4">
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      component-name="RebornGuide"
+      title="交互演练场"
+      description="切换浮层 / 对话框模式与默认定位，再点「开始引导」逐步走完高亮流程。"
+    >
+      <DemoBlock>
         <RebornButton
           v-if="current < 0"
           color="primary"
@@ -104,126 +125,91 @@ const placementOptions = [
         >
           重新开始
         </RebornButton>
-
         <RebornButton
-          variant="subtle"
+          variant="text"
           @click="current = -1"
         >
           停止
         </RebornButton>
+      </DemoBlock>
+    </Playground>
 
-        <div class="flex items-center gap-2 ml-4">
-          <span class="text-sm text-gray-5">模式：</span>
+    <DemoSection
+      title="引导落点"
+      description="高亮目标用虚线描边标识，本身无填充；引导浮层由组件自己画。"
+    >
+      <DemoBlock layout="stack">
+        <header
+          ref="headerRef"
+          class="text-center"
+        >
+          <p class="text-highlighted text-sm font-semibold">页面头部</p>
+          <p class="text-muted mt-1 text-sm">逐步引导用户了解页面功能</p>
+        </header>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div
+            ref="card1Ref"
+            :class="targetClass"
+          >
+            <Icon
+              name="lucide:zap"
+              class="text-primary mb-3 size-6"
+            />
+            <p class="text-highlighted text-sm font-semibold">闪电般快速</p>
+            <p class="text-muted mt-1 text-sm">基于 Vue 3 Composition API 构建。</p>
+          </div>
+          <div
+            ref="card2Ref"
+            :class="targetClass"
+          >
+            <Icon
+              name="lucide:shield-check"
+              class="text-success mb-3 size-6"
+            />
+            <p class="text-highlighted text-sm font-semibold">类型安全</p>
+            <p class="text-muted mt-1 text-sm">完整的 TypeScript 类型定义。</p>
+          </div>
+          <div :class="targetClass">
+            <Icon
+              name="lucide:palette"
+              class="text-warning mb-3 size-6"
+            />
+            <p class="text-highlighted text-sm font-semibold">高度可定制</p>
+            <p class="text-muted mt-1 text-sm">支持 ui 属性覆盖任意样式。</p>
+          </div>
+        </div>
+
+        <div
+          ref="actionBtnRef"
+          class="text-center"
+        >
           <RebornButton
-            :variant="mode === 'popup' ? 'solid' : 'outline'"
-            size="sm"
-            @click="mode = 'popup'"
+            color="primary"
+            @click="startGuide"
           >
-            Popup
-          </RebornButton>
-          <RebornButton
-            :variant="mode === 'dialog' ? 'solid' : 'outline'"
-            size="sm"
-            @click="mode = 'dialog'"
-          >
-            Dialog
+            点击体验引导
           </RebornButton>
         </div>
 
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-5">默认 Placement：</span>
-          <select
-            v-model="placement"
-            class="px-2 py-1 text-sm border border-gray-2 rounded-lg bg-white dark:bg-gray-8"
-          >
-            <option v-for="p in placementOptions" :key="p" :value="p">{{ p }}</option>
-          </select>
-        </div>
-      </div>
-    </div>
+        <DemoNote
+          v-if="current >= 0"
+          tone="dimmed"
+        >
+          当前步骤：{{ current + 1 }} / {{ steps.length }} · 模式：{{ steps[current]?.mode || state.mode }} · Placement：{{ steps[current]?.placement || "-" }}
+        </DemoNote>
+      </DemoBlock>
+    </DemoSection>
 
-    <!-- 功能卡片区域 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div
-        ref="card1Ref"
-        class="rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-9 p-6 shadow-sm"
-      >
-        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <Icon name="lucide:zap" class="size-6 text-primary" />
-        </div>
-        <h3 class="text-lg font-semibold text-gray-9 dark:text-gray-1 mb-2">闪电般快速</h3>
-        <p class="text-sm text-gray-5 dark:text-gray-4">
-          基于 Vue 3 Composition API，使用 defineModel 和 TypeScript 构建，开发体验极致流畅。
-        </p>
-      </div>
-
-      <div
-        ref="card2Ref"
-        class="rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-9 p-6 shadow-sm"
-      >
-        <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-4">
-          <Icon name="lucide:shield-check" class="size-6 text-success" />
-        </div>
-        <h3 class="text-lg font-semibold text-gray-9 dark:text-gray-1 mb-2">类型安全</h3>
-        <p class="text-sm text-gray-5 dark:text-gray-4">
-          完整的 TypeScript 类型定义，所有 Props、Events、Slots 都有智能提示。
-        </p>
-      </div>
-
-      <div
-        class="rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-9 p-6 shadow-sm"
-      >
-        <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mb-4">
-          <Icon name="lucide:palette" class="size-6 text-warning" />
-        </div>
-        <h3 class="text-lg font-semibold text-gray-9 dark:text-gray-1 mb-2">高度可定制</h3>
-        <p class="text-sm text-gray-5 dark:text-gray-4">
-          支持 ui 属性覆盖任意样式，支持步骤级按钮配置，满足各种业务场景。
-        </p>
-      </div>
-    </div>
-
-    <!-- 操作按钮区 -->
-    <div ref="actionBtnRef" class="text-center">
-      <RebornButton
-        color="primary"
-        size="lg"
-        @click="startGuide"
-      >
-        点击体验引导
-      </RebornButton>
-    </div>
-
-    <!-- 事件日志 -->
-    <div v-if="current >= 0" class="mt-8 p-4 rounded-ui-lg border border-gray-2 dark:border-gray-7 bg-gray-1 dark:bg-gray-8">
-      <h4 class="text-sm font-semibold text-gray-7 dark:text-gray-3 mb-2">事件日志</h4>
-      <div class="text-xs text-gray-5">
-        当前步骤：{{ current + 1 }} / {{ steps.length }}
-        &nbsp;|&nbsp; 模式：{{ steps[current]?.mode || mode }}
-        &nbsp;|&nbsp; Placement：{{ steps[current]?.placement || '-' }}
-      </div>
-    </div>
-
-    <!-- Guide 组件 -->
     <RebornGuide
       v-model:current="current"
       :steps="steps"
-      :mode="mode"
+      :mode="state.mode"
       :z-index="9999"
-      @finish="onFinish"
-      @change="onChange"
     >
       <template #counter="{ current: cur, total }">
-        <span class="text-xs text-gray-4">
-          步骤 {{ cur }} / {{ total }}
-        </span>
+        <span class="text-dimmed text-xs">步骤 {{ cur }} / {{ total }}</span>
       </template>
     </RebornGuide>
   </div>
 </template>
-
-<script lang="ts">
-export default {
-  name: "RebornGuideDemo",
-};
-</script>

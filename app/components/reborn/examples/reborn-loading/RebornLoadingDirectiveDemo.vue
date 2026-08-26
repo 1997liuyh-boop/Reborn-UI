@@ -3,7 +3,6 @@
  * Loading 指令与服务演示
  * 聚焦 v-loading 指令与 useLoading 服务式调用（加载图标本身的样式请参阅 RebornLoadingDemo）
  */
-import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { LoadingTypes, LoadingColors } from "~/components/reborn/ui/reborn-loading/reborn-loading.config";
 import { useLoading } from "~/composables/useLoading";
 
@@ -175,13 +174,13 @@ const orders = [
   { id: "RB-2100", name: "晨昏氛围灯", status: "配送中", tone: "info", amount: "¥ 329" },
 ];
 
-/** 状态徽标配色（成对适配暗色模式） */
+/** 状态徽标配色：只用语义色，徽标属于原子标记而非嵌套盒子 */
 const statusTone: Record<string, string> = {
-  success: "bg-success/10 text-success dark:bg-success/15",
-  warning: "bg-warning/10 text-warning dark:bg-warning/15",
-  info: "bg-info/10 text-info dark:bg-info/15",
-  error: "bg-error/10 text-error dark:bg-error/15",
-  neutral: "bg-gray-500/10 text-gray-500 dark:bg-gray-400/15 dark:text-gray-400",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/10 text-warning",
+  info: "bg-info/10 text-info",
+  error: "bg-error/10 text-error",
+  neutral: "bg-accented text-muted",
 };
 
 /* ==================== 区域加载（数据看板） ==================== */
@@ -194,6 +193,9 @@ const boardStats = [
   { label: "转化率", value: "38.9%", trend: "+1.8%", icon: "lucide:target" },
 ];
 
+/** 趋势条的高度百分比（纯装饰数据，用来撑出一个有内容的加载宿主） */
+const trendBars = [42, 66, 51, 80, 62, 92, 71, 58, 84, 68, 95, 76];
+
 /** 点击刷新：1.6 秒后自动结束加载 */
 function refreshBoard() {
   if (boardLoading.value) return;
@@ -202,6 +204,16 @@ function refreshBoard() {
     boardLoading.value = false;
   }, 1600);
 }
+
+/* ==================== 属性定制矩阵 ==================== */
+
+/** 四种 reborn-loading-* 组合，常驻展示 */
+const attrCases = [
+  { label: '预设色 · type="bars-scale" color="info"', type: "bars-scale", color: "info", text: "信息流刷新中…", size: null as string | null, background: null as string | null },
+  { label: '自定义色 · color="#d946ef" size="30px"', type: "gooey-balls", color: "#d946ef", text: "AI 生成中…", size: "30px", background: null },
+  { label: "深色遮罩 · background 覆盖默认底", type: "blocks-wave", color: "#a78bfa", text: "夜间模式渲染…", size: null, background: "rgba(2, 6, 23, 0.85)" },
+  { label: '无文字 · type="spinner" color="warning"', type: "spinner", color: "warning", text: null as string | null, size: "32px", background: null },
+];
 
 /* ==================== 全屏加载（指令修饰符） ==================== */
 
@@ -280,64 +292,51 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-12 pt-4 pb-24">
-    <!-- 标题头 -->
-    <div class="flex flex-col gap-3">
-      <h2 class="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Loading 加载指令</h2>
-      <p class="max-w-3xl text-xl text-gray-500 dark:text-gray-400">
-        通过 <code class="text-lg text-violet-500 dark:text-violet-400">v-loading</code> 指令为任意元素声明式挂载加载遮罩，或使用
-        <code class="text-lg text-violet-500 dark:text-violet-400">useLoading</code> 服务式调用命令式控制全屏 /
-        局部加载，支持文字、图标、颜色与滚动锁定的全量定制。
-      </p>
-    </div>
-
-    <!-- 交互演练场 -->
+  <div class="flex w-full min-w-0 flex-col">
+    <!-- 交互演练场：Playground 自带标题栏 -->
     <Playground v-model="state" :controls="controls" :code="codeString" component-name="v-loading" title="交互演练场"
       description="实时调节遮罩参数；开启全屏模式后遮罩将覆盖整页并在 2 秒后自动关闭">
       <template #tag>
-        <button
-          class="flex cursor-pointer items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-widest text-primary uppercase transition-all hover:bg-primary/20 active:scale-95"
-          @click="resetState">
-          <Icon name="lucide:rotate-ccw" size="12" />
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
+          </template>
           重置配置
-        </button>
+        </RebornButton>
       </template>
 
-      <!-- 宿主容器：模拟订单表格（自身可滚动，遮罩随滚动实时钉在可视区域；开启 lock 后滚动被锁定） -->
+      <!--
+        宿主容器：遮罩必须覆盖在一个真实区域上，这个区域本身就是被演示的对象，
+        属示例规范里唯一允许的那层浅填充；其内部不再出现任何填充盒。
+      -->
       <div v-loading="{ loading: state.loading, fullscreen: state.fullscreen, lock: state.lock }"
         :reborn-loading-text="state.text || null" :reborn-loading-type="state.type"
         :reborn-loading-color="playgroundColor" :reborn-loading-size="state.size + 'px'"
         :reborn-loading-background="playgroundBackground"
-        class="h-[400px] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200/60 bg-white/70 shadow-xl shadow-slate-200/40 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40 dark:shadow-black/30">
-        <!-- 表格头 -->
-        <div
-          class="sticky top-0 z-[1] flex items-center justify-between border-b border-slate-200/60 bg-white/85 px-6 py-4 backdrop-blur-xl dark:border-white/5 dark:bg-slate-900/80">
+        class="bg-elevated rounded-ui-base h-[400px] w-full max-w-2xl overflow-y-auto">
+        <!-- 表头需遮挡下方滚过的行，沿用与容器同色的底，视觉上仍是同一层表面 -->
+        <div class="bg-elevated border-default sticky top-0 z-[1] flex items-center justify-between border-b px-6 py-4">
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-gray-900 dark:text-white">订单中心</span>
-            <span class="text-[10px] tracking-[0.25em] text-gray-400 uppercase dark:text-gray-500">Order Center</span>
+            <span class="text-highlighted text-sm font-bold">订单中心</span>
+            <span class="text-dimmed text-[10px] tracking-[0.25em] uppercase">Order Center</span>
           </div>
-          <span
-            class="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold text-primary">
-            <span class="size-1.5 animate-pulse rounded-full bg-primary" />
+          <span class="bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold">
+            <span class="bg-primary size-1.5 animate-pulse rounded-full" />
             实时同步
           </span>
         </div>
-        <!-- 表格体 -->
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-white/5">
+
+        <div class="divide-default flex flex-col divide-y">
           <div v-for="order in orders" :key="order.id"
-            class="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50/80 dark:hover:bg-white/5">
-            <span
-              class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/15 to-fuchsia-500/15 font-mono text-[10px] font-bold text-violet-500 dark:text-violet-300">
-              {{ order.id.slice(-2) }}
-            </span>
+            class="hover:bg-accented/60 flex items-center gap-4 px-6 py-4 transition-colors">
             <div class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-sm font-semibold text-gray-800 dark:text-gray-100">{{ order.name }}</span>
-              <span class="font-mono text-[10px] text-gray-400 dark:text-gray-500">{{ order.id }}</span>
+              <span class="text-default truncate text-sm font-semibold">{{ order.name }}</span>
+              <span class="text-dimmed font-mono text-[10px]">{{ order.id }}</span>
             </div>
             <span class="rounded-full px-2.5 py-1 text-[10px] font-bold" :class="statusTone[order.tone]">
               {{ order.status }}
             </span>
-            <span class="w-20 text-right font-mono text-xs font-bold text-gray-700 dark:text-gray-200">
+            <span class="text-muted w-20 text-right font-mono text-xs font-bold">
               {{ order.amount }}
             </span>
           </div>
@@ -345,51 +344,38 @@ onUnmounted(() => {
       </div>
     </Playground>
 
-    <!-- 场景编排 -->
-    <div class="grid grid-cols-1 gap-x-8 gap-y-4 lg:grid-cols-2">
-
-      <!-- 标题行 -->
-      <div class="flex flex-col gap-1">
-        <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">区域加载</h4>
-        <p class="text-sm text-gray-500">最常见的用法：在数据请求期间为看板 / 表格覆盖遮罩，宿主定位由指令自动修正。</p>
-      </div>
-      <div class="flex flex-col gap-1">
-        <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-          自定义文字与图标 <code class="text-sm font-normal text-violet-400">reborn-loading-*</code>
-        </h4>
-        <p class="text-sm text-gray-500">通过元素属性定制图标类型、颜色与遮罩背景，属性响应式生效。</p>
-      </div>
-
-      <!-- 区域加载：数据看板 -->
-      <section
-        class="flex flex-col gap-5 rounded-3xl border border-slate-200/50 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
+    <DemoSection title="区域加载" description="最常见的用法：在数据请求期间为看板 / 表格覆盖遮罩，宿主定位由指令自动修正。">
+      <DemoBlock layout="stack" class="gap-4">
+        <!-- 看板同样是遮罩宿主，沿用那唯一一层浅填充 -->
         <div v-loading="boardLoading" reborn-loading-text="正在同步看板数据…"
-          class="flex flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white/80 p-5 dark:border-white/5 dark:bg-slate-950/50">
-          <div class="grid grid-cols-3 gap-3">
-            <div v-for="stat in boardStats" :key="stat.label"
-              class="flex flex-col gap-1.5 rounded-xl bg-slate-50/80 p-3.5 dark:bg-white/5">
-              <span class="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+          class="bg-elevated rounded-ui-sm flex w-full flex-col gap-5 p-5">
+          <div class="divide-default grid grid-cols-3 sm:divide-x">
+            <div v-for="(stat, i) in boardStats" :key="stat.label" class="flex flex-col gap-1.5"
+              :class="i === 0 ? 'sm:pr-4' : i === boardStats.length - 1 ? 'sm:pl-4' : 'sm:px-4'">
+              <span class="text-dimmed flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase">
                 <Icon :name="stat.icon" size="12" class="text-primary" />
                 {{ stat.label }}
               </span>
-              <span class="text-lg font-black tracking-tight text-gray-900 dark:text-white">{{ stat.value }}</span>
-              <span class="text-[10px] font-bold text-success">{{ stat.trend }}</span>
+              <span class="text-highlighted text-lg font-bold tracking-tight">{{ stat.value }}</span>
+              <span class="text-success text-[10px] font-bold">{{ stat.trend }}</span>
             </div>
           </div>
-          <!-- 模拟趋势条 -->
-          <div class="flex h-16 items-end gap-1.5 rounded-xl bg-slate-50/80 p-3 dark:bg-white/5">
-            <div v-for="(h, i) in [42, 66, 51, 80, 62, 92, 71, 58, 84, 68, 95, 76]" :key="i"
-              class="flex-1 rounded-t-sm bg-gradient-to-t from-violet-500/70 to-fuchsia-400/70 transition-all duration-500 hover:from-violet-500 hover:to-fuchsia-400"
+
+          <!-- 模拟趋势条：柱体是内容标记，不构成额外的背景层 -->
+          <div class="flex h-16 items-end gap-1.5">
+            <div v-for="(h, i) in trendBars" :key="i"
+              class="bg-primary/50 hover:bg-primary flex-1 rounded-t-sm transition-all duration-500"
               :style="{ height: h + '%' }" />
           </div>
         </div>
-        <div class="flex items-center justify-between">
+
+        <div class="flex w-full items-center justify-between">
           <Transition name="fade" mode="out-in">
-            <span v-if="boardLoading" key="loading" class="flex items-center gap-1.5 text-xs text-gray-400">
-              <span class="size-1.5 animate-pulse rounded-full bg-primary" />
+            <DemoNote v-if="boardLoading" key="loading" tone="dimmed" class="flex items-center gap-1.5 text-xs">
+              <span class="bg-primary size-1.5 animate-pulse rounded-full" />
               指令已挂载遮罩…
-            </span>
-            <span v-else key="idle" class="font-mono text-[10px] text-gray-400">v-loading="boardLoading"</span>
+            </DemoNote>
+            <DemoNote v-else key="idle" tone="dimmed" class="font-mono text-[10px]">v-loading="boardLoading"</DemoNote>
           </Transition>
           <RebornButton label="刷新看板" color="primary" variant="soft" size="sm" :disabled="boardLoading"
             @click="refreshBoard">
@@ -398,86 +384,46 @@ onUnmounted(() => {
             </template>
           </RebornButton>
         </div>
-      </section>
+      </DemoBlock>
+    </DemoSection>
 
-      <!-- 属性定制矩阵：四种风格常驻展示 -->
-      <section
-        class="grid grid-cols-1 gap-4 rounded-3xl border border-slate-200/50 bg-white/60 p-6 backdrop-blur-2xl sm:grid-cols-2 dark:border-white/5 dark:bg-slate-900/40">
-        <!-- 预设色 + bars-scale -->
-        <div v-loading="true" reborn-loading-type="bars-scale" reborn-loading-color="info" reborn-loading-text="信息流刷新中…"
-          class="relative h-40 overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5">
-          <div
-            class="absolute inset-0 bg-gradient-to-br from-sky-100 via-white to-cyan-50 dark:from-sky-950 dark:via-slate-950 dark:to-cyan-950" />
+    <DemoSection title="自定义文字与图标" description="通过 reborn-loading-* 元素属性定制图标类型、颜色、尺寸与遮罩背景，属性变化时响应式生效。">
+      <DemoBlock layout="grid" align="start" class="sm:grid-cols-2 lg:grid-cols-4">
+        <div v-for="item in attrCases" :key="item.label" class="flex flex-col gap-2">
+          <span class="text-dimmed text-xs font-medium">{{ item.label }}</span>
+          <!-- 宿主只描边不填充：遮罩自带背景，这里只需要一块可辨认的落点 -->
+          <div v-loading="true" :reborn-loading-type="item.type" :reborn-loading-color="item.color"
+            :reborn-loading-text="item.text" :reborn-loading-size="item.size"
+            :reborn-loading-background="item.background"
+            class="border-default rounded-ui-sm relative h-40 overflow-hidden border border-dashed" />
         </div>
-        <!-- 自定义色 + gooey-balls -->
-        <div v-loading="true" reborn-loading-type="gooey-balls" reborn-loading-color="#d946ef"
-          reborn-loading-text="AI 生成中…" reborn-loading-size="30px"
-          class="relative h-40 overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5">
-          <div
-            class="absolute inset-0 bg-gradient-to-br from-fuchsia-100 via-white to-violet-50 dark:from-fuchsia-950 dark:via-slate-950 dark:to-violet-950" />
-        </div>
-        <!-- 深色遮罩背景 + 自定义浅色图标 -->
-        <div v-loading="true" reborn-loading-type="blocks-wave" reborn-loading-color="#a78bfa"
-          reborn-loading-background="rgba(2, 6, 23, 0.85)" reborn-loading-text="夜间模式渲染…"
-          class="relative h-40 overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5">
-          <div
-            class="absolute inset-0 bg-gradient-to-br from-indigo-200 via-slate-100 to-violet-200 dark:from-indigo-900 dark:via-slate-900 dark:to-violet-900" />
-        </div>
-        <!-- 无文字 + spinner 警示色 -->
-        <div v-loading="true" reborn-loading-type="spinner" reborn-loading-color="warning" reborn-loading-size="32px"
-          class="relative h-40 overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5">
-          <div
-            class="absolute inset-0 bg-gradient-to-br from-amber-100 via-white to-orange-50 dark:from-amber-950 dark:via-slate-950 dark:to-orange-950" />
-        </div>
-      </section>
+      </DemoBlock>
+    </DemoSection>
 
-      <!-- 标题行 -->
-      <div class="mt-4 flex flex-col gap-1">
-        <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-          全屏加载 <code class="text-sm font-normal text-violet-400">.fullscreen.lock</code>
-        </h4>
-        <p class="text-sm text-gray-500">修饰符将遮罩挂载至 body 铺满视口，并以全局引用计数锁定页面滚动。</p>
-      </div>
-      <div class="mt-4 flex flex-col gap-1">
-        <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-          服务式调用 <code class="text-sm font-normal text-violet-400">useLoading</code>
-        </h4>
-        <p class="text-sm text-gray-500">命令式创建遮罩，返回实例句柄进行 setText / patch / close 全流程控制。</p>
-      </div>
+    <DemoSection title="全屏加载" description="`.fullscreen` 将遮罩挂载至 body 铺满视口，`.lock` 以全局引用计数锁定页面滚动。">
+      <div v-loading.fullscreen.lock="fullscreenOn" reborn-loading-text="整页处理中 · 2 秒后自动关闭"
+        reborn-loading-type="gooey-balls" reborn-loading-size="34px" class="flex flex-col gap-4">
+        <DemoNote class="max-w-2xl">
+          适合支付、发布等不可中断流程。遮罩层级默认 <code>3000</code>，滚动锁与 Overlay 共享同一个全局计数器，互不踩踏；重复触发全屏遮罩时复用同一单例。
+        </DemoNote>
 
-      <!-- 全屏加载 -->
-      <section v-loading.fullscreen.lock="fullscreenOn" reborn-loading-text="整页处理中 · 2 秒后自动关闭"
-        reborn-loading-type="gooey-balls" reborn-loading-size="34px"
-        class="relative flex flex-col justify-between gap-6 overflow-hidden rounded-3xl border border-white/10 bg-gray-950 p-7 shadow-2xl shadow-black/40">
-        <!-- 装饰光斑 -->
-        <div class="pointer-events-none absolute -top-20 -right-16 size-56 rounded-full bg-violet-600/20 blur-3xl" />
-        <div class="pointer-events-none absolute -bottom-24 -left-16 size-56 rounded-full bg-fuchsia-600/10 blur-3xl" />
-        <div class="relative flex flex-col gap-3">
-          <span class="text-[10px] tracking-[0.4em] text-gray-500 uppercase">Fullscreen · Lock</span>
-          <h5 class="text-2xl font-black tracking-tight text-white">整页阻断式加载</h5>
-          <p class="text-sm leading-relaxed text-gray-400">
-            适合支付、发布等不可中断流程。遮罩层级默认 <code class="text-violet-300">3000</code>，
-            滚动锁与 Overlay 共享同一个全局计数器，互不踩踏；重复触发全屏遮罩时复用同一单例。
-          </p>
-          <pre
-            class="mt-1 w-fit rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-mono text-[11px] leading-relaxed text-violet-200">
-        <code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code>
-      </pre>
-        </div>
-        <div class="relative flex items-center justify-between">
-          <span class="font-mono text-[10px] text-gray-600">z-index: 3000 · scroll locked</span>
+        <pre
+          class="bg-elevated rounded-ui-sm text-muted w-fit px-4 py-3 font-mono text-[11px] leading-relaxed"><code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code></pre>
+
+        <div class="flex items-center gap-4">
           <RebornButton label="触发全屏加载" color="primary" variant="solid" :disabled="fullscreenOn"
             @click="triggerFullscreen">
             <template #leading>
               <Icon name="lucide:expand" size="14" />
             </template>
           </RebornButton>
+          <DemoNote tone="dimmed" class="font-mono text-[10px]">z-index: 3000 · scroll locked</DemoNote>
         </div>
-      </section>
+      </div>
+    </DemoSection>
 
-      <!-- 服务式 useLoading -->
-      <section
-        class="flex flex-col gap-4 rounded-3xl border border-slate-200/50 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
+    <DemoSection title="服务式调用" description="useLoading 命令式创建遮罩，返回实例句柄进行 setText / patch / close 全流程控制。">
+      <DemoBlock layout="stack" class="gap-4">
         <div class="flex flex-wrap gap-3">
           <RebornButton label="模拟发布流程 (全屏分步)" color="primary" variant="soft" size="sm" :disabled="publishing"
             @click="runPublishFlow">
@@ -493,46 +439,29 @@ onUnmounted(() => {
           </RebornButton>
         </div>
 
-        <!-- 调用日志面板：同时也是局部遮罩的 target 容器 -->
+        <!-- 调用日志面板：它同时是局部遮罩的 target 容器，即被演示的宿主，故保留这层浅填充 -->
         <div id="reborn-loading-service-panel"
-          class="flex min-h-[220px] flex-1 flex-col gap-2 overflow-hidden rounded-2xl border border-slate-200/60 bg-slate-950 p-5 font-mono text-[11px] shadow-inner dark:border-white/10">
-          <div class="mb-1 flex items-center gap-2 text-[10px] tracking-[0.3em] text-gray-500 uppercase">
+          class="bg-elevated rounded-ui-sm flex min-h-[220px] w-full flex-col gap-2 overflow-hidden p-5 font-mono text-[11px]">
+          <div class="text-dimmed mb-1 flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase">
             <span class="flex gap-1.5">
-              <span class="size-2 rounded-full bg-error/70" />
-              <span class="size-2 rounded-full bg-warning/70" />
-              <span class="size-2 rounded-full bg-success/70" />
+              <span class="bg-error/70 size-2 rounded-full" />
+              <span class="bg-warning/70 size-2 rounded-full" />
+              <span class="bg-success/70 size-2 rounded-full" />
             </span>
             service console
           </div>
           <TransitionGroup name="log">
             <div v-for="(item, i) in serviceLogs" :key="item.time + item.msg + i" class="flex items-start gap-2">
-              <span class="shrink-0 text-gray-600">{{ item.time }}</span>
-              <span :class="item.tone === 'success' ? 'text-emerald-400' : 'text-violet-300'">{{ item.msg }}</span>
+              <span class="text-dimmed shrink-0">{{ item.time }}</span>
+              <span :class="item.tone === 'success' ? 'text-success' : 'text-primary'">{{ item.msg }}</span>
             </div>
           </TransitionGroup>
-          <div v-if="serviceLogs.length === 0" class="flex flex-1 items-center justify-center text-gray-600">
+          <div v-if="serviceLogs.length === 0" class="text-dimmed flex flex-1 items-center justify-center">
             点击上方按钮，观察 useLoading 实例的完整生命周期 →
           </div>
         </div>
-      </section>
-    </div>
-
-    <!-- 特性说明卡 -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <div v-for="feature in [
-        { no: '01', title: '全屏单例', desc: '未关闭时重复调用 useLoading 全屏模式，返回同一个实例，避免遮罩叠加。' },
-        { no: '02', title: '实例复用', desc: 'v-loading 快速开关复用同一遮罩实例，淡出未结束即重开时自动作废销毁意图。' },
-        { no: '03', title: '属性响应式', desc: 'reborn-loading-* 元素属性在组件更新时重读，可随业务状态实时切换文案与样式。' },
-      ]" :key="feature.no"
-        class="group flex flex-col gap-3 rounded-3xl border border-slate-200/50 bg-white/60 p-6 backdrop-blur-2xl transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 dark:border-white/5 dark:bg-slate-900/40">
-        <span
-          class="w-fit bg-gradient-to-br from-violet-500 to-fuchsia-500 bg-clip-text font-mono text-3xl font-black text-transparent opacity-40 transition-opacity group-hover:opacity-100">
-          {{ feature.no }}
-        </span>
-        <h5 class="text-base font-bold text-gray-900 dark:text-white">{{ feature.title }}</h5>
-        <p class="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{{ feature.desc }}</p>
-      </div>
-    </div>
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>
 

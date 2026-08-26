@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { h, resolveComponent } from "vue";
 import RebornDialog from "~/components/reborn/ui/reborn-dialog/RebornDialog.vue";
 
 /**
@@ -16,6 +15,13 @@ const emit = defineEmits<{
   confirm: [];
   cancel: [];
 }>();
+
+/** 演示用的只读表单字段 */
+const profileFields = [
+  { label: "姓氏", value: "安" },
+  { label: "名字", value: "重力" },
+  { label: "电子邮箱", value: "antigravity@example.com" },
+];
 
 function handleConfirm() {
   emit("confirm");
@@ -39,26 +45,11 @@ function handleCancel() {
     <slot />
 
     <template #content>
-      <div class="space-y-4 py-2">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">姓氏</label>
-            <div class="h-10 px-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center text-sm text-gray-600">
-              安
-            </div>
-          </div>
-          <div class="space-y-2">
-            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">名字</label>
-            <div class="h-10 px-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center text-sm text-gray-600">
-              重力
-            </div>
-          </div>
-        </div>
-        <div class="space-y-2">
-          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">电子邮箱</label>
-          <div class="h-10 px-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center text-sm text-gray-600">
-            antigravity@example.com
-          </div>
+      <!-- 只读字段列表：靠分隔线区分行，不额外铺底色 -->
+      <div class="divide-default flex flex-col divide-y">
+        <div v-for="field in profileFields" :key="field.label" class="flex items-center justify-between gap-4 py-2.5">
+          <span class="text-muted text-sm">{{ field.label }}</span>
+          <span class="text-highlighted text-sm font-medium">{{ field.value }}</span>
         </div>
       </div>
     </template>

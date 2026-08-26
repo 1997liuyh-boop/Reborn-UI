@@ -1,51 +1,106 @@
 <script setup lang="ts">
-import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
 import { sliderColors, sliderSizes } from "~/components/reborn/ui/reborn-slider/reborn-slider.config";
 
-const size = ref<any>("md");
-const color = ref<any>("primary");
+/** 演练场绑定值 */
+const state = ref({
+  size: "md",
+  color: "primary",
+  disabled: false,
+});
+
 const value1 = ref(40);
 const rangeValues = ref([20, 80]);
-const disabled = ref(false);
+
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "外观",
+    children: [
+      {
+        label: "尺寸",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: sliderSizes.map((s) => ({ label: s, value: s })) },
+      },
+      {
+        label: "颜色",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "primary",
+        props: { options: sliderColors.map((c) => ({ label: c, value: c })) },
+      },
+      { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+];
 </script>
 
 <template>
-    <div class="flex w-full flex-col gap-10">
-        <div
-            class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">尺寸</span>
-                <USelect v-model="size" :items="[...sliderSizes]" class="w-28" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">颜色</span>
-                <USelect v-model="color" :items="[...sliderColors]" class="w-28" />
-            </div>
-            <UCheckbox v-model="disabled" label="禁用" />
-        </div>
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      component-name="RebornSlider"
+      title="交互演练场"
+      description="切换尺寸与颜色，滑块实时响应；勾选禁用查看不可拖动态。"
+    >
+      <RebornSlider
+        v-model="value1"
+        class="w-full max-w-sm"
+        :size="state.size"
+        :color="state.color"
+        :disabled="state.disabled"
+        show-value
+      />
+    </Playground>
 
-        <div class="grid gap-8">
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">基础</h3>
-                <RebornSlider v-model="value1" :size="size" :color="color" :disabled="disabled" show-value />
-            </div>
+    <DemoSection
+      title="步长"
+      description="step=10 时拖动会按 10 对齐。"
+    >
+      <DemoBlock layout="stack">
+        <RebornSlider
+          v-model="value1"
+          class="w-full max-w-sm"
+          :step="10"
+          :size="state.size"
+          :color="state.color"
+          show-value
+        />
+      </DemoBlock>
+    </DemoSection>
 
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">步长 (step=10)</h3>
-                <RebornSlider v-model="value1" :step="10" :size="size" :color="color" show-value />
-            </div>
+    <DemoSection
+      title="范围选择"
+      description="v-model:values 绑定长度为 2 的数组，开启 range 即为区间滑块。"
+    >
+      <DemoBlock layout="stack">
+        <RebornSlider
+          v-model:values="rangeValues"
+          class="w-full max-w-sm"
+          range
+          :size="state.size"
+          :color="state.color"
+          show-value
+        />
+      </DemoBlock>
+    </DemoSection>
 
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">范围选择</h3>
-                <RebornSlider v-model:values="rangeValues" range :size="size" :color="color" show-value />
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">颜色</h3>
-                <div class="flex flex-col gap-4">
-                    <RebornSlider v-for="c in sliderColors" :key="c" :model-value="50" :color="c" :size="size" />
-                </div>
-            </div>
-        </div>
-    </div>
+    <DemoSection
+      title="颜色"
+      description="与全站语义色板对齐。"
+    >
+      <DemoBlock layout="stack">
+        <RebornSlider
+          v-for="c in sliderColors"
+          :key="c"
+          class="w-full max-w-sm"
+          :model-value="50"
+          :color="c"
+          :size="state.size"
+        />
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>

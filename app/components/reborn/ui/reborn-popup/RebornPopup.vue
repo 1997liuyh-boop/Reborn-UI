@@ -23,8 +23,7 @@
           <slot name="header">
             <span :class="ui.title()" role="heading">{{ title }}</span>
           </slot>
-          <RebornButton v-if="showClose" variant="soft" @click="handleClose" :class="ui.closeBtn()" color="neutral"
-            circle>
+          <RebornButton v-if="showClose" variant="circle" @click="handleClose" :class="ui.closeBtn()" color="neutral">
             <Icon name="lucide:x" class="w-5 h-5" />
           </RebornButton>
         </header>

@@ -34,164 +34,105 @@ const rangeShortcuts = [
 </script>
 
 <template>
-    <div class="flex w-full flex-col gap-8 p-1">
-        <!-- 控制面板 -->
-        <div
-            class="flex flex-wrap items-center gap-6 rounded-2xl border border-gray-1 bg-white/50 p-6 shadow-sm backdrop-blur-sm dark:border-gray-8 dark:bg-gray-900/50">
-            <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon name="lucide:settings-2" class="size-5" />
+    <div class="flex w-full flex-col">
+        <!-- 全局配置：一行控件，不铺底色 -->
+        <DemoSection title="全局配置" description="下方所有示例共享这组尺寸 / 颜色 / 禁用参数。">
+            <DemoBlock class="gap-6">
+                <div class="flex items-center gap-2">
+                    <span class="text-muted text-xs font-medium">尺寸</span>
+                    <USelect v-model="size" :items="[...selectDateSizes]" class="w-24" />
                 </div>
-                <div>
-                    <p class="text-caption font-bold uppercase tracking-wider text-gray-400">全局配置</p>
-                    <div class="mt-1 flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-medium text-gray-500">尺寸</span>
-                            <USelect v-model="size" :items="[...selectDateSizes]" class="w-24" />
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-medium text-gray-500">颜色</span>
-                            <USelect v-model="color" :items="[...selectDateColors]" class="w-28" />
-                        </div>
-                        <UCheckbox v-model="disabled" label="禁用组件" />
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-muted text-xs font-medium">颜色</span>
+                    <USelect v-model="color" :items="[...selectDateColors]" class="w-28" />
                 </div>
-            </div>
-        </div>
+                <UCheckbox v-model="disabled" label="禁用组件" />
+            </DemoBlock>
+        </DemoSection>
 
-        <div class="grid gap-6 md:grid-cols-2">
-            <!-- 基础选择 -->
-            <section
-                class="rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900">
-                <div class="mb-6 flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
-                        <Icon name="lucide:calendar" class="size-5" />
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">基础日期</h3>
+        <DemoSection title="基础日期" description="date 选日期，datetime 额外带时间列。">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Date picker</span>
+                    <RebornSelectDate v-model="dateValue" type="date" :size="size" :color="color" :disabled="disabled"
+                        placeholder="选择日期" />
+                    <DemoNote tone="dimmed" class="font-mono text-xs">Value: {{ dateValue || 'undefined' }}</DemoNote>
                 </div>
-
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Date picker</label>
-                        <RebornSelectDate v-model="dateValue" type="date" :size="size" :color="color"
-                            :disabled="disabled" placeholder="选择日期" />
-                        <div
-                            class="flex h-8 items-center rounded-lg bg-gray-50 px-3 text-sm text-gray-500 dark:bg-gray-800/50">
-                            Value: <span class="ml-2 font-mono text-primary">{{ dateValue || `undefined` }}</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">DateTime picker</label>
-                        <RebornSelectDate v-model="datetimeValue" type="datetime" :size="size" :color="color"
-                            :disabled="disabled" placeholder="选择日期时间" />
-                        <div
-                            class="flex h-8 items-center rounded-lg bg-gray-50 px-3 text-sm text-gray-500 dark:bg-gray-800/50">
-                            Value: <span class="ml-2 font-mono text-primary">{{ datetimeValue || `undefined` }}</span>
-                        </div>
-                    </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">DateTime picker</span>
+                    <RebornSelectDate v-model="datetimeValue" type="datetime" :size="size" :color="color"
+                        :disabled="disabled" placeholder="选择日期时间" />
+                    <DemoNote tone="dimmed" class="font-mono text-xs">Value: {{ datetimeValue || 'undefined' }}
+                    </DemoNote>
                 </div>
-            </section>
+            </DemoBlock>
+        </DemoSection>
 
-            <!-- 范围选择 -->
-            <section
-                class="rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900">
-                <div class="mb-6 flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
-                        <Icon name="lucide:calendar-range" class="size-5" />
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">范围选择</h3>
+        <DemoSection title="范围选择" description="rangeable 开启双面板，配合 shortcuts 可一键套用常用区间。">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Date Range（双面板）</span>
+                    <RebornSelectDate v-model="rangeValue" type="daterange" rangeable :size="size" :color="color"
+                        :disabled="disabled" :shortcuts="rangeShortcuts" placeholder="点击选择日期范围" />
+                    <DemoNote tone="dimmed" class="font-mono text-xs">
+                        Value: {{ rangeValue.length ? rangeValue.join(' ~ ') : 'empty' }}
+                    </DemoNote>
                 </div>
-
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Date Range (Dual Panel)</label>
-                        <RebornSelectDate v-model="rangeValue" type="daterange" rangeable :size="size" :color="color"
-                            :disabled="disabled" :shortcuts="rangeShortcuts" placeholder="点击选择日期范围" />
-                        <div
-                            class="flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-sm text-gray-500 dark:bg-gray-800/50">
-                            Value: <span class="ml-2 font-mono text-primary">{{ rangeValue.length ? rangeValue.join(` ~
-                                `) : `empty` }}</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">DateTime Range (Dual Panel)</label>
-                        <RebornSelectDate v-model="dateTimeRangeValue" type="datetimerange" rangeable :size="size"
-                            :color="color" :disabled="disabled" value-format="YYYY-MM-DD HH:mm:ss.SSS"
-                            placeholder="选择开始与结束时间" />
-                        <div
-                            class="flex min-h-8 flex-wrap items-center rounded-lg bg-gray-50 px-3 py-1 text-sm text-gray-500 dark:bg-gray-800/50">
-                            Value: <span class="ml-2 font-mono text-primary">{{ dateTimeRangeValue.length ?
-                                dateTimeRangeValue.join(` ~ `) : `empty` }}</span>
-                        </div>
-                    </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">DateTime Range（双面板）</span>
+                    <RebornSelectDate v-model="dateTimeRangeValue" type="datetimerange" rangeable :size="size"
+                        :color="color" :disabled="disabled" value-format="YYYY-MM-DD HH:mm:ss.SSS"
+                        placeholder="选择开始与结束时间" />
+                    <DemoNote tone="dimmed" class="font-mono text-xs">
+                        Value: {{ dateTimeRangeValue.length ? dateTimeRangeValue.join(' ~ ') : 'empty' }}
+                    </DemoNote>
                 </div>
-            </section>
+            </DemoBlock>
+        </DemoSection>
 
-            <!-- 组合选择 (月中、年中) -->
-            <section
-                class="rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900">
-                <div class="mb-6 flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
-                        <Icon name="lucide:layout-grid" class="size-5" />
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">特殊维度</h3>
+        <DemoSection title="特殊维度" description="按月 / 年 / 整周 / 多天四种粒度取值。">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-4">
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Month view</span>
+                    <RebornSelectDate v-model="monthValue" type="month" :size="size" :color="color"
+                        :disabled="disabled" placeholder="仅月份" />
                 </div>
-
-                <div class="grid gap-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Month view</label>
-                        <RebornSelectDate v-model="monthValue" type="month" :size="size" :color="color"
-                            :disabled="disabled" placeholder="仅月份" />
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Year view</label>
-                        <RebornSelectDate v-model="yearValue" type="year" :size="size" :color="color"
-                            :disabled="disabled" placeholder="仅年份" />
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Week selection</label>
-                        <RebornSelectDate v-model="weekValue" type="week" rangeable :size="size" :color="color"
-                            :disabled="disabled" placeholder="整周选择" />
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Multiple dates</label>
-                        <RebornSelectDate v-model="datesValue" type="dates" :size="size" :color="color"
-                            :disabled="disabled" placeholder="选择多天" />
-                    </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Year view</span>
+                    <RebornSelectDate v-model="yearValue" type="year" :size="size" :color="color" :disabled="disabled"
+                        placeholder="仅年份" />
                 </div>
-            </section>
-
-            <!-- 高级自定义 -->
-            <section
-                class="rounded-2xl border border-gray-1 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-gray-8 dark:bg-gray-900">
-                <div class="mb-6 flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
-                        <Icon name="lucide:palette" class="size-5" />
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">高级定制</h3>
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Week selection</span>
+                    <RebornSelectDate v-model="weekValue" type="week" rangeable :size="size" :color="color"
+                        :disabled="disabled" placeholder="整周选择" />
                 </div>
-
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Custom Format</label>
-                        <RebornSelectDate v-model="customFormatValue" type="date" labelFormat="YYYY年MM月DD日"
-                            valueFormat="YYYY/MM/DD" :size="size" :color="color" placeholder="格式化显示与存储" />
-                        <p class="text-sm text-gray-400 italic">Display: YYYY年MM月DD日 | Value: {{
-                            customFormatValue
-                            || `-` }}</p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-gray-400">Luxury Theme Overwrites</label>
-                        <RebornSelectDate type="datetime" :size="size" color="info" :ui="{
-                            trigger: 'border-2 border-info/30 rounded-2xl bg-info/5 hover:border-info/60 transition-all shadow-inner',
-                            dropdown: 'rounded-ui-lg shadow-2xl shadow-info/20 border-info/10 bg-white/95 backdrop-blur-md dark:bg-gray-800/95'
-                        }" placeholder="深度重写 UI 样式" />
-                    </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Multiple dates</span>
+                    <RebornSelectDate v-model="datesValue" type="dates" :size="size" :color="color"
+                        :disabled="disabled" placeholder="选择多天" />
                 </div>
-            </section>
-        </div>
+            </DemoBlock>
+        </DemoSection>
+
+        <DemoSection title="高级定制" description="labelFormat 决定展示、valueFormat 决定存储；ui 可深度重写触发器与浮层。">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">Custom Format</span>
+                    <RebornSelectDate v-model="customFormatValue" type="date" label-format="YYYY年MM月DD日"
+                        value-format="YYYY/MM/DD" :size="size" :color="color" placeholder="格式化显示与存储" />
+                    <DemoNote tone="dimmed" class="font-mono text-xs">
+                        Display: YYYY年MM月DD日 | Value: {{ customFormatValue || '-' }}
+                    </DemoNote>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <span class="text-dimmed text-xs font-medium">UI 深度重写</span>
+                    <RebornSelectDate type="datetime" :size="size" color="info" :ui="{
+                        trigger: 'border-2 border-info/30 rounded-ui-base bg-info/5 hover:border-info/60 transition-all',
+                        dropdown: 'rounded-ui-base border-info/20'
+                    }" placeholder="深度重写 UI 样式" />
+                </div>
+            </DemoBlock>
+        </DemoSection>
     </div>
 </template>

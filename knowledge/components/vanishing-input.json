@@ -49,7 +49,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\nconst placeholders = [\n  \"Why is my code always broken?\",\n  \"What does 'undefined' even mean?\",\n  \"How to center a div (for real this time)\",\n  \"Am I smarter than a compiler?\",\n  \"Do loops ever get dizzy?\",\n];\nconst text = ref(\"\");\n</script>\n\n<template>\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\n    <h2 class=\"mb-10 text-center text-xl text-black sm:mb-20 sm:text-5xl dark:text-white\">\n      Ask Anything Silly\n    </h2>\n    <VanishingInput\n      v-model=\"text\"\n      :placeholders=\"placeholders\"\n    />\n  </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\nconst placeholders = [\n  \"为什么我的代码总是坏掉？\",\n  \"undefined 到底是什么意思？\",\n  \"这次真的要把 div 居中了\",\n  \"我比编译器聪明吗？\",\n  \"循环会不会转晕？\",\n];\nconst text = ref(\"\");\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"占位文案轮换消失；标题是输入框的引导，不是页面级 hero。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <div class=\"flex flex-col items-center justify-center px-4 py-16\">\n        <h2 class=\"text-highlighted mb-10 text-center text-xl sm:mb-16 sm:text-4xl\">\n          随便问点什么\n        </h2>\n        <VanishingInput\n          v-model=\"text\"\n          :placeholders=\"placeholders\"\n        />\n      </div>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,8 @@
   },
   "docPath": "content/2.components/input-and-forms/placeholders-and-vanish-input.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "527a3f06db7f4410060a42697bc4e5daf8397b03",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "cc677103a69c602e8722ef035dbb7b97b536d8e9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

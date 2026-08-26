@@ -20,7 +20,7 @@
                     </div>
                 </div>
                 <div label="code" icon="lucide:laptop-minimal">
-                    <MDCRenderer v-if="ast" :body="ast.body" :data="ast.data"
+                    <MDCRenderer v-if="ast" :body="ast.body" :data="ast.data" :components="{ pre: ProsePre }"
                         class="[&_pre]:!rounded-t-none [&_div.my-5]:!mt-0" />
                 </div>
             </CodeGroup>
@@ -33,6 +33,7 @@ import { pascalCase, kebabCase } from 'scule';
 import { hash } from 'ohash'
 import json5 from 'json5'
 import { get, set } from '../../utils';
+import ProsePre from '~/components/content/ProsePre.vue';
 
 
 interface Props {

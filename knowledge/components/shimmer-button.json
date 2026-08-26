@@ -68,7 +68,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"z-10 flex min-h-64 items-center justify-center\">\n    <ShimmerButton\n      class=\"shadow-2xl\"\n      shimmer-size=\"2px\"\n    >\n      <span\n        class=\"text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg dark:from-white dark:to-slate-900/10\"\n      >\n        Cool Button\n      </span>\n    </ShimmerButton>\n  </div>\n</template>\n",
+      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"ShimmerButton 通过 shimmer-size 控制光带宽度，光带沿按钮边框循环流动，适合首屏 CTA 与订阅入口。\"\n  >\n    <DemoBlock align=\"center\">\n      <ShimmerButton shimmer-size=\"2px\">\n        <span\n          class=\"text-center text-sm leading-none font-medium tracking-tight whitespace-pre-wrap text-white lg:text-lg\"\n        >\n          微光按钮\n        </span>\n      </ShimmerButton>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -102,8 +102,8 @@
   },
   "docPath": "content/2.components/button/shimmer-button.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "018335121fbc42df2ec4ebc46e0eca4271191c4a",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "d836ae41b07eee938f4ecedbec66d40e662a9af6",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

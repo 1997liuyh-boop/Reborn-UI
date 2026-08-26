@@ -1,52 +1,62 @@
+<script setup lang="ts">
+/** 吸顶演示需要一段可滚动内容，列表本身无背景，靠分隔线区分条目 */
+const listA = Array.from({ length: 8 }, (_, i) => i + 1);
+const listB = Array.from({ length: 8 }, (_, i) => i + 1);
+const listC = Array.from({ length: 16 }, (_, i) => i + 1);
+</script>
+
 <template>
-    <div class="space-y-4">
-        <div class="p-4 border border-gray-200 dark:border-gray-800 rounded-lg">
-            <h2 class="text-xl font-bold mb-4">Sticky 吸顶 Demo</h2>
-            <p class="text-gray-500 mb-8">
-                该组件与CSS中position: sticky属性实现的效果一致，当组件达到预设的到顶部距离时， 就会固定在指定位置。
-            </p>
+  <div class="flex w-full min-w-0 flex-col">
+    <DemoSection
+      title="基础用法"
+      description="与 CSS position: sticky 一致：组件到达预设的顶部距离后固定。下方三条吸顶条分别使用 offset 0 / 40 / 80，可叠加。"
+    >
+      <DemoBlock
+        layout="stack"
+        tone="inset"
+      >
+        <RebornSticky>
+          <div class="bg-primary rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white">
+            默认吸顶 · offset 0
+          </div>
+        </RebornSticky>
 
-            <div class="space-y-4">
-                <RebornSticky>
-                    <div class="bg-primary p-3 h-[40px] text-white flex flex-row items-center rounded shadow-sm">
-                        Header - Default (Offset 0)
-                    </div>
-                </RebornSticky>
-
-                <div v-for="item in 10" :key="`a-${item}`"
-                    class="p-3 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded shadow-sm">
-                    Item A - {{ item }}
-                </div>
-
-                <RebornSticky :offset-top="40">
-                    <div class="bg-amber-500 p-3 h-[40px] text-white flex flex-row items-center rounded shadow-sm">
-                        Header - Offset 40px
-                    </div>
-                </RebornSticky>
-
-                <div v-for="item in 10" :key="`b-${item}`"
-                    class="p-3 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded shadow-sm">
-                    Item B - {{ item }}
-                </div>
-
-                <RebornSticky :offset-top="80">
-                    <div class="bg-green-500 p-3 h-[40px] text-white flex flex-row items-center rounded shadow-sm">
-                        Header - Offset 80px
-                    </div>
-                </RebornSticky>
-
-                <div v-for="item in 30" :key="`c-${item}`"
-                    class="p-3 bg-white dark:bg-gray-900 border dark:border-gray-800 rounded shadow-sm">
-                    Item C - {{ item }}
-                </div>
-            </div>
+        <div
+          v-for="item in listA"
+          :key="`a-${item}`"
+          class="border-default border-b py-3 last:border-b-0"
+        >
+          <span class="text-muted text-sm">条目 A · {{ item }}</span>
         </div>
 
-        <RebornBackTop />
-    </div>
-</template>
+        <RebornSticky :offset-top="40">
+          <div class="bg-warning rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white">
+            吸顶 · offset 40px
+          </div>
+        </RebornSticky>
 
-<script setup lang="ts">
-import RebornSticky from "~/components/reborn/ui/reborn-sticky/RebornSticky.vue"
-import RebornBackTop from "~/components/reborn/ui/reborn-back-top/RebornBackTop.vue"
-</script>
+        <div
+          v-for="item in listB"
+          :key="`b-${item}`"
+          class="border-default border-b py-3 last:border-b-0"
+        >
+          <span class="text-muted text-sm">条目 B · {{ item }}</span>
+        </div>
+
+        <RebornSticky :offset-top="80">
+          <div class="bg-success rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white">
+            吸顶 · offset 80px
+          </div>
+        </RebornSticky>
+
+        <div
+          v-for="item in listC"
+          :key="`c-${item}`"
+          class="border-default border-b py-3 last:border-b-0"
+        >
+          <span class="text-muted text-sm">条目 C · {{ item }}</span>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+  </div>
+</template>

@@ -48,13 +48,20 @@ export interface PlaygroundProps {
     description?: string;
     /** 方向 */
     direction?: 'horizontal' | 'vertical';
+    /**
+     * 是否补回表面样式（背景 + 描边）。
+     * 默认 false：组件渲染在 DemoStage 画布内，画布已是唯一表面层，再铺底色会形成双层背景。
+     * 脱离 DemoStage 独立使用时（如 /playground 页面）传 true。
+     */
+    surface?: boolean;
 }
 
 const props = withDefaults(defineProps<PlaygroundProps>(), {
     title: "交互体验",
     description: "通过左侧面板实时调节组件属性，在右侧查看视觉反馈",
     componentName: "Component",
-    direction: 'horizontal'
+    direction: 'horizontal',
+    surface: false
 });
 
 const emit = defineEmits<{
@@ -160,7 +167,7 @@ function getAccentColor(_index: number) {
     return "bg-primary/80";
 }
 
-const ui = computed(() => tv(config)({ direction: props.direction }));
+const ui = computed(() => tv(config)({ direction: props.direction, surface: props.surface }));
 </script>
 
 <template>
@@ -175,7 +182,7 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
             </div>
             <slot name="tag">
                 <span :class="ui.headerTag()">
-                    Playground
+                    演练场
                 </span>
             </slot>
         </div>
@@ -217,15 +224,12 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornInput v-else-if="item.component === 'input'"
                                         :model-value="getField(item.key)" v-bind="item.props" size="sm"
-                                        class="bg-white! dark:bg-gray-800!"
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornSlider v-else-if="item.component === 'slider'"
                                         :model-value="getField(item.key)" v-bind="item.props" size="sm"
-                                        class="bg-white! dark:bg-gray-800!"
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornColorPicker v-else-if="item.component === 'color-picker'"
                                         :model-value="getField(item.key)" v-bind="item.props" size="sm"
-                                        class="bg-white! dark:bg-gray-800!"
                                         @update:model-value="updateField(item.key, $event)" />
                                 </div>
                             </template>
@@ -252,11 +256,6 @@ const ui = computed(() => tv(config)({ direction: props.direction }));
                             </div>
                         </template>
                     </RebornPopover>
-                </div>
-
-                <!-- 背景装饰 -->
-                <div :class="ui.bgDecorationWrapper()">
-                    <div :class="ui.bgDecoration()" />
                 </div>
 
                 <!-- 预览插槽 -->

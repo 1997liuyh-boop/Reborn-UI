@@ -95,7 +95,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div\n    class=\"font-heading flex flex-col items-center justify-center overflow-hidden bg-black px-4 py-16\"\n  >\n    <Text3d\n      class=\"text-8xl font-bold max-md:text-7xl\"\n      shadow-color=\"red\"\n    >\n      3D\n    </Text3d>\n    <Text3d\n      class=\"text-8xl font-black max-md:text-7xl\"\n      shadow-color=\"skyblue\"\n      :animate=\"false\"\n    >\n      IS\n    </Text3d>\n    <Text3d class=\"text-8xl font-bold max-md:text-7xl\">AWESOME</Text3d>\n  </div>\n</template>\n",
+      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"3D 文字需要深色舞台才看得清阴影层；两种模式都保持深色。\"\n  >\n    <div class=\"flex flex-col items-center justify-center overflow-hidden rounded-ui-md bg-gray-10 px-4 py-16 dark:bg-gray-1\">\n      <Text3d\n        class=\"text-8xl font-bold max-md:text-7xl\"\n        shadow-color=\"red\"\n      >\n        3D\n      </Text3d>\n      <Text3d\n        class=\"text-8xl font-black max-md:text-7xl\"\n        shadow-color=\"skyblue\"\n        :animate=\"false\"\n      >\n        就是\n      </Text3d>\n      <Text3d class=\"text-8xl font-bold max-md:text-7xl\">厉害</Text3d>\n    </div>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -128,8 +128,8 @@
   },
   "docPath": "content/2.components/text-animations/3d-text.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "3f2211a6a627c644f72ab21a00daa87e3293e3a4",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "a5b49a0d707bddefb7dffdbceeafa9b3362b9a06",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

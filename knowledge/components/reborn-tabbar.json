@@ -198,7 +198,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-300\">web端暂时不需要</div>\n</template>\n",
+      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
@@ -243,8 +243,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-tabbar.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "c8aee64d2fb6747b6f3af8829d40136fcc6dbdc5",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "76c86bd95358b8b8df36cb72fef372bbbf69f97c",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

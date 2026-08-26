@@ -5,7 +5,8 @@ export interface ComponentCodeArgs {
 }
 
 const rawFiles = import.meta.glob<string>([
-  "~/components/reborn/**/*.{vue,ts,js,d.ts}",
+  // 含 css：部分组件（如 scrollbar）有同目录样式文件，需在源码面板中一并展示
+  "~/components/reborn/**/*.{vue,ts,js,css,d.ts}",
   "~/assets/**/*.{css,scss,json,ts,js,vue}",
   "@/../packages/uniapp-project/src/**/*.{vue,ts,js,css,json,scss}",
   "@/../packages/uniapp-project/*.{vue,ts,js,json,css,scss}",

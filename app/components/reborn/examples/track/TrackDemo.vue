@@ -1,173 +1,175 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
+/** 单条埋点记录 */
 interface TrackedEvent {
-    eventName: string
-    params: Record<string, any>
-    timestamp: number
-    id: string
+    /** 事件名 */
+    eventName: string;
+    /** 事件携带的参数 */
+    params: Record<string, any>;
+    /** 触发时间戳 */
+    timestamp: number;
+    /** 列表渲染用的唯一键 */
+    id: string;
 }
 
-const events = ref<TrackedEvent[]>([])
+const events = ref<TrackedEvent[]>([]);
 
+/** 监听 v-track 指令派发的全局事件，把结果推到日志顶部 */
 const onTracked = (e: Event) => {
-    const detail = (e as CustomEvent).detail
+    const detail = (e as CustomEvent).detail;
     events.value.unshift({
         ...detail,
-        id: Math.random().toString(36).substring(2, 9)
-    })
-}
+        id: Math.random().toString(36).substring(2, 9),
+    });
+};
 
+/** 清空右侧事件流 */
 const clearLogs = () => {
-    events.value = []
-}
+    events.value = [];
+};
 
 onMounted(() => {
-    window.addEventListener('track:event', onTracked)
-})
+    window.addEventListener("track:event", onTracked);
+});
 
 onUnmounted(() => {
-    window.removeEventListener('track:event', onTracked)
-})
+    window.removeEventListener("track:event", onTracked);
+});
 
+/** 把时间戳格式化成 时:分:秒.毫秒 */
 const formatTime = (ts: number) => {
-    const d = new Date(ts)
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}.${d.getMilliseconds().toString().padStart(3, '0')}`
-}
+    const d = new Date(ts);
+    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+};
 </script>
 
 <template>
-    <div
-        class="analytics-demo p-6 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden min-h-[600px]">
-        <!-- 头部 -->
-        <div class="mb-8 flex items-center justify-between">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <Icon name="lucide:chart-column-increasing" class="text-primary w-6 h-6" />
-                    埋点事件模拟器 (v-track)
-                </h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">与左侧元素交互将触发埋点事件，并在右侧实时展示。</p>
-            </div>
-            <button @click="clearLogs"
-                class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5">
-                <Icon name="lucide:trash-2" class="w-4 h-4" />
-                清空日志
-            </button>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full min-h-[500px]">
-            <!-- 左侧：触发器 -->
-            <div
-                class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 space-y-8 overflow-y-auto max-h-[600px]">
-
-
-                <RebornDialog>
-                    <RebornButton label="打开追踪弹窗 (带有 .duration)" color="primary" variant="solid" />
-                    <template #content>
-                        <!-- 成功结合：page_source（来源页面）、trigger_type（触发方式：点击/自动弹出）、user_status（new/returning） -->
-                        <div class="p-12 text-center" v-track:view="{
-                            event: 'auth_popup_show',
-                            params: { page_source: 'home', trigger_type: 'click', user_status: 'new' },
-                            duration: { event: 'auth_popup_stay', params: { auth_type: 'login' } }
-                        }">
-                            <h4 class="text-lg font-bold mb-2">登录弹窗</h4>
-                            <p class="text-sm text-gray-500">此弹窗在关闭时会额外发送一个 `auth_popup_stay` 埋点并带有 duration 属性
-                            </p>
-                        </div>
-                    </template>
-                </RebornDialog>
-
-                <RebornButton v-track="{ event: 'auth_submit_click', params: { auth_type: 'login', method: 'phone' } }">
-                    登录
-                </RebornButton>
-
-                <RebornButton
-                    v-track.once="{ event: 'auth_submit_click', params: { auth_type: 'register', method: 'phone' } }">
-                    注册(只触发一次)
-                </RebornButton>
-
-                <div>
-                    登录邮箱1
-                    <RebornInput v-track="{
-                        focus: { event: 'auth_input_focus', params: { input_type: 'email' } },
-                        blur: { event: 'auth_input_complete', params: { input_type: 'email' } }
-                    }" />
-                </div>
-                <div>
-                    登录手机号
-                    <RebornInput v-track="{
-                        focus: { event: 'auth_input_focus', params: { input_type: 'phone' } },
-                        blur: { event: 'auth_input_complete', params: { input_type: 'phone' } }
-                    }" />
-                </div>
-                <div>
-                    登录密码
-                    <RebornInput v-track="{
-                        focus: { event: 'auth_input_focus', params: { input_type: 'password' } },
-                        blur: { event: 'auth_input_complete', params: { input_type: 'password' } }
-                    }" />
-                </div>
-                <a href="https://google.com" target="_blank" v-track.prevent="'link_nav_prevented'"
-                    class="text-primary hover:underline text-sm font-medium px-2 py-2">
-                    阻止跳转并追踪
-                </a>
-
-                <div class="h-150 w-full bg-gray-2 rounded-ui-base">
-
-                </div>
-
-                <div v-track:view="{ event: 'section_view_3s', stay: 3000 }"
-                    class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg text-center">
-                    <p class="text-sm text-blue-700 dark:text-blue-400">停留 3 秒触发</p>
-                </div>
-                <div v-track:view="{ event: 'section_levels', stay: [3000, 10000] }"
-                    class="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg text-center">
-                    <p class="text-sm text-purple-700 dark:text-purple-400 font-medium">停留分档追踪 (3s & 10s)</p>
-                    <p class="text-sm text-purple-500 mt-1">分次发送埋点并带有 stayed 参数</p>
-                </div>
-
-                <div v-track:view="'item_visible_at_once'"
-                    class="shrink-0 w-3/4 p-4 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded-lg text-center font-bold border border-yellow-200 dark:border-yellow-800/50 transition-all hover:scale-105">
-                    元素显示的时记录
-                </div>
-            </div>
-
-            <!-- 右侧：实时监控 -->
-            <div
-                class="bg-gray-100 dark:bg-gray-950 p-4 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-col h-full overflow-hidden">
-                <div class="flex items-center justify-between mb-3 px-2">
-                    <span class="text-xs font-bold text-gray-400 uppercase">实时事件流 (track:event)</span>
-                    <span class="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                </div>
-
-                <div class="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
-                    <div v-if="events.length === 0"
-                        class="h-full flex flex-col items-center justify-center text-gray-500 dark:text-gray-600 py-20">
-                        <Icon name="lucide:inbox" class="w-12 h-12 mb-2 opacity-20" />
-                        <p class="text-sm italic">等待记录输出...</p>
+    <div class="flex w-full min-w-0 flex-col">
+        <DemoSection title="埋点事件模拟器" description="与左栏元素交互即可触发 v-track 指令，右栏实时打印 track:event 事件流。">
+            <div class="divide-default grid gap-6 lg:grid-cols-2 lg:gap-0 lg:divide-x">
+                <!-- ========== 左栏：埋点触发器 ========== -->
+                <div class="scrollbar-hide flex max-h-[560px] flex-col gap-6 overflow-y-auto lg:pr-6">
+                    <div class="flex flex-col gap-3">
+                        <span class="text-dimmed text-xs font-medium">停留时长 · <code>duration</code></span>
+                        <RebornDialog>
+                            <RebornButton label="打开追踪弹窗" color="primary" variant="solid" />
+                            <template #content>
+                                <!-- 组合上报：page_source 来源页面、trigger_type 触发方式、user_status 新老用户 -->
+                                <div class="py-8 text-center" v-track:view="{
+                                    event: 'auth_popup_show',
+                                    params: { page_source: 'home', trigger_type: 'click', user_status: 'new' },
+                                    duration: { event: 'auth_popup_stay', params: { auth_type: 'login' } }
+                                }">
+                                    <h4 class="text-highlighted mb-2 text-base font-semibold">登录弹窗</h4>
+                                    <p class="text-muted text-sm">关闭时会额外发送 <code>auth_popup_stay</code>，并携带 duration 属性。</p>
+                                </div>
+                            </template>
+                        </RebornDialog>
                     </div>
 
-                    <TransitionGroup name="list">
-                        <div v-for="event in events" :key="event.id"
-                            class="p-3 bg-white dark:bg-gray-900 rounded-lg shadow-sm border-l-4 border-l-primary-500 text-xs">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="font-mono text-primary-600 dark:text-primary-400 font-bold">{{
-                                    event.eventName }}</span>
-                                <span class="text-gray-400 scale-90">{{ formatTime(event.timestamp) }}</span>
-                            </div>
-                            <div v-if="Object.keys(event.params).length > 0"
-                                class="bg-gray-50 dark:bg-black/20 p-2 rounded border border-gray-100 dark:border-white/5 font-mono text-sm text-gray-600 dark:text-gray-400 scroll-auto overflow-x-auto whitespace-pre">
-                                {{ JSON.stringify(event.params, null, 2) }}
-                            </div>
-                            <div v-else class="text-gray-400 italic py-1">无额外参数</div>
+                    <div class="flex flex-col gap-3">
+                        <span class="text-dimmed text-xs font-medium">点击上报 · <code>v-track</code> / <code>.once</code></span>
+                        <DemoBlock>
+                            <RebornButton
+                                v-track="{ event: 'auth_submit_click', params: { auth_type: 'login', method: 'phone' } }"
+                                label="登录" color="neutral" variant="outline" />
+                            <RebornButton
+                                v-track.once="{ event: 'auth_submit_click', params: { auth_type: 'register', method: 'phone' } }"
+                                label="注册（只触发一次）" color="neutral" variant="soft" />
+                        </DemoBlock>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <span class="text-dimmed text-xs font-medium">聚焦与失焦 · <code>focus</code> / <code>blur</code></span>
+                        <DemoBlock layout="stack" class="gap-3">
+                            <RebornInput v-track="{
+                                focus: { event: 'auth_input_focus', params: { input_type: 'email' } },
+                                blur: { event: 'auth_input_complete', params: { input_type: 'email' } }
+                            }" placeholder="登录邮箱" class="w-full" />
+                            <RebornInput v-track="{
+                                focus: { event: 'auth_input_focus', params: { input_type: 'phone' } },
+                                blur: { event: 'auth_input_complete', params: { input_type: 'phone' } }
+                            }" placeholder="登录手机号" class="w-full" />
+                            <RebornInput v-track="{
+                                focus: { event: 'auth_input_focus', params: { input_type: 'password' } },
+                                blur: { event: 'auth_input_complete', params: { input_type: 'password' } }
+                            }" type="password" placeholder="登录密码" class="w-full" />
+                        </DemoBlock>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <span class="text-dimmed text-xs font-medium">阻止默认行为 · <code>.prevent</code></span>
+                        <a href="https://google.com" target="_blank" v-track.prevent="'link_nav_prevented'"
+                            class="text-primary w-fit text-sm font-medium hover:underline">
+                            点我：只上报，不跳转
+                        </a>
+                    </div>
+
+                    <!-- 滚动占位：只描边不填充，用来把下方曝光埋点推出可视区 -->
+                    <div
+                        class="border-default text-dimmed rounded-ui-sm flex h-64 shrink-0 items-center justify-center border border-dashed text-xs">
+                        继续向下滚动，触发曝光类埋点
+                    </div>
+
+                    <div v-track:view="{ event: 'section_view_3s', stay: 3000 }"
+                        class="bg-info/10 text-info rounded-ui-sm shrink-0 px-4 py-3 text-center text-sm">
+                        停留 3 秒触发
+                    </div>
+
+                    <div v-track:view="{ event: 'section_levels', stay: [3000, 10000] }"
+                        class="bg-secondary/10 text-secondary rounded-ui-sm shrink-0 px-4 py-3 text-center">
+                        <p class="text-sm font-medium">停留分档追踪（3s &amp; 10s）</p>
+                        <p class="mt-1 text-xs opacity-80">分次发送埋点并携带 stayed 参数</p>
+                    </div>
+
+                    <div v-track:view="'item_visible_at_once'"
+                        class="bg-warning/10 text-warning rounded-ui-sm shrink-0 px-4 py-3 text-center text-sm font-medium">
+                        元素出现即记录
+                    </div>
+                </div>
+
+                <!-- ========== 右栏：实时事件流 ========== -->
+                <div class="flex max-h-[560px] min-h-[320px] flex-col lg:pl-6">
+                    <div class="flex shrink-0 items-center justify-between gap-4 pb-3">
+                        <span class="text-dimmed text-xs font-bold tracking-wider uppercase">实时事件流 · track:event</span>
+                        <div class="flex items-center gap-3">
+                            <span class="bg-success size-2 shrink-0 animate-pulse rounded-full" />
+                            <RebornButton label="清空日志" size="sm" color="neutral" variant="text" @click="clearLogs">
+                                <template #leading>
+                                    <Icon name="lucide:trash-2" class="size-4" />
+                                </template>
+                            </RebornButton>
                         </div>
-                    </TransitionGroup>
+                    </div>
+
+                    <!-- 控制台面板：规范允许的唯一一层浅填充（tone="inset"），其内部不再叠任何填充盒 -->
+                    <DemoBlock tone="inset" layout="stack" class="scrollbar-hide min-h-0 flex-1 gap-0 overflow-y-auto">
+                        <div v-if="events.length === 0"
+                            class="text-dimmed flex h-full min-h-[220px] flex-col items-center justify-center gap-2">
+                            <Icon name="lucide:inbox" class="size-10 opacity-30" />
+                            <p class="text-xs">等待记录输出…</p>
+                        </div>
+
+                        <TransitionGroup name="list">
+                            <div v-for="event in events" :key="event.id"
+                                class="border-l-primary flex flex-col gap-1.5 border-l-2 py-3 pl-3">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-primary font-mono text-xs font-bold">{{ event.eventName }}</span>
+                                    <span class="text-dimmed shrink-0 font-mono text-[11px]">{{
+                                        formatTime(event.timestamp) }}</span>
+                                </div>
+                                <pre v-if="Object.keys(event.params).length > 0"
+                                    class="text-muted overflow-x-auto font-mono text-[11px] leading-relaxed whitespace-pre">{{ JSON.stringify(event.params, null, 2) }}</pre>
+                                <span v-else class="text-dimmed text-[11px]">无额外参数</span>
+                            </div>
+                        </TransitionGroup>
+                    </DemoBlock>
                 </div>
             </div>
-        </div>
+        </DemoSection>
     </div>
 </template>
-
 
 <style scoped>
 .list-enter-active,
@@ -185,6 +187,7 @@ const formatTime = (ts: number) => {
     transform: translateX(-30px);
 }
 
+/* 事件流与触发器列表隐藏原生滚动条，避免在窄栏里挤压内容宽度 */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

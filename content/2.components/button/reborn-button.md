@@ -1,6 +1,6 @@
 ---
 title: 按钮
-description: 双端基础按钮：7 种语义色 × 5 种变体，支持尺寸、形状、加载与禁用状态。
+description: 双端基础按钮：7 种语义色 × 多变体（Web 7 / UniApp 5），支持尺寸、形状、加载与禁用状态。
 category: 按钮
 tags: [css, tailwind, button, uniapp]
 badge: New
@@ -20,9 +20,9 @@ navigation:
 
 Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端同名同构。
 
-它的样式体系由两个正交维度构成：`color` 决定**语义**（这个操作是主要的、危险的还是中性的），`variant` 决定**视觉强度**（这个操作在当前界面里有多突出）。7 种语义色 × 5 种变体覆盖了从主行动按钮到轻量文字链接的完整强度梯度，无需为每种场景单独定制样式。
+它的样式体系由两个正交维度构成：`color` 决定**语义**（这个操作是主要的、危险的还是中性的），`variant` 决定**视觉强度**（这个操作在当前界面里有多突出）。7 种语义色 × 5 种强度变体覆盖了从主行动按钮到轻量文字链接的完整强度梯度，无需为每种场景单独定制样式。
 
-在此之上，`size` / `round` / `circle` 控制形态，`loading` / `disabled` 控制状态，`leading` / `trailing` 插槽承载图标。UniApp 端额外完整代理了小程序原生 `button` 的开放能力（获取手机号、客服会话、打开授权设置等），因此同一套 API 可以同时服务 H5 与各端小程序。
+在此之上，形态与状态各有一组 API：**形状**两端分化——Web 端把形状并入 `variant`（额外提供 `round` 胶囊 / `circle` 圆形图标按钮两个取值），UniApp 端保留 `round` / `circle` 布尔 props；`size` 控制尺寸，`loading` / `disabled` 控制状态，`leading` / `trailing` 插槽承载图标。UniApp 端额外完整代理了小程序原生 `button` 的开放能力（获取手机号、客服会话、打开授权设置等），因此同一套 API 可以同时服务 H5 与各端小程序。
 
 ### 何时使用
 
@@ -63,6 +63,8 @@ Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端�
 | `soft` | 10% 透明度浅色底，无边框 | 并列的多个同级操作 |
 | `subtle` | 浅色底 + 同色描边 | 需要比 `soft` 更明确边界的场景 |
 | `text` | 无背景无边框，高度与内边距归零 | 表格行内操作、辅助链接 |
+| `round` | 胶囊形（`!rounded-full`），着色同 `solid` | 需要胶囊形状的主行动（仅 Web 端） |
+| `circle` | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `solid` | 收起、收藏、关闭等图标操作（仅 Web 端） |
 
 ```vue
 <template>
@@ -93,13 +95,13 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-三档，高度固定 px，水平内边距统一 12px：
+三档，高度固定 px，水平内边距统一 12px；非形状变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
 
-| `size` | 高度 | 字号 |
-| --- | --- | --- |
-| `sm` | 24px | `text-sm`（12px） |
-| `md`（默认） | 32px | `text-base`（14px） |
-| `lg` | 40px | `text-lg`（16px） |
+| `size` | 高度 | 字号 | 直角圆角 |
+| --- | --- | --- | --- |
+| `sm` | 24px | `text-sm`（12px） | 4px（`--radius-ui-2xs`） |
+| `md`（默认） | 32px | `text-base`（14px） | 6px（`--radius-ui-xs`） |
+| `lg` | 40px | `text-lg`（16px） | 8px（`--radius-ui-sm`） |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -130,9 +132,38 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 ### 形状
 
+两端的形状 API 不同：
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+Web 端**没有** `round` / `circle` 布尔 props，形状并入 `variant`：
+
+- `variant="round"`：胶囊形（`!rounded-full`），着色规则同 `solid`。
+- `variant="circle"`：圆形纯图标按钮，通过 `!aspect-square !w-auto !p-0 has-[>svg]:!p-0 !rounded-full` 实现，着色规则同 `solid`。
+- 形状圆角带 `!` 是刻意的：`size` 轴的 `rounded-ui-*` 是自定义令牌类，`tailwind-merge` 不会把它与 `rounded-full` 判为冲突而合并，且其生成 CSS 顺序靠后，不加强制覆盖会反向吃掉形状圆角。
+- 其余变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随 `size` 取设计令牌（4 / 6 / 8px）；`text` 无背景、不施加圆角。需要自定义圆角时直接用 `class` 覆盖即可（自定义类名优先级最高）。
+
+```vue
+<template>
+  <!-- 胶囊按钮 -->
+  <RebornButton variant="round">胶囊按钮</RebornButton>
+
+  <!-- 默认实心按钮：圆角随尺寸令牌；自定义圆角直接用 class 覆盖 -->
+  <RebornButton class="rounded-md">自定义圆角</RebornButton>
+
+  <!-- 圆形图标按钮 -->
+  <RebornButton variant="circle">
+    <Icon name="lucide:plus" />
+  </RebornButton>
+</template>
+```
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
 `round` 默认为 `true`，按钮呈胶囊形（`rounded-full`）。需要直角或自定义圆角时**必须显式传 `:round="false"`**，否则圆角类会被 `rounded-full` 覆盖。
 
-`circle` 渲染正方形纯图标按钮：Web 端通过 `!aspect-square !w-auto !p-0` 实现，UniApp 端按 `size` 匹配等宽令牌。
+`circle` 渲染正方形纯图标按钮，按 `size` 匹配等宽令牌。
 
 ```vue
 <template>
@@ -140,7 +171,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
   <RebornButton>胶囊按钮</RebornButton>
 
   <!-- 关掉胶囊才能自定义圆角 -->
-  <RebornButton :round="false" class="rounded-md">直角按钮</RebornButton>
+  <RebornButton :round="false" custom-class="rounded-md">直角按钮</RebornButton>
 
   <!-- 圆形图标按钮 -->
   <RebornButton circle>
@@ -148,10 +179,13 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
   </RebornButton>
 </template>
 ```
+:::
+
+::
 
 ### 加载与禁用
 
-`loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发。加载动画的颜色随变体走：`solid` 下为白色，其余变体跟随 `color`。
+`loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发。加载动画的颜色随变体走：`solid` / `round` / `circle` 下为白色，其余变体跟随 `color`。
 
 - Web 端动画尺寸为 `1.25em`，跟随当前字号自动缩放。
 - UniApp 端动画尺寸按 `size` 取固定值（22 / 24 / 26 / 26 / 28 / 30 / 32）。
@@ -282,12 +316,10 @@ function onError(e: any) {
 | --- | --- | --- | --- |
 | `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
-| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text'` | `'solid'` | 视觉变体，含义见「颜色与变体」。 |
+| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'solid'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸，三档固定 px；处于表单组内时被组尺寸覆盖。 |
 | `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
-| `round` | `boolean` | `true` | 是否为胶囊形状；自定义圆角时须显式传 `false`。 |
-| `circle` | `boolean` | `false` | 是否为正方形纯图标按钮（内边距归零）。 |
 | `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
 | `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `class` | `any` | - | 追加到根元素的自定义类名。 |
@@ -472,6 +504,8 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 | --- | --- | --- |
 | 自定义类名 | `class` | `customClass` |
 | 尺寸档位 | `sm` / `md` / `lg`（3 档，px） | `xs` ~ `2xl`（7 档，rpx） |
+| 形状 API | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 | `round` / `circle` 布尔 props |
+| 直角圆角 | 随 `size` 取令牌 4 / 6 / 8px | 随 `size` 递进 6 ~ 14px |
 | 水平内边距 | 统一 12px | 随 `size` 递进 12 / 16 / 24rpx |
 | 边框线型 | 支持 `borderStyle` | 不支持，固定实线 |
 | 块级布局 | 用 `class` 自行控制 | `block` prop |
@@ -483,7 +517,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ## 注意事项
 
-- **`round` 是默认开启的**。需要直角、或按钮组拼接时的单侧圆角，必须显式传 `:round="false"`，否则自定义圆角类会被 `rounded-full` 覆盖。
+- **形状 API 两端不同**。Web 端形状并入 `variant`（`round` / `circle` 两个取值），默认 `solid` 不再是胶囊，而是随 `size` 取 4 / 6 / 8px 圆角令牌；UniApp 端 `round` 仍默认开启，需要直角或按钮组拼接时的单侧圆角必须显式传 `:round="false"`，否则自定义圆角类会被 `rounded-full` 覆盖。
 - **`loading` 隐含禁用**。加载中按钮不会派发 `click` / `tap`，无需再额外绑 `disabled`。
 - **`text` 变体不占固定高度**。它用 `!h-auto !px-0` 覆盖了 `size` 的高度与水平内边距，与其他变体并排时基线不齐是预期行为；需要对齐请把它放进同一个 flex 容器并用 `items-center`。
 - **`borderStyle` 只影响有边框的变体**。`solid` / `soft` / `text` 本身不渲染边框，传 `dashed` 不会有视觉变化。

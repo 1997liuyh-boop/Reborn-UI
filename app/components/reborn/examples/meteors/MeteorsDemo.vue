@@ -1,46 +1,38 @@
 <template>
   <ClientOnly>
-    <div class="flex w-full flex-col items-center justify-center py-24">
-      <div class="relative w-full max-w-xs">
+    <DemoSection
+      title="基础用法"
+      description="Meteors 会在父容器内随机生成流星轨迹，父容器需要 relative 与 overflow-hidden；深色底更能凸显拖尾效果。"
+    >
+      <DemoBlock
+        layout="stack"
+        align="center"
+      >
+        <!-- 卡片本体即被演示的载体，深色表面是流星效果的一部分 -->
         <div
-          class="absolute inset-0 size-full scale-[0.80] rounded-full bg-red-500 bg-gradient-to-r from-blue-500 to-teal-500 blur-3xl"
-        />
-        <div
-          class="relative flex h-full flex-col items-start justify-end overflow-hidden rounded-2xl border border-gray-800 bg-gray-900 px-4 py-8 shadow-xl"
+          class="rounded-ui-lg border-gray-8/40 relative flex w-full max-w-xs flex-col items-start justify-end overflow-hidden border bg-gray-10 px-4 py-8 dark:bg-gray-1"
         >
-          <div
-            class="mb-4 flex size-5 items-center justify-center rounded-full border border-gray-500"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              class="size-2 text-gray-300"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.5 4.5l15 15m0 0V8.25m0 11.25H8.25"
-              />
-            </svg>
-          </div>
+          <Icon
+            name="lucide:arrow-up-right"
+            class="text-gray-6 mb-4 size-5"
+          />
 
-          <h1 class="relative z-50 mb-4 text-xl font-bold text-white">
-            Meteors because they&apos;re cool
-          </h1>
+          <h3 class="relative z-10 mb-4 text-xl font-bold text-white">流星划过夜空</h3>
 
-          <p class="relative z-50 mb-4 text-base font-normal text-slate-500">
-            I don&apos;t know what to write so I&apos;ll just paste something cool here. One more
-            sentence because lorem ipsum is just unacceptable. Won&apos;t ChatGPT the shit out of
-            this.
+          <p class="text-gray-6 relative z-10 mb-4 text-base leading-relaxed">
+            在任意深色区块上叠加一层流星动画，可用于产品首屏、活动页头图或空状态插画，无需额外的图片资源。
           </p>
 
-          <button class="rounded-lg border border-gray-500 px-4 py-1 text-gray-300">Explore</button>
+          <button
+            type="button"
+            class="rounded-ui-2xs border-gray-6 text-gray-6 hover:text-white border px-4 py-1 text-sm transition-colors hover:border-white"
+          >
+            了解更多
+          </button>
+
           <Meteors />
         </div>
-      </div>
-    </div>
+      </DemoBlock>
+    </DemoSection>
   </ClientOnly>
 </template>

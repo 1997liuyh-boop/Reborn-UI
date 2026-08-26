@@ -1,129 +1,261 @@
 <script setup lang="ts">
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
 import RebornCheckboxGroup from "~/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue";
-import type { CheckboxProps } from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
-import { checkboxColors, checkboxSizes } from "~/components/reborn/ui/reborn-checkbox/reborn-checkbox.config";
+import {
+  checkboxColors,
+  checkboxSizes,
+} from "~/components/reborn/ui/reborn-checkbox/reborn-checkbox.config";
 
-const sizes = ref([...checkboxSizes]);
-const colors = ref([...checkboxColors]);
-const size = ref<CheckboxProps["size"]>("md");
-const color = ref<CheckboxProps["color"]>("primary");
+// ─── 交互演练场 ─────────────────────────────────────────────────
 
-const defaultValue = ref(false);
+const state = ref<Record<string, any>>({
+  checked: true,
+  size: "md",
+  color: "primary",
+  label: "同意用户协议",
+  disabled: false,
+});
+
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "基础属性",
+    children: [
+      {
+        label: "标签文本",
+        key: "label",
+        component: "input" as const,
+        defaultValue: "同意用户协议",
+      },
+      {
+        label: "尺寸规格",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: checkboxSizes.map((s) => ({ label: s.toUpperCase(), value: s })) },
+      },
+      {
+        label: "配色方案",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "primary",
+        props: { options: checkboxColors.map((c) => ({ label: c, value: c })) },
+      },
+      { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+];
+
+/** 演练场右上角展示的等价代码 */
+const checkboxCode = computed(() => {
+  const s = state.value;
+  const props: string[] = ['v-model="checked"', `label="${s.label}"`];
+
+  if (s.size !== "md") props.push(`size="${s.size}"`);
+  if (s.color !== "primary") props.push(`color="${s.color}"`);
+  if (s.disabled) props.push("disabled");
+
+  return `<RebornCheckbox\n  ${props.join("\n  ")}\n/>`;
+});
+
+// ─── 场景演示状态 ───────────────────────────────────────────────
+
+/** 三种基础状态 */
+const uncheckedValue = ref(false);
 const checkedValue = ref(true);
 const disabledValue = ref(true);
 
-const selectedGroup = ref("系统更新");
-const groupOptions = ["系统更新", "产品迭代", "活动通知"];
+/** 自定义真假值：未选中时也会写入具体文案 */
+const noticeValue = ref("系统更新");
 
-const selectedGroup2 = ref<string[]>(["Apple"]);
-const groupOptions2 = ["Apple", "Huawei", "Xiaomi"];
+/** 复选框组的选中集合 */
+const brands = ref<string[]>(["Apple"]);
+const brandOptions = ["Apple", "Huawei", "Xiaomi"];
 
+/** 卡片式多选 */
 const selectedPlans = ref<string[]>(["标准版"]);
 const plans = [
-  {
-    value: "基础版",
-    title: "基础版",
-    description: "适合快速接入的轻量配置。",
-  },
-  {
-    value: "标准版",
-    title: "标准版",
-    description: "涵盖常用场景的均衡方案。",
-  },
-  {
-    value: "旗舰版",
-    title: "旗舰版",
-    description: "完整能力组合，满足复杂业务。",
-  },
+  { value: "基础版", title: "基础版", description: "适合快速接入的轻量配置。" },
+  { value: "标准版", title: "标准版", description: "涵盖常用场景的均衡方案。" },
+  { value: "旗舰版", title: "旗舰版", description: "完整能力组合，满足复杂业务。" },
 ];
+
+/** 高级定制演示用的独立状态 */
+const roundedValue = ref(true);
+const iconValue = ref(true);
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-10">
-    <div
-      class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 dark:bg-gray-800 p-4 dark:border-gray-800">
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-gray-500">尺寸</span>
-        <USelect v-model="size" :items="sizes" class="w-28" />
-      </div>
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="checkboxCode"
+      component-name="RebornCheckbox"
+      title="交互演练场"
+      description="调节尺寸与配色，实时预览勾选框的选中动画与禁用表现。"
+    >
+      <RebornCheckbox
+        v-model="state.checked"
+        :size="state.size"
+        :color="state.color"
+        :label="state.label"
+        :disabled="state.disabled"
+      />
+    </Playground>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-gray-500">配色</span>
-        <USelect v-model="color" :items="colors" class="w-32" />
-      </div>
-    </div>
+    <DemoSection
+      title="基础状态"
+      description="未选中、已选中与禁用三种状态；禁用后仍会保留当前勾选结果。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-10"
+      >
+        <RebornCheckbox
+          v-model="uncheckedValue"
+          label="未选中"
+        />
+        <RebornCheckbox
+          v-model="checkedValue"
+          label="已选中"
+        />
+        <RebornCheckbox
+          v-model="disabledValue"
+          label="禁用"
+          disabled
+        />
+      </DemoBlock>
+    </DemoSection>
 
-    <div class="grid gap-8">
-      <div class="space-y-4">
-        <h3 class="text-base font-medium text-gray-400">状态</h3>
-        <div class="grid gap-4 md:grid-cols-3">
-          <RebornCheckbox v-model="defaultValue" :size="size" :color="color" label="默认" />
-          <RebornCheckbox v-model="checkedValue" :size="size" :color="color" label="选中" />
-          <RebornCheckbox v-model="disabledValue" :size="size" :color="color" label="禁用" disabled />
-        </div>
-      </div>
+    <DemoSection
+      title="自定义真假值"
+      description="true-value 与 false-value 让单个勾选框直接绑定业务文案，而不局限于布尔值。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-10"
+      >
+        <RebornCheckbox
+          v-model="noticeValue"
+          true-value="系统更新"
+          false-value="系统不更新"
+          label="系统更新"
+        />
+        <RebornCheckbox
+          v-model="noticeValue"
+          true-value="产品迭代"
+          false-value="产品不迭代"
+          label="产品迭代"
+          color="info"
+        />
+        <RebornCheckbox
+          v-model="noticeValue"
+          true-value="活动通知"
+          false-value="活动不通知"
+          label="活动通知"
+          color="success"
+        />
+      </DemoBlock>
 
-      <div class="space-y-4">
-        <h3 class="text-base font-medium text-gray-400">基础用法</h3>
-        {{ selectedGroup }}
-        <div class="grid gap-4 md:grid-cols-3">
-          <RebornCheckbox v-model="selectedGroup" :size="size" :color="color" true-value="系统更新" false-value="系统不更新"
-            label="系统更新" />
-          <RebornCheckbox v-model="selectedGroup" :size="size" :color="color" true-value="产品迭代" false-value="产品不迭代"
-            label="产品迭代" />
-          <RebornCheckbox v-model="selectedGroup" :size="size" :color="color" true-value="活动通知" false-value="活动不通知"
-            label="活动通知" />
-        </div>
-      </div>
+      <DemoNote tone="dimmed">
+        当前值：<code>{{ noticeValue }}</code>
+      </DemoNote>
+    </DemoSection>
 
-      <div class="space-y-4">
-        <h3 class="text-base font-medium text-gray-400">Checkbox Group</h3>
-        {{ selectedGroup2 }}
-        <div class="grid gap-4">
-          <RebornCheckboxGroup v-model="selectedGroup2" :size="size" :color="color">
-            <RebornCheckbox v-for="option in groupOptions2" :key="option" :value="option" :true-value="`${option}111`"
-              :false-value="`不${option}`" :label="option" />
-          </RebornCheckboxGroup>
-        </div>
-      </div>
+    <DemoSection
+      title="复选框组"
+      description="RebornCheckboxGroup 统一托管数组值，并向下派发 size 与 color。"
+    >
+      <DemoBlock layout="stack">
+        <RebornCheckboxGroup
+          v-model="brands"
+          color="secondary"
+          class="flex flex-wrap items-center gap-8"
+        >
+          <RebornCheckbox
+            v-for="option in brandOptions"
+            :key="option"
+            :value="option"
+            :label="option"
+          />
+        </RebornCheckboxGroup>
+      </DemoBlock>
 
-      <div class="space-y-4">
-        <h3 class="text-base font-medium text-gray-400">组合视图</h3>
-        {{ selectedPlans }}
-        <div class="grid gap-4 md:grid-cols-2">
-          <label v-for="plan in plans" :key="plan.value"
-            class="flex cursor-pointer items-start gap-4 rounded-2xl border border-gray-100 bg-white dark:bg-gray-800 p-4 transition-colors hover:border-gray-200 dark:hover:border-gray-700">
-            <RebornCheckbox v-model="selectedPlans" :size="size" :color="color" :value="plan.value" />
-            <div class="space-y-1">
-              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ plan.title }}</p>
-              <p class="text-xs text-gray-500">{{ plan.description }}</p>
-            </div>
-          </label>
-        </div>
-      </div>
+      <DemoNote tone="dimmed">
+        已选：<code>{{ brands.length ? brands.join("、") : "空" }}</code>
+      </DemoNote>
+    </DemoSection>
 
-      <div class="space-y-4">
-        <h3 class="text-base font-medium text-gray-400">高级定制</h3>
-        <div class="grid gap-4 md:grid-cols-2">
-          <!-- Custom UI Style -->
-          <div class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-            <RebornCheckbox v-model="checkedValue" :size="size" :color="color" label="完全圆角 (Custom UI)"
-              :ui="{ control: 'rounded-full', label: 'font-bold bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent' }" />
+    <DemoSection
+      title="卡片式多选"
+      description="value 与数组型 v-model 配合，可把勾选框嵌入到整块可点击的描边卡片中。"
+    >
+      <DemoBlock
+        layout="grid"
+        align="start"
+      >
+        <label
+          v-for="plan in plans"
+          :key="plan.value"
+          class="border-default rounded-ui-md hover:border-inverted flex cursor-pointer items-start gap-4 border p-4 transition-colors"
+        >
+          <RebornCheckbox
+            v-model="selectedPlans"
+            :value="plan.value"
+          />
+          <div class="flex flex-col gap-1">
+            <p class="text-highlighted text-sm font-semibold">{{ plan.title }}</p>
+            <p class="text-muted text-xs">{{ plan.description }}</p>
           </div>
+        </label>
+      </DemoBlock>
 
-          <!-- Custom Icon Slot -->
-          <div class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white dark:bg-gray-800 p-4">
-            <RebornCheckbox v-model="checkedValue" :size="size" :color="color" label="自定义图标、大小 (Slot)"
-              :ui="{ control: 'size-8' }">
-              <template #icon="{ checked }">
-                <Icon :name="checked ? 'lucide:heart' : 'lucide:heart-crack'" class="size-6 transition-all duration-300"
-                  :class="checked ? 'fill-current scale-100' : 'scale-100 text-black opacity-100'" />
-              </template>
-            </RebornCheckbox>
-          </div>
+      <DemoNote tone="dimmed">
+        已选套餐：<code>{{ selectedPlans.length ? selectedPlans.join("、") : "空" }}</code>
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection
+      title="进阶自定义"
+      description="ui 可逐槽覆盖 control / icon / label 的样式，icon 插槽还能整体替换勾选标记。"
+    >
+      <DemoBlock
+        layout="grid"
+        align="center"
+      >
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">全圆角 · <code>ui</code> 覆盖</span>
+          <RebornCheckbox
+            v-model="roundedValue"
+            label="渐变文字标签"
+            :ui="{
+              control: 'rounded-full',
+              label: 'font-bold bg-linear-to-r from-primary to-info bg-clip-text text-transparent',
+            }"
+          />
         </div>
-      </div>
-    </div>
+
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">自定义图标 · <code>#icon</code></span>
+          <RebornCheckbox
+            v-model="iconValue"
+            label="收藏这个组件"
+            color="error"
+            :ui="{ control: 'size-8' }"
+          >
+            <template #icon="{ checked }">
+              <Icon
+                :name="checked ? 'lucide:heart' : 'lucide:heart-crack'"
+                class="size-5 transition-all duration-300"
+                :class="checked ? 'fill-current' : 'text-dimmed'"
+              />
+            </template>
+          </RebornCheckbox>
+        </div>
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>

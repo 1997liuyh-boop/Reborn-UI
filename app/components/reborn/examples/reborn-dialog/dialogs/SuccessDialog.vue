@@ -26,7 +26,7 @@ function handleConfirm() {
     :title="title || '精简模式'"
     :close="false"
     :ui="{
-      panel: 'max-w-[360px] rounded-3xl',
+      panel: 'max-w-[360px] rounded-ui-lg',
       header: 'border-0 pb-0',
       body: 'text-center pt-2 pb-6',
       footer: 'border-0 pt-0 justify-center pb-6',
@@ -36,11 +36,11 @@ function handleConfirm() {
     <slot />
 
     <template #content>
-      <div class="w-16 h-16 rounded-full bg-green-50 text-green-500 flex items-center justify-center mx-auto mb-4">
-        <Icon name="lucide:check-circle-2" class="w-8 h-8" />
+      <div class="bg-success/10 text-success mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
+        <Icon name="lucide:check-circle-2" class="size-8" />
       </div>
-      <h4 class="font-semibold text-gray-900 mb-1 text-base">操作已成功</h4>
-      <p class="text-xs text-gray-500">{{ message || '您的设置已即时生效，无需额外操作。' }}</p>
+      <h4 class="text-highlighted mb-1 text-base font-semibold">操作已成功</h4>
+      <p class="text-muted text-xs">{{ message || '您的设置已即时生效，无需额外操作。' }}</p>
     </template>
 
     <template #footer>

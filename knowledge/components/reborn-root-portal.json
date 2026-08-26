@@ -21,7 +21,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\n// Web 端 Demo：前端加紧开发中\n</script>\n\n<template>\n    <div\n        class=\"p-6 flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border border-dashed border-slate-300\">\n        <div class=\"text-xl font-bold text-slate-900 mb-2\">RebornRootPortal Demo</div>\n        <div class=\"text-slate-500 italic\">前端加紧开发中...</div>\n    </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\n// Web 端 Demo：前端加紧开发中\n</script>\n\n<template>\n  <div class=\"flex w-full min-w-0 flex-col\">\n    <DemoSection\n      title=\"基础用法\"\n      description=\"RebornRootPortal 用于把内容传送到页面根节点之外渲染，Web 端示例正在开发中。\"\n    >\n      <DemoBlock layout=\"stack\">\n        <div\n          class=\"border-default rounded-ui-md text-dimmed flex min-h-[240px] w-full items-center justify-center border border-dashed text-sm\"\n        >\n          前端加紧开发中...\n        </div>\n      </DemoBlock>\n    </DemoSection>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
@@ -61,8 +61,8 @@
   },
   "docPath": "content/2.components/miscellaneous/reborn-root-portal.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "13f4e2365edaefb719e175aa18a47e5ceb709322",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "4f517d3783a982abfa73d5b22727497d140b6914",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

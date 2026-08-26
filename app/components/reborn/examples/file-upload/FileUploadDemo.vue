@@ -1,7 +1,12 @@
 <template>
-  <div class="space-y-6 p-8 dark:bg-black">
-    <FileUpload class="rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800">
-      <FileUploadGrid />
-    </FileUpload>
-  </div>
+  <DemoSection
+    title="基础用法"
+    description="虚线框是组件自己的拖放区，不是脚手架。"
+  >
+    <DemoBlock layout="stack">
+      <FileUpload class="border-default rounded-ui-md border border-dashed">
+        <FileUploadGrid />
+      </FileUpload>
+    </DemoBlock>
+  </DemoSection>
 </template>

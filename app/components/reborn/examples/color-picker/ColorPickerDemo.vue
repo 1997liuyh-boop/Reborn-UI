@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ColorPickerValue } from "@/components/content/reborn/ui/color-picker";
-import { ref } from "vue";
+import type { ColorPickerValue } from "~/components/content/reborn/ui/color-picker";
 
+/** 当前色值：组件同时输出 hex / hsl / hsla / rgb / rgba 五种格式 */
 const color = ref<ColorPickerValue>({
   hex: "#A35fFF",
   hsl: { h: 265.5, s: 100, l: 67, a: 1 },
@@ -13,54 +13,66 @@ const color = ref<ColorPickerValue>({
 function setColor(newColor: ColorPickerValue) {
   color.value = newColor;
 }
+
+/** 触发器上的实心色块背景 */
+const swatchStyle = computed(() => ({
+  backgroundColor: `rgba(${color.value.rgb.r}, ${color.value.rgb.g}, ${color.value.rgb.b}, ${color.value.rgb.a})`,
+}));
+
+/** 便于阅读的取整输出 */
+const readableValue = computed(() => {
+  const { hex, hsl, rgb } = color.value;
+
+  return {
+    hex,
+    hsl: { h: Math.round(hsl.h), s: Math.round(hsl.s), l: Math.round(hsl.l) },
+    hsla: { h: Math.round(hsl.h), s: Math.round(hsl.s), l: Math.round(hsl.l), a: hsl.a },
+    rgb: { r: Math.round(rgb.r), g: Math.round(rgb.g), b: Math.round(rgb.b) },
+    rgba: { r: Math.round(rgb.r), g: Math.round(rgb.g), b: Math.round(rgb.b), a: rgb.a },
+  };
+});
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center gap-6 p-6">
-    <div class="flex items-center justify-center">
-      <ColorPicker :value="color.hsl" type="hsla" :swatches="['#AEDEAE', '#FFD3B6', '#FFB6B9', '#FFC0CB', '#FFD1DC']"
-        @value-change="setColor">
-        <button
-          class="ring-offset-background focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50">
-          <div class="mr-2 h-4 w-4 rounded border" :style="{
-            backgroundColor: `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`,
-          }" />
-          Pick Color
-          <Icon name="lucide:chevron-down" :size="16" />
-        </button>
-      </ColorPicker>
-    </div>
+  <div class="flex w-full min-w-0 flex-col">
+    <DemoSection
+      title="基础用法"
+      description="默认插槽即触发器，面板自带表面样式；swatches 提供一排快捷色，value-change 在拖拽过程中持续触发。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+      >
+        <ColorPicker
+          :value="color.hsl"
+          type="hsla"
+          :swatches="['#AEDEAE', '#FFD3B6', '#FFB6B9', '#FFC0CB', '#FFD1DC']"
+          @value-change="setColor"
+        >
+          <RebornButton
+            variant="outline"
+            color="neutral"
+            label="选择颜色"
+          >
+            <template #leading>
+              <span
+                class="border-default rounded-ui-2xs size-4 border"
+                :style="swatchStyle"
+              />
+            </template>
+            <template #trailing>
+              <Icon name="lucide:chevron-down" />
+            </template>
+          </RebornButton>
+        </ColorPicker>
+      </DemoBlock>
+    </DemoSection>
 
-    <div class="w-full max-w-lg">
-      <pre class="bg-muted overflow-x-auto rounded-md p-4 text-sm">
-        <code class="text-muted-foreground">
-<span class="text-foreground">&#123;</span>
-  <span class="text-blue-400">"hex"</span>: <span class="text-red-400">"{{ color.hex }}"</span>,
-  <span class="text-blue-400">"hsl"</span>: &#123;
-    <span class="text-blue-400">"h"</span>: <span class="text-red-400">{{ Math.round(color.hsl.h) }}</span>,
-    <span class="text-blue-400">"s"</span>: <span class="text-red-400">{{ Math.round(color.hsl.s) }}</span>,
-    <span class="text-blue-400">"l"</span>: <span class="text-red-400">{{ Math.round(color.hsl.l) }}</span>
-  &#125;,
-  <span class="text-blue-400">"hsla"</span>: &#123;
-    <span class="text-blue-400">"h"</span>: <span class="text-red-400">{{ Math.round(color.hsl.h) }}</span>,
-    <span class="text-blue-400">"s"</span>: <span class="text-red-400">{{ Math.round(color.hsl.s) }}</span>,
-    <span class="text-blue-400">"l"</span>: <span class="text-red-400">{{ Math.round(color.hsl.l) }}</span>,
-    <span class="text-blue-400">"a"</span>: <span class="text-red-400">{{ color.hsl.a }}</span>
-  &#125;,
-  <span class="text-blue-400">"rgb"</span>: &#123;
-    <span class="text-blue-400">"r"</span>: <span class="text-red-400">{{ Math.round(color.rgb.r) }}</span>,
-    <span class="text-blue-400">"g"</span>: <span class="text-red-400">{{ Math.round(color.rgb.g) }}</span>,
-    <span class="text-blue-400">"b"</span>: <span class="text-red-400">{{ Math.round(color.rgb.b) }}</span>
-  &#125;,
-  <span class="text-blue-400">"rgba"</span>: &#123;
-    <span class="text-blue-400">"r"</span>: <span class="text-red-400">{{ Math.round(color.rgb.r) }}</span>,
-    <span class="text-blue-400">"g"</span>: <span class="text-red-400">{{ Math.round(color.rgb.g) }}</span>,
-    <span class="text-blue-400">"b"</span>: <span class="text-red-400">{{ Math.round(color.rgb.b) }}</span>,
-    <span class="text-blue-400">"a"</span>: <span class="text-red-400">{{ color.rgb.a }}</span>
-  &#125;
-<span class="text-foreground">&#125;</span>
-        </code>
-      </pre>
-    </div>
+    <DemoSection
+      title="输出格式"
+      description="每次变更都会回传完整的色值对象，可按业务需要取用其中任意一种表示。"
+    >
+      <pre class="border-default rounded-ui-sm text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">{{ JSON.stringify(readableValue, null, 2) }}</pre>
+    </DemoSection>
   </div>
 </template>

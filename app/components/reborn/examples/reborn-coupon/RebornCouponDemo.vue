@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
 import RebornCoupon from "~/components/reborn/ui/reborn-coupon/RebornCoupon.vue";
 
 const state = ref<Record<string, any>>({
@@ -238,107 +237,103 @@ const activeCode = computed(() => {
 </script>
 
 <template>
-    <div class="space-y-16">
-        <Playground v-model="state" :controls="controls" :code="activeCode" component-name="RebornCoupon" title="参数实验室"
-            description="调节实时交互参数，探索每一种形态的视觉可能性">
-            <RebornCoupon v-bind="couponProps" class="shadow-2xl transition duration-300" :style="{
-                background: state.background,
-                color: state.background === '#f8fafc' ? '#1e293b' : 'white',
-            }">
-                <template #left>
-                    <div class="flex h-full flex-col items-center justify-center">
-                        <span class="text-4xl font-extrabold tracking-tighter">¥100</span>
-                        <span class="text-sm font-bold tracking-wider uppercase opacity-70">满 ¥1000 可用</span>
-                    </div>
-                </template>
-                <template #right>
-                    <div class="flex h-full flex-col justify-center px-6 py-2">
-                        <div class="flex flex-wrap gap-2">
-                            <span
-                                class="text-sm rounded bg-white/20 px-2 py-0.5 font-bold tracking-wider">NEW</span>
-                            <span
-                                class="text-sm rounded bg-white/20 px-2 py-0.5 font-bold tracking-wider">新人专享</span>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-black">全球时尚购物周礼券</h3>
-                            <p class="text-xs font-medium opacity-80">全平台自营品类通用，不包含电子产品</p>
-                        </div>
-                        <div class="mt-2 flex items-center justify-between">
-                            <span class="text-sm font-medium opacity-60">有效期至: 2026.12.31</span>
-                            <button
-                                class="rounded-full bg-white px-5 py-1.5 text-xs font-bold transition-all hover:scale-105 active:scale-95"
-                                :style="{ color: state.background.includes('linear') ? '#FF7E5F' : 'inherit' }">
-                                立即领取
-                            </button>
-                        </div>
-                    </div>
-                </template>
-            </RebornCoupon>
-        </Playground>
-        <!-- 响应式示例 -->
-        <div class="space-y-4">
-            <RebornCoupon v-for="item in 2" :key="item" type="perforated" :radius="8" :size="[1, 4]" split="dashed"
-                direction="vertical" :gap="4" split-color="#575859" :sm="{ width: 300, height: 74, offset: 178 }"
-                :md="{ width: 400, height: 74, offset: 278 }" :lg="{ width: 400, height: 81, offset: 278 }"
-                :xl="{ width: 500, height: 90, offset: 363 }" :xxl="{ width: 444, height: 90, offset: 307 }"
-                :ui="{ right: 'flex items-center justify-center' }" class="bg-white rounded-ui-sm" data-aos="zoom-in"
-                :data-aos-delay="50 * item">
-                <template #left>
-                    <div class="flex items-center justify-center gap-x-5 h-full">
-                        <div class="flex flex-col items-center gap-y-2">
-                            <NuxtImg src="https://www.rakufun.com/images/sites/Mercari.png"
-                                class="mobile:size-[24px] tablet:size-[32px]" />
-                            <p class="text-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">
-                                Mercari</p>
-                        </div>
-                        <div>
-                            <p>
-                                <b class="text-xl tablet:text-[30px] text-gray-9 leading-[30px]">
-                                    5000
-                                </b>
-                                <sub>
-                                    日元
-                                </sub>
-                            </p>
-                            <p class="text-[#888A8C] text-sm tablet:text-base">
-                                滿{{ 1000 * item }}日圓可用
-                            </p>
-                        </div>
-                    </div>
-                </template>
-                <template #right>
-                    <RebornButton>立即领取</RebornButton>
-                </template>
-            </RebornCoupon>
-        </div>
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="activeCode"
+      component-name="RebornCoupon"
+      title="交互演练场"
+      description="优惠券的裁切形态由 type 决定，缺口位置由 direction / position / offset 三者共同控制；背景通过内联样式直接传入，组件只负责裁形。"
+    >
+      <!-- 优惠券本身即被演示的对象，其表面与背景属于组件效果，不视为额外嵌套 -->
+      <RebornCoupon
+        v-bind="couponProps"
+        class="transition duration-300"
+        :style="{
+          background: state.background,
+          color: state.background === '#f8fafc' ? '#1e293b' : 'white',
+        }"
+      >
+        <template #left>
+          <div class="flex h-full flex-col items-center justify-center">
+            <span class="text-4xl font-extrabold tracking-tighter">¥100</span>
+            <span class="text-sm font-bold tracking-wider uppercase opacity-70">满 ¥1000 可用</span>
+          </div>
+        </template>
+        <template #right>
+          <div class="flex h-full flex-col justify-center px-6 py-2">
+            <div class="flex flex-wrap gap-2">
+              <span class="rounded-ui-2xs border-current/40 border px-2 py-0.5 text-sm font-bold tracking-wider">
+                NEW
+              </span>
+              <span class="rounded-ui-2xs border-current/40 border px-2 py-0.5 text-sm font-bold tracking-wider">
+                新人专享
+              </span>
+            </div>
+            <div>
+              <h3 class="text-xl font-black">全球时尚购物周礼券</h3>
+              <p class="text-xs font-medium opacity-80">全平台自营品类通用，不包含电子产品</p>
+            </div>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="text-sm font-medium opacity-60">有效期至：2026.12.31</span>
+              <button
+                class="border-current px-5 py-1.5 text-xs font-bold transition-transform rounded-full border hover:scale-105 active:scale-95"
+              >
+                立即领取
+              </button>
+            </div>
+          </div>
+        </template>
+      </RebornCoupon>
+    </Playground>
 
-        <RebornCoupon type="perforated" :width="379" :height="90" :offset="244" :radius="16" :size="[1, 6]"
-            split="dashed" :gap="6" direction="vertical" split-color="#575859" class="bg-white rounded-ui-sm">
-            <!-- <template #left>
-                <div class="flex items-center justify-center gap-x-5 h-full">
-                    <div class="flex flex-col items-center gap-y-2">
-                        <NuxtImg src="https://www.rakufun.com/images/sites/Mercari.png" class="size-[32px]" />
-                        <p class="text-base font-sans letter-spacing-normal text-gray-9 dark:text-gray-1">Mercari
-                        </p>
-                    </div>
-                    <div>
-                        <p>
-                            <b class="text-[30px] text-gray-9 leading-[30px]">
-                                5000
-                            </b>
-                            <sub>
-                                日元
-                            </sub>
-                        </p>
-                        <p class="text-[#888A8C]">
-                            滿3000日圓可用
-                        </p>
-                    </div>
-                </div>
-            </template>
-            <template #right>
-                <RebornButton>立即领取</RebornButton>
-            </template> -->
+    <DemoSection
+      title="响应式尺寸"
+      description="sm / md / lg / xl / xxl 五个断点各自接收一组 width、height、offset，组件会按当前视口宽度自动切换，无需手写媒体查询。"
+    >
+      <DemoBlock layout="stack">
+        <RebornCoupon
+          v-for="item in 2"
+          :key="item"
+          type="perforated"
+          :radius="8"
+          :size="[1, 4]"
+          split="dashed"
+          direction="vertical"
+          :gap="4"
+          split-color="#575859"
+          :sm="{ width: 300, height: 74, offset: 178 }"
+          :md="{ width: 400, height: 74, offset: 278 }"
+          :lg="{ width: 400, height: 81, offset: 278 }"
+          :xl="{ width: 500, height: 90, offset: 363 }"
+          :xxl="{ width: 444, height: 90, offset: 307 }"
+          :ui="{ right: 'flex items-center justify-center' }"
+          class="bg-elevated rounded-ui-sm"
+        >
+          <template #left>
+            <div class="flex h-full items-center justify-center gap-x-5">
+              <div class="flex flex-col items-center gap-y-2">
+                <NuxtImg
+                  src="https://www.rakufun.com/images/sites/Mercari.png"
+                  class="mobile:size-[24px] tablet:size-[32px]"
+                />
+                <p class="text-default text-base">Mercari</p>
+              </div>
+              <div>
+                <p>
+                  <b class="text-default tablet:text-[30px] text-xl leading-[30px]">5000</b>
+                  <sub>日元</sub>
+                </p>
+                <p class="text-muted tablet:text-base text-sm">滿 {{ 1000 * item }} 日圓可用</p>
+              </div>
+            </div>
+          </template>
+          <template #right>
+            <RebornButton label="立即领取" />
+          </template>
         </RebornCoupon>
-    </div>
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>

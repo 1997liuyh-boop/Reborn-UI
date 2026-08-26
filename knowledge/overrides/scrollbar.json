@@ -1,17 +1,24 @@
 {
-  "description": "通用滚动条 CSS 样式，悬浮于内容之上不挤压布局，提供 4/6/8 三档尺寸与颜色变量定制。",
+  "description": "浮层式滚动条组件，隐藏原生滚动条并自绘 thumb，悬浮于内容之上不挤压布局；提供 4/6/8 三档尺寸、轨道显形、圆角内缩与带缓动动画的命令式滚动。",
   "whenToUse": [
-    "需要为容器或页面提供统一、细窄、不占宽度的滚动条时。",
-    "需要 4 / 6 / 8px 多档尺寸，或按品牌色定制 thumb 颜色的场景。",
+    "需要为容器提供统一、细窄、不占宽度的滚动条时。",
+    "需要 4 / 6 / 8px 多档尺寸，或按品牌色定制 thumb、轨道与悬停颜色的场景。",
+    "需要有 / 无滚动条时内容可视宽度完全一致、避免布局抖动的场景。",
+    "需要代码控制滚动位置且要求平滑动画（如目录跳转、卡片轨道翻屏）的场景。",
     "需要随 .dark 自动切换滚动条对比度的深浅色适配场景。"
   ],
   "whenNotToUse": [
     "需要完全隐藏滚动条时，改用 scrollbar-hide 工具类。",
+    "整页（html / body）滚动条不适用本组件，请使用站点全局滚动条样式。",
     "需要为滚动条预留占位以避免布局跳动（而非悬浮）时，可自行叠加 scrollbar-gutter: stable。"
   ],
   "pitfalls": [
-    "纯 CSS 样式而非 Vue 组件，无 props / events / slots，通过 class 与 CSS 变量使用。",
-    "Firefox 无法精确控制 4 / 6 / 8px，降级为 scrollbar-width: thin。",
-    "overflow: overlay 已被规范废弃，Chromium 仍支持，不支持的浏览器自动回退为 overflow: auto。"
+    "组件需要确定高度才会产生滚动，请在类名上给出 h-* 或由父容器约束高度。",
+    "滚动条是自绘 DOM 而非原生滚动条，无法通过 ::-webkit-scrollbar 定制，请改用 --reborn-scrollbar-* 变量或 size / track / inset 属性。",
+    "Chromium 下元素的 scrollbar-width / scrollbar-color 为非 auto 值时，所有 ::-webkit-scrollbar 规则整体失效，且 scrollbar-color 会从祖先继承 —— 这是原生滚动条方案无法自定义粗细与悬停色的根因。",
+    "overflow: overlay 已在 Chromium 121+ 被移除，computed 回退为 auto，无法实现浮层式滚动条。",
+    "容器带 rounded-* 圆角时，根元素的 overflow: hidden 会用圆角弧线裁剪贴边的轨道两端，thumb 滚到顶端 / 末端会被削角。inset 属性默认 'auto'，按容器实际 border-radius 自动推算内缩；传数值可固定内缩，传 0 则完全贴边。",
+    "运行时动态改变容器 border-radius 后需在 nextTick() 后调用实例的 refresh() 重算内缩（圆角只改样式不改尺寸，ResizeObserver 不会触发）；仅内容或容器尺寸变化由 ResizeObserver 自动处理。",
+    "setScrollTop / setScrollLeft 默认带 easeInOutCubic 缓动并返回 Promise；用户滚轮、触摸、拖拽 thumb 或点击轨道会自动中止动画（Promise 同样 resolve，await 不会挂起）。需要立即落位时传 { animated: false }。"
   ]
 }

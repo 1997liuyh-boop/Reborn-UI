@@ -4,31 +4,27 @@ import { rand } from "@vueuse/core";
 const testimonials = [
   {
     img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,
-    quote:
-      "Reborn UI is sleeker than my star cruiser. Launch-ready in seconds. Zero crashes, zero gravity.",
+    quote: "Reborn UI 比我的星际巡洋舰还顺滑。秒级启动，零崩溃，零重力。",
     name: "Buzz Lightyear",
-    role: "Intergalactic Interface Command",
+    role: "星际界面指挥部",
   },
   {
     img: `https://randomuser.me/api/portraits/women/${getRandomNumber()}.jpg`,
-    quote:
-      "Clickin' around this thing feels like ridin' a horse with turbo boosters. reborn’s got giddyup!",
+    quote: "点来点去像骑着加了涡轮的马。这套组件有劲儿！",
     name: "Jessie",
-    role: "Yeehaw Engagement & Barnyard UX",
+    role: "牧场体验与互动",
   },
   {
     img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,
-    quote:
-      "I’ve seen some clunky UIs in my day... but this one? Smoother than a tumbleweed on Tuesday.",
+    quote: "我见过不少磕磕绊绊的界面……这一套？比周二的风滚草还顺。",
     name: "Woody",
-    role: "Sheriff",
+    role: "警长",
   },
   {
     img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,
-    quote:
-      "I was terrified. Then I clicked. Nothing exploded. Reborn UI is a safe space. I’m thriving.",
+    quote: "我本来很怕。然后我点了一下。什么都没炸。Reborn UI 是安全区，我活下来了。",
     name: "Rex",
-    role: "Senior Panic Tester, Dinosaur Usability Lab",
+    role: "恐龙可用性实验室 · 高级恐慌测试员",
   },
 ];
 
@@ -38,9 +34,14 @@ function getRandomNumber() {
 </script>
 
 <template>
-  <div class="bg-background relative h-[500px] w-full overflow-hidden rounded-lg border">
-    <div class="mt-[64px] flex justify-center px-12">
-      <TestimonialSlider :testimonials="testimonials" />
+  <DemoSection
+    title="基础用法"
+    description="评价轮播自己会铺内容；外层只给高度，不再套填充卡片。"
+  >
+    <div class="relative h-[500px] w-full overflow-hidden">
+      <div class="mt-16 flex justify-center px-12">
+        <TestimonialSlider :testimonials="testimonials" />
+      </div>
     </div>
-  </div>
+  </DemoSection>
 </template>

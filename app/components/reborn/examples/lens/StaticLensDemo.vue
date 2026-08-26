@@ -1,37 +1,21 @@
-<script setup lang="ts">
-import { ref } from "vue";
-
-const hovering = ref(false);
-
-function setHovering(value: boolean) {
-  hovering.value = value;
-}
-</script>
-
 <template>
-  <div
-    class="relative my-10 w-full overflow-hidden rounded-3xl bg-gradient-to-r from-[#1D2235] to-[#121318] p-8"
-  >
+  <div class="rounded-ui-lg relative w-full max-w-lg overflow-hidden bg-gray-10 p-8 dark:bg-gray-1">
     <Rays />
     <Beams />
     <div class="relative z-10">
       <Lens is-static>
         <img
           src="https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="image"
+          alt="Vision Pro 配图"
           width="500"
           height="500"
-          class="rounded-2xl"
-        />
+          class="rounded-ui-md"
+        >
       </Lens>
-      <div
-        :style="{ filter: hovering ? 'blur(2px)' : 'blur(0px)' }"
-        class="relative z-20 py-4"
-      >
-        <h2 class="text-left text-2xl font-bold text-white">Apple Vision Pro</h2>
-        <p class="mt-4 text-left text-neutral-200">
-          The all new apple vision pro was the best thing that happened around 8 months ago, not
-          anymore.
+      <div class="relative z-20 py-4 text-white">
+        <h3 class="text-left text-2xl font-bold">Apple Vision Pro</h3>
+        <p class="text-gray-6 mt-4 text-left">
+          is-static 时镜头固定在预设位置，不再跟随鼠标。
         </p>
       </div>
     </div>

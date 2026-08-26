@@ -43,7 +43,7 @@ function handleCancel() {
     <slot />
 
     <template #content>
-      <div class="whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
+      <div class="text-muted text-sm leading-relaxed whitespace-pre-wrap">
         {{ longContent }}
       </div>
     </template>

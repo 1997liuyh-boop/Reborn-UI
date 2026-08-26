@@ -43,36 +43,35 @@ const computedUrl = computed(() => {
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-start justify-start gap-4">
-    <!-- 内边距收口：外层 DemoStage / 文档列已提供留白，避免画布被双重收窄 -->
-    <!-- 演示舞台：近实底 + 轻投影，在点阵背景上凸显为「画布」层 -->
-    <UPageCard
-      variant="outline" class="bg-default/85 shadow-xs shadow-zinc-950/[0.04] dark:shadow-none w-full min-w-0" :ui="{
-        container: 'w-full min-w-0 p-3 sm:p-4'
-      }"
-    >
-      <UTabs v-if="showInnerTabs" :items="items" class="w-full">
-        <template #web>
-          <div class="pt-4">
-            <slot name="component" />
+  <div class="flex w-full min-w-0 flex-col items-start justify-start gap-6">
+    <!--
+      背景层级铁律：示例的表面层已由 DemoStage 画布承担，
+      这里不再叠加任何卡片背景 / 描边 / 投影，只负责内容分发。
+    -->
+    <UTabs v-if="showInnerTabs" :items="items" class="w-full min-w-0">
+      <template #web>
+        <div class="pt-4">
+          <slot name="component" />
+        </div>
+      </template>
+      <template #uniapp>
+        <div class="flex justify-center pt-4">
+          <DeviceFrame v-if="computedUrl" :src="computedUrl" />
+          <div v-else class="text-muted p-4 text-sm">
+            未提供预览地址
           </div>
-        </template>
-        <template #uniapp>
-          <div class="flex justify-center pt-4">
-            <DeviceFrame v-if="computedUrl" :src="computedUrl" />
-            <div v-else class="text-sm text-muted-foreground p-4">
-              No Preview URL provided
-            </div>
-          </div>
-        </template>
-      </UTabs>
-      <slot v-else name="component" />
-    </UPageCard>
+        </div>
+      </template>
+    </UTabs>
+    <div v-else class="w-full min-w-0">
+      <slot name="component" />
+    </div>
 
-    <div v-if="$slots.config" class="flex w-full flex-row items-center justify-between">
+    <!-- 参数调节入口：仅少数需要大量可调项的组件使用（抽屉承载，不占画布面积） -->
+    <div v-if="$slots.config" class="border-default flex w-full flex-row items-center justify-between border-t pt-6">
       <div class="flex flex-col items-start gap-1.5">
-        <span class="text-highlighted text-xl font-semibold tracking-tight">Playground</span>
-        <span class="text-muted text-sm">Play with props and customize the component.</span>
+        <span class="text-highlighted text-base font-semibold tracking-tight">交互演练场</span>
+        <span class="text-muted text-sm">调节参数，实时查看组件表现。</span>
       </div>
       <UDrawer
         v-model:open="open" :direction="isDesktop ? 'right' : 'bottom'" :overlay="!isDesktop"
@@ -81,12 +80,12 @@ const computedUrl = computed(() => {
           content: 'bg-default/35 backdrop-blur-3xl md:min-w-md',
         }"
       >
-        <UButton label="Customize" variant="solid" trailing-icon="tabler:chevron-right" size="xl" />
+        <UButton label="调节参数" variant="solid" trailing-icon="tabler:chevron-right" size="lg" />
 
         <template #header>
           <div class="flex flex-col gap-2">
-            <h2 class="text-highlighted font-semibold">Component Playground</h2>
-            <h2 class="text-muted text-sm font-light italic">Customize & play with component.</h2>
+            <h2 class="text-highlighted font-semibold">交互演练场</h2>
+            <h2 class="text-muted text-sm font-light">调节下方参数，实时查看组件表现。</h2>
           </div>
 
           <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="open = false" />

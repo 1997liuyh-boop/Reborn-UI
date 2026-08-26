@@ -1,35 +1,53 @@
 <script setup lang="ts">
-import RebornMain from '../../ui/reborn-main/RebornMain.vue'
-import RebornContainer from '../../ui/reborn-container/RebornContainer.vue'
+/**
+ * 主体区域演示
+ *
+ * RebornMain 的职责是根据 --ui-header-height 变量自动撑起最小高度，
+ * 视觉上本身不带任何样式，因此这里只用一条描边勾出它的边界，内部不再套填充盒。
+ */
+const features = [
+  { icon: "lucide:layout", title: "自动最小高度", desc: "读取头部高度变量，保证内容不足时页面仍撑满视口。" },
+  { icon: "lucide:columns-3", title: "配合容器使用", desc: "内部通常嵌 RebornContainer 控制最大宽度与左右留白。" },
+  { icon: "lucide:sliders-horizontal", title: "样式完全交给业务", desc: "组件不预设背景与内边距，可自由通过 class 覆盖。" },
+];
 </script>
 
 <template>
-    <RebornMain class="bg-gray-50 dark:bg-gray-900/50 transition-colors duration-300">
-        <RebornContainer class="py-12">
-            <div class="flex flex-col items-center justify-center space-y-8 text-center">
-                <div class="space-y-4">
-                    <h2 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-                        Reborn Main Layout
-                    </h2>
-                    <p class="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-                        A premium main layout component that automatically handles minimum height based on the UI header
-                        height variable.
-                    </p>
-                </div>
+  <div class="flex w-full min-w-0 flex-col">
+    <DemoSection
+      title="基础用法"
+      description="RebornMain 作为页面主体包裹层，最小高度为「视口高度 − 头部高度」；下方描边即它撑开的实际范围。"
+    >
+      <DemoBlock layout="stack">
+        <RebornMain class="border-default rounded-ui-md w-full border">
+          <RebornContainer class="py-10">
+            <div class="flex flex-col gap-8">
+              <p class="text-muted mx-auto max-w-2xl text-center text-sm leading-relaxed">
+                主体区域会自动占满剩余高度，页脚因此始终贴在视口底部，而不会在内容较少时上浮。
+              </p>
 
-                <div class="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    <div v-for="i in 6" :key="i"
-                        class="flex flex-col items-start p-6 space-y-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200">
-                        <div class="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Icon name="lucide:layout" class="text-primary size-6" />
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Feature Item {{ i }}</h3>
-                        <p class="text-gray-500 dark:text-gray-400 leading-relaxed">
-                            Experience the standard of modern web design with Reborn UI's professional layout system.
-                        </p>
-                    </div>
+              <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div
+                  v-for="item in features"
+                  :key="item.title"
+                  class="flex flex-col items-start gap-2"
+                >
+                  <Icon
+                    :name="item.icon"
+                    class="text-primary size-5"
+                  />
+                  <h4 class="text-default text-sm font-semibold">
+                    {{ item.title }}
+                  </h4>
+                  <p class="text-muted text-sm leading-relaxed">
+                    {{ item.desc }}
+                  </p>
                 </div>
+              </div>
             </div>
-        </RebornContainer>
-    </RebornMain>
+          </RebornContainer>
+        </RebornMain>
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>

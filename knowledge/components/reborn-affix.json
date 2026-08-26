@@ -92,7 +92,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport RebornAffix from '@/components/reborn/ui/reborn-affix/RebornAffix.vue'\nimport { ref } from 'vue'\n\nconst isDark = ref(false)\nconst toggleDarkMode = () => isDark.value = !isDark.value\nconst list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']\n</script>\n\n<template>\n    <div class=\"space-y-4\">\n        <div class=\"p-6 bg-slate-100 dark:bg-slate-900 rounded-xl space-y-2\">\n            <h3 class=\"font-bold text-lg\">RebornAffix Demo</h3>\n            <p class=\"text-slate-500\">\n                请尝试拖拽右下角的浮动按钮（支持鼠标和触摸）。\n            </p>\n        </div>\n\n        <div class=\"h-[200px] border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center\">\n            Content Area\n        </div>\n\n\n        <RebornAffix :right=\"20\" :bottom=\"400\" disabled>\n            <div class=\"w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white shadow-lg cursor-not-allowed\"\n                title=\"Disabled\">\n                <UIcon name=\"i-lucide-lock\" class=\"size-5\" />\n            </div>\n        </RebornAffix>\n\n        <RebornAffix :left=\"100\" :bottom=\"100\" :no-snapping=\"true\">\n            <div class=\"w-12 h-12 flex flex-col items-center justify-center rounded-full bg-blue-500 overflow-hidden shadow-xl cursor-move transition-transform active:scale-95\"\n                @click=\"toggleDarkMode\">\n                <UIcon name=\"i-lucide-sun\" class=\"text-white size-6\" />\n            </div>\n        </RebornAffix>\n    </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\n/**\n * 可拖拽浮动按钮演示\n *\n * RebornAffix 自身是 fixed 定位的浮层，脱离文档流悬浮在视口上，\n * 因此这里不给它套任何容器，只用描边标出「原本会占位的区域」。\n */\n\n/** 记录最近一次拖拽结束后的落点，替代 console 输出 */\nconst lastAction = ref(\"暂无\");\n\nfunction handleDrag() {\n  lastAction.value = \"拖拽结束，已自动吸附到最近的一侧边缘\";\n}\n</script>\n\n<template>\n  <div class=\"flex w-full min-w-0 flex-col\">\n    <DemoSection\n      title=\"基础用法\"\n      description=\"按住浮动按钮拖动即可移动（同时支持鼠标与触摸）；松手后默认吸附到距离最近的左右边缘，可通过 no-snapping 关闭吸附。\"\n    >\n      <DemoBlock layout=\"stack\">\n        <div class=\"border-default rounded-ui-md text-dimmed flex h-40 w-full items-center justify-center border border-dashed text-sm\">\n          浮动按钮悬浮于视口之上，不占据此处的文档流空间\n        </div>\n\n        <DemoNote tone=\"dimmed\">\n          最近操作：<code>{{ lastAction }}</code>\n        </DemoNote>\n      </DemoBlock>\n    </DemoSection>\n\n    <!-- 可拖拽：关闭吸附后可停在任意位置 -->\n    <RebornAffix\n      :left=\"100\"\n      :bottom=\"100\"\n      :no-snapping=\"true\"\n      @pointerup=\"handleDrag\"\n    >\n      <div class=\"bg-primary flex size-12 cursor-move items-center justify-center rounded-full text-white transition-transform active:scale-95\">\n        <Icon\n          name=\"lucide:move\"\n          class=\"size-5\"\n        />\n      </div>\n    </RebornAffix>\n\n    <!-- 禁用态：仅展示，不响应拖拽 -->\n    <RebornAffix\n      :right=\"20\"\n      :bottom=\"400\"\n      disabled\n    >\n      <div class=\"bg-elevated text-dimmed flex size-10 cursor-not-allowed items-center justify-center rounded-full\">\n        <Icon\n          name=\"lucide:lock\"\n          class=\"size-5\"\n        />\n      </div>\n    </RebornAffix>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
@@ -139,8 +139,8 @@
   },
   "docPath": "content/2.components/navigation/reborn-affix.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "3a05f38c6d68a68d2b6198ae07db75829372cd7c",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "afba1d16a53eff933bb2e354dc4da7fecef637e0",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

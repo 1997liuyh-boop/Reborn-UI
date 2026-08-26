@@ -12,7 +12,7 @@ export interface ButtonProps {
     label?: string
     /** 语义色，7 种取值：primary/secondary/success/info/warning/error/neutral，默认 primary */
     color?: typeof buttonColors[number]
-    /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边 / text 文字按钮，默认 solid；颜色由 color 控制 */
+    /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边 / text 文字按钮 / round 胶囊 / circle 圆形纯图标按钮，默认 solid；颜色由 color 控制 */
     variant?: typeof buttonVariants[number]
     /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；处于表单组内时被组尺寸覆盖 */
     size?: typeof buttonSizes[number]
@@ -22,15 +22,11 @@ export interface ButtonProps {
     loading?: boolean
     /** 是否禁用按钮 */
     disabled?: boolean
-    /** 是否为胶囊形状（rounded-full），默认 true；需要自定义圆角时显式传 false */
-    round?: boolean
     /** 追加到根元素的自定义类名 */
     class?: any
     /** 细粒度样式覆盖对象，键为 base/label/leadingIcon/leadingAvatar/leadingAvatarSize/trailingIcon */
     ui?: any
     gap?: boolean // 是否间隔按钮：为相邻的同级按钮自动添加左边距
-    /** 是否为圆形纯图标按钮（宽高相等、内边距归零） */
-    circle?: boolean
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -40,9 +36,7 @@ const props = withDefaults(defineProps<ButtonProps>(), {
     borderStyle: 'solid',
     loading: false,
     disabled: false,
-    round: true,
-    gap: false,
-    circle: false
+    gap: false
 })
 
 const slots = defineSlots<{
@@ -63,7 +57,8 @@ const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 
 const loadingColor = computed(() => {
-    if (props.variant === 'solid') return 'white'
+    // solid / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
+    if (props.variant === 'solid' || props.variant === 'round' || props.variant === 'circle') return 'white'
     return props.color
 })
 
@@ -73,7 +68,7 @@ const loadingSize = computed(() => {
 })
 
 const isIconOnly = computed(() => {
-    return props.circle || (!props.label && !slots.default)
+    return props.variant === 'circle' || (!props.label && !slots.default)
 })
 
 const b = tv(theme)
@@ -87,9 +82,7 @@ const ui = computed(() => {
         borderStyle: props.borderStyle,
         fieldGroup: orientation.value,
         gap: props.gap,
-        disabled: props.disabled,
-        round: props.round,
-        circle: props.circle
+        disabled: props.disabled
     })
 
     return {
@@ -100,11 +93,11 @@ const ui = computed(() => {
                 uiOverrides.value.base
             )
         }),
-        label: (opts?: { class?: any }) => styles.label({ class: cn(opts?.class, 'leading-none', uiOverrides.value.label) }),
-        leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(opts?.class, uiOverrides.value.leadingIcon) }),
-        leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(opts?.class, uiOverrides.value.leadingAvatar) }),
-        leadingAvatarSize: (opts?: { class?: any }) => styles.leadingAvatarSize({ class: cn(opts?.class, uiOverrides.value.leadingAvatarSize) }),
-        trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(opts?.class, uiOverrides.value.trailingIcon) }),
+        label: (opts?: { class?: any }) => styles.label({ class: cn(uiOverrides.value.label, opts?.class, 'leading-none') }),
+        leadingIcon: (opts?: { class?: any }) => styles.leadingIcon({ class: cn(uiOverrides.value.leadingIcon, opts?.class) }),
+        leadingAvatar: (opts?: { class?: any }) => styles.leadingAvatar({ class: cn(uiOverrides.value.leadingAvatar, opts?.class) }),
+        leadingAvatarSize: (opts?: { class?: any }) => styles.leadingAvatarSize({ class: cn(uiOverrides.value.leadingAvatarSize, opts?.class) }),
+        trailingIcon: (opts?: { class?: any }) => styles.trailingIcon({ class: cn(uiOverrides.value.trailingIcon, opts?.class) }),
     }
 })
 </script>

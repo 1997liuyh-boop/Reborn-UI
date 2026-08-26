@@ -39,8 +39,8 @@ function handleCancel() {
     <slot />
 
     <template #content>
-      <div class="py-8 text-center text-gray-400">
-        <Icon name="lucide:mouse-pointer-2" class="w-8 h-8 mx-auto mb-2 opacity-20" />
+      <div class="text-dimmed flex flex-col items-center gap-2 py-6 text-center">
+        <Icon name="lucide:mouse-pointer-2" class="size-8 opacity-40" />
         <p class="text-xs">该模式下弹窗不会锁定在屏幕正中</p>
       </div>
     </template>

@@ -1,114 +1,206 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-import RebornTransition from '@/components/reborn/ui/reborn-transition/RebornTransition.vue'
-import type { TransitionName } from '@/components/reborn/ui/reborn-transition/reborn-transition.config'
+import {
+  transitionStyles,
+  type TransitionName,
+} from "~/components/reborn/ui/reborn-transition/reborn-transition.config";
 
-const show = ref(false)
-const customShow = ref(false)
-const name = ref<TransitionName>('fade-up')
+/** 内置动画名称，直接取自组件配置，避免手工维护列表 */
+const transitionNames = Object.keys(transitionStyles) as TransitionName[];
 
-function transition(n: TransitionName) {
-    name.value = n
-    show.value = true
-    setTimeout(() => {
-        show.value = false
-    }, 1500)
+const state = ref<Record<string, any>>({
+  name: "fade-up" as TransitionName,
+  duration: 500,
+  hold: 1500,
+});
+
+/** 演练场控制面板配置 */
+const controls = computed(() => [
+  {
+    title: "动画配置",
+    children: [
+      {
+        label: "动画名称",
+        key: "name",
+        component: "select" as const,
+        defaultValue: "fade-up",
+        props: { options: transitionNames.map((n) => ({ label: n, value: n })) },
+      },
+      {
+        label: "动画时长 (ms)",
+        key: "duration",
+        component: "slider" as const,
+        defaultValue: 500,
+        props: { min: 100, max: 2000, step: 50 },
+      },
+      {
+        label: "停留时长 (ms)",
+        key: "hold",
+        component: "slider" as const,
+        defaultValue: 1500,
+        props: { min: 500, max: 4000, step: 100 },
+      },
+    ],
+  },
+]);
+
+/** 演练场右上角展示的等价代码 */
+const transitionCode = computed(
+  () =>
+    `<RebornTransition\n  :show="show"\n  name="${state.value.name}"\n  :duration="${state.value.duration}"\n>\n  <div class="...">内容</div>\n</RebornTransition>`,
+);
+
+const show = ref(false);
+const customShow = ref(false);
+
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+/** 播放内置动画：显示后按停留时长自动收起 */
+function play() {
+  if (timer) clearTimeout(timer);
+  show.value = false;
+
+  // 下一帧再置为 true，保证连续点击时能重新触发入场
+  requestAnimationFrame(() => {
+    show.value = true;
+    timer = setTimeout(() => {
+      show.value = false;
+    }, state.value.hold);
+  });
 }
 
-function custom() {
-    customShow.value = true
-    setTimeout(() => {
-        customShow.value = false
-    }, 1200)
+let customTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** 播放自定义动画类 */
+function playCustom() {
+  if (customTimer) clearTimeout(customTimer);
+  customShow.value = true;
+  customTimer = setTimeout(() => {
+    customShow.value = false;
+  }, 1200);
 }
+
+onUnmounted(() => {
+  if (timer) clearTimeout(timer);
+  if (customTimer) clearTimeout(customTimer);
+});
 </script>
 
 <template>
-    <div class="space-y-6">
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="transitionCode"
+      component-name="RebornTransition"
+      title="交互演练场"
+      description="show 控制显隐，name 指定内置动画，duration 可传数字或 { enter, leave } 分别设置进出场时长。"
+    >
+      <template #tag>
+        <RebornButton
+          size="sm"
+          variant="soft"
+          color="primary"
+          label="播放动画"
+          @click="play"
+        >
+          <template #leading>
+            <Icon
+              name="lucide:play"
+              size="12"
+            />
+          </template>
+        </RebornButton>
+      </template>
+
+      <!-- 动画舞台：滑动类动画需要一个有边界的可视区域才说得清，此处仅描边不填充 -->
+      <div
+        class="border-default rounded-ui-md relative flex h-44 w-full items-center justify-center overflow-hidden border"
+      >
+        <span
+          v-if="!show"
+          class="text-dimmed text-sm"
+        >点击右上角「播放动画」预览</span>
+
+        <RebornTransition
+          :show="show"
+          :name="state.name"
+          :duration="state.duration"
+          class="absolute"
+        >
+          <div
+            class="bg-primary rounded-ui-sm flex size-24 items-center justify-center text-xs font-medium text-white"
+          >
+            {{ state.name }}
+          </div>
+        </RebornTransition>
+      </div>
+    </Playground>
+
+    <DemoSection
+      title="自定义动画类"
+      description="不使用内置 name，改为传入 enter-class / enter-active-class / enter-to-class 等六个类名，可完全接管动画曲线；duration 传对象即可让进出场时长不同。"
+    >
+      <DemoBlock layout="stack">
+        <RebornButton
+          size="sm"
+          variant="outline"
+          color="neutral"
+          label="播放自定义动画"
+          @click="playCustom"
+        >
+          <template #leading>
+            <Icon
+              name="lucide:play"
+              size="12"
+            />
+          </template>
+        </RebornButton>
+
         <div
-            class="h-32 w-full bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center p-4 relative overflow-hidden">
-            <span v-if="!show && !customShow" class="text-sm text-gray-400">点击下方按钮预览动画，1.5s 后自动消失</span>
+          class="border-default rounded-ui-md relative flex h-44 w-full items-center justify-center overflow-hidden border"
+        >
+          <span
+            v-if="!customShow"
+            class="text-dimmed text-sm"
+          >进场旋转 180° 飞入，离场反向飞出</span>
 
-            <RebornTransition :show="show" :name="name" :duration="500" class="absolute">
-                <div
-                    class="w-24 h-24 bg-primary flex items-center justify-center text-white rounded-lg shadow-lg text-sm font-medium">
-                    {{ name }}
-                </div>
-            </RebornTransition>
-
-            <RebornTransition :show="customShow" :duration="{ enter: 700, leave: 1000 }" enter-class="custom-enter"
-                enter-active-class="custom-enter-active" enter-to-class="custom-enter-to" leave-class="custom-leave"
-                leave-active-class="custom-leave-active" leave-to-class="custom-leave-to" class="absolute">
-                <div
-                    class="w-24 h-24 bg-red-500 flex items-center justify-center text-white rounded-lg shadow-lg text-sm font-medium">
-                    custom
-                </div>
-            </RebornTransition>
-        </div>
-
-        <div class="space-y-4">
-            <h3 class="text-lg font-medium">Fade 动画</h3>
-            <div class="grid grid-cols-4 gap-2">
-                <RebornButton color="primary" variant="solid" @click="transition('fade')">fade</RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('fade-up')">fade-up</RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('fade-down')">fade-down</RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('fade-left')">fade-left</RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('fade-right')">fade-right
-                </RebornButton>
+          <RebornTransition
+            :show="customShow"
+            :duration="{ enter: 700, leave: 1000 }"
+            enter-class="custom-enter"
+            enter-active-class="custom-enter-active"
+            enter-to-class="custom-enter-to"
+            leave-class="custom-leave"
+            leave-active-class="custom-leave-active"
+            leave-to-class="custom-leave-to"
+            class="absolute"
+          >
+            <div
+              class="bg-error rounded-ui-sm flex size-24 items-center justify-center text-xs font-medium text-white"
+            >
+              custom
             </div>
+          </RebornTransition>
         </div>
-
-        <div class="space-y-4">
-            <h3 class="text-lg font-medium">Slide 动画</h3>
-            <div class="grid grid-cols-4 gap-2">
-                <RebornButton color="primary" variant="solid" @click="transition('slide-up')">slide-up</RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('slide-down')">slide-down
-                </RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('slide-left')">slide-left
-                </RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('slide-right')">slide-right
-                </RebornButton>
-            </div>
-        </div>
-
-        <div class="space-y-4">
-            <h3 class="text-lg font-medium">Zoom 动画</h3>
-            <div class="grid grid-cols-4 gap-2">
-                <RebornButton color="primary" variant="solid" @click="transition('zoom-in')">zoom-in</RebornButton>
-                <RebornButton color="primary" variant="solid" @click="transition('zoom-out')">zoom-out</RebornButton>
-            </div>
-        </div>
-
-        <div class="space-y-4">
-            <h3 class="text-lg font-medium">折叠 动画</h3>
-            <div class="grid grid-cols-4 gap-2">
-                <RebornButton color="primary" variant="solid" @click="transition('select-collapse')">select-collapse
-                </RebornButton>
-            </div>
-        </div>
-
-        <div class="space-y-4">
-            <h3 class="text-lg font-medium">自定义 动画</h3>
-            <div class="grid grid-cols-4 gap-2">
-                <RebornButton color="primary" variant="solid" @click="custom">custom</RebornButton>
-            </div>
-        </div>
-    </div>
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>
 
 <style scoped>
+/* 自定义动画：进场从左上角旋转飞入，离场向右下角旋转飞出 */
 :deep(.custom-enter-active),
 :deep(.custom-leave-active) {
-    transition-property: transform, opacity;
+  transition-property: transform, opacity;
 }
 
 :deep(.custom-enter) {
-    transform: translate3d(-100px, -100px, 0) rotate(-180deg);
-    opacity: 0;
+  transform: translate3d(-100px, -100px, 0) rotate(-180deg);
+  opacity: 0;
 }
 
 :deep(.custom-leave-to) {
-    transform: translate3d(100px, 100px, 0) rotate(180deg);
-    opacity: 0;
+  transform: translate3d(100px, 100px, 0) rotate(180deg);
+  opacity: 0;
 }
 </style>

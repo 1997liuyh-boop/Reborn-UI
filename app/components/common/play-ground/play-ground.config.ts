@@ -1,50 +1,71 @@
+/**
+ * Playground（交互演练场）样式配置
+ *
+ * ── 背景层级铁律 ────────────────────────────────────────────────
+ * 本组件默认**不自带表面背景**：它通常渲染在 DemoStage 画布内部，
+ * 而画布已经是示例区唯一的表面层。控制面板与预览区靠分隔线（divide-default）
+ * 切分，而不是各自铺一层底色 —— 否则就会出现「画布套面板」的双层背景。
+ * 若需脱离 DemoStage 独立使用（例如 /playground 页面），传 `surface` 补回表面样式。
+ * 完整规范见文档页 /getting-started/demo-guidelines。
+ * ────────────────────────────────────────────────────────────────
+ */
 export default {
     slots: {
         wrapper: "space-y-4",
-        header: "flex items-center justify-between",
+        header: "flex items-center justify-between gap-4",
         headerTitleWrapper: "",
-        headerTitle: "text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100",
-        headerDesc: "mt-2 text-gray-500",
-        headerTag: "rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary",
+        /** 小节标题：不再使用页面级 3xl 字号，避免与文档页大标题抢层级 */
+        headerTitle: "text-highlighted text-base font-semibold tracking-tight",
+        headerDesc: "text-muted mt-1 text-sm",
+        headerTag: "text-primary bg-primary/10 shrink-0 rounded-full px-3 py-1 text-[11px] font-bold tracking-widest uppercase",
 
-        container: "rounded-ui-base border border-gray-200 bg-white shadow-xl shadow-zinc-950/[0.06] dark:border-gray-800 dark:bg-gray-900 dark:shadow-none",
-        controlPanel: "flex flex-col gap-8 bg-gray-50/50 p-4 dark:bg-gray-900/50",
+        /** 主体容器：无背景、无投影，仅靠分隔线切分控制区与预览区 */
+        container: "rounded-ui-md overflow-hidden",
+        /** 控制面板：无底色，与预览区靠 divide 分隔 */
+        controlPanel: "flex flex-col gap-8 py-4 lg:pr-6",
         groupTitleWrapper: "flex items-center gap-2",
         groupTitleAccent: "h-4 w-1 rounded-full",
-        groupTitleText: "text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider",
+        groupTitleText: "text-muted text-xs font-bold tracking-wider uppercase",
         controlList: "grid gap-1",
         fieldWrapper: "space-y-2",
-        fieldLabel: "text-xs font-semibold text-gray-500 dark:text-gray-400",
-        fieldValue: "text-xs font-semibold text-gray-400",
+        fieldLabel: "text-muted text-xs font-semibold",
+        fieldValue: "text-dimmed text-xs font-semibold",
 
-        /* 预览区：白底 + 细点阵画布，与站点背景 / DemoStage 画布语言一致 */
-        previewPanel: "relative flex min-h-[560px] flex-col bg-white bg-[radial-gradient(circle,rgba(24,24,27,0.05)_1px,transparent_1px)] bg-[size:18px_18px] dark:bg-gray-950 dark:bg-[radial-gradient(circle,rgba(255,255,255,0.045)_1px,transparent_1px)]",
-        popoverWrapper: "absolute top-5 left-5 z-20",
-        popoverBtn: "flex items-center gap-1.5 rounded-xl bg-gray-100/80 px-3 py-2 text-xs font-bold text-gray-500 shadow-xs backdrop-blur-sm transition-all hover:bg-gray-200/80 hover:text-gray-700 active:scale-95 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/80",
+        /** 预览区：无底色、无光晕，示例本体直接落在画布表面上 */
+        previewPanel: "relative flex min-h-[420px] flex-col",
+        popoverWrapper: "absolute top-3 right-3 z-20",
+        popoverBtn: "border-default text-muted hover:text-highlighted hover:bg-elevated flex items-center gap-1.5 rounded-ui-xs border px-2.5 py-1.5 text-xs font-bold transition-colors active:scale-95",
         popoverIcon: "size-4",
-        popoverContent: "w-[420px] overflow-hidden rounded-2xl bg-zinc-900 p-5 font-mono text-sm leading-relaxed text-zinc-100 shadow-xl ring-1 ring-white/10",
+        popoverContent: "w-[420px] overflow-hidden rounded-ui-sm bg-zinc-900 p-5 font-mono text-sm leading-relaxed text-zinc-100 ring-1 ring-white/10",
         popoverPre: "overflow-x-auto",
 
-        bgDecorationWrapper: "absolute inset-0 z-0 opacity-40 select-none pointer-events-none overflow-hidden",
-        /* 单一主色光晕：避免红蓝双色渐变的杂色感 */
-        bgDecoration: "absolute top-1/2 left-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-linear-to-br from-primary/15 via-primary/5 to-transparent blur-[100px]",
-        previewContent: "relative z-10 flex flex-1 items-center justify-center p-12",
+        previewContent: "relative z-10 flex flex-1 items-center justify-center p-6",
     },
     variants: {
         direction: {
             horizontal: {
-                container: "grid lg:grid-cols-12",
-                controlPanel: "border-r border-gray-100 dark:border-gray-800 lg:col-span-4",
-                previewPanel: "lg:col-span-8",
+                container: "divide-default grid lg:grid-cols-12 lg:divide-x",
+                controlPanel: "lg:col-span-4",
+                previewPanel: "lg:col-span-8 lg:pl-6",
             },
             vertical: {
-                container: "flex flex-col",
-                controlPanel: "border-t border-gray-100 dark:border-gray-800",
+                container: "divide-default flex flex-col divide-y",
+                controlPanel: "lg:pr-0",
                 previewPanel: "",
             }
-        }
+        },
+        /** 脱离 DemoStage 单独使用时补回表面样式（如 /playground 页面） */
+        surface: {
+            true: {
+                container: "border-default bg-default border",
+                controlPanel: "px-4 lg:pr-6 lg:pl-4",
+                previewPanel: "lg:pr-4",
+            },
+            false: {},
+        },
     },
     defaultVariants: {
         direction: "horizontal" as const,
+        surface: false as const,
     }
 };

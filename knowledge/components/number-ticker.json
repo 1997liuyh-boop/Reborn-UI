@@ -68,7 +68,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex min-h-64 items-center justify-center\">\n    <p class=\"text-8xl font-medium tracking-tighter whitespace-pre-wrap text-black dark:text-white\">\n      <NumberTicker :value=\"100\" />\n    </p>\n  </div>\n</template>\n",
+      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <p class=\"text-highlighted text-8xl font-medium tracking-tighter whitespace-pre-wrap\">\n        <NumberTicker :value=\"100\" />\n      </p>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -102,8 +102,8 @@
   },
   "docPath": "content/2.components/text-animations/number-ticker.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "19ea10b70f31af9ce5745a0645b0c4cb1c833f3a",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "3c304fee300a89efb72a2da80d81950de08e1907",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

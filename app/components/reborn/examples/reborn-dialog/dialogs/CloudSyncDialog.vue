@@ -52,8 +52,9 @@ defineExpose({
     <slot />
 
     <template #content>
-      <div class="flex items-center gap-4 p-4 rounded-xl bg-secondary/5 text-secondary border border-secondary/10">
-        <Icon name="lucide:cloud-upload" class="w-5 h-5 shrink-0" />
+      <!-- 弹窗面板内的语义提示条，属原子标记而非嵌套容器 -->
+      <div class="bg-secondary/10 text-secondary rounded-ui-sm flex items-center gap-3 p-3">
+        <Icon name="lucide:cloud-upload" class="size-5 shrink-0" />
         <span class="text-xs font-medium">系统检测到 3 项配置需要合并同步。</span>
       </div>
     </template>

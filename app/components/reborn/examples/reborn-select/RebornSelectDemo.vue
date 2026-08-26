@@ -2,6 +2,7 @@
 import { reactive } from "vue";
 import { z } from "zod";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import type { SelectOption } from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
 import RebornFormItem from "~/components/reborn/ui/reborn-form/RebornFormItem.vue";
@@ -182,17 +183,17 @@ function onChange(value: any) {
 </script>
 
 <template>
-    <div class="flex w-full flex-col gap-12 pt-4 pb-24">
-        <!-- 1. 交互演练场 -->
+    <div class="flex w-full flex-col">
+        <!-- 1. 交互演练场：Playground 自带标题栏，不再额外套 DemoSection -->
         <Playground v-model="state" :controls="controls" component-name="RebornSelect" title="交互体验"
-            description="通过左侧面板实时调节组件属性，在右侧查看视觉反馈。数据源为 60 个站点，展开时会自动定位到已选项">
+            description="调节左侧参数实时查看反馈；数据源为 60 个站点，展开时会自动定位到已选项">
             <template #tag>
-                <button
-                    class="flex cursor-pointer items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold tracking-widest text-primary uppercase transition-all hover:bg-primary/20 active:scale-95"
-                    @click="resetState">
-                    <Icon name="lucide:rotate-ccw" size="12" />
+                <RebornButton variant="soft" size="sm" @click="resetState">
+                    <template #leading>
+                        <Icon name="lucide:rotate-ccw" size="12" />
+                    </template>
                     重置配置
-                </button>
+                </RebornButton>
             </template>
 
             <RebornSelect v-model="state.value" :options="cityOptions" :size="state.size" :color="state.color"
@@ -203,226 +204,173 @@ function onChange(value: any) {
         </Playground>
 
         <!-- 2. 核心色彩 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">核心色彩</h3>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div v-for="c in selectColors" :key="c"
-                    class="flex items-center justify-between rounded-2xl border border-gray-100/80 bg-white/60 p-4 backdrop-blur-2xl transition-all hover:border-gray-200 hover:shadow-sm dark:border-white/5 dark:bg-slate-900/40">
-                    <span class="text-xs font-bold tracking-tighter text-gray-400 uppercase">{{ c }}</span>
+        <DemoSection title="核心色彩">
+            <DemoBlock layout="grid" class="lg:grid-cols-2">
+                <div v-for="c in selectColors" :key="c" class="flex items-center justify-between gap-4">
+                    <span class="text-dimmed text-xs font-bold tracking-tighter uppercase">{{ c }}</span>
                     <RebornSelect v-model="coloredValue" :color="c" :options="frameworkOptions" size="sm"
                         class="w-40" />
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 3. 尺寸规范 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">尺寸规范</h3>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-            <div
-                class="flex flex-col items-center justify-center gap-8 rounded-2xl border border-gray-100 bg-gray-50/30 p-8 sm:flex-row dark:border-gray-800 dark:bg-gray-900/30">
-                <div v-for="s in sizeSections" :key="s.size" class="flex flex-col items-center gap-4">
+        <DemoSection title="尺寸规范">
+            <DemoBlock align="end" class="gap-8">
+                <div v-for="s in sizeSections" :key="s.size" class="flex flex-col items-center gap-3">
                     <RebornSelect v-model="sizeValue" :size="s.size" color="info" :options="frameworkOptions"
                         class="w-44" />
-                    <span class="text-sm font-black tracking-widest text-gray-400 uppercase">{{ s.label }}</span>
+                    <span class="text-dimmed text-xs font-semibold tracking-widest uppercase">{{ s.label }}</span>
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 4. 多选模式 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">多选模式</h3>
-                <p class="text-sm text-gray-500">面板保持展开，可连续勾选多项</p>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-
-            <div class="grid gap-6 md:grid-cols-2">
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">连续勾选</h4>
-                    <p class="text-xs text-gray-500">
-                        <code class="text-violet-500">multiple</code>
-                        模式下点击选项只切换勾选状态，只有点击面板外部才会收起；已选项右侧带对勾标记
-                    </p>
+        <DemoSection title="多选模式" description="面板保持展开，可连续勾选多项。">
+            <DemoBlock layout="grid" class="lg:grid-cols-2">
+                <div class="flex flex-col gap-3">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">连续勾选</h4>
+                    <DemoNote class="text-xs">
+                        <code>multiple</code> 模式下点击选项只切换勾选状态，只有点击面板外部才会收起；已选项右侧带对勾标记
+                    </DemoNote>
                     <RebornSelect v-model="multipleValue" :options="frameworkOptions" multiple color="success"
                         placeholder="可多选框架" class="w-full" @change="onChange" />
                 </div>
 
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">选中结果</h4>
-                    <p class="text-xs text-gray-500">与上方选择器共享同一份 modelValue，可单独移除某一项</p>
+                <div class="flex flex-col gap-3">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">选中结果</h4>
+                    <DemoNote class="text-xs">与上方选择器共享同一份 modelValue，可单独移除某一项</DemoNote>
                     <div class="flex min-h-10 flex-wrap items-center gap-2">
                         <span v-for="item in multipleSelected" :key="item.value"
-                            class="group flex items-center gap-1.5 rounded-full bg-success/10 py-1.5 pr-2 pl-3 text-xs font-medium text-success transition-all hover:bg-success/20">
+                            class="group bg-success/10 text-success flex items-center gap-1.5 rounded-full py-1.5 pr-2 pl-3 text-xs font-medium transition-all hover:bg-success/20">
                             {{ item.label }}
                             <button class="cursor-pointer opacity-60 transition-all hover:opacity-100 active:scale-90"
                                 @click="removeSelected(item.value)">
                                 <Icon name="lucide:x" size="12" />
                             </button>
                         </span>
-                        <span v-if="multipleSelected.length === 0" class="text-xs text-gray-400">尚未选择任何项</span>
+                        <DemoNote v-if="multipleSelected.length === 0" tone="dimmed" class="text-xs">
+                            尚未选择任何项
+                        </DemoNote>
                     </div>
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 5. 浮层定位 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">浮层定位</h3>
-                <p class="text-sm text-gray-500">浮层传送至 body，始终锚定触发器</p>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-
-            <div class="grid gap-6 md:grid-cols-2">
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">滚动容器内</h4>
-                    <p class="text-xs text-gray-500">
-                        展开后滚动灰色区域：浮层实时跟随触发器，且不会被容器的
-                        <code class="text-violet-500">overflow-hidden</code> 裁掉
-                    </p>
-                    <div
-                        class="h-56 overflow-y-auto rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
-                        <p class="pb-4 text-xs text-gray-400">向下滚动一段距离后再展开选择器 ↓</p>
+        <DemoSection title="浮层定位" description="浮层传送至 body，始终锚定触发器。">
+            <DemoBlock layout="grid" class="lg:grid-cols-2">
+                <div class="flex flex-col gap-3">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">滚动容器内</h4>
+                    <DemoNote class="text-xs">
+                        展开后滚动下方区域：浮层实时跟随触发器，且不会被容器的 <code>overflow-hidden</code> 裁掉
+                    </DemoNote>
+                    <!-- 滚动容器本身就是被演示的对象，属规范里唯一允许的那层浅填充 -->
+                    <div class="bg-elevated rounded-ui-sm h-56 overflow-y-auto p-4">
+                        <DemoNote tone="dimmed" class="pb-4 text-xs">向下滚动一段距离后再展开选择器 ↓</DemoNote>
                         <div class="h-24" />
                         <RebornSelect v-model="scrollBoxValue" :options="cityOptions" color="info" class="w-full" />
                         <div class="h-72" />
-                        <p class="text-xs text-gray-400">容器底部</p>
+                        <DemoNote tone="dimmed" class="text-xs">容器底部</DemoNote>
                     </div>
                 </div>
 
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">
-                        对照组：<code class="text-violet-500">:portal="false"</code>
+                <div class="flex flex-col gap-3">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">
+                        对照组：<code>:portal="false"</code>
                     </h4>
-                    <p class="text-xs text-gray-500">
+                    <DemoNote class="text-xs">
                         浮层留在触发器内，只能在容器内绘制，因此被 overflow 截断。
                         需要浮层随父容器一起滚动、一起裁剪时才关掉 portal
-                    </p>
-                    <div
-                        class="h-56 overflow-y-auto rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-4 dark:border-gray-700 dark:bg-gray-900/50">
-                        <p class="pb-4 text-xs text-gray-400">展开后与左侧对比 ↓</p>
+                    </DemoNote>
+                    <div class="bg-elevated rounded-ui-sm h-56 overflow-y-auto p-4">
+                        <DemoNote tone="dimmed" class="pb-4 text-xs">展开后与左侧对比 ↓</DemoNote>
                         <div class="h-24" />
                         <RebornSelect v-model="clippedValue" :options="cityOptions" color="error" :portal="false"
                             class="w-full" />
                         <div class="h-72" />
-                        <p class="text-xs text-gray-400">容器底部</p>
+                        <DemoNote tone="dimmed" class="text-xs">容器底部</DemoNote>
                     </div>
                 </div>
+            </DemoBlock>
 
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl md:col-span-2 dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">自动翻转与定位</h4>
-                    <p class="text-xs text-gray-500">
-                        下方空间不足时自动向上展开；60 项长列表在展开瞬间即滚动到已选项，无需手动查找
-                    </p>
-                    <RebornSelect v-model="followValue" :options="cityOptions" color="warning" class="w-full max-w-md" />
-                    <ul class="grid gap-2 pt-2 text-xs text-gray-500 sm:grid-cols-3">
-                        <li class="flex gap-2">
-                            <span class="font-black text-gray-300 dark:text-gray-600">01</span>
-                            展开方向在展开瞬间锁定，滚动中不会翻转，浮层始终贴住触发器
-                        </li>
-                        <li class="flex gap-2">
-                            <span class="font-black text-gray-300 dark:text-gray-600">02</span>
-                            浮层最小宽度对齐触发器，内容更宽时向右扩展并留出视口边距
-                        </li>
-                        <li class="flex gap-2">
-                            <span class="font-black text-gray-300 dark:text-gray-600">03</span>
-                            支持 <code class="text-violet-500">↑ ↓</code> 移动高亮、
-                            <code class="text-violet-500">Enter</code> 选中、
-                            <code class="text-violet-500">Esc</code> 收起
-                        </li>
-                    </ul>
-                </div>
+            <div class="border-default mt-6 flex flex-col gap-3 border-t pt-6">
+                <h4 class="text-default text-xs font-bold tracking-widest uppercase">自动翻转与定位</h4>
+                <DemoNote class="text-xs">
+                    下方空间不足时自动向上展开；60 项长列表在展开瞬间即滚动到已选项，无需手动查找
+                </DemoNote>
+                <RebornSelect v-model="followValue" :options="cityOptions" color="warning" class="w-full max-w-md" />
+                <ul class="text-muted grid gap-2 pt-2 text-xs sm:grid-cols-3">
+                    <li class="flex gap-2">
+                        <span class="text-dimmed font-black">01</span>
+                        展开方向在展开瞬间锁定，滚动中不会翻转，浮层始终贴住触发器
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-dimmed font-black">02</span>
+                        浮层最小宽度对齐触发器，内容更宽时向右扩展并留出视口边距
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-dimmed font-black">03</span>
+                        支持 <code>↑ ↓</code> 移动高亮、<code>Enter</code> 选中、<code>Esc</code> 收起
+                    </li>
+                </ul>
             </div>
-        </section>
+        </DemoSection>
 
         <!-- 6. 选项与外观状态 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">状态矩阵</h3>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <div
-                    class="space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-xs font-bold tracking-widest text-gray-400 uppercase">禁用单项</h4>
-                    <p class="text-xs text-gray-500">选项自带 <code class="text-violet-500">disabled</code></p>
+        <DemoSection title="状态矩阵">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-4">
+                <div class="flex flex-col gap-2">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">禁用单项</h4>
+                    <DemoNote class="text-xs">选项自带 <code>disabled</code></DemoNote>
                     <RebornSelect v-model="disabledItemValue" :options="frameworkOptions" class="w-full" />
                 </div>
 
-                <div
-                    class="space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-xs font-bold tracking-widest text-gray-400 uppercase">空数据</h4>
-                    <p class="text-xs text-gray-500">无选项时展示兜底文案</p>
+                <div class="flex flex-col gap-2">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">空数据</h4>
+                    <DemoNote class="text-xs">无选项时展示兜底文案</DemoNote>
                     <RebornSelect v-model="emptyValue" :options="[]" placeholder="暂无可选项" class="w-full" />
                 </div>
 
-                <div
-                    class="space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-xs font-bold tracking-widest text-gray-400 uppercase">无边框</h4>
-                    <p class="text-xs text-gray-500">嵌入工具栏等紧凑场景</p>
+                <div class="flex flex-col gap-2">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">无边框</h4>
+                    <DemoNote class="text-xs">嵌入工具栏等紧凑场景</DemoNote>
                     <RebornSelect v-model="plainValue" :options="frameworkOptions" :bordered="false" :clearable="false"
                         class="w-full" />
                 </div>
 
-                <div
-                    class="space-y-3 rounded-2xl border border-gray-100/80 bg-white/60 p-6 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-xs font-bold tracking-widest text-gray-400 uppercase">整体禁用</h4>
-                    <p class="text-xs text-gray-500">不可展开、不可清空</p>
+                <div class="flex flex-col gap-2">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">整体禁用</h4>
+                    <DemoNote class="text-xs">不可展开、不可清空</DemoNote>
                     <RebornSelect v-model="plainValue" :options="frameworkOptions" disabled class="w-full" />
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 7. 关闭时机 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">关闭时机</h3>
-                <p class="text-sm text-gray-500">closeOn</p>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-            <div
-                class="grid gap-6 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl sm:grid-cols-2 dark:border-white/5 dark:bg-slate-900/40">
+        <DemoSection title="关闭时机" description="closeOn 决定点击外部时收起的时机。">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
                 <div class="flex flex-col gap-2">
-                    <span class="text-sm font-black tracking-widest text-gray-400 uppercase">closeOn: click</span>
-                    <p class="pb-1 text-xs text-gray-500">在外部完成一次完整点击后才收起</p>
+                    <span class="text-default text-xs font-bold tracking-widest uppercase">closeOn: click</span>
+                    <DemoNote class="text-xs">在外部完成一次完整点击后才收起</DemoNote>
                     <RebornSelect v-model="closeOnClickValue" :options="frameworkOptions" close-on="click"
                         class="w-full" />
                 </div>
                 <div class="flex flex-col gap-2" data-demo="close-on-mousedown">
-                    <span class="text-sm font-black tracking-widest text-gray-400 uppercase">closeOn:
-                        mousedown</span>
-                    <p class="pb-1 text-xs text-gray-500">在外部按下鼠标（含右键）立即收起</p>
+                    <span class="text-default text-xs font-bold tracking-widest uppercase">closeOn: mousedown</span>
+                    <DemoNote class="text-xs">在外部按下鼠标（含右键）立即收起</DemoNote>
                     <RebornSelect v-model="closeOnMousedownValue" :options="frameworkOptions" close-on="mousedown"
                         class="w-full" />
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 8. 插槽定制 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">插槽定制</h3>
-                <p class="text-sm text-gray-500">接管选项与触发器的渲染</p>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-
-            <div class="grid gap-6 md:grid-cols-2">
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">option 插槽</h4>
-                    <p class="text-xs text-gray-500">在选项内渲染图标与副标题，作用域提供 option 与 active</p>
+        <DemoSection title="插槽定制" description="接管选项与触发器的渲染。">
+            <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
+                <div class="flex flex-col gap-3">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">option 插槽</h4>
+                    <DemoNote class="text-xs">在选项内渲染图标与副标题，作用域提供 option 与 active</DemoNote>
                     <RebornSelect v-model="slotOptionValue" :options="frameworkOptions" :ui="{ option: 'h-auto py-2.5' }"
                         class="w-full">
                         <template #option="{ option, active }">
@@ -430,23 +378,22 @@ function onChange(value: any) {
                                 <Icon :name="option.icon" class="size-5 shrink-0" />
                                 <div class="flex min-w-0 flex-1 flex-col">
                                     <span class="truncate text-sm font-medium">{{ option.label }}</span>
-                                    <span class="truncate text-xs text-gray-400">{{ option.desc }}</span>
+                                    <span class="text-dimmed truncate text-xs">{{ option.desc }}</span>
                                 </div>
-                                <Icon v-if="active" name="lucide:check" class="size-4 shrink-0 text-primary" />
+                                <Icon v-if="active" name="lucide:check" class="text-primary size-4 shrink-0" />
                             </div>
                         </template>
                     </RebornSelect>
                 </div>
 
-                <div
-                    class="space-y-4 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                    <h4 class="text-sm font-bold tracking-widest text-gray-400 uppercase">cover 插槽</h4>
-                    <p class="text-xs text-gray-500">完全接管触发器内容，自带箭头与状态样式由业务决定</p>
+                <div class="flex flex-col gap-3">
+                    <h4 class="text-default text-xs font-bold tracking-widest uppercase">cover 插槽</h4>
+                    <DemoNote class="text-xs">完全接管触发器内容，自带箭头与状态样式由业务决定</DemoNote>
                     <RebornSelect v-model="coverValue" :options="frameworkOptions"
                         :trigger-ui="{ trigger: 'h-auto p-0 border-none bg-transparent' }" class="w-full">
                         <template #cover="{ displayText, placeholder, isOpen }">
                             <div
-                                class="flex w-full cursor-pointer items-center gap-3 rounded-2xl bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white shadow-lg shadow-violet-500/25 transition-all hover:shadow-violet-500/40 active:scale-[0.98]">
+                                class="rounded-ui-base flex w-full cursor-pointer items-center gap-3 bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white transition-all active:scale-[0.98]">
                                 <Icon name="lucide:sparkles" class="size-4 shrink-0" />
                                 <span class="flex-1 truncate text-sm font-semibold">
                                     {{ displayText || placeholder }}
@@ -457,27 +404,19 @@ function onChange(value: any) {
                         </template>
                     </RebornSelect>
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 9. 表单集成 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">表单集成</h3>
-                <p class="text-sm text-gray-500">尺寸、禁用与校验态由 RebornForm 下发</p>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-
-            <div
-                class="space-y-6 rounded-3xl border border-gray-100/80 bg-white/60 p-8 backdrop-blur-2xl dark:border-white/5 dark:bg-slate-900/40">
-                <p class="text-xs text-gray-500">
-                    选择器不需要自己接错误状态：<code class="text-violet-500">size</code>、
-                    <code class="text-violet-500">disabled</code>、<code class="text-violet-500">error</code>
+        <DemoSection title="表单集成" description="尺寸、禁用与校验态由 RebornForm 下发。">
+            <DemoBlock layout="stack" class="gap-6">
+                <DemoNote class="text-xs">
+                    选择器不需要自己接错误状态：<code>size</code>、<code>disabled</code>、<code>error</code>
                     都从表单上下文注入。选中触发 change 校验，收起面板触发 blur 校验
-                </p>
+                </DemoNote>
 
                 <RebornForm ref="formRef" :model-value="formModel" :rules="formRules" label-width="100px"
-                    label-position="left" size="md" :trigger="['change', 'blur']">
+                    label-position="left" size="md" :trigger="['change', 'blur']" class="w-full max-w-lg">
                     <RebornFormItem prop="framework" label="主框架" required>
                         <RebornSelect v-model="formModel.framework" :options="frameworkOptions" placeholder="请选择主框架" />
                     </RebornFormItem>
@@ -489,40 +428,20 @@ function onChange(value: any) {
                 </RebornForm>
 
                 <div class="flex gap-3">
-                    <button
-                        class="cursor-pointer rounded-full bg-primary px-5 py-2 text-xs font-bold tracking-widest text-white uppercase transition-all hover:opacity-90 active:scale-95"
-                        @click="submitForm">
-                        校验并提交
-                    </button>
-                    <button
-                        class="cursor-pointer rounded-full bg-gray-100 px-5 py-2 text-xs font-bold tracking-widest text-gray-500 uppercase transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
-                        @click="resetForm">
-                        重置
-                    </button>
+                    <RebornButton color="primary" @click="submitForm">校验并提交</RebornButton>
+                    <RebornButton color="neutral" variant="outline" @click="resetForm">重置</RebornButton>
                 </div>
-            </div>
-        </section>
+            </DemoBlock>
+        </DemoSection>
 
         <!-- 10. 深度样式定制 -->
-        <section class="space-y-6">
-            <div class="flex items-center gap-3">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">深度样式定制</h3>
-                <p class="text-sm text-gray-500">triggerUi / ui</p>
-                <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
-            </div>
-            <div
-                class="rounded-3xl border-2 border-indigo-100 bg-indigo-50/30 p-8 dark:border-indigo-900/50 dark:bg-indigo-950/10">
-                <h4 class="mb-2 text-sm font-bold tracking-widest text-indigo-400 uppercase">Custom Styling</h4>
-                <p class="mb-6 text-xs text-indigo-500/70">
-                    triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并
-                </p>
-                <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="{
-                    trigger: 'border-dashed border-2 rounded-xl bg-white dark:bg-gray-800 border-indigo-200 dark:border-indigo-800 px-4 h-14',
-                }" :ui="{
-                    dropdown: 'rounded-xl shadow-2xl shadow-indigo-500/10 border-indigo-100 dark:border-indigo-900 bg-white/90 dark:bg-gray-800/90 backdrop-blur',
-                    optionHighlight: 'bg-indigo-50 dark:bg-indigo-900/40',
-                }" class="w-full max-w-md" />
-            </div>
-        </section>
+        <DemoSection title="深度样式定制" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
+            <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="{
+                trigger: 'border-dashed border-2 rounded-ui-base border-indigo-200 dark:border-indigo-800 px-4 h-14',
+            }" :ui="{
+                dropdown: 'rounded-ui-base border-indigo-100 dark:border-indigo-900',
+                optionHighlight: 'bg-indigo-50 dark:bg-indigo-900/40',
+            }" class="w-full max-w-md" />
+        </DemoSection>
     </div>
 </template>

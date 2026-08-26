@@ -62,13 +62,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst particlesColor = computed(() => (useColorMode().value === \"dark\" ? \"#FFFFFF\" : \"#000000\"));\n</script>\n<template>\n  <div\n    class=\"flex h-[40rem] w-full flex-col items-center justify-center overflow-hidden rounded-md bg-white dark:bg-black\">\n    <h1 class=\"relative z-20 text-center text-3xl font-bold text-black md:text-7xl lg:text-9xl dark:text-white\">\n      Reborn UI\n    </h1>\n    <div class=\"relative h-40 w-[40rem]\">\n      <div\n        class=\"absolute inset-x-20 top-0 h-[2px] w-3/4 bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-sm\" />\n      <div\n        class=\"absolute inset-x-20 top-0 h-px w-3/4 bg-gradient-to-r from-transparent via-indigo-500 to-transparent\" />\n      <div\n        class=\"absolute inset-x-60 top-0 h-[5px] w-1/4 bg-gradient-to-r from-transparent via-sky-500 to-transparent blur-sm\" />\n      <div class=\"absolute inset-x-60 top-0 h-px w-1/4 bg-gradient-to-r from-transparent via-sky-500 to-transparent\" />\n\n      <Sparkles background=\"transparent\" :min-size=\"0.4\" :max-size=\"1.4\" :particle-density=\"1200\" class=\"size-full\"\n        :particle-color=\"particlesColor\" />\n\n      <div\n        class=\"absolute inset-0 size-full bg-white [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)] dark:bg-black\" />\n    </div>\n  </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\n\n/** 粒子颜色跟随亮暗模式 */\nconst particlesColor = computed(() => (useColorMode().value === \"dark\" ? \"#FFFFFF\" : \"#000000\"));\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"粒子舞台是效果本身的一部分；径向遮罩用画布同色淡出边缘。\"\n  >\n    <!-- 粒子遮罩需要跟画布同色，外层不再另铺填充 -->\n    <div class=\"flex h-[28rem] w-full flex-col items-center justify-center overflow-hidden\">\n      <h1 class=\"text-highlighted relative z-20 text-center text-3xl font-bold md:text-7xl\">\n        Reborn UI\n      </h1>\n      <div class=\"relative h-40 w-[40rem] max-w-full\">\n        <div class=\"absolute inset-x-20 top-0 h-[2px] w-3/4 bg-linear-to-r from-transparent via-indigo-500 to-transparent blur-sm\" />\n        <div class=\"absolute inset-x-20 top-0 h-px w-3/4 bg-linear-to-r from-transparent via-indigo-500 to-transparent\" />\n        <div class=\"absolute inset-x-60 top-0 h-[5px] w-1/4 bg-linear-to-r from-transparent via-sky-500 to-transparent blur-sm\" />\n        <div class=\"absolute inset-x-60 top-0 h-px w-1/4 bg-linear-to-r from-transparent via-sky-500 to-transparent\" />\n\n        <Sparkles\n          background=\"transparent\"\n          :min-size=\"0.4\"\n          :max-size=\"1.4\"\n          :particle-density=\"1200\"\n          class=\"size-full\"\n          :particle-color=\"particlesColor\"\n        />\n\n        <div class=\"bg-default absolute inset-0 size-full [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]\" />\n      </div>\n    </div>\n  </DemoSection>\n</template>\n",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst particlesColor = computed(() => (useColorMode().value === \"dark\" ? \"#FFFFFF\" : \"#000000\"));\n</script>\n<template>\n  <div\n    class=\"relative flex h-[40rem] w-full flex-col items-center justify-center overflow-hidden rounded-md bg-white dark:bg-black\"\n  >\n    <div class=\"absolute inset-0 h-screen w-full\">\n      <Sparkles\n        background=\"transparent\"\n        :min-size=\"0.8\"\n        :max-size=\"2\"\n        :particle-density=\"800\"\n        class=\"size-full\"\n        :particle-color=\"particlesColor\"\n      />\n    </div>\n    <h1\n      class=\"relative z-20 text-center text-3xl font-bold text-black md:text-7xl lg:text-6xl dark:text-white\"\n    >\n      Build great products\n    </h1>\n  </div>\n</template>\n",
+      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\n\n/** 粒子颜色跟随亮暗模式 */\nconst particlesColor = computed(() => (useColorMode().value === \"dark\" ? \"#FFFFFF\" : \"#000000\"));\n</script>\n\n<template>\n  <div class=\"relative flex h-[28rem] w-full flex-col items-center justify-center overflow-hidden\">\n    <div class=\"absolute inset-0 w-full\">\n      <Sparkles\n        background=\"transparent\"\n        :min-size=\"0.8\"\n        :max-size=\"2\"\n        :particle-density=\"800\"\n        class=\"size-full\"\n        :particle-color=\"particlesColor\"\n      />\n    </div>\n    <h1 class=\"text-highlighted relative z-20 text-center text-3xl font-bold md:text-6xl\">\n      做出好产品\n    </h1>\n  </div>\n</template>\n",
       "source": "demo",
       "platform": "web"
     }
@@ -103,8 +103,8 @@
   },
   "docPath": "content/2.components/special-effects/sparkles.md",
   "_meta": {
-    "generatedAt": "2026-08-24T10:44:38.148Z",
-    "contentHash": "57e650fef897871239a2dc0486de9b91897c818b",
+    "generatedAt": "2026-08-25T10:59:50.149Z",
+    "contentHash": "fd14951901256909fea137db39a1d75969758a1c",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

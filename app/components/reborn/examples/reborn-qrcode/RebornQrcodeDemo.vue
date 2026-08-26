@@ -1,320 +1,390 @@
 <script setup lang="ts">
-import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
-import type { ClQrcodeMode } from '../../ui/reborn-qrcode'
-import { eccLevel } from '../../ui/reborn-qrcode'
-import RebornSwitch from "../../ui/reborn-switch/RebornSwitch.vue"
+import type { ClQrcodeMode } from "~/components/reborn/ui/reborn-qrcode";
+import { eccLevel } from "~/components/reborn/ui/reborn-qrcode";
 
-const qrConfig = ref({
-  text: 'https://www.leyifan.com/',
-  margin: 1,
-  ecc: eccLevel.H,
-  dotsType: 'circular' as ClQrcodeMode,
-  dotsColor: '#131313',
-  dotsImage: undefined as string | undefined,
-  dotsGradient: undefined as any,
-  backgroundColor: '#FFFFFF',
-  backgroundTransparent: false,
-  backgroundGradient: undefined as any,
-  logoImage: 'https://cms-image.leyifan.cn/img_reborn/index/icon-calculator.png',
-  logoSize: 40,
-  logoMargin: 4,
-  logoShape: 'circle',
-  logoHideBackgroundDots: true,
-  logoShadow: false,
-  cornersSquareType: 'extra-rounded',
-  cornersDotType: 'dot',
-})
+// ─── 交互演练场 ─────────────────────────────────────────────────
 
-const tabs = [
-  { label: '基础', value: 'basic', icon: 'i-lucide-settings' },
-  { label: '颜色', value: 'color', icon: 'i-lucide-palette' },
-  { label: '形状', value: 'shape', icon: 'i-lucide-shapes' },
-  { label: 'Logo', value: 'logo', icon: 'i-lucide-image' },
-  { label: '预设', value: 'preset', icon: 'i-lucide-code' },
-]
+/** 码点渲染模式 */
+const modeOptions: { label: string; value: ClQrcodeMode }[] = [
+  { label: "圆点 circular", value: "circular" },
+  { label: "直角 rect", value: "rect" },
+  { label: "小直角 rectSmall", value: "rectSmall" },
+  { label: "条纹 line", value: "line" },
+];
 
-const activeTab = ref('basic')
-
-const presets = [
-  {
-    name: '极简黑白',
-    config: { dotsColor: '#000000', backgroundColor: '#FFFFFF', dotsType: 'rect', cornersSquareType: 'dot', cornersDotType: 'dot' }
-  },
-  {
-    name: '圆润天蓝',
-    config: { dotsColor: '#3b82f6', backgroundColor: '#eff6ff', dotsType: 'circular', cornersSquareType: 'extra-rounded', cornersDotType: 'dot' }
-  },
-  {
-    name: '优雅暗红',
-    config: { dotsColor: '#991b1b', backgroundColor: '#fef2f2', dotsType: 'line', cornersSquareType: 'rounded', cornersDotType: 'rect' }
-  },
-  {
-    name: '落日渐变',
-    config: {
-      dotsGradient: {
-        type: 'linear',
-        direction: 'diagonal',
-        colorStops: [
-          { offset: 0, color: '#f59e0b' },
-          { offset: 1, color: '#ef4444' }
-        ]
-      },
-      backgroundColor: '#fffbeb',
-      dotsType: 'circular'
-    }
-  },
-  {
-    name: '星空纹理',
-    config: {
-      dotsImage: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1000&auto=format&fit=crop',
-      backgroundColor: '#000000',
-      dotsType: 'rectSmall',
-      cornersSquareType: 'rounded',
-      cornersDotType: 'extra-rounded'
-    }
-  }
-]
-
-const applyPreset = (preset: any) => {
-  // Reset conflicting properties
-  qrConfig.value.dotsImage = undefined
-  qrConfig.value.dotsGradient = undefined
-  qrConfig.value.backgroundGradient = undefined
-  Object.assign(qrConfig.value, preset.config)
-}
-
-const copyParams = async () => {
-  const payload = JSON.stringify(qrConfig.value, null, 2)
-  await navigator.clipboard.writeText(payload)
-  // Use a simple alert or toast if available
-  alert('配置参数已复制到剪贴板')
-}
-
-const modeOptions = [
-  { label: '圆点', value: 'circular' },
-  { label: '直角', value: 'rect' },
-  { label: '小直角', value: 'rectSmall' },
-  { label: '条纹', value: 'line' }
-]
+/** 定位点（三个大眼睛）的外框与内点样式 */
+const cornerOptions = [
+  { label: "默认", value: "none" },
+  { label: "直角 rect", value: "rect" },
+  { label: "极圆 extra-rounded", value: "extra-rounded" },
+  { label: "圆点 dot", value: "dot" },
+];
 
 const eccOptions = [
-  { label: 'L (7%)', value: eccLevel.L },
-  { label: 'M (15%)', value: eccLevel.M },
-  { label: 'Q (25%)', value: eccLevel.Q },
-  { label: 'H (30%)', value: eccLevel.H }
-]
+  { label: "L · 7% 容错", value: eccLevel.L },
+  { label: "M · 15% 容错", value: eccLevel.M },
+  { label: "Q · 25% 容错", value: eccLevel.Q },
+  { label: "H · 30% 容错", value: eccLevel.H },
+];
 
-const cornerOptions = [
-  { label: '默认', value: 'none' },
-  { label: '直角', value: 'rect' },
-  { label: '圆角', value: 'rounded' },
-  { label: '极圆', value: 'extra-rounded' },
-  { label: '圆点', value: 'dot' }
-]
+const state = ref<Record<string, any>>({
+  text: "https://www.leyifan.com/",
+  ecc: eccLevel.H,
+  mode: "circular",
+  padding: 5,
+  foreground: "#131313",
+  background: "#FFFFFF",
+  backgroundTransparent: false,
+  cornersSquareType: "extra-rounded",
+  cornersDotType: "dot",
+  logo: "https://cms-image.leyifan.cn/img_reborn/index/icon-calculator.png",
+  logoSize: 40,
+  logoMargin: 4,
+  logoHideBackgroundDots: true,
+  logoShadow: false,
+});
 
-const toggleDotsGradient = () => {
-  if (qrConfig.value.dotsGradient) {
-    qrConfig.value.dotsGradient = undefined
-  } else {
-    qrConfig.value.dotsImage = undefined
-    qrConfig.value.dotsGradient = {
-      type: 'linear',
-      direction: 'horizontal',
-      colorStops: [
-        { offset: 0, color: '#3b82f6' },
-        { offset: 1, color: '#8b5cf6' }
-      ]
-    }
-  }
-}
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "内容与容错",
+    children: [
+      {
+        label: "二维码内容",
+        key: "text",
+        component: "input" as const,
+        defaultValue: "https://www.leyifan.com/",
+      },
+      {
+        label: "纠错级别",
+        key: "ecc",
+        component: "select" as const,
+        defaultValue: eccLevel.H,
+        props: { options: eccOptions },
+      },
+      {
+        label: "内边距（px）",
+        key: "padding",
+        component: "slider" as const,
+        defaultValue: 5,
+        props: { min: 0, max: 30, step: 1 },
+      },
+    ],
+  },
+  {
+    title: "形状与配色",
+    children: [
+      {
+        label: "码点形状",
+        key: "mode",
+        component: "select" as const,
+        defaultValue: "circular",
+        props: { options: modeOptions },
+      },
+      {
+        label: "定位点外框",
+        key: "cornersSquareType",
+        component: "select" as const,
+        defaultValue: "extra-rounded",
+        props: { options: cornerOptions },
+      },
+      {
+        label: "定位点内点",
+        key: "cornersDotType",
+        component: "select" as const,
+        defaultValue: "dot",
+        props: { options: cornerOptions },
+      },
+      { label: "前景色", key: "foreground", component: "color-picker" as const, defaultValue: "#131313" },
+      { label: "背景色", key: "background", component: "color-picker" as const, defaultValue: "#FFFFFF" },
+      {
+        label: "背景透明",
+        key: "backgroundTransparent",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+    ],
+  },
+  {
+    title: "Logo 嵌入",
+    children: [
+      {
+        label: "Logo 图片地址",
+        key: "logo",
+        component: "input" as const,
+        defaultValue: "https://cms-image.leyifan.cn/img_reborn/index/icon-calculator.png",
+      },
+      {
+        label: "Logo 尺寸（px）",
+        key: "logoSize",
+        component: "slider" as const,
+        defaultValue: 40,
+        props: { min: 20, max: 80, step: 4 },
+      },
+      {
+        label: "Logo 留白（px）",
+        key: "logoMargin",
+        component: "slider" as const,
+        defaultValue: 4,
+        props: { min: 0, max: 20, step: 1 },
+      },
+      {
+        label: "隐藏 Logo 下方码点",
+        key: "logoHideBackgroundDots",
+        component: "checkbox" as const,
+        defaultValue: true,
+      },
+      { label: "Logo 投影", key: "logoShadow", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+];
 
-const toggleBackgroundGradient = () => {
-  if (qrConfig.value.backgroundGradient) {
-    qrConfig.value.backgroundGradient = undefined
-  } else {
-    qrConfig.value.backgroundTransparent = false
-    qrConfig.value.backgroundGradient = {
-      type: 'linear',
-      direction: 'vertical',
-      colorStops: [
-        { offset: 0, color: '#f8fafc' },
-        { offset: 1, color: '#e2e8f0' }
-      ]
-    }
-  }
+/** 演练场右上角展示的等价代码 */
+const qrcodeCode = computed(() => {
+  const s = state.value;
+  const props: string[] = [`text="${s.text}"`, `mode="${s.mode}"`];
+
+  if (s.ecc !== eccLevel.H) props.push(`ecc="${s.ecc}"`);
+  if (s.padding !== 5) props.push(`:padding="${s.padding}"`);
+  if (s.foreground !== "#131313") props.push(`foreground="${s.foreground}"`);
+  if (s.backgroundTransparent) props.push("background-transparent");
+  else if (s.background !== "#FFFFFF") props.push(`background="${s.background}"`);
+  if (s.cornersSquareType !== "none") props.push(`corners-square-type="${s.cornersSquareType}"`);
+  if (s.cornersDotType !== "none") props.push(`corners-dot-type="${s.cornersDotType}"`);
+  if (s.logo) props.push(`logo="${s.logo}"`, `:logo-size="${s.logoSize}"`);
+  if (s.logoHideBackgroundDots) props.push("logo-hide-background-dots");
+  if (s.logoShadow) props.push("logo-shadow");
+
+  return `<RebornQrcode\n  ${props.join("\n  ")}\n/>`;
+});
+
+// ─── 场景演示数据 ───────────────────────────────────────────────
+
+/** 定位点外框样式对照 */
+const cornerShowcase = [
+  { square: "rect", dot: "rect", label: "全直角" },
+  { square: "extra-rounded", dot: "dot", label: "圆角外框 + 圆点" },
+  { square: "dot", dot: "dot", label: "全圆" },
+] as const;
+
+/** 点阵线性渐变 */
+const sunsetGradient = {
+  type: "linear",
+  direction: "diagonal",
+  colorStops: [
+    { offset: 0, color: "#f59e0b" },
+    { offset: 1, color: "#ef4444" },
+  ],
+};
+
+/** 背景纵向渐变 */
+const skyGradient = {
+  type: "linear",
+  direction: "vertical",
+  colorStops: [
+    { offset: 0, color: "#eff6ff" },
+    { offset: 1, color: "#bfdbfe" },
+  ],
+};
+
+/** 点阵图片纹理地址 */
+const textureImage =
+  "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=1000&auto=format&fit=crop";
+
+/** 预设风格：点击后直接写回演练场状态 */
+const presets = [
+  {
+    name: "极简黑白",
+    config: {
+      foreground: "#000000",
+      background: "#FFFFFF",
+      mode: "rect",
+      cornersSquareType: "rect",
+      cornersDotType: "rect",
+    },
+  },
+  {
+    name: "圆润天蓝",
+    config: {
+      foreground: "#3b82f6",
+      background: "#eff6ff",
+      mode: "circular",
+      cornersSquareType: "extra-rounded",
+      cornersDotType: "dot",
+    },
+  },
+  {
+    name: "优雅暗红",
+    config: {
+      foreground: "#991b1b",
+      background: "#fef2f2",
+      mode: "line",
+      cornersSquareType: "extra-rounded",
+      cornersDotType: "rect",
+    },
+  },
+  {
+    name: "深邃墨绿",
+    config: {
+      foreground: "#065f46",
+      background: "#ecfdf5",
+      mode: "rectSmall",
+      cornersSquareType: "dot",
+      cornersDotType: "dot",
+    },
+  },
+];
+
+/** 应用预设到演练场 */
+function applyPreset(config: Record<string, any>) {
+  Object.assign(state.value, config);
 }
 </script>
 
 <template>
-  <div class="p-6 grid grid-cols-7 gap-4 w-full">
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="qrcodeCode"
+      component-name="RebornQrcode"
+      title="交互演练场"
+      description="二维码由 Canvas 实时绘制；纠错级别越高，可被 Logo 遮挡的面积越大。"
+    >
+      <div class="flex w-full flex-col items-center gap-4">
+        <RebornQrcode
+          :text="state.text"
+          :ecc="state.ecc"
+          :mode="state.mode"
+          :padding="state.padding"
+          :foreground="state.foreground"
+          :background="state.background"
+          :background-transparent="state.backgroundTransparent"
+          :corners-square-type="state.cornersSquareType"
+          :corners-dot-type="state.cornersDotType"
+          :logo="state.logo"
+          :logo-size="state.logoSize"
+          :logo-margin="state.logoMargin"
+          :logo-hide-background-dots="state.logoHideBackgroundDots"
+          :logo-shadow="state.logoShadow"
+        />
 
-    <!-- 左侧：配置区 -->
-    <div class="col-span-4 space-y-6">
-      <UCard :ui="{ root: 'overflow-visible!', body: 'p-0! py-2!' }">
-        <UTabs v-model="activeTab" :items="tabs" class="w-full" variant="link" size="xs">
-          <template #content="{ item }">
-            <div class="px-2 space-y-6 min-h-[400px]">
-              <!-- 基础配置 -->
-              <div v-if="item.value === 'basic'" class="space-y-4">
-                <UFormField label="内容" description="输入二维码包含的链接或文本">
-                  <RebornTextarea v-model="qrConfig.text" placeholder="https://..." :rows="3" />
-                </UFormField>
+        <DemoNote tone="dimmed">
+          <span class="font-mono break-all">{{ state.text }}</span>
+        </DemoNote>
+      </div>
+    </Playground>
 
-                <UFormField label="边距">
-                  <RebornInputNumber v-model="qrConfig.margin" type="number" :min="0" :max="10" size="md" />
-                </UFormField>
-                <UFormField label="纠错级别">
-                  <RebornSelect v-model="qrConfig.ecc" :options="eccOptions" />
-                </UFormField>
-              </div>
-
-              <!-- 颜色与视觉配置 -->
-              <div v-if="item.value === 'color'" class="space-y-6">
-                <UFormField label="主体基准色" description="当不使用渐变或图片时生效">
-                  <div class="flex items-center gap-2">
-                    <RebornColorPicker v-model="qrConfig.dotsColor" />
-                  </div>
-                </UFormField>
-                <UFormField label="背景颜色">
-                  <div class="flex items-center gap-2">
-                    <RebornColorPicker v-model="qrConfig.backgroundColor" :disabled="qrConfig.backgroundTransparent" />
-                  </div>
-                </UFormField>
-
-                <UFormField label="透明背景">
-                  <RebornSwitch v-model="qrConfig.backgroundTransparent" active-label="透明背景" inactive-label="不透明背景"
-                    :ui="{ track: 'rounded-md', thumb: 'rounded-sm' }" />
-                </UFormField>
-
-                <!-- 图片纹理配置 -->
-                <UFormField label="前景图片纹理 (URL)" description="覆盖颜色和渐变">
-                  <UInput v-model="qrConfig.dotsImage" placeholder="https://images.unsplash.com/..." />
-                </UFormField>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium">主体视觉特效</span>
-                  <div class="flex gap-2">
-                    <RebornButton size="sm" :color="qrConfig.dotsGradient ? 'primary' : 'neutral'" variant="soft"
-                      @click="toggleDotsGradient">
-                      {{ qrConfig.dotsGradient ? '关闭渐变' : '开启渐变' }}
-                    </RebornButton>
-                  </div>
-                </div>
-
-                <!-- 主体渐变配置 -->
-                <div v-if="qrConfig.dotsGradient"
-                  class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-4 border border-gray-100 dark:border-gray-700">
-                  <UFormField label="起始颜色">
-                    <RebornColorPicker v-model="qrConfig.dotsGradient.colorStops[0].color" size="sm" />
-                  </UFormField>
-                  <UFormField label="结束颜色">
-                    <RebornColorPicker v-model="qrConfig.dotsGradient.colorStops[1].color" size="sm" />
-                  </UFormField>
-                  <UFormField label="方向">
-                    <RebornSelect v-model="qrConfig.dotsGradient.direction"
-                      :options="['horizontal', 'vertical', 'diagonal']" />
-                  </UFormField>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium">背景视觉特效</span>
-                  <div class="flex gap-2">
-                    <RebornButton size="sm" :color="qrConfig.backgroundGradient ? 'primary' : 'neutral'" variant="soft"
-                      @click="toggleBackgroundGradient">
-                      {{ qrConfig.backgroundGradient ? '关闭渐变' : '开启背景渐变' }}
-                    </RebornButton>
-                  </div>
-                </div>
-
-                <div v-if="qrConfig.backgroundGradient"
-                  class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-4 border border-gray-100 dark:border-gray-700">
-                  <UFormField label="背景起始色">
-                    <RebornColorPicker v-model="qrConfig.backgroundGradient.colorStops[0].color" size="sm" />
-                  </UFormField>
-                  <UFormField label="背景结束色">
-                    <RebornColorPicker v-model="qrConfig.backgroundGradient.colorStops[1].color" size="sm" />
-                  </UFormField>
-                  <UFormField label="渐变方向">
-                    <RebornSelect v-model="qrConfig.backgroundGradient.direction"
-                      :options="['horizontal', 'vertical', 'diagonal']" />
-                  </UFormField>
-                </div>
-              </div>
-
-              <!-- 形状配置 -->
-              <div v-if="item.value === 'shape'" class="space-y-6">
-                <UFormField label="码点形状">
-                  <RebornSelect v-model="qrConfig.dotsType" :options="modeOptions" />
-                </UFormField>
-
-                <UFormField label="定位点外框">
-                  <RebornSelect v-model="qrConfig.cornersSquareType" :options="cornerOptions" />
-                </UFormField>
-                <UFormField label="定位点中心">
-                  <RebornSelect v-model="qrConfig.cornersDotType" :options="cornerOptions" />
-                </UFormField>
-              </div>
-
-              <!-- Logo 配置 -->
-              <div v-if="item.value === 'logo'" class="space-y-4">
-                <UFormField label="Logo 链接" description="输入图片 URL 或选择预设（暂不支持上传）">
-                  <UInput v-model="qrConfig.logoImage" placeholder="https://..." />
-                </UFormField>
-
-                <UFormField label="Logo 大小">
-                  <RebornInputNumber v-model="qrConfig.logoSize" :min="20" :max="100" />
-                </UFormField>
-                <UFormField label="Logo 边距">
-                  <RebornInputNumber v-model="qrConfig.logoMargin" :min="0" :max="20" />
-                </UFormField>
-
-                <UFormField label="Logo 下方码点">
-                  <RebornSwitch v-model="qrConfig.logoHideBackgroundDots" active-label="隐藏" inactive-label="显示" />
-                </UFormField>
-                <UFormField label="Logo 投影">
-                  <RebornSwitch v-model="qrConfig.logoShadow" active-label="开启" inactive-label="关闭" />
-                </UFormField>
-              </div>
-
-              <!-- 预设配置 -->
-              <div v-if="item.value === 'preset'" class="space-y-6">
-                <RebornButton v-for="preset in presets" :key="preset.name" variant="solid" size="lg"
-                  class="rounded-full" @click="applyPreset(preset)">
-                  <span class="text-xs">{{ preset.name }}</span>
-                </RebornButton>
-              </div>
-            </div>
-          </template>
-        </UTabs>
-      </UCard>
-    </div>
-
-    <!-- 右侧：预览区 -->
-    <div class="col-span-3 sticky top-6 space-y-6">
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">实时预览</h3>
-            <div class="flex gap-2">
-              <UButton size="xs" color="primary" @click="copyParams">复制参数</UButton>
-            </div>
-          </div>
-        </template>
-
+    <DemoSection
+      title="码点形状"
+      description="mode 决定每个码点的绘制方式；line 会把纵向相邻的码点连成条纹，扫码识别率与容错级别相关。"
+    >
+      <DemoBlock
+        layout="row"
+        align="start"
+      >
         <div
-          class="flex flex-col items-center justify-center py-10 bg-gray-50 dark:bg-gray-900 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-          <RebornQrcode :text="qrConfig.text" :foreground="qrConfig.dotsColor" :background="qrConfig.backgroundColor"
-            :pd-color="qrConfig.dotsColor" :padding="qrConfig.margin * 5" :mode="qrConfig.dotsType" :ecc="qrConfig.ecc"
-            :logo="qrConfig.logoImage" :logo-size="qrConfig.logoSize" :logo-margin="qrConfig.logoMargin"
-            :logo-hide-background-dots="qrConfig.logoHideBackgroundDots" :logo-shadow="qrConfig.logoShadow"
-            :pd-outer-radius="qrConfig.cornersSquareType === 'rect' ? 0 : qrConfig.cornersSquareType === 'rounded' ? 8 : qrConfig.cornersSquareType === 'extra-rounded' ? 15 : qrConfig.cornersSquareType === 'dot' ? 25 : undefined"
-            :pd-inner-radius="qrConfig.cornersDotType === 'rect' ? 0 : qrConfig.cornersDotType === 'rounded' ? 4 : qrConfig.cornersDotType === 'extra-rounded' ? 8 : qrConfig.cornersDotType === 'dot' ? 15 : undefined"
-            :background-transparent="qrConfig.backgroundTransparent" :dots-gradient="qrConfig.dotsGradient"
-            :dots-image="qrConfig.dotsImage" :background-gradient="qrConfig.backgroundGradient" />
-          <div class="mt-8 text-center">
-            <p class="text-sm text-gray-400 font-mono break-all px-4 max-w-xs">{{ qrConfig.text }}</p>
-          </div>
+          v-for="item in modeOptions"
+          :key="item.value"
+          class="flex flex-col items-center gap-2"
+        >
+          <RebornQrcode
+            :text="state.text"
+            :mode="item.value"
+            :size="120"
+            :padding="4"
+          />
+          <span class="text-dimmed text-xs font-medium">{{ item.label }}</span>
         </div>
-      </UCard>
-    </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="定位点样式"
+      description="corners-square-type 与 corners-dot-type 分别控制三个定位点的外框与中心内点。"
+    >
+      <DemoBlock
+        layout="row"
+        align="start"
+      >
+        <div
+          v-for="item in cornerShowcase"
+          :key="item.label"
+          class="flex flex-col items-center gap-2"
+        >
+          <RebornQrcode
+            :text="state.text"
+            :size="120"
+            :padding="4"
+            :corners-square-type="item.square"
+            :corners-dot-type="item.dot"
+          />
+          <span class="text-dimmed text-xs font-medium">{{ item.label }}</span>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="渐变与图片纹理"
+      description="dots-gradient / background-gradient 接受 colorStops 配置；dots-image 会以图片填充码点，优先级高于颜色与渐变。"
+    >
+      <DemoBlock
+        layout="row"
+        align="start"
+      >
+        <div class="flex flex-col items-center gap-2">
+          <RebornQrcode
+            :text="state.text"
+            :size="120"
+            :padding="4"
+            :dots-gradient="sunsetGradient"
+          />
+          <span class="text-dimmed text-xs font-medium">码点渐变 · <code>dots-gradient</code></span>
+        </div>
+
+        <div class="flex flex-col items-center gap-2">
+          <RebornQrcode
+            :text="state.text"
+            :size="120"
+            :padding="4"
+            :background-gradient="skyGradient"
+          />
+          <span class="text-dimmed text-xs font-medium">
+            背景渐变 · <code>background-gradient</code>
+          </span>
+        </div>
+
+        <div class="flex flex-col items-center gap-2">
+          <RebornQrcode
+            :text="state.text"
+            :size="120"
+            :padding="4"
+            :dots-image="textureImage"
+            background="#000000"
+            mode="rectSmall"
+          />
+          <span class="text-dimmed text-xs font-medium">图片纹理 · <code>dots-image</code></span>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="预设风格"
+      description="点击任意预设即可把整套配色与形状写回上方演练场，便于快速比较。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+      >
+        <RebornButton
+          v-for="preset in presets"
+          :key="preset.name"
+          variant="outline"
+          size="sm"
+          :label="preset.name"
+          @click="applyPreset(preset.config)"
+        />
+      </DemoBlock>
+    </DemoSection>
   </div>
 </template>

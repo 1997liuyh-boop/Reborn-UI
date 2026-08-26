@@ -4,7 +4,6 @@ import type {
   TransferItem,
 } from "~/components/reborn/ui/reborn-transfer/reborn-transfer.config";
 
-import { computed, ref } from "vue";
 import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
 import {
   transferCheckShapes,
@@ -13,7 +12,9 @@ import {
 import RebornTransfer from "~/components/reborn/ui/reborn-transfer/RebornTransfer.vue";
 import { cn } from "~/lib/utils";
 
-/** Playground 固定高度选项 */
+// ─── 交互演练场 ─────────────────────────────────────────────────
+
+/** 演练场固定高度选项 */
 const transferHeightPresetOptions = [
   { label: "自适应（随尺寸）", value: "auto" },
   { label: "280px", value: 280 },
@@ -21,7 +22,6 @@ const transferHeightPresetOptions = [
   { label: "420px", value: 420 },
 ] as const;
 
-// --- Playground 状态 ---
 const defaultPlaygroundState = {
   size: "md",
   disabled: false,
@@ -37,6 +37,7 @@ const defaultPlaygroundTargetKeys = ["3", "6", "9"];
 
 const state = ref<Record<string, any>>({ ...defaultPlaygroundState });
 
+/** 高度预设为 auto 时不下发 height，交由尺寸决定 */
 const playgroundHeight = computed(() => {
   const preset = state.value.heightPreset;
   return preset === "auto" ? undefined : (preset as number);
@@ -44,12 +45,14 @@ const playgroundHeight = computed(() => {
 
 const playgroundTargetKeys = ref([...defaultPlaygroundTargetKeys]);
 
+/** 还原演练场的全部配置与已选项 */
 function resetPlaygroundConfig() {
   state.value = { ...defaultPlaygroundState };
   playgroundTargetKeys.value = [...defaultPlaygroundTargetKeys];
+  lastEvent.value = "";
 }
 
-// --- 控制面板配置 ---
+/** 演练场控制面板配置 */
 const controls: any = [
   {
     title: "基础属性",
@@ -117,40 +120,43 @@ const controls: any = [
   },
 ];
 
+/** 最近一次触发的事件描述，替代 console 输出 */
+const lastEvent = ref("");
+
 function handleChange(nextTargetKeys: string[], direction: "right" | "left", moveKeys: string[]) {
-  console.log("change", { nextTargetKeys, direction, moveKeys });
+  lastEvent.value = `change · 方向 ${direction} · 移动 ${moveKeys.length} 项 · 右侧共 ${nextTargetKeys.length} 项`;
 }
 
 function handleSelectChange(sourceSelectedKeys: string[], targetSelectedKeys: string[]) {
-  console.log("selectChange", { sourceSelectedKeys, targetSelectedKeys });
+  lastEvent.value = `select-change · 左侧勾选 ${sourceSelectedKeys.length} 项 · 右侧勾选 ${targetSelectedKeys.length} 项`;
 }
 
 function handleUndo(
   nextTargetKeys: string[],
   payload: { direction: "right" | "left"; moveKeys: string[] },
 ) {
-  console.log("undo", { nextTargetKeys, payload });
+  lastEvent.value = `undo · 撤回 ${payload.moveKeys.length} 项 · 右侧共 ${nextTargetKeys.length} 项`;
 }
 
+/** 演练场右上角展示的等价代码 */
 const codeString = computed(() => {
   const heightAttr =
-    playgroundHeight.value != null ? `\n  :height='${playgroundHeight.value}'` : "";
+    playgroundHeight.value != null ? `\n  :height="${playgroundHeight.value}"` : "";
   return `<RebornTransfer
-  v-model='${JSON.stringify(playgroundTargetKeys.value)}'
-  :data-source='dataSource'
-  :titles='["可选科目", "已选科目"]'
-  :size='${state.value.size}'
-  :disabled='${state.value.disabled}'
-  :show-search='${state.value.showSearch}'
-  header-select='${state.value.headerSelect}'
-  :one-way='${state.value.oneWay}'
-  :show-undo='${state.value.showUndo}'
-  check-shape='${state.value.checkShape}'${heightAttr}
+  v-model="targetKeys"
+  :data-source="dataSource"
+  :titles="['可选科目', '已选科目']"
+  size="${state.value.size}"
+  :disabled="${state.value.disabled}"
+  :show-search="${state.value.showSearch}"
+  header-select="${state.value.headerSelect}"
+  :one-way="${state.value.oneWay}"
+  :show-undo="${state.value.showUndo}"
+  check-shape="${state.value.checkShape}"${heightAttr}
 />`;
 });
 
-// ─── 演练场数据源 ─────────────────────────────────────────────────
-
+/** 演练场数据源 */
 const playgroundData: TransferItem[] = [
   { key: "1", label: "语文", description: "人教版 · 必修" },
   { key: "2", label: "数学", description: "人教版 · 必修" },
@@ -164,19 +170,9 @@ const playgroundData: TransferItem[] = [
   { key: "10", label: "美术", description: "选课 · 艺体" },
 ];
 
-// ─── Showcase 1：尺寸对比 ─────────────────────────────────────────
+// ─── 场景演示数据 ───────────────────────────────────────────────
 
-const sizeDemoData: TransferItem[] = [
-  { key: "1", label: "前端开发" },
-  { key: "2", label: "后端开发" },
-  { key: "3", label: "UI 设计" },
-  { key: "4", label: "产品管理" },
-  { key: "5", label: "测试工程" },
-];
-const sizeTargetKeys = ref(["2", "3"]);
-
-// ─── Showcase：列表分页（大数据量）────────────────────────────────
-
+/** 列表分页：56 条模拟员工数据 */
 const DEPARTMENTS = ["研发部", "产品部", "设计部", "运营部", "市场部", "人力部"] as const;
 
 const paginationDemoData: TransferItem[] = Array.from({ length: 56 }, (_, i) => {
@@ -191,8 +187,7 @@ const paginationDemoData: TransferItem[] = Array.from({ length: 56 }, (_, i) => 
 
 const paginationTargetKeys = ref(["emp-3", "emp-12", "emp-28", "emp-41"]);
 
-// ─── Showcase：包含禁用条目 ─────────────────────────────────────
-
+/** 禁用条目：内置角色不可移除 */
 const withDisabledData: TransferItem[] = [
   { key: "admin", label: "超级管理员", description: "系统内置，不可移除", disabled: true },
   { key: "editor", label: "内容编辑", description: "可编辑文章与媒体" },
@@ -203,8 +198,7 @@ const withDisabledData: TransferItem[] = [
 ];
 const withDisabledTargetKeys = ref(["editor", "ops"]);
 
-// ─── Showcase 4：单向模式 ─────────────────────────────────────────
-
+/** 单向模式：任务看板 */
 const oneWayData: TransferItem[] = [
   { key: "a", label: "待办 · 优化登录流程", description: "预计 2 天" },
   { key: "b", label: "待办 · 修复支付 Bug", description: "预计 0.5 天" },
@@ -215,8 +209,7 @@ const oneWayData: TransferItem[] = [
 const oneWayTargetKeys = ref(["b", "c"]);
 const oneWayEnabled = ref(true);
 
-// ─── Showcase：自定义中间操作按钮 ────────────────────────────────
-
+/** 自定义中间操作按钮：区域覆盖 */
 const customOpData: TransferItem[] = [
   { key: "1", label: "华北区" },
   { key: "2", label: "华东区" },
@@ -226,8 +219,7 @@ const customOpData: TransferItem[] = [
 ];
 const customOpTargetKeys = ref(["2", "4"]);
 
-// ─── Showcase 5：自定义条目插槽 ──────────────────────────────────
-
+/** 自定义条目插槽：成员列表 */
 const memberData: TransferItem[] = [
   { key: "u1", label: "陈晨", description: "前端工程师 · P5" },
   { key: "u2", label: "苏木木", description: "后端工程师 · P6" },
@@ -259,296 +251,221 @@ function getRankClass(description: string): string {
     return "bg-primary/10 text-primary";
   }
   if (description.includes("D4")) return "bg-success/10 text-success";
-  return "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400";
+  return "bg-elevated text-muted";
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-16">
-    <!-- 第一部分：交互式游乐场 -->
+  <div class="flex w-full min-w-0 flex-col">
     <Playground
       v-model="state"
       :controls="controls"
       :code="codeString"
       component-name="RebornTransfer"
-      title="交互体验"
+      title="交互演练场"
+      description="调节尺寸、头部控件与穿梭方向，实时预览两侧列表的联动表现。"
     >
       <template #tag>
-        <button
-          type="button"
-          class="bg-primary/10 text-primary hover:bg-primary/20 flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase transition-all active:scale-95"
+        <RebornButton
+          variant="soft"
+          size="sm"
+          label="重置配置"
           @click="resetPlaygroundConfig"
         >
-          <Icon
-            name="lucide:rotate-ccw"
-            size="12"
-          />
-          重置配置
-        </button>
+          <template #leading>
+            <Icon
+              name="lucide:rotate-ccw"
+              class="size-3.5"
+            />
+          </template>
+        </RebornButton>
       </template>
 
-      <RebornTransfer
-        v-model="playgroundTargetKeys"
-        :data-source="playgroundData"
-        :titles="['可选科目', '已选科目']"
-        :size="state.size"
-        :height="playgroundHeight"
-        :disabled="state.disabled"
-        :show-search="state.showSearch"
-        :header-select="state.headerSelect"
-        :one-way="state.oneWay"
-        :show-undo="state.showUndo"
-        :check-shape="state.checkShape"
-        class="mt-6 w-full"
-        @change="handleChange"
-        @select-change="handleSelectChange"
-        @undo="handleUndo"
-      />
+      <div class="flex w-full flex-col gap-4">
+        <RebornTransfer
+          v-model="playgroundTargetKeys"
+          :data-source="playgroundData"
+          :titles="['可选科目', '已选科目']"
+          :size="state.size"
+          :height="playgroundHeight"
+          :disabled="state.disabled"
+          :show-search="state.showSearch"
+          :header-select="state.headerSelect"
+          :one-way="state.oneWay"
+          :show-undo="state.showUndo"
+          :check-shape="state.checkShape"
+          class="w-full"
+          @change="handleChange"
+          @select-change="handleSelectChange"
+          @undo="handleUndo"
+        />
+        <DemoNote
+          v-if="lastEvent"
+          tone="dimmed"
+        >
+          最后事件：<code>{{ lastEvent }}</code>
+        </DemoNote>
+      </div>
     </Playground>
 
-    <!-- 第二部分：组件变体 -->
-    <section class="space-y-8">
-      <div class="flex flex-col gap-10">
-        <!-- ── 列表分页（大数据量）── -->
-        <div class="flex flex-col gap-4">
-          <div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-              列表分页
-              <code class="text-primary ml-2 text-sm font-normal">pagination</code>
-            </h4>
-            <p class="mt-1 text-sm text-gray-500">
-              当数据源条目较多时，通过
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >pagination</code
-              >
-              开启两侧独立分页，每页仅渲染固定条数，减轻长列表滚动与 DOM 压力。可与
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >show-search</code
-              >
-              组合：搜索会重置到第 1 页；配合
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >header-select="menu"</code
-              >
-              使用时，「全选当页」仅勾选当前分页；「全选所有」则跨页勾选当前侧全部条目，点击穿梭按钮会将所有已勾选项一并移入另一侧。
-            </p>
-          </div>
+    <DemoSection
+      title="列表分页"
+      description="数据量较大时用 pagination 开启两侧独立分页，每页只渲染固定条数以减轻长列表的滚动与 DOM 压力。"
+    >
+      <DemoBlock layout="stack">
+        <RebornTransfer
+          v-model="paginationTargetKeys"
+          :data-source="paginationDemoData"
+          :titles="['组织全员', '项目组已选']"
+          :pagination="{ pageSize: 8 }"
+          header-select="menu"
+          show-search
+          show-undo
+          search-placeholder="按姓名或工号搜索"
+          class="w-full"
+        />
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        共 {{ paginationDemoData.length }} 条候选数据，每页 8 条，当前已选
+        {{ paginationTargetKeys.length }} 人。搜索会重置到第 1 页；<code>header-select="menu"</code>
+        下「全选当页」仅勾选当前分页，「全选所有」则跨页勾选整侧条目。
+      </DemoNote>
+    </DemoSection>
 
-          <div
-            class="rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40"
-          >
-            <RebornTransfer
-              v-model="paginationTargetKeys"
-              :data-source="paginationDemoData"
-              :titles="['组织全员', '项目组已选']"
-              :pagination="{ pageSize: 8 }"
-              header-select="menu"
-              show-search
-              show-undo
-              search-placeholder="按姓名或工号搜索"
-              class="w-full"
-            />
+    <DemoSection
+      title="禁用条目"
+      description="在 dataSource 中为条目设置 disabled: true，即可禁止该条目被勾选与穿梭。"
+    >
+      <DemoBlock layout="stack">
+        <RebornTransfer
+          v-model="withDisabledTargetKeys"
+          :data-source="withDisabledData"
+          :titles="['全部角色', '已授权角色']"
+          class="w-full"
+        />
+      </DemoBlock>
+    </DemoSection>
 
-            <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
-              共 {{ paginationDemoData.length }} 条候选数据，每页 8 条；当前已选
-              {{ paginationTargetKeys.length }} 人进入右侧。
-            </p>
-          </div>
+    <DemoSection
+      title="单向模式"
+      description="one-way 只保留从左至右的穿梭通道，右侧条目改由自身的移除按钮退回，适合「一经确认不可回退」的流程。"
+    >
+      <DemoBlock layout="stack">
+        <div class="flex items-center gap-3">
+          <RebornSwitch v-model="oneWayEnabled" />
+          <span class="text-muted text-sm">开启单向模式</span>
         </div>
+        <RebornTransfer
+          v-model="oneWayTargetKeys"
+          :data-source="oneWayData"
+          :titles="['待办任务', '进行中']"
+          :one-way="oneWayEnabled"
+          header-select="menu"
+          class="w-full"
+        />
+      </DemoBlock>
+    </DemoSection>
 
-        <!-- ── 3. 禁用条目 ── -->
-        <div class="flex flex-col gap-4">
-          <div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-              禁用条目
-              <code class="text-primary ml-2 text-sm font-normal">disabled</code>
-            </h4>
-            <p class="mt-1 text-sm text-gray-500">
-              在 dataSource 中为条目设置
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >disabled: true</code
+    <DemoSection
+      title="自定义操作按钮"
+      description="operation-buttons 可统一配置三个操作按钮的图标、文案与悬停提示。"
+    >
+      <DemoBlock layout="stack">
+        <RebornTransfer
+          v-model="customOpTargetKeys"
+          :data-source="customOpData"
+          :titles="['未覆盖区域', '已覆盖区域']"
+          show-undo
+          :operation-buttons="{
+            toRight: {
+              title: '将选中区域加入覆盖范围',
+              label: '加入',
+              icon: 'lucide:plus',
+              iconClass: 'size-3.5 text-primary',
+              trailingIcon: 'lucide:chevron-right',
+              trailingIconClass: 'size-3.5 opacity-60',
+            },
+            toLeft: {
+              title: '从覆盖范围移除选中区域',
+              label: '移除',
+              icon: 'lucide:minus',
+              iconClass: 'size-3.5 text-warning',
+              trailingIcon: 'lucide:chevron-left',
+              trailingIconClass: 'size-3.5 opacity-60',
+            },
+            undo: {
+              title: '撤销最近一次区域调整',
+              label: '撤销',
+              icon: 'lucide:history',
+              iconClass: 'size-3.5',
+              trailingIcon: 'lucide:rotate-ccw',
+              trailingIconClass: 'size-3 opacity-50',
+            },
+          }"
+          class="w-full"
+        />
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        如需完全自定义按钮结构，可用 <code>operation-to-right</code> /
+        <code>operation-to-left</code> / <code>operation-undo</code> 插槽整体替换。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection
+      title="自定义条目"
+      description="#item 插槽可完全接管条目的渲染内容，作用域提供当前条目的原始数据对象。"
+    >
+      <DemoBlock layout="stack">
+        <RebornTransfer
+          :data-source="memberData"
+          :default-target-keys="memberDefaultTargetKeys"
+          :titles="['全部成员', '项目组成员']"
+          class="w-full"
+        >
+          <template #item="{ item }">
+            <div class="flex items-center gap-2.5">
+              <!-- 头像：取姓名首字，配色由字符编码派生 -->
+              <div
+                :class="
+                  cn(
+                    'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                    getAvatarColor(item.label),
+                  )
+                "
               >
-              可禁止该条目被勾选和穿梭。
-            </p>
-          </div>
-
-          <div
-            class="rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40"
-          >
-            <RebornTransfer
-              v-model="withDisabledTargetKeys"
-              :data-source="withDisabledData"
-              :titles="['全部角色', '已授权角色']"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- ── 4. 单向穿梭 ── -->
-        <div class="flex flex-col gap-4">
-          <div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-              单向模式
-              <code class="text-primary ml-2 text-sm font-normal">one-way</code>
-            </h4>
-          </div>
-
-          <div
-            class="rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40"
-          >
-            <div class="mb-4 flex items-center gap-3">
-              <RebornSwitch v-model="oneWayEnabled" />
-              <span class="text-sm text-gray-500 dark:text-gray-400">开启单向模式</span>
-            </div>
-
-            <RebornTransfer
-              v-model="oneWayTargetKeys"
-              :data-source="oneWayData"
-              :titles="['待办任务', '进行中']"
-              :one-way="oneWayEnabled"
-              header-select="menu"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- ── 自定义中间操作按钮 ── -->
-        <div class="flex flex-col gap-4">
-          <div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-              自定义操作按钮
-              <code class="text-primary ml-2 text-sm font-normal">operation-buttons</code>
-            </h4>
-            <p class="mt-1 text-sm text-gray-500">
-              通过
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >operation-buttons</code
-              >
-              可统一配置三个操作按钮的图标（leadingIcon /
-              trailingIcon）、文案（label）与悬停提示（title）；如需完全自定义按钮结构，可使用
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >operation-to-right</code
-              >
-              /
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >operation-to-left</code
-              >
-              /
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >operation-undo</code
-              >
-              插槽整体替换。
-            </p>
-          </div>
-
-          <div
-            class="rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40"
-          >
-            <RebornTransfer
-              v-model="customOpTargetKeys"
-              :data-source="customOpData"
-              :titles="['未覆盖区域', '已覆盖区域']"
-              show-undo
-              :operation-buttons="{
-                toRight: {
-                  title: '将选中区域加入覆盖范围',
-                  label: '加入',
-                  icon: 'lucide:plus',
-                  iconClass: 'size-3.5 text-primary',
-                  trailingIcon: 'lucide:chevron-right',
-                  trailingIconClass: 'size-3.5 opacity-60',
-                },
-                toLeft: {
-                  title: '从覆盖范围移除选中区域',
-                  label: '移除',
-                  icon: 'lucide:minus',
-                  iconClass: 'size-3.5 text-warning',
-                  trailingIcon: 'lucide:chevron-left',
-                  trailingIconClass: 'size-3.5 opacity-60',
-                },
-                undo: {
-                  title: '撤销最近一次区域调整',
-                  label: '撤销',
-                  icon: 'lucide:history',
-                  iconClass: 'size-3.5',
-                  trailingIcon: 'lucide:rotate-ccw',
-                  trailingIconClass: 'size-3 opacity-50',
-                },
-              }"
-              class="w-full"
-            />
-          </div>
-        </div>
-
-        <!-- ── 5. 自定义条目插槽 ── -->
-        <div class="flex flex-col gap-4">
-          <div>
-            <h4 class="text-xl font-bold text-gray-800 dark:text-gray-200">
-              自定义条目
-              <code class="text-primary ml-2 text-sm font-normal">#item</code>
-            </h4>
-            <p class="mt-1 text-sm text-gray-500">
-              通过
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800">#item</code>
-              插槽可完全自定义每个条目的渲染内容，插槽作用域提供当前条目的原始数据对象。可配合
-              <code class="rounded bg-gray-100 px-1 py-0.5 text-xs dark:bg-gray-800"
-                >default-target-keys</code
-              >
-              预设右侧初始内容。
-            </p>
-          </div>
-
-          <div
-            class="rounded-2xl bg-white/50 p-6 ring-1 ring-gray-200/80 dark:bg-gray-900/20 dark:ring-gray-700/40"
-          >
-            <RebornTransfer
-              :data-source="memberData"
-              :default-target-keys="memberDefaultTargetKeys"
-              :titles="['全部成员', '项目组成员']"
-              class="w-full"
-            >
-              <template #item="{ item }">
-                <div class="flex items-center gap-2.5">
-                  <!-- 头像 -->
-                  <div
+                {{ item.label.charAt(0) }}
+              </div>
+              <!-- 姓名与职级 -->
+              <div class="min-w-0 flex-1">
+                <div class="text-highlighted truncate text-sm font-medium">
+                  {{ item.label }}
+                </div>
+                <div
+                  v-if="item.description"
+                  class="mt-0.5 flex items-center gap-1.5"
+                >
+                  <span
                     :class="
                       cn(
-                        'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
-                        getAvatarColor(item.label),
+                        'rounded-ui-2xs px-1.5 py-px text-[10px] font-semibold',
+                        getRankClass(item.description),
                       )
                     "
                   >
-                    {{ item.label.charAt(0) }}
-                  </div>
-                  <!-- 姓名与职级 -->
-                  <div class="min-w-0 flex-1">
-                    <div class="truncate text-sm font-medium text-gray-800 dark:text-gray-100">
-                      {{ item.label }}
-                    </div>
-                    <div
-                      v-if="item.description"
-                      class="mt-0.5 flex items-center gap-1.5"
-                    >
-                      <span
-                        :class="
-                          cn(
-                            'rounded px-1.5 py-px text-[10px] font-semibold',
-                            getRankClass(item.description),
-                          )
-                        "
-                      >
-                        {{ item.description.split(" · ")[1] }}
-                      </span>
-                      <span class="truncate text-[11px] text-gray-400 dark:text-gray-500">
-                        {{ item.description.split(" · ")[0] }}
-                      </span>
-                    </div>
-                  </div>
+                    {{ item.description.split(" · ")[1] }}
+                  </span>
+                  <span class="text-dimmed truncate text-[11px]">
+                    {{ item.description.split(" · ")[0] }}
+                  </span>
                 </div>
-              </template>
-            </RebornTransfer>
-          </div>
-        </div>
-      </div>
-    </section>
+              </div>
+            </div>
+          </template>
+        </RebornTransfer>
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        可配合 <code>default-target-keys</code> 预设右侧的初始内容。
+      </DemoNote>
+    </DemoSection>
   </div>
 </template>

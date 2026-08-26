@@ -1,66 +1,103 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import RebornCollapse from '~/components/reborn/ui/reborn-collapse/RebornCollapse.vue'
+/** 基础用法的展开状态 */
+const visible = ref(false);
 
-const visible = ref(false)
+/** 手风琴：每一项独立维护展开状态 */
+const panels = ref([
+  {
+    title: "组件是什么",
+    open: true,
+    content:
+      "RebornCollapse 只负责折叠区域的高度过渡与状态管理，触发器与内容都由插槽提供，不预设任何视觉样式，便于嵌入各类业务卡片。",
+  },
+  {
+    title: "如何控制展开",
+    open: false,
+    content:
+      "通过 v-model 双向绑定展开状态；也可以监听 toggle 事件在展开或收起时执行额外逻辑，例如懒加载内容。",
+  },
+  {
+    title: "向上展开",
+    open: false,
+    content:
+      "position 设为 top 时内容向上方展开，配合 absolute 可让内容脱离文档流悬浮显示，适合底部工具栏场景。",
+  },
+]);
 </script>
 
 <template>
-    <div class="flex flex-col gap-2 items-center">
-        <RebornCollapse v-model="visible" customClass="w-full">
-            <template #default="{ open }">
-                <div
-                    class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700">
-                    <span class="font-medium">Click to Toggle</span>
-                    <Icon name="lucide:chevron-down" class="w-4 h-4 transition-transform duration-200"
-                        :class="{ 'rotate-180': open }" />
-                </div>
-            </template>
-            <template #content>
-                <div class="p-4 text-slate-600 dark:text-slate-400 bg-white mt-1 rounded-2xl space-y-2 indent-4">
-                    <div>
-                        张若虚（约公元660—约公元720），唐代诗人，扬州（今属江苏）人。曾任兖州兵曹。生卒年、字号均不详。事迹略见于《旧唐书·贺知章传》。
-                    </div>
-                    <div>
-                        唐中宗神龙年间（公元705～公元707），张若虚与贺知章、贺朝、万齐融、邢巨、包融俱以文词俊秀驰名于京都，张若虚与贺知章、张旭、包融并称“吴中四士”。唐玄宗开元时张若虚还尚在世。
-                    </div>
-                    <div>
-                        张若虚的诗仅存二首于《全唐诗》中。其中《春江花月夜》是一篇脍炙人口的名作，它沿用陈隋乐府旧题，抒写真挚动人的离情别绪及富有哲理意味的人生感慨，表现了一种迥绝的宇宙意识，创造了一个深沉、寥廓、宁静的境界。
-                    </div>
-                    <div>
-                        全诗共三十六句，每四句一换韵，通篇融诗情、画意、哲理为一体，意境空明，想象奇特，语言自然隽永，韵律宛转悠扬，洗去了宫体的浓脂艳粉，给人以澄澈空明、清丽自然的感觉。具有极高的审美价值，素有“孤篇盖全唐”之誉。
-                    </div>
-                    <img src="https://q7.itc.cn/q_70/images01/20240301/bf4c154b04334b3b955139dd1f06ba53.jpeg" alt="" />
-                </div>
-            </template>
+  <div class="flex w-full min-w-0 flex-col">
+    <DemoSection
+      title="基础用法"
+      description="默认插槽是触发器，可通过作用域参数 open 拿到当前状态；content 插槽是折叠内容，高度过渡由组件自动计算。"
+    >
+      <DemoBlock layout="stack">
+        <RebornCollapse
+          v-model="visible"
+          custom-class="w-full"
+        >
+          <template #default="{ open }">
+            <div
+              class="border-default rounded-ui-sm flex cursor-pointer items-center justify-between border px-4 py-3"
+            >
+              <span class="text-default text-sm font-medium">点击展开 / 收起</span>
+              <Icon
+                name="lucide:chevron-down"
+                class="text-muted size-4 transition-transform duration-200"
+                :class="{ 'rotate-180': open }"
+              />
+            </div>
+          </template>
+
+          <template #content>
+            <div class="text-muted space-y-2 px-4 py-3 text-sm leading-relaxed">
+              <p>
+                张若虚（约公元 660—约公元 720），唐代诗人，扬州（今属江苏）人，曾任兖州兵曹，生卒年与字号均已不详。
+              </p>
+              <p>
+                其诗仅存两首于《全唐诗》中，《春江花月夜》抒写离情别绪与人生感慨，意境空明、韵律悠扬，素有「孤篇盖全唐」之誉。
+              </p>
+            </div>
+          </template>
         </RebornCollapse>
 
-        <RebornCollapse v-model="visible" customClass="flex flex-col gap-2 w-3/4">
+        <DemoNote tone="dimmed">
+          当前状态：<code>{{ visible ? "展开" : "收起" }}</code>
+        </DemoNote>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="组合成手风琴"
+      description="每一项各自持有一份状态即可组合出列表；这里用一条分隔线代替卡片外壳，避免层层嵌套的背景块。"
+    >
+      <DemoBlock layout="stack">
+        <div class="divide-default border-default rounded-ui-md w-full divide-y border">
+          <RebornCollapse
+            v-for="panel in panels"
+            :key="panel.title"
+            v-model="panel.open"
+            custom-class="w-full"
+          >
             <template #default="{ open }">
-                <div
-                    class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700">
-                    <span class="font-medium">Click to Toggle</span>
-                    <Icon name="lucide:chevron-down" class="w-4 h-4 transition-transform duration-200"
-                        :class="{ 'rotate-180': open }" />
-                </div>
+              <div class="flex cursor-pointer items-center justify-between px-4 py-3">
+                <span class="text-default text-sm font-medium">{{ panel.title }}</span>
+                <Icon
+                  name="lucide:chevron-down"
+                  class="text-muted size-4 transition-transform duration-200"
+                  :class="{ 'rotate-180': open }"
+                />
+              </div>
             </template>
+
             <template #content>
-                <div class="p-4 text-slate-600 dark:text-slate-400 bg-white mt-1 rounded-2xl space-y-2 indent-4">
-                    <div>
-                        张若虚（约公元660—约公元720），唐代诗人，扬州（今属江苏）人。曾任兖州兵曹。生卒年、字号均不详。事迹略见于《旧唐书·贺知章传》。
-                    </div>
-                    <div>
-                        唐中宗神龙年间（公元705～公元707），张若虚与贺知章、贺朝、万齐融、邢巨、包融俱以文词俊秀驰名于京都，张若虚与贺知章、张旭、包融并称“吴中四士”。唐玄宗开元时张若虚还尚在世。
-                    </div>
-                    <div>
-                        张若虚的诗仅存二首于《全唐诗》中。其中《春江花月夜》是一篇脍炙人口的名作，它沿用陈隋乐府旧题，抒写真挚动人的离情别绪及富有哲理意味的人生感慨，表现了一种迥绝的宇宙意识，创造了一个深沉、寥廓、宁静的境界。
-                    </div>
-                    <div>
-                        全诗共三十六句，每四句一换韵，通篇融诗情、画意、哲理为一体，意境空明，想象奇特，语言自然隽永，韵律宛转悠扬，洗去了宫体的浓脂艳粉，给人以澄澈空明、清丽自然的感觉。具有极高的审美价值，素有“孤篇盖全唐”之誉。
-                    </div>
-                    <img src="https://q7.itc.cn/q_70/images01/20240301/bf4c154b04334b3b955139dd1f06ba53.jpeg" alt="" />
-                </div>
+              <p class="text-muted px-4 pb-3 text-sm leading-relaxed">
+                {{ panel.content }}
+              </p>
             </template>
-        </RebornCollapse>
-    </div>
+          </RebornCollapse>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>

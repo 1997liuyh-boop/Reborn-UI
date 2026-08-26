@@ -1,105 +1,161 @@
 <script setup lang="ts">
-import RebornRate from "~/components/reborn/ui/reborn-rate/RebornRate.vue";
 import { rateColors, rateSizes } from "~/components/reborn/ui/reborn-rate/reborn-rate.config";
 
+/** 演练场绑定值 */
+const state = ref({
+  size: "md",
+  color: "warning",
+  count: 5,
+  allowHalf: false,
+  showValue: true,
+  disabled: false,
+  readonly: false,
+});
+
 const val1 = ref(3);
-const currentSize = ref<any>("md");
-const currentColor = ref<any>("warning");
-const maxCount = ref(5);
-const isAllowHalf = ref(false);
-const isShowValue = ref(true);
-const isDisabled = ref(false);
-const isReadonly = ref(false);
+
+/** 演练场控制面板配置 */
+const controls = [
+  {
+    title: "外观",
+    children: [
+      {
+        label: "尺寸",
+        key: "size",
+        component: "select" as const,
+        defaultValue: "md",
+        props: { options: rateSizes.map((s) => ({ label: s, value: s })) },
+      },
+      {
+        label: "颜色",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "warning",
+        props: { options: rateColors.map((c) => ({ label: c, value: c })) },
+      },
+      {
+        label: "数量",
+        key: "count",
+        component: "slider" as const,
+        defaultValue: 5,
+        props: { min: 1, max: 10, step: 1 },
+      },
+    ],
+  },
+  {
+    title: "行为",
+    children: [
+      { label: "半星", key: "allowHalf", component: "checkbox" as const, defaultValue: false },
+      { label: "显示分数", key: "showValue", component: "checkbox" as const, defaultValue: true },
+      { label: "禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
+      { label: "只读", key: "readonly", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+];
 </script>
 
 <template>
-    <div class="flex w-full flex-col gap-10">
-        <!-- Controls -->
-        <div
-            class="flex flex-wrap items-center gap-6 rounded-lg border bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/40">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">尺寸</span>
-                <USelect v-model="currentSize" :items="[...rateSizes]" class="w-28" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">颜色</span>
-                <USelect v-model="currentColor" :items="[...rateColors]" class="w-28" />
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">数量</span>
-                <UInput v-model.number="maxCount" type="number" class="w-20" />
-            </div>
-            <UCheckbox v-model="isAllowHalf" label="半星" />
-            <UCheckbox v-model="isShowValue" label="显示分数" />
-            <UCheckbox v-model="isDisabled" label="禁用" />
-            <UCheckbox v-model="isReadonly" label="只读" />
+  <div class="flex w-full min-w-0 flex-col">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      component-name="RebornRate"
+      title="交互演练场"
+      description="调节尺寸、颜色与颗数，右侧评分实时响应；半星、禁用、只读可叠加。"
+    >
+      <RebornRate
+        v-model="val1"
+        :size="state.size"
+        :color="state.color"
+        :allow-half="state.allowHalf"
+        :show-value="state.showValue"
+        :disabled="state.disabled"
+        :readonly="state.readonly"
+        :count="state.count"
+      />
+    </Playground>
+
+    <DemoSection
+      title="自定义图标"
+      description="#icon 插槽拿到 active，可换成任意 Icon 或图片。"
+    >
+      <DemoBlock layout="stack">
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-12 text-xs">爱心</span>
+          <RebornRate
+            v-model="val1"
+            :size="state.size"
+            :color="state.color"
+            :allow-half="state.allowHalf"
+            :show-value="state.showValue"
+            :disabled="state.disabled"
+            :readonly="state.readonly"
+            :count="state.count"
+          >
+            <template #icon>
+              <Icon
+                name="lucide:heart"
+                class="size-full"
+              />
+            </template>
+          </RebornRate>
         </div>
-
-        <div class="grid gap-8">
-            <!-- 基础 -->
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">基础</h3>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">默认</span>
-                    <RebornRate v-model="val1" :size="currentSize" :color="currentColor" :allow-half="isAllowHalf"
-                        :show-value="isShowValue" :disabled="isDisabled" :readonly="isReadonly" :count="maxCount" />
-                </div>
-            </div>
-
-            <!-- 自定义图标 -->
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">自定义图标</h3>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">爱心</span>
-                    <RebornRate v-model="val1" :size="currentSize" :color="currentColor" :allow-half="isAllowHalf"
-                        :show-value="isShowValue" :disabled="isDisabled" :readonly="isReadonly" :count="maxCount">
-                        <template #icon="{ active }">
-                            <Icon name="lucide:heart" class="size-full" />
-                        </template>
-                    </RebornRate>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">火焰</span>
-                    <RebornRate v-model="val1" :size="currentSize" :color="currentColor" :allow-half="isAllowHalf"
-                        :show-value="isShowValue" :disabled="isDisabled" :readonly="isReadonly" :count="maxCount">
-                        <template #icon="{ active }">
-                            <Icon name="lucide:flame" class="size-full" />
-                        </template>
-                    </RebornRate>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">点赞</span>
-                    <RebornRate v-model="val1" :size="currentSize" :color="currentColor" :allow-half="isAllowHalf"
-                        :show-value="isShowValue" :disabled="isDisabled" :readonly="isReadonly" :count="maxCount">
-                        <template #icon="{ active }">
-                            <Icon name="lucide:thumbs-up" class="size-full" />
-                        </template>
-                    </RebornRate>
-                </div>
-            </div>
-
-            <!-- 图片URL -->
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">图片 URL</h3>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">自定义图片</span>
-                    <RebornRate v-model="val1" :size="currentSize" :color="currentColor" :allow-half="isAllowHalf"
-                        :show-value="isShowValue" :disabled="isDisabled" :readonly="isReadonly" :count="maxCount">
-                        <template #icon="{ active, style }">
-                            <img src="https://www.leyifan.com/favicon.ico" class="size-full object-contain"
-                                :class="!active && 'opacity-30'" :style="style" />
-                        </template>
-                    </RebornRate>
-                </div>
-            </div>
-
-            <!-- 颜色 -->
-            <div class="space-y-4">
-                <h3 class="text-base font-medium text-gray-400 dark:text-gray-500">颜色</h3>
-                <div class="flex flex-col gap-3">
-                    <RebornRate v-for="c in rateColors" :key="c" :model-value="3" :color="c" :size="currentSize" />
-                </div>
-            </div>
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-12 text-xs">火焰</span>
+          <RebornRate
+            v-model="val1"
+            :size="state.size"
+            :color="state.color"
+            :allow-half="state.allowHalf"
+            :show-value="state.showValue"
+            :disabled="state.disabled"
+            :readonly="state.readonly"
+            :count="state.count"
+          >
+            <template #icon>
+              <Icon
+                name="lucide:flame"
+                class="size-full"
+              />
+            </template>
+          </RebornRate>
         </div>
-    </div>
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-12 text-xs">点赞</span>
+          <RebornRate
+            v-model="val1"
+            :size="state.size"
+            :color="state.color"
+            :allow-half="state.allowHalf"
+            :show-value="state.showValue"
+            :disabled="state.disabled"
+            :readonly="state.readonly"
+            :count="state.count"
+          >
+            <template #icon>
+              <Icon
+                name="lucide:thumbs-up"
+                class="size-full"
+              />
+            </template>
+          </RebornRate>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="颜色"
+      description="与全站语义色板对齐。"
+    >
+      <DemoBlock layout="stack">
+        <RebornRate
+          v-for="c in rateColors"
+          :key="c"
+          :model-value="3"
+          :color="c"
+          :size="state.size"
+        />
+      </DemoBlock>
+    </DemoSection>
+  </div>
 </template>
