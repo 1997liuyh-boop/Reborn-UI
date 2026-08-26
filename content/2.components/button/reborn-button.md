@@ -327,7 +327,7 @@ function onError(e: any) {
 | --- | --- | --- | --- |
 | `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
-| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text'` | `'solid'` | 视觉变体，含义见「颜色与变体」。 |
+| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'solid'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
 | `size` | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'` | `'md'` | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。 |
 | `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
@@ -509,7 +509,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ## 注意事项
 
-- **形状 API 两端不同**。Web 端形状并入 `variant`（`round` / `circle` 两个取值），默认 `solid` 不再是胶囊，而是随 `size` 取 4 / 6 / 8px 圆角令牌；UniApp 端 `round` 仍默认开启，需要直角或按钮组拼接时的单侧圆角必须显式传 `:round="false"`，否则自定义圆角类会被 `rounded-full` 覆盖。
+- **形状并入 `variant`**。两端都没有 `round` / `circle` 布尔 props：`round` 胶囊、`circle` 圆形图标按钮。默认 `solid` 不再是胶囊，而是随 `size` 取 4 / 6 / 8 的圆角令牌（Web 为 px，UniApp 为 rpx）；需要自定义圆角时直接用 `class` / `customClass` 覆盖。
 - **`loading` 隐含禁用**。加载中按钮不会派发 `click` / `tap`，无需再额外绑 `disabled`。
 - **`text` 变体不占固定高度**。它用 `!h-auto !px-0` 覆盖了 `size` 的高度与水平内边距，与其他变体并排时基线不齐是预期行为；需要对齐请把它放进同一个 flex 容器并用 `items-center`。
 - **`borderStyle` 只影响有边框的变体**。`solid` / `soft` / `text` 本身不渲染边框，传 `dashed` 不会有视觉变化。

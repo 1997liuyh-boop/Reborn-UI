@@ -758,7 +758,7 @@
     {
       "id": "reborn-button",
       "title": "按钮",
-      "description": "双端基础按钮：7 种语义色 × 多变体（Web 7 / UniApp 5），支持尺寸、形状、加载与禁用状态。",
+      "description": "双端基础按钮：7 种语义色 × 7 种变体（含 round 胶囊 / circle 圆形图标按钮），支持尺寸、形状、加载与禁用状态。",
       "category": "basic",
       "tags": [
         "css",

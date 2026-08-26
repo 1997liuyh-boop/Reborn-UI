@@ -1,5 +1,5 @@
 {
-  "description": "双端基础按钮：7 种语义色 × 多变体（Web 7 / UniApp 5），支持尺寸、形状、加载与禁用状态。",
+  "description": "双端基础按钮：7 种语义色 × 7 种变体（含 round 胶囊 / circle 圆形图标按钮），支持尺寸、形状、加载与禁用状态。",
   "whenToUse": [
     "表单提交、确认/取消、保存等常规操作触发。",
     "需要按强度分层的按钮体系：主操作 solid、次操作 outline、弱操作 text。",
@@ -15,19 +15,11 @@
   "props": [
     {
       "name": "variant",
-      "description": "视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮；Web 端另有 round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）两个形状取值，形状圆角带 ! 以覆盖 size 的 rounded-ui-* 令牌；UniApp 端无此二值、形状用 round/circle 布尔 props。默认 solid"
-    },
-    {
-      "name": "round",
-      "description": "仅 UniApp 端：是否为胶囊形状（rounded-full），默认 true；Web 端无此 prop，胶囊形状用 variant=\"round\" 表达"
-    },
-    {
-      "name": "circle",
-      "description": "仅 UniApp 端：是否为正方形纯图标按钮（内边距归零），默认 false；Web 端无此 prop，圆形图标按钮用 variant=\"circle\" 表达"
+      "description": "视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）。形状圆角带 ! 以覆盖 size 的 rounded-ui-* 令牌。默认 solid"
     }
   ],
   "pitfalls": [
-    "形状 API 两端不同：Web 端形状并入 variant（round 胶囊 / circle 圆形图标按钮），默认 solid 不再是胶囊，直角圆角随 size 取 4/6/8px 令牌；UniApp 端 round 默认 true（胶囊），需要直角/自定义圆角时须显式传 :round=\"false\"，否则自定义圆角会被 rounded-full 覆盖。",
+    "形状并入 variant：round 胶囊 / circle 圆形图标按钮；默认 solid 不再是胶囊，直角圆角随 size 取令牌（Web 4/6/8px，UniApp 4/6/8rpx）。需要自定义圆角时直接用 class / customClass 覆盖。",
     "loading 为 true 时隐含禁用，不再派发 click/tap，无需额外绑 disabled；trailing 插槽在加载态不渲染。",
     "text 变体用 !h-auto !px-0 覆盖了 size 的高度与水平内边距，与其他变体并排时基线不齐属预期行为。",
     "borderStyle 仅 web 端提供，且只对渲染边框的 outline/subtle 生效；solid/soft/text/round/circle 传 dashed 无视觉变化。",

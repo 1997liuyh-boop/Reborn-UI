@@ -87,8 +87,8 @@ export default {
       // 圆角带 ! 强制：size 轴的 rounded-ui-* 是自定义令牌，tailwind-merge 不会将其与
       // rounded-full 判为冲突组而合并掉，且生成 CSS 顺序靠后，不加 ! 会反向覆盖形状圆角
       round: '!rounded-full',
-      // 圆形纯图标按钮：宽高相等、内边距归零，着色复合规则与 solid 一致（见 compoundVariants）
-      circle: '!aspect-square !w-auto !p-0 !rounded-full',
+      // 圆形纯图标按钮：内边距归零 + 胶囊圆角；等宽由下方 size 复合规则的 w-button-* 保证（小程序对 aspect-square 支持不稳）
+      circle: '!p-0 !rounded-full',
     },
     disabled: {
       true: '',
