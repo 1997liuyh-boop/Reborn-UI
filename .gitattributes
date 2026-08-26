@@ -1,0 +1,12 @@
+# pnpm 的 patchedDependencies 会把补丁文件内容的 sha256 写进 pnpm-lock.yaml。
+# 本机 core.autocrlf=true，检出时会把 LF 换成 CRLF，pnpm 于是哈希到一份 CRLF 副本；
+# 而 Linux CI 检出的是 LF 原文，两边算出的 hash 不同，
+# `pnpm install --frozen-lockfile` 就会报 ERR_PNPM_LOCKFILE_CONFIG_MISMATCH。
+# 强制补丁文件在任何平台的工作区里都保持 LF，从根上消除这类跨平台哈希漂移。
+patches/*.patch text eol=lf
+
+# 锁文件同理：行尾漂移会造成无意义的整文件 diff
+pnpm-lock.yaml text eol=lf
+
+# Shell 脚本必须是 LF，否则在 Linux 上会因 \r 报 "bad interpreter"
+*.sh text eol=lf
