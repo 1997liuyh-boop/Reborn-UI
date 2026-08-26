@@ -40,7 +40,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <LetterPullup\n        words=\"逐字上浮\"\n        :delay=\"0.05\"\n        class=\"text-highlighted\"\n      />\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/letter-pullup/LetterPullupDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -73,8 +73,7 @@
   },
   "docPath": "content/2.components/text-animations/letter-pullup.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "d00a67f3b2cfb2b99a90c5d2d649e23b3b22085c",
+    "contentHash": "124fd4c94166d6da99bd588f810a76ac279c065a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

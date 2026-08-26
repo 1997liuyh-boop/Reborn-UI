@@ -138,7 +138,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport type { Props } from \"../../ui/dither-shader/DitherShader.vue\";\nimport { DitherShader } from \"../../ui/dither-shader\";\n\nexport interface DemoProps extends Omit<Props, \"class\" | \"src\"> {}\n\nconst {\n  gridSize = 4,\n  ditherMode = \"bayer\",\n  colorMode = \"original\",\n  invert = false,\n  pixelRatio = 1,\n  primaryColor = \"#000000\",\n  secondaryColor = \"#ffffff\",\n  customPalette = [\"#000000\", \"#ffffff\"],\n  brightness = 0,\n  contrast = 1,\n  backgroundColor = \"transparent\",\n  objectFit = \"cover\",\n  threshold = 0.5,\n  animated = false,\n  animationSpeed = 0.02,\n} = defineProps<DemoProps>();\n</script>\n\n<template>\n  <div class=\"relative flex flex-col items-center gap-6 overflow-hidden p-8\">\n    <DitherShader\n      src=\"https://images.unsplash.com/photo-1555952517-2e8e729e0b44?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n      :invert\n      :contrast\n      :brightness\n      :animated\n      :grid-size=\"gridSize\"\n      :threshold=\"threshold\"\n      :color-mode=\"colorMode\"\n      :object-fit=\"objectFit\"\n      :dither-mode=\"ditherMode\"\n      :pixel-ratio=\"pixelRatio\"\n      :primary-color=\"primaryColor\"\n      :custom-palette=\"customPalette\"\n      :secondary-color=\"secondaryColor\"\n      :animation-speed=\"animationSpeed\"\n      :background-color=\"backgroundColor\"\n      class=\"h-72 w-100 sm:h-80 sm:w-125\"\n    />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/dither-shader/DitherShaderDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -172,8 +172,7 @@
   },
   "docPath": "content/2.components/special-effects/dither-shader.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "91c6dfb3ef26a8bba9815b31bdf1f17835b3a22f",
+    "contentHash": "e2e6377c4569069c829823c654fe2e11641ffa2a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

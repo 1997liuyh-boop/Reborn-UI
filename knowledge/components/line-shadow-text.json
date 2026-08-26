@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { useColorMode } from \"@vueuse/core\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst shadowColor = computed(() => (isDark.value ? \"white\" : \"black\"));\n</script>\n\n<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <h1 class=\"text-highlighted text-8xl leading-none font-extrabold tracking-tighter text-balance\">\n        快速\n        <LineShadowText\n          class=\"italic\"\n          :shadow-color=\"shadowColor\"\n        >\n          上线\n        </LineShadowText>\n      </h1>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/line-shadow-text/LineShadowTextDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -77,8 +77,7 @@
   },
   "docPath": "content/2.components/text-animations/line-shadow-text.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "32611f1ea2af9bac0f97284feae6a592bac9f7f2",
+    "contentHash": "9c5b1d106174f6e4fd0aeb56493d9777003870fb",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

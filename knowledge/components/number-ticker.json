@@ -68,7 +68,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <p class=\"text-highlighted text-8xl font-medium tracking-tighter whitespace-pre-wrap\">\n        <NumberTicker :value=\"100\" />\n      </p>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/number-ticker/NumberTickerDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -102,8 +102,7 @@
   },
   "docPath": "content/2.components/text-animations/number-ticker.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "3c304fee300a89efb72a2da80d81950de08e1907",
+    "contentHash": "4fad1eccadf4487a8916c834602ffad61f67bb97",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

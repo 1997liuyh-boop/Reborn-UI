@@ -95,7 +95,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"3D 文字需要深色舞台才看得清阴影层；两种模式都保持深色。\"\n  >\n    <div class=\"flex flex-col items-center justify-center overflow-hidden rounded-ui-md bg-gray-10 px-4 py-16 dark:bg-gray-1\">\n      <Text3d\n        class=\"text-8xl font-bold max-md:text-7xl\"\n        shadow-color=\"red\"\n      >\n        3D\n      </Text3d>\n      <Text3d\n        class=\"text-8xl font-black max-md:text-7xl\"\n        shadow-color=\"skyblue\"\n        :animate=\"false\"\n      >\n        就是\n      </Text3d>\n      <Text3d class=\"text-8xl font-bold max-md:text-7xl\">厉害</Text3d>\n    </div>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/text-3d/Text3dDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -128,8 +128,7 @@
   },
   "docPath": "content/2.components/text-animations/3d-text.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "a5b49a0d707bddefb7dffdbceeafa9b3362b9a06",
+    "contentHash": "84e1078e5acc200762cc8f0f9db73b2f8da3c6ab",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

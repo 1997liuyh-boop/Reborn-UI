@@ -82,7 +82,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nconst items = [\n  {\n    title: \"创新的黎明\",\n    description: \"探索那些改变世界的想法与发明从何而来。\",\n  },\n  {\n    title: \"数字革命\",\n    description: \"走进技术如何重塑我们的生活。\",\n  },\n  {\n    title: \"设计的艺术\",\n    description: \"发现深思熟虑的体验设计之美。\",\n  },\n  {\n    title: \"沟通的力量\",\n    description: \"理解有效沟通如何影响日常。\",\n  },\n  {\n    title: \"求知\",\n    description: \"加入这场通往理解与启发的旅途。\",\n  },\n  {\n    title: \"创造的乐趣\",\n    description: \"体验把想法变成现实的那一下。\",\n  },\n  {\n    title: \"冒险精神\",\n    description: \"出发，去遇见新的风景。\",\n  },\n];\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"格子头部的脉冲块是条目自己的骨架占位，用 elevated 而不是 zinc。\"\n  >\n    <BentoGrid class=\"mx-auto max-w-4xl\">\n      <BentoGridItem\n        v-for=\"(item, index) in items\"\n        :key=\"index\"\n        :class=\"index === 3 || index === 6 ? 'md:col-span-2' : ''\"\n      >\n        <template #header>\n          <div class=\"flex size-full animate-pulse space-x-4\">\n            <div class=\"bg-elevated flex size-full flex-1 rounded-ui-sm\" />\n          </div>\n        </template>\n\n        <template #title>\n          <strong>{{ item.title }}</strong>\n        </template>\n\n        <template #icon />\n\n        <template #description>\n          <p>{{ item.description }}</p>\n        </template>\n      </BentoGridItem>\n    </BentoGrid>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/bento-grid/BentoGridDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -117,8 +117,7 @@
   },
   "docPath": "content/2.components/miscellaneous/bento-grid.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "24199a63f97428a641161a0c9f2c5f1ffbff35fa",
+    "contentHash": "3c184eb52ddea270006d337ad7ca1c476641093d",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

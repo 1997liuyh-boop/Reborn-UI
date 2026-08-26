@@ -50,7 +50,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex h-[40rem] w-full items-center justify-center overflow-hidden\">\n    <SVGMask class=\"h-[40rem] rounded-md border\">\n      <template #base>\n        The first rule of <span class=\"text-red-500\">MRR Club</span> is you do not talk about MRR\n        Club. The second rule of MRR Club is you DO NOT talk about\n        <span class=\"text-red-500\">MRR Club</span>.\n      </template>\n      <template #reveal>\n        <p class=\"mx-auto max-w-4xl text-center text-4xl font-bold text-slate-800\">\n          The first rule of MRR Club is you do not talk about MRR Club. The second rule of MRR Club\n          is you DO NOT talk about MRR Club.\n        </p>\n      </template>\n    </SVGMask>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/svg-mask/SvgMaskDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,7 @@
   },
   "docPath": "content/2.components/miscellaneous/svg-mask.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "b598e61f2df4dd016c9aeea16adf394ffed32d8a",
+    "contentHash": "02ea053ede0b95a54c07934f487ff8cfd14a92d7",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

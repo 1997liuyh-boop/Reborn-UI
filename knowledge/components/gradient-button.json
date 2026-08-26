@@ -74,7 +74,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst bgColor = computed(() => (isDark.value ? \"#000\" : \"#fff\"));\n</script>\n\n<template>\n  <div class=\"z-10 flex h-56 w-full flex-col items-center justify-center\">\n    <GradientButton :bg-color=\"bgColor\">Zooooooooooom 🚀</GradientButton>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/gradient-button/GradientButtonDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -106,8 +106,7 @@
   },
   "docPath": "content/2.components/button/gradient-button.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "bc63f8033483cf8219f4a81fabc85be235c13814",
+    "contentHash": "acecce3efb8bf3cf36515aac2771bb1acfaf547f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

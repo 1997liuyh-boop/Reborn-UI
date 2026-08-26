@@ -57,13 +57,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-card/RebornCardDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "UniApp 演示",
-      "code": "<script setup lang=\"ts\">\n// RebornCard 演示页：标题、标题插槽与内边距控制\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\n</script>\n\n<template>\n  <RebornPage title=\"Card 卡片\" description=\"用于分组展示内容区块的基础卡片容器，常与 Page 搭配组织页面。\">\n    <!-- 基础用法：通过 title 属性渲染标题，内容放默认插槽 -->\n    <RebornCard title=\"基础用法\">\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        卡片由标题与内容体两部分组成，内容体默认带圆角边框、白色背景与内边距。\n      </view>\n      <view class=\"rounded-lg bg-blue-1 p-3 text-[24rpx] text-slate-500\">\n        任意内容都可以放进默认插槽，多个子元素之间自动保持间距。\n      </view>\n    </RebornCard>\n\n    <!-- 标题插槽：使用 title 插槽完全接管标题区域 -->\n    <RebornCard>\n      <template #title>\n        <view class=\"flex items-center gap-2\">\n          <view class=\"i-lucide-sparkles size-[32rpx] text-amber-500\" />\n          <text\n            class=\"\n              font-medium text-[26rpx] text-slate-500\n              dark:text-slate-200\n            \"\n          >\n            标题插槽\n          </text>\n        </view>\n      </template>\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        需要图标、角标等富文本标题时，用 title 插槽替换默认标题渲染。\n      </view>\n    </RebornCard>\n\n    <!-- 无内边距：padding=false 时内容可通铺整个卡片 -->\n    <RebornCard title=\"无内边距\" :padding=\"false\">\n      <view\n        class=\"\n          flex h-[160rpx] items-center justify-center bg-gradient-to-r\n          from-indigo-500 to-purple-500\n        \"\n      >\n        <text class=\"text-[28rpx] text-white\">通铺内容（padding=false）</text>\n      </view>\n    </RebornCard>\n  </RebornPage>\n</template>\n",
+      "path": "packages/uniapp-project/src/pages/reborn-card/RebornCardDemo.vue",
       "source": "demo",
       "platform": "uniapp"
     }
@@ -94,8 +94,7 @@
   },
   "docPath": "content/2.components/cards/reborn-card.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "272d3bbc24829d81ea5749119ee691f2692e0342",
+    "contentHash": "621477158d7eef45c1b2a7ef2f08ab58f381773f",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

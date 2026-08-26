@@ -59,7 +59,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <ClientOnly>\n      <BlurReveal\n        :delay=\"0.2\"\n        :duration=\"0.75\"\n        class=\"p-8\"\n      >\n        <h2 class=\"text-highlighted text-3xl font-bold tracking-tighter sm:text-5xl\">你好 👋</h2>\n        <span class=\"text-muted text-xl tracking-tighter text-pretty sm:text-3xl\">\n          最近怎么样？\n        </span>\n      </BlurReveal>\n    </ClientOnly>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/blur-reveal/BlurRevealDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -93,8 +93,7 @@
   },
   "docPath": "content/2.components/text-animations/blur-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "d093519db012c4ed998cbf9c3cac3d73e8fad351",
+    "contentHash": "cfed228c81f69bf0ebc462189dfeaecca726c2a6",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

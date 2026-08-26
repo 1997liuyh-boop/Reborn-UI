@@ -66,13 +66,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nconst hovering = ref(false);\n\nfunction setHovering(value: boolean) {\n  hovering.value = value;\n}\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"鼠标移入图片后出现圆形放大镜；下方文案在悬停时轻微模糊，突出镜头焦点。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <!-- 深色舞台是放大镜效果的一部分，两种模式都保持深色 -->\n      <div class=\"rounded-ui-lg relative w-full max-w-lg overflow-hidden bg-gray-10 p-8 dark:bg-gray-1\">\n        <Rays />\n        <Beams />\n        <div class=\"relative z-10\">\n          <Lens\n            :hovering=\"hovering\"\n            @hover-update=\"setHovering\"\n          >\n            <img\n              src=\"https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n              alt=\"Vision Pro 配图\"\n              width=\"500\"\n              height=\"500\"\n              class=\"rounded-ui-md\"\n            >\n          </Lens>\n          <div\n            :style=\"{ filter: hovering ? 'blur(2px)' : 'blur(0px)' }\"\n            class=\"relative z-20 py-4 text-white\"\n          >\n            <h3 class=\"text-left text-2xl font-bold\">Apple Vision Pro</h3>\n            <p class=\"text-gray-6 mt-4 text-left\">\n              空间计算头显，把数字内容叠到现实空间里。把鼠标移到图片上即可局部放大。\n            </p>\n          </div>\n        </div>\n      </div>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/lens/LensDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"rounded-ui-lg relative w-full max-w-lg overflow-hidden bg-gray-10 p-8 dark:bg-gray-1\">\n    <Rays />\n    <Beams />\n    <div class=\"relative z-10\">\n      <Lens is-static>\n        <img\n          src=\"https://images.unsplash.com/photo-1713869820987-519844949a8a?q=80&w=3500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n          alt=\"Vision Pro 配图\"\n          width=\"500\"\n          height=\"500\"\n          class=\"rounded-ui-md\"\n        >\n      </Lens>\n      <div class=\"relative z-20 py-4 text-white\">\n        <h3 class=\"text-left text-2xl font-bold\">Apple Vision Pro</h3>\n        <p class=\"text-gray-6 mt-4 text-left\">\n          is-static 时镜头固定在预设位置，不再跟随鼠标。\n        </p>\n      </div>\n    </div>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/lens/StaticLensDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -107,8 +107,7 @@
   },
   "docPath": "content/2.components/miscellaneous/lens.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "aae10576678d0dae8e1cbef75097736007181e6c",
+    "contentHash": "1cb3a748c91766eec9f47b7ffa73b6d3eb11d400",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

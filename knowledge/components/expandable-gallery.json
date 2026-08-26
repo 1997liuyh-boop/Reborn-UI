@@ -33,7 +33,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nconst images = [\n  \"https://images.unsplash.com/photo-1709884735646-897b57461d61?q=80&w=3628&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\n  \"https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\n  \"https://images.unsplash.com/photo-1527529482837-4698179dc6ce?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\n  \"https://images.unsplash.com/photo-1502085671122-2d218cd434e6?q=80&w=3626&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\",\n];\n</script>\n\n<template>\n  <ExpandableGallery\n    :images=\"images\"\n    class=\"p-4\"\n  />\n</template>\n",
+      "path": "app/components/reborn/examples/expandable-gallery/ExpandableGalleryDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -65,8 +65,7 @@
   },
   "docPath": "content/2.components/miscellaneous/expandable-gallery.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "3877ee78ea46a2084c64a74a73898cd47181b01e",
+    "contentHash": "9956009aec88a2a877c6a685d88d95600ec39e9e",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

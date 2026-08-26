@@ -57,13 +57,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-page/RebornPageDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "UniApp 演示",
-      "code": "<script setup lang=\"ts\">\n// RebornPage 演示页：页面根容器，提供标题、描述与内容区布局\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\n</script>\n\n<template>\n  <!-- 页面最外层根容器：title/description 渲染默认头部，页面内容放默认插槽 -->\n  <RebornPage title=\"Page 页面容器\" description=\"统一的页面根容器：标题 + 描述 + 内容区，并内置 Toast 挂载点。\">\n    <RebornCard title=\"页面结构\">\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        header 区域渲染 title 与 description，body 区域承载页面内容，子元素间距由容器统一管理。\n      </view>\n    </RebornCard>\n\n    <RebornCard title=\"样式定制\">\n      <view\n        class=\"\n          text-[26rpx] text-slate-600\n          dark:text-slate-300\n        \"\n      >\n        通过 ui 属性可按 root / header / title / description / body 分区覆盖样式；customClass 用于给根容器追加类名；需要完全自定义头部时使用 header 插槽。\n      </view>\n    </RebornCard>\n  </RebornPage>\n</template>\n",
+      "path": "packages/uniapp-project/src/pages/reborn-page/RebornPageDemo.vue",
       "source": "demo",
       "platform": "uniapp"
     }
@@ -97,8 +97,7 @@
   },
   "docPath": "content/2.components/layout/reborn-page.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "c0897a021698b2e0245f9093c86c9576d4bf3e26",
+    "contentHash": "8e2dc0731d194ecbc11d27ddf9ac8d120d03b615",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

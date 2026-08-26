@@ -55,7 +55,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nconst data = [\n  {\n    id: \"version1.0\",\n    label: \"Version 1.0\",\n  },\n  {\n    id: \"version2.0\",\n    label: \"Version 2.0\",\n  },\n\n  {\n    id: \"version3.0\",\n    label: \"Version 3.0\",\n  },\n  {\n    id: \"version4.0\",\n    label: \"Version 4.0\",\n  },\n\n  {\n    id: \"version5.0\",\n    label: \"Version 5.0\",\n  },\n  {\n    id: \"version6.0\",\n    label: \"Version 6.0\",\n  },\n];\n</script>\n\n<template>\n  <div class=\"h-fit w-full\">\n    <Timeline :items=\"data\" title=\"Beam me up\" description=\"Show the timeline in style\">\n      <template v-for=\"(item, index) in data\" :key=\"`${item.id}template`\" #[item.id]>\n        <div class=\"relative w-full pr-4 pl-20 md:pl-4\">\n          <h3 class=\"mb-4 block text-left text-2xl font-bold text-neutral-500 dark:text-neutral-500\">\n            {{ `Section ${index + 1}` }}\n          </h3>\n        </div>\n        <p class=\"mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200\">\n          Reborn UI gives you the freedom to design awesome website, in less time.\n        </p>\n      </template>\n    </Timeline>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/timeline/TimelineDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -89,8 +89,7 @@
   },
   "docPath": "content/2.components/miscellaneous/timeline.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "1d93aebb21166e01e925f020f3718e71f07d2fba",
+    "contentHash": "1446c4b52c961e07e5e58b30d5f93676455cdaf8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

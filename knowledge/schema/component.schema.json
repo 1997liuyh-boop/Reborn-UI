@@ -169,6 +169,9 @@
               "code": {
                 "type": "string"
               },
+              "path": {
+                "type": "string"
+              },
               "source": {
                 "type": "string",
                 "enum": [
@@ -186,7 +189,6 @@
             },
             "required": [
               "title",
-              "code",
               "source"
             ],
             "additionalProperties": false
@@ -261,9 +263,6 @@
         "_meta": {
           "type": "object",
           "properties": {
-            "generatedAt": {
-              "type": "string"
-            },
             "contentHash": {
               "type": "string"
             },
@@ -308,7 +307,6 @@
             }
           },
           "required": [
-            "generatedAt",
             "contentHash",
             "hasOverride",
             "extractors"

@@ -52,7 +52,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <h1 class=\"text-highlighted text-center text-4xl font-bold text-balance\">\n        你是一位\n        <TextHighlight class=\"rounded-ui-sm bg-linear-to-r from-indigo-300 to-purple-300\">\n          了不起的开发者\n        </TextHighlight>\n      </h1>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/text-highlight/TextHighlightDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -84,8 +84,7 @@
   },
   "docPath": "content/2.components/text-animations/text-highlight.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "82552570becfd950af23bd2fd0b94f0051e5ea16",
+    "contentHash": "1ebf44a0f7b49c9d46cda306f060dd649083eb0b",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -25,7 +25,10 @@ export interface KbProp {
 export interface KbExample {
   title?: string;
   description?: string;
-  code: string;
+  /** 示例源码。仓库内的 demo 示例不内联源码，此处为空，需按 path 现读 */
+  code?: string;
+  /** 演示文件的仓库相对路径（POSIX 分隔符），仅 demo 示例有 */
+  path?: string;
   source?: string;
   platform?: string;
 }
@@ -143,7 +146,26 @@ export class KnowledgeBase {
     const file = path.join(this.dir, "components", `${id}.json`);
     if (!fs.existsSync(file)) return null;
     const data = JSON.parse(fs.readFileSync(file, "utf8")) as KbComponent;
+    this.hydrateExamples(data);
     this.componentCache.set(id, data);
     return data;
+  }
+
+  /**
+   * 补齐示例源码
+   *
+   * 知识库 JSON 里 demo 示例只存 path 不存 code（内联会让改一个 demo 就重写整份 JSON）。
+   * npm 包内快照在 prepack 时已把 code 灌好，这里不会命中；
+   * monorepo 内开发（知识库目录就在仓库里）才需要按 path 现读源文件。
+   * 文件缺失时保持 code 为空，交由上层按「无示例」处理，不抛错。
+   */
+  private hydrateExamples(component: KbComponent): void {
+    const repoRoot = path.resolve(this.dir, "..");
+    for (const example of component.examples ?? []) {
+      if (example.code || !example.path) continue;
+      const abs = path.join(repoRoot, example.path);
+      if (!fs.existsSync(abs)) continue;
+      example.code = fs.readFileSync(abs, "utf8").replace(/\r\n/g, "\n");
+    }
   }
 }

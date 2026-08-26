@@ -124,30 +124,52 @@ export function categoryForDoc(doc: DocRef | undefined): Category {
   return DOC_DIR_TO_CATEGORY[doc.dirName] ?? "misc";
 }
 
-/** 查找组件的演示代码文件 */
+/** 仓库内绝对路径 → 相对仓库根的 POSIX 路径 */
+export function toRepoRelative(absPath: string): string {
+  return path.relative(REPO_ROOT, absPath).split(path.sep).join("/");
+}
+
+/**
+ * 查找组件的演示代码文件
+ * 返回 relPath 供知识库存引用（示例源码不再内联进 JSON）
+ */
 export function findDemoFiles(id: string) {
-  const result: { platform: "web" | "uniapp"; absPath: string }[] = [];
+  const result: { platform: "web" | "uniapp"; absPath: string; relPath: string }[] = [];
+  const push = (platform: "web" | "uniapp", absPath: string) => {
+    result.push({ platform, absPath, relPath: toRepoRelative(absPath) });
+  };
 
   const webDir = path.join(WEB_EXAMPLES_DIR, id);
   if (fs.existsSync(webDir)) {
     for (const f of fs.readdirSync(webDir)) {
-      if (f.endsWith("Demo.vue")) result.push({ platform: "web", absPath: path.join(webDir, f) });
+      if (f.endsWith("Demo.vue")) push("web", path.join(webDir, f));
     }
   }
 
   const uniDir = path.join(UNIAPP_PAGES_DIR, id);
   if (fs.existsSync(uniDir)) {
     for (const f of fs.readdirSync(uniDir)) {
-      if (f.endsWith(".vue")) result.push({ platform: "uniapp", absPath: path.join(uniDir, f) });
+      if (f.endsWith(".vue")) push("uniapp", path.join(uniDir, f));
     }
   }
   return result;
 }
 
-/** 读取 registry，返回 id → npm 依赖 的映射 */
+/**
+ * 读取 registry，返回 id → npm 依赖 的映射
+ *
+ * registry 是构建产物且不入库，新克隆的仓库里并不存在。
+ * 这里的依赖信息会写进知识库 JSON 并参与 contentHash，
+ * 缺失时若静默返回空表，会让 145 个组件全部误判为 drift，
+ * 因此直接失败并提示先跑 registry:build。
+ */
 export function loadRegistryDependencies(): Map<string, string[]> {
   const map = new Map<string, string[]>();
-  if (!fs.existsSync(REGISTRY_JSON)) return map;
+  if (!fs.existsSync(REGISTRY_JSON)) {
+    throw new Error(
+      `registry 尚未生成：${REGISTRY_JSON}\n知识库的依赖信息来自 registry，请先运行 pnpm registry:build`,
+    );
+  }
   const registry = JSON.parse(fs.readFileSync(REGISTRY_JSON, "utf8"));
   for (const c of registry.components ?? []) {
     map.set(c.name, c.dependencies ?? []);

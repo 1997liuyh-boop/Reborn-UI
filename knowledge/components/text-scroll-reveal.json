@@ -52,7 +52,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"随滚动逐词点亮；画布内部不再另套填充层。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <div class=\"z-10 flex min-h-64 items-center justify-center\">\n        <TextScrollReveal text=\"用 Reborn UI 把界面做漂亮。\" />\n      </div>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/text-scroll-reveal/TextScrollRevealDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -84,8 +84,7 @@
   },
   "docPath": "content/2.components/text-animations/text-scroll-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "a02dd0de7772ecfb4e6d6032ab43e898dcc1b561",
+    "contentHash": "97b97ca2fc27db0ac86f1db554c48f1e159973d8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -52,7 +52,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"grid place-content-center p-8\">\n    <RippleButton> Click me! </RippleButton>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/ripple-button/RippleButtonDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -86,8 +86,7 @@
   },
   "docPath": "content/2.components/button/ripple-button.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "df566953bac70b3d46a1aec3fd4c4344964d37b2",
+    "contentHash": "096723b2bea1204d89496f847cb047f8268aef8a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

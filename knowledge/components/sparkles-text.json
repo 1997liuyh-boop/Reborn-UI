@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex h-80 items-center justify-center\">\n    <SparklesText text=\"Reborn UI\" :colors=\"{ first: '#9E7AFF', second: '#FE8BBB' }\" :sparkles-count=\"10\"\n      class=\"my-8\" />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/sparkles-text/SparklesTextDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -80,8 +80,7 @@
   },
   "docPath": "content/2.components/text-animations/sparkles-text.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "5789c5f87884fe9dec848392756f8cd6c9e43e70",
+    "contentHash": "ca265f2000a789fd2b6017ce14483a3e28d083b5",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

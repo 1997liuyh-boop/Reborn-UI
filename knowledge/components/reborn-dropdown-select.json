@@ -91,13 +91,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-dropdown-select/RebornDropdownSelectDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "UniApp 演示",
-      "code": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\nimport RebornDropdownSelect from '@/components/reborn-dropdown-select/RebornDropdownSelect.vue'\nimport { dropdownSelectColors, dropdownSelectSizes } from '@/components/reborn-dropdown-select/reborn-dropdown-select.config'\n\nconst demoColor = ref<typeof dropdownSelectColors[number]>('primary')\nconst demoSize = ref<typeof dropdownSelectSizes[number]>('md')\nconst value1 = ref('')\nconst value2 = ref('2')\nconst value3 = ref('')\nconst value4 = ref('')\n\nconst options = [\n  { label: '选项一', value: '1' },\n  { label: '选项二', value: '2' },\n  { label: '选项三', value: '3' },\n  { label: '选项四', value: '4' },\n]\n</script>\n\n<template>\n  <RebornPage title=\"DropdownSelect 下拉选择\">\n    <RebornCard title=\"基础用法\" custom-class=\"space-y-4\" overflow-visible>\n      <view class=\"text-sm font-medium text-slate-500 dark:text-slate-200\">\n        颜色\n      </view>\n      <view class=\"flex flex-wrap gap-2\">\n        <view v-for=\"c in dropdownSelectColors\" :key=\"c\" class=\"\n              size-6 cursor-pointer rounded-full ring-2 ring-transparent\n              ring-offset-2 transition-all\n            \" :class=\"[\n              `bg-${c}`,\n              demoColor === c ? 'scale-110 ring-slate-400' : `hover:scale-110`,\n            ]\" :style=\"{ backgroundColor: `var(--color-${c}, ${c === 'neutral' ? '#737373' : ''})` }\"\n          @click=\"demoColor = c\" />\n      </view>\n\n      <view class=\"text-sm font-medium text-slate-500 dark:text-slate-200\">\n        尺寸\n      </view>\n      <view>\n        <RebornButton v-for=\"s in dropdownSelectSizes\" :key=\"s\" variant=\"outline\" gap\n          :color=\"demoSize === s ? 'primary' : 'neutral'\" size=\"sm\" :square=\"false\" custom-class=\"rounded-full\"\n          @click=\"demoSize = s\">\n          {{ s }}\n        </RebornButton>\n      </view>\n\n      <RebornDropdownSelect v-model=\"value1\" :options=\"options\" :color=\"demoColor\" :size=\"demoSize\" placeholder=\"请选择\" />\n      <text class=\"text-sm text-gray-500\">当前值: {{ value1 }}</text>\n    </RebornCard>\n\n    <RebornCard title=\"默认选中\" custom-class=\"space-y-4\" overflow-visible>\n      <RebornDropdownSelect v-model=\"value2\" :options=\"options\" />\n    </RebornCard>\n\n    <RebornCard title=\"禁用状态\" custom-class=\"space-y-4\" overflow-visible>\n      <RebornDropdownSelect v-model=\"value3\" :options=\"options\" disabled />\n    </RebornCard>\n\n    <RebornCard title=\"可清除\" custom-class=\"space-y-4\" overflow-visible>\n      <RebornDropdownSelect v-model=\"value4\" :options=\"options\" clearable />\n    </RebornCard>\n  </RebornPage>\n</template>\n",
+      "path": "packages/uniapp-project/src/pages/reborn-dropdown-select/RebornDropdownSelectDemo.vue",
       "source": "demo",
       "platform": "uniapp"
     }
@@ -131,8 +131,7 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-dropdown-select.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "d31ca3d887a14b2193bb9569ae052981c7aaa4a1",
+    "contentHash": "c2c2a11d85950af3533f4939abe93045c7979a14",
     "hasOverride": true,
     "extractors": {
       "web": "absent",

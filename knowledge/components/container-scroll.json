@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"标题是组件自己的 #title 插槽；卡片面上的图用白名单圆角。\"\n  >\n    <div class=\"flex flex-col overflow-hidden\">\n      <ContainerScroll>\n        <template #title>\n          <h1 class=\"text-highlighted text-4xl font-semibold\">\n            释放滚动动画的力量\n            <br>\n            <span class=\"mt-1 text-4xl leading-none font-bold md:text-[6rem]\">\n              Scroll Animations\n            </span>\n          </h1>\n        </template>\n        <template #card>\n          <img\n            src=\"https://cdn.reborn-ui.com/images/linear.webp\"\n            class=\"mx-auto h-full rounded-ui-lg object-cover object-left-top\"\n            alt=\"滚动动画示意\"\n            height=\"720\"\n            width=\"1400\"\n          >\n        </template>\n      </ContainerScroll>\n    </div>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/container-scroll/ContainerScrollDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -89,8 +89,7 @@
   },
   "docPath": "content/2.components/miscellaneous/container-scroll.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "dfccfb818f209d2ff8bb453f10b4ec950e3d0a80",
+    "contentHash": "c0f0475cae18f698e64859417e0ea0de3d53787f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -6,6 +6,10 @@
   "files": [
     "registry"
   ],
+  "scripts": {
+    "registry:build": "pnpm --filter reborn-ui run registry:build",
+    "prepack": "npm run registry:build"
+  },
   "publishConfig": {
     "access": "public"
   }

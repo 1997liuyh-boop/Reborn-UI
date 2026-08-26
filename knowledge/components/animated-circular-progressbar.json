@@ -83,7 +83,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { onBeforeUnmount, onMounted, ref } from \"vue\";\n\nconst value = ref(0);\n\nfunction handleIncrement(prev: number) {\n  return prev === 100 ? 0 : prev + 10;\n}\n\nlet interval: ReturnType<typeof setInterval>;\n\nonMounted(() => {\n  value.value = handleIncrement(value.value);\n  interval = setInterval(() => {\n    value.value = handleIncrement(value.value);\n  }, 2000);\n});\n\nonBeforeUnmount(() => {\n  if (interval) {\n    clearInterval(interval);\n  }\n});\n</script>\n\n<template>\n  <div class=\"flex items-center justify-center py-1\">\n    <AnimatedCircularProgressBar\n      :max=\"100\"\n      :min=\"0\"\n      :value=\"value\"\n    />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/animated-circular-progressbar/AnimatedCircularProgressBarDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -114,8 +114,7 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-circular-progressbar.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "7dd8798f629421b394e4eaaf08871c2c9b3d9c36",
+    "contentHash": "a27a070fc61e03f040fb652e2291abf5da23ca70",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

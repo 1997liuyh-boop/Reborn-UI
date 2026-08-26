@@ -50,13 +50,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"border-default rounded-ui-sm border border-dashed p-6 text-center\">\n    <DemoNote>Web 端暂未提供此组件，请在 UniApp 端查看。</DemoNote>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-footer/RebornFooterDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "UniApp 演示",
-      "code": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport RebornButton from '@/components/reborn-button/RebornButton.vue'\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornFooter from '@/components/reborn-footer/RebornFooter.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\n\nconst counter = ref(0)\nconst fixedHeight = ref<number | null>(null)\nconst customBg = ref<boolean>(false)\n</script>\n\n<template>\n  <RebornPage title=\"Footer 底部栏\" description=\"固定在页面底部，并自动生成占位高度，避免遮挡内容。\">\n    <view>\n      <RebornCard title=\"控制项\">\n        <view class=\"flex flex-wrap items-center gap-2\">\n          <RebornButton :fluid=\"true\" @click=\"counter++\">\n            触发重算高度(vt)\n          </RebornButton>\n          <RebornButton :fluid=\"true\" @click=\"fixedHeight = fixedHeight ? null : 56\">\n            {{ fixedHeight ? '取消固定高度' : '固定高度 56px' }}\n          </RebornButton>\n          <RebornButton :fluid=\"true\" @click=\"customBg = !customBg\">\n            {{ customBg ? '恢复默认背景' : '设置浅绿色背景' }} ({{ customBg }})\n          </RebornButton>\n        </view>\n      </RebornCard>\n\n      <RebornCard title=\"内容区\">\n        <view class=\"space-y-2 text-sm text-gray-6\">\n          <view v-for=\"i in 20\" :key=\"i\" class=\"\n            rounded bg-gray-1 p-3\n            dark:bg-gray-8\n          \">\n            列表内容 {{ i }}\n          </view>\n        </view>\n      </RebornCard>\n\n      <RebornFooter :vt=\"counter\" :height=\"fixedHeight\"\n        :ui=\"{ content: 'flex items-center justify-between px-4 py-3', base: `${customBg ? 'bg-green-4' : 'bg-white dark:bg-gray-8'}` }\">\n        <text class=\"text-sm font-medium\">当前重算次数：{{ counter }}</text>\n        <button class=\"rounded bg-primary px-3 py-1 text-xs text-white\" @click=\"counter++\">\n          操作\n        </button>\n      </RebornFooter>\n    </view>\n  </RebornPage>\n</template>\n",
+      "path": "packages/uniapp-project/src/pages/reborn-footer/RebornFooterDemo.vue",
       "source": "demo",
       "platform": "uniapp"
     }
@@ -97,8 +97,7 @@
   },
   "docPath": "content/2.components/navigation/reborn-footer.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "fe04caef1c019302c097796ea06eeb491f556a5b",
+    "contentHash": "264d3013cefbdab48625df65796280e883ed5841",
     "hasOverride": true,
     "extractors": {
       "web": "partial",

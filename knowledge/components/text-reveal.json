@@ -58,7 +58,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex items-center justify-center p-8\">\n    <TextReveal class=\"text-center text-4xl leading-relaxed font-semibold\">\n      With Reborn UI, you can build beautiful websites powered by Vue and Nuxt in record time.\n    </TextReveal>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/text-reveal/TextRevealDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -93,8 +93,7 @@
   },
   "docPath": "content/2.components/text-animations/text-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "50a0becafcd8a46769d0e5afedc436d155b9f0d3",
+    "contentHash": "500784a8e394e2f14e6756322f24f38da49dab77",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

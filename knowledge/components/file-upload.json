@@ -38,7 +38,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"虚线框是组件自己的拖放区，不是脚手架。\"\n  >\n    <DemoBlock layout=\"stack\">\n      <FileUpload class=\"border-default rounded-ui-md border border-dashed\">\n        <FileUploadGrid />\n      </FileUpload>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/file-upload/FileUploadDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -71,8 +71,7 @@
   },
   "docPath": "content/2.components/input-and-forms/file-upload.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "4c1bab62fb34ed4d4d49ca9853668ebacc4e5890",
+    "contentHash": "2c408bcf348998766b4ecc148d903973c4b6b2d4",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -73,7 +73,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <Book>\n        <BookHeader>\n          <Icon\n            name=\"heroicons:book-open-solid\"\n            size=\"24\"\n          />\n        </BookHeader>\n        <BookTitle>\n          <h1>那本书</h1>\n        </BookTitle>\n        <BookDescription>\n          <p>把鼠标移上来看看动画。</p>\n        </BookDescription>\n      </Book>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/book/BookDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -108,8 +108,7 @@
   },
   "docPath": "content/2.components/miscellaneous/book.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "6ef9efb7d874824499116cd7c106ca5145ebc96b",
+    "contentHash": "702b3bdf248d749bc9630b2c75c60a81fbf9f930",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

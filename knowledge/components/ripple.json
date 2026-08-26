@@ -105,7 +105,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"Ripple 会在容器中心生成一组同心圆并依次扩散，父容器需要 relative 与 overflow-hidden；通过 circle-class 可自定义每一圈的描边与填充。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <div\n        class=\"rounded-ui-md relative flex h-[450px] w-full flex-col items-center justify-center overflow-hidden\"\n      >\n        <p class=\"text-highlighted z-10 text-center text-5xl font-medium tracking-tighter\">Ripple</p>\n        <Ripple\n          class=\"[mask-image:linear-gradient(to_bottom,white,transparent)]\"\n          circle-class=\"border-primary/30 bg-primary/10 rounded-full\"\n        />\n      </div>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/ripple/RippleDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -139,8 +139,7 @@
   },
   "docPath": "content/2.components/special-effects/ripple.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "3de1965fe03b152652e7a8121331c0fb04cd89ea",
+    "contentHash": "bb96a1687a9eae410cbe57f1c98c1b5ec7234bd9",
     "hasOverride": true,
     "extractors": {
       "web": "partial",

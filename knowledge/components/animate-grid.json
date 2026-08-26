@@ -74,7 +74,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport cloudflare from \"./cloudflare.svg\";\n\ninterface Props {\n  textGlowStartColor: string;\n  perspective: number;\n  textGlowEndColor: string;\n  rotateX: number;\n  rotateY: number;\n}\n\nconst props = defineProps<Props>();\n\nconst cards = Array.from({ length: 16 }, () => ({\n  logo: cloudflare,\n}));\n</script>\n\n<template>\n  <div class=\"flex items-center justify-center p-4\">\n    <AnimateGrid\n      :cards\n      v-bind=\"props\"\n    >\n      <template #logo=\"{ logo }\">\n        <img\n          class=\"logo mx-auto h-10 w-auto\"\n          :src=\"logo\"\n        />\n      </template>\n    </AnimateGrid>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/animate-grid/AnimateGridDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -105,8 +105,7 @@
   },
   "docPath": "content/2.components/miscellaneous/animate-grid.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "e8da3af7b5588bf0fc229317c7b1019dbae33910",
+    "contentHash": "a6c336a4f03e13a1a9684135fc81b2b8ed6eafce",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

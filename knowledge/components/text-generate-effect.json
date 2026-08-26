@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex items-center justify-center py-12 max-lg:w-full md:flex-1\">\n    <TextGenerateEffect\n      words=\"Nuxt is an open source framework that makes web development intuitive and powerful. Create performant and production-grade full-stack web apps and websites with confidence.\"\n    />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/text-generate-effect/TextGenerateDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -88,8 +88,7 @@
   },
   "docPath": "content/2.components/text-animations/text-generate-effect.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "b29b184c248ddd6356c525c94f68d7dddc8731e1",
+    "contentHash": "75fbcb11822d1c1b9b0a4d8ccb2067e26d1f3823",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

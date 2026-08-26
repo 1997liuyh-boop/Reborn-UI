@@ -41,7 +41,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\n\n</script>\n<template>\n    <RebornContainer>\n        <div class=\"reborn-container-demo\">\n            <h1>RebornContainer Demo</h1>\n            <p>This is a demo of the RebornContainer component.</p>\n        </div>\n    </RebornContainer>\n</template>",
+      "path": "app/components/reborn/examples/reborn-container/RebornContainerDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -73,8 +73,7 @@
   },
   "docPath": "content/2.components/navigation/reborn-container.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "eee12307c65c518b6a7009d8734b1d7509cc430e",
+    "contentHash": "f8c76a2ebe7851d28b2418a644842daa20ba0c58",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -89,7 +89,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport { CardBody, CardContainer, CardItem } from \"~/components/reborn/ui/card-3d\";\n\ninterface Props {\n  title?: {\n    translateX?: number;\n    translateY?: number;\n    translateZ?: number;\n    rotateX?: number;\n    rotateY?: number;\n    rotateZ?: number;\n  };\n  description?: {\n    translateX?: number;\n    translateY?: number;\n    translateZ?: number;\n    rotateX?: number;\n    rotateY?: number;\n    rotateZ?: number;\n  };\n  image?: {\n    translateX?: number;\n    translateY?: number;\n    translateZ?: number;\n    rotateX?: number;\n    rotateY?: number;\n    rotateZ?: number;\n  };\n  btnLeft?: {\n    translateX?: number;\n    translateY?: number;\n    translateZ?: number;\n    rotateX?: number;\n    rotateY?: number;\n    rotateZ?: number;\n  };\n  btnRight?: {\n    translateX?: number;\n    translateY?: number;\n    translateZ?: number;\n    rotateX?: number;\n    rotateY?: number;\n    rotateZ?: number;\n  };\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  title: () => ({\n    translateX: 0,\n    translateY: 0,\n    translateZ: 50,\n    rotateX: 0,\n    rotateY: 0,\n    rotateZ: 0,\n  }),\n  description: () => ({\n    translateX: 0,\n    translateY: 0,\n    translateZ: 60,\n    rotateX: 0,\n    rotateY: 0,\n    rotateZ: 0,\n  }),\n  image: () => ({\n    translateX: 0,\n    translateY: 0,\n    translateZ: 100,\n    rotateX: 0,\n    rotateY: 0,\n    rotateZ: 0,\n  }),\n  btnLeft: () => ({\n    translateX: 0,\n    translateY: 0,\n    translateZ: 20,\n    rotateX: 0,\n    rotateY: 0,\n    rotateZ: 0,\n  }),\n  btnRight: () => ({\n    translateX: 0,\n    translateY: 0,\n    translateZ: 20,\n    rotateX: 0,\n    rotateY: 0,\n    rotateZ: 0,\n  }),\n});\n</script>\n\n<template>\n  <!-- 卡片本身就是被演示的对象，其表面样式属于组件效果，不视为额外嵌套 -->\n  <CardContainer>\n    <CardBody\n      class=\"group/card border-default bg-elevated rounded-ui-base relative h-auto w-fit border p-6 sm:w-[30rem]\">\n      <CardItem v-bind=\"props.title\" class=\"text-highlighted text-xl font-bold\">\n        让元素浮在空中\n      </CardItem>\n      <CardItem as=\"p\" v-bind=\"props.description\" class=\"text-muted mt-2 max-w-sm text-sm\">\n        把鼠标移到卡片上，感受 CSS 透视带来的立体效果\n      </CardItem>\n      <CardItem v-bind=\"props.image\" class=\"mt-4 w-full\">\n        <img\n          src=\"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n          height=\"1000\" width=\"1000\" class=\"rounded-ui-md h-60 w-full object-cover\" alt=\"示例图片\" />\n      </CardItem>\n      <div class=\"mt-12 flex items-center justify-between\">\n        <CardItem v-bind=\"props.btnLeft\" as=\"a\" href=\"https://rahulv.dev\" target=\"__blank\"\n          class=\"text-default rounded-ui-md px-4 py-2 text-xs font-normal\">\n          访问 →\n        </CardItem>\n        <CardItem v-bind=\"props.btnRight\" as=\"button\"\n          class=\"bg-inverted text-inverted rounded-ui-md px-4 py-2 text-xs font-bold\">\n          立即开始\n        </CardItem>\n      </div>\n    </CardBody>\n  </CardContainer>\n</template>\n",
+      "path": "app/components/reborn/examples/card-3d/CardDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -126,8 +126,7 @@
   },
   "docPath": "content/2.components/cards/3d-card.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "640d650a0d35f7dba832b5159102f3ae1a2b604c",
+    "contentHash": "692859093aaf49e461fe58c01800642421b554b8",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

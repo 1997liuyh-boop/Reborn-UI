@@ -1,6 +1,9 @@
 # 知识库与 registry 一致性校验
-# 功能：PR 与分支推送时校验知识库无 drift、registry 生成物与源码一致，
-#       防止「改了组件源码/文档却忘跑 kb:build / registry:build」的脏提交进入主干
+# 功能：PR 与分支推送时校验知识库无 drift，并确认 registry 能从源码干净重建，
+#       防止「改了组件源码/文档却忘跑 kb:build」的脏提交进入主干
+#
+# 注意步骤顺序不可颠倒：registry 已不入库（见 .gitignore），
+# 而知识库的依赖信息来自 registry，因此必须先 registry:build 再 kb:check。
 name: kb-and-registry-check
 
 on:
@@ -30,30 +33,34 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: 知识库校验（drift / schema / 集合一致性 / 手改检测）
-        run: pnpm kb:check
+      - name: registry 重建（产物不入库，此处即发布链路的预演）
+        run: pnpm registry:build
 
-      - name: registry 幂等校验（重建后与提交版本对比，忽略时间戳）
+      - name: registry 产物自检（两处一致 + 知识库元数据确实注入）
         run: |
-          pnpm registry:build
           node -e "
             const fs = require('fs');
-            const { execSync } = require('child_process');
-            // generatedAt 每次构建必变，对比前统一抹平
-            const normalize = (s) => {
-              const j = JSON.parse(s);
-              j.generatedAt = '';
-              return JSON.stringify(j);
-            };
-            const read = (p) => normalize(fs.readFileSync(p, 'utf8'));
-            const readHead = (p) => normalize(execSync('git show HEAD:' + p, { maxBuffer: 64 * 1024 * 1024 }).toString());
+            const normalize = (s) => { const j = JSON.parse(s); j.generatedAt = ''; return JSON.stringify(j); };
             const paths = ['packages/cli/registry/registry.json', 'packages/module/registry/registry.json'];
-            // 校验一：两处 registry 内容一致
-            if (read(paths[0]) !== read(paths[1])) { console.error('两处 registry 内容不一致'); process.exit(1); }
-            // 校验二：重建结果与提交版本一致（不一致 = 提交时忘跑 registry:build）
-            for (const p of paths) {
-              if (read(p) !== readHead(p)) { console.error('registry 与源码脱节，请运行 pnpm registry:build 后重新提交: ' + p); process.exit(1); }
+
+            // 校验一：两处 registry 内容一致（module 包靠 --also-out 产出，不能与 CLI 侧脱节）
+            if (normalize(fs.readFileSync(paths[0], 'utf8')) !== normalize(fs.readFileSync(paths[1], 'utf8'))) {
+              console.error('两处 registry 内容不一致'); process.exit(1);
             }
+
+            // 校验二：title/description 必须来自 knowledge/index.json
+            // registry:build 带 --strict-kb，索引缺失会直接失败；这里再兜一层，
+            // 防止索引存在但组件 id 对不上导致发出一份没有标题描述的 registry
+            const reg = JSON.parse(fs.readFileSync(paths[0], 'utf8'));
+            const items = reg.components || [];
+            if (items.length === 0) { console.error('registry 为空'); process.exit(1); }
+            const naked = items.filter((c) => !c.title || !c.description).map((c) => c.name);
+            if (naked.length > 0) {
+              console.error('以下组件缺少知识库元数据（title/description）：' + naked.join(', '));
+              process.exit(1);
+            }
+            console.log('registry 自检通过：' + items.length + ' 个组件，元数据齐全');
           "
-          # 校验三：逐组件 JSON（不含时间戳字段）重建后必须无任何差异
-          git diff --exit-code --stat -- packages/cli/registry/components packages/module/registry/components
+
+      - name: 知识库校验（drift / schema / 集合一致性 / 手改检测）
+        run: pnpm kb:check

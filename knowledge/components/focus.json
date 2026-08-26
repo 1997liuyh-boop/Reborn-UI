@@ -62,19 +62,19 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <Focus\n    sentence=\"Focus is the key\"\n    :manual-mode=\"false\"\n    :blur-amount=\"5\"\n    border-color=\"red\"\n    :animation-duration=\"1\"\n    :pause-between-animations=\"0.5\"\n  />\n</template>\n",
+      "path": "app/components/reborn/examples/focus/FocusAutoDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"relative flex h-96 w-full flex-col items-center justify-center gap-24 overflow-clip\">\n    <FocusAutoDemo />\n    <FocusManualDemo />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/focus/FocusDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\n  <Focus\n    sentence=\"Focus Manually\"\n    manual-mode\n    :blur-amount=\"5\"\n    border-color=\"blue\"\n    :animation-duration=\"2\"\n    :pause-between-animations=\"1\"\n  />\n</template>\n",
+      "path": "app/components/reborn/examples/focus/FocusManualDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -106,8 +106,7 @@
   },
   "docPath": "content/2.components/text-animations/focus.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "73f15a0cc1c2c286678623098c17a6c08af4b30f",
+    "contentHash": "3725456516b67c566d5c2fd6ee8661d97f83cdd9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -47,7 +47,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <ClientOnly>\n    <div class=\"flex h-auto flex-col items-center justify-center gap-4 max-lg:w-full md:flex-1\">\n      <span class=\"text-xl font-medium\">Hover below to reveal</span>\n      <TextHoverEffect class=\"w-[90%] lg:min-h-64\" text=\"reborn\" />\n    </div>\n  </ClientOnly>\n</template>\n",
+      "path": "app/components/reborn/examples/text-hover-effect/TextHoverEffectDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -80,8 +80,7 @@
   },
   "docPath": "content/2.components/text-animations/text-hover-effect.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "ed21593b7b343adbf72c68b54b98bb4cf652a701",
+    "contentHash": "833a68cc835f93d65695df27f68229a6513f39d1",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

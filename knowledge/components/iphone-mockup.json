@@ -42,7 +42,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<!-- eslint-disable check-file/filename-naming-convention -->\n<template>\n    <div class=\"relative flex w-full flex-col items-center justify-center p-8\">\n        <iPhone15ProMockup src=\"/\" class=\"size-full max-w-sm\" />\n    </div>\n</template>\n",
+      "path": "app/components/reborn/examples/iphone-mockup/iPhone15ProMockupDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -72,8 +72,7 @@
   },
   "docPath": "content/2.components/device-mocks/iphone-mockup.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "a8c302451c899e42b07503f8e3a23df62c8742d3",
+    "contentHash": "ce196ccbb21fd88c5444098e9151c8747c5f5d18",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

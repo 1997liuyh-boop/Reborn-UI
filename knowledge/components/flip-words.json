@@ -49,7 +49,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex h-[40rem] items-center justify-center px-4\">\n    <div class=\"mx-auto text-4xl font-normal text-neutral-600 dark:text-neutral-400\">\n      Vuejs: The\n      <FlipWords\n        :words=\"['Progressive', 'Approachable', 'Performant', 'Versatile']\"\n        :duration=\"3000\"\n        class=\"!text-primary text-4xl\"\n      />\n      <div>\n        JavaScript Framework for building <br />\n        Modern Web Apps\n      </div>\n    </div>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/flip-words/FlipWordsDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -80,8 +80,7 @@
   },
   "docPath": "content/2.components/text-animations/flip-words.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "f07c60d8dbb01f63a1fac1cd02e5b241a99abe4c",
+    "contentHash": "115069ddb91d4b26635146ef09cbc1dfa2f837bc",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

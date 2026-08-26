@@ -260,10 +260,10 @@ export function buildComponent(id: string): {
     enrichWithDocs({ props, events, slots }, docsResult, drifts);
   }
 
-  // 演示代码 → examples
+  // 演示代码 → examples（只存路径引用，不内联源码，避免改 demo 就重写整份 JSON）
   const examples: ExampleInfo[] = findDemoFiles(id).map((d) => ({
     title: `${d.platform === "web" ? "Web" : "UniApp"} 演示`,
-    code: readTextFile(d.absPath),
+    path: d.relPath,
     source: "demo" as const,
     platform: d.platform,
   }));
@@ -328,7 +328,6 @@ export function buildComponent(id: string): {
     },
     docPath: doc ? doc.relPath : null,
     _meta: {
-      generatedAt: "",
       contentHash: "",
       hasOverride: false,
       extractors: {

@@ -46,7 +46,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex items-center justify-center p-8\">\n    <span class=\"text-primary text-lg\">\n      See the scroll island in action on the top of this page\n    </span>\n    <ScrollIsland title=\"Scroll Island\">\n      <div class=\"my-3 flex flex-col gap-2\">\n        <a href=\"#install-using-cli\"># Install using CLI</a>\n        <a href=\"#install-manually\"># Install Manually</a>\n        <a href=\"#api\"># API</a>\n        <a href=\"#features\"># Features</a>\n        <a href=\"#credits\"># Credits</a>\n      </div>\n    </ScrollIsland>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/scroll-island/ScrollIslandDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -82,8 +82,7 @@
   },
   "docPath": "content/2.components/miscellaneous/scroll-island.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "5634652100b2d82dd2e9374c5cd0628e044312e8",
+    "contentHash": "2281473993241c86b5ef6e7c3c47b18e92eb008a",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

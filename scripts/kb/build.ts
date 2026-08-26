@@ -18,6 +18,26 @@ function writeJson(absPath: string, data: unknown) {
   fs.writeFileSync(absPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
+/**
+ * 写入带时间戳的聚合文件（index.json / report.json）
+ * 除 generatedAt 外内容没变时保持原文件不动，避免每次构建都把这两个文件标记为已修改
+ */
+function writeJsonStable(absPath: string, data: Record<string, unknown>) {
+  const withoutTime = (o: Record<string, unknown>) => {
+    const { generatedAt: _generatedAt, ...rest } = o;
+    return JSON.stringify(rest);
+  };
+  if (fs.existsSync(absPath)) {
+    try {
+      const prev = JSON.parse(fs.readFileSync(absPath, "utf8"));
+      if (withoutTime(prev) === withoutTime(data)) return;
+    } catch {
+      // 旧文件损坏则直接覆盖
+    }
+  }
+  writeJson(absPath, data);
+}
+
 function parseArgs() {
   const onlyIdx = process.argv.indexOf("--only");
   const only = onlyIdx >= 0 ? (process.argv[onlyIdx + 1] ?? "").split(",").filter(Boolean) : null;
@@ -56,7 +76,6 @@ async function main() {
 
   for (const id of targetIds) {
     const { component, report } = buildComponent(id);
-    component._meta.generatedAt = now;
 
     // zod 校验，保证产物永远符合 schema
     const check = componentSchema.safeParse(component);
@@ -85,7 +104,7 @@ async function main() {
   // 只有全量构建才重写 index 与报告
   if (!only) {
     const index: KnowledgeIndex = { schemaVersion: 1, generatedAt: now, components: indexEntries };
-    writeJson(path.join(KNOWLEDGE_DIR, "index.json"), index);
+    writeJsonStable(path.join(KNOWLEDGE_DIR, "index.json"), index);
 
     // 覆盖率报告
     const okCount = reports.filter(
@@ -100,7 +119,7 @@ async function main() {
     const withDrifts = reports.filter((r) => r.drifts.length > 0);
     const withWarnings = reports.filter((r) => r.warnings.length > 0);
 
-    writeJson(path.join(KNOWLEDGE_DIR, "report.json"), {
+    writeJsonStable(path.join(KNOWLEDGE_DIR, "report.json"), {
       generatedAt: now,
       total: reports.length,
       extractCleanRate: `${((okCount / Math.max(reports.length, 1)) * 100).toFixed(1)}%`,

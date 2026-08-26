@@ -143,13 +143,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\n/** 吸顶演示需要一段可滚动内容，列表本身无背景，靠分隔线区分条目 */\nconst listA = Array.from({ length: 8 }, (_, i) => i + 1);\nconst listB = Array.from({ length: 8 }, (_, i) => i + 1);\nconst listC = Array.from({ length: 16 }, (_, i) => i + 1);\n</script>\n\n<template>\n  <div class=\"flex w-full min-w-0 flex-col\">\n    <DemoSection\n      title=\"基础用法\"\n      description=\"与 CSS position: sticky 一致：组件到达预设的顶部距离后固定。下方三条吸顶条分别使用 offset 0 / 40 / 80，可叠加。\"\n    >\n      <DemoBlock\n        layout=\"stack\"\n        tone=\"inset\"\n      >\n        <RebornSticky>\n          <div class=\"bg-primary rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white\">\n            默认吸顶 · offset 0\n          </div>\n        </RebornSticky>\n\n        <div\n          v-for=\"item in listA\"\n          :key=\"`a-${item}`\"\n          class=\"border-default border-b py-3 last:border-b-0\"\n        >\n          <span class=\"text-muted text-sm\">条目 A · {{ item }}</span>\n        </div>\n\n        <RebornSticky :offset-top=\"40\">\n          <div class=\"bg-warning rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white\">\n            吸顶 · offset 40px\n          </div>\n        </RebornSticky>\n\n        <div\n          v-for=\"item in listB\"\n          :key=\"`b-${item}`\"\n          class=\"border-default border-b py-3 last:border-b-0\"\n        >\n          <span class=\"text-muted text-sm\">条目 B · {{ item }}</span>\n        </div>\n\n        <RebornSticky :offset-top=\"80\">\n          <div class=\"bg-success rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white\">\n            吸顶 · offset 80px\n          </div>\n        </RebornSticky>\n\n        <div\n          v-for=\"item in listC\"\n          :key=\"`c-${item}`\"\n          class=\"border-default border-b py-3 last:border-b-0\"\n        >\n          <span class=\"text-muted text-sm\">条目 C · {{ item }}</span>\n        </div>\n      </DemoBlock>\n    </DemoSection>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-sticky/RebornStickyDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "UniApp 演示",
-      "code": "<script setup lang=\"ts\">\nimport type { backTopColors, backTopSizes } from '@/components/reborn-back-top/reborn-back-top.config'\nimport RebornBackTop from '@/components/reborn-back-top/RebornBackTop.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\nimport RebornSticky from '@/components/reborn-sticky/RebornSticky.vue'\n\nconst items = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`)\nconst scrollTop = ref(0)\n\nconst color = ref<typeof backTopColors[number]>('primary')\nconst size = ref<typeof backTopSizes[number]>('md')\n\nonPageScroll((e) => {\n  scrollTop.value = e.scrollTop\n})\n</script>\n\n<template>\n  <RebornPage title=\"Sticky 吸顶\"\n    description=\"该组件与CSS中position: sticky属性实现的效果一致，当组件达到预设的到顶部距离时， 就会固定在指定位置，组件位置大于预设的顶部距离时，会重新按照正常的布局排列。\"\n    custom-class=\"space-y-2\">\n    <RebornSticky :scroll-top=\"scrollTop\">\n      <view class=\"rounded flex h-[40px] flex-row items-center bg-primary p-3 text-white\">\n        Header - 1\n      </view>\n    </RebornSticky>\n\n    <view v-for=\"(item, index) in items\" :key=\"item\" class=\"\n        rounded bg-white p-3 shadow\n        dark:bg-gray-800 dark:text-white mb-2\n      \" :class=\"[index == 0 ? 'mt-2' : '']\">\n      {{ item }}\n    </view>\n\n    <RebornSticky :scroll-top=\"scrollTop\" :offset-top=\"40\">\n      <view class=\"rounded flex h-[40px] flex-row items-center bg-warning p-3 text-white\">\n        Header - 2\n      </view>\n    </RebornSticky>\n\n    <view v-for=\"(item, index) in items\" :key=\"item\" class=\"\n        rounded bg-white p-3 shadow\n        dark:bg-gray-800 dark:text-white mb-2 \n      \" :class=\"[index == 0 ? 'mt-2' : '']\">\n      {{ item }}\n    </view>\n\n    <RebornSticky :scroll-top=\"scrollTop\" :offset-top=\"80\">\n      <view class=\"rounded flex h-[40px] flex-row items-center bg-success p-3 text-white\">\n        Header - 3\n      </view>\n    </RebornSticky>\n\n    <view v-for=\"(item, index) in items\" :key=\"item\" class=\"\n        rounded bg-white p-3 shadow\n        dark:bg-gray-800 dark:text-white mb-2 \n      \" :class=\"[index == 0 ? 'mt-2' : '']\">\n      {{ item }}\n    </view>\n\n    <!-- 基础用法 -->\n    <RebornBackTop :color=\"color\" :size=\"size\" :scroll-top=\"scrollTop\" />\n  </RebornPage>\n</template>\n",
+      "path": "packages/uniapp-project/src/pages/reborn-sticky/RebornStickyDemo.vue",
       "source": "demo",
       "platform": "uniapp"
     }
@@ -189,8 +189,7 @@
   },
   "docPath": "content/2.components/navigation/reborn-sticky.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "a9bdc91a199b68b50d84f1a7fa1981b275b0578c",
+    "contentHash": "e1a8f3012eda253dba99d99b0020a33d28186fc7",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

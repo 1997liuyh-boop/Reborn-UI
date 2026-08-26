@@ -92,13 +92,13 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\n/**\n * 可拖拽浮动按钮演示\n *\n * RebornAffix 自身是 fixed 定位的浮层，脱离文档流悬浮在视口上，\n * 因此这里不给它套任何容器，只用描边标出「原本会占位的区域」。\n */\n\n/** 记录最近一次拖拽结束后的落点，替代 console 输出 */\nconst lastAction = ref(\"暂无\");\n\nfunction handleDrag() {\n  lastAction.value = \"拖拽结束，已自动吸附到最近的一侧边缘\";\n}\n</script>\n\n<template>\n  <div class=\"flex w-full min-w-0 flex-col\">\n    <DemoSection\n      title=\"基础用法\"\n      description=\"按住浮动按钮拖动即可移动（同时支持鼠标与触摸）；松手后默认吸附到距离最近的左右边缘，可通过 no-snapping 关闭吸附。\"\n    >\n      <DemoBlock layout=\"stack\">\n        <div class=\"border-default rounded-ui-md text-dimmed flex h-40 w-full items-center justify-center border border-dashed text-sm\">\n          浮动按钮悬浮于视口之上，不占据此处的文档流空间\n        </div>\n\n        <DemoNote tone=\"dimmed\">\n          最近操作：<code>{{ lastAction }}</code>\n        </DemoNote>\n      </DemoBlock>\n    </DemoSection>\n\n    <!-- 可拖拽：关闭吸附后可停在任意位置 -->\n    <RebornAffix\n      :left=\"100\"\n      :bottom=\"100\"\n      :no-snapping=\"true\"\n      @pointerup=\"handleDrag\"\n    >\n      <div class=\"bg-primary flex size-12 cursor-move items-center justify-center rounded-full text-white transition-transform active:scale-95\">\n        <Icon\n          name=\"lucide:move\"\n          class=\"size-5\"\n        />\n      </div>\n    </RebornAffix>\n\n    <!-- 禁用态：仅展示，不响应拖拽 -->\n    <RebornAffix\n      :right=\"20\"\n      :bottom=\"400\"\n      disabled\n    >\n      <div class=\"bg-elevated text-dimmed flex size-10 cursor-not-allowed items-center justify-center rounded-full\">\n        <Icon\n          name=\"lucide:lock\"\n          class=\"size-5\"\n        />\n      </div>\n    </RebornAffix>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-affix/RebornAffixDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "UniApp 演示",
-      "code": "<script setup lang=\"ts\">\nimport RebornAffix from '@/components/reborn-affix/RebornAffix.vue'\n\nimport RebornCard from '@/components/reborn-card/RebornCard.vue'\nimport RebornPage from '@/components/reborn-page/RebornPage.vue'\nimport { useDarkMode } from '@/composables/useDarkMode'\n\nconst { isDark, toggleDarkMode } = useDarkMode()\n\nconst list = ['i-meteocons-clear-day-fill', 'i-meteocons-solar-eclipse-fill']\n</script>\n\n<template>\n  <RebornPage>\n    <RebornCard>\n      <view class=\"dark:text-white\">\n        禁用状态，无法拖拽\n      </view>\n    </RebornCard>\n\n    <RebornCard>\n      <view class=\"dark:text-white\">\n        不吸附边缘，任意位置可拖拽\n      </view>\n    </RebornCard>\n    <RebornAffix disabled :right=\"20\" :bottom=\"150\" :gap=\"10\">\n      <view class=\"i-meteocons-hurricane-fill size-10\" />\n    </RebornAffix>\n    <RebornAffix :left=\"20\" :bottom=\"150\" :no-snapping=\"true\">\n      <view\n        class=\"\n          bg-primary-500 flex size-10 flex-col items-center justify-center\n          overflow-hidden rounded-full\n        \"\n        @tap=\"toggleDarkMode\"\n      >\n        <view\n          class=\"flex flex-col transition-transform duration-300\"\n          :class=\"isDark ? '-translate-y-[20px]' : `translate-y-[20px]`\"\n        >\n          <view\n            v-for=\"item in list\" :key=\"item\" :class=\"item\" class=\"\n              size-10 text-white\n            \"\n          />\n        </view>\n      </view>\n    </RebornAffix>\n  </RebornPage>\n</template>\n",
+      "path": "packages/uniapp-project/src/pages/reborn-affix/RebornAffixDemo.vue",
       "source": "demo",
       "platform": "uniapp"
     }
@@ -139,8 +139,7 @@
   },
   "docPath": "content/2.components/navigation/reborn-affix.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "afba1d16a53eff933bb2e354dc4da7fecef637e0",
+    "contentHash": "2d3da37734ae64f4860b017b3d46b1509f4479f9",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

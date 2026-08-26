@@ -54,7 +54,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <DemoSection title=\"基础用法\">\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <TextGlitch\n        :speed=\"1\"\n        :enable-shadows=\"true\"\n        text=\"Reborn UI\"\n      />\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/text-glitch/TextGlitchDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -86,8 +86,7 @@
   },
   "docPath": "content/2.components/text-animations/text-glitch.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "3e4281992703ebd6b6aca5dc6e4b66758c73634e",
+    "contentHash": "7da66b738577e954e8ef70e0f51e86f25dd157d5",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

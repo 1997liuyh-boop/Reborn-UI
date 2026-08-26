@@ -33,7 +33,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nimport IconCloud from \"~/components/reborn/ui/icon-cloud/IconCloud.vue\";\n\n/** 取自 Simple Icons 的图标标识，用于拼装 CDN 地址 */\nconst slugs = [\n  \"typescript\",\n  \"javascript\",\n  \"dart\",\n  \"java\",\n  \"react\",\n  \"flutter\",\n  \"android\",\n  \"html5\",\n  \"css3\",\n  \"nodedotjs\",\n  \"express\",\n  \"nextdotjs\",\n  \"prisma\",\n  \"amazonaws\",\n  \"postgresql\",\n  \"firebase\",\n  \"nginx\",\n  \"vercel\",\n  \"testinglibrary\",\n  \"jest\",\n  \"cypress\",\n  \"docker\",\n  \"git\",\n  \"jira\",\n  \"github\",\n  \"gitlab\",\n  \"visualstudiocode\",\n  \"androidstudio\",\n  \"sonarqube\",\n  \"figma\",\n];\n\n/** 组件只接收图片地址数组，图标来源可以自由替换 */\nconst imageUrls = slugs.map((slug) => `https://cdn.simpleicons.org/${slug}/${slug}`);\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"基于 Canvas 的 3D 图标云，适合做技术栈、能力矩阵或品牌集合的轻量展示；点击任意节点会自动旋转到正前方，拖拽画布可手动调整视角。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <IconCloud :images=\"imageUrls\" />\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/icon-cloud/IconCloudDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -65,8 +65,7 @@
   },
   "docPath": "content/2.components/miscellaneous/icon-cloud.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "f65c4f8ea46c50eea7149b207123a333f8fa621d",
+    "contentHash": "0971e43bb2a2b7398fbf7233f4afb28728ad3db7",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -51,7 +51,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex h-56 w-full flex-col items-center justify-center gap-2\">\n    <label\n      for=\"inputDemo\"\n      class=\"ml-4 w-full max-w-sm text-sm font-medium text-gray-700 dark:text-gray-200\"\n      >Hover over below input</label\n    >\n    <IInput\n      id=\"inputDemo\"\n      placeholder=\"Hover over me\"\n      container-class=\"w-full max-w-sm\"\n    />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/input/InputDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -85,8 +85,7 @@
   },
   "docPath": "content/2.components/input-and-forms/input.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "6ead0725348fbc1ca3242372eeeae656c7040b47",
+    "contentHash": "e40ae3445da5ab0144180cd3d9c7436a0030ac39",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

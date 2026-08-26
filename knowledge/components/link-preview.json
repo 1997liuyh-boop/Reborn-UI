@@ -74,7 +74,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex h-[40rem] flex-col items-center justify-center px-4\">\n    <p class=\"mx-auto mb-10 max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\n      <LinkPreview url=\"https://tailwindcss.com\" class=\"font-bold\">\n        Tailwind CSS\n      </LinkPreview>\n      and\n      <LinkPreview url=\"https://motion.unovue.com/\" class=\"font-bold\">\n        motion-v\n      </LinkPreview>\n      are a great way to build modern websites.\n    </p>\n    <p class=\"mx-auto max-w-3xl text-xl text-neutral-500 md:text-3xl dark:text-neutral-400\">\n      Visit\n      <LinkPreview url=\"https://reborn-ui.com\" :width=\"400\" :height=\"200\">\n        <span class=\"bg-gradient-to-br from-purple-500 to-pink-500 bg-clip-text font-bold text-transparent\">\n          Reborn UI\n        </span>\n      </LinkPreview>\n      for more cool components\n    </p>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/link-preview/LinkPreviewDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -105,8 +105,7 @@
   },
   "docPath": "content/2.components/miscellaneous/link-preview.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "25f288f31d994f31ba1ddcd3790b53323a678959",
+    "contentHash": "c461f74d2ca521a26cb2dcafb416002017af4c78",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -87,3 +87,18 @@ public/r
 
 # Playground 补全数据(构建时由 modules/playground-completions.ts 从知识库生成)
 public/playground-completions.json
+
+# ================================
+# 构建产物：registry 与知识库快照（不入库，用时现生成）
+# ================================
+
+# registry 数据由 pnpm registry:build 从组件源码 + knowledge/index.json 生成。
+# 两处内容逐字节相同，入库等于把同一份 4MB JSON 存两遍，
+# 且任何组件改动都会带出上百个 JSON diff，纯噪音。
+# 发布链路：packages/cli 与 packages/module 的 prepack 都会重新生成（--strict-kb 保证元数据不缺）。
+# 注意：knowledge/ 仍然入库（含人工维护的 overrides），只有 registry 移出。
+packages/cli/registry/
+packages/module/registry/
+
+# MCP 包内知识库快照：prepack 时由 kb:snapshot 从仓库根 knowledge/ 生成并内联示例源码
+packages/mcp/knowledge/

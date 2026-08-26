@@ -48,7 +48,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nconst texts = [\n  \"Hello\",\n  \"Morphing\",\n  \"Text\",\n  \"Animation\",\n  \"Vue\",\n  \"Component\",\n  \"Smooth\",\n  \"Transition\",\n  \"Engaging\",\n];\n</script>\n\n<template>\n  <ClientOnly>\n    <MorphingText :texts=\"texts\" />\n  </ClientOnly>\n</template>\n\n<style></style>\n",
+      "path": "app/components/reborn/examples/morphing-text/MorphingTextDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -79,8 +79,7 @@
   },
   "docPath": "content/2.components/text-animations/morphing-text.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "9556b26bbd4e95ab16d1d90404a2a9facb2af903",
+    "contentHash": "edede8df075b57beee47273c5c3a5eedb5333bba",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

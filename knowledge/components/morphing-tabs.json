@@ -60,7 +60,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport { ref } from \"vue\";\n\nconst tabs = [\"Home\", \"Apps\", \"About\", \"My\"];\nconst activeTab = ref(tabs[0]);\n</script>\n\n<template>\n  <MorphingTabs\n    :tabs=\"tabs\"\n    :active-tab=\"activeTab\"\n    @update:active-tab=\"activeTab = $event\"\n  />\n</template>\n",
+      "path": "app/components/reborn/examples/morphing-tabs/MorphingTabsDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -91,8 +91,7 @@
   },
   "docPath": "content/2.components/miscellaneous/morphing-tabs.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "db429a570da272b1cf2b6e37d799523bf9b51fe0",
+    "contentHash": "8cc2fdeaa9708d85108fd6e91d21074bac2645d2",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

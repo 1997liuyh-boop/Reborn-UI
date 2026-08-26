@@ -40,7 +40,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport { rand } from \"@vueuse/core\";\n\nconst testimonials = [\n  {\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\n    quote: \"Reborn UI 比我的星际巡洋舰还顺滑。秒级启动，零崩溃，零重力。\",\n    name: \"Buzz Lightyear\",\n    role: \"星际界面指挥部\",\n  },\n  {\n    img: `https://randomuser.me/api/portraits/women/${getRandomNumber()}.jpg`,\n    quote: \"点来点去像骑着加了涡轮的马。这套组件有劲儿！\",\n    name: \"Jessie\",\n    role: \"牧场体验与互动\",\n  },\n  {\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\n    quote: \"我见过不少磕磕绊绊的界面……这一套？比周二的风滚草还顺。\",\n    name: \"Woody\",\n    role: \"警长\",\n  },\n  {\n    img: `https://randomuser.me/api/portraits/men/${getRandomNumber()}.jpg`,\n    quote: \"我本来很怕。然后我点了一下。什么都没炸。Reborn UI 是安全区，我活下来了。\",\n    name: \"Rex\",\n    role: \"恐龙可用性实验室 · 高级恐慌测试员\",\n  },\n];\n\nfunction getRandomNumber() {\n  return rand(1, 99);\n}\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"评价轮播自己会铺内容；外层只给高度，不再套填充卡片。\"\n  >\n    <div class=\"relative h-[500px] w-full overflow-hidden\">\n      <div class=\"mt-16 flex justify-center px-12\">\n        <TestimonialSlider :testimonials=\"testimonials\" />\n      </div>\n    </div>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/testimonial-slider/TestimonialSliderDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -72,8 +72,7 @@
   },
   "docPath": "content/2.components/miscellaneous/testimonial-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "f3788e8e93350d763ac63ab7b9c99190a521b4ae",
+    "contentHash": "bd6e7bcd7f2ef2db80a9fb96fd38683659005bcb",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

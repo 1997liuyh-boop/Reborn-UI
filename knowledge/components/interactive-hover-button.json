@@ -35,7 +35,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup></script>\n\n<template>\n  <div class=\"flex w-full items-center justify-center p-4\">\n    <InteractiveHoverButton />\n  </div>\n</template>\n\n<style></style>\n",
+      "path": "app/components/reborn/examples/interactive-hover-button/InteractiveHoverButtonDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -67,8 +67,7 @@
   },
   "docPath": "content/2.components/button/interactive-hover-button.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "2ec2928ff62521952638b31b7435f9c18929ba84",
+    "contentHash": "622603c85818e213e434f434bb5233a9ea9be875",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

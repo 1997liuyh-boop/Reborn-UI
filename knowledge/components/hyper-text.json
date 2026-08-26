@@ -48,7 +48,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex flex-col items-center justify-center space-y-4\">\n    <HyperText\n      text=\"Hyper Text\"\n      class=\"text-4xl font-bold\"\n      :duration=\"800\"\n      :animate-on-load=\"true\"\n    />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/hyper-text/HyperTextDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -83,8 +83,7 @@
   },
   "docPath": "content/2.components/text-animations/hyper-text.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "78d5761858aa0a8aa86063ba72a3a78b94010809",
+    "contentHash": "0f14711ef34958eebe670e831208aa4ddc825442",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

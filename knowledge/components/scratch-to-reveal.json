@@ -66,7 +66,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nconst completed = ref(false);\n\nfunction handleComplete() {\n  completed.value = true;\n}\n</script>\n\n<template>\n  <DemoSection\n    title=\"基础用法\"\n    description=\"涂层本身是刮刮卡的主体表面；刮开超过一半面积后触发 complete。\"\n  >\n    <DemoBlock\n      layout=\"stack\"\n      align=\"center\"\n    >\n      <ScratchToReveal\n        :width=\"250\"\n        :height=\"250\"\n        :min-scratch-percentage=\"50\"\n        class=\"border-default bg-elevated mx-auto flex items-center justify-center overflow-hidden rounded-ui-lg border-2\"\n        :gradient-colors=\"['#A97CF8', '#F38CB8', '#FDCC92']\"\n        @complete=\"handleComplete\"\n      >\n        <div class=\"text-8xl\">🥳</div>\n      </ScratchToReveal>\n      <DemoNote\n        v-if=\"completed\"\n        tone=\"dimmed\"\n      >\n        已刮开\n      </DemoNote>\n    </DemoBlock>\n  </DemoSection>\n</template>\n",
+      "path": "app/components/reborn/examples/scratch-to-reveal/ScratchToRevealDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -101,8 +101,7 @@
   },
   "docPath": "content/2.components/special-effects/scratch-to-reveal.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "ac5393155a8da6f6f0aac8e088b44d8ba9a28bcf",
+    "contentHash": "46fa7af8054cb3bb9a3819ed2546d02c354846ce",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

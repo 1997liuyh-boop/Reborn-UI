@@ -65,7 +65,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\n/** 选中结果：key 为属性组的 key，value 为选中项的 valueKey 值（多选时为数组） */\nconst selected = ref<Record<string, any>>({\n  color: \"black\",\n  size: \"M\",\n  services: [],\n});\n\n/** 商品规格配置：颜色 / 尺码为单选，增值服务为多选 */\nconst options = [\n  {\n    title: \"颜色\",\n    key: \"color\",\n    labelKey: \"label\",\n    valueKey: \"value\",\n    children: [\n      { label: \"曜石黑\", value: \"black\" },\n      { label: \"云雾白\", value: \"white\" },\n      { label: \"远峰蓝\", value: \"blue\" },\n    ],\n  },\n  {\n    title: \"尺码\",\n    key: \"size\",\n    labelKey: \"label\",\n    valueKey: \"value\",\n    children: [\n      { label: \"S\", value: \"S\" },\n      { label: \"M\", value: \"M\" },\n      { label: \"L\", value: \"L\" },\n      { label: \"XL\", value: \"XL\" },\n    ],\n  },\n  {\n    title: \"增值服务（可多选）\",\n    key: \"services\",\n    labelKey: \"label\",\n    valueKey: \"value\",\n    multiple: true,\n    children: [\n      { label: \"延保一年\", value: \"warranty\" },\n      { label: \"礼品包装\", value: \"gift\" },\n      { label: \"碎屏险\", value: \"screen\" },\n    ],\n  },\n];\n\n/** 自定义渲染场景：通过 #item 插槽附带展示价格 */\nconst priceSelected = ref<Record<string, any>>({ plan: \"pro\" });\nconst priceOptions = [\n  {\n    title: \"套餐版本\",\n    key: \"plan\",\n    labelKey: \"label\",\n    valueKey: \"value\",\n    children: [\n      { label: \"基础版\", value: \"basic\", price: 199 },\n      { label: \"专业版\", value: \"pro\", price: 399 },\n      { label: \"旗舰版\", value: \"ultra\", price: 699 },\n    ],\n  },\n];\n\n/** 最近一次 change 事件的参数，展示在选中结果下方 */\nconst lastChange = ref(\"\");\n\n/** 单个属性组选中值变化时触发 */\nfunction onChange(key: string, value: any) {\n  lastChange.value = `${key} → ${JSON.stringify(value)}`;\n}\n</script>\n\n<template>\n  <div class=\"flex w-full min-w-0 flex-col\">\n    <DemoSection\n      title=\"商品规格选择\"\n      description=\"单选 + 多选属性组，对象形式 v-model 收集选中结果。\"\n    >\n      <DemoBlock layout=\"stack\">\n        <RebornSku\n          v-model=\"selected\"\n          :options=\"options\"\n          @change=\"onChange\"\n        />\n        <DemoNote tone=\"dimmed\">\n          当前选中：{{ selected }}\n          <template v-if=\"lastChange\"> · 最近变化：{{ lastChange }}</template>\n        </DemoNote>\n      </DemoBlock>\n    </DemoSection>\n\n    <DemoSection\n      title=\"自定义选项渲染\"\n      description=\"#item 插槽拿到 item / option / selected，自行拼装内容。\"\n    >\n      <DemoBlock layout=\"stack\">\n        <RebornSku\n          v-model=\"priceSelected\"\n          :options=\"priceOptions\"\n        >\n          <template #item=\"{ item }\">\n            <span>{{ item.label }}</span>\n            <span class=\"ml-1 text-xs opacity-70\">¥{{ item.price }}</span>\n          </template>\n        </RebornSku>\n      </DemoBlock>\n    </DemoSection>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/reborn-sku/RebornSkuDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -99,8 +99,7 @@
   },
   "docPath": "content/2.components/input-and-forms/reborn-sku.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "dae9b52c3ef27be2b904ea5e7de1b07f11f61fe5",
+    "contentHash": "02f0a4cca9f30a95f50035c96f4cddee0fc4d147",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

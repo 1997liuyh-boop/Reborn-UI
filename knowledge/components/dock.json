@@ -58,7 +58,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <Dock class=\"mb-6\">\n    <DockIcon>\n      <Icon\n        name=\"mdi:github\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n    <DockSeparator />\n    <DockIcon>\n      <Icon\n        name=\"logos:google-drive\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n    <DockIcon>\n      <Icon\n        name=\"logos:notion-icon\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n    <DockIcon>\n      <Icon\n        name=\"logos:whatsapp-icon\"\n        class=\"size-full\"\n      />\n    </DockIcon>\n  </Dock>\n</template>\n",
+      "path": "app/components/reborn/examples/dock/DockDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -94,8 +94,7 @@
   },
   "docPath": "content/2.components/miscellaneous/dock.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "6ffa78cdd3219a19d766d0746012719578bcda77",
+    "contentHash": "ad499d7b3ceb6b476a94ae97658138d1d5513671",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -45,18 +45,32 @@ export const exposeSchema = z.object({
   description: z.string(),
 });
 
-/** 用法示例 */
+/**
+ * 用法示例
+ *
+ * code 与 path 二选一，且分工固定：
+ * - source=demo：仓库内只存 path（演示文件的仓库相对路径），不内联源码。
+ *   内联会让「改一个 demo」重写整份知识库 JSON，是历史上最大的 diff 噪音源。
+ *   完整代码由消费端按需取：MCP 发布时 kb:snapshot 把 code 灌进包内快照，
+ *   monorepo 内开发时 MCP 运行时按 path 直接读仓库源码。
+ * - source=manual：人工在 overrides 里手写 code，没有对应源文件，因此不带 path。
+ */
 export const exampleSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
-  code: z.string(),
+  code: z.string().optional(), // 示例源码；demo 示例在仓库内为空，由消费端按 path 解析
+  path: z.string().optional(), // 演示文件的仓库相对路径（POSIX 分隔符），仅 demo 示例有
   source: z.enum(["demo", "manual"]), // demo=从演示页抽取；manual=人工在 overrides 中编写
   platform: z.enum(["web", "uniapp"]).optional(),
 });
 
-/** 生成元信息（不参与内容哈希） */
+/**
+ * 生成元信息（不参与内容哈希）
+ *
+ * 刻意不含 generatedAt：该字段每次构建必变，而 contentHash 本就不覆盖它，
+ * 结果是「内容没变但 145 个文件全是 diff」。总构建时间见 index.json / report.json。
+ */
 export const metaSchema = z.object({
-  generatedAt: z.string(),
   contentHash: z.string(), // 除 _meta/$schema 外全部字段的 sha1，用于 drift 检测
   hasOverride: z.boolean(),
   extractors: z.object({

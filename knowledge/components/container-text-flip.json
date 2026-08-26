@@ -53,19 +53,19 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex w-full items-center justify-center\">\n    <ContainerTextFlip />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/container-text-flip/ContainerTextFlipDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport { Motion } from \"motion-v\";\n</script>\n\n<template>\n  <div class=\"flex w-full items-center justify-center\">\n    <Motion\n      as=\"h1\"\n      :initial=\"{\n        opacity: 0,\n      }\"\n      :while-in-view=\"{\n        opacity: 1,\n      }\"\n      class=\"relative mb-6 max-w-2xl text-left text-4xl leading-normal font-bold tracking-tight text-zinc-700 md:text-7xl dark:text-zinc-100\"\n      layout\n    >\n      <div class=\"inline-block\">\n        Make your websites look 10x\n        <ContainerTextFlip :words=\"['better', 'modern', 'beautiful', 'awesome']\" />\n      </div>\n    </Motion>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/container-text-flip/ContainerTextFlipHeroDemo.vue",
       "source": "demo",
       "platform": "web"
     },
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"flex w-full items-center justify-center\">\n    <ContainerTextFlip :words=\"['better', 'modern', 'Tyler Durden', 'awesome']\" />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/container-text-flip/ContainerTextFlipStandardDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -99,8 +99,7 @@
   },
   "docPath": "content/2.components/text-animations/container-text-flip.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "00bb035083fded9c77cff0150b1798539a97a4b9",
+    "contentHash": "18f10442ae8ce350cc0bf72a58c5341627bf3b1f",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

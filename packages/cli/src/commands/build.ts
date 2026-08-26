@@ -74,6 +74,11 @@ export function buildCommand() {
       "知识库索引文件路径（相对 root），用于注入 title/description/category/tags",
       "knowledge/index.json",
     )
+    .option(
+      "--strict-kb",
+      "知识库索引缺失或损坏时直接失败（发布与 CI 必开，防止发出没有标题描述的 registry）",
+      false,
+    )
     .action(async (opts) => {
       const rootDir = opts.root
         ? path.resolve(opts.root)
@@ -88,7 +93,9 @@ export function buildCommand() {
       );
 
       // 读取知识库索引，按组件 id 注入 title/description/category/tags
-      // 索引不存在时静默降级（如在无 knowledge/ 的环境单独跑 CLI build）
+      // 默认静默降级（在无 knowledge/ 的环境单独跑 CLI build）；
+      // --strict-kb 下缺失或损坏一律失败 —— registry 已不入库，发布时全靠这一步现生成，
+      // 静默降级会让 npm 上出现一份没有标题和描述的 registry，且事后无人察觉。
       type KbIndexEntry = {
         id: string;
         title?: string;
@@ -98,17 +105,28 @@ export function buildCommand() {
       };
       const kbMeta = new Map<string, KbIndexEntry>();
       const kbIndexPath = path.join(rootDir, opts.kbIndex);
-      if (fssync.existsSync(kbIndexPath)) {
+      const kbFail = (reason: string) => {
+        if (opts.strictKb) {
+          // eslint-disable-next-line no-console
+          console.error(`${reason}：${kbIndexPath}\n请先在仓库根运行 pnpm kb:build`);
+          process.exit(1);
+        }
+        // eslint-disable-next-line no-console
+        console.warn(`${reason}，跳过元数据注入：${kbIndexPath}`);
+      };
+
+      if (!fssync.existsSync(kbIndexPath)) {
+        kbFail("知识库索引不存在");
+      } else {
         try {
           const raw = JSON.parse(await fs.readFile(kbIndexPath, "utf8"));
           const entries: KbIndexEntry[] = Array.isArray(raw) ? raw : raw.components;
           for (const e of entries ?? []) {
             if (e?.id) kbMeta.set(e.id, e);
           }
+          if (kbMeta.size === 0) kbFail("知识库索引为空");
         } catch {
-          // 索引损坏不阻塞 registry 生成，仅提示
-          // eslint-disable-next-line no-console
-          console.warn(`知识库索引解析失败，跳过元数据注入：${kbIndexPath}`);
+          kbFail("知识库索引解析失败");
         }
       }
 

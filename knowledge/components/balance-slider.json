@@ -83,7 +83,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script lang=\"ts\" setup>\nimport { useColorMode } from \"@vueuse/core\";\nimport { computed } from \"vue\";\n\nconst isDark = computed(() => useColorMode().value == \"dark\");\nconst rightColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\nconst indicatorColor = computed(() => (isDark.value ? \"#FFFFFF\" : \"#000000\"));\n</script>\n\n<template>\n  <div class=\"w-full p-4\">\n    <BalanceSlider\n      :right-color=\"rightColor\"\n      left-content=\"COFFEE\"\n      right-content=\"MILK\"\n      :indicator-color=\"indicatorColor\"\n    />\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/balance-slider/BalanceSliderDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -115,8 +115,7 @@
   },
   "docPath": "content/2.components/input-and-forms/balance-slider.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "c41e11e7ed733646ee1d4742bcc230f943e33a6c",
+    "contentHash": "dfa85b375003735da9b5e57b42e309934f1d7980",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

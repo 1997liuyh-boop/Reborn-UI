@@ -22,5 +22,39 @@ fs.cpSync(source, target, {
   filter: (src) => !src.includes(`${path.sep}overrides`),
 });
 
-const count = fs.readdirSync(path.join(target, "components")).length;
-console.log(`知识库快照完成：${count} 个组件 → ${target}`);
+// 仓库内的 demo 示例只存 path 不存 code（避免改 demo 就重写整份知识库 JSON），
+// 发布出去的包读不到仓库源码，因此快照时按 path 把源码灌进 code，保证 npx 场景可离线取到完整示例
+const componentsDir = path.join(target, "components");
+let inlined = 0;
+const missing: string[] = [];
+
+for (const file of fs.readdirSync(componentsDir)) {
+  if (!file.endsWith(".json")) continue;
+  const abs = path.join(componentsDir, file);
+  const data = JSON.parse(fs.readFileSync(abs, "utf8"));
+  let changed = false;
+
+  for (const example of data.examples ?? []) {
+    if (example.code || !example.path) continue;
+    const src = path.join(repoRoot, example.path);
+    if (!fs.existsSync(src)) {
+      missing.push(example.path);
+      continue;
+    }
+    example.code = fs.readFileSync(src, "utf8").replace(/\r\n/g, "\n");
+    inlined++;
+    changed = true;
+  }
+
+  // 注意：只改 examples[].code，不重算 _meta.contentHash
+  // contentHash 是仓库内产物与源码的一致性凭据，快照是它的派生物，不参与 kb:check
+  if (changed) fs.writeFileSync(abs, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+}
+
+if (missing.length > 0) {
+  console.error(`以下示例文件不存在，快照缺少源码：\n  ${missing.join("\n  ")}`);
+  process.exit(1);
+}
+
+const count = fs.readdirSync(componentsDir).length;
+console.log(`知识库快照完成：${count} 个组件、内联 ${inlined} 份示例源码 → ${target}`);

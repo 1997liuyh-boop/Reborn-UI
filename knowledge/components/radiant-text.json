@@ -45,7 +45,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <RadiantText\n    class=\"inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-600 hover:duration-300 hover:dark:text-neutral-400\"\n    :duration=\"5\">\n    <span class=\"text-3xl font-bold\">✨ Introducing Reborn UI</span>\n  </RadiantText>\n</template>\n",
+      "path": "app/components/reborn/examples/radiant-text/RadiantTextDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -76,8 +76,7 @@
   },
   "docPath": "content/2.components/text-animations/radiant-text.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "d40f824537f163e07d33cb1c320cb27ddbeef33c",
+    "contentHash": "efe1f81822836f88fe8d6ea95d14a9d09523d8e4",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

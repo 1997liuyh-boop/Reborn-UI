@@ -28,7 +28,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<template>\n  <div class=\"relative z-0 flex h-96 w-full flex-col items-center justify-center\">\n    <HaloSearch />\n\n    <span class=\"text-muted-foreground mt-24 font-light\">\n      Try hovering over component and typing in it.\n    </span>\n  </div>\n</template>\n",
+      "path": "app/components/reborn/examples/halo-search/HaloSearchDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -58,8 +58,7 @@
   },
   "docPath": "content/2.components/input-and-forms/halo-search.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "552d5feace34d5a23ade06be7ca4fa5b19a6b37a",
+    "contentHash": "e661b3b8e03f1ec3e91c2c8f8e4fcf64e6545d23",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

@@ -73,7 +73,7 @@
   "examples": [
     {
       "title": "Web 演示",
-      "code": "<script setup lang=\"ts\">\nconst notifications = [\n  {\n    name: \"Payment received\",\n    description: \"Reborn UI\",\n    time: \"15m ago\",\n    icon: \"💸\",\n    color: \"#00C9A7\",\n  },\n  {\n    name: \"User signed up\",\n    description: \"Reborn UI\",\n    time: \"10m ago\",\n    icon: \"👤\",\n    color: \"#FFB800\",\n  },\n  {\n    name: \"New message\",\n    description: \"Reborn UI\",\n    time: \"5m ago\",\n    icon: \"💬\",\n    color: \"#FF3D71\",\n  },\n  {\n    name: \"New event\",\n    description: \"Reborn UI\",\n    time: \"2m ago\",\n    icon: \"🗞️\",\n    color: \"#1E86FF\",\n  },\n  {\n    name: \"Task completed\",\n    description: \"Reborn UI\",\n    time: \"1m ago\",\n    icon: \"✅\",\n    color: \"#45B26B\",\n  },\n];\n</script>\n\n<template>\n  <ClientOnly>\n    <div class=\"relative flex h-[500px] w-full flex-col overflow-hidden p-6\">\n      <AnimatedList>\n        <template #default>\n          <Notification v-for=\"(item, idx) in notifications\" :key=\"idx\" :name=\"item.name\"\n            :description=\"item.description\" :icon=\"item.icon\" :color=\"item.color\" :time=\"item.time\" />\n        </template>\n      </AnimatedList>\n    </div>\n  </ClientOnly>\n</template>\n",
+      "path": "app/components/reborn/examples/animated-list/AnimatedListDemo.vue",
       "source": "demo",
       "platform": "web"
     }
@@ -108,8 +108,7 @@
   },
   "docPath": "content/2.components/miscellaneous/animated-list.md",
   "_meta": {
-    "generatedAt": "2026-08-25T10:59:50.149Z",
-    "contentHash": "0e2e208c7b3d95bfcc569ab74eae00d02c886419",
+    "contentHash": "513393f9145a699a2878223151793c028eee51dd",
     "hasOverride": true,
     "extractors": {
       "web": "ok",
