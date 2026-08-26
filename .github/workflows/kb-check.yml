@@ -15,6 +15,10 @@ on:
       - main
       - "feature/**"
       - "feature-*"
+      - "refactor/**"
+      - "fix/**"
+  # 分支名不在上列前缀内时，可在 Actions 页面手动指定分支跑一次
+  workflow_dispatch:
 
 jobs:
   check:

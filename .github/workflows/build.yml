@@ -1,11 +1,15 @@
 name: Build and Package
 
-# main 分支的构建与部署由 deploy.yml 负责，此流水线仅为 feature 分支打包产物，避免重复构建
+# main 分支的构建与部署由 deploy.yml 负责，此流水线仅为开发分支打包产物，避免重复构建。
+# 分支名不在下列前缀内时，可在 Actions 页面用 workflow_dispatch 手动指定分支跑一次。
 on:
   push:
     branches:
       - "feature/**"
       - "feature-*"
+      - "refactor/**"
+      - "fix/**"
+  workflow_dispatch:
 
 jobs:
   build:
