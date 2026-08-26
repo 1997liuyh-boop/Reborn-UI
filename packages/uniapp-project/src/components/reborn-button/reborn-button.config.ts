@@ -1,5 +1,5 @@
 export const buttonColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
-export const buttonVariants = ['solid', 'outline', 'soft', 'subtle', 'text'] as const
+export const buttonVariants = ['solid', 'outline', 'soft', 'subtle', 'text', 'round', 'circle'] as const
 
 export const buttonSizes = [
   'xs',
@@ -41,6 +41,41 @@ export default {
         base: 'inline-flex',
       }
     },
+    /**
+     * 七档尺寸：高度用 rpx 随屏宽缩放。
+     * 直角圆角随尺寸取设计令牌：xs/sm → rounded-ui-2xs(4rpx) / default/md → rounded-ui-xs(6rpx) / lg+ → rounded-ui-sm(8rpx)；
+     * round / circle / text 变体在 variant 轴覆盖此圆角（本轴刻意置于 variant 之前，保证后者在 tailwind-merge 中胜出）。
+     */
+    size: {
+      'xs': {
+        base: 'h-button-xs px-3 text-22 gap-1.5 rounded-ui-2xs',
+        loading: 'size-3',
+      },
+      'sm': {
+        base: 'h-button-sm px-3 text-24 gap-1.5 rounded-ui-2xs',
+        loading: 'size-3.5',
+      },
+      'default': {
+        base: 'h-button-md px-4 text-26 gap-1.5 rounded-ui-xs',
+        loading: 'size-4',
+      },
+      'md': {
+        base: 'h-button-md px-4 text-26 gap-1.5 rounded-ui-xs',
+        loading: 'size-4',
+      },
+      'lg': {
+        base: 'h-button-lg px-6 text-28 gap-1.5 rounded-ui-sm',
+        loading: 'size-5',
+      },
+      'xl': {
+        base: 'h-button-xl px-6 text-30 gap-2 rounded-ui-sm',
+        loading: 'size-6',
+      },
+      '2xl': {
+        base: 'h-button-2xl px-6 text-32 gap-2 rounded-ui-sm',
+        loading: 'size-7',
+      },
+    },
     variant: {
       solid: '',
       outline: '',
@@ -48,46 +83,16 @@ export default {
       subtle: '',
       // 文字按钮：无背景/边框，高度跟随文字（见 compoundVariants 覆盖 size 的固定高度）
       text: '',
+      // 胶囊按钮：形状类，着色复合规则与 solid 一致（见 compoundVariants）
+      // 圆角带 ! 强制：size 轴的 rounded-ui-* 是自定义令牌，tailwind-merge 不会将其与
+      // rounded-full 判为冲突组而合并掉，且生成 CSS 顺序靠后，不加 ! 会反向覆盖形状圆角
+      round: '!rounded-full',
+      // 圆形纯图标按钮：宽高相等、内边距归零，着色复合规则与 solid 一致（见 compoundVariants）
+      circle: '!aspect-square !w-auto !p-0 !rounded-full',
     },
     disabled: {
       true: '',
       false: '',
-    },
-    round: {
-      true: {
-        base: '!rounded-full',
-      },
-      false: '',
-    },
-    size: {
-      'xs': {
-        base: 'h-button-xs px-3 text-22 gap-1.5 rounded-[6px]',
-        loading: 'size-3',
-      },
-      'sm': {
-        base: 'h-button-sm px-3 text-24 gap-1.5 rounded-[6px]',
-        loading: 'size-3.5',
-      },
-      'default': {
-        base: 'h-button-md px-4 text-26 gap-1.5 rounded-[8px]',
-        loading: 'size-4',
-      },
-      'md': {
-        base: 'h-button-md px-4 text-26 gap-1.5 rounded-[8px]',
-        loading: 'size-4',
-      },
-      'lg': {
-        base: 'h-button-lg px-6 text-28 gap-1.5 rounded-[10px]',
-        loading: 'size-5',
-      },
-      'xl': {
-        base: 'h-button-xl px-6 text-30 gap-2 rounded-[12px]',
-        loading: 'size-6',
-      },
-      '2xl': {
-        base: 'h-button-2xl px-6 text-32 gap-2 rounded-[14px]',
-        loading: 'size-7',
-      },
     },
     loading: {
       true: 'pointer-events-none opacity-80',
@@ -99,21 +104,15 @@ export default {
       },
       false: '',
     },
-    circle: {
-      true: {
-        base: 'p-0 !rounded-full',
-      },
-      false: '',
-    },
   },
   compoundVariants: [
-    { circle: true, size: 'xs' as (typeof buttonSizes)[number], class: { base: 'w-button-xs' } },
-    { circle: true, size: 'sm' as (typeof buttonSizes)[number], class: { base: 'w-button-sm' } },
-    { circle: true, size: 'md' as (typeof buttonSizes)[number], class: { base: 'w-button-md' } },
-    { circle: true, size: 'default' as (typeof buttonSizes)[number], class: { base: 'w-button-md' } },
-    { circle: true, size: 'lg' as (typeof buttonSizes)[number], class: { base: 'w-button-lg' } },
-    { circle: true, size: 'xl' as (typeof buttonSizes)[number], class: { base: 'w-button-xl' } },
-    { circle: true, size: '2xl' as (typeof buttonSizes)[number], class: { base: 'w-button-2xl' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: 'xs' as (typeof buttonSizes)[number], class: { base: 'w-button-xs' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: 'sm' as (typeof buttonSizes)[number], class: { base: 'w-button-sm' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: 'md' as (typeof buttonSizes)[number], class: { base: 'w-button-md' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: 'default' as (typeof buttonSizes)[number], class: { base: 'w-button-md' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: 'lg' as (typeof buttonSizes)[number], class: { base: 'w-button-lg' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: 'xl' as (typeof buttonSizes)[number], class: { base: 'w-button-xl' } },
+    { variant: 'circle' as (typeof buttonVariants)[number], size: '2xl' as (typeof buttonSizes)[number], class: { base: 'w-button-2xl' } },
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'solid' as (typeof buttonVariants)[number],
