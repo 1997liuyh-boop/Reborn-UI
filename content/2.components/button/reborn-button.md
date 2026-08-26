@@ -1,6 +1,6 @@
 ---
 title: 按钮
-description: 双端基础按钮：7 种语义色 × 多变体（Web 7 / UniApp 5），支持尺寸、形状、加载与禁用状态。
+description: 双端基础按钮：7 种语义色 × 7 种变体，支持尺寸、形状、加载与禁用状态。
 category: 按钮
 tags: [css, tailwind, button, uniapp]
 badge: New
@@ -20,9 +20,9 @@ navigation:
 
 Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端同名同构。
 
-它的样式体系由两个正交维度构成：`color` 决定**语义**（这个操作是主要的、危险的还是中性的），`variant` 决定**视觉强度**（这个操作在当前界面里有多突出）。7 种语义色 × 5 种强度变体覆盖了从主行动按钮到轻量文字链接的完整强度梯度，无需为每种场景单独定制样式。
+它的样式体系由两个正交维度构成：`color` 决定**语义**（这个操作是主要的、危险的还是中性的），`variant` 决定**视觉强度与形状**（这个操作在当前界面里有多突出、是直角、胶囊还是圆形）。7 种语义色 × 7 种变体覆盖了从主行动按钮到轻量文字链接、再到胶囊 / 圆形图标按钮的完整梯度，无需为每种场景单独定制样式。
 
-在此之上，形态与状态各有一组 API：**形状**两端分化——Web 端把形状并入 `variant`（额外提供 `round` 胶囊 / `circle` 圆形图标按钮两个取值），UniApp 端保留 `round` / `circle` 布尔 props；`size` 控制尺寸，`loading` / `disabled` 控制状态，`leading` / `trailing` 插槽承载图标。UniApp 端额外完整代理了小程序原生 `button` 的开放能力（获取手机号、客服会话、打开授权设置等），因此同一套 API 可以同时服务 H5 与各端小程序。
+在此之上，形态与状态各有一组 API：**形状**两端都并入 `variant`（额外提供 `round` 胶囊 / `circle` 圆形图标按钮两个取值）；`size` 控制尺寸，`loading` / `disabled` 控制状态，`leading` / `trailing` 插槽承载图标。UniApp 端额外完整代理了小程序原生 `button` 的开放能力（获取手机号、客服会话、打开授权设置等），因此同一套 API 可以同时服务 H5 与各端小程序。
 
 ### 何时使用
 
@@ -63,8 +63,8 @@ Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端�
 | `soft` | 10% 透明度浅色底，无边框 | 并列的多个同级操作 |
 | `subtle` | 浅色底 + 同色描边 | 需要比 `soft` 更明确边界的场景 |
 | `text` | 无背景无边框，高度与内边距归零 | 表格行内操作、辅助链接 |
-| `round` | 胶囊形（`!rounded-full`），着色同 `solid` | 需要胶囊形状的主行动（仅 Web 端） |
-| `circle` | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `solid` | 收起、收藏、关闭等图标操作（仅 Web 端） |
+| `round` | 胶囊形（`!rounded-full`），着色同 `solid` | 需要胶囊形状的主行动 |
+| `circle` | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `solid` | 收起、收藏、关闭等图标操作 |
 
 ```vue
 <template>
@@ -105,17 +105,17 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-七档，高度用 `rpx` 随屏宽缩放，水平内边距与圆角同步递进：
+七档，高度用 `rpx` 随屏宽缩放；非形状变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
 
 | `size` | 高度 | 水平内边距 | 字号 | 直角圆角 |
 | --- | --- | --- | --- | --- |
-| `xs` | 48rpx | 12rpx | 22rpx | 6px |
-| `sm` | 56rpx | 12rpx | 24rpx | 6px |
-| `default` | 64rpx | 16rpx | 26rpx | 8px |
-| `md`（默认） | 64rpx | 16rpx | 26rpx | 8px |
-| `lg` | 76rpx | 24rpx | 28rpx | 10px |
-| `xl` | 86rpx | 24rpx | 30rpx | 12px |
-| `2xl` | 96rpx | 24rpx | 32rpx | 14px |
+| `xs` | 48rpx | 12rpx | 22rpx | 4rpx（`--radius-ui-2xs`） |
+| `sm` | 56rpx | 12rpx | 24rpx | 4rpx（`--radius-ui-2xs`） |
+| `default` | 64rpx | 16rpx | 26rpx | 6rpx（`--radius-ui-xs`） |
+| `md`（默认） | 64rpx | 16rpx | 26rpx | 6rpx（`--radius-ui-xs`） |
+| `lg` | 76rpx | 24rpx | 28rpx | 8rpx（`--radius-ui-sm`） |
+| `xl` | 86rpx | 24rpx | 30rpx | 8rpx（`--radius-ui-sm`） |
+| `2xl` | 96rpx | 24rpx | 32rpx | 8rpx（`--radius-ui-sm`） |
 
 `default` 与 `md` 完全等价，前者保留用于对齐旧代码。
 :::
@@ -132,18 +132,16 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 ### 形状
 
-两端的形状 API 不同：
+两端都**没有** `round` / `circle` 布尔 props，形状并入 `variant`：
+
+- `variant="round"`：胶囊形（`!rounded-full`），着色规则同 `solid`。
+- `variant="circle"`：圆形纯图标按钮，宽高相等、内边距归零，着色规则同 `solid`。Web 端额外用 `has-[>svg]:!p-0` 约束直接子级 svg 的内边距。
+- 形状圆角带 `!` 是刻意的：`size` 轴的 `rounded-ui-*` 是自定义令牌类，`tailwind-merge` 不会把它与 `rounded-full` 判为冲突而合并，且其生成 CSS 顺序靠后，不加强制覆盖会反向吃掉形状圆角。
+- 其余变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随 `size` 取设计令牌（Web 4 / 6 / 8px，UniApp 4 / 6 / 8rpx）；`text` 无背景、不施加圆角。需要自定义圆角时直接用 `class`（Web）或 `customClass`（UniApp）覆盖即可（自定义类名优先级最高）。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-Web 端**没有** `round` / `circle` 布尔 props，形状并入 `variant`：
-
-- `variant="round"`：胶囊形（`!rounded-full`），着色规则同 `solid`。
-- `variant="circle"`：圆形纯图标按钮，通过 `!aspect-square !w-auto !p-0 has-[>svg]:!p-0 !rounded-full` 实现，着色规则同 `solid`。
-- 形状圆角带 `!` 是刻意的：`size` 轴的 `rounded-ui-*` 是自定义令牌类，`tailwind-merge` 不会把它与 `rounded-full` 判为冲突而合并，且其生成 CSS 顺序靠后，不加强制覆盖会反向吃掉形状圆角。
-- 其余变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随 `size` 取设计令牌（4 / 6 / 8px）；`text` 无背景、不施加圆角。需要自定义圆角时直接用 `class` 覆盖即可（自定义类名优先级最高）。
-
 ```vue
 <template>
   <!-- 胶囊按钮 -->
@@ -161,21 +159,17 @@ Web 端**没有** `round` / `circle` 布尔 props，形状并入 `variant`：
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-`round` 默认为 `true`，按钮呈胶囊形（`rounded-full`）。需要直角或自定义圆角时**必须显式传 `:round="false"`**，否则圆角类会被 `rounded-full` 覆盖。
-
-`circle` 渲染正方形纯图标按钮，按 `size` 匹配等宽令牌。
-
 ```vue
 <template>
-  <!-- 默认胶囊 -->
-  <RebornButton>胶囊按钮</RebornButton>
+  <!-- 胶囊按钮 -->
+  <RebornButton variant="round">胶囊按钮</RebornButton>
 
-  <!-- 关掉胶囊才能自定义圆角 -->
-  <RebornButton :round="false" custom-class="rounded-md">直角按钮</RebornButton>
+  <!-- 默认实心按钮：圆角随尺寸令牌；自定义圆角直接用 customClass 覆盖 -->
+  <RebornButton custom-class="rounded-md">自定义圆角</RebornButton>
 
   <!-- 圆形图标按钮 -->
-  <RebornButton circle>
-    <Icon name="lucide:plus" />
+  <RebornButton variant="circle">
+    <view class="i-lucide-plus" />
   </RebornButton>
 </template>
 ```
@@ -337,8 +331,6 @@ function onError(e: any) {
 | `size` | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'` | `'md'` | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。 |
 | `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
-| `round` | `boolean` | `true` | 是否为胶囊形状；自定义圆角时须显式传 `false`。 |
-| `circle` | `boolean` | `false` | 是否为正方形纯图标按钮（内边距归零）。 |
 | `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
 | `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `customClass` | `any` | - | 追加到根节点的自定义类名（对应 Web 端 `class`）。 |
@@ -504,8 +496,8 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 | --- | --- | --- |
 | 自定义类名 | `class` | `customClass` |
 | 尺寸档位 | `sm` / `md` / `lg`（3 档，px） | `xs` ~ `2xl`（7 档，rpx） |
-| 形状 API | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 | `round` / `circle` 布尔 props |
-| 直角圆角 | 随 `size` 取令牌 4 / 6 / 8px | 随 `size` 递进 6 ~ 14px |
+| 形状 API | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 |
+| 直角圆角 | 随 `size` 取令牌 4 / 6 / 8px | 随 `size` 取令牌 4 / 6 / 8rpx |
 | 水平内边距 | 统一 12px | 随 `size` 递进 12 / 16 / 24rpx |
 | 边框线型 | 支持 `borderStyle` | 不支持，固定实线 |
 | 块级布局 | 用 `class` 自行控制 | `block` prop |
