@@ -37,6 +37,14 @@ logs
 .history
 .wrangler
 
+# Agent 工具本地目录（技能统一放 .agents/，以下目录由各类 CLI 工具自动生成，禁止入库）
+.claude/
+.codex/
+.agent/
+.aionrs/
+.playwright-mcp/
+.codebase-memory/
+
 public/r
 
 # ================================
