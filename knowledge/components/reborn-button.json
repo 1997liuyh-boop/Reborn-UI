@@ -39,7 +39,7 @@
     },
     {
       "name": "variant",
-      "type": "'solid' | 'outline' | 'soft' | 'subtle' | 'text'",
+      "type": "'solid' | 'outline' | 'soft' | 'subtle' | 'text' | 'round' | 'circle'",
       "required": false,
       "description": "视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮；Web 端另有 round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）两个形状取值，形状圆角带 ! 以覆盖 size 的 rounded-ui-* 令牌；UniApp 端无此二值、形状用 round/circle 布尔 props。默认 solid",
       "default": "'solid'",
@@ -48,7 +48,9 @@
         "outline",
         "soft",
         "subtle",
-        "text"
+        "text",
+        "round",
+        "circle"
       ]
     },
     {
@@ -225,20 +227,6 @@
       "description": "是否创建直播活动"
     },
     {
-      "name": "round",
-      "type": "boolean",
-      "required": false,
-      "description": "仅 UniApp 端：是否为胶囊形状（rounded-full），默认 true；Web 端无此 prop，胶囊形状用 variant=\"round\" 表达",
-      "default": "true"
-    },
-    {
-      "name": "circle",
-      "type": "boolean",
-      "required": false,
-      "description": "仅 UniApp 端：是否为正方形纯图标按钮（内边距归零），默认 false；Web 端无此 prop，圆形图标按钮用 variant=\"circle\" 表达",
-      "default": "false"
-    },
-    {
       "name": "borderStyle",
       "type": "typeof buttonBorderStyles[number]",
       "required": false,
@@ -409,7 +397,7 @@
   },
   "docPath": "content/2.components/button/reborn-button.md",
   "_meta": {
-    "contentHash": "38c9b0c1c41127317001df60c0fbf48699c464c8",
+    "contentHash": "07d47a27d0e1f6520cd291db55ab15de536aa345",
     "hasOverride": true,
     "extractors": {
       "web": "ok",

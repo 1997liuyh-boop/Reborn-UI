@@ -149,6 +149,80 @@ export default {
       class: 'bg-neutral border-neutral text-white hover:bg-neutral/90',
     },
 
+    // Round Variants：胶囊形状，着色规则与 solid 一致
+    {
+      color: 'primary' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-primary border-primary text-white hover:bg-primary/90',
+    },
+    {
+      color: 'secondary' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-secondary border-secondary text-secondary-foreground hover:bg-secondary/90',
+    },
+    {
+      color: 'success' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-success border-success text-white hover:bg-success/90',
+    },
+    {
+      color: 'info' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-info border-info text-white hover:bg-info/90',
+    },
+    {
+      color: 'warning' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-warning border-warning text-white hover:bg-warning/90',
+    },
+    {
+      color: 'error' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-error border-error text-white hover:bg-error/90',
+    },
+    {
+      color: 'neutral' as (typeof buttonColors)[number],
+      variant: 'round' as (typeof buttonVariants)[number],
+      class: 'bg-neutral border-neutral text-white hover:bg-neutral/90',
+    },
+
+    // Circle Variants：圆形纯图标按钮，着色规则与 solid 一致
+    {
+      color: 'primary' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-primary border-primary text-white hover:bg-primary/90',
+    },
+    {
+      color: 'secondary' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-secondary border-secondary text-secondary-foreground hover:bg-secondary/90',
+    },
+    {
+      color: 'success' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-success border-success text-white hover:bg-success/90',
+    },
+    {
+      color: 'info' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-info border-info text-white hover:bg-info/90',
+    },
+    {
+      color: 'warning' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-warning border-warning text-white hover:bg-warning/90',
+    },
+    {
+      color: 'error' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-error border-error text-white hover:bg-error/90',
+    },
+    {
+      color: 'neutral' as (typeof buttonColors)[number],
+      variant: 'circle' as (typeof buttonVariants)[number],
+      class: 'bg-neutral border-neutral text-white hover:bg-neutral/90',
+    },
+
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'outline' as (typeof buttonVariants)[number],
@@ -271,6 +345,16 @@ export default {
       class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
     },
     {
+      variant: 'round' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
+    },
+    {
+      variant: 'circle' as (typeof buttonVariants)[number],
+      disabled: true,
+      class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
+    },
+    {
       variant: 'outline' as (typeof buttonVariants)[number],
       disabled: true,
       class: '!bg-gray-2 !border-gray-4 !text-gray-6 hover:!bg-gray-2 hover:!border-gray-4',
@@ -287,6 +371,11 @@ export default {
     },
 
     // Text Variants：无背景/边框，高度与水平内边距跟随文字
+    {
+      // text 无背景，不参与尺寸圆角令牌：显式归零，避免继承 size 的 rounded-ui-*
+      variant: 'text' as (typeof buttonVariants)[number],
+      class: 'rounded-none',
+    },
     {
       color: 'primary' as (typeof buttonColors)[number],
       variant: 'text' as (typeof buttonVariants)[number],

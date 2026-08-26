@@ -10,7 +10,7 @@ import RebornLoading from '../reborn-loading/RebornLoading.vue'
 export interface ButtonProps {
   label?: string // 按钮文本内容；提供 default 插槽时被插槽内容覆盖
   color?: typeof buttonColors[number] // 语义色：primary/secondary/success/info/warning/error/neutral，默认 primary
-  variant?: typeof buttonVariants[number] // 视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮，默认 solid
+  variant?: typeof buttonVariants[number] // 视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊/circle 圆形纯图标按钮，默认 solid；颜色由 color 控制
   size?: typeof buttonSizes[number] // 尺寸：xs/sm/default/md/lg/xl/2xl（default 与 md 等高），默认 md
   loading?: boolean // 是否加载中；显示加载动画并禁用点击
   disabled?: boolean // 是否禁用按钮
@@ -37,8 +37,6 @@ export interface ButtonProps {
   publicId?: string // 公众号ID
   phoneNumberNoQuotaToast?: boolean // 手机号获取失败时是否弹出错误提示
   createliveactivity?: boolean // 是否创建直播活动
-  round?: boolean // 是否为胶囊形状
-  circle?: boolean // 是否为圆形
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
@@ -52,8 +50,6 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   hoverStartTime: 20,
   hoverStayTime: 70,
   block: false,
-  round: true,
-  circle: false
 })
 
 // 事件定义
@@ -105,7 +101,8 @@ const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 
 const loadingColor = computed(() => {
-  if (props.variant === 'solid') { return 'white' }
+  // solid / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
+  if (props.variant === 'solid' || props.variant === 'round' || props.variant === 'circle') { return 'white' }
   return props.color
 })
 
@@ -122,7 +119,7 @@ const loadingSize = computed(() => {
   return sizeMap[size.value] || 16
 })
 
-const isIconOnly = computed(() => props.circle)
+const isIconOnly = computed(() => props.variant === 'circle')
 
 const uiOverrides = computed(() => props.ui || {})
 
@@ -135,8 +132,6 @@ const ui = computed(() => {
     loading: props.loading,
     gap: props.gap,
     block: props.block,
-    round: props.round,
-    circle: props.circle
   })
 
   return {

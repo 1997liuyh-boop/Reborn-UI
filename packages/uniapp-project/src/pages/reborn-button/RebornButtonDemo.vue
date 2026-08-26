@@ -77,12 +77,12 @@ function copyContent(text: string) {
           </RebornButton>
 
           <view class="mt-4 flex gap-2">
-            <RebornButton :size="demoSize" :variant="demoVariant" :color="demoColor" :loading="demoLoading"
-              :disabled="demoDisabled" circle>
+            <RebornButton :size="demoSize" variant="circle" :color="demoColor" :loading="demoLoading"
+              :disabled="demoDisabled">
               <view class="i-lucide-plus" />
             </RebornButton>
-            <RebornButton :size="demoSize" variant="outline" :color="demoColor" :loading="demoLoading"
-              :disabled="demoDisabled" circle>
+            <RebornButton :size="demoSize" variant="circle" :color="demoColor" :loading="demoLoading"
+              :disabled="demoDisabled">
               <view class="i-lucide-share-2" />
             </RebornButton>
           </view>
@@ -162,16 +162,16 @@ function copyContent(text: string) {
       </view>
 
       <view class="mt-6 flex flex-wrap items-center gap-4">
-        <RebornButton size="sm" variant="soft" circle :loading="demoLoading">
+        <RebornButton size="sm" variant="circle" :loading="demoLoading">
           <view class="i-lucide-plus" />
         </RebornButton>
-        <RebornButton size="md" variant="soft" circle :loading="demoLoading">
+        <RebornButton size="md" variant="circle" :loading="demoLoading">
           <view class="i-lucide-settings" />
         </RebornButton>
-        <RebornButton size="lg" variant="soft" circle :loading="demoLoading" custom-class="rounded-full">
+        <RebornButton size="lg" variant="circle" :loading="demoLoading">
           <view class="i-lucide-user" />
         </RebornButton>
-        <RebornButton size="xl" color="error" circle :loading="demoLoading" custom-class="rounded-full">
+        <RebornButton size="xl" variant="circle" color="error" :loading="demoLoading">
           <view class="i-lucide-trash-2" />
         </RebornButton>
       </view>
