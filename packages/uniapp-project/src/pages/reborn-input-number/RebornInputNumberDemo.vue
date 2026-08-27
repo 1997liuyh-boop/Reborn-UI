@@ -17,6 +17,22 @@ const currentShape = ref<any>('circle')
 const sizes = ['sm', 'md', 'lg'] as const
 const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const
 const shapes = ['square', 'circle'] as const
+const variants = ['outlined', 'filled', 'borderless', 'underlined'] as const
+const cursors = ['start', 'end', 'all'] as const
+
+const variantValue = ref(3)
+// 按钮位置（左 / 右堆叠）
+const positionValue = ref(5)
+const precisionValue = ref(1.5)
+const focusValue = ref(8)
+
+/** 组件实例引用，用于调用暴露出的 focus(cursor) */
+const focusInputRef = ref<any>(null)
+
+/** 按指定落位方式聚焦输入框 */
+function focusAt(cursor: typeof cursors[number]) {
+  focusInputRef.value?.focus(cursor)
+}
 </script>
 
 <template>
@@ -119,6 +135,122 @@ const shapes = ['square', 'circle'] as const
         <RebornInputNumber v-model="val2" :min="5" :max="20" :step="5" />
       </view>
     </RebornCard>
+
+    <!-- Controls Position -->
+    <RebornCard title="按钮位置" custom-class="space-y-3">
+      <text class="text-sm text-slate-500">
+        controls-position 支持 left / right 上下堆叠，堆叠按钮与输入区之间以分割线隔开（触屏端常显，web 端悬停滑入）。
+      </text>
+      <view class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          右侧堆叠 right
+        </text>
+        <RebornInputNumber v-model="positionValue" controls-position="right" shape="square" />
+      </view>
+      <view class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          左侧堆叠 left
+        </text>
+        <RebornInputNumber v-model="positionValue" controls-position="left" shape="square" />
+      </view>
+    </RebornCard>
+
+    <!-- Variant -->
+    <RebornCard title="形态变体" custom-class="space-y-3">
+      <text class="text-sm text-slate-500">
+        outlined / filled / borderless / underlined，underlined 会强制压平圆角，此时 shape 不生效。
+      </text>
+      <view v-for="v in variants" :key="v" class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          {{ v }}
+        </text>
+        <RebornInputNumber v-model="variantValue" :variant="v" shape="square" color="primary" />
+      </view>
+    </RebornCard>
+
+    <!-- Precision & Prefix / Suffix -->
+    <RebornCard title="精度与前后缀" custom-class="space-y-3">
+      <view class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          precision=2, step=0.5
+        </text>
+        <RebornInputNumber v-model="precisionValue" :precision="2" :step="0.5" :max="10" input-type="digit" />
+      </view>
+      <view class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          prefix / suffix 插槽
+        </text>
+        <RebornInputNumber v-model="precisionValue" :max="10" shape="square">
+          <template #prefix>
+            <text>¥</text>
+          </template>
+          <template #suffix>
+            <text>元</text>
+          </template>
+        </RebornInputNumber>
+      </view>
+    </RebornCard>
+
+    <!-- Keyboard / Wheel / Focus -->
+    <RebornCard title="键盘、滚轮与焦点" custom-class="space-y-3">
+      <text class="text-sm text-slate-500">
+        keyboard 控制 ↑ / ↓ 步进，仅 H5 生效：小程序与 App 的原生输入框不派发 keydown。
+        changeOnWheel 在 uniapp 侧为空实现，仅为与 web 端同名同签名而保留。
+      </text>
+      <view class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          keyboard 关闭
+        </text>
+        <RebornInputNumber v-model="focusValue" :keyboard="false" :max="99" />
+      </view>
+      <view class="flex items-center justify-between">
+        <text
+          class="
+            text-sm text-slate-600
+            dark:text-gray-5
+          "
+        >
+          focus(cursor)
+        </text>
+        <RebornInputNumber ref="focusInputRef" v-model="focusValue" :max="99" shape="square" />
+      </view>
+      <view class="flex flex-wrap gap-2">
+        <ReButton v-for="c in cursors" :key="c" size="xs" variant="outline" color="primary" @tap="focusAt(c)">
+          focus('{{ c }}')
+        </ReButton>
+      </view>
+    </RebornCard>
+
     <!-- Custom Color -->
     <RebornCard title="自定义颜色" custom-class="space-y-3">
       <view class="flex items-center justify-between">
@@ -175,10 +307,11 @@ const shapes = ['square', 'circle'] as const
             divider: 'bg-indigo-100 w-px group-focus-within:bg-indigo-200',
           }"
         >
-          <template #decrease-icon>
+          <!-- 与 web 端对齐的新插槽名 -->
+          <template #minus>
             <view class="i-lucide-arrow-left size-5" />
           </template>
-          <template #increase-icon>
+          <template #plus>
             <view class="i-lucide-arrow-right size-5" />
           </template>
         </RebornInputNumber>
