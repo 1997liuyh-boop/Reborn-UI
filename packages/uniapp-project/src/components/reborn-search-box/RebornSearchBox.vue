@@ -160,10 +160,11 @@ onMounted(() => {
 
 <template>
   <view :class="ui.wrapper()">
+    <!-- RebornInput 已改用 variant / shape 形态体系：SearchBox 自身的 rounded / border 旧属性在此做等价映射 -->
     <RebornInput :model-value="modelValue" :size="props.size" :color="props.color" :disabled="disabled"
-      :rounded="rounded" :clearable="clearable" :border="border" :placeholder="placeholder"
-      :placeholder-class="placeholderClass" :ui="inputUi" :separator="false" @update:model-value="onInput"
-      @focus="onFocus" @blur="onBlur" @confirm="handleSearch">
+      :shape="rounded ? 'circle' : 'square'" :clearable="clearable" :variant="border ? 'outlined' : 'filled'"
+      :placeholder="placeholder" :placeholder-class="placeholderClass" :ui="inputUi" :separator="false"
+      @update:model-value="onInput" @focus="onFocus" @blur="onBlur" @confirm="handleSearch">
       <template #leading>
         <RebornImage src="https://mall.leyifan.cn/static/h5/new_images/index_search_small.png?v=1" width="38"
           height="38" mode="widthFix" />

@@ -108,7 +108,7 @@ const chipText = ref('100+')
         <view class="text-sm text-slate-500">
           Text:
         </view>
-        <RebornInput v-model="chipText" :rounded="false" />
+        <RebornInput v-model="chipText" />
         <view class="ml-auto">
           <view class="rounded border px-3 py-1 text-sm" @tap="showChip = !showChip">
             {{ showChip ? 'Hide' : 'Show' }}
