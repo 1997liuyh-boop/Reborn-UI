@@ -5,6 +5,7 @@
  *   2. 每份 JSON 通过 zod schema 校验
  *   3. 组件集合与源码目录、index.json 三方一致
  *   4. overrides 不引用不存在的组件
+ *   5. 文档写出的 ui 键位与源码实际消费的一致（见 check-ui-keys.ts）
  * 任何一项失败即退出码 1
  *
  * 关于各检查项在两种场景下的实际效力（knowledge/components 已不入库，见 .gitignore）：
@@ -12,11 +13,13 @@
  *     components/ 是同一次运行刚生成的。保留它们是为本地场景：开发者手上留着上次生成的
  *     components/，直接跑 pnpm kb:check 仍能抓到「改了源码/文档却没重跑 kb:build」。
  *   - 检查项 2（schema）、3（集合一致性）、4（overrides 悬空引用）两种场景下均有效。
+ *   - 检查项 5（ui 键位）两种场景下均有效：它比对源码与入库的文档，不涉及生成物。
  *   - 「新增/删除组件却没同步 index.json」由 CI 的 git diff 守卫负责，
  *     见 .github/workflows/kb-check.yml。
  */
 import fs from "node:fs";
 import path from "node:path";
+import { checkUiKeyDrift } from "./check-ui-keys.js";
 import { buildComponent, contentHashOf } from "./merge.js";
 import { componentSchema } from "./schema.js";
 import { KNOWLEDGE_DIR, listComponentIds } from "./sources.js";
@@ -24,8 +27,10 @@ import { KNOWLEDGE_DIR, listComponentIds } from "./sources.js";
 function fail(messages: string[]): never {
   for (const m of messages) console.error(`✗ ${m}`);
   console.error(
-    `\n共 ${messages.length} 个问题。请运行 pnpm kb:bootstrap 重新生成；` +
-      `\ncomponents/ 等生成物不入库，只有 knowledge/overrides/ 与 knowledge/index.json 需要提交。`,
+    `\n共 ${messages.length} 个问题。` +
+      `\n· 同步/schema/集合类问题：运行 pnpm kb:bootstrap 重新生成（components/ 等生成物不入库，` +
+      `只有 knowledge/overrides/ 与 knowledge/index.json 需要提交）。` +
+      `\n· ui 键位类问题：按提示补改对应的 content/ 文档，源码是唯一事实来源。`,
   );
   process.exit(1);
 }
@@ -112,6 +117,9 @@ function main() {
       problems.push("index.json 与 components/ 目录不一致");
     }
   }
+
+  // 5. 文档 ui 键位与源码一致性
+  problems.push(...checkUiKeyDrift());
 
   if (problems.length > 0) fail(problems);
   console.log(`✓ 知识库校验通过（${diskIds.length} 个组件）`);

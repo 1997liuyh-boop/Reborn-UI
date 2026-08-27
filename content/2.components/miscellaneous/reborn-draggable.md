@@ -41,6 +41,24 @@ navigation:
 | :----- | :------------- | :-------------------------------------------------------------------------------------------------------------------- |
 | `item` | 自定义列表项内容 | `{ item: any, index: number, dragging: boolean, dragIndex: number, insertIndex: number }` |
 
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。**该组件仅 UniApp 端支持 `ui`**，Web 端请用 `className` 覆盖根节点。
+
+| 键名   | 平台   | 说明                                                                                                                                       |
+| ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `base` | UniApp | **同时并入根容器与每个列表项**两个节点（内部两个槽位共用这一个键）。根容器默认 `flex flex-col relative overflow-visible`（`columns > 1` 时改为 `flex-row flex-wrap`），列表项默认 `relative z-10`（`disabled` 时叠加 `opacity-60`）。想只改其中一个节点，请分别用 `className` 与 `item` 插槽内的自定义类名。 |
+
+```vue
+<template>
+  <RebornDraggable v-model="list" :ui="{ base: 'gap-2' }">
+    <template #item="{ item }">
+      <view class="rounded bg-white p-3">{{ item.label }}</view>
+    </template>
+  </RebornDraggable>
+</template>
+```
+
 ## 差异说明
 - **Web 端**：
   - 基于 HTML5 原生 `drag` / `drop` 事件实现，具有平滑的重新排序过渡动画。

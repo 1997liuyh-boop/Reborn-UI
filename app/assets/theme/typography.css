@@ -40,14 +40,34 @@
   --height-button-lg: 40px;
 
   /* 输入框高度 (Input) */
-  --height-input-sm: 40px;
-  --height-input-md: 45px;
-  --height-input-lg: 48px;
+  --height-input-sm: 24px;
+  --height-input-md: 32px;
+  --height-input-lg: 40px;
 
   /* 徽章高度 (Badge) */
   --height-badge-sm: 28px;
   --height-badge-md: 32px;
   --height-badge-lg: 38px;
+
+  /* 分页高度 (Pagination) —— 页码 / 翻页按钮 / 省略号共用 */
+  --height-pagination-sm: 24px;
+  --height-pagination-md: 32px;
+  --height-pagination-lg: 40px;
+
+  /* 分页页码最小宽：与高度同值，保证单数字页码为正方形 */
+  --min-width-pagination-sm: var(--height-pagination-sm);
+  --min-width-pagination-md: var(--height-pagination-md);
+  --min-width-pagination-lg: var(--height-pagination-lg);
+
+  /* 分页跳转输入宽：高度的 2 倍，容纳两位页码 */
+  --width-pagination-input-sm: calc(var(--height-pagination-sm) * 2);
+  --width-pagination-input-md: calc(var(--height-pagination-md) * 2);
+  --width-pagination-input-lg: calc(var(--height-pagination-lg) * 2);
+
+  /* 分页跳转输入最小宽：与输入宽同值，避免在 flex 布局中被压缩 */
+  --min-width-pagination-input-sm: var(--width-pagination-input-sm);
+  --min-width-pagination-input-md: var(--width-pagination-input-md);
+  --min-width-pagination-input-lg: var(--width-pagination-input-lg);
 
   /* --- 间距与对齐 (Spacing) --- */
 

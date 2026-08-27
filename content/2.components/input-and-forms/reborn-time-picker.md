@@ -78,17 +78,61 @@ navigation:
 | `dropdown`           | 下拉菜单根容器样式（含定位及阴影）。        |
 | `dropdownInner`      | 下拉菜单内层容器样式。                      |
 
-### `ui`
+### 自定义样式（ui）
 
-覆盖 `RebornTimePicker` 特有部分的样式参数：
+`RebornTimePicker` 上的 `ui` 只作用于**触发器区域与浮层容器**（仅 Web 端）：
 
-| 名称          | 说明                       |
-| ------------- | -------------------------- |
-| `wrapper`     | 外层容器样式。             |
-| `triggerText` | 触发器中的时间文本样式。   |
-| `placeholder` | 触发器中的占位文本样式。   |
-| `dropdown`    | 下拉面板过渡容器样式。     |
-| `rangeText`   | 范围模式下的布局容器样式。 |
-| `separator`   | 范围分隔符样式。           |
+| 键名          | 说明                                                                                                                                                                     |
+| :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`     | 组件最外层容器（`RebornSelectTrigger` 的根节点），默认 `relative inline-flex w-full group outline-none`；改宽度、改成行内块状排布都在这里。                               |
+| `dropdown`    | 弹出浮层的根容器，默认为空，但会叠加 `size`×`isRange` 复合变体给出的最小宽度（单选 `min-w-40/45/52`，范围 `min-w-72/80/88`）；想让面板更宽或加阴影改这里。与 `triggerUi.dropdown` 可同时使用，二者会一起合并。 |
+| `rangeText`   | 范围模式下「开始 ~ 结束」的行容器，默认 `flex items-center gap-2 truncate w-full`。**仅在未填充 default 插槽时渲染**，填充该插槽会替换掉该节点，`ui.rangeText` 随之失效。 |
+| `triggerText` | 触发器中已选时间的文本节点，默认 `truncate text-gray-8 dark:text-gray-1 flex-1`。**仅在未填充 default 插槽时渲染**，填充该插槽会替换掉该节点，`ui.triggerText` 随之失效。 |
+| `placeholder` | 触发器中的占位文本节点，默认 `truncate text-gray-4 dark:text-gray-5 flex-1`。**仅在未填充 default 插槽时渲染**，填充该插槽会替换掉该节点，`ui.placeholder` 随之失效。     |
+| `separator`   | 范围模式下的分隔符节点（文字内容由 `rangeSeparator` 决定），默认 `shrink-0 text-gray-4 dark:text-gray-5`。**仅在未填充 default 插槽时渲染**，填充该插槽会替换掉该节点，`ui.separator` 随之失效。 |
 
-面板内部样式由 `RebornTimePanel` 管理，包含列容器、箭头按钮、选项列表和底部提示等区域，可在源码中继续扩展。
+**面板内部的 `ui` 要写在 `RebornTimePanel` 上**——`RebornTimePicker` 不会把 `ui` 下发给内部弹出的面板。需要调整时/分/秒滚动列的样式时，直接内联使用面板组件：
+
+| 键名             | 说明                                                                                                                                                 |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`        | 面板根节点，默认 `w-full`，另按 `size` 追加内边距（`p-1`）。                                                                                          |
+| `rangeWrapper`   | 范围模式下「开始面板 / 分隔符 / 结束面板」的栅格容器，默认 `grid gap-4 md:grid-cols-[1fr_auto_1fr]`。**仅 `isRange` 为真时渲染。**                     |
+| `rangeSeparator` | 范围模式下两个面板之间的分隔符，默认 `hidden items-center justify-center text-gray-4 md:flex`（窄屏隐藏）。                                            |
+| `section`        | 单个时间面板的纵向分区容器（滚动列 + 底部栏的父级），默认 `space-y-4`。                                                                                |
+| `columns`        | 时/分/秒滚动列的横向容器，默认 `relative flex w-full overflow-hidden` + 按显示的列数生成的 `grid-cols-*`，另按 `size` 追加 `h-45 gap-2`；面板高度改这里。 |
+| `column`         | 单列（如「时」列）容器，默认 `relative flex flex-1 flex-col items-center`。                                                                            |
+| `arrowButton`    | 列上下两端的箭头按钮，默认 `flex w-full shrink-0 cursor-pointer items-center justify-center text-gray-4 hover:text-primary z-20`。**仅 `arrowControl` 为真时渲染。** |
+| `list`           | 列内可滚动的选项列表，默认 `flex-1 flex flex-col items-center w-full overflow-y-auto scrollbar-hide`，另按 `size` 追加上下留白 `py-16`。                |
+| `item`           | 单个时间选项，默认 `flex w-full shrink-0 cursor-pointer items-center justify-center transition-all`，另按 `size` 追加 `h-8 text-sm`；**行高改这里时要同步 `columns` 的高度与 `list` 的 `py`，否则选中项会对不上 `indicator`。** |
+| `itemActive`     | 选中项的附加样式，默认 `font-semibold text-primary scale-110`。**不是独立节点**——选中时被合并进 `item` 所在节点。                                      |
+| `itemDisabled`   | 被 `disabledHours` / `disabledMinutes` / `disabledSeconds` / `disabledMilliseconds` 排除的选项，默认 `cursor-not-allowed opacity-30 grayscale`。同样是合并进 `item`。 |
+| `itemIdle`       | 未选中且可用的选项，默认 `text-gray-4 hover:text-gray-7`。同样是合并进 `item`。                                                                        |
+| `indicator`      | 列中央标示当前选中行的横线框，默认 `absolute left-2 right-2 top-1/2 z-10 -translate-y-1/2 pointer-events-none border-y border-gray-2`。                 |
+| `mask`           | 列上下两端的渐隐遮罩，默认 `absolute inset-0 pointer-events-none z-10 bg-gradient-to-b from-white/80 via-transparent to-white/80`；深色底上需要改这里的渐变色。 |
+| `footer`         | 面板底部操作栏（默认「清空」「确定」两个按钮），默认 `flex items-center justify-end gap-3 border-t border-gray-2 p-2`。填充 `footer` 插槽只替换栏内内容，`ui.footer` 仍生效。 |
+
+```vue
+<template>
+  <!-- 触发器与浮层 -->
+  <RebornTimePicker
+    v-model="time"
+    :ui="{
+      wrapper: 'w-60',
+      dropdown: 'min-w-60 shadow-lg',
+      triggerText: 'font-mono text-primary',
+    }"
+  />
+
+  <!-- 面板（内联使用时才能改面板样式） -->
+  <RebornTimePanel
+    v-model="time"
+    :ui="{
+      columns: 'h-60',
+      item: 'h-10 text-base',
+      list: 'py-25',
+      itemActive: 'font-bold text-error scale-100',
+      indicator: 'border-primary',
+    }"
+  />
+</template>
+```

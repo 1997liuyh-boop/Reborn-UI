@@ -1,18 +1,21 @@
 {
-  "description": "用于大数据量列表分页切换的双端分页组件，提供多页码与简洁两种模式。",
+  "description": "用于数据列表分页切换的分页组件，支持布局组合、简洁模式、页码折叠与完整插槽定制。",
   "whenToUse": [
     "表格、列表数据量大需要按页浏览时。",
-    "移动端需要简洁的上一页/下一页翻页（mode=\"simple\"）时。",
+    "需要自定义翻页控件布局（layout 组合 total/jumper/sizes）时。",
+    "移动端或窄屏需要简洁的上一页/下一页翻页（simple）时。",
     "只有一页时希望自动隐藏分页器（hideOnSinglePage）时。"
   ],
   "whenNotToUse": [
-    "uniapp 滚动触底加载更多改用 reborn-loadmore。",
+    "滚动触底加载更多改用 reborn-loadmore。",
     "内容按类别切换改用 reborn-tabs。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用，但 size 属性仅 web 端支持。",
-    "v-model 绑定当前页码（默认 1），需配合 total 与 pageSize 计算页数。",
-    "page 插槽仅在 multi 模式下可用，simple 模式用 simpleContent 插槽。",
-    "组件暴露 prev/next 方法可命令式翻页。"
+    "pagerCount 必须为不小于 5 的奇数，非法值会被钳制到最近的奇数。",
+    "color 控制激活页码与悬停高亮，取值 primary / secondary / success / info / warning / error / neutral；jumper 与 sizes 的聚焦色会跟随当前主题色。",
+    "total 为 0 时按 1 页显示且翻页按钮禁用，配合 hideOnSinglePage 可整组件隐藏。",
+    "layout 使用逗号分隔的 token（prev/pager/next/jumper/total/sizes），未知 token 会被忽略。",
+    "current-change 仅在页码实际变化时触发；size-change 触发后会先钳制当前页再判断是否补发 current-change。",
+    "pager 中省略号不是 pager-item，点击省略号会向对应方向跳 pagerCount - 2 页。"
   ]
 }

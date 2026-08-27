@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-25T10:59:50.149Z",
+  "generatedAt": "2026-08-27T05:43:34.221Z",
   "components": [
     {
       "id": "animate-grid",
@@ -744,7 +744,7 @@
     {
       "id": "reborn-breadcrumb",
       "title": "面包屑",
-      "description": "用于展示当前页面层级路径并可逐级返回的面包屑导航组件，双端可用。",
+      "description": "用于展示当前页面层级路径并可逐级返回的面包屑导航组件，支持手写条目与 routes 数据驱动两种用法，双端可用。",
       "category": "navigation",
       "tags": [
         "navigation",
@@ -986,6 +986,17 @@
       ]
     },
     {
+      "id": "reborn-field-trigger",
+      "title": "reborn-field-trigger",
+      "description": "表单类下拉组件共用的触发器盒子内部基础组件，提供输入框式外观（边框、尺寸、占位符、清空按钮、箭头）。",
+      "category": "misc",
+      "tags": [],
+      "platforms": [
+        "web"
+      ],
+      "internal": true
+    },
+    {
       "id": "reborn-fireworks",
       "title": "礼花",
       "description": "用于给容器内元素附加点击礼花/烟花粒子特效的组件，仅 web 端。",
@@ -1083,7 +1094,7 @@
     {
       "id": "reborn-input-number",
       "title": "数字输入框",
-      "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件。",
+      "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件，支持四种形态变体、精度控制、步进倍数约束、键盘与滚轮增减、前后缀插槽与自定义增减图标。",
       "category": "form",
       "tags": [
         "css",
@@ -1111,6 +1122,22 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-layout",
+      "title": "布局容器 Layout",
+      "description": "由顶栏、侧边栏、主区域、底栏拼装后台页面骨架的 flex 布局容器，排列方向可自动推断。",
+      "category": "layout",
+      "tags": [
+        "css",
+        "tailwind",
+        "layout",
+        "container",
+        "flex"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {
@@ -1207,7 +1234,7 @@
     {
       "id": "reborn-pagination",
       "title": "分页",
-      "description": "用于大数据量列表分页切换的双端分页组件，提供多页码与简洁两种模式。",
+      "description": "用于数据列表分页切换的分页组件，支持布局组合、简洁模式、页码折叠与完整插槽定制。",
       "category": "navigation",
       "tags": [],
       "platforms": [
@@ -1362,7 +1389,7 @@
     {
       "id": "reborn-select-trigger",
       "title": "reborn-select-trigger",
-      "description": "用于各类下拉选择组件复用的触发器与浮层容器内部基础组件。",
+      "description": "用于各类下拉类组件复用的浮层容器内部基础组件，只负责定位、展开收起与外部点击判定。",
       "category": "misc",
       "tags": [],
       "platforms": [

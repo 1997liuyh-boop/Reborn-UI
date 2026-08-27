@@ -161,6 +161,40 @@ const steps: GuideStep[] = [
 | `skipButtonProps`  | `ButtonProps`                      | -          | 步骤级跳过按钮配置                       | N    |
 | `stepOverlayClass` | `string`                           | -          | 覆盖该步骤遮罩/高亮框的类名              | N    |
 
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；键分三组：**popup 模式专属**、**dialog 模式专属**、**两种模式共用**。
+
+| 键名            | 生效模式 | 说明                                                                                                                                                     |
+| --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overlay`       | popup    | 全屏遮罩层。**仅 `showOverlay` 为真时渲染**，默认 `fixed inset-0 z-[--guide-z]`；它本身透明，实际的暗色来自 `highlightMask` 的巨型 `box-shadow`。          |
+| `highlightMask` | popup    | 高亮挖洞框（贴合目标元素）。默认 `absolute rounded-lg transition-all duration-300 pointer-events-none`；圆角与移动过渡改这里。步骤级 `stepOverlayClass` 也会并到该节点。 |
+| `guideBox`      | popup    | 贴靠目标元素的指引框。默认 `fixed z-[--guide-box-z] bg-white rounded-ui-lg shadow-xl border min-w-[260px] max-w-[360px]`，宽度、底色、圆角改这里；`class` prop 也并到该节点。 |
+| `guideArrow`    | popup    | 指引框的箭头。**仅命中目标元素且箭头方向不为 `none` 时渲染**，默认 `absolute w-3 h-3 rotate-45 bg-white border-gray-2`；改底色时要与 `guideBox` 一起改。   |
+| `dialogOverlay` | dialog   | 居中对话框的遮罩兼定位层，默认 `fixed inset-0 z-[--guide-z] bg-gray-900/60 flex items-center justify-center p-4`，遮罩深浅改这里。步骤级 `stepOverlayClass` 也会并到该节点。 |
+| `dialogBox`     | dialog   | 对话框面板，默认 `bg-white rounded-ui-lg shadow-xl w-full max-w-[480px]`，宽度与圆角改这里；`class` prop 也并到该节点。                                    |
+| `guideHeader`   | 共用     | 标题条。**仅该步骤配了 `title` 时渲染**，默认 `flex items-center justify-between px-5 pt-5 pb-2`。                                                         |
+| `guideTitle`    | 共用     | 标题 `<h3>`，默认 `text-base font-semibold text-gray-9`。                                                                                                 |
+| `guideBody`     | 共用     | 正文容器，默认 `px-5 py-2 text-sm text-gray-6 leading-relaxed`；步骤的 `content` 插槽渲染在它内部，容器本身始终生效。                                     |
+| `guideFooter`   | 共用     | 底部条，默认 `flex items-center justify-between px-5 pb-5 pt-3 gap-2`；计数器与按钮组的两端对齐改这里。                                                    |
+| `counter`       | 共用     | 步骤计数文本（如 `2 / 5`），默认 `text-xs text-gray-4`。**仅 `hideCounter` 为假且未填充 `counter` 插槽时渲染**，填充该插槽会替换掉这个节点，`ui.counter` 随之失效。 |
+| `buttonGroup`   | 共用     | 上一步 / 下一步 / 跳过按钮的容器，默认 `flex items-center gap-2`；按钮间距改这里，按钮本身请用 `nextButtonProps` 等步骤级配置。                            |
+
+```vue
+<template>
+  <RebornGuide
+    v-model:current="current"
+    :steps="steps"
+    :ui="{
+      guideBox: 'max-w-[320px] rounded-xl',
+      guideTitle: 'text-sm',
+      dialogOverlay: 'bg-black/70',
+      counter: 'text-gray-5',
+    }"
+  />
+</template>
+```
+
 ## 注意事项
 
 - 仅 web 端可用。

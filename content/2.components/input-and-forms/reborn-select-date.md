@@ -90,16 +90,87 @@ navigation:
 各个内部组件的 UI 样式覆盖参数。
 
 ### `ui`
-| 名称 | 描述 |
-| --- | --- |
-| `wrapper` | 外层容器样式。 |
-| `popupOp` | 弹出层底部操作区样式。 |
-| `rangeBox` | 范围选择模式上方的选项盒样式。 |
-| `rangeValues` | 范围选择模式两个日期显示组的样式。 |
-| `rangeStart` | 范围选择模式开始日期项的样式。 |
-| `rangeEnd` | 范围选择模式结束日期项的样式。 |
-| `shortcuts` | 快捷选择项的区域样式。 |
-| `separator` | 范围模式内部分隔符样式。 |
+
+两端形态不同（Web 是「触发器 + 日历浮层」，UniApp 是「触发器 + 底部弹窗 + 滚动选择器」），**键位完全不同**，不要跨端照抄。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+
+Web 端的 `cal*` 系列键会被转发给内部的 `RebornDatePickerPanel`（`calHeader` → 面板的 `header`，`calDay` → 面板的 `day`，以此类推）；**面板其余键位（年/月网格、日期时间段落等）不对外开放**，需要完整控制时请直接使用 `RebornDatePickerPanel`。
+
+| 名称             | 描述                                                                                                                                                                     |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`        | 组件最外层容器（`RebornSelectTrigger` 的根节点），默认为空；改宽度、加 `block` 之类的布局在这里。                                                                          |
+| `dropdown`       | 日历浮层的根容器，默认 `w-[var(--rb-trigger-width,100%)]`（跟随触发器宽度）；想让浮层比触发器宽就在这里写死宽度。与 `triggerUi.dropdown` 会一起合并。                      |
+| `content`        | 浮层内部包裹日历面板的容器，默认 `w-full`；面板内边距改这里（面板自身的 `wrapper` 已被强制为 `p-0`）。                                                                     |
+| `calHeader`      | 日历顶部导航行，默认 `flex items-center justify-between mb-2`。                                                                                                            |
+| `calNavBtn`      | 日历左右翻页按钮，默认 `p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3`。                               |
+| `calTitle`       | 日历中间的年月标题（点击切换年/月视图），默认 `text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors`。                      |
+| `calWeekdays`    | 星期表头容器，默认 `grid grid-cols-7 gap-0 text-center text-xs text-gray-4 dark:text-gray-5`。                                                                             |
+| `calDays`        | 日期网格容器，默认 `grid grid-cols-7 gap-0.5`；格子间距改这里。                                                                                                            |
+| `calDay`         | 单个日期格，默认 `flex items-center justify-center rounded-md text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7`。 |
+| `calDayActive`   | 选中日期的附加样式，默认由 `color` 变体给出（`primary` 时为 `bg-primary text-white hover:bg-primary/90`）。**不是独立节点**——选中时被合并进 `calDay` 所在节点。             |
+| `calDayToday`    | 今日的标识样式，默认 `font-bold`。同样是合并进 `calDay`。                                                                                                                  |
+| `calDayDisabled` | 超出 `start` / `end` 范围的日期，默认 `text-gray-4 dark:text-gray-5 opacity-40 pointer-events-none`。同样是合并进 `calDay`。                                                |
+
+> 触发器盒子本身（边框、文本、清空按钮、箭头）不在这张表里，改它请用 `triggerUi`，见下一节。
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 名称               | 描述                                                                                                                                                              |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`          | 组件根节点，默认 `w-full`。                                                                                                                                        |
+| `popupOp`          | 弹窗顶部操作区容器，默认 `flex flex-row items-center justify-center gap-2 p-3`。                                                                                    |
+| `rangeBox`         | 范围模式下滚动选择器上方的「起止 + 快捷项」区块，默认 `px-3 pb-5 pt-2`。**仅 `rangeable` 为真时渲染。**                                                              |
+| `shortcuts`        | 快捷选择项的区域容器，默认 `mb-4 flex flex-row flex-wrap items-center gap-2`。**仅传入 `shortcuts` 时渲染。**                                                        |
+| `shortcutItem`     | 单个快捷选择项，默认 `flex cursor-pointer items-center gap-1 rounded-md border border-solid px-2 py-1 text-xs transition-colors`；选中态的描边/文字色由 `color` 变体给出，写在这里的类会叠加在两种状态上。 |
+| `rangeValues`      | 「开始日期 ~ 结束日期」的横向容器，默认 `flex flex-row items-center justify-center`。                                                                                |
+| `rangeStart`       | 开始日期的可点击卡片，默认 `flex-1 rounded-xl border border-solid p-2 text-center transition-colors`；正在编辑时的高亮描边由 `color` 变体给出。                       |
+| `rangeEnd`         | 结束日期的可点击卡片，默认同 `rangeStart`。                                                                                                                         |
+| `rangeValueText`   | 起止卡片内**已有值**时的文字样式（作为 `RebornText` 的 `ui.base` 下发），默认 `text-center block w-full`。                                                            |
+| `rangePlaceholder` | 起止卡片内**尚无值**时的占位文字样式，默认 `text-surface-400 block w-full text-center`；与 `rangeValueText` 二选一。                                                 |
+| `separator`        | 起止卡片之间的分隔符，默认 `text-gray-5 mx-3 text-sm`。                                                                                                             |
+| `footer`           | 底部按钮栏，默认 `flex flex-row items-center justify-center gap-2 px-3 pt-3 pb-[calc(0.75rem+var(--window-bottom))]`；底部安全区已包含在内，改内边距时请保留 `var(--window-bottom)`。 |
+| `cancel`           | 「取消」按钮的外层容器，默认 `flex-1`；想让两个按钮不等宽就改这里的 `flex-*`。                                                                                       |
+| `cancelButton`     | 「取消」按钮本体（作为 `RebornButton` 的 `ui.base` 下发），默认 `w-full`。                                                                                           |
+| `confirm`          | 「确定」按钮的外层容器，默认 `flex-1`。                                                                                                                             |
+| `confirmButton`    | 「确定」按钮本体（作为 `RebornButton` 的 `ui.base` 下发），默认 `w-full`。                                                                                           |
+
+> 弹窗外壳（遮罩、圆角、标题栏）属于 `RebornPopup`，滚动列属于 `RebornPickerView`，分别用 `popupUi` / `pickerUi`，见下面两节。
+
+:::
+
+::
+
+```vue
+<template>
+  <!-- Web：浮层加宽、选中日期改成圆形红底 -->
+  <RebornSelectDate
+    v-model="date"
+    :ui="{
+      dropdown: 'w-80',
+      calDays: 'gap-1',
+      calDay: 'rounded-full',
+      calDayActive: 'bg-error text-white hover:bg-error/90',
+    }"
+  />
+
+  <!-- UniApp：底部按钮改成「确定」占两份宽 -->
+  <RebornSelectDate
+    v-model="date"
+    rangeable
+    :ui="{
+      rangeStart: 'rounded-lg',
+      rangeEnd: 'rounded-lg',
+      cancel: 'flex-none w-[200rpx]',
+      confirm: 'flex-1',
+    }"
+  />
+</template>
+```
 
 ### `triggerUi`
 覆盖 `RebornSelectTrigger`。支持 `wrapper`, `content`, `text`, `placeholder`, `iconWrapper`, `clearIcon`, `arrowIcon` 等。

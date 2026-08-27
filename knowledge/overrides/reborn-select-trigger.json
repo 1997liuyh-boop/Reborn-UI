@@ -1,17 +1,20 @@
 {
   "internal": true,
-  "description": "用于各类下拉选择组件复用的触发器与浮层容器内部基础组件。",
+  "description": "用于各类下拉类组件复用的浮层容器内部基础组件，只负责定位、展开收起与外部点击判定。",
   "whenToUse": [
-    "自研新的下拉类组件时，复用统一的触发器外观（占位符、清空按钮、箭头旋转动画）。",
-    "需要统一控制浮层展开收起行为（open / close / toggle 事件，isOpen 状态）时作为底层容器。"
+    "自研新的下拉类组件时，复用统一的浮层能力（传送到 body、向上翻转、随页面滚动跟随触发器）。",
+    "需要统一控制浮层展开收起行为（enter / afterEnter / close 事件，isOpen 状态）时作为底层容器。"
   ],
   "whenNotToUse": [
+    "只想要一个「输入框式触发器盒子」（占位符、清空按钮、箭头旋转）时，改用 reborn-field-trigger。",
     "业务中直接做数据选择时，改用成品组件 reborn-select、reborn-select-date 或 reborn-time-picker。"
   ],
   "pitfalls": [
     "web 与 uniapp 双端均有实现，但这是内部基础组件，无独立文档页与演示示例。",
+    "web 端已拆分：本组件只剩浮层，触发器盒子迁到 reborn-field-trigger；uniapp 端仍是触发器与浮层合体的旧实现，双端 API 暂时不一致。",
+    "触发器结构经 trigger 插槽由调用方自行渲染，浮层内容经 content 插槽传入。",
+    "外层 wrapper 带 group 与 tabindex，触发器必须渲染在 trigger 插槽内，group-focus 系列聚焦样式才生效。",
     "portal 默认 true，浮层传送到 body；closeOn 可选 click / mousedown 控制关闭时机。",
-    "浮层内容经 content 插槽传入，cover 插槽可整体替换触发器显示区。",
     "知识条目中 props / events 描述大量缺失，使用前建议直接查阅源码（RebornSelectTrigger.vue）。"
   ]
 }

@@ -7,6 +7,11 @@
                 ui.base(),
                 visible ? '-translate-x-3' : 'translate-x-20'
             ]">
+                <svg v-if="showProgress" :class="ui.progress()" viewBox="0 0 100 100" aria-hidden="true">
+                    <circle :class="ui.progressTrack()" cx="50" cy="50" :r="progressRadius" />
+                    <circle :class="ui.progressBar()" cx="50" cy="50" :r="progressRadius"
+                        :stroke-dasharray="progressCircumference" :stroke-dashoffset="progressDashOffset" />
+                </svg>
                 <span :class="ui.icon()">↑</span>
             </div>
         </slot>
@@ -14,12 +19,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, shallowRef, ref } from "vue";
 import type { ClassValue } from "clsx"
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-import { useWindowScroll } from '@vueuse/core'
-import theme, { backTopColors, backTopSizes } from "./reborn-back-top.config";
+import { useResizeObserver, useWindowScroll, useWindowSize } from '@vueuse/core'
+import theme, {
+    backTopColors,
+    backTopSizes,
+    BACK_TOP_PROGRESS_CIRCUMFERENCE,
+    BACK_TOP_PROGRESS_RADIUS,
+} from "./reborn-back-top.config";
 
 defineOptions({
     name: "RebornBackTop"
@@ -38,12 +48,19 @@ export interface BackTopProps {
     isTab?: boolean;
     // 是否适配安全区域
     safeArea?: boolean;
+    // 是否在按钮边缘展示滚动进度环；传了自定义默认插槽时不生效（按钮结构已由插槽接管）
+    showProgress?: boolean;
+    // 可滚动总距离 (px)。外部接管 scrollTop 时用于换算百分比；不传则按 document 实测
+    scrollRange?: number;
     color?: typeof backTopColors[number]
     size?: typeof backTopSizes[number]
     ui?: {
         wrapper?: ClassValue,
         base?: ClassValue,
-        icon?: ClassValue
+        icon?: ClassValue,
+        progress?: ClassValue,
+        progressTrack?: ClassValue,
+        progressBar?: ClassValue
     }
 }
 
@@ -53,6 +70,7 @@ const props = withDefaults(defineProps<BackTopProps>(), {
     duration: 300,
     isTab: false,
     safeArea: true,
+    showProgress: false,
     color: 'primary',
     size: 'md'
 });
@@ -93,6 +111,42 @@ const viewBottom = computed(() => {
 // 是否显示
 const visible = computed(() => currentScrollTop.value > props.threshold);
 
+// ── 滚动进度 ────────────────────────────────────────────────
+const progressRadius = BACK_TOP_PROGRESS_RADIUS
+const progressCircumference = BACK_TOP_PROGRESS_CIRCUMFERENCE
+
+const { height: windowHeight } = useWindowSize()
+
+// 文档高度不是响应式的，需要观察后手动同步
+const docHeight = ref(0)
+// 观察目标延后到 onMounted 赋值：SSR 阶段没有 document，直接引用会报错
+const docEl = shallowRef<HTMLElement | null>(null)
+
+const measureDoc = () => {
+    docHeight.value = document.documentElement.scrollHeight
+}
+
+// 图片、懒加载内容撑高页面后重新测量，否则进度环会算成「已经到底」
+useResizeObserver(docEl, measureDoc)
+
+onMounted(() => {
+    measureDoc()
+    docEl.value = document.documentElement
+})
+
+// 可滚动总距离：外部传了 scrollRange 就用外部的，否则按文档高度 - 视口高度
+const maxScroll = computed(() => {
+    const range = props.scrollRange ?? docHeight.value - windowHeight.value
+    // 兜底为 1，避免内容不足一屏时除零得到 Infinity
+    return Math.max(1, range)
+})
+
+// 当前进度，取值 0 ~ 1
+const progress = computed(() => Math.min(1, Math.max(0, currentScrollTop.value / maxScroll.value)))
+
+// 环的可见长度靠 dashoffset 收缩：进度 0 时偏移整个周长（不可见），进度 1 时偏移 0（满环）
+const progressDashOffset = computed(() => progressCircumference * (1 - progress.value))
+
 const uiOverrides = computed(() => props.ui || {});
 
 const ui = computed(() => {
@@ -105,6 +159,9 @@ const ui = computed(() => {
         wrapper: (opts?: { class?: any }) => styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
         base: (opts?: { class?: any }) => styles.base({ class: cn(opts?.class, uiOverrides.value.base) }),
         icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
+        progress: (opts?: { class?: any }) => styles.progress({ class: cn(opts?.class, uiOverrides.value.progress) }),
+        progressTrack: (opts?: { class?: any }) => styles.progressTrack({ class: cn(opts?.class, uiOverrides.value.progressTrack) }),
+        progressBar: (opts?: { class?: any }) => styles.progressBar({ class: cn(opts?.class, uiOverrides.value.progressBar) }),
     }
 })
 

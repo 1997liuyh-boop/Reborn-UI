@@ -112,3 +112,15 @@ knowledge/schema/
 
 # MCP 包内知识库快照：prepack 时由 kb:snapshot 从仓库根 knowledge/ 生成并内联示例源码
 packages/mcp/knowledge/
+
+# ================================
+# 本地调试残留（不入库）
+# ================================
+
+# 误把 dev server 端口当成目录名留下的 Nuxt 缓存
+/3001/
+
+# 仓库根目录调试截图 / Playwright 快照（正式静态资源放 public/ 或 uniapp static）
+/*.png
+/*-snap.yml
+/*-snapshot.yml

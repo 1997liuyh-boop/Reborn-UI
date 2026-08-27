@@ -30,7 +30,16 @@ export interface PopoverProps {
   closeDelay?: number;
   /** 追加到根元素（触发器外层容器）的自定义类名 */
   class?: any;
-  ui?: any;
+  /** 按内部结构键覆盖各节点类名，键位见文档「自定义样式（ui）」 */
+  ui?: Partial<{
+    wrapper?: any;
+    trigger?: any;
+    contentWrapper?: any;
+    content?: any;
+    arrow?: any;
+    bridge?: any;
+    mask?: any;
+  }>;
 }
 
 const props = withDefaults(defineProps<PopoverProps>(), {
@@ -409,10 +418,25 @@ const arrowStyle = computed(() => {
 
 const b = tv(theme);
 const ui = computed(() => {
-  return b({
+  const s = b({
     side: resolvedSide.value,
     align: resolvedAlign.value,
   });
+  const ov: any = props.ui ?? {};
+  // 把 ui 传入的类名并进对应槽位，未传时行为与原先完全一致
+  const slot =
+    <K extends keyof typeof s>(key: K) =>
+    (opts?: { class?: any }) =>
+      s[key]({ class: [opts?.class, ov[key]] });
+  return {
+    wrapper: slot("wrapper"),
+    trigger: slot("trigger"),
+    contentWrapper: slot("contentWrapper"),
+    content: slot("content"),
+    arrow: slot("arrow"),
+    bridge: slot("bridge"),
+    mask: slot("mask"),
+  };
 });
 
 defineExpose({

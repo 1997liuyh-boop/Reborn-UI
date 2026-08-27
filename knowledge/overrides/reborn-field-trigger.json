@@ -1,0 +1,19 @@
+{
+  "internal": true,
+  "description": "表单类下拉组件共用的触发器盒子内部基础组件，提供输入框式外观（边框、尺寸、占位符、清空按钮、箭头）。",
+  "whenToUse": [
+    "自研新的下拉类组件时，复用与 reborn-select 一致的触发器外观与尺寸体系。",
+    "需要与 reborn-input 保持同一套 h-input-* 高度、圆角与描边色时。"
+  ],
+  "whenNotToUse": [
+    "触发器不是输入框形态（例如 reborn-dropdown 的按钮 / 按钮组）时，直接在自己的模板里渲染即可。",
+    "业务中直接做数据选择时，改用成品组件 reborn-select、reborn-select-date 或 reborn-time-picker。"
+  ],
+  "pitfalls": [
+    "仅 web 端存在，这是内部基础组件，无独立文档页与演示示例；uniapp 端触发器仍内置在 reborn-select-trigger 中。",
+    "本身不含定位能力，必须渲染在 reborn-select-trigger 的 trigger 插槽内，否则 group-focus 聚焦描边不生效。",
+    "自己不管理展开状态，isOpen 由外部传入；点击与清空分别通过 click / clear 事件上抛。",
+    "clearable 为 true 时清空按钮会顶替箭头显示，二者不会同时出现。",
+    "cover 插槽整体接管触发器内容（连清空按钮与箭头一并交给调用方绘制），default 插槽只替换文本区。"
+  ]
+}

@@ -217,13 +217,13 @@ function handleClick() {
                             <view :class="ui.activeIcon()" :style="textStyle">
                                 <RebornImage v-if="isImage(icon)" :width="imageSize || 40" :height="imageSize || 40"
                                     :src="icon!" mode="scaleToFill" />
-                                <view v-else :class="['text-40', icon]" />
+                                <view v-else :class="[ui.iconInner(), icon]" />
                             </view>
                             <!-- 未选中时 -->
                             <view :class="ui.inactiveIcon()" :style="textStyle">
                                 <RebornImage v-if="isImage(inactive || icon)" :width="imageSize || 40"
                                     :height="imageSize || 40" :src="inactive! || icon!" mode="scaleToFill" />
-                                <view v-else :class="['text-40', inactive || icon]" />
+                                <view v-else :class="[ui.iconInner(), inactive || icon]" />
                             </view>
                         </slot>
                         <!-- Glass 动画: icon 级别渐变光影背景层 (normal + glass) -->

@@ -39,12 +39,12 @@ export interface DropdownProps {
   ui?: Partial<{
     wrapper: ClassValue;
     trigger: ClassValue;
+    splitRoot: ClassValue;
     splitMain: ClassValue;
     splitArrow: ClassValue;
     dropdown: ClassValue;
     item: ClassValue;
     divider: ClassValue;
-    icon: ClassValue;
     label: ClassValue;
   }>;
 }
@@ -182,6 +182,8 @@ const ui = computed(() => {
       styles.wrapper({ class: cn(opts?.class, overrides.value.wrapper) }),
     trigger: (opts?: { class?: any }) =>
       styles.trigger({ class: cn(opts?.class, overrides.value.trigger) }),
+    splitRoot: (opts?: { class?: any }) =>
+      styles.splitRoot({ class: cn(opts?.class, overrides.value.splitRoot) }),
     splitMain: (opts?: { class?: any }) =>
       styles.splitMain({ class: cn(opts?.class, overrides.value.splitMain) }),
     splitArrow: (opts?: { class?: any }) =>
@@ -192,8 +194,6 @@ const ui = computed(() => {
       styles.item({ class: cn(opts?.class, overrides.value.item) }),
     divider: (opts?: { class?: any }) =>
       styles.divider({ class: cn(opts?.class, overrides.value.divider) }),
-    icon: (opts?: { class?: any }) =>
-      styles.icon({ class: cn(opts?.class, overrides.value.icon) }),
     label: (opts?: { class?: any }) =>
       styles.label({ class: cn(opts?.class, overrides.value.label) }),
   };
@@ -214,15 +214,13 @@ defineExpose({
 
 <template>
   <div :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-    <RebornSelectTrigger :is-open="isOpen" :disabled="isDisabled" :size="formSize || size"
-      :color="color" :bordered="false" :show-arrow="false" :portal="portal" :ui="{
-        /* 覆盖底层组件的默认样式，仅保留定位能力，具体样式由内部插槽决定 */
-        trigger: 'bg-transparent p-0',
-        dropdown: 'w-auto!',
-      }" @toggle="onTriggerClick" @keydown="onKeydown" @close="onOutsideClose">
-      <!-- 使用 cover 完全接管触发器样式 -->
-      <template #cover>
-        <div v-if="splitButton" class="flex h-full w-full items-center overflow-hidden">
+    <RebornSelectTrigger :is-open="isOpen" :disabled="isDisabled" :size="formSize || size" :portal="portal" :ui="{
+      /* 浮层宽度由菜单内容撑开，不跟随触发器 */
+      dropdown: 'w-auto!',
+    }" @keydown="onKeydown" @close="onOutsideClose">
+      <!-- 触发器的结构与样式全部由本组件自己决定 -->
+      <template #trigger>
+        <div v-if="splitButton" :class="ui.splitRoot()" @click="onTriggerClick">
           <div :class="ui.splitMain()" class="flex-1">
             <slot />
           </div>
@@ -231,7 +229,7 @@ defineExpose({
               :class="cn('size-4 transition-transform duration-200', isOpen && 'rotate-180')" />
           </div>
         </div>
-        <div v-else :class="ui.trigger()" class="h-full w-full">
+        <div v-else :class="ui.trigger()" class="w-full" @click="onTriggerClick">
           <slot />
         </div>
       </template>

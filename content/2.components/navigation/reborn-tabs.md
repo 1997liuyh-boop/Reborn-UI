@@ -216,7 +216,42 @@ Web 端根组件 `TabsRoot` 的属性：
 
 ### 自定义样式（ui）
 
-Web 端 `TabsRoot` 的 `ui` 按以下键覆盖对应节点类名：`root`、`list`、`indicator`、`trigger`、`leadingIcon`、`leadingAvatar`、`leadingAvatarSize`、`label`、`trailingBadge`、`trailingBadgeSize`、`content`。
+Web 端 `ui` 只写在 **`TabsRoot`** 上，通过 context 注入给 `TabsList` / `TabsTrigger` / `TabsContent`，不要往子组件上单独传：
+
+| 键名                | 说明                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `root`              | `TabsRoot` 根节点，默认 `flex flex-col gap-2 min-w-0`；标签行与内容区之间的间距改这里；`class` prop 也并到该节点。                                 |
+| `list`              | `TabsList` 根节点（`role="tablist"`），默认 `relative flex max-w-full box-border gap-2` 并隐藏滚动条；标签之间的间距、底部边框、居中方式改这里（指示器的定位基准，`relative` 勿移除）。 |
+| `indicator`         | 活动指示条，默认 `absolute bottom-0 left-0 h-1.5 w-0 rounded-full transition-all duration-300`；位移与宽度由内联 `style` 驱动，这里只改高度、圆角、底色。**填充 `TabsList` 的 `indicator` 插槽会替换掉该节点**，不过该插槽的作用域已把 `class` 与 `style` 透出，接管时可原样绑上去。 |
+| `trigger`           | 单个标签按钮（`TabsTrigger` 根节点），默认 `relative z-10 inline-flex items-center justify-center gap-2 px-3 py-2 text-lg font-medium text-gray-7`；内边距、字号、选中/禁用态由内部变体给出，覆盖写这里。`TabsTrigger` 自身的 `class` 也并到该节点。 |
+| `leadingIcon`       | 前置图标的包裹节点，默认 `flex items-center text-base`。**仅填充了 `leading-icon` 插槽时渲染。**                                                    |
+| `leadingAvatar`     | 前置头像的外层包裹，默认 `flex items-center overflow-hidden rounded-full`。**仅填充了 `leading-avatar` 插槽时渲染。**                               |
+| `leadingAvatarSize` | 前置头像的尺寸节点（`leadingAvatar` 内层），默认 `h-6 w-6`；头像大小改这里。                                                                       |
+| `label`             | 标签文本的包裹节点，默认 `relative z-10`；它始终渲染，`label` 插槽与 default 插槽都填在它内部，所以覆盖一定生效。                                   |
+| `trailingBadge`     | 后置徽标的外层包裹，默认 `flex items-center rounded-full bg-gray-2 px-2 py-0.5 text-sm text-gray-7`。**仅填充了 `trailing-badge` 插槽时渲染。**     |
+| `trailingBadgeSize` | 后置徽标的字号节点（`trailingBadge` 内层），默认 `text-sm`。                                                                                       |
+| `content`           | `TabsContent` 根节点，默认 `mt-2 scroll-mt-24` 加一组 `focus-visible:ring-*`；内容区内边距、上边距改这里。`TabsContent` 自身的 `class` 也并到该节点。 |
+
+```vue
+<template>
+  <TabsRoot
+    v-model="active"
+    :ui="{
+      list: 'border-b border-gray-2 gap-6',
+      indicator: 'h-0.5 bg-primary',
+      trigger: 'text-sm px-0',
+      content: 'mt-4',
+    }"
+  >
+    <TabsList>
+      <TabsTrigger value="a">概览</TabsTrigger>
+      <TabsTrigger value="b">设置</TabsTrigger>
+    </TabsList>
+    <TabsContent value="a">概览内容</TabsContent>
+    <TabsContent value="b">设置内容</TabsContent>
+  </TabsRoot>
+</template>
+```
 
 UniApp 端 `RebornTabs` 的 `ui` 键为：
 

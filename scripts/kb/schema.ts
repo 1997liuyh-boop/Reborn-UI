@@ -22,6 +22,12 @@ export const propSchema = z.object({
   description: z.string(), // 中文说明，来自源码行尾注释或文档表格
   options: z.array(z.string()).optional(), // 枚举可选值（从 config.ts 常量数组解析）
   vModel: z.boolean().optional(), // 是否为 v-model 双向绑定 prop
+  /**
+   * 该条目专属的平台。
+   * 仅在双端同名 prop 的对象键位集不同（如 ui 两端键位零重叠）时才并存两条并标注；
+   * 两端一致的通用 prop 保持单条、不带此字段，避免给全部组件的 JSON 无谓地加字段。
+   */
+  platform: z.enum(["web", "uniapp"]).optional(),
 });
 
 /** 事件描述 */

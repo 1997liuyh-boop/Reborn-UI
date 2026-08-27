@@ -9,6 +9,9 @@ import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
+import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.config";
+import RebornFieldTrigger from "../reborn-field-trigger/RebornFieldTrigger.vue";
+import type { FieldTriggerProps } from "../reborn-field-trigger/RebornFieldTrigger.vue";
 import theme, { cascaderSizes, cascaderColors } from "./reborn-cascader.config";
 
 const b = tv(theme);
@@ -74,8 +77,8 @@ export interface CascaderProps {
    * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
    */
   portal?: SelectTriggerProps["portal"];
-  /** 触发器 UI 配置 */
-  triggerUi?: SelectTriggerProps["ui"];
+  /** 触发器 UI 配置：触发器盒子与浮层的键混写在一起，组件内部自动拆分下发 */
+  triggerUi?: SelectTriggerProps["ui"] & FieldTriggerProps["ui"];
   /** 级联选择器内部组件的 UI 微调配置 */
   ui?: Partial<{
     wrapper: ClassValue;
@@ -144,12 +147,15 @@ const styles = computed(() =>
   }),
 );
 
-/** 传给 Trigger 的 UI 配置 */
-const triggerUi = computed(() => {
-  const ui = { ...(props.triggerUi || {}) };
-  ui.dropdown = cn(styles.value.dropdown(), ui.dropdown);
-  return ui;
-});
+/** 传给 Trigger 的 UI 配置：浮层给 RebornSelectTrigger，触发器盒子给 RebornFieldTrigger */
+const splitUi = computed(() => splitTriggerUi(props.triggerUi));
+
+const overlayUi = computed(() => ({
+  ...splitUi.value.overlay,
+  dropdown: cn(styles.value.dropdown(), splitUi.value.overlay.dropdown),
+}));
+
+const fieldUi = computed(() => splitUi.value.field);
 
 const uiOverrides = computed(() => props.ui || {});
 
@@ -413,14 +419,16 @@ defineExpose({
 
 <template>
   <RebornSelectTrigger v-if="showTrigger" :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
-    :disabled="disabled" :clearable="clearable && hasValue" :size="size" :color="color" :bordered="bordered"
-    :show-arrow="showArrow" :arrow-animation="arrowAnimation" :ui="triggerUi" :portal="portal" @toggle="toggle" @clear="clear"
-    @close="onOutsideClose">
-    <template #default>
-      <slot :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue" :displayText="displayText">
-        <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
-        <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
-      </slot>
+    :disabled="disabled" :size="size" :ui="overlayUi" :portal="portal" @close="onOutsideClose">
+    <template #trigger>
+      <RebornFieldTrigger :is-open="isOpen" :disabled="disabled" :clearable="clearable && hasValue" :size="size"
+        :color="color" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation" :ui="fieldUi"
+        @click="toggle" @clear="clear">
+        <slot :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue" :displayText="displayText">
+          <span v-if="displayText" :class="ui.triggerText()">{{ displayText }}</span>
+          <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
+        </slot>
+      </RebornFieldTrigger>
     </template>
 
     <template #content>

@@ -7,6 +7,7 @@ const state = ref<Record<string, any>>({
   size: "md",
   threshold: 300,
   bottom: 20,
+  showProgress: true,
 });
 
 /** 演练场控制面板配置 */
@@ -27,6 +28,12 @@ const controls = [
         component: "select" as const,
         defaultValue: "md",
         props: { options: backTopSizes.map((s) => ({ label: s, value: s })) },
+      },
+      {
+        label: "展示滚动进度环",
+        key: "showProgress",
+        component: "checkbox" as const,
+        defaultValue: true,
       },
     ],
   },
@@ -54,7 +61,7 @@ const controls = [
 /** 演练场右上角展示的等价代码 */
 const backTopCode = computed(
   () =>
-    `<RebornBackTop\n  color="${state.value.color}"\n  size="${state.value.size}"\n  :threshold="${state.value.threshold}"\n  :bottom="${state.value.bottom}"\n/>`,
+    `<RebornBackTop\n  color="${state.value.color}"\n  size="${state.value.size}"\n  :threshold="${state.value.threshold}"\n  :bottom="${state.value.bottom}"\n  :show-progress="${state.value.showProgress}"\n/>`,
 );
 
 /** 用于把页面撑高的占位行，便于触发滚动 */
@@ -69,7 +76,7 @@ const rows = Array.from({ length: 12 }, (_, i) => `占位内容 ${i + 1}`);
       :code="backTopCode"
       component-name="RebornBackTop"
       title="交互演练场"
-      description="组件监听窗口滚动，滚动距离超过 threshold 后从右侧滑入；按钮固定在视口右下角，请向下滚动本页查看效果。"
+      description="组件监听窗口滚动，滚动距离超过 threshold 后从右侧滑入；按钮固定在视口右下角，请向下滚动本页查看效果。开启进度环后，按钮边缘会随滚动进度逐渐画满。"
     >
       <!-- 组件本身是固定定位的浮层，这里只用描边标出占位区域，避免再叠一层背景 -->
       <div class="border-default rounded-ui-md w-full border">
@@ -89,8 +96,29 @@ const rows = Array.from({ length: 12 }, (_, i) => `占位内容 ${i + 1}`);
         :size="state.size"
         :threshold="state.threshold"
         :bottom="state.bottom"
+        :show-progress="state.showProgress"
       />
     </Playground>
+
+    <DemoSection
+      title="滚动进度环"
+      description="show-progress 会在圆形按钮边缘画出一圈进度环，进度 = 当前滚动距离 / 可滚动总距离，滚到底时环画满。"
+    >
+      <DemoBlock layout="stack">
+        <DemoNote>
+          进度环随本页滚动实时更新。默认按 document 实测总高度；若用 scroll-top 接管了滚动数值，请同时传
+          <code>scroll-range</code> 指明可滚动总距离，否则百分比会算错。
+        </DemoNote>
+
+        <RebornBackTop
+          :bottom="180"
+          show-progress
+          color="info"
+          size="lg"
+          :ui="{ wrapper: 'z-50' }"
+        />
+      </DemoBlock>
+    </DemoSection>
 
     <DemoSection
       title="自定义内容"

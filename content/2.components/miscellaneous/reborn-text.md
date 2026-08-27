@@ -45,4 +45,39 @@ navigation:
 | `card` | 银行卡脱敏 | `622***7890` |
 | `email` | 邮箱脱敏 | `h***o@example.com` |
 
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。两端 DOM 结构不同，可用键位也不同：
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+
+| 键名       | 说明                                                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `base`     | 根元素（`<span>`）。默认 `inline [flex-shrink:unset]`，字号、颜色、多行省略等都作用在这里；`class` prop 也会并到同一节点。                          |
+| `currency` | 货币符号节点。**仅在传入 `currency` 且未填充 default 插槽时渲染**，填充 default 插槽会替换掉整块兜底内容，`ui.currency` 随之失效。位置由 `currencyPosition` 决定（`after` 时排在数字后面）。 |
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 键名   | 说明                                                                                                                    |
+| ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `base` | 根元素（`<view>` 或 `<text>`，取决于是否需要多行省略）。默认 `reborn-text [flex-shrink:unset] text-28`；`className` prop 也会并到同一节点。 |
+
+:::
+
+::
+
+```vue
+<template>
+  <RebornText
+    type="amount"
+    :value="12345.6"
+    :ui="{ base: 'font-semibold text-error', currency: 'mr-0.5 text-xs align-top' }"
+  />
+</template>
+```
+
 ::

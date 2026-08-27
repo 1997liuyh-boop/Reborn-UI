@@ -59,21 +59,34 @@ navigation:
 | `default` | 菜单项文字内容 |
 | `icon` | 菜单项左侧图标 |
 
-## UI 对象说明
+## 自定义样式（ui）
 
-通过 `ui` 属性可以重写内部元素的样式：
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；`ui` 传给 `RebornDropdown`，菜单项相关的键会自动下发给每个 `RebornDropdownItem`：
 
-| 属性 | 说明 |
-| :--- | :--- |
-| `wrapper` | 最外层容器 |
-| `trigger` | 触发元素（普通模式） |
-| `splitMain` | split-button 模式下左侧功能按钮区域 |
-| `splitArrow` | split-button 模式下右侧箭头按钮 |
-| `dropdown` | 下拉面板容器 |
-| `item` | 菜单项 |
-| `divider` | 分隔线 |
-| `icon` | 菜单项图标区域 |
-| `label` | 菜单项文字区域 |
+| 键名         | 说明                                                                                                                                          |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`    | 最外层容器，默认 `relative inline-flex`，`class` prop 也并到这里；整体占位与外边距改这里。                                                     |
+| `trigger`    | 普通模式的触发器。默认 `inline-flex items-center cursor-pointer select-none outline-none transition-colors`。**`splitButton` 为真时不渲染。**  |
+| `splitRoot`  | split-button 模式的触发器外框，把左右两半包在一起。**仅 `splitButton` 为真时渲染**，默认 `flex w-full items-center overflow-hidden`，圆角与边框加这里。 |
+| `splitMain`  | split-button 左半边的主按钮区，默认 `inline-flex items-center justify-center`（模板另加 `flex-1` 撑开）。                                      |
+| `splitArrow` | split-button 右半边的箭头按钮，默认 `inline-flex items-center justify-center border-l border-white/20`，分隔线颜色改这里。                     |
+| `dropdown`   | 下拉面板容器，默认 `overflow-hidden p-2 w-auto!`，面板底色、圆角、内边距、最大高度改这里。                                                     |
+| `item`       | 单个菜单项。默认 `flex w-full cursor-pointer select-none items-center gap-2 text-gray-7 transition-colors`，禁用态走 `data-[disabled=true]`；hover 底色、行高改这里。 |
+| `divider`    | 菜单项上方的分隔线。**仅该项 `divided` 为真时渲染**，默认 `my-1 border-t border-gray-2`。                                                      |
+| `label`      | 菜单项的文字节点，默认 `flex-1 truncate`；它在 default 插槽外层，填充插槽后依然生效。                                                          |
+
+```vue
+<template>
+  <RebornDropdown
+    :items="items"
+    :ui="{
+      dropdown: 'rounded-xl shadow-lg p-1',
+      item: 'rounded-lg px-3 py-2 hover:bg-primary/10',
+      label: 'text-sm',
+    }"
+  />
+</template>
+```
 
 ## 示例代码
 

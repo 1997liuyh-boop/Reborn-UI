@@ -1,0 +1,22 @@
+{
+  "description": "由顶栏、侧边栏、主区域、底栏拼装后台页面骨架的 flex 布局容器，排列方向可自动推断。",
+  "whenToUse": [
+    "搭建后台管理页面骨架：Header + Aside + Main + Footer 的各种拼版组合。",
+    "需要主区域独立滚动、顶栏/侧边栏固定不动的经典管理端布局。",
+    "需要按任意 CSS 长度（px / rem / 百分比 / auto）指定顶栏高度或侧边栏宽度。"
+  ],
+  "whenNotToUse": [
+    "只是要一个限宽居中的正文容器，用 reborn-container。",
+    "需要带交互的站点导航头（移动端抽屉、吸顶模式），用 reborn-header。",
+    "需要用户拖拽调整面板比例，用 reborn-splitter。",
+    "uniapp 端项目：platforms 仅 web，无 uniapp 实现。"
+  ],
+  "pitfalls": [
+    "platforms 仅 web 端提供。",
+    "命名上与已有的 reborn-container / reborn-header / reborn-main / reborn-footer 完全独立、语义不同，切勿混用：后者分别是限宽居中容器、站点导航头、语义化 main 包装、uniapp 吸底操作条。",
+    "RebornLayout 的直接子元素必须是 Header / Aside / Main / Footer 或嵌套的 RebornLayout；后四者脱离 RebornLayout 单独使用时 flex 尺寸不生效。",
+    "未传 direction 时方向靠扫描默认插槽的 vnode 推断：命中 Header 或 Footer 即纵向，否则横向；显式传 direction 会覆盖推断结果。",
+    "height / width 走内联 CSS 变量下发（--reborn-layout-header-height 等），不是 Tailwind 类，因此无法用 ui 里的类名覆盖，请直接改 prop。",
+    "Header 与 Footer 只有 padding 和高度，不带 flex 居中；需要内容垂直居中请自行传 class（如 flex items-center）。"
+  ]
+}

@@ -93,6 +93,8 @@ onPageScroll((e) => {
 | `duration` | `number`  | `300`     | 滚动回顶部的动画时长 (ms)。web 端使用 CSS 平滑滚动，此参数仅作兼容保留。 |
 | `isTab`    | `boolean` | `false`   | 是否是 TabBar 页面。如果是，组件会自动抬高 50px 以避开 TabBar。 |
 | `safeArea` | `boolean` | `true`    | 是否适配安全区域（避让底部黑条）。 |
+| `showProgress` | `boolean` | `false` | 是否在按钮边缘展示滚动进度环。**仅 web 端可用**；传了自定义默认插槽时不生效。 |
+| `scrollRange` | `number` | `-`      | 可滚动总距离 (px)，用于换算进度百分比。不传时按 `document` 实测（文档高度 − 视口高度）；用 `scrollTop` 接管滚动数值时应一并传入。**仅 web 端可用**。 |
 | `color`    | `string`  | `primary` | 按钮颜色。可选值：`primary`, `secondary`, `success`, `info`, `warning`, `error`, `neutral`。 |
 | `size`     | `string`  | `md`      | 按钮大小。可选值：`sm`, `md`, `lg`。 |
 | `ui`       | `object`  | `{}`      | 覆盖各个 slots 的样式，见下方「自定义样式（ui）」。 |
@@ -118,6 +120,9 @@ onPageScroll((e) => {
 | `wrapper` | 外层容器，负责定位和动画。 |
 | `base`    | 按钮主体，包含背景色和圆角。 |
 | `icon`    | 所有的图标或文字内容。 |
+| `progress` | 进度环 SVG 根节点，负责绝对定位与起始角度（仅 `showProgress` 开启时渲染）。 |
+| `progressTrack` | 进度环底环（未走完的那一圈）。 |
+| `progressBar` | 进度环本体，长度随滚动进度增长。 |
 
 ## 注意事项
 
@@ -125,4 +130,7 @@ onPageScroll((e) => {
 - `threshold` 默认 300px，滚动超过该距离才显示按钮。
 - `isTab` 为 `true` 时组件自动抬高 50px 避开 TabBar；`safeArea` 默认开启底部安全区适配（web 端安全区高度视为 0）。
 - `duration` 仅 uniapp 端生效；web 端使用 CSS `smooth` 平滑滚动，动画时长由浏览器决定。
-- 自定义按钮外观用默认插槽，细粒度样式覆盖用 `ui` 对象（`wrapper` / `base` / `icon`）。
+- 自定义按钮外观用默认插槽，细粒度样式覆盖用 `ui` 对象（`wrapper` / `base` / `icon` / `progress` / `progressTrack` / `progressBar`）。
+- `showProgress` 进度环画在**内置按钮内部**，一旦传了自定义默认插槽，按钮结构由插槽接管，进度环不会渲染。
+- 进度环目前**仅 web 端可用**：默认按 `document` 实测总高度（并用 `ResizeObserver` 观察文档高度变化，图片/懒加载撑高页面后会自动重算）；uniapp 端只拿得到 `scrollTop`、缺少总高来源，需另用 `createSelectorQuery` 测量，暂未实现。
+- 用 `scrollTop` 接管滚动数值时请一并传 `scrollRange`，否则进度百分比会按错误的总距离换算。

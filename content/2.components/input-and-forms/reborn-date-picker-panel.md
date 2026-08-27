@@ -73,18 +73,77 @@ navigation:
 各个内部组件的 UI 样式覆盖参数。
 
 ### Web 版本 `ui`
-| 名称 | 描述 |
-| --- | --- |
-| `wrapper` | 面板最外层容器。 |
-| `container` | 包含快捷选择和主面板的内部容器。 |
-| `shortcuts` | 快捷选择侧边栏容器。 |
-| `shortcut` | 单个快捷选择项。 |
-| `header` | 顶部导航区域样式。 |
-| `navBtn` | 左右导航切换按钮样式。 |
-| `title` | 中间年份/月份切换标题样式。 |
-| `weekdays` | 星期表头展示容器样式。 |
-| `days` | 日期/月份/年份网格展示容器样式。 |
-| `day` | 单个日期单元格的基础样式。 |
-| `dayActive` | 选中状态下的日期单元格样式。 |
-| `dayDisabled` | 禁用或非当前范围的日期样式。 |
-| `dayToday` | 今日日期的标识样式。 |
+
+该组件仅 Web 端提供。面板由「快捷侧栏 + 主面板（可双联）」组成，`type` 决定主面板渲染日期网格、月份/年份四列网格还是带时间列的复合视图，因此下表中不少键只在特定 `type` 或 `range` 模式下才会出现。
+
+**布局骨架**
+
+| 名称         | 描述                                                                                                                                          |
+| :----------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`    | 面板最外层容器，默认 `w-full bg-white dark:bg-gray-8 transition-all overflow-hidden`；面板底色、整体宽度、圆角改这里。                          |
+| `container`  | 「快捷侧栏 + 内容区」的横向容器，默认 `flex h-full`。                                                                                          |
+| `shortcuts`  | 快捷选择侧边栏容器，默认 `border-r border-gray-2 dark:border-gray-7 p-4 flex flex-col gap-4 overflow-y-auto` + 隐藏滚动条。**仅传入 `shortcuts` 且非空时渲染。** |
+| `shortcut`   | 单个快捷选择项，默认 `min-w-15 text-xs text-gray-6 dark:text-gray-4 hover:bg-gray-1 dark:hover:bg-gray-7 hover:text-primary cursor-pointer transition-colors whitespace-nowrap`。 |
+| `content`    | 快捷侧栏右侧的内容区，默认 `flex-1 p-4`；面板内边距改这里。                                                                                     |
+| `panelLeft`  | 主（左）面板容器，默认 `w-full`。                                                                                                              |
+| `panelRight` | 双联模式下的右面板容器，默认 `flex-1 px-2!`。**仅 `daterange` / `datetimerange` / `monthrange` 等双联视图渲染。**                                |
+
+**顶部导航**
+
+| 名称           | 描述                                                                                                                                                   |
+| :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `header`       | 顶部导航行，默认 `flex items-center justify-between py-4`。                                                                                              |
+| `navBtn`       | 左右翻页按钮，默认 `flex items-center p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3`。 |
+| `navBtnHidden` | 双联模式下被隐藏的那一侧翻页按钮（占位保持对齐），默认 `p-1 opacity-0 pointer-events-none`；想彻底去掉占位就在这里加 `hidden`。                          |
+| `title`        | 中间的年份/月份切换标题（点击进入年选/月选），默认 `text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors`。 |
+| `icon`         | 翻页按钮内的箭头图标，默认 `transition-all`；换大小、换颜色改这里（图标名固定为 `lucide:chevron-left/right`）。                                          |
+
+**日期网格**
+
+| 名称          | 描述                                                                                                                                                                   |
+| :------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `weekdays`    | 星期表头容器，默认 `grid grid-cols-7 gap-0 text-center justify-items-center text-xs text-gray-4 dark:text-gray-5 mb-4`。                                                 |
+| `days`        | 日期网格容器，默认 `grid grid-cols-7 justify-items-center gap-4`；格子间距改这里。                                                                                       |
+| `day`         | 单个日期格，默认 `flex items-center justify-center text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7 aspect-square w-full h-full`；格子形状（如改成圆形）在这里加 `rounded-full`。 |
+| `dayActive`   | 选中日期的附加样式，默认由 `color` 变体给出（`primary` 时为 `bg-primary text-white hover:bg-primary/90`）。**不是独立节点**——选中时被合并进 `day` 所在节点。              |
+| `dayInRange`  | 范围模式下落在起止之间的日期，默认由 `color` 变体给出（`bg-primary/10 dark:bg-primary/20`）。同样是合并进 `day`。                                                        |
+| `dayToday`    | 今日的标识样式，默认 `font-bold underline`；仅在今日**未被选中**时叠加。同样是合并进 `day`。                                                                              |
+| `dayDisabled` | 超出 `start` / `end` 或被 `disabledDate` 排除的日期，默认 `text-gray-4 dark:text-gray-5 opacity-40 pointer-events-none`。同样是合并进 `day`。                             |
+| `dayHidden`   | 范围模式下非本月的补位格子，默认 `invisible`（占位但不可见）。同样是合并进 `day`；单选模式下不使用该键，非本月日期照常显示。                                              |
+
+**年 / 月网格**
+
+| 名称               | 描述                                                                                                                                                                         |
+| :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `grid4Year`        | 年份视图的四列网格容器，默认 `grid grid-cols-4 gap-y-2 justify-items-center overflow-auto`。                                                                                   |
+| `grid4Month`       | 月份视图的四列网格容器，默认 `grid grid-cols-4 gap-y-2 justify-items-center py-2`。                                                                                            |
+| `yearMonthItem`    | 单个年份/月份格，默认 `flex items-center justify-center cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7 w-full rounded-lg`。 |
+| `yearMonthInRange` | 范围模式下落在起止之间的年/月，默认由 `color` 变体给出（`bg-primary/10 dark:bg-primary/20`）。**不是独立节点**——合并进 `yearMonthItem`；选中项走的是 `dayActive`，不是单独的键。 |
+| `yearMonthOutside` | 年份视图中不属于当前十年页的年份，默认 `opacity-40`。同样是合并进 `yearMonthItem`。                                                                                            |
+
+**日期时间复合视图（`datetime` / `datetimerange`）**
+
+| 名称                      | 描述                                                                                                                                                                      |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `dateTimeHeader`          | 「日期段 / 时间段」切换条的容器，默认 `flex items-center justify-center gap-2 w-full`。                                                                                     |
+| `dateTimeSegment`         | 切换条中的单个段落（日期或时间），默认 `ring-1 ring-gray-3 dark:ring-gray-6 text-xs h-6 leading-6 w-24 text-center rounded-md transition-all text-gray-7 dark:text-gray-2 flex-1`。 |
+| `dateTimeSegmentActive`   | 可点击（当前可切换）的段落的附加样式，默认 `cursor-pointer hover:ring-primary/50 hover:text-primary`。**不是独立节点**——合并进 `dateTimeSegment`。                          |
+| `dateTimeSegmentDisabled` | 不可点击的段落的附加样式，默认 `cursor-not-allowed`。同样是合并进 `dateTimeSegment`。                                                                                        |
+| `dateTimeSeparator`       | 两个段落之间的 `/` 分隔符，默认 `text-gray-3 dark:text-gray-6 font-light`。                                                                                                  |
+
+```vue
+<template>
+  <RebornDatePickerPanel
+    v-model="date"
+    type="daterange"
+    :ui="{
+      wrapper: 'rounded-xl shadow-lg',
+      days: 'gap-2',
+      day: 'rounded-full',
+      dayActive: 'bg-error text-white hover:bg-error/90',
+      dayInRange: 'bg-error/10',
+      title: 'text-base font-semibold',
+    }"
+  />
+</template>
+```

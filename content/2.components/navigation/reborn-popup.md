@@ -194,6 +194,51 @@ function beforeClose(done: (cancel?: boolean) => void) {
 | --------------- | ------------------------------------------------------------------------ | ---- |
 | `handleClose()` | 手动关闭弹出层；Web 端配置了 `beforeClose` 时会先执行拦截回调            | 通用 |
 
+### 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。两端 DOM 结构差异较大，可用键位也不同：
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+
+| 键名       | 说明                                                                                                                                             |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`  | 定位包装层。默认 `fixed pointer-events-none`，只负责把面板摆到视口的对应边；居中模式下它同时充当 flex 居中容器。层级由 `zIndex` 内联注入，别在这里写 `z-*`。 |
+| `root`     | 面板本体（过渡动画的目标节点）。默认 `fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50 box-border p-1`，底色、圆角、阴影、内边距都改这里；`class` 与 `customClass` 也会并到同一节点。 |
+| `resizer`  | 拖拽改变尺寸的把手。**仅 `resizable` 为真且 `position` 不为 `center` 时渲染**，默认透明、悬浮时 `bg-primary/20`。                                     |
+| `header`   | 头部容器。**仅 `showHeader` 为真时渲染**，默认 `w-full flex items-center justify-between shrink-0`；`headerClass` 也会并到同一节点。                  |
+| `title`    | 标题文本。默认 `text-base font-medium`。**填充 `header` 插槽会替换掉整块兜底内容**，该节点随之消失，`ui.title` 失效。                                 |
+| `closeBtn` | 右上角关闭按钮（`RebornButton` 的圆形变体）。**仅 `showClose` 为真时渲染**。                                                                          |
+| `body`     | 内容区，包裹 default 插槽。默认 `flex-1 overflow-y-auto scrollbar-hide min-h-0`，内边距与滚动行为改这里；`bodyClass` 也会并到同一节点。               |
+| `footer`   | 页脚容器。**仅填充了 `footer` 插槽时才渲染**，默认 `border-t border-gray-1 shrink-0`；`footerClass` 也会并到同一节点。                                |
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 键名        | 说明                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `base`      | 面板本体（过渡组件的 `custom-class`）。默认 `fixed bg-white`，位置类由 `position` 决定、圆角由 `round` 决定；底色与阴影改这里。 |
+| `inner`     | 面板内层容器，默认 `relative`，是手柄、头部与内容的定位参照。整体内边距建议加在这里。                                          |
+| `draw`      | 顶部的滑动手柄横条。默认 `mx-auto mt-2 h-1 w-10 rounded-full bg-gray-3`，颜色也受 `color` prop 影响。                          |
+| `header`    | 头部容器。**仅 `showHeader` 为真时渲染**，默认 `flex items-center justify-between px-4 py-2`。                                 |
+| `title`     | 标题文本 `<text>`，默认 `text-30 font-medium text-gray-9`。                                                                    |
+| `closeIcon` | 右上角关闭图标 `<text>`（内置 `i-lucide-x`）。**仅 `showClose` 为真时渲染**，默认 `text-gray-5 cursor-pointer`，字号即图标大小。 |
+
+:::
+
+::
+
+```vue
+<template>
+  <RebornPopup v-model="visible" position="bottom" round title="筛选" show-close
+    :ui="{ root: 'rounded-t-2xl p-0', header: 'px-4 py-3', body: 'p-4' }">
+    <div>内容</div>
+  </RebornPopup>
+</template>
+```
+
 ## 注意事项
 
 - web、uniapp 双端可用。

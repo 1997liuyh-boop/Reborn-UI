@@ -66,8 +66,15 @@ interface PopupProps {
   swipeClose?: boolean;
   /** 手势滑动关闭的触发阈值（手指竖直位移 px，不与阻尼位移混用） */
   swipeCloseThreshold?: number
-  /** 自定义 UI 配置 */
-  ui?: any
+  /** 按内部结构键覆盖各节点类名，键位见文档「自定义样式（ui）」 */
+  ui?: Partial<{
+    base?: any
+    inner?: any
+    draw?: any
+    header?: any
+    title?: any
+    closeIcon?: any
+  }>
   /** 是否使用 reborn-root-portal (别名) */
   rootPortal?: boolean
   /** 是否使用 reborn-root-portal */
@@ -242,7 +249,21 @@ const overlayDragStyle = computed(() => {
 
 const b = tv(theme)
 const rootClass = computed(() => {
-  return b({ position: actualPosition.value, color: props.color, class: props.customClass, round: props.round })
+  const s = b({ position: actualPosition.value, color: props.color, class: props.customClass, round: props.round })
+  const ov: any = props.ui ?? {}
+  // 把 ui 传入的类名并进对应槽位，未传时行为与原先完全一致
+  const slot =
+    <K extends keyof typeof s>(key: K) =>
+      (opts?: { class?: any }) =>
+        s[key]({ class: [opts?.class, ov[key]] })
+  return {
+    base: slot('base'),
+    inner: slot('inner'),
+    draw: slot('draw'),
+    header: slot('header'),
+    title: slot('title'),
+    closeIcon: slot('closeIcon'),
+  }
 })
 
 onBeforeMount(() => {

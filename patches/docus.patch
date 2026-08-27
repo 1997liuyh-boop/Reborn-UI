@@ -70,7 +70,7 @@ index 3579d89683b9d3f5f53dae6c997b1f02424314a6..d32867b63597bb61e1b5f25239fd264d
      >
        <UContentToc
 diff --git a/modules/assistant/runtime/components/AssistantLoading.vue b/modules/assistant/runtime/components/AssistantLoading.vue
-index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..7e4111e6c321adf22028b6fe6753950541cdec9e 100644
+index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..f74829caec03aab79a52d16206d44f07f42915b0 100644
 --- a/modules/assistant/runtime/components/AssistantLoading.vue
 +++ b/modules/assistant/runtime/components/AssistantLoading.vue
 @@ -155,7 +155,16 @@ onUnmounted(() => {
@@ -92,10 +92,10 @@ index 2524cd24e166062aff4f93071ccb6c5f6c7b823f..7e4111e6c321adf22028b6fe67539505
          </span>
        </motion.div>
 diff --git a/modules/assistant/runtime/components/AssistantPanel.vue b/modules/assistant/runtime/components/AssistantPanel.vue
-index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461144f5de0 100644
+index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..35416a73f506e201eaf662f2a74c4108560060c7 100644
 --- a/modules/assistant/runtime/components/AssistantPanel.vue
 +++ b/modules/assistant/runtime/components/AssistantPanel.vue
-@@ -42,16 +42,127 @@ const chat = new Chat({
+@@ -42,18 +42,198 @@ const chat = new Chat({
        description: message,
        icon: 'i-lucide-alert-circle',
        color: 'error',
@@ -124,6 +124,35 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
 +const conversationId = useState<string | undefined>('assistant-conversation-id', () => undefined)
 +const historyList = ref<RebornConversation[]>([])
 +const historyOpen = ref(false)
++
++/**
++ * 当前会话 id 在 sessionStorage 中的存放键。
++ * messages / conversationId 都是 useState,整页刷新即被重置,刷新后面板会变空且下一次
++ * 提问会另建一条记录(旧会话被孤立)。把 id 落到 sessionStorage,刷新后即可续上同一段对话;
++ * 用 sessionStorage 而非 localStorage,以便新标签页与关闭浏览器后都从新会话开始。
++ */
++const CONVERSATION_KEY = 'reborn-assistant-conversation'
++
++/** 记录/清除当前会话 id,使整页刷新后仍能定位到同一条服务端记录 */
++function rememberConversation(id: string | undefined) {
++  if (!import.meta.client) return
++  try {
++    if (id) sessionStorage.setItem(CONVERSATION_KEY, id)
++    else sessionStorage.removeItem(CONVERSATION_KEY)
++  }
++  catch { /* 隐私模式下 sessionStorage 可能不可用,失败只是丢失恢复能力 */ }
++}
++
++/** 读取上次记录的会话 id */
++function readRememberedConversation(): string | undefined {
++  if (!import.meta.client) return undefined
++  try {
++    return sessionStorage.getItem(CONVERSATION_KEY) || undefined
++  }
++  catch {
++    return undefined
++  }
++}
 +
 +async function fetchAuthUser() {
 +  try {
@@ -160,17 +189,22 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
 +  }
 +}
 +
-+// 登录态就绪后补发:未登录期间被拦下的 pending 问题,或上轮以用户消息结尾的续答
-+watch(authUser, (user) => {
++// 登录态就绪后依次处理:未登录期间被拦下的 pending 问题、整页刷新后的会话恢复、上轮以用户消息结尾的续答
++watch(authUser, async (user) => {
 +  if (!user) return
 +  if (pendingMessage.value) {
++    // [Reborn UI 补丁] 文档页浮动输入框走 open(msg, true)，语义是「另起一段会话」，
++    // 因此这里连 conversationId 一起丢弃，避免新会话覆盖写回上一段记录
 +    if (messages.value.length === 0 && chat.messages.length > 0) {
-+      chat.messages.length = 0
++      startFreshConversation()
 +    }
 +    chat.sendMessage({ text: pendingMessage.value })
 +    clearPending()
++    return
 +  }
-+  else if (chat.lastMessage?.role === 'user' && chat.status === 'ready') {
++  // 带着 pending 问题进来时不恢复旧会话,避免文档页「向 AI 提问」被拼到无关的上下文后面
++  await restoreConversation()
++  if (chat.lastMessage?.role === 'user' && chat.status === 'ready') {
 +    chat.regenerate()
 +  }
 +})
@@ -183,6 +217,8 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
 +      body: { conversationId: conversationId.value, messages: chat.messages },
 +    })
 +    conversationId.value = res.id
++    // [Reborn UI 补丁] 同步落盘,使整页刷新后能恢复到这条会话
++    rememberConversation(res.id)
 +  }
 +  catch { /* 保存失败不打断对话 */ }
 +}
@@ -205,15 +241,47 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
 +    chat.messages.push(...res.messages)
 +    messages.value = chat.messages
 +    conversationId.value = id
++    rememberConversation(id)
 +    historyOpen.value = false
++    return true
 +  }
-+  catch { /* 会话可能已删除 */ }
++  catch {
++    // 会话可能已删除
++    return false
++  }
++}
++
++/**
++ * 整页刷新后恢复上一段会话。
++ * messages 为 useState,刷新即清空,这里据 sessionStorage 里的 id 把服务端记录拉回来,
++ * 让「当前会话」的上下文跨刷新延续,而不是静默开一段新对话。
++ */
++async function restoreConversation() {
++  const id = readRememberedConversation()
++  // 已有会话(同一页内的 SPA 跳转)或压根没记录过,都无需恢复
++  if (!id || conversationId.value || chat.messages.length > 0) return
++  // 记录可能已被删除,恢复失败就清掉本地标记,避免每次刷新都重试一次请求
++  if (!await openConversation(id)) rememberConversation(undefined)
++}
++
++/**
++ * 清空当前对话，开启新的一段会话。
++ * 关键在于同时丢弃 conversationId 与本地标记：只清 chat.messages 的话，
++ * 下一次 saveHistory() 会带着旧 id 提交，把上一段会话在服务端「覆盖」掉。
++ */
++function startFreshConversation() {
++  chat.messages.length = 0
++  conversationId.value = undefined
++  rememberConversation(undefined)
 +}
 +
 +async function removeConversation(id: string) {
 +  await $fetch(`/api/chat/${id}`, { method: 'DELETE' }).catch(() => {})
 +  historyList.value = historyList.value.filter(c => c.id !== id)
-+  if (conversationId.value === id) conversationId.value = undefined
++  if (conversationId.value === id) {
++    conversationId.value = undefined
++    rememberConversation(undefined)
++  }
 +}
 +// ============ [Reborn UI 补丁] 结束 ============
 +
@@ -221,10 +289,25 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
    if (message) {
 +    // [Reborn UI 补丁] 未登录时保留 pending 不发送,登录态就绪后由 authUser watch 统一补发
 +    if (!authUser.value) return
++    // [Reborn UI 补丁] 同上：另起会话时一并重置 conversationId
      if (messages.value.length === 0 && chat.messages.length > 0) {
-       chat.messages.length = 0
+-      chat.messages.length = 0
++      startFreshConversation()
      }
-@@ -92,6 +203,9 @@ function handleSubmit(event?: Event) {
+     chat.sendMessage({
+       text: message,
+@@ -63,8 +243,9 @@ watch(pendingMessage, (message: string | undefined) => {
+ }, { immediate: true })
+ 
+ watch(messages, (newMessages: UIMessage[]) => {
++  // [Reborn UI 补丁] 外部把 messages 置空即视为另起会话，conversationId 必须同步作废
+   if (newMessages.length === 0 && chat.messages.length > 0) {
+-    chat.messages.length = 0
++    startFreshConversation()
+   }
+ }, { deep: true })
+ 
+@@ -92,6 +273,9 @@ function handleSubmit(event?: Event) {
      return
    }
  
@@ -234,7 +317,7 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
    chat.sendMessage({
      text: input.value,
    })
-@@ -100,6 +214,8 @@ function handleSubmit(event?: Event) {
+@@ -100,6 +284,8 @@ function handleSubmit(event?: Event) {
  }
  
  function askQuestion(question: string) {
@@ -243,12 +326,13 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
    chat.sendMessage({
      text: question,
    })
-@@ -109,18 +225,13 @@ function resetChat() {
+@@ -108,19 +294,13 @@ function askQuestion(question: string) {
+ function resetChat() {
    chat.stop()
    messages.value = []
-   chat.messages.length = 0
-+  // [Reborn UI 补丁] 清空即开启新会话,后续保存生成新记录
-+  conversationId.value = undefined
+-  chat.messages.length = 0
++  // [Reborn UI 补丁] 清空即开启新会话,后续保存生成新记录;同时清掉刷新恢复标记
++  startFreshConversation()
  }
  
  onMounted(() => {
@@ -266,7 +350,7 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
  })
  </script>
  
-@@ -130,6 +241,39 @@ onMounted(() => {
+@@ -130,6 +310,39 @@ onMounted(() => {
        <div class="flex h-16 shrink-0 items-center justify-between border-b border-default px-4">
          <span class="font-medium text-highlighted">{{ displayTitle }}</span>
          <div class="flex items-center gap-1">
@@ -306,7 +390,7 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
            <UTooltip
              v-if="showExpandButton"
              :text="isExpanded ? t('assistant.collapse') : t('assistant.expand')"
-@@ -256,7 +400,40 @@ onMounted(() => {
+@@ -256,7 +469,40 @@ onMounted(() => {
        </div>
  
        <div class="w-full shrink-0 p-3">
@@ -347,7 +431,7 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
            v-model="input"
            :rows="2"
            :placeholder="displayPlaceholder"
-@@ -288,8 +465,13 @@ onMounted(() => {
+@@ -288,8 +534,13 @@ onMounted(() => {
              />
            </template>
          </UChatPrompt>
@@ -363,7 +447,7 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
            <span>
              {{ input.length }}/1000
            </span>
-@@ -298,9 +480,14 @@ onMounted(() => {
+@@ -298,9 +549,14 @@ onMounted(() => {
      </div>
    </DefineChatContent>
  
@@ -380,10 +464,10 @@ index 459494244a6ed1897ad8b6e0bd9ef6d163cc1de9..41699765313343c73489c51b76e23461
        width: `${panelWidth}px`,
        right: isOpen ? '0' : `-${panelWidth}px`,
 diff --git a/modules/assistant/runtime/server/api/search.ts b/modules/assistant/runtime/server/api/search.ts
-index b0fc292e6daf6b8201ced1fa2a7fb1c5a1db4c65..c90bd75d021745e18369746e76a69afa355bcabc 100644
+index b0fc292e6daf6b8201ced1fa2a7fb1c5a1db4c65..58fdfc2cc271b0b5b1d90d3dc1e0fb94950b9419 100644
 --- a/modules/assistant/runtime/server/api/search.ts
 +++ b/modules/assistant/runtime/server/api/search.ts
-@@ -44,6 +44,11 @@ function getSystemPrompt(siteName: string) {
+@@ -44,6 +44,20 @@ function getSystemPrompt(siteName: string) {
  - Use bullet points for lists
  - Keep code examples focused and minimal
  
@@ -391,6 +475,15 @@ index b0fc292e6daf6b8201ced1fa2a7fb1c5a1db4c65..c90bd75d021745e18369746e76a69afa
 +- When you provide ${siteName} component demo code, ALWAYS output ONE complete self-contained snippet in a \`\`\`vue fence: a <template> block plus an optional <script setup> block
 +- Components are globally registered - do NOT write import statements for them; Vue APIs like ref/computed/watch are also available without imports
 +- Users can execute your \`\`\`vue snippet instantly via the "Run in Playground" button under the code block, so it must render as-is
++
++**Component API first (CRITICAL):**
++- BEFORE writing any ${siteName} component code, read that component's documentation page with get-page. Never write component code from memory - the props, slots and \`ui\` keys must come from the page you just read
++- Express the requirement through the component's OWN props first. Example: pass text via the \`label\` prop instead of hand-writing a child element for it
++- Customize appearance through the component's \`ui\` override object - \`:ui="{ <slotKey>: 'classes' }"\`, where the available slot keys are listed in that component's docs. Put the classes on the slot they belong to
++- Do NOT wrap component content in an extra <span>/<div> just to attach utility classes, and do NOT push slot-level styling onto the root element via \`class\`. Those are workarounds for a missing prop, and the component almost always already has one
++- Only fall back to slots plus raw utility classes when the docs show no prop and no \`ui\` slot key that can express the requirement
++- When a state-dependent style is needed (hover/focus/active), put the trigger on the root via \`ui.base\` (e.g. \`'group'\`) and the reaction on the target slot (e.g. \`'group-hover:...'\`)
++- A \`ui\` slot key only styles the element the component itself renders for that slot. Filling that slot with your own content REPLACES that element, silently dropping the classes. So whenever you style \`ui.<slotKey>\`, the content for it must come from the matching prop - e.g. style \`ui.label\` together with \`label="..."\`, never with text in the default slot
 +
  **Response style:**
  - Conversational but professional

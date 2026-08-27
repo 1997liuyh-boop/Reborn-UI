@@ -1,17 +1,23 @@
 {
-  "description": "用于展示当前页面层级路径并可逐级返回的面包屑导航组件，双端可用。",
+  "description": "用于展示当前页面层级路径并可逐级返回的面包屑导航组件，支持手写条目与 routes 数据驱动两种用法，双端可用。",
   "whenToUse": [
     "多层级页面结构中提示用户当前位置并支持返回上级。",
     "后台管理、商城分类等需要层级导航的页面头部。",
-    "需要自定义分隔符（文本、Iconify 图标或每项独立分隔符插槽）的路径导航。"
+    "路径层级较深、需要用 max-count 折叠中间层级的导航场景。",
+    "需要在某一级展开同级页面下拉菜单（droplist）快速平移的场景。",
+    "需要自定义分隔符（文本、图标或每项独立分隔符插槽）的路径导航。"
   ],
   "whenNotToUse": [
     "平级页签切换场景，改用 reborn-tabs。",
     "分页浏览列表数据，改用 reborn-pagination。"
   ],
   "pitfalls": [
-    "web 与 uniapp 双端可用，但跳转模式取值不同：Web 为 push/replace/blank（新窗口），UniApp 为 navigate/redirect/switchTab/reLaunch。",
-    "条目必须使用配套的 RebornBreadcrumbItem 子组件包裹，跳转目标通过其 to 属性传入。",
-    "separator-icon 传入图标名后会覆盖 separator 文本分隔符；也可用 separator 插槽为单项自定义分隔符。"
+    "同名的自定义插槽优先级高于属性，条目级配置优先级高于容器级配置。",
+    "末项会被识别为当前页，即使传了 to 也不会渲染成链接。",
+    "routes 与默认插槽互斥，传了 routes 时默认插槽不再渲染。",
+    "首尾状态与 max-count 折叠依赖条目挂载时向容器登记的顺序，动态增删条目时推荐改用 routes 数据驱动。",
+    "折叠时省略号节点位于文档最前、靠 flex order 归位，覆盖 ui.root 时不要移除 flex 布局。",
+    "web 与 uniapp 跳转模式取值不同：Web 为 push/replace/blank（新窗口），UniApp 为 navigate/redirect/switchTab/reLaunch。",
+    "下拉菜单实现不同：Web 复用 RebornDropdown 支持完整 dropdown-props，UniApp 为内置绝对定位面板且仅支持 hideOnClick。"
   ]
 }

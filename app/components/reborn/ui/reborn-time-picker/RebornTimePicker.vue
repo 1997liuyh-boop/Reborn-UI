@@ -6,6 +6,9 @@ import { tv } from "~/lib/tv";
 import RebornTimePanel from "./RebornTimePanel.vue";
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
+import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.config";
+import RebornFieldTrigger from "../reborn-field-trigger/RebornFieldTrigger.vue";
+import type { FieldTriggerProps } from "../reborn-field-trigger/RebornFieldTrigger.vue";
 import theme, { timePickerColors, timePickerSizes } from "./reborn-time-picker.config";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -67,8 +70,8 @@ export interface TimePickerProps {
    * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
    */
   portal?: SelectTriggerProps["portal"];
-  /** 触发器 (Trigger) 的 UI 微调配置 */
-  triggerUi?: SelectTriggerProps["ui"];
+  /** 触发器 (Trigger) 的 UI 微调配置：触发器盒子与浮层的键混写在一起，组件内部自动拆分下发 */
+  triggerUi?: SelectTriggerProps["ui"] & FieldTriggerProps["ui"];
   /** 时间选择器内部组件的 UI 微调配置 */
   ui?: Partial<{
     wrapper: ClassValue;
@@ -126,13 +129,19 @@ const styles = computed(() => b({
   isRange: props.isRange,
 }));
 
-/** 传给 Trigger 的 UI 配置，合并了 config 中的宽度逻辑 */
-const triggerUi = computed(() => {
-  const ui = { ...(props.triggerUi || {}) };
-  ui.dropdown = cn(styles.value.dropdown(), ui.dropdown);
-  ui.trigger = cn(styles.value.trigger(), ui.trigger);
-  return ui;
-});
+/** 传给 Trigger 的 UI 配置，合并了 config 中的宽度逻辑；浮层与触发器盒子分别下发 */
+const splitUi = computed(() => splitTriggerUi(props.triggerUi));
+
+const overlayUi = computed(() => ({
+  ...splitUi.value.overlay,
+  // 浮层宽度来自 config 的 size/isRange 复合变体，triggerUi.dropdown 与 ui.dropdown 都可继续叠加
+  dropdown: cn(styles.value.dropdown(), splitUi.value.overlay.dropdown, props.ui?.dropdown),
+}));
+
+const fieldUi = computed(() => ({
+  ...splitUi.value.field,
+  trigger: cn(styles.value.trigger(), splitUi.value.field.trigger),
+}));
 
 const uiOverrides = computed(() => props.ui || {});
 
@@ -220,32 +229,35 @@ function onOutsideClose() {
 </script>
 
 <template>
-  <RebornSelectTrigger :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
-    :disabled="disabled" :clearable="clearable && hasValue" :size="size" :color="color"
-    :icon="arrowControl ? 'lucide:chevrons-up-down' : 'lucide:clock-3'" :ui="triggerUi" :bordered="bordered"
-    :show-arrow="showArrow" :arrow-animation="arrowAnimation" :portal="portal" @toggle="toggle" @clear="clear"
-    @close="onOutsideClose">
-    <template #cover v-if="$slots.cover">
-      <slot name="cover" :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue"
-        :rangeDisplay="rangeDisplay" :singleDisplay="singleDisplay" />
-    </template>
-    <template #default>
-      <slot :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue" :rangeDisplay="rangeDisplay"
-        :singleDisplay="singleDisplay">
-        <template v-if="isRange && rangeDisplay">
-          <div :class="ui.rangeText()">
-            <span v-if="rangeDisplay.start" :class="ui.triggerText()">{{ rangeDisplay.start }}</span>
-            <span v-else :class="ui.placeholder()">{{ startPlaceholder }}</span>
-            <span :class="ui.separator()">{{ rangeSeparator }}</span>
-            <span v-if="rangeDisplay.end" :class="ui.triggerText()">{{ rangeDisplay.end }}</span>
-            <span v-else :class="ui.placeholder()">{{ endPlaceholder }}</span>
-          </div>
+  <RebornSelectTrigger :class="ui.wrapper({ class: props.class })" :is-open="isOpen" :disabled="disabled" :size="size"
+    :ui="overlayUi" :portal="portal" @close="onOutsideClose">
+    <template #trigger>
+      <RebornFieldTrigger :is-open="isOpen" :disabled="disabled" :clearable="clearable && hasValue" :size="size"
+        :color="color" :icon="arrowControl ? 'lucide:chevrons-up-down' : 'lucide:clock-3'" :ui="fieldUi"
+        :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation" @click="toggle" @clear="clear">
+        <template #cover v-if="$slots.cover">
+          <slot name="cover" :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue"
+            :rangeDisplay="rangeDisplay" :singleDisplay="singleDisplay" />
         </template>
-        <template v-else>
-          <span v-if="singleDisplay" :class="ui.triggerText()">{{ singleDisplay }}</span>
-          <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
+        <template #default>
+          <slot :isOpen="isOpen" :toggle="toggle" :clear="clear" :hasValue="hasValue" :rangeDisplay="rangeDisplay"
+            :singleDisplay="singleDisplay">
+            <template v-if="isRange && rangeDisplay">
+              <div :class="ui.rangeText()">
+                <span v-if="rangeDisplay.start" :class="ui.triggerText()">{{ rangeDisplay.start }}</span>
+                <span v-else :class="ui.placeholder()">{{ startPlaceholder }}</span>
+                <span :class="ui.separator()">{{ rangeSeparator }}</span>
+                <span v-if="rangeDisplay.end" :class="ui.triggerText()">{{ rangeDisplay.end }}</span>
+                <span v-else :class="ui.placeholder()">{{ endPlaceholder }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <span v-if="singleDisplay" :class="ui.triggerText()">{{ singleDisplay }}</span>
+              <span v-else :class="ui.placeholder()">{{ placeholder }}</span>
+            </template>
+          </slot>
         </template>
-      </slot>
+      </RebornFieldTrigger>
     </template>
 
     <template #content>

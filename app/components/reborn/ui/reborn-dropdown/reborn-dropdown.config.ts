@@ -7,6 +7,8 @@ export default {
   slots: {
     wrapper: "relative inline-flex",
     trigger: "inline-flex items-center cursor-pointer select-none outline-none transition-colors",
+    /** 按钮组形态的外层行容器，负责限定整行高度并裁剪溢出内容 */
+    splitRoot: "flex w-full items-center overflow-hidden",
     splitMain: "inline-flex items-center justify-center",
     splitArrow: "inline-flex items-center justify-center border-l border-white/20",
     dropdown: "overflow-hidden p-2 w-auto!",
@@ -19,18 +21,21 @@ export default {
     size: {
       sm: {
         trigger: "h-input-sm px-2 text-sm gap-1 rounded-ui-sm",
+        splitRoot: "h-input-sm",
         splitArrow: "px-1.5 h-input-sm rounded-r-ui-sm",
         item: "h-8 px-3 text-sm rounded-md",
         icon: "size-3.5",
       },
       md: {
         trigger: "h-input-md px-3 text-base gap-1.5 rounded-ui-md",
+        splitRoot: "h-input-md",
         splitArrow: "px-2 h-input-md rounded-r-ui-md",
         item: "h-9 px-4 text-base rounded-md",
         icon: "size-4",
       },
       lg: {
         trigger: "h-input-lg px-4 text-base gap-2 rounded-ui-base",
+        splitRoot: "h-input-lg",
         splitArrow: "px-2.5 h-input-lg rounded-r-ui-base",
         item: "h-10 px-5 text-base rounded-md",
         icon: "size-5",

@@ -152,12 +152,56 @@ UniApp 端不传 `content` 插槽时，可用 `title` + `displayMode` 快速渲�
 
 ### 自定义样式（ui）
 
-`ui` 属性按内部结构键覆盖对应节点的类名，双端键位不同：
+`ui` 属性按内部结构键覆盖对应节点的类名。两端内部结构差异较大，键位互不通用：
 
-| 端     | 可用键                                                                                  |
-| ------ | --------------------------------------------------------------------------------------- |
-| Web    | `wrapper`、`trigger`、`contentWrapper`、`content`、`arrow`、`bridge`、`mask`             |
-| UniApp | `base`、`target`、`pos`、`hidden`、`container`、`inner`、`arrow`、`closeIcon`、`menu`、`menuInner` |
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+
+| 键名             | 说明                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`        | 最外层包裹节点。默认 `relative inline-block`，`class` prop 也会并到这里；整体在行内流中的占位、外边距改这里。                  |
+| `trigger`        | 触发器包裹层，默认 `inline-block`，包住 `default` 插槽的内容，事件绑定在它身上。                                               |
+| `mask`           | 遮罩层。**仅在 `modal` 为真且气泡打开时渲染**，默认 `fixed inset-0 bg-black/30 z-[9998]`，遮罩深浅改这里。                     |
+| `contentWrapper` | 气泡的定位层（Teleport 之后的过渡容器）。默认 `fixed top-0 left-0 z-[9999]`，`transform` 由定位计算写入内联样式，层级改这里。 |
+| `content`        | 气泡主体，也就是看得见的那张卡片。默认 `relative bg-white border shadow-xl rounded-xl p-3`，底色、圆角、内边距、阴影都在这里。 |
+| `bridge`         | 触发器与气泡之间的透明桥接层，防止鼠标移动途中气泡关闭。**仅 `mode="hover"` 时渲染**，默认 `absolute inset-0 z-[-1]`。         |
+| `arrow`          | 箭头。**仅 `arrow` 为真时渲染**，默认 `absolute w-3 h-3 border bg-white`；改底色时要与 `content` 一起改，否则会露馅。          |
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 键名        | 说明                                                                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `base`      | 最外层 `<view>`。默认 `relative inline-block`，`customClass` 也会并到这里。                                                                                 |
+| `target`    | 触发器包裹层，默认 `inline-block`，包住 `default` 插槽，点击事件绑定在它身上。                                                                              |
+| `pos`       | 气泡的定位层。默认 `absolute box-border min-h-[36px] z-[500] transition-opacity duration-200 rounded-md bg-white`，层级与显隐过渡改这里。                   |
+| `hidden`    | 定位层在**离屏测量态**下额外叠加的类名，默认 `left-[-100vw] invisible`。组件需要先把气泡渲染到屏幕外量尺寸再定位，一般不需要覆盖。                          |
+| `container` | 气泡外层容器。默认 `relative text-sm leading-normal shadow-[0_2px_15px_0_rgba(0,0,0,0.1)]`，阴影与基准字号改这里。                                          |
+| `inner`     | 普通模式的内容节点。**仅 `displayMode="normal"` 且未填充 `content` 插槽时渲染**，默认 `relative whitespace-nowrap p-3 rounded-md bg-white`；填充 `content` 插槽后该节点不存在，`ui.inner` 随之失效。 |
+| `menu`      | 菜单模式的列表容器。**仅 `displayMode="menu"` 时渲染**，默认 `inline-block px-3 whitespace-nowrap relative rounded-md bg-white z-[500]`。                    |
+| `menuInner` | 菜单模式下的每一项。默认 `relative py-3 flex items-center border-t first:border-0`，行高、分割线改这里。                                                     |
+| `arrow`     | 箭头。默认 `absolute w-[9px] h-[9px] bg-white pointer-events-none`，方向偏移由内部 `arrowSide` 变体追加；改底色需与 `inner` / `menu` 保持一致。             |
+| `closeIcon` | 关闭图标。默认 `absolute text-[12px] right-[-8px] top-[-10px] scale-50 p-2.5`，位置与点击热区改这里。                                                       |
+
+:::
+
+::
+
+```vue
+<template>
+  <RebornPopover
+    :ui="{
+      content: 'bg-neutral-9 text-white rounded-lg p-2',
+      arrow: 'bg-neutral-9 border-neutral-9',
+    }"
+  >
+    <RebornButton label="悬停查看" />
+    <template #content>提示内容</template>
+  </RebornPopover>
+</template>
+```
 
 ## 注意事项
 

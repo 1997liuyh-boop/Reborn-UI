@@ -3,7 +3,8 @@
   "whenToUse": [
     "长列表、长文章页面需要一键回到顶部时。",
     "uniapp TabBar 页面需要按钮自动抬高避开 TabBar（isTab）时。",
-    "需要预设色彩（primary/success 等）与尺寸（sm/md/lg）的回顶按钮。"
+    "需要预设色彩（primary/success 等）与尺寸（sm/md/lg）的回顶按钮。",
+    "需要在回顶按钮上顺带展示阅读/滚动进度时，开启 showProgress（仅 web 端）。"
   ],
   "whenNotToUse": [
     "需要可拖拽的悬浮入口，改用 reborn-affix。",
@@ -13,6 +14,9 @@
     "web 与 uniapp 双端可用；uniapp 端必须通过 onPageScroll 把 scrollTop 传入组件，否则按钮不会随滚动显示。",
     "threshold 默认 300px，滚动超过该距离才显示按钮。",
     "isTab 为 true 时组件自动抬高 50px 避开 TabBar；safeArea 默认开启底部安全区适配。",
-    "自定义按钮外观用默认插槽，细粒度样式覆盖用 ui 对象（wrapper/base/icon）。"
+    "自定义按钮外观用默认插槽，细粒度样式覆盖用 ui 对象（wrapper/base/icon/progress/progressTrack/progressBar）。",
+    "showProgress 进度环画在内置按钮内部，传了自定义默认插槽时按钮结构由插槽接管，进度环不会渲染。",
+    "showProgress 与 scrollRange 目前仅 web 端可用；uniapp 端只拿得到 scrollTop、缺少总高来源，需另用 createSelectorQuery 测量，尚未实现。",
+    "用 scrollTop 接管滚动数值时必须一并传 scrollRange，否则进度百分比按错误的总距离换算。"
   ]
 }

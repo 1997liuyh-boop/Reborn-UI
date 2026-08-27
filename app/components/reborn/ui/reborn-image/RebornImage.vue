@@ -37,11 +37,9 @@ export interface ImageProps {
 		root: ClassValue;
 		error: ClassValue;
 		errorIcon: ClassValue;
-		errorLabel: ClassValue;
 		loading: ClassValue;
 		loadingIcon: ClassValue;
 		inner: ClassValue;
-		magnifier: ClassValue;
 		magnifierLens: ClassValue;
 		magnifierView: ClassValue;
 		magnifierViewImage: ClassValue;
@@ -94,7 +92,6 @@ const ui = computed(() => {
 	return {
 		root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
 		error: (opts?: { class?: any }) => styles.error({ class: cn(opts?.class, uiOverrides.value.error) }),
-		errorLabel: (opts?: { class?: any }) => styles.errorLabel({ class: cn(opts?.class, uiOverrides.value.errorLabel) }),
 		errorIcon: (opts?: { class?: any }) => styles.errorIcon({ class: cn(opts?.class, uiOverrides.value.errorIcon) }),
 		loading: (opts?: { class?: any }) => styles.loading({ class: cn(opts?.class, uiOverrides.value.loading) }),
 		loadingIcon: (opts?: { class?: any }) => styles.loadingIcon({ class: cn(opts?.class, uiOverrides.value.loadingIcon) }),

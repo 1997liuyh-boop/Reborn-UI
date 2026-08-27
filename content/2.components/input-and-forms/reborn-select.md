@@ -13,7 +13,7 @@ navigation:
     color: warning
 ---
 
-::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "RebornSelectTrigger.vue", "reborn-select.config.ts", "reborn-select-trigger.config.ts", "RebornTransition.vue"]' :uniappFiles='["RebornDropdownSelect.vue", "reborn-dropdown-select.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts", "RebornTransition.vue", "reborn-transition.config.ts"]'}
+::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "RebornSelectTrigger.vue", "RebornFieldTrigger.vue", "reborn-select.config.ts", "reborn-select-trigger.config.ts", "reborn-field-trigger.config.ts", "RebornTransition.vue"]' :uniappFiles='["RebornDropdownSelect.vue", "reborn-dropdown-select.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts", "RebornTransition.vue", "reborn-transition.config.ts"]'}
 ::
 
 ## API

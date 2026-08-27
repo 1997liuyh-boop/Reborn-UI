@@ -1,18 +1,37 @@
 {
-  "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件。",
+  "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件，支持四种形态变体、精度控制、步进倍数约束、键盘与滚轮增减、前后缀插槽与自定义增减图标。",
   "whenToUse": [
     "购物车、库存等数量增减场景。",
-    "需要限定 min/max 与 step 的数值录入。",
-    "需要自定义加减按钮图标（decrease-icon/increase-icon 插槽）时。"
+    "需要限定 min/max/step，或需要固定小数位（precision）的数值录入。",
+    "需要在输入框内附带货币符号、单位等前后缀（prefix/suffix 插槽）时。",
+    "需要只允许步进倍数取值（step-strictly）时。",
+    "需要自定义加减按钮图标（plus/minus 插槽，双端同名）时。",
+    "需要嵌入已有边框容器（variant=borderless）或走极简下划线风格（variant=underlined）时。",
+    "表格行内批量改数值、希望用滚轮快速调节（change-on-wheel）时，注意该能力仅 web 端有效。",
+    "需要在校验失败后把焦点与光标精确落到该输入框（focus('start' | 'end' | 'all')）时。"
   ],
   "whenNotToUse": [
     "自由输入长数字或文本改用 reborn-input。",
     "在连续区间内取值改用 reborn-slider。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用，但插槽名不同：web 端为 decrement/increment，uniapp 端为 decrease-icon/increase-icon。",
-    "uniapp 端 min 默认 0、max 默认 200（web 端两者无默认值，不传即不限制），step 默认 1，业务范围不同时必须显式传入。",
-    "readonly（仅 uniapp）与原生语义相反：默认 true 表示允许直接键入，设为 false 后输入框只读、仅能通过按钮增减。",
-    "inputType（仅 uniapp）仅支持 digit/number 两种；digit 模式下数值自动保留两位小数。"
+    "宽度默认 w-full 撑满父容器，组件自身不设固定宽度；需要固定宽度时通过 class（如 w-40）或 ui.wrapper 传入。",
+    "variant=underlined 会强制压平圆角并隐藏按钮间的竖直分割线，此时传 shape 不会有效果。",
+    "variant=borderless 平时没有描边，仅在表单校验失败时补一圈红色描边，否则错误态不可见。",
+    "改 web 端圆角时必须加 ! 提权（如 rounded-none!）：项目自定义的 rounded-ui-* 没有注册进 app/lib/utils.ts 的 tailwind-merge 冲突组，不提权时它会与 rounded-none 共存并由 CSS 源码顺序决定胜负，变体级覆盖会失效。uniapp 端用的是标准 rounded-* 类，不受此限。",
+    "web 端配色背景一律使用 gray-1/gray-2 等灰阶 token（base.css 的 .dark 会整条翻转），不可写 bg-white；uniapp 端 theme.css 没有 .dark 代码块、灰阶不翻转，深色适配必须逐条写显式 dark: 变体。两端策略相反，互抄样式会出错。",
+    "change-on-wheel 只在输入框已聚焦时接管滚轮，未聚焦时不影响页面滚动；这与 Element Plus 的默认行为不同，需要留意。",
+    "change-on-wheel 在 uniapp 端是空实现：小程序与 App 没有鼠标滚轮事件，该属性仅为与 web 端同名同签名而保留，便于同一份业务代码跨端复用。",
+    "keyboard=false 只关闭 ↑/↓ 步进，Enter 提交仍然生效，提交时机仍由 model-event 决定。",
+    "keyboard 在 uniapp 端仅 H5 生效：小程序与 App 的原生输入框不派发 keydown 事件，该端上没有可拦截的按键。",
+    "focus(cursor) 双端可用但实现机制不同：web 端命令式调用 setSelectionRange，uniapp 端只能通过 cursor / selection-start / selection-end 属性声明式指定，落位在部分小程序端可能不精确。",
+    "web、uniapp 双端插槽名已对齐为 plus/minus；旧名仍兼容（web 端 decrement/increment，uniapp 端 decrease-icon/increase-icon），新代码不要再用旧名。",
+    "precision 与 step 冲突时以 step 的小数位优先：precision 小于 step 的小数位会被提升，否则步进结果会被截断。",
+    "model-event=\"input\" 下键入值允许临时超出 min/max，失焦时才统一修正；在 watch 中直接消费绑定值需考虑这段越界窗口。",
+    "step-strictly 采用就近吸附而非拒绝输入：step 为 5 时键入 13，提交后为 15。",
+    "formatter 与 parser 必须配对使用，只传其一会导致展示文本无法被解析回数值。",
+    "web 端 readonly 为原生语义（只读且按钮禁用）；uniapp 端 readonly 与原生语义相反，默认 true 表示允许键入，设为 false 后仅能通过按钮增减。",
+    "uniapp 端 min 默认 0、max 默认 200；web 端默认取 Number.MIN_SAFE_INTEGER / Number.MAX_SAFE_INTEGER 即不限制，业务范围不同时必须显式传入。",
+    "inputType（仅 uniapp）仅支持 digit/number 两种；digit 模式下默认保留两位小数，显式传 precision 会覆盖这一默认。"
   ]
 }

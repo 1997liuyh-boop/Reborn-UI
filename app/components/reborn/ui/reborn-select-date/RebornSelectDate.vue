@@ -6,6 +6,9 @@ import { cn } from "~/lib/utils";
 import RebornDatePickerPanel from "../reborn-date-picker-panel/RebornDatePickerPanel.vue";
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
+import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.config";
+import RebornFieldTrigger from "../reborn-field-trigger/RebornFieldTrigger.vue";
+import type { FieldTriggerProps } from "../reborn-field-trigger/RebornFieldTrigger.vue";
 import RebornBadge from "../reborn-badge/RebornBadge.vue";
 import RebornPopover from "../reborn-popover/RebornPopover.vue";
 
@@ -47,13 +50,12 @@ export interface SelectDateProps {
      * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
      */
     portal?: SelectTriggerProps["portal"];
-    /** 触发器 (Trigger) 的 UI 微调配置 */
-    triggerUi?: SelectTriggerProps["ui"];
+    /** 触发器 (Trigger) 的 UI 微调配置：触发器盒子与浮层的键混写在一起，组件内部自动拆分下发 */
+    triggerUi?: SelectTriggerProps["ui"] & FieldTriggerProps["ui"];
     /** 日期选择器内部组件的 UI 微调配置 */
     ui?: Partial<{
         wrapper: ClassValue;
         calDayToday: ClassValue;
-        clearBtn: ClassValue;
         dropdown: ClassValue;
         content: ClassValue;
         calHeader: ClassValue;
@@ -130,11 +132,15 @@ const ui = computed(() => {
     };
 });
 
-/** 触发器 (Trigger) 的最终 UI 配置 */
-const selectTriggerUi = computed(() => ({
-    ...props.triggerUi,
-    dropdown: cn(props.triggerUi?.dropdown, ui.value.dropdown()),
+/** 拆分后的最终 UI 配置：浮层给 RebornSelectTrigger，触发器盒子给 RebornFieldTrigger */
+const splitUi = computed(() => splitTriggerUi(props.triggerUi));
+
+const overlayUi = computed(() => ({
+    ...splitUi.value.overlay,
+    dropdown: cn(splitUi.value.overlay.dropdown, ui.value.dropdown()),
 }));
+
+const fieldUi = computed(() => splitUi.value.field);
 
 const panelUi = computed(() => ({
     wrapper: "p-0", // No padding inside dropdown as dropdown has its own
@@ -265,45 +271,51 @@ function onOutsideClose() {
 </script>
 
 <template>
-    <RebornSelectTrigger :class="props.class" :display-text="displayText" :placeholder="placeholder"
-        :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size" :color="color"
-        :clearable="clearable && (Array.isArray(modelValue) ? modelValue.length > 0 : !!modelValue)"
-        :ui="selectTriggerUi" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation"
-        icon="lucide:calendar" :error="isError" :portal="portal" @toggle="toggle" @clear="clear" @close="onOutsideClose">
-        <template #cover="{ displayText, placeholder, isOpen, ui: triggerUi }" v-if="$slots.cover">
-            <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi" />
-        </template>
-        <template #default="{ displayText, placeholder, isOpen, ui: triggerUi }">
-            <slot :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi">
-                <div v-if="multiSelectionInfo" class="flex max-w-full items-center gap-1.5" @click.stop>
-                    <RebornPopover :content="{ side: 'bottom', align: 'center', sideOffset: 12 }" arrow>
-                        <div class="flex items-center gap-1">
-                            <RebornBadge :color="color" :size="size" :label="`${multiSelectionInfo.first}`"
-                                class="shrink-0 cursor-pointer" />
-                            <RebornBadge :color="color" :size="size" :label="`+${multiSelectionInfo.count}`"
-                                class="shrink-0 cursor-pointer" />
+    <RebornSelectTrigger :class="ui.wrapper({ class: props.class })" :is-open="isOpen" :disabled="isDisabled"
+        :size="fieldGroupSize || size" :ui="overlayUi" :portal="portal" @close="onOutsideClose">
+        <template #trigger>
+            <RebornFieldTrigger :display-text="displayText" :placeholder="placeholder" :is-open="isOpen"
+                :disabled="isDisabled" :size="fieldGroupSize || size" :color="color"
+                :clearable="clearable && (Array.isArray(modelValue) ? modelValue.length > 0 : !!modelValue)"
+                :ui="fieldUi" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation"
+                icon="lucide:calendar" :error="isError" @click="toggle" @clear="clear">
+                <template #cover="{ displayText, placeholder, isOpen, ui: triggerUi }" v-if="$slots.cover">
+                    <slot name="cover" :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen"
+                        :ui="triggerUi" />
+                </template>
+                <template #default="{ displayText, placeholder, isOpen, ui: triggerUi }">
+                    <slot :displayText="displayText" :placeholder="placeholder" :isOpen="isOpen" :ui="triggerUi">
+                        <div v-if="multiSelectionInfo" class="flex max-w-full items-center gap-1.5" @click.stop>
+                            <RebornPopover :content="{ side: 'bottom', align: 'center', sideOffset: 12 }" arrow>
+                                <div class="flex items-center gap-1">
+                                    <RebornBadge :color="color" :size="size" :label="`${multiSelectionInfo.first}`"
+                                        class="shrink-0 cursor-pointer" />
+                                    <RebornBadge :color="color" :size="size" :label="`+${multiSelectionInfo.count}`"
+                                        class="shrink-0 cursor-pointer" />
+                                </div>
+                                <template #content>
+                                    <div
+                                        class="flex max-w-[280px] flex-col overflow-hidden bg-white dark:bg-gray-8 shadow-xl rounded-xl border border-gray-1 dark:border-gray-7">
+                                        <div
+                                            class="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-1 dark:border-gray-7 flex justify-between items-center">
+                                            <span class="text-sm font-bold text-gray-400 tracking-wider">已选清单 ({{
+                                                selectionList.length }})</span>
+                                            <div class="text-sm text-primary cursor-pointer hover:underline"
+                                                @click="clear">全部清空</div>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2 p-3 overflow-y-auto max-h-[200px]">
+                                            <RebornBadge v-for="item in selectionList" :key="item.index"
+                                                :label="item.label" :color="color" :size="size" closable
+                                                @close="removeSelection(item.index, $event)" />
+                                        </div>
+                                    </div>
+                                </template>
+                            </RebornPopover>
                         </div>
-                        <template #content>
-                            <div
-                                class="flex max-w-[280px] flex-col overflow-hidden bg-white dark:bg-gray-8 shadow-xl rounded-xl border border-gray-1 dark:border-gray-7">
-                                <div
-                                    class="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-1 dark:border-gray-7 flex justify-between items-center">
-                                    <span class="text-sm font-bold text-gray-400 tracking-wider">已选清单 ({{
-                                        selectionList.length }})</span>
-                                    <div class="text-sm text-primary cursor-pointer hover:underline"
-                                        @click="clear">全部清空</div>
-                                </div>
-                                <div class="flex flex-wrap gap-2 p-3 overflow-y-auto max-h-[200px]">
-                                    <RebornBadge v-for="item in selectionList" :key="item.index" :label="item.label"
-                                        :color="color" :size="size" closable
-                                        @close="removeSelection(item.index, $event)" />
-                                </div>
-                            </div>
-                        </template>
-                    </RebornPopover>
-                </div>
-                <span v-else :class="triggerUi.triggerText()">{{ displayText }}</span>
-            </slot>
+                        <span v-else :class="triggerUi.triggerText()">{{ displayText }}</span>
+                    </slot>
+                </template>
+            </RebornFieldTrigger>
         </template>
 
         <template #content>

@@ -62,6 +62,41 @@ navigation:
 | `open-auto-focus`  | `-`              | Dialog 打开后自动聚焦时触发。          | Web  |
 | `close-auto-focus` | `-`              | Dialog 关闭后焦点返回触发器时触发。    | Web  |
 
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供：
+
+| 键名            | 说明                                                                                                                                                            |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trigger`       | 触发器包裹层。**仅填充了 default 插槽时渲染**，默认 `inline-flex`。                                                                                              |
+| `root`          | Teleport 之后的全屏根节点，默认 `fixed inset-0`；层级由内联样式写入，遮罩之外的定位上下文改这里。                                                                |
+| `backdrop`      | 遮罩层，默认 `absolute inset-0 bg-black/45 backdrop-blur-[2px]`，遮罩深浅与模糊度改这里。                                                                        |
+| `shell`         | 居中容器（过渡动画的 `custom-class`）。默认 `absolute inset-0 flex items-center justify-center p-4 sm:p-6`；想让弹窗靠顶部就在这里改 `items-*`。                  |
+| `panel`         | 弹窗面板本体。默认 `relative flex w-full max-w-[560px] flex-col overflow-hidden rounded-ui-md border bg-white shadow-…`，宽度、圆角、底色都在这里；`class` prop 也并到该节点。 |
+| `header`        | 头部条。**仅传了 `title` / `description` 或填充 `header` 插槽时渲染**，默认 `flex items-start justify-between gap-4 border-b px-4 py-3`，拖拽手柄绑定在它身上。   |
+| `headerContent` | 头部左侧的文字区容器，默认 `min-w-0 flex-1 space-y-1`；它在 `header` 插槽外层，填充插槽后依然生效。                                                              |
+| `title`         | 标题 `<h3>`，默认 `text-lg font-semibold text-gray-900`。**仅在传了 `title` 且未填充 `header` 插槽时渲染**，填充 `header` 插槽会替换掉该节点，`ui.title` 随之失效。 |
+| `description`   | 描述 `<p>`，默认 `text-sm leading-[1.6] text-gray-500`。**仅在传了 `description` 且未填充 `header` 插槽时渲染**，填充 `header` 插槽会使其失效。                  |
+| `close`         | 右上角关闭图标，默认 `shrink-0`。**仅 `close` 为真时渲染**，图标名走 `closeIcon` prop。                                                                          |
+| `body`          | 内容区，默认 `px-4 py-3`，承载 `content` 插槽；正文内边距与滚动改这里（配合 `scrollable`）。                                                                     |
+| `footer`        | 底部条。**仅底部有内容时渲染**（填充了 `footer` 插槽或启用了确认/取消按钮），默认 `flex items-center justify-end gap-3 border-t px-4 py-2`，按钮对齐方式改这里。  |
+
+```vue
+<template>
+  <RebornDialog
+    v-model:open="open"
+    title="删除确认"
+    description="该操作不可撤销"
+    :ui="{
+      backdrop: 'bg-black/60',
+      panel: 'max-w-[420px] rounded-2xl',
+      title: 'text-base font-bold',
+      footer: 'justify-between',
+    }"
+  />
+</template>
+```
+
 ## 默认行为
 
 - `default` 插槽、`open` 与 `v-model:open` 可以同时参与打开 Dialog，不会互斥。

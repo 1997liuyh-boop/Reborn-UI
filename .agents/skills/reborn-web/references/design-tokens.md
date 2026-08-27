@@ -41,7 +41,8 @@
 | 颜色 | `bg-primary`、`text-inverted`、`bg-gray-9/90`、`border-gray-5` | 色阶类支持透明度修饰符（如 `/90`、`/10`） |
 | 透明度变体 | `bg-success/10`、`border-warning/20` | soft / subtle 变体的标准写法 |
 | 字号 | `text-sm`、`text-base`、`text-lg`、`text-xl`、`text-2xl`、`text-3xl`、`text-4xl` | 对应 `--text-*`，仅这 7 级 |
-| 结构高度 | `h-badge-sm/md/lg`、`h-button-sm/md/lg`、`h-input-sm/md/lg` | 对应 `--height-*` |
+| 结构高度 | `h-badge-sm/md/lg`、`h-button-sm/md/lg`、`h-input-sm/md/lg`、`h-pagination-sm/md/lg` | 对应 `--height-*` |
+| 结构宽度 | `min-w-pagination-sm/md/lg`、`w-pagination-input-sm/md/lg`、`min-w-pagination-input-sm/md/lg` | 对应 `--min-width-pagination-*` / `--width-pagination-input-*` / `--min-width-pagination-input-*` |
 
 > 注意：设计稿指定的一次性颜色（如 Badge warning 变体的 `bg-[#FFF7F3]`）允许使用任意值类，但需与设计确认后落盘，且不得替代已有令牌。
 
@@ -62,6 +63,18 @@ Web / PC 端三档，水平内边距统一 **12px**（`px-3`）：
 边框线型由 `borderStyle` prop 控制（`solid` / `dashed`），宽度固定 1px，对有边框的 `outline` / `subtle` 变体生效。`subtle` 的描边已由 `ring-1 ring-inset` 改为 `border`——ring 本质是 box-shadow，无法渲染虚线。
 
 > UniApp 端按钮仍为 `xs` ~ `2xl` 七档，走自己的 rpx 令牌（`packages/uniapp-project/src/styles/theme.css` + 独立 `tailwind.config.ts`），与 Web 端互不影响。
+
+### 分页尺寸 (Pagination)
+
+页码 / 翻页按钮 / 省略号共用高度；页码最小宽与高度同值（单数字为正方形）；跳转输入宽为高度的 2 倍。
+
+| size | 高度 | 高度令牌 | 页码最小宽 | 跳转输入宽 |
+|---|---|---|---|---|
+| `sm` | 24px | `--height-pagination-sm` | `--min-width-pagination-sm` | `--width-pagination-input-sm`（48px） |
+| `md` | 28px | `--height-pagination-md` | `--min-width-pagination-md` | `--width-pagination-input-md`（56px） |
+| `lg` | 32px | `--height-pagination-lg` | `--min-width-pagination-lg` | `--width-pagination-input-lg`（64px） |
+
+`md` 为默认档。跳转输入会盖在 `RebornInput` 的 `w-full` 上，config 中宽度类需加 `!`。
 
 ### 圆角 (Radius)
 - `2xs`: 4px

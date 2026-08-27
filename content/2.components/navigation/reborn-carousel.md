@@ -155,25 +155,76 @@ Carousel 是仅 web 端的轮播组件，基于原生 CSS Scroll Snap 实现，�
 | `next` | `-`               | 平滑滚动切换到下一张；`loop` 下可从末张无缝回到首张，非 `loop` 已在末张时无操作；触发 `change` 并重置自动播放计时。 |
 | `goTo` | `(index: number)` | 带平滑滚动动画跳转到指定索引（从 0 起，`loop` 下越界自动取模）；同步 `v-model`、触发 `change` 并重置自动播放计时。 |
 
-## UI 对象
+## 自定义样式（ui）
 
-`ui` 支持覆盖以下区域：
+`ui` 按内部结构键覆盖对应节点的类名。本组件仅 Web 端提供。节点自外向内是：`wrapper` → `thumbsShell` →（左/上侧的缩略图面板 + 主轮播 `root`）。
 
-- `wrapper`
-- `root`
-- `viewport`
-- `track`
-- `slide`
-- `slideInner`
-- `slideActive`
-- `slideInactive`
-- `arrowGroup`
-- `arrow`
-- `indicatorWrapper`
-- `indicators`
-- `indicator`
-- `indicatorActive`
-- `indicatorInactive`
+### 外层与轨道
+
+| 键名         | 说明                                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `wrapper`    | 最外层节点，默认 `w-full max-w-full min-w-0 overflow-hidden`；`class` prop 也并到该节点，整体外边距、宽度改这里。          |
+| `thumbsShell`| 「缩略图面板 + 主轮播」的 flex 外壳，默认 `flex gap-4 md:gap-5`；两者之间的间距、排列方向（受 `thumbs.position` 控制）改这里。 |
+| `root`       | 主轮播根节点，默认 `group/reborn-carousel relative isolate w-full min-w-0 max-w-full overflow-hidden`；圆角、阴影、外框改这里（箭头与 `inside` 指示器都定位在它内部）。 |
+| `viewport`   | 滚动视口，默认 `relative w-full min-w-0 max-w-full overflow-auto` 并隐藏滚动条；`grabCursor` 生效时会追加 `cursor-grab`。  |
+| `track`      | 轨道，默认 `flex w-full min-w-full items-stretch`；轨道位移由内联 `style` 驱动，不要在这里写 `transform`。                  |
+| `slide`      | 单个轮播项外层，默认 `relative min-w-0 max-w-full shrink-0 transition-all duration-500`；宽度由 `slidesPerview` 计算成内联样式，这里适合改圆角、间距。 |
+| `slideActive`| **当前项**的追加类名——不是独立节点，激活时并入 `slide`。                                                                 |
+| `slideInactive`| **非当前项**的追加类名，同样并入 `slide`（默认为空，可用来做未激活项的缩放/降透明度）。                                 |
+| `slideInner` | 轮播项内层容器（default 插槽内容的直接父级），默认 `relative w-full overflow-hidden isolate rounded-[inherit]`。          |
+
+### 箭头与指示器
+
+| 键名               | 说明                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `arrowGroup`       | 左右箭头的定位容器。**仅 `arrow` 判定为显示时渲染**，默认 `pointer-events-none absolute inset-x-4 top-1/2 z-20 flex -translate-y-1/2 justify-between`；箭头离边距离改这里。 |
+| `arrow`            | 单个箭头按钮，默认 `size-10 rounded-full inline-flex items-center justify-center bg-[#000000]/45 backdrop-blur-3xl border`。**仅在未填充 `prev` / `next` 插槽时渲染**，填充这两个插槽会替换掉按钮，`ui.arrow` 随之失效。 |
+| `indicatorWrapper` | 指示器定位容器，默认 `flex justify-center`；`indicatorPosition` 为 `inside` 时在 `root` 内绝对定位，为 `outside` 时在 `root` 下方常规排列。   |
+| `indicators`       | 圆点/按钮列表容器，默认 `flex items-center gap-2 pointer-events-auto`。**仅在未填充 `indicators` 插槽、且分页类型不是 `fraction` 时渲染**，填充该插槽会使它连同下面三个键一起失效。 |
+| `indicator`        | 单个指示器，默认 `rounded-full transition-all duration-300`；尺寸请在这里给（默认样式不含宽高）。同样受 `indicators` 插槽陷阱影响。            |
+| `indicatorActive`  | **当前项**指示器的追加类名，默认 `bg-slate-900 dark:bg-white`——不是独立节点，激活时并入 `indicator`。                                       |
+| `indicatorInactive`| **非当前项**指示器的追加类名，默认 `bg-slate-400/60 dark:bg-slate-500/60`，同样并入 `indicator`。                                            |
+
+> `pagination.type` 为 `fraction` 时渲染的是「当前/总数」胶囊，它是一段固定内联类名，不接受 `ui` 覆盖——要改样式请填充 `indicators` 插槽自行渲染。
+
+### 缩略图
+
+以下键仅在传入 `thumbs` 配置后渲染：
+
+| 键名                | 说明                                                                                                                        |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `thumbsPanel`       | 缩略图面板根节点，默认 `group/reborn-carousel-thumbs relative flex min-w-0 shrink-0 gap-3`；面板尺寸由 `thumbs` 配置算成内联样式。 |
+| `thumbsViewport`    | 缩略图滚动视口，默认 `min-w-0 min-h-0` 并隐藏滚动条。                                                                        |
+| `thumbsTrack`       | 缩略图轨道，默认 `flex gap-3`；缩略图之间的间距改这里。                                                                       |
+| `thumb`             | 单张缩略图外层，默认 `group/thumb relative overflow-hidden transition-all duration-300`；宽高由 `thumbs` 配置给出。            |
+| `thumbActive`       | **当前**缩略图的追加类名，默认 `border border-[#252626] rounded-ui-md`——并入 `thumb`，选中描边改这里。                        |
+| `thumbInactive`     | **非当前**缩略图的追加类名，默认带 `opacity-70` 与 hover 提亮，同样并入 `thumb`。                                              |
+| `thumbPreview`      | 缩略图内的预览容器（复用 default 插槽内容并强制铺满），默认 `pointer-events-none h-full w-full overflow-hidden rounded-[inherit]`。 |
+| `thumbOverlay`      | 缩略图上的渐变蒙层，默认 `pointer-events-none absolute inset-0 bg-linear-to-t …`；组件按选中态给它 `opacity-40` / `opacity-10`，写在这里的类名会追加在后面。 |
+| `thumbsArrowGroup`  | 缩略图箭头的定位容器。**仅缩略图可滚动且 `thumbs.arrow` 允许显示时渲染**，默认 `pointer-events-none absolute z-10 flex items-center gap-2`。 |
+| `thumbsArrow`       | 缩略图箭头按钮，默认 `size-8 rounded-full inline-flex items-center justify-center bg-[#000000]/45 backdrop-blur-3xl border`；该按钮没有对应插槽，覆盖一定生效。 |
+
+```vue
+<template>
+  <RebornCarousel
+    v-model="index"
+    :items="items"
+    loop
+    arrow="always"
+    :ui="{
+      root: 'rounded-2xl shadow-lg',
+      slide: 'px-2',
+      arrow: 'size-8 bg-black/70',
+      indicator: 'size-2',
+      indicatorActive: 'bg-primary w-6',
+    }"
+  >
+    <template #default="{ item }">
+      <img :src="item.src" class="h-64 w-full object-cover" />
+    </template>
+  </RebornCarousel>
+</template>
+```
 
 ## 使用注意事项
 

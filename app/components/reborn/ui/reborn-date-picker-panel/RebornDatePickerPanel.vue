@@ -54,7 +54,6 @@ export interface DatePickerPanelProps {
         dayInRange: ClassValue;
         yearMonthInRange: ClassValue;
         yearMonthOutside: ClassValue;
-        grid4: ClassValue;
         grid4Year: ClassValue;
         grid4Month: ClassValue;
         dateTimeHeader: ClassValue;
@@ -62,7 +61,6 @@ export interface DatePickerPanelProps {
         dateTimeSegmentActive: ClassValue;
         dateTimeSegmentDisabled: ClassValue;
         dateTimeSeparator: ClassValue;
-        headerActions: ClassValue;
         content: ClassValue;
         panelLeft: ClassValue;
         panelRight: ClassValue;

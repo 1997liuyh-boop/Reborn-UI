@@ -55,30 +55,53 @@ Reborn UI 致力于在 Web (Nuxt 3) 和 UniApp 平台提供一致的开发体验
 | `click` | `(event: Event)` | 点击整个徽标时触发（UniApp 显式定义）。 |
 | `update:show`| `(value: boolean)` | `v-model:show` 同步事件。 |
 
-## UI 自定义配置 (Config)
+## 自定义样式（ui）
 
-可以通过 `ui` 属性对组件内部结构进行精细化样式注入：
+`ui` 按内部结构键覆盖对应节点的类名。两端键名相同，但个别键的生效条件不同：
 
-```typescript
-// Web 端 UiProps 结构
-{
-  root?: string        // 动画容器层
-  base?: string        // 徽标主体内容
-  label?: string       // 文本层
-  leadingIcon?: string // 前置图标
-  trailingIcon?: string// 后置图标
-  closeButton?: string // 关闭按钮容器
-}
+::tabs{sync="platform"}
 
-// UniApp 端 UiProps 结构 (额外支持)
-{
-  root?: string
-  base?: string
-  label?: string
-  leadingIcon?: string
-  trailingIcon?: string
-  closeButton?: string
-  closeIcon?: string
-}
+:::tabs-item{label="Web" icon="tabler:world"}
+
+| 键名           | 说明                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`         | 最外层动画容器（`RebornTransition`）。默认 `reborn-badge cursor-pointer`，显隐过渡与外边距、定位加在这里。                                          |
+| `base`         | 徽标主体（标签名由 `as` 决定）。默认 `inline-flex items-center justify-center font-medium whitespace-nowrap overflow-hidden`，底色、圆角、内边距、字号都在这里，尺寸/配色变体也作用于它。 |
+| `label`        | 文本包裹层，默认 `inline-flex items-center justify-center truncate max-w-full min-w-0`。**该节点在 default 插槽外层**，因此填充 default 插槽后它依然存在，`ui.label` 仍生效。 |
+| `leadingIcon`  | 前置图标类名。模板本身不渲染前置图标，需要在 `leading` 插槽里自行取用：`<template #leading="{ ui }">`，再把 `ui.leadingIcon()` 挂到你的图标上。      |
+| `trailingIcon` | 后置图标类名，用法同 `leadingIcon`，通过 `trailing` 插槽的作用域参数取用。                                                                          |
+| `closeButton`  | 关闭按钮容器。**仅 `closable` 为真时渲染**，默认 `inline-flex items-center justify-center rounded-full hover:bg-black/10`。                        |
+| `closeIcon`    | 关闭图标。**仅 `closable` 为真且未填充 `close` 插槽时渲染**，填充该插槽会替换掉图标节点，`ui.closeIcon` 随之失效（插槽作用域里可拿到 `ui` 自行套用）。 |
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 键名           | 说明                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`         | 最外层动画容器（`RebornTransition` 的 `custom-class`）。默认 `reborn-badge inline`。                                                            |
+| `base`         | 徽标主体 `<view>`。默认 `inline-flex items-center justify-center font-medium whitespace-nowrap overflow-hidden`，底色、圆角、内边距、字号在这里；`customClass` 也会并到同一节点。 |
+| `label`        | 文本包裹 `<view>`，默认 `truncate`。**仅在传了 `label` 或填充了 default 插槽时渲染**；该节点在插槽外层，填充插槽不影响它生效。                  |
+| `leadingIcon`  | 前置图标 `<view>`（类名图标）。**仅在传了 `icon` 且未填充 `leading` 插槽时渲染**，填充该插槽会替换掉图标节点，`ui.leadingIcon` 随之失效。       |
+| `trailingIcon` | 后置图标类名。UniApp 端模板未渲染后置图标（`trailing` 插槽也不透出 `ui`），当前传入不会生效，保留该键仅为与 Web 端对齐。                        |
+| `closeButton`  | 关闭按钮容器 `<view>`。**仅 `closable` 为真时渲染**，默认 `inline-flex items-center justify-center rounded-full hover:bg-black/10`。            |
+| `closeIcon`    | 关闭图标 `<view>`（与 `closeIcon` prop 的类名一起作用）。**仅 `closable` 为真且未填充 `close` 插槽时渲染**，填充该插槽会使其失效。              |
+
+:::
+
+::
+
+```vue
+<template>
+  <RebornBadge
+    label="新"
+    closable
+    :ui="{
+      base: 'bg-error/10 text-error',
+      label: 'tracking-wide',
+      closeButton: 'hover:bg-error/20',
+    }"
+  />
+</template>
 ```
 

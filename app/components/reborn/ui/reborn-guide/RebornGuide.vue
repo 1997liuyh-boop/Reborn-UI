@@ -95,7 +95,6 @@ export interface RebornGuideProps {
     guideFooter: ClassValue;
     counter: ClassValue;
     buttonGroup: ClassValue;
-    skipLink: ClassValue;
     dialogOverlay: ClassValue;
     dialogBox: ClassValue;
   }>;
@@ -585,8 +584,6 @@ const ui = computed(() => {
       cn(styles.counter(), opts?.class, overrides.value.counter),
     buttonGroup: (opts?: { class?: any }) =>
       cn(styles.buttonGroup(), opts?.class, overrides.value.buttonGroup),
-    skipLink: (opts?: { class?: any }) =>
-      cn(styles.skipLink(), opts?.class, overrides.value.skipLink),
     dialogOverlay: (opts?: { class?: any }) =>
       cn(styles.dialogOverlay(), opts?.class, overrides.value.dialogOverlay),
     dialogBox: (opts?: { class?: any }) =>

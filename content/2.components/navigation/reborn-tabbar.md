@@ -189,6 +189,34 @@ function beforeChange({ name }: { name: string | number }, done: (ok?: boolean) 
 | `flyBallsContainer` | `fly-balls` 动画的小球容器层。 |
 | `flyBallItem` | `fly-balls` 动画的单个小球。 |
 
+`RebornTabbarTrigger` 的 `ui` 写在子项上，按以下键覆盖单个标签内部的节点（注意 `RebornTabbar` 的 `ui` **不会**下发给子项，两者各写各的）：
+
+| 键名            | 说明                                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`          | 子项根节点，默认 `box-content`，形状变体会追加尺寸类；单项宽度、点击热区改这里，`custom-class` 也并到该节点。                              |
+| `bodyGlowLayer` | 包在 `body` 外的一层颜色背景（`round` + `glass` 组合才有实际样式，默认 `display: contents` 不影响布局）。**填充子项 default 插槽会替换掉从这里开始的全部内容**，`ui.bodyGlowLayer` 及其内部各键随之失效——不过该插槽的作用域透出了 `ui`，接管时可自行绑回去。 |
+| `body`          | 图标 + 标题的排布容器；上下内边距、图文间距改这里。同样受上面的 default 插槽陷阱影响。                                                     |
+| `icon`          | 图标区外层（抖动 / 果冻动画作用在它身上）。**仅传了 `icon` 或填充了 `icon` 插槽时渲染**；图标尺寸、外边距改这里。                          |
+| `activeIcon`    | 选中态图标节点。**仅在未填充 `icon` 插槽时渲染**，填充该插槽会替换掉选中/未选中两个节点，`ui.activeIcon` 随之失效。                        |
+| `inactiveIcon`  | 未选中态图标节点，同样受 `icon` 插槽陷阱影响。                                                                                             |
+| `iconInner`     | 字体图标的实际渲染节点（`icon` 传的是类名而非图片时），默认 `text-40`——图标字号改这里；传图片路径时走 `RebornImage`，请用 `imageSize` 调整。 |
+| `glowLayer`     | 图标区内的渐变光影层（`normal` + `glass` 动画），始终渲染但默认无样式，只有对应动画变体才可见。                                            |
+| `title`         | 标题文本节点。**仅传了 `title` 且非 `pureIcon` 时渲染**；字号、行高、上边距改这里（颜色由组件按选中态写成内联 `style`，类名改不动，请用 `activeColor` / `inactiveColor`）。 |
+
+```vue
+<template>
+  <RebornTabbar v-model="active" fixed :ui="{ base: 'h-[120rpx]' }">
+    <RebornTabbarTrigger
+      name="home"
+      title="首页"
+      icon="i-lucide-home"
+      :ui="{ title: 'text-22 mt-[4rpx]', iconInner: 'text-44' }"
+    />
+    <RebornTabbarTrigger name="mine" title="我的" icon="i-lucide-user" />
+  </RebornTabbar>
+</template>
+```
+
 ## 注意事项
 
 - 仅 UniApp 端可用；示例尺寸单位为 rpx（标签栏高 `110rpx`，`pureIcon` 时 `90rpx`，`normal` + `glass` 动画时 `130rpx`）。

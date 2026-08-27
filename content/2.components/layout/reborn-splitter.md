@@ -53,4 +53,37 @@ badge: New
 | `start-collapsible` | 自定义起始折叠按钮的内容。 |
 | `end-collapsible` | 结束可折叠按钮的自定义内容。 |
 
+### 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供，且**两个组件各有自己的 `ui`**：容器键传给 `Splitter`，面板与拖拽条的键传给 `SplitterPanel`。
+
+**Splitter（容器）**
+
+| 键名   | 说明                                                                                              |
+| ------ | --------------------------------------------------------------------------------------------------- |
+| `root` | 根容器。默认 `relative flex w-full h-full overflow-hidden select-none`，整体尺寸、边框、圆角改这里。 |
+
+**SplitterPanel（每个面板自行传入）**
+
+| 键名             | 说明                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `panel`          | 单个面板的外层。默认 `relative flex shrink-0 hover:z-50`，实际宽高由 `size` 内联注入；面板背景、内边距加在这里。                            |
+| `bar`            | 该面板后面的拖拽条。默认 `flex items-center justify-center shrink-0 bg-gray-200 hover:bg-primary-500 z-20`，宽度/颜色/悬浮态改这里；仅在需要显示拖拽条时渲染。 |
+| `collapseButton` | 拖拽条上的折叠按钮（起始、结束两个按钮共用此键）。默认 `absolute size-5 rounded-full bg-white border shadow-sm opacity-20 group-hover:opacity-100`；定位类由布局方向与折叠状态动态追加，覆盖时注意别和 `left-*` / `top-*` 打架。 |
+
+```vue
+<template>
+  <Splitter :ui="{ root: 'rounded-lg border border-gray-2' }">
+    <SplitterPanel
+      :size="30"
+      collapsible
+      :ui="{ panel: 'bg-white', bar: 'w-1 bg-gray-1', collapseButton: 'shadow-md' }"
+    >
+      左侧
+    </SplitterPanel>
+    <SplitterPanel :ui="{ panel: 'p-4' }">右侧</SplitterPanel>
+  </Splitter>
+</template>
+```
+
 ::

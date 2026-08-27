@@ -104,6 +104,73 @@ function extractPlatform(dir: string | null): { result: VueExtractResult | null;
   return { result: merged, files };
 }
 
+/** 按嵌套深度切分类型文本：只在深度 0 处按分隔符断开 */
+function splitTopLevel(text: string, sep: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let cur = "";
+  for (const ch of text) {
+    if (ch === "<" || ch === "{" || ch === "[") depth++;
+    else if (ch === ">" || ch === "}" || ch === "]") depth--;
+    if (ch === sep && depth === 0) {
+      out.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+/**
+ * 取出对象型类型文本的成员键名（排序后）。
+ *
+ * 只认能直接读出键位的写法（`{ a: X; b: Y }`、`Partial<{ a: X }>`）；
+ * 别名（`CascaderUI`）、`any`、`Record<...>` 一律返回 null——
+ * 那是抽取器没能展开，不足以断言两端 API 有差异。
+ */
+function objectKeysOfType(text: string): string[] | null {
+  const open = text.indexOf("{");
+  if (open < 0) return null;
+  let depth = 0;
+  let close = -1;
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === "{") depth++;
+    else if (text[i] === "}") {
+      depth--;
+      if (depth === 0) {
+        close = i;
+        break;
+      }
+    }
+  }
+  if (close < 0) return null;
+  // 成员分隔符三种写法都要吃：分号、逗号、纯换行
+  const body = text.slice(open + 1, close).replace(/[;\r\n]+/g, ",");
+  const keys = new Set<string>();
+  for (const member of splitTopLevel(body, ",")) {
+    const m = member.trim().match(/^\[?["']?([A-Za-z_$][\w$]*)["']?\]?\??\s*:/);
+    if (m) keys.add(m[1]);
+  }
+  return keys.size > 0 ? [...keys].sort() : null;
+}
+
+/**
+ * 两端同名 prop 是否应按平台并存两条。
+ *
+ * 判据刻意收窄为「对象键位集不同」：这正是本库真实存在的跨端差异
+ * （如 RebornSelect 的 ui，web 是 option/optionActive/dropdown，uniapp 是 buttons/confirm，零重叠）。
+ * 不比类型文本——`typeof sizes[number]` 与展开后的字面量联合、`SizeAlias` 与 `(typeof sizes)[number]`
+ * 说的是同一件事，按文本比会给几十个枚举 prop 凭空拆出重复条目，纯噪音。
+ */
+function shouldSplitByPlatform(a: string, b: string): boolean {
+  const keysA = objectKeysOfType(a);
+  const keysB = objectKeysOfType(b);
+  if (!keysA || !keysB) return false;
+  return keysA.join(",") !== keysB.join(",");
+}
+
 /** kebab-case → camelCase（文档模板写法与源码 prop 名对齐） */
 function kebabToCamel(name: string): string {
   return name.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
@@ -137,6 +204,16 @@ function findByDocName<T extends { name: string }>(list: T[], raw: string): T | 
   return list.find((x) => candidates.includes(x.name));
 }
 
+/**
+ * 按候选名查找全部同名条目。
+ * 双端 API 有差异的 prop 会按平台并存两条（见 buildComponent），
+ * 只取第一条会让另一条永远拿不到文档里的说明与默认值。
+ */
+function findAllByDocName<T extends { name: string }>(list: T[], raw: string): T[] {
+  const candidates = docNameCandidates(raw);
+  return list.filter((x) => candidates.includes(x.name));
+}
+
 /** 动态成员名（如插槽 content-[name]）无法与源码静态匹配，跳过校验 */
 function isDynamicDocName(raw: string): boolean {
   return /\[.+\]/.test(raw);
@@ -150,14 +227,20 @@ function enrichWithDocs(
 ) {
   for (const row of docs.apiProps) {
     if (isDynamicDocName(row.name)) continue;
-    const prop = findByDocName(target.props, row.name);
-    if (!prop) {
+    const matches = findAllByDocName(target.props, row.name);
+    if (matches.length === 0) {
       if (row.strict) drifts.push(`文档 Props 表格中的「${row.name}」在源码中不存在`);
       continue;
     }
-    if (!prop.description && row.description) prop.description = row.description;
-    if (prop.default === undefined && row.default && row.default !== "-")
-      prop.default = row.default;
+    // 文档行标了平台时只补同平台的条目；未标平台（单表通用）则全部补
+    const targets = row.platform
+      ? matches.filter((p) => !p.platform || p.platform === row.platform)
+      : matches;
+    for (const prop of targets.length > 0 ? targets : matches) {
+      if (!prop.description && row.description) prop.description = row.description;
+      if (prop.default === undefined && row.default && row.default !== "-")
+        prop.default = row.default;
+    }
   }
   for (const row of docs.apiEvents) {
     if (isDynamicDocName(row.name)) continue;
@@ -246,7 +329,18 @@ export function buildComponent(id: string): {
 
   // 双平台组件：并入 web 侧独有的成员
   if (secondary) {
-    for (const p of secondary.props) if (!props.some((x) => x.name === p.name)) props.push(p);
+    for (const p of secondary.props) {
+      const same = props.find((x) => x.name === p.name);
+      if (!same) {
+        props.push(p);
+        continue;
+      }
+      // 键位集相同、或无法判定（别名/any）→ 保持一条通用条目，不打平台标记
+      if (!shouldSplitByPlatform(same.type, p.type)) continue;
+      // 键位集确实不同 → 两端 API 有实质差异（典型是 ui 键位两套零重叠），并存两条并标平台
+      same.platform = "uniapp";
+      props.push({ ...p, platform: "web" });
+    }
     for (const e of secondary.events) if (!events.some((x) => x.name === e.name)) events.push(e);
     for (const s of secondary.slots) if (!slots.some((x) => x.name === s.name)) slots.push(s);
     for (const ex of secondary.exposes)

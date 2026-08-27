@@ -87,6 +87,8 @@ const ui = computed(() => {
         center: (opts?: { class?: any }) => styles.center({ class: cn(opts?.class, overrides.center) }),
         right: (opts?: { class?: any }) => styles.right({ class: cn(opts?.class, overrides.right) }),
         toggle: (opts?: { class?: any }) => styles.toggle({ class: cn(opts?.class, overrides.toggle) }),
+        // 移动端弹窗根节点：本组件没有对应的 tv slot，直接把用户覆盖透传给内部 RebornPopup 的 root
+        popup: (opts?: { class?: any }) => cn(opts?.class, overrides.popup),
         popupHeader: (opts?: { class?: any }) => styles.popupHeader({ class: cn(opts?.class, overrides.popupHeader) }),
         popupBody: (opts?: { class?: any }) => styles.popupBody({ class: cn(opts?.class, overrides.popupBody) }),
         popupFooter: (opts?: { class?: any }) => styles.popupFooter({ class: cn(opts?.class, overrides.popupFooter) }),
@@ -171,7 +173,8 @@ async function toggleMenu() {
 
     <!-- 移动端菜单弹窗 (支持从 Drawer 映射为 Popup) -->
     <RebornPopup v-model="isMenuOpen" :position="toggleSide" size="100%" :round="false" :ui="{
-        root: 'z-[980]', // 位于吸顶导航栏下方 (Header 通常 z-1000)
+        // 位于吸顶导航栏下方 (Header 通常 z-1000)；ui.popup 可继续覆盖
+        root: ui.popup({ class: 'z-[980]' }),
     }">
         <!-- 弹窗头部 (除非被插槽覆盖，否则始终可见) -->
         <template #header>

@@ -163,6 +163,46 @@ const items = [
 | --------- | ------------------------------------------------------- |
 | `close()` | 手动关闭当前菜单（同步展开状态并触发 `update:open`）    |
 
+### 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供。**`ui` 不会自动下发给子菜单**——递归渲染的子级 `RebornContextMenu` 只继承 `size` / `portal` 等属性，需要统一外观时请用全局配置或对每层单独传入。
+
+| 键名              | 说明                                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wrapper`         | 最外层包裹节点，右键与 hover 事件绑定在它身上。默认 `relative`，`class` prop 也并到该节点。                                                                  |
+| `trigger`         | 触发器包裹层，包住 default 插槽的内容，默认无类名——需要让触发区撑满时在这里加 `block w-full`。                                                               |
+| `mask`            | 遮罩层。**仅 `modal` 为真、菜单打开且非子菜单时渲染**，默认 `fixed inset-0 z-[9999] bg-black/15 backdrop-blur-[1px]`。                                       |
+| `contentWrapper`  | 面板的定位层（过渡动画的 `custom-class`）。默认 `fixed left-0 top-0 z-[10000]`，`transform` 由定位计算写入内联样式，层级改这里。                             |
+| `content`         | 面板本体。默认 `relative min-w-[220px] overflow-hidden rounded-2xl border bg-white/95 p-2 shadow-… backdrop-blur-xl`，面板宽度、底色、圆角、内边距都在这里。 |
+| `bridge`          | 触发器与面板之间的透明桥接层，防止鼠标移动途中关闭。**仅 `trigger="hover"` 时渲染**，默认 `absolute inset-0 z-[-1]`。                                        |
+| `group`           | 菜单项分组容器（`items` 传二维数组时每组一个），默认 `flex flex-col gap-1`；组内项间距改这里。                                                               |
+| `separator`       | 分隔线。**仅菜单项 `type: 'separator'` 时渲染**，默认 `my-2 h-px bg-gray-200/70`。                                                                           |
+| `empty`           | 空态文案「暂无可用操作」。**仅 `items` 为空且未填充 `content` 插槽时渲染**，默认 `px-3 py-2 text-sm text-gray-500`。                                          |
+| `item`            | 单个菜单项 `<button>`。默认 `group/item relative flex w-full select-none items-center gap-3 rounded-xl text-left transition-all`；行高、hover 底色、圆角改这里，禁用态与 `color` 由内部变体处理。 |
+| `itemLeading`     | 菜单项前置图标位，默认 `flex size-5 shrink-0 items-center justify-center text-gray-500`；图标本身由菜单项的 `icon` 字段决定。                                 |
+| `itemBody`        | 标题 + 描述的纵向容器，默认 `min-w-0 flex-1`。                                                                                                              |
+| `itemLabel`       | 菜单项标题，默认 `truncate font-medium text-gray-900`。                                                                                                      |
+| `itemDescription` | 菜单项描述。**仅该项配了 `description` 时渲染**，默认 `mt-0.5 text-xs leading-5 text-gray-500`。                                                             |
+| `itemTrailing`    | 菜单项右侧区域（快捷键或子菜单箭头），默认 `ml-auto flex items-center gap-2 pl-4`。                                                                          |
+| `itemKbd`         | 快捷键小键帽。**仅该项配了 `kbds` 时渲染**，默认 `rounded-md border bg-gray-50 px-1.5 py-0.5 text-[11px] font-medium uppercase text-gray-500`。              |
+| `itemArrow`       | 子菜单展开箭头。**仅该项含 `children` 时渲染**，默认 `text-gray-400 transition-transform group-hover/item:translate-x-0.5`。                                  |
+
+```vue
+<template>
+  <RebornContextMenu
+    :items="items"
+    :ui="{
+      content: 'min-w-[260px] rounded-xl',
+      item: 'py-2 hover:bg-primary/10',
+      itemLabel: 'text-sm',
+      itemKbd: 'bg-white',
+    }"
+  >
+    <div class="p-8">右键点我</div>
+  </RebornContextMenu>
+</template>
+```
+
 ## 注意事项
 
 - 仅 web 端可用（当前仅提供 Web 实现，后续可按同名 API 补齐跨端）。

@@ -22,6 +22,35 @@ export default defineNuxtConfig({
 
   // Ensure we use the local config module instead of the one bundled in the Docus layer.
   hooks: {
+    /**
+     * 让本仓库 app/composables 下的同名 composable 稳定胜过 @nuxt/ui 的实现。
+     *
+     * 根因：@nuxt/ui 与本仓库都提供了 useFieldGroup / useOverlay / defineShortcuts /
+     * extractShortcuts。unimport 去重时按 `(other.priority || 1) - (i.priority || 1)` 比较，
+     * 两边都是默认优先级 1 时 diff 为 0，只能由数组先后顺序决定胜负（启动日志里那几条
+     * "Duplicated imports ... has been ignored" 就是 diff 为 0 时打出来的），结果不稳定。
+     * 一旦 @nuxt/ui 胜出，RebornForm 里 `useFieldGroup()` 拿到的是它那个只返回
+     * orientation / size 的版本，解构出的 addField / removeField / getError 全是 undefined，
+     * RebornFormItem 挂载时执行 `form.addField(...)` 会直接抛 "addField is not a function"。
+     * 方案：给本地这批 composable 显式抬高优先级。diff 不再为 0，无论先后顺序本地都胜出，
+     * 那 4 条重名告警也随之消失。@nuxt/ui 自身组件是走相对路径显式 import 这些 composable 的，
+     * 不依赖自动导入，因此不受影响。
+     *
+     * 注意：imports:extend 收到的是扫描得来的动态导入列表（即各层的 composables 目录），
+     * @nuxt/ui 通过 addImports 注册的静态条目不在其中，所以这里只能调优先级、不能直接剔除。
+     */
+    "imports:extend": function (imports) {
+      /** 本仓库 composables 目录，统一成正斜杠后再比对，避免 Windows 反斜杠对不上 */
+      const localComposablesDir = resolve("./app/composables").replace(/\\/g, "/");
+
+      for (const item of imports) {
+        const source = String(item.from || "").replace(/\\/g, "/");
+        if (source.startsWith(localComposablesDir)) {
+          item.priority = 10;
+        }
+      }
+    },
+
     "modules:before": function () {
       const nuxt = useNuxt();
       const localConfigModule = resolve("./modules/config");

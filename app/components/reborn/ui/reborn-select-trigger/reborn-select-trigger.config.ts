@@ -1,16 +1,44 @@
-const sizes = ["sm", "md", "lg"] as const;
-const colors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
+import type { ClassValue } from "clsx";
 
-export { sizes as selectSizes, colors as selectColors };
+const sizes = ["sm", "md", "lg"] as const;
+
+export { sizes as selectTriggerSizes };
+
+/** 浮层容器可覆盖的样式键 */
+export type SelectTriggerUI = Partial<{
+    wrapper: ClassValue;
+    dropdown: ClassValue;
+    dropdownInner: ClassValue;
+}>;
+
+/** 浮层容器独占的 ui 键，用于把消费方的合并 ui 配置拆成两半 */
+const OVERLAY_UI_KEYS = ["wrapper", "dropdown", "dropdownInner"] as const;
+
+/**
+ * 把消费方对外暴露的 triggerUi（触发器盒子 + 浮层两部分混在一起）拆开：
+ * overlay 交给 RebornSelectTrigger，field 交给 RebornFieldTrigger。
+ * 拆分后消费方对外的 triggerUi 键名不变，调用方无感知。
+ */
+export function splitTriggerUi<T extends Record<string, any>>(ui?: T) {
+    const source = (ui ?? {}) as T;
+    const overlay: Record<string, any> = {};
+    const field: Record<string, any> = {};
+
+    for (const key of Object.keys(source)) {
+        if ((OVERLAY_UI_KEYS as readonly string[]).includes(key)) {
+            overlay[key] = source[key];
+        } else {
+            field[key] = source[key];
+        }
+    }
+
+    return { overlay: overlay as SelectTriggerUI, field };
+}
+
 export default {
     slots: {
+        // 浮层锚点：relative 提供行内模式的定位参照，group + tabindex（由组件模板给出）支撑子级触发器的聚焦描边
         wrapper: "relative inline-flex w-full group outline-none",
-        trigger: "flex w-full items-center justify-between leading-normal bg-gray-1 dark:bg-gray-8 transition-colors cursor-pointer select-none outline-none",
-        triggerText: "truncate text-gray-8 dark:text-gray-1",
-        triggerIconWrapper: "flex items-center gap-2",
-        placeholder: "text-gray-4 dark:text-gray-5",
-        arrow: "transition-transform duration-200 text-gray-8 dark:text-gray-1 shrink-0",
-        clearBtn: "shrink-0 text-gray-4 hover:text-gray-6 dark:hover:text-gray-3 cursor-pointer",
         dropdown: "absolute z-50 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide flex flex-col",
         dropdownInner: "w-full shrink-0",
     },
@@ -30,63 +58,16 @@ export default {
                 dropdown: "absolute z-50 w-full"
             }
         },
-        bordered: {
-            true: {
-                trigger: "border border-gray-3 dark:border-gray-6",
-            },
-            false: {
-                trigger: "border-none",
-            },
-        },
+        /** 尺寸只影响浮层圆角，触发器盒子的高度与内边距已移交 RebornFieldTrigger */
         size: {
             sm: {
-                trigger: "h-input-sm px-2 text-sm gap-1 rounded-ui-sm leading-none",
-                arrow: "size-3",
-                clearBtn: "size-3",
                 dropdown: "rounded-ui-sm",
             },
             md: {
-                trigger: "h-input-md px-3 text-base gap-1 rounded-ui-md",
-                arrow: "size-4",
-                clearBtn: "size-4",
                 dropdown: "rounded-ui-md",
             },
             lg: {
-                trigger: "h-input-lg px-4 text-base gap-1 rounded-ui-base",
-                arrow: "size-5",
-                clearBtn: "size-5",
                 dropdown: "rounded-ui-base",
-            },
-        },
-        color: {
-            primary: {
-                trigger: "group-focus:border-primary data-[state=open]:border-primary",
-            },
-            secondary: {
-                trigger: "group-focus:border-secondary data-[state=open]:border-secondary",
-            },
-            success: {
-                trigger: "group-focus:border-success data-[state=open]:border-success",
-            },
-            info: {
-                trigger: "group-focus:border-info data-[state=open]:border-info",
-            },
-            warning: {
-                trigger: "group-focus:border-warning data-[state=open]:border-warning",
-            },
-            error: {
-                trigger: "group-focus:border-error data-[state=open]:border-error",
-            },
-            neutral: {
-                trigger: "group-focus:border-neutral data-[state=open]:border-neutral",
-            },
-        },
-        open: {
-            true: { arrow: "rotate-180" },
-        },
-        disabled: {
-            true: {
-                trigger: "opacity-50 pointer-events-none cursor-not-allowed bg-gray-50 dark:bg-gray-900",
             },
         },
         /**
@@ -98,11 +79,6 @@ export default {
             bottom: {},
             top: {},
         },
-        error: {
-            true: {
-                trigger: "border-red-5 focus:border-red-5 data-[state=open]:border-red-5",
-            },
-        },
     },
     compoundVariants: [
         { portal: false, placement: "bottom", class: { dropdown: "top-full mt-1" } },
@@ -110,7 +86,6 @@ export default {
     ],
     defaultVariants: {
         size: "md" as (typeof sizes)[number],
-        color: "primary" as (typeof colors)[number],
         placement: "bottom" as const,
     },
 };

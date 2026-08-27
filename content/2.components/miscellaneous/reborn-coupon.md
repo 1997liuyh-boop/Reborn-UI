@@ -55,3 +55,29 @@ RebornCoupon 提供强大的 CSS Mask 遮罩能力，仅通过配置属性即可
 ### Emits
 
 该纯 UI 布局组件目前没有特殊的抛出事件。你可以直接在其内部的插槽结构中添加对应的点击或业务事件。
+
+### 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供：
+
+| 键名     | 说明                                                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`   | 根元素。默认 `flex overflow-hidden bg-[#f5f5f5] cursor-pointer`，`direction` 决定主轴方向，`hoverable` 的悬浮位移与阴影也叠加在这里。缺口形状由内联 `mask` 生成，覆盖背景色时请改这里而非子节点。 |
+| `left`   | 左侧（`direction="horizontal"` 时为上方）区块，包裹 `left` 插槽。默认 `shrink-0`，尺寸由 `size` 相关内联样式控制，改这里可加内边距与文字颜色。 |
+| `center` | 分割线所在的中间区块。默认 `py-2`，内部还有一个由 `split` 决定虚线/点线样式的内层元素；改虚线颜色需覆盖内层，这里只负责该区块的留白与宽高。   |
+| `right`  | 右侧（`direction="horizontal"` 时为下方）区块，包裹 `right` 插槽。默认 `grow flex-1`，主内容区的内边距、排版加在这里。                         |
+
+```vue
+<template>
+  <RebornCoupon
+    :ui="{
+      root: 'bg-white shadow-sm',
+      left: 'flex items-center px-4 text-error',
+      right: 'p-3',
+    }"
+  >
+    <template #left>￥50</template>
+    <template #right>满 200 元可用</template>
+  </RebornCoupon>
+</template>
+```

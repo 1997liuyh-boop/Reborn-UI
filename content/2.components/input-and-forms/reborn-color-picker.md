@@ -124,13 +124,52 @@ UniApp 端通过 `content` 调整弹出方向与偏移（默认 `{ side: 'right'
 
 ### 自定义样式（ui）
 
-`ui` 属性按以下键覆盖触发器对应节点的类名：
+`RebornColorPicker` 上的 `ui` 只作用于**触发器**（双端键位相同）：
 
-| 键名   | 说明                       |
-| :----- | :------------------------- |
-| `root` | 触发器根容器               |
-| `base` | 色块本体（背景为当前颜色） |
-| `icon` | 色块内的下拉箭头图标       |
+| 键名   | 说明                                                                                                                                              |
+| :----- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `root` | 触发器根容器，默认 `ring ring-1 ring-gray-5 p-1 rounded-md cursor-pointer select-none hover:scale-105 transition-all`；整体尺寸由 `size` 变体给出，外框与圆角改这里。**Web 端填充 default 插槽只替换容器内部的色块，`ui.root` 仍生效。** |
+| `base` | 色块本体（背景色为当前颜色，由内联 `style` 给出），默认 `rounded-md ring ring-1 ring-gray-5 w-full h-full flex justify-center items-center`。**Web 端填充 default 插槽会替换掉该节点**，`ui.base` 与 `ui.icon` 随之失效。 |
+| `icon` | 色块内的下拉箭头图标，默认 `text-white transition-transform duration-200`；同样受上面的 default 插槽陷阱影响。                                      |
+
+**面板的 `ui` 要写在 `RebornColorPickerPanel` 上**——触发器不会把 `ui` 下发给内部弹出的面板。想改面板样式，请直接使用面板组件（双端键位相同，只有默认值不同：Web 端面板宽 `w-64`，UniApp 端为 `w-[260px]`）：
+
+| 键名               | 说明                                                                                                                       |
+| :----------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| `root`             | 面板根节点，默认 `w-64 space-y-4 p-3 bg-white rounded-xl border shadow-sm`（UniApp 端为 `flex flex-col w-[260px] … p-4`）；面板宽度、内边距、底色改这里。 |
+| `saturation`       | 饱和度/明度取色区，默认 `relative w-full aspect-video rounded-lg cursor-crosshair overflow-hidden`（UniApp 端为固定 `h-40`）；背景渐变由内联 `style` 生成，这里只改尺寸与圆角。 |
+| `saturationCursor` | 取色区内的圆形游标，默认 `absolute w-4 h-4 rounded-full border-2 border-white shadow-sm pointer-events-none`；位置由内联 `style` 驱动。 |
+| `controls`         | 「预览色块 + 滑杆组」一行的容器，默认 `flex gap-3 items-center`。                                                            |
+| `preview`          | 当前颜色预览块，默认 `size-10 rounded-lg shadow-inner shrink-0`（UniApp 端为圆形 `rounded-full`）。                          |
+| `sliders`          | 色相/透明度两条滑杆的纵向容器，默认 `flex-1 space-y-2`。                                                                     |
+| `hueSlider`        | 色相滑杆轨道，默认 `relative h-3 w-full rounded-full cursor-pointer`；彩虹渐变由内联 `style` 给出。                          |
+| `hueCursor`        | 色相滑杆游标，默认 `absolute h-4 w-4 bg-white rounded-full shadow-md pointer-events-none`。                                  |
+| `alphaSlider`      | 透明度滑杆轨道，默认同 `hueSlider`；棋盘格与当前色渐变由内联 `style` 给出。                                                   |
+| `alphaCursor`      | 透明度滑杆游标，默认同 `hueCursor`。                                                                                        |
+| `inputs`           | 「格式切换 + 色值输入框」区块的容器，默认 `space-y-2`（UniApp 端 `flex flex-col gap-3`）。                                    |
+| `formatToggles`    | `HEX / RGB / RGBA` 切换按钮组的容器，默认 `flex gap-1`；按钮本身是 `RebornButton`，样式请用它自己的 props。                   |
+| `input`            | 色值输入框（内部 `RebornInput` 的 `class`），默认 `w-full text-xs font-mono`。                                               |
+| `presets`          | 预设色区块容器，默认 `pt-3 border-t border-gray-100`；分隔线改这里。                                                         |
+| `presetTitle`      | 预设色标题「主题预设」，默认 `text-[10px] text-gray-400 font-bold mb-2 uppercase tracking-tight`。                            |
+| `presetGrid`       | 预设色网格，默认 `grid grid-cols-10 gap-1.5`（UniApp 端 `grid-cols-8`）；每行个数改这里。                                     |
+| `presetSwatch`     | 单个预设色块（`RebornButton` 的 `class`），默认 `aspect-square ring-1 ring-black/5 hover:scale-110 p-0!`。                    |
+
+```vue
+<template>
+  <!-- 触发器 -->
+  <RebornColorPicker v-model="color" :ui="{ root: 'rounded-full p-0.5', base: 'rounded-full' }" />
+
+  <!-- 面板（内联使用时才能改面板样式） -->
+  <RebornColorPickerPanel
+    v-model="color"
+    :ui="{
+      root: 'w-72 p-4',
+      saturation: 'h-44',
+      presetGrid: 'grid-cols-8 gap-2',
+    }"
+  />
+</template>
+```
 
 ## 注意事项
 

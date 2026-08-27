@@ -51,4 +51,21 @@ navigation:
 | --------- | ---------------------- |
 | `default` | 需要添加水印的内容容器 |
 
+### 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。两端结构一致，键位相同：
+
+| 键名        | 说明                                                                             |
+| ----------- | -------------------------------------------------------------------------------- |
+| `root`      | 根元素。相对定位的内容容器，默认 `w-full overflow-hidden`，水印层以它为定位参照。 |
+| `watermark` | 水印平铺层。绝对定位覆盖整个根元素，默认 `pointer-events-none` 不拦截交互，层级由 `--reborn-watermark-z-index` 控制。 |
+
+```vue
+<template>
+  <RebornWatermark content="内部资料" :ui="{ root: 'rounded-xl', watermark: 'opacity-60' }">
+    <div class="h-40">受保护的内容</div>
+  </RebornWatermark>
+</template>
+```
+
 ::

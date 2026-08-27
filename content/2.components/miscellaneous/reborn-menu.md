@@ -108,6 +108,39 @@ navigation:
 | `default` | 分组内的菜单项 |
 | `title`   | 自定义标题内容 |
 
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；**把 `ui` 传给最外层 `RebornMenu` 即可**，所有键会通过依赖注入下发到 `RebornSubMenu` / `RebornMenuItem` / `RebornMenuItemGroup`（后三者也接受自己的 `ui`，用于只改某一个分支）。
+
+| 键名                 | 落在哪个节点                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `root`               | 菜单最外层容器 `<div>`。默认 `relative rounded-xl shadow-sm p-2 bg-white`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。       |
+| `menu`               | 顶层 `<ul>`。默认 `flex rounded-xl transition-all duration-300`，主轴方向由 `mode` 决定（水平/垂直），折叠动画也作用于它；菜单项之间的间距改这里。     |
+| `menuItem`           | 单个菜单项（`RebornMenuItem` 的 `<li>`，以及 `RebornSubMenu` 内部那一行标题）。默认 `relative flex cursor-pointer select-none items-center transition-all`，行高、hover 底色、圆角改这里。 |
+| `menuItemContent`    | 菜单项内部的横向排布容器，默认 `flex w-full items-center gap-3`；图标与文字的间距改这里。                                                              |
+| `menuItemIcon`       | 图标位。**仅填充了 `icon` 插槽时渲染**，默认 `flex shrink-0 items-center justify-center`；容器本身不受插槽内容影响，`ui.menuItemIcon` 始终生效。         |
+| `menuItemTitle`      | 文字节点，默认 `flex-1 truncate font-medium`；它在 default / `title` 插槽的外层，填充插槽后依然生效。                                                  |
+| `menuItemArrow`      | 子菜单的展开箭头。**仅在垂直方向的 `RebornSubMenu` 上渲染**（根级水平菜单不显示箭头），默认 `flex shrink-0 items-center justify-center transition-transform`，展开态由内部 `opened` 变体旋转。 |
+| `subMenu`            | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是浮层定位的参照物，非必要不要改 `position`。                                                      |
+| `subMenuPopup`       | 浮层展开时的子菜单面板（Teleport 到 body）。**仅 `expandType="popup"` 时渲染**，默认 `absolute z-50 rounded-lg border bg-white p-2 shadow-xl`，浮层底色与层级改这里。 |
+| `subMenuContent`     | 子菜单内部的 `<ul>`，默认 `flex flex-col`；内联展开与浮层展开都会用到。                                                                                |
+| `menuItemGroup`      | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                |
+| `menuItemGroupTitle` | 分组标题容器，默认 `px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400`。该节点在 `title` 插槽外层，填充插槽后依然生效。                |
+
+```vue
+<template>
+  <RebornMenu
+    :items="items"
+    :ui="{
+      root: 'shadow-none bg-transparent p-0',
+      menuItem: 'rounded-lg px-3 py-2 hover:bg-primary/10',
+      menuItemTitle: 'text-sm',
+      subMenuPopup: 'rounded-xl',
+    }"
+  />
+</template>
+```
+
 ## 示例代码
 
 ### 基础垂直菜单

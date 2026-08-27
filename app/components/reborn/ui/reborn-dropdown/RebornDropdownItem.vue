@@ -22,7 +22,6 @@ const dropdownCtx = inject<{
   ui: {
     item: (opts?: { class?: any }) => string;
     divider: (opts?: { class?: any }) => string;
-    icon: (opts?: { class?: any }) => string;
     label: (opts?: { class?: any }) => string;
   };
 } | null>("reborn-dropdown", null);
@@ -30,7 +29,6 @@ const dropdownCtx = inject<{
 const fallbackUi = {
   item: (opts?: { class?: any }) => opts?.class || '',
   divider: (opts?: { class?: any }) => opts?.class || '',
-  icon: (opts?: { class?: any }) => opts?.class || '',
   label: (opts?: { class?: any }) => opts?.class || '',
 };
 

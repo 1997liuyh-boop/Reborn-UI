@@ -20,6 +20,8 @@ export interface KbProp {
   required?: boolean;
   description?: string;
   options?: string[];
+  /** 仅在两端同名 prop 签名不同、按平台并存两条时出现；缺省表示两端通用 */
+  platform?: string;
 }
 
 export interface KbExample {

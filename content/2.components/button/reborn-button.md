@@ -429,7 +429,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 | 键名 | 说明 |
 | --- | --- |
 | `base` | 根元素。 |
-| `label` | 文本节点。 |
+| `label` | 文本节点，默认 `truncate leading-none`。**仅在使用 `label` prop 时渲染**，填充 default 插槽会替换掉该节点，`ui.label` 随之失效——需要保留该样式时在插槽里用作用域的 `:class="ui.label()"`。 |
 | `leadingIcon` | 前置图标区域，同时是加载动画的容器。 |
 | `leadingAvatar` | 前置头像区域。 |
 | `leadingAvatarSize` | 前置头像尺寸。 |
@@ -441,7 +441,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 | --- | --- |
 | `base` | 根元素。 |
 | `inner` | 覆盖在根节点上的透明原生 `button` 点击层。 |
-| `label` | 文本节点。 |
+| `label` | 文本节点，默认 `truncate`。**仅在使用 `label` prop 时渲染**，填充 default 插槽会替换掉该节点，`ui.label` 随之失效——需要保留该样式时在插槽里用作用域的 `:class="ui.label()"`。 |
 | `loading` | 加载动画容器。 |
 :::
 
