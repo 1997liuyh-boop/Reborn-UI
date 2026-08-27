@@ -19,20 +19,27 @@ export default {
         headerDesc: "text-muted mt-1 text-sm",
         headerTag: "text-primary bg-primary/10 shrink-0 rounded-full px-3 py-1 text-[11px] font-bold tracking-widest uppercase",
 
-        /** 主体容器：无背景、无投影，仅靠分隔线切分控制区与预览区 */
-        container: "rounded-ui-md overflow-hidden",
+        /**
+         * 主体容器：无背景、无投影，仅靠分隔线切分控制区与预览区。
+         *
+         * 根因：容器若加 overflow-hidden，圆角裁剪边界正好压在控制面板上——
+         * 非 surface 模式下 controlPanel 没有左内边距，输入框的 1px 左边框被裁剪边缘抹掉，
+         * 滑块头（left: calc(pct% - blockSize/2px)）在最小值时更是真的溢出到容器外被整块裁掉。
+         * 方案：容器只留圆角不裁剪，把裁剪下移到 previewPanel —— 过宽示例仍被拦住，控制面板得以完整渲染。
+         */
+        container: "rounded-ui-md",
         /** 控制面板：无底色，与预览区靠 divide 分隔 */
         controlPanel: "flex flex-col gap-8 py-4 lg:pr-6",
         groupTitleWrapper: "flex items-center gap-2",
         groupTitleAccent: "h-4 w-1 rounded-full",
         groupTitleText: "text-muted text-xs font-bold tracking-wider uppercase",
-        controlList: "grid gap-1",
+        controlList: "grid gap-2",
         fieldWrapper: "space-y-2",
-        fieldLabel: "text-muted text-xs font-semibold",
+        fieldLabel: "block text-muted text-xs font-semibold mb-1",
         fieldValue: "text-dimmed text-xs font-semibold",
 
-        /** 预览区：无底色、无光晕，示例本体直接落在画布表面上 */
-        previewPanel: "relative flex min-h-[420px] flex-col",
+        /** 预览区：无底色、无光晕，示例本体直接落在画布表面上；这里承接容器让出的裁剪职责，拦住过宽示例 */
+        previewPanel: "relative flex min-h-[420px] flex-col overflow-hidden",
         popoverWrapper: "absolute top-3 right-3 z-20",
         popoverBtn: "border-default text-muted hover:text-highlighted hover:bg-elevated flex items-center gap-1.5 rounded-ui-xs border px-2.5 py-1.5 text-xs font-bold transition-colors active:scale-95",
         popoverIcon: "size-4",

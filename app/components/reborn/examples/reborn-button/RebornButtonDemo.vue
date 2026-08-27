@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { buttonBorderStyles, buttonColors, buttonSizes, buttonVariants } from "~/components/reborn/ui/reborn-button/reborn-button.config"
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue"
-import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue"
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue"
-import { buttonColors, buttonVariants, buttonSizes, buttonBorderStyles } from "~/components/reborn/ui/reborn-button/reborn-button.config"
 
 const colorOptions = buttonColors.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
 const variantOptions = buttonVariants.map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v }));
@@ -12,80 +11,125 @@ const borderStyleOptions = buttonBorderStyles.map(b => ({
   value: b as typeof buttonBorderStyles[number],
 }));
 
-const color = ref<typeof buttonColors[number]>('primary')
-const variant = ref<typeof buttonVariants[number]>('solid')
-const size = ref<typeof buttonSizes[number]>('md')
-const borderStyle = ref<typeof buttonBorderStyles[number]>('solid')
+// ─── 交互演练场 ─────────────────────────────────────────────────
 
-const disabled = ref(false)
-const loading = ref(false)
-const gap = ref(true)
+/** 演练场默认状态 */
+const defaultState: Record<string, any> = {
+  color: 'primary',
+  variant: 'solid',
+  size: 'md',
+  borderStyle: 'solid',
+  disabled: false,
+  loading: false,
+}
 
+const state = ref<Record<string, any>>({ ...defaultState })
+
+/** 点击计数，让预览区的交互「有回应」 */
 const clickCount = ref(0)
 function onClick() {
   clickCount.value++
 }
+
+/** 重置演练场配置 */
+function resetState() {
+  state.value = { ...defaultState }
+  clickCount.value = 0
+}
+
+/** 演练场控制面板配置 */
+const controls: any = [
+  {
+    title: '基础属性',
+    children: [
+      { label: '配色方案', key: 'color', component: 'select' as const, defaultValue: 'primary', props: { options: colorOptions } },
+      { label: '风格变体', key: 'variant', component: 'select' as const, defaultValue: 'solid', props: { options: variantOptions } },
+      { label: '尺寸规格', key: 'size', component: 'select' as const, defaultValue: 'md', props: { options: sizeOptions } },
+      {
+        label: '边框线型（对 outline / subtle 生效）',
+        key: 'borderStyle',
+        component: 'select' as const,
+        defaultValue: 'solid',
+        props: { options: borderStyleOptions },
+      },
+    ],
+  },
+  {
+    title: '状态',
+    children: [
+      { label: '禁用状态', key: 'disabled', component: 'checkbox' as const, defaultValue: false },
+      { label: '加载状态', key: 'loading', component: 'checkbox' as const, defaultValue: false },
+    ],
+  },
+]
+
+/** 演练场右上角展示的传参明细（按钮无 v-model，需手动拼接）：完整列出当前所有参数（含默认值） */
+const buttonCode = computed(() => {
+  const s = state.value
+  const props: string[] = [
+    `color="${s.color}"`,
+    `variant="${s.variant}"`,
+    `size="${s.size}"`,
+    `border-style="${s.borderStyle}"`,
+    `:disabled="${s.disabled}"`,
+    `:loading="${s.loading}"`,
+  ]
+  return `<RebornButton\n  ${props.join('\n  ')}\n>\n  按钮\n</RebornButton>`
+})
+
+// ─── 场景演示状态 ───────────────────────────────────────────────
+
+const gap = ref(true)
 </script>
 
 <template>
   <div class="flex w-full flex-col">
-    <!-- 交互演练场：左侧参数、右侧预览，靠一条竖线分隔，不铺任何底色 -->
-    <DemoSection title="交互演练场" description="调节左侧参数，实时查看按钮表现。">
-      <div class="divide-default grid gap-6 lg:grid-cols-12 lg:gap-0 lg:divide-x">
-        <div class="flex flex-col gap-6 lg:col-span-4 lg:pr-6">
-          <div class="flex flex-col gap-2">
-            <span class="text-muted text-xs font-bold tracking-wider uppercase">颜色</span>
-            <RebornSelect v-model="color" :options="colorOptions" />
-          </div>
+    <Playground
+      v-model="state" :controls="controls" :code="buttonCode" component-name="RebornButton"
+      title="交互演练场" description="调节左侧参数，实时查看按钮表现。"
+    >
+      <template #tag>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
+          </template>
+          重置配置
+        </RebornButton>
+      </template>
 
-          <div class="flex flex-col gap-2">
-            <span class="text-muted text-xs font-bold tracking-wider uppercase">风格</span>
-            <RebornSelect v-model="variant" :options="variantOptions" />
-          </div>
+      <div class="flex w-full flex-col items-center gap-8">
+        <div class="flex flex-wrap items-center justify-center gap-6">
+          <RebornButton
+            :color="state.color" :variant="state.variant" :size="state.size" :disabled="state.disabled"
+            :loading="state.loading" :border-style="state.borderStyle" @click="onClick"
+          >
+            点我交互 ({{ clickCount }})
+          </RebornButton>
 
-          <div class="flex flex-col gap-2">
-            <span class="text-muted text-xs font-bold tracking-wider uppercase">尺寸</span>
-            <RebornSelect v-model="size" :options="sizeOptions" />
-          </div>
+          <RebornButton
+            :color="state.color" variant="circle" :size="state.size" :disabled="state.disabled"
+            :loading="state.loading"
+          >
+            <Icon name="lucide:sparkles" />
+          </RebornButton>
 
-          <div class="flex flex-col gap-2">
-            <span class="text-muted text-xs font-bold tracking-wider uppercase">边框线型</span>
-            <RebornSelect v-model="borderStyle" :options="borderStyleOptions" />
-            <DemoNote tone="dimmed" class="text-xs">1px；对 outline / subtle 变体生效</DemoNote>
-          </div>
-
-          <div class="flex flex-col gap-3 pt-2">
-            <RebornCheckbox v-model="disabled" label="禁用状态" />
-            <RebornCheckbox v-model="loading" label="加载状态" />
-          </div>
+          <RebornButton
+            :color="state.color" variant="outline" :size="state.size" :border-style="state.borderStyle"
+            :disabled="state.disabled" :loading="state.loading"
+          >
+            <template #leading>
+              <Icon name="lucide:shopping-cart" />
+            </template>
+            带图标
+          </RebornButton>
         </div>
 
-        <div class="flex min-h-[260px] flex-col items-center justify-center gap-8 lg:col-span-8 lg:pl-6">
-          <DemoBlock align="center" class="justify-center gap-6">
-            <RebornButton :color="color" :variant="variant" :size="size" :disabled="disabled" :loading="loading"
-              :border-style="borderStyle" @click="onClick">
-              点我交互 ({{ clickCount }})
-            </RebornButton>
-
-            <RebornButton :color="color" variant="circle" :size="size" :disabled="disabled" :loading="loading">
-              <Icon name="lucide:sparkles" />
-            </RebornButton>
-
-            <RebornButton :color="color" variant="outline" :size="size" :border-style="borderStyle" :disabled="disabled"
-              :loading="loading">
-              <template #leading>
-                <Icon name="lucide:shopping-cart" />
-              </template>
-              带图标
-            </RebornButton>
-          </DemoBlock>
-          <DemoNote tone="dimmed" class="font-mono text-xs">
-            Props: { color: '{{ color }}', variant: '{{ variant }}', size: '{{ size }}', borderStyle: '{{ borderStyle
-            }}' }
-          </DemoNote>
-        </div>
+        <DemoNote tone="dimmed" class="font-mono text-xs">
+          Props: { color: '{{ state.color }}', variant: '{{ state.variant }}', size: '{{ state.size }}', borderStyle:
+          '{{ state.borderStyle }}' }
+        </DemoNote>
       </div>
-    </DemoSection>
+    </Playground>
 
     <DemoSection title="所有变体展示">
       <DemoBlock layout="stack" class="gap-4">
@@ -97,7 +141,7 @@ function onClick() {
               <Icon name="lucide:star" />
             </RebornButton>
           </template>
-          <RebornButton v-else v-for="c in buttonColors" :key="c" :variant="v" :color="c" size="sm">
+          <RebornButton v-for="c in buttonColors" v-else :key="c" :variant="v" :color="c" size="sm">
             {{ c }}
           </RebornButton>
         </div>

@@ -2,6 +2,7 @@
 import { computed, reactive, watch, onMounted } from "vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
+import RebornInputNumber from "~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue";
 import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
 import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
 import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
@@ -16,11 +17,15 @@ export interface PlaygroundControlItem {
     /** v-model 绑定到 modelValue 中的 key */
     key: string;
     /** 渲染的组件类型 */
-    component: "select" | "input" | "checkbox" | "slider" | "color-picker";
+    component: "select" | "input" | "input-number" | "checkbox" | "slider" | "color-picker";
     /** 传递给控件的额外 props（如 options、type 等） */
     props?: Record<string, any>;
     /** 默认值，用于检测是否需要在代码中展示此属性 */
     defaultValue?: any;
+    /** 生成传参明细时忽略该控件（如仅演示用的辅助开关） */
+    codeIgnore?: boolean;
+    /** 值为空字符串时不写入传参明细（用于「空 = 未传该参数」语义的选项，如 controlsPosition） */
+    codeSkipEmpty?: boolean;
     /** 是否隐藏该控件，接受当前字段值和状态对象，支持 Promise */
     hide?: (value: any, modelValue: Record<string, any>) => boolean | Promise<boolean>;
 }
@@ -40,6 +45,8 @@ export interface PlaygroundProps {
     controls: PlaygroundControlGroup[];
     /** 选填：手动指定的代码字符串。若不传则根据 controls 和 modelValue 自动生成 */
     code?: string;
+    /** 追加到自动生成传参明细末尾的额外行（如 placeholder、@change 监听）；手动传 code 时不生效 */
+    codeExtras?: string[];
     /** 组件名称，用于自动生成代码（如 'RebornButton'） */
     componentName?: string;
     /** 标题 */
@@ -128,7 +135,12 @@ onMounted(() => {
     updateVisibility();
 });
 
-/** 自动生成代码明细 */
+/** camelCase 的状态 key 转为模板里的 kebab-case 属性名（如 showPassword → show-password） */
+function toKebabCase(key: string) {
+    return key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
+}
+
+/** 自动生成代码明细：完整列出当前所有参数（含等于默认值的项），便于整段拷贝复现 */
 const activeCode = computed(() => {
     if (props.code) return props.code;
 
@@ -141,22 +153,27 @@ const activeCode = computed(() => {
     props.controls.forEach(group => {
         group.children.forEach(item => {
             const val = s[item.key];
-            const def = item.defaultValue;
+            const name = toKebabCase(item.key);
 
-            // 仅在值不等于默认值时展示
-            if (val !== undefined && val !== def) {
+            if (item.codeIgnore) return;
+            if (item.codeSkipEmpty && val === "") return;
+
+            if (val !== undefined) {
                 if (typeof val === "boolean") {
-                    if (val) parts.push(`  ${item.key}`);
+                    parts.push(`  :${name}="${val}"`);
                 } else if (typeof val === "number") {
-                    parts.push(`  :${item.key}="${val}"`);
+                    parts.push(`  :${name}="${val}"`);
                 } else if (typeof val === "string") {
-                    parts.push(`  ${item.key}="${val}"`);
+                    parts.push(`  ${name}="${val}"`);
                 } else {
-                    parts.push(`  :${item.key}='${JSON.stringify(val)}'`);
+                    parts.push(`  :${name}='${JSON.stringify(val)}'`);
                 }
             }
         });
     });
+
+    // 追加 controls 之外的固定参数与事件监听
+    (props.codeExtras || []).forEach(line => parts.push(`  ${line}`));
 
     parts.push("/>");
     return parts.join("\n");
@@ -205,31 +222,32 @@ const ui = computed(() => tv(config)({ direction: props.direction, surface: prop
                     <div :class="ui.controlList()">
                         <template v-for="item in group.children" :key="item.key">
                             <template v-if="!visibilityMap[item.key]">
-                                <!-- Checkbox：不需要外包 label -->
-                                <RebornCheckbox v-if="item.component === 'checkbox'" :model-value="getField(item.key)"
-                                    :label="item.label" v-bind="item.props" size="sm"
-                                    @update:model-value="updateField(item.key, $event)" />
-
                                 <!-- Select / Input：统一外包 label -->
-                                <div v-else :class="ui.fieldWrapper()">
+                                <div :class="ui.fieldWrapper()">
                                     <label :class="ui.fieldLabel()">
                                         {{ item.label }}
                                         <span v-if="item.component === 'slider'" :class="ui.fieldValue()">
                                             {{ getField(item.key) }}
                                         </span>
                                     </label>
+                                    <RebornCheckbox v-if="item.component === 'checkbox'"
+                                        :model-value="getField(item.key)" :label="item.label" v-bind="item.props"
+                                        size="md" @update:model-value="updateField(item.key, $event)" />
                                     <!-- 兼容历史 demo 误传 items：RebornSelect 正式字段是 options -->
                                     <RebornSelect v-if="item.component === 'select'" :model-value="getField(item.key)"
-                                        v-bind="normalizeSelectProps(item.props)" class="w-full" size="sm"
+                                        v-bind="normalizeSelectProps(item.props)" class="w-full" size="lg"
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornInput v-else-if="item.component === 'input'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornSlider v-else-if="item.component === 'slider'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
                                         @update:model-value="updateField(item.key, $event)" />
                                     <RebornColorPicker v-else-if="item.component === 'color-picker'"
-                                        :model-value="getField(item.key)" v-bind="item.props" size="sm"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
+                                        @update:model-value="updateField(item.key, $event)" />
+                                    <RebornInputNumber v-else-if="item.component === 'input-number'"
+                                        :model-value="getField(item.key)" v-bind="item.props" size="lg"
                                         @update:model-value="updateField(item.key, $event)" />
                                 </div>
                             </template>
