@@ -68,7 +68,7 @@ const props = withDefaults(defineProps<PlaygroundProps>(), {
     description: "通过左侧面板实时调节组件属性，在右侧查看视觉反馈",
     componentName: "Component",
     direction: 'horizontal',
-    surface: false
+    surface: true
 });
 
 const emit = defineEmits<{

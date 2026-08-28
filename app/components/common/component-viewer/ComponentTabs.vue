@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { TabsItem } from "@nuxt/ui";
+import { demoContextKey } from "../demo/types";
 
 interface Props {
   devDependencies?: string;
@@ -89,7 +90,13 @@ const platformItems = computed<TabsItem[]>(() => {
 });
 
 // Use the composable for both component and demo code loading
-const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponentCode({
+const {
+  componentCode,
+  demoCode,
+  uniappCode,
+  uniappComponentCode,
+  demoRawCode,
+} = useComponentCode({
   componentId,
   componentFiles,
   demoFile,
@@ -98,6 +105,20 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
   uniappFiles,
   uniappComponentId: componentId
 });
+
+/**
+ * 把 demo 源文件按 <DemoSection title="..."> 切成「标题 -> 源码」映射，向下提供给各张分组卡片。
+ * 分组里的内容既是示例也是代码，同源抽取，不需要在文档或分组上再写一遍。
+ */
+const demoSectionSources = computed(() => extractDemoSections(demoRawCode.value));
+
+provide(demoContextKey, {
+  sources: demoSectionSources,
+  componentId,
+  demoFile,
+  demoName: demoFile.replace(".vue", ""),
+});
+
 </script>
 
 <template>
@@ -111,7 +132,7 @@ const { componentCode, demoCode, uniappCode, uniappComponentCode } = useComponen
     content: 'py-4',
   }" :unmount-on-hide="false">
     <template #preview>
-      <!-- 统一展示舞台：视口切换（375/768/全宽）+ 全屏预览入口 -->
+      <!-- 统一展示容器：分组各自成卡，动作与源码都在卡片头上 -->
       <DemoStage :demo-name="demoFile.replace('.vue', '')">
         <ClientOnly>
           <component :is="config" />

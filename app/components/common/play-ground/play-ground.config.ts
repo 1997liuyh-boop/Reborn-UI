@@ -2,10 +2,10 @@
  * Playground（交互演练场）样式配置
  *
  * ── 背景层级铁律 ────────────────────────────────────────────────
- * 本组件默认**不自带表面背景**：它通常渲染在 DemoStage 画布内部，
- * 而画布已经是示例区唯一的表面层。控制面板与预览区靠分隔线（divide-default）
- * 切分，而不是各自铺一层底色 —— 否则就会出现「画布套面板」的双层背景。
- * 若需脱离 DemoStage 独立使用（例如 /playground 页面），传 `surface` 补回表面样式。
+ * 示例分组已各自成卡（DemoSection），DemoStage 的全宽画布不再铺底，
+ * 因此演练场默认 `surface=true`，自己就是一张卡片 —— 与相邻的分组卡片同级。
+ * 卡片内部控制面板与预览区靠分隔线（divide-default）切分，各自不再铺底色。
+ * 若要嵌进别的表面里（例如已有卡片内部），传 `:surface="false"` 去掉这层。
  * 完整规范见文档页 /getting-started/demo-guidelines。
  * ────────────────────────────────────────────────────────────────
  */
@@ -73,6 +73,6 @@ export default {
     },
     defaultVariants: {
         direction: "horizontal" as const,
-        surface: false as const,
+        surface: true as const,
     }
 };

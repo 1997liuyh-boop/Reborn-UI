@@ -33,6 +33,12 @@ export function useComponentCode(options: UseComponentCodeOptions) {
   const componentCode = ref<string>('')
   const demoCode = ref<string>('')
   const uniappCode = ref<string>('')
+  /** demo 原始源码（未包 markdown 围栏），供展示卡片抽取分组、复制与询问 AI 使用 */
+  const demoRawCode = ref<string>('')
+  /** UniApp demo 原始源码 */
+  const uniappRawCode = ref<string>('')
+  /** UniApp demo 文件名（约定 <PascalCase>Demo.vue） */
+  const uniappDemoFile = ref<string>('')
   const uniappComponentCode = ref<string>('')
   const mdcCode = ref<string>('')
   const isLoading = ref(false)
@@ -125,6 +131,7 @@ export function useComponentCode(options: UseComponentCodeOptions) {
   async function loadDemoCode() {
     if (!demoFile || !componentId) {
       demoCode.value = ''
+      demoRawCode.value = ''
       return
     }
 
@@ -138,6 +145,7 @@ export function useComponentCode(options: UseComponentCodeOptions) {
       if (codeGetter) {
         const code = (await codeGetter()) as unknown as string
         const fileExt = demoFile.split('.').at(-1)
+        demoRawCode.value = code
 
         demoCode.value = `
 ## Component Usage
@@ -206,6 +214,8 @@ ${componentsList.value?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${i
   async function loadUniappCode() {
     if (!uniapp || !uniappComponentId) {
       uniappCode.value = ''
+      uniappRawCode.value = ''
+      uniappDemoFile.value = ''
       return
     }
 
@@ -228,6 +238,8 @@ ${componentsList.value?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\n${i
         try {
           const code = (await demoCodeGetter()) as unknown as string
           const fileExt = demoFileName.split('.').at(-1)
+          uniappRawCode.value = code
+          uniappDemoFile.value = demoFileName
 
           uniappCode.value = `
 ## UniApp Component Usage
@@ -362,6 +374,9 @@ ${uniappComponentCodeItems?.map((item) => `\`\`\`${item.ext} [${item.fileName}]\
     componentCode: readonly(componentCode),
     demoCode: readonly(demoCode),
     uniappCode: readonly(uniappCode),
+    demoRawCode: readonly(demoRawCode),
+    uniappRawCode: readonly(uniappRawCode),
+    uniappDemoFile: readonly(uniappDemoFile),
     uniappComponentCode: readonly(uniappComponentCode),
     mdcCode: readonly(mdcCode),
     isLoading: readonly(isLoading),
