@@ -182,55 +182,37 @@ const totalCount = computed(() => overviewItems.value.length)
 
     <!-- 分类分块 -->
     <div class="mt-10 flex flex-col gap-12 sm:mt-12 sm:gap-14">
-      <section
-        v-for="section in groupedSections"
-        :id="`cat-${section.name}`"
-        :key="section.name"
-        class="scroll-mt-24"
-      >
+      <section v-for="section in groupedSections" :id="`cat-${section.name}`" :key="section.name" class="scroll-mt-24">
         <div class="mb-5 flex items-center gap-4 sm:mb-6">
           <h2 class="text-default text-xl font-medium tracking-tight sm:text-[28px] sm:leading-[34px]">
             {{ section.name }}
           </h2>
-          <span class="overview-count inline-flex min-w-9 items-center justify-center rounded bg-[#F4F4F6] px-2 py-1 text-base font-medium text-[#3D3D3D] dark:bg-white/10 dark:text-neutral-200">
+          <span
+            class="overview-count inline-flex min-w-9 items-center justify-center rounded bg-[#F4F4F6] px-2 py-1 text-base font-medium text-[#3D3D3D] dark:bg-white/10 dark:text-neutral-200">
             {{ section.count }}
           </span>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-          <NuxtLink
-            v-for="item in section.items"
-            :key="item.id"
-            :to="item.path"
-            class="overview-card group relative flex flex-col overflow-hidden rounded-lg border border-[#E5E6EB] bg-white transition-colors hover:border-primary/40 hover:bg-[#FAFBFC] dark:border-white/10 dark:bg-neutral-900 dark:hover:border-primary/40 dark:hover:bg-neutral-900/80"
-          >
+          <NuxtLink v-for="item in section.items" :key="item.id" :to="item.path"
+            class="overview-card group relative flex flex-col overflow-hidden rounded-lg border border-[#E5E6EB] bg-white transition-colors hover:border-primary/40 hover:bg-[#FAFBFC] dark:border-white/10 dark:bg-neutral-900 dark:hover:border-primary/40 dark:hover:bg-neutral-900/80">
             <!-- 标题栏：稿面顶栏浅底 + 居中标题 -->
-            <div class="overview-card-head relative flex h-14 shrink-0 items-center justify-center bg-[rgba(1,27,70,0.04)] px-4 sm:h-16 dark:bg-white/[0.04]">
+            <div
+              class="overview-card-head relative flex h-14 shrink-0 items-center justify-center bg-[rgba(1,27,70,0.04)] px-4 sm:h-16 dark:bg-white/[0.04]">
               <div class="min-w-0 px-8 text-center">
                 <div class="truncate text-[15px] font-medium text-[#202229] dark:text-neutral-100 sm:text-base">
                   {{ item.title }}
-                  <span
-                    v-if="item.englishName && item.englishName !== item.title"
-                    class="ml-1.5 font-normal text-[#86909C] dark:text-neutral-400"
-                  >{{ item.englishName }}</span>
+                  <span v-if="item.englishName && item.englishName !== item.title"
+                    class="ml-1.5 font-normal text-[#86909C] dark:text-neutral-400">{{ item.englishName }}</span>
                 </div>
               </div>
-              <UBadge
-                v-if="item.badge"
-                class="absolute top-3 right-3"
-                variant="subtle"
-                size="sm"
-                :color="item.badge?.toLowerCase() === 'new' ? 'success' : 'warning'"
-                :label="item.badge"
-              />
+              <UBadge v-if="item.badge" class="absolute top-3 right-3" variant="subtle" size="sm"
+                :color="item.badge?.toLowerCase() === 'new' ? 'success' : 'warning'" :label="item.badge" />
             </div>
 
             <!-- Overview 缩略预览（视口懒加载；未补齐时回退几何示意） -->
             <div class="overview-card-preview relative min-h-[180px] flex-1 overflow-hidden sm:min-h-[220px]">
-              <ComponentOverviewDemo
-                :demo-name="item.demoName"
-                :category="item.category"
-              />
+              <ComponentOverviewDemo :demo-name="item.demoName" :category="item.category" />
             </div>
           </NuxtLink>
         </div>

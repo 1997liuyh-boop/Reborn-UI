@@ -9,7 +9,7 @@ const defaultState: Record<string, any> = {
   page: 1,
   total: 100,
   pageSize: 10,
-  pagerCount: 3,
+  pagerCount: 7,
   layout: "prev, pager, next,jumper,total,sizes",
   pageSizes: "10,20,50,100",
   size: "md",
@@ -51,15 +51,16 @@ const controls: any = [
         label: "每页条数",
         key: "pageSize",
         component: "slider" as const,
-        defaultValue: 3,
-        props: { min: 5, max: 50, step: 1 },
+        defaultValue: 10,
+        props: { min: 5, max: 50, step: 5 },
       },
       {
+        // pagerCount 会被组件规范化为「不小于 5 的奇数」，滑块直接按 5 起、步长 2 取值，避免拖动无反馈
         label: "页码按钮数",
         key: "pagerCount",
         component: "slider" as const,
-        defaultValue: 3,
-        props: { min: 2, max: 5, step: 1 },
+        defaultValue: 7,
+        props: { min: 5, max: 13, step: 2 },
       },
       {
         label: "布局组合",
@@ -202,18 +203,17 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
     </Playground>
 
     <DemoSection title="默认用法" description="传入 total 与 page-size，v-model 绑定当前页码，切换时触发 current-change。">
-      <DemoBlock layout="row" align="center">
+      <DemoBlock layout="stack" align="start">
         <RebornPagination v-model="basicPage" :total="50" @current-change="handleCurrentChange" />
+        <DemoNote tone="dimmed">当前页：<code>{{ basicPage }}</code></DemoNote>
       </DemoBlock>
-      <DemoNote tone="dimmed">当前页：<code>{{ basicPage }}</code></DemoNote>
     </DemoSection>
 
     <DemoSection title="主题颜色" description="color 控制激活页码与悬停高亮，取值与按钮/徽章同一套语义色。">
-      <DemoBlock layout="stack" align="start" class="gap-4">
-        <RebornPagination
-          v-for="c in paginationColors" :key="c" v-model="colorPage" :total="50" :color="c"
-          background
-        />
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem v-for="c in paginationColors" :key="c" :label="c" mono>
+          <RebornPagination v-model="colorPage" :total="50" :color="c" background />
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -224,14 +224,19 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
     </DemoSection>
 
     <DemoSection title="简洁模式" description="simple 忽略 layout，只保留上一页 / 当前页-总页数 / 下一页；prev-text 与 next-text 可把箭头换成文字。">
-      <DemoBlock layout="row" align="center" class="gap-6">
-        <RebornPagination v-model="simplePage" :total="80" simple />
-        <RebornPagination v-model="simplePage" :total="80" simple prev-text="上一页" next-text="下一页" />
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="simple（默认箭头）" mono>
+          <RebornPagination v-model="simplePage" :total="80" simple />
+        </DemoItem>
+
+        <DemoItem label="simple + prev-text / next-text" mono>
+          <RebornPagination v-model="simplePage" :total="80" simple prev-text="上一页" next-text="下一页" />
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
     <DemoSection title="布局组合" description="layout 用逗号组合 prev / pager / next / jumper / total / sizes，未知 token 会被忽略。">
-      <DemoBlock layout="stack" align="center" class="gap-4">
+      <DemoBlock layout="stack" align="start">
         <RebornPagination
           v-model="layoutPage" v-model:page-size="layoutSize" :total="200" :page-sizes="[5, 10, 20, 50]"
           layout="prev, pager, next, jumper, total, sizes" @current-change="handleCurrentChange"
@@ -250,19 +255,23 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
     </DemoSection>
 
     <DemoSection title="单页隐藏" description="hideOnSinglePage 在总页数不超过 1 时整组件不渲染，点击按钮切换数据量观察显隐。">
-      <DemoBlock layout="row" align="center" class="gap-6">
-        <RebornPagination v-model="singlePage" :total="singleTotal" hide-on-single-page />
-        <RebornButton size="sm" variant="soft" color="primary" @click="toggleSingleTotal">
-          {{ singleTotal === 5 ? "切换为 100 条" : "切换为 5 条" }}
-        </RebornButton>
+      <DemoBlock layout="stack" align="start">
+        <div class="flex flex-wrap items-center gap-6">
+          <RebornPagination v-model="singlePage" :total="singleTotal" hide-on-single-page />
+          <RebornButton size="sm" variant="soft" color="primary" @click="toggleSingleTotal">
+            {{ singleTotal === 5 ? "切换为 100 条" : "切换为 5 条" }}
+          </RebornButton>
+        </div>
+        <DemoNote tone="dimmed">当前 total：<code>{{ singleTotal }}</code></DemoNote>
       </DemoBlock>
-      <DemoNote tone="dimmed">当前 total：<code>{{ singleTotal }}</code></DemoNote>
     </DemoSection>
 
     <DemoSection title="插槽自定义" description="prev / next / pager-item / jumper / total / sizes 六个插槽均可完全接管默认内容。">
       <DemoBlock layout="stack" class="gap-6">
-        <div class="flex flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">圆形页码 · <code>#pager-item</code></span>
+        <DemoItem>
+          <template #label>
+            圆形页码 · <code>#pager-item</code>
+          </template>
           <RebornPagination v-model="slotPage" :total="50" background>
             <template #pager-item="{ page, active, disabled }">
               <RebornButton
@@ -273,10 +282,12 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
               </RebornButton>
             </template>
           </RebornPagination>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">自定义箭头 · <code>#prev</code> / <code>#next</code></span>
+        <DemoItem>
+          <template #label>
+            自定义箭头 · <code>#prev</code> / <code>#next</code>
+          </template>
           <RebornPagination v-model="slotPage" :total="50">
             <template #prev="{ prev, disabled }">
               <RebornButton color="error" variant="circle" size="sm" :disabled="disabled" @click="prev">
@@ -289,12 +300,12 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
               </RebornButton>
             </template>
           </RebornPagination>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">
+        <DemoItem>
+          <template #label>
             自定义 <code>#jumper</code> / <code>#total</code> / <code>#sizes</code>
-          </span>
+          </template>
           <RebornPagination
             v-model="slotPage" v-model:page-size="slotSize" :total="120" :page-sizes="[5, 10, 20]"
             layout="total, sizes, prev, pager, next, jumper"
@@ -316,7 +327,7 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
               <span class="text-dimmed text-xs">/ {{ totalPages }} 页</span>
             </template>
           </RebornPagination>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
   </div>

@@ -272,35 +272,30 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </div>
     </Playground>
 
-    <DemoSection title="形状与形态">
+    <DemoSection title="外形 shape">
       <template #description>
-        <code>shape</code> 控制外框圆角（circle 胶囊 / square 方角）；<code>variant</code> 提供
-        outlined / filled / borderless / underlined 四种形态，underlined 会强制压平圆角，此时 shape 不再生效。
+        <code>shape</code> 控制外框圆角：circle 胶囊 / square 方角。
+        注意 <code>variant="underlined"</code> 会强制压平圆角，此时 shape 不再生效。
       </template>
-      <DemoBlock layout="stack" class="gap-6">
-        <div class="flex flex-col gap-3">
-          <p class="text-muted text-xs font-medium">shape</p>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div v-for="s in inputNumberShapes" :key="s" class="flex flex-col gap-3">
-              <p class="text-dimmed text-xs italic">{{ s }}</p>
-              <RebornInputNumber v-model="shapeValue" :shape="s" color="secondary" />
-            </div>
-          </div>
-        </div>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem v-for="s in inputNumberShapes" :key="s" :label="s" mono>
+          <RebornInputNumber v-model="shapeValue" :shape="s" color="secondary" />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-muted text-xs font-medium">variant</p>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div v-for="v in inputNumberVariants" :key="v" class="flex flex-col gap-3">
-              <p class="text-dimmed text-xs italic">{{ v }}</p>
-              <!-- borderless 无边框形态搭配左侧堆叠按钮，悬停时体验滑入效果 -->
-              <RebornInputNumber
-                v-model="variantValue" :variant="v" shape="square" color="primary"
-                :controls-position="v === 'borderless' ? 'left' : undefined"
-              />
-            </div>
-          </div>
-        </div>
+    <DemoSection title="形态 variant">
+      <template #description>
+        <code>variant</code> 提供 outlined / filled / borderless / underlined 四种形态。
+      </template>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem v-for="v in inputNumberVariants" :key="v" :label="v" mono>
+          <!-- borderless 无边框形态搭配左侧堆叠按钮，悬停时体验滑入效果 -->
+          <RebornInputNumber
+            v-model="variantValue" :variant="v" shape="square" color="primary"
+            :controls-position="v === 'borderless' ? 'left' : undefined"
+          />
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -308,16 +303,14 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       <template #description>
         <code>disabled</code> 整体灰显且不可交互；<code>readonly</code> 可聚焦、可选中复制文本，但键入与按钮增减均被拦截。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">disabled</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="disabled" mono>
           <RebornInputNumber v-model="lockedValue" disabled />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">readonly</p>
+        <DemoItem label="readonly" mono>
           <RebornInputNumber v-model="lockedValue" readonly />
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -325,18 +318,17 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       <template #description>
         <code>precision</code> 指定保留的小数位数。当 precision 小于 step 的小数位时，精度取 step 的小数位，否则步进结果会被截断。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">precision = 2，step = 1</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="precision = 2，step = 1" mono :note="`当前值：${precisionValue}`">
           <RebornInputNumber v-model="precisionValue" :precision="2" :step="1" />
-          <DemoNote tone="dimmed" class="text-xs">当前值：<code>{{ precisionValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">precision = 0，step = 0.1 → 实际精度 1 位</p>
+        <DemoItem
+          label="precision = 0，step = 0.1 → 实际精度 1 位" mono
+          :note="`当前值：${stepPrecisionValue}`"
+        >
           <RebornInputNumber v-model="stepPrecisionValue" :precision="0" :step="0.1" />
-          <DemoNote tone="dimmed" class="text-xs">当前值：<code>{{ stepPrecisionValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -344,24 +336,22 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       <template #description>
         <code>#prefix</code> 与 <code>#suffix</code> 插槽在输入框内部添加固定内容，不参与数值解析。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">货币前缀</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="货币前缀">
           <RebornInputNumber v-model="priceValue" :min="0" :step="10" align="right">
             <template #prefix>
               <span class="text-sm">￥</span>
             </template>
           </RebornInputNumber>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">单位后缀</p>
+        <DemoItem label="单位后缀">
           <RebornInputNumber v-model="weightValue" :min="0" :step="0.5" :precision="1" align="right">
             <template #suffix>
               <span class="text-sm">kg</span>
             </template>
           </RebornInputNumber>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -370,24 +360,20 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         <code>formatter</code> 决定输入框展示的文本，<code>parser</code> 负责在提交前把文本还原为数值，两者必须配对使用；
         按钮步进与键入提交都会经过这对转换。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">千分位分隔</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="千分位分隔" :note="`绑定值：${formattedValue}`">
           <RebornInputNumber
             v-model="formattedValue" :min="0" :step="1000" align="right" :formatter="formatThousands"
             :parser="parseThousands"
           />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ formattedValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">百分比展示</p>
+        <DemoItem label="百分比展示" :note="`绑定值：${percentValue}`">
           <RebornInputNumber
             v-model="percentValue" :min="0" :max="100" :step="5" :formatter="formatPercent"
             :parser="parsePercent"
           />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ percentValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -396,9 +382,8 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         <code>#plus</code> 与 <code>#minus</code> 插槽替换增减按钮内的图标，作用域参数 <code>iconClass</code>
         是当前尺寸对应的图标类名。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">爱心图标</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="爱心图标">
           <RebornInputNumber v-model="customValue" color="error">
             <template #minus="{ iconClass }">
               <Icon name="lucide:heart-minus" :class="iconClass" />
@@ -407,10 +392,9 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
               <Icon name="lucide:heart-plus" :class="iconClass" />
             </template>
           </RebornInputNumber>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">左右箭头</p>
+        <DemoItem label="左右箭头">
           <RebornInputNumber v-model="customValue" shape="square" color="info">
             <template #minus="{ iconClass }">
               <Icon name="lucide:arrow-left" :class="iconClass" />
@@ -419,7 +403,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
               <Icon name="lucide:arrow-right" :class="iconClass" />
             </template>
           </RebornInputNumber>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -428,18 +412,14 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         默认在失焦或按下 Enter 时更新绑定值；<code>model-event="input"</code> 改为键入时即时更新，
         此时允许临时超出 min / max，失焦时自动修正。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">默认 change（失焦 / 回车提交）</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="change（默认，失焦 / 回车提交）" mono :note="`绑定值：${changeModeValue}`">
           <RebornInputNumber v-model="changeModeValue" :min="0" :max="100" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ changeModeValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">model-event="input"（键入即时，失焦修正）</p>
+        <DemoItem label="input（键入即时，失焦修正）" mono :note="`绑定值：${inputModeValue}`">
           <RebornInputNumber v-model="inputModeValue" model-event="input" :min="0" :max="100" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ inputModeValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -449,27 +429,22 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         <code>controls-position</code> 支持 left / right 上下堆叠，堆叠时按钮默认隐藏，悬停或聚焦时从所在侧滑入；
         <code>hide-button</code> 隐藏按钮只保留数字输入。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">step-strictly，step = 5（试着输入 13）</p>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="step-strictly，step = 5（试着输入 13）" mono :note="`绑定值：${strictlyValue}`">
           <RebornInputNumber v-model="strictlyValue" :step="5" step-strictly :min="0" :max="100" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ strictlyValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">controls-position="right"（悬停显示）</p>
-          <RebornInputNumber v-model="layoutValue" shape="square" controls-position="right" align="left" />
-        </div>
-
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">controls-position="left"（悬停显示）</p>
-          <RebornInputNumber v-model="layoutValue" shape="square" controls-position="left" align="left" />
-        </div>
-
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">hide-button（纯数字输入）</p>
+        <DemoItem label="hide-button（纯数字输入）" mono>
           <RebornInputNumber v-model="layoutValue" shape="square" hide-button align="left" />
-        </div>
+        </DemoItem>
+
+        <DemoItem label="controls-position=&quot;left&quot;（悬停显示）" mono>
+          <RebornInputNumber v-model="layoutValue" shape="square" controls-position="left" align="left" />
+        </DemoItem>
+
+        <DemoItem label="controls-position=&quot;right&quot;（悬停显示）" mono>
+          <RebornInputNumber v-model="layoutValue" shape="square" controls-position="right" align="left" />
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -479,23 +454,17 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         <code>change-on-wheel</code> 开启鼠标滚轮增减，仅在输入框已聚焦时接管滚动，未聚焦时不影响页面滚动。
       </template>
       <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">keyboard 默认开启（聚焦后按 ↑ / ↓）</p>
+        <DemoItem label="keyboard 默认开启（聚焦后按 ↑ / ↓）" mono :note="`绑定值：${keyboardOnValue}`">
           <RebornInputNumber v-model="keyboardOnValue" shape="square" :min="0" :max="100" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ keyboardOnValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">:keyboard="false"（方向键不再步进）</p>
+        <DemoItem label=":keyboard=&quot;false&quot;（方向键不再步进）" mono :note="`绑定值：${keyboardOffValue}`">
           <RebornInputNumber v-model="keyboardOffValue" shape="square" :keyboard="false" :min="0" :max="100" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ keyboardOffValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">change-on-wheel（先聚焦，再滚滚轮）</p>
+        <DemoItem label="change-on-wheel（先聚焦，再滚滚轮）" mono :note="`绑定值：${wheelValue}`">
           <RebornInputNumber v-model="wheelValue" shape="square" change-on-wheel :min="0" :max="100" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ wheelValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -523,8 +492,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         <code>ui</code> 可逐槽覆盖 wrapper / input / button / divider / prefix / suffix 的类名。
       </template>
       <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">甜美主题</p>
+        <DemoItem label="甜美主题">
           <RebornInputNumber
             v-model="themedValue" :ui="{
               wrapper: 'bg-default ring-rose-200 focus-within:ring-rose-400 rounded-ui-md h-14 border-0',
@@ -539,13 +507,14 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
               <Icon name="lucide:heart-plus" :class="iconClass" />
             </template>
           </RebornInputNumber>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">科技霓虹 · 直角 + 等宽字体</p>
+        <DemoItem label="科技霓虹 · 直角 + 等宽字体">
+          <!-- 灰阶在明暗之间对偶翻转，恒深底必须写成 bg-gray-10 dark:bg-gray-1，否则暗色模式下会翻成浅底白字 -->
           <RebornInputNumber
             v-model="themedValue" :ui="{
-              wrapper: 'bg-gray-9 ring-indigo-500/50 focus-within:ring-indigo-400 rounded-none h-12 border-0',
+              wrapper:
+                'bg-gray-10 dark:bg-gray-1 ring-indigo-500/50 focus-within:ring-indigo-400 rounded-none h-12 border-0',
               input: 'text-white font-mono leading-none',
               button: 'text-indigo-400 hover:bg-indigo-500/20 transition-all',
               divider: 'bg-indigo-500/20',
@@ -558,10 +527,9 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
               <Icon name="lucide:arrow-left" class="size-4" />
             </template>
           </RebornInputNumber>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">极简无界 · 仅保留下划线</p>
+        <DemoItem label="极简无界 · 仅保留下划线">
           <RebornInputNumber
             v-model="themedValue" class="font-bold" :ui="{
               wrapper:
@@ -571,7 +539,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
               divider: 'hidden',
             }"
           />
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
   </div>

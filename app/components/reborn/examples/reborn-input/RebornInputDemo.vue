@@ -151,35 +151,29 @@ function parseThousands(text: string) {
       </div>
     </Playground>
 
-    <DemoSection title="形态与形状">
+    <DemoSection title="形态 variant">
       <template #description>
-        <code>variant</code> 提供 outlined / filled / borderless / underlined 四种形态，underlined 会强制压平圆角；
-        <code>shape</code> 控制外形轮廓：square 按尺寸取圆角令牌（sm 4px / md 6px / lg 8px），circle 为胶囊。
+        <code>variant</code> 提供 outlined / filled / borderless / underlined 四种形态，underlined 会强制压平圆角。
       </template>
-      <DemoBlock layout="stack" class="gap-6">
-        <div class="flex flex-col gap-3">
-          <p class="text-muted text-xs font-medium">variant</p>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div v-for="v in inputVariants" :key="v" class="flex flex-col gap-3">
-              <p class="text-dimmed text-xs italic">{{ v }}</p>
-              <RebornInput v-model="variantValue" :variant="v" placeholder="请输入" />
-            </div>
-          </div>
-        </div>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem v-for="v in inputVariants" :key="v" :label="v" mono>
+          <RebornInput v-model="variantValue" :variant="v" placeholder="请输入" />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-muted text-xs font-medium">shape × size（square 圆角随尺寸变化）</p>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div v-for="s in inputSizes" :key="s" class="flex flex-col gap-3">
-              <p class="text-dimmed text-xs italic">square · {{ s }}</p>
-              <RebornInput v-model="variantValue" variant="outlined" shape="square" :size="s" placeholder="请输入" />
-            </div>
-            <div class="flex flex-col gap-3">
-              <p class="text-dimmed text-xs italic">circle · 胶囊</p>
-              <RebornInput v-model="variantValue" variant="outlined" shape="circle" placeholder="请输入" />
-            </div>
-          </div>
-        </div>
+    <DemoSection title="形状与尺寸">
+      <template #description>
+        <code>shape</code> 控制外形轮廓：square 按尺寸取圆角令牌（sm 4px / md 6px / lg 8px），circle 为胶囊；
+        <code>size</code> 同时决定高度、字号与内边距。
+      </template>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem v-for="s in inputSizes" :key="s" :label="`square · ${s}`" mono>
+          <RebornInput v-model="variantValue" variant="outlined" shape="square" :size="s" placeholder="请输入" />
+        </DemoItem>
+        <DemoItem label="circle · 胶囊" mono>
+          <RebornInput v-model="variantValue" variant="outlined" shape="circle" placeholder="请输入" />
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -189,8 +183,7 @@ function parseThousands(text: string) {
         插槽在输入框内部添加内容；<code>#prepend</code> / <code>#append</code> 插槽在输入框外部拼出连体块，仅单行模式有效。
       </template>
       <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">slot：prefix / suffix</p>
+        <DemoItem label="#prefix / #suffix" mono>
           <RebornInput v-model="iconValue" placeholder="搜索日期">
             <template #prefix>
               prefix
@@ -199,15 +192,14 @@ function parseThousands(text: string) {
               suffix
             </template>
           </RebornInput>
-        </div>
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">prefix-icon / suffix-icon</p>
+        </DemoItem>
+
+        <DemoItem label="prefix-icon / suffix-icon" mono>
           <RebornInput v-model="iconValue" prefix-icon="lucide:search" suffix-icon="lucide:calendar"
             placeholder="搜索日期" />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">#prepend / #append 连体块</p>
+        <DemoItem label="#prepend / #append（连体块）" mono>
           <RebornInput v-model="groupValue" variant="outlined" placeholder="域名前缀">
             <template #prepend>
               https://
@@ -216,7 +208,7 @@ function parseThousands(text: string) {
               .com
             </template>
           </RebornInput>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -226,22 +218,19 @@ function parseThousands(text: string) {
         <code>word-limit-position</code> 可选 inside（默认）/ outside。
       </template>
       <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">inside（默认）</p>
+        <DemoItem label="inside（默认）" mono>
           <RebornInput v-model="limitValue" :maxlength="10" show-word-limit placeholder="最多 10 字" />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">outside</p>
+        <DemoItem label="outside" mono>
           <RebornInput v-model="limitOutsideValue" :maxlength="10" show-word-limit word-limit-position="outside"
             placeholder="统计显示在下方" />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">textarea（右下角）</p>
+        <DemoItem label="textarea（统计落在右下角）" mono>
           <RebornInput v-model="limitAreaValue" type="textarea" :rows="3" :maxlength="50" show-word-limit
             placeholder="多行文本统计" />
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -250,13 +239,11 @@ function parseThousands(text: string) {
         <code>formatter</code> 决定展示文本，<code>parser</code> 从格式化文本中还原绑定值，两者配对使用，仅
         <code>type="text"</code> 时生效。
       </template>
-      <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">千分位分隔</p>
+      <DemoBlock layout="stack" align="start">
+        <DemoItem label="千分位分隔" mono :note="`绑定值：${formattedValue}`" class="w-full max-w-sm">
           <RebornInput v-model="formattedValue" :formatter="formatThousands" :parser="parseThousands"
             placeholder="输入数字" />
-          <DemoNote tone="dimmed" class="text-xs">绑定值：<code>{{ formattedValue }}</code></DemoNote>
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -266,24 +253,21 @@ function parseThousands(text: string) {
         <code>visible</code>）可自定义图标；<code>clearable</code> 显示清除按钮，<code>clear-icon</code> 可换图标。
       </template>
       <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">show-password</p>
+        <DemoItem label="show-password" mono>
           <RebornInput v-model="passwordValue" show-password placeholder="请输入密码" />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">自定义 #password-icon</p>
+        <DemoItem label="自定义 #password-icon" mono>
           <RebornInput v-model="passwordValue" show-password placeholder="请输入密码">
             <template #password-icon="{ visible }">
               <Icon :name="visible ? 'lucide:unlock' : 'lucide:lock'" />
             </template>
           </RebornInput>
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">clearable + clear-icon</p>
+        <DemoItem label="clearable + clear-icon" mono>
           <RebornInput v-model="clearValue" clearable clear-icon="lucide:trash-2" placeholder="可清空" />
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
 
@@ -293,21 +277,18 @@ function parseThousands(text: string) {
         让高度随内容自适应，可传 <code>{ minRows, maxRows }</code> 限定范围；<code>resize</code> 控制是否允许用户拖拽缩放。
       </template>
       <DemoBlock layout="grid" align="start">
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">固定 rows = 3</p>
+        <DemoItem label="rows = 3（固定行数）" mono>
           <RebornInput v-model="textareaValue" type="textarea" :rows="3" variant="outlined" placeholder="请输入多行内容..." />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">autosize：{ minRows: 2, maxRows: 6 }</p>
+        <DemoItem label="autosize = { minRows: 2, maxRows: 6 }" mono>
           <RebornInput v-model="autosizeValue" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }"
             placeholder="高度自适应..." />
-        </div>
+        </DemoItem>
 
-        <div class="flex flex-col gap-3">
-          <p class="text-dimmed text-xs italic">resize="vertical"（允许纵向拖拽）</p>
+        <DemoItem label="resize=&quot;vertical&quot;（允许纵向拖拽）" mono>
           <RebornInput v-model="textareaValue" type="textarea" :rows="3" resize="vertical" placeholder="右下角可拖拽" />
-        </div>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
   </div>

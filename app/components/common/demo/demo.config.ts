@@ -1,5 +1,5 @@
 /**
- * Demo 展示原语（DemoSection / DemoBlock / DemoNote / DemoActions）样式配置
+ * Demo 展示原语（DemoSection / DemoBlock / DemoItem / DemoNote / DemoActions）样式配置
  *
  * ══════════════════════════════════════════════════════════════════
  * 示例编写规范 · 铁律（全站唯一事实来源，文档页 /getting-started/demo-guidelines 与此同步）
@@ -61,6 +61,9 @@
  *   · 必须在两种模式下都保持深色的表面：bg-gray-10 dark:bg-gray-1
  *     （灰阶 gray-1…10 在亮暗之间对偶翻转，不存在单 token 永深色）；
  *     深色底上的弱文字用 text-gray-6。禁止写 gray-900 / gray-800 等默认色板名。
+ *   · 一组同类示例（各种 variant / shape / size 的对照）用 <DemoItem label="取值">，
+ *     不要手写「小标题 + 组件」的 div；条目数量固定时给 DemoBlock 传 :columns 定死列数，
+ *     避免 4 项排进 3 列断成 3+1 的孤行。
  *   · 交互演练场用 <Playground>，不要手写控制条。左侧控制面板的控件统一 lg 尺寸
  *     （Playground 内置，demo 无需配置）；「传参明细」完整列出当前所有参数
  *     （含等于默认值的项），不做默认值过滤。
@@ -169,6 +172,18 @@ export const blockConfig = {
             grid: { root: 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3' },
             stack: { root: 'flex flex-col gap-4' },
         },
+        /**
+         * 网格列数（仅 layout="grid" 有意义，其余排列下 grid-cols-* 不产生效果）。
+         * auto 沿用「窄屏 1 列 / sm 2 列 / lg 3 列」的默认响应式档位；
+         * 显式指定则用于「示例条目数量固定」的场景，避免 3 列里排 4 项断成 3+1 的孤行。
+         */
+        columns: {
+            auto: {},
+            1: { root: 'grid-cols-1 sm:grid-cols-1 lg:grid-cols-1' },
+            2: { root: 'sm:grid-cols-2 lg:grid-cols-2' },
+            3: { root: 'sm:grid-cols-2 lg:grid-cols-3' },
+            4: { root: 'sm:grid-cols-2 lg:grid-cols-4' },
+        },
         /** 交叉轴对齐；auto 表示按 layout 取各自最自然的默认值 */
         align: {
             auto: {},
@@ -194,8 +209,38 @@ export const blockConfig = {
     ],
     defaultVariants: {
         layout: 'row' as const,
+        columns: 'auto' as const,
         align: 'auto' as const,
         tone: 'plain' as const,
+    },
+} as const
+
+/**
+ * DemoItem —— 示例条目：一行取值标签 + 示例本体 + 可选脚注
+ *
+ * 用来取代 demo 里反复手写的
+ * `<div class="flex flex-col gap-3"><p class="text-dimmed text-xs italic">…</p>…</div>`：
+ * 标签字号 / 颜色 / 间距各处不一致，且斜体作用在中文标签上会被合成为伪斜体，观感很差。
+ */
+export const itemConfig = {
+    slots: {
+        root: 'flex min-w-0 flex-col gap-2',
+        /** 取值标签：不用斜体（中文伪斜体难看），靠字号与弱化色与示例本体拉开层级 */
+        label: 'text-dimmed text-xs leading-none font-medium',
+        /** 示例本体：允许放多个元素，纵向小间距排列 */
+        body: 'flex min-w-0 flex-col gap-2',
+        /** 脚注：绑定值回显、边界条件提示等 */
+        note: 'text-dimmed text-xs leading-relaxed',
+    },
+    variants: {
+        /** 标签是否用等宽字体：标签是字面量取值（outlined / circle / sm）时更整齐 */
+        mono: {
+            true: { label: 'font-mono' },
+            false: {},
+        },
+    },
+    defaultVariants: {
+        mono: false,
     },
 } as const
 
