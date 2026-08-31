@@ -2,7 +2,11 @@
 import { computed } from "vue";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
-import theme, { fieldTriggerColors, fieldTriggerSizes } from "./reborn-field-trigger.config";
+import theme, {
+  fieldTriggerColors,
+  fieldTriggerSizes,
+  fieldTriggerVariants,
+} from "./reborn-field-trigger.config";
 import type { FieldTriggerUI } from "./reborn-field-trigger.config";
 
 defineOptions({ name: "RebornFieldTrigger" });
@@ -15,10 +19,12 @@ export interface FieldTriggerProps {
   /** 下拉是否处于展开态，用于 data-state 描边与箭头旋转 */
   isOpen?: boolean;
   disabled?: boolean;
-  /** 是否显示清空按钮（显示时会占用箭头的位置） */
+  /** 是否显示清空按钮（悬停时盖在箭头之上，不额外占位） */
   clearable?: boolean;
   size?: (typeof fieldTriggerSizes)[number];
   color?: (typeof fieldTriggerColors)[number];
+  /** 形态变体：描边 / 填充 / 无边框 / 下划线 */
+  variant?: (typeof fieldTriggerVariants)[number];
   /** 右侧图标名，默认向下箭头 */
   icon?: string;
   class?: any;
@@ -40,6 +46,7 @@ const props = withDefaults(defineProps<FieldTriggerProps>(), {
   clearable: true,
   size: "md",
   color: "primary",
+  variant: "outlined",
   icon: "lucide:chevron-down",
   bordered: true,
   showArrow: true,
@@ -58,9 +65,11 @@ const ui = computed(() => {
   const styles = b({
     size: props.size,
     color: props.color,
+    variant: props.variant,
     open: props.isOpen && props.arrowAnimation,
     disabled: props.disabled,
     bordered: props.bordered,
+    clearable: props.clearable,
     error: props.error,
   });
 
@@ -99,11 +108,13 @@ function handleClear(event: Event) {
         </span>
       </slot>
 
-      <div :class="ui.triggerIconWrapper()">
-        <span v-if="clearable" :class="ui.clearBtn()" @click.stop="handleClear">
+      <!-- 尾部图标区：箭头与清空按钮重叠在同一格子里，悬停时交替显隐，宽度恒定不抖动 -->
+      <div v-if="showArrow || clearable" :class="ui.triggerIconWrapper()">
+        <Icon v-if="showArrow" :name="icon" :class="ui.arrow()" />
+        <span v-if="clearable" :class="ui.clearBtn({ class: showArrow ? undefined : 'static flex' })"
+          @click.stop="handleClear">
           <Icon name="lucide:x" class="size-full" />
         </span>
-        <Icon v-else-if="showArrow" :name="icon" :class="ui.arrow()" />
       </div>
     </template>
   </div>

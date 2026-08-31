@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<InputProps>(), {
   type: "text",
   size: "md",
   color: "primary",
-  variant: "filled",
+  variant: "outlined",
   shape: "square",
   disabled: false,
   readonly: false,

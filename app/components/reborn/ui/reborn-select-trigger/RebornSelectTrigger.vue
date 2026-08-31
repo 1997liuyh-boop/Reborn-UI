@@ -23,7 +23,9 @@ export interface SelectTriggerProps {
   /**
    * 关闭下拉的时机：
    * - 'click'：在触发器（含下拉面板）外完成一次点击后才收起（默认）
-   * - 'mousedown'：在触发器（含下拉面板）外发生任意按下类鼠标事件（左键/右键/中键按下）立即收起
+   * - 'mousedown'：外部一有动静就收起——在触发器（含下拉面板）外按下任意鼠标键
+   *   （左键 / 右键 / 中键）立即收起，面板外的滚动同样收起；
+   *   面板内部的列表滚动不算外部动静，不会误收。
    */
   closeOn?: "click" | "mousedown";
   scrollToActive?: (instant?: boolean) => void;
@@ -207,8 +209,17 @@ onBeforeUnmount(() => {
  * 捕获阶段监听是为了同时覆盖祖先滚动容器：页面级滚动本身由文档坐标兜住，
  * 但触发器被放进 overflow 容器（或 fixed 祖先）时文档坐标会变，需要补位。
  */
-function onViewportScroll() {
+function onViewportScroll(event: Event) {
   if (!floatingEl()) return;
+
+  // mousedown 时机的语义是「外部只要有动静就立刻收起」，页面滚动同样计入。
+  // 但下拉面板内部的列表滚动属于组件自身的交互，必须排除，
+  // 否则用滚轮翻选项会当场把面板关掉。
+  if (props.closeOn === "mousedown" && props.isOpen && !containsNode(event.target as Node)) {
+    emit("close");
+    return;
+  }
+
   scheduleSync();
 }
 
@@ -317,11 +328,15 @@ defineExpose({
 
       浮层内不再 stop 冒泡：外部点击判定由 containsNode（wrapper + 浮层双边界）负责，
       截断冒泡会让页面上其他依赖 document 点击流的浮层（popover / tooltip / 右键菜单）无法收起。
+
+      收起动画期间（200ms）浮层仍占着原来的尺寸，只是透明度渐隐，
+      若不摘掉 pointer-events，这块「看不见的板子」会吃掉落在它下方的点击，
+      表现就是「点了下一个选择器却没反应、要点第二次才展开」，故非展开态一律 pointer-events-none。
     -->
     <Teleport to="body" :disabled="!portal">
       <RebornTransition ref="transitionRef" :show="isOpen" :duration="{ enter: 300, leave: 200 }"
         @before-enter="onBeforeEnter" @enter="onEnter" @after-enter="onAfterEnter" @after-leave="onAfterLeave"
-        :custom-class="ui.dropdown()" name="select-collapse">
+        :custom-class="ui.dropdown({ class: isOpen ? undefined : 'pointer-events-none' })" name="select-collapse">
         <div ref="dropdownInnerRef" :class="ui.dropdownInner()">
           <slot name="content" />
         </div>

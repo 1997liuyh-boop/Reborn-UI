@@ -16,7 +16,7 @@ const OVERLAY_UI_KEYS = ["wrapper", "dropdown", "dropdownInner"] as const;
 
 /**
  * 把消费方对外暴露的 triggerUi（触发器盒子 + 浮层两部分混在一起）拆开：
- * overlay 交给 RebornSelectTrigger，field 交给 RebornFieldTrigger。
+ * overlay 交给 RebornSelectTrigger，field 交给消费方自己的触发器盒子。
  * 拆分后消费方对外的 triggerUi 键名不变，调用方无感知。
  */
 export function splitTriggerUi<T extends Record<string, any>>(ui?: T) {
@@ -39,7 +39,9 @@ export default {
     slots: {
         // 浮层锚点：relative 提供行内模式的定位参照，group + tabindex（由组件模板给出）支撑子级触发器的聚焦描边
         wrapper: "relative inline-flex w-full group outline-none",
-        dropdown: "absolute z-50 w-full border border-gray-2 dark:border-gray-7 bg-white dark:bg-gray-8 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide flex flex-col",
+        // 背景与描边只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 bg-white / dark: 前缀，否则深色模式下会二次翻转
+        // 圆角 8px（rounded-ui-sm）；内边距不放这里，展开动画走 height:0 → scrollHeight，border-box 下内边距会撑出一段残留高度
+        dropdown: "absolute z-50 w-full flex flex-col rounded-ui-sm border border-gray-3 bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
         dropdownInner: "w-full shrink-0",
     },
     variants: {
@@ -58,17 +60,15 @@ export default {
                 dropdown: "absolute z-50 w-full"
             }
         },
-        /** 尺寸只影响浮层圆角，触发器盒子的高度与内边距已移交 RebornFieldTrigger */
+        /**
+         * 尺寸档位。浮层圆角已统一为 8px（见 slots.dropdown），
+         * 不再随尺寸放大，因此此处三档均无附加样式；保留该变体是为了让调用方的 size 透传保持合法。
+         * 触发器盒子的高度与内边距由各消费组件自行给出。
+         */
         size: {
-            sm: {
-                dropdown: "rounded-ui-sm",
-            },
-            md: {
-                dropdown: "rounded-ui-md",
-            },
-            lg: {
-                dropdown: "rounded-ui-base",
-            },
+            sm: {},
+            md: {},
+            lg: {},
         },
         /**
          * 展开方向。偏移类只在行内模式下给出：
