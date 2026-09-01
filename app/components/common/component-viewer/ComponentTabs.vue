@@ -112,8 +112,12 @@ const {
  */
 const demoSectionSources = computed(() => extractDemoSections(demoRawCode.value));
 
+/** 可独立运行版本：按模板依赖抽取 script 声明并补全 <template> 包裹，供「在 Playground 运行」 */
+const demoRunnableSources = computed(() => buildRunnableDemoSections(demoRawCode.value));
+
 provide(demoContextKey, {
   sources: demoSectionSources,
+  runnableSources: demoRunnableSources,
   componentId,
   demoFile,
   demoName: demoFile.replace(".vue", ""),
@@ -126,11 +130,13 @@ provide(demoContextKey, {
     Tab 栏吸顶：分类导航已并入主顶栏，各断点均按单层 header（64px）补偿。
     z-index 约定：header z-50 > 悬浮目录 z-40 > 吸顶 Tab 栏 z-20 > 内容
   -->
-  <UTabs size="lg" variant="pill" :items="items" class="w-full" :ui="{
-    list: 'sticky top-16 z-20 w-fit max-sm:w-full bg-default/75 backdrop-blur-xl rounded-xl gap-4 self-start overflow-auto',
-    trigger: 'w-fit min-w-fit outline outline-neutral-200 dark:outline-neutral-800',
-    content: 'py-4',
-  }" :unmount-on-hide="false">
+  <UTabs
+    size="lg" variant="pill" :items="items" class="w-full" :ui="{
+      list: 'sticky top-16 z-20 w-fit max-sm:w-full bg-default/75 backdrop-blur-xl rounded-xl gap-4 self-start overflow-auto',
+      trigger: 'w-fit min-w-fit outline outline-neutral-200 dark:outline-neutral-800',
+      content: 'py-4',
+    }" :unmount-on-hide="false"
+  >
     <template #preview>
       <!-- 统一展示容器：分组各自成卡，动作与源码都在卡片头上 -->
       <DemoStage :demo-name="demoFile.replace('.vue', '')">

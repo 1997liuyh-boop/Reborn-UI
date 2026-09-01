@@ -5,6 +5,8 @@ import type { DemoSectionSourceMap } from '~/utils/extractDemoSections'
 export interface DemoContext {
     /** 分组标题 -> 分组内模板源码 */
     sources: Ref<DemoSectionSourceMap>
+    /** 分组标题 -> 可独立运行的完整 SFC（补全了 script 依赖与 template 包裹），供 Playground 使用 */
+    runnableSources?: Ref<DemoSectionSourceMap>
     /** 当前组件 id（kebab-case），用于拼「询问 AI」提示词 */
     componentId?: string
     /** demo 文件名，用于代码块头部标题 */

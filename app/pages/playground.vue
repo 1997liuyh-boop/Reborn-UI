@@ -1,84 +1,5 @@
-<template>
-    <div class="bg-default text-default flex h-screen flex-col overflow-hidden">
-        <!-- 顶栏:与 /preview 同风格的极简工具条 -->
-        <header
-            class="border-default bg-default/80 flex shrink-0 items-center justify-between gap-4 border-b px-4 py-2 backdrop-blur">
-            <div class="flex items-center gap-2">
-                <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" size="sm" @click="goBack">
-                    返回文档
-                </UButton>
-                <span class="text-highlighted hidden font-semibold sm:inline">Playground</span>
-                <span class="text-muted hidden text-xs sm:inline">在线编辑并实时运行 Reborn UI 演示代码</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <UButton icon="i-lucide-play" size="sm" variant="solid" @click="run">
-                    运行
-                </UButton>
-                <UButton icon="i-lucide-wand-sparkles" size="sm" variant="outline" color="neutral"
-                    :loading="formatting" title="Prettier 格式化(Ctrl+S)" @click="format">
-                    格式化
-                </UButton>
-                <UButton :icon="copied ? 'i-lucide-check' : 'i-lucide-link'" size="sm" variant="outline"
-                    color="neutral" @click="share">
-                    {{ copied ? '已复制' : '分享链接' }}
-                </UButton>
-                <UButton icon="i-lucide-rotate-ccw" size="sm" variant="ghost" color="neutral" title="重置为示例代码"
-                    @click="reset" />
-                <ClientOnly>
-                    <UColorModeButton />
-                </ClientOnly>
-            </div>
-        </header>
-
-        <!-- 主体:左编辑器 / 右预览,窄屏纵向堆叠 -->
-        <main class="grid min-h-0 flex-1 grid-rows-2 md:grid-cols-2 md:grid-rows-1">
-            <!-- 编辑器 -->
-            <section class="border-default flex min-h-0 flex-col border-b md:border-b-0 md:border-r">
-                <div class="border-default text-muted flex items-center gap-2 border-b px-4 py-1.5 text-xs">
-                    <UIcon name="i-lucide-code-xml" class="size-3.5" />
-                    <span>demo.vue —— 组件已全局注册,无需 import;输入 &lt; 触发组件与属性提示</span>
-                </div>
-                <ClientOnly>
-                    <PlaygroundCodeEditor v-model="code" class="min-h-0 flex-1" @format="format" />
-                    <template #fallback>
-                        <pre
-                            class="text-muted min-h-0 w-full flex-1 overflow-auto p-4 font-mono text-[13px] leading-relaxed">{{ code }}</pre>
-                    </template>
-                </ClientOnly>
-            </section>
-
-            <!-- 预览 -->
-            <section class="relative flex min-h-0 flex-col">
-                <div class="border-default text-muted flex items-center gap-2 border-b px-4 py-1.5 text-xs">
-                    <UIcon name="i-lucide-eye" class="size-3.5" />
-                    <span>实时预览</span>
-                    <span v-if="pending" class="text-primary flex items-center gap-1">
-                        <UIcon name="i-lucide-loader-circle" class="size-3 animate-spin" />编译中
-                    </span>
-                </div>
-                <div class="min-h-0 flex-1 overflow-auto p-6">
-                    <ClientOnly>
-                        <PlaygroundErrorBoundary v-if="compiled" :key="renderKey" @error="onRuntimeError">
-                            <component :is="compiled" />
-                        </PlaygroundErrorBoundary>
-                        <template #fallback>
-                            <div class="text-muted flex items-center gap-2 text-sm">
-                                <UIcon name="i-lucide-loader-circle" class="size-4 animate-spin" />正在初始化…
-                            </div>
-                        </template>
-                    </ClientOnly>
-                </div>
-                <!-- 错误提示条 -->
-                <div v-if="error"
-                    class="border-error/30 bg-error/10 text-error absolute inset-x-0 bottom-0 max-h-40 overflow-auto border-t px-4 py-2 font-mono text-xs whitespace-pre-wrap">
-                    {{ error }}
-                </div>
-            </section>
-        </main>
-    </div>
-</template>
-
 <script setup lang="ts">
+import type {Component} from "vue";
 /**
  * 在线演示 Playground —— /playground
  *
@@ -87,7 +8,7 @@
  * - 代码通过 #code=<base64url> 哈希进出,支持分享链接与 AI 助手一键运行;
  * - 编译错误在挂载前拦截,运行时错误由错误边界捕获,均显示在预览区底部。
  */
-import { defineComponent, onErrorCaptured, type Component } from "vue";
+import {  defineComponent, onErrorCaptured } from "vue";
 
 definePageMeta({
     layout: false,
@@ -101,12 +22,15 @@ useSeoMeta({
     robots: "noindex",
 });
 
+// 注册组件 config 模块，让演示代码里的常量 import（如 radioColors）可被真实解析
+installPlaygroundModules();
+
 /** 默认示例:展示按钮的常见变体 */
 const DEFAULT_CODE = `<template>
   <div class="flex flex-col items-start gap-4">
     <div class="flex items-center gap-3">
       <RebornButton @click="count++">点击 +1</RebornButton>
-      <RebornButton variant="outline">Outline</RebornButton>
+      <RebornButton variant="outlined">Outlined</RebornButton>
       <RebornButton variant="dashed">Dashed</RebornButton>
     </div>
     <p class="text-sm text-muted">已点击 {{ count }} 次</p>
@@ -227,3 +151,93 @@ onUnmounted(() => {
     clearTimeout(timer);
 });
 </script>
+
+<template>
+  <div class="bg-default text-default flex h-screen flex-col overflow-hidden">
+    <!-- 顶栏:与 /preview 同风格的极简工具条 -->
+    <header
+      class="border-default bg-default/80 flex shrink-0 items-center justify-between gap-4 border-b px-4 py-2 backdrop-blur"
+    >
+      <div class="flex items-center gap-2">
+        <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" size="sm" @click="goBack">
+          返回文档
+        </UButton>
+        <span class="text-highlighted hidden font-semibold sm:inline">Playground</span>
+        <span class="text-muted hidden text-xs sm:inline">在线编辑并实时运行 Reborn UI 演示代码</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <UButton icon="i-lucide-play" size="sm" variant="solid" @click="run">
+          运行
+        </UButton>
+        <UButton
+          icon="i-lucide-wand-sparkles" size="sm" variant="outline" color="neutral"
+          :loading="formatting" title="Prettier 格式化(Ctrl+S)" @click="format"
+        >
+          格式化
+        </UButton>
+        <UButton
+          :icon="copied ? 'i-lucide-check' : 'i-lucide-link'" size="sm" variant="outline"
+          color="neutral" @click="share"
+        >
+          {{ copied ? '已复制' : '分享链接' }}
+        </UButton>
+        <UButton
+          icon="i-lucide-rotate-ccw" size="sm" variant="ghost" color="neutral" title="重置为示例代码"
+          @click="reset"
+        />
+        <ClientOnly>
+          <UColorModeButton />
+        </ClientOnly>
+      </div>
+    </header>
+
+    <!-- 主体:左编辑器 / 右预览,窄屏纵向堆叠 -->
+    <main class="grid min-h-0 flex-1 grid-rows-2 md:grid-cols-2 md:grid-rows-1">
+      <!-- 编辑器 -->
+      <section class="border-default flex min-h-0 flex-col border-b md:border-b-0 md:border-r">
+        <div class="border-default text-muted flex items-center gap-2 border-b px-4 py-1.5 text-xs">
+          <UIcon name="i-lucide-code-xml" class="size-3.5" />
+          <span>demo.vue —— 组件已全局注册,无需 import;输入 &lt; 触发组件与属性提示</span>
+        </div>
+        <ClientOnly>
+          <PlaygroundCodeEditor v-model="code" class="min-h-0 flex-1" @format="format" />
+          <template #fallback>
+            <pre
+              class="text-muted min-h-0 w-full flex-1 overflow-auto p-4 font-mono text-[13px] leading-relaxed"
+            >{{ code }}</pre>
+          </template>
+        </ClientOnly>
+      </section>
+
+      <!-- 预览 -->
+      <section class="relative flex min-h-0 flex-col">
+        <div class="border-default text-muted flex items-center gap-2 border-b px-4 py-1.5 text-xs">
+          <UIcon name="i-lucide-eye" class="size-3.5" />
+          <span>实时预览</span>
+          <span v-if="pending" class="text-primary flex items-center gap-1">
+            <UIcon name="i-lucide-loader-circle" class="size-3 animate-spin" />编译中
+          </span>
+        </div>
+        <div class="min-h-0 flex-1 overflow-auto p-6">
+          <ClientOnly>
+            <PlaygroundErrorBoundary v-if="compiled" :key="renderKey" @error="onRuntimeError">
+              <component :is="compiled" />
+            </PlaygroundErrorBoundary>
+            <template #fallback>
+              <div class="text-muted flex items-center gap-2 text-sm">
+                <UIcon name="i-lucide-loader-circle" class="size-4 animate-spin" />正在初始化…
+              </div>
+            </template>
+          </ClientOnly>
+        </div>
+        <!-- 错误提示条 -->
+        <div
+          v-if="error"
+          class="border-error/30 bg-error/10 text-error absolute inset-x-0 bottom-0 max-h-40 overflow-auto border-t px-4 py-2 font-mono text-xs whitespace-pre-wrap"
+        >
+          {{ error }}
+        </div>
+      </section>
+    </main>
+  </div>
+</template>

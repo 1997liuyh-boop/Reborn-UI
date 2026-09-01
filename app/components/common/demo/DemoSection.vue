@@ -1,34 +1,3 @@
-<template>
-    <section :class="ui.root()">
-        <!-- 卡片头：左标题区，右动作组（悬停浮出） -->
-        <header :class="ui.header()">
-            <div :class="ui.headerMain()">
-                <h3 :class="ui.title()">
-                    <slot name="title">{{ title }}</slot>
-                </h3>
-                <p v-if="description || $slots.description" :class="ui.description()">
-                    <slot name="description">{{ description }}</slot>
-                </p>
-            </div>
-
-            <DemoActions v-model:open="open" :code="source" :preview-path="previewPath" :label="title"
-                :ask-subject="askSubject" />
-        </header>
-
-        <!-- 示例本体：常驻 -->
-        <div :class="ui.body()">
-            <slot />
-        </div>
-
-        <!-- 源码：在示例下方折叠展开（reborn-collapse 的 grid 0fr↔1fr 高度动画） -->
-        <RebornCollapse v-if="source" v-model="open">
-            <template #content>
-                <DemoCode :class="ui.code()" :code="source" :label="codeLabel" />
-            </template>
-        </RebornCollapse>
-    </section>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoSection —— 示例分组卡片
@@ -79,6 +48,14 @@ const ctx = inject(demoContextKey, undefined)
 /** 优先用手写 code，其次按标题从 demo 源文件中抽取 */
 const source = computed(() => props.code?.trim() || ctx?.sources.value[props.title]?.trim() || '')
 
+/**
+ * Playground 用的可运行版本：补全了 script 依赖与 <template> 包裹的完整 SFC。
+ * 手写 code 视为作者自洽的片段，直接沿用；抽不到可运行版本时退回展示源码。
+ */
+const runnableSource = computed(() =>
+    props.code?.trim() || ctx?.runnableSources?.value[props.title]?.trim() || source.value,
+)
+
 /** 代码块头部标题：`<demo 文件名> · <分组标题>`，让读者知道这段出自哪里 */
 const codeLabel = computed(() => (ctx?.demoFile ? `${ctx.demoFile} · ${props.title}` : props.title))
 
@@ -90,3 +67,36 @@ const askSubject = computed(() =>
     ctx?.componentId ? `组件 \`${ctx.componentId}\` 的「${props.title}」` : `「${props.title}」`,
 )
 </script>
+
+<template>
+  <section :class="ui.root()">
+    <!-- 卡片头：左标题区，右动作组（悬停浮出） -->
+    <header :class="ui.header()">
+      <div :class="ui.headerMain()">
+        <h3 :class="ui.title()">
+          <slot name="title">{{ title }}</slot>
+        </h3>
+        <p v-if="description || $slots.description" :class="ui.description()">
+          <slot name="description">{{ description }}</slot>
+        </p>
+      </div>
+
+      <DemoActions
+        v-model:open="open" :code="source" :playground-code="runnableSource"
+        :preview-path="previewPath" :label="title" :ask-subject="askSubject"
+      />
+    </header>
+
+    <!-- 示例本体：常驻 -->
+    <div :class="ui.body()">
+      <slot />
+    </div>
+
+    <!-- 源码：在示例下方折叠展开（reborn-collapse 的 grid 0fr↔1fr 高度动画） -->
+    <RebornCollapse v-if="source" v-model="open">
+      <template #content>
+        <DemoCode :class="ui.code()" :code="source" :label="codeLabel" />
+      </template>
+    </RebornCollapse>
+  </section>
+</template>

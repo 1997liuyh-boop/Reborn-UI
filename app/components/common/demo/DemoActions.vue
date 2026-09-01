@@ -1,33 +1,3 @@
-<template>
-    <div :class="ui.root()">
-        <UTooltip v-if="hasCode" :text="open ? '收起代码' : '展开代码'">
-            <UButton icon="tabler:chevron-down" size="xs" :color="open ? 'primary' : 'neutral'"
-                :variant="open ? 'soft' : 'ghost'" :aria-label="open ? '收起代码' : '展开代码'"
-                :ui="{ leadingIcon: ui.chevron() }" @click="open = !open" />
-        </UTooltip>
-
-        <UTooltip v-if="hasCode" :text="copied ? '已复制' : '复制代码'">
-            <UButton :icon="copied ? 'tabler:check' : 'tabler:copy'" size="xs" :color="copied ? 'success' : 'neutral'"
-                variant="ghost" aria-label="复制代码" @click="copyCode" />
-        </UTooltip>
-
-        <UTooltip v-if="previewPath" text="预览（新标签页）">
-            <UButton icon="tabler:eye" size="xs" color="neutral" variant="ghost" aria-label="预览" :to="previewPath"
-                target="_blank" />
-        </UTooltip>
-
-        <UTooltip v-if="hasCode" text="在 Playground 运行">
-            <UButton icon="tabler:player-play" size="xs" color="neutral" variant="ghost" aria-label="Playground"
-                @click="openPlayground" />
-        </UTooltip>
-
-        <UTooltip v-if="canAsk" text="询问 AI">
-            <UButton icon="tabler:sparkles" size="xs" color="neutral" variant="ghost" aria-label="询问 AI"
-                @click="askAi" />
-        </UTooltip>
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoActions —— 示例卡片的动作组
@@ -46,6 +16,8 @@ import { actionsConfig } from './demo.config'
 interface Props {
     /** 本示例的原始源码；为空时隐藏代码相关动作 */
     code?: string
+    /** 可独立运行的完整 SFC（补全 script 依赖与 template 包裹）；缺省时 Playground 退回 code */
+    playgroundCode?: string
     /** 代码语言，用于 Playground 与提示词围栏 */
     lang?: string
     /** 独立预览路由；为空时隐藏「预览」 */
@@ -58,6 +30,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     code: '',
+    playgroundCode: '',
     lang: 'vue',
     previewPath: '',
     label: '示例',
@@ -92,10 +65,10 @@ async function copyCode() {
 }
 
 // ---- Playground ----
-/** 把源码编码进 /playground#code= 并新标签页打开（与文档代码块的入口同一格式） */
+/** 把可运行源码编码进 /playground#code= 并新标签页打开（与文档代码块的入口同一格式） */
 function openPlayground() {
     if (!hasCode.value) return
-    window.open(buildPlaygroundUrl(props.code.trim()), '_blank')
+    window.open(buildPlaygroundUrl((props.playgroundCode || props.code).trim()), '_blank')
 }
 
 // ---- 询问 AI ----
@@ -120,3 +93,43 @@ function askAi() {
     )
 }
 </script>
+
+<template>
+  <div :class="ui.root()">
+    <UTooltip v-if="hasCode" :text="open ? '收起代码' : '展开代码'">
+      <UButton
+        icon="tabler:chevron-down" size="xs" :color="open ? 'primary' : 'neutral'"
+        :variant="open ? 'soft' : 'ghost'" :aria-label="open ? '收起代码' : '展开代码'"
+        :ui="{ leadingIcon: ui.chevron() }" @click="open = !open"
+      />
+    </UTooltip>
+
+    <UTooltip v-if="hasCode" :text="copied ? '已复制' : '复制代码'">
+      <UButton
+        :icon="copied ? 'tabler:check' : 'tabler:copy'" size="xs" :color="copied ? 'success' : 'neutral'"
+        variant="ghost" aria-label="复制代码" @click="copyCode"
+      />
+    </UTooltip>
+
+    <UTooltip v-if="previewPath" text="预览（新标签页）">
+      <UButton
+        icon="tabler:eye" size="xs" color="neutral" variant="ghost" aria-label="预览" :to="previewPath"
+        target="_blank"
+      />
+    </UTooltip>
+
+    <UTooltip v-if="hasCode" text="在 Playground 运行">
+      <UButton
+        icon="tabler:player-play" size="xs" color="neutral" variant="ghost" aria-label="Playground"
+        @click="openPlayground"
+      />
+    </UTooltip>
+
+    <UTooltip v-if="canAsk" text="询问 AI">
+      <UButton
+        icon="tabler:sparkles" size="xs" color="neutral" variant="ghost" aria-label="询问 AI"
+        @click="askAi"
+      />
+    </UTooltip>
+  </div>
+</template>
