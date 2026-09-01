@@ -12,7 +12,8 @@
   ],
   "pitfalls": [
     "pagerCount 必须为不小于 5 的奇数，非法值会被钳制到最近的奇数。",
-    "color 控制激活页码与悬停高亮，取值 primary / secondary / success / info / warning / error / neutral；jumper 与 sizes 的聚焦色会跟随当前主题色。",
+    "background 为 true 时非激活页码 bg-gray-2 text-gray-5，激活页码 bg-primary/50 text-primary；false 时无背景。",
+    "simple 为 true 时忽略 layout，只渲染上一页 + 当前页/总页数文本 + 下一页，不是输入框。",
     "total 为 0 时按 1 页显示且翻页按钮禁用，配合 hideOnSinglePage 可整组件隐藏。",
     "layout 使用逗号分隔的 token（prev/pager/next/jumper/total/sizes），未知 token 会被忽略。",
     "current-change 仅在页码实际变化时触发；size-change 触发后会先钳制当前页再判断是否补发 current-change。",

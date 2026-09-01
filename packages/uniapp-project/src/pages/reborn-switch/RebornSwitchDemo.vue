@@ -53,7 +53,7 @@ const focusSwitch = () => {
       <view class="space-y-2">
         <text class="text-sm text-gray-500">尺寸控制</text>
         <view class="flex flex-wrap gap-2">
-          <ReButton v-for="size in sizes" :key="size" :variant="currentSize === size ? 'solid' : 'outline'"
+          <ReButton v-for="size in sizes" :key="size" :variant="currentSize === size ? 'filled' : 'outlined'"
             :color="currentSize === size ? 'primary' : 'neutral'" @click="currentSize = size">
             {{ size.toUpperCase() }}
           </ReButton>

@@ -480,9 +480,9 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
           class="max-w-xs"
         />
         <div class="flex flex-wrap gap-3">
-          <RebornButton variant="outline" size="sm" label="cursor: start" @click="focusWithCursor('start')" />
-          <RebornButton variant="outline" size="sm" label="cursor: end" @click="focusWithCursor('end')" />
-          <RebornButton variant="outline" size="sm" label="cursor: all" @click="focusWithCursor('all')" />
+          <RebornButton variant="outlined" size="sm" label="cursor: start" @click="focusWithCursor('start')" />
+          <RebornButton variant="outlined" size="sm" label="cursor: end" @click="focusWithCursor('end')" />
+          <RebornButton variant="outlined" size="sm" label="cursor: all" @click="focusWithCursor('all')" />
         </div>
       </DemoBlock>
     </DemoSection>

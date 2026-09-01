@@ -141,7 +141,7 @@ const gradientVisible = ref(false);
         align="center"
       >
         <RebornButton
-          variant="outline"
+          variant="outlined"
           label="展开渐变遮罩"
           @click="gradientVisible = true"
         />

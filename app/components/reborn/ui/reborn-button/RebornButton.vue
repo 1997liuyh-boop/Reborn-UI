@@ -12,11 +12,11 @@ export interface ButtonProps {
     label?: string
     /** 语义色，7 种取值：primary/secondary/success/info/warning/error/neutral，默认 primary */
     color?: typeof buttonColors[number]
-    /** 视觉变体：solid 实心 / outline 描边 / soft 浅底 / subtle 浅底加描边 / text 文字按钮 / round 胶囊 / circle 圆形纯图标按钮，默认 solid；颜色由 color 控制 */
+    /** 视觉变体：filled 实心 / outlined 描边 / soft 浅底 / subtle 浅底加描边 / text 文字按钮 / round 胶囊 / circle 圆形纯图标按钮，默认 filled；颜色由 color 控制 */
     variant?: typeof buttonVariants[number]
     /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；处于表单组内时被组尺寸覆盖 */
     size?: typeof buttonSizes[number]
-    /** 边框线型：solid 实线 / dashed 虚线，默认 solid；边框宽度固定 1px，对有边框的变体（outline / subtle）生效 */
+    /** 边框线型：solid 实线 / dashed 虚线，默认 solid；边框宽度固定 1px，对有边框的变体（outlined / subtle）生效 */
     borderStyle?: typeof buttonBorderStyles[number]
     /** 是否加载中；显示加载动画、降低透明度并禁用点击 */
     loading?: boolean
@@ -31,7 +31,7 @@ export interface ButtonProps {
 
 const props = withDefaults(defineProps<ButtonProps>(), {
     color: 'primary',
-    variant: 'solid',
+    variant: 'filled',
     size: 'md',
     borderStyle: 'solid',
     loading: false,
@@ -57,8 +57,8 @@ const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 
 const loadingColor = computed(() => {
-    // solid / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
-    if (props.variant === 'solid' || props.variant === 'round' || props.variant === 'circle') return 'white'
+    // filled / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
+    if (props.variant === 'filled' || props.variant === 'round' || props.variant === 'circle') return 'white'
     return props.color
 })
 

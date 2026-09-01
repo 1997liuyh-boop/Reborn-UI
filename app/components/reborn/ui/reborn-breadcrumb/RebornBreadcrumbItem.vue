@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { BreadcrumbDroplistItem, BreadcrumbUI } from './reborn-breadcrumb.config'
-import { computed, inject, onBeforeUnmount, ref, useSlots } from 'vue'
+import { computed, inject, onBeforeUnmount, provide, ref, useSlots } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
-import RebornDropdown from '../reborn-dropdown/RebornDropdown.vue'
-import RebornDropdownItem from '../reborn-dropdown/RebornDropdownItem.vue'
+import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue'
 import theme, { BREADCRUMB_INJECTION_KEY } from './reborn-breadcrumb.config'
 
 export interface RebornBreadcrumbItemProps {
@@ -18,7 +17,7 @@ export interface RebornBreadcrumbItemProps {
     separatorIcon?: any
     /** 下拉菜单数据 */
     droplist?: BreadcrumbDroplistItem[]
-    /** 透传给底层 RebornDropdown 的属性 */
+    /** 透传给底层浮层容器 RebornSelectTrigger 的属性（如 portal、size、closeOn、ui） */
     dropdownProps?: Record<string, any>
     /** 追加到条目链接节点的自定义类名 */
     customClass?: any
@@ -64,12 +63,37 @@ const separatorIcon = computed(() => props.separatorIcon ?? context?.separatorIc
 const isOpen = ref(false)
 const hasDroplist = computed(() => !!slots.droplist || !!props.droplist?.length)
 
+function toggleDroplist() {
+    if (!hasDroplist.value) { return }
+    isOpen.value = !isOpen.value
+}
+
+function closeDroplist() {
+    isOpen.value = false
+}
+
+/** 浮层锚点可聚焦（tabindex 0），补齐键盘操作：Enter / Space 开合，Esc 收起 */
+function onTriggerKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        toggleDroplist()
+    }
+    else if (event.key === 'Escape' && isOpen.value) {
+        closeDroplist()
+    }
+}
+
 function navigate(path: string) {
     const isExternal = /^(?:https?:)?\/\//.test(path)
     navigateTo(path, isExternal ? { external: true } : undefined)
 }
 
+/**
+ * 菜单项点击。command 为 droplist 的下标；
+ * #droplist 插槽里的自定义项传的是使用者自定的 command，取不到数据时只负责收起。
+ */
 function onCommand(command: string) {
+    closeDroplist()
     const item = props.droplist?.[Number(command)]
     if (!item) { return }
     emit('select', item)
@@ -94,37 +118,72 @@ const ui = computed(() => {
         separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class, inherited.separator, props.ui?.separator) }),
         dropIcon: (opts?: { class?: any }) => styles.dropIcon({ class: cn(opts?.class, inherited.dropIcon, props.ui?.dropIcon) }),
         droplist: (opts?: { class?: any }) => styles.droplist({ class: cn(opts?.class, inherited.droplist, props.ui?.droplist) }),
-        droplistItem: (opts?: { class?: any }) => styles.droplistItem({ class: cn(opts?.class, inherited.droplistItem, props.ui?.droplistItem) })
+        droplistItem: (opts?: { class?: any }) => styles.droplistItem({ class: cn(opts?.class, inherited.droplistItem, props.ui?.droplistItem) }),
+        droplistDivider: (opts?: { class?: any }) => styles.droplistDivider({ class: cn(opts?.class, inherited.droplistDivider, props.ui?.droplistDivider) })
     }
+})
+
+/**
+ * 兼容 #droplist 插槽里书写的 RebornDropdownItem。
+ * 该组件的点击回调与样式全部取自 provide('reborn-dropdown')，
+ * 本条目改用 RebornSelectTrigger 自绘浮层后已不存在 RebornDropdown 提供上下文，
+ * 这里补一份：点击走 onCommand（点完即收起），样式换成面包屑自己的 droplistItem。
+ */
+provide('reborn-dropdown', {
+    handleItemClick: onCommand,
+    ui: computed(() => ({
+        item: (opts?: { class?: any }) => ui.value.droplistItem({ class: opts?.class }),
+        divider: (opts?: { class?: any }) => ui.value.droplistDivider({ class: opts?.class }),
+        label: (opts?: { class?: any }) => cn('flex-1 truncate', opts?.class)
+    }))
 })
 </script>
 
 <template>
   <div :class="ui.item()" :style="orderStyle">
-    <!-- 带下拉菜单的条目 -->
-    <RebornDropdown
+    <!--
+      带下拉菜单的条目。
+      浮层只借 RebornSelectTrigger 的定位与外部点击边界，触发器仍是一枚普通面包屑条目：
+      不套任何边框 / 底色 / 内边距，样式与不带下拉的条目完全一致，只多一枚箭头。
+      close-on="mousedown"：外部一有动静（按下任意鼠标键、面板外滚动）立即收起。
+    -->
+    <RebornSelectTrigger
       v-if="hasDroplist"
-      :ui="{ dropdown: ui.droplist() }"
+      :is-open="isOpen"
+      close-on="mousedown"
+      :ui="{ wrapper: 'w-auto', dropdown: 'w-auto!' }"
       v-bind="props.dropdownProps"
-      :class="ui.link({ class: 'reborn-breadcrumb-item__link' })"
-      @command="onCommand"
-      @visible-change="value => (isOpen = value)"
+      @keydown="onTriggerKeydown"
+      @close="closeDroplist"
     >
-      <slot />
-      <Icon name="lucide:chevron-down" :class="ui.dropIcon()" />
-      <template #dropdown>
-        <slot name="droplist">
-          <RebornDropdownItem
-            v-for="(option, optionIndex) in props.droplist"
-            :key="`${option.label}-${optionIndex}`"
-            :command="String(optionIndex)"
-            :class="ui.droplistItem()"
-          >
-            {{ option.label }}
-          </RebornDropdownItem>
-        </slot>
+      <template #trigger>
+        <span
+          :class="ui.link({ class: 'reborn-breadcrumb-item__link' })"
+          role="button"
+          :aria-expanded="isOpen"
+          @click="toggleDroplist"
+        >
+          <slot />
+          <Icon name="lucide:chevron-down" :class="ui.dropIcon()" />
+        </span>
       </template>
-    </RebornDropdown>
+
+      <template #content>
+        <div :class="ui.droplist()" role="menu">
+          <slot name="droplist">
+            <div
+              v-for="(option, optionIndex) in props.droplist"
+              :key="`${option.label}-${optionIndex}`"
+              :class="ui.droplistItem()"
+              role="menuitem"
+              @click="onCommand(String(optionIndex))"
+            >
+              {{ option.label }}
+            </div>
+          </slot>
+        </div>
+      </template>
+    </RebornSelectTrigger>
 
     <!-- 可跳转条目 -->
     <NuxtLink

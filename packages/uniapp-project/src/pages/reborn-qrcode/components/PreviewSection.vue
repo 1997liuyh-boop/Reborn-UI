@@ -66,13 +66,13 @@ defineExpose({
 
             <!-- 操作按钮 -->
             <view class="flex flex-row flex-wrap mb-2 overflow-visible">
-                <RebornButton @click="$emit('save')" :loading="isGenerating" variant="solid" color="primary" gap>
+                <RebornButton @click="$emit('save')" :loading="isGenerating" variant="filled" color="primary" gap>
                     保存
                 </RebornButton>
-                <RebornButton @click="$emit('share')" :loading="isGenerating" variant="solid" color="secondary" gap>
+                <RebornButton @click="$emit('share')" :loading="isGenerating" variant="filled" color="secondary" gap>
                     分享
                 </RebornButton>
-                <RebornButton @click="$emit('reset')" variant="solid" color="warning" gap>重置</RebornButton>
+                <RebornButton @click="$emit('reset')" variant="filled" color="warning" gap>重置</RebornButton>
             </view>
         </view>
     </view>

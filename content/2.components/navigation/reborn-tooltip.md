@@ -38,7 +38,7 @@ Tooltip 是 web 端的文字提示气泡：把触发元素放进 `default` 插�
 ```vue
 <template>
   <RebornTooltip content="删除后不可恢复" placement="top">
-    <RebornButton color="error" variant="outline">删除</RebornButton>
+    <RebornButton color="error" variant="outlined">删除</RebornButton>
   </RebornTooltip>
 </template>
 ```
@@ -50,11 +50,11 @@ Tooltip 是 web 端的文字提示气泡：把触发元素放进 `default` 插�
 ```vue
 <template>
   <RebornTooltip content="浅色主题" effect="light">
-    <RebornButton variant="outline">Light</RebornButton>
+    <RebornButton variant="outlined">Light</RebornButton>
   </RebornTooltip>
 
   <RebornTooltip content="无箭头，延时 500ms" :arrow="false" :open-delay="500">
-    <RebornButton variant="outline">Delay</RebornButton>
+    <RebornButton variant="outlined">Delay</RebornButton>
   </RebornTooltip>
 </template>
 ```

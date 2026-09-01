@@ -53,7 +53,7 @@ const formatTime = (ts: number) => {
                     <div class="flex flex-col gap-3">
                         <span class="text-dimmed text-xs font-medium">停留时长 · <code>duration</code></span>
                         <RebornDialog>
-                            <RebornButton label="打开追踪弹窗" color="primary" variant="solid" />
+                            <RebornButton label="打开追踪弹窗" color="primary" variant="filled" />
                             <template #content>
                                 <!-- 组合上报：page_source 来源页面、trigger_type 触发方式、user_status 新老用户 -->
                                 <div class="py-8 text-center" v-track:view="{
@@ -73,7 +73,7 @@ const formatTime = (ts: number) => {
                         <DemoBlock>
                             <RebornButton
                                 v-track="{ event: 'auth_submit_click', params: { auth_type: 'login', method: 'phone' } }"
-                                label="登录" color="neutral" variant="outline" />
+                                label="登录" color="neutral" variant="outlined" />
                             <RebornButton
                                 v-track.once="{ event: 'auth_submit_click', params: { auth_type: 'register', method: 'phone' } }"
                                 label="注册（只触发一次）" color="neutral" variant="soft" />

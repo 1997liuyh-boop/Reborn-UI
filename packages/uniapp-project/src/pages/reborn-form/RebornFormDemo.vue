@@ -308,7 +308,7 @@ function scrollToBio() {
         <RebornButton :ui="{ base: 'w-full' }" @click="submit">
           提交
         </RebornButton>
-        <RebornButton variant="outline" :ui="{ base: 'w-full' }" @click="reset">
+        <RebornButton variant="outlined" :ui="{ base: 'w-full' }" @click="reset">
           重置
         </RebornButton>
         <RebornButton variant="subtle" :ui="{ base: 'w-full' }" @click="scrollToBio">

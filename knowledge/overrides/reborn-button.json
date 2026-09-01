@@ -2,7 +2,7 @@
   "description": "双端基础按钮：7 种语义色 × 7 种变体（含 round 胶囊 / circle 圆形图标按钮），支持尺寸、形状、加载与禁用状态。",
   "whenToUse": [
     "表单提交、确认/取消、保存等常规操作触发。",
-    "需要按强度分层的按钮体系：主操作 solid、次操作 outline、弱操作 text。",
+    "需要按强度分层的按钮体系：主操作 filled、次操作 outlined、弱操作 text。",
     "需要语义色表达操作后果，例如删除用 error、完成用 success。",
     "需要 leading/trailing 插槽放置图标的图文按钮。",
     "小程序开放能力场景（open-type 获取手机号、客服会话等）。"
@@ -15,14 +15,14 @@
   "props": [
     {
       "name": "variant",
-      "description": "视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）。形状圆角带 ! 以覆盖 size 的 rounded-ui-* 令牌。默认 solid"
+      "description": "视觉变体：filled 实心/outlined 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）。形状圆角带 ! 以覆盖 size 的 rounded-ui-* 令牌。默认 filled"
     }
   ],
   "pitfalls": [
-    "形状并入 variant：round 胶囊 / circle 圆形图标按钮；默认 solid 不再是胶囊，直角圆角随 size 取令牌（Web 4/6/8px，UniApp 4/6/8rpx）。需要自定义圆角时直接用 class / customClass 覆盖。",
+    "形状并入 variant：round 胶囊 / circle 圆形图标按钮；默认 filled 不再是胶囊，直角圆角随 size 取令牌（Web 4/6/8px，UniApp 4/6/8rpx）。需要自定义圆角时直接用 class / customClass 覆盖。",
     "loading 为 true 时隐含禁用，不再派发 click/tap，无需额外绑 disabled；trailing 插槽在加载态不渲染。",
     "text 变体用 !h-auto !px-0 覆盖了 size 的高度与水平内边距，与其他变体并排时基线不齐属预期行为。",
-    "borderStyle 仅 web 端提供，且只对渲染边框的 outline/subtle 生效；solid/soft/text/round/circle 传 dashed 无视觉变化。",
+    "borderStyle 仅 web 端提供，且只对渲染边框的 outlined/subtle 生效；filled/soft/text/round/circle 传 dashed 无视觉变化。",
     "open-type 系列 props（openType/sessionFrom/appParameter 等）与 getphonenumber、contact 等事件仅在小程序开放能力场景生效，H5/APP 端无效。",
     "两端尺寸档位不同：web 为 sm/md/lg（px），uniapp 为 xs~2xl 共 7 档（rpx），其中 default 与 md 等价。",
     "表单组禁用传导不同：uniapp 端 Form 的 disabled 会强制禁用组内按钮，web 端按钮禁用态只由自身 disabled/loading 决定。",

@@ -10,7 +10,7 @@ import RebornLoading from '../reborn-loading/RebornLoading.vue'
 export interface ButtonProps {
   label?: string // 按钮文本内容；提供 default 插槽时被插槽内容覆盖
   color?: typeof buttonColors[number] // 语义色：primary/secondary/success/info/warning/error/neutral，默认 primary
-  variant?: typeof buttonVariants[number] // 视觉变体：solid 实心/outline 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊/circle 圆形纯图标按钮，默认 solid；颜色由 color 控制
+  variant?: typeof buttonVariants[number] // 视觉变体：filled 实心/outlined 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊/circle 圆形纯图标按钮，默认 filled；颜色由 color 控制
   size?: typeof buttonSizes[number] // 尺寸：xs/sm/default/md/lg/xl/2xl（default 与 md 等高），默认 md
   loading?: boolean // 是否加载中；显示加载动画并禁用点击
   disabled?: boolean // 是否禁用按钮
@@ -41,7 +41,7 @@ export interface ButtonProps {
 
 const props = withDefaults(defineProps<ButtonProps>(), {
   color: 'primary',
-  variant: 'solid',
+  variant: 'filled',
   size: 'md',
   loading: false,
   disabled: false,
@@ -101,8 +101,8 @@ const variant = toRef(props, 'variant')
 const size = toRef(props, 'size')
 
 const loadingColor = computed(() => {
-  // solid / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
-  if (props.variant === 'solid' || props.variant === 'round' || props.variant === 'circle') { return 'white' }
+  // filled / round / circle 为实底着色，加载动画用白色；其余变体跟随语义色
+  if (props.variant === 'filled' || props.variant === 'round' || props.variant === 'circle') { return 'white' }
   return props.color
 })
 

@@ -11,7 +11,7 @@ import {
 const state = ref<Record<string, any>>({
   label: "乐一番",
   color: "primary",
-  variant: "solid",
+  variant: "filled",
   size: "md",
   closable: false,
   square: false,
@@ -35,7 +35,7 @@ const controls = [
         label: "视觉风格",
         key: "variant",
         component: "select" as const,
-        defaultValue: "solid",
+        defaultValue: "filled",
         props: { options: badgeVariants.map((v) => ({ label: v, value: v })) },
       },
       {
@@ -63,7 +63,7 @@ const badgeCode = computed(() => {
   const props: string[] = [`label="${s.label}"`];
 
   if (s.color !== "primary") props.push(`color="${s.color}"`);
-  if (s.variant !== "solid") props.push(`variant="${s.variant}"`);
+  if (s.variant !== "filled") props.push(`variant="${s.variant}"`);
   if (s.size !== "md") props.push(`size="${s.size}"`);
   if (s.closable) props.push("closable");
   if (s.square) props.push("square");
@@ -115,7 +115,7 @@ function beforeCloseVerify(): Promise<boolean> {
 
     <DemoSection
       title="变体矩阵"
-      description="四种视觉风格 × 七种预设色彩，solid 用于强调，outline 与 subtle 更适合密集列表。"
+      description="四种视觉风格 × 七种预设色彩，filled 用于强调，outlined 与 subtle 更适合密集列表。"
     >
       <DemoBlock layout="stack">
         <div
@@ -163,7 +163,7 @@ function beforeCloseVerify(): Promise<boolean> {
 
         <RebornBadge
           color="success"
-          variant="outline"
+          variant="outlined"
         >
           <template #trailing>
             <Icon
@@ -176,7 +176,7 @@ function beforeCloseVerify(): Promise<boolean> {
 
         <RebornBadge
           color="error"
-          variant="solid"
+          variant="filled"
           size="lg"
           square
         >
@@ -238,7 +238,7 @@ function beforeCloseVerify(): Promise<boolean> {
 
         <RebornBadge
           color="success"
-          variant="solid"
+          variant="filled"
           label="异步确认关闭"
           closable
           :before-close="beforeCloseVerify"
@@ -264,7 +264,7 @@ function beforeCloseVerify(): Promise<boolean> {
       >
         <RebornBadge
           color="neutral"
-          variant="outline"
+          variant="outlined"
           class="px-1 py-0"
         >
           <template #leading>
@@ -279,7 +279,7 @@ function beforeCloseVerify(): Promise<boolean> {
 
         <RebornBadge
           color="neutral"
-          variant="outline"
+          variant="outlined"
           label="新品・未开封"
           class="pl-0"
           :ui="{ label: 'text-sm' }"

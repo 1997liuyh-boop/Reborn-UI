@@ -1,9 +1,3 @@
-<template>
-    <p :class="ui">
-        <slot>{{ text }}</slot>
-    </p>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoNote —— 示例中的说明性文字
@@ -31,3 +25,9 @@ const props = withDefaults(defineProps<Props>(), {
 const b = tv(noteConfig)
 const ui = computed(() => b({ tone: props.tone }))
 </script>
+
+<template>
+  <p :class="ui">
+    <slot>{{ text }}</slot>
+  </p>
+</template>

@@ -143,7 +143,7 @@ onUnmounted(() => {
       <DemoBlock layout="stack">
         <RebornButton
           size="sm"
-          variant="outline"
+          variant="outlined"
           color="neutral"
           label="播放自定义动画"
           @click="playCustom"

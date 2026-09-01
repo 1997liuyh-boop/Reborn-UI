@@ -120,7 +120,7 @@ const controls = [
         </RebornButton>
         <RebornButton
           v-else
-          variant="outline"
+          variant="outlined"
           @click="restartGuide"
         >
           重新开始

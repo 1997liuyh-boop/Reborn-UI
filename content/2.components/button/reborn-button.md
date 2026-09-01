@@ -27,7 +27,7 @@ Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端�
 ### 何时使用
 
 - 表单提交、确认 / 取消、保存等常规操作触发。
-- 需要按强度分层的按钮体系：主操作用 `solid`，次操作用 `outline`，弱操作用 `text`。
+- 需要按强度分层的按钮体系：主操作用 `filled`，次操作用 `outlined`，弱操作用 `text`。
 - 需要语义色表达操作后果，例如删除用 `error`、完成用 `success`。
 - 需要图文按钮，通过 `leading` / `trailing` 插槽放置图标。
 - 小程序开放能力场景，通过 `openType` 触发原生能力。
@@ -58,18 +58,18 @@ Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端�
 
 | 变体 | 外观 | 典型用途 |
 | --- | --- | --- |
-| `solid` | 实心填充，白色文字 | 页面主行动（每屏建议只有一个） |
-| `outline` | 透明底 + 1px 描边 | 次级操作，如「取消」 |
+| `filled` | 实心填充，白色文字 | 页面主行动（每屏建议只有一个） |
+| `outlined` | 透明底 + 1px 描边 | 次级操作，如「取消」 |
 | `soft` | 10% 透明度浅色底，无边框 | 并列的多个同级操作 |
 | `subtle` | 浅色底 + 同色描边 | 需要比 `soft` 更明确边界的场景 |
 | `text` | 无背景无边框，高度与内边距归零 | 表格行内操作、辅助链接 |
-| `round` | 胶囊形（`!rounded-full`），着色同 `solid` | 需要胶囊形状的主行动 |
-| `circle` | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `solid` | 收起、收藏、关闭等图标操作 |
+| `round` | 胶囊形（`!rounded-full`），着色同 `filled` | 需要胶囊形状的主行动 |
+| `circle` | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `filled` | 收起、收藏、关闭等图标操作 |
 
 ```vue
 <template>
   <RebornButton color="primary">确认提交</RebornButton>
-  <RebornButton color="neutral" variant="outline">取消</RebornButton>
+  <RebornButton color="neutral" variant="outlined">取消</RebornButton>
   <RebornButton color="error" variant="soft">删除</RebornButton>
   <RebornButton color="success" variant="subtle">已完成</RebornButton>
   <RebornButton color="primary" variant="text">查看详情</RebornButton>
@@ -80,11 +80,11 @@ Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端�
 `text` 变体通过 `!h-auto !px-0` 覆盖了 `size` 的固定高度与水平内边距，所以它的占位完全由文字撑开，可以安全地嵌在文本流或表格单元格里。
 ::
 
-Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边框的 `outline` / `subtle` 生效（边框宽度固定 1px）。
+Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边框的 `outlined` / `subtle` 生效（边框宽度固定 1px）。
 
 ```vue
 <template>
-  <RebornButton variant="outline" border-style="dashed">添加字段</RebornButton>
+  <RebornButton variant="outlined" border-style="dashed">添加字段</RebornButton>
 </template>
 ```
 
@@ -95,7 +95,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-三档，高度固定 px，水平内边距统一 12px；非形状变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
+三档，高度固定 px，水平内边距统一 12px；非形状变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
 
 | `size` | 高度 | 字号 | 直角圆角 |
 | --- | --- | --- | --- |
@@ -105,7 +105,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-七档，高度用 `rpx` 随屏宽缩放；非形状变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
+七档，高度用 `rpx` 随屏宽缩放；非形状变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
 
 | `size` | 高度 | 水平内边距 | 字号 | 直角圆角 |
 | --- | --- | --- | --- | --- |
@@ -134,10 +134,10 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 两端都**没有** `round` / `circle` 布尔 props，形状并入 `variant`：
 
-- `variant="round"`：胶囊形（`!rounded-full`），着色规则同 `solid`。
-- `variant="circle"`：圆形纯图标按钮，宽高相等、内边距归零，着色规则同 `solid`。Web 端额外用 `has-[>svg]:!p-0` 约束直接子级 svg 的内边距。
+- `variant="round"`：胶囊形（`!rounded-full`），着色规则同 `filled`。
+- `variant="circle"`：圆形纯图标按钮，宽高相等、内边距归零，着色规则同 `filled`。Web 端额外用 `has-[>svg]:!p-0` 约束直接子级 svg 的内边距。
 - 形状圆角带 `!` 是刻意的：`size` 轴的 `rounded-ui-*` 是自定义令牌类，`tailwind-merge` 不会把它与 `rounded-full` 判为冲突而合并，且其生成 CSS 顺序靠后，不加强制覆盖会反向吃掉形状圆角。
-- 其余变体（`solid` / `outline` / `soft` / `subtle`）的直角圆角随 `size` 取设计令牌（Web 4 / 6 / 8px，UniApp 4 / 6 / 8rpx）；`text` 无背景、不施加圆角。需要自定义圆角时直接用 `class`（Web）或 `customClass`（UniApp）覆盖即可（自定义类名优先级最高）。
+- 其余变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随 `size` 取设计令牌（Web 4 / 6 / 8px，UniApp 4 / 6 / 8rpx）；`text` 无背景、不施加圆角。需要自定义圆角时直接用 `class`（Web）或 `customClass`（UniApp）覆盖即可（自定义类名优先级最高）。
 
 ::tabs{sync="platform"}
 
@@ -179,7 +179,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 ### 加载与禁用
 
-`loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发。加载动画的颜色随变体走：`solid` / `round` / `circle` 下为白色，其余变体跟随 `color`。
+`loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发。加载动画的颜色随变体走：`filled` / `round` / `circle` 下为白色，其余变体跟随 `color`。
 
 - Web 端动画尺寸为 `1.25em`，跟随当前字号自动缩放。
 - UniApp 端动画尺寸按 `size` 取固定值（22 / 24 / 26 / 26 / 28 / 30 / 32）。
@@ -222,7 +222,7 @@ async function onSubmit() {
     邮箱登录
   </RebornButton>
 
-  <RebornButton variant="outline">
+  <RebornButton variant="outlined">
     下一步
     <template #trailing>
       <Icon name="lucide:arrow-right" />
@@ -310,14 +310,14 @@ function onError(e: any) {
 | --- | --- | --- | --- |
 | `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
-| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'solid'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
+| `variant` | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'filled'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸，三档固定 px；处于表单组内时被组尺寸覆盖。 |
 | `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
 | `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
 | `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `class` | `any` | - | 追加到根元素的自定义类名。 |
-| `borderStyle` | `'solid' \| 'dashed'` | `'solid'` | 边框线型；宽度固定 1px，仅对 `outline` / `subtle` 生效。 |
+| `borderStyle` | `'solid' \| 'dashed'` | `'solid'` | 边框线型；宽度固定 1px，仅对 `outlined` / `subtle` 生效。 |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -327,7 +327,7 @@ function onError(e: any) {
 | --- | --- | --- | --- |
 | `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
-| `variant` | `'solid' \| 'outline' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'solid'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
+| `variant` | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'filled'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
 | `size` | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'` | `'md'` | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。 |
 | `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
@@ -509,10 +509,10 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ## 注意事项
 
-- **形状并入 `variant`**。两端都没有 `round` / `circle` 布尔 props：`round` 胶囊、`circle` 圆形图标按钮。默认 `solid` 不再是胶囊，而是随 `size` 取 4 / 6 / 8 的圆角令牌（Web 为 px，UniApp 为 rpx）；需要自定义圆角时直接用 `class` / `customClass` 覆盖。
+- **形状并入 `variant`**。两端都没有 `round` / `circle` 布尔 props：`round` 胶囊、`circle` 圆形图标按钮。默认 `filled` 不再是胶囊，而是随 `size` 取 4 / 6 / 8 的圆角令牌（Web 为 px，UniApp 为 rpx）；需要自定义圆角时直接用 `class` / `customClass` 覆盖。
 - **`loading` 隐含禁用**。加载中按钮不会派发 `click` / `tap`，无需再额外绑 `disabled`。
 - **`text` 变体不占固定高度**。它用 `!h-auto !px-0` 覆盖了 `size` 的高度与水平内边距，与其他变体并排时基线不齐是预期行为；需要对齐请把它放进同一个 flex 容器并用 `items-center`。
-- **`borderStyle` 只影响有边框的变体**。`solid` / `soft` / `text` 本身不渲染边框，传 `dashed` 不会有视觉变化。
+- **`borderStyle` 只影响有边框的变体**。`filled` / `soft` / `text` 本身不渲染边框，传 `dashed` 不会有视觉变化。
 - **开放能力仅小程序生效**。`openType` 系列 props 与 `getphonenumber`、`contact` 等事件在 H5 / APP 端无效，具体能力的平台支持范围以对应小程序平台文档为准。
 - **UniApp 的点击层是独立元素**。原生 `button` 以透明层叠在根节点上（`ui.inner`），如果自定义样式改动了根节点的层叠上下文或 `overflow`，可能影响点击命中，请一并检查。
 - **`fluid` 当前是预留 prop**。UniApp 端已声明但尚未接入样式，需要等宽填充请改用 `block` 或外层 flex 布局。

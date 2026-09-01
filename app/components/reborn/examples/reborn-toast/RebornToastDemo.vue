@@ -179,7 +179,7 @@ function showLongLoading() {
         <RebornButton
           v-for="item in positions"
           :key="item.value"
-          variant="outline"
+          variant="outlined"
           :label="item.label"
           @click="showPosition(item.value, item.label)"
         />

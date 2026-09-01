@@ -68,15 +68,16 @@ export default {
         /* ---------------- 下拉列表 ---------------- */
 
         /**
-         * 下拉选项。字号基线 14px、行高 150%，未选中文字为 gray-6；
-         * 内边距 6/4、圆角 4px（rounded-ui-2xs）。
+         * 下拉选项。字号基线 14px、行高 150%；内边距 6/4、圆角 4px（rounded-ui-2xs）。
+         * 文字色不在此声明：未选中的 gray-6 由 active 变体给出，与 optionActive 的选中色
+         * 落在同一维度上，二者永不同时出现（原因见下方 active 变体的注释）。
          * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），
          * 写 dark: 前缀会二次翻转，深色模式下反而更暗。
          */
         option:
-            "flex cursor-pointer items-center rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] text-gray-6 transition-colors data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
-        optionContent: "flex w-full items-center justify-between gap-2",
-        optionLabel: "flex-1 truncate",
+            "flex cursor-pointer items-center rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] transition-colors data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
+        optionContent: "flex w-full items-center gap-1",
+        optionLabel: "truncate",
         optionActive: "",
         optionActiveIcon: "size-4 shrink-0 opacity-75",
         optionHighlight: "bg-gray-2",
@@ -223,6 +224,10 @@ export default {
             },
             false: {},
         },
+        active: {
+            true: {},
+            false: { option: "text-gray-6" },
+        },
         /**
          * 配色。同时决定两件事：
          * 1. 触发器聚焦态 / 展开态的描边色（group-focus 依赖浮层容器上的 group + tabindex）；
@@ -232,31 +237,31 @@ export default {
         color: {
             primary: {
                 trigger: "group-focus:border-primary data-[state=open]:border-primary",
-                optionActive: "bg-red-2 text-red-6",
+                optionActive: "bg-brand-1 text-primary",
             },
             secondary: {
                 trigger: "group-focus:border-secondary data-[state=open]:border-secondary",
-                optionActive: "bg-secondary-2 text-secondary-6",
+                optionActive: "bg-secondary-1 text-secondary-6",
             },
             success: {
                 trigger: "group-focus:border-success data-[state=open]:border-success",
-                optionActive: "bg-green-2 text-green-6",
+                optionActive: "bg-green-1 text-green-6",
             },
             info: {
                 trigger: "group-focus:border-info data-[state=open]:border-info",
-                optionActive: "bg-blue-2 text-blue-6",
+                optionActive: "bg-blue-1 text-blue-6",
             },
             warning: {
                 trigger: "group-focus:border-warning data-[state=open]:border-warning",
-                optionActive: "bg-orange-2 text-orange-6",
+                optionActive: "bg-orange-1 text-orange-6",
             },
             error: {
                 trigger: "group-focus:border-error data-[state=open]:border-error",
-                optionActive: "bg-red-2 text-red-6",
+                optionActive: "bg-red-1 text-red-6",
             },
             neutral: {
                 trigger: "group-focus:border-neutral data-[state=open]:border-neutral",
-                optionActive: "bg-gray-2 text-gray-6",
+                optionActive: "bg-gray-1 text-gray-6",
             },
         },
         open: {
@@ -320,5 +325,7 @@ export default {
         size: "md" as (typeof sizes)[number],
         color: "primary" as (typeof colors)[number],
         variant: "outlined" as (typeof variants)[number],
+        // 选项默认未选中，由模板逐项调用 option({ active }) 覆盖；缺省值保证漏传时仍有文字色
+        active: false,
     },
 };

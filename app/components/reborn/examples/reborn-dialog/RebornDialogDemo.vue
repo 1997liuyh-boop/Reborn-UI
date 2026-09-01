@@ -230,7 +230,7 @@ async function openCustomIconDialog() {
       <DemoBlock>
         <RebornDialog v-bind="state" @confirm="() => console.log('Confirm clicked')"
           @cancel="() => console.log('Cancel clicked')">
-          <RebornButton label="打开对话框（组件式）" color="primary" variant="solid" />
+          <RebornButton label="打开对话框（组件式）" color="primary" variant="filled" />
 
           <template #content>
             <!-- 只读字段列表：靠分隔线区分行，不额外铺底色 -->
@@ -244,7 +244,7 @@ async function openCustomIconDialog() {
           </template>
         </RebornDialog>
 
-        <RebornButton label="打开对话框（服务式）" color="secondary" variant="outline" @click="openPlaygroundDialog" />
+        <RebornButton label="打开对话框（服务式）" color="secondary" variant="outlined" @click="openPlaygroundDialog" />
         <RebornButton label="二次封装组件" color="neutral" variant="soft" @click="openEditProfileDialog" />
       </DemoBlock>
     </Playground>
@@ -252,7 +252,7 @@ async function openCustomIconDialog() {
     <DemoSection title="嵌套弹窗" description="Dialog 支持多层嵌套，自动管理层级与遮罩，确保交互闭环。">
       <DemoBlock>
         <RebornDialog v-model:open="nestedOpen1" title="第一层对话框" description="您可以点击下方按钮开启更深一层的交互。">
-          <RebornButton label="开启嵌套流程（组件式）" color="neutral" variant="outline" />
+          <RebornButton label="开启嵌套流程（组件式）" color="neutral" variant="outlined" />
 
           <template #content>
             <!-- 业务内容占位：只描边不填充，避免在弹窗面板内再叠一层表面 -->
@@ -290,7 +290,7 @@ async function openCustomIconDialog() {
           </template>
         </RebornDialog>
 
-        <RebornButton label="阅读协议详情（服务式）" color="neutral" variant="outline" @click="openUserAgreementDialog" />
+        <RebornButton label="阅读协议详情（服务式）" color="neutral" variant="outlined" @click="openUserAgreementDialog" />
       </DemoBlock>
     </DemoSection>
 
@@ -310,7 +310,7 @@ async function openCustomIconDialog() {
           </template>
         </RebornDialog>
 
-        <RebornButton label="执行同步（服务式）" color="secondary" variant="outline" @click="openCloudSyncDialog" />
+        <RebornButton label="执行同步（服务式）" color="secondary" variant="outlined" @click="openCloudSyncDialog" />
       </DemoBlock>
     </DemoSection>
 
@@ -320,7 +320,7 @@ async function openCustomIconDialog() {
           <span class="text-dimmed text-xs font-medium">自由拖拽 · <code>draggable</code></span>
           <DemoBlock>
             <RebornDialog title="自由拖拽" draggable description="按住标题区域即可平移位置。">
-              <RebornButton label="拖拽演示（组件式）" variant="outline" />
+              <RebornButton label="拖拽演示（组件式）" variant="outlined" />
               <template #content>
                 <div class="text-dimmed flex flex-col items-center gap-2 py-6 text-center">
                   <Icon name="lucide:mouse-pointer-2" class="size-8 opacity-40" />
@@ -342,7 +342,7 @@ async function openCustomIconDialog() {
               body: 'text-center pt-2 pb-6',
               footer: 'border-0 pt-0 justify-center pb-6',
             }">
-              <RebornButton label="自定义 UI（组件式）" variant="outline" />
+              <RebornButton label="自定义 UI（组件式）" variant="outlined" />
               <template #content>
                 <div class="bg-success/10 text-success mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
                   <Icon name="lucide:check-circle-2" class="size-8" />
@@ -363,9 +363,9 @@ async function openCustomIconDialog() {
 
     <DemoSection title="服务式调用" description="useOverlay 创建的实例可在任意逻辑中直接唤起，无需在模板里预先占位。">
       <DemoBlock>
-        <RebornButton label="延迟 500ms 开关" color="neutral" variant="outline" @click="openDelayedDialog" />
-        <RebornButton label="全屏模式" color="neutral" variant="outline" @click="openFullscreenDialog" />
-        <RebornButton label="自定义关闭图标" color="neutral" variant="outline" @click="openCustomIconDialog" />
+        <RebornButton label="延迟 500ms 开关" color="neutral" variant="outlined" @click="openDelayedDialog" />
+        <RebornButton label="全屏模式" color="neutral" variant="outlined" @click="openFullscreenDialog" />
+        <RebornButton label="自定义关闭图标" color="neutral" variant="outlined" @click="openCustomIconDialog" />
       </DemoBlock>
       <DemoNote tone="dimmed" class="mt-3">延迟示例的开关时机会打印在浏览器控制台。</DemoNote>
     </DemoSection>

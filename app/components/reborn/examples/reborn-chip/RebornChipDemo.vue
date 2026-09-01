@@ -152,7 +152,7 @@ const controls = [
 
         <div class="flex flex-col items-center gap-3">
           <RebornChip color="warning" text="SALE" size="md">
-            <RebornButton label="立即解锁" color="neutral" variant="solid" />
+            <RebornButton label="立即解锁" color="neutral" variant="filled" />
           </RebornChip>
           <span class="text-dimmed text-xs font-medium">按钮促销标</span>
         </div>

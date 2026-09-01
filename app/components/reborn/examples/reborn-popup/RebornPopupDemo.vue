@@ -193,7 +193,7 @@ const maskFreeOpen = ref(false);
         align="center"
       >
         <RebornButton
-          variant="outline"
+          variant="outlined"
           label="打开第一层"
           @click="nestedLevel1 = true"
         />
@@ -267,7 +267,7 @@ const maskFreeOpen = ref(false);
         align="center"
       >
         <RebornButton
-          variant="outline"
+          variant="outlined"
           label="打开带拦截的弹出层"
           @click="formOpen = true"
         />
@@ -325,7 +325,7 @@ const maskFreeOpen = ref(false);
         align="center"
       >
         <RebornButton
-          variant="outline"
+          variant="outlined"
           label="打开无遮罩面板"
           @click="maskFreeOpen = true"
         />

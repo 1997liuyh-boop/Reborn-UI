@@ -24,7 +24,7 @@ Reborn UI 致力于在 Web (Nuxt 3) 和 UniApp 平台提供一致的开发体验
 | `v-model:show` | `boolean` | `true` | - | 控制徽标显示/隐藏，支持动画。 |
 | `label` | `string \| number` | - | - | 徽标显示的文本内容。 |
 | `color` | `BadgeColor` | `'primary'` | - | 语义化颜色，详见下方配置。 |
-| `variant` | `BadgeVariant` | `'solid'` | - | 视觉风格：`solid`, `outline`, `soft`, `subtle` 等。 |
+| `variant` | `BadgeVariant` | `'filled'` | - | 视觉风格：`filled`, `outlined`, `soft`, `subtle` 等。 |
 | `size` | `BadgeSize` | `'md'` | - | 尺寸规格：`sm`, `md`, `lg`。 |
 | `icon` | `string` | - | **UniApp 专用** | 直接传入图标类名。Web 端建议使用插槽。 |
 | `square` | `boolean` | `false` | - | 是否为正方形（等宽高）。 |

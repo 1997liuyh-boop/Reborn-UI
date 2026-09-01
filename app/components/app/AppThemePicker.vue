@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const colors = [
-    { name: 'Red', variable: '--color-red-6', bgClass: 'bg-[#ff3d58]' },
+    { name: 'Brand', variable: '--color-brand-6', bgClass: 'bg-[#0d99e5]' },
     { name: 'Orange', variable: '--color-orange-6', bgClass: 'bg-[#ff9711]' },
     { name: 'Green', variable: '--color-green-6', bgClass: 'bg-[#16ae88]' },
-    { name: 'Blue', variable: '--color-blue-6', bgClass: 'bg-[#0d99e5]' },
+    { name: 'Red', variable: '--color-red-6', bgClass: 'bg-[#ff3d58]' },
 ];
 
-const primaryColorVar = useCookie('primary-color-var', { default: () => '--color-red-6' });
+const primaryColorVar = useCookie('primary-color-var', { default: () => '--color-brand-6' });
 
 const updateTheme = (variable: string) => {
     if (import.meta.client) {

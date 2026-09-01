@@ -179,7 +179,7 @@ const droplist = [
 | `separator`      | 分隔符文字，优先级高于容器的 `separator`                                                                                | `string / number`          | —                   |
 | `separator-icon` | 图标分隔符，优先级高于本条目的 `separator`                                                                              | `string / Component`       | —                   |
 | `droplist`       | 下拉菜单数据                                                                                                            | `BreadcrumbDroplistItem[]` | —                   |
-| `dropdown-props` | 下拉菜单属性。Web 透传给 `RebornDropdown`；UniApp 仅支持 `hideOnClick`                                                  | `object`                   | —                   |
+| `dropdown-props` | 下拉菜单属性。Web 透传给底层浮层容器 `RebornSelectTrigger`（如 `portal` / `size` / `closeOn` / `ui`，写在组件默认值之后，可覆盖）；UniApp 仅支持 `hideOnClick` | `object`                   | —                   |
 | `target`         | 预留的链接打开方式属性（仅 UniApp 端声明，当前不参与跳转逻辑，打开方式由 `replace` 决定）                                | `string`                   | —                   |
 | `customClass`    | 追加到条目链接节点的自定义类名                                                                                          | `string`                   | —                   |
 | `ui`             | 细粒度样式覆盖对象，优先级高于容器的 `ui`                                                                               | `BreadcrumbUI`             | `{}`                |
@@ -217,14 +217,15 @@ const droplist = [
 | 键名           | 说明                                                                                                                                                  |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `root`         | 根节点 `<nav>`，默认 `flex items-center flex-wrap gap-x-1.5 text-sm leading-none`；整条面包屑的字号、换行、条目间距改这里；`class` prop 也并到该节点。**折叠依赖 flex `order`，覆盖时请保留 `flex`。** |
-| `item`         | 单个条目外层（折叠出现的省略号节点也用这个键），默认 `reborn-breadcrumb-item flex items-center gap-x-1.5 group`。文字与分隔符之间的间距改这里。          |
-| `link`         | 条目的文本/链接节点，默认 `text-gray-7 transition-colors flex items-center gap-1`，并靠 `group-first:` / `group-last:` 给首项加粗、末项加深。条目上的 `class` prop 也并到该节点。 |
-| `separator`    | 分隔符容器，默认 `text-gray-4 select-none flex items-center justify-center text-xs group-last:hidden`（末项自动隐藏）。填充 `separator` 插槽只替换里面的内容，容器类名仍生效。 |
-| `more`         | 折叠省略号的容器。**仅 `max-count` 触发折叠时渲染**，默认 `text-gray-7 flex items-center`。                                                             |
+| `item`         | 单个条目外层（折叠出现的省略号节点也用这个键），默认 `reborn-breadcrumb-item flex items-center gap-x-1.5 group/breadcrumb`。文字与分隔符之间的间距改这里。**分组名固定为 `group/breadcrumb`（具名而非匿名），覆盖时请保留。** |
+| `link`         | 条目的文本/链接节点，默认 `text-gray-9 transition-colors flex items-center gap-1`。**所有条目一视同仁**：同一个文字颜色 `text-gray-9`、同一个字重，首项与末项都不加粗；视觉上的唯一变化来自 hover（可跳转与带下拉的条目变 `text-primary`）。要给首项/末项做区分可自行补 `group-first/breadcrumb:` / `group-last/breadcrumb:` 修饰。条目上的 `class` prop 也并到该节点。**带下拉菜单的条目同样只有这一层样式，不会额外套边框或底色。** |
+| `separator`    | 分隔符容器，默认 `text-gray-4 select-none flex items-center justify-center text-xs group-last/breadcrumb:hidden`（末项自动隐藏）。填充 `separator` 插槽只替换里面的内容，容器类名仍生效。 |
+| `more`         | 折叠省略号的容器。**仅 `max-count` 触发折叠时渲染**，默认 `text-gray-9 flex items-center`（与条目同色）。                                                |
 | `moreIcon`     | 省略号图标，默认 `size-4`。**仅在未填充 `more-icon` 插槽时渲染**，填充该插槽会替换掉图标，`ui.moreIcon` 随之失效。                                       |
 | `dropIcon`     | 下拉箭头图标，默认 `size-3.5 shrink-0 transition-transform duration-200`。**仅该条目有下拉菜单时渲染。**                                                |
-| `droplist`     | 下拉面板，默认 `min-w-32`（透传给内部 `RebornDropdown` 的 `ui.dropdown`）。面板宽度、内边距改这里；若通过 `dropdown-props` 自行传了 `ui`，会覆盖这里的值。 |
-| `droplistItem` | 下拉菜单项，默认 `whitespace-nowrap`。**仅在未填充 `droplist` 插槽时渲染**，填充该插槽会替换掉整份菜单项，`ui.droplistItem` 随之失效。                    |
+| `droplist`     | 下拉面板的内容区，默认 `min-w-32 max-h-60 overflow-y-auto px-[4px] py-[6px] space-y-[4px] scrollbar-hide`。面板宽度、内边距、最大高度改这里。**内边距必须留在这一层**：外层浮层壳的展开动画走 `height: 0 → scrollHeight`，内边距放到壳上会在收起时露出一条残留色块。浮层外壳（描边、底色、阴影、圆角）由 `RebornSelectTrigger` 提供，需要改用 `dropdown-props` 的 `ui.dropdown`。 |
+| `droplistItem` | 下拉菜单项，默认 `flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary`。**字号必须自带**：浮层默认传送到 body，拿不到面包屑根节点的 `text-sm`。填充 `droplist` 插槽时该键仍生效——插槽里的 `RebornDropdownItem` 会自动套用这份样式。 |
+| `droplistDivider` | 下拉菜单项之间的分隔线，默认 `my-[4px] border-t border-gray-3`。**仅 `droplist` 插槽里的 `RebornDropdownItem` 带 `divided` 时渲染。**                 |
 
 :::
 
@@ -271,5 +272,7 @@ const droplist = [
 - 首尾状态与 `max-count` 折叠依赖条目在挂载时向容器登记的顺序。使用 `v-if` / `v-for` 动态增删条目时，推荐改用 `routes` 数据驱动，避免顺序错位。
 - 折叠时省略号节点在文档结构上位于最前，靠 flex `order` 归位；若自行覆盖 `ui.root` 请勿移除 `flex` 布局。
 - web 与 uniapp 跳转模式取值不同：Web 为 `push` / `replace` / `blank`（新窗口），UniApp 为 `navigate` / `redirect` / `switchTab` / `reLaunch`。
-- 下拉菜单实现不同：Web 复用 `RebornDropdown`（支持传送门与完整 `dropdown-props`），UniApp 为组件内置的绝对定位面板，`dropdown-props` 仅支持 `hideOnClick`。
+- 下拉菜单的开合是「点击」触发，不是悬停：点条目本体展开，再点一次收起；`Enter` / `空格` 同样开合，`Esc` 收起。
+- 下拉菜单的关闭时机固定为 `close-on="mousedown"`：在条目与面板之外按下任意鼠标键（左键 / 右键 / 中键）立即收起，面板外的页面滚动同样收起；面板内部的列表滚动不会误收。需要改成「点完才收」可通过 `dropdown-props="{ closeOn: 'click' }"` 覆盖。
+- 下拉菜单实现不同：Web 借 `RebornSelectTrigger` 做浮层容器（默认传送到 body，支持完整 `dropdown-props`），触发器仍是一枚普通面包屑条目、不套边框底色；UniApp 为组件内置的绝对定位面板，`dropdown-props` 仅支持 `hideOnClick`。
 - `target` 仅在 UniApp 端声明且当前不参与跳转逻辑；Web 端新窗口打开请使用 `replace="blank"`。

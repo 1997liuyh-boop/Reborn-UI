@@ -11,7 +11,7 @@ import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
 // Demo State
-const demoVariant = ref<(typeof buttonVariants)[number]>('solid')
+const demoVariant = ref<(typeof buttonVariants)[number]>('filled')
 const demoColor = ref<(typeof buttonColors)[number]>('primary')
 const demoSize = ref<(typeof buttonSizes)[number]>('md')
 const demoLoading = ref(false)
@@ -93,7 +93,7 @@ function copyContent(text: string) {
         按钮类型 (Variants)
       </RebornText>
       <view class="flex flex-wrap gap-2">
-        <RebornButton v-for="item in variantOptions" :key="item.value" variant="outline"
+        <RebornButton v-for="item in variantOptions" :key="item.value" variant="outlined"
           :color="demoVariant === item.value ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
           @click="demoVariant = item.value">
           {{ item.label }}
@@ -120,7 +120,7 @@ function copyContent(text: string) {
         标准尺寸 (Base Sizes)
       </RebornText>
       <view class="flex flex-wrap gap-2">
-        <RebornButton v-for="item in baseSizeOptions" :key="item.value" variant="outline"
+        <RebornButton v-for="item in baseSizeOptions" :key="item.value" variant="outlined"
           :color="demoSize === item.value ? 'primary' : 'neutral'" size="sm" custom-class="rounded-full"
           @click="demoSize = item.value">
           {{ item.label }}
@@ -146,7 +146,7 @@ function copyContent(text: string) {
           Login with Email
         </RebornButton>
 
-        <RebornButton variant="outline" color="secondary" :loading="demoLoading">
+        <RebornButton variant="outlined" color="secondary" :loading="demoLoading">
           Next Step
           <template #trailing>
             <view class="i-lucide-arrow-right size-4" />
@@ -184,8 +184,8 @@ function copyContent(text: string) {
             不同 Variant 下的 Loading 表现 (Primary Color)
           </RebornText>
           <view class="flex flex-wrap gap-3">
-            <RebornButton variant="solid" loading>Solid</RebornButton>
-            <RebornButton variant="outline" loading>Outline</RebornButton>
+            <RebornButton variant="filled" loading>Filled</RebornButton>
+            <RebornButton variant="outlined" loading>Outlined</RebornButton>
             <RebornButton variant="soft" loading>Soft</RebornButton>
             <RebornButton variant="subtle" loading>Subtle</RebornButton>
           </view>
@@ -221,12 +221,12 @@ function copyContent(text: string) {
           <RebornButton
             custom-class="!bg-[var(--btn-custom)] !border-[var(--btn-custom)] border border-solid text-white shadow-lg active:scale-95"
             @click="handleClick">
-            Solid Custom
+            Filled Custom
           </RebornButton>
-          <RebornButton variant="outline"
+          <RebornButton variant="outlined"
             custom-class="!border-[var(--btn-custom)] !text-[var(--btn-custom)] border border-solid bg-transparent"
             @click="handleClick">
-            Outline Custom
+            Outlined Custom
           </RebornButton>
         </view>
       </view>

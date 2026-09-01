@@ -558,7 +558,7 @@ onBeforeUnmount(() => {
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-muted text-xs font-medium">动画时长</span>
           <RebornButton v-for="option in durationOptions" :key="option.value" size="sm" color="primary"
-            :variant="duration === option.value ? 'solid' : 'outline'" @click="duration = option.value">
+            :variant="duration === option.value ? 'filled' : 'outlined'" @click="duration = option.value">
             {{ option.label }}
           </RebornButton>
           <span class="text-primary ml-auto flex items-center gap-1.5 font-mono text-xs font-medium">
@@ -575,7 +575,7 @@ onBeforeUnmount(() => {
               纵向定位 <code>setScrollTop</code> · {{ duration }}ms
             </template>
             <div class="flex flex-wrap gap-2">
-              <RebornButton v-for="action in jumpActions" :key="action.label" size="sm" variant="outline"
+              <RebornButton v-for="action in jumpActions" :key="action.label" size="sm" variant="outlined"
                 color="neutral" @click="action.handler()">
                 <template #leading>
                   <Icon :name="action.icon" class="size-3.5" />
@@ -604,13 +604,13 @@ onBeforeUnmount(() => {
               横向翻屏 <code>setScrollLeft</code> · {{ duration }}ms
             </template>
             <div class="flex flex-wrap gap-2">
-              <RebornButton size="sm" variant="outline" color="neutral" @click="railStep(-1)">
+              <RebornButton size="sm" variant="outlined" color="neutral" @click="railStep(-1)">
                 <template #leading>
                   <Icon name="lucide:chevron-left" class="size-3.5" />
                 </template>
                 上一屏
               </RebornButton>
-              <RebornButton size="sm" variant="outline" color="neutral" @click="railStep(1)">
+              <RebornButton size="sm" variant="outlined" color="neutral" @click="railStep(1)">
                 下一屏
                 <template #trailing>
                   <Icon name="lucide:chevron-right" class="size-3.5" />

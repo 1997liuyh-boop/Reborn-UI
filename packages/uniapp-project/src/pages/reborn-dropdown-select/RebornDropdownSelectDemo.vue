@@ -42,7 +42,7 @@ const options = [
         尺寸
       </view>
       <view>
-        <RebornButton v-for="s in dropdownSelectSizes" :key="s" variant="outline" gap
+        <RebornButton v-for="s in dropdownSelectSizes" :key="s" variant="outlined" gap
           :color="demoSize === s ? 'primary' : 'neutral'" size="sm" :square="false" custom-class="rounded-full"
           @click="demoSize = s">
           {{ s }}

@@ -291,7 +291,7 @@ const coloredItems = [
           label="重置配置"
           size="sm"
           color="neutral"
-          variant="outline"
+          variant="outlined"
           @click="resetDemo"
         >
           <template #leading>

@@ -326,7 +326,7 @@ const dropdownCode = computed(() => {
           >
             <RebornButton
               color="secondary"
-              variant="outline"
+              variant="outlined"
               label="个人中心"
             >
               <template #trailing>

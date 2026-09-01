@@ -16,7 +16,7 @@ const borderStyleOptions = buttonBorderStyles.map(b => ({
 /** 演练场默认状态 */
 const defaultState: Record<string, any> = {
   color: 'primary',
-  variant: 'solid',
+  variant: 'filled',
   size: 'md',
   borderStyle: 'solid',
   disabled: false,
@@ -43,10 +43,10 @@ const controls: any = [
     title: '基础属性',
     children: [
       { label: '配色方案', key: 'color', component: 'select' as const, defaultValue: 'primary', props: { options: colorOptions } },
-      { label: '风格变体', key: 'variant', component: 'select' as const, defaultValue: 'solid', props: { options: variantOptions } },
+      { label: '风格变体', key: 'variant', component: 'select' as const, defaultValue: 'filled', props: { options: variantOptions } },
       { label: '尺寸规格', key: 'size', component: 'select' as const, defaultValue: 'md', props: { options: sizeOptions } },
       {
-        label: '边框线型（对 outline / subtle 生效）',
+        label: '边框线型（对 outlined / subtle 生效）',
         key: 'borderStyle',
         component: 'select' as const,
         defaultValue: 'solid',
@@ -114,7 +114,7 @@ const gap = ref(true)
           </RebornButton>
 
           <RebornButton
-            :color="state.color" variant="outline" :size="state.size" :border-style="state.borderStyle"
+            :color="state.color" variant="outlined" :size="state.size" :border-style="state.borderStyle"
             :disabled="state.disabled" :loading="state.loading"
           >
             <template #leading>
@@ -187,10 +187,10 @@ const gap = ref(true)
     <DemoSection title="边框线型 (Border Style)">
       <template #description>
         <code>borderStyle</code> 取 <code>solid</code> / <code>dashed</code>，边框宽度固定 1px；
-        对有边框的 <code>outline</code> / <code>subtle</code> 变体生效。
+        对有边框的 <code>outlined</code> / <code>subtle</code> 变体生效。
       </template>
       <DemoBlock layout="stack" class="gap-5">
-        <div v-for="v in (['outline', 'subtle'] as const)" :key="v" class="flex flex-col gap-3">
+        <div v-for="v in (['outlined', 'subtle'] as const)" :key="v" class="flex flex-col gap-3">
           <p class="text-muted text-xs font-medium">{{ v }}</p>
           <div v-for="bs in borderStyleOptions" :key="bs.value" class="flex flex-wrap items-center gap-3">
             <p class="text-dimmed w-20 text-xs italic">{{ bs.value }}</p>
@@ -207,7 +207,7 @@ const gap = ref(true)
         <RebornCheckbox v-model="gap" label="开启间隔" />
         <div class="flex flex-wrap items-center">
           <RebornButton color="primary" :gap="gap">确认提交</RebornButton>
-          <RebornButton color="neutral" variant="outline" :gap="gap">取消</RebornButton>
+          <RebornButton color="neutral" variant="outlined" :gap="gap">取消</RebornButton>
           <RebornButton color="error" variant="soft" :gap="gap">删除</RebornButton>
         </div>
       </DemoBlock>
@@ -225,15 +225,15 @@ const gap = ref(true)
         <div class="flex flex-col items-center gap-3">
           <DemoNote tone="dimmed" class="text-xs">垂直功能</DemoNote>
           <div class="flex">
-            <RebornButton color="warning" variant="solid" class="h-auto w-16 flex-col gap-1 rounded-r-none py-3">
+            <RebornButton color="warning" variant="filled" class="h-auto w-16 flex-col gap-1 rounded-r-none py-3">
               <Icon name="lucide:share-2" size="18" />
               <span class="text-[10px]">分享</span>
             </RebornButton>
-            <RebornButton color="secondary" variant="solid" class="h-auto w-16 flex-col gap-1 rounded-none! py-3">
+            <RebornButton color="secondary" variant="filled" class="h-auto w-16 flex-col gap-1 rounded-none! py-3">
               <Icon name="lucide:message-square" size="18" />
               <span class="text-[10px]">咨询</span>
             </RebornButton>
-            <RebornButton color="error" variant="solid" class="h-auto w-16 flex-col gap-1 rounded-l-none py-3">
+            <RebornButton color="error" variant="filled" class="h-auto w-16 flex-col gap-1 rounded-l-none py-3">
               <Icon name="lucide:heart" size="18" />
               <span class="text-[10px]">点赞</span>
             </RebornButton>

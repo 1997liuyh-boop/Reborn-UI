@@ -11,7 +11,7 @@ import RebornInput from '@/components/reborn-input/RebornInput.vue'
 
 // 演练场状态
 const color = ref<(typeof badgeColors)[number]>('primary')
-const variant = ref<(typeof badgeVariants)[number]>('solid')
+const variant = ref<(typeof badgeVariants)[number]>('filled')
 const size = ref<(typeof badgeSizes)[number]>('md')
 const label = ref('乐一番')
 const closable = ref(false)

@@ -40,7 +40,7 @@ export interface BadgeProps {
 
 const props = withDefaults(defineProps<BadgeProps>(), {
   color: 'primary',
-  variant: 'solid',
+  variant: 'filled',
   size: 'md',
   closeIcon: 'i-mdi-close-circle',
   gap: false

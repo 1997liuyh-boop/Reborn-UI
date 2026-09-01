@@ -109,7 +109,7 @@ const images = {
             class="mt-3"
             size="sm"
             color="primary"
-            variant="solid"
+            variant="filled"
             label="查看菜谱"
           />
         </DirectionAwareHover>

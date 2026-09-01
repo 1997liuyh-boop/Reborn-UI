@@ -126,7 +126,7 @@ const actions = [
       >
         <RebornButton
           size="lg"
-          :variant="state.mode === 'hover' ? 'soft' : 'solid'"
+          :variant="state.mode === 'hover' ? 'soft' : 'filled'"
           :label="state.mode === 'hover' ? '悬浮体验' : '点击触发'"
           class="min-w-[140px]"
         />

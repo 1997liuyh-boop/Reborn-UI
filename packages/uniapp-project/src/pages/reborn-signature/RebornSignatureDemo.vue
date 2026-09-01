@@ -94,7 +94,7 @@ function updatePopupSignatureRecord(payload: SignatureSavePayload) {
                 <text class="text-[28rpx] text-gray-6">横屏按钮位置</text>
                 <view class="flex flex-row flex-wrap justify-end gap-[12rpx]">
                     <RebornButton v-for="item in landscapeToolbarPositions" :key="item" size="sm"
-                        :variant="landscapeToolbarPosition === item ? 'solid' : 'outline'"
+                        :variant="landscapeToolbarPosition === item ? 'filled' : 'outlined'"
                         :color="landscapeToolbarPosition === item ? 'primary' : 'neutral'"
                         @tap="landscapeToolbarPosition = item">
                         {{ item }}

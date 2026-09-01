@@ -1,9 +1,3 @@
-<template>
-    <div :class="ui">
-        <MdcProse :key="markdown" :value="markdown" />
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoCode —— 示例源码面板
@@ -34,3 +28,9 @@ const markdown = computed(() =>
     props.code ? `\`\`\`${props.lang} [${props.label || 'example'}]\n${props.code}\n\`\`\`` : '',
 )
 </script>
+
+<template>
+  <div :class="ui">
+    <MdcProse :key="markdown" :value="markdown" />
+  </div>
+</template>

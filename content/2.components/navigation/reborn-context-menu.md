@@ -83,7 +83,7 @@ const items = [
 ```vue
 <template>
   <RebornContextMenu :items="items" trigger="click" v-model:open="menuOpen">
-    <RebornButton variant="outline">点击打开</RebornButton>
+    <RebornButton variant="outlined">点击打开</RebornButton>
   </RebornContextMenu>
 </template>
 ```

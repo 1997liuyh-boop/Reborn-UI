@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornCheckbox from '@/components/reborn-checkbox/RebornCheckbox.vue'
+import RebornCheckboxGroup from '@/components/reborn-checkbox/RebornCheckboxGroup.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 
 const checked1 = ref(true)
@@ -9,6 +10,43 @@ const checked2 = ref(false)
 const groupValues = ref(['Option A'])
 const sizes = ['sm', 'md', 'lg'] as const
 const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', 'neutral'] as const
+
+/** 半选与全选：父级勾选框的状态由子项选中数量推导 */
+const allFruits = ['苹果', '香蕉', '橙子']
+const fruits = ref<string[]>(['苹果'])
+const isAllFruitChecked = computed(() => fruits.value.length === allFruits.length)
+const isPartFruitChecked = computed(() => fruits.value.length > 0 && !isAllFruitChecked.value)
+
+/** 点击父级勾选框：全选或全不选 */
+function toggleAllFruits() {
+  fruits.value = isAllFruitChecked.value ? [] : [...allFruits]
+}
+
+/** 数据驱动的复选框组：options 支持对象写法，可逐项禁用 */
+const roleOptions = [
+  { label: '管理员', value: 'admin' },
+  { label: '开发', value: 'dev' },
+  { label: '测试', value: 'qa' },
+  { label: '运维', value: 'ops', disabled: true },
+]
+const roles = ref<string[]>(['dev'])
+
+/** max 限制：选满两项后未选中的选项自动禁用 */
+const limitedRoles = ref<string[]>([])
+
+/** 样式变体矩阵：两种变体各演示未选、选中、半选三态 */
+const variantMatrix = [
+  { variant: 'filled' as const, note: '默认值。选中与半选都填充配色，图标为白色。' },
+  {
+    variant: 'outlined' as const,
+    note: '选中不填充背景，只把边框与图标染成配色；半选时边框保持灰色，中间是同色实心小方块。',
+  },
+]
+const variantUnchecked = ref(false)
+const variantChecked = ref(true)
+
+/** outlined 变体的配色对照 */
+const variantColors = ['primary', 'success', 'warning', 'error'] as const
 </script>
 
 <template>
@@ -86,6 +124,81 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
             </text>
           </view>
         </RebornCheckbox>
+      </view>
+    </RebornCard>
+
+    <!-- 半选与全选 -->
+    <RebornCard title="半选与全选" custom-class="flex flex-col gap-[16rpx]">
+      <RebornCheckbox
+        :model-value="isAllFruitChecked" :indeterminate="isPartFruitChecked" label="全选"
+        @change="toggleAllFruits"
+      />
+      <RebornCheckboxGroup v-model="fruits" direction="vertical" custom-class="pl-[48rpx]">
+        <RebornCheckbox v-for="fruit in allFruits" :key="fruit" :value="fruit" :label="fruit" />
+      </RebornCheckboxGroup>
+      <view class="
+          text-sm text-slate-500
+          dark:text-slate-200
+        ">
+        已选 {{ fruits.length }} / {{ allFruits.length }} 项
+      </view>
+    </RebornCard>
+
+    <!-- 样式变体 -->
+    <RebornCard title="样式变体 (Variants)" custom-class="flex flex-col gap-[24rpx]">
+      <view v-for="item in variantMatrix" :key="item.variant" class="flex flex-col gap-[12rpx]">
+        <text class="
+            text-sm text-slate-500
+            dark:text-slate-200
+          ">
+          variant="{{ item.variant }}"
+        </text>
+        <view class="flex flex-wrap items-center gap-[32rpx]">
+          <RebornCheckbox v-model="variantUnchecked" :variant="item.variant" label="未选" />
+          <RebornCheckbox v-model="variantChecked" :variant="item.variant" label="选中" />
+          <RebornCheckbox :model-value="false" :variant="item.variant" indeterminate label="半选" />
+        </view>
+        <text class="text-xs text-slate-400">{{ item.note }}</text>
+      </view>
+
+      <view class="flex flex-wrap items-center gap-[32rpx]">
+        <RebornCheckbox
+          v-for="color in variantColors" :key="color" :model-value="true" variant="outlined"
+          :color="color" :label="color"
+        />
+      </view>
+    </RebornCard>
+
+    <!-- 复选框组 -->
+    <RebornCard title="复选框组 (CheckboxGroup)" custom-class="flex flex-col gap-[24rpx]">
+      <view class="flex flex-col gap-[12rpx]">
+        <text class="
+            text-sm text-slate-500
+            dark:text-slate-200
+          ">
+          options 数据驱动 · 横向排列
+        </text>
+        <RebornCheckboxGroup v-model="roles" :options="roleOptions" />
+      </view>
+
+      <view class="flex flex-col gap-[12rpx]">
+        <text class="
+            text-sm text-slate-500
+            dark:text-slate-200
+          ">
+          max=2 · 纵向排列 · label 插槽（已选 {{ limitedRoles.length }} / 2）
+        </text>
+        <RebornCheckboxGroup
+          v-model="limitedRoles" :options="roleOptions" :max="2" color="success"
+          direction="vertical"
+        >
+          <template #label="{ data }">
+            <view class="flex items-center gap-[8rpx]">
+              <text>{{ data.label }}</text>
+              <text class="text-xs text-slate-400">{{ data.value }}</text>
+            </view>
+          </template>
+        </RebornCheckboxGroup>
       </view>
     </RebornCard>
 

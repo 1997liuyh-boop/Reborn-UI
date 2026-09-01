@@ -141,7 +141,7 @@ function onCustomSelect(label: string) {
           v-for="option in separatorOptions"
           :key="option"
           size="sm"
-          variant="outline"
+          variant="outlined"
           :color="separator === option ? 'primary' : 'neutral'"
           @click="separator = option"
         >
@@ -157,7 +157,7 @@ function onCustomSelect(label: string) {
           v-for="option in separatorIconOptions"
           :key="option.label"
           size="sm"
-          variant="outline"
+          variant="outlined"
           :color="separatorIcon === option.value ? 'primary' : 'neutral'"
           @click="separatorIcon = option.value"
         >

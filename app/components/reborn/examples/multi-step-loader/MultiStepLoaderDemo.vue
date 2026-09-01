@@ -104,7 +104,7 @@ async function startAsync() {
       <DemoBlock layout="stack">
         <RebornButton
           color="primary"
-          variant="solid"
+          variant="filled"
           :label="timedLoading ? '停止流程' : '开始定时流程'"
           @click="toggleTimed"
         />
@@ -126,7 +126,7 @@ async function startAsync() {
       <DemoBlock layout="stack">
         <RebornButton
           color="primary"
-          variant="outline"
+          variant="outlined"
           label="开始异步流程"
           :disabled="asyncLoading"
           @click="startAsync"

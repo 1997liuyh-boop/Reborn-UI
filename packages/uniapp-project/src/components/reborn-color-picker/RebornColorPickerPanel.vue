@@ -268,7 +268,7 @@ function selectPreset(color: string) {
         <view :class="ui.inputs()">
             <view :class="ui.formatToggles()">
                 <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="xs"
-                    :variant="format === f ? 'solid' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
+                    :variant="format === f ? 'filled' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
                     class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors"
                     @tap="format = f as ColorFormat">
                     {{ f }}

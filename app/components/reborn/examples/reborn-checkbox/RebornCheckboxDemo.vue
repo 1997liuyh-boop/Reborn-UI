@@ -4,6 +4,7 @@ import RebornCheckboxGroup from "~/components/reborn/ui/reborn-checkbox/RebornCh
 import {
   checkboxColors,
   checkboxSizes,
+  checkboxVariants,
 } from "~/components/reborn/ui/reborn-checkbox/reborn-checkbox.config";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
@@ -12,7 +13,9 @@ const state = ref<Record<string, any>>({
   checked: true,
   size: "md",
   color: "primary",
+  variant: "filled",
   label: "同意用户协议",
+  indeterminate: false,
   disabled: false,
 });
 
@@ -41,6 +44,19 @@ const controls = [
         defaultValue: "primary",
         props: { options: checkboxColors.map((c) => ({ label: c, value: c })) },
       },
+      {
+        label: "样式变体",
+        key: "variant",
+        component: "select" as const,
+        defaultValue: "filled",
+        props: { options: checkboxVariants.map((v) => ({ label: v, value: v })) },
+      },
+      {
+        label: "半选状态",
+        key: "indeterminate",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
   },
@@ -53,6 +69,8 @@ const checkboxCode = computed(() => {
 
   if (s.size !== "md") props.push(`size="${s.size}"`);
   if (s.color !== "primary") props.push(`color="${s.color}"`);
+  if (s.variant !== "filled") props.push(`variant="${s.variant}"`);
+  if (s.indeterminate) props.push("indeterminate");
   if (s.disabled) props.push("disabled");
 
   return `<RebornCheckbox\n  ${props.join("\n  ")}\n/>`;
@@ -80,9 +98,51 @@ const plans = [
   { value: "旗舰版", title: "旗舰版", description: "完整能力组合，满足复杂业务。" },
 ];
 
+/** 半选与全选：父级勾选框的状态由子项选中数量推导 */
+const fruitOptions = ["苹果", "香蕉", "橙子"];
+const fruits = ref<string[]>(["苹果"]);
+const isAllFruitChecked = computed(() => fruits.value.length === fruitOptions.length);
+const isPartFruitChecked = computed(() => fruits.value.length > 0 && !isAllFruitChecked.value);
+
+/** 点击父级勾选框：全选或全不选 */
+function toggleAllFruits() {
+  fruits.value = isAllFruitChecked.value ? [] : [...fruitOptions];
+}
+
+/** 数据驱动的复选框组：options 支持对象写法，可逐项禁用 */
+const roleOptions = [
+  { label: "管理员", value: "admin" },
+  { label: "开发", value: "dev" },
+  { label: "测试", value: "qa" },
+  { label: "运维", value: "ops", disabled: true },
+];
+const roles = ref<string[]>(["dev"]);
+const roleDirection = ref<"horizontal" | "vertical">("horizontal");
+
+/** max 限制：选满两项后未选中的选项自动禁用 */
+const limitedRoles = ref<string[]>([]);
+
+/** 自定义勾选框：checkbox 插槽整体替换方块 */
+const tagOptions = ["Vue", "React", "Svelte"];
+const tags = ref<string[]>(["Vue"]);
+
 /** 高级定制演示用的独立状态 */
 const roundedValue = ref(true);
 const iconValue = ref(true);
+
+/** 样式变体矩阵：两种变体各演示未选、选中、半选三态 */
+const variantMatrix = [
+  { variant: "filled" as const, note: "默认值。选中与半选都填充配色，图标为白色。" },
+  {
+    variant: "outlined" as const,
+    note: "选中不填充背景，只把边框与图标染成配色；半选时边框保持灰色，中间是同色实心小方块。",
+  },
+];
+const variantUnchecked = ref(false);
+const variantChecked = ref(true);
+
+/** outlined 变体的配色对照 */
+const variantColors = ["primary", "success", "warning", "error"] as const;
 </script>
 
 <template>
@@ -99,7 +159,9 @@ const iconValue = ref(true);
         v-model="state.checked"
         :size="state.size"
         :color="state.color"
+        :variant="state.variant"
         :label="state.label"
+        :indeterminate="state.indeterminate"
         :disabled="state.disabled"
       />
     </Playground>
@@ -127,6 +189,65 @@ const iconValue = ref(true);
           disabled
         />
       </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="样式变体"
+      description="variant 控制选中态的表现形式：filled 填充配色，outlined 只染边框与图标。半选样式跟随变体，无需额外配置。"
+    >
+      <DemoBlock
+        layout="grid"
+        align="start"
+      >
+        <div
+          v-for="item in variantMatrix"
+          :key="item.variant"
+          class="flex flex-col gap-3"
+        >
+          <span class="text-dimmed text-xs font-medium">
+            <code>variant="{{ item.variant }}"</code>
+          </span>
+          <div class="flex flex-wrap items-center gap-8">
+            <RebornCheckbox
+              v-model="variantUnchecked"
+              :variant="item.variant"
+              label="未选"
+            />
+            <RebornCheckbox
+              v-model="variantChecked"
+              :variant="item.variant"
+              label="选中"
+            />
+            <RebornCheckbox
+              :model-value="false"
+              :variant="item.variant"
+              indeterminate
+              label="半选"
+            />
+          </div>
+          <p class="text-muted text-xs">{{ item.note }}</p>
+        </div>
+      </DemoBlock>
+
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-8"
+      >
+        <RebornCheckbox
+          v-for="color in variantColors"
+          :key="color"
+          :model-value="true"
+          variant="outlined"
+          :color="color"
+          :label="color"
+        />
+      </DemoBlock>
+
+      <DemoNote tone="dimmed">
+        outlined 的半选态刻意不改边框颜色，只在方块中央渲染一个宽高为勾选框一半的同色实心小方块；此时
+        <code>ui.icon</code> 不生效，需要覆盖样式请改用 <code>ui.dot</code>。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection
@@ -190,6 +311,92 @@ const iconValue = ref(true);
     </DemoSection>
 
     <DemoSection
+      title="半选与全选"
+      description="indeterminate 是纯受控属性，父级勾选框的半选态需由子项选中数量推导。"
+    >
+      <DemoBlock layout="stack">
+        <RebornCheckbox
+          :model-value="isAllFruitChecked"
+          :indeterminate="isPartFruitChecked"
+          label="全选"
+          @change="toggleAllFruits"
+        />
+
+        <RebornCheckboxGroup
+          v-model="fruits"
+          class="pl-7"
+        >
+          <RebornCheckbox
+            v-for="fruit in fruitOptions"
+            :key="fruit"
+            :value="fruit"
+            :label="fruit"
+          />
+        </RebornCheckboxGroup>
+      </DemoBlock>
+
+      <DemoNote tone="dimmed">
+        已选 <code>{{ fruits.length }}</code> / {{ fruitOptions.length }} 项，父级当前为
+        <code>{{ isAllFruitChecked ? "全选" : isPartFruitChecked ? "半选" : "未选" }}</code>
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection
+      title="数据驱动的复选框组"
+      description="options 传入数据后由组自行渲染子项，此时默认插槽不再生效；direction 控制排列方向，max 限制最多选中数量。"
+    >
+      <DemoBlock
+        layout="grid"
+        align="start"
+      >
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">
+            <code>options</code> ·
+            <code>direction</code>
+          </span>
+          <RebornCheckboxGroup
+            v-model="roles"
+            :options="roleOptions"
+            :direction="roleDirection"
+          />
+          <button
+            type="button"
+            class="border-default rounded-ui-md hover:border-inverted text-muted w-fit cursor-pointer border px-3 py-1 text-xs transition-colors"
+            @click="roleDirection = roleDirection === 'horizontal' ? 'vertical' : 'horizontal'"
+          >
+            切换为 {{ roleDirection === "horizontal" ? "vertical" : "horizontal" }}
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">
+            <code>max="2"</code> ·
+            <code>#label</code>
+          </span>
+          <RebornCheckboxGroup
+            v-model="limitedRoles"
+            :options="roleOptions"
+            :max="2"
+            color="success"
+            direction="vertical"
+          >
+            <template #label="{ data }">
+              <span class="flex items-center gap-2">
+                {{ data.label }}
+                <code class="text-dimmed text-[10px]">{{ data.value }}</code>
+              </span>
+            </template>
+          </RebornCheckboxGroup>
+        </div>
+      </DemoBlock>
+
+      <DemoNote tone="dimmed">
+        角色：<code>{{ roles.length ? roles.join("、") : "空" }}</code>；限额组已选
+        <code>{{ limitedRoles.length }}</code> / 2 项，选满后未选中项自动禁用。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection
       title="卡片式多选"
       description="value 与数组型 v-model 配合，可把勾选框嵌入到整块可点击的描边卡片中。"
     >
@@ -215,6 +422,37 @@ const iconValue = ref(true);
 
       <DemoNote tone="dimmed">
         已选套餐：<code>{{ selectedPlans.length ? selectedPlans.join("、") : "空" }}</code>
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection
+      title="自定义勾选框"
+      description="checkbox 插槽整体替换勾选方块，作用域提供 checked / disabled / indeterminate；填充后 ui 的 control 与 icon 两个键会失效。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-4"
+      >
+        <RebornCheckbox
+          v-for="tag in tagOptions"
+          :key="tag"
+          v-model="tags"
+          :value="tag"
+        >
+          <template #checkbox="{ checked }">
+            <span
+              class="rounded-ui-md border px-3 py-1 text-xs font-medium transition-colors"
+              :class="checked ? 'border-primary bg-primary text-inverted' : 'border-default text-muted'"
+            >
+              {{ tag }}
+            </span>
+          </template>
+        </RebornCheckbox>
+      </DemoBlock>
+
+      <DemoNote tone="dimmed">
+        已选技术栈：<code>{{ tags.length ? tags.join("、") : "空" }}</code>
       </DemoNote>
     </DemoSection>
 

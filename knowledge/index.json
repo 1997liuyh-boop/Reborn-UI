@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-27T05:43:34.221Z",
+  "generatedAt": "2026-09-01T08:38:50.650Z",
   "components": [
     {
       "id": "animate-grid",
@@ -814,8 +814,8 @@
     },
     {
       "id": "reborn-checkbox",
-      "title": "多选框",
-      "description": "用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定。",
+      "title": "checkbox 多选框",
+      "description": "用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定，并提供半选态与数据驱动的复选框组。",
       "category": "form",
       "tags": [
         "css",
@@ -1077,7 +1077,7 @@
     },
     {
       "id": "reborn-input",
-      "title": "基础输入框",
+      "title": "input 输入框",
       "description": "用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。",
       "category": "form",
       "tags": [
@@ -1233,7 +1233,7 @@
     },
     {
       "id": "reborn-pagination",
-      "title": "分页",
+      "title": "Pagination 分页",
       "description": "用于数据列表分页切换的分页组件，支持布局组合、简洁模式、页码折叠与完整插槽定制。",
       "category": "navigation",
       "tags": [],
@@ -1298,8 +1298,8 @@
     },
     {
       "id": "reborn-radio",
-      "title": "单选框",
-      "description": "用于在一组互斥选项中选择单项的双端单选框组件。",
+      "title": "radio 单选框",
+      "description": "用于在一组互斥选项中选择单项的单选框组件，支持圆点（radio）、分段按钮（button）与实体按钮拼接（pure-button）三种类型。",
       "category": "form",
       "tags": [
         "css",
@@ -1360,7 +1360,7 @@
     },
     {
       "id": "reborn-select",
-      "title": "下拉选择",
+      "title": "select 下拉选择",
       "description": "用于从选项列表中单选或多选的双端下拉选择组件，uniapp 端为弹层滚动选择。",
       "category": "form",
       "tags": [

@@ -379,7 +379,7 @@ function applyPreset(config: Record<string, any>) {
         <RebornButton
           v-for="preset in presets"
           :key="preset.name"
-          variant="outline"
+          variant="outlined"
           size="sm"
           :label="preset.name"
           @click="applyPreset(preset.config)"

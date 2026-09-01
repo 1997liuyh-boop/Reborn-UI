@@ -3,7 +3,7 @@
  * RebornPagination 分页组件（UniApp 版）
  * 支持布局组合、简洁模式、页码折叠与完整插槽定制。
  */
-import type { paginationColors, paginationSizes, PaginationUI } from './reborn-pagination.config'
+import type { paginationSizes, PaginationUI } from './reborn-pagination.config'
 import { computed, ref, watch } from 'vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
@@ -27,8 +27,6 @@ interface PaginationProps {
   pageSizes?: number[]
   /** 尺寸：sm / md / lg */
   size?: (typeof paginationSizes)[number]
-  /** 主题色：primary / secondary / success / info / warning / error / neutral */
-  color?: (typeof paginationColors)[number]
   /** 是否为页码按钮添加背景 */
   background?: boolean
   /** 是否禁用 */
@@ -53,7 +51,6 @@ const props = withDefaults(defineProps<PaginationProps>(), {
   layout: 'prev, pager, next',
   pageSizes: () => [10, 20, 50, 100],
   size: 'md',
-  color: 'primary',
   background: false,
   disabled: false,
   hideOnSinglePage: false,
@@ -205,23 +202,6 @@ const nextDisabled = computed(() => props.disabled || currentPage.value >= total
 const jumperValue = ref<number | string>('')
 
 /**
- * 简洁模式输入框的显示值（与 web 端对齐：当前页可直接键入跳转）。
- * uniapp 的 input 无法直接 v-model 只读 computed，这里用本地 ref 与 currentPage 单向同步。
- */
-const simpleValue = ref(String(1))
-
-/** 简洁模式输入确认：钳制跳页，非法输入回显当前页 */
-function handleSimpleConfirm() {
-  const value = Number(simpleValue.value)
-  if (Number.isNaN(value) || value < 1) {
-    simpleValue.value = String(currentPage.value)
-    return
-  }
-  jumpTo(value)
-  simpleValue.value = String(currentPage.value)
-}
-
-/**
  * 设置当前页：钳制到有效范围，仅在实际变化时同步并触发事件
  */
 function setPage(page: number) {
@@ -289,11 +269,6 @@ function handleSizeChange(size: number | string) {
 /** 外部修改当前页越界时自动钳制 */
 watch(modelValue, () => clampPage())
 
-/** 当前页变化时同步简洁模式输入框的显示值 */
-watch(currentPage, (page) => {
-  simpleValue.value = String(page)
-}, { immediate: true })
-
 /** 外部修改每页条数时钳制当前页 */
 watch(pageSizeModel, () => clampPage())
 
@@ -304,7 +279,6 @@ const ui = computed(() => {
   const overrides = props.ui || {}
   const base = (opts: { active?: boolean; disabled?: boolean } = {}) => ({
     size: props.size,
-    color: props.color,
     active: opts.active ?? false,
     background: props.background,
     disabled: opts.disabled ?? props.disabled,
@@ -378,21 +352,8 @@ defineExpose({
         </view>
       </slot>
 
-      <!-- 当前页（可键入跳转）/ 总页数 -->
-      <view :class="ui.simple()">
-        <RebornInput
-          v-model="simpleValue"
-          type="number"
-          :size="props.size"
-          :color="props.color"
-          :disabled="props.disabled"
-          :custom-class="ui.input()"
-          @confirm="handleSimpleConfirm"
-          @blur="handleSimpleConfirm"
-        />
-        <text>/</text>
-        <text>{{ totalPages }}</text>
-      </view>
+      <!-- 当前页 / 总页数 -->
+      <text :class="ui.simple()">{{ currentPage }} / {{ totalPages }}</text>
 
       <!-- 下一页 -->
       <slot name="next" :disabled="nextDisabled" :next="next">
@@ -456,7 +417,6 @@ defineExpose({
               v-model="jumperValue"
               type="number"
               :size="props.size"
-              :color="props.color"
               :disabled="props.disabled"
               :custom-class="ui.input()"
               @confirm="handleJumperConfirm"
@@ -485,7 +445,6 @@ defineExpose({
               :model-value="pageSizeModel"
               :options="sizeOptions"
               :size="props.size"
-              :color="props.color"
               :disabled="props.disabled"
               :clearable="false"
               @update:model-value="handleSizeChange"

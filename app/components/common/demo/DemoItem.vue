@@ -1,19 +1,3 @@
-<template>
-    <div :class="ui.root()">
-        <p v-if="label || $slots.label" :class="ui.label()">
-            <slot name="label">{{ label }}</slot>
-        </p>
-
-        <div :class="ui.body()">
-            <slot />
-        </div>
-
-        <p v-if="note || $slots.note" :class="ui.note()">
-            <slot name="note">{{ note }}</slot>
-        </p>
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoItem —— 示例条目：取值标签 + 示例本体 + 可选脚注
@@ -47,3 +31,19 @@ const props = withDefaults(defineProps<Props>(), {
 const b = tv(itemConfig)
 const ui = computed(() => b({ mono: props.mono }))
 </script>
+
+<template>
+  <div :class="ui.root()">
+    <p v-if="label || $slots.label" :class="ui.label()">
+      <slot name="label">{{ label }}</slot>
+    </p>
+
+    <div :class="ui.body()">
+      <slot />
+    </div>
+
+    <p v-if="note || $slots.note" :class="ui.note()">
+      <slot name="note">{{ note }}</slot>
+    </p>
+  </div>
+</template>

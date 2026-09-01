@@ -110,8 +110,7 @@ const lastSelected = ref("");
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" :code="breadcrumbCode" component-name="RebornBreadcrumb"
-      title="交互演练场"
-      description="切换分隔符样式、填入 Iconify 图标名替代文本分隔符，或调整最多展示数量观察折叠效果。">
+      title="交互演练场" description="切换分隔符样式、填入 Iconify 图标名替代文本分隔符，或调整最多展示数量观察折叠效果。">
       <template #tag>
         <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
           <template #leading>
@@ -194,7 +193,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸与配色" description="通过 ui 传入细粒度类名覆盖根节点与条目样式，父级 ui 会级联到所有子条目。">
+    <DemoSection title="尺寸与配色" description="通过 ui 传入细粒度类名覆盖根节点与条目样式：父级 ui 会级联到所有子条目，条目级 ui 可给单项单独配色且优先级更高。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="缩小字号" mono>
           <RebornBreadcrumb :ui="{ root: 'text-xs', separator: 'text-2xs' }">
@@ -209,6 +208,29 @@ const lastSelected = ref("");
             <RebornBreadcrumbItem to="/">大号主色</RebornBreadcrumbItem>
             <RebornBreadcrumbItem to="/components">组件库</RebornBreadcrumbItem>
             <RebornBreadcrumbItem>面包屑</RebornBreadcrumbItem>
+          </RebornBreadcrumb>
+        </DemoItem>
+
+        <DemoItem label="逐项配色" mono>
+          <template #note>
+            条目级 <code>ui.link</code> 只作用于当前项；覆盖颜色时要连 <code>hover:</code> 一起写，否则悬停仍会被默认的
+            <code>hover:text-primary</code> 抢走。项目色阶没有 yellow，黄色取 <code>orange</code>（即 warning 色）。
+          </template>
+          <RebornBreadcrumb>
+            <RebornBreadcrumbItem to="/" :ui="{ link: 'text-red-6 hover:text-red-5' }">红色</RebornBreadcrumbItem>
+            <RebornBreadcrumbItem to="/components" :ui="{ link: 'text-green-6 hover:text-green-5' }">绿色</RebornBreadcrumbItem>
+            <RebornBreadcrumbItem :ui="{ link: 'text-orange-6' }">黄色</RebornBreadcrumbItem>
+          </RebornBreadcrumb>
+        </DemoItem>
+
+        <DemoItem label="父级级联 + 条目覆盖" mono>
+          <template #note>
+            容器 <code>ui.link</code> 把三项统一成绿色，中间一项用条目级 <code>ui</code> 改成红色——条目级优先。
+          </template>
+          <RebornBreadcrumb :ui="{ link: 'text-green-6 hover:text-green-5' }">
+            <RebornBreadcrumbItem to="/">绿色</RebornBreadcrumbItem>
+            <RebornBreadcrumbItem to="/components" :ui="{ link: 'text-red-6 hover:text-red-5' }">红色（覆盖）</RebornBreadcrumbItem>
+            <RebornBreadcrumbItem>绿色</RebornBreadcrumbItem>
           </RebornBreadcrumb>
         </DemoItem>
       </DemoBlock>
@@ -309,7 +331,7 @@ const lastSelected = ref("");
     <DemoSection title="链接与跳转方式" description="每一项通过 to 指定跳转地址，replace 控制以 push / replace / blank 三种方式打开。">
       <DemoBlock layout="stack">
         <RebornBreadcrumb separator="/">
-          <RebornBreadcrumbItem to="/">首页</RebornBreadcrumbItem>
+          <RebornBreadcrumbItem to="/" class="text-red-5!">首页</RebornBreadcrumbItem>
           <RebornBreadcrumbItem to="/components" replace="replace">组件库（替换历史记录）</RebornBreadcrumbItem>
           <RebornBreadcrumbItem to="https://github.com" replace="blank">GitHub（新窗口）</RebornBreadcrumbItem>
           <RebornBreadcrumbItem>项目详情</RebornBreadcrumbItem>

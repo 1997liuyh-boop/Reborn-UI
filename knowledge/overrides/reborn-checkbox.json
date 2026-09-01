@@ -1,17 +1,23 @@
 {
-  "description": "用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定。",
+  "description": "用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定，并提供半选态与数据驱动的复选框组。",
   "whenToUse": [
     "表单中需要勾选一组可多选的选项。",
     "单个布尔开关确认项（如同意协议），v-model 绑定 boolean。",
-    "需要 trueValue/falseValue 自定义选中/未选中值的场景。"
+    "需要 trueValue/falseValue 自定义选中/未选中值的场景。",
+    "需要「全选 / 半选」联动的分组勾选，用 indeterminate 表达父级的部分选中态。"
   ],
   "whenNotToUse": [
     "一组互斥选项只能选一个时，改用 reborn-radio。",
     "即时生效的开关设置项，改用 reborn-switch。"
   ],
   "pitfalls": [
-    "web 与 uniapp 双端可用。",
+    "web 与 uniapp 双端可用，RebornCheckboxGroup 双端均已提供；额外类名 web 端用 class，uniapp 端用 customClass。",
     "modelValue 支持 boolean 或数组两种模式：绑定数组时 value 才作为选中值生效，未提供 value 时以 label 充当 value。",
-    "可通过 icon 插槽自定义选中图标，default 插槽自定义标签内容。"
+    "indeterminate 是纯受控属性，组件只渲染半选样式、不会在点击后自动清除，父级半选态需由子项选中数量推导。",
+    "RebornCheckboxGroup 传入 options 后由组自行渲染子项，默认插槽不再渲染，两种写法互斥。",
+    "RebornCheckboxGroup 的 max 达到上限后，未选中的子项会自动禁用，已选中的仍可取消。",
+    "填充 checkbox 插槽会整体替换勾选方块，此时 ui.control 与 ui.icon 静默失效。",
+    "可通过 icon 插槽自定义选中图标，default 插槽自定义标签内容。",
+    "variant=\"outlined\" 的半选态刻意不改变边框颜色，且渲染的是 dot 节点而非勾选图标，因此该状态下 ui.icon 不生效，调整小方块请覆盖 ui.dot。"
   ]
 }

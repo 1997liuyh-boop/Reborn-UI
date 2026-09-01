@@ -270,7 +270,7 @@ function selectPreset(color: string) {
         <div :class="ui.inputs()">
             <div :class="ui.formatToggles()">
                 <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="sm"
-                    :variant="format === f ? 'solid' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
+                    :variant="format === f ? 'filled' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
                     class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors" @click="format = f">
                     {{ f }}
                 </RebornButton>

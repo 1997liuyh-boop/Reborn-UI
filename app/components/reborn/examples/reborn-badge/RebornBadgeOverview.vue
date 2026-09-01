@@ -18,7 +18,7 @@ import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue'
     />
     <RebornBadge
       color="warning"
-      variant="outline"
+      variant="outlined"
       label="Warning"
     />
     <RebornBadge

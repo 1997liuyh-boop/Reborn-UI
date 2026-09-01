@@ -232,7 +232,7 @@ function openSelect2() {
         <text class="text-sm text-slate-500">尺寸 (Size)</text>
         <view class="flex flex-wrap gap-2">
           <view v-for="size in selectSizes" :key="size">
-            <RebornButton size="xs" :variant="currentSize === size ? 'solid' : 'outline'"
+            <RebornButton size="xs" :variant="currentSize === size ? 'filled' : 'outlined'"
               :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size">
               {{ size }}
             </RebornButton>
@@ -284,7 +284,7 @@ function openSelect2() {
       <view class="text-xs text-gray-4">
         通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开
       </view>
-      <RebornButton variant="outline" color="primary" @tap="openSelect2">
+      <RebornButton variant="outlined" color="primary" @tap="openSelect2">
         打开选择器
       </RebornButton>
       <RebornSelect ref="selectRef2" v-model="form.selected2" :options="options2" :show-trigger="false" />

@@ -5,14 +5,13 @@ import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
 import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
 import RebornPagination from '@/components/reborn-pagination/RebornPagination.vue'
-import { paginationColors, paginationSizes } from '@/components/reborn-pagination/reborn-pagination.config'
+import { paginationSizes } from '@/components/reborn-pagination/reborn-pagination.config'
 
 // Playground 状态
 const playPage = ref(1)
 const playPageSize = ref(10)
 const playTotal = ref(200)
 const playSize = ref<any>('md')
-const playColor = ref<any>('primary')
 const playBackground = ref(false)
 const playDisabled = ref(false)
 const playSimple = ref(false)
@@ -36,12 +35,6 @@ function handlePlaySizeChange(size: number) {
 
 // 尺寸选项
 const sizeOptions = paginationSizes.map(s => ({ label: s, value: s }))
-
-// 主题色选项
-const colorOptions = paginationColors.map(c => ({ label: c, value: c }))
-
-// 主题颜色演示的绑定页码
-const colorPage = ref(1)
 
 // 折叠数量选项
 const pagerCountOptions = [5, 7, 9, 11].map(n => ({ label: `${n}`, value: n }))
@@ -115,11 +108,6 @@ function handleLayoutSizeChange(size: number) {
       </view>
 
       <view>
-        <text class="text-24 text-gray-5 mb-2">主题色 color</text>
-        <RebornSelect v-model="playColor" :options="colorOptions" :size="'sm'" :clearable="false" />
-      </view>
-
-      <view>
         <text class="text-24 text-gray-5 mb-2">折叠数量 pagerCount</text>
         <RebornSelect v-model="playPagerCount" :options="pagerCountOptions" :size="'sm'" :clearable="false" />
       </view>
@@ -163,7 +151,6 @@ function handleLayoutSizeChange(size: number) {
           :layout="playLayout"
           :page-sizes="playPageSizes"
           :size="playSize"
-          :color="playColor"
           :background="playBackground"
           :disabled="playDisabled"
           :simple="playSimple"
@@ -194,24 +181,10 @@ function handleLayoutSizeChange(size: number) {
       <text class="text-24 text-gray-6">当前页 {{ backgroundPage }}</text>
     </RebornCard>
 
-    <!-- 主题颜色 -->
-    <RebornCard title="主题颜色（color）">
-      <view class="flex flex-col gap-3">
-        <RebornPagination
-          v-for="c in paginationColors"
-          :key="c"
-          v-model="colorPage"
-          :total="50"
-          :color="c"
-          background
-        />
-      </view>
-    </RebornCard>
-
     <!-- 简洁模式 -->
     <RebornCard title="简洁模式（simple）">
       <RebornPagination v-model="simplePage" :total="60" simple />
-      <text class="text-24 text-gray-6">当前页 {{ simplePage }}（输入框可直接键入跳页）</text>
+      <text class="text-24 text-gray-6">当前页 {{ simplePage }} / 总页数文本展示</text>
     </RebornCard>
 
     <!-- 完整布局 -->

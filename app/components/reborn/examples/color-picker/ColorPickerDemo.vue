@@ -50,7 +50,7 @@ const readableValue = computed(() => {
           @value-change="setColor"
         >
           <RebornButton
-            variant="outline"
+            variant="outlined"
             color="neutral"
             label="选择颜色"
           >

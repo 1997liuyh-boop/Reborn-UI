@@ -101,7 +101,7 @@ const handlePremiumClick = () => {
         </NuxtLink>
         <RebornButton
           size="lg"
-          variant="outline"
+          variant="outlined"
           class="min-w-40 border-white/70 bg-white/35 text-zinc-900 backdrop-blur-xl hover:bg-white/55 dark:border-white/14 dark:bg-white/6 dark:text-white dark:hover:bg-white/10"
           @click="handlePremiumClick"
         >

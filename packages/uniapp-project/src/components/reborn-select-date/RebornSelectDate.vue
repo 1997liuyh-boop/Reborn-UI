@@ -723,13 +723,13 @@ defineExpose({
         </view>
         <view :class="ui.footer()">
           <view :class="ui.cancel()">
-            <RebornButton v-if="showCancel" :size="size" variant="outline" :color="color"
+            <RebornButton v-if="showCancel" :size="size" variant="outlined" :color="color"
               :ui="{ base: ui.cancelButton() }" block @tap="close">
               {{ cancelText }}
             </RebornButton>
           </view>
           <view :class="ui.confirm()">
-            <RebornButton v-if="showConfirm" :size="size" variant="solid" :color="color"
+            <RebornButton v-if="showConfirm" :size="size" variant="filled" :color="color"
               :ui="{ base: ui.confirmButton() }" block @click="confirm">
               {{ confirmText }}
             </RebornButton>

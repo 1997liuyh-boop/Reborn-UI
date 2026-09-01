@@ -62,6 +62,20 @@
   --color-gray-10: #1d2129; /* title 标题 */
 
   /*
+   * Brand / 主色品牌色
+   * 命名维度与上方四族不同：上方按色相命名（red/orange/...），本族按语义命名，
+   */
+  --color-brand-1: #ebf5ff; /* tag 填充色 */
+  --color-brand-2: #bedefe; /* border 描边色 */
+  --color-brand-3: #96c6fd;
+  --color-brand-4: #6eacfc;
+  --color-brand-5: #5095fb; /* hover 悬停 */
+  --color-brand-6: #1b6dfa; /* default 默认 */
+  --color-brand-7: #1150d0; /* active 点击 */
+  --color-brand-8: #0937a5;
+  --color-brand-9: #032277;
+  --color-brand-10: #00124d;
+  /*
    * 辅助色系 (Secondary) —— 薄荷绿，与品牌主色 red-6 配对使用。
    * 命名维度与上方四族不同：上方按色相命名（red/orange/...），本族按语义命名，
    * 因为它在设计稿中就是「品牌辅助色」这一固定角色，不复用于其它语义。
@@ -94,13 +108,13 @@
     Helvetica, Arial, sans-serif;
 
   /* --- 语义化颜色 (Semantic Colors) --- */
-  --color-primary: var(--color-red-5);
-  --color-secondary: var(--color-secondary-5);
-  --color-success: var(--color-green-5);
-  --color-info: var(--color-blue-5);
-  --color-warning: var(--color-orange-5);
-  --color-error: var(--color-red-5);
-  --color-neutral: var(--color-gray-5);
+  --color-primary: var(--color-brand-6);
+  --color-secondary: var(--color-secondary-6);
+  --color-success: var(--color-green-6);
+  --color-info: var(--color-blue-6);
+  --color-warning: var(--color-orange-6);
+  --color-error: var(--color-red-6);
+  --color-neutral: var(--color-gray-6);
 
   --color-inverted: #ffffff;
   --color-default: var(--color-gray-8);
@@ -182,6 +196,20 @@
   --color-gray-9: #dfdfdf; /* primary 正文 */
   --color-gray-10: #ffffff; /* title 标题 */
 
+  /*
+   * Brand / 主色品牌色
+   */
+  --color-brand-1: #00124d; /* tag 填充色 */
+  --color-brand-2: #022178; /* border 描边色 */
+  --color-brand-3: #0d3aa3;
+  --color-brand-4: #1d58cf;
+  --color-brand-5: #317bfa; /* hover 悬停 */
+  --color-brand-6: #418cfb; /* default 默认 */
+  --color-brand-7: #6caafc; /* active 点击 */
+  --color-brand-8: #97c7fd;
+  --color-brand-9: #c3e1fe;
+  --color-brand-10: #eff7ff;
+
   /* 辅助色系 (Secondary) —— 与浅色板一一对偶，色阶方向相反：第 1 阶最深、第 10 阶最浅 */
   --color-secondary-1: #004d33; /* tag 填充色 */
   --color-secondary-2: #06744c; /* border 描边色 */
@@ -198,13 +226,13 @@
    * 反色前景：暗色板的 default 阶是浅色块，白字对比度不足（如 red-6 配白仅 2.4:1），
    * 故翻转为最深的中性色。实测 primary 6.25:1、success 12.4:1、warning 8.9:1、info 9.1:1。
    */
-  --color-primary: var(--color-red-6);
-  --color-secondary: var(--color-secondary-6);
-  --color-success: var(--color-green-6);
-  --color-info: var(--color-blue-6);
-  --color-warning: var(--color-orange-6);
-  --color-error: var(--color-red-6);
-  --color-neutral: var(--color-gray-6);
+  --color-primary: var(--color-brand-5);
+  --color-secondary: var(--color-secondary-5);
+  --color-success: var(--color-green-5);
+  --color-info: var(--color-blue-5);
+  --color-warning: var(--color-orange-5);
+  --color-error: var(--color-red-5);
+  --color-neutral: var(--color-gray-5);
   --color-inverted: var(--color-gray-1);
 }
 

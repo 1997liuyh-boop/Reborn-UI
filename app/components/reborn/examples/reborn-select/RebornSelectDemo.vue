@@ -329,8 +329,7 @@ function onChange(value: any) {
         </DemoSection>
 
         <!-- 4. 页头与页脚 -->
-        <DemoSection title="页头与页脚"
-            description="header 与 footer 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。">
+        <DemoSection title="页头与页脚" description="header 与 footer 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="header + footer" note="页头展示已选统计，页脚放置操作入口；点击页脚不会收起面板">
                     <RebornSelect v-model="headerFooterValue" :options="frameworkOptions" multiple placeholder="可多选框架"
@@ -356,11 +355,10 @@ function onChange(value: any) {
         </DemoSection>
 
         <!-- 5. 滚动加载 -->
-        <DemoSection title="滚动加载"
-            description="dropdown-scroll 原样透出下拉列表的原生滚动事件，据此判断触底即可实现分页续接。">
+        <DemoSection title="滚动加载" description="dropdown-scroll 原样透出下拉列表的原生滚动事件，据此判断触底即可实现分页续接。">
             <DemoItem label="dropdown-scroll" note="初始只有 12 项，滚动到底部自动追加下一页；加载提示放在固定不动的页脚里，滚动位置不会丢失">
-                <RebornSelect v-model="scrollLoadValue" :options="scrollLoadOptions" color="warning" placeholder="向下滚动加载更多"
-                    class="w-full max-w-md" @dropdown-scroll="onDropdownScroll">
+                <RebornSelect v-model="scrollLoadValue" :options="scrollLoadOptions" color="warning"
+                    placeholder="向下滚动加载更多" class="w-full max-w-md" @dropdown-scroll="onDropdownScroll">
                     <template #footer>
                         <div class="flex items-center justify-center gap-2">
                             <Icon v-if="scrollLoadPending" name="lucide:loader-2" class="size-3.5 animate-spin" />
@@ -407,7 +405,8 @@ function onChange(value: any) {
                     </div>
                 </DemoItem>
 
-                <DemoItem label="对照组：:portal=&quot;false&quot;" note="浮层留在触发器内，被容器 overflow 截断；需要浮层随父容器一起滚动、一起裁剪时才关掉 portal">
+                <DemoItem label="对照组：:portal=&quot;false&quot;"
+                    note="浮层留在触发器内，被容器 overflow 截断；需要浮层随父容器一起滚动、一起裁剪时才关掉 portal">
                     <div class="bg-elevated rounded-ui-sm h-56 w-full overflow-y-auto p-4">
                         <DemoNote tone="dimmed" class="pb-4 text-xs">展开后与左侧对比 ↓</DemoNote>
                         <div class="h-24" />
@@ -421,7 +420,8 @@ function onChange(value: any) {
 
             <div class="border-default mt-6 border-t pt-6">
                 <DemoItem label="自动翻转与定位" note="下方空间不足时自动向上展开；60 项长列表在展开瞬间即滚动到已选项，无需手动查找">
-                    <RebornSelect v-model="followValue" :options="cityOptions" color="warning" class="w-full max-w-md" />
+                    <RebornSelect v-model="followValue" :options="cityOptions" color="warning"
+                        class="w-full max-w-md" />
                 </DemoItem>
                 <ul class="text-muted grid gap-2 pt-2 text-xs sm:grid-cols-3">
                     <li class="flex gap-2">
@@ -444,8 +444,8 @@ function onChange(value: any) {
         <DemoSection title="插槽定制" description="接管选项与触发器的渲染。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="option 插槽" note="在选项内渲染图标与副标题，作用域提供 option 与 active" mono>
-                    <RebornSelect v-model="slotOptionValue" :options="frameworkOptions" :ui="{ option: 'h-auto py-2.5' }"
-                        class="w-full">
+                    <RebornSelect v-model="slotOptionValue" :options="frameworkOptions"
+                        :ui="{ option: 'h-auto py-2.5' }" class="w-full">
                         <template #option="{ option, active }">
                             <div class="flex w-full items-center gap-3">
                                 <Icon :name="option.icon" class="size-5 shrink-0" />
@@ -500,7 +500,7 @@ function onChange(value: any) {
 
                 <div class="flex gap-3">
                     <RebornButton color="primary" @click="submitForm">校验并提交</RebornButton>
-                    <RebornButton color="neutral" variant="outline" @click="resetForm">重置</RebornButton>
+                    <RebornButton color="neutral" variant="outlined" @click="resetForm">重置</RebornButton>
                 </div>
             </DemoBlock>
         </DemoSection>

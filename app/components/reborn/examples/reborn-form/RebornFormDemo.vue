@@ -367,7 +367,7 @@ function scrollToBio() {
               <span class="text-highlighted text-sm font-semibold">联系人列表</span>
               <RebornButton
                 size="sm"
-                variant="outline"
+                variant="outlined"
                 label="添加联系人"
                 @click="addContact"
               >
@@ -450,7 +450,7 @@ function scrollToBio() {
             @click="submit"
           />
           <RebornButton
-            variant="outline"
+            variant="outlined"
             label="重置"
             @click="reset"
           />

@@ -37,7 +37,7 @@ const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'info', '
         <view class="flex flex-wrap gap-2">
           <view v-for="size in sizes" :key="size">
             <ReButton
-              size="xs" :variant="currentSize === size ? 'solid' : 'outline'"
+              size="xs" :variant="currentSize === size ? 'filled' : 'outlined'"
               :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size"
             >
               {{ size }}

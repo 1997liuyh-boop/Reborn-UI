@@ -41,21 +41,49 @@ export interface BreadcrumbUI {
   droplist?: ClassValue;
   /** 下拉菜单项 */
   droplistItem?: ClassValue;
+  /** 下拉菜单项之间的分隔线（divided 的菜单项才渲染） */
+  droplistDivider?: ClassValue;
 }
 
 export default {
   slots: {
     root: "flex items-center flex-wrap gap-x-1.5 text-sm leading-none",
-    item: "reborn-breadcrumb-item flex items-center gap-x-1.5 group",
-    link: "text-gray-7 transition-colors flex items-center gap-1 group-first:text-gray-8 group-first:font-semibold group-last:text-gray-9 group-last:font-medium",
-    separator: "text-gray-4 select-none flex items-center justify-center text-xs group-last:hidden",
+    /**
+     * 条目容器。
+     * 分组用具名 group/breadcrumb 而非匿名 group：带下拉的条目内部嵌了
+     * RebornSelectTrigger，它的浮层锚点自带匿名 group 且恰好是本容器的 first-child，
+     * 匿名 group-first 会被它命中，导致每一项都套上首项样式。
+     */
+    item: "reborn-breadcrumb-item flex items-center gap-x-1.5 group/breadcrumb",
+    /**
+     * 条目文本/链接节点。
+     * 全部条目一视同仁：统一 text-gray-9、统一字重，首项与末项都不加粗；
+     * 视觉上的唯一变化来自 hover（可跳转与带下拉的条目变主色），见 active / droplist 变体。
+     */
+    link: "text-gray-9 transition-colors flex items-center gap-1",
+    separator:
+      "text-gray-4 select-none flex items-center justify-center text-xs group-last/breadcrumb:hidden",
     /** 超出 max-count 后的折叠占位内容 */
-    more: "text-gray-7 flex items-center",
+    more: "text-gray-9 flex items-center",
     moreIcon: "size-4",
     /** 条目带下拉菜单时追加的箭头，方向由 open 变体控制 */
     dropIcon: "size-3.5 shrink-0 transition-transform duration-200",
-    droplist: "min-w-32",
-    droplistItem: "whitespace-nowrap",
+    /**
+     * 下拉面板的内容区。
+     * 内边距落在这里而不是浮层外壳（RebornSelectTrigger 的 dropdown）上：
+     * 外壳的展开动画走 height 0 → scrollHeight，border-box 下内边距会把 height:0
+     * 撑出一段残留高度，收起时露出一条色块。
+     */
+    droplist: "min-w-32 max-h-60 overflow-y-auto px-[4px] py-[6px] space-y-[4px] scrollbar-hide",
+    /**
+     * 下拉菜单项。字号 14px（text-base）与其余 Reborn 浮层保持一致：
+     * 浮层默认传送到 body，拿不到面包屑根节点的 text-sm，必须自带字号。
+     * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 dark: 前缀。
+     */
+    droplistItem:
+      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+    /** 菜单项分隔线，与浮层描边同一阶 */
+    droplistDivider: "my-[4px] border-t border-gray-3",
   },
   variants: {
     /** 条目是否可跳转：由是否传入 to 决定 */
@@ -68,14 +96,13 @@ export default {
       },
     },
     /**
-     * 首项样式的兜底开关。
-     * 根因：折叠时父组件会在最前插入省略号节点，首项不再是 first-child，group-first 会失效。
-     * 方案：仅在折叠态下由注册索引补发首项样式，其余情况仍走结构伪类，保证服务端首屏就正确。
+     * 首项样式的兜底开关，当前为空——首项不做任何视觉区分。
+     * 保留这个钩子是因为它解决的问题仍然存在：折叠时父组件会在最前插入省略号节点，
+     * 首项不再是 first-child，`group-first/breadcrumb:` 会整条失效；
+     * 组件里由注册索引在折叠态下补发 first，以后若要给首项加样式，写在这里即可。
      */
     first: {
-      true: {
-        link: "text-gray-8 font-semibold",
-      },
+      true: {},
       false: {},
     },
     /** 条目的下拉菜单是否展开：仅驱动箭头方向 */

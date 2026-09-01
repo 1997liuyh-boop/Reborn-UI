@@ -3,7 +3,7 @@ export const badgeSizes = ['sm', 'md', 'lg'] as const
 /** 徽章颜色选项 */
 export const badgeColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 /** 徽章变体选项 */
-export const badgeVariants = ['solid', 'outline', 'soft', 'subtle'] as const
+export const badgeVariants = ['filled', 'outlined', 'soft', 'subtle'] as const
 
 const config = {
   /** 徽章插槽样式配置 */
@@ -25,8 +25,8 @@ const config = {
     },
     /** 样式变体 */
     variant: {
-      solid: '',
-      outline: 'bg-transparent border border-solid',
+      filled: '',
+      outlined: 'bg-transparent border border-solid',
       soft: 'border-transparent',
       subtle: 'border border-solid'
     },
@@ -77,23 +77,23 @@ const config = {
   },
   /** 复合变体：根据颜色和样式变体组合生成的样式 */
   compoundVariants: [
-    // Solid
-    { color: 'primary' as any, variant: 'solid' as any, class: 'bg-primary border-primary text-white' },
-    { color: 'secondary' as any, variant: 'solid' as any, class: 'bg-secondary border-secondary text-white' },
-    { color: 'success' as any, variant: 'solid' as any, class: 'bg-success border-success text-white' },
-    { color: 'info' as any, variant: 'solid' as any, class: 'bg-info border-info text-white' },
-    { color: 'warning' as any, variant: 'solid' as any, class: 'bg-warning border-warning text-white' },
-    { color: 'error' as any, variant: 'solid' as any, class: 'bg-error border-error text-white' },
-    { color: 'neutral' as any, variant: 'solid' as any, class: 'bg-neutral border-neutral text-white' },
+    // Filled
+    { color: 'primary' as any, variant: 'filled' as any, class: 'bg-primary border-primary text-white' },
+    { color: 'secondary' as any, variant: 'filled' as any, class: 'bg-secondary border-secondary text-white' },
+    { color: 'success' as any, variant: 'filled' as any, class: 'bg-success border-success text-white' },
+    { color: 'info' as any, variant: 'filled' as any, class: 'bg-info border-info text-white' },
+    { color: 'warning' as any, variant: 'filled' as any, class: 'bg-warning border-warning text-white' },
+    { color: 'error' as any, variant: 'filled' as any, class: 'bg-error border-error text-white' },
+    { color: 'neutral' as any, variant: 'filled' as any, class: 'bg-neutral border-neutral text-white' },
 
-    // Outline
-    { color: 'primary' as any, variant: 'outline' as any, class: 'border-primary text-primary' },
-    { color: 'secondary' as any, variant: 'outline' as any, class: 'border-secondary text-secondary' },
-    { color: 'success' as any, variant: 'outline' as any, class: 'border-success text-success' },
-    { color: 'info' as any, variant: 'outline' as any, class: 'border-info text-info' },
-    { color: 'warning' as any, variant: 'outline' as any, class: 'border-warning text-warning' },
-    { color: 'error' as any, variant: 'outline' as any, class: 'border-error text-error' },
-    { color: 'neutral' as any, variant: 'outline' as any, class: 'border-neutral text-neutral' },
+    // Outlined
+    { color: 'primary' as any, variant: 'outlined' as any, class: 'border-primary text-primary' },
+    { color: 'secondary' as any, variant: 'outlined' as any, class: 'border-secondary text-secondary' },
+    { color: 'success' as any, variant: 'outlined' as any, class: 'border-success text-success' },
+    { color: 'info' as any, variant: 'outlined' as any, class: 'border-info text-info' },
+    { color: 'warning' as any, variant: 'outlined' as any, class: 'border-warning text-warning' },
+    { color: 'error' as any, variant: 'outlined' as any, class: 'border-error text-error' },
+    { color: 'neutral' as any, variant: 'outlined' as any, class: 'border-neutral text-neutral' },
 
     // Soft
     { color: 'primary' as any, variant: 'soft' as any, class: 'bg-primary/10 text-primary' },
@@ -116,7 +116,7 @@ const config = {
   /** 默认变体值 */
   defaultVariants: {
     color: 'primary' as (typeof badgeColors)[number],
-    variant: 'solid' as (typeof badgeVariants)[number],
+    variant: 'filled' as (typeof badgeVariants)[number],
     size: 'md' as (typeof badgeSizes)[number]
   }
 }

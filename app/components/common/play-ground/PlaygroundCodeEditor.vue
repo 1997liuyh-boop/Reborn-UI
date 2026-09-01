@@ -8,7 +8,7 @@
  *
  * - 语法高亮:@codemirror/lang-vue(SFC 模板/脚本分区着色),主题跟随全局明暗模式
  * - 智能提示:三级补全 —— 组件标签(<Reborn…)、属性与事件(含类型和中文说明)、
- *   枚举属性值(variant="solid|outline|…"),数据来自知识库构建产物
+ *   枚举属性值(variant="filled|outlined|…"),数据来自知识库构建产物
  *   /playground-completions.json(modules/playground-completions.ts 生成)
  * - Ctrl/Cmd+S 触发 format 事件,由页面调用 prettier 完成一键格式化
  */

@@ -411,7 +411,7 @@ onUnmounted(() => {
           class="bg-elevated rounded-ui-sm text-muted w-fit px-4 py-3 font-mono text-[11px] leading-relaxed"><code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code></pre>
 
         <div class="flex items-center gap-4">
-          <RebornButton label="触发全屏加载" color="primary" variant="solid" :disabled="fullscreenOn"
+          <RebornButton label="触发全屏加载" color="primary" variant="filled" :disabled="fullscreenOn"
             @click="triggerFullscreen">
             <template #leading>
               <Icon name="lucide:expand" size="14" />

@@ -45,7 +45,7 @@ function focusAt(cursor: typeof cursors[number]) {
         <view class="flex flex-wrap gap-2">
           <ReButton
             v-for="size in sizes" :key="size" size="xs"
-            :variant="currentSize === size ? 'solid' : 'outline'"
+            :variant="currentSize === size ? 'filled' : 'outlined'"
             :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size"
           >
             {{ size }}
@@ -59,7 +59,7 @@ function focusAt(cursor: typeof cursors[number]) {
         <view class="flex flex-wrap gap-2">
           <ReButton
             v-for="shape in shapes" :key="shape" size="xs"
-            :variant="currentShape === shape ? 'solid' : 'outline'"
+            :variant="currentShape === shape ? 'filled' : 'outlined'"
             :color="currentShape === shape ? 'primary' : 'neutral'" @tap="currentShape = shape"
           >
             {{ shape }}
@@ -245,7 +245,7 @@ function focusAt(cursor: typeof cursors[number]) {
         <RebornInputNumber ref="focusInputRef" v-model="focusValue" :max="99" shape="square" />
       </view>
       <view class="flex flex-wrap gap-2">
-        <ReButton v-for="c in cursors" :key="c" size="xs" variant="outline" color="primary" @tap="focusAt(c)">
+        <ReButton v-for="c in cursors" :key="c" size="xs" variant="outlined" color="primary" @tap="focusAt(c)">
           focus('{{ c }}')
         </ReButton>
       </view>

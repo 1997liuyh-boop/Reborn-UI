@@ -179,7 +179,7 @@ const mergedNextProps = computed<ButtonProps>(() => ({
 
 const mergedPrevProps = computed<ButtonProps>(() => ({
   label: "上一步",
-  variant: "outline" as const,
+  variant: "outlined" as const,
   ...props.prevButtonProps,
   ...(activeStep.value?.prevButtonProps ?? {}),
 }));

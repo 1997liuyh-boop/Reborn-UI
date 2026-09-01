@@ -133,7 +133,7 @@ function handleCommand(key: string) {
 ```vue
 <template>
   <RebornDropdown trigger="click" :hide-on-click="false" @command="handleCommand">
-    <RebornButton variant="outline">设置</RebornButton>
+    <RebornButton variant="outlined">设置</RebornButton>
     <template #dropdown>
       <RebornDropdownItem command="profile">个人资料</RebornDropdownItem>
       <RebornDropdownItem command="security" divided>安全设置</RebornDropdownItem>

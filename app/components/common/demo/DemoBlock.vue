@@ -1,9 +1,3 @@
-<template>
-    <div :class="ui.root()">
-        <slot />
-    </div>
-</template>
-
 <script setup lang="ts">
 /**
  * DemoBlock —— 承载示例本体的排版容器
@@ -45,3 +39,9 @@ const ui = computed(() =>
     b({ layout: props.layout, columns: props.columns, align: props.align, tone: props.tone }),
 )
 </script>
+
+<template>
+  <div :class="ui.root()">
+    <slot />
+  </div>
+</template>

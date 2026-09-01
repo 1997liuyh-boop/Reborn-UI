@@ -361,8 +361,12 @@ const ui = computed(() => {
       styles.searchInput({ class: cn(opts?.class, field.searchInput) }),
     triggerLoadingIcon: (opts?: { class?: any }) =>
       styles.triggerLoadingIcon({ class: cn(opts?.class, field.triggerLoadingIcon) }),
-    option: (opts?: { class?: any }) =>
-      styles.option({ class: cn(opts?.class, uiOverrides.value.option) }),
+    option: (opts?: { class?: any; active?: boolean }) =>
+      styles.option({
+        // active 决定未选中态的文字色是否产出；传 undefined 时回落到 defaultVariants 的 false
+        active: opts?.active,
+        class: cn(opts?.class, uiOverrides.value.option),
+      }),
     optionContent: (opts?: { class?: any }) =>
       styles.optionContent({ class: cn(opts?.class, uiOverrides.value.optionContent) }),
     optionLabel: (opts?: { class?: any }) =>
@@ -802,9 +806,10 @@ function scrollToActive(instant = false) {
             <div :class="[ui.optionList(), virtual ? ui.virtualWindow() : '']"
               :style="virtual ? { transform: `translateY(${virtualOffset}px)` } : undefined">
               <!-- 选中态优先于高亮态：两者都是 bg-*，数组绑定不过 tailwind-merge，同时挂上只能靠 CSS 顺序定胜负 -->
+              <!-- 文字色不在此列：未选中的 gray-6 已收进 option 的 active 变体，选中时根本不产出，不会与 optionActive 抢色 -->
               <!-- 下标一律取 row.index（filteredOptions 中的真实下标）：虚拟模式下 DOM 顺序不等于数据顺序 -->
               <div v-for="row in renderRows" :key="row.index" :data-index="row.index" :class="[
-                ui.option(),
+                ui.option({ active: isSelected(row.option.value) }),
                 isSelected(row.option.value) ? ui.optionActive() : '',
                 highlightIndex === row.index && !isSelected(row.option.value) ? ui.optionHighlight() : '',
               ]" :style="virtual ? { height: `${virtualItemHeight - 4}px` } : undefined"

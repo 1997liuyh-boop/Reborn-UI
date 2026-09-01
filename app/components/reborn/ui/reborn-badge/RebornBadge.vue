@@ -36,7 +36,7 @@ export interface BadgeProps {
      */
     color?: BadgeColor | (string & {})
     /**
-     * @defaultValue 'solid'
+     * @defaultValue 'filled'
      */
     variant?: BadgeVariant | (string & {})
     /**
@@ -69,7 +69,7 @@ export interface BadgeSlots {
 const props = withDefaults(defineProps<BadgeProps>(), {
     as: 'span',
     color: 'primary',
-    variant: 'solid',
+    variant: 'filled',
     size: 'md',
     closeIcon: 'i-lucide-x',
     gap: false

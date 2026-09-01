@@ -18,6 +18,8 @@
     "首尾状态与 max-count 折叠依赖条目挂载时向容器登记的顺序，动态增删条目时推荐改用 routes 数据驱动。",
     "折叠时省略号节点位于文档最前、靠 flex order 归位，覆盖 ui.root 时不要移除 flex 布局。",
     "web 与 uniapp 跳转模式取值不同：Web 为 push/replace/blank（新窗口），UniApp 为 navigate/redirect/switchTab/reLaunch。",
-    "下拉菜单实现不同：Web 复用 RebornDropdown 支持完整 dropdown-props，UniApp 为内置绝对定位面板且仅支持 hideOnClick。"
+    "下拉菜单靠点击开合而非悬停，关闭时机固定为 close-on=\"mousedown\"（面板外按下任意鼠标键或滚动页面即收起，面板内滚动不收），需要点完才收可用 dropdown-props 传 closeOn: 'click'。",
+    "下拉菜单实现不同：Web 借 RebornSelectTrigger 做浮层容器（默认传送到 body，触发器仍是一枚普通面包屑条目、不套边框底色，dropdown-props 透传给它），UniApp 为内置绝对定位面板且仅支持 hideOnClick。",
+    "下拉面板的内边距必须留在 ui.droplist（内容区），不能挪到浮层外壳：外壳展开动画走 height 0 → scrollHeight，内边距会在收起时露出残留色块；菜单项字号也必须自带，浮层传送到 body 后拿不到面包屑根节点的 text-sm。"
   ]
 }

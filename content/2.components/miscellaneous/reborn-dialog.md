@@ -22,7 +22,7 @@ navigation:
 | `open` / `v-model:open` | `boolean`                        | `undefined`                                            | 控制 Dialog 是否打开，支持外部状态和内部触发器同时参与。 | Web  |
 | `title`                 | `string`                         | `''`                                                   | 默认头部标题。                                           | Web  |
 | `description`           | `string`                         | `''`                                                   | 默认头部描述。                                           | Web  |
-| `close`                 | `boolean \| ButtonProps`         | `{ color: 'primary', variant: 'outline', size: 'sm' }` | 右上角关闭按钮配置，传 `false` 时隐藏。                  | Web  |
+| `close`                 | `boolean \| ButtonProps`         | `{ color: 'primary', variant: 'outlined', size: 'sm' }` | 右上角关闭按钮配置，传 `false` 时隐藏。                  | Web  |
 | `closeIcon`             | `string`                         | `'lucide:x'`                                           | 关闭按钮图标。                                           | Web  |
 | `overlay`               | `boolean`                        | `true`                                                 | 是否显示遮罩层。                                         | Web  |
 | `dismissible`           | `boolean`                        | `true`                                                 | 是否允许点击外部或按下 `Esc` 关闭。                      | Web  |

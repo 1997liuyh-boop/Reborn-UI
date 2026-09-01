@@ -24,7 +24,7 @@ const type = ref('dark');
                 </RebornTooltip>
 
                 <RebornTooltip content="这是一个浅色文字提示" effect="light">
-                    <RebornButton variant="outline">Light</RebornButton>
+                    <RebornButton variant="outlined">Light</RebornButton>
                 </RebornTooltip>
             </div>
         </section>
@@ -133,15 +133,15 @@ const type = ref('dark');
             <h3 class="text-lg font-bold mb-4">更多配置</h3>
             <div class="flex gap-4">
                 <RebornTooltip content="无箭头文字提示" :arrow="false">
-                    <RebornButton variant="outline" color="secondary">No Arrow</RebornButton>
+                    <RebornButton variant="outlined" color="secondary">No Arrow</RebornButton>
                 </RebornTooltip>
 
                 <RebornTooltip content="延时 500ms 显示" :open-delay="500">
-                    <RebornButton variant="outline" color="secondary">Delay 500ms</RebornButton>
+                    <RebornButton variant="outlined" color="secondary">Delay 500ms</RebornButton>
                 </RebornTooltip>
 
                 <RebornTooltip content="禁用提示" :disabled="true">
-                    <RebornButton variant="outline" color="secondary">Disabled</RebornButton>
+                    <RebornButton variant="outlined" color="secondary">Disabled</RebornButton>
                 </RebornTooltip>
             </div>
         </section>

@@ -121,7 +121,7 @@ const typeOptions = [
             <view class="text-xs text-gray-4">
                 通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开。
             </view>
-            <RebornButton variant="outline" color="primary" @tap="openSelectDate3">
+            <RebornButton variant="outlined" color="primary" @tap="openSelectDate3">
                 打开日期选择器
             </RebornButton>
             <RebornSelectDate ref="selectDateRef3" v-model="date3" type="date" :show-trigger="false"

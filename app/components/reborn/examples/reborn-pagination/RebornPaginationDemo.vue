@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { paginationColors, paginationSizes } from "~/components/reborn/ui/reborn-pagination/reborn-pagination.config";
+import { paginationSizes } from "~/components/reborn/ui/reborn-pagination/reborn-pagination.config";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
@@ -13,7 +13,6 @@ const defaultState: Record<string, any> = {
   layout: "prev, pager, next,jumper,total,sizes",
   pageSizes: "10,20,50,100",
   size: "md",
-  color: "primary",
   background: false,
   disabled: false,
   simple: false,
@@ -86,13 +85,6 @@ const controls: any = [
         defaultValue: "md",
         props: { options: paginationSizes.map((s) => ({ label: s, value: s })) },
       },
-      {
-        label: "主题颜色",
-        key: "color",
-        component: "select" as const,
-        defaultValue: "primary",
-        props: { options: paginationColors.map((c) => ({ label: c, value: c })) },
-      },
       { label: "页码背景", key: "background", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
       { label: "简洁模式", key: "simple", component: "checkbox" as const, defaultValue: false },
@@ -109,7 +101,6 @@ const paginationCode = computed(() => {
   props.push(`layout="${s.layout}"`);
   props.push(`:page-sizes="[${parsedPageSizes.value.join(", ")}]"`);
   props.push(`size="${s.size}"`);
-  props.push(`color="${s.color}"`);
   props.push(`:background="${s.background}"`);
   props.push(`:disabled="${s.disabled}"`);
   props.push(`:simple="${s.simple}"`);
@@ -136,8 +127,6 @@ function handleSizeChange(size: number) {
 
 /** 默认用法 */
 const basicPage = ref(1);
-/** 主题颜色 */
-const colorPage = ref(1);
 /** 背景模式 */
 const bgPage = ref(1);
 /** 简洁模式 */
@@ -185,7 +174,7 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
         <RebornPagination
           v-model="state.page" :total="state.total" :page-size="state.pageSize"
           :pager-count="state.pagerCount" :layout="state.layout" :page-sizes="parsedPageSizes" :size="state.size"
-          :color="state.color" :background="state.background" :disabled="state.disabled" :simple="state.simple"
+          :background="state.background" :disabled="state.disabled" :simple="state.simple"
           :hide-on-single-page="state.hideOnSinglePage" @current-change="handleCurrentChange"
           @size-change="handleSizeChange"
         />
@@ -209,21 +198,13 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="主题颜色" description="color 控制激活页码与悬停高亮，取值与按钮/徽章同一套语义色。">
-      <DemoBlock layout="grid" :columns="2" align="start">
-        <DemoItem v-for="c in paginationColors" :key="c" :label="c" mono>
-          <RebornPagination v-model="colorPage" :total="50" :color="c" background />
-        </DemoItem>
-      </DemoBlock>
-    </DemoSection>
-
-    <DemoSection title="背景模式" description="background 为页码按钮添加浅色背景，激活页码使用当前主题色高亮。">
+    <DemoSection title="背景模式" description="background 为页码按钮添加浅色背景：非激活 bg-gray-2 text-gray-5，激活 bg-primary/50 text-primary。">
       <DemoBlock layout="row" align="center">
         <RebornPagination v-model="bgPage" :total="60" background />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="简洁模式" description="simple 忽略 layout，只保留上一页 / 当前页-总页数 / 下一页；prev-text 与 next-text 可把箭头换成文字。">
+    <DemoSection title="简洁模式" description="simple 忽略 layout，只保留上一页 + 当前页/总页数文本 + 下一页；prev-text 与 next-text 可把箭头换成文字。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="simple（默认箭头）" mono>
           <RebornPagination v-model="simplePage" :total="80" simple />
@@ -275,7 +256,7 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
           <RebornPagination v-model="slotPage" :total="50" background>
             <template #pager-item="{ page, active, disabled }">
               <RebornButton
-                :variant="active ? 'solid' : 'circle'" :color="active ? 'primary' : 'neutral'" size="sm"
+                :variant="active ? 'filled' : 'circle'" :color="active ? 'primary' : 'neutral'" size="sm"
                 :disabled="disabled" @click="slotPage = page"
               >
                 {{ page }}

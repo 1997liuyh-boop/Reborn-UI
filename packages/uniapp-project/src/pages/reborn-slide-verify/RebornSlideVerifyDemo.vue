@@ -80,7 +80,7 @@ function getShieldIcon(verified: boolean) {
                     当前状态：{{ basicVerified ? '已通过' : '未通过' }}
                 </text>
                 <view class="flex flex-row gap-2">
-                    <RebornButton size="sm" variant="outline" color="neutral" @tap="resetBasic">
+                    <RebornButton size="sm" variant="outlined" color="neutral" @tap="resetBasic">
                         重置
                     </RebornButton>
                     <RebornButton size="sm" @tap="verifyBasic" color="primary">
@@ -104,7 +104,7 @@ function getShieldIcon(verified: boolean) {
                     <text class="text-sm text-slate-500">尺寸</text>
                     <view class="flex flex-row flex-wrap justify-end gap-2">
                         <RebornButton v-for="size in slideVerifySizes" :key="size" size="xs"
-                            :variant="currentSize === size ? 'solid' : 'outline'"
+                            :variant="currentSize === size ? 'filled' : 'outlined'"
                             :color="currentSize === size ? 'primary' : 'neutral'" @tap="currentSize = size">
                             {{ size }}
                         </RebornButton>

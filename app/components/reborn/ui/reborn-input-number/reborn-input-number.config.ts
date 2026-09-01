@@ -134,36 +134,43 @@ export default {
         wrapper: "focus-within:ring-primary focus-within:border-primary",
         button: "hover:text-primary",
         stackButton: "hover:text-primary",
+        input: "caret-primary",
       },
       secondary: {
         wrapper: "focus-within:ring-secondary focus-within:border-secondary",
         button: "hover:text-secondary",
         stackButton: "hover:text-secondary",
+        input: "caret-secondary",
       },
       success: {
         wrapper: "focus-within:ring-success focus-within:border-success",
         button: "hover:text-success",
         stackButton: "hover:text-success",
+        input: "caret-success",
       },
       info: {
         wrapper: "focus-within:ring-info focus-within:border-info",
         button: "hover:text-info",
         stackButton: "hover:text-info",
+        input: "caret-info",
       },
       warning: {
         wrapper: "focus-within:ring-warning focus-within:border-warning",
         button: "hover:text-warning",
         stackButton: "hover:text-warning",
+        input: "caret-warning",
       },
       error: {
         wrapper: "focus-within:ring-error focus-within:border-error",
         button: "hover:text-error",
         stackButton: "hover:text-error",
+        input: "caret-error",
       },
       neutral: {
         wrapper: "focus-within:ring-neutral focus-within:border-neutral",
         button: "hover:text-neutral",
         stackButton: "hover:text-neutral",
+        input: "caret-neutral",
       },
     },
     fieldGroup: {

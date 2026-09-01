@@ -71,7 +71,7 @@ function changeSpeedText() {
         </div>
         <div class="flex flex-wrap items-center gap-3">
           <RebornButton color="primary" @click="changeText">切换文本</RebornButton>
-          <RebornButton color="neutral" variant="outline" @click="resetText">重置</RebornButton>
+          <RebornButton color="neutral" variant="outlined" @click="resetText">重置</RebornButton>
         </div>
       </DemoBlock>
     </DemoSection>

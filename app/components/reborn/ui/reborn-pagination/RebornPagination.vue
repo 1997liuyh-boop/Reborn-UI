@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { paginationColors, paginationSizes, PaginationUI } from "./reborn-pagination.config";
+import type { paginationSizes, PaginationUI } from "./reborn-pagination.config";
 /**
  * RebornPagination 分页组件 (Web 版)
  * 支持布局组合、简洁模式、页码折叠与完整插槽定制。
@@ -17,7 +17,6 @@ const props = withDefaults(defineProps<PaginationProps>(), {
   layout: "prev, pager, next",
   pageSizes: () => [10, 20, 50, 100],
   size: "md",
-  color: "primary",
   background: false,
   disabled: false,
   hideOnSinglePage: false,
@@ -48,8 +47,6 @@ export interface PaginationProps {
   pageSizes?: number[];
   /** 尺寸：sm / md / lg */
   size?: (typeof paginationSizes)[number];
-  /** 主题色：primary / secondary / success / info / warning / error / neutral */
-  color?: (typeof paginationColors)[number];
   /** 是否为页码按钮添加背景 */
   background?: boolean;
   /** 是否禁用 */
@@ -203,19 +200,6 @@ const nextDisabled = computed(() => props.disabled || currentPage.value >= total
 const jumperValue = ref<number | null>(null);
 
 /**
- * 简洁模式输入框的绑定值。
- * currentPage 是只读 computed，不能直接 v-model；这里用可写 computed 代理，
- * 写入时统一走 setPage 钳制并触发 current-change。
- */
-const simplePage = computed({
-  get: () => currentPage.value,
-  set: (page: number | null) => {
-    if (page === null) return;
-    setPage(page);
-  },
-});
-
-/**
  * 设置当前页：钳制到有效范围，仅在实际变化时同步并触发事件
  */
 function setPage(page: number) {
@@ -261,7 +245,7 @@ function handleEllipsisJump(direction: "prev" | "next") {
   jumpTo(direction === "prev" ? currentPage.value - step : currentPage.value + step);
 }
 
-/** 确认跳转输入：值已由 RebornInputNumber 钳制到 [1, totalPages]，跳转后清空输入框 */
+/** 确认跳转输入：钳制到 [1, totalPages]，跳转后清空输入框 */
 function handleJumperConfirm(value: number | null) {
   if (value === null) return;
   jumpTo(value);
@@ -288,7 +272,6 @@ const ui = computed(() => {
   const overrides = props.ui || {};
   const base = (opts: { active?: boolean; disabled?: boolean } = {}) => ({
     size: props.size,
-    color: props.color,
     active: opts.active ?? false,
     background: props.background,
     disabled: opts.disabled ?? props.disabled,
@@ -363,18 +346,7 @@ defineExpose({
       </slot>
 
       <!-- 当前页 / 总页数 -->
-      <span :class="ui.simple()">
-        <div :class="ui.input({ disabled })">
-          <RebornInputNumber v-model="simplePage" :size="size" :color="color" :disabled="disabled" align="center"
-            variant="outlined" :min="1" :max="totalPages" change-on-wheel hide-button />
-        </div>
-        <div :class="ui.pagerItem()">
-          /
-        </div>
-        <button type="button" :class="ui.pagerItem()" :disabled="pagerDisabled">
-          {{ totalPages }}
-        </button>
-      </span>
+      <span :class="ui.simple()">{{ currentPage }} / {{ totalPages }}</span>
 
       <!-- 下一页 -->
       <slot name="next" :disabled="nextDisabled" :next="next">
@@ -427,7 +399,7 @@ defineExpose({
             <span>前往</span>
 
             <div :class="ui.input({ disabled })">
-              <RebornInputNumber v-model="jumperValue" :size="size" :color="color" :disabled="disabled" align="center"
+              <RebornInputNumber v-model="jumperValue" :size="size" :disabled="disabled" align="center"
                 variant="outlined" :min="1" :max="totalPages" change-on-wheel hide-button
                 @change="handleJumperConfirm" />
             </div>
@@ -443,7 +415,7 @@ defineExpose({
         <!-- 每页条数选择 -->
         <div v-else-if="token === 'sizes'" :class="ui.sizes()">
           <slot name="sizes" :page-size="pageSizeModel" :page-sizes="props.pageSizes" :change="handleSizeChange">
-            <RebornSelect :model-value="pageSizeModel" :options="sizeOptions" :size="props.size" :color="props.color"
+            <RebornSelect :model-value="pageSizeModel" :options="sizeOptions" :size="props.size"
               :disabled="props.disabled" :clearable="false" class="w-[110px]" @update:model-value="handleSizeChange" />
           </slot>
         </div>

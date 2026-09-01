@@ -247,7 +247,7 @@ const normalizedCancelButton = computed(() =>
   normalizeActionButton(props.cancelBtn, {
     label: "取消",
     color: "neutral",
-    variant: "outline",
+    variant: "outlined",
     size: "md",
   }),
 );
@@ -256,7 +256,7 @@ const normalizedConfirmButton = computed(() =>
   normalizeActionButton(props.confirmBtn, {
     label: "确认",
     color: "primary",
-    variant: "solid",
+    variant: "filled",
     size: "md",
   }),
 );

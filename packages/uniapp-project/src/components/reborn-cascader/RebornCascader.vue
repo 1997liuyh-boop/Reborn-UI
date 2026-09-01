@@ -518,7 +518,7 @@ defineExpose({
                 <view v-if="props.multiple" :class="ui.footer()">
                     <text :class="ui.footerText()">已选 {{ selectedPaths.length }} 项</text>
                     <view :class="ui.footerActions()">
-                        <RebornButton size="sm" variant="outline" @tap="clear">清空</RebornButton>
+                        <RebornButton size="sm" variant="outlined" @tap="clear">清空</RebornButton>
                         <RebornButton size="sm" @tap="onConfirm">确认</RebornButton>
                     </view>
                 </view>
