@@ -8,11 +8,18 @@ export const twMergeConfig = {
       "font-size": [
         {
           text: [
-            (value: string) => !isNaN(Number(value)),
+            (value: string) => !Number.isNaN(Number(value)),
             (value: string) => value.startsWith("caption-"),
             (value: string) => value.startsWith("body-"),
             (value: string) => value.startsWith("title-"),
           ],
+        },
+      ],
+      // 自定义水平内边距令牌（typography.css 的 --spacing-input-px-*）纳入 px 冲突组：
+      // 否则 px-input-px-md 与后写的 px-0 会共存，由 CSS 源序决定胜负而非类名顺序
+      px: [
+        {
+          px: [(value: string) => value.startsWith("input-px-")],
         },
       ],
     },

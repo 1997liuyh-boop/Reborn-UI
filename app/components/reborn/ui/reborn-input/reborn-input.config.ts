@@ -113,12 +113,14 @@ export default {
         wrapper:
           "bg-gray-2 border-1 border-transparent focus-within:bg-gray-1 data-[disabled=true]:bg-gray-2 data-[disabled=true]:border-gray-4",
       },
+      // borderless / underlined 横向内边距归零：px-input-px-* 已在 lib/utils.ts 的
+      // twMergeConfig 注册进 px 冲突组，后写的 px-0 可正常清除 size 层的令牌类
       borderless: {
-        wrapper: "bg-transparent border-0 focus-within:border-0",
+        wrapper: "bg-transparent border-0 focus-within:border-0 px-0",
       },
       underlined: {
         wrapper:
-          "border-b-1 border-gray-3 bg-transparent border-0 focus-within:border-0 data-[disabled=true]:border-gray-4",
+          "border-0 border-b-1 border-gray-3 bg-transparent data-[disabled=true]:border-gray-4 px-0",
       },
     },
     /** 外形轮廓：circle 胶囊；square 的圆角按尺寸在 compoundVariants 中给出 */
@@ -134,30 +136,37 @@ export default {
       primary: {
         wrapper: "focus-within:border-primary focus-within:border-primary",
         separator: "group-focus-within/input:bg-primary",
+        input: "caret-primary",
       },
       secondary: {
         wrapper: "focus-within:border-secondary focus-within:border-secondary",
         separator: "group-focus-within/input:bg-secondary",
+        input: "caret-secondary",
       },
       success: {
         wrapper: "focus-within:border-success focus-within:border-success",
         separator: "group-focus-within/input:bg-success",
+        input: "caret-success",
       },
       info: {
         wrapper: "focus-within:border-info focus-within:border-info",
         separator: "group-focus-within/input:bg-info",
+        input: "caret-info",
       },
       warning: {
         wrapper: "focus-within:border-warning focus-within:border-warning",
         separator: "group-focus-within/input:bg-warning",
+        input: "caret-warning",
       },
       error: {
         wrapper: "focus-within:border-error focus-within:border-error",
         separator: "group-focus-within/input:bg-error",
+        input: "caret-error",
       },
       neutral: {
         wrapper: "focus-within:border-neutral focus-within:border-neutral",
         separator: "group-focus-within/input:bg-neutral",
+        input: "caret-neutral",
       },
     },
     error: {
