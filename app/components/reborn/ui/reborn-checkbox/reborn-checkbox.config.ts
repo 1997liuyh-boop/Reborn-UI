@@ -80,10 +80,12 @@ export default {
     disabled: {
       true: {
         wrapper: "cursor-not-allowed",
-        control: "border-gray-2 bg-gray-4 ring-transparent",
-        // 禁用且已选中时仍要看得见勾，只是降到灰阶（配色复合变体已被门控掉，这里必须自己给色）
-        icon: "text-gray-2",
-        dot: "bg-gray-2",
+        // 按令牌语义取色：gray-2 是禁用填充色，gray-4 是边框色，之前两者写反了
+        control: "border-gray-4 bg-gray-2 ring-transparent",
+        // 禁用且已选中时仍要看得见勾，只是降到灰阶（配色复合变体已被门控掉，这里必须自己给色）。
+        // 不能用 gray-2 —— 那正是上面的填充色，同色会让勾完全看不见
+        icon: "text-gray-4",
+        dot: "bg-gray-4",
       },
       false: {},
     },

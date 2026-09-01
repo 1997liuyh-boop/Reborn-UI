@@ -384,6 +384,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | 键名 | 说明 |
 | --- | --- |
 | `wrapper` | 根容器。 |
+| `input` | 隐藏的原生 checkbox（`sr-only`），承担读屏语义。 |
 | `control` | 勾选框方块；填充 `checkbox` 插槽后失效。 |
 | `icon` | 勾选图标；填充 `checkbox` 插槽后失效，`outlined` 半选态也不渲染该节点。 |
 | `dot` | `outlined` 半选时居中的实心小方块，仅该状态下渲染。 |

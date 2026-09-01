@@ -29,20 +29,23 @@ export default {
   slots: {
     wrapper: 'group inline-flex items-center gap-3 cursor-pointer select-none',
     input: 'sr-only',
+    /** 禁用态按令牌语义取色：gray-2 是禁用填充色，gray-4 是边框色，与 web 端保持一致 */
     control:
-      'flex items-center justify-center rounded-md border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent group-[.is-disabled]:cursor-not-allowed group-[.is-disabled]:bg-gray-2 group-[.is-disabled]:border-gray-3',
+      'flex items-center justify-center rounded-md border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent group-[.is-disabled]:cursor-not-allowed group-[.is-disabled]:bg-gray-2 group-[.is-disabled]:border-gray-4',
     /**
      * 勾选图标。小程序端没有 :checked 伪类，选中/半选态一律靠 wrapper 上的
-     * is-checked / is-indeterminate 标记类驱动，显形规则与配色无关，只写一次
+     * is-checked / is-indeterminate 标记类驱动，显形规则与配色无关，只写一次。
+     * 禁用态降到灰阶盖掉配色；不能用 gray-2 —— 那正是禁用填充色，同色会让勾看不见
      */
-    icon: 'size-4 opacity-0 scale-75 transition-all group-[.is-checked]:opacity-100 group-[.is-checked]:scale-100 group-[.is-indeterminate]:opacity-100 group-[.is-indeterminate]:scale-100',
+    icon: 'size-4 opacity-0 scale-75 transition-all group-[.is-checked]:opacity-100 group-[.is-checked]:scale-100 group-[.is-indeterminate]:opacity-100 group-[.is-indeterminate]:scale-100 group-[.is-disabled]:text-gray-4',
     /**
      * outlined 变体的半选方块：与勾选框同尺寸同圆角，再整体缩到 50%。
      * 圆角随之等比减半，形状与外框一致；transform 以中心为原点，
      * 不会像 w-1/2 h-1/2 那样因为奇数像素取整而视觉偏心。
-     * 只在半选时挂载，因此不写入场过渡；显形规则挂在 icon 上，不会命中本节点
+     * 只在半选时挂载，因此不写入场过渡；显形规则挂在 icon 上，不会命中本节点。
+     * 禁用态与 icon 同理降到 gray-4
      */
-    dot: 'w-full h-full rounded-md scale-50',
+    dot: 'w-full h-full rounded-md scale-50 group-[.is-disabled]:bg-gray-4',
     label: 'text-gray-8 dark:text-gray-2',
   },
   variants: {
