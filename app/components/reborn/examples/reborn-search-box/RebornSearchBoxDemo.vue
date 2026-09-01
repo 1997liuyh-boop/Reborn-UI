@@ -156,10 +156,7 @@ function handleSelectSku(attr: any) {
           @select-sku="handleSelectSku"
         >
           <template #language>
-            <RebornRadioGroup
-              v-model="skuSearchValue.language"
-              variant="circle"
-            >
+            <RebornRadioGroup v-model="skuSearchValue.language">
               <RebornRadio value="cn">
                 直接搜索
               </RebornRadio>

@@ -1,8 +1,9 @@
 {
-  "description": "用于在一组互斥选项中选择单项的双端单选框组件。",
+  "description": "用于在一组互斥选项中选择单项的单选框组件，支持圆点（radio）、分段按钮（button）与实体按钮拼接（pure-button）三种类型。",
   "whenToUse": [
     "表单中单选性别、支付方式等互斥选项。",
-    "需要勾选图标风格（activeIcon 默认 i-lucide-check）或 simple/circle 两种外观时。"
+    "视图/模式切换等分段选择（type='button' 分段按钮风格）。",
+    "需要实体按钮观感的单选（type='pure-button'，复用 RebornButton，首尾圆角、中间直角拼接）。"
   ],
   "whenNotToUse": [
     "可同时选中多项改用 reborn-checkbox。",
@@ -10,9 +11,13 @@
     "选项很多时改用 reborn-select。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用；额外类名 web 端用 class，uniapp 端用 customClass。",
-    "选中态由 modelValue === value 严格相等决定（注意类型一致）；多个选项绑定同一 modelValue，或用随组件一同分发的 RebornRadioGroup 统一管理绑定值并下发 size/color/disabled（web 端还支持 variant/activeIcon 等）。",
-    "fill 是 uniapp 端 RadioGroup 上的预留属性，当前未参与任何逻辑，请直接使用 color。",
-    "showIcon 默认 true；variant（simple/circle）仅 web 端，isRound（默认 true）仅 uniapp 端。"
+    "选中态由绑定值 === value 严格相等决定（注意类型一致）；推荐用 RebornRadioGroup 统一管理绑定值并下发 type/size/disabled，单个 Radio 不再绑 v-model。",
+    "Radio 的 value 默认为 true；点击已选中项不会再次触发事件（单选框不能取消选中）。",
+    "Group 支持 options 快捷传参（string | number | RadioOption 混合数组）与 defaultValue 非受控用法；options 与默认插槽二选一。",
+    "radio 插槽（checked/disabled）完全接管单选框渲染；label 插槽（data: RadioOption）仅作用于 options 渲染出的选项。",
+    "size 为 sm/md/lg，radio 类型圆形图标直径 12/14/16px；color 支持 7 种语义色，组内单个 Radio 可用自身 color 覆盖；config 不写 dark: 前缀，灰阶 token 随主题自动翻转。",
+    "variant 支持 outlined（默认）/filled，作用于三种 type 的选中态：radio 圆点 filled 为语义色实底外圈+白色圆点；button/pure-button filled 为语义色实底+白字，outlined 为当前描边/浮起样式。",
+    "pure-button 未选中态为 gray-4 边框 + gray-9 文字、禁用未选中为 gray-2 底 + gray-5 文字（bg 用 ! 压制 RebornButton 遗留的 dark:bg-gray-8）；buttonProps.variant 只作用于未选中态；圆点用绝对定位 + transform 居中，避免奇偶像素下 flex 居中半像素偏移。",
+    "uniapp 端组件尚未对齐本次新 API（仍为旧版 size/color/activeIcon/isRound 等参数）。"
   ]
 }
