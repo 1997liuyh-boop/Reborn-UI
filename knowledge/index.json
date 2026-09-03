@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-01T08:38:50.650Z",
+  "generatedAt": "2026-09-03T11:44:11.070Z",
   "components": [
     {
       "id": "animate-grid",
@@ -727,7 +727,7 @@
     {
       "id": "reborn-badge",
       "title": "徽章 Badge",
-      "description": "用于展示状态、数量或标识的跨端徽标组件，支持可关闭与显隐绑定。",
+      "description": "用于展示状态、数量或标识的跨端徽标组件，支持圆角胶囊、可关闭、可选中（Check Tag）与显隐绑定。",
       "category": "basic",
       "tags": [
         "css",
@@ -1587,8 +1587,8 @@
     },
     {
       "id": "reborn-toast",
-      "title": "Toast 轻提示",
-      "description": "用于短暂消息反馈的轻提示组件，通过 useToast() 服务式调用展示成功、失败、加载等状态。",
+      "title": "Message 消息提示",
+      "description": "全局命令式消息提示（Message）：五种类型静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1599,7 +1599,7 @@
     {
       "id": "reborn-tooltip",
       "title": "Tooltip 文字提示",
-      "description": "用于鼠标悬停时在元素旁显示文字提示气泡的组件。",
+      "description": "文字提示气泡组件：多触发行为、自动翻转与贴边偏移、自定义背景色、可控显隐。",
       "category": "navigation",
       "tags": [],
       "platforms": [

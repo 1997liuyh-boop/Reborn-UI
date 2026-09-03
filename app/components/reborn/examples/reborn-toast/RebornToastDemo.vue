@@ -1,132 +1,109 @@
 <script setup lang="ts">
-import { useToast } from "~/components/reborn/ui/reborn-toast/index";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import { message } from "~/components/reborn/ui/reborn-toast/index";
+import {
+  messageTypes,
+  messageVariants,
+} from "~/components/reborn/ui/reborn-toast/reborn-toast.config";
 
-const toast = useToast();
+const typeOptions = messageTypes.map((t) => ({ label: t, value: t }));
+const variantOptions = messageVariants.map((v) => ({ label: v, value: v }));
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
 const state = ref<Record<string, any>>({
-  msg: "操作成功",
-  iconName: "success",
-  position: "middle",
-  duration: 2000,
-  cover: false,
+  content: "这是一条消息提示",
+  type: "success",
+  variant: "base",
+  duration: 3,
+  pauseOnHover: true,
 });
 
 /** 演练场控制面板配置 */
 const controls = [
   {
-    title: "内容与图标",
+    title: "内容与外观",
     children: [
-      { label: "提示文案", key: "msg", component: "input" as const, defaultValue: "操作成功" },
+      { label: "提示内容", key: "content", component: "input" as const, defaultValue: "这是一条消息提示" },
       {
-        label: "图标类型",
-        key: "iconName",
+        label: "消息类型",
+        key: "type",
         component: "select" as const,
         defaultValue: "success",
-        props: {
-          options: [
-            { label: "success 成功", value: "success" },
-            { label: "error 错误", value: "error" },
-            { label: "warning 警告", value: "warning" },
-            { label: "info 常规", value: "info" },
-            { label: "loading 加载", value: "loading" },
-          ],
-        },
+        props: { options: typeOptions },
+      },
+      {
+        label: "视觉变体",
+        key: "variant",
+        component: "select" as const,
+        defaultValue: "base",
+        props: { options: variantOptions },
       },
     ],
   },
   {
-    title: "位置与行为",
+    title: "行为",
     children: [
       {
-        label: "弹出位置",
-        key: "position",
-        component: "select" as const,
-        defaultValue: "middle",
-        props: {
-          options: [
-            { label: "顶部 top", value: "top" },
-            { label: "偏上 middle-top", value: "middle-top" },
-            { label: "居中 middle", value: "middle" },
-            { label: "底部 bottom", value: "bottom" },
-          ],
-        },
-      },
-      {
-        label: "停留时长（ms，0 表示常驻）",
+        label: "自动关闭延时（秒，0 不自动关闭）",
         key: "duration",
         component: "slider" as const,
-        defaultValue: 2000,
-        props: { min: 0, max: 5000, step: 500 },
+        defaultValue: 3,
+        props: { min: 0, max: 10, step: 1 },
       },
-      { label: "显示遮罩层", key: "cover", component: "checkbox" as const, defaultValue: false },
+      { label: "悬停暂停计时", key: "pauseOnHover", component: "checkbox" as const, defaultValue: true },
     ],
   },
 ];
 
 /** 演练场右上角展示的等价代码 */
-const toastCode = computed(() => {
+const messageCode = computed(() => {
   const s = state.value;
-  const lines: string[] = [`msg: "${s.msg}"`, `iconName: "${s.iconName}"`];
+  const config: string[] = [`content: "${s.content}"`];
+  if (s.variant !== "base") config.push(`variant: "${s.variant}"`);
+  if (s.duration !== 3) config.push(`duration: ${s.duration}`);
+  if (!s.pauseOnHover) config.push("pauseOnHover: false");
 
-  if (s.position !== "middle") lines.push(`position: "${s.position}"`);
-  if (s.duration !== 2000) lines.push(`duration: ${s.duration}`);
-  if (s.cover) lines.push("cover: true");
-
-  return `const toast = useToast()\n\ntoast.show({\n  ${lines.join(",\n  ")},\n})`;
+  return config.length === 1 && s.duration === 3
+    ? `message.${s.type}("${s.content}")`
+    : `message.${s.type}({\n  ${config.join(",\n  ")},\n})`;
 });
 
-/** 按当前演练场配置弹出提示 */
-function showPlaygroundToast() {
-  toast.show({
-    msg: state.value.msg,
-    iconName: state.value.iconName,
-    position: state.value.position,
-    duration: state.value.duration,
-    cover: state.value.cover,
+function fireFromPlayground() {
+  const s = state.value;
+  message[s.type as (typeof messageTypes)[number]]({
+    content: s.content,
+    variant: s.variant,
+    duration: s.duration,
+    pauseOnHover: s.pauseOnHover,
   });
 }
 
 // ─── 场景演示 ───────────────────────────────────────────────────
 
-/** 语义化快捷方法：自带配色与图标 */
-const semanticTypes = [
-  { key: "success", label: "成功", color: "success" },
-  { key: "info", label: "常规", color: "info" },
-  { key: "error", label: "错误", color: "error" },
-  { key: "warning", label: "警告", color: "warning" },
-] as const;
-
-function showSemantic(type: (typeof semanticTypes)[number]["key"]) {
-  toast[type]({ msg: `这是一条 ${type} 提示`, duration: 1500 });
-}
-
-/** 四个方位的定位演示 */
-const positions = [
-  { value: "top", label: "顶部" },
-  { value: "middle-top", label: "偏上" },
-  { value: "middle", label: "居中" },
-  { value: "bottom", label: "底部" },
-] as const;
-
-function showPosition(position: (typeof positions)[number]["value"], label: string) {
-  toast.show({ position, msg: `${label} Toast` });
-}
-
-/** 基础加载：duration 为 0 时需手动关闭 */
-function showLoading() {
-  toast.loading("3 秒后自动关闭");
-  setTimeout(() => toast.close(), 3000);
-}
-
-/** 长文本加载：验证 max-w 与换行表现 */
-function showLongLoading() {
-  toast.loading({
-    msg: "芦叶满汀洲，寒沙带浅流。二十年重过南楼。柳下系船犹未稳，能几日，又中秋。",
-    duration: 0,
+/** Promise 接口：loading 关闭后接续提示 */
+function firePromiseDemo() {
+  message.loading("正在提交…", 1.5).then(() => {
+    message.success("提交成功，感谢反馈！");
   });
-  setTimeout(() => toast.close(), 3000);
+}
+
+/** 同 key 更新：先 loading 再原位变成功 */
+function fireKeyDemo() {
+  message.loading({ content: "加载中…", key: "updatable", duration: 0 });
+  setTimeout(() => {
+    message.success({ content: "加载完成！", key: "updatable", duration: 2 });
+  }, 1200);
+}
+
+/** maxCount 演示：限 3 条后连发 6 条 */
+function fireMaxCountDemo() {
+  message.config({ maxCount: 3 });
+  for (let i = 1; i <= 6; i++) {
+    message.info(`第 ${i} 条消息（最多同时 3 条）`, 2 + i * 0.4);
+  }
+  // 演示完还原，避免影响其他示例
+  setTimeout(() => message.config({ maxCount: 0 }), 100);
 }
 </script>
 
@@ -135,86 +112,59 @@ function showLongLoading() {
     <Playground
       v-model="state"
       :controls="controls"
-      :code="toastCode"
-      component-name="RebornToast"
+      :code="messageCode"
+      component-name="message"
       title="交互演练场"
-      description="Toast 通过 useToast() 命令式调用，无需在模板中放置组件；调节参数后点击按钮即可预览。"
+      description="message 为命令式 API，调节参数后点击按钮触发；悬停在消息上可暂停自动关闭计时。"
     >
-      <RebornButton
-        label="触发 Toast"
-        @click="showPlaygroundToast"
-      >
-        <template #leading>
-          <Icon name="lucide:bell-ring" />
-        </template>
-      </RebornButton>
+      <RebornButton @click="fireFromPlayground">弹出消息</RebornButton>
     </Playground>
 
     <DemoSection
-      title="语义化提示"
-      description="success / info / error / warning 四个快捷方法会自动带上对应的配色与图标。"
+      title="基本用法"
+      description="五个静态方法对应五种消息类型；基础变体为白底浮层 + 语义色圆形图标，3 秒后自动关闭。"
     >
-      <DemoBlock
-        layout="row"
-        align="center"
-      >
-        <RebornButton
-          v-for="item in semanticTypes"
-          :key="item.key"
-          :color="item.color"
-          :label="item.label"
-          @click="showSemantic(item.key)"
-        />
+      <DemoBlock layout="row" align="center">
+        <RebornButton @click="message.success('操作成功！')">Success</RebornButton>
+        <RebornButton color="error" @click="message.error('出错了，请稍后重试。')">Error</RebornButton>
+        <RebornButton color="warning" @click="message.warning('这是一条警告提示。')">Warning</RebornButton>
+        <RebornButton color="info" @click="message.info('这是一条普通信息。')">Info</RebornButton>
+        <RebornButton color="neutral" @click="message.loading('加载中…', 2)">Loading</RebornButton>
       </DemoBlock>
     </DemoSection>
 
     <DemoSection
-      title="弹出位置"
-      description="position 支持 top / middle-top / middle / bottom 四档，居中为默认值。"
+      title="视觉变体"
+      description="base 之外提供 filled / outlined / soft / subtle 四种变体，配色与按钮组件的同名变体一致。"
     >
-      <DemoBlock
-        layout="row"
-        align="center"
-      >
+      <DemoBlock layout="row" align="center">
         <RebornButton
-          v-for="item in positions"
-          :key="item.value"
-          variant="outlined"
-          :label="item.label"
-          @click="showPosition(item.value, item.label)"
-        />
+          v-for="v in messageVariants" :key="v"
+          @click="message.success({ content: `${v} 变体的消息提示`, variant: v })"
+        >
+          {{ v }}
+        </RebornButton>
       </DemoBlock>
     </DemoSection>
 
     <DemoSection
-      title="加载提示"
-      description="loading 默认 duration 为 0，即常驻显示，需要业务侧在流程结束后主动调用 close()。"
+      title="Promise 接口"
+      description="静态方法返回 Promise，在消息关闭后兑现，可用 then 串联后续动作。"
     >
-      <DemoBlock
-        layout="row"
-        align="center"
-      >
-        <RebornButton
-          variant="soft"
-          label="基础加载"
-          @click="showLoading"
-        />
-        <RebornButton
-          variant="soft"
-          label="长文本加载"
-          @click="showLongLoading"
-        />
-        <RebornButton
-          variant="soft"
-          color="neutral"
-          label="立即关闭"
-          @click="toast.close()"
-        />
+      <DemoBlock layout="row" align="center">
+        <RebornButton @click="firePromiseDemo">loading → then → success</RebornButton>
       </DemoBlock>
+    </DemoSection>
 
-      <DemoNote tone="dimmed">
-        <code>toast.close()</code> 与 <code>toast.hide()</code> 等价，均只关闭当前这一条全局提示。
-      </DemoNote>
+    <DemoSection
+      title="更新内容与全局方法"
+      description="传相同 key 可原位更新消息并重置计时；message.config 设置 maxCount 等全局项，message.destroy 立即关闭。"
+    >
+      <DemoBlock layout="row" align="center">
+        <RebornButton @click="fireKeyDemo">同 key 原位更新</RebornButton>
+        <RebornButton @click="fireMaxCountDemo">maxCount 限 3 连发 6 条</RebornButton>
+        <RebornButton color="error" variant="outlined" @click="message.destroy()">destroy 全部关闭</RebornButton>
+      </DemoBlock>
     </DemoSection>
   </div>
 </template>

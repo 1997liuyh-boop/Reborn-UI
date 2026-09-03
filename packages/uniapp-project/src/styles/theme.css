@@ -167,9 +167,9 @@
     --input-md-height: 90rpx;
     --input-sm-height: 80rpx;
 
-    /* 徽章高度设置 */
-    --badge-lg-height: 38rpx;
-    --badge-md-height: 36rpx;
-    --badge-sm-height: 28rpx;
+    /* 徽章高度设置 —— 对应 Web 端 lg 32px / md 24px / sm 18px，rpx 取双倍 */
+    --badge-lg-height: 64rpx;
+    --badge-md-height: 48rpx;
+    --badge-sm-height: 36rpx;
   }
 }

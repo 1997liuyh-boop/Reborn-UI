@@ -44,10 +44,10 @@
   --height-input-md: 32px;
   --height-input-lg: 40px;
 
-  /* 徽章高度 (Badge) */
-  --height-badge-sm: 28px;
-  --height-badge-md: 32px;
-  --height-badge-lg: 38px;
+  /* 徽章高度 (Badge) —— sm/md 配 12px 字号，lg 配 14px 字号 */
+  --height-badge-sm: 18px;
+  --height-badge-md: 24px;
+  --height-badge-lg: 32px;
 
   /* 分页高度 (Pagination) —— 页码 / 翻页按钮 / 省略号共用 */
   --height-pagination-sm: 24px;

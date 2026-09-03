@@ -1,161 +1,113 @@
-import type { Ref } from 'vue'
-import { createVNode, getCurrentInstance, inject, provide, ref, render } from 'vue'
+import type {MessageGlobalConfig, MessageNode, MessageOptions, MessageType} from './reborn-toast.config';
 import { RebornToast } from '#components'
-import { type ToastOptions, defaultOptions, getToastOptionKey, globalOptionRef } from './reborn-toast.config'
+import { useNuxtApp } from '#imports'
+import { createVNode, getCurrentInstance, render } from 'vue'
+import {
+  addMessage,
+  applyMessageConfig,
+  destroyMessages
+  
+  
+  
+  
+} from './reborn-toast.config'
 
-let toastContainer: HTMLElement | null = null
-let globalTimer: ReturnType<typeof setTimeout> | null = null
-let isMounted = false
+export type { MessageGlobalConfig, MessageOptions, MessageType } from './reborn-toast.config'
 
-/**
- * 确保 toast 容器已挂载到 DOM（命令式调用时自动初始化）
- */
-function mountToastContainer() {
-  if (typeof document === 'undefined' || isMounted) return
-
-  toastContainer = document.createElement('div')
-  document.body.appendChild(toastContainer)
-
-  const vnode = createVNode(RebornToast)
-  const instance = getCurrentInstance()
-  if (instance) {
-    vnode.appContext = instance.appContext
-  }
-  // 注入全局状态（作为兜底，即便没有 appContext，RebornToast 内部也会从 config 导入）
-  if (vnode.appContext) {
-    vnode.appContext.provides[getToastOptionKey()] = globalOptionRef
-  }
-  render(vnode, toastContainer)
-  isMounted = true
-}
+let containerEl: HTMLElement | null = null
+let getContainer: (() => HTMLElement) | undefined
 
 /**
- * 统一的状态更新与计时器管理
+ * 确保消息容器已挂载（命令式调用时自动初始化）；
+ * getContainer 变更时把容器节点移动到新的父级（仍为全屏展示）
  */
-function applyOptions(targetRef: Ref<ToastOptions>, options: ToastOptions) {
-  // 合并默认配置、传入配置，并强制显示
-  const finalOptions = { ...defaultOptions, ...options, show: true }
+function mountContainer() {
+  if (typeof document === 'undefined') return
 
-  // 处理 duration 为空的情况
-  if (finalOptions.duration === undefined || finalOptions.duration === null) {
-    finalOptions.duration = defaultOptions.duration
-  }
-
-  targetRef.value = finalOptions
-
-  // 处理计时器
-  if (globalTimer) clearTimeout(globalTimer)
-  if (targetRef.value.duration! > 0) {
-    globalTimer = setTimeout(() => {
-      targetRef.value.show = false
-    }, targetRef.value.duration)
-  }
-}
-
-/**
- * 显示 toast（全局单例）
- */
-function invoke(options: ToastOptions) {
-  mountToastContainer()
-  applyOptions(globalOptionRef, options)
-}
-
-/**
- * 规范化参数，支持 (msg: string, ...) 和 (options: ToastOptions, ...)
- */
-function normalizeOptions(msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>, defaultDuration = 2000): ToastOptions {
-  if (typeof msg === 'string') {
-    return { msg, duration: duration ?? defaultDuration, ...opts }
-  }
-  return { ...msg, ...opts }
-}
-
-/**
- * 命令式 Toast API，类似 Element Plus 的 ElMessage
- */
-export const showToast = {
-  show: invoke,
-  hide: () => { globalOptionRef.value.show = false },
-  success: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-    invoke({ color: 'success', iconName: 'success', ...normalizeOptions(msg, duration, opts, 1500) }),
-  error: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-    invoke({ color: 'error', iconName: 'error', ...normalizeOptions(msg, duration, opts, 2000) }),
-  warning: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-    invoke({ color: 'warning', iconName: 'warning', ...normalizeOptions(msg, duration, opts, 2000) }),
-  info: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-    invoke({ color: 'info', iconName: 'info', ...normalizeOptions(msg, duration, opts, 2000) }),
-  loading: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-    invoke({ cover: false, iconName: 'loading', ...normalizeOptions(msg, duration, opts, duration ?? 0) }),
-}
-
-/**
- * Composable 式 Toast API，支持多实例（通过 selector 区分）
- */
-export function useToast(selector = '') {
-  const key = getToastOptionKey(selector)
-  const instance = getCurrentInstance()
-
-  // 如果是默认 selector，复用全局单例
-  if (!selector) {
-    mountToastContainer()
-    const optionRef = inject<Ref<ToastOptions>>(key, globalOptionRef)
-    if (instance) {
-      provide(key, optionRef)
+  const parent = (() => {
+    try {
+      return getContainer?.() ?? document.body
+    } catch {
+      return document.body
     }
+  })()
 
-    return {
-      show: (options: ToastOptions) => { invoke(options) },
-      hide: () => { globalOptionRef.value.show = false },
-      close: () => { globalOptionRef.value.show = false },
-      success: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-        invoke({ color: 'success', iconName: 'success', ...normalizeOptions(msg, duration, opts, 1500) }),
-      error: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-        invoke({ color: 'error', iconName: 'error', ...normalizeOptions(msg, duration, opts, 2000) }),
-      warning: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-        invoke({ color: 'warning', iconName: 'warning', ...normalizeOptions(msg, duration, opts, 2000) }),
-      info: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-        invoke({ color: 'info', iconName: 'info', ...normalizeOptions(msg, duration, opts, 2000) }),
-      loading: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-        invoke({ cover: false, iconName: 'loading', ...normalizeOptions(msg, duration, opts, duration ?? 0) }),
-    }
-  }
-
-  // selector 非空时：独立 optionRef，支持多 toast 实例共存
-  const optionRef = inject<Ref<ToastOptions>>(key, ref<ToastOptions>({ ...defaultOptions }))
-
-  if (typeof document !== 'undefined' && !toastContainer) {
-    toastContainer = document.createElement('div')
-    document.body.appendChild(toastContainer)
-
+  if (!containerEl) {
+    containerEl = document.createElement('div')
     const vnode = createVNode(RebornToast)
+    // 命令式调用大多发生在事件回调里（无组件实例），必须兜底拿应用上下文，
+    // 否则容器内的 NuxtIcon 等依赖 app provide 的组件会在 setup 中崩溃
+    const instance = getCurrentInstance()
     if (instance) {
       vnode.appContext = instance.appContext
+    } else {
+      try {
+        vnode.appContext = (useNuxtApp().vueApp as any)._context
+      } catch {
+        // 拿不到应用上下文时仍渲染，仅自定义组件类内容可能受限
+      }
     }
-    if (vnode.appContext) {
-      vnode.appContext.provides[key] = optionRef
+    render(vnode, containerEl)
+  }
+
+  if (containerEl.parentElement !== parent) {
+    parent.appendChild(containerEl)
+  }
+}
+
+/** 打开一条消息，返回关闭时兑现的 Promise */
+function open(options: MessageOptions): Promise<void> {
+  mountContainer()
+  return addMessage(options)
+}
+
+/**
+ * 归一化 (content, duration, onClose) 与 (config) 两种调用形态：
+ * content 为对象时视作 config，其余参数忽略
+ */
+function normalize(
+  content: MessageNode | MessageOptions,
+  duration?: number,
+  onClose?: () => void,
+): MessageOptions {
+  if (content !== null && typeof content === 'object') {
+    // VNode 也是对象：按提示内容处理而非 config
+    if ('__v_isVNode' in content) {
+      return { content: content as MessageNode, duration, onClose }
     }
-    render(vnode, toastContainer)
+    return { ...(content as MessageOptions) }
   }
+  return { content: content as MessageNode, duration, onClose }
+}
 
-  provide(key, optionRef)
+/** 生成某个 level 的静态方法 */
+function levelMethod(type: MessageType) {
+  return (content: MessageNode | MessageOptions, duration?: number, onClose?: () => void) =>
+    open({ ...normalize(content, duration, onClose), type })
+}
 
-  const show = (options: ToastOptions) => {
-    applyOptions(optionRef, options)
-  }
-
-  return {
-    show,
-    hide: () => { optionRef.value.show = false },
-    close: () => { optionRef.value.show = false },
-    success: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-      show({ color: 'success', iconName: 'success', ...normalizeOptions(msg, duration, opts, 1500) }),
-    error: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-      show({ color: 'error', iconName: 'error', ...normalizeOptions(msg, duration, opts, 2000) }),
-    warning: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-      show({ color: 'warning', iconName: 'warning', ...normalizeOptions(msg, duration, opts, 2000) }),
-    info: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-      show({ color: 'info', iconName: 'info', ...normalizeOptions(msg, duration, opts, 2000) }),
-    loading: (msg: string | ToastOptions, duration?: number, opts?: Partial<ToastOptions>) =>
-      show({ cover: false, iconName: 'loading', ...normalizeOptions(msg, duration, opts, duration ?? 0) }),
-  }
+/**
+ * 命令式消息提示 API：
+ * message.success('已保存')、message.error(config)、message[level](content, duration, onClose).then(afterClose)
+ */
+export const message = {
+  /** 以完整 config 打开一条消息 */
+  open,
+  info: levelMethod('info'),
+  success: levelMethod('success'),
+  warning: levelMethod('warning'),
+  error: levelMethod('error'),
+  loading: levelMethod('loading'),
+  /** 全局配置：top / duration / maxCount / rtl / getContainer */
+  config(options: MessageGlobalConfig) {
+    if (options.getContainer !== undefined) {
+      getContainer = options.getContainer
+      if (containerEl) mountContainer()
+    }
+    applyMessageConfig(options)
+  },
+  /** 全局销毁：不传 key 关闭全部，传 key 关闭对应消息 */
+  destroy(key?: string | number) {
+    destroyMessages(key)
+  },
 }

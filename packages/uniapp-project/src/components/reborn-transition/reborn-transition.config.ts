@@ -88,11 +88,14 @@ export const transitionStyles: Record<string, Record<string, string>> = {
         'leave-to': 'opacity-0 scale-[1.04]'
     },
     'badge-custom': {
+        // 徽章进出场：缩放 + 淡出。此前 leave 用的 [transform:rotateY(...)] 任意属性类
+        // 没有进 H5 产物 CSS，关闭动画实际失效；v3 的 scale-* 走 transform 属性，
+        // 与 transition-[opacity,transform] 正好配套
         enter: 'opacity-0 scale-50',
         'enter-active': 'transition-[opacity,transform]',
         'enter-to': 'opacity-100 scale-100',
-        leave: 'opacity-100 [transform:rotateY(0deg)]',
+        leave: 'opacity-100 scale-100',
         'leave-active': 'transition-[opacity,transform]',
-        'leave-to': 'opacity-0 [transform:rotateY(-90deg)]'
+        'leave-to': 'opacity-0 scale-50'
     }
 }

@@ -5,11 +5,21 @@ export const badgeVariants = ['filled', 'outlined', 'soft', 'subtle'] as const
 /** 徽章尺寸选项 */
 export const badgeSizes = ['sm', 'md', 'lg'] as const
 
+/*
+ * 配色按「语义色 → 色相族」映射到设计令牌的数字色阶：
+ * primary→brand、secondary→secondary、success→green、info→blue、warning→orange、error→red、neutral→gray。
+ * 各视觉风格的取阶规则（来自设计规格）：
+ *   subtle   → bg 取 2 阶 + border 取 4 阶 + 文字取 6 阶
+ *   soft     → bg 取 2 阶 + 文字取 6 阶
+ *   outlined → border 取 4 阶 + 文字取 6 阶
+ *   filled   → bg 取 6 阶 + 文字 gray-1（即两种模式下的纸面色）
+ * 例外：neutral 的非 filled 文字统一用 gray-9（正文色），避免 gray-6 文字对比度不足。
+ */
 const config = {
   /** 徽章插槽样式配置 */
   slots: {
     root: 'reborn-badge cursor-pointer',
-    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color] max-w-full min-w-0',
+    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color] max-w-full min-w-0 select-none',
     label: 'inline-flex items-center justify-center truncate max-w-full min-w-0',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
@@ -23,7 +33,7 @@ const config = {
       horizontal: 'not-only:first:rounded-e-none not-only:last:rounded-s-none not-last:not-first:rounded-none focus-visible:z-[1]',
       vertical: 'not-only:first:rounded-b-none not-only:last:rounded-t-none not-last:not-first:rounded-none focus-visible:z-[1]'
     },
-    /** 样式变体 */
+    /** 样式变体：只挂结构类，配色一律交给复合变体 */
     variant: {
       filled: '',
       outlined: 'bg-transparent border border-solid',
@@ -40,33 +50,54 @@ const config = {
       error: '',
       neutral: ''
     },
-    /** 尺寸配置：高度、内边距、字体等 */
+    /** 尺寸配置：sm 18px / md 24px / lg 32px（h-badge-* 令牌），水平内边距统一 6px */
     size: {
       sm: {
-        base: 'h-badge-sm px-2 rounded-ui-xs gap-1',
+        base: 'h-badge-sm px-1.5 text-sm rounded-ui-2xs gap-1',
+        label: 'leading-none',
+        leadingIcon: 'size-3',
+        trailingIcon: 'size-3',
+        closeIcon: 'size-3'
+      },
+      md: {
+        base: 'h-badge-md px-1.5 text-sm rounded-ui-xs gap-1',
         label: 'leading-none',
         leadingIcon: 'size-3.5',
         trailingIcon: 'size-3.5',
-        closeIcon: 'size-4',
-      },
-      md: {
-        base: 'h-badge-md px-2 rounded-ui-sm gap-1',
-        label: 'leading-normal',
-        leadingIcon: 'size-4',
-        trailingIcon: 'size-4',
-        closeIcon: 'size-5'
+        closeIcon: 'size-3.5'
       },
       lg: {
-        base: 'h-badge-lg px-[16px] rounded-ui-md gap-1',
-        label: 'leading-normal',
+        base: 'h-badge-lg px-1.5 text-base rounded-ui-sm gap-1',
+        label: 'leading-none',
         leadingIcon: 'size-4',
         trailingIcon: 'size-4',
-        closeIcon: 'size-6'
+        closeIcon: 'size-4'
       }
     },
     /** 是否为正方形（等宽高） */
     square: {
       true: 'p-0 aspect-square'
+    },
+    /**
+     * 圆角标签：与按钮的 round 一致做成全圆角胶囊。
+     * 圆角带 ! 强制：size 轴的 rounded-ui-* 是自定义令牌，tailwind-merge 不会把它与
+     * rounded-full 判为冲突组而合并掉，不加 ! 会被形状圆角反向覆盖
+     */
+    round: {
+      true: {
+        base: '!rounded-full'
+      }
+    },
+    /** 可选中模式的未选中态：本轴只声明维度，具体灰阶样式按 variant 在复合变体中给出 */
+    unchecked: {
+      true: {}
+    },
+    /** 禁用态（配合 check 可选中模式使用）：整体降透明度并屏蔽交互 */
+    disabled: {
+      true: {
+        root: 'cursor-not-allowed',
+        base: 'opacity-50 pointer-events-none'
+      }
     },
     gap: {
       true: {
@@ -76,41 +107,48 @@ const config = {
   },
   /** 复合变体：根据颜色和样式变体组合生成的样式 */
   compoundVariants: [
-    // Filled
-    { color: 'primary' as any, variant: 'filled' as any, class: 'bg-primary border-primary text-inverted' },
-    { color: 'secondary' as any, variant: 'filled' as any, class: 'bg-secondary border-secondary text-inverted' },
-    { color: 'success' as any, variant: 'filled' as any, class: 'bg-success border-success text-inverted' },
-    { color: 'info' as any, variant: 'filled' as any, class: 'bg-info border-info text-inverted' },
-    { color: 'warning' as any, variant: 'filled' as any, class: 'bg-[#FFF7F3] border-warning text-inverted' },
-    { color: 'error' as any, variant: 'filled' as any, class: 'bg-error border-error text-inverted' },
-    { color: 'neutral' as any, variant: 'filled' as any, class: 'bg-neutral border-neutral text-inverted' },
+    // Filled：bg 取 6 阶，文字用 gray-1（纸面色）
+    { color: 'primary' as any, variant: 'filled' as any, class: 'bg-brand-6 text-gray-1' },
+    { color: 'secondary' as any, variant: 'filled' as any, class: 'bg-secondary-6 text-gray-1' },
+    { color: 'success' as any, variant: 'filled' as any, class: 'bg-green-6 text-gray-1' },
+    { color: 'info' as any, variant: 'filled' as any, class: 'bg-blue-6 text-gray-1' },
+    { color: 'warning' as any, variant: 'filled' as any, class: 'bg-orange-6 text-gray-1' },
+    { color: 'error' as any, variant: 'filled' as any, class: 'bg-red-6 text-gray-1' },
+    { color: 'neutral' as any, variant: 'filled' as any, class: 'bg-gray-6 text-gray-1' },
 
-    // Outlined
-    { color: 'primary' as any, variant: 'outlined' as any, class: 'border-primary text-primary' },
-    { color: 'secondary' as any, variant: 'outlined' as any, class: 'border-secondary text-secondary' },
-    { color: 'success' as any, variant: 'outlined' as any, class: 'border-success text-success' },
-    { color: 'info' as any, variant: 'outlined' as any, class: 'border-info text-info' },
-    { color: 'warning' as any, variant: 'outlined' as any, class: 'border-warning text-warning' },
-    { color: 'error' as any, variant: 'outlined' as any, class: 'border-error text-error' },
-    { color: 'neutral' as any, variant: 'outlined' as any, class: 'border-neutral text-neutral' },
+    // Outlined：border 取 4 阶，文字取 6 阶（neutral 用 gray-9 正文色）
+    { color: 'primary' as any, variant: 'outlined' as any, class: 'border-brand-4 text-brand-6' },
+    { color: 'secondary' as any, variant: 'outlined' as any, class: 'border-secondary-4 text-secondary-6' },
+    { color: 'success' as any, variant: 'outlined' as any, class: 'border-green-4 text-green-6' },
+    { color: 'info' as any, variant: 'outlined' as any, class: 'border-blue-4 text-blue-6' },
+    { color: 'warning' as any, variant: 'outlined' as any, class: 'border-orange-4 text-orange-6' },
+    { color: 'error' as any, variant: 'outlined' as any, class: 'border-red-4 text-red-6' },
+    { color: 'neutral' as any, variant: 'outlined' as any, class: 'border-gray-4 text-gray-9' },
 
-    // Soft
-    { color: 'primary' as any, variant: 'soft' as any, class: 'bg-primary/10 text-primary' },
-    { color: 'secondary' as any, variant: 'soft' as any, class: 'bg-secondary/10 text-secondary' },
-    { color: 'success' as any, variant: 'soft' as any, class: 'bg-success/10 text-success' },
-    { color: 'info' as any, variant: 'soft' as any, class: 'bg-info/10 text-info' },
-    { color: 'warning' as any, variant: 'soft' as any, class: 'bg-[#FFF7F3] text-warning' },
-    { color: 'error' as any, variant: 'soft' as any, class: 'bg-error/10 text-error' },
-    { color: 'neutral' as any, variant: 'soft' as any, class: 'bg-neutral/10 text-neutral' },
+    // Soft：bg 取 2 阶，文字取 6 阶（neutral 用 gray-9 正文色）
+    { color: 'primary' as any, variant: 'soft' as any, class: 'bg-brand-2 text-brand-6' },
+    { color: 'secondary' as any, variant: 'soft' as any, class: 'bg-secondary-2 text-secondary-6' },
+    { color: 'success' as any, variant: 'soft' as any, class: 'bg-green-2 text-green-6' },
+    { color: 'info' as any, variant: 'soft' as any, class: 'bg-blue-2 text-blue-6' },
+    { color: 'warning' as any, variant: 'soft' as any, class: 'bg-orange-2 text-orange-6' },
+    { color: 'error' as any, variant: 'soft' as any, class: 'bg-red-2 text-red-6' },
+    { color: 'neutral' as any, variant: 'soft' as any, class: 'bg-gray-2 text-gray-9' },
 
-    // Subtle
-    { color: 'primary' as any, variant: 'subtle' as any, class: 'bg-primary/10 border-primary/20 text-primary' },
-    { color: 'secondary' as any, variant: 'subtle' as any, class: 'bg-secondary/10 border-secondary/20 text-secondary' },
-    { color: 'success' as any, variant: 'subtle' as any, class: 'bg-success/10 border-success/20 text-success' },
-    { color: 'info' as any, variant: 'subtle' as any, class: 'bg-info/10 border-info/20 text-info' },
-    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-[#FFF7F3] border-warning/20 text-warning' },
-    { color: 'error' as any, variant: 'subtle' as any, class: 'bg-error/10 border-error/20 text-error' },
-    { color: 'neutral' as any, variant: 'subtle' as any, class: 'bg-neutral/10 border-neutral/20 text-neutral' },
+    // Subtle：bg 取 2 阶 + border 取 4 阶，文字取 6 阶（neutral 用 gray-9 正文色）
+    { color: 'primary' as any, variant: 'subtle' as any, class: 'bg-brand-2 border-brand-4 text-brand-6' },
+    { color: 'secondary' as any, variant: 'subtle' as any, class: 'bg-secondary-2 border-secondary-4 text-secondary-6' },
+    { color: 'success' as any, variant: 'subtle' as any, class: 'bg-green-2 border-green-4 text-green-6' },
+    { color: 'info' as any, variant: 'subtle' as any, class: 'bg-blue-2 border-blue-4 text-blue-6' },
+    { color: 'warning' as any, variant: 'subtle' as any, class: 'bg-orange-2 border-orange-4 text-orange-6' },
+    { color: 'error' as any, variant: 'subtle' as any, class: 'bg-red-2 border-red-4 text-red-6' },
+    { color: 'neutral' as any, variant: 'subtle' as any, class: 'bg-gray-2 border-gray-4 text-gray-9' },
+
+    // 可选中模式未选中态：统一退到灰阶。必须排在配色复合变体之后——
+    // 同为 bg/border/text 颜色组，tailwind-merge 保留后出现者，从而覆盖上方配色
+    { variant: 'subtle' as any, unchecked: true, class: 'bg-gray-2 border-gray-4 text-gray-6' },
+    { variant: 'soft' as any, unchecked: true, class: 'bg-gray-2 text-gray-6' },
+    { variant: 'outlined' as any, unchecked: true, class: 'border-gray-2 text-gray-6' },
+    { variant: 'filled' as any, unchecked: true, class: 'bg-gray-2 text-gray-6' }
   ],
   /** 默认变体值 */
   defaultVariants: {
@@ -121,7 +159,7 @@ const config = {
 }
 
 /** 徽章 UI 样式覆盖接口 */
-export type BadgeUI = {
+export interface BadgeUI {
   base?: string
   label?: string
   leadingIcon?: string

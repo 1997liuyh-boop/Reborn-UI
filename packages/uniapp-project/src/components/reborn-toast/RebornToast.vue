@@ -1,178 +1,132 @@
-<script lang="ts">
-export default {
-    name: 'reborn-toast',
-    options: {
-        virtualHost: true,
-        addGlobalClass: true,
-        styleIsolation: 'shared',
-    },
-}
-</script>
-
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
-import RebornLoading from '@/components/reborn-loading/RebornLoading.vue'
-import RebornOverlay from '@/components/reborn-overlay/RebornOverlay.vue'
-import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
-import base64 from '@/lib/base64'
-import { addUnit, isDef, isFunction } from '@/lib/util'
-import { tv } from '@/lib/tv'
-import { cn } from '@/lib/utils'
-import { globalOptionRef, getToastOptionKey, toastIcon, type ToastDirection, type ToastOptions } from './index'
-import theme, { toastColors, toastDirections, toastPositions } from './reborn-toast.config'
-import type { ToastLoadingType, ToastIconType, ToastPositionType } from './index'
+import type { CSSProperties } from 'vue'
+import type { MessageInstance, MessageSemanticDOM } from './reborn-toast.config'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { addUnit } from '@/lib/util'
+import {
+  markMessageMounted,
+  MESSAGE_TYPE_ICON,
+  messageState,
+  messageTheme,
+  pauseMessage,
+  resumeMessage,
+  unmarkMessageMounted,
+} from './reborn-toast.config'
 
-interface ToastProps {
-    selector?: string
-    msg?: string
-    direction?: ToastDirection
-    iconName?: ToastIconType | ''
-    iconSize?: number
-    loadingType?: ToastLoadingType
-    loadingColor?: string
-    loadingSize?: number
-    position?: ToastPositionType
-    zIndex?: number
-    cover?: boolean
-    iconClass?: string
-    classPrefix?: string
-    color?: Exclude<typeof toastColors[number], 'default'> | ''
-    opened?: () => void
-    closed?: () => void
-    customClass?: string
+// 小程序端启用虚拟节点与全局样式类，保证 tailwind 工具类可作用到组件内
+defineOptions({
+  name: 'RebornToast',
+  options: {
+    virtualHost: true,
+    addGlobalClass: true,
+    styleIsolation: 'shared',
+  },
+})
+
+// 注册实例计数：H5 命令式调用据此判断是否还需动态挂载容器（小程序端组件必须预置在页面里）
+onMounted(markMessageMounted)
+onUnmounted(unmarkMessageMounted)
+
+/**
+ * 顶部偏移：数字按 rpx 处理（样式优先原则，Web 端为 px），字符串原样使用；
+ * H5 端叠加 --window-top 避开 uni 顶栏，小程序端该变量不存在时回退 0
+ */
+const topStyle = computed(() => `calc(var(--window-top, 0px) + ${addUnit(messageState.top)})`)
+
+/** 取单条消息的样式构建器 */
+const themeOf = (item: MessageInstance) => messageTheme({ variant: item.variant, color: item.color })
+
+/** classNames / styles 支持对象或函数两种形态 */
+function semanticClass(item: MessageInstance, key: MessageSemanticDOM): string | undefined {
+  const source = typeof item.classNames === 'function' ? item.classNames({ props: item }) : item.classNames
+  return source?.[key]
+}
+function semanticStyle(item: MessageInstance, key: MessageSemanticDOM): CSSProperties | undefined {
+  const source = typeof item.styles === 'function' ? item.styles({ props: item }) : item.styles
+  return source?.[key]
 }
 
-const props = withDefaults(defineProps<ToastProps>(), {
-    selector: '',
-    msg: '',
-    direction: 'horizontal',
-    iconName: '',
-    loadingType: 'outline',
-    loadingColor: '#4D80F0',
-    position: 'middle-top',
-    zIndex: 100,
-    cover: false,
-    iconClass: '',
-    classPrefix: 'rb-icon',
-    customClass: '',
-    color: '',
-    loadingSize: 40,
-    iconSize: 40,
-})
-const show = ref(false)
-const msg = ref('')
-const iconName = ref<ToastProps['iconName']>('')
-const svgStr = ref('')
-const cover = ref(false)
-const position = ref(props.position)
-const zIndex = ref(props.zIndex)
-const direction = ref(props.direction)
-const loadingType = ref(props.loadingType)
-const loadingColor = ref(props.loadingColor)
-const loadingSize = ref<string | undefined>(undefined)
-const iconSize = ref<string | undefined>(undefined)
-const color = ref<ToastProps['color']>(props.color)
-let opened: (() => void) | null = null
-let closed: (() => void) | null = null
-
-const key = getToastOptionKey(props.selector)
-const toastOption = inject(key, globalOptionRef)
-watch(() => toastOption.value, (val) => reset(val), { immediate: true, deep: true })
-watch(() => iconName.value, buildSvg, { immediate: true })
-
-const b = tv(theme)
-const transitionStyle = computed(() => {
-    const z = `z-index:${zIndex.value};position:fixed;left:0;width:100%;text-align:center;pointer-events:none;`
-    const pos = position.value
-    // #ifdef H5
-    // iOS Safari 中 position:fixed 的 top/bottom 参照的是 visual viewport，
-    // 而 vh 单位参照的是 layout viewport（最大视口），两者在底部标签栏收起/展开时不一致。
-    // 因此对 top/bottom 位置直接用 top/bottom 定位而非从 50% 偏移，避免 iOS Safari 错位。
-    if (pos === 'top') {
-        return z + 'top:0;transform:none;padding-top:env(safe-area-inset-top,0px);'
-    }
-    if (pos === 'bottom') {
-        return z + 'bottom:0;transform:none;padding-bottom:env(safe-area-inset-bottom,0px);'
-    }
-    // #endif
-    return z + 'top:50%;transform:translate(0,-50%);'
-})
-const ui = computed(() => {
-    const pos = position.value as typeof toastPositions[number]
-    // #ifdef H5
-    // iOS Safari 的 position:fixed 和 vh 单位参照不同视口，在底部标签栏收起/展开时会错位。
-    // H5 端 top/bottom 由外层容器的 top:0/bottom:0 控制，内层改用 margin 提供视觉间距。
-    {
-        const h5TopBottomClass = pos === 'top' ? 'mt-12' : pos === 'bottom' ? 'mb-12' : undefined
-        const resolvedPos = (pos === 'top' || pos === 'bottom') ? 'middle' : pos
-        const styles = b({
-            position: resolvedPos as typeof toastPositions[number],
-            direction: direction.value as typeof toastDirections[number],
-            withIcon: Boolean(iconName.value && (iconName.value !== 'loading' || msg.value)),
-            color: (color.value || 'default') as typeof toastColors[number],
-        })
-        return {
-            root: (opts?: { class?: any }) => styles.root({ class: cn(h5TopBottomClass, opts?.class) }),
-            msg: (opts?: { class?: any }) => styles.msg({ class: cn(opts?.class) }),
-        }
-    }
-    // #endif
-    const styles = b({
-        position: pos,
-        direction: direction.value as typeof toastDirections[number],
-        withIcon: Boolean(iconName.value && (iconName.value !== 'loading' || msg.value)),
-        color: (color.value || 'default') as typeof toastColors[number],
-    })
-
-    return {
-        root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class) }),
-        msg: (opts?: { class?: any }) => styles.msg({ class: cn(opts?.class) }),
-    }
-})
-const svgStyle = computed(() => {
-    const size = iconSize.value || '30rpx'
-    return `background-image:url(${svgStr.value});width:${size};height:${size};`
-})
-
-const onAfterEnter = () => isFunction(opened) && opened()
-const onAfterLeave = () => isFunction(closed) && closed()
-
-function buildSvg() {
-    if (!iconName.value || iconName.value === 'loading') return
-    svgStr.value = `data:image/svg+xml;base64,${base64(toastIcon[iconName.value as keyof typeof toastIcon]())}`
+/** 进出场动画类：closing 标记切到离场动画 */
+function motionClass(item: MessageInstance) {
+  return item.closing ? 'rb-message-leave' : 'rb-message-enter'
 }
 
-function reset(option: ToastOptions) {
-    show.value = !!option.show
-    if (!show.value) return
-    iconName.value = option.iconName ?? props.iconName
-    msg.value = option.msg ?? props.msg
-    position.value = option.position ?? props.position
-    zIndex.value = option.zIndex ?? props.zIndex
-    cover.value = option.cover ?? props.cover
-    direction.value = option.direction ?? props.direction
-    loadingType.value = option.loadingType ?? props.loadingType
-    loadingColor.value = option.loadingColor ?? props.loadingColor
-    color.value = option.color ?? props.color
-    iconSize.value = isDef(option.iconSize) ? addUnit(option.iconSize) : isDef(props.iconSize) ? addUnit(props.iconSize) : undefined
-    loadingSize.value = isDef(option.loadingSize) ? addUnit(option.loadingSize) : isDef(props.loadingSize) ? addUnit(props.loadingSize) : undefined
-    closed = option.closed ?? props.closed ?? null
-    opened = option.opened ?? props.opened ?? null
+/** 图标类名：icon 传入时优先，否则按 type 取默认图标；loading 默认图标追加旋转动画 */
+function iconClass(item: MessageInstance) {
+  const name = item.icon || MESSAGE_TYPE_ICON[item.type]
+  const spin = item.type === 'loading' && !item.icon ? 'animate-spin' : ''
+  return `${name} ${spin}`
+}
+
+/** 按住（H5 悬停）暂停计时，松开（移出）恢复 */
+function handlePause(item: MessageInstance) {
+  if (item.pauseOnHover) {
+    pauseMessage(item.id)
+  }
+}
+function handleResume(item: MessageInstance) {
+  if (item.pauseOnHover) {
+    resumeMessage(item.id)
+  }
 }
 </script>
 
 <template>
-    <RebornOverlay v-if="cover" :show="show" :z-index="zIndex" lock-scroll
-        custom-style="background-color:transparent;pointer-events:auto;" />
-    <RebornTransition name="fade" :show="show" :custom-style="transitionStyle" @after-enter="onAfterEnter"
-        @after-leave="onAfterLeave">
-        <view :class="ui.root({ class: props.customClass })">
-            <RebornLoading v-if="iconName === 'loading'" :type="loadingType" :color="loadingColor as any"
-                :size="loadingSize" :custom-class="direction === 'vertical' ? 'mb-2' : 'mr-2'" />
-            <view v-else-if="iconName"
-                :class="direction === 'vertical' ? 'mb-2 mx-auto inline-block bg-cover bg-no-repeat' : 'mr-2 inline-block bg-cover bg-no-repeat'"
-                :style="svgStyle" />
-            <view v-if="msg" :class="ui.msg()">{{ msg }}</view>
-        </view>
-    </RebornTransition>
+  <view :class="messageTheme().wrapper()" :style="{ top: topStyle }" :dir="messageState.rtl ? 'rtl' : undefined">
+    <view
+      v-for="item in messageState.list" :key="item.id"
+      :class="[themeOf(item).root(), motionClass(item), item.className, semanticClass(item, 'root')]"
+      :style="[item.style ?? {}, semanticStyle(item, 'root') ?? {}]" @click="item.onClick?.($event)"
+      @touchstart="handlePause(item)" @touchend="handleResume(item)" @touchcancel="handleResume(item)"
+      @mouseenter="handlePause(item)" @mouseleave="handleResume(item)"
+    >
+      <view
+        :class="[themeOf(item).iconWrapper(), semanticClass(item, 'icon')]"
+        :style="semanticStyle(item, 'icon')"
+      >
+        <view :class="[iconClass(item), themeOf(item).icon()]" />
+      </view>
+
+      <view
+        :class="[themeOf(item).content(), semanticClass(item, 'content')]"
+        :style="semanticStyle(item, 'content')"
+      >
+        {{ item.content }}
+      </view>
+    </view>
+  </view>
 </template>
+
+<style>
+/* 小程序端不支持 TransitionGroup，进出场动画用 CSS keyframes 驱动，时长需与 config 的 LEAVE_DURATION 一致 */
+.rb-message-enter {
+  animation: rb-message-in 0.24s ease both;
+}
+
+.rb-message-leave {
+  animation: rb-message-out 0.24s ease both;
+}
+
+@keyframes rb-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-32rpx) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rb-message-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-16rpx) scale(0.96);
+  }
+}
+</style>

@@ -111,12 +111,15 @@ export const transitionStyles: Record<string, Record<string, string>> = {
     'leave-to': 'opacity-0 scale-105',
   },
   'badge-custom': {
+    // 徽章进出场：缩放 + 淡出。刻意用 v4 的原生 scale 属性而非 transform：
+    // 容器自带 transform-gpu 占用了 transform，rotateY 之类的任意 transform 类会被它覆盖；
+    // 过渡属性也必须写 scale（transition-[opacity,transform] 动不了 scale 属性）
     enter: 'opacity-0 scale-50',
-    'enter-active': `transition-[opacity,transform] ${EASE_ENTER}`,
+    'enter-active': `transition-[opacity,scale] ${EASE_ENTER}`,
     'enter-to': 'opacity-100 scale-100',
-    leave: 'opacity-100 [transform:rotateY(0deg)]',
-    'leave-active': `transition-[opacity,transform] ${EASE_LEAVE}`,
-    'leave-to': 'opacity-0 [transform:rotateY(-90deg)]',
+    leave: 'opacity-100 scale-100',
+    'leave-active': `transition-[opacity,scale] ${EASE_LEAVE}`,
+    'leave-to': 'opacity-0 scale-50',
   },
   'select-collapse': {
     enter: 'opacity-0',

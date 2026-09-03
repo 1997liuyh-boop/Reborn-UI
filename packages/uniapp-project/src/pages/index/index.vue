@@ -76,6 +76,7 @@ const menuItems = [
       { label: '过渡动画', icon: 'i-lucide-move', path: '/pages/reborn-transition/RebornTransitionDemo' },
       { label: '遮罩层', icon: 'i-lucide-square', path: '/pages/reborn-overlay/RebornOverlayDemo' },
       { label: '提示框', icon: 'i-lucide-message-square', path: '/pages/reborn-toast/RebornToastDemo' },
+      { label: '警告提示', icon: 'i-lucide-triangle-alert', path: '/pages/reborn-alert/RebornAlertDemo' },
       { label: '加载更多', icon: 'i-lucide-arrow-down-circle', path: '/pages/reborn-loadmore/RebornLoadmoreDemo' },
       { label: '拖拽排序', icon: 'i-lucide-move', path: '/pages/reborn-draggable/RebornDraggableDemo' },
       { label: '取色器', icon: 'i-lucide-palette', path: '/pages/reborn-color-picker/RebornColorPickerDemo' },

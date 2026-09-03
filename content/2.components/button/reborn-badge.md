@@ -1,6 +1,6 @@
 ---
 title: 徽章 Badge
-description: 用于展示状态、数量或标识的跨端徽标组件，支持可关闭与显隐绑定。
+description: 用于展示状态、数量或标识的跨端徽标组件，支持圆角胶囊、可关闭、可选中（Check Tag）与显隐绑定。
 category: 按钮
 tags: [css, tailwind, badge, uniapp, cross-platform]
 badge: New
@@ -28,6 +28,10 @@ Reborn UI 致力于在 Web (Nuxt 3) 和 UniApp 平台提供一致的开发体验
 | `size` | `BadgeSize` | `'md'` | - | 尺寸规格：`sm`, `md`, `lg`。 |
 | `icon` | `string` | - | **UniApp 专用** | 直接传入图标类名。Web 端建议使用插槽。 |
 | `square` | `boolean` | `false` | - | 是否为正方形（等宽高）。 |
+| `round` | `boolean` | `false` | - | 圆角标签：与按钮组件一致变为全圆角胶囊。 |
+| `check` | `boolean` | `false` | - | 可选中模式：作为类复选框的 Check Tag 使用。 |
+| `v-model:checked` | `boolean` | `false` | - | 可选中模式下的选中态；未选中时徽标退为灰阶。 |
+| `disabled` | `boolean` | `false` | - | 是否禁用（屏蔽选中切换与关闭交互）。 |
 | `closable` | `boolean` | `false` | - | 是否显示关闭按钮。 |
 | `closeIcon` | `string` | - | **默认值差异** | Web 默认为 `i-lucide-x`；UniApp 默认为 `i-mdi-close-circle`。 |
 | `as` | `any` | `'span'` | **Web 专用** | 指定渲染的 HTML 标签或组件。 |
@@ -51,9 +55,42 @@ Reborn UI 致力于在 Web (Nuxt 3) 和 UniApp 平台提供一致的开发体验
 
 | 事件名 | 参数 | 平台说明 |
 | :--- | :--- | :--- |
-| `close` | `(event: MouseEvent)` | 点击关闭按钮时触发。 |
-| `click` | `(event: Event)` | 点击整个徽标时触发（UniApp 显式定义）。 |
+| `close` | `(event: MouseEvent)` | 点击关闭按钮时触发；徽标以 200ms 的缩放淡出动画收起。 |
+| `click` | `(event: Event)` | 点击整个徽标时触发（双端一致）。 |
+| `change` | `(checked: boolean)` | 可选中模式下点击切换选中态时触发。 |
 | `update:show`| `(value: boolean)` | `v-model:show` 同步事件。 |
+| `update:checked`| `(value: boolean)` | `v-model:checked` 同步事件。 |
+
+## 视觉规格
+
+尺寸三档：`sm` 高 18px / 字号 12px，`md` 高 24px / 字号 12px，`lg` 高 32px / 字号 14px，水平内边距统一 6px（UniApp 端按 rpx 双倍取值）。
+
+配色按「语义色 → 色相族」映射到设计令牌的数字色阶，各视觉风格的取阶规则：
+
+| 风格 | 背景 | 边框 | 文字 |
+| :--- | :--- | :--- | :--- |
+| `subtle` | `[color]-2` | `1px solid [color]-4` | `[color]-6`（neutral 用 `gray-9` 正文色） |
+| `soft` | `[color]-2` | - | `[color]-6`（neutral 用 `gray-9` 正文色） |
+| `outlined` | 透明 | `1px solid [color]-4` | `[color]-6`（neutral 用 `gray-9` 正文色） |
+| `filled` | `[color]-6` | - | `gray-1`（纸面色） |
+
+UniApp 端调色板差异：主色即 red 系（primary→red）；无独立 secondary 色阶、gray 只到 8 阶，因此 secondary 走灰阶、neutral 文字用 `gray-8` 顶替 `gray-9`。
+
+## 可选中标签
+
+开启 `check` 后徽标即为类复选框的 Check Tag：点击切换 `v-model:checked` 并触发 `change`；未选中时按当前 `variant` 统一退为灰阶（`subtle`/`soft` 底色 `gray-1`、`outlined` 边框 `gray-2`、`filled` 底色 `gray-2`，文字均为 `gray-6`），`disabled` 可禁用交互。
+
+```vue
+<template>
+  <RebornBadge
+    check
+    v-model:checked="checked"
+    variant="soft"
+    label="热销"
+    @change="onTagChange"
+  />
+</template>
+```
 
 ## 自定义样式（ui）
 

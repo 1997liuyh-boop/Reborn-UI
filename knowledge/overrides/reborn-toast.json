@@ -1,19 +1,21 @@
 {
-  "description": "用于短暂消息反馈的轻提示组件，通过 useToast() 服务式调用展示成功、失败、加载等状态。",
+  "description": "全局命令式消息提示（Message）：五种类型静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
   "whenToUse": [
-    "操作结果的即时反馈（success / error / warning / info 图标）。",
-    "异步请求过程中的 loading 提示。",
-    "提示期间需要防止触摸穿透时开启 cover 透明遮罩。"
+    "操作反馈的轻量全局提示（success / error / info / warning / loading 五种类型）。",
+    "需要 Promise 串联后续动作（message.loading(...).then(...)）或同 key 原位更新（loading → success）。",
+    "需要全局配置 top / duration / maxCount / rtl / getContainer，或用 message.destroy 主动关闭。"
   ],
   "whenNotToUse": [
-    "需要用户确认或交互的弹窗改用 reborn-dialog（仅 web）。",
-    "循环播放的消息通知改用 reborn-notice-bar。",
-    "针对某个区域或整页的加载态改用 reborn-loading。"
+    "需要用户确认或承载操作按钮的通知，改用 reborn-dialog 或通知类组件。",
+    "uniapp 端项目：uniapp 侧仍是旧版轻提示 Toast（useToast 服务式，参数不同）。"
   ],
   "pitfalls": [
-    "web 与 uniapp 双端均可用。",
-    "组件无 events 与 slots，主要通过 useToast() 调用而非模板声明；opened / closed 以回调 prop 形式提供。",
-    "position 默认 'middle-top'，可选 top / middle-top / middle / bottom。",
-    "cover 默认 false，需要防触摸穿透须显式开启。"
+    "duration 单位是秒且默认 3（旧 Toast API 是毫秒）；设 0 不自动关闭。",
+    "loading 同样默认 3 秒关闭，常驻需 duration: 0 并配合 key + destroy(key) 或同 key 更新。",
+    "web 端与 uniapp 端 API 不互通：web 为 message 命令式，uniapp 为 useToast。",
+    "消息容器首次调用时自动挂载（默认 body），无需在模板放组件；getContainer 变更会移动容器节点。",
+    "悬停消息默认暂停自动关闭计时（pauseOnHover: true）。",
+    "soft / subtle 变体底色用同色相 1 阶实色令牌替代按钮的半透明底，outlined 垫 gray-1，避免悬浮层透出页面内容。",
+    "堆叠折叠（stack）未实现，用 maxCount 控制同屏数量。"
   ]
 }

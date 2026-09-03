@@ -1,9 +1,10 @@
 {
-  "description": "用于鼠标悬停时在元素旁显示文字提示气泡的组件。",
+  "description": "文字提示气泡组件：多触发行为、自动翻转与贴边偏移、自定义背景色、可控显隐。",
   "whenToUse": [
-    "悬停解释图标、按钮或缩写的含义（content 属性传入短文本）。",
-    "需要控制提示的方向与主题（placement、effect dark / light）。",
-    "需要受控显示（v-model:open）或用 content 插槽自定义提示内容。"
+    "悬停解释图标、按钮或缩写的含义（title / content 属性传入短文本）。",
+    "需要控制提示的方向与底色（placement 支持驼峰命名别名、color 自定义背景色）。",
+    "需要 hover 以外的触发方式（trigger: focus / click / contextMenu，可数组组合）。",
+    "需要受控显示（v-model:open）、初始展示（defaultOpen）或用 content 插槽承载 HTML 富内容。"
   ],
   "whenNotToUse": [
     "承载可交互的复杂内容改用 reborn-popover。",
@@ -11,7 +12,11 @@
   ],
   "pitfalls": [
     "platforms 仅 web 端提供。",
-    "触发元素放在 default 插槽内；content 插槽优先级高于 content 属性。",
-    "openDelay / closeDelay 默认各 100ms；effect 默认 'dark'，placement 默认 'bottom'。"
+    "触发元素放在 default 插槽内；content 插槽优先级高于 title / content 属性且始终实时（fresh 只冻结文案属性）。",
+    "title 显式传 null 或空串会禁用提示；未传 title 时回落到 content。",
+    "openDelay / closeDelay 为毫秒，mouseEnterDelay / mouseLeaveDelay 为秒且传入时优先。",
+    "color 自定义背景时面板与箭头同步着色、文字固定白色，需自行保证背景与白字的对比度。",
+    "getPopupContainer 指定的容器若带 CSS transform，fixed 定位会错位。",
+    "destroyOnHidden 默认 false：关闭后 DOM 保留（v-show 隐藏），需要彻底卸载时显式传 true。"
   ]
 }

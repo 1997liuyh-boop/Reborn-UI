@@ -1,67 +1,107 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue';
-import RebornOverlay from '../reborn-overlay/RebornOverlay.vue';
-import RebornTransition from '../reborn-transition/RebornTransition.vue';
-import { toastTheme, type ToastOptions, defaultOptions, getToastOptionKey, globalOptionRef } from './reborn-toast.config';
+import type { CSSProperties } from 'vue';
+import type {MessageInstance, MessageNode, MessageSemanticDOM} from './reborn-toast.config';
+import { computed } from 'vue';
+import {
+  MESSAGE_TYPE_ICON,
+  
+  
+  
+  messageState,
+  messageTheme,
+  pauseMessage,
+  resumeMessage
+} from './reborn-toast.config';
 
-const props = withDefaults(defineProps<{ selector?: string }>(), { selector: '' });
-const key = getToastOptionKey(props.selector);
+defineOptions({ name: 'RebornToast' });
 
-const optionRef = inject(key, props.selector ? ref<ToastOptions>({ ...defaultOptions }) : globalOptionRef);
-const state = ref<ToastOptions>({ ...defaultOptions });
-watch(() => optionRef.value, (v) => { state.value = { ...v }; }, { immediate: true, deep: true });
-
-const rootClass = computed(() => {
-  const base = toastTheme.root;
-  const pos = toastTheme.positions[state.value.position || 'top'];
-  const customConfigColor = state.value.color ? toastTheme.colors[state.value.color as keyof typeof toastTheme.colors] : '';
-  const finalBase = customConfigColor ? base.replace('bg-black/80', '').replace('text-white', '') + ` ${customConfigColor}` : base;
-  return `${finalBase} ${pos}`;
+/** 顶部偏移：数字视为 px */
+const topStyle = computed(() => {
+  const top = messageState.top;
+  return typeof top === 'number' ? `${top}px` : top;
 });
 
-const getIconName = (name: string) => {
-  if (name === 'loading') return 'lucide:loader-2';
-  if (name === 'success') return 'lucide:circle-check';
-  if (name === 'error') return 'lucide:circle-x';
-  if (name === 'warning') return 'lucide:triangle-alert';
-  if (name === 'info') return 'lucide:info';
-  return name;
-};
+/** 取单条消息的样式构建器 */
+const themeOf = (item: MessageInstance) => messageTheme({ variant: item.variant, color: item.color });
+
+/** classNames / styles 支持对象或函数两种形态 */
+function semanticClass(item: MessageInstance, key: MessageSemanticDOM): string | undefined {
+  const source = typeof item.classNames === 'function' ? item.classNames({ props: item }) : item.classNames;
+  return source?.[key];
+}
+function semanticStyle(item: MessageInstance, key: MessageSemanticDOM): CSSProperties | undefined {
+  const source = typeof item.styles === 'function' ? item.styles({ props: item }) : item.styles;
+  return source?.[key];
+}
+
+/** VNode（或返回 VNode 的函数）走 component :is 渲染 */
+function asComponent(node?: MessageNode) {
+  if (!node || typeof node === 'string') return null;
+  return typeof node === 'function' ? node : () => node;
+}
+
+/** 图标名：icon 传字符串时优先，否则按 type 取默认图标 */
+function iconName(item: MessageInstance) {
+  return typeof item.icon === 'string' ? item.icon : MESSAGE_TYPE_ICON[item.type];
+}
+
+function handleMouseEnter(item: MessageInstance) {
+  if (item.pauseOnHover) pauseMessage(item.id);
+}
+function handleMouseLeave(item: MessageInstance) {
+  if (item.pauseOnHover) resumeMessage(item.id);
+}
 </script>
+
 <template>
-  <RebornOverlay v-if="state.cover" :model-value="!!state.show" :z-index="state.zIndex || 100"
-    custom-style="background-color:transparent;pointer-events:auto;" />
-  <RebornTransition name="fade" :show="!!state.show"
-    :custom-style="`z-index:${state.zIndex || 100};position:fixed;left:0;top:50%;width:100%;transform:translateY(-50%);text-align:center;pointer-events:none;`">
-    <div :class="rootClass">
-      <Transition name="fade-content" mode="out-in">
-        <div :key="state.msg + (state.iconName || '') + (state.color || '')"
-          class="flex items-center justify-center transition-all duration-300"
-          :class="{ 'flex-col': state.direction === 'vertical' }">
-          <Icon v-if="state.iconName" :name="getIconName(state.iconName)" :class="[
-            state.iconName === 'loading' ? 'animate-spin' : '',
-            state.iconName === 'success' ? 'text-success' : '',
-            state.iconName === 'error' ? 'text-error' : '',
-            state.iconName === 'warning' ? 'text-warning' : '',
-            state.iconName === 'info' ? 'text-info' : '',
-            state.direction === 'vertical' ? 'mb-2 text-3xl' : 'mr-2 text-xl'
-          ]" />
-          <span :class="toastTheme.msg">{{ state.msg }}</span>
-        </div>
-      </Transition>
+  <TransitionGroup
+    tag="div" name="reborn-message" :class="messageTheme().wrapper()" :style="{ top: topStyle }"
+    :dir="messageState.rtl ? 'rtl' : undefined"
+  >
+    <div
+      v-for="item in messageState.list" :key="item.id"
+      :class="[themeOf(item).root(), item.className, semanticClass(item, 'root')]"
+      :style="[item.style ?? {}, semanticStyle(item, 'root') ?? {}]"
+      role="alert"
+      @click="item.onClick?.($event)"
+      @mouseenter="handleMouseEnter(item)"
+      @mouseleave="handleMouseLeave(item)"
+    >
+      <span :class="[themeOf(item).iconWrapper(), semanticClass(item, 'icon')]" :style="semanticStyle(item, 'icon')">
+        <component :is="asComponent(item.icon)" v-if="asComponent(item.icon)" />
+        <Icon
+          v-else :name="iconName(item)"
+          :class="[themeOf(item).icon(), item.type === 'loading' && !item.icon ? 'animate-spin' : '']"
+        />
+      </span>
+
+      <span :class="[themeOf(item).content(), semanticClass(item, 'content')]" :style="semanticStyle(item, 'content')">
+        <component :is="asComponent(item.content)" v-if="asComponent(item.content)" />
+        <template v-else>{{ item.content }}</template>
+      </span>
     </div>
-  </RebornTransition>
+  </TransitionGroup>
 </template>
 
 <style scoped>
-.fade-content-enter-active,
-.fade-content-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+.reborn-message-enter-active,
+.reborn-message-leave-active,
+.reborn-message-move {
+  transition: opacity 0.24s ease, transform 0.24s ease;
 }
 
-.fade-content-enter-from,
-.fade-content-leave-to {
+.reborn-message-enter-from {
   opacity: 0;
-  transform: scale(0.95);
+  transform: translateY(-16px) scale(0.96);
+}
+
+.reborn-message-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+
+/* 离场元素脱离文档流，让后续消息的 move 过渡平滑上移 */
+.reborn-message-leave-active {
+  position: absolute;
 }
 </style>
