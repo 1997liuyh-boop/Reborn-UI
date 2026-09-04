@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AlertColor, AlertType, AlertUI, AlertVariant } from './reborn-alert.config'
-import { computed, useSlots } from 'vue'
+import type { AlertColor, AlertDirection, AlertType, AlertUI, AlertVariant } from './reborn-alert.config'
+import { computed, getCurrentInstance, nextTick, onMounted, ref, useSlots, watch } from 'vue'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
 import { cn } from '@/lib/utils'
 import { ALERT_TYPE_COLOR, ALERT_TYPE_ICON, alertTheme } from './reborn-alert.config'
@@ -24,6 +24,9 @@ const props = withDefaults(defineProps<AlertProps>(), {
   center: false,
   closeIcon: 'i-lucide-x',
   interval: 3000,
+  direction: 'vertical',
+  speed: 60,
+  rows: 1,
   customClass: '',
   ui: () => ({}),
 })
@@ -62,6 +65,12 @@ export interface AlertProps {
   messages?: string[]
   /** 轮播间隔时间，单位毫秒，默认 3000 */
   interval?: number
+  /** 轮播方向：vertical 垂直切换，horizontal 全部消息拼成一行水平跑马灯滚动，默认 vertical */
+  direction?: AlertDirection
+  /** 水平跑马灯的滚动速率，单位 px/s，默认 60 */
+  speed?: number
+  /** 垂直轮播时同时展示的行数；大于 1 时多条消息同时可见并逐行向上滚动，默认 1 */
+  rows?: number
   /** 自定义根节点类名 */
   customClass?: string
   /** 按语义化结构覆盖各节点样式 */
@@ -97,16 +106,84 @@ const ui = computed(() => {
     closeIcon: () => styles.closeIcon({ class: cn(props.ui.closeIcon) }),
     carouselWrapper: () => styles.carouselWrapper({ class: cn(props.ui.carouselWrapper) }),
     carouselItem: () => styles.carouselItem({ class: cn(props.ui.carouselItem) }),
+    marqueeWrapper: () => styles.marqueeWrapper({ class: cn(props.ui.marqueeWrapper) }),
+    marquee: () => styles.marquee({ class: cn(props.ui.marquee) }),
+    marqueeItem: () => styles.marqueeItem({ class: cn(props.ui.marqueeItem) }),
   }
 })
 
-/** 传入 messages 即进入轮播模式，用内置 swiper 做垂直轮播（双端一致） */
+// ─── 消息轮播通知栏 ─────────────────────────────────────────────
+
+/** 传入 messages 即进入轮播模式 */
 const isCarousel = computed(() => (props.messages?.length ?? 0) > 0)
-const autoplay = computed(() => (props.messages?.length ?? 0) > 1)
+const messageCount = computed(() => props.messages?.length ?? 0)
+/** 水平跑马灯 */
+const isHorizontal = computed(() => isCarousel.value && props.direction === 'horizontal')
+/** 垂直模式同时可见的行数，即 swiper 同时显示的滑块数 */
+const rowCount = computed(() => Math.max(1, Math.floor(props.rows)))
+/** 垂直轮播用内置 swiper 承担：条数超过可见行数才自动切换 */
+const autoplay = computed(() => messageCount.value > rowCount.value)
+/** 多行时按行数撑高 swiper（单行 42rpx 由 carouselWrapper 给定） */
+const swiperStyle = computed(() => (rowCount.value > 1 ? `height: ${rowCount.value * 42}rpx;` : ''))
 
 function handleSwiperChange(e: { detail: { current: number } }) {
   emit('change', e.detail.current)
 }
+
+// ─── 水平跑马灯 ─────────────────────────────────────────────────
+
+const proxy = getCurrentInstance()?.proxy
+/** 起点为容器宽度（从右缘滚入），一轮时长按 speed 折算以保持匀速 */
+const marqueeFrom = ref(0)
+const marqueeDuration = ref(0)
+/** 测宽重试次数：入场过渡期间根节点仍为 display:none，会测到 0 宽 */
+const MARQUEE_MEASURE_RETRIES = 5
+
+function measureMarquee(retries = MARQUEE_MEASURE_RETRIES) {
+  if (!isHorizontal.value) {
+    return
+  }
+  nextTick(() => {
+    // 延时等布局完成后再测量（与 reborn-notice-bar 做法一致）
+    setTimeout(() => {
+      const query = uni.createSelectorQuery().in(proxy)
+      query.select('.reborn-alert__marquee-wrapper').boundingClientRect()
+      query.select('.reborn-alert__marquee').boundingClientRect()
+      query.exec((res) => {
+        const wrapperWidth = Math.floor(res?.[0]?.width || 0)
+        const textWidth = Math.ceil(res?.[1]?.width || 0)
+        if (!wrapperWidth || !textWidth) {
+          if (retries > 0) {
+            measureMarquee(retries - 1)
+          }
+          return
+        }
+        marqueeFrom.value = wrapperWidth
+        marqueeDuration.value = (textWidth + wrapperWidth) / props.speed
+      })
+    }, 200)
+  })
+}
+
+/** 测宽完成前不挂动画类，避免以 0 时长起播 */
+const marqueeAnimationClass = computed(() => (marqueeDuration.value > 0 ? 'reborn-alert-marquee' : ''))
+
+const marqueeStyle = computed(() => (
+  marqueeDuration.value > 0
+    ? `--reborn-alert-marquee-from: ${marqueeFrom.value}px; animation-duration: ${marqueeDuration.value}s;`
+    : ''
+))
+
+watch(() => [props.messages, props.direction, props.speed], () => measureMarquee())
+
+/** 重新显示后容器才有宽度，需再测一次 */
+watch(show, (visible) => {
+  if (visible) {
+    measureMarquee()
+  }
+})
+
+onMounted(() => measureMarquee())
 
 function handleClose(e: unknown) {
   show.value = false
@@ -115,11 +192,15 @@ function handleClose(e: unknown) {
 </script>
 
 <template>
-  <RebornTransition name="fade" :show="show" custom-class="w-full" @after-leave="emit('after-close')">
+  <!-- after-enter 时根节点已可见，此时测宽最可靠 -->
+  <RebornTransition
+    name="fade" :show="show" custom-class="w-full"
+    @after-enter="measureMarquee()" @after-leave="emit('after-close')"
+  >
     <view :class="ui.root()">
       <view v-if="showIcon" :class="ui.icon()">
         <slot name="icon">
-          <view :class="iconClass" class="size-full" />
+          <view :class="iconClass" class="size-[32rpx]" />
         </slot>
       </view>
 
@@ -130,23 +211,37 @@ function handleClose(e: unknown) {
           </slot>
         </view>
 
-        <!-- 轮播模式：messages 多条消息垂直轮播 -->
-        <swiper
-          v-if="isCarousel" :class="ui.carouselWrapper()" vertical circular
-          :autoplay="autoplay" :interval="interval" @change="handleSwiperChange"
-        >
-          <swiper-item
-            v-for="(item, index) in messages" :key="index" class="
-              flex h-full items-center
-            "
-          >
-            <view :class="ui.carouselItem()">
-              <slot name="message" :item="item" :index="index">
-                {{ item }}
-              </slot>
+        <!-- 轮播模式：messages 传入即进入，按 direction / rows 分三种形态 -->
+        <template v-if="isCarousel">
+          <!-- 水平跑马灯：全部消息拼成一行，从右向左匀速滚动 -->
+          <view v-if="isHorizontal" :class="ui.marqueeWrapper()">
+            <view :class="[ui.marquee(), marqueeAnimationClass]" :style="marqueeStyle">
+              <view v-for="(item, index) in messages" :key="index" :class="ui.marqueeItem()">
+                <slot name="message" :item="item" :index="index">
+                  {{ item }}
+                </slot>
+              </view>
             </view>
-          </swiper-item>
-        </swiper>
+          </view>
+          <!-- 垂直轮播：单行逐条 / 多行逐行都由 swiper 承担，rows 即同时显示的滑块数 -->
+          <swiper
+            v-else :class="ui.carouselWrapper()" :style="swiperStyle" vertical circular
+            :display-multiple-items="rowCount" :autoplay="autoplay" :interval="interval"
+            @change="handleSwiperChange"
+          >
+            <swiper-item
+              v-for="(item, index) in messages" :key="index" class="
+                flex h-full items-center
+              "
+            >
+              <view :class="ui.carouselItem()">
+                <slot name="message" :item="item" :index="index">
+                  {{ item }}
+                </slot>
+              </view>
+            </swiper-item>
+          </swiper>
+        </template>
         <view v-else-if="slots.default" :class="ui.description()">
           <slot />
         </view>
@@ -164,3 +259,20 @@ function handleClose(e: unknown) {
     </view>
   </RebornTransition>
 </template>
+
+<style scoped>
+/* 水平跑马灯：从容器右缘滚入，整行滚出左缘后循环 */
+@keyframes reborn-alert-marquee {
+  from {
+    transform: translateX(var(--reborn-alert-marquee-from, 100%));
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.reborn-alert-marquee {
+  animation: reborn-alert-marquee linear infinite;
+}
+</style>

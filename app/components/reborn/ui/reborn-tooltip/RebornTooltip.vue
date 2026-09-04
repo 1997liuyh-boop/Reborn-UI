@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import type {CSSProperties} from 'vue';
+import type { TooltipUI } from './reborn-tooltip.config';
 import {
   computed,
-  
+
   nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
   useId,
-  useSlots, watch 
+  useSlots, watch
 } from 'vue';
+import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
 import { rebornTooltip } from './reborn-tooltip.config';
 
@@ -101,6 +103,10 @@ interface RebornTooltipProps {
   zIndex?: number;
   /** 是否禁用 */
   disabled?: boolean;
+  /** 追加到根节点（触发器外层容器）的自定义类名 */
+  class?: any;
+  /** 按语义化结构覆盖各节点样式，键位见文档「自定义样式（ui）」 */
+  ui?: TooltipUI;
 }
 
 interface Position {
@@ -191,11 +197,20 @@ const placementState = computed(() => {
 const actualSide = ref<TooltipSide>('bottom');
 watch(placementState, (state) => { actualSide.value = state.side; }, { immediate: true });
 
-const styles = computed(() =>
-  rebornTooltip({
-    side: actualSide.value,
-  }),
-);
+/** 各节点样式：主题槽位 + ui 覆盖，根节点再并入 class prop */
+const uiOverrides = computed(() => props.ui || {});
+const styles = computed(() => {
+  const theme = rebornTooltip({ side: actualSide.value });
+  const slot = (key: keyof TooltipUI) => (opts?: { class?: any }) =>
+    theme[key]({ class: cn(opts?.class, uiOverrides.value[key]) });
+  return {
+    wrapper: () => theme.wrapper({ class: cn(uiOverrides.value.wrapper, props.class) }),
+    trigger: slot('trigger'),
+    contentWrapper: slot('contentWrapper'),
+    content: slot('content'),
+    arrow: slot('arrow'),
+  };
+});
 
 /** 箭头显隐与指向模式归一化 */
 const showArrow = computed(() => props.arrow !== false);

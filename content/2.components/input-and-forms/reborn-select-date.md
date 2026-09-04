@@ -49,6 +49,7 @@ navigation:
 | `showArrow` | `boolean` | `true` | 是否显示右侧箭头图标。 |
 | `arrowAnimation` | `boolean` | `true` | 展开时箭头是否旋转动画。 |
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。 |
+| `autoAdjustOverflow` | `boolean` | `true` | 下拉框是否自动调整位置：下方空间不足且上方更宽裕时向上展开；关闭后固定向下展开。 |
 | `triggerUi` | `Partial<SelectTriggerUI>` | `{}` | 用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。 |
 | `class` | `any` | - | 追加到触发器根元素的自定义类名（Web 端）。 |
 | `ui` | `Partial<SelectDateUiShape>` | `{}` | 组件自身样式覆盖对象，两端键位不同：UniApp 端可重写范围选择区、快捷选项、底部按钮等（见下方 `ui`），Web 端可重写日历面板各区域。 |

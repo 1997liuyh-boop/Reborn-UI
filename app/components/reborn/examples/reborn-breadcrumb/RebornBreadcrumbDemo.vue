@@ -2,7 +2,7 @@
 import type { BreadcrumbRoute } from "~/components/reborn/ui/reborn-breadcrumb/reborn-breadcrumb.config";
 import RebornBreadcrumb from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumb.vue";
 import RebornBreadcrumbItem from "~/components/reborn/ui/reborn-breadcrumb/RebornBreadcrumbItem.vue";
-import RebornDropdownItem from "~/components/reborn/ui/reborn-dropdown/RebornDropdownItem.vue";
+import RebornDoption from "~/components/reborn/ui/reborn-dropdown/RebornDoption.vue";
 
 /** 演练场默认状态 */
 const defaultState = {
@@ -293,9 +293,9 @@ const lastSelected = ref("");
             <RebornBreadcrumbItem>
               频道
               <template #droplist>
-                <RebornDropdownItem command="a">自定义项 1</RebornDropdownItem>
-                <RebornDropdownItem command="b">自定义项 2</RebornDropdownItem>
-                <RebornDropdownItem command="c" divided>自定义项 3</RebornDropdownItem>
+                <RebornDoption value="a">自定义项 1</RebornDoption>
+                <RebornDoption value="b">自定义项 2</RebornDoption>
+                <RebornDoption value="c">自定义项 3</RebornDoption>
               </template>
             </RebornBreadcrumbItem>
             <RebornBreadcrumbItem>新闻</RebornBreadcrumbItem>

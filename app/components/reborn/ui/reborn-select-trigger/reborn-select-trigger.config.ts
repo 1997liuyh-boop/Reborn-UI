@@ -4,15 +4,24 @@ const sizes = ["sm", "md", "lg"] as const;
 
 export { sizes as selectTriggerSizes };
 
+/** 浮层展开方向：auto 为向下展开、空间不足时自动向上（默认） */
+export const selectTriggerSides = ["auto", "top", "bottom", "left", "right"] as const;
+export type SelectTriggerSide = (typeof selectTriggerSides)[number];
+
+/** 浮层在交叉轴上的对齐方式 */
+export const selectTriggerAligns = ["start", "center", "end"] as const;
+export type SelectTriggerAlign = (typeof selectTriggerAligns)[number];
+
 /** 浮层容器可覆盖的样式键 */
 export type SelectTriggerUI = Partial<{
     wrapper: ClassValue;
     dropdown: ClassValue;
     dropdownInner: ClassValue;
+    arrow: ClassValue;
 }>;
 
 /** 浮层容器独占的 ui 键，用于把消费方的合并 ui 配置拆成两半 */
-const OVERLAY_UI_KEYS = ["wrapper", "dropdown", "dropdownInner"] as const;
+const OVERLAY_UI_KEYS = ["wrapper", "dropdown", "dropdownInner", "arrow"] as const;
 
 /**
  * 把消费方对外暴露的 triggerUi（触发器盒子 + 浮层两部分混在一起）拆开：
@@ -43,6 +52,10 @@ export default {
         // 圆角 8px（rounded-ui-sm）；内边距不放这里，展开动画走 height:0 → scrollHeight，border-box 下内边距会撑出一段残留高度
         dropdown: "absolute z-50 w-full flex flex-col rounded-ui-sm border border-gray-3 bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
         dropdownInner: "w-full shrink-0",
+        // 指向触发器的小箭头：12px 正方形旋转 45°，与浮层同底色同描边。
+        // 它是浮层的同级节点而非子节点：浮层展开 / 收起动画期间是 overflow-hidden，探出盒子的箭头会被瞬间裁掉；
+        // 独立成节点后按同样时长淡入淡出。位置（贴在浮层朝向触发器的边上、对准触发器中心）与描边方向由组件内联下发
+        arrow: "absolute size-3 border border-gray-3 bg-gray-1 pointer-events-none",
     },
     variants: {
         /**
@@ -54,10 +67,12 @@ export default {
          */
         portal: {
             true: {
-                dropdown: "absolute top-0 left-0 z-[9999] w-auto min-w-[var(--rb-trigger-width)]"
+                dropdown: "absolute top-0 left-0 z-[9999] w-auto min-w-[var(--rb-trigger-width)]",
+                arrow: "z-[9999]",
             },
             false: {
-                dropdown: "absolute z-50 w-full"
+                dropdown: "absolute z-50 w-full",
+                arrow: "z-50",
             }
         },
         /**
@@ -71,21 +86,32 @@ export default {
             lg: {},
         },
         /**
-         * 展开方向。偏移类只在行内模式下给出：
+         * 实际展开方向（auto 已在组件内解析为 top / bottom）。偏移类只在行内模式下给出：
          * 传送模式的 top / left / transform 全部由组件内联下发，
          * 若这里再叠 top-full / bottom-full，两套定位会互相打架（只是恰好被内联优先级压住）。
          */
         placement: {
             bottom: {},
             top: {},
+            left: {},
+            right: {},
+        },
+        /** 交叉轴对齐，仅传送模式生效（由组件内联下发），行内模式恒为 start */
+        align: {
+            start: {},
+            center: {},
+            end: {},
         },
     },
     compoundVariants: [
         { portal: false, placement: "bottom", class: { dropdown: "top-full mt-1" } },
         { portal: false, placement: "top", class: { dropdown: "bottom-full mb-1" } },
+        { portal: false, placement: "left", class: { dropdown: "right-full top-0 mr-1 w-auto" } },
+        { portal: false, placement: "right", class: { dropdown: "left-full top-0 ml-1 w-auto" } },
     ],
     defaultVariants: {
         size: "md" as (typeof sizes)[number],
         placement: "bottom" as const,
+        align: "start" as const,
     },
 };

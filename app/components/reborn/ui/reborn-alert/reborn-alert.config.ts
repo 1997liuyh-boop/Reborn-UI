@@ -12,6 +12,10 @@ export type AlertVariant = (typeof alertVariants)[number];
 export const alertColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const;
 export type AlertColor = (typeof alertColors)[number];
 
+/** 轮播方向：vertical 垂直切换（rows > 1 时多行逐行滚动），horizontal 水平跑马灯 */
+export const alertDirections = ['vertical', 'horizontal'] as const;
+export type AlertDirection = (typeof alertDirections)[number];
+
 /** type → 默认配色（normal 视作中性色） */
 export const ALERT_TYPE_COLOR: Record<AlertType, AlertColor> = {
   info: 'info',
@@ -30,25 +34,25 @@ export const ALERT_TYPE_ICON: Record<AlertType, string> = {
   normal: 'lucide:megaphone',
 };
 
-/*
- * 视觉规格：字号 14px / 常规字重 / 水平内边距 12px / 最小高度 40px。
- * 垂直内边距挂在 content 上（py-2），单行时由 min-h + items-center 撑到 40px，
- * 多行内容自然增高且不会贴边，root 自身保持 padding 0 12px 的规格。
- * filled / outlined / soft / subtle / text / round 配色对齐 reborn-button 的
- * 同名变体（不含 circle），提示是静态容器，故去掉按钮的 hover 反馈。
- */
 export const alertTheme = tv({
   slots: {
-    root: 'reborn-alert relative flex w-full min-h-10 items-center gap-2 px-3 text-sm font-normal leading-[1.5] rounded-ui-sm',
-    icon: 'shrink-0 size-4',
-    content: 'flex min-w-0 flex-1 flex-col gap-0.5 py-2',
+    root: 'reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal leading-[1.5] rounded-ui-sm',
+    icon: 'flex h-[1.5em] shrink-0 items-center',
+    content: 'flex min-w-0 flex-1 flex-col gap-2',
     title: 'font-medium',
     description: 'min-w-0',
-    action: 'shrink-0',
-    closeButton: 'shrink-0 inline-flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none',
+    action: 'flex min-h-[1.5em] shrink-0 items-center',
+    closeButton: 'flex size-[1.5em] shrink-0 items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none',
     closeIcon: 'size-3.5 shrink-0',
-    carouselWrapper: 'relative min-w-0 flex-1 overflow-hidden',
+    // 位于内容列中，不能带 flex-1：不定高列容器里 basis 0% 会退化为按内容计算，顶掉多行模式的显式高度
+    carouselWrapper: 'relative min-w-0 overflow-hidden',
     carouselItem: 'truncate',
+    // 多行垂直滚动的轨道：整体 translateY 逐行上移，回卷时由组件临时关闭过渡
+    carouselList: 'flex flex-col transition-transform duration-300 ease-out',
+    // 水平跑马灯：不换行的整行文本，由组件测宽后驱动 CSS 动画
+    marqueeWrapper: 'relative min-w-0 overflow-hidden',
+    marquee: 'inline-block whitespace-nowrap will-change-transform',
+    marqueeItem: 'mr-6 last:mr-0',
   },
   variants: {
     variant: {
@@ -155,4 +159,8 @@ export interface AlertUI {
   closeIcon?: string;
   carouselWrapper?: string;
   carouselItem?: string;
+  carouselList?: string;
+  marqueeWrapper?: string;
+  marquee?: string;
+  marqueeItem?: string;
 }

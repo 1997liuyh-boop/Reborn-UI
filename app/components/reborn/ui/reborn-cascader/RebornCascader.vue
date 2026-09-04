@@ -77,6 +77,8 @@ export interface CascaderProps {
    * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
    */
   portal?: SelectTriggerProps["portal"];
+  /** 下拉框是否自动调整位置：下方空间不足且上方更宽裕时向上展开；关闭后固定向下 */
+  autoAdjustOverflow?: SelectTriggerProps["autoAdjustOverflow"];
   /** 触发器 UI 配置：触发器盒子与浮层的键混写在一起，组件内部自动拆分下发 */
   triggerUi?: SelectTriggerProps["ui"] & FieldTriggerProps["ui"];
   /** 级联选择器内部组件的 UI 微调配置 */
@@ -106,6 +108,7 @@ const props = withDefaults(defineProps<CascaderProps>(), {
   showArrow: true,
   arrowAnimation: true,
   portal: true,
+  autoAdjustOverflow: true,
   labelKey: "label",
   valueKey: "value",
   childrenKey: "children",
@@ -419,7 +422,8 @@ defineExpose({
 
 <template>
   <RebornSelectTrigger v-if="showTrigger" :class="ui.wrapper({ class: props.class })" :is-open="isOpen"
-    :disabled="disabled" :size="size" :ui="overlayUi" :portal="portal" @close="onOutsideClose">
+    :disabled="disabled" :size="size" :ui="overlayUi" :portal="portal" :auto-adjust-overflow="autoAdjustOverflow"
+    @close="onOutsideClose">
     <template #trigger>
       <RebornFieldTrigger :is-open="isOpen" :disabled="disabled" :clearable="clearable && hasValue" :size="size"
         :color="color" :bordered="bordered" :show-arrow="showArrow" :arrow-animation="arrowAnimation" :ui="fieldUi"

@@ -12,6 +12,10 @@ export type AlertVariant = (typeof alertVariants)[number]
 export const alertColors = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 export type AlertColor = (typeof alertColors)[number]
 
+/** 轮播方向：vertical 垂直切换（rows > 1 时多行逐行滚动），horizontal 水平跑马灯 */
+export const alertDirections = ['vertical', 'horizontal'] as const
+export type AlertDirection = (typeof alertDirections)[number]
+
 /** type → 默认配色（normal 视作中性色） */
 export const ALERT_TYPE_COLOR: Record<AlertType, AlertColor> = {
   info: 'info',
@@ -31,9 +35,13 @@ export const ALERT_TYPE_ICON: Record<AlertType, string> = {
 }
 
 /*
- * 视觉规格对齐 Web 端：字号 28rpx / 常规字重 / 水平内边距 24rpx / 最小高度 80rpx。
- * 垂直内边距挂在 content 上（py 16rpx），单行时由 min-h + items-center 撑到 80rpx，
- * 多行内容自然增高且不会贴边。
+ * 视觉规格对齐 Web 端：字号 28rpx / 常规字重 / 内边距 24rpx 16rpx / 高度自适应（无最小高度）。
+ * 根节点 items-start，图标、关闭按钮是高度等于文字首行行高（1.5em = 42rpx）的 flex
+ * 容器并在其中垂直居中：有标题时以标题首行为中心，无标题时以提示内容首行为中心。
+ * 按钮插槽用 min-h 而非固定高度：不高于一行的内容同样以首行为中心，超过一行高的内容
+ * （如竖排多个按钮）与标题顶部对齐并把盒子撑高，避免溢出。
+ * 间距统一 16rpx（8px）：图标 / 内容 / 按钮插槽 / 关闭按钮之间为 root gap，
+ * 标题与提示内容之间为 content gap。
  * filled / outlined / soft / subtle / text / round 配色对齐 reborn-button 的
  * 同名变体（不含 circle），提示是静态容器，无 hover 反馈
  */
@@ -41,19 +49,35 @@ export const alertTheme = tv({
   slots: {
     /* eslint-disable better-tailwindcss/no-unknown-classes */
     root: `
-      reborn-alert relative flex min-h-[80rpx] w-full items-center gap-[16rpx]
-      rounded-ui-sm px-[24rpx] text-28 font-normal leading-[1.5]
+      reborn-alert relative flex w-full items-start gap-[16rpx] rounded-ui-sm
+      px-[24rpx] py-[16rpx] text-28 font-normal leading-[1.5]
+    `,
+    // reborn-alert__* 是 createSelectorQuery 测宽用的选择器类名，跟随样式一起挂到节点上
+    marqueeWrapper: `
+      reborn-alert__marquee-wrapper h-[42rpx] min-w-0 overflow-hidden
+    `,
+    // 水平跑马灯：不换行的整行文本，由组件测宽后驱动 CSS 动画
+    marquee: `
+      reborn-alert__marquee inline-block whitespace-nowrap will-change-transform
     `,
     /* eslint-enable better-tailwindcss/no-unknown-classes */
-    icon: 'size-[32rpx] shrink-0',
-    content: 'flex min-w-0 flex-1 flex-col gap-[4rpx] py-[16rpx]',
+    icon: 'flex h-[1.5em] shrink-0 items-center',
+    content: 'flex min-w-0 flex-1 flex-col gap-[16rpx]',
     title: 'font-medium',
     description: 'min-w-0',
-    action: 'shrink-0',
-    closeButton: 'inline-flex shrink-0 items-center justify-center rounded-full',
+    action: 'flex min-h-[1.5em] shrink-0 items-center',
+    closeButton: `
+      flex size-[1.5em] shrink-0 items-center justify-center rounded-full
+    `,
     closeIcon: 'size-[28rpx] shrink-0',
-    carouselWrapper: 'h-[42rpx] min-w-0 flex-1',
+    // 单行高度 42rpx（28rpx × 1.5）；多行模式由组件按 rows 用内联样式覆盖高度。
+    // 位于内容列中，不能带 flex-1：不定高列容器里 basis 0% 会退化为按内容计算，顶掉显式高度
+    carouselWrapper: 'h-[42rpx] min-w-0 overflow-hidden',
     carouselItem: 'truncate',
+    marqueeItem: `
+      mr-[48rpx] inline-block
+      last:mr-0
+    `,
   },
   variants: {
     variant: {
@@ -222,4 +246,7 @@ export interface AlertUI {
   closeIcon?: string
   carouselWrapper?: string
   carouselItem?: string
+  marqueeWrapper?: string
+  marquee?: string
+  marqueeItem?: string
 }

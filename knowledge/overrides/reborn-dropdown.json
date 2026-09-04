@@ -1,9 +1,11 @@
 {
-  "description": "用于将一组操作折叠进浮层菜单的下拉组件，悬停或点击展开，仅 web 端。",
+  "description": "当页面上的操作命令过多时用于收纳操作元素的下拉菜单，点击或移入触点展开，选择后触发 select，仅 web 端。",
   "whenToUse": [
-    "把「更多操作」收纳到按钮触发的下拉菜单中，通过 command 事件分发点击项。",
-    "需要 splitButton 模式：左侧主操作按钮 + 右侧箭头展开更多操作。",
-    "需要 hover/click 两种触发方式与 6 向 placement 定位的操作菜单。"
+    "把「更多操作」收纳到触发元素的下拉菜单中，通过 options 配置项或 content 插槽（RebornDoption）声明菜单项，select 事件回传选中项的 value。",
+    "需要多级菜单（RebornDsubmenu，默认悬停、右上角弹出、可无限嵌套，选中逐级冒泡到最外层）或选项分组标题（RebornDgroup）。",
+    "带下拉框的按钮：trigger=manual 让组件不绑定触发行为，整组按钮作为触发器占位，只让右侧箭头按钮调用默认插槽下发的 toggle（插槽参数 visible / open / close / toggle），position 用 bottomRight。",
+    "需要 12 向 position 定位、可选箭头（show-arrow）、header / footer 页头页脚的操作菜单。",
+    "需要 click（默认）或 hover 两种触发方式，以及 v-model:popup-visible 受控显隐。"
   ],
   "whenNotToUse": [
     "uniapp 端不可用（仅 web），uniapp 下拉选值改用 reborn-dropdown-select。",
@@ -12,8 +14,8 @@
   ],
   "pitfalls": [
     "仅 web 端可用。",
-    "菜单项需放在 dropdown 插槽内（通常为 RebornDropdownItem），通过 command 属性标识点击项，divided 在项上方加分隔线。",
-    "trigger 默认 hover；hideOnClick 默认 true 点击菜单项后自动收起。",
-    "portal 默认 true 浮层传送到 body，关闭后浮层随父容器裁剪；组件暴露 open/close/toggle/isOpen。"
+    "菜单项二选一：options 数组（{ label, value, disabled?, icon? }）或 content 插槽内的 RebornDoption（value / disabled），插槽优先；旧版的 command / divided / splitButton / size / color 已移除。",
+    "trigger 默认 click，hover 移动端不支持；hide-on-select 默认 true 选择后自动收起。",
+    "position 为 12 向 camelCase（bottom / bottomLeft / rightTop 等），靠近视口边缘会自动翻转；portal 默认 true 浮层传送到 body。"
   ]
 }

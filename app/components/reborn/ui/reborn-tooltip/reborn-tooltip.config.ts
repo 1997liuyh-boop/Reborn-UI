@@ -37,3 +37,17 @@ export const rebornTooltip = tv({
     side: 'bottom',
   },
 });
+
+/** 语义化结构键，供 ui 属性按节点覆盖样式 */
+export interface TooltipUI {
+  /** 根节点（触发器外层容器），class prop 也并到这里 */
+  wrapper?: string;
+  /** 触发元素的外框 */
+  trigger?: string;
+  /** 浮层定位外壳（fixed 定位、层级） */
+  contentWrapper?: string;
+  /** 提示面板（底色、文字、内边距、圆角、最大宽度） */
+  content?: string;
+  /** 箭头（颜色随 text-* 类，与面板同色） */
+  arrow?: string;
+}

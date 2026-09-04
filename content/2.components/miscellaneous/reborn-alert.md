@@ -30,8 +30,11 @@ navigation:
 | center      | 内容是否居中显示                                             | `boolean`                                                                              | `false`    |
 | icon        | 自定义图标名（也可用 icon 插槽）                             | `string`                                                                               | -          |
 | close-icon  | 关闭按钮的图标                                               | `string`                                                                               | `'lucide:x'` |
-| messages    | 轮播消息列表：传入即变为消息轮播通知栏，多条消息垂直轮播展示 | `string[]`                                                                             | -          |
-| interval    | 轮播间隔时间，单位毫秒                                       | `number`                                                                               | `3000`     |
+| messages    | 轮播消息列表：传入即变为消息轮播通知栏，默认单条逐条垂直轮播 | `string[]`                                                                             | -          |
+| interval    | 垂直轮播的切换间隔，单位毫秒                                 | `number`                                                                               | `3000`     |
+| direction   | 轮播方向：`vertical` 垂直切换；`horizontal` 全部消息拼成一行水平跑马灯滚动 | `'vertical' \| 'horizontal'`                                              | `'vertical'` |
+| speed       | 水平跑马灯的滚动速率，单位 px/s                              | `number`                                                                               | `60`       |
+| rows        | 垂直轮播时同时展示的行数；大于 1 时多条消息同时可见并逐行向上滚动 | `number`                                                                          | `1`        |
 | v-model:show | 显隐状态（受控），关闭按钮会将其置为 false                  | `boolean`                                                                              | `true`     |
 | ui          | 按语义化结构覆盖各节点样式                                   | `AlertUI`                                                                              | -          |
 
@@ -59,6 +62,7 @@ navigation:
 | 能力          | Web 端                          | uniapp 端                                        |
 | ------------ | ------------------------------- | ------------------------------------------------ |
 | 图标          | `Icon` 组件（lucide 图标名）     | tailwind 图标类（`i-lucide-*`）                   |
-| 轮播实现      | `Transition` 垂直进出场          | 内置 `swiper` 垂直轮播（circular + autoplay）     |
+| 垂直轮播实现  | 单行 `Transition` 进出场；多行为列表整体 `translateY` 逐行滚动 | 内置 `swiper` 垂直轮播（circular + autoplay），多行由 `display-multiple-items` 承担 |
+| 水平跑马灯    | `offsetWidth` 测宽后驱动 CSS 动画 | `createSelectorQuery` 测宽后驱动 CSS 动画        |
 | close 事件参数 | `MouseEvent`                    | uniapp 事件对象                                   |
 | 悬停暂停轮播  | 支持                             | 不适用（触屏无悬停）                              |

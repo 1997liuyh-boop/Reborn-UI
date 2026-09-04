@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
 import theme, { selectTriggerSizes } from "./reborn-select-trigger.config";
-import type { SelectTriggerUI } from "./reborn-select-trigger.config";
+import type { SelectTriggerAlign, SelectTriggerSide, SelectTriggerUI } from "./reborn-select-trigger.config";
 
 defineOptions({ inheritAttrs: false });
 
@@ -38,6 +38,23 @@ export interface SelectTriggerProps {
    * 仅当调用方确实需要浮层随父容器一起滚动、一起被裁剪时才关掉。
    */
   portal?: boolean;
+  /**
+   * 浮层展开方向：
+   * - 'auto'（默认）：向下展开，下方空间不足且上方更宽裕时自动向上
+   * - 显式 top / bottom / left / right：按指定方向展开，该侧空间不足且对侧更宽裕时翻转
+   */
+  side?: SelectTriggerSide;
+  /** 浮层在交叉轴上的对齐：start 与触发器起点对齐（默认）、center 居中、end 与终点对齐；仅传送模式生效 */
+  align?: SelectTriggerAlign;
+  /** 浮层与触发器的间距（px） */
+  offset?: number;
+  /** 是否显示指向触发器的小箭头 */
+  arrow?: boolean;
+  /**
+   * 下拉框是否自动调整位置：目标侧空间不足时翻转到对侧（auto 方向下即「下方不足改向上」）。
+   * 关闭后严格按 side 展开（auto 视为 bottom），不再依据视口余量翻转。
+   */
+  autoAdjustOverflow?: boolean;
 }
 
 const props = withDefaults(defineProps<SelectTriggerProps>(), {
@@ -45,15 +62,20 @@ const props = withDefaults(defineProps<SelectTriggerProps>(), {
   disabled: false,
   size: "md",
   closeOn: "click",
-  portal: true
+  portal: true,
+  side: "auto",
+  align: "start",
+  offset: 4,
+  arrow: false,
+  autoAdjustOverflow: true,
 });
 
 const emit = defineEmits<{
   (e: "keydown", event: KeyboardEvent): void;
   (e: "enter"): void;
   (e: "afterEnter"): void;
-  /** 在触发器外发生了 closeOn 指定的鼠标事件，请求父组件收起下拉 */
-  (e: "close"): void;
+  /** 在触发器外发生了 closeOn 指定的鼠标事件，请求父组件收起下拉；附带原始事件供父组件二次判定 */
+  (e: "close", event?: Event): void;
 }>();
 
 const isOpening = ref(false);
@@ -61,14 +83,19 @@ const transitionRef = ref<any>(null);
 const transitionElRef = ref<HTMLElement | null>(null);
 const dropdownInnerRef = ref<HTMLElement | null>(null);
 const wrapperRef = ref<HTMLElement | null>(null);
-const isUpward = ref(false);
 
-/** 浮层与触发器的间距，与行内模式的 mt-1 / mb-1 (4px) 对齐 */
-const GAP = 4;
-/** 传送模式下浮层右侧保留的视口边距，避免内容撑宽后溢出屏幕 */
+/** 实际展开方向：auto 在展开瞬间解析为 top / bottom，显式方向空间不足时翻转到对侧 */
+type ResolvedSide = Exclude<SelectTriggerSide, "auto">;
+const resolvedSide = ref<ResolvedSide>("bottom");
+/** 箭头中心点坐标（传送模式为文档坐标，行内模式相对 wrapper），与浮层坐标一样在 syncFloating 中写入 */
+const arrowPoint = ref({ x: 0, y: 0 });
+
+/** 传送模式下浮层与视口边缘保留的边距，避免内容撑宽后溢出屏幕 */
 const VIEWPORT_MARGIN = 8;
-/** 下方剩余空间低于此值且上方更宽裕时改为向上展开 */
+/** 上下展开：目标侧剩余空间低于此值且对侧更宽裕时翻转 */
 const UPWARD_THRESHOLD = 280;
+/** 左右展开：目标侧剩余空间低于此值且对侧更宽裕时翻转 */
+const SIDEWAYS_THRESHOLD = 200;
 
 /** 浮层实际的过渡元素，传送后它已不是 wrapper 的 DOM 后代 */
 function floatingEl(): HTMLElement | null {
@@ -76,22 +103,39 @@ function floatingEl(): HTMLElement | null {
   return transitionElRef.value ?? exposed?.value ?? exposed ?? null;
 }
 
-/** 依据触发器在视口中的余量判断该向上还是向下展开 */
-function resolvePlacement(rect: DOMRect) {
+/** 依据触发器在视口中的余量解析实际展开方向；关闭自动调整时严格按 side 展开 */
+function resolvePlacement(rect: DOMRect): ResolvedSide {
+  if (!props.autoAdjustOverflow) {
+    return props.side === "auto" ? "bottom" : props.side;
+  }
+
   const spaceBelow = window.innerHeight - rect.bottom;
   const spaceAbove = rect.top;
-  return spaceBelow < UPWARD_THRESHOLD && spaceAbove > spaceBelow;
+  const spaceLeft = rect.left;
+  const spaceRight = window.innerWidth - rect.right;
+
+  switch (props.side) {
+    case "top":
+      return spaceAbove < UPWARD_THRESHOLD && spaceBelow > spaceAbove ? "bottom" : "top";
+    case "left":
+      return spaceLeft < SIDEWAYS_THRESHOLD && spaceRight > spaceLeft ? "right" : "left";
+    case "right":
+      return spaceRight < SIDEWAYS_THRESHOLD && spaceLeft > spaceRight ? "left" : "right";
+    // bottom 与 auto 同规则：下方不足且上方更宽裕时向上
+    default:
+      return spaceBelow < UPWARD_THRESHOLD && spaceAbove > spaceBelow ? "top" : "bottom";
+  }
 }
 
 /**
  * 决策展开方向。只在「展开瞬间」与「视口尺寸变化」时调用，滚动过程中不重算：
- * 方向翻转会让浮层在触发器上方与下方之间瞬移，正是滚动时浮层脱离触发器的主因。
+ * 方向翻转会让浮层在触发器两侧之间瞬移，正是滚动时浮层脱离触发器的主因。
  * 同时它影响的是类名（要走 Vue 渲染），必须在浮层插入 DOM 前定下来，否则首帧用错变体。
  */
 function lockPlacement() {
   const anchor = wrapperRef.value;
   if (!anchor) return;
-  isUpward.value = resolvePlacement(anchor.getBoundingClientRect());
+  resolvedSide.value = resolvePlacement(anchor.getBoundingClientRect());
 }
 
 /**
@@ -100,38 +144,127 @@ function lockPlacement() {
  * 两个定位选择都是为了「零测量」，让浏览器在同一帧内自行代入几何量：
  * 1. absolute + 文档坐标（而非 fixed + 视口坐标）：页面滚动时浮层与触发器处于同一
  *    坐标系，浏览器自然同步，不靠 scroll 回调补位；
- * 2. 向上展开用 translateY(-100%)（而非 top 减去浮层高度）：高度每帧由浏览器代入，
- *    展开动画期间（height 0 → auto）浮层底边始终贴住触发器，不会出现「动画结束才回正」。
+ * 2. 向上 / 向左 / 居中 / 末端对齐一律用百分比 translate（而非 top 减去浮层尺寸）：
+ *    尺寸每帧由浏览器代入，展开动画期间（height 0 → auto）浮层始终贴住触发器，
+ *    不会出现「动画结束才回正」。
  */
 function syncFloating() {
   const anchor = wrapperRef.value;
   if (!anchor) return;
+
+  const rect = anchor.getBoundingClientRect();
+  const scrollX = window.scrollX || window.pageXOffset;
+  const scrollY = window.scrollY || window.pageYOffset;
+  syncArrow(rect, scrollX, scrollY);
+
   if (!props.portal) return;
 
   const el = floatingEl();
   if (!el) return;
 
-  const rect = anchor.getBoundingClientRect();
-  const scrollX = window.scrollX || window.pageXOffset;
-  const scrollY = window.scrollY || window.pageYOffset;
   const style = el.style;
+  const side = resolvedSide.value;
+  const align = props.align;
+  const gap = props.offset;
+  const viewportWidth = window.innerWidth;
+
+  let left = rect.left;
+  let top = rect.bottom + gap;
+  let translateX = "0";
+  let translateY = "0";
+  let maxWidth = viewportWidth - rect.left - VIEWPORT_MARGIN;
+
+  if (side === "top" || side === "bottom") {
+    if (align === "center") {
+      left = rect.left + rect.width / 2;
+      translateX = "-50%";
+      maxWidth = viewportWidth - VIEWPORT_MARGIN * 2;
+    } else if (align === "end") {
+      left = rect.right;
+      translateX = "-100%";
+      maxWidth = rect.right - VIEWPORT_MARGIN;
+    }
+    if (side === "top") {
+      top = rect.top - gap;
+      translateY = "-100%";
+    }
+  } else {
+    top = rect.top;
+    if (align === "center") {
+      top = rect.top + rect.height / 2;
+      translateY = "-50%";
+    } else if (align === "end") {
+      top = rect.bottom;
+      translateY = "-100%";
+    }
+    if (side === "right") {
+      left = rect.right + gap;
+      maxWidth = viewportWidth - rect.right - gap - VIEWPORT_MARGIN;
+    } else {
+      left = rect.left - gap;
+      translateX = "-100%";
+      maxWidth = rect.left - gap - VIEWPORT_MARGIN;
+    }
+  }
 
   style.setProperty("--rb-trigger-width", `${rect.width}px`);
-  style.left = `${rect.left + scrollX}px`;
+  style.left = `${left + scrollX}px`;
+  style.top = `${top + scrollY}px`;
   style.right = "auto";
   style.bottom = "auto";
   style.marginTop = "0px";
   style.marginBottom = "0px";
-  style.maxWidth = `${Math.max(0, window.innerWidth - rect.left - VIEWPORT_MARGIN)}px`;
-
-  if (isUpward.value) {
-    style.top = `${rect.top + scrollY - GAP}px`;
-    style.transform = "translateY(-100%) translateZ(0)";
-  } else {
-    style.top = `${rect.bottom + scrollY + GAP}px`;
-    style.transform = "translateZ(0)";
-  }
+  style.maxWidth = `${Math.max(0, maxWidth)}px`;
+  style.transform = `translate(${translateX}, ${translateY}) translateZ(0)`;
 }
+
+/**
+ * 箭头中心点：落在浮层朝向触发器的那条边上、对准触发器中心，只由触发器几何与间距决定，
+ * 不需要测量浮层。传送模式换算成文档坐标（与浮层同一坐标系），行内模式相对 wrapper。
+ */
+function syncArrow(rect: DOMRect, scrollX: number, scrollY: number) {
+  const gap = props.offset;
+  let x = rect.width / 2;
+  let y = rect.height / 2;
+
+  switch (resolvedSide.value) {
+    case "bottom":
+      y = rect.height + gap;
+      break;
+    case "top":
+      y = -gap;
+      break;
+    case "right":
+      x = rect.width + gap;
+      break;
+    default:
+      x = -gap;
+  }
+
+  if (props.portal) {
+    x += rect.left + scrollX;
+    y += rect.top + scrollY;
+  }
+  arrowPoint.value = { x, y };
+}
+
+/**
+ * 箭头样式：以中心点定位并旋转 45°，只保留朝外两条边的描边，
+ * 探进浮层内的那一半用同底色盖住浮层描边，看起来与面板连成一体。
+ */
+const ARROW_BORDER_WIDTH: Record<ResolvedSide, string> = {
+  bottom: "1px 0 0 1px",
+  top: "0 1px 1px 0",
+  left: "1px 1px 0 0",
+  right: "0 0 1px 1px",
+};
+
+const arrowStyle = computed<Record<string, string>>(() => ({
+  left: `${arrowPoint.value.x}px`,
+  top: `${arrowPoint.value.y}px`,
+  transform: "translate(-50%, -50%) rotate(45deg)",
+  borderWidth: ARROW_BORDER_WIDTH[resolvedSide.value],
+}));
 
 /** 滚动补位合批到下一帧，避免一次滚动手势内多次强制同步布局 */
 let syncFrame = 0;
@@ -167,7 +300,7 @@ function containsNode(node: Node | null) {
 function onOutsideEvent(event: Event) {
   if (!props.isOpen) return;
   if (!containsNode(event.target as Node)) {
-    emit("close");
+    emit("close", event);
   }
 }
 
@@ -248,7 +381,8 @@ const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
   const styles = b({
     size: props.size,
-    placement: isUpward.value ? "top" : "bottom",
+    placement: resolvedSide.value,
+    align: props.align,
     portal: props.portal
   });
 
@@ -259,6 +393,8 @@ const ui = computed(() => {
       styles.dropdown({ class: cn(opts?.class, uiOverrides.value.dropdown) }),
     dropdownInner: (opts?: { class?: any }) =>
       styles.dropdownInner({ class: cn(opts?.class, uiOverrides.value.dropdownInner) }),
+    arrow: (opts?: { class?: any }) =>
+      styles.arrow({ class: cn(opts?.class, uiOverrides.value.arrow) }),
   };
 });
 
@@ -341,6 +477,12 @@ defineExpose({
           <slot name="content" />
         </div>
       </RebornTransition>
+
+      <!-- 箭头与浮层同级、同时长淡入淡出，避免被浮层展开 / 收起期间的 overflow-hidden 裁掉 -->
+      <RebornTransition
+        v-if="arrow" :show="isOpen" :duration="{ enter: 300, leave: 200 }" name="fade"
+        :custom-class="ui.arrow()" :custom-style="arrowStyle"
+      />
     </Teleport>
   </div>
 </template>

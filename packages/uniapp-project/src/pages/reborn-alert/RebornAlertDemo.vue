@@ -34,6 +34,7 @@ const noticeMessages = [
   '系统将于今晚 24:00 进行升级维护',
   '新版本 2.41.0 已发布，新增 normal 类型',
   '文档站已支持双端演示与在线运行',
+  '组件库知识库与 AI 助手已上线，欢迎试用',
 ]
 const noticeIndex = ref(0)
 </script>
@@ -311,14 +312,18 @@ const noticeIndex = ref(0)
             dark:text-slate-300
           "
         >
-          通过 messages 传入多条消息即变为轮播通知栏，垂直轮播展示，interval 控制间隔。
+          通过 messages 传入消息即变为轮播通知栏，三种形态：默认单条逐条垂直轮播；direction=horizontal 水平跑马灯，speed 控制速率；rows 大于 1 时多条消息同时可见并逐行向上滚动。
         </view>
       </template>
       <RebornAlert
         type="normal" banner :messages="noticeMessages" :interval="2500" closable
         @change="noticeIndex = $event"
       />
-      <text class="text-xs text-slate-400">当前第 {{ noticeIndex + 1 }} / {{ noticeMessages.length }} 条</text>
+      <text class="text-xs text-slate-400">单条逐条垂直轮播：当前第 {{ noticeIndex + 1 }} / {{ noticeMessages.length }} 条</text>
+      <RebornAlert type="info" banner :messages="noticeMessages" direction="horizontal" :speed="60" closable />
+      <text class="text-xs text-slate-400">水平跑马灯滚动（speed = 60 px/s）</text>
+      <RebornAlert type="warning" banner :messages="noticeMessages" :rows="2" :interval="2000" closable />
+      <text class="text-xs text-slate-400">多条消息垂直滚动（rows = 2，每次上移一行）</text>
     </RebornCard>
   </RebornPage>
 </template>

@@ -104,6 +104,8 @@ export interface SelectProps {
    * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
    */
   portal?: SelectTriggerProps["portal"];
+  /** 下拉框是否自动调整位置：下方空间不足且上方更宽裕时向上展开；关闭后固定向下 */
+  autoAdjustOverflow?: SelectTriggerProps["autoAdjustOverflow"];
   /** 触发器 UI 配置：触发器盒子与浮层的键混写在一起，组件内部自动拆分下发 */
   triggerUi?: SelectTriggerProps["ui"] & SelectFieldUI;
   /** 下拉列表内部组件的 UI 微调配置 */
@@ -157,6 +159,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   icon: "lucide:chevron-down",
   closeOn: "click",
   portal: true,
+  autoAdjustOverflow: true,
 });
 
 /**
@@ -716,7 +719,8 @@ function scrollToActive(instant = false) {
 
 <template>
   <RebornSelectTrigger :class="props.class" :is-open="isOpen" :disabled="isDisabled" :size="fieldGroupSize || size"
-    :ui="overlayUi" :scroll-to-active="scrollToActive" :close-on="closeOn" :portal="portal" @keydown="onKeydown"
+    :ui="overlayUi" :scroll-to-active="scrollToActive" :close-on="closeOn" :portal="portal"
+    :auto-adjust-overflow="autoAdjustOverflow" @keydown="onKeydown"
     @enter="onDropdownEnter" @close="onOutsideClose">
     <template #trigger>
       <!-- 触发器盒子：样式由本组件的 theme 直接给出，不再借道 RebornFieldTrigger -->

@@ -39,6 +39,7 @@ navigation:
 | `leafLevel` | `number` | `0` | 限制选择层级 (0为不限制) |
 | `multiple` | `boolean` | `false` | 是否多选 |
 | `portal` | `boolean` | `true` | （Web）浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪 |
+| `autoAdjustOverflow` | `boolean` | `true` | （Web）下拉框是否自动调整位置：下方空间不足且上方更宽裕时向上展开；关闭后固定向下展开 |
 | `ui` | `CascaderUI` | `{}` | 样式覆盖对象 |
 
 ## Events

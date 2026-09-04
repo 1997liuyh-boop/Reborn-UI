@@ -1,245 +1,313 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, provide, ref } from "vue";
-import type { ClassValue } from "clsx";
-import { cn } from "~/lib/utils";
-import { tv } from "~/lib/tv";
-import theme, { dropdownSizes, dropdownColors } from "./reborn-dropdown.config";
-import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
-import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
+import type {
+  DropdownContext,
+  DropdownOption,
+  DropdownPosition,
+  DropdownTrigger,
+  DropdownUI,
+  DropdownValue,
+} from './reborn-dropdown.config';
+import { computed, inject, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue';
+import { cn } from '~/lib/utils';
+import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue';
+import { DROPDOWN_INJECTION_KEY, DROPDOWN_POSITION_MAP, dropdownTheme } from './reborn-dropdown.config';
+import RebornDoption from './RebornDoption.vue';
 
-defineOptions({ inheritAttrs: false });
-
-export interface DropdownProps {
-  /** 是否呈现为按钮组（左侧功能按钮 + 右侧触发按钮） */
-  splitButton?: boolean;
-  /** 点击菜单项后是否自动隐藏下拉 */
-  hideOnClick?: boolean;
-  /** 触发方式：hover 悬浮 / click 点击 */
-  trigger?: "hover" | "click";
-  /** hover 模式下打开延迟（ms），避免误触 */
-  openDelay?: number;
-  /** hover 模式下关闭延迟（ms），允许鼠标移回 */
-  closeDelay?: number;
-  /** 是否禁用 */
-  disabled?: boolean;
-  /** 尺寸 */
-  size?: (typeof dropdownSizes)[number];
-  /** 主题颜色 */
-  color?: (typeof dropdownColors)[number];
-  /** 弹出位置 */
-  placement?: "bottom-start" | "bottom" | "bottom-end" | "top-start" | "top" | "top-end";
-  /**
-   * 浮层是否传送到 body（默认 true）。
-   * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
-   */
-  portal?: SelectTriggerProps["portal"];
-  /** 自定义类名 */
-  class?: any;
-  /** UI 局部重写 */
-  ui?: Partial<{
-    wrapper: ClassValue;
-    trigger: ClassValue;
-    splitRoot: ClassValue;
-    splitMain: ClassValue;
-    splitArrow: ClassValue;
-    dropdown: ClassValue;
-    item: ClassValue;
-    divider: ClassValue;
-    label: ClassValue;
-  }>;
-}
+defineOptions({ name: 'RebornDropdown' });
 
 const props = withDefaults(defineProps<DropdownProps>(), {
-  splitButton: false,
-  hideOnClick: true,
-  trigger: "hover",
-  openDelay: 100,
-  closeDelay: 200,
+  showArrow: false,
   disabled: false,
-  size: "md",
-  color: "primary",
-  placement: "bottom-start",
+  options: () => [],
+  position: 'bottom',
+  trigger: 'click',
+  hideOnSelect: true,
   portal: true,
+  autoAdjustOverflow: true,
 });
 
 const emit = defineEmits<{
-  /** 菜单项被点击时触发，参数为该项的 command 值 */
-  (e: "command", key: string): void;
-  /** 下拉展开/收起状态变化 */
-  (e: "visible-change", visible: boolean): void;
+  /** 下拉框显示状态发生改变时触发（模板中以 @popup-visible-change 监听） */
+  popupVisibleChange: [visible: boolean];
+  /** 用户选择时触发 */
+  select: [value: DropdownValue, ev: Event];
 }>();
 
-// --- 状态与表单注入 ---
-const { disabled: formDisabled, size: formSize } = useFormInject(props);
-const isDisabled = computed(() => formDisabled.value || props.disabled);
-const isOpen = ref(false);
+export interface DropdownProps {
+  /**
+   * 下拉框箭头是否显示
+   * @defaultValue false
+   */
+  showArrow?: boolean;
+  /**
+   * 菜单是否禁用
+   * @defaultValue false
+   */
+  disabled?: boolean;
+  /** 菜单配置项；与 content 插槽二选一，插槽优先 */
+  options?: DropdownOption[];
+  /**
+   * 菜单弹出位置
+   * @defaultValue 'bottom'
+   */
+  position?: DropdownPosition;
+  /**
+   * 触发下拉的行为，移动端不支持 hover；manual 由使用者通过插槽下发的 open / close / toggle 或 v-model:popup-visible 控制
+   * @defaultValue 'click'
+   */
+  trigger?: DropdownTrigger;
+  /** 浮层与触发器的间距（px）；未传时无箭头为 4、带箭头为 8 */
+  popupOffset?: number;
+  /**
+   * 用户选择后是否自动收起菜单
+   * @defaultValue true
+   */
+  hideOnSelect?: boolean;
+  /**
+   * 浮层是否传送到 body；关闭后浮层留在触发器内，随父容器一起滚动与裁剪
+   * @defaultValue true
+   */
+  portal?: boolean;
+  /**
+   * 下拉框是否自动调整位置：position 指定的一侧空间不足时翻转到对侧；关闭后严格按 position 弹出
+   * @defaultValue true
+   */
+  autoAdjustOverflow?: boolean;
+  class?: any;
+  /** 按语义化结构覆盖各节点样式 */
+  ui?: DropdownUI;
+}
 
-let openTimer: ReturnType<typeof setTimeout> | null = null
-let closeTimer: ReturnType<typeof setTimeout> | null = null
+const slots = useSlots();
 
-// --- 核心逻辑 ---
-function clearAllTimers() {
-  if (openTimer) { clearTimeout(openTimer); openTimer = null }
-  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null }
+/**
+ * 父级 Dropdown 的上下文（子菜单场景）。必须在本组件 provide 之前 inject，
+ * 否则读到的是自己刚 provide 的那份。
+ */
+const parent = inject<DropdownContext | null>(DROPDOWN_INJECTION_KEY, null);
+
+/** 下拉框显隐，支持 v-model:popup-visible 受控 */
+const popupVisible = defineModel<boolean>('popupVisible', { default: false });
+
+/** hover 触发的展开 / 收起延迟：前者防误触，后者留出鼠标从触发器移入面板的时间 */
+const HOVER_OPEN_DELAY = 100;
+const HOVER_CLOSE_DELAY = 150;
+let openTimer: ReturnType<typeof setTimeout> | null = null;
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearTimers() {
+  if (openTimer) {
+    clearTimeout(openTimer);
+    openTimer = null;
+  }
+  if (closeTimer) {
+    clearTimeout(closeTimer);
+    closeTimer = null;
+  }
+}
+
+/** 显隐变更统一走这里，保证事件只触发一次 */
+function setVisible(visible: boolean) {
+  if (visible === popupVisible.value) return;
+  popupVisible.value = visible;
+  emit('popupVisibleChange', visible);
 }
 
 function open() {
-  if (isDisabled.value) return
-  clearAllTimers()
-  if (!isOpen.value) {
-    isOpen.value = true
-    emit("visible-change", true)
-  }
+  if (props.disabled) return;
+  clearTimers();
+  setVisible(true);
 }
 
-function close(immediate = false) {
-  clearAllTimers()
-  const delay = immediate ? 0 : (props.trigger === "hover" ? props.closeDelay : 0)
-  if (delay <= 0) {
-    isOpen.value = false
-    emit("visible-change", false)
-    return
-  }
-  closeTimer = setTimeout(() => {
-    isOpen.value = false
-    emit("visible-change", false)
-  }, delay)
+function close() {
+  clearTimers();
+  setVisible(false);
 }
 
 function toggle() {
-  if (isOpen.value) {
-    close()
-  } else {
-    open()
-  }
+  if (popupVisible.value) close();
+  else open();
 }
 
-function handleItemClick(command: string) {
-  emit("command", command)
-  if (props.hideOnClick) {
-    close(true)
-  }
+/** 禁用时若菜单仍展开则收起 */
+watch(() => props.disabled, (disabled) => {
+  if (disabled) close();
+});
+
+// ─── 嵌套（子菜单）────────────────────────────────────────────────
+
+const triggerRef = ref<InstanceType<typeof RebornSelectTrigger> | null>(null);
+/** 已注册的子级面板判定，外部点击落在子级面板内时不收起 */
+const nestedContains: Array<(node: Node) => boolean> = [];
+
+function registerNested(contains: (node: Node) => boolean) {
+  nestedContains.push(contains);
+  return () => {
+    const index = nestedContains.indexOf(contains);
+    if (index >= 0) nestedContains.splice(index, 1);
+  };
 }
 
-// --- 事件监听 ---
-function onMouseEnter() {
-  if (props.trigger !== "hover") return
-  clearAllTimers()
-  if (!isOpen.value && props.openDelay! > 0) {
-    openTimer = setTimeout(open, props.openDelay)
-  } else {
-    open()
-  }
+/** 节点是否位于本菜单（触发器 + 面板）或任一子级菜单内 */
+function containsNode(node: Node) {
+  return !!triggerRef.value?.contains(node) || nestedContains.some(contains => contains(node));
 }
 
-function onMouseLeave() {
-  if (props.trigger !== "hover") return
-  clearAllTimers()
-  close()
-}
+let unregisterFromParent: (() => void) | null = null;
+onMounted(() => {
+  unregisterFromParent = parent?.registerNested(containsNode) ?? null;
+});
+
+onBeforeUnmount(() => {
+  clearTimers();
+  unregisterFromParent?.();
+});
+
+// ─── 触发行为 ───────────────────────────────────────────────────
 
 function onTriggerClick() {
-  if (props.trigger === "click") toggle()
-}
-
-function onKeydown(e: KeyboardEvent) {
-  if (isDisabled.value) return;
-  if (e.key === "Enter" || e.key === " ") {
-    e.preventDefault();
-    toggle();
-  } else if (e.key === "Escape" && isOpen.value) {
-    close(true);
-  }
+  if (props.trigger === 'click') toggle();
 }
 
 /**
- * 收起菜单。外部点击的判定归 RebornSelectTrigger：
- * 菜单已随浮层传送到 body，本组件根节点不再包含它，
- * 自己在捕获阶段判 $el.contains 会把「点击菜单项」当成外部点击、抢在 command 之前收起。
+ * 触发器与面板共用：面板已传送到 body，不在触发器 DOM 内，需各自监听。
+ * 作为子菜单时同时上报父级，父级据此维持展开（子面板同样不在父面板 DOM 内）。
  */
-function onOutsideClose() {
-  if (!isOpen.value) return;
-  close(true);
+function onMouseEnter() {
+  parent?.hoverEnter();
+  if (props.trigger !== 'hover') return;
+  clearTimers();
+  if (!popupVisible.value) openTimer = setTimeout(open, HOVER_OPEN_DELAY);
 }
 
-onBeforeUnmount(() => {
-  clearAllTimers();
-});
+function onMouseLeave() {
+  parent?.hoverLeave();
+  if (props.trigger !== 'hover') return;
+  clearTimers();
+  closeTimer = setTimeout(close, HOVER_CLOSE_DELAY);
+}
 
-// --- 样式计算 ---
-const b = tv(theme);
-const overrides = computed(() => props.ui || {});
+function onKeydown(e: KeyboardEvent) {
+  if (props.disabled) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggle();
+  } else if (e.key === 'Escape' && popupVisible.value) {
+    close();
+  }
+}
 
+/** 触发器外的点击：落在子菜单面板内的不算外部 */
+function onOutsideClose(ev?: Event) {
+  const target = ev?.target as Node | null;
+  if (target && nestedContains.some(contains => contains(target))) return;
+  close();
+}
+
+/** 选中：触发本级 select 并按需收起；作为子菜单时继续向父级冒泡，整条链路一起收起 */
+function handleSelect(value: DropdownValue, ev: Event) {
+  emit('select', value, ev);
+  if (props.hideOnSelect) close();
+  parent?.select(value, ev);
+}
+
+/** 12 向位置映射为 SelectTrigger 的 side / align；间距显式传入优先，否则带箭头时留出箭头高度 */
+const placement = computed(() => DROPDOWN_POSITION_MAP[props.position]);
+const offset = computed(() => props.popupOffset ?? (props.showArrow ? 8 : 4));
+
+// ─── 样式 ───────────────────────────────────────────────────────
+
+const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
-  const styles = b({
-    size: formSize.value || props.size,
-    color: props.color,
-    placement: props.placement,
-  });
-
+  const styles = dropdownTheme();
+  const slot = (key: keyof DropdownUI) => (opts?: { class?: any }) =>
+    styles[key]({ class: cn(opts?.class, uiOverrides.value[key]) });
   return {
-    wrapper: (opts?: { class?: any }) =>
-      styles.wrapper({ class: cn(opts?.class, overrides.value.wrapper) }),
-    trigger: (opts?: { class?: any }) =>
-      styles.trigger({ class: cn(opts?.class, overrides.value.trigger) }),
-    splitRoot: (opts?: { class?: any }) =>
-      styles.splitRoot({ class: cn(opts?.class, overrides.value.splitRoot) }),
-    splitMain: (opts?: { class?: any }) =>
-      styles.splitMain({ class: cn(opts?.class, overrides.value.splitMain) }),
-    splitArrow: (opts?: { class?: any }) =>
-      styles.splitArrow({ class: cn(opts?.class, overrides.value.splitArrow) }),
-    dropdown: (opts?: { class?: any }) =>
-      styles.dropdown({ class: cn(opts?.class, overrides.value.dropdown) }),
-    item: (opts?: { class?: any }) =>
-      styles.item({ class: cn(opts?.class, overrides.value.item) }),
-    divider: (opts?: { class?: any }) =>
-      styles.divider({ class: cn(opts?.class, overrides.value.divider) }),
-    label: (opts?: { class?: any }) =>
-      styles.label({ class: cn(opts?.class, overrides.value.label) }),
+    wrapper: () => styles.wrapper({ class: cn(uiOverrides.value.wrapper, props.class) }),
+    trigger: slot('trigger'),
+    panel: slot('panel'),
+    header: slot('header'),
+    list: slot('list'),
+    item: slot('item'),
+    itemIcon: slot('itemIcon'),
+    itemLabel: slot('itemLabel'),
+    submenuIcon: slot('submenuIcon'),
+    group: slot('group'),
+    groupTitle: slot('groupTitle'),
+    footer: slot('footer'),
   };
 });
 
-provide("reborn-dropdown", {
-  handleItemClick,
-  ui,
+provide<DropdownContext>(DROPDOWN_INJECTION_KEY, {
+  select: handleSelect,
+  hoverEnter: onMouseEnter,
+  hoverLeave: onMouseLeave,
+  registerNested,
+  ui: computed(() => ({
+    item: ui.value.item,
+    itemIcon: ui.value.itemIcon,
+    itemLabel: ui.value.itemLabel,
+    submenuIcon: ui.value.submenuIcon,
+    group: ui.value.group,
+    groupTitle: ui.value.groupTitle,
+  })),
 });
 
 defineExpose({
-  isOpen,
+  /** 展开菜单（禁用时无效） */
   open,
+  /** 收起菜单 */
   close,
+  /** 切换展开 / 收起 */
   toggle,
+  /** 节点是否位于本菜单（触发器 + 面板）或任一子级菜单内 */
+  contains: containsNode,
 });
 </script>
 
 <template>
-  <div :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-    <RebornSelectTrigger :is-open="isOpen" :disabled="isDisabled" :size="formSize || size" :portal="portal" :ui="{
+  <RebornSelectTrigger
+    ref="triggerRef"
+    :is-open="popupVisible" :disabled="disabled" :portal="portal" :auto-adjust-overflow="autoAdjustOverflow"
+    :side="placement.side" :align="placement.align" :offset="offset" :arrow="showArrow"
+    :class="ui.wrapper()" :ui="{
       /* 浮层宽度由菜单内容撑开，不跟随触发器 */
       dropdown: 'w-auto!',
-    }" @keydown="onKeydown" @close="onOutsideClose">
-      <!-- 触发器的结构与样式全部由本组件自己决定 -->
-      <template #trigger>
-        <div v-if="splitButton" :class="ui.splitRoot()" @click="onTriggerClick">
-          <div :class="ui.splitMain()" class="flex-1">
-            <slot />
-          </div>
-          <div :class="ui.splitArrow()" @click.stop="toggle">
-            <Icon name="lucide:chevron-down"
-              :class="cn('size-4 transition-transform duration-200', isOpen && 'rotate-180')" />
-          </div>
-        </div>
-        <div v-else :class="ui.trigger()" class="w-full" @click="onTriggerClick">
-          <slot />
-        </div>
-      </template>
+    }"
+    @keydown="onKeydown" @close="onOutsideClose"
+  >
+    <template #trigger>
+      <div :class="ui.trigger()" @click="onTriggerClick" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+        <!-- 下发显隐状态与控制方法，供 manual 触发方式（或任意触发方式下的局部控件）使用 -->
+        <slot :visible="popupVisible" :open="open" :close="close" :toggle="toggle" />
+      </div>
+    </template>
 
-      <template #content>
-        <!-- 将 Dropdown 自身的面板样式应用在这里，避免与底层组件冲突 -->
-        <div :class="ui.dropdown()" role="menu">
-          <slot name="dropdown" />
+    <template #content>
+      <div :class="ui.panel()" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+        <div v-if="slots.header" :class="ui.header()">
+          <slot name="header" />
         </div>
-      </template>
-    </RebornSelectTrigger>
-  </div>
+
+        <div :class="ui.list()" role="menu">
+          <!-- content 插槽优先；未提供时按 options 渲染 -->
+          <slot name="content">
+            <RebornDoption
+              v-for="(option, index) in options" :key="index" :value="option.value"
+              :disabled="option.disabled"
+            >
+              <template v-if="option.icon" #icon>
+                <Icon :name="option.icon" class="size-4" />
+              </template>
+              {{ option.label }}
+            </RebornDoption>
+          </slot>
+        </div>
+
+        <div v-if="slots.footer" :class="ui.footer()">
+          <slot name="footer" />
+        </div>
+      </div>
+    </template>
+  </RebornSelectTrigger>
 </template>

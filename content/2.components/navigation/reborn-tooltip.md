@@ -37,6 +37,8 @@ navigation:
 | `closeDelay`         | 关闭延时（毫秒）                                                                         | `number`                                                  | `100`        |
 | `zIndex`             | 提示层 z-index，未传时用样式默认值                                                       | `number`                                                  | -            |
 | `disabled`           | 是否禁用                                                                                 | `boolean`                                                 | `false`      |
+| `class`              | 追加到根节点（触发器外层容器）的自定义类名                                               | `any`                                                     | -            |
+| `ui`                 | 按语义化结构覆盖各节点样式，见下方「自定义样式（ui）」                                   | `TooltipUI`                                               | -            |
 | `v-model:open`       | 受控显示状态；不绑定时组件内部自管理显隐                                                 | `boolean`                                                 | -            |
 
 ### TooltipPlacement
@@ -69,6 +71,32 @@ navigation:
 | --------- | --------------------------------------------------- |
 | `open()`  | 手动打开提示层（仍受 `disabled` 与打开延时约束）    |
 | `close()` | 手动关闭提示层（经关闭延时后隐藏）                  |
+
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名，与主题默认类通过 tailwind-merge 合并（同属性后者胜出）：
+
+| 键名             | 说明                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `wrapper`        | 根节点（触发器外层容器），`class` prop 也并到这里；整体占位改这里                            |
+| `trigger`        | 触发元素的外框，默认 `inline-flex max-w-full`                                                |
+| `contentWrapper` | 浮层定位外壳，默认 `fixed left-0 top-0 z-[9999] pointer-events-none flex`；层级改这里        |
+| `content`        | 提示面板，默认 `bg-gray-10 text-gray-1 p-2 text-base rounded-ui-sm max-w-60`；底色、文字、内边距、圆角、最大宽度改这里 |
+| `arrow`          | 箭头容器，默认 `absolute text-gray-10`；箭头颜色随 `text-*` 类（与面板同色时需一起改）       |
+
+```vue
+<template>
+  <RebornTooltip
+    content="最大宽度放宽到 320px，改用主色底"
+    :ui="{
+      content: 'max-w-80 bg-primary text-white',
+      arrow: 'text-primary',
+    }"
+  >
+    <RebornButton label="自定义样式" />
+  </RebornTooltip>
+</template>
+```
 
 ## 注意事项
 

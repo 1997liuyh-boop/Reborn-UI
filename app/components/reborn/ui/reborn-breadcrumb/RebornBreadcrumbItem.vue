@@ -17,7 +17,7 @@ export interface RebornBreadcrumbItemProps {
     separatorIcon?: any
     /** 下拉菜单数据 */
     droplist?: BreadcrumbDroplistItem[]
-    /** 透传给底层浮层容器 RebornSelectTrigger 的属性（如 portal、size、closeOn、ui） */
+    /** 透传给底层浮层容器 RebornSelectTrigger 的属性（如 portal、autoAdjustOverflow、size、closeOn、ui） */
     dropdownProps?: Record<string, any>
     /** 追加到条目链接节点的自定义类名 */
     customClass?: any
@@ -124,17 +124,17 @@ const ui = computed(() => {
 })
 
 /**
- * 兼容 #droplist 插槽里书写的 RebornDropdownItem。
+ * 兼容 #droplist 插槽里书写的 RebornDoption。
  * 该组件的点击回调与样式全部取自 provide('reborn-dropdown')，
  * 本条目改用 RebornSelectTrigger 自绘浮层后已不存在 RebornDropdown 提供上下文，
- * 这里补一份：点击走 onCommand（点完即收起），样式换成面包屑自己的 droplistItem。
+ * 这里补一份：选中走 onCommand（点完即收起），样式换成面包屑自己的 droplistItem。
  */
 provide('reborn-dropdown', {
-    handleItemClick: onCommand,
+    select: (value: unknown) => onCommand(String(value)),
     ui: computed(() => ({
         item: (opts?: { class?: any }) => ui.value.droplistItem({ class: opts?.class }),
-        divider: (opts?: { class?: any }) => ui.value.droplistDivider({ class: opts?.class }),
-        label: (opts?: { class?: any }) => cn('flex-1 truncate', opts?.class)
+        itemIcon: (opts?: { class?: any }) => cn('flex size-4 shrink-0 items-center justify-center', opts?.class),
+        itemLabel: (opts?: { class?: any }) => cn('flex-1 truncate', opts?.class)
     }))
 })
 </script>
