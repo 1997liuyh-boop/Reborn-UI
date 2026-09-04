@@ -5,8 +5,14 @@ const config = {
   slots: {
     wrapper: 'relative w-full',
     trigger: 'w-full',
-    //  leading-normal rounded-ui-base
-    content: 'absolute top-full left-0 right-0 bg-white dark:bg-gray-8 border border-gray-2 dark:border-gray-7 shadow-lg z-[999] max-h-[400rpx] overflow-y-auto mt-1 rounded-ui-base',
+    /*
+     * 面板外壳：负责定位、底色描边阴影与展开动画。
+     * 展开走高度 0 → 实测高度（与 Web 端 Select 的 select-collapse 一致），动画期间必须 overflow-hidden 裁剪内容；
+     * 高度由组件用 createSelectorQuery 测得 content 的高度后内联写入，reborn-dropdown-select__* 即测量用的选择器类名。
+     */
+    panel: 'reborn-dropdown-select__panel absolute top-full left-0 right-0 z-[999] mt-1 overflow-hidden rounded-ui-base border border-gray-2 bg-white shadow-lg transition-[height,opacity] duration-200 ease-out will-change-[height,opacity] dark:border-gray-7 dark:bg-gray-8',
+    // 面板内容：真正的滚动容器，高度上限在这里，外壳测量到的就是它被上限裁过之后的高度
+    content: 'reborn-dropdown-select__content max-h-[400rpx] overflow-y-auto',
     item: 'leading-normal text-sm text-gray-8 dark:text-gray-2 border-b border-gray-100 dark:border-gray-7 last:border-b-0 active:bg-gray-50 dark:active:bg-gray-7 flex items-center justify-between',
     itemText: 'flex-1 truncate',
     itemIcon: 'w-4 h-4 text-blue-6 dark:text-blue-400',

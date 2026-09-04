@@ -45,8 +45,9 @@ export interface PaginationUI {
 export default {
   slots: {
     root: "reborn-pagination inline-flex flex-wrap items-center gap-2",
+    // 不做颜色过渡：折叠窗口切换时页码节点会瞬间重排，若高亮还在淡入淡出，旧激活项会在新位置上残留半程高亮，看起来像来回跳动
     button:
-      "reborn-pagination-button px-1 inline-flex items-center justify-center rounded-md cursor-pointer select-none transition-colors",
+      "reborn-pagination-button px-1 inline-flex items-center justify-center rounded-md cursor-pointer select-none",
     pager: "reborn-pagination-pager inline-flex items-center gap-2",
     pagerItem: "reborn-pagination-pager-item",
     ellipsis:
@@ -60,27 +61,36 @@ export default {
     input: "shrink-0",
   },
   variants: {
+    /*
+     * 尺寸全部走主题令牌（typography.css）：
+     * 按钮 / 省略号为方形控件，高度 h-pagination-*、最小宽 min-w-pagination-*（令牌里与高度同值）；
+     * 跳转 / 总数 / 简洁模式文字与控件同字号（sm、md 为 text-sm 12px，lg 为 text-base 14px）；
+     * 跳转输入框宽度 w-pagination-input-*，令牌里按控件高度倍数派生。
+     */
     size: {
       sm: {
-        button: "h-[24px] text-[12px] min-w-[24px]",
-        ellipsis: "h-[24px] text-[12px] min-w-[24px]",
-        jumper: "text-[12px]",
-        total: "text-[12px]",
-        simple: "text-[12px]",
+        button: "h-pagination-sm min-w-pagination-sm text-sm",
+        ellipsis: "h-pagination-sm min-w-pagination-sm text-sm",
+        jumper: "text-sm",
+        total: "text-sm",
+        simple: "text-sm",
+        input: "w-pagination-input-sm",
       },
       md: {
-        button: "h-[28px] text-[12px] min-w-[28px]",
-        ellipsis: "h-[28px] text-[12px] min-w-[28px]",
-        jumper: "text-[12px]",
-        total: "text-[12px]",
-        simple: "text-[12px]",
+        button: "h-pagination-md min-w-pagination-md text-sm",
+        ellipsis: "h-pagination-md min-w-pagination-md text-sm",
+        jumper: "text-sm",
+        total: "text-sm",
+        simple: "text-sm",
+        input: "w-pagination-input-md",
       },
       lg: {
-        button: "h-[32px] text-[14px] min-w-[32px]",
-        ellipsis: "h-[32px] text-[14px] min-w-[32px]",
-        jumper: "text-[14px]",
-        total: "text-[14px]",
-        simple: "text-[14px]",
+        button: "h-pagination-lg min-w-pagination-lg text-base",
+        ellipsis: "h-pagination-lg min-w-pagination-lg text-base",
+        jumper: "text-base",
+        total: "text-base",
+        simple: "text-base",
+        input: "w-pagination-input-lg",
       },
     },
     active: {

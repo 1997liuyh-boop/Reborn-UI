@@ -20,7 +20,7 @@ navigation:
 
 ## 简介
 
-DropdownSelect 是一个轻量的下拉单选控件：传入 `options` 选项数组并用 `v-model` 绑定选中值即可使用。组件内部由 `RebornSelectTrigger` 触发器与 `RebornTransition` 过渡动画组成，点击触发器原地展开选项面板，选中选项或点击遮罩后自动收起，适合筛选条件、简单表单等只需要「就地展开选一项」的场景。
+DropdownSelect 是一个轻量的下拉单选控件：传入 `options` 选项数组并用 `v-model` 绑定选中值即可使用。组件内部由 `RebornSelectTrigger` 触发器与自顶向下的高度展开动画组成（面板从高度 0 展开到实测高度并淡入，收起反向，与 Web 端 Select 一致），点击触发器原地展开选项面板，选中选项或点击遮罩后自动收起，适合筛选条件、简单表单等只需要「就地展开选一项」的场景。
 
 适用场景：
 
@@ -135,7 +135,8 @@ const value = ref("2"); // 默认选中「选项二」
 | :--------- | :--------------------------------------- |
 | `wrapper`  | 最外层相对定位容器。                     |
 | `trigger`  | 触发器（`RebornSelectTrigger`）。        |
-| `content`  | 下拉选项面板容器。                       |
+| `panel`    | 面板外壳：定位、底色描边阴影与高度展开动画（`transition-[height,opacity] duration-200`），动画期间 `overflow-hidden` 裁剪内容。 |
+| `content`  | 面板内容：真正的滚动容器，高度上限 `max-h-[400rpx]` 在这里。 |
 | `item`     | 单个选项行。                             |
 | `itemText` | 选项文本。                               |
 | `itemIcon` | 选中项右侧勾选图标。                     |

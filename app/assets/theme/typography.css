@@ -60,9 +60,9 @@
   --min-width-pagination-lg: var(--height-pagination-lg);
 
   /* 分页跳转输入宽：高度的 2 倍，容纳两位页码 */
-  --width-pagination-input-sm: calc(var(--height-pagination-sm) * 2);
-  --width-pagination-input-md: calc(var(--height-pagination-md) * 2);
-  --width-pagination-input-lg: calc(var(--height-pagination-lg) * 2);
+  --width-pagination-input-sm: calc(var(--height-pagination-sm) * 3);
+  --width-pagination-input-md: calc(var(--height-pagination-md) * 3);
+  --width-pagination-input-lg: calc(var(--height-pagination-lg) * 3);
 
   /* 分页跳转输入最小宽：与输入宽同值，避免在 flex 布局中被压缩 */
   --min-width-pagination-input-sm: var(--width-pagination-input-sm);

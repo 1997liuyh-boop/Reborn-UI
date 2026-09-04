@@ -11,7 +11,7 @@
     "内容按类别切换改用 reborn-tabs。"
   ],
   "pitfalls": [
-    "pagerCount 必须为不小于 5 的奇数，非法值会被钳制到最近的奇数。",
+    "pagerCount 为不小于 3 的整数（奇偶均可），过小的值钳到 3；3 时只显示首页、当前页、末页，偶数时当前页在中间窗口偏左一格。",
     "background 为 true 时非激活页码 bg-gray-2 text-gray-5，激活页码 bg-primary/50 text-primary；false 时无背景。",
     "simple 为 true 时忽略 layout，只渲染上一页 + 当前页/总页数文本 + 下一页，不是输入框。",
     "total 为 0 时按 1 页显示且翻页按钮禁用，配合 hideOnSinglePage 可整组件隐藏。",

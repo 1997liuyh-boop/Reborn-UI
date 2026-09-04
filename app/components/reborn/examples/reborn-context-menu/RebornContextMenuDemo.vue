@@ -135,6 +135,32 @@ const items = computed<RebornContextMenuItem[][]>(() => [
   ],
 ]);
 
+/** 划词菜单：onSelect 的第二个参数带有当前选中的文字 */
+const selectionItems: RebornContextMenuItem[] = [
+  {
+    label: "复制",
+    icon: "lucide:copy",
+    onSelect: (_event, context) => {
+      latestAction.value = `已复制：${context.selectionText}`;
+    },
+  },
+  {
+    label: "搜索",
+    icon: "lucide:search",
+    onSelect: (_event, context) => {
+      latestAction.value = `已搜索：${context.selectionText}`;
+    },
+  },
+  {
+    label: "高亮标记",
+    icon: "lucide:highlighter",
+    color: "warning",
+    onSelect: (_event, context) => {
+      latestAction.value = `已高亮：${context.selectionText}`;
+    },
+  },
+];
+
 const automationItems: RebornContextMenuItem[][] = [
   [
     {
@@ -230,7 +256,7 @@ const automationItems: RebornContextMenuItem[][] = [
         </div>
       </template>
 
-      <RebornContextMenu :items="items" :size="state.size" :modal="state.modal" :disabled="state.disabled" @select.stop>
+      <RebornContextMenu :items="items" :size="state.size" :modal="state.modal" :disabled="state.disabled">
         <!-- 右键触发区：只描边不填充，让它可辨认又不形成第二层表面 -->
         <div class="border-default rounded-ui-base flex w-full flex-col gap-5 border border-dashed p-5">
           <div class="flex items-center justify-between">
@@ -288,6 +314,22 @@ const automationItems: RebornContextMenuItem[][] = [
         </div>
       </RebornContextMenu>
     </Playground>
+
+    <DemoSection title="划词菜单"
+      description="trigger=selection 与浏览器 Selection API 组合：在触发区内选中一段文字，菜单在选区上方居中弹出；onSelect / select 事件的 context.selectionText 为选中的文字，换一段选区会先收起再在新位置展开。">
+      <DemoBlock layout="stack">
+        <RebornContextMenu v-slot="{ selectionText }" :items="selectionItems" trigger="selection">
+          <div class="flex flex-col gap-3">
+            <p class="border-default text-default rounded-ui-base border border-dashed p-5 text-sm leading-7 select-text">
+              增长实验主画布支持在同一页面内对多个流量分组做 A/B 对比。选中这段文字里的任意片段，
+              例如「流量分组」或「A/B 对比」，松开鼠标后会在选区上方弹出操作菜单；点击菜单项时选区不会被清掉，
+              回调里可以直接拿到选中的文字用于复制、搜索或标记。
+            </p>
+            <DemoNote tone="dimmed">当前选区：{{ selectionText || "（尚未选择文字）" }}</DemoNote>
+          </div>
+        </RebornContextMenu>
+      </DemoBlock>
+    </DemoSection>
 
     <DemoSection title="更多用法" description="小尺寸菜单适配二级操作；不传 items 时用 #content 完全自定义菜单面板。">
       <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">

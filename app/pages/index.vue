@@ -15,6 +15,8 @@ const pageType = isLandingPage.value ? "landing" : "docs";
 
 definePageMeta({
     layout: false,
+    // 首页自带页脚，不渲染 Docus 的全站页脚（app.vue 按 meta.footer 判断）
+    footer: false,
     middleware: (to) => {
         const isLanding = to.path === "/" || to.path === "//";
         setPageLayout(isLanding ? "default" : "docs");
@@ -83,9 +85,6 @@ defineOgImageComponent("Docs", {
 <template>
     <!-- 文档页共享模板：布局细节统一收敛在 DocsPage -->
     <DocsPage v-if="page && !isLandingPage" :page="page" :surround="surround" :headline="headline" />
-    <UPage v-else-if="page && isLandingPage">
-        <UPageBody class="container mx-auto max-w-6xl px-4">
-            <Landing />
-        </UPageBody>
-    </UPage>
+    <!-- 首页全宽渲染，各区块自行用 max-w 约束内容宽度 -->
+    <Landing v-else-if="page && isLandingPage" />
 </template>

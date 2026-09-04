@@ -36,8 +36,15 @@ export interface RebornContextMenuItem {
   disabled?: boolean;
   color?: ContextMenuColor;
   children?: RebornContextMenuItems;
-  onSelect?: (event: MouseEvent) => void;
+  /** 点击该项时的回调；selection 触发方式下 context.selectionText 为当前划选的文字 */
+  onSelect?: (event: MouseEvent, context: RebornContextMenuSelectContext) => void;
   class?: any;
+}
+
+/** select 事件与 onSelect 回调的附加上下文 */
+export interface RebornContextMenuSelectContext {
+  /** 划词触发时当前选中的文字；其他触发方式为空串 */
+  selectionText: string;
 }
 
 export type RebornContextMenuItemGroup = RebornContextMenuItem[];
@@ -52,7 +59,9 @@ export interface RebornContextMenuContentProps {
 export interface RebornContextMenuProps {
   items?: RebornContextMenuItems;
   size?: ContextMenuSize;
+  /** 触发方式；selection 为划词触发：在触发区内选中文字后，菜单在选区上方弹出 */
   trigger?: ContextMenuTrigger;
+  /** 弹出方向与对齐；未传时右键 / 点击 / 悬浮为 bottom-start，划词为 top-center，子菜单为 right-start */
   content?: RebornContextMenuContentProps;
   open?: boolean;
   defaultOpen?: boolean;
@@ -95,6 +104,11 @@ interface ContextMenuRootController {
 const CONTEXT_MENU_ROOT_KEY = Symbol("reborn-context-menu-root");
 const ROOT_MENU_OPEN_EVENT = "reborn-context-menu:root-open";
 const VIEWPORT_OFFSET = 8;
+/** 展开 / 收起动画时长，与 select-collapse 过渡类的 duration-300 / duration-200 一致 */
+const ENTER_DURATION = 300;
+const LEAVE_DURATION = 200;
+/** 换位重开要等上一次收起动画完全走完（含过渡结束回调），再在新位置展开 */
+const REOPEN_DELAY = LEAVE_DURATION + 30;
 
 function isGroupedItems(items?: RebornContextMenuItems): items is RebornContextMenuItem[][] {
   return Array.isArray(items) && items.length > 0 && Array.isArray(items[0]);
@@ -113,11 +127,8 @@ const props = withDefaults(defineProps<RebornContextMenuProps>(), {
   items: () => [],
   size: "md",
   trigger: "contextmenu",
-  content: () => ({
-    side: "bottom",
-    align: "start",
-    sideOffset: 8,
-  }),
+  // 方向 / 对齐按触发方式取默认值（见 resolvePlacement），这里不预填以便区分「用户显式传入」
+  content: () => ({}),
   portal: true,
   dismissible: true,
   modal: false,
@@ -131,7 +142,8 @@ const props = withDefaults(defineProps<RebornContextMenuProps>(), {
 
 const emit = defineEmits<{
   (e: "update:open", value: boolean): void;
-  (e: "select", item: RebornContextMenuItem, event: MouseEvent): void;
+  /** 点击叶子菜单项时触发；context.selectionText 为划词触发时选中的文字 */
+  (e: "select", item: RebornContextMenuItem, event: MouseEvent, context: RebornContextMenuSelectContext): void;
 }>();
 
 const slots = useSlots();
@@ -198,12 +210,54 @@ const style = ref<Record<string, string>>({
   left: "0px",
   top: "0px",
 });
-const resolvedSide = ref<ContextMenuSide>(props.content.side ?? (props.nested ? "right" : "bottom"));
+
+/** 划词触发：当前选区的矩形（作为定位锚点）与文字 */
+const selectionRect = ref<DOMRect | null>(null);
+const selectionText = ref("");
+
+/** 按触发方式解析默认的弹出方向与对齐：划词在选区上方居中，子菜单贴右侧，其余在下方起点对齐 */
+function resolvePlacement() {
+  const defaultSide: ContextMenuSide = props.nested ? "right" : props.trigger === "selection" ? "top" : "bottom";
+  const defaultAlign: ContextMenuAlign = props.trigger === "selection" ? "center" : "start";
+  return {
+    side: props.content.side ?? defaultSide,
+    align: props.content.align ?? defaultAlign,
+    offset: props.content.sideOffset ?? 8,
+  };
+}
+
+const resolvedSide = ref<ContextMenuSide>(resolvePlacement().side);
 
 let hoverCount = 0;
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+let reopenTimer: ReturnType<typeof setTimeout> | null = null;
 let frame: number | null = null;
 let resizeObserver: ResizeObserver | null = null;
+
+function clearReopenTimer() {
+  if (!reopenTimer) return;
+  clearTimeout(reopenTimer);
+  reopenTimer = null;
+}
+
+/**
+ * 在新的锚点位置展开：菜单已经打开时先收起，等收起动画走完再在新位置展开，
+ * 而不是让面板从旧位置平移过去（右键换位、换一段划词都走这里）。
+ */
+function reopenAtAnchor() {
+  clearReopenTimer();
+  if (open.value) {
+    updateOpen(false);
+    reopenTimer = setTimeout(() => {
+      reopenTimer = null;
+      updateOpen(true);
+      schedulePositionUpdate();
+    }, REOPEN_DELAY);
+    return;
+  }
+  updateOpen(true);
+  schedulePositionUpdate();
+}
 
 function getHorizontalPosition(
   rect: DOMRect,
@@ -290,12 +344,14 @@ function calculatePosition(contentElement?: HTMLElement) {
     return;
   }
 
-  if (!triggerRef.value) return;
+  // 划词触发以选区矩形为锚点，其余以触发器为锚点
+  const rect = props.trigger === "selection" ? selectionRect.value : triggerRef.value?.getBoundingClientRect();
+  if (!rect) return;
 
-  const rect = triggerRef.value.getBoundingClientRect();
-  const offset = props.content.sideOffset ?? 8;
-  let side: ContextMenuSide = props.content.side ?? (props.nested ? "right" : "bottom");
-  let align: ContextMenuAlign = props.content.align ?? "start";
+  const placement = resolvePlacement();
+  const offset = placement.offset;
+  let side: ContextMenuSide = placement.side;
+  let align: ContextMenuAlign = placement.align;
 
   let position = getHorizontalPosition(rect, width, height, side, align, offset);
   let overflow = getOverflow(position.x, position.y, width, height);
@@ -381,17 +437,55 @@ function onClickTrigger(event: MouseEvent) {
 }
 
 function onContextMenuTrigger(event: MouseEvent) {
-  if (props.trigger !== "contextmenu") return;
+  // 禁用时不拦截右键，让浏览器显示默认的上下文菜单
+  if (props.trigger !== "contextmenu" || props.disabled) return;
 
   event.preventDefault();
-  if (props.disabled) return;
 
   pointer.value = {
     x: event.clientX,
     y: event.clientY,
   };
-  updateOpen(true);
-  schedulePositionUpdate();
+  reopenAtAnchor();
+}
+
+/**
+ * 划词触发：鼠标 / 键盘完成选择后读取 Selection API。
+ * 选区落在触发区内且有文字时，以选区矩形为锚点弹出；选区取消（折叠）时收起。
+ * 监听挂在 document 上：拖选过程中鼠标可能在触发区外松开。
+ */
+function onSelectionEnd() {
+  if (props.trigger !== "selection" || props.disabled || props.nested) return;
+
+  // 松开鼠标的瞬间选区尚未最终确定，延后一拍再读
+  setTimeout(() => {
+    const selection = window.getSelection();
+    const text = selection?.toString().trim() ?? "";
+    const anchor = selection?.anchorNode ?? null;
+    const insideTrigger = !!anchor && !!triggerRef.value?.contains(anchor);
+
+    if (!selection || selection.isCollapsed || !text || !selection.rangeCount || !insideTrigger) {
+      if (open.value && !contentRef.value?.contains(anchor)) {
+        selectionText.value = "";
+        updateOpen(false);
+      }
+      return;
+    }
+
+    selectionRect.value = selection.getRangeAt(0).getBoundingClientRect();
+    selectionText.value = text;
+    reopenAtAnchor();
+  }, 0);
+}
+
+/** 划词模式下点击菜单不能让浏览器清掉选区，否则回调里拿不到选中的文字 */
+function onContentMouseDown(event: MouseEvent) {
+  if (props.trigger === "selection") event.preventDefault();
+}
+
+/** 传给 select 事件与 onSelect 回调的上下文 */
+function getSelectContext(): RebornContextMenuSelectContext {
+  return { selectionText: selectionText.value };
 }
 
 function isItemDisabled(item: RebornContextMenuItem) {
@@ -413,13 +507,14 @@ function getItemKey(item: RebornContextMenuItem, groupIndex: number, itemIndex: 
 function handleItemSelect(item: RebornContextMenuItem, event: MouseEvent) {
   if (isItemDisabled(item) || getItemChildren(item).length > 0) return;
 
-  item.onSelect?.(event);
-  emit("select", item, event);
+  const context = getSelectContext();
+  item.onSelect?.(event, context);
+  emit("select", item, event, context);
   rootController.closeAll();
 }
 
-function handleNestedSelect(item: RebornContextMenuItem, event: MouseEvent) {
-  emit("select", item, event);
+function handleNestedSelect(item: RebornContextMenuItem, event: MouseEvent, context: RebornContextMenuSelectContext) {
+  emit("select", item, event, context);
 }
 
 function onClickOutside(event: MouseEvent) {
@@ -519,6 +614,8 @@ onMounted(() => {
   document.addEventListener("mousedown", onClickOutside);
   document.addEventListener("click", onDocumentClick);
   document.addEventListener("keydown", onKeydown);
+  document.addEventListener("mouseup", onSelectionEnd);
+  document.addEventListener("keyup", onSelectionEnd);
   document.addEventListener(ROOT_MENU_OPEN_EVENT, onRootMenuOpen as EventListener);
   window.addEventListener("resize", schedulePositionUpdate);
   window.addEventListener("scroll", schedulePositionUpdate, true);
@@ -536,10 +633,13 @@ onUnmounted(() => {
   document.removeEventListener("mousedown", onClickOutside);
   document.removeEventListener("click", onDocumentClick);
   document.removeEventListener("keydown", onKeydown);
+  document.removeEventListener("mouseup", onSelectionEnd);
+  document.removeEventListener("keyup", onSelectionEnd);
   document.removeEventListener(ROOT_MENU_OPEN_EVENT, onRootMenuOpen as EventListener);
   window.removeEventListener("resize", schedulePositionUpdate);
   window.removeEventListener("scroll", schedulePositionUpdate, true);
   clearHoverTimer();
+  clearReopenTimer();
   if (resizeObserver) resizeObserver.disconnect();
   if (frame) window.cancelAnimationFrame(frame);
 });
@@ -594,6 +694,9 @@ const ui = computed(() => {
   };
 });
 
+/** 根菜单自顶向下展开（下拉样式），子菜单贴右侧弹出仍用缩放淡入 */
+const transitionName = computed(() => (props.nested ? "zoom-in" : "select-collapse"));
+
 const bridgeStyle = computed(() => {
   const gap = `${Math.max(props.content.sideOffset ?? 0, 0)}px`;
 
@@ -646,7 +749,7 @@ defineExpose({
       :data-reborn-context-menu-root="rootController.rootId"
       @click="onClickTrigger"
     >
-      <slot :open="open" />
+      <slot :open="open" :selection-text="selectionText" />
     </div>
 
     <Teleport :to="typeof props.portal === 'string' ? props.portal : 'body'" :disabled="!props.portal">
@@ -660,8 +763,8 @@ defineExpose({
       <RebornTransition
         ref="contentRefComponent"
         :show="open"
-        name="zoom-in"
-        :duration="{ enter: 180, leave: 120 }"
+        :name="transitionName"
+        :duration="{ enter: ENTER_DURATION, leave: LEAVE_DURATION }"
         :custom-class="ui.contentWrapper()"
         :custom-style="style"
         @before-enter="onBeforeEnter"
@@ -673,8 +776,9 @@ defineExpose({
           :class="ui.content()"
           :data-reborn-context-menu-root="rootController.rootId"
           role="menu"
+          @mousedown="onContentMouseDown"
         >
-          <slot v-if="hasCustomContent" name="content" :close="rootController.closeAll" />
+          <slot v-if="hasCustomContent" name="content" :close="rootController.closeAll" :selection-text="selectionText" />
 
           <template v-else-if="groupedItems.length">
             <div

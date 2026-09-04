@@ -13,7 +13,7 @@ defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<PaginationProps>(), {
   total: 0,
-  pagerCount: 7,
+  pagerCount: 3,
   layout: "prev, pager, next",
   pageSizes: () => [10, 20, 50, 100],
   size: "md",
@@ -39,7 +39,7 @@ const emit = defineEmits<{
 export interface PaginationProps {
   /** 数据总数 */
   total?: number;
-  /** 页码按钮数量：需为不小于 5 的奇数，非法值自动钳制 */
+  /** 页码按钮数量：不小于 3 的整数，奇偶均可（3 即首页、当前页、末页各一），过小的值钳到 3 */
   pagerCount?: number;
   /** 布局：逗号分隔的 token（prev/pager/next/jumper/total/sizes），未知 token 忽略 */
   layout?: string;
@@ -73,14 +73,10 @@ const pageSizeModel = defineModel<number>("pageSize", { default: 10 });
 const b = tv(theme);
 
 /**
- * 规范化 pagerCount：不小于 5 的奇数
+ * 规范化 pagerCount：不小于 3 的整数，奇偶均可。
+ * 3 是折叠布局的下限：首页 + 当前页 + 末页各占一格，两侧只剩省略号。
  */
-const pagerCount = computed(() => {
-  let count = Math.floor(Number(props.pagerCount)) || 7;
-  if (count < 5) count = 5;
-  if (count % 2 === 0) count += 1;
-  return count;
-});
+const pagerCount = computed(() => Math.max(3, Math.floor(Number(props.pagerCount)) || 7));
 
 /**
  * 总页数：至少 1 页
@@ -99,26 +95,31 @@ const currentPage = computed(() => {
 });
 
 /**
- * 折叠阈值的一半（用于省略号显隐判断）
+ * 折叠时中间页码窗口在当前页两侧各占几格：首尾各固定一格，剩下 count - 2 格给中间窗口，
+ * 奇数时左右对称，偶数时右侧多一格（当前页偏左），奇偶都能刚好铺满 count 个按钮。
  */
-const halfPagerCount = computed(() => Math.floor((pagerCount.value - 1) / 2));
+const pagerWindow = computed(() => {
+  const middle = pagerCount.value - 2;
+  const left = Math.floor((middle - 1) / 2);
+  return { left, right: middle - 1 - left };
+});
 
 /**
- * 是否显示左侧省略号
+ * 是否显示左侧省略号：窗口左缘与首页之间还有被跳过的页码
  */
 const showPrevMore = computed(
-  () => totalPages.value > pagerCount.value && currentPage.value > pagerCount.value - halfPagerCount.value,
+  () => totalPages.value > pagerCount.value && currentPage.value - pagerWindow.value.left > 2,
 );
 
 /**
- * 是否显示右侧省略号
+ * 是否显示右侧省略号：窗口右缘与末页之间还有被跳过的页码
  */
 const showNextMore = computed(
-  () => totalPages.value > pagerCount.value && currentPage.value < totalPages.value - halfPagerCount.value,
+  () => totalPages.value > pagerCount.value && currentPage.value + pagerWindow.value.right < totalPages.value - 1,
 );
 
 /**
- * 中间页码列表（不含首尾与省略号），折叠逻辑对齐 Element Plus
+ * 中间页码列表（不含首尾与省略号）：靠近首页 / 末页时贴边铺满，居中时按窗口围绕当前页
  */
 const pagers = computed(() => {
   const total = totalPages.value;
@@ -132,8 +133,8 @@ const pagers = computed(() => {
   } else if (!showPrevMore.value && showNextMore.value) {
     for (let i = 2; i < count; i++) list.push(i);
   } else if (showPrevMore.value && showNextMore.value) {
-    const offset = Math.floor(count / 2) - 1;
-    for (let i = current - offset; i <= current + offset; i++) list.push(i);
+    const { left, right } = pagerWindow.value;
+    for (let i = current - left; i <= current + right; i++) list.push(i);
   } else {
     for (let i = 2; i < total; i++) list.push(i);
   }

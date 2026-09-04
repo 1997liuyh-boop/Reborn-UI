@@ -1,182 +1,175 @@
 <script lang="ts" setup>
-import LiquidGlass from "~/components/reborn/ui/liquid-glass/LiquidGlass.vue";
-
-const componentPath = "/components";
-
+const appConfig = useAppConfig();
 const toast = useToast();
 
-const links = [
-  {
-    icon: "tabler:rocket",
-    eyebrow: "Get Started",
-    title: "快速开始",
-    description: "先了解 Reborn UI 的核心理念、目录组织和最短上手路径。",
-    to: "/getting-started",
-    glowClass: "from-[#ff3d58]/18 via-[#ff3d58]/6 to-transparent",
-    iconClass: "text-[var(--color-primary)]",
-    iconGlassClass: "bg-[linear-gradient(135deg,rgba(255,61,88,0.16),rgba(255,61,88,0.07))]",
-  },
-  {
-    icon: "tabler:play",
-    eyebrow: "Install",
-    title: "安装接入",
-    description: "查看依赖、初始化方式和与你当前项目最匹配的接入流程。",
-    to: "/getting-started/installation",
-    glowClass: "from-[#5b6bff]/18 via-[#7c3aed]/8 to-transparent",
-    iconClass: "text-[#5b6bff] dark:text-[#93a2ff]",
-    iconGlassClass: "bg-[linear-gradient(135deg,rgba(91,107,255,0.16),rgba(124,58,237,0.07))]",
-  },
-  {
-    icon: "tabler:components",
-    eyebrow: "Explore",
-    title: "组件总览",
-    description: "直接浏览组件、示例和 API，快速判断哪些能力可以立刻复用。",
-    to: "/components",
-    glowClass: "from-[#22c1c3]/18 via-[#5b6bff]/6 to-transparent",
-    iconClass: "text-[#188d9a] dark:text-[#7ae9ef]",
-    iconGlassClass: "bg-[linear-gradient(135deg,rgba(34,193,195,0.16),rgba(91,107,255,0.07))]",
-  },
-] as const;
+/** 安装命令（与安装文档一致） */
+const installCommand = "npx reborn-ui@latest init";
 
-const handlePremiumClick = () => {
-  toast.add({ title: "这里已经很专业了，先把组件用起来吧。" });
-};
+const githubUrl = computed(() => (appConfig.github as { url?: string } | undefined)?.url || "https://github.com");
+
+async function copyInstallCommand() {
+  try {
+    await navigator.clipboard.writeText(installCommand);
+    toast.add({ title: "已复制安装命令", description: installCommand });
+  } catch {
+    toast.add({ title: "复制失败，请手动复制", description: installCommand, color: "error" });
+  }
+}
 </script>
 
 <template>
-  <section class="relative mx-auto flex min-h-[82vh] w-full max-w-7xl items-center justify-center px-6 py-16 sm:px-8 lg:px-10">
-    <div class="relative flex w-full flex-col items-center gap-10 text-center lg:gap-14">
-      <div class="absolute top-14 left-1/2 -z-10 h-52 w-[34rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,_rgba(255,61,88,0.18)_0%,_transparent_70%)] blur-3xl" />
+  <section
+    class="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-6 pt-16 pb-8 sm:px-8 lg:grid-cols-[1.1fr_1fr] lg:gap-8 lg:px-10">
+    <!-- 左侧：标题 / 副标题 / 描述 / 按钮 / 安装命令 -->
+    <div class="relative flex flex-col items-start gap-6">
+      <h1
+        class="text-balance bg-gradient-to-r from-[#1B6DFA] via-[#6d5cf6] to-[#a855f7] bg-clip-text text-6xl font-black tracking-[-0.04em] text-transparent sm:text-7xl lg:text-[5.5rem] lg:leading-[1.05]">
+        REBORN-UI
+      </h1>
+      <p class="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-white">
+        重新定义你的界面体验
+      </p>
+      <p class="max-w-xl text-base leading-8 text-zinc-600 sm:text-lg dark:text-white/65">
+        一个现代化、跨端的 Vue 组件库：Web 与 uniapp 共用同一套 API。
+        <br>
+        让开发更高效，让设计更自由。
+      </p>
 
-      <LiquidGlass
-        position="relative"
-        container-class="inline-block rounded-full"
-        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-[0.22em] text-[var(--color-primary)] uppercase dark:text-white/90"
-        :radius="999"
-        :border="0.08"
-        :lightness="68"
-        :alpha="0.66"
-        :blur="12"
-        :frost="0.08"
-        :displace="8"
-        :scale="-130"
-      >
-        <span class="h-2 w-2 rounded-full bg-[var(--color-primary)] shadow-[0_0_18px_rgba(255,61,88,0.9)]" />
-        Reborn UI
-      </LiquidGlass>
-
-      <div class="flex max-w-4xl flex-col items-center gap-5">
-        <h1 class="text-balance text-5xl font-black tracking-[-0.05em] text-zinc-950 sm:text-6xl lg:text-7xl dark:text-white">
-          用 Vue 与 Nuxt 构建更有质感的动效界面
-        </h1>
-        <p class="max-w-3xl text-lg leading-8 text-zinc-600 sm:text-xl dark:text-white/70">
-          Reborn UI 把
-          <NuxtLink to="https://tailwindcss.com/" target="_blank" rel="noreferrer" class="font-semibold text-[var(--color-primary)] transition-opacity hover:opacity-75">
-            Tailwind CSS
-          </NuxtLink>
-          、
-          <NuxtLink to="https://motion.dev/docs/vue" target="_blank" rel="noreferrer" class="font-semibold text-[var(--color-primary)] transition-opacity hover:opacity-75">
-            motion-v
-          </NuxtLink>
-          、
-          <NuxtLink to="https://gsap.com/" target="_blank" rel="noreferrer" class="font-semibold text-[var(--color-primary)] transition-opacity hover:opacity-75">
-            GSAP
-          </NuxtLink>
-          和
-          <NuxtLink to="https://threejs.org/" target="_blank" rel="noreferrer" class="font-semibold text-[var(--color-primary)] transition-opacity hover:opacity-75">
-            Three.js
-          </NuxtLink>
-          组织成可复用的组件系统，帮助你更快交付带高级感的页面。
-        </p>
-        <p class="max-w-2xl text-base leading-7 text-zinc-500 dark:text-white/55">
-          无论你是在启动新项目，还是给已有产品补上更细致的视觉表达，这里都能直接接上你的开发节奏。
-        </p>
-      </div>
-
-      <div class="flex flex-wrap items-center justify-center gap-3">
-        <NuxtLink :to="componentPath">
-          <RebornButton size="lg" class="min-w-40 shadow-[0_18px_44px_rgba(255,61,88,0.24)]">
-            浏览组件
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <NuxtLink to="/getting-started">
+          <RebornButton size="lg"
+            class="min-w-36 bg-gradient-to-r from-[#1B6DFA] to-[#8b5cf6] text-white shadow-[0_16px_40px_rgba(109,92,246,0.45)] hover:from-[#3b82f6] hover:to-[#a78bfa]">
+            开始使用
+            <template #trailing>
+              <Icon name="lucide:arrow-right" class="size-4" />
+            </template>
           </RebornButton>
         </NuxtLink>
-        <RebornButton
-          size="lg"
-          variant="outlined"
-          class="min-w-40 border-white/70 bg-white/35 text-zinc-900 backdrop-blur-xl hover:bg-white/55 dark:border-white/14 dark:bg-white/6 dark:text-white dark:hover:bg-white/10"
-          @click="handlePremiumClick"
-        >
-          获取专业版
-        </RebornButton>
-      </div>
-
-      <div class="grid w-full gap-5 pt-2 md:grid-cols-3">
-        <NuxtLink
-          v-for="link in links"
-          :key="link.to"
-          :to="link.to"
-          class="group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/42 p-5 text-left shadow-[0_22px_60px_rgba(15,23,42,0.08)] ring-1 ring-white/65 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/70 hover:bg-white/56 hover:shadow-[0_28px_80px_rgba(255,61,88,0.14)] dark:border-white/12 dark:bg-white/[0.06] dark:ring-white/8 dark:hover:bg-white/[0.09] dark:hover:shadow-[0_28px_80px_rgba(0,0,0,0.32)]"
-        >
-          <div class="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/95 to-transparent dark:via-white/60" />
-          <div class="absolute -top-10 right-[-1.5rem] h-28 w-28 rounded-full bg-gradient-to-br blur-3xl transition-transform duration-500 group-hover:scale-110" :class="link.glowClass" />
-
-          <div class="relative z-10 flex h-full flex-col">
-            <div class="flex items-start justify-between gap-3">
-              <LiquidGlass
-                position="relative"
-                container-class="h-12 w-12 rounded-2xl shrink-0"
-                class="flex h-full w-full items-center justify-center rounded-2xl border border-white/35 dark:border-white/10"
-                :radius="18"
-                :border="0.09"
-                :lightness="64"
-                :alpha="0.62"
-                :blur="10"
-                :frost="0.08"
-                :displace="7"
-                :scale="-120"
-              >
-                <div class="flex h-full w-full items-center justify-center rounded-2xl" :class="[link.iconClass, link.iconGlassClass]">
-                  <Icon :name="link.icon" class="h-5 w-5" />
-                </div>
-              </LiquidGlass>
-
-              <div class="flex h-9 w-9 items-center justify-center rounded-full border border-white/55 bg-white/55 text-zinc-500 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[var(--color-primary)] dark:border-white/12 dark:bg-white/[0.06] dark:text-white/55">
-                <Icon name="tabler:arrow-up-right" class="h-4 w-4" />
-              </div>
-            </div>
-
-            <div class="mt-6 flex flex-1 flex-col">
-              <div class="text-[11px] font-semibold tracking-[0.22em] text-zinc-400 uppercase dark:text-white/35">
-                {{ link.eyebrow }}
-              </div>
-              <h3 class="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">
-                {{ link.title }}
-              </h3>
-              <p class="mt-3 text-sm leading-7 text-zinc-600 dark:text-white/65">
-                {{ link.description }}
-              </p>
-            </div>
-
-            <div class="mt-6 flex items-center justify-between border-t border-white/45 pt-4 text-sm text-zinc-500 dark:border-white/10 dark:text-white/45">
-              <span>立即进入</span>
-              <LiquidGlass
-                position="relative"
-                container-class="inline-block rounded-full"
-                class="px-3 py-1 text-[11px] font-mono tracking-wide text-zinc-600 dark:text-white/70"
-                :radius="999"
-                :border="0.08"
-                :lightness="66"
-                :alpha="0.6"
-                :blur="10"
-                :frost="0.07"
-                :displace="6"
-                :scale="-110"
-              >
-                {{ link.to }}
-              </LiquidGlass>
-            </div>
-          </div>
+        <NuxtLink :to="githubUrl" target="_blank" rel="noreferrer">
+          <RebornButton size="lg" variant="outlined" color="neutral"
+            class="min-w-44 border-zinc-300 bg-white/60 text-zinc-800 backdrop-blur-xl hover:bg-white dark:border-white/15 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]">
+            在 GitHub 上查看
+            <template #trailing>
+              <Icon name="simple-icons:github" class="size-4" />
+            </template>
+          </RebornButton>
         </NuxtLink>
       </div>
+
+      <!-- 安装命令 -->
+      <button type="button"
+        class="group mt-2 flex w-full max-w-md items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-white/70 px-4 py-3 text-left font-mono text-sm text-zinc-700 backdrop-blur-xl transition-colors hover:border-[#8b5cf6]/50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80 dark:hover:border-[#8b5cf6]/60"
+        @click="copyInstallCommand">
+        <span class="flex items-center gap-3">
+          <span class="text-[#8b5cf6]">$</span>
+          <span>{{ installCommand }}</span>
+        </span>
+        <Icon name="lucide:copy"
+          class="size-4 shrink-0 text-zinc-400 transition-colors group-hover:text-[#8b5cf6] dark:text-white/40" />
+      </button>
+    </div>
+
+    <!-- 右侧：悬浮的品牌标志（玻璃球 + 轨道环 + 基座） -->
+    <div class="relative mx-auto flex h-[26rem] w-full max-w-[30rem] items-center justify-center lg:h-[34rem]">
+      <!-- 轨道环 -->
+      <div
+        class="hero-ring absolute h-[22rem] w-[22rem] rounded-full border border-[#8b5cf6]/40 lg:h-[27rem] lg:w-[27rem]" />
+      <div
+        class="hero-ring-2 absolute h-[26rem] w-[26rem] rounded-full border border-[#1B6DFA]/25 lg:h-[32rem] lg:w-[32rem]" />
+
+      <!-- 玻璃球 -->
+      <div
+        class="hero-float relative flex h-64 w-64 items-center justify-center rounded-full border border-white/20 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.28)_0%,rgba(139,92,246,0.18)_35%,rgba(27,109,250,0.12)_60%,rgba(10,6,22,0.4)_100%)] shadow-[0_0_80px_rgba(139,92,246,0.45),inset_0_0_60px_rgba(255,255,255,0.08)] backdrop-blur-xl lg:h-80 lg:w-80">
+        <svg viewBox="0 0 64 64" class="h-32 w-32 drop-shadow-[0_18px_30px_rgba(109,92,246,0.55)] lg:h-40 lg:w-40"
+          role="img" aria-label="Reborn UI">
+          <defs>
+            <linearGradient id="hero-logo-gradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#c4b5fd" />
+              <stop offset="50%" stop-color="#8b5cf6" />
+              <stop offset="100%" stop-color="#1B6DFA" />
+            </linearGradient>
+          </defs>
+          <rect x="6" y="6" width="52" height="52" rx="12" stroke="url(#hero-logo-gradient)" stroke-width="3.5"
+            fill="none" />
+          <g fill="url(#hero-logo-gradient)">
+            <rect x="18" y="18" width="12" height="12" rx="2.5" />
+            <rect x="34" y="18" width="12" height="12" rx="2.5" opacity="0.45" />
+            <rect x="18" y="34" width="12" height="12" rx="2.5" opacity="0.45" />
+            <rect x="34" y="34" width="12" height="12" rx="2.5" />
+          </g>
+        </svg>
+      </div>
+
+      <!-- 漂浮的小方块 -->
+      <div
+        class="hero-cube absolute top-10 left-8 h-5 w-5 rotate-12 rounded-md bg-gradient-to-br from-[#a78bfa] to-[#6d5cf6] opacity-80 shadow-[0_0_20px_rgba(139,92,246,0.6)]" />
+      <div
+        class="hero-cube-2 absolute right-6 bottom-24 h-7 w-7 -rotate-6 rounded-md bg-gradient-to-br from-[#93c5fd] to-[#1B6DFA] opacity-70 shadow-[0_0_24px_rgba(27,109,250,0.6)]" />
+      <div class="hero-cube absolute top-32 right-2 h-3 w-3 rotate-45 rounded-sm bg-[#c4b5fd] opacity-70" />
+
+      <!-- 基座 -->
+      <div
+        class="absolute bottom-6 h-10 w-64 rounded-[100%] border border-[#8b5cf6]/40 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.45)_0%,rgba(27,109,250,0.15)_50%,transparent_75%)] blur-[1px] lg:w-80" />
+      <div
+        class="absolute bottom-2 h-6 w-48 rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.6)_0%,transparent_70%)] blur-md lg:w-60" />
     </div>
   </section>
 </template>
+
+<style scoped>
+.hero-float {
+  animation: hero-float 6s ease-in-out infinite;
+}
+
+.hero-ring {
+  transform: rotateX(70deg);
+  animation: hero-ring 18s linear infinite;
+}
+
+.hero-ring-2 {
+  transform: rotateX(70deg) rotateZ(30deg);
+  animation: hero-ring 26s linear infinite reverse;
+}
+
+.hero-cube {
+  animation: hero-cube 7s ease-in-out infinite;
+}
+
+.hero-cube-2 {
+  animation: hero-cube 9s ease-in-out infinite 1.5s;
+}
+
+@keyframes hero-float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes hero-ring {
+  from {
+    transform: rotateX(70deg) rotateZ(0deg);
+  }
+
+  to {
+    transform: rotateX(70deg) rotateZ(360deg);
+  }
+}
+
+@keyframes hero-cube {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(12deg);
+  }
+
+  50% {
+    transform: translateY(-18px) rotate(24deg);
+  }
+}
+</style>
