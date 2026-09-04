@@ -1,0 +1,20 @@
+{
+  "description": "静态警告提示条：五种消息类型、按钮同款六种视觉变体、顶部公告模式与消息轮播通知栏（逐条垂直轮播 / 水平跑马灯 / 多行滚动），双端可用。",
+  "whenToUse": [
+    "页面内需要长期展示的静态提示（info / success / warning / error / normal），可带标题、图标、操作项与关闭按钮。",
+    "顶部公告：banner 模式去除边框圆角铺满容器，配合 center 让内容居中。",
+    "消息轮播通知栏：传入 messages 即变为轮播，默认逐条垂直轮播；direction=horizontal 水平跑马灯（speed 控制速率）；rows 大于 1 时多条同时可见逐行上滚。"
+  ],
+  "whenNotToUse": [
+    "操作后的短暂全局反馈，改用 reborn-toast（Message）。",
+    "需要用户确认或承载复杂交互的通知，改用 reborn-dialog。",
+    "单条文本的横向滚动公告条（带左右图标、可点击），改用 reborn-notice-bar。"
+  ],
+  "pitfalls": [
+    "图标、action 插槽、关闭按钮以文字首行为中心对齐：有标题对齐标题、无标题对齐内容；action 里超过一行高的内容（如竖排多个按钮）会与标题顶部对齐并把盒子撑高。",
+    "高度自适应无最小高度，内边距 12px 8px；标题与内容、图标 / 内容 / action / 关闭按钮之间统一 8px。",
+    "轮播容器不能带 flex-1（不定高列容器里 basis 0% 会顶掉显式高度），多行模式高度 = rows × 行高。",
+    "uniapp 端垂直轮播用内置 swiper（多行走 display-multiple-items），水平跑马灯用 createSelectorQuery 测宽，入场过渡期间测到 0 宽会自动重试并在 after-enter 再测一次。",
+    "v-model:show 受控显隐，关闭按钮会将其置为 false；after-close 在关闭动画结束后触发。"
+  ]
+}

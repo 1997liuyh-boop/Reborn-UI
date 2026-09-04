@@ -134,6 +134,12 @@ navigation:
 | `optionList`       | 选项行容器样式，行间距在这里声明（虚拟与非虚拟模式共用）。 |
 | `virtualPhantom`   | 虚拟列表占位层样式，高度由「总条数 × 步长」写成行内样式，负责撑出真实滚动条。 |
 | `virtualWindow`    | 虚拟列表窗口层样式，脱离文档流贴在占位层顶部，靠行内 `translateY` 滑到当前区间。 |
+| `tagList`          | 多选标签区容器：撑满触发器剩余宽度，默认单行裁剪，`wrapTags` 时逐行铺开。 |
+| `tag`              | 单个多选标签的盒子（作为 `RebornBadge` 的 base 覆盖下发），圆角与高度需带 `!` 提权。 |
+| `tagLabel`         | 多选标签的文本（`truncate`）。                       |
+| `tagClose`         | 多选标签的关闭按钮，默认 `text-gray-5`、hover `text-gray-8`。 |
+| `tagCloseIcon`     | 多选标签关闭按钮里的图标。                           |
+| `collapseTag`      | `collapse-tags` 折叠后的「+N」标签。                 |
 
 ### UniApp 版本 `ui`
 

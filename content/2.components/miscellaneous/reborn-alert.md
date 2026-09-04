@@ -57,6 +57,47 @@ navigation:
 | close-element | 关闭元素                          | close: `(e: MouseEvent) => void`      | 2.36.0 |
 | message       | 轮播模式下单条消息的自定义渲染    | item: `string`、index: `number`       |        |
 
+## 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名，与主题默认类通过 tailwind-merge 合并：
+
+### Web 端
+
+| 键名              | 说明                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `root`            | 根节点：`items-start` 行布局、内边距 12px 8px、字号 / 行高 / 圆角与配色变体都落在这里     |
+| `icon`            | 图标容器，高度等于文字首行行高（1.5em）并垂直居中                                        |
+| `content`         | 标题与内容的纵向列，标题与内容间距 8px                                                   |
+| `title`           | 标题                                                                                     |
+| `description`     | 提示内容（默认插槽）                                                                     |
+| `action`          | 操作项插槽容器，`min-h-[1.5em]` 内垂直居中，超过一行高时与标题顶部对齐                   |
+| `closeButton`     | 关闭按钮，`1.5em` 圆形热区，hover 浅底                                                   |
+| `closeIcon`       | 关闭图标                                                                                 |
+| `carouselWrapper` | 垂直轮播容器（单行 / 多行），多行模式高度由组件按 rows 写入                              |
+| `carouselItem`    | 单条轮播消息，默认 `truncate`                                                            |
+| `carouselList`    | 多行垂直滚动的轨道，整体 `translateY` 逐行上移                                           |
+| `marqueeWrapper`  | 水平跑马灯容器                                                                           |
+| `marquee`         | 跑马灯整行文本（不换行），由组件测宽后驱动动画                                           |
+| `marqueeItem`     | 跑马灯中的单条消息，条间距 24px                                                          |
+
+### UniApp 端
+
+| 键名              | 说明                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `root`            | 根节点：`items-start` 行布局、内边距 24rpx 16rpx、字号 / 行高 / 圆角与配色变体           |
+| `icon`            | 图标容器，高度等于文字首行行高并垂直居中                                                 |
+| `content`         | 标题与内容的纵向列，间距 16rpx                                                           |
+| `title`           | 标题                                                                                     |
+| `description`     | 提示内容（默认插槽）                                                                     |
+| `action`          | 操作项插槽容器，`min-h-[1.5em]` 内垂直居中                                               |
+| `closeButton`     | 关闭按钮，`1.5em` 圆形热区                                                               |
+| `closeIcon`       | 关闭图标                                                                                 |
+| `carouselWrapper` | 垂直轮播的 swiper 容器，单行 42rpx，多行由组件按 rows 写入高度                           |
+| `carouselItem`    | 单条轮播消息，默认 `truncate`                                                            |
+| `marqueeWrapper`  | 水平跑马灯容器（带 `createSelectorQuery` 测宽用的选择器类名）                             |
+| `marquee`         | 跑马灯整行文本（不换行）                                                                 |
+| `marqueeItem`     | 跑马灯中的单条消息，条间距 48rpx                                                         |
+
 ## 双端差异
 
 | 能力          | Web 端                          | uniapp 端                                        |

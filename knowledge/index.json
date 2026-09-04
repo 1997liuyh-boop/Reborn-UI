@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-03T11:44:11.070Z",
+  "generatedAt": "2026-09-04T07:42:59.983Z",
   "components": [
     {
       "id": "animate-grid",
@@ -714,6 +714,17 @@
       ]
     },
     {
+      "id": "reborn-alert",
+      "title": "Alert 警告提示",
+      "description": "静态警告提示条：五种消息类型、按钮同款六种视觉变体、顶部公告模式与消息轮播通知栏（逐条垂直轮播 / 水平跑马灯 / 多行滚动），双端可用。",
+      "category": "misc",
+      "tags": [],
+      "platforms": [
+        "web",
+        "uniapp"
+      ]
+    },
+    {
       "id": "reborn-back-top",
       "title": "BackTop",
       "description": "用于长页面滚动超过阈值后显示返回顶部按钮的跨端导航组件。",
@@ -952,7 +963,7 @@
     {
       "id": "reborn-dropdown",
       "title": "Dropdown 下拉菜单",
-      "description": "用于将一组操作折叠进浮层菜单的下拉组件，悬停或点击展开，仅 web 端。",
+      "description": "当页面上的操作命令过多时用于收纳操作元素的下拉菜单，点击或移入触点展开，选择后触发 select，仅 web 端。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1587,7 +1598,7 @@
     },
     {
       "id": "reborn-toast",
-      "title": "Message 消息提示",
+      "title": "Toast 消息提示",
       "description": "全局命令式消息提示（Message）：五种类型静态方法、Promise 接口、同 key 更新与全局配置；web 端由 Toast 升级而来。",
       "category": "misc",
       "tags": [],
