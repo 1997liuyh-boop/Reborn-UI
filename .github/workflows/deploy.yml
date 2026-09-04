@@ -156,6 +156,8 @@ jobs:
       - name: 部署后探针（AI 运行时）
         env:
           SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
+          # 可选：一段已登录用户的 Cookie（如 nuxt-session=...）。配置后冒烟会真实调用模型；未配置则只验证鉴权拦截生效
+          SMOKE_COOKIE: ${{ secrets.DEPLOY_SMOKE_COOKIE }}
         run: |
           set -euo pipefail
           # 等进程起来
@@ -163,12 +165,29 @@ jobs:
           echo "---- GET /api/ai/status ----"
           status="$(curl -fsS --max-time 20 "http://${SERVER_IP}/api/ai/status")"
           echo "$status"
-          echo "$status" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True, d; assert d.get("hasApiKey") and d.get("hasBaseUrl") and d.get("providerRegistered"), d'
+          # 探针未登录时只回传 ok（hasApiKey 等明细字段仅登录可见）；
+          # ok 本身即「密钥存在 + baseUrl 存在 + provider 已注册 + 路径带 /v1」的合取，断言它就够了
+          echo "$status" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True, d'
+
           echo "---- POST /__docus__/assistant smoke ----"
+          payload='{"messages":[{"role":"user","parts":[{"type":"text","text":"只回复：你好"}]}]}'
+          if [ -z "${SMOKE_COOKIE:-}" ]; then
+            # 助手端点受 ai-guard 保护，未登录应返回 401：证明进程在线且鉴权生效
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 -X POST "http://${SERVER_IP}/__docus__/assistant" \
+              -H "Content-Type: application/json" \
+              -H "Accept: text/event-stream" \
+              --data "$payload")"
+            echo "HTTP $code（未提供 DEPLOY_SMOKE_COOKIE，仅校验鉴权拦截）"
+            [ "$code" = "401" ] || { echo "❌ 期望 401，实际 $code"; exit 1; }
+            echo "assistant guard ok"
+            exit 0
+          fi
+
           body="$(curl -fsS --max-time 90 -X POST "http://${SERVER_IP}/__docus__/assistant" \
             -H "Content-Type: application/json" \
             -H "Accept: text/event-stream" \
-            --data '{"messages":[{"role":"user","parts":[{"type":"text","text":"只回复：你好"}]}]}')"
+            -H "Cookie: ${SMOKE_COOKIE}" \
+            --data "$payload")"
           echo "$body" | head -c 800
           echo
           # 至少应出现 reasoning 或 text；不允许再出现秒级空 finish(other)
