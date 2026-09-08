@@ -2,7 +2,7 @@
   "description": "用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。",
   "whenToUse": [
     "表单中录入文本、密码等单行内容时。",
-    "需要前后缀图标或按钮（leading/trailing 插槽）时。",
+    "需要前后缀图标或按钮（prefix/suffix 插槽）时。",
     "通过 as=\"textarea\" 需要多行输入（rows 默认 4）时。",
     "uniapp 端需要 confirmType、adjustPosition、holdKeyboard 等键盘控制时。"
   ],

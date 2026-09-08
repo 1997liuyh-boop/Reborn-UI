@@ -151,13 +151,56 @@ function parseThousands(text: string) {
       </div>
     </Playground>
 
-    <DemoSection title="形态 variant">
+    <DemoSection title="插槽">
       <template #description>
-        <code>variant</code> 提供 outlined / filled / borderless / underlined 四种形态，underlined 会强制压平圆角。
+        使用插槽
       </template>
       <DemoBlock layout="grid" :columns="2" align="start">
-        <DemoItem v-for="v in inputVariants" :key="v" :label="v" mono>
-          <RebornInput v-model="variantValue" :variant="v" placeholder="请输入" />
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
+            append: 'bg-brand-6 text-white px-[12px] border border-brand-6'
+          }">
+            <template #append>
+              搜索
+            </template>
+          </RebornInput>
+        </DemoItem>
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
+            append: 'bg-brand-3 text-gray-2 px-[12px] border border-brand-3'
+          }">
+            <template #append>
+              搜索
+            </template>
+          </RebornInput>
+        </DemoItem>
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
+            append: 'bg-white text-gray-10 px-[8px]'
+          }">
+            <template #prepend>
+              <div class="px-[12px]">
+                https://
+              </div>
+            </template>
+            <template #append>
+              <Icon name="lucide:search" />
+            </template>
+          </RebornInput>
+        </DemoItem>
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
+            append: 'bg-gray-2 text-gray-5 px-[8px]'
+          }">
+            <template #prepend>
+              <div class="px-[12px] text-gray-5">
+                https://
+              </div>
+            </template>
+            <template #append>
+              <Icon name="lucide:search" />
+            </template>
+          </RebornInput>
         </DemoItem>
       </DemoBlock>
     </DemoSection>
@@ -202,10 +245,14 @@ function parseThousands(text: string) {
         <DemoItem label="#prepend / #append（连体块）" mono>
           <RebornInput v-model="groupValue" variant="outlined" placeholder="域名前缀">
             <template #prepend>
-              https://
+              <div class="px-[12px]">
+                https://
+              </div>
             </template>
             <template #append>
-              .com
+              <div class="px-[8px]">
+                .com
+              </div>
             </template>
           </RebornInput>
         </DemoItem>

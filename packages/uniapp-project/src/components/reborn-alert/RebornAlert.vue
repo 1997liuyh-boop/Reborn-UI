@@ -33,11 +33,11 @@ const props = withDefaults(defineProps<AlertProps>(), {
 
 const emit = defineEmits<{
   /** 点击关闭按钮时触发 */
-  'close': [ev: unknown]
-  /** 关闭动画结束后触发 */
-  'after-close': []
+  close: [ev: unknown]
+  /** 关闭动画结束后触发（模板中以 @after-close 监听，与 web 端声明保持一致） */
+  afterClose: []
   /** 轮播消息切换时触发 */
-  'change': [index: number]
+  change: [index: number]
 }>()
 
 export interface AlertProps {
@@ -195,7 +195,7 @@ function handleClose(e: unknown) {
   <!-- after-enter 时根节点已可见，此时测宽最可靠 -->
   <RebornTransition
     name="fade" :show="show" custom-class="w-full"
-    @after-enter="measureMarquee()" @after-leave="emit('after-close')"
+    @after-enter="measureMarquee()" @after-leave="emit('afterClose')"
   >
     <view :class="ui.root()">
       <view v-if="showIcon" :class="ui.icon()">

@@ -1,4 +1,9 @@
-const color = ['primary', 'success', 'info', 'warning', 'error', 'neutral'] as const
+/**
+ * 与 Web 端对齐的 7 色枚举。本端调色板没有独立的 secondary 色阶
+ * （theme.css 中 --color-secondary 即 gray-8），因此 secondary 走灰阶，
+ * 与 reborn-badge / reborn-button 的处理方式一致。
+ */
+const color = ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 const config = {
   slots: {
     wrapper: 'w-full h-full',
@@ -13,6 +18,10 @@ const config = {
     color: {
       primary: {
         indicator: 'bg-primary/10',
+      },
+      // secondary 在本端即 gray-8 灰阶
+      secondary: {
+        indicator: 'bg-secondary/10',
       },
       success: {
         indicator: 'bg-success/10',
@@ -41,6 +50,7 @@ const config = {
   },
   compoundVariants: [
     { color: 'primary' as (typeof color)[number], active: true as const, class: { itemText: 'text-primary dark:text-primary' } },
+    { color: 'secondary' as (typeof color)[number], active: true as const, class: { itemText: 'text-gray-8 dark:text-gray-2' } },
     { color: 'success' as (typeof color)[number], active: true as const, class: { itemText: 'text-success dark:text-success' } },
     { color: 'info' as (typeof color)[number], active: true as const, class: { itemText: 'text-info dark:text-info' } },
     { color: 'warning' as (typeof color)[number], active: true as const, class: { itemText: 'text-warning dark:text-warning' } },

@@ -8,8 +8,6 @@ const variants = ['outlined', 'filled', 'borderless', 'underlined'] as const
 const shapes = ['circle', 'square'] as const
 
 /**
- * 注意：uniapp 侧的 theme.css 没有 .dark 代码块，gray-1~gray-8 不会随主题翻转，
- * 深色适配必须逐条写显式 dark: 变体（与 web 侧的自动翻转策略不同）。
  * 小程序不支持 :focus-within，聚焦态由组件内 JS 维护的 focus 变体驱动。
  */
 const config = {
@@ -23,20 +21,20 @@ const config = {
      */
     group: 'flex w-full min-w-0 grow items-stretch',
     /** 前置块（#prepend 插槽），与输入框连体，仅单行模式渲染 */
-    prepend: 'flex shrink-0 items-center px-3 bg-gray-2 dark:bg-gray-8 text-gray-6 dark:text-gray-4',
+    prepend: 'flex shrink-0 items-center px-3 bg-gray-2 text-gray-6',
     /** 后置块（#append 插槽），与输入框连体，仅单行模式渲染 */
-    append: 'flex shrink-0 items-center px-3 bg-gray-2 dark:bg-gray-8 text-gray-6 dark:text-gray-4',
+    append: 'flex shrink-0 items-center px-3 bg-gray-2 text-gray-6',
     /**
      * 输入框主体容器。背景与边框交给 variant 形态变体；
      * 禁用态统一为 bg-gray-2 / text-gray-5 / 边框 gray-4（与 web 端对齐）。
      */
     wrapper:
-      'relative flex w-full min-w-0 items-center transition-colors overflow-hidden text-gray-9 dark:text-gray-1 data-[disabled=true]:text-gray-5',
+      'relative flex w-full min-w-0 items-center transition-colors overflow-hidden text-gray-9 data-[disabled=true]:text-gray-5',
     input:
-      'flex-1 min-w-0 h-full pl-3 text-gray-9 dark:text-gray-1 focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:text-gray-5 disabled:pointer-events-none transition-colors',
+      'flex-1 min-w-0 h-full pl-3 text-gray-9 focus-visible:outline-none focus:outline-none disabled:cursor-not-allowed disabled:text-gray-5 disabled:pointer-events-none transition-colors',
     inputItem: 'h-full w-full',
-    /** 前缀区（#prefix / #leading 插槽或 prefix-icon） */
-    leading: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-gray-6 dark:text-gray-4',
+    /** 前缀区（#prefix 插槽或 prefix-icon） */
+    prefix: 'absolute left-3 top-0 bottom-0 flex items-center justify-center text-gray-6',
     /** 尾部功能区：清除按钮 / 密码开关 / 字数统计 / 后缀 */
     iconBox: 'h-full flex-shrink-0 flex items-center gap-[16rpx] pr-3',
     iconSection: 'flex cursor-pointer items-center justify-center text-gray-5 transition-all hover:opacity-80',
@@ -83,18 +81,18 @@ const config = {
     variant: {
       outlined: {
         wrapper:
-          'bg-white dark:bg-gray-800 ring-1 ring-gray-4 dark:ring-gray-7 data-[disabled=true]:bg-gray-2 dark:data-[disabled=true]:bg-gray-900',
+          'bg-white ring-1 ring-gray-4 data-[disabled=true]:bg-gray-2',
       },
       filled: {
         wrapper:
-          'bg-gray-2 dark:bg-gray-8 ring-1 ring-transparent data-[disabled=true]:bg-gray-2 data-[disabled=true]:ring-gray-4 dark:data-[disabled=true]:bg-gray-900',
+          'bg-gray-2 ring-1 ring-transparent data-[disabled=true]:bg-gray-2 data-[disabled=true]:ring-gray-4',
       },
       borderless: {
         wrapper: 'bg-transparent ring-0',
       },
       underlined: {
         wrapper:
-          'border-b border-gray-3 dark:border-gray-7 bg-transparent ring-0 data-[disabled=true]:border-gray-4',
+          'border-b border-gray-3 bg-transparent ring-0 data-[disabled=true]:border-gray-4',
         // 下划线形态下分割线保持灰阶即可
       },
     },
@@ -127,12 +125,12 @@ const config = {
         wrapper: 'first:rounded-b-none last:rounded-t-none',
       },
     },
-    hasLeading: {
+    hasPrefix: {
       true: {
         input: 'pl-9',
       },
     },
-    hasTrailing: {
+    hasSuffix: {
       true: {},
     },
     /** 有前置块时输入框左侧圆角压平，与 prepend 连体 */
@@ -167,7 +165,7 @@ const config = {
     { color: 'error', focus: true, class: { wrapper: 'ring-error border-error', separator: 'bg-error' } },
     { color: 'neutral', focus: true, class: { wrapper: 'ring-gray-4 border-gray-4', separator: 'bg-gray-4' } },
     // filled 形态聚焦时背景由灰底转白底（与 web 端 focus-within:bg-gray-1 对齐）
-    { variant: 'filled', focus: true, class: { wrapper: 'bg-white dark:bg-gray-900' } },
+    { variant: 'filled', focus: true, class: { wrapper: 'bg-gray-1' } },
     // borderless 聚焦不上描边，保持无边框语义
     { variant: 'borderless', focus: true, class: { wrapper: 'ring-0' } },
     // square 外形的圆角按尺寸取令牌：sm 4rpx / md 6rpx / lg 8rpx。

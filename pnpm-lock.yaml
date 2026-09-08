@@ -75,6 +75,9 @@ importers:
       '@vueuse/nuxt':
         specifier: ^14.1.0
         version: 14.2.1(magicast@0.5.2)(nuxt@4.2.2(@parcel/watcher@2.5.6)(@types/node@24.12.0)(@vue/compiler-sfc@3.5.29)(better-sqlite3@12.6.2)(cac@6.7.14)(db0@0.3.4(better-sqlite3@12.6.2))(eslint@9.39.3(jiti@2.6.1))(ioredis@5.10.0)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(optionator@0.9.4)(oxlint@1.51.0)(rollup@4.59.0)(sass@1.97.3)(stylelint@17.4.0(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.97.3)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-tsc@3.2.5(typescript@5.9.3))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
+      ai:
+        specifier: ^6.0.86
+        version: 6.0.86(zod@3.25.76)
       better-sqlite3:
         specifier: ^12.5.0
         version: 12.6.2
@@ -202,6 +205,9 @@ importers:
       '@prettier/plugin-oxc':
         specifier: ^0.1.3
         version: 0.1.3
+      '@tailwindcss/browser':
+        specifier: 4.2.4
+        version: 4.2.4
       '@types/three':
         specifier: ^0.182.0
         version: 0.182.0
@@ -4820,6 +4826,9 @@ packages:
 
   '@tailwindcss-mangle/shared@4.1.3':
     resolution: {integrity: sha512-u7TSrR0PwEHUwP/gEE+yIy8QrkCnyVkN245uyn74aYWK73ksJAY2bb27OStzlMdfQADGf7xpBLshISM9UpDJEQ==}
+
+  '@tailwindcss/browser@4.2.4':
+    resolution: {integrity: sha512-yd+3CxxuF1KDt9Q+405JR3/vyotvS5eMIsZPEynEak/JybvFVn8mVmLjVUxgNmrFB6EGCc89lXBECzIZA+YeXQ==}
 
   '@tailwindcss/node@4.2.1':
     resolution: {integrity: sha512-jlx6sLk4EOwO6hHe1oCGm1Q4AN/s0rSrTTPBGPM0/RQ6Uylwq17FuU8IeJJKEjtc6K6O07zsvP+gDO6MMWo7pg==}
@@ -18845,6 +18854,8 @@ snapshots:
       - magicast
 
   '@tailwindcss-mangle/shared@4.1.3': {}
+
+  '@tailwindcss/browser@4.2.4': {}
 
   '@tailwindcss/node@4.2.1':
     dependencies:

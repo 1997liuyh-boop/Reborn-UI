@@ -10,17 +10,16 @@ import { buttonColors, buttonVariants, buttonSizes } from '@/components/reborn-b
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
-// Demo State
+// 演练场状态
 const demoVariant = ref<(typeof buttonVariants)[number]>('filled')
 const demoColor = ref<(typeof buttonColors)[number]>('primary')
 const demoSize = ref<(typeof buttonSizes)[number]>('md')
 const demoLoading = ref(false)
 const demoDisabled = ref(false)
-const demoSquare = ref(false)
 const demoLabel = ref('Reborn UI')
 const customButtonColor = ref('#6366f1')
 
-// Options Mapping
+// 选项映射
 const variantOptions = (buttonVariants as unknown as string[]).map(v => ({ label: v.charAt(0).toUpperCase() + v.slice(1), value: v as (typeof buttonVariants)[number] }))
 const colorOptions = (buttonColors as unknown as string[]).map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c as (typeof buttonColors)[number] }))
 const baseSizeOptions = buttonSizes.map(s => ({ label: s.toUpperCase(), value: s as (typeof buttonSizes)[number] }))
@@ -72,7 +71,7 @@ function copyContent(text: string) {
               dark:border-white/10 dark:bg-black/30
             ">
           <RebornButton :variant="demoVariant" :color="demoColor" :size="demoSize" :loading="demoLoading"
-            :disabled="demoDisabled" :square="demoSquare" @click="handleClick">
+            :disabled="demoDisabled" @click="handleClick">
             {{ demoLabel }}
           </RebornButton>
 
@@ -104,13 +103,14 @@ function copyContent(text: string) {
         按钮颜色 (Colors)
       </RebornText>
       <RebornRadioGroup v-model="demoColor">
-        <RebornRadio v-for="item in colorOptions" :key="item.value" :value="item.value" :showIcon="false">
-          <template #default="{ isChecked }">
-            <view class="relative flex size-5">
-              <view v-if="isChecked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+        <RebornRadio v-for="item in colorOptions" :key="item.value" :value="item.value">
+          <!-- radio 插槽完全接管渲染，做成纯色板选择 -->
+          <template #radio="{ checked }">
+            <view class="relative flex size-[40rpx]">
+              <view v-if="checked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
                 :class="`bg-${item.value}`">
               </view>
-              <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item.value}`"></view>
+              <view class="relative inline-flex size-[40rpx] rounded-full" :class="`bg-${item.value}`"></view>
             </view>
           </template>
         </RebornRadio>
@@ -133,7 +133,6 @@ function copyContent(text: string) {
       <view class="flex flex-col gap-4">
         <RebornSwitch v-model="demoLoading" active-label="加载中 (Loading)" inactive-label="取消加载" />
         <RebornSwitch v-model="demoDisabled" active-label="禁用 (Disabled)" inactive-label="启用" />
-        <RebornSwitch v-model="demoSquare" active-label="紧凑布局 (Square)" inactive-label="常规布局" />
       </view>
     </RebornCard>
 

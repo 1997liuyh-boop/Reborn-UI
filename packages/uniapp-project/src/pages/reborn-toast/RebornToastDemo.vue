@@ -97,7 +97,9 @@ function fireVariant(v: MessageVariant) {
           消息类型
         </text>
         <RebornRadioGroup v-model="type">
-          <RebornRadio v-for="item in messageTypes" :key="item" :value="item" :label="item" />
+          <RebornRadio v-for="item in messageTypes" :key="item" :value="item">
+            {{ item }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 
@@ -108,7 +110,9 @@ function fireVariant(v: MessageVariant) {
           视觉变体
         </text>
         <RebornRadioGroup v-model="variant">
-          <RebornRadio v-for="item in messageVariants" :key="item" :value="item" :label="item" />
+          <RebornRadio v-for="item in messageVariants" :key="item" :value="item">
+            {{ item }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 

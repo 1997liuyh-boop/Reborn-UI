@@ -79,7 +79,9 @@ const noticeIndex = ref(0)
           消息类型
         </text>
         <RebornRadioGroup v-model="type">
-          <RebornRadio v-for="item in alertTypes" :key="item" :value="item" :label="item" />
+          <RebornRadio v-for="item in alertTypes" :key="item" :value="item">
+            {{ item }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 
@@ -90,7 +92,9 @@ const noticeIndex = ref(0)
           视觉变体
         </text>
         <RebornRadioGroup v-model="variant">
-          <RebornRadio v-for="item in alertVariants" :key="item" :value="item" :label="item" />
+          <RebornRadio v-for="item in alertVariants" :key="item" :value="item">
+            {{ item }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 

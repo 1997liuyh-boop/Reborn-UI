@@ -3,6 +3,7 @@ import type { dropdownSelectColors, dropdownSelectSizes } from './reborn-dropdow
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import RebornSelectTrigger from '@/components/reborn-select-trigger/RebornSelectTrigger.vue'
 import RebornTransition from '@/components/reborn-transition/RebornTransition.vue'
+import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import theme from './reborn-dropdown-select.config'
@@ -13,7 +14,6 @@ interface Option {
 }
 
 interface Props {
-  modelValue?: any
   options?: Option[]
   placeholder?: string
   disabled?: boolean
@@ -48,12 +48,28 @@ const props = withDefaults(defineProps<Props>(), {
   ui: () => ({}),
 })
 
-const emit = defineEmits(['update:modelValue', 'change'])
+const emit = defineEmits<{
+  /** 选中项变化（含点击清空后的 null） */
+  (e: 'change', value: any): void
+}>()
+
+/** 选中值（v-model）：对应选项的 value，清空后为 null */
+const model = defineModel<any>()
+
+/**
+ * 表单注入：放进 RebornForm / RebornFormItem 时，尺寸与禁用态由表单接管，
+ * 值变化时触发所在表单项的 change 校验（与同端 reborn-input / reborn-select 一致）。
+ */
+const { size: fieldGroupSize, disabled: fieldGroupDisabled, validate } = useFormInject(props)
+/** 最终生效的尺寸：表单注入优先，其次组件自身的 size */
+const resolvedSize = computed(() => fieldGroupSize.value || props.size)
+/** 最终生效的禁用态：表单禁用或组件自身禁用 */
+const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled)
 
 const isOpen = ref(false)
 
 const selectedLabel = computed(() => {
-  const option = props.options.find(opt => opt.value === props.modelValue)
+  const option = props.options.find(opt => opt.value === model.value)
   return option ? option.label : ''
 })
 
@@ -62,8 +78,8 @@ const b = tv(theme)
 const ui = computed(() => {
   const styles = b({
     color: props.color,
-    size: props.size,
-    disabled: props.disabled,
+    size: resolvedSize.value,
+    disabled: isDisabled.value,
   })
 
   return {
@@ -192,7 +208,7 @@ onBeforeUnmount(clearAnimationTimer)
 // ─── 交互 ───────────────────────────────────────────────────────
 
 function toggleDropdown() {
-  if (props.disabled) {
+  if (isDisabled.value) {
     return
   }
   isOpen.value = !isOpen.value
@@ -203,14 +219,17 @@ function closeDropdown() {
 }
 
 function selectOption(option: Option) {
-  emit('update:modelValue', option.value)
+  model.value = option.value
   emit('change', option.value)
+  // 值变化即触发所在表单项的 change 校验
+  if (validate) { validate('change') }
   closeDropdown()
 }
 
 function onClear() {
-  emit('update:modelValue', null)
+  model.value = null
   emit('change', null)
+  if (validate) { validate('change') }
 }
 </script>
 
@@ -218,7 +237,7 @@ function onClear() {
   <view :class="ui.wrapper({ class: props.customClass })">
     <RebornSelectTrigger
       :custom-class="ui.trigger()" :text="selectedLabel" :placeholder="placeholder"
-      :disabled="disabled" :size="size" :color="color" :focus="isOpen" :clearable="clearable" @open="toggleDropdown"
+      :disabled="isDisabled" :size="resolvedSize" :color="color" :focus="isOpen" :clearable="clearable" @open="toggleDropdown"
       @clear="onClear"
     />
 
@@ -231,11 +250,11 @@ function onClear() {
     <view v-if="panelRendered" :class="ui.panel()" :style="panelStyle">
       <view :class="ui.content()">
         <view
-          v-for="(item, index) in options" :key="index" :class="ui.item({ selected: item.value === modelValue })"
+          v-for="(item, index) in options" :key="index" :class="ui.item({ selected: item.value === model })"
           @tap.stop="selectOption(item)"
         >
-          <text :class="ui.itemText({ selected: item.value === modelValue })">{{ item.label }}</text>
-          <text v-if="item.value === modelValue" class="i-lucide-check" :class="ui.itemIcon()" />
+          <text :class="ui.itemText({ selected: item.value === model })">{{ item.label }}</text>
+          <text v-if="item.value === model" class="i-lucide-check" :class="ui.itemIcon()" />
         </view>
         <view v-if="options.length === 0" :class="ui.empty()">
           无数据

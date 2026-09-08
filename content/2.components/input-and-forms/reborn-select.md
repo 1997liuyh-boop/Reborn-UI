@@ -13,8 +13,10 @@ navigation:
     color: warning
 ---
 
-::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "RebornSelectTrigger.vue", "reborn-select.config.ts", "reborn-select-trigger.config.ts", "RebornTransition.vue"]' :uniappFiles='["RebornDropdownSelect.vue", "reborn-dropdown-select.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts", "RebornTransition.vue", "reborn-transition.config.ts"]'}
+::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornSelect.vue", "reborn-select.config.ts", "index.ts"]'}
 ::
+
+> 源码面板只列 select 自身目录下的文件。触发器 `RebornSelectTrigger`（含 `reborn-select-trigger.config.ts`）与展开动画 `RebornTransition` 是独立组件，源码分别见 `reborn-select-trigger`、`reborn-transition` 组件页。
 
 ## API
 

@@ -47,7 +47,9 @@ const onChange = (color: string) => {
       </view>
       <RebornColorPicker v-model="colorValue" @onChange="onChange" />
       <RebornRadioGroup v-model="demoType">
-        <RebornRadio v-for="t in LoadingTypes" :key="t" :value="t" :label="t" />
+        <RebornRadio v-for="t in LoadingTypes" :key="t" :value="t">
+          {{ t }}
+        </RebornRadio>
       </RebornRadioGroup>
     </RebornCard>
   </RebornPage>

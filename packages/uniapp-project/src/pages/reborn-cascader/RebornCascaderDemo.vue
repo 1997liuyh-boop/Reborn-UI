@@ -124,20 +124,23 @@ const lazyLoad = (node: any, resolve: any) => {
                 尺寸：
             </RebornText>
             <RebornRadioGroup v-model="currentSize">
-                <RebornRadio v-for="s in CascaderSizes" :key="s" :value="s" :label="s" />
+                <RebornRadio v-for="s in CascaderSizes" :key="s" :value="s">
+                    {{ s }}
+                </RebornRadio>
             </RebornRadioGroup>
             <RebornText color="neutral">
                 按钮颜色：
             </RebornText>
             <RebornRadioGroup v-model="currentColor">
-                <RebornRadio v-for="item in CascaderColors" :key="item" :value="item" :showIcon="false">
-                    <template #default="{ isChecked }">
-                        <view class="relative flex size-5">
-                            <view v-if="isChecked"
+                <RebornRadio v-for="item in CascaderColors" :key="item" :value="item">
+                    <!-- radio 插槽完全接管渲染，做成纯色板选择 -->
+                    <template #radio="{ checked }">
+                        <view class="relative flex size-[40rpx]">
+                            <view v-if="checked"
                                 class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
                                 :class="`bg-${item}`">
                             </view>
-                            <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`"></view>
+                            <view class="relative inline-flex size-[40rpx] rounded-full" :class="`bg-${item}`"></view>
                         </view>
                     </template>
                 </RebornRadio>

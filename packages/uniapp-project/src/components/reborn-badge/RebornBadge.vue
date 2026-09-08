@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { badgeColors, badgeSizes, badgeVariants } from './reborn-badge.config'
-import { computed, nextTick, useSlots } from 'vue'
+import { computed, nextTick } from 'vue'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
 import RebornTransition from '../reborn-transition/RebornTransition.vue'
@@ -18,7 +18,22 @@ const props = withDefaults(defineProps<BadgeProps>(), {
   closeIcon: 'i-mdi-close-circle',
   gap: false
 })
-const emit = defineEmits(['close', 'click', 'change'])
+const emit = defineEmits<{
+  /** 点击关闭按钮、徽章隐藏后触发 */
+  close: [ev: unknown]
+  /** 点击徽章时触发 */
+  click: [ev: unknown]
+  /** 可选中模式下选中态切换时触发，载荷为切换后的新值 */
+  change: [checked: boolean]
+}>()
+
+/** 插槽签名与 web 端 BadgeSlots 对齐：均透出 ui 作用域，close 插槽额外透出关闭方法 */
+const slots = defineSlots<{
+  leading?: (props: { ui: any }) => any
+  default?: (props: { ui: any }) => any
+  trailing?: (props: { ui: any }) => any
+  close?: (props: { ui: any, close: (e: unknown) => void }) => any
+}>()
 // 直接从主体对象派生类型，以确保静态分析正常工作
 type BadgeColor = (typeof badgeColors)[number]
 type BadgeVariant = (typeof badgeVariants)[number]
@@ -57,8 +72,6 @@ const show = defineModel<boolean>('show', { default: true })
 const checked = defineModel<boolean>('checked', { default: false })
 
 const b = tv(theme)
-
-const slots = useSlots()
 
 const uiOverrides = computed(() => props.ui || {})
 
@@ -113,21 +126,21 @@ function handleClose(e: any) {
         class: cn(props.customClass)
       })" @tap="onClick"
     >
-      <slot name="leading">
+      <slot name="leading" :ui="ui">
         <view v-if="props.icon" :class="cn(props.icon, ui.leadingIcon())" />
       </slot>
 
       <!-- 微信小程序中 text 内不得再嵌套 text/slot 文本节点，否则子内容不渲染只剩占位；用 view 包住 -->
       <view v-if="props.label || slots.default" :class="ui.label()">
-        <slot>
+        <slot :ui="ui">
           <text v-if="props.label">{{ props.label }}</text>
         </slot>
       </view>
 
-      <slot name="trailing" />
+      <slot name="trailing" :ui="ui" />
 
       <view v-if="props.closable" :class="ui.closeButton()" @tap.stop="handleClose">
-        <slot name="close">
+        <slot name="close" :ui="ui" :close="handleClose">
           <view :class="cn(props.closeIcon, ui.closeIcon())" />
         </slot>
       </view>

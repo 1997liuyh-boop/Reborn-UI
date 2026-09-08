@@ -16,7 +16,8 @@ const playBackground = ref(false)
 const playDisabled = ref(false)
 const playSimple = ref(false)
 const playHideOnSinglePage = ref(false)
-const playPagerCount = ref<any>(7)
+// 初值与组件默认值保持一致（双端默认均为 3）
+const playPagerCount = ref<any>(3)
 const playLayout = ref<any>('prev, pager, next')
 const playPageSizes = ref<number[]>([10, 20, 50, 100])
 
@@ -37,7 +38,8 @@ function handlePlaySizeChange(size: number) {
 const sizeOptions = paginationSizes.map(s => ({ label: s, value: s }))
 
 // 折叠数量选项
-const pagerCountOptions = [5, 7, 9, 11].map(n => ({ label: `${n}`, value: n }))
+// pagerCount 为不小于 3 的整数，奇偶均可，3 即为默认值
+const pagerCountOptions = [3, 5, 7, 9, 11].map(n => ({ label: `${n}`, value: n }))
 
 // 布局选项
 const layoutOptions = [

@@ -9,7 +9,7 @@
     "多层级数据选择，改用 reborn-cascader。"
   ],
   "pitfalls": [
-    "仅 uniapp 端可用，且当前无文档页（docs missing），props 描述不完整。",
+    "仅 uniapp 端可用；已接入 useFormInject，放进 RebornForm 时表单的 size / disabled 优先，值变化会触发所在表单项的 change 校验。",
     "options 为 Option[] 数组，选中值通过 v-model 绑定，变更时触发 change 事件。",
     "clearable 默认 false，需要清空按钮时须显式开启。"
   ]

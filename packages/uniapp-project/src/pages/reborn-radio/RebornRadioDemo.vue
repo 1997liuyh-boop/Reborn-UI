@@ -2,95 +2,170 @@
 import { ref } from 'vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
+import { radioColors } from '@/components/reborn-radio/reborn-radio.config'
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 
-const v1 = ref('1')
-const v2 = ref('primary')
-const v3 = ref('md')
-const v4 = ref('2')
-const v5 = ref('1')
-const v6 = ref('1')
-const v7 = ref('😀')
-const radioGroupValue = ref('New York')
-
-const emojis = [
-  { value: '😀', label: '开心' },
-  { value: '😍', label: '喜欢' },
-  { value: '🤔', label: '思考' },
-  { value: '🎉', label: '庆祝' },
+/** 水果选项，供多个演示区块复用 */
+const fruits = [
+  { value: 'apple', label: '苹果' },
+  { value: 'banana', label: '香蕉' },
+  { value: 'orange', label: '橘子' },
+  { value: 'grape', label: '葡萄' },
 ]
+
+const selectedFruit = ref('apple')
+const selectedMode = ref('day')
+const selectedAlign = ref('center')
+const selectedVariant = ref('apple')
+const selectedColor = ref('primary')
+const selectedCity = ref('北京')
+const selectedPay = ref('wechat')
+const selectedPlan = ref('basic')
+const selectedDisabled = ref('2')
+/** 整组禁用演示的绑定值 */
+const disabledGroupValue = ref('banana')
+
+/** 非受控用法的最新值，仅由 change 事件回填展示 */
+const uncontrolledValue = ref('banana')
+
+/** options 混合数组：字符串简写与对象写法可以混用，对象写法支持 disabled */
+const cityOptions = ['北京', '上海', '广州', { label: '深圳（禁用）', value: '深圳', disabled: true }]
+
+const payOptions = [
+  { value: 'wechat', label: '微信支付' },
+  { value: 'alipay', label: '支付宝' },
+  { value: 'card', label: '银行卡' },
+]
+
+const plans = [
+  { value: 'basic', label: '基础版', desc: '适合个人开发者' },
+  { value: 'pro', label: '专业版', desc: '适合小型团队' },
+  { value: 'enterprise', label: '企业版', desc: '定制化支持' },
+]
+
+/** 非受控模式下通过 change 事件拿到最新值 */
+function onUncontrolledChange(value: string | number | boolean) {
+  uncontrolledValue.value = String(value)
+}
 </script>
 
 <template>
-  <RebornPage title="Radio 单选框" description="单选框组件，用于从多个选项中选择一个。">
-    <RebornCard title="基础用法" custom-class="space-y-4">
-      <view class="flex gap-4">
-        <RebornRadio v-model="v1" label="苹果" value="1" />
-        <RebornRadio v-model="v1" label="香蕉" value="2" />
-      </view>
-      <text class="text-sm text-gray-500">当前值: {{ v1 }}</text>
+  <RebornPage title="Radio 单选框" description="用于在一组互斥选项中选择单项，支持圆点、分段按钮与实体按钮拼接三种类型。">
+    <RebornCard title="基础用法" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup v-model="selectedFruit">
+        <RebornRadio v-for="fruit in fruits" :key="fruit.value" :value="fruit.value">
+          {{ fruit.label }}
+        </RebornRadio>
+      </RebornRadioGroup>
+      <text class="text-24 text-gray-6">
+        当前值：{{ selectedFruit }}
+      </text>
     </RebornCard>
 
-    <RebornCard title="颜色" custom-class="space-y-4">
-      <view class="flex flex-wrap gap-4">
-        <RebornRadio v-model="v2" label="Primary" value="primary" color="primary" />
-        <RebornRadio v-model="v2" label="Success" value="success" color="success" />
-        <RebornRadio v-model="v2" label="Warning" value="warning" color="warning" />
-        <RebornRadio v-model="v2" label="Error" value="error" color="error" />
-      </view>
+    <RebornCard title="按钮类型与尺寸" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup v-model="selectedMode" type="button" size="sm">
+        <RebornRadio value="day">
+          日视图
+        </RebornRadio>
+        <RebornRadio value="week">
+          周视图
+        </RebornRadio>
+        <RebornRadio value="month">
+          月视图
+        </RebornRadio>
+      </RebornRadioGroup>
+      <RebornRadioGroup v-model="selectedMode" type="button" size="lg">
+        <RebornRadio value="day">
+          日视图
+        </RebornRadio>
+        <RebornRadio value="week">
+          周视图
+        </RebornRadio>
+        <RebornRadio value="month">
+          月视图
+        </RebornRadio>
+      </RebornRadioGroup>
     </RebornCard>
 
-    <RebornCard title="尺寸" custom-class="space-y-4">
-      <view class="flex items-center gap-4">
-        <RebornRadio v-model="v3" label="Small" value="sm" size="sm" />
-        <RebornRadio v-model="v3" label="Medium" value="md" size="md" />
-        <RebornRadio v-model="v3" label="Large" value="lg" size="lg" />
-      </view>
+    <RebornCard title="实体按钮拼接 (pure-button)" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup
+        v-model="selectedAlign" type="pure-button" color="success"
+        :options="['左对齐', '居中', '右对齐']"
+      />
+      <text class="text-24 text-gray-6">
+        当前值：{{ selectedAlign }}
+      </text>
     </RebornCard>
 
-    <RebornCard title="禁用状态" custom-class="space-y-4">
-      <view class="flex gap-4">
-        <RebornRadio v-model="v4" label="未选中禁用" value="1" disabled />
-        <RebornRadio v-model="v4" label="选中禁用" value="2" disabled />
-      </view>
+    <RebornCard title="样式变体 (variant)" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup v-model="selectedVariant" variant="outlined" :options="fruits" />
+      <RebornRadioGroup v-model="selectedVariant" variant="filled" :options="fruits" />
+      <RebornRadioGroup v-model="selectedVariant" type="button" variant="filled" :options="fruits" />
     </RebornCard>
 
-    <RebornCard title="自定义图标" custom-class="space-y-4">
-      <RebornRadio v-model="v5" label="自定义图标" value="1" active-icon="i-lucide-check-circle-2"
-        inactive-icon="i-lucide-circle" />
+    <RebornCard title="语义色彩" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup v-model="selectedColor">
+        <RebornRadio v-for="c in radioColors" :key="c" :value="c" :color="c">
+          {{ c }}
+        </RebornRadio>
+      </RebornRadioGroup>
     </RebornCard>
 
-    <RebornCard title="自定义样式 (UI Prop)" custom-class="space-y-4">
-      <RebornRadio v-model="v6" label="方框样式" value="1" :ui="{
-        activeIcon: 'rounded-md',
-        inactiveIcon: 'rounded-md',
-        label: 'text-primary font-bold',
-      }" active-icon="i-lucide-square-check" inactive-icon="i-lucide-square" />
+    <RebornCard title="options 快捷传参" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup v-model="selectedCity" :options="cityOptions" />
+      <!-- label 插槽统一定制选项文案 -->
+      <RebornRadioGroup v-model="selectedPay" :options="payOptions">
+        <template #label="{ data }">
+          <text class="font-medium">{{ data.label }}</text>
+        </template>
+      </RebornRadioGroup>
     </RebornCard>
 
-    <RebornCard title="自定义插槽 (Slot)" custom-class="space-y-4">
-      <RebornRadioGroup v-model="v7">
-        <RebornRadio v-for="e in emojis" :key="e.value" :value="e.value" :label="e.label">
-          <template #active-icon>
-            <text class="text-lg">{{ e.value }}</text>
-          </template>
-          <template #inactive-icon>
-            <text class="text-lg opacity-30">{{ e.value }}</text>
+    <RebornCard title="方向与非受控" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup
+        default-value="banana" direction="vertical" :options="fruits"
+        @change="onUncontrolledChange"
+      />
+      <text class="text-24 text-gray-6">
+        change 事件最新值：{{ uncontrolledValue }}
+      </text>
+    </RebornCard>
+
+    <RebornCard title="禁用状态" custom-class="space-y-[24rpx]">
+      <RebornRadioGroup v-model="selectedDisabled">
+        <RebornRadio value="1" disabled>
+          未选中禁用
+        </RebornRadio>
+        <RebornRadio value="2" disabled>
+          选中禁用
+        </RebornRadio>
+      </RebornRadioGroup>
+      <RebornRadioGroup v-model="disabledGroupValue" disabled :options="fruits" />
+    </RebornCard>
+
+    <RebornCard title="radio 插槽深度定制" custom-class="space-y-[24rpx]">
+      <!-- radio 插槽（作用域含 checked / disabled）完全接管单选框渲染，可做成卡片式选择 -->
+      <RebornRadioGroup v-model="selectedPlan" direction="vertical">
+        <RebornRadio v-for="plan in plans" :key="plan.value" :value="plan.value">
+          <template #radio="{ checked }">
+            <view
+              class="w-[300rpx] rounded-ui-xs border border-solid p-[24rpx]"
+              :class="checked ? 'border-primary bg-primary/5' : 'border-gray-4'"
+            >
+              <view
+                class="text-28 font-medium"
+                :class="checked ? 'text-primary' : 'text-gray-8'"
+              >
+                {{ plan.label }}
+              </view>
+              <view class="mt-[8rpx] text-24 text-gray-6">
+                {{ plan.desc }}
+              </view>
+            </view>
           </template>
         </RebornRadio>
       </RebornRadioGroup>
-      <text class="text-sm text-gray-500">选中: {{ v7 }}</text>
-    </RebornCard>
-
-    <RebornCard title="单选框组 (Radio Group)" custom-class="space-y-4">
-      <RebornRadioGroup v-model="radioGroupValue" size="lg" color="primary">
-        <RebornRadio label="纽约" value="New York" />
-        <RebornRadio label="华盛顿" value="Washington" />
-        <RebornRadio label="洛杉矶" value="Los Angeles" />
-        <RebornRadio label="芝加哥" value="Chicago" />
-      </RebornRadioGroup>
-      <text class="text-sm text-gray-500">选中: {{ radioGroupValue }}</text>
     </RebornCard>
   </RebornPage>
 </template>

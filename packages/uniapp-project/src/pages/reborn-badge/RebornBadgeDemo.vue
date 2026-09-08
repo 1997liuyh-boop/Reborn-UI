@@ -41,16 +41,16 @@ function handleCheckChange(label: string, checked: boolean) {
 
 <template>
   <RebornPage title="Badge 徽标" description="用于展示状态、数量或重要标识的微型标签。支持多种色彩、感官风格及交互状态。">
-    <!-- Playground Section -->
+    <!-- 交互演练场 -->
     <RebornCard title="交互演练场" custom-class="overflow-hidden p-0">
-      <!-- Preview -->
+      <!-- 预览区 -->
       <view class="flex-1 p-10 flex items-center justify-center min-h-[300rpx] bg-blue-1">
         <RebornBadge
           v-model:show="showBadge" :color="color" :variant="variant" :size="size" :label="label"
           :closable="closable" :square="square" :round="round" @close="handleClose"
         />
       </view>
-      <!-- Controls -->
+      <!-- 控制项 -->
       <view class="space-y-2">
         <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">内容文本</text>
         <RebornInput v-model="label" placeholder="输入标签文字" />
@@ -59,14 +59,15 @@ function handleCheckChange(label: string, checked: boolean) {
       <view class="space-y-2">
         <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">预设色彩</text>
         <RebornRadioGroup v-model="color">
-          <RebornRadio v-for="item in badgeColors" :key="item" :value="item" :show-icon="false">
-            <template #default="{ isChecked }">
-              <view class="relative flex size-5">
+          <RebornRadio v-for="item in badgeColors" :key="item" :value="item">
+            <!-- radio 插槽完全接管渲染，做成纯色板选择 -->
+            <template #radio="{ checked }">
+              <view class="relative flex size-[40rpx]">
                 <view
-                  v-if="isChecked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                  v-if="checked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
                   :class="`bg-${item}`"
                 />
-                <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`" />
+                <view class="relative inline-flex size-[40rpx] rounded-full" :class="`bg-${item}`" />
               </view>
             </template>
           </RebornRadio>
@@ -76,14 +77,18 @@ function handleCheckChange(label: string, checked: boolean) {
       <view class="space-y-2">
         <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">视觉风格</text>
         <RebornRadioGroup v-model="variant">
-          <RebornRadio v-for="item in badgeVariants" :key="item" :value="item" :label="item" />
+          <RebornRadio v-for="item in badgeVariants" :key="item" :value="item">
+            {{ item }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 
       <view class="space-y-2">
         <text class="text-[10px] font-bold uppercase tracking-widest text-slate-400">尺寸规格</text>
         <RebornRadioGroup v-model="size">
-          <RebornRadio v-for="item in badgeSizes" :key="item" :value="item" :label="item" />
+          <RebornRadio v-for="item in badgeSizes" :key="item" :value="item">
+            {{ item }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 
@@ -103,7 +108,7 @@ function handleCheckChange(label: string, checked: boolean) {
       </view>
     </RebornCard>
 
-    <!-- Variants Matrix -->
+    <!-- 变体矩阵 -->
     <RebornCard title="变体矩阵 (Variants Matrix)">
       <view v-for="v in badgeVariants" :key="v">
         <text class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{{ v }}</text>
@@ -113,7 +118,7 @@ function handleCheckChange(label: string, checked: boolean) {
       </view>
     </RebornCard>
 
-    <!-- Round -->
+    <!-- 圆角标签 -->
     <RebornCard title="圆角标签 (Round)">
       <view class="flex flex-wrap items-center gap-2">
         <RebornBadge v-for="v in badgeVariants" :key="v" :variant="v" color="primary" round :label="v" />
@@ -121,7 +126,7 @@ function handleCheckChange(label: string, checked: boolean) {
       </view>
     </RebornCard>
 
-    <!-- Check Tag -->
+    <!-- 可选中标签 -->
     <RebornCard title="可选中标签 (Check Tag)">
       <view class="flex flex-wrap items-center gap-2">
         <RebornBadge
@@ -133,7 +138,7 @@ function handleCheckChange(label: string, checked: boolean) {
       </view>
     </RebornCard>
 
-    <!-- Icons & Slots -->
+    <!-- 图标与插槽 -->
     <RebornCard title="图标集成 (Icons)">
       <view>
         <RebornBadge icon="i-lucide-check" label="Success" color="success" />

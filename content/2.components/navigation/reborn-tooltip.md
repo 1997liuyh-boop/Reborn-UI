@@ -11,7 +11,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornTooltipDemo.vue" config="RebornTooltipConfig" componentId="reborn-tooltip" :componentFiles='["RebornTooltip.vue", "reborn-tooltip.config.ts"]' :uniappFiles='["RebornTooltip.vue", "reborn-tooltip.config.ts"]'}
+::ComponentViewer{demoFile="RebornTooltipDemo.vue" config="RebornTooltipConfig" componentId="reborn-tooltip" :componentFiles='["RebornTooltip.vue", "reborn-tooltip.config.ts"]'}
 ::
 
 ## API

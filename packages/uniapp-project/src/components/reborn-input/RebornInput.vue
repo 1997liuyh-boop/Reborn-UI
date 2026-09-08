@@ -33,8 +33,8 @@ export interface InputUI {
   wrapper?: string
   input?: string
   inputItem?: string
-  leading?: string
-  trailing?: string
+  prefix?: string
+  suffix?: string
   iconBox?: string
   clear?: string
   password?: string
@@ -49,8 +49,6 @@ export interface InputAutosize {
 }
 
 export interface InputProps {
-  /** 输入框绑定值（v-model） */
-  modelValue?: string | number
   /** 非受控模式下的初始值，未绑定 modelValue 时生效 */
   defaultValue?: string | number
   placeholder?: string
@@ -119,7 +117,7 @@ export interface InputProps {
   autofocus?: boolean
   /** 是否在清除按钮、密码开关与后缀之间显示竖分割线 */
   separator?: boolean
-  /** 按 wrapper/input/inputItem/leading/trailing 等键覆盖内部节点类名 */
+  /** 按 wrapper/input/inputItem/prefix/suffix 等键覆盖内部节点类名 */
   ui?: InputUI
 }
 
@@ -153,16 +151,29 @@ const props = withDefaults(defineProps<InputProps>(), {
   clearable: false,
   separator: true,
 })
-const emit = defineEmits([
-  'update:modelValue', // 输入值变化时触发（v-model 同步）
-  'input', // 输入时触发，参数为当前输入值
-  'change', // 输入值变化时触发，与 input 同步；清空时也触发，参数为空字符串
-  'focus', // 输入框获得焦点时触发
-  'blur', // 输入框失去焦点时触发
-  'confirm', // 点击键盘确认/完成按钮时触发
-  'clear', // 点击清除按钮清空内容后触发
-  'keyboardheightchange', // 键盘高度变化时触发，e.detail 含 height（px）与 duration
-])
+const emit = defineEmits<{
+  /** 输入时触发，参数为当前输入值 */
+  (e: 'input', value: string): void
+  /** 输入值变化时触发，与 input 同步；清空时也触发，参数为空字符串 */
+  (e: 'change', value: string): void
+  /** 输入框获得焦点时触发 */
+  (e: 'focus', event: any): void
+  /** 输入框失去焦点时触发 */
+  (e: 'blur', event: any): void
+  /** 点击键盘确认/完成按钮时触发 */
+  (e: 'confirm', event: any): void
+  /** 点击清除按钮清空内容后触发 */
+  (e: 'clear'): void
+  /** 键盘高度变化时触发，event.detail 含 height（px）与 duration */
+  (e: 'keyboardheightchange', event: any): void
+}>()
+
+/**
+ * 输入框绑定值（v-model）。
+ * 未绑定 v-model 时 model 自动退化为组件内部状态，此时由下方 localValue 承接 defaultValue 初始值。
+ */
+const model = defineModel<string | number>()
+
 const slots = useSlots()
 
 const inputRef = ref<any>(null)
@@ -227,8 +238,9 @@ function focusNativeInputToEnd() {
   return false
 }
 
+/** 当前生效值：已有 v-model 值时取 model，否则回退到非受控的本地值 */
 const inputValue = computed(() =>
-  props.modelValue !== undefined ? props.modelValue : localValue.value,
+  model.value !== undefined ? model.value : localValue.value,
 )
 
 /** formatter / parser 仅在单行 type="text" 下生效 */
@@ -276,8 +288,8 @@ const ui = computed(() => {
     shape: props.shape,
     fieldGroup: orientation.value,
     multiline: isMultiline.value,
-    hasLeading: !isMultiline.value && (!!slots.prefix || !!slots.leading || !!props.prefixIcon),
-    hasTrailing: !!slots.suffix || !!slots.trailing || showClear.value,
+    hasPrefix: !isMultiline.value && (!!slots.prefix || !!props.prefixIcon),
+    hasSuffix: !!slots.suffix || showClear.value,
     hasPrepend: !isMultiline.value && !!slots.prepend,
     hasAppend: !isMultiline.value && !!slots.append,
     error: isError.value,
@@ -296,12 +308,12 @@ const ui = computed(() => {
       styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
     input: (opts?: { class?: any }) =>
       styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
-    leading: (opts?: { class?: any }) =>
-      styles.leading({ class: cn(opts?.class, uiOverrides.value.leading) }),
+    prefix: (opts?: { class?: any }) =>
+      styles.prefix({ class: cn(opts?.class, uiOverrides.value.prefix) }),
     iconBox: (opts?: { class?: any }) =>
       styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
-    trailing: (opts?: { class?: any }) =>
-      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.trailing) }),
+    suffix: (opts?: { class?: any }) =>
+      styles.iconSection({ class: cn(opts?.class, uiOverrides.value.suffix) }),
     clear: (opts?: { class?: any }) =>
       styles.icon({ class: cn(opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) =>
@@ -316,14 +328,12 @@ const ui = computed(() => {
 }
 )
 
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== undefined) {
-      localValue.value = value
-    }
-  },
-)
+// v-model 值变化时同步本地兜底值，保证非受控展示来源一致
+watch(model, (value) => {
+  if (value !== undefined) {
+    localValue.value = value
+  }
+})
 
 watch(
   [() => props.disabled, fieldGroupDisabled],
@@ -341,8 +351,8 @@ function onInput(e: any) {
   if (useFormatter.value && props.parser) {
     value = props.parser(value)
   }
-  localValue.value = value // Update local value for uncontrolled usage
-  emit('update:modelValue', value)
+  localValue.value = value // 非受控用法下同步本地值
+  model.value = value
   emit('input', value)
   emit('change', value)
   if (validate) { validate('change') }
@@ -428,7 +438,7 @@ function handleFocus(e: any) {
 // 清除方法
 function clear() {
   localValue.value = ''
-  emit('update:modelValue', '')
+  model.value = ''
   emit('change', '')
   emit('clear')
 
@@ -454,12 +464,10 @@ defineExpose({
       </view>
 
       <view :class="ui.wrapper()" :data-disabled="fieldGroupDisabled" :data-filled="isFilled">
-        <!-- 前缀：#prefix（新名）优先，#leading（旧名）兼容，其次 prefix-icon -->
-        <view v-if="($slots.prefix || $slots.leading || prefixIcon) && !isMultiline" :class="ui.leading()">
+        <!-- 前缀：#prefix 插槽优先，其次 prefix-icon -->
+        <view v-if="($slots.prefix || prefixIcon) && !isMultiline" :class="ui.prefix()">
           <slot name="prefix" :ui="ui">
-            <slot name="leading" :ui="ui">
-              <view v-if="prefixIcon" :class="prefixIcon" />
-            </slot>
+            <view v-if="prefixIcon" :class="prefixIcon" />
           </slot>
         </view>
 
@@ -509,13 +517,14 @@ defineExpose({
           {{ currentCount }} / {{ props.maxlength }}
         </view>
 
-        <!-- Icons Section -->
+        <!-- 图标功能区 -->
         <view v-if="!isMultiline" :class="ui.iconBox()" @tap.stop.prevent>
           <view v-if="showClear" :class="ui.clear({ class: 'right-0' })" @tap.stop="clear">
-            <view :class="props.clearIcon" style="width: var(--icon-size); height: var(--icon-size);" />
+            <!-- 清除图标固定 40rpx，与 config 中 icon 变体的 text-40（1em = 40rpx）一致 -->
+            <view class="size-[40rpx]" :class="props.clearIcon" />
           </view>
 
-          <view v-if="separator && showClear && (isPasswordMode || $slots.suffix || $slots.trailing || suffixIcon)" :class="ui.separator()" />
+          <view v-if="separator && showClear && (isPasswordMode || $slots.suffix || suffixIcon)" :class="ui.separator()" />
 
           <!-- #ifdef H5 || APP-PLUS -->
           <view v-if="isPasswordMode" :class="ui.password({ class: 'h-full' })" @touchstart.prevent="handleInteraction">
@@ -538,14 +547,12 @@ defineExpose({
             {{ currentCount }} / {{ props.maxlength }}
           </view>
 
-          <view v-if="separator && isPasswordMode && ($slots.suffix || $slots.trailing || suffixIcon)" :class="ui.separator()" />
+          <view v-if="separator && isPasswordMode && ($slots.suffix || suffixIcon)" :class="ui.separator()" />
 
-          <!-- 后缀：#suffix（新名）优先，#trailing（旧名）兼容，其次 suffix-icon -->
-          <view v-if="$slots.suffix || $slots.trailing || suffixIcon" :class="ui.trailing()">
+          <!-- 后缀：#suffix 插槽优先，其次 suffix-icon -->
+          <view v-if="$slots.suffix || suffixIcon" :class="ui.suffix()">
             <slot name="suffix" :ui="ui">
-              <slot name="trailing" :ui="ui">
-                <view v-if="suffixIcon" :class="suffixIcon" />
-              </slot>
+              <view v-if="suffixIcon" :class="suffixIcon" />
             </slot>
           </view>
         </view>

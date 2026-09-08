@@ -23,8 +23,8 @@ Input 是 Web 与 UniApp 双端可用的基础输入框：`v-model` 绑定输入
 适用场景：
 
 - 表单中录入文本、密码等单行内容。
-- 需要前后缀图标或按钮（`leading` / `trailing` 插槽）的输入框。
-- Web 端通过 `as="textarea"` 的多行输入（`rows` 默认 4）。
+- 需要前后缀图标或按钮（`prefix` / `suffix` 插槽）的输入框。
+- Web 端通过 `as="textarea"` 的多行输入（`rows` 默认 2）。
 - UniApp 端需要 `confirmType`、`adjustPosition`、`holdKeyboard` 等键盘控制时。
 
 不适用场景：
@@ -95,7 +95,7 @@ Web 端通过 `type="textarea"` 渲染多行文本域（旧属性 `as="textarea"
 
 ### 密码框、清除与前后缀
 
-`show-password`（旧名 `password` 兼容）开启掩码显示并出现明文/密文切换按钮，`#password-icon` 作用域插槽（参数 `visible`）可自定义图标；`clearable` 显示清除按钮，`clear-icon` 可替换图标。前后缀有三层能力：`prefix-icon` / `suffix-icon` 快捷图标，`#prefix` / `#suffix` 插槽（旧名 `#leading` / `#trailing` 兼容，作用域提供 `ui` 类名生成器），以及输入框外的 `#prepend` / `#append` 连体块；`separator` 控制清除按钮、密码开关与后缀之间的竖分割线。
+`show-password`（旧名 `password` 兼容）开启掩码显示并出现明文/密文切换按钮，`#password-icon` 作用域插槽（参数 `visible`）可自定义图标；`clearable` 显示清除按钮，`clear-icon` 可替换图标。前后缀有三层能力：`prefix-icon` / `suffix-icon` 快捷图标，`#prefix` / `#suffix` 插槽（作用域提供 `ui` 类名生成器），以及输入框外的 `#prepend` / `#append` 连体块；`separator` 控制清除按钮、密码开关与后缀之间的竖分割线。
 
 ```vue
 <template>
@@ -160,9 +160,9 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 | `disabled`         | `boolean`                                                                              | `false`                  | 通用   | 是否禁用。                                                          |
 | `readonly`         | `boolean`                                                                              | `false`                  | 通用   | 是否只读。                                                          |
 | `type`             | `InputType`                                                                            | `'text'`                 | 通用   | 输入类型；UniApp 端支持 text/number/idcard/digit 等原生键盘类型。   |
-| `size`             | `'sm' \| 'md' \| 'lg'`                                                                 | `'sm'`                   | 通用   | 尺寸，影响高度与字号（Web 端 sm/md 14px、lg 16px）。                |
+| `size`             | `'sm' \| 'md' \| 'lg'`                                                                 | Web `'md'` / UniApp `'sm'` | 通用   | 尺寸，影响高度与字号（Web 端 sm/md 14px、lg 16px）。双端默认值不同，跨端复用同一份配置时需显式指定。 |
 | `color`            | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'`              | 通用   | 聚焦时描边 / 下划线 / 分割线的高亮颜色。                            |
-| `variant`          | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                               | `'filled'`               | 通用   | 形态变体；filled 默认灰底，聚焦转亮底 + 描边。                      |
+| `variant`          | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                               | Web `'outlined'` / UniApp `'filled'` | 通用   | 形态变体；filled 为灰底、聚焦转亮底 + 描边。双端默认值不同，跨端复用同一份配置时需显式指定。 |
 | `shape`            | `'circle' \| 'square'`                                                                 | `'square'`               | 通用   | 外形：square 圆角按尺寸取令牌（Web 4/6/8px、UniApp 4/6/8rpx），circle 为胶囊。 |
 | `showPassword`     | `boolean`                                                                              | `false`                  | 通用   | 是否显示明文/密文切换按钮（旧名 `password` 两端仍兼容）。           |
 | `password`         | `boolean`                                                                              | `false`                  | 通用   | 旧属性名，等价于 `showPassword`，保留以兼容既有用法。               |
@@ -202,7 +202,7 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 | `confirmType`      | `string`                                                                               | `'done'`                 | UniApp | 键盘确认按钮文案：done/send/search/next/go。                        |
 | `adjustPosition`   | `boolean`                                                                              | `true`                   | UniApp | 键盘弹起时是否自动上推页面。                                        |
 | `holdKeyboard`     | `boolean`                                                                              | `false`                  | UniApp | 聚焦时点击页面其他区域是否保持键盘不收起。                          |
-| `placeholderClass` | `string`                                                                               | `''`                     | UniApp | 占位文本的样式类，追加在内置 `text-gray-4` 之后。                   |
+| `placeholderClass` | `string`                                                                               | `''`                     | UniApp | 占位文本的样式类，追加在内置 `text-gray-5` 之后。                   |
 
 ### Emits
 
@@ -224,13 +224,11 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 
 | 插槽名          | 作用域参数    | 描述                                                                        |
 | :-------------- | :------------ | :-------------------------------------------------------------------------- |
-| `prefix`        | `{ ui }`      | 输入框前缀区域（新名，优先级高于 `leading`），仅非 textarea 有效。           |
-| `suffix`        | `{ ui }`      | 输入框后缀区域（新名，优先级高于 `trailing`），仅非 textarea 有效。          |
+| `prefix`        | `{ ui }`      | 输入框前缀区域，仅非 textarea 有效。                                        |
+| `suffix`        | `{ ui }`      | 输入框后缀区域，位于清除按钮与密码开关之后，仅非 textarea 有效。            |
 | `prepend`       | -             | 输入框外的前置连体块（如协议前缀），仅非 textarea 有效。                     |
 | `append`        | -             | 输入框外的后置连体块（如域名后缀），仅非 textarea 有效。                     |
 | `password-icon` | `{ visible }` | 密码切换按钮的图标内容，仅 `show-password` 开启时生效。                      |
-| `leading`       | `{ ui }`      | `prefix` 的旧名，保留以兼容既有用法。                                        |
-| `trailing`      | `{ ui }`      | `suffix` 的旧名，位于清除按钮与密码开关之后，保留以兼容既有用法。            |
 
 ### Expose
 
@@ -262,8 +260,8 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 | `wrapper`   | 通用   | 输入框主体容器。                               |
 | `input`     | 通用   | 输入区域（UniApp 端为包裹原生 input 的容器）。 |
 | `inputItem` | UniApp | 原生 input 元素本体。                          |
-| `leading`   | 通用   | 前缀插槽容器。                                 |
-| `trailing`  | 通用   | 后缀插槽容器。                                 |
+| `prefix`    | 通用   | 前缀插槽容器。                                 |
+| `suffix`    | 通用   | 后缀插槽容器。                                 |
 | `iconBox`   | 通用   | 右侧图标区容器（清除/密码/字数/后缀）。        |
 | `icon`      | Web    | 清除与密码图标的尺寸类。                       |
 | `clear`     | 通用   | 清除按钮。                                     |
@@ -273,11 +271,23 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 
 ### CSS 变量
 
-| 变量名              | 描述             | 移动端值 (默认) | 桌面端值 (min-width: 768px) |
-| :------------------ | :--------------- | :-------------- | :-------------------------- |
-| `--input-lg-height` | 大尺寸输入框高度 | `96px`          | `48px`                      |
-| `--input-md-height` | 中尺寸输入框高度 | `90px`          | `45px`                      |
-| `--input-sm-height` | 小尺寸输入框高度 | `80px`          | `40px`                      |
+双端变量名与取值都不同，各自定义在自己的主题文件里，没有断点切换一说。
+
+UniApp（`packages/uniapp-project/src/styles/theme.css`）：
+
+| 变量名              | 描述             | 值       |
+| :------------------ | :--------------- | :------- |
+| `--input-sm-height` | 小尺寸输入框高度 | `80rpx`  |
+| `--input-md-height` | 中尺寸输入框高度 | `90rpx`  |
+| `--input-lg-height` | 大尺寸输入框高度 | `96rpx`  |
+
+Web（`app/assets/theme/typography.css`）：
+
+| 变量名                | 描述             | 值     |
+| :-------------------- | :--------------- | :----- |
+| `--height-input-sm`   | 小尺寸输入框高度 | `24px` |
+| `--height-input-md`   | 中尺寸输入框高度 | `32px` |
+| `--height-input-lg`   | 大尺寸输入框高度 | `40px` |
 
 ## 注意事项
 

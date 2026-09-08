@@ -67,24 +67,24 @@ function parseThousands(text: string) {
         v-model="input2" :size="currentSize" :color="colors" :show-password="password" :disabled="disabled"
         :variant="currentVariant" :shape="currentShape" :clearable="clearable" placeholder="插槽"
       >
-        <template #leading="{ ui }">
-          <view class="i-lucide-search text-gray-400" :class="ui.trailing()" />
+        <template #prefix="{ ui }">
+          <view class="i-lucide-search text-gray-400" :class="ui.prefix()" />
         </template>
-        <template #trailing="{ ui }">
-          <view class="i-lucide-calendar text-gray-400" :class="ui.trailing()" />
+        <template #suffix="{ ui }">
+          <view class="i-lucide-calendar text-gray-400" :class="ui.suffix()" />
         </template>
       </RebornInput>
       <RebornInput
         v-model="input2" :size="currentSize" :color="colors" :show-password="password" :disabled="disabled"
         :variant="currentVariant" :shape="currentShape" :clearable="clearable" placeholder="关键词/商品ID/网址"
       >
-        <template #leading>
+        <template #prefix>
           <RebornImage
             src="https://mall.leyifan.cn/static/h5/new_images/index_search_small.png?v=1" width="30"
             height="30" mode="widthFix"
           />
         </template>
-        <template #trailing>
+        <template #suffix>
           <view class="relative h-[80rpx] w-[80rpx] flex items-center justify-center" @tap.stop="toggleTranslate">
             <view
               class="absolute left-[8rpx] top-[12rpx] flex h-[46rpx] w-[46rpx] items-center justify-center rounded-[8rpx] border text-[22rpx] font-bold transition-all duration-300"
@@ -107,21 +107,24 @@ function parseThousands(text: string) {
       <view class="col-span-2">
         <RebornText color="neutral">尺寸</RebornText>
         <RebornRadioGroup v-model="currentSize">
-          <RebornRadio v-for="size in inputSizes" :key="size" :value="size" :label="size" />
+          <RebornRadio v-for="size in inputSizes" :key="size" :value="size">
+            {{ size }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 
       <view class="col-span-2">
         <RebornText color="neutral">激活边框颜色</RebornText>
         <RebornRadioGroup v-model="colors">
-          <RebornRadio v-for="item in inputColors" :key="item" :value="item" :show-icon="false">
-            <template #default="{ isChecked }">
-              <view class="relative flex size-5">
+          <RebornRadio v-for="item in inputColors" :key="item" :value="item">
+            <!-- radio 插槽完全接管渲染，做成纯色板选择 -->
+            <template #radio="{ checked }">
+              <view class="relative flex size-[40rpx]">
                 <view
-                  v-if="isChecked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                  v-if="checked" class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
                   :class="`bg-${item}`"
                 />
-                <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`" />
+                <view class="relative inline-flex size-[40rpx] rounded-full" :class="`bg-${item}`" />
               </view>
             </template>
           </RebornRadio>
@@ -141,14 +144,18 @@ function parseThousands(text: string) {
       <view class="col-span-2">
         <RebornText color="neutral">形态变体 variant</RebornText>
         <RebornRadioGroup v-model="currentVariant">
-          <RebornRadio v-for="v in inputVariants" :key="v" :value="v" :label="v" />
+          <RebornRadio v-for="v in inputVariants" :key="v" :value="v">
+            {{ v }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 
       <view class="col-span-2">
         <RebornText color="neutral">形状轮廓 shape</RebornText>
         <RebornRadioGroup v-model="currentShape">
-          <RebornRadio v-for="s in inputShapes" :key="s" :value="s" :label="s" />
+          <RebornRadio v-for="s in inputShapes" :key="s" :value="s">
+            {{ s }}
+          </RebornRadio>
         </RebornRadioGroup>
       </view>
 

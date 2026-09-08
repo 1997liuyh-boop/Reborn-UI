@@ -47,33 +47,34 @@ export default {
      * round / circle / text 变体在 variant 轴覆盖此圆角（本轴刻意置于 variant 之前，保证后者在 tailwind-merge 中胜出）。
      */
     size: {
+      // 水平内边距按文档规格随 size 递进 12 / 16 / 24rpx；图文间距与加载动画尺寸同走 rpx 随屏缩放
       'xs': {
-        base: 'h-button-xs px-3 text-22 gap-1.5 rounded-ui-2xs',
-        loading: 'size-3',
+        base: 'h-button-xs px-[12rpx] text-22 gap-[12rpx] rounded-ui-2xs',
+        loading: 'size-[24rpx]',
       },
       'sm': {
-        base: 'h-button-sm px-3 text-24 gap-1.5 rounded-ui-2xs',
-        loading: 'size-3.5',
+        base: 'h-button-sm px-[12rpx] text-24 gap-[12rpx] rounded-ui-2xs',
+        loading: 'size-[28rpx]',
       },
       'default': {
-        base: 'h-button-md px-4 text-26 gap-1.5 rounded-ui-xs',
-        loading: 'size-4',
+        base: 'h-button-md px-[16rpx] text-26 gap-[12rpx] rounded-ui-xs',
+        loading: 'size-[32rpx]',
       },
       'md': {
-        base: 'h-button-md px-4 text-26 gap-1.5 rounded-ui-xs',
-        loading: 'size-4',
+        base: 'h-button-md px-[16rpx] text-26 gap-[12rpx] rounded-ui-xs',
+        loading: 'size-[32rpx]',
       },
       'lg': {
-        base: 'h-button-lg px-6 text-28 gap-1.5 rounded-ui-sm',
-        loading: 'size-5',
+        base: 'h-button-lg px-[24rpx] text-28 gap-[12rpx] rounded-ui-sm',
+        loading: 'size-[40rpx]',
       },
       'xl': {
-        base: 'h-button-xl px-6 text-30 gap-2 rounded-ui-sm',
-        loading: 'size-6',
+        base: 'h-button-xl px-[24rpx] text-30 gap-[16rpx] rounded-ui-sm',
+        loading: 'size-[48rpx]',
       },
       '2xl': {
-        base: 'h-button-2xl px-6 text-32 gap-2 rounded-ui-sm',
-        loading: 'size-7',
+        base: 'h-button-2xl px-[24rpx] text-32 gap-[16rpx] rounded-ui-sm',
+        loading: 'size-[56rpx]',
       },
     },
     variant: {

@@ -41,8 +41,6 @@ const props = withDefaults(defineProps<InputProps>(), {
 });
 
 const emit = defineEmits<{
-  /** 输入值变化时触发（v-model 同步） */
-  (e: "update:modelValue", value: string | number): void;
   /** 输入值变化时触发，回调为当前值（输入法合成期间不触发） */
   (e: "input", value: string | number): void;
   /** 失焦或按下 Enter 且值相对聚焦时发生变化后触发 */
@@ -67,9 +65,16 @@ const emit = defineEmits<{
   (e: "compositionend", event: CompositionEvent): void;
 }>();
 
+/**
+ * 输入框绑定值（v-model）。
+ * 解构第二项为 v-model 修饰符集合（trim 失焦去首尾空格 / number 转数字），由 Vue 自动注入。
+ * 未绑定 v-model 时 model 自动退化为组件内部状态，此时由下方 localValue 承接 defaultValue 初始值。
+ */
+const [model, modelModifiers] = defineModel<string | number, "trim" | "number">();
+
 const b = tv(theme);
 
-/** 按内部结构键覆盖节点类名；旧键（wrapper/input/leading/trailing…）全部保留 */
+/** 按内部结构键覆盖节点类名（root/group/wrapper/input/prefix/suffix…） */
 export interface InputUi {
   root?: string;
   group?: string;
@@ -77,10 +82,10 @@ export interface InputUi {
   append?: string;
   wrapper?: string;
   input?: string;
-  leading?: string;
+  prefix?: string;
   iconBox?: string;
   icon?: string;
-  trailing?: string;
+  suffix?: string;
   clear?: string;
   password?: string;
   separator?: string;
@@ -94,10 +99,6 @@ export interface InputAutosize {
 }
 
 export interface InputProps {
-  /** 输入框绑定值（v-model） */
-  modelValue?: string | number;
-  /** v-model 修饰符（trim 失焦去首尾空格 / number 转数字），由 Vue 自动注入 */
-  modelModifiers?: { trim?: boolean; number?: boolean };
   /** 非受控模式下的初始值，未绑定 modelValue 时生效 */
   defaultValue?: string | number;
   /** 输入类型（原生 type）；传 'textarea' 渲染为多行文本域 */
@@ -201,8 +202,9 @@ const passwordVisible = ref(false);
 /** 聚焦时的快照值，用于判定 change 事件 */
 const focusedValue = ref<string>("");
 
+/** 当前生效值：已有 v-model 值时取 model，否则回退到非受控的本地值 */
 const inputValue = computed(() =>
-  props.modelValue !== undefined ? props.modelValue : localValue.value,
+  model.value !== undefined ? model.value : localValue.value,
 );
 /** 是否渲染为多行 textarea：type="textarea" 或旧属性 as="textarea" */
 const isMultiline = computed(() => props.type === "textarea" || props.as === "textarea");
@@ -257,6 +259,7 @@ const ui = computed(() => {
     fieldGroup: orientation.value,
     multiline: isMultiline.value,
     error: isError.value,
+    disabled: isDisabled.value,
     hasPrepend: !isMultiline.value && !!slots.prepend,
     hasAppend: !isMultiline.value && !!slots.append,
   });
@@ -269,10 +272,10 @@ const ui = computed(() => {
     wrapper: (opts?: { class?: any }) =>
       styles.wrapper({ class: cn(opts?.class, props.class, uiOverrides.value.wrapper) }),
     input: (opts?: { class?: any }) => styles.input({ class: cn(opts?.class, uiOverrides.value.input) }),
-    leading: (opts?: { class?: any }) => styles.leading({ class: cn(opts?.class, uiOverrides.value.leading) }),
+    prefix: (opts?: { class?: any }) => styles.prefix({ class: cn(opts?.class, uiOverrides.value.prefix) }),
     iconBox: (opts?: { class?: any }) => styles.iconBox({ class: cn(opts?.class, uiOverrides.value.iconBox) }),
     icon: (opts?: { class?: any }) => styles.icon({ class: cn(opts?.class, uiOverrides.value.icon) }),
-    trailing: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.trailing) }),
+    suffix: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.suffix) }),
     clear: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.clear) }),
     password: (opts?: { class?: any }) => styles.iconSection({ class: cn(opts?.class, uiOverrides.value.password) }),
     separator: (opts?: { class?: any }) => styles.separator({ class: cn(opts?.class, uiOverrides.value.separator) }),
@@ -348,10 +351,10 @@ const mergedInputStyle = computed(() => [
 
 /** 提交新值：非受控时落本地，同步 v-model 并抛 input */
 function setValue(value: string | number) {
-  if (props.modelValue === undefined) {
+  if (model.value === undefined) {
     localValue.value = value;
   }
-  emit("update:modelValue", value);
+  model.value = value;
   emit("input", value);
   if (props.validateEvent) validate("change");
 }
@@ -366,7 +369,7 @@ function handleInput(event: Event) {
   if (useFormatter.value && props.parser) {
     value = props.parser(value);
   }
-  if (props.modelModifiers?.number) {
+  if (modelModifiers.number) {
     const parsed = Number.parseFloat(String(value));
     if (!Number.isNaN(parsed)) value = parsed;
   }
@@ -419,10 +422,10 @@ function onBlur(event: FocusEvent) {
   isFocus.value = false;
 
   // trim 修饰符：失焦时去除首尾空格
-  if (props.modelModifiers?.trim) {
+  if (modelModifiers.trim) {
     const trimmed = String(inputValue.value ?? "").trim();
     if (trimmed !== String(inputValue.value ?? "")) {
-      setValue(props.modelModifiers?.number && !Number.isNaN(Number.parseFloat(trimmed)) ? Number.parseFloat(trimmed) : trimmed);
+      setValue(modelModifiers.number && !Number.isNaN(Number.parseFloat(trimmed)) ? Number.parseFloat(trimmed) : trimmed);
     }
   }
 
@@ -439,10 +442,10 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 function clear() {
-  if (props.modelValue === undefined) {
+  if (model.value === undefined) {
     localValue.value = "";
   }
-  emit("update:modelValue", "");
+  model.value = "";
   emit("input", "");
   emit("change", "");
   emit("clear");
@@ -459,12 +462,10 @@ function select() {
   inputRef.value?.select();
 }
 
-watch(
-  () => props.modelValue,
-  (value) => {
-    localValue.value = value ?? "";
-  },
-);
+// v-model 值变化时同步本地兜底值，保证解绑或清空后仍有一致的展示来源
+watch(model, (value) => {
+  localValue.value = value ?? "";
+});
 
 // 内容变化后重算 textarea 高度
 watch(inputValue, () => nextTick(resizeTextarea));
@@ -512,13 +513,10 @@ defineExpose({
 
       <div :class="ui.wrapper()" :data-disabled="isDisabled" :data-filled="isFilled" @click="inputRef?.focus()"
         @mouseenter="emit('mouseenter', $event)" @mouseleave="emit('mouseleave', $event)">
-        <!-- 前缀：#prefix（新名）优先，#leading（旧名）兼容，其次 prefix-icon -->
-        <span v-if="($slots.prefix || $slots.leading || prefixIcon) && !isMultiline"
-          :class="ui.leading({ class: 'mr-1' })" @click.stop>
+        <!-- 前缀：#prefix 插槽优先，其次 prefix-icon -->
+        <span v-if="($slots.prefix || prefixIcon) && !isMultiline" :class="ui.prefix({ class: 'mr-1' })" @click.stop>
           <slot name="prefix" :ui="ui">
-            <slot name="leading" :ui="ui">
-              <Icon v-if="prefixIcon" :name="prefixIcon" :class="ui.icon()" />
-            </slot>
+            <Icon v-if="prefixIcon" :name="prefixIcon" :class="ui.icon()" />
           </slot>
         </span>
 
@@ -544,7 +542,7 @@ defineExpose({
             </div>
           </Transition>
 
-          <div v-if="separator && showClear && (isPasswordMode || $slots.trailing || $slots.suffix || suffixIcon)"
+          <div v-if="separator && showClear && (isPasswordMode || $slots.suffix || suffixIcon)"
             :class="ui.separator()" />
 
           <!-- 密码明文/密文切换；#password-icon 作用域插槽可自定义图标 -->
@@ -559,15 +557,13 @@ defineExpose({
             {{ currentCount }} / {{ props.maxlength }}
           </span>
 
-          <div v-if="separator && ($slots.trailing || $slots.suffix || suffixIcon) && (!showClear || isPasswordMode)"
+          <div v-if="separator && ($slots.suffix || suffixIcon) && (!showClear || isPasswordMode)"
             :class="ui.separator()" />
 
-          <!-- 后缀：#suffix（新名）优先，#trailing（旧名）兼容，其次 suffix-icon -->
-          <div v-if="$slots.suffix || $slots.trailing || suffixIcon" :class="ui.trailing()">
+          <!-- 后缀：#suffix 插槽优先，其次 suffix-icon -->
+          <div v-if="$slots.suffix || suffixIcon" :class="ui.suffix()">
             <slot name="suffix" :ui="ui">
-              <slot name="trailing" :ui="ui">
-                <Icon v-if="suffixIcon" :name="suffixIcon" :class="ui.icon()" />
-              </slot>
+              <Icon v-if="suffixIcon" :name="suffixIcon" :class="ui.icon()" />
             </slot>
           </div>
         </div>

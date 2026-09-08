@@ -13,7 +13,7 @@ navigation:
     color: primary
 ---
 
-::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "reborn-radio.config.ts"]' :uniappFiles='["RebornRadio.vue", "reborn-radio.config.ts"]'}
+::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]' :uniappFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]'}
 ::
 
 ## 简介
@@ -255,9 +255,7 @@ const fruit = ref("apple");
 
 ## 自定义样式（ui）
 
-`ui` 属性按以下键覆盖对应节点的样式类（两端结构不同，键位分别列出）：
-
-### Web 端
+`ui` 属性按以下键覆盖对应节点的样式类（两端键位一致）：
 
 | 键名    | 说明                          |
 | ------- | ----------------------------- |
@@ -266,20 +264,16 @@ const fruit = ref("apple");
 | `dot`   | 选中态实心圆点。              |
 | `label` | 标签文本。                    |
 
-### UniApp 端
-
-| 键名           | 说明                                       |
-| -------------- | ------------------------------------------ |
-| `root`         | 根节点容器。                               |
-| `wrapper`      | 图标与文案的内层行容器（对齐用）。         |
-| `activeIcon`   | 选中态图标（语义色渐变底，尺寸随 size）。  |
-| `inactiveIcon` | 未选中态图标（灰色描边，尺寸随 size）。    |
-| `label`        | 标签文本。                                 |
-
 ## 注意事项
 
 - 选中态由绑定值与 `value` 严格相等判断，注意字符串与数字类型不一致会导致无法选中；点击已选中项不会再次触发事件（单选框不能取消选中）。
 - 使用 `RebornRadioGroup` 时绑定值由 Group 的 `v-model` 管理，单个 Radio 不需要再绑 `v-model`；`type` / `size` / `disabled` 也由 Group 统一下发。
 - `options` 与默认插槽二选一：传了 `options` 时默认插槽不渲染。
 - `pure-button` 类型下选中态外观随 `variant`（filled 实底白字 / outlined 语义色描边+文字）+ `color` 语义色，`buttonProps.variant` 只影响未选中态；首尾圆角由组容器按 `size` 取 `RebornButton` 同款圆角令牌恢复。
-- uniapp 端组件尚未对齐本次新 API（仍为旧版 `size` / `color` / `activeIcon` 等参数），跨端使用请以各端源码面板为准。
+- uniapp 端已与 Web 端对齐同一套 API（Props / Emits / 插槽名与作用域参数一致），跨端迁移无需改动调用写法，仅以下平台差异需要注意：
+  - 追加自定义类名的属性名为 `custom-class`（Web 端为 `class`），与 uniapp 端其余组件保持一致。
+  - 事件绑定为 `@tap`，节点为 `view` / `text`，`change` 事件第二个参数为 uni 合成事件对象（H5 下即原生 `Event`）。
+  - 小程序端没有 hover 态，Web 端未选中项的悬停语义色预示（`group-hover` / `hover`）在 uniapp 端不再声明。
+  - `pure-button` 未选中态文字取 `gray-8`（uniapp 灰阶止于 gray-8，对应 Web 端的 `gray-9`）；禁用态直接复用 uniapp 端 `RebornButton` 自带的禁用灰阶，无需 Web 端压制 `dark:bg-gray-8` 的 `!` 提权写法。
+  - `pure-button` 的首尾圆角与相邻边框折叠依赖组容器的子选择器（`:first-child` / `:last-child` / `:not(:first-child)`），在个别不支持结构性伪类的小程序端会降级为各自独立的按钮外观。
+  - uniapp 端尺寸全部使用 rpx：`radio` 圆形图标直径为 `24 / 28 / 32rpx`，`button` / `pure-button` 高度取 `RebornButton` 同款令牌 `56 / 64 / 76rpx`。

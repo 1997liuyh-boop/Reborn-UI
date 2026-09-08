@@ -233,15 +233,15 @@ const droplist = [
 
 | 键名           | 说明                                                                                                                                                     |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `root`         | 根节点 `<view>`，默认 `flex flex-row items-center flex-wrap gap-x-1.5 text-28 leading-none`；字号用 rpx 体系（`text-28`），整体间距改这里。**折叠依赖 flex `order`，覆盖时请保留 `flex`。** |
-| `item`         | 单个条目外层（折叠省略号节点同用），默认 `reborn-breadcrumb-item flex flex-row items-center gap-x-1.5 relative group`；`relative` 是下拉面板的定位基准，勿移除。 |
-| `link`         | 条目的文本节点，默认 `text-gray-500 transition-colors flex flex-row items-center gap-1`。条目上的 `custom-class` 也并到该节点。                            |
-| `separator`    | 分隔符容器，默认 `text-gray-400 select-none flex flex-row items-center justify-center text-24`。填充 `separator` 插槽只替换内容，容器类名仍生效。            |
-| `more`         | 折叠省略号的容器。**仅 `max-count` 触发折叠时渲染**，默认 `text-gray-500 flex flex-row items-center`。                                                     |
-| `moreIcon`     | 省略号图标，默认 `w-4 h-4`。**仅在未填充 `more-icon` 插槽时渲染**，填充该插槽会使其失效。                                                                  |
-| `dropIcon`     | 下拉箭头图标，默认 `w-3 h-3 shrink-0 transition-transform duration-200`。**仅该条目有下拉菜单时渲染。**                                                    |
-| `droplist`     | 下拉面板（组件内置的绝对定位面板），默认 `absolute left-0 top-full z-[999] mt-1 min-w-[200rpx] rounded-ui-base bg-white border shadow-lg py-1`。**仅面板展开时渲染**，宽度、层级、底色改这里。 |
-| `droplistItem` | 下拉菜单项，默认 `px-3 py-2 text-28 leading-normal text-gray-8 active:bg-gray-50`。**仅在未填充 `droplist` 插槽时渲染**，填充该插槽会使其失效。             |
+| `root`         | 根节点 `<view>`，默认 `flex flex-row items-center flex-wrap gap-x-[12rpx] text-28 leading-none`；尺寸全走 rpx 体系，整体间距改这里。**折叠依赖 flex `order`，覆盖时请保留 `flex`。** |
+| `item`         | 单个条目外层（折叠省略号节点同用），默认 `reborn-breadcrumb-item flex flex-row items-center gap-x-[12rpx] relative group`；`relative` 是下拉面板的定位基准，勿移除。 |
+| `link`         | 条目的文本节点，默认 `text-gray-8 transition-colors flex flex-row items-center gap-[8rpx]`。**与 Web 端一致，所有条目一视同仁**：同一个文字颜色、同一个字重，首项与末项都不加粗（本端灰阶只到 8，`gray-8` 对应 Web 的 `gray-9`）；视觉变化只来自按压反馈（可跳转与带下拉的条目按压变 `text-primary`）。条目上的 `custom-class` 也并到该节点。 |
+| `separator`    | 分隔符容器，默认 `text-gray-4 select-none flex flex-row items-center justify-center text-24`（末项由索引判定自动隐藏）。填充 `separator` 插槽只替换内容，容器类名仍生效。 |
+| `more`         | 折叠省略号的容器。**仅 `max-count` 触发折叠时渲染**，默认 `text-gray-8 flex flex-row items-center`（与条目同色）。                                          |
+| `moreIcon`     | 省略号图标，默认 `w-[32rpx] h-[32rpx]`。**仅在未填充 `more-icon` 插槽时渲染**，填充该插槽会使其失效。                                                      |
+| `dropIcon`     | 下拉箭头图标，默认 `w-[28rpx] h-[28rpx] shrink-0 transition-transform duration-200`（与 Web 端 `size-3.5` 对齐）。**仅该条目有下拉菜单时渲染。**            |
+| `droplist`     | 下拉面板（组件内置的绝对定位面板），默认 `absolute left-0 top-full z-[999] mt-[8rpx] min-w-[200rpx] rounded-ui-base bg-white border shadow-lg py-[8rpx]`。**仅面板展开时渲染**，宽度、层级、底色改这里。 |
+| `droplistItem` | 下拉菜单项，默认 `px-[24rpx] py-[16rpx] text-28 leading-normal text-gray-7 active:bg-gray-2`（配色与 Web 端一致，hover 换为按压反馈）。**仅在未填充 `droplist` 插槽时渲染**，填充该插槽会使其失效。 |
 | `droplistMask` | 面板展开时铺满全屏的点击遮罩（用于点击外部收起），默认 `fixed inset-0 z-[998]`。**仅面板展开时渲染**，层级要与 `droplist` 配套调整。                        |
 
 :::

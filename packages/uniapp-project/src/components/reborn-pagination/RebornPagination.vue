@@ -47,7 +47,7 @@ interface PaginationProps {
 
 const props = withDefaults(defineProps<PaginationProps>(), {
   total: 0,
-  pagerCount: 7,
+  pagerCount: 3,
   layout: 'prev, pager, next',
   pageSizes: () => [10, 20, 50, 100],
   size: 'md',
@@ -78,7 +78,7 @@ const b = tv(theme)
  * 规范化 pagerCount：不小于 3 的整数，奇偶均可。
  * 3 是折叠布局的下限：首页 + 当前页 + 末页各占一格，两侧只剩省略号。
  */
-const pagerCount = computed(() => Math.max(3, Math.floor(Number(props.pagerCount)) || 7))
+const pagerCount = computed(() => Math.max(3, Math.floor(Number(props.pagerCount)) || 3))
 
 /**
  * 总页数：至少 1 页

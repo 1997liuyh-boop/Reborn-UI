@@ -224,7 +224,7 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="页码折叠" description="pagerCount 控制页码按钮数量（需为不小于 5 的奇数），超长时自动折叠并显示省略号，点击省略号向对应方向跳页。">
+    <DemoSection title="页码折叠" description="pagerCount 控制页码按钮数量（不小于 3 的整数，奇偶均可，过小的值钳到 3），超长时自动折叠并显示省略号，点击省略号向对应方向跳页。">
       <DemoBlock layout="row" align="center">
         <RebornPagination v-model="foldPage" :total="200" :pager-count="9" background />
       </DemoBlock>

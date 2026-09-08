@@ -43,7 +43,7 @@ Reborn UI 致力于在 Web (Nuxt 3) 和 UniApp 平台提供一致的开发体验
 
 ### Slots 插槽
 
-| 插槽名 | 作用域 (Web) | 说明 |
+| 插槽名 | 作用域（双端一致） | 说明 |
 | :--- | :--- | :--- |
 | `default` | `{ ui }` | 徽标主体内容，覆盖 `label`。 |
 | `leading` | `{ ui }` | 前置内容，通常用于图标、小头像。 |
@@ -120,7 +120,7 @@ UniApp 端调色板差异：主色即 red 系（primary→red）；无独立 sec
 | `base`         | 徽标主体 `<view>`。默认 `inline-flex items-center justify-center font-medium whitespace-nowrap overflow-hidden`，底色、圆角、内边距、字号在这里；`customClass` 也会并到同一节点。 |
 | `label`        | 文本包裹 `<view>`，默认 `truncate`。**仅在传了 `label` 或填充了 default 插槽时渲染**；该节点在插槽外层，填充插槽不影响它生效。                  |
 | `leadingIcon`  | 前置图标 `<view>`（类名图标）。**仅在传了 `icon` 且未填充 `leading` 插槽时渲染**，填充该插槽会替换掉图标节点，`ui.leadingIcon` 随之失效。       |
-| `trailingIcon` | 后置图标类名。UniApp 端模板未渲染后置图标（`trailing` 插槽也不透出 `ui`），当前传入不会生效，保留该键仅为与 Web 端对齐。                        |
+| `trailingIcon` | 后置图标类名。UniApp 端模板本身不渲染后置图标，需在 `trailing` 插槽的作用域参数中取 `ui.trailingIcon()` 挂到自定义图标上（用法与 Web 端一致）。 |
 | `closeButton`  | 关闭按钮容器 `<view>`。**仅 `closable` 为真时渲染**，默认 `inline-flex items-center justify-center rounded-full hover:bg-black/10`。            |
 | `closeIcon`    | 关闭图标 `<view>`（与 `closeIcon` prop 的类名一起作用）。**仅 `closable` 为真且未填充 `close` 插槽时渲染**，填充该插槽会使其失效。              |
 

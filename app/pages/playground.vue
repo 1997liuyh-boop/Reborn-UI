@@ -31,7 +31,7 @@ const DEFAULT_CODE = `<template>
     <div class="flex items-center gap-3">
       <RebornButton @click="count++">点击 +1</RebornButton>
       <RebornButton variant="outlined">Outlined</RebornButton>
-      <RebornButton variant="dashed">Dashed</RebornButton>
+      <RebornButton variant="outlined" border-style="dashed">Dashed</RebornButton>
     </div>
     <p class="text-sm text-muted">已点击 {{ count }} 次</p>
   </div>
@@ -142,6 +142,11 @@ function goBack() {
 }
 
 onMounted(() => {
+    // 先启动运行时 Tailwind:预览代码里的任意工具类都不在构建期 CSS 中,
+    // 需要浏览器端编译器实时补出(详见 app/utils/runtimeTailwind.ts)
+    ensureRuntimeTailwind().catch((err) => {
+        console.error("[playground] 运行时 Tailwind 启动失败,预览中的部分工具类可能无样式:", err);
+    });
     loadFromHash();
     window.addEventListener("hashchange", loadFromHash);
 });

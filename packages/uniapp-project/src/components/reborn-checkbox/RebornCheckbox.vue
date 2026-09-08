@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
+import type { ComputedRef, Ref } from 'vue'
 import type { CheckboxValue, checkboxColors, checkboxSizes, checkboxVariants } from './reborn-checkbox.config'
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
 import { cn } from '@/lib/utils'
@@ -12,6 +13,9 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<CheckboxProps>(), {
+  // 运行时类型含 Boolean：未传时会被 Vue 强转为 false，
+  // 必须显式给 undefined 默认值（default 键存在即跳过强转），否则 defaultChecked 永远轮不到生效
+  defaultValue: undefined,
   defaultChecked: false,
   indeterminate: false,
   disabled: false,
@@ -22,16 +26,39 @@ const props = withDefaults(defineProps<CheckboxProps>(), {
 })
 
 const emit = defineEmits<{
-  /** 绑定值更新时触发，参数为最新值：布尔或选中值数组 */
-  (e: 'update:modelValue', value: boolean | CheckboxValue[]): void
   /** 用户切换选中状态后触发，第一个参数与 update:modelValue 相同，第二个参数为原生事件对象 */
   (e: 'change', value: boolean | CheckboxValue[], ev: Event): void
 }>()
 
+/** 绑定值（v-model）；显式 default: undefined 跳过 Boolean 类型未传时被强转为 false 的规则，保住非受控判断 */
+const model = defineModel<boolean | CheckboxValue[]>({ default: undefined })
+
 const b = tv(theme)
 
+/** CheckboxGroup 通过 provide 下发的上下文 */
+export interface CheckboxGroupContext {
+  /** 组内当前选中值数组 */
+  modelValue: ComputedRef<CheckboxValue[]>
+  /** 组级禁用（含 Form 级禁用） */
+  disabled: ComputedRef<boolean>
+  /** 组级尺寸 */
+  size: ComputedRef<typeof checkboxSizes[number]>
+  /** 组级配色 */
+  color: Ref<typeof checkboxColors[number]>
+  /** 组级样式变体 */
+  variant: Ref<typeof checkboxVariants[number]>
+  /** 组级最多可选数量 */
+  max: Ref<number | undefined>
+  /** 组内选中数量是否已达 max 上限 */
+  limitReached: ComputedRef<boolean>
+  /** 表单校验错误态 */
+  isError?: ComputedRef<boolean>
+  /** 组内选中值更新入口；被 max 上限拦截时返回 undefined */
+  updateValue: (value: CheckboxValue, ev: Event) => CheckboxValue[] | undefined
+}
+
 export interface CheckboxProps {
-  modelValue?: boolean | CheckboxValue[]
+  /** 默认值，用于非受控模式（优先于 defaultChecked） */
   defaultValue?: boolean | CheckboxValue[]
   /** 默认是否选中，用于非受控模式（等价于 defaultValue 传布尔值） */
   defaultChecked?: boolean
@@ -64,24 +91,23 @@ export interface CheckboxProps {
 }
 
 /** 注入父级 CheckboxGroup 状态（如果存在） */
-const checkboxGroup = inject<any>('RebornCheckboxGroup', null)
-const isGroup = computed(() => !!checkboxGroup)
+const checkboxGroup = inject<CheckboxGroupContext | null>('RebornCheckboxGroup', null)
 
 const { size: fieldGroupSize, disabled: fieldGroupDisabled, isError, validate } = useFormInject(props)
 
-/** 内部维护的值，用于 modelValue 未定义时的非受控状态；defaultValue 优先于 defaultChecked */
-const localValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? props.defaultChecked)
+/** 非受控状态的内部值，未绑定 v-model 时以 defaultValue（优先）或 defaultChecked 起始 */
+const innerValue = ref<boolean | CheckboxValue[]>(props.defaultValue ?? props.defaultChecked)
 
 /**
  * 当前实际生效的值
- * 优先级：CheckboxGroup.modelValue > props.modelValue > localValue
+ * 优先级：CheckboxGroup.modelValue > v-model 绑定值 > 非受控内部值
  */
-const currentValue = computed(() => {
-  if (isGroup.value && checkboxGroup?.modelValue) {
+const currentValue = computed<boolean | CheckboxValue[]>(() => {
+  if (checkboxGroup) {
     return checkboxGroup.modelValue.value
   }
 
-  return props.modelValue !== undefined ? props.modelValue : localValue.value
+  return model.value !== undefined ? model.value : innerValue.value
 })
 
 const optionValue = computed<CheckboxValue>(() => props.value ?? props.label ?? '')
@@ -102,7 +128,7 @@ const isIndeterminate = computed(() => props.indeterminate)
  * 组内选中数量达到 max 上限时，未选中的选项一并禁用（已选中的仍可取消）
  */
 const isDisabled = computed(() => {
-  if (isGroup.value) {
+  if (checkboxGroup) {
     if (checkboxGroup.limitReached?.value && !isChecked.value) {
       return true
     }
@@ -115,7 +141,7 @@ const isDisabled = computed(() => {
 
 /** 最终生效的尺寸：组内由组统一下发 */
 const computedSize = computed(() => {
-  if (isGroup.value && checkboxGroup.size?.value) {
+  if (checkboxGroup?.size?.value) {
     return checkboxGroup.size.value
   }
 
@@ -124,7 +150,7 @@ const computedSize = computed(() => {
 
 /** 最终生效的配色：组内由组统一下发 */
 const computedColor = computed(() => {
-  if (isGroup.value && checkboxGroup.color?.value) {
+  if (checkboxGroup?.color?.value) {
     return checkboxGroup.color.value
   }
 
@@ -133,7 +159,7 @@ const computedColor = computed(() => {
 
 /** 最终生效的样式变体：组内由组统一下发 */
 const computedVariant = computed(() => {
-  if (isGroup.value && checkboxGroup.variant?.value) {
+  if (checkboxGroup?.variant?.value) {
     return checkboxGroup.variant.value
   }
 
@@ -150,7 +176,7 @@ const ui = computed(() => {
     size: computedSize.value,
     color: computedColor.value,
     variant: computedVariant.value,
-    error: isError.value || (isGroup.value && checkboxGroup.isError?.value),
+    error: isError.value || !!checkboxGroup?.isError?.value,
   })
 
   return {
@@ -169,10 +195,10 @@ const ui = computed(() => {
  * @param event 触发本次更新的原生事件
  */
 function updateValue(nextValue: boolean | CheckboxValue[], event: Event) {
-  if (props.modelValue === undefined) {
-    localValue.value = nextValue
-  }
-  emit('update:modelValue', nextValue)
+  // 非受控内部值同步维护：未绑定 v-model 时由它承载状态
+  innerValue.value = nextValue
+  model.value = nextValue
+  // 受控绑定下 model 赋值后同步回读仍是旧值，事件载荷一律用本地新值
   emit('change', nextValue, event)
   if (validate) { validate('change') }
 }
@@ -181,7 +207,7 @@ function toggle(event: Event) {
   if (isDisabled.value || props.readOnly) { return }
 
   // 情况 A: 处于 CheckboxGroup 中，值由父级统一维护（校验也由父级触发）
-  if (isGroup.value) {
+  if (checkboxGroup) {
     const next = checkboxGroup.updateValue(optionValue.value, event)
     // 被 max 上限拦截时返回 undefined，此时不抛事件
     if (next) {
@@ -206,15 +232,6 @@ function toggle(event: Event) {
     updateValue(!isChecked.value, event)
   }
 }
-
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== undefined) {
-      localValue.value = value
-    }
-  },
-)
 </script>
 
 <template>

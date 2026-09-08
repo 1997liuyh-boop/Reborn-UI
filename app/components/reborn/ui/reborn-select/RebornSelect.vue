@@ -34,8 +34,6 @@ export interface SelectOption {
  * 下拉选择属性定义
  */
 export interface SelectProps {
-  /** 选中值 */
-  modelValue?: any;
   /** 是否开启多选模式，开启后 v-model 的值为选中值组成的数组 */
   multiple?: boolean;
   /** 多选时把超出的标签合并为一段 “+N” 文字 */
@@ -135,7 +133,6 @@ export interface SelectProps {
 }
 
 const props = withDefaults(defineProps<SelectProps>(), {
-  modelValue: null,
   multiple: false,
   collapseTags: false,
   collapseTagsTooltip: false,
@@ -166,8 +163,6 @@ const props = withDefaults(defineProps<SelectProps>(), {
  * 事件发送器
  */
 const emit = defineEmits<{
-  /** 绑定值更新事件 */
-  (e: "update:modelValue", value: any): void;
   /** 选择变动事件 */
   (e: "change", value: any): void;
   /** 多选模式下移除单个标签，回传被移除的值 */
@@ -181,6 +176,12 @@ const emit = defineEmits<{
   /** 搜索关键词变化（allowSearch 开启时），配合 filter-option=false 可做远程搜索 */
   (e: "search", value: string): void;
 }>();
+
+/**
+ * 选中值（v-model）：单选为选项的 value，多选为 value 组成的数组。
+ * 未传入时回落为 null，与清空后的取值保持一致。
+ */
+const model = defineModel<any>({ default: null });
 
 const {
   disabled: fieldGroupDisabled,
@@ -214,9 +215,8 @@ const isSearching = computed(() => props.allowSearch && isOpen.value);
  */
 const showClearButton = computed(() => {
   if (props.loading) return false;
-  const isEmpty =
-    props.modelValue === null || props.modelValue === undefined || props.modelValue === "";
-  return props.clearable && (props.multiple ? props.modelValue?.length > 0 : !isEmpty);
+  const isEmpty = model.value === null || model.value === undefined || model.value === "";
+  return props.clearable && (props.multiple ? model.value?.length > 0 : !isEmpty);
 });
 
 /**
@@ -224,10 +224,10 @@ const showClearButton = computed(() => {
  * 必须先于 ui 声明：它同时决定 wrapTags 变体（多选标签是否换行铺开）。
  */
 const selectedOptions = computed(() => {
-  if (props.multiple && Array.isArray(props.modelValue)) {
-    return props.options.filter((o) => props.modelValue.includes(o.value));
+  if (props.multiple && Array.isArray(model.value)) {
+    return props.options.filter((o) => model.value.includes(o.value));
   }
-  const opt = props.options.find((o) => o.value === props.modelValue);
+  const opt = props.options.find((o) => o.value === model.value);
   return opt ? [opt] : [];
 });
 
@@ -417,10 +417,10 @@ const ui = computed(() => {
  * 校验某个值是否处于选中状态
  */
 const isSelected = (value: any) => {
-  if (props.multiple && Array.isArray(props.modelValue)) {
-    return props.modelValue.includes(value);
+  if (props.multiple && Array.isArray(model.value)) {
+    return model.value.includes(value);
   }
-  return value === props.modelValue;
+  return value === model.value;
 };
 
 /**
@@ -448,10 +448,10 @@ const collapsedText = computed(() => collapsedTags.value.map((o) => o.label).joi
 function removeTag(value: any, e: Event) {
   e.stopPropagation();
   if (isDisabled.value) return;
-  const newValue = (Array.isArray(props.modelValue) ? props.modelValue : []).filter(
+  const newValue = (Array.isArray(model.value) ? model.value : []).filter(
     (item: any) => item !== value,
   );
-  emit("update:modelValue", newValue);
+  model.value = newValue;
   emit("remove-tag", value);
   emit("change", newValue);
   validate("change");
@@ -509,13 +509,13 @@ function onDropdownScroll(e: Event) {
 function getAnchorIndex() {
   const list = filteredOptions.value;
 
-  if (props.multiple && Array.isArray(props.modelValue) && props.modelValue.length > 0) {
-    const anchorValue = props.modelValue[0];
+  if (props.multiple && Array.isArray(model.value) && model.value.length > 0) {
+    const anchorValue = model.value[0];
     return list.findIndex((o) => o.value === anchorValue);
   }
 
-  if (!props.multiple && props.modelValue !== null) {
-    return list.findIndex((o) => o.value === props.modelValue);
+  if (!props.multiple && model.value !== null) {
+    return list.findIndex((o) => o.value === model.value);
   }
 
   return -1;
@@ -572,7 +572,7 @@ function selectOption(option: SelectOption) {
   if (option.disabled) return;
 
   if (props.multiple) {
-    const newValue = Array.isArray(props.modelValue) ? [...props.modelValue] : [];
+    const newValue = Array.isArray(model.value) ? [...model.value] : [];
     const index = newValue.indexOf(option.value);
     if (index > -1) {
       newValue.splice(index, 1);
@@ -582,7 +582,7 @@ function selectOption(option: SelectOption) {
       if (props.multipleLimit > 0 && newValue.length >= props.multipleLimit) return;
       newValue.push(option.value);
     }
-    emit("update:modelValue", newValue);
+    model.value = newValue;
     emit("change", newValue);
     validate("change");
     // 多选选中后清掉关键词、把焦点还给输入框，方便连续搜索多个选项
@@ -592,7 +592,7 @@ function selectOption(option: SelectOption) {
       nextTick(() => searchInputRef.value?.focus());
     }
   } else {
-    emit("update:modelValue", option.value);
+    model.value = option.value;
     emit("change", option.value);
     validate("change");
     isOpen.value = false;
@@ -605,7 +605,7 @@ function selectOption(option: SelectOption) {
 function clear(e: Event) {
   e.stopPropagation();
   const newValue = props.multiple ? [] : null;
-  emit("update:modelValue", newValue);
+  model.value = newValue;
   emit("clear");
   emit("change", newValue);
   validate("change");

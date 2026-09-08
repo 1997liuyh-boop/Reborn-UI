@@ -165,7 +165,7 @@ const totalCount = computed(() => overviewItems.value.length)
 </script>
 
 <template>
-  <div class="components-overview relative w-full">
+  <div class="components-overview relative w-full mt-10">
     <!-- 深色头图：对齐稿面 #1E2E3E -->
     <header class="overview-hero rounded-xl px-6 py-10 sm:px-10 sm:py-12">
       <h1 class="text-2xl font-medium tracking-tight text-white sm:text-[32px] sm:leading-[38px]">

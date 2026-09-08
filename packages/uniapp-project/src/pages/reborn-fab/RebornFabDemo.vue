@@ -49,12 +49,12 @@ function handleAction(name: string) {
             </view>
 
             <RebornText color="neutral">展开方向 (开启拖拽后无效)</RebornText>
-            <RebornRadioGroup v-model="demoDirection" direction="row">
+            <RebornRadioGroup v-model="demoDirection" direction="horizontal">
                 <RebornRadio v-for="d in fabDirections" :key="d" :value="d">{{ d }}</RebornRadio>
             </RebornRadioGroup>
 
             <RebornText color="neutral">位置</RebornText>
-            <RebornRadioGroup v-model="demoPosition" direction="row" :disabled="draggable">
+            <RebornRadioGroup v-model="demoPosition" direction="horizontal" :disabled="draggable">
                 <RebornRadio v-for="d in fabPositions" :key="d" :value="d">{{ d }}</RebornRadio>
             </RebornRadioGroup>
 

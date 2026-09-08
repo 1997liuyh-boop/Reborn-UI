@@ -79,20 +79,23 @@ const typeOptions = [
                 尺寸：
             </RebornText>
             <RebornRadioGroup v-model="currentSize">
-                <RebornRadio v-for="s in selectDateSizes" :key="s" :value="s" :label="s" />
+                <RebornRadio v-for="s in selectDateSizes" :key="s" :value="s">
+                    {{ s }}
+                </RebornRadio>
             </RebornRadioGroup>
             <RebornText color="neutral">
                 按钮颜色：
             </RebornText>
             <RebornRadioGroup v-model="currentColor">
-                <RebornRadio v-for="item in selectDateColors" :key="item" :value="item" :showIcon="false">
-                    <template #default="{ isChecked }">
-                        <view class="relative flex size-5">
-                            <view v-if="isChecked"
+                <RebornRadio v-for="item in selectDateColors" :key="item" :value="item">
+                    <!-- radio 插槽完全接管渲染，做成纯色板选择 -->
+                    <template #radio="{ checked }">
+                        <view class="relative flex size-[40rpx]">
+                            <view v-if="checked"
                                 class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
                                 :class="`bg-${item}`">
                             </view>
-                            <view class="relative inline-flex size-5 rounded-full" :class="`bg-${item}`"></view>
+                            <view class="relative inline-flex size-[40rpx] rounded-full" :class="`bg-${item}`"></view>
                         </view>
                     </template>
                 </RebornRadio>
@@ -100,9 +103,11 @@ const typeOptions = [
             <RebornText color="neutral">
                 格式化：
             </RebornText>
-            <RebornRadioGroup v-model="currentType">
-                <RebornRadio v-for="item in typeOptions" :key="item.value" :value="item.value" :label="item.label"
-                    size="sm" />
+            <!-- 尺寸改由 Group 统一下发，单个 Radio 不再接收 size -->
+            <RebornRadioGroup v-model="currentType" size="sm">
+                <RebornRadio v-for="item in typeOptions" :key="item.value" :value="item.value">
+                    {{ item.label }}
+                </RebornRadio>
             </RebornRadioGroup>
         </RebornCard>
 

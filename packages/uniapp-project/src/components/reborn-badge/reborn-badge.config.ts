@@ -52,24 +52,25 @@ const config = {
     /** 尺寸配置：sm 36rpx / md 48rpx / lg 64rpx（对应 Web 端 18/24/32px），水平内边距统一 12rpx（6px） */
     size: {
       sm: {
-        base: 'h-badge-sm px-[12rpx] rounded-ui-2xs gap-1',
+        base: 'h-badge-sm px-[12rpx] gap-[8rpx] rounded-ui-2xs',
         label: 'text-24 leading-none',
-        leadingIcon: 'size-3',
-        trailingIcon: 'size-3',
+        // 前后图标与字号同尺寸（text-24 = 24rpx），并统一走 rpx 随屏缩放
+        leadingIcon: 'size-[24rpx]',
+        trailingIcon: 'size-[24rpx]',
         closeButton: 'text-24'
       },
       md: {
-        base: 'h-badge-md px-[12rpx] rounded-ui-xs gap-1',
+        base: 'h-badge-md px-[12rpx] gap-[8rpx] rounded-ui-xs',
         label: 'text-24 leading-none',
-        leadingIcon: 'size-3',
-        trailingIcon: 'size-3',
+        leadingIcon: 'size-[24rpx]',
+        trailingIcon: 'size-[24rpx]',
         closeButton: 'text-24'
       },
       lg: {
-        base: 'h-badge-lg px-[12rpx] rounded-ui-sm gap-1',
+        base: 'h-badge-lg px-[12rpx] gap-[8rpx] rounded-ui-sm',
         label: 'text-28 leading-none',
-        leadingIcon: 'size-4',
-        trailingIcon: 'size-4',
+        leadingIcon: 'size-[28rpx]',
+        trailingIcon: 'size-[28rpx]',
         closeButton: 'text-28'
       }
     },

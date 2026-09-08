@@ -7,12 +7,12 @@
   ],
   "whenNotToUse": [
     "需要用户确认或承载操作按钮的通知，改用 reborn-dialog 或通知类组件。",
-    "uniapp 端项目：uniapp 侧仍是旧版轻提示 Toast（useToast 服务式，参数不同）。"
+    "需要在消息里渲染自定义 VNode 且目标是 uniapp 端：uniapp 端 MessageNode 仅支持字符串。"
   ],
   "pitfalls": [
     "duration 单位是秒且默认 3（旧 Toast API 是毫秒）；设 0 不自动关闭。",
     "loading 同样默认 3 秒关闭，常驻需 duration: 0 并配合 key + destroy(key) 或同 key 更新。",
-    "web 端与 uniapp 端 API 不互通：web 为 message 命令式，uniapp 为 useToast。",
+    "双端 message API 同名同形（open/info/success/warning/error/loading/config/destroy）；差异只有三处：uniapp 的 MessageNode 仅 string、getContainer 仅 H5 生效、小程序端页面须渲染 <RebornToast />（RebornPage 已内置）。",
     "消息容器首次调用时自动挂载（默认 body），无需在模板放组件；getContainer 变更会移动容器节点。",
     "悬停消息默认暂停自动关闭计时（pauseOnHover: true）。",
     "soft / subtle 变体底色用同色相 1 阶实色令牌替代按钮的半透明底，outlined 垫 gray-1，避免悬浮层透出页面内容。",

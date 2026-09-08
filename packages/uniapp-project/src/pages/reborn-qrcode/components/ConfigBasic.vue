@@ -31,14 +31,18 @@ const qrConfig = computed({
         <view class="mb-4">
             <text class="block text-sm font-medium text-[#262626] mb-1">外边距</text>
             <RebornRadioGroup v-model="qrConfig.margin" size="sm">
-                <RebornRadio v-for="item in marginOptions" :key="item.value" :label="item.name" :value="item.value" />
+                <RebornRadio v-for="item in marginOptions" :key="item.value" :value="item.value">
+                    {{ item.name }}
+                </RebornRadio>
             </RebornRadioGroup>
         </view>
 
         <view class="mb-4">
             <text class="block text-sm font-medium text-[#262626] mb-1">容错率</text>
             <RebornRadioGroup v-model="qrConfig.ecc" size="sm">
-                <RebornRadio v-for="item in errorLevels" :key="item.value" :label="item.name" :value="item.value" />
+                <RebornRadio v-for="item in errorLevels" :key="item.value" :value="item.value">
+                    {{ item.name }}
+                </RebornRadio>
             </RebornRadioGroup>
         </view>
     </view>

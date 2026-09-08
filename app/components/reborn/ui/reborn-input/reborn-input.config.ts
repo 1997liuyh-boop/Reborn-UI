@@ -39,7 +39,7 @@ export default {
      * 禁用态统一为 bg-gray-2 / text-gray-5 / 边框 gray-4（与 InputNumber 对齐）。
      */
     wrapper:
-      "group/input relative inline-flex w-full min-w-0 items-center box-border overflow-hidden text-gray-9 transition-colors data-[disabled=true]:cursor-not-allowed data-[disabled=true]:text-gray-5",
+      "group/input relative inline-flex w-full min-w-0 items-center box-border overflow-hidden text-gray-9 transition-colors ",
     /**
      * 输入元素。h-full 让它撑满 wrapper 高度：单行 <input> 的文本由浏览器在内容盒内
      * 原生垂直居中，盒子必须先撑满才生效；否则 input 高度只等于自身行高，
@@ -48,8 +48,8 @@ export default {
      */
     input:
       "h-full min-w-0 flex-1 bg-transparent text-gray-9 outline-none placeholder:text-gray-5 read-only:cursor-default disabled:cursor-not-allowed disabled:text-gray-5",
-    /** 前缀区（#prefix / #leading 插槽或 prefix-icon） */
-    leading: "inline-flex shrink-0 items-center text-gray-6",
+    /** 前缀区（#prefix 插槽或 prefix-icon） */
+    prefix: "inline-flex shrink-0 items-center text-gray-6",
     /** 尾部功能区：清除按钮 / 密码开关 / 字数统计 / 后缀 */
     iconBox: "inline-flex shrink-0 items-center gap-2",
     icon: "",
@@ -74,8 +74,8 @@ export default {
         group: "h-input-sm",
         wrapper: "px-input-px-sm text-sm",
         input: "text-sm",
-        prepend: "px-input-px-sm text-sm",
-        append: "px-input-px-sm text-sm",
+        prepend: "text-sm",
+        append: "text-sm",
         icon: "text-sm",
         separator: "h-input-sep-sm",
       },
@@ -83,8 +83,8 @@ export default {
         group: "h-input-md",
         wrapper: "px-input-px-md text-base",
         input: "text-base",
-        prepend: "px-input-px-md text-base",
-        append: "px-input-px-md text-base",
+        prepend: "text-base",
+        append: "text-base",
         icon: "text-base",
         separator: "h-input-sep-md",
       },
@@ -92,8 +92,8 @@ export default {
         group: "h-input-lg",
         wrapper: "px-input-px-lg text-lg",
         input: "text-lg",
-        prepend: "px-input-px-lg text-lg",
-        append: "px-input-px-lg text-lg",
+        prepend: "text-lg",
+        append: "text-lg",
         icon: "text-lg",
         separator: "h-input-sep-lg",
       },
@@ -117,16 +117,25 @@ export default {
       // twMergeConfig 注册进 px 冲突组，后写的 px-0 可正常清除 size 层的令牌类
       borderless: {
         wrapper: "bg-transparent border-0 focus-within:border-0 px-0",
+        input: "px-[2px]"
       },
       underlined: {
         wrapper:
           "border-0 border-b-1 border-gray-3 bg-transparent data-[disabled=true]:border-gray-4 px-0",
+        input: "px-[2px]"
       },
     },
     /** 外形轮廓：circle 胶囊；square 的圆角按尺寸在 compoundVariants 中给出 */
     shape: {
       circle: { wrapper: "rounded-full" },
       square: {},
+    },
+    disabled: {
+      true: {
+        prepend: "cursor-not-allowed text-gray-5",
+        append: "cursor-not-allowed text-gray-5",
+        wrapper: "cursor-not-allowed text-gray-5",
+      }
     },
     /**
      * 配色。聚焦态的 border 供 outlined / filled 使用，border 供 underlined 使用；

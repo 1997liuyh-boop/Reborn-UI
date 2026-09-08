@@ -55,6 +55,7 @@ const config = {
       sm: {
         base: 'h-badge-sm px-1.5 text-sm rounded-ui-2xs gap-1',
         label: 'leading-none',
+        // 前后图标与字号同尺寸（本项目 text-sm = 12px、text-base = 14px，见 assets/theme/typography.css）
         leadingIcon: 'size-3',
         trailingIcon: 'size-3',
         closeIcon: 'size-3'
@@ -62,15 +63,15 @@ const config = {
       md: {
         base: 'h-badge-md px-1.5 text-sm rounded-ui-xs gap-1',
         label: 'leading-none',
-        leadingIcon: 'size-3.5',
-        trailingIcon: 'size-3.5',
+        leadingIcon: 'size-3',
+        trailingIcon: 'size-3',
         closeIcon: 'size-3.5'
       },
       lg: {
         base: 'h-badge-lg px-1.5 text-base rounded-ui-sm gap-1',
         label: 'leading-none',
-        leadingIcon: 'size-4',
-        trailingIcon: 'size-4',
+        leadingIcon: 'size-3.5',
+        trailingIcon: 'size-3.5',
         closeIcon: 'size-4'
       }
     },

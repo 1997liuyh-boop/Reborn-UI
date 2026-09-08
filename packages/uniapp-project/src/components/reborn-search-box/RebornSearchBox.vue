@@ -165,12 +165,12 @@ onMounted(() => {
       :shape="rounded ? 'circle' : 'square'" :clearable="clearable" :variant="border ? 'outlined' : 'filled'"
       :placeholder="placeholder" :placeholder-class="placeholderClass" :ui="inputUi" :separator="false"
       @update:model-value="onInput" @focus="onFocus" @blur="onBlur" @confirm="handleSearch">
-      <template #leading>
+      <template #prefix>
         <RebornImage src="https://mall.leyifan.cn/static/h5/new_images/index_search_small.png?v=1" width="38"
           height="38" mode="widthFix" />
       </template>
 
-      <template #trailing>
+      <template #suffix>
         <view :class="ui.trailing()">
           <view :class="ui.translateWrapper()" @tap.stop="toggleTranslate">
             <view class="left-[4rpx] top-[12rpx]" :class="[

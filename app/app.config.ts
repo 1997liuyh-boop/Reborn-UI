@@ -9,7 +9,7 @@ export default defineAppConfig({
      */
     header: {
       slots: {
-        root: "bg-default/95 backdrop-blur-md border-b border-default/60",
+        root: "bg-white/40 backdrop-blur-md border-b border-default/60",
       },
     },
     contentSearch: {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-04T10:17:49.096Z",
+  "generatedAt": "2026-09-07T10:08:07.117Z",
   "components": [
     {
       "id": "animate-grid",
@@ -1355,7 +1355,7 @@
     {
       "id": "reborn-search-box",
       "title": "搜索框",
-      "description": "用于带下拉面板的双端搜索框组件，支持历史记录、推荐词与 SKU 属性筛选。",
+      "description": "用于带下拉面板的双端搜索框组件，web 端为纯插槽基元：选择器/后置区/面板全部由插槽组合。",
       "category": "form",
       "tags": [
         "css",

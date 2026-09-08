@@ -113,8 +113,8 @@ const value = ref("2"); // 默认选中「选项二」
 | `modelValue`  | `any`                                                                                  | `-`         | 选中值，支持 `v-model` 双向绑定，与选项的 `value` 字段比较。 |
 | `options`     | `Option[]`（`{ label: string, value: any }`）                                          | `[]`        | 下拉选项数组。                                               |
 | `placeholder` | `string`                                                                               | `'请选择'`  | 未选中任何值时触发器显示的占位文本。                         |
-| `disabled`    | `boolean`                                                                              | `false`     | 是否禁用（整体半透明且不可交互）。                           |
-| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 触发器与选项行的尺寸。                                       |
+| `disabled`    | `boolean`                                                                              | `false`     | 是否禁用（整体半透明且不可交互）。放入 `RebornForm` 时表单的 `disabled` 优先。 |
+| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 触发器与选项行的尺寸。放入 `RebornForm` 时表单的 `size` 优先。 |
 | `color`       | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 主题色，作用于选中项高亮与勾选图标。                         |
 | `clearable`   | `boolean`                                                                              | `false`     | 是否显示清空按钮，点击后将值重置为 `null`。                  |
 | `ui`          | `Partial<{ wrapper, trigger, content, item, itemText, itemIcon, empty, mask }>`        | `{}`        | 按内部结构键覆盖类名，见下方「自定义样式（ui）」。           |
@@ -150,3 +150,18 @@ const value = ref("2"); // 默认选中「选项二」
 - `clearable` 默认关闭，需要清空按钮时须显式开启；清空后 `modelValue` 变为 `null` 而非空字符串。
 - 下拉面板通过绝对定位展开在触发器下方（`z-index: 999`），若外层容器设置了 `overflow: hidden` 会被裁剪，可参考演示为容器开启 overflow visible。
 - 面板最大高度为 `400rpx`，超出的选项内部滚动。
+
+## 表单集成
+
+组件已接入 `useFormInject`，放进 `RebornForm` / `RebornFormItem` 后与同端 `reborn-input`、`reborn-select` 行为一致：
+
+- **尺寸与禁用态注入**：表单的 `size` / `disabled` 优先于组件自身的同名属性，无需逐个控件重复声明。
+- **自动校验**：选中选项或点击清空按钮导致值变化时，自动触发所在 `RebornFormItem` 的 `change` 校验（是否真正执行由表单项的 `trigger` 决定，`trigger="none"` 时不校验）。
+
+```vue
+<RebornForm :model="form" :rules="rules" size="lg">
+  <RebornFormItem label="城市" prop="city" trigger="change">
+    <RebornDropdownSelect v-model="form.city" :options="cityOptions" clearable />
+  </RebornFormItem>
+</RebornForm>
+```

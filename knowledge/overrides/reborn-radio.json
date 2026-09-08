@@ -18,6 +18,8 @@
     "size 为 sm/md/lg，radio 类型圆形图标直径 12/14/16px；color 支持 7 种语义色，组内单个 Radio 可用自身 color 覆盖；config 不写 dark: 前缀，灰阶 token 随主题自动翻转。",
     "variant 支持 outlined（默认）/filled，作用于三种 type 的选中态：radio 圆点 filled 为语义色实底外圈+白色圆点；button/pure-button filled 为语义色实底+白字，outlined 为当前描边/浮起样式。",
     "pure-button 未选中态为 gray-4 边框 + gray-9 文字、禁用未选中为 gray-2 底 + gray-5 文字（bg 用 ! 压制 RebornButton 遗留的 dark:bg-gray-8）；buttonProps.variant 只作用于未选中态；圆点用绝对定位 + transform 居中，避免奇偶像素下 flex 居中半像素偏移。",
-    "uniapp 端组件尚未对齐本次新 API（仍为旧版 size/color/activeIcon/isRound 等参数）。"
+    "uniapp 端已与 Web 端对齐同一套 API（Props/Emits/插槽名与作用域参数一致，v-model 用 defineModel 且显式 default: undefined 以区分受控/非受控）；平台差异仅：自定义类名属性为 custom-class（Web 为 class）、事件为 @tap、节点为 view/text、小程序无 hover 故不声明悬停预示样式。",
+    "uniapp 端尺寸一律 rpx（该项目 postcss 未开启 px→rpx 转换，tailwind 默认刻度 px-3/gap-2/size-4 都是 px，禁止用于尺寸）：radio 圆形图标 24/28/32rpx，button/pure-button 高度取 h-button-sm/md/lg（56/64/76rpx）；uniapp 灰阶止于 gray-8，pure-button 未选中文字用 gray-8 对应 Web 的 gray-9，禁用态复用 RebornButton 自带灰阶。",
+    "uniapp 端 pure-button 的拼接（首尾圆角、相邻边框 -1px 折叠）依赖组容器子选择器，且后代选择器指向 .reborn-button（uniapp RebornButton 的可视节点是 view，内部 button 仅为透明点击层），不是 Web 端的 button 标签。"
   ]
 }

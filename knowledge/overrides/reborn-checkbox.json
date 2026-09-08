@@ -13,6 +13,7 @@
   "pitfalls": [
     "web 与 uniapp 双端可用，RebornCheckboxGroup 双端均已提供；额外类名 web 端用 class，uniapp 端用 customClass。",
     "modelValue 支持 boolean 或数组两种模式：绑定数组时 value 才作为选中值生效，未提供 value 时以 label 充当 value。",
+    "绑定值走 defineModel（显式 default: undefined，避开 Boolean 类型未传被强转 false 的规则）：绑 v-model 即完全受控；不绑时以 defaultValue（优先）或 defaultChecked 起始并由组件内部维护。只写单向 :model-value 而不监听更新时，点击后组件会接管为内部状态，需要纯展示请配合 disabled（UniApp 端 readOnly）。",
     "indeterminate 是纯受控属性，组件只渲染半选样式、不会在点击后自动清除，父级半选态需由子项选中数量推导。",
     "RebornCheckboxGroup 传入 options 后由组自行渲染子项，默认插槽不再渲染，两种写法互斥。",
     "RebornCheckboxGroup 的 max 达到上限后，未选中的子项会自动禁用，已选中的仍可取消。",

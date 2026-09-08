@@ -52,15 +52,12 @@ const config = {
     },
     size: {
       sm: {
-        // trigger: 'h-input-sm px-2 text-26 gap-1 leading-none',
         item: 'h-input-sm text-26 leading-none px-2',
       },
       md: {
-        // trigger: 'h-input-md px-3 text-28 gap-2',
         item: 'h-input-md text-28 leading-normal px-3',
       },
       lg: {
-        // trigger: 'h-input-lg px-3 text-28 gap-2',
         item: 'h-input-lg px-3 text-base',
       },
     },

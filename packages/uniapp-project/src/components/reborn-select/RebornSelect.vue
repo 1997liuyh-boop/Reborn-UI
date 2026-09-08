@@ -20,7 +20,6 @@ defineOptions({
 })
 
 const props = withDefaults(defineProps<SelectProps>(), {
-  modelValue: null,
   title: '请选择',
   placeholder: '请选择',
   options: () => [],
@@ -38,8 +37,9 @@ const props = withDefaults(defineProps<SelectProps>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: SelectValue): void
+  /** 确认 / 清空后的选择变动事件，第二个参数为对应的选项对象（多列时为数组） */
   (e: 'change', value: SelectValue, select: any): void
+  /** 滚轮滚动过程中的实时值变化 */
   (e: 'changing', value: SelectValue): void
 }>()
 
@@ -51,11 +51,15 @@ defineSlots<{
   empty: () => any
 }>()
 
+/**
+ * 选择器的值（v-model）：单列为选项的 value，多列为各列 value 组成的数组。
+ * 未传入时回落为 null，与清空后的取值保持一致。
+ */
+const model = defineModel<SelectValue>({ default: null })
+
 export type SelectValue = string | number | (string | number)[] | null
 
 export interface SelectProps {
-  /** 选择器的值 */
-  modelValue?: SelectValue
   /** 标题 */
   title?: string
   /** 占位符 */
@@ -194,7 +198,7 @@ const columns = computed<SelectOption[][]>(() => {
 const text = ref('')
 
 function updateText() {
-  const val = props.modelValue
+  const val = model.value
   if (val == null || val == undefined) {
     text.value = ''
   }
@@ -290,23 +294,22 @@ let callback: ((value: SelectValue) => void) | null = null
 function open(cb: ((value: SelectValue) => void) | null = null) {
   renderKey.value++
   visible.value = true
-  setValue(props.modelValue)
+  setValue(model.value)
   callback = cb
 }
 
 function close() {
-  console.log('close');
   visible.value = false
 }
 
 function clear() {
   text.value = ''
   if (props.columnCount == 1) {
-    emit('update:modelValue', null)
+    model.value = null
     emit('change', null, null)
   }
   else {
-    emit('update:modelValue', [])
+    model.value = []
     emit('change', [], [])
   }
   if (validate) { validate('change') }
@@ -318,7 +321,7 @@ function confirm() {
 
   selectItem.value = getSelectItem(indexes.value)
 
-  emit('update:modelValue', val)
+  model.value = val
   emit('change', val, selectItem.value)
   if (validate) { validate('change') }
   if (callback != null) {
@@ -329,7 +332,7 @@ function confirm() {
 
 onMounted(() => {
   watch(
-    () => props.modelValue,
+    () => model.value,
     (val) => {
       setValue(val)
     },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provide, toRef, computed, ref, watch } from 'vue'
+import { provide, toRef, computed, ref } from 'vue'
 import type { ClassValue } from 'clsx'
 import { cn } from '~/lib/utils'
 import { tv } from '~/lib/tv'
@@ -21,8 +21,6 @@ import { useFormInject } from "~/composables/useFieldGroup";
 const b = tv(checkboxGroupTheme)
 
 export interface CheckboxGroupProps {
-    /** 绑定值 (v-model)，为选中项的值数组 */
-    modelValue?: CheckboxValue[]
     /** 默认值，用于非受控模式 */
     defaultValue?: CheckboxValue[]
     /** 支持最多选中的数量，达到上限后未选中项自动禁用 */
@@ -56,10 +54,12 @@ const props = withDefaults(defineProps<CheckboxGroupProps>(), {
 })
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: CheckboxValue[]): void
     /** 选中项变化时触发，第二个参数为触发本次变化的原生事件 */
     (e: 'change', value: CheckboxValue[], ev: Event): void
 }>()
+
+/** 绑定值（v-model），为选中项的值数组；显式 default: undefined 保住非受控判断 */
+const model = defineModel<CheckboxValue[]>({ default: undefined })
 
 const {
     disabled: fieldGroupDisabled,
@@ -69,14 +69,14 @@ const {
 } = useFormInject(props);
 
 /**
- * 内部维护的值，用于 modelValue 未定义时的非受控状态
+ * 非受控状态的内部值，未绑定 v-model 时以 defaultValue 起始
  */
-const localValue = ref<CheckboxValue[]>(props.defaultValue ?? [])
+const innerValue = ref<CheckboxValue[]>(props.defaultValue ?? [])
 
 /**
- * 当前实际生效的选中值数组
+ * 当前实际生效的选中值数组：受控时取 v-model，非受控时取内部值
  */
-const currentValue = computed<CheckboxValue[]>(() => props.modelValue ?? localValue.value)
+const currentValue = computed<CheckboxValue[]>(() => model.value ?? innerValue.value)
 
 /**
  * 选中数量是否已达 max 上限
@@ -124,26 +124,14 @@ const updateValue = (value: CheckboxValue, ev: Event) => {
         nextValue.push(value)
     }
 
-    if (props.modelValue === undefined) {
-        localValue.value = nextValue
-    }
-    emit('update:modelValue', nextValue)
+    // 非受控内部值同步维护：未绑定 v-model 时由它承载状态
+    innerValue.value = nextValue
+    model.value = nextValue
+    // 受控绑定下 model 赋值后同步回读仍是旧值，事件载荷一律用本地新值
     emit('change', nextValue, ev)
     validate('change')
     return nextValue
 }
-
-/**
- * 监听外部 modelValue 变化，实时同步到内部状态
- */
-watch(
-    () => props.modelValue,
-    (value) => {
-        if (value !== undefined) {
-            localValue.value = value
-        }
-    },
-)
 
 provide('RebornCheckboxGroup', {
     modelValue: currentValue,

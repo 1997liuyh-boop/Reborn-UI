@@ -64,6 +64,28 @@ export default defineNuxtConfig({
         });
       }
     },
+
+    /**
+     * 把 AI 助手面板的请求指向本仓库自己的 server/api/assistant.post.ts。
+     *
+     * Docus 的 assistant 模块在 setup 里直接赋值 runtimeConfig.public.assistant,
+     * 并把自己的处理器注册在 apiPath(默认 /__docus__/assistant)上。若改模块选项 apiPath,
+     * 它只会把自己的处理器挪到新路径、与本仓库的路由冲突;因此保留其默认路径不动,
+     * 只在所有模块 setup 完成后改写客户端读取的 public.assistant.apiPath。
+     *
+     * 上游那个处理器随之闲置,并由 server/middleware/ai-guard.ts 直接封禁,
+     * 避免出现一个不鉴权、不限流的 token 消耗入口。
+     */
+    "modules:done": function () {
+      const nuxt = useNuxt();
+      const publicAssistant = nuxt.options.runtimeConfig.public.assistant as
+        | { enabled?: boolean; apiPath?: string }
+        | undefined;
+
+      if (publicAssistant?.apiPath) {
+        publicAssistant.apiPath = "/api/assistant";
+      }
+    },
   },
 
   modules: [

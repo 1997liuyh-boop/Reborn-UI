@@ -29,7 +29,7 @@ navigation:
 | banner      | 是否作为顶部公告使用（去除边框和圆角）                       | `boolean`                                                                              | `false`    |
 | center      | 内容是否居中显示                                             | `boolean`                                                                              | `false`    |
 | icon        | 自定义图标名（也可用 icon 插槽）                             | `string`                                                                               | -          |
-| close-icon  | 关闭按钮的图标                                               | `string`                                                                               | `'lucide:x'` |
+| close-icon  | 关闭按钮的图标（Web 默认 `'lucide:x'`，UniApp 默认 `'i-lucide-x'`） | `string`                                                                        | 分端默认   |
 | messages    | 轮播消息列表：传入即变为消息轮播通知栏，默认单条逐条垂直轮播 | `string[]`                                                                             | -          |
 | interval    | 垂直轮播的切换间隔，单位毫秒                                 | `number`                                                                               | `3000`     |
 | direction   | 轮播方向：`vertical` 垂直切换；`horizontal` 全部消息拼成一行水平跑马灯滚动 | `'vertical' \| 'horizontal'`                                              | `'vertical'` |
@@ -37,6 +37,8 @@ navigation:
 | rows        | 垂直轮播时同时展示的行数；大于 1 时多条消息同时可见并逐行向上滚动 | `number`                                                                          | `1`        |
 | v-model:show | 显隐状态（受控），关闭按钮会将其置为 false                  | `boolean`                                                                              | `true`     |
 | ui          | 按语义化结构覆盖各节点样式                                   | `AlertUI`                                                                              | -          |
+| class       | 根节点自定义类名（**仅 Web 端**）                            | `any`                                                                                  | -          |
+| custom-class | 根节点自定义类名（**仅 UniApp 端**，避免与原生 class 冲突）  | `string`                                                                               | `''`       |
 
 ### `<alert>` Events
 

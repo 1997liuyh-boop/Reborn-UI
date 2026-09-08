@@ -4,7 +4,6 @@ import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornImage from '@/components/reborn-image/RebornImage.vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
-import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
 import RebornPopup from '@/components/reborn-popup/RebornPopup.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
@@ -34,9 +33,8 @@ const directions: { label: string; value: PopupPosition }[] = [
         <view class="text-sm text-gray-500">
           方向：
         </view>
-        <RebornRadioGroup v-model="direction" :options="directions">
-          <RebornRadio v-for="d in directions" :key="d.value" :value="d.value" :label="d.label" />
-        </RebornRadioGroup>
+        <!-- options 传入后由组自行渲染选项，无需再写子项 -->
+        <RebornRadioGroup v-model="direction" :options="directions" />
         <view class="text-sm text-gray-500 flex items-center gap-2 justify-between">
           是否显示遮罩：
           <RebornSwitch v-model="showMask" activeLabel="显示" inactiveLabel="隐藏" />

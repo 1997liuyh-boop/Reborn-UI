@@ -101,7 +101,7 @@ message.config({
 
 ## 注意事项
 
-- web 端为本页的 `message` 命令式 API；uniapp 端仍为轻提示 Toast（`useToast()` 服务式调用，参数与本页不同），双端 API 暂不互通。
+- 双端均为本页的 `message` 命令式 API，同名同形（`open` / `info` / `success` / `warning` / `error` / `loading` / `config` / `destroy`），从各自的 `reborn-toast/index.ts` 导入即可。剩余差异只有三处：uniapp 端 `MessageNode` 仅支持 `string`（web 端还支持 `VNode` 与 `() => VNode`），`getContainer` 仅 H5 生效，小程序端无 DOM、页面里必须渲染 `<RebornToast />`（`RebornPage` 已内置）。
 - `duration` 单位是秒（不是毫秒）；`loading` 类型同样默认 3 秒自动关闭，需要常驻时传 `duration: 0` 并配合 `key` + `message.destroy(key)` 或同 key 更新收尾。
 - 消息容器在首次调用时自动挂载到 `getContainer()`（默认 body），无需在模板中放置组件。
 - 堆叠折叠（stack）暂未实现；多条消息始终纵向排列，可用 `maxCount` 控制数量上限。

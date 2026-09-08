@@ -14,6 +14,6 @@
     "web、uniapp 双端可用，交互形态不同：Web 为浮层选项列表，UniApp 为弹层 + RebornPickerView 滚动选择并需点确认。",
     "change 触发时机双端不同：Web 选中即触发，UniApp 在确认后触发；changing 事件为滚动未确认时触发。",
     "portal 默认 true，浮层传送到 body，不受祖先 overflow/transform 裁剪（如在 RebornDialog 内）；关闭后浮层随父容器滚动与裁剪。",
-    "size 默认值双端不同（Web 默认 'lg'）；uniapp 端 disabled 兼容 reborn-form。"
+    "size 默认值双端不同：Web 默认 'md'、UniApp 默认 'lg'，跨端复用同一份配置时需显式指定；uniapp 端 disabled 兼容 reborn-form。"
   ]
 }

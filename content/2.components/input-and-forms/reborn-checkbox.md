@@ -89,7 +89,7 @@ const status = ref("no");
 </template>
 ```
 
-不绑定 `v-model` 时组件进入非受控模式，可用 `defaultValue`（或布尔简写 `defaultChecked`）指定初始值，通过 `change` 事件拿到最新值。
+不绑定 `v-model` 时组件进入非受控模式，可用 `defaultValue`（或布尔简写 `defaultChecked`）指定初始值，之后由组件自行维护选中状态，通过 `change` 事件拿到最新值。
 
 ### 颜色与变体
 
@@ -249,8 +249,8 @@ function onCheckAll(value: boolean) {
 | `value` | `string \| number \| boolean` | - | 该项的选中值，数组模式（或组内）生效；未传时以 `label` 兜底。 |
 | `label` | `string` | - | 标签文本；提供默认插槽时被插槽内容覆盖。 |
 | `indeterminate` | `boolean` | `false` | 是否为半选状态。纯受控属性，组件不会自动清除。 |
-| `trueValue` | `string \| number` | `true` | 选中时写回的值，仅非数组模式生效。 |
-| `falseValue` | `string \| number` | `false` | 未选中时写回的值，仅非数组模式生效。 |
+| `trueValue` | `string \| number \| boolean` | `true` | 选中时写回的值，仅非数组模式生效。 |
+| `falseValue` | `string \| number \| boolean` | `false` | 未选中时写回的值，仅非数组模式生效。 |
 | `disabled` | `boolean` | `false` | 是否禁用。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸；组内由 Group 统一下发，表单组内被组尺寸覆盖。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
@@ -420,6 +420,7 @@ UniApp 端没有原生 input 节点，`ui.input` 不适用。
 ## 注意事项
 
 - **绑定模式由 `modelValue` 类型决定**：数组即多选（按 `value` 存取），非数组即布尔/自定义值开关；`trueValue` / `falseValue` 仅 Web 端存在，且数组模式下不生效。
+- **受控 / 非受控二选一**。绑定 `v-model` 即完全受控，值由外层数据决定；不绑定时以 `defaultValue`（优先）或 `defaultChecked` 起始并由组件内部维护。若只写单向的 `:model-value` 而不监听更新，组件会在用户点击后接管为内部状态（`defineModel` 的单向绑定语义），需要「只读展示」请配合 `disabled`（UniApp 端可用 `readOnly`）。
 - **`indeterminate` 只负责渲染**。组件不会在用户点击后自动清除半选；半选态与选中态可同时成立，此时视觉上以半选为准。
 - **`options` 与默认插槽互斥**。传入 `options` 后默认插槽不再渲染；需要复杂标签内容时用 `label` 插槽而非在 `options.label` 里塞 HTML。
 - **`checkbox` 插槽整体替换勾选方块**。此时 `ui.control` / `ui.icon` 静默失效，样式请写在插槽内容上。

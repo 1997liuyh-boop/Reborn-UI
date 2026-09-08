@@ -86,3 +86,7 @@ pnpm kb:check          # 提交前自检：schema / 集合一致性 / overrides 
 2. 读 `knowledge/components/<id>.json` 的 `description`、`whenToUse`、`whenNotToUse`、`pitfalls`，确认选型与端支持（`platforms`）。
 3. props/events/slots 以知识库为准（源码抽取），示例见 `examples` 字段。
 4. 涉及尺寸的样式优先使用 `rpx` 单位；组件代码使用 `defineModel` 与接口式 `defineProps`；所有注释必须中文。
+
+## 组件 Demo 规范
+
+编写或修改组件 demo（web examples / uniapp pages）前，必读技能 `component-demo`（Claude 端在 `.claude/skills/component-demo/SKILL.md`，Codex 端在 `.codex/skills/component-demo/SKILL.md`，两份为镜像，改动须同步）：以 `app/components/reborn/examples/reborn-button/RebornButtonDemo.vue` 为唯一参考范本（顶部 Playground 交互演练场 + DemoSection 场景分节 + 显式 import + 中文注释），并按其中的校验清单收尾（eslint / kb:build / uni build）。
