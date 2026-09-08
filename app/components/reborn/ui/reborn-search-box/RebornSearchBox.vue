@@ -1,80 +1,55 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, nextTick, watch } from "vue";
-import RebornButton from "../reborn-button/RebornButton.vue";
-import RebornInput from "../reborn-input/RebornInput.vue";
-import RebornSelect, { type SelectProps } from "../reborn-select/RebornSelect.vue";
-import RebornBadge from "../reborn-badge/RebornBadge.vue";
-import { inputColors } from "../reborn-input/reborn-input.config";
-import type { InputUi } from "../reborn-input/RebornInput.vue";
-import theme, { searchBoxSizes, inputTheme, selectTriggerTheme, selectUiTheme } from "./reborn-search-box.config";
-import RebornSku, { type SkuOption } from "../reborn-sku/RebornSku.vue";
+import type { inputColors, inputShapes } from "../reborn-input/reborn-input.config";
+import type { InputProps, InputUi } from "../reborn-input/RebornInput.vue";
+import type { searchBoxSizes } from "./reborn-search-box.config";
+import { computed, nextTick, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
-
-/** 使用 tailwind-variants 生成基础样式生成器 */
-const b = tv(theme);
+import RebornInput from "../reborn-input/RebornInput.vue";
+import theme, { inputTheme } from "./reborn-search-box.config";
 
 defineOptions({
   inheritAttrs: false, // 禁用属性透传，手动控制
 });
 
-/** SKU 属性项类型定义 (兼容旧版，建议使用 SkuOption) */
-export type SkuAttribute = SkuOption;
+const props = withDefaults(defineProps<SearchBoxProps>(), {
+  placeholder: "请输入搜索内容",
+  size: "sm",
+  color: "primary",
+  shape: "circle",
+  showDropdown: true,
+  ui: () => ({}),
+  inputUi: () => ({}),
+});
 
-/** RebornSelect 组件的 UI 覆盖类型定义 */
-export interface SelectUi {
-  /** 触发器最外层容器样式 */
-  wrapper?: string;
-  /** 触发器主体按钮样式 */
-  trigger?: string;
-  /** 触发器文本内容样式 */
-  triggerText?: string;
-  /** 占位提示文字样式 */
-  placeholder?: string;
-  /** 右侧箭头/图标样式 */
-  arrow?: string;
-  /** 触发器内部生成的浮层(Dropdown)容器样式 */
-  dropdown?: string;
-  /** 内部 RebornSelect 内容区(Dropdown Content)包装容器样式 */
-  internalDropdown?: string;
-  /** 内部 RebornSelect 单个选项样式 */
-  internalOption?: string;
-  /** 内部 RebornSelect 选中项样式 */
-  internalOptionActive?: string;
-  /** 内部 RebornSelect 高亮项样式 */
-  internalOptionHighlight?: string;
-  /** 内部 RebornSelect 空状态提示样式 */
-  internalEmpty?: string;
-  /** 清除按钮样式 */
-  clearBtn?: string;
-}
+const emit = defineEmits<{
+  /** 按下回车或通过插槽作用域触发搜索时触发（trailing 插槽作用域透出 search 方法供自定义按钮调用），参数为当前 modelValue */
+  (e: "search", value: SearchBoxModelValue): void;
+  /** 输入框获得焦点时触发；showDropdown 开启时同时展开下拉面板 */
+  (e: "focus", event: FocusEvent): void;
+  /** 输入框失去焦点时触发；若焦点仍在组件内部则不收起面板 */
+  (e: "blur", event: FocusEvent): void;
+}>();
+
+/** 使用 tailwind-variants 生成基础样式生成器 */
+const b = tv(theme);
+
+/** 插槽表：用于判断是否存在外置插槽，从而决定聚焦描边画在外框还是输入框区 */
+const slots = useSlots();
 
 /** RebornSearchBox 组件本身的 UI 槽位定义 */
 export interface SearchBoxUi {
   wrapper?: string;
   /** 展开状态下的底色卡片 */
   backdropCard?: string;
+  /** 控件行：外置前后置插槽 + 输入框区的横向容器，承担外层边框；无外置插槽时聚焦高亮也落在这一层 */
+  control?: string;
+  /** 输入框区：撑满剩余空间的结构层，承担水平内边距；有外置插槽时聚焦描边以 ::before 覆盖层画在这一层内 */
   inputWrapper?: string;
-  input?: string;
-  cameraIcon?: string;
   dropdownOuter?: string;
   dropdown?: string;
-  section?: string;
-  sectionTitle?: string;
-  historyTags?: string;
-  historyTag?: string;
-  deleteIcon?: string;
-  clearAll?: string;
-  /** 联想列表容器 */
-  associateList?: string;
-  /** 联想项 */
-  associateItem?: string;
   leadingWrapper?: string;
   trailingWrapper?: string;
-  separator?: string;
-  searchIconInner?: string;
-  emptyText?: string;
-  recommendIcon?: string;
 }
 
 /** 搜索框双向绑定值类型 */
@@ -83,28 +58,22 @@ export interface SearchBoxModelValue {
   inputValue: string;
   /** 下拉选择器选中值 */
   selectValue: string | number;
-  /** SKU 部分的值，仅在 mode=sku 时有效 */
+  /** 扩展字段：在 dropdown 插槽中组合 RebornSku 等筛选内容时可自行并入 */
   [key: string]: any;
 }
 
 /** 搜索框组件 Props 定义 */
 export interface SearchBoxProps {
-  /** 搜索关键字双向绑定 */
-  modelValue?: SearchBoxModelValue;
   /** 占位提示文字 */
   placeholder?: string;
   /** 尺寸变体: sm, md, lg */
   size?: typeof searchBoxSizes[number];
   /** 颜色变体 */
   color?: typeof inputColors[number];
-  /** 模式: associate(联想词/历史记录) | sku(属性搜索) */
-  mode?: "associate" | "sku";
-  /** 是否显示下拉面板 */
+  /** 外形轮廓，与 RebornInput 的 shape 对齐：circle 胶囊 / square 统一取 rounded-ui-xs 令牌（不分尺寸）；底色卡片与下拉面板的圆角随之与输入框对齐 */
+  shape?: typeof inputShapes[number];
+  /** 是否展示下拉面板（面板内容完全由 dropdown 插槽提供） */
   showDropdown?: boolean;
-  /** 是否显示历史记录区块 */
-  showHistory?: boolean;
-  /** SKU 属性列表 (仅在 sku 模式下有效) */
-  skuAttributes?: SkuAttribute[];
   /** 自定义保存历史记录回调 */
   saveHistory?: (history: string[]) => void;
   /** 自定义清除历史记录回调 */
@@ -115,59 +84,19 @@ export interface SearchBoxProps {
   ui?: SearchBoxUi;
   /** 内部 RebornInput UI 覆盖 */
   inputUi?: InputUi;
-  /** 内部 RebornSelect UI 覆盖 */
-  selectUi?: SelectUi;
-  /** 下拉选择器属性 */
-  selectAttrs?: SelectProps;
-  /** 推荐搜索关键词列表 */
-  recommendKeywords?: string[];
-  /** 历史记录区块标题 */
-  historyTitle?: string;
-  /** 空历史记录提示文字 */
-  emptyHistoryLabel?: string;
-  /** 推荐搜索区块标题 */
-  recommendTitle?: string;
-  /** 清空全部历史记录按钮文字 */
-  clearAllLabel?: string;
+  /** 输入框属性透传（v-bind 到内部 RebornInput；size/color/shape/placeholder 等显式 prop 优先级更高） */
+  inputAttrs?: Partial<InputProps>;
 }
 
-const props = withDefaults(defineProps<SearchBoxProps>(), {
-  modelValue: () => ({ inputValue: "", selectValue: "" }),
-  placeholder: "请输入搜索内容",
-  size: "sm",
-  color: "primary",
-  mode: "associate",
-  showDropdown: true,
-  showHistory: true,
-  skuAttributes: () => [],
-  ui: () => ({}),
-  inputUi: () => ({}),
-  selectUi: () => ({}),
-  recommendKeywords: () => [],
-  historyTitle: "历史记录",
-  emptyHistoryLabel: "暂无最近的搜索记录",
-  recommendTitle: "推荐搜索",
-  clearAllLabel: "清空全部",
+/** 搜索关键字双向绑定（inputValue + selectValue 的组合对象） */
+const model = defineModel<SearchBoxModelValue>({
+  default: () => ({ inputValue: "", selectValue: "" }),
 });
-
-const emit = defineEmits<{
-  /** 输入框、左侧选择器或 SKU 值变化时触发，参数为合并后的完整 modelValue 对象 */
-  (e: "update:modelValue", value: SearchBoxModelValue): void;
-  /** 点击搜索按钮、按下回车或选中历史记录时触发，参数为当前 modelValue */
-  (e: "search", value: SearchBoxModelValue): void;
-  /** 点击后置相机图标时触发（web 端短横线命名，对应 uniapp 端的 clickCamera） */
-  (e: "click-camera"): void;
-  /** 左侧选择器或 SKU 属性变化时触发，label 为属性 key（选择器变更时为 "selectValue"），value 为选中值（web 端短横线命名，对应 uniapp 端的 selectSku） */
-  (e: "select-sku", attr: { label: string, value: string | number }): void;
-  /** 输入框获得焦点时触发；showDropdown 开启时同时展开下拉面板 */
-  (e: "focus", event: FocusEvent): void;
-  /** 输入框失去焦点时触发；若焦点仍在组件内部则不收起面板 */
-  (e: "blur", event: FocusEvent): void;
-}>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
 const wrapperRef = ref<HTMLElement | null>(null);
 const isExpanded = ref(false); // 下拉面板展开状态
+const isInputFocused = ref(false); // 内部输入框是否获得焦点（边框激活高亮的唯一依据）
 const localHistory = ref<string[]>([]); // 本地历史记录列表
 
 // 历史记录本地存储 Key
@@ -179,7 +108,7 @@ const loadHistory = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     localHistory.value = saved ? JSON.parse(saved) : [];
-  } catch (e) {
+  } catch {
     localHistory.value = [];
   }
 };
@@ -221,7 +150,13 @@ const handleRemoveHistoryItem = (keyword: string) => {
 const ui = computed(() => {
   const styles = b({
     expanded: isExpanded.value,
-    //  size: props.size 
+    shape: props.shape,
+    size: props.size,
+    color: props.color,
+    // 激活高亮只跟随输入框焦点，外置插槽获得焦点时不点亮边框
+    focused: isInputFocused.value,
+    // 存在外置插槽时，外框恒为灰色、聚焦描边只画在输入框区内，避免外置插槽跟着变色
+    hasOuterSlots: Boolean(slots.leading || slots.trailing),
   });
   const uiOverrides = props.ui || {};
 
@@ -230,117 +165,62 @@ const ui = computed(() => {
       styles.wrapper({ class: cn(opts?.class, props.class, uiOverrides.wrapper) }),
     backdropCard: (opts?: { class?: any }) =>
       styles.backdropCard({ class: cn(opts?.class, uiOverrides.backdropCard) }),
+    control: (opts?: { class?: any }) =>
+      styles.control({ class: cn(opts?.class, uiOverrides.control) }),
     inputWrapper: (opts?: { class?: any }) =>
       styles.inputWrapper({ class: cn(opts?.class, uiOverrides.inputWrapper) }),
-    inputLink: (opts?: { class?: any }) =>
-      styles.input({ class: cn(opts?.class, uiOverrides.input) }),
-    cameraIcon: (opts?: { class?: any }) =>
-      styles.cameraIcon({ class: cn(opts?.class, uiOverrides.cameraIcon) }),
     dropdownOuter: (opts?: { class?: any }) =>
       styles.dropdownOuter({ class: cn(opts?.class, uiOverrides.dropdownOuter) }),
     dropdown: (opts?: { class?: any }) =>
       styles.dropdown({ class: cn(opts?.class, uiOverrides.dropdown) }),
-    section: (opts?: { class?: any }) =>
-      styles.section({ class: cn(opts?.class, uiOverrides.section) }),
-    sectionTitle: (opts?: { class?: any }) =>
-      styles.sectionTitle({ class: cn(opts?.class, uiOverrides.sectionTitle) }),
-    historyTags: (opts?: { class?: any }) =>
-      styles.historyTags({ class: cn(opts?.class, uiOverrides.historyTags) }),
-    historyTag: (opts?: { class?: any }) =>
-      styles.historyTag({ class: cn(opts?.class, uiOverrides.historyTag) }),
-    deleteIcon: (opts?: { class?: any }) =>
-      styles.deleteIcon({ class: cn(opts?.class, uiOverrides.deleteIcon) }),
-    clearAll: (opts?: { class?: any }) =>
-      styles.clearAll({ class: cn(opts?.class, uiOverrides.clearAll) }),
-    associateList: (opts?: { class?: any }) =>
-      styles.associateList({ class: cn(opts?.class, uiOverrides.associateList) }),
-    associateItem: (opts?: { class?: any }) =>
-      styles.associateItem({ class: cn(opts?.class, uiOverrides.associateItem) }),
-
     leadingWrapper: (opts?: { class?: any }) =>
       styles.leadingWrapper({ class: cn(opts?.class, uiOverrides.leadingWrapper) }),
     trailingWrapper: (opts?: { class?: any }) =>
       styles.trailingWrapper({ class: cn(opts?.class, uiOverrides.trailingWrapper) }),
-    separator: (opts?: { class?: any }) =>
-      styles.separator({ class: cn(opts?.class, uiOverrides.separator) }),
-    searchIconInner: (opts?: { class?: any }) =>
-      styles.searchIconInner({ class: cn(opts?.class, uiOverrides.searchIconInner) }),
-    emptyText: (opts?: { class?: any }) =>
-      styles.emptyText({ class: cn(opts?.class, uiOverrides.emptyText) }),
-    recommendIcon: (opts?: { class?: any }) =>
-      styles.recommendIcon({ class: cn(opts?.class, uiOverrides.recommendIcon) }),
   };
 });
 
-/** 内部 Select 组件基础样式 */
-const selectTriggerStyles = tv(selectTriggerTheme)();
-const selectUiStyles = tv(selectUiTheme)();
-
-/** 
- * 内部 Select 组件触发器 UI 配置
- * 这里的属性将透传给 RebornSelectTrigger 进行样式覆盖
- */
-const internalSelectTriggerUi = computed(() => ({
-  ...props.selectUi,
-  wrapper: cn(selectTriggerStyles.wrapper(), props.selectUi?.wrapper),
-  trigger: cn(selectTriggerStyles.trigger(), props.selectUi?.trigger),
-  triggerText: cn(selectTriggerStyles.triggerText(), props.selectUi?.triggerText),
-  dropdown: cn(selectTriggerStyles.dropdown(), props.selectUi?.dropdown),
-}));
-
-/** 
- * 内部 Select 组件内容 UI 配置
- * 这里的属性将透传给 RebornSelect 的 ui 属性，用于覆盖选项列表等内部样式
- */
-const internalSelectUi = computed(() => ({
-  ...props.selectUi,
-  dropdown: cn(selectUiStyles.dropdown(), props.selectUi?.internalDropdown),
-  option: props.selectUi?.internalOption,
-  optionActive: props.selectUi?.internalOptionActive,
-  optionHighlight: props.selectUi?.internalOptionHighlight,
-  empty: props.selectUi?.internalEmpty,
-}));
-
-/** 合并后的 RebornSelect 组件属性 */
-const internalSelectProps = computed(() => ({
-  ...props.selectAttrs,
-  color: props.color,
-  size: "md" as const,
-  triggerUi: internalSelectTriggerUi.value,
-  ui: internalSelectUi.value,
-  clearable: false,
-}));
-
-/** 内部 Input 组件 UI 配置 */
+/** 内部 Input 组件 UI 配置：边框与聚焦态一律交给控件行外壳承担，恒压掉 input 自身的 ring */
 const internalInputUi = computed(() => {
-  const inputStyles = tv(inputTheme)({ size: props.size });
+  const inputStyles = tv(inputTheme)({ size: props.size, shape: props.shape });
   return {
     ...props.inputUi,
-    wrapper: cn(inputStyles.wrapper(), props.inputUi?.wrapper, !isExpanded.value && "ring-0"),
+    wrapper: cn(inputStyles.wrapper(), props.inputUi?.wrapper),
     icon: cn(inputStyles.icon(), props.inputUi?.icon),
     iconBox: cn(inputStyles.iconBox(), props.inputUi?.iconBox),
   };
 });
 
-const inputWrapperRef = ref<HTMLElement | null>(null);
-const internalInputHeight = ref(45); // 实时测量的输入框高度，用于计算下拉定位
+/**
+ * 输入框透传属性：内部输入框恒为 borderless（边框统一由控件行外壳承担，避免双层描边），
+ * 故 variant 后置、不接受 inputAttrs 覆盖；其余键照常透传，
+ * size/color/shape/placeholder 等显式 prop 在模板中后绑、优先级更高
+ */
+const internalInputAttrs = computed(() => ({
+  ...props.inputAttrs,
+  variant: "borderless" as const,
+}));
 
-/** 处理输入事件 */
-function handleInputValueChange(val: string | number) {
-  emit("update:modelValue", { ...props.modelValue!, inputValue: String(val) });
+const controlRef = ref<HTMLElement | null>(null);
+const controlHeight = ref(45); // 实时测量的控件行高度，用于计算底色卡片与下拉定位
+
+/** 处理输入事件（RebornInput 的 defineModel 载荷可能为 undefined，统一归一为字符串） */
+function handleInputValueChange(val: string | number | undefined) {
+  model.value = { ...model.value, inputValue: String(val ?? "") };
 }
 
 /** 执行搜索 */
 function handleSearch() {
-  const current = props.modelValue!;
+  const current = model.value;
   addToHistory(current.inputValue);
   emit("search", current);
   isExpanded.value = false;
   inputRef.value?.blur();
 }
 
-/** 获得焦点展开面板 */
+/** 获得焦点：点亮边框并展开面板 */
 const onFocus = (e: FocusEvent) => {
+  isInputFocused.value = true;
   if (props.showDropdown) {
     isExpanded.value = true;
   }
@@ -355,8 +235,9 @@ const onInputClick = () => {
 };
 
 
-/** 失去焦点收起面板 (需延时，避开点击下拉列表时的冲突) */
+/** 失去焦点：熄灭边框并收起面板 (收起需延时，避开点击下拉列表时的冲突) */
 const onBlur = (e: FocusEvent) => {
+  isInputFocused.value = false;
   const nextTarget = e.relatedTarget as Node | null;
   // 如果新焦点仍在组件内部，则不关闭面板 (如从主输入框点击到了 SKU 里的输入框)
   if (nextTarget && wrapperRef.value?.contains(nextTarget)) {
@@ -372,30 +253,19 @@ const onBlur = (e: FocusEvent) => {
   emit("blur", e);
 };
 
-/** 选择一条历史记录 */
+/** 选择一条历史记录（通过 dropdown 插槽作用域暴露给外部内容使用） */
 function selectHistory(keyword: string) {
-  const next = { ...props.modelValue!, inputValue: keyword };
-  emit("update:modelValue", next);
+  const next = { ...model.value, inputValue: keyword };
+  model.value = next;
   addToHistory(keyword);
   emit("search", next);
   isExpanded.value = false;
 }
 
-/** 点击推荐搜索项，将 inputValue 赋值 */
+/** 选中一条推荐词并回填 inputValue（通过 dropdown 插槽作用域暴露） */
 function selectRecommend(keyword: string) {
-  emit("update:modelValue", { ...props.modelValue!, inputValue: keyword });
+  model.value = { ...model.value, inputValue: keyword };
   isExpanded.value = false;
-}
-
-/** 相机图标点击 */
-function handleCameraClick() {
-  emit("click-camera");
-}
-
-/** Select 选中值变更 */
-function handleSelectChange(val: string | number) {
-  emit("update:modelValue", { ...props.modelValue!, selectValue: val });
-  emit("select-sku", { label: 'selectValue', value: val });
 }
 
 const contentRef = ref<HTMLElement | null>(null);
@@ -423,7 +293,7 @@ watch(() => props.showDropdown, (val) => {
 });
 
 let contentObserver: ResizeObserver | null = null;
-let inputObserver: ResizeObserver | null = null;
+let controlObserver: ResizeObserver | null = null;
 
 onMounted(() => {
   loadHistory();
@@ -436,83 +306,91 @@ onMounted(() => {
     contentObserver.observe(contentRef.value);
   }
 
-  // 输入框包裹层的 ResizeObserver (处理响应式布局导致的搜索框高度变动)
-  if (inputWrapperRef.value) {
-    inputObserver = new ResizeObserver((entries) => {
+  // 控件行的 ResizeObserver (处理响应式布局或前后置插槽内容导致的行高变动)
+  if (controlRef.value) {
+    controlObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        internalInputHeight.value =
+        controlHeight.value =
           entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
       }
     });
-    inputObserver.observe(inputWrapperRef.value);
+    controlObserver.observe(controlRef.value);
   }
 });
 
 onUnmounted(() => {
   contentObserver?.disconnect();
-  inputObserver?.disconnect();
+  controlObserver?.disconnect();
 });
 </script>
 
 <template>
   <div ref="wrapperRef" :class="ui.wrapper()">
-    <!-- 展开状态下的底色卡片 (绝对定位，圆角匹配输入框的药丸形状) -->
+    <!-- 展开状态下的底色卡片 (绝对定位，圆角由 shape 变体控制并与输入框对齐) -->
     <div :class="ui.backdropCard()" :style="{
-      height: `${internalInputHeight + 12}px`,
+      height: `${controlHeight + 12}px`,
       borderBottom: 'none',
       opacity: isExpanded ? 1 : 0,
       transform: isExpanded ? 'scaleY(1)' : 'scaleY(0.95)',
       transformOrigin: 'top center',
     }" />
 
-    <!-- 搜索输入框核心区 -->
-    <div ref="inputWrapperRef" :class="ui.inputWrapper()">
-      <RebornInput ref="inputRef" :model-value="modelValue?.inputValue" :placeholder="placeholder" clearable
-        :separator="false" :class="ui.inputLink()" :size="size" :color="color" :ui="internalInputUi"
-        @click="onInputClick" @update:model-value="handleInputValueChange" @focus="onFocus" @blur="onBlur"
-        @keydown.enter="handleSearch">
-        <!-- 前置选择器槽位 -->
-        <template #leading="{ ui: inputSlotUi }">
-          <div :class="ui.leadingWrapper()" @click.stop="isExpanded = false">
-            <RebornSelect :model-value="modelValue?.selectValue" v-bind="internalSelectProps"
-              @update:model-value="handleSelectChange" :bordered="false" @click.stop>
-              <template #default="{ displayText, ui: selectSlotUi }">
-                <slot name="select-trigger" :displayText="displayText" :ui="selectSlotUi">
-                  <div :class="selectSlotUi.triggerText()">
-                    {{ displayText }}
-                  </div>
-                </slot>
-              </template>
-            </RebornSelect>
-            <!-- 阻止 separator 点击冒泡到 RebornInput 的 wrapper click，避免触发非 input 的聚焦 -->
-            <div :class="[ui.separator(), inputSlotUi.separator()]" @click.stop="inputRef?.focus()" />
-          </div>
-        </template>
-        <!-- 后置功能区槽位 -->
-        <template #trailing>
-          <div :class="ui.trailingWrapper()">
-            <slot name="trailing" :ui="ui">
-              <Icon name="lucide:camera" :class="ui.cameraIcon()" @click.stop="handleCameraClick" />
-            </slot>
+    <!--
+      控件行：外层边框所在的一层，把外置的 leading / trailing 插槽一并囊括在内；
+      激活态一律由 isInputFocused 驱动而非 CSS focus-within，因此点中外置插槽里的选择器、按钮都不会点亮描边。
+      无外置插槽时整行就是输入框，聚焦高亮直接换这一层的边框色；
+      有外置插槽时这一层恒为 gray-4，高亮改由输入框区自己另起一圈（见下方 inputWrapper）。
+      items-stretch 让两个外置插槽包裹层与输入框区一样撑满整行高度。
+    -->
+    <div ref="controlRef" :class="ui.control()">
+      <!--
+        外置前置插槽：在边框内、输入框之外，无默认内容（如自行放入 RebornSelect）。
+        包裹层点击即收起面板并阻止冒泡，避免触发输入框聚焦；分隔线等装饰样式由插槽内容自行提供。
+      -->
+      <div v-if="$slots.leading" :class="ui.leadingWrapper()" @click.stop="isExpanded = false">
+        <slot name="leading" :ui="ui" />
+      </div>
 
-            <RebornButton @click.stop="handleSearch" :size="size" :color="color">
-              <slot name="search-button" :ui="ui">
-                <Icon name="lucide:search" :class="ui.searchIconInner()" />
-              </slot>
-            </RebornButton>
-          </div>
-        </template>
-      </RebornInput>
+      <!--
+        输入框区：撑满剩余空间的结构层，承担水平内边距；
+        存在外置插槽时由 hasOuterSlots 变体挂上 ::before 覆盖层，聚焦时只在这块区域内画一圈描边，
+        纯装饰、绝对定位，不参与布局也不挤压输入框高度。
+      -->
+      <div :class="ui.inputWrapper()">
+        <!-- internalInputAttrs 先绑定（variant 恒为 borderless）、显式 prop 后绑定优先级更高 -->
+        <RebornInput ref="inputRef" v-bind="internalInputAttrs" :model-value="model.inputValue" shape="square"
+          :placeholder="placeholder" clearable :separator="false" :size="size" :color="color" :ui="internalInputUi"
+          @click="onInputClick" @update:model-value="handleInputValueChange" @focus="onFocus" @blur="onBlur"
+          @keydown.enter="handleSearch">
+          <!-- 内置前置插槽：转发到 RebornInput 的 #prefix，落在输入框内部、随输入框一起进入激活态 -->
+          <template v-if="$slots['input-leading']" #prefix="inputScope">
+            <slot name="input-leading" :ui="ui" :input-ui="inputScope.ui" :search="handleSearch" />
+          </template>
+
+          <!-- 内置后置插槽：转发到 RebornInput 的 #suffix，落在输入框内部、随输入框一起进入激活态 -->
+          <template v-if="$slots['input-trailing']" #suffix="inputScope">
+            <slot name="input-trailing" :ui="ui" :input-ui="inputScope.ui" :search="handleSearch" />
+          </template>
+        </RebornInput>
+      </div>
+
+      <!--
+        外置后置插槽：在边框内、输入框之外，无默认内容（如相机图标、搜索按钮）。
+        作用域透出 search 方法，自定义搜索按钮点击时调用即可触发搜索。
+      -->
+      <div v-if="$slots.trailing" :class="ui.trailingWrapper()">
+        <slot name="trailing" :ui="ui" :search="handleSearch" />
+      </div>
     </div>
 
-    <!-- 动态下拉面板 (SKU属性 / 历史搜索 / 推荐搜索) -->
+    <!-- 动态下拉面板（内容完全由 dropdown 插槽提供） -->
     <div :class="ui.dropdownOuter()" :style="{
       height: isExpanded ? `${dropdownHeight}px` : '0px',
-      top: `${internalInputHeight / 2}px`,
+      top: `${controlHeight / 2}px`,
       pointerEvents: isExpanded ? 'auto' : 'none',
     }">
       <div ref="contentRef" :class="ui.dropdown()" :style="{
-        paddingTop: `${internalInputHeight / 2 + 24}px`,
+        paddingTop: `${controlHeight / 2 + 24}px`,
         opacity: isExpanded ? 1 : 0,
         transform: isExpanded ? 'translateY(0)' : 'translateY(-8px)',
         transitionDelay: isExpanded ? '100ms' : '0ms',
@@ -524,58 +402,14 @@ onUnmounted(() => {
         }
         e.preventDefault();
       }">
-        <slot name="dropdown" :ui="ui" :history="localHistory">
-
-          <!-- SKU 属性搜索区块 -->
-          <template v-if="mode === 'sku'">
-            <slot name="sku-list" :ui="ui" :attributes="skuAttributes">
-              <RebornSku :model-value="modelValue" :options="skuAttributes"
-                @update:model-value="(val: any) => emit('update:modelValue', val)"
-                @change="(key: string, val: any) => emit('select-sku', { label: key, value: val })" @click.stop>
-                <!-- 将从 RebornSearchBox 接收到的所有插槽全部穿透转发给 RebornSku (例如 #price 等) -->
-                <template v-for="(_, name) in $slots" #[name]="slotData">
-                  <slot :name="name" v-bind="slotData" />
-                </template>
-              </RebornSku>
-            </slot>
-          </template>
-
-          <!-- 历史搜索区块 -->
-          <div v-if="showHistory" :class="ui.section()">
-            <div :class="ui.sectionTitle()">
-              <span>{{ historyTitle }}</span>
-              <div v-if="localHistory.length > 0" :class="ui.clearAll()" @click="handleClearHistory">
-                <Icon name="lucide:trash-2" />
-                {{ clearAllLabel }}
-              </div>
-            </div>
-
-            <div v-if="localHistory.length > 0" :class="ui.historyTags()">
-              <slot name="history" :history="localHistory" :ui="ui">
-                <RebornBadge v-for="h in localHistory" :key="h" :label="h" closable variant="soft" color="neutral"
-                  size="md" :ui="{ label: 'text-gray-7' }" @click="selectHistory(h)"
-                  @close="handleRemoveHistoryItem(h)" />
-              </slot>
-            </div>
-            <div v-else :class="ui.emptyText()">
-              {{ emptyHistoryLabel }}
-            </div>
-          </div>
-
-          <!-- 推荐搜索区块，支持 slot 完全覆盖，暴露 selectRecommend 方法供外部赋值 inputValue -->
-          <div v-if="$slots['recommend-list'] || mode === 'associate'" :class="ui.section()">
-            <slot name="recommend-list" :ui="ui" :selectRecommend="selectRecommend">
-              <div :class="ui.sectionTitle()">{{ recommendTitle }}</div>
-              <div :class="ui.associateList()">
-                <div v-for="item in recommendKeywords" :key="item" :class="ui.associateItem()"
-                  @click="selectRecommend(item)">
-                  <Icon name="lucide:trending-up" :class="ui.recommendIcon()" />
-                  <span>{{ item }}</span>
-                </div>
-              </div>
-            </slot>
-          </div>
-        </slot>
+        <!--
+          面板内容完全由 dropdown 插槽提供，组件不渲染任何默认内容。
+          作用域透出：ui（结构层样式键，面板内容的装饰样式由插槽内容自行提供）、
+          history（历史记录列表）与历史/推荐相关的操作方法。
+        -->
+        <slot name="dropdown" :ui="ui" :history="localHistory" :select-history="selectHistory"
+          :remove-history-item="handleRemoveHistoryItem" :clear-history="handleClearHistory"
+          :select-recommend="selectRecommend" />
       </div>
     </div>
   </div>

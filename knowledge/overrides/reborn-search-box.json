@@ -1,18 +1,19 @@
 {
-  "description": "用于带下拉面板的双端搜索框组件，支持历史记录、推荐词与 SKU 属性筛选。",
+  "description": "用于带下拉面板的双端搜索框组件，web 端为纯插槽基元：选择器/后置区/面板全部由插槽组合。",
   "whenToUse": [
-    "电商、文档站搜索框，需要历史记录与推荐搜索下拉面板时。",
-    "SKU 模式按商品属性筛选（mode=\"sku\" + skuAttributes，selectSku 事件）。",
-    "需要图片搜索入口时（trailing 默认含相机图标，clickCamera 事件）。"
+    "电商、文档站搜索框，需要历史记录与推荐搜索下拉面板时（经 dropdown 插槽构建）。",
+    "按商品属性筛选：把 reborn-sku 放进 dropdown 插槽组合使用。",
+    "需要目录选择器、图片搜索等自定义入口时（外置区用 leading / trailing、输入框内用 input-leading / input-trailing 提供并自行处理交互）。"
   ],
   "whenNotToUse": [
     "普通文本录入改用 reborn-input。",
     "从固定选项集中选择改用 reborn-select。"
   ],
   "pitfalls": [
-    "web、uniapp 双端可用。",
-    "showDropdown 与 showHistory 默认开启，可通过 saveHistory/removeHistory 自定义历史记录的存取。",
-    "相机与 SKU 事件同时存在驼峰与短横线两种命名（clickCamera/click-camera、selectSku/select-sku）。",
-    "内部组合了输入框与选择器，可通过 inputUi/selectUi/selectAttrs 透传定制。"
+    "web、uniapp 双端可用，但 modelValue 类型不同：web 为 { inputValue, selectValue } 对象，uniapp 为字符串。",
+    "web 端插槽分两族，决定内容落在输入框内还是外：input-leading / input-trailing 转发到内部 reborn-input 的 prefix / suffix，内容落在输入框内部、贴着文本排布并随输入框一起进入激活态（作用域 ui/inputUi/search）；leading / trailing 是搜索框自身的外置插槽，与输入框区并列排在控件行里、被外层边框囊括在内，高度与输入框区一样撑满整行，但获得焦点时不出现任何描边（leading 里放可聚焦的 reborn-select 也不会点亮）。leading 作用域透出 ui（仅结构层样式键，分隔线等装饰样式由插槽内容自行提供），trailing 作用域透出 search() 触发搜索，dropdown 作用域透出 ui/history/selectHistory/removeHistoryItem/clearHistory/selectRecommend；不填插槽则对应区域不渲染，回车仍可搜索。",
+    "外层边框落在控件行（ui.control）并把外置插槽一并囊括在内，默认 border-gray-4；激活态由组件内部的 focus / blur 事件维护而非 CSS focus-within，因此点 leading 里的选择器、trailing 里的按钮都不会出现描边。聚焦描边画在哪一层取决于有无外置插槽：无外置插槽时直接把 control 的边框换成 color 对应色族 5 阶；有 leading / trailing 任一插槽时 control 恒为 gray-4 不变色，改由输入框区（ui.inputWrapper）的 ::before 覆盖层在区内另起一圈同色描边（绝对定位、不参与布局，按尺寸内缩 2 / 3 / 4px，圆角随 shape 与尺寸对齐）。输入框区的水平内边距兼作与外置插槽的间距，按尺寸取 8px（sm）/ 12px（md、lg），覆盖时改 inputWrapper 键。内部 reborn-input 恒为 variant=borderless，inputAttrs 不可覆盖（避免双层描边）。shape 与 reborn-input 的同名 API 对齐（circle 胶囊 / square 统一 rounded-ui-xs 令牌、不分尺寸）：底色卡片上半圆角与输入框对齐，面板只保留下半圆角；inputAttrs 其余键会 v-bind 透传给内部输入框，显式 prop 优先。",
+    "组件样式统一浅色令牌、无 dark: 前缀；深色适配经 ui/inputUi 覆盖。showDropdown/shape/inputAttrs 仅 web 端生效。",
+    "历史记录默认写本地存储（key reborn-search-history，最多 10 条），可用 saveHistory/removeHistory 自定义存取；即便面板不展示历史，search 仍会写入。"
   ]
 }
