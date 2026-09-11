@@ -1,0 +1,28 @@
+{
+  "description": "层级数据展示：展开/点选/勾选三组受控 keys，支持父子联动、异步加载、拖拽与虚拟滚动。",
+  "whenToUse": [
+    "文件目录、组织架构等层级数据的浏览与定位：treeData 一次传入，defaultExpandedKeys 控制初始视野。",
+    "权限点、分类勾选等「选父即选子」的批量选择：checkable 开启复选框，父子联动自动补全。",
+    "层级很深、子级按需请求的场景：loadData 异步加载，isLeaf 终止加载链。",
+    "需要用户手动调整层级结构（移动、归档、排序）：draggable + drop 回调落库。",
+    "上千节点的大数据树：设置 height 启用虚拟滚动，只渲染视口内的行。"
+  ],
+  "whenNotToUse": [
+    "表单里选一个层级路径（省市区、分类），改用 reborn-cascader，它自带触发器与浮层。",
+    "平铺的可折叠内容区块（FAQ、设置分组），改用 reborn-collapse，它是内容容器而非数据结构。",
+    "页面级导航目录，改用 reborn-menu，它带路由联动与浮层子菜单。"
+  ],
+  "pitfalls": [
+    "checkable 树的标题点击切换的是勾选而非点选（有意偏离 antd）：selectable / multiple 在复选树里停用，也不渲染点选高亮背景。",
+    "multiple 只作用于点选（selectedKeys 能否累加）；复选框勾选（checkedKeys）天生多选，不受 multiple 影响。",
+    "展开动画是行级过渡（TransitionGroup：新行淡入、下方行 FLIP 让位），不是容器高度过渡；animated 控制（默认开启），虚拟滚动生效时强制关闭，antd 的 motion 参数由它替代。",
+    "drop 事件不代改数据：组件只负责拖拽交互与位置判定，不在回调里按 dropPosition（-1 前 / 0 内 / 1 后）落库的话界面会弹回原状。",
+    "非 checkStrictly 下 checkedKeys 会被联动归一：传父节点 key 等于整枝勾选，取消一个子级会同时摘掉父链再重算，回写值是归一后的完整集合。",
+    "disabled / disableCheckbox 的节点阻断勾选联动传导；而节点级 checkable: false 只隐藏复选框、仍参与联动计算，两者语义不同。",
+    "虚拟滚动依赖定高行：滚动位置按 itemHeight（默认 28px）换算，用 ui 改了行高必须同步调整 itemHeight，否则切片与 scrollTo 落点漂移。",
+    "scrollTo 的 autoExpand 只在非受控展开下生效：受控（v-model:expanded-keys）时展开集合归外部所有，需先用 useTree 的 getPath 自行并入父链。",
+    "autoExpandParent 只响应外部写入 expandedKeys，组件内部的展开/收起不触发父链补全，否则刚收起的父级会被子级 key 立刻撑回。",
+    "itemHeight 是 Vue 适配新增 prop（antd 行高是内部常量），不用虚拟滚动时无需关心。",
+    "仅 Web 端组件，UniApp 端暂无对应实现；移动端层级选择可改用 reborn-cascader。"
+  ]
+}

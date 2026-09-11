@@ -1,0 +1,24 @@
+{
+  "description": "Web 层级选值：沿用 select 的三档尺寸与四种形态，下拉复用 tree，支持单选、独立多选和清空。",
+  "whenToUse": [
+    "表单选择团队、目录或分类节点：treeData 保留父子结构。",
+    "多个层级节点需要分别选取：multiple 开启独立复选（checkStrictly，父子不联动）。",
+    "与普通下拉框并排展示：size / color / variant 直接复用 reborn-select 主题，外观一致。",
+    "子级数据按需获取：loadData 异步补充，调用方写回 treeData。"
+  ],
+  "whenNotToUse": [
+    "选项没有层级关系，改用 reborn-select。",
+    "需要逐级选完整路径，改用 reborn-cascader。",
+    "常驻展示目录、拖拽或父子联动勾选，改用 reborn-tree。"
+  ],
+  "pitfalls": [
+    "多选不做父子联动：内部树固定 checkStrictly，选择父节点不会选中子节点，移除标签也只影响自身。",
+    "搜索不修改原始数据或清除隐藏的已选值：匹配用 fieldNames.title 映射后的标题；关闭时清理关键词并恢复原展开状态。",
+    "节点 key 必须全树唯一且类型稳定：数字 0 与字符串 '0' 是不同值；异步数据未到达时暂用 key 回显，数据更新后自动显示标题。",
+    "禁用节点（disabled / disableCheckbox）不能通过标签单独移除；组件未禁用时清空按钮仍可重置整个字段。",
+    "虚拟滚动依赖树的固定行高：title 插槽避免多行内容，否则滚动切片错位；需要可变高度时关闭 virtual。",
+    "loadData 不代改数据：由调用方把子节点写入响应式 treeData，叶子节点标记 isLeaf 终止加载链。",
+    "选择框样式直接复用 select：仅改树内容样式用 treeUi，不要覆盖触发器；collapseTagsTooltip 仅在多选 + collapseTags 且确有隐藏标签时生效。",
+    "仅 Web 端组件，UniApp 层级选值请使用 reborn-cascader。"
+  ]
+}
