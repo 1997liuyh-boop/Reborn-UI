@@ -48,6 +48,7 @@ claude mcp add reborn-ui -- npx -y reborn-ui-mcp@latest
 | `get_component_example` | 用法示例代码（支持按标题/平台过滤） |
 | `get_install_command` | CLI 安装命令与 npm 依赖清单 |
 | `list_categories` | 全部分类与组件数量 |
+| `get_authoring_spec` | 写作规范全文：`kind="doc"` 组件文档 / `kind="demo"` 组件 demo，`includeTemplate` 附带参考范本 |
 
 ## Agent 推荐工作流
 
@@ -55,6 +56,10 @@ claude mcp add reborn-ui -- npx -y reborn-ui-mcp@latest
 2. `get_component` 读 `whenToUse` / `whenNotToUse` / `pitfalls` 确认选型与端支持（`platforms`）；
 3. `get_install_command` 安装组件；
 4. `get_component_example` 参照示例写页面，props 用法以知识条目为准。
+
+若要**为本组件库编写文档或 demo**（而非用组件写业务页面），先调 `get_authoring_spec` 取规范全文再动笔。压缩版骨架与硬规则已写在 server instructions 里，客户端会自动注入系统提示，无需 tool call 即可看到；全文与唯一参考范本（`reborn-button`）需要本工具。
+
+规范正文的真源是仓库的 [`docs/authoring/`](../../docs/authoring/)：发布包内置一份 `spec/` 快照（`prepack` 时由 `spec:snapshot` 生成）；仓库内开发时自动解析 monorepo 根的 `docs/authoring/`，也可用 `--spec-dir` / `REBORN_SPEC_DIR` 指向快照目录做发布前验证。
 
 ## 本地调试
 

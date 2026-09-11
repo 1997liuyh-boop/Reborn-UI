@@ -87,6 +87,31 @@ pnpm kb:check          # 提交前自检：schema / 集合一致性 / overrides 
 3. props/events/slots 以知识库为准（源码抽取），示例见 `examples` 字段。
 4. 涉及尺寸的样式优先使用 `rpx` 单位；组件代码使用 `defineModel` 与接口式 `defineProps`；所有注释必须中文。
 
+## 组件文档规范
+
+编写或修改 `content/2.components/**/*.md` 前，**必读 `docs/authoring/component-doc.md`**（规范正文唯一真源），或技能 `component-doc`（Claude 端 `.claude/skills/component-doc/SKILL.md`，Codex 端 `.codex/skills/component-doc/SKILL.md`，两份为镜像，改动须同步）。唯一参考范本是 `content/2.components/button/reborn-button.md`。
+
+骨架速查（顺序固定）：
+
+```
+frontmatter（title / description ≤60 字 / category / tags）
+::ComponentViewer{... componentId="<id>"}
+## 简介            三段：一句话定位+双端同构 → 正交维度拆解 → 剩余 API 分组概览
+### 何时使用        3-5 条，每条点名具体 prop
+### 何时不使用      2-3 条，每条给替代组件（—— 改用 `reborn-xxx`）
+## 用法            一节一能力：一句话引子 → 维度表（含「典型用途」列）→ 5-15 行 vue 块
+## API             ### Props / ### Emits / ### Slots / ### Expose
+                   ### 自定义样式（ui） / ### CSS 变量（写出定义文件路径）
+## 两端差异对照     维度|Web|UniApp 三列速查表（仅双端组件）
+## 注意事项         每条 = 粗体结论句 + 机制 + 后果
+```
+
+三条硬规则：① 骨架固定有序，`简介` / `何时使用` / `何时不使用` / `注意事项` 不得省略；② `### Props|Emits|Slots|Expose` 下表格行名必须与源码成员逐字一致（**CI 强校验**），`ui` 键位表与 CSS 变量表必须放在非 API 标题下；③ 不描述源码里不存在的能力，预留未接线的 prop 要在「注意事项」里明说。
+
 ## 组件 Demo 规范
 
-编写或修改组件 demo（web examples / uniapp pages）前，必读技能 `component-demo`（Claude 端在 `.claude/skills/component-demo/SKILL.md`，Codex 端在 `.codex/skills/component-demo/SKILL.md`，两份为镜像，改动须同步）：以 `app/components/reborn/examples/reborn-button/RebornButtonDemo.vue` 为唯一参考范本（顶部 Playground 交互演练场 + DemoSection 场景分节 + 显式 import + 中文注释），并按其中的校验清单收尾（eslint / kb:build / uni build）。
+编写或修改组件 demo（web examples / uniapp pages）前，**必读 `docs/authoring/component-demo.md`**（规范正文唯一真源），或技能 `component-demo`（Claude 端 `.claude/skills/component-demo/SKILL.md`，Codex 端 `.codex/skills/component-demo/SKILL.md`，两份为镜像，改动须同步）。唯一参考范本是 `app/components/reborn/examples/reborn-button/RebornButtonDemo.vue`：顶部 Playground 交互演练场 + DemoSection 场景分节 + 显式 import + 中文注释，并按正文的收尾清单验证（eslint / kb:build / uni build）。
+
+三条硬规则：① 严禁传组件不存在的 prop / 插槽 / 事件（死开关）；② `DemoSection` 节序与节名应与文档 `## 用法` 的 `###` 小节一一对应；③ uniapp demo 页尺寸一律 rpx，条件编译注释不得破坏，作用域插槽禁止 `v-bind="scope"` 整包透传。
+
+demo 里的文案（`Playground` 的 `title` / `description`、`DemoSection` 的 `description`、`DemoNote` 正文）与上面的文档规范**同源**：一句话定位、prop 名用代码体、给理由不给口号、禁营销词、一律中文。

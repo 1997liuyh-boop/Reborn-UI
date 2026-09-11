@@ -114,7 +114,7 @@
   --color-info: var(--color-blue-6);
   --color-warning: var(--color-orange-6);
   --color-error: var(--color-red-6);
-  --color-neutral: var(--color-gray-6);
+  --color-neutral: var(--color-gray-4);
 
   --color-inverted: #ffffff;
   --color-default: var(--color-gray-8);
@@ -262,4 +262,23 @@ body.layout-admin-shell {
 ::selection {
   background-color: var(--color-primary);
   color: var(--color-gray-1);
+}
+
+/* Dialog 弹跳入场关键帧（transition="bounce" 经 animate-[reborn-dialog-bounce_...] 引用） */
+@keyframes reborn-dialog-bounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  75% {
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

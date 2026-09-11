@@ -1,12 +1,32 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { tv } from "~/lib/tv";
-import theme from "./reborn-popover.config";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
+import theme from "./reborn-popover.config";
 
 defineOptions({
   name: "RebornPopover",
 });
+
+const props = withDefaults(defineProps<PopoverProps>(), {
+  mode: "click",
+  portal: true,
+  arrow: false,
+  dismissible: true,
+  modal: false,
+  openDelay: 0,
+  closeDelay: 120,
+  content: () => ({
+    side: "bottom",
+    align: "center",
+    sideOffset: 8,
+  }),
+});
+
+const emit = defineEmits<{
+  /** 显隐状态变化时触发，参数为最新的 open 值（对应 v-model:open） */
+  (e: "update:open", v: boolean): void;
+}>();
 
 export interface PopoverContentProps {
   side?: "top" | "right" | "bottom" | "left";
@@ -41,26 +61,6 @@ export interface PopoverProps {
     mask?: any;
   }>;
 }
-
-const props = withDefaults(defineProps<PopoverProps>(), {
-  mode: "click",
-  portal: true,
-  arrow: false,
-  dismissible: true,
-  modal: false,
-  openDelay: 0,
-  closeDelay: 120,
-  content: () => ({
-    side: "bottom",
-    align: "center",
-    sideOffset: 8,
-  }),
-});
-
-const emit = defineEmits<{
-  /** 显隐状态变化时触发，参数为最新的 open 值（对应 v-model:open） */
-  (e: "update:open", v: boolean): void;
-}>();
 
 const internalOpen = ref(props.defaultOpen ?? props.open ?? false);
 
@@ -127,7 +127,12 @@ const onClickOutside = (event: MouseEvent) => {
 };
 
 const VIEWPORT_OFFSET = 8;
-const ARROW_INSET = 20;
+/**
+ * 箭头中心距面板端部的最小内缩量，与 reborn-tooltip 取同一口径：
+ * 面板圆角 8px（rounded-ui-sm）加半个箭头底边（12px 方块旋转 45° 后底边 ≈16.97px，半边 ≈8.49px），取整 17。
+ * 小于该值箭头底边会压到圆角的弧线上，连接处出现悬空缺口。
+ */
+const ARROW_INSET = 17;
 
 const style = ref<Record<string, string>>({
   left: "0px",
@@ -220,13 +225,25 @@ function getVerticalAlignFallbacks(align: PopoverAlign, direction: "top" | "bott
   return [] as PopoverAlign[];
 }
 
-function syncArrowPosition(rect: DOMRect, x: number, y: number, width: number, height: number) {
-  const triggerCenterX = rect.left + rect.width / 2 - x;
-  const triggerCenterY = rect.top + rect.height / 2 - y;
+/** 把箭头中心钳制在面板直边范围内；面板短到放不下两倍内缩量时退回正中，避免上下限倒挂。 */
+function clampArrowOffset(center: number, extent: number) {
+  if (extent < ARROW_INSET * 2) return extent / 2;
+  return Math.min(Math.max(center, ARROW_INSET), extent - ARROW_INSET);
+}
+
+/**
+ * 同步箭头在面板内的坐标：箭头指向触发器中心，再按最小内缩量钳制到面板直边内。
+ * 箭头绝对定位在带边框的 .content 里，top / left 以内边距盒为原点，
+ * 而 x / y 是面板边框盒的位置，因此要扣掉边框宽度，箭头中心才能真正落在触发器中心上。
+ */
+function syncArrowPosition(rect: DOMRect, x: number, y: number, contentBox: HTMLElement) {
+  // clientLeft / clientTop 即左、上边框宽度，clientWidth / clientHeight 即内边距盒尺寸
+  const triggerCenterX = rect.left + rect.width / 2 - x - contentBox.clientLeft;
+  const triggerCenterY = rect.top + rect.height / 2 - y - contentBox.clientTop;
 
   arrowPosition.value = {
-    x: `${Math.min(Math.max(triggerCenterX, ARROW_INSET), width - ARROW_INSET)}px`,
-    y: `${Math.min(Math.max(triggerCenterY, ARROW_INSET), height - ARROW_INSET)}px`,
+    x: `${clampArrowOffset(triggerCenterX, contentBox.clientWidth)}px`,
+    y: `${clampArrowOffset(triggerCenterY, contentBox.clientHeight)}px`,
   };
 }
 
@@ -294,7 +311,7 @@ function calculatePosition(contentElement?: HTMLElement) {
   const clamped = clampPosition(position.x, position.y, width, height);
   resolvedSide.value = side;
   resolvedAlign.value = align;
-  syncArrowPosition(rect, clamped.x, clamped.y, width, height);
+  syncArrowPosition(rect, clamped.x, clamped.y, contentBox);
 
   style.value = {
     left: `${clamped.x}px`,
@@ -446,8 +463,10 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave">
+  <div
+    ref="wrapperRef" :class="ui.wrapper({ class: props.class })" @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+  >
     <div ref="triggerRef" :class="ui.trigger()" @click="onClickTrigger">
       <slot :open="open" />
     </div>
@@ -455,14 +474,18 @@ defineExpose({
     <Teleport :to="typeof portal === 'string' ? portal : 'body'" :disabled="!portal">
       <div v-if="open && modal" :class="ui.mask()" @click="props.dismissible && (open = false)" />
 
-      <RebornTransition :show="open" name="zoom-in" :duration="{ enter: 200, leave: 150 }"
-        :custom-class="ui.contentWrapper()" :custom-style="style" ref="contentRefComponent"
-        @before-enter="onBeforeEnter" @enter="onEnter" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+      <RebornTransition
+        ref="contentRefComponent" :show="open" name="zoom-in"
+        :duration="{ enter: 200, leave: 150 }" :custom-class="ui.contentWrapper()" :custom-style="style"
+        @before-enter="onBeforeEnter" @enter="onEnter" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave"
+      >
         <div :class="ui.content()">
           <slot name="content" />
 
-          <div v-if="props.mode === 'hover'" :class="ui.bridge()"
-            :style="{ margin: `-${props.content.sideOffset ?? 8}px` }" />
+          <div
+            v-if="props.mode === 'hover'" :class="ui.bridge()"
+            :style="{ margin: `-${props.content.sideOffset ?? 8}px` }"
+          />
 
           <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" />
         </div>

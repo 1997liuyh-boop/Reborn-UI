@@ -20,12 +20,13 @@
           @touchstart="onDragStart" />
 
         <header v-if="showHeader" :class="[ui.header(), headerClass]" :aria-level="headerAriaLevel">
+          <!-- 关闭图标在标题左侧，与标题间隔 12px（间距由 header 的 gap 提供） -->
+          <button v-if="showClose" type="button" aria-label="关闭" :class="ui.closeBtn()" @click="handleClose">
+            <Icon name="lucide:x" class="size-[20px]" />
+          </button>
           <slot name="header">
             <span :class="ui.title()" role="heading">{{ title }}</span>
           </slot>
-          <RebornButton v-if="showClose" variant="circle" @click="handleClose" :class="ui.closeBtn()" color="neutral">
-            <Icon name="lucide:x" class="w-5 h-5" />
-          </RebornButton>
         </header>
 
         <div :class="[ui.body(), bodyClass]" v-if="contentRendered">
@@ -102,7 +103,7 @@ export interface RebornPopupProps {
   title?: string;
   /** 是否显示头部（包含标题和关闭按钮） */
   showHeader?: boolean;
-  /** 是否显示遮罩层对应的圆角 */
+  /** 面板是否带圆角；抽屉规格默认无圆角，需要时显式开启 */
   round?: boolean;
   /** 遮罩层的自定义类名 */
   modalClass?: string;
@@ -160,7 +161,7 @@ const props = withDefaults(defineProps<RebornPopupProps>(), {
   size: '30%',
   title: '',
   showHeader: true,
-  round: true,
+  round: false,
   modalClass: '',
   modalStyle: '',
   customClass: '',

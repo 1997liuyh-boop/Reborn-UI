@@ -1,0 +1,6 @@
+{
+  "extends": "../../.nuxt/tsconfig.app.json",
+  "compilerOptions": { "types": ["node"], "noEmit": true },
+  "include": ["../../app/components/reborn/ui/reborn-progress/**/*.ts", "../../app/components/reborn/ui/reborn-progress/**/*.vue"],
+  "exclude": []
+}

@@ -1,0 +1,38 @@
+<!-- section 18: 分页示例三（共500项 + 页码 + 每页条数选择器展开态） (17:71769 组件142) -->
+<div style="position:absolute;left:729px;top:2393px;width:550px;height:32px;font-family:'San Francisco Text',-apple-system,'PingFang SC',sans-serif;font-size:14px;line-height:150%;">
+  <!-- 总数文字（样板文字 _placeholder） token: 文字/正文 -->
+  <div style="position:absolute;left:0px;top:0px;width:62px;height:32px;">
+    <span style="position:absolute;left:4px;top:5.5px;color:#4E5969;white-space:nowrap;">共</span>
+    <span style="position:absolute;left:18px;top:5.5px;color:#4E5969;white-space:nowrap;">500</span>
+    <span style="position:absolute;left:44px;top:5.5px;color:#4E5969;white-space:nowrap;">项</span>
+  </div>
+  <!-- 上一页（disabled 置灰 #A9AEB8，水平镜像） -->
+  <div style="position:absolute;left:70px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;"><span style="width:16px;height:16px;display:flex;justify-content:center;align-items:center;transform:scaleX(-1);">@@SVG:S18#0@@</span></div>
+  <!-- 页码（样板文字 _placeholder），选中项 token: base蓝/normal -->
+  <div style="position:absolute;left:110px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#1B6DFA;">1</div>
+  <div style="position:absolute;left:150px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#272E3B;">1</div>
+  <div style="position:absolute;left:190px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#272E3B;">1</div>
+  <div style="position:absolute;left:230px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#272E3B;">1</div>
+  <div style="position:absolute;left:270px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#272E3B;">1</div>
+  <!-- 更多省略号（矢量无 key，文本近似） -->
+  <div style="position:absolute;left:310px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#272E3B;letter-spacing:1px;">···</div>
+  <div style="position:absolute;left:350px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;color:#272E3B;">100</div>
+  <!-- 下一页（矢量去重复用 S18#0，原色 #272E3B，用 filter 加深近似） -->
+  <div style="position:absolute;left:390px;top:0px;width:32px;height:32px;display:flex;justify-content:center;align-items:center;"><span style="width:16px;height:16px;display:flex;justify-content:center;align-items:center;filter:brightness(0.4);">@@SVG:S18#0@@</span></div>
+  <!-- 基础选择器（input 输入中，展开下拉；组件母版宽 240 缩放适配到实例宽 120） -->
+  <div style="position:absolute;left:430px;top:0px;width:120px;height:32px;">
+    <div style="position:absolute;left:0px;top:0px;width:120px;height:32px;border:1px solid #1B6DFA;border-radius:6px;box-sizing:border-box;box-shadow:0 0 0 2px #EBF5FF;background:#FFFFFF;">
+      <!-- 样板文字(_placeholder) token: 文字/禁用 -->
+      <span style="position:absolute;left:12px;top:5.5px;color:#A9AEB8;white-space:nowrap;">请选择内容</span>
+      <span style="position:absolute;left:92px;top:8px;width:16px;height:16px;display:flex;justify-content:center;align-items:center;">@@SVG:S18#1@@</span><!-- 展开箭头 #86909C -->
+    </div>
+    <!-- 下拉面板 token: 下拉框阴影 -->
+    <div style="position:absolute;left:0px;top:34px;width:120px;height:173px;background:#FFFFFF;border-radius:8px;box-shadow:0px 2px 16px 0px rgba(1,27,70,0.1);">
+      <div style="position:absolute;left:4px;top:6px;width:112px;height:29px;border-radius:4px;"><span style="position:absolute;left:6px;top:4px;color:#86909C;white-space:nowrap;">下拉选项</span></div>
+      <div style="position:absolute;left:4px;top:39px;width:112px;height:29px;border-radius:4px;background:#F2F3F5;"><span style="position:absolute;left:6px;top:4px;color:#86909C;white-space:nowrap;">下拉选项</span></div><!-- hover悬停态 -->
+      <div style="position:absolute;left:4px;top:72px;width:112px;height:29px;border-radius:4px;"><span style="position:absolute;left:6px;top:4px;color:#86909C;white-space:nowrap;">下拉选项</span></div>
+      <div style="position:absolute;left:4px;top:105px;width:112px;height:29px;border-radius:4px;"><span style="position:absolute;left:6px;top:4px;color:#86909C;white-space:nowrap;">下拉选项</span></div>
+      <div style="position:absolute;left:4px;top:138px;width:112px;height:29px;border-radius:4px;"><span style="position:absolute;left:6px;top:4px;color:#86909C;white-space:nowrap;">下拉选项</span></div>
+    </div>
+  </div>
+</div>

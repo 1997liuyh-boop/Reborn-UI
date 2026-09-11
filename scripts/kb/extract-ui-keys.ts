@@ -138,10 +138,11 @@ function collectKeys(src: string, dir: string, id: string) {
   // props.ui 的本地别名：uiOverrides 是最常见的写法，另有
   //   const overrides = props.ui || {}
   //   const o = computed(() => props.ui ?? {})
+  //   const o = computed<XxxUI>(() => props.ui || {})   // computed 带类型参数
   //   const ov: any = props.ui ?? {}
   const aliases = new Set<string>(["uiOverrides"]);
   for (const m of src.matchAll(
-    /(?:const|let)\s+([A-Za-z0-9_$]+)\s*(?::[^=\n]+)?=\s*(?:computed\(\s*\(\s*\)\s*=>\s*)?props\.ui\b/g,
+    /(?:const|let)\s+([A-Za-z0-9_$]+)\s*(?::[^=\n]+)?=\s*(?:computed(?:<[^>]*>)?\s*\(\s*\(\s*\)\s*=>\s*)?props\.ui\b/g,
   )) {
     aliases.add(m[1]);
   }
@@ -151,12 +152,12 @@ function collectKeys(src: string, dir: string, id: string) {
 
   // 写法一变体：先把 props 合并成 computed 再读，如 RebornCoupon 的
   //   activeProps.value.ui?.root
-  // 这里必须限定 `.value.ui`（而非泛化的 `.ui`），否则会撞上 tabs 子组件的
-  // `context.ui.value.content(...)`——那个 `ui` 是 tv 结果，会把 value 误当键名。
+  // 这里必须限定 `.value.ui`（而非泛化的 `.ui`），否则会撞上把 tv 结果放进 context
+  // 的写法 `context.ui.value.content(...)`——那个 `ui` 是 tv 结果，会把 value 误当键名。
   for (const m of src.matchAll(/\.value\.ui\s*\??\.\s*([A-Za-z0-9_$]+)/g)) keys.add(m[1]);
 
   // 写法二：读别名的属性。别名若是 computed/ref，脚本里写 `别名.value.键`，
-  // 而模板里靠自动解包直接写 `别名.键`（如 TabsRoot.vue 的 uiOverrides.root），
+  // 而模板里靠自动解包直接写 `别名.键`（如 RebornSplitter.vue 的 uiOverrides.root），
   // 多文件复合组件两种形态会同时出现，故两趟都要跑。
   //
   // 唯一的坑是「键名叫 value」：`.value` 若写成可选量词，单独出现的 `别名.value`
@@ -229,8 +230,8 @@ export function extractUiKeys(id: string, platform: "web" | "uniapp"): UiKeysRes
     .filter((f) => consumesUi.test(f.src));
   if (files.length === 0) return empty;
 
-  // 直接读 props.ui 的才是「所有者」；只读注入值的子组件（如 TabsList、
-  // RebornDropdownItem 从 inject 里拿父组件的 ui）没有自己的 ui prop，
+  // 直接读 props.ui 的才是「所有者」；只读注入值的子组件（如 RebornDoption
+  // 从 inject 里拿父组件的 ui）没有自己的 ui prop，
   // 键位归属于唯一的所有者。
   // 全目录都没有 props.ui 时（如 RebornCoupon 先合并 props 再读 ui），
   // 退回「凡消费 ui 者即所有者」，避免整个组件被判成不支持 ui。

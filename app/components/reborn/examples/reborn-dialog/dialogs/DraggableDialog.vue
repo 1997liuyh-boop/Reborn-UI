@@ -27,7 +27,7 @@ function handleCancel() {
 
 <template>
   <RebornDialog
-    v-model:open="open"
+    v-model="open"
     :title="title || '自由拖拽'"
     :description="description || '按住标题区域即可平移位置。'"
     draggable
@@ -36,9 +36,11 @@ function handleCancel() {
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
-    <slot />
+    <template #trigger>
+      <slot />
+    </template>
 
-    <template #content>
+    <template #default>
       <div class="text-dimmed flex flex-col items-center gap-2 py-6 text-center">
         <Icon name="lucide:mouse-pointer-2" class="size-8 opacity-40" />
         <p class="text-xs">该模式下弹窗不会锁定在屏幕正中</p>

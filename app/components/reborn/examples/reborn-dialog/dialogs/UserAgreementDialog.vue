@@ -31,7 +31,7 @@ function handleCancel() {
 
 <template>
   <RebornDialog
-    v-model:open="open"
+    v-model="open"
     :title="title || '用户服务协议'"
     :description="description || '更新日期：2026年3月'"
     confirm-btn="我已阅读"
@@ -40,9 +40,11 @@ function handleCancel() {
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
-    <slot />
+    <template #trigger>
+      <slot />
+    </template>
 
-    <template #content>
+    <template #default>
       <div class="text-muted text-sm leading-relaxed whitespace-pre-wrap">
         {{ longContent }}
       </div>

@@ -1,87 +1,38 @@
 <script setup lang="ts">
-import type { ClassValue } from "clsx";
-import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
+import type { VNode } from "vue";
+import type { RouteLocationRaw } from "vue-router";
+import type {
+  ExpandType,
+  ItemType,
+  MenuColor,
+  MenuMode,
+  MenuTrigger,
+  MenuUI,
+} from "./reborn-menu.config";
+import {
+  Comment,
+  computed,
+  Fragment,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+  Text,
+  useSlots,
+  watch,
+} from "vue";
 import { cn } from "~/lib/utils";
-import theme from "./reborn-menu.config";
-
-// --- 类型定义 ---
+import theme, { MENU_INJECTION_KEY } from "./reborn-menu.config";
+// RebornMenuItems / RebornSubMenu 由 Nuxt 全局自动注册（nuxt.config 的 pathPrefix: false），
+// 这里刻意不写静态 import：三个组件互为递归引用，静态导入会形成 ESM 循环依赖。
 
 /** 菜单项标识值类型 */
 type MenuValue = string;
-/** 二级菜单展开方式：平铺展开 / 浮层展开 */
-type ExpandType = "normal" | "popup";
-/** 菜单显示模式：水平或垂直 */
-type MenuMode = "horizontal" | "vertical";
-/** 菜单触发方式：悬浮或点击 */
-type MenuTrigger = "hover" | "click";
-/** 菜单主题颜色 */
-type MenuColor = "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
-
-/**
- * 菜单组件属性接口
- */
-export interface RebornMenuProps {
-  /** 菜单模式 */
-  mode?: MenuMode;
-  /** 是否折叠菜单 */
-  collapse?: boolean;
-  /** 默认展开的子菜单索引数组 */
-  defaultOpeneds?: string[];
-  /** 是否只保持一个子菜单的展开（手风琴模式） */
-  uniqueOpened?: boolean;
-  /** 子菜单打开的触发方式 (仅水平模式或折叠时生效) */
-  menuTrigger?: MenuTrigger;
-  /** 是否使用 vue-router 的模式，启用后 index 会作为 path 进行路由跳转 */
-  router?: boolean;
-  /** 是否开启折叠过渡动画 */
-  collapseTransition?: boolean;
-  /** 二级菜单展开方式：平铺展开(normal) / 浮层展开(popup) */
-  expandType?: ExpandType;
-  /** 同级别是否互斥展开，即同级只有一个子菜单展开 */
-  expandMutex?: boolean;
-  /** 触发方式为点击时，点击菜单外部是否关闭展开的子菜单 */
-  closeOnClickOutside?: boolean;
-  /** 主题颜色 */
-  color?: MenuColor;
-  /** 菜单背景色 */
-  backgroundColor?: string;
-  /** 菜单文字颜色 */
-  textColor?: string;
-  /** 激活状态的文字颜色 */
-  activeTextColor?: string;
-  /** 自定义类名 */
-  class?: any;
-  /** UI 局部重写配置 */
-  ui?: Partial<{
-    root: ClassValue;
-    menu: ClassValue;
-    menuItem: ClassValue;
-    menuItemContent: ClassValue;
-    menuItemTitle: ClassValue;
-    menuItemIcon: ClassValue;
-    menuItemArrow: ClassValue;
-    subMenu: ClassValue;
-    subMenuPopup: ClassValue;
-    subMenuContent: ClassValue;
-    menuItemGroup: ClassValue;
-    menuItemGroupTitle: ClassValue;
-  }>;
-}
-
-// --- 状态与属性 ---
-
-/** 当前激活的菜单项路径 */
-const active = defineModel<string[]>("active", {
-  default: () => [],
-});
-
-/** 子菜单展开的导航集合，支持 v-model:expanded（等价于 .sync 修饰符） */
-const expanded = defineModel<MenuValue[]>("expanded", {
-  default: () => [],
-});
 
 const props = withDefaults(defineProps<RebornMenuProps>(), {
   mode: "vertical",
+  items: undefined,
   collapse: false,
   expandType: "popup",
   defaultOpeneds: () => [],
@@ -91,7 +42,14 @@ const props = withDefaults(defineProps<RebornMenuProps>(), {
   menuTrigger: "hover",
   router: false,
   collapseTransition: true,
+  ellipsis: false,
+  ellipsisIcon: "lucide:more-horizontal",
+  popperOffset: 8,
+  showTimeout: 300,
+  hideTimeout: 300,
+  persistent: true,
   color: "primary",
+  showActiveBackground: true,
   backgroundColor: "",
   textColor: "",
   activeTextColor: "",
@@ -110,12 +68,85 @@ const emit = defineEmits<{
   (e: "close", index: string, indexPath: string[]): void;
 }>();
 
+/** 溢出折叠触发器使用的保留标识，避免与用户的 index 冲突 */
+const ELLIPSIS_INDEX = "__reborn_menu_ellipsis__";
+
+/**
+ * 菜单组件属性接口
+ */
+export interface RebornMenuProps {
+  /** 菜单模式 */
+  mode?: MenuMode;
+  /** 菜单数据，传入后由组件驱动渲染，无需再手写子条目 */
+  items?: ItemType[];
+  /** 是否折叠菜单 */
+  collapse?: boolean;
+  /** 默认展开的子菜单索引数组 */
+  defaultOpeneds?: string[];
+  /** 是否只保持一个子菜单的展开（手风琴模式） */
+  uniqueOpened?: boolean;
+  /** 子菜单打开的触发方式 (仅水平模式或折叠时生效) */
+  menuTrigger?: MenuTrigger;
+  /** 是否使用 vue-router 的模式，启用后 index 会作为 path 进行路由跳转 */
+  router?: boolean;
+  /** 是否开启折叠过渡动画 */
+  collapseTransition?: boolean;
+  /** 水平模式下宽度不足时是否把溢出菜单项折叠进「更多」子菜单 */
+  ellipsis?: boolean;
+  /** 溢出折叠触发器的图标名称 */
+  ellipsisIcon?: string;
+  /** 浮层子菜单相对触发元素的偏移量（像素） */
+  popperOffset?: number;
+  /** 浮层子菜单的展开延时（毫秒） */
+  showTimeout?: number;
+  /** 浮层子菜单的关闭延时（毫秒） */
+  hideTimeout?: number;
+  /** 浮层关闭后是否保留其 DOM，为 false 时关闭即销毁 */
+  persistent?: boolean;
+  /** 二级菜单展开方式：平铺展开(normal) / 浮层展开(popup) */
+  expandType?: ExpandType;
+  /** 同级别是否互斥展开，即同级只有一个子菜单展开 */
+  expandMutex?: boolean;
+  /** 触发方式为点击时，点击菜单外部是否关闭展开的子菜单 */
+  closeOnClickOutside?: boolean;
+  /** 主题颜色 */
+  color?: MenuColor;
+  /** 选中项是否展示背景块，关闭后仅保留文字高亮 */
+  showActiveBackground?: boolean;
+  /** 菜单背景色 */
+  backgroundColor?: string;
+  /** 菜单文字颜色 */
+  textColor?: string;
+  /** 激活状态的文字颜色 */
+  activeTextColor?: string;
+  /** 自定义类名 */
+  class?: any;
+  /** UI 局部重写配置 */
+  ui?: MenuUI;
+}
+
+// --- 状态与属性 ---
+
+/**
+ * 当前选中项的完整路径（含各级父菜单标识）。
+ * 注意：此处存的是「路径」而非单个 key，祖先高亮依赖该语义。
+ */
+const selectedKeys = defineModel<string[]>("selectedKeys", {
+  default: () => [],
+});
+
+/** 当前展开的子菜单标识集合 */
+const openKeys = defineModel<MenuValue[]>("openKeys", {
+  default: () => [],
+});
+
 const b = theme;
+const slots = useSlots();
 const appRouter = useRouter();
 
-/** 当前展开的子菜单索引列表（优先使用 expanded 模型值，否则使用 defaultOpeneds） */
+/** 当前展开的子菜单索引列表（优先使用 openKeys 模型值，否则使用 defaultOpeneds） */
 const openedMenus = ref<MenuValue[]>(
-  expanded.value.length > 0 ? [...expanded.value] : [...props.defaultOpeneds]
+  openKeys.value.length > 0 ? [...openKeys.value] : [...props.defaultOpeneds],
 );
 /** 记录已展开子菜单的完整路径关系：记录 key 为菜单 index，value 为路径数组 */
 const openedMenuPaths = ref<Record<string, string[]>>({});
@@ -160,12 +191,46 @@ function isPathPrefix(parentPath: string[], targetPath: string[]) {
   return parentPath.every((segment, index) => targetPath[index] === segment);
 }
 
+/** 收起全部子菜单并同步模型 */
+function closeAllMenus() {
+  openedMenus.value = [];
+  openedMenuPaths.value = {};
+  openKeys.value = [];
+}
+
+// --- 全局兜底关闭 ---
+
+/**
+ * ⚠️ 根因：旧实现的子组件在 popup 边界离开时调用 scheduleCloseAll/cancelCloseAll，
+ * 但根组件的 provide 里从未提供这两个方法，注释描述的「全局兜底关闭」是一段死逻辑，
+ * 鼠标从多级浮层快速移出时会残留展开状态。
+ * ✅ 修复：在根组件实现并下发，延时取 hideTimeout。
+ */
+let closeAllTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** 取消全局兜底关闭 */
+function cancelCloseAll() {
+  if (closeAllTimer) {
+    clearTimeout(closeAllTimer);
+    closeAllTimer = null;
+  }
+}
+
+/** 安排全局兜底关闭：鼠标真正离开整个菜单体系后收起所有层级 */
+function scheduleCloseAll() {
+  cancelCloseAll();
+  closeAllTimer = setTimeout(() => {
+    closeAllMenus();
+    closeAllTimer = null;
+  }, props.hideTimeout);
+}
+
 // --- 样式计算 ---
 
 /** 获取用户传入的 UI 覆盖配置 */
-const overrides = computed(() => props.ui || {});
+const overrides = computed<MenuUI>(() => props.ui || {});
 
-/** 
+/**
  * 根据状态计算各子组件的样式生成函数
  */
 const ui = computed(() => {
@@ -173,14 +238,14 @@ const ui = computed(() => {
     mode: props.mode,
     collapse: props.collapse,
     color: props.color,
+    showActiveBackground: props.showActiveBackground,
     expandType: props.expandType,
+    collapseTransition: props.collapseTransition,
   });
 
   return {
-    root: (opts?: { class?: any }) =>
-      styles.root({ class: cn(opts?.class, overrides.value.root) }),
-    menu: (opts?: { class?: any }) =>
-      styles.menu({ class: cn(opts?.class, overrides.value.menu) }),
+    root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, overrides.value.root) }),
+    menu: (opts?: { class?: any }) => styles.menu({ class: cn(opts?.class, overrides.value.menu) }),
     menuItem: (opts?: {
       class?: any;
       active?: boolean;
@@ -201,6 +266,8 @@ const ui = computed(() => {
       styles.menuItemTitle({ class: cn(opts?.class, overrides.value.menuItemTitle) }),
     menuItemIcon: (opts?: { class?: any }) =>
       styles.menuItemIcon({ class: cn(opts?.class, overrides.value.menuItemIcon) }),
+    menuItemExtra: (opts?: { class?: any }) =>
+      styles.menuItemExtra({ class: cn(opts?.class, overrides.value.menuItemExtra) }),
     menuItemArrow: (opts?: { class?: any; opened?: boolean }) =>
       styles.menuItemArrow({
         opened: opts?.opened,
@@ -216,6 +283,11 @@ const ui = computed(() => {
       styles.menuItemGroup({ class: cn(opts?.class, overrides.value.menuItemGroup) }),
     menuItemGroupTitle: (opts?: { class?: any }) =>
       styles.menuItemGroupTitle({ class: cn(opts?.class, overrides.value.menuItemGroupTitle) }),
+    menuDivider: (opts?: { class?: any; dashed?: boolean }) =>
+      styles.menuDivider({
+        dashed: opts?.dashed,
+        class: cn(opts?.class, overrides.value.menuDivider),
+      }),
   };
 });
 
@@ -225,25 +297,35 @@ const menuStyle = computed(() => ({
   color: props.textColor,
 }));
 
+/**
+ * 折叠态的根容器宽度。
+ * ⚠️ 根因：折叠宽度写在主题变体里会被使用者的 class 压掉——tv 把 props.class 拼在最后，
+ * twMerge 后者胜，demo 里的 `w-full max-w-xs` 会直接吃掉 w-16，
+ * 结果只有内层 ul 缩到 64px，外层白底面板仍是原宽，看着像没折叠。
+ * ✅ 修复：折叠宽度改用内联样式下发，优先级高于任何 class。
+ */
+const rootStyle = computed(() => (props.collapse ? { width: "4rem" } : {}));
+
 // --- 核心交互逻辑 ---
 
 /**
  * 选中菜单项的回调
  * @param index 选中项的标识
  * @param indexPath 选中项的路径
+ * @param route 显式指定的跳转地址，缺省时回退使用 index
  */
-function handleSelect(index: string, indexPath: string[]) {
-  active.value = [...indexPath];
+function handleSelect(index: string, indexPath: string[], route?: RouteLocationRaw) {
+  selectedKeys.value = [...indexPath];
   clearCloseTimers();
+  cancelCloseAll();
   // 选中某项时，收起其他子菜单
-  openedMenus.value = [];
-  openedMenuPaths.value = {};
-  expanded.value = [];
+  closeAllMenus();
   emit("select", index, indexPath);
 
   // 如果开启了 router 模式，则进行路由跳转
-  if (props.router && index) {
-    void appRouter.push(index);
+  const target = route ?? index;
+  if (props.router && target) {
+    void appRouter.push(target);
   }
 }
 
@@ -283,8 +365,8 @@ function handleOpen(index: string, indexPath: string[]) {
     openedMenus.value = Array.from(new Set([...openedMenus.value, ...indexPath]));
   }
 
-  // 同步到 expanded 模型
-  expanded.value = [...openedMenus.value];
+  // 同步到 openKeys 模型
+  openKeys.value = [...openedMenus.value];
 
   emit("open", index, indexPath);
 }
@@ -311,8 +393,8 @@ function handleClose(index: string, indexPath: string[]) {
     }
   });
 
-  // 同步到 expanded 模型
-  expanded.value = [...openedMenus.value];
+  // 同步到 openKeys 模型
+  openKeys.value = [...openedMenus.value];
 
   emit("close", index, indexPath);
 }
@@ -330,20 +412,191 @@ function toggleSubMenu(index: string, indexPath: string[]) {
   }
 }
 
-/** 监听外部 expanded 模型变化，同步展开状态 */
-watch(expanded, (val) => {
-  openedMenus.value = [...val];
-  // 重建路径映射
-  const newPaths: Record<string, string[]> = {};
-  for (const idx of val) {
-    if (openedMenuPaths.value[idx]) {
-      newPaths[idx] = [...openedMenuPaths.value[idx]];
+/** 监听外部 openKeys 模型变化，同步展开状态 */
+watch(
+  openKeys,
+  (val) => {
+    openedMenus.value = [...val];
+    // 重建路径映射
+    const newPaths: Record<string, string[]> = {};
+    for (const idx of val) {
+      if (openedMenuPaths.value[idx]) {
+        newPaths[idx] = [...openedMenuPaths.value[idx]];
+      } else {
+        newPaths[idx] = [idx];
+      }
+    }
+    openedMenuPaths.value = newPaths;
+  },
+  { deep: true },
+);
+
+// --- 水平模式溢出折叠（ellipsis） ---
+
+/** 菜单列表元素引用，溢出测量的基准容器 */
+const menuRef = ref<HTMLElement | null>(null);
+/**
+ * 溢出切分下标：-1 表示不折叠（全量展示）。
+ * 大于等于 0 时，下标之后的条目移入「更多」子菜单。
+ */
+const sliceIndex = ref(-1);
+/** 缓存「更多」触发器的实测宽度，重置测量时它已从 DOM 移除，需用上次的值预留空间 */
+const ellipsisWidth = ref(56);
+
+/** 溢出折叠是否生效：仅水平、非折叠态下开启 */
+const ellipsisEnabled = computed(
+  () => props.ellipsis && props.mode === "horizontal" && !props.collapse,
+);
+
+/**
+ * 把插槽返回的节点展平：模板里的 v-for / v-if 会产出 Fragment，
+ * 不展平就无法按「菜单项」为粒度切分。同时剔除注释与空白文本节点。
+ */
+function flattenNodes(nodes: VNode[]): VNode[] {
+  const result: VNode[] = [];
+  for (const node of nodes) {
+    if (node.type === Comment) continue;
+    if (node.type === Text && !String(node.children ?? "").trim()) continue;
+    if (node.type === Fragment && Array.isArray(node.children)) {
+      result.push(...flattenNodes(node.children as VNode[]));
     } else {
-      newPaths[idx] = [idx];
+      result.push(node);
     }
   }
-  openedMenuPaths.value = newPaths;
-}, { deep: true });
+  return result;
+}
+
+/** 取插槽里的顶层菜单节点（每次调用重新求值，避免复用旧 vnode） */
+function slotNodes(): VNode[] {
+  return flattenNodes(slots.default?.() ?? []);
+}
+
+/** 插槽模式：留在菜单栏内的节点 */
+function VisibleSlotNodes() {
+  const nodes = slotNodes();
+  return sliceIndex.value < 0 ? nodes : nodes.slice(0, sliceIndex.value);
+}
+
+/** 插槽模式：被折叠进「更多」的节点 */
+function OverflowSlotNodes() {
+  const nodes = slotNodes();
+  return sliceIndex.value < 0 ? [] : nodes.slice(sliceIndex.value);
+}
+
+/** items 模式：留在菜单栏内的数据 */
+const visibleItems = computed(() =>
+  sliceIndex.value < 0 ? (props.items ?? []) : (props.items ?? []).slice(0, sliceIndex.value),
+);
+
+/** items 模式：被折叠进「更多」的数据 */
+const overflowItems = computed(() =>
+  sliceIndex.value < 0 ? [] : (props.items ?? []).slice(sliceIndex.value),
+);
+
+/** 是否需要渲染「更多」触发器 */
+const showEllipsis = computed(() => ellipsisEnabled.value && sliceIndex.value >= 0);
+
+/** 测量是否正在进行，用于阻断重入 */
+let measuring = false;
+/** 测量期间收到的新一轮请求，结束后补算一次 */
+let measurePending = false;
+
+/**
+ * 重新计算溢出切分点。
+ *
+ * ⚠️ 根因：折叠后被隐藏的条目已从 DOM 移除，直接在折叠态下测量拿不到真实总宽，
+ * 会导致窗口变宽后无法还原（折叠点单调不可逆）。
+ * ✅ 修复：采用「重置 → 测量 → 应用」三拍，每次先全量渲染再量。
+ *
+ * 「重置」这一拍会改动 DOM，可能反过来惊动 ResizeObserver，
+ * 因此用 measuring 阻断重入、用 measurePending 保证期间的请求不丢失。
+ */
+async function calcEllipsis(): Promise<void> {
+  if (measuring) {
+    measurePending = true;
+    return;
+  }
+  measuring = true;
+
+  try {
+    await runEllipsisMeasure();
+  } finally {
+    measuring = false;
+  }
+
+  if (measurePending) {
+    measurePending = false;
+    await calcEllipsis();
+  }
+}
+
+/** 单轮「重置 → 测量 → 应用」，仅供 calcEllipsis 调用 */
+async function runEllipsisMeasure() {
+  if (!ellipsisEnabled.value) {
+    sliceIndex.value = -1;
+    return;
+  }
+
+  // 第一拍：重置为全量渲染
+  if (sliceIndex.value !== -1) {
+    sliceIndex.value = -1;
+    await nextTick();
+  }
+
+  const menuEl = menuRef.value;
+  if (!menuEl) return;
+
+  // 第二拍：在全量状态下测量
+  const children = Array.from(menuEl.children) as HTMLElement[];
+  if (children.length === 0) return;
+
+  const menuStyles = window.getComputedStyle(menuEl);
+  const paddingRight = Number.parseFloat(menuStyles.paddingRight) || 0;
+  // clientWidth 含内边距，减去右侧内边距得到内容区可用右边界
+  const available = menuEl.clientWidth - paddingRight;
+
+  // 未溢出则保持全量展示
+  if (menuEl.scrollWidth <= menuEl.clientWidth) {
+    sliceIndex.value = -1;
+    return;
+  }
+
+  // 子元素与 ul 共享同一个 offsetParent（根容器为 relative），换算成相对 ul 的右边界
+  const originLeft = menuEl.offsetLeft;
+  const limit = available - ellipsisWidth.value;
+
+  let nextSlice = -1;
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i]!;
+    const right = child.offsetLeft + child.offsetWidth - originLeft;
+    if (right > limit) {
+      nextSlice = i;
+      break;
+    }
+  }
+
+  // 至少保留一项，避免容器极窄时整条菜单只剩「更多」
+  sliceIndex.value = nextSlice === 0 ? 1 : nextSlice;
+
+  // 第三拍：应用后回读「更多」触发器的真实宽度，供下次测量预留
+  if (sliceIndex.value >= 0) {
+    await nextTick();
+    const last = menuEl.lastElementChild as HTMLElement | null;
+    if (last?.dataset.rebornMenuEllipsis === "true") {
+      ellipsisWidth.value = last.offsetWidth;
+    }
+  }
+}
+
+let resizeObserver: ResizeObserver | null = null;
+
+watch(
+  () => [ellipsisEnabled.value, props.items, props.mode] as const,
+  () => {
+    void calcEllipsis();
+  },
+  { deep: true },
+);
 
 // --- 点击外部关闭 ---
 
@@ -369,17 +622,27 @@ function handleClickOutside(event: MouseEvent) {
   }
 
   // 关闭所有展开的子菜单
-  openedMenus.value = [];
-  openedMenuPaths.value = {};
-  expanded.value = [];
+  closeAllMenus();
 }
 
 onMounted(() => {
   document.addEventListener("click", handleClickOutside, true);
+
+  if (menuRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      void calcEllipsis();
+    });
+    resizeObserver.observe(menuRef.value);
+  }
+  void calcEllipsis();
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside, true);
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+  clearCloseTimers();
+  cancelCloseAll();
 });
 
 // --- 依赖注入与方法暴露 ---
@@ -387,20 +650,29 @@ onBeforeUnmount(() => {
 /**
  * 向下提供给子组件的上下文和方法
  */
-provide("reborn-menu", {
-  active,
+provide(MENU_INJECTION_KEY, {
+  selectedKeys,
   openedMenus,
   parentIndexPath: computed(() => [] as string[]),
   mode: computed(() => props.mode),
   collapse: computed(() => props.collapse),
   menuTrigger: computed(() => props.menuTrigger),
   color: computed(() => props.color),
+  showActiveBackground: computed(() => props.showActiveBackground),
+  /** 根级条目不缩进，平铺子菜单逐层 +1（见 RebornSubMenu 的再次下发） */
+  inlineDepth: computed(() => 0),
   backgroundColor: computed(() => props.backgroundColor),
   textColor: computed(() => props.textColor),
   activeTextColor: computed(() => props.activeTextColor),
   expandType: computed(() => props.expandType),
   expandMutex: computed(() => props.expandMutex),
+  persistent: computed(() => props.persistent),
+  popperOffset: computed(() => props.popperOffset),
+  showTimeout: computed(() => props.showTimeout),
+  hideTimeout: computed(() => props.hideTimeout),
+  collapseTransition: computed(() => props.collapseTransition),
   ui,
+  uiOverrides: overrides,
   handleSelect,
   handleOpen,
   handleClose,
@@ -409,8 +681,10 @@ provide("reborn-menu", {
   registerCloseTimer,
   registerPopup,
   unregisterPopup,
+  scheduleCloseAll,
+  cancelCloseAll,
   /** 通知父级需要重新计算高度（根级无需操作） */
-  notifyResize: () => { },
+  notifyResize: () => {},
 });
 
 /**
@@ -425,35 +699,59 @@ defineExpose({
   close: (index: string) => {
     handleClose(index, [index]);
   },
-  /** 更新当前激活的菜单路径 */
-  updateActive: (indexPath: string[]) => {
-    active.value = [...indexPath];
+  /** 主动触发一次溢出折叠测量 */
+  handleResize: () => calcEllipsis(),
+  /** 更新当前选中的菜单路径 */
+  updateActiveIndex: (indexPath: string[]) => {
+    selectedKeys.value = [...indexPath];
   },
 });
 </script>
 
 <template>
-  <div ref="rootRef" :class="ui.root({ class: props.class })">
-    <ul :class="ui.menu()" :style="menuStyle" role="menu">
-      <slot />
+  <div
+    ref="rootRef"
+    :class="ui.root({ class: props.class })"
+    :style="rootStyle"
+  >
+    <ul
+      ref="menuRef"
+      :class="ui.menu()"
+      :style="menuStyle"
+      role="menu"
+    >
+      <!-- items 模式：条目由组件递归渲染 -->
+      <RebornMenuItems
+        v-if="props.items?.length"
+        :items="visibleItems"
+      />
+      <!-- 插槽模式：ellipsis 开启时按测量结果切分 vnode -->
+      <component
+        :is="VisibleSlotNodes"
+        v-else
+      />
+
+      <!-- 溢出折叠触发器 -->
+      <RebornSubMenu
+        v-if="showEllipsis"
+        :index="ELLIPSIS_INDEX"
+        data-reborn-menu-ellipsis="true"
+      >
+        <template #title>
+          <Icon
+            :name="props.ellipsisIcon"
+            class="size-4"
+          />
+        </template>
+        <RebornMenuItems
+          v-if="props.items?.length"
+          :items="overflowItems"
+        />
+        <component
+          :is="OverflowSlotNodes"
+          v-else
+        />
+      </RebornSubMenu>
     </ul>
   </div>
 </template>
-
-<style>
-@keyframes rebornMenuShimmer {
-  0% {
-    background-position: 200% center;
-  }
-  100% {
-    background-position: -200% center;
-  }
-}
-.reborn-menu-shimmer-text {
-  background-size: 200% auto !important;
-  animation: rebornMenuShimmer 2.5s linear infinite;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-}
-</style>

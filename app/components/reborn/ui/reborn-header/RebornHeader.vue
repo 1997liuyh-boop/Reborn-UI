@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
 import { useRoute } from '#imports';
-import { tv } from 'tailwind-variants';
 import { createReusableTemplate } from '@vueuse/core';
+import { computed, watch } from 'vue';
+import { tv } from '~/lib/tv';
+import { cn } from '~/lib/utils';
 import RebornPopup from '../reborn-popup/RebornPopup.vue';
 import theme from './reborn-header.config';
-import { cn } from '~/lib/utils';
 
 const b = tv(theme);
 

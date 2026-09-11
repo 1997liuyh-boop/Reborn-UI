@@ -13,8 +13,11 @@
   `description` 为空的成员即为缺口；whenToUse/whenNotToUse/pitfalls 是人工内容可改写进文档
 - 人工内容层：`knowledge/overrides/<id>.json`（只在需要修正手写区时编辑）
 - 文档：`content/2.components/<分类目录>/<id>.md`
-- 文档结构样板：`content/2.components/layout/reborn-waterfall.md`（完整结构：frontmatter →
-  ComponentViewer → 简介 → 用法分节 → API → 自定义样式 → 注意事项）
+- **文档写作规范正文（唯一真源）**：`docs/authoring/component-doc.md` —— 章节骨架、各节写法、
+  文风与反例都在这里，动笔前通读一遍
+- **唯一参考范本**：`content/2.components/button/reborn-button.md` —— 全库结构最完整的一份，
+  拿不准某节该写成什么样就照它抄结构（注意：旧版本手册曾把 `reborn-waterfall.md` 列为样板，
+  那份缺 `简介` / `何时使用` / `两端差异对照`，已作废）
 - 历史素材（如主线提供）：Wave1 挖掘的人写描述素材库 legacy-descriptions.json，
   可由 `git show 52c264b:knowledge/legacy-descriptions.json` 提取；语句质量甄别后可直接采用
 
@@ -33,20 +36,22 @@
 
 ## 2. 文档充实（content/2.components/.../<id>.md）
 
-文档偏薄（无简介、只有一个 ComponentViewer + API 表）的组件，按 waterfall 样板补齐：
+文档偏薄（无简介、只有一个 ComponentViewer + API 表）的组件，按规范正文补齐。
 
-1. frontmatter `description` 若空泛，改写为一句准确定位（≤60 字，Agent 选型第一依据）
-2. `## 简介`：组件定位 + 适用/不适用场景（改写知识档案 whenToUse/whenNotToUse，
-   不适用场景给出替代组件名）
-3. `## 用法` 下 2-4 个 `###` 功能分节（简单组件 1-2 个）：节首一句话说明（关键 prop 用反引号），
-   配 ```vue 静态代码块（5-15 行，可运行的最小示例）；当前架构**没有 demo-block**，
-   不要创建独立示例文件，示例直接写在文档代码块里
-4. 功能点选择依据：有 size/color/variant 枚举必做对应节；有 v-model 做交互节；有插槽做插槽节
-5. `## 注意事项`：改写知识档案 pitfalls + 源码里发现的真实坑点；uniapp 示例尺寸用 rpx
-6. **API 表格约束（CI 强校验）**：`## API` 下 `### Props/### Emits/### Slots/### Expose`
-   标准标题内的表格行名必须与源码成员名一致（写了源码没有的名字 CI 会挂）；
-   ui 键位表 / 类型字段表放在非 API 标题下（如「### 自定义样式（ui）」）
-7. API 表格中缺描述的行顺手补上（与源码注释同语义）
+**结构、各节写法、文风要求一律以 `docs/authoring/component-doc.md` 为准**，本手册不再重复描述
+（此前重复的一份已与范本脱节，是批次产出参差的直接原因）。只补充批次场景下的额外约束：
+
+1. **素材来源**：`## 简介` / `### 何时使用` / `### 何时不使用` / `## 注意事项` 的内容改写自知识
+   档案的 whenToUse / whenNotToUse / pitfalls，再补上你在源码里发现的真实坑点；不要凭想象编造。
+   frontmatter `description` 若空泛，一并改写为一句准确定位 —— 它同时是知识库 `description`
+   的真源（`kb:build` 直接取这一句），规则见 `knowledge/README.md`「描述规范」。
+2. **分节数量按组件复杂度收敛**：`## 用法` 下 2-4 个 `###` 节，简单组件 1-2 个即可；选择依据是
+   有 size/color/variant 枚举必做对应节，有 v-model 做交互节，有插槽做插槽节。
+3. **示例直接内联**：当前架构**没有 demo-block**，批次代理不要新建独立示例文件，示例写在文档的
+   ```vue 代码块里（5-15 行，可运行的最小示例）。
+4. **API 表格中缺描述的行顺手补上**，与你在第 1 步给源码写的注释同语义。
+5. **不确定就少写**：宁可缺一节并在报告里注明原因，也不要写源码里不存在的 prop / 事件 / 插槽
+   ——CI 会挂（规范正文「API 的 CI 强校验」一节有完整规则）。
 
 ## 3. 手写区修正（仅必要时）
 
@@ -56,6 +61,9 @@
 ## 验收自查（每组件）
 
 - [ ] 知识档案缺描述成员清单逐条对照：源码已补注释（或报告中注明无法补的原因）
-- [ ] 文档有简介与至少 2 个用法节（简单组件 1 个），示例代码语法正确
-- [ ] API 表格行名未新增源码不存在的成员
+- [ ] 章节序列与 `docs/authoring/component-doc.md` 的骨架一致：`## 简介` / `### 何时使用` /
+      `### 何时不使用` 都在位，`## 用法` 有至少 2 个节（简单组件 1 个），示例代码语法正确
+- [ ] `### 何时不使用` 的每一条都给出了替代组件 id
+- [ ] `## 注意事项` 每条都是「粗体结论句 + 机制 + 后果」，不是空泛提醒
+- [ ] API 表格行名未新增源码不存在的成员；ui 键位表 / CSS 变量表放在非 API 标题下
 - [ ] 未改动 knowledge/components/、packages/*/registry/ 下任何文件

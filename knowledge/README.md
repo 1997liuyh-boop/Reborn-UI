@@ -27,6 +27,13 @@ pnpm kb:check              # 校验：schema / 集合一致性 / overrides 悬�
 
 ## 描述规范（Agent 友好）
 
+本节与组件文档规范（`docs/authoring/component-doc.md`）是**同一条规则**，作用在同一句话上：
+`description` 的真源是文档 frontmatter 的 `description`（`kb:build` 直接取它，见
+`scripts/kb/merge.ts`），所以按规范写好文档那一句，知识库这一句就自动到位。
+
+唯一会分叉的情况是 `overrides/<id>.json` 显式写了 `description` —— 它会覆盖 frontmatter 那句，
+而文档站仍显示 frontmatter 原句。要么两处措辞保持一致，要么干脆不在 overrides 里写这个字段。
+
 `description` 是 Agent 选型的第一依据，必须满足：
 
 1. **一句话，≤60 字**，句式为「用于…的…组件」或等价的功能定位句。

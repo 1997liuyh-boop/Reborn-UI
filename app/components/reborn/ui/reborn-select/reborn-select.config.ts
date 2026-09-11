@@ -6,7 +6,7 @@ const colors = ["primary", "secondary", "success", "info", "warning", "error", "
 /** 形态变体：描边 / 填充 / 无边框 / 下划线（与 RebornInput、RebornInputNumber 同一套形态语言） */
 const variants = ["outlined", "filled", "borderless", "underlined"] as const;
 
-export { sizes as selectSizes, colors as selectColors, variants as selectVariants };
+export { colors as selectColors, sizes as selectSizes, variants as selectVariants };
 
 /**
  * 触发器盒子可覆盖的样式键。
@@ -280,7 +280,8 @@ export default {
         },
         disabled: {
             true: {
-                trigger: "pointer-events-none cursor-not-allowed border-gray-4 bg-gray-2",
+                // 禁用时保留触发器命中以显示禁止光标，仅屏蔽子元素的鼠标交互。
+                trigger: "cursor-not-allowed border-gray-4 bg-gray-2 [&_*]:pointer-events-none",
                 triggerText: "text-gray-5",
                 arrow: "text-gray-5",
                 tag: "text-gray-5",

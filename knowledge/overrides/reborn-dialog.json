@@ -1,10 +1,11 @@
 {
-  "description": "用于模态确认与内容展示的对话框组件，支持触发器/受控、拖拽与全屏，仅 web 端。",
+  "description": "用于模态确认与内容展示的对话框组件，属性对齐 Element Plus Dialog，附 Modal 命令式确认框（info/success/warning/error/confirm + destroyAll），仅 web 端。",
   "whenToUse": [
     "需要确认/取消按钮的模态操作确认（confirm/cancel 事件）。",
-    "把触发按钮放默认插槽、点击即开的免受控弹窗用法。",
+    "免模板占位的命令式确认框：Modal.info/success/warning/error/confirm(config)，onBeforeOk 支持异步 done 关闭、onOk/onCancel 支持 Promise 门控。",
+    "把触发按钮放 trigger 插槽、点击即开的免受控弹窗用法。",
     "关闭前需要异步拦截（beforeClose 调用 done() 才关闭）的场景。",
-    "需要可拖拽（draggable）或全屏（fullscreen）展示的弹窗。"
+    "需要可拖拽（draggable，配 overflow 可拖出屏幕）或全屏（fullscreen）展示的弹窗。"
   ],
   "whenNotToUse": [
     "uniapp 端不可用（仅 web），双端弹层改用 reborn-popup。",
@@ -12,9 +13,15 @@
   ],
   "pitfalls": [
     "仅 web 端可用。",
-    "默认插槽是触发器（点击打开），正文必须放 content 插槽，勿混淆。",
-    "点击确认按钮触发 confirm 事件但默认不自动关闭，取消按钮默认会关闭。",
-    "draggable 在 fullscreen 模式下无效；lockScroll 默认 true 打开时锁定页面滚动。",
-    "支持受控（open + update:open）与非受控两种模式，也可用暴露的 open/close 方法。"
+    "显隐为 v-model（modelValue），旧的 v-model:open 已废弃；未绑定时组件内部自管理。",
+    "正文放 default 插槽，触发器放 trigger 具名插槽（与 Element Plus 的 default=正文对齐），勿混淆。",
+    "描述文字参数为 describe（旧名 description 兼容、describe 优先），与标题间隔 8px；面板统一 py-[20px] px-[24px]、header/body/footer 之间 gap-[20px]，header/footer 无分隔线，footer 按钮靠右（取消 neutral+outlined、确认 filled，均 size=md、border-style=solid）。",
+    "默认按 top（15vh）顶部落位，需要垂直居中要开 align-center；center 只管 header/footer 内容居中。",
+    "遮罩关闭/ESC 分别由 close-on-click-modal、close-on-press-escape 控制；modal-penetrable 需 modal=false 才生效。",
+    "点击确认按钮触发 confirm 事件但默认不自动关闭，取消按钮默认会关闭；before-close 拦截全部关闭入口。",
+    "destroy-on-close 默认 false：首开后内容 DOM 常驻复用，需要每次重置内部状态就开它。",
+    "Modal.method() 的遮罩/ESC/关闭按钮统一走 onBeforeCancel/onCancel 门控；onLoading 默认开启，异步期间按钮 loading；返回 { close, destroy }，Modal.destroyAll() 批量销毁（跳过动画）。",
+    "draggable 在 fullscreen 模式下无效，默认拖拽限制在可视区内（overflow 放开）；lockScroll 默认 true 打开时锁定页面滚动。",
+    "事件名对齐 Element Plus：before-open/opened/before-close/closed/open-auto-focus/close-auto-focus；expose 有 open/close/handleClose/resetPosition。"
   ]
 }

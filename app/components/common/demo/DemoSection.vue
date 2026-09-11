@@ -10,6 +10,7 @@
  *
  * 源码不需要手写：由 ComponentTabs 注入的 demo 源文件文本按 title 抽取
  * （见 utils/extractDemoSections），所以标题必须是字面量且同文件内唯一；
+ * 展示的是补全后的完整 SFC——模板片段 + 它依赖的 <script setup>（见 utils/demoSectionSfc），
  * 抽不到源码时自动隐藏「展开代码 / 复制 / Playground」，演示照常。
  *
  * 完整规范见 ./demo.config.ts 顶部注释与文档页 /getting-started/demo-guidelines。
@@ -17,7 +18,7 @@
 import RebornCollapse from '~/components/reborn/ui/reborn-collapse/RebornCollapse.vue'
 import { tv } from '~/lib/tv'
 import { sectionConfig } from './demo.config'
-import { demoContextKey } from './types'
+import { DEMO_SCOPE_ATTR, demoContextKey } from './types'
 
 interface Props {
     /** 小节标题（必填），同时作为从 demo 源文件中抽取本段代码的键 */
@@ -45,15 +46,16 @@ const ui = computed(() => b({ divider: props.divider }))
 
 const ctx = inject(demoContextKey, undefined)
 
-/** 优先用手写 code，其次按标题从 demo 源文件中抽取 */
-const source = computed(() => props.code?.trim() || ctx?.sources.value[props.title]?.trim() || '')
+/** 模板片段：只用于判断这一段有没有抽到代码 */
+const templateSource = computed(() => props.code?.trim() || ctx?.sources.value[props.title]?.trim() || '')
 
 /**
- * Playground 用的可运行版本：补全了 script 依赖与 <template> 包裹的完整 SFC。
- * 手写 code 视为作者自洽的片段，直接沿用；抽不到可运行版本时退回展示源码。
+ * 展示 / 复制 / 询问 AI / Playground 统一用的完整 SFC：
+ * 模板片段 + 它依赖的 <script setup>（见 utils/demoSectionSfc）。
+ * 手写 code 视为作者自洽的片段，直接沿用；补全失败时退回模板片段。
  */
-const runnableSource = computed(() =>
-    props.code?.trim() || ctx?.runnableSources?.value[props.title]?.trim() || source.value,
+const source = computed(() =>
+    props.code?.trim() || ctx?.runnableSources?.value[props.title]?.trim() || templateSource.value,
 )
 
 /** 代码块头部标题：`<demo 文件名> · <分组标题>`，让读者知道这段出自哪里 */
@@ -66,6 +68,25 @@ const previewPath = computed(() => (ctx?.demoName ? `/preview/${ctx.demoName}` :
 const askSubject = computed(() =>
     ctx?.componentId ? `组件 \`${ctx.componentId}\` 的「${props.title}」` : `「${props.title}」`,
 )
+
+// ---- Theme slots ----
+/**
+ * 主题 slot 面板跟着示例走：每张卡片各自开关、各自作用域，
+ * 高亮与计数只针对本示例渲染出来的节点，不会串到同页其它示例上。
+ */
+const themeGroups = computed(() => ctx?.themeGroups?.value ?? [])
+
+/** 本示例的 Theme slots 面板是否展开 */
+const themeOpen = ref(false)
+
+/** 示例本体容器：面板以它为主作用域查找 slot 对应的真实节点 */
+const bodyEl = ref<HTMLElement | null>(null)
+
+/**
+ * 给示例本体打上作用域标记（见 DEMO_SCOPE_ATTR）。
+ * 面板据此把「本卡片内的节点」与「Teleport 到 body 的弹层节点」分开处理。
+ */
+const scopeAttrs = computed(() => ({ [DEMO_SCOPE_ATTR]: props.title || 'demo' }))
 </script>
 
 <template>
@@ -82,14 +103,21 @@ const askSubject = computed(() =>
       </div>
 
       <DemoActions
-        v-model:open="open" :code="source" :playground-code="runnableSource"
+        v-model:open="open" v-model:theme-open="themeOpen" :code="source"
         :preview-path="previewPath" :label="title" :ask-subject="askSubject"
+        :has-theme-slots="themeGroups.length > 0"
       />
     </header>
 
-    <!-- 示例本体：常驻 -->
-    <div :class="ui.body()">
-      <slot />
+    <!-- 示例本体：常驻；展开 Theme slots 后与面板分列左右（窄屏改为上下） -->
+    <div :class="ui.bodyRow()">
+      <div ref="bodyEl" v-bind="scopeAttrs" :class="ui.body()">
+        <slot />
+      </div>
+
+      <div v-if="themeOpen && themeGroups.length" :class="ui.themePanel()">
+        <ThemeSlotsPanel v-model:open="themeOpen" :groups="themeGroups" :scope="bodyEl" />
+      </div>
     </div>
 
     <!-- 源码：在示例下方折叠展开（reborn-collapse 的 grid 0fr↔1fr 高度动画） -->

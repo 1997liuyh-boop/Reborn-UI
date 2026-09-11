@@ -1,5 +1,5 @@
 ---
-title: Form
+title: Form 表单
 description: 用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。
 category: 表单与输入
 badge: New
@@ -49,11 +49,26 @@ const rules = z.object({
 </script>
 
 <template>
-  <RebornForm :model-value="form" :rules="rules" label-width="160rpx">
-    <RebornFormItem prop="username" label="用户名" required>
-      <RebornInput v-model="form.username" placeholder="请输入用户名" />
+  <RebornForm
+    :model-value="form"
+    :rules="rules"
+    label-width="160rpx"
+  >
+    <RebornFormItem
+      prop="username"
+      label="用户名"
+      required
+    >
+      <RebornInput
+        v-model="form.username"
+        placeholder="请输入用户名"
+      />
     </RebornFormItem>
-    <RebornFormItem prop="age" label="年龄" required>
+    <RebornFormItem
+      prop="age"
+      label="年龄"
+      required
+    >
       <RebornInputNumber v-model="form.age" />
     </RebornFormItem>
   </RebornForm>
@@ -67,8 +82,16 @@ const rules = z.object({
 ```vue
 <template>
   <!-- 输入时与失焦时都实时校验 -->
-  <RebornForm :model-value="form" :rules="rules" :trigger="['change', 'blur']">
-    <RebornFormItem prop="email" label="邮箱" trigger="blur">
+  <RebornForm
+    :model-value="form"
+    :rules="rules"
+    :trigger="['change', 'blur']"
+  >
+    <RebornFormItem
+      prop="email"
+      label="邮箱"
+      trigger="blur"
+    >
       <RebornInput v-model="form.email" />
     </RebornFormItem>
   </RebornForm>
@@ -104,91 +127,91 @@ function reset() {
 
 ### Form Props
 
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
-| `modelValue` | `object` | `{}` | 表单数据对象，通常使用 `v-model` 或 `:model-value` 绑定。 |
-| `rules` | `z.ZodObject` | `undefined` | 表单验证规则，基于 `zod` schema（web 端还支持 `z.ZodEffects`），不是 Element 风格的规则数组。 |
-| `labelPosition` | `"left" \| "right" \| "top"` | `"left"` | 标签位置。 |
-| `labelWidth` | `string \| number` | Web `"140px"` / UniApp `"140rpx"` | 标签宽度。 |
-| `hideRequiredAsterisk` | `boolean` | `false` | 是否隐藏必填字段的红色星号。 |
-| `requireAsteriskPosition` | `"left" \| "right"` | Web `"right"` / UniApp `"left"` | 必填星号的位置。 |
-| `showMessage` | `boolean` | `true` | 是否显示校验错误信息。 |
-| `inlineMessage` | `boolean` | `false` | 是否以行内形式显示校验信息。 |
-| `statusIcon` | `boolean` | `false` | 是否在输入框中显示校验结果反馈图标。 |
-| `validateOnRuleChange` | `boolean` | `true` | 是否在 `rules` 属性改变后立即触发一次验证。 |
-| `disabled` | `boolean` | `false` | 是否禁用该表单内的所有组件。 |
-| `scrollToError` | `boolean` | `true` | 校验失败时，是否自动滚动到第一个错误字段。 |
-| `size` | `"" \| "sm" \| "md" \| "lg"` | Web `"sm"` / UniApp `""` | 统一控制表单内组件的尺寸。 |
-| `trigger` | `"blur" \| "change" \| "none" \| Array<"blur" \| "change">` | `"none"` | 自动校验时机；`"none"` 表示仅手动调用 `validate` 时校验。 |
-| `class` | `string` | `""` | **仅 Web**。追加到根 `form` 元素的自定义类名。 |
-| `customClass` | `string` | `""` | **仅 UniApp**。追加到根节点的自定义类名。 |
-| `ui` | `object` | `{}` | 覆盖内部样式类，目前仅支持 `root`（根节点）。 |
+| 属性名                    | 类型                                                        | 默认值                            | 描述                                                                                          |
+| ------------------------- | ----------------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
+| `modelValue`              | `object`                                                    | `{}`                              | 表单数据对象，通常使用 `v-model` 或 `:model-value` 绑定。                                     |
+| `rules`                   | `z.ZodObject`                                               | `undefined`                       | 表单验证规则，基于 `zod` schema（web 端还支持 `z.ZodEffects`），不是 Element 风格的规则数组。 |
+| `labelPosition`           | `"left" \| "right" \| "top"`                                | `"left"`                          | 标签位置。                                                                                    |
+| `labelWidth`              | `string \| number`                                          | Web `"140px"` / UniApp `"140rpx"` | 标签宽度。                                                                                    |
+| `hideRequiredAsterisk`    | `boolean`                                                   | `false`                           | 是否隐藏必填字段的红色星号。                                                                  |
+| `requireAsteriskPosition` | `"left" \| "right"`                                         | Web `"right"` / UniApp `"left"`   | 必填星号的位置。                                                                              |
+| `showMessage`             | `boolean`                                                   | `true`                            | 是否显示校验错误信息。                                                                        |
+| `inlineMessage`           | `boolean`                                                   | `false`                           | 是否以行内形式显示校验信息。                                                                  |
+| `statusIcon`              | `boolean`                                                   | `false`                           | 是否在输入框中显示校验结果反馈图标。                                                          |
+| `validateOnRuleChange`    | `boolean`                                                   | `true`                            | 是否在 `rules` 属性改变后立即触发一次验证。                                                   |
+| `disabled`                | `boolean`                                                   | `false`                           | 是否禁用该表单内的所有组件。                                                                  |
+| `scrollToError`           | `boolean`                                                   | `true`                            | 校验失败时，是否自动滚动到第一个错误字段。                                                    |
+| `size`                    | `"" \| "sm" \| "md" \| "lg"`                                | Web `"sm"` / UniApp `""`          | 统一控制表单内组件的尺寸。                                                                    |
+| `trigger`                 | `"blur" \| "change" \| "none" \| Array<"blur" \| "change">` | `"none"`                          | 自动校验时机；`"none"` 表示仅手动调用 `validate` 时校验。                                     |
+| `class`                   | `string`                                                    | `""`                              | **仅 Web**。追加到根 `form` 元素的自定义类名。                                                |
+| `customClass`             | `string`                                                    | `""`                              | **仅 UniApp**。追加到根节点的自定义类名。                                                     |
+| `ui`                      | `object`                                                    | `{}`                              | 覆盖内部样式类，目前仅支持 `root`（根节点）。                                                 |
 
 ### Form Exposes
 
-| 名称 | 描述 |
-| --- | --- |
-| `validate` | `(callback?: (valid: boolean, errors: FormValidateError[]) => void) => Promise<boolean>` <br> 校验整个表单。Promise 始终 resolve 是否通过（不 reject）；失败且 `scrollToError` 开启时自动滚动到第一个错误字段。 |
-| `validateField` | `(prop: string) => Promise<string \| null>` <br> 校验单个字段（支持 `contacts-0-name` 形式的嵌套路径），返回错误信息，通过时为 `null`。 |
-| `resetFields` | `() => void` <br> 将所有字段重置为初始值快照（挂载时自动记录）并清除全部校验结果。 |
-| `clearValidate` | `(props?: string \| string[]) => void` <br> 清除校验错误提示；不传清除全部字段，传字段名或数组仅清除对应字段（不重置值）。 |
-| `scrollToField` | `(prop: string) => void` <br> 滚动页面使指定字段进入视口居中位置。 |
-| `setInitialValues` | `(values: any) => void` <br> 重设 `resetFields` 使用的初始值快照（深拷贝存储）；异步回填数据后应调用一次。 |
-| `fields` | `Set<string>` <br> 已注册字段名（`prop`）的集合，只读。 |
-| `getField` | `(prop: string) => FormItem 实例 \| undefined` <br> **仅 UniApp**。按 `prop` 获取已注册的表单项实例。 |
+| 名称               | 描述                                                                                                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `validate`         | `(callback?: (valid: boolean, errors: FormValidateError[]) => void) => Promise<boolean>` <br> 校验整个表单。Promise 始终 resolve 是否通过（不 reject）；失败且 `scrollToError` 开启时自动滚动到第一个错误字段。 |
+| `validateField`    | `(prop: string) => Promise<string \| null>` <br> 校验单个字段（支持 `contacts-0-name` 形式的嵌套路径），返回错误信息，通过时为 `null`。                                                                         |
+| `resetFields`      | `() => void` <br> 将所有字段重置为初始值快照（挂载时自动记录）并清除全部校验结果。                                                                                                                              |
+| `clearValidate`    | `(props?: string \| string[]) => void` <br> 清除校验错误提示；不传清除全部字段，传字段名或数组仅清除对应字段（不重置值）。                                                                                      |
+| `scrollToField`    | `(prop: string) => void` <br> 滚动页面使指定字段进入视口居中位置。                                                                                                                                              |
+| `setInitialValues` | `(values: any) => void` <br> 重设 `resetFields` 使用的初始值快照（深拷贝存储）；异步回填数据后应调用一次。                                                                                                      |
+| `fields`           | `Set<string>` <br> 已注册字段名（`prop`）的集合，只读。                                                                                                                                                         |
+| `getField`         | `(prop: string) => FormItem 实例 \| undefined` <br> **仅 UniApp**。按 `prop` 获取已注册的表单项实例。                                                                                                           |
 
 ### Form Slots
 
-| 名称 | 描述 |
-| --- | --- |
+| 名称      | 描述                                      |
+| --------- | ----------------------------------------- |
 | `default` | 表单内容，通常放置若干 `RebornFormItem`。 |
 
 ### Form UI
 
-| 名称 | 描述 |
-| --- | --- |
+| 名称   | 描述     |
+| ------ | -------- |
 | `root` | 根元素。 |
 
 ## Form Item
 
 ### Form Item Props
 
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
-| `prop` | `string` | `""` | 表单域对应的数据字段名；使用 `validate` / `resetFields` 等方法时该属性必填。 |
-| `label` | `string` | `""` | 标签文本。 |
-| `labelWidth` | `string \| number` | `undefined` | 标签宽度，默认继承表单的 `labelWidth`。 |
-| `labelPosition` | `"left" \| "right" \| "top"` | `undefined` | 标签位置，默认继承表单的 `labelPosition`。 |
-| `required` | `boolean` | `false` | 是否显示必填星号（仅展示用途，校验规则仍由 `rules` 决定）。 |
-| `requireAsteriskPosition` | `"left" \| "right"` | `"right"` | 必填星号的位置。 |
-| `trigger` | `"blur" \| "change" \| "none" \| Array<"blur" \| "change">` | `undefined` | 覆盖该字段的自动校验时机，优先级高于表单的 `trigger`。 |
-| `class` | `string` | `""` | **仅 Web**。追加到表单项根节点的自定义类名。 |
-| `customClass` | `string` | `""` | **仅 UniApp**。追加到表单项根节点的自定义类名。 |
-| `ui` | `object` | `{}` | 覆盖内部各区域样式类，见下方 Form Item UI。 |
+| 属性名                    | 类型                                                        | 默认值      | 描述                                                                         |
+| ------------------------- | ----------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| `prop`                    | `string`                                                    | `""`        | 表单域对应的数据字段名；使用 `validate` / `resetFields` 等方法时该属性必填。 |
+| `label`                   | `string`                                                    | `""`        | 标签文本。                                                                   |
+| `labelWidth`              | `string \| number`                                          | `undefined` | 标签宽度，默认继承表单的 `labelWidth`。                                      |
+| `labelPosition`           | `"left" \| "right" \| "top"`                                | `undefined` | 标签位置，默认继承表单的 `labelPosition`。                                   |
+| `required`                | `boolean`                                                   | `false`     | 是否显示必填星号（仅展示用途，校验规则仍由 `rules` 决定）。                  |
+| `requireAsteriskPosition` | `"left" \| "right"`                                         | `"right"`   | 必填星号的位置。                                                             |
+| `trigger`                 | `"blur" \| "change" \| "none" \| Array<"blur" \| "change">` | `undefined` | 覆盖该字段的自动校验时机，优先级高于表单的 `trigger`。                       |
+| `class`                   | `string`                                                    | `""`        | **仅 Web**。追加到表单项根节点的自定义类名。                                 |
+| `customClass`             | `string`                                                    | `""`        | **仅 UniApp**。追加到表单项根节点的自定义类名。                              |
+| `ui`                      | `object`                                                    | `{}`        | 覆盖内部各区域样式类，见下方 Form Item UI。                                  |
 
 ### Form Item Slots
 
-| 名称 | 描述 |
-| --- | --- |
-| `default` | 表单域的内容（输入控件等）。 |
-| `label` | 自定义标签区域，替代 `label` 文本与必填星号。 |
+| 名称      | 描述                                          |
+| --------- | --------------------------------------------- |
+| `default` | 表单域的内容（输入控件等）。                  |
+| `label`   | 自定义标签区域，替代 `label` 文本与必填星号。 |
 
 ### Form Item Exposes
 
-| 名称 | 描述 |
-| --- | --- |
-| `prop` | 当前表单项绑定的字段名，供父级 Form 定位字段实例。 |
+| 名称                    | 描述                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `prop`                  | 当前表单项绑定的字段名，供父级 Form 定位字段实例。                                                     |
 | `getBoundingClientRect` | `(callback: (rect) => void) => void` <br> 以回调返回表单项根节点的位置与尺寸，校验失败滚动定位时使用。 |
 
 ### Form Item UI
 
-| 名称 | 描述 |
-| --- | --- |
-| `root` | 根元素。 |
-| `label` | 标签文本。 |
+| 名称      | 描述                   |
+| --------- | ---------------------- |
+| `root`    | 根元素。               |
+| `label`   | 标签文本。             |
 | `wrapper` | 内容和错误的包裹容器。 |
-| `content` | 表单域内容容器。 |
-| `error` | 错误信息。 |
+| `content` | 表单域内容容器。       |
+| `error`   | 错误信息。             |
 
 ## 注意事项
 

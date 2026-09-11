@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-07T10:08:07.117Z",
+  "generatedAt": "2026-09-11T10:20:30.667Z",
   "components": [
     {
       "id": "animate-grid",
@@ -942,7 +942,7 @@
     {
       "id": "reborn-dialog",
       "title": "Dialog 对话框",
-      "description": "用于模态确认与内容展示的对话框组件，支持触发器/受控、拖拽与全屏，仅 web 端。",
+      "description": "用于模态确认与内容展示的对话框组件，属性对齐 Element Plus Dialog，附 Modal 命令式确认框（info/success/warning/error/confirm + destroyAll），仅 web 端。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1034,7 +1034,7 @@
     },
     {
       "id": "reborn-form",
-      "title": "Form",
+      "title": "Form 表单",
       "description": "用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。",
       "category": "form",
       "tags": [],
@@ -1137,7 +1137,7 @@
     },
     {
       "id": "reborn-layout",
-      "title": "布局容器 Layout",
+      "title": "Layout布局容器",
       "description": "由顶栏、侧边栏、主区域、底栏拼装后台页面骨架的 flex 布局容器，排列方向可自动推断。",
       "category": "layout",
       "tags": [
@@ -1198,8 +1198,8 @@
     },
     {
       "id": "reborn-menu",
-      "title": "菜单",
-      "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠与多级子菜单。",
+      "title": "Menu 菜单",
+      "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠、多级子菜单与配置式数据驱动。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1215,6 +1215,16 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-notification",
+      "title": "Notification 通知",
+      "description": "屏幕四角弹出的全局通知：标题 + 正文 + 底部操作区三段结构，支持倒计时进度条、悬停暂停、同 key 更新，属性对齐 Element Plus Notification，仅 web 端。",
+      "category": "misc",
+      "tags": [],
+      "platforms": [
+        "web"
       ]
     },
     {
@@ -1269,6 +1279,21 @@
       ]
     },
     {
+      "id": "reborn-popconfirm",
+      "title": "Popconfirm 气泡确认框",
+      "description": "点击触发的轻量确认气泡，标题、描述加确认取消按钮，适合低风险操作的二次确认。",
+      "category": "misc",
+      "tags": [
+        "popconfirm",
+        "confirm",
+        "feedback",
+        "popover"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-popover",
       "title": "Popover",
       "description": "用于点击或悬停触发气泡浮层的双端组件，可配置定位方向、箭头与遮罩。",
@@ -1291,6 +1316,21 @@
       ]
     },
     {
+      "id": "reborn-progress",
+      "title": "Progress 进度条",
+      "description": "用于展示任务完成比例的进度组件，支持直线、圆环、仪表盘及步骤形态、渐变与分段颜色。",
+      "category": "misc",
+      "tags": [
+        "progress",
+        "feedback",
+        "status",
+        "steps"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-qrcode",
       "title": "二维码 Qrcode",
       "description": "用于生成二维码的双端组件，支持前景/背景色、码点样式、中央 Logo 与纠错级别。",
@@ -1309,7 +1349,7 @@
     },
     {
       "id": "reborn-radio",
-      "title": "radio 单选框",
+      "title": "Radio 单选框",
       "description": "用于在一组互斥选项中选择单项的单选框组件，支持圆点（radio）、分段按钮（button）与实体按钮拼接（pure-button）三种类型。",
       "category": "form",
       "tags": [
@@ -1354,7 +1394,7 @@
     },
     {
       "id": "reborn-search-box",
-      "title": "搜索框",
+      "title": "SearchBox 搜索框",
       "description": "用于带下拉面板的双端搜索框组件，web 端为纯插槽基元：选择器/后置区/面板全部由插槽组合。",
       "category": "form",
       "tags": [
@@ -1371,7 +1411,7 @@
     },
     {
       "id": "reborn-select",
-      "title": "select 下拉选择",
+      "title": "Select 下拉选择",
       "description": "用于从选项列表中单选或多选的双端下拉选择组件，uniapp 端为弹层滚动选择。",
       "category": "form",
       "tags": [
@@ -1451,7 +1491,7 @@
     },
     {
       "id": "reborn-slider",
-      "title": "滑块",
+      "title": "Slider 滑块",
       "description": "用于在数值区间内拖动取值的滑块组件，支持单值与范围两种模式。",
       "category": "form",
       "tags": [
@@ -1509,7 +1549,7 @@
     },
     {
       "id": "reborn-switch",
-      "title": "开关",
+      "title": "Switch 开关",
       "description": "用于在两种状态间切换的开关组件，支持自定义开关值、加载态与切换前拦截。",
       "category": "form",
       "tags": [
@@ -1539,13 +1579,14 @@
     },
     {
       "id": "reborn-tabs",
-      "title": "标签页 Tabs",
-      "description": "用于在多个内容区之间切换的标签页组件，web 端为组合式子组件、uniapp 端为数据驱动单组件。",
+      "title": "Tabs 标签页",
+      "description": "双端标签页：RebornTabs + RebornTabPane 组合，key 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。",
       "category": "navigation",
       "tags": [
         "css",
         "tailwind",
-        "tabs"
+        "tabs",
+        "uniapp"
       ],
       "platforms": [
         "web",
@@ -1636,6 +1677,37 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-tree",
+      "title": "Tree 树形控件",
+      "description": "层级数据展示：展开/点选/勾选三组受控 keys，支持父子联动、异步加载、拖拽与虚拟滚动。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "tree",
+        "data"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-tree-select",
+      "title": "Tree Select 树选择器",
+      "description": "Web 层级选值：沿用 select 的三档尺寸与四种形态，下拉复用 tree，支持单选、独立多选和清空。",
+      "category": "form",
+      "tags": [
+        "tree-select",
+        "tree",
+        "select",
+        "form",
+        "web"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {

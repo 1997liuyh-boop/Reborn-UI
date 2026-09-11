@@ -1,0 +1,6 @@
+{
+  "description": "点击触发的轻量确认气泡，标题、描述加确认取消按钮，适合低风险操作的二次确认。",
+  "whenToUse": ["删除单条数据、退出编辑等低风险操作的二次确认。", "确认内容一两句话能说清、不需要打断全局的场景。"],
+  "whenNotToUse": ["高风险、不可逆或需要展示较多上下文的确认，使用 reborn-dialog。", "纯展示性气泡使用 reborn-popover，纯文字提示使用 reborn-tooltip。"],
+  "pitfalls": ["仅支持 Web。基于 reborn-popover 定位（click 模式），按钮为 reborn-button 的 sm 档。", "布局固定：气泡内边距 12px，标题（14px gray-10）与描述（14px gray-8）间隔 8px，按钮区与文字区间隔 16px、按钮间隔 8px 右对齐。", "loading 时点击确认不自动关闭，异步确认需配合 v-model:open 手动收起；取消与点击外部不受 loading 影响。", "footer 插槽的 confirm/cancel 回调会触发事件并按 loading 规则关闭，直接自绘按钮不调用回调则不会关闭。", "content/arrow/portal/dismissible 与 reborn-popover 语义一致，定位默认 top + center + 8px。"]
+}

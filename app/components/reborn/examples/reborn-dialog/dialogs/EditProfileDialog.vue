@@ -34,7 +34,7 @@ function handleCancel() {
 
 <template>
   <RebornDialog
-    v-model:open="open"
+    v-model="open"
     :title="title || '编辑个人资料'"
     :description="description || '在此修改您的个人账户信息，完成后点击保存。'"
     confirm-btn="保存修改"
@@ -42,9 +42,11 @@ function handleCancel() {
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
-    <slot />
+    <template #trigger>
+      <slot />
+    </template>
 
-    <template #content>
+    <template #default>
       <!-- 只读字段列表：靠分隔线区分行，不额外铺底色 -->
       <div class="divide-default flex flex-col divide-y">
         <div v-for="field in profileFields" :key="field.label" class="flex items-center justify-between gap-4 py-2.5">

@@ -41,7 +41,7 @@ defineExpose({
 
 <template>
   <RebornDialog
-    v-model:open="open"
+    v-model="open"
     :title="title || '同步云端设置'"
     :description="description || '正在将您的配置上传至私有云端节点...'"
     :confirm-btn="{ label: saving ? '正在同步...' : '立即同步', loading: saving }"
@@ -49,9 +49,11 @@ defineExpose({
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
-    <slot />
+    <template #trigger>
+      <slot />
+    </template>
 
-    <template #content>
+    <template #default>
       <!-- 弹窗面板内的语义提示条，属原子标记而非嵌套容器 -->
       <div class="bg-secondary/10 text-secondary rounded-ui-sm flex items-center gap-3 p-3">
         <Icon name="lucide:cloud-upload" class="size-5 shrink-0" />

@@ -53,18 +53,18 @@ const formatTime = (ts: number) => {
                     <div class="flex flex-col gap-3">
                         <span class="text-dimmed text-xs font-medium">停留时长 · <code>duration</code></span>
                         <RebornDialog>
-                            <RebornButton label="打开追踪弹窗" color="primary" variant="filled" />
-                            <template #content>
-                                <!-- 组合上报：page_source 来源页面、trigger_type 触发方式、user_status 新老用户 -->
-                                <div class="py-8 text-center" v-track:view="{
-                                    event: 'auth_popup_show',
-                                    params: { page_source: 'home', trigger_type: 'click', user_status: 'new' },
-                                    duration: { event: 'auth_popup_stay', params: { auth_type: 'login' } }
-                                }">
-                                    <h4 class="text-highlighted mb-2 text-base font-semibold">登录弹窗</h4>
-                                    <p class="text-muted text-sm">关闭时会额外发送 <code>auth_popup_stay</code>，并携带 duration 属性。</p>
-                                </div>
+                            <template #trigger>
+                                <RebornButton label="打开追踪弹窗" color="primary" variant="filled" />
                             </template>
+                            <!-- 组合上报：page_source 来源页面、trigger_type 触发方式、user_status 新老用户 -->
+                            <div class="py-8 text-center" v-track:view="{
+                                event: 'auth_popup_show',
+                                params: { page_source: 'home', trigger_type: 'click', user_status: 'new' },
+                                duration: { event: 'auth_popup_stay', params: { auth_type: 'login' } }
+                            }">
+                                <h4 class="text-highlighted mb-2 text-base font-semibold">登录弹窗</h4>
+                                <p class="text-muted text-sm">关闭时会额外发送 <code>auth_popup_stay</code>，并携带 duration 属性。</p>
+                            </div>
                         </RebornDialog>
                     </div>
 

@@ -126,7 +126,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-neutral text-white hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 hover:bg-neutral/75",
     },
 
     // Round Variants：胶囊形状，着色规则与 filled 一致
@@ -163,7 +163,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-neutral text-white hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 hover:bg-neutral/75",
     },
 
     // Circle Variants：圆形纯图标按钮，着色规则与 filled 一致
@@ -200,7 +200,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-neutral text-white hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 hover:bg-neutral/75",
     },
 
     {
@@ -243,7 +243,7 @@ export default {
       color: "neutral" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-neutral border border-neutral hover:bg-neutral/10",
+        "bg-transparent text-gary-10 border border-neutral hover:bg-neutral/10",
     },
     {
       variant: "filled" as (typeof variant)[number],
@@ -309,7 +309,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-neutral/10 text-neutral hover:bg-neutral/20",
+      class: "bg-gray-2 text-gray-10 hover:bg-gray-2/20",
     },
 
     {
@@ -346,7 +346,7 @@ export default {
     {
       color: "neutral" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-neutral/10 border border-neutral text-neutral hover:bg-neutral/20",
+      class: "bg-gray-2 border border-gray-4 text-gray-10 hover:bg-gray-2/20"
     },
 
     // Text Variants：无背景/边框，高度与水平内边距跟随文字

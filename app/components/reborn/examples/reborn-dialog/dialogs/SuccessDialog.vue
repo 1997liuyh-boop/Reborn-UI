@@ -22,9 +22,9 @@ function handleConfirm() {
 
 <template>
   <RebornDialog
-    v-model:open="open"
+    v-model="open"
     :title="title || '精简模式'"
-    :close="false"
+    :show-close="false"
     :ui="{
       panel: 'max-w-[360px] rounded-ui-lg',
       header: 'border-0 pb-0',
@@ -33,9 +33,11 @@ function handleConfirm() {
     }"
     @confirm="handleConfirm"
   >
-    <slot />
+    <template #trigger>
+      <slot />
+    </template>
 
-    <template #content>
+    <template #default>
       <div class="bg-success/10 text-success mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
         <Icon name="lucide:check-circle-2" class="size-8" />
       </div>

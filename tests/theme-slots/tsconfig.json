@@ -1,0 +1,6 @@
+{
+  "extends": "../../.nuxt/tsconfig.app.json",
+  "compilerOptions": { "types": ["node", "vite/client"], "noEmit": true },
+  "include": ["../../app/lib/tv.ts", "../../app/utils/getComponentTheme.ts", "./*.ts"],
+  "exclude": []
+}

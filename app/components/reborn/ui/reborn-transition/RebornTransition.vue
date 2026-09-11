@@ -183,7 +183,7 @@ defineExpose({
     @enter="onEnterInternal" @after-enter="onAfterEnterInternal" @before-leave="onBeforeLeaveInternal"
     @leave="onLeaveInternal" @after-leave="onAfterLeaveInternal">
     <div v-if="renderReady && (destroy ? show : true)" v-show="destroy ? true : show" ref="elRef"
-      :class="['rb-transition transform-gpu will-change-[opacity,transform]', customClass]"
+      :class="['rb-transition transform-gpu will-change-[opacity,transform,translate,scale]', customClass]"
       :style="[{ transitionDuration: `${durationOf(show ? 'enter' : 'leave')}ms` }, customStyle]"
       @click="emit('click')">
       <slot />

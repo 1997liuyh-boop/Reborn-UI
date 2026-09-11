@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { tv } from 'tailwind-variants'
+import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
 import theme from './reborn-main.config'
 

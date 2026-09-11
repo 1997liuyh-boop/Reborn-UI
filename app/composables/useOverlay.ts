@@ -74,13 +74,15 @@ function withLoading(btn: any, loading: boolean) {
   return { ...btn, loading };
 }
 
-/** 构建传递给目标组件的具名插槽（content / header / footer） */
+/** 构建传递给目标组件的具名插槽（content 选项映射到 default 正文插槽，header / footer 同名透传） */
 function buildSlots(state: OverlayState): Record<string, () => VNode> {
   const slots: Record<string, () => VNode> = {};
   (['content', 'header', 'footer'] as const).forEach((key) => {
     const val = state.options[key];
     if (val) {
-      slots[key] = typeof val === 'function' ? val : () => val as VNode;
+      const fn = typeof val === 'function' ? val : () => val as VNode;
+      // RebornDialog 重构后正文为 default 插槽；content 键仅作为选项名保留
+      slots[key === 'content' ? 'default' : key] = fn;
     }
   });
   return slots;
@@ -112,11 +114,16 @@ export const useOverlay = () => {
 
           const mergedProps: Record<string, any> = {
             ...userProps,
+            // dialog / popup 均为 modelValue 双向绑定；open 键保留兼容旧封装组件
+            modelValue: true,
             open: true,
             // 有异步确认回调时，为确认按钮注入 loading 态
             ...(handler ? { confirmBtn: withLoading(userProps.confirmBtn, confirming.value) } : {}),
-            'onUpdate:open': (value: boolean) => {
+            'onUpdate:modelValue': (value: boolean) => {
               // 确认进行中锁定，避免中途关闭打断异步流程
+              if (!value && !confirming.value) close(id);
+            },
+            'onUpdate:open': (value: boolean) => {
               if (!value && !confirming.value) close(id);
             },
             onConfirm: async () => {

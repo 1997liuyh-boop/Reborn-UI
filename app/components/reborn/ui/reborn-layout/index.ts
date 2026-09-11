@@ -3,10 +3,11 @@ export {
   LAYOUT_FOOTER_HEIGHT_VAR,
   LAYOUT_HEADER_HEIGHT_VAR,
   layoutDirections,
+  layoutSiderBreakpoints,
   default as rebornLayoutConfig,
   VERTICAL_LAYOUT_CHILDREN,
 } from './reborn-layout.config'
-export type { LayoutDirection, LayoutUI } from './reborn-layout.config'
+export type { LayoutDirection, LayoutSiderBreakpoint, LayoutSiderCollapseType, LayoutUI } from './reborn-layout.config'
 export { default as RebornLayout } from './RebornLayout.vue'
 export { default as RebornLayoutAside } from './RebornLayoutAside.vue'
 export { default as RebornLayoutFooter } from './RebornLayoutFooter.vue'

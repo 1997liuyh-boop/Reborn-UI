@@ -1,11 +1,11 @@
 /**
- * 把 DemoSection 的模板片段补全为可独立运行的 SFC
+ * 把 DemoSection 的模板片段补全为完整、可独立运行的 SFC
  *
- * 卡片里展示的分组代码只是模板片段（见 extractDemoSections），直接丢进
- * Playground 会因为缺少 <script setup> 里的响应式状态而报错。这里按
+ * extractDemoSections 切出来的只是模板片段，缺少 <script setup> 里的响应式状态：
+ * 展示给读者是「半截代码」，丢进 Playground 会直接报错。这里按
  * 「模板引用了哪些标识符」从 demo 源文件的 <script setup> 中抽取对应的
  * 顶层声明（含传递依赖）与 import 语句，拼出完整的
- * <script setup> + <template> 结构。
+ * <script setup> + <template> 结构，卡片展示、复制、询问 AI 与 Playground 共用同一份。
  *
  * 解析是基于行与括号深度的轻量扫描，不是完整的 TS 解析器；
  * 依赖 demo 文件遵循演示代码规范（顶层声明、无奇技淫巧）。
@@ -162,13 +162,99 @@ function collectIdentifiers(text: string): Set<string> {
     return ids;
 }
 
+/** 关键字与字面量：出现在模板表达式里也不是脚本绑定 */
+const TEMPLATE_RESERVED = new Set([
+    "true", "false", "null", "undefined", "in", "of", "new", "typeof", "instanceof",
+    "void", "delete", "return", "if", "else", "this", "await", "async", "function",
+    "let", "const", "var", "class", "extends", "case", "default", "do", "while", "for",
+]);
+
+/** kebab-case -> PascalCase：模板里 <reborn-alert> 与 <RebornAlert> 指向同一个绑定 */
+function toPascalCase(name: string): string {
+    return name.replace(/(^|-)([a-z])/g, (_, __, ch: string) => ch.toUpperCase());
+}
+
+/** 从一段表达式里挑出标识符：剔除字符串字面量、属性名与关键字 */
+function collectExpressionIdentifiers(expression: string, into: Set<string>): void {
+    const cleaned = expression
+        // 字符串字面量里的内容不是标识符（"info"、'lucide:x' 等）
+        .replace(/'[^']*'|"[^"]*"|`[^`]*`/g, " ")
+        // 属性访问的后半段由对象自己提供（a.b -> 只要 a）
+        .replace(/\??\.\s*[A-Z_$][\w$]*/gi, " ");
+
+    for (const m of cleaned.matchAll(/[A-Z_$][\w$]*/gi)) {
+        if (!TEMPLATE_RESERVED.has(m[0])) into.add(m[0]);
+    }
+}
+
+/** 动态绑定 / 事件 / 指令：只有这些属性的值是表达式，静态属性不会引用脚本 */
+const TEMPLATE_BINDING = /(?:^|\s)(?::|@|v-)[\w:.\-[\]]*\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+
+/** 组件标签名（含 <Foo.Bar> 命名空间写法） */
+const TEMPLATE_TAG = /<\/?([A-Z][\w.-]*)/gi;
+
+/** {{ 插值 }} */
+const TEMPLATE_INTERPOLATION = /\{\{([\s\S]*?)\}\}/g;
+
+/**
+ * 从模板片段中收集「会引用到 <script setup> 绑定」的标识符。
+ *
+ * 模板里只有三处能引用脚本：组件标签名、动态绑定/事件/指令的表达式、插值。
+ * 静态属性值与纯文本都不会，所以这里不做全文扫描——否则示例文案里随便一个
+ * 英文单词都可能撞上同名的顶层声明，把无关代码一起带进展示的源码里。
+ */
+export function collectTemplateIdentifiers(template: string): Set<string> {
+    const ids = new Set<string>();
+
+    for (const m of template.matchAll(TEMPLATE_TAG)) {
+        const tag = m[1]!;
+        ids.add(tag);
+        ids.add(tag.split(".")[0]!);
+        if (tag.includes("-")) ids.add(toPascalCase(tag));
+    }
+
+    for (const m of template.matchAll(TEMPLATE_BINDING)) {
+        collectExpressionIdentifiers(m[1] ?? m[2] ?? "", ids);
+    }
+
+    for (const m of template.matchAll(TEMPLATE_INTERPOLATION)) {
+        collectExpressionIdentifiers(m[1] ?? "", ids);
+    }
+
+    return ids;
+}
+
+/**
+ * 收缩 import 的具名列表，只留下真正用到的绑定。
+ *
+ * 一条 import 往往同时引入好几个名字（如 alertTypes / alertVariants），
+ * 只要命中一个就整条照搬，展示出来的代码会带上本段用不到的引用。
+ * 只处理 `{ ... }` 具名子句，默认导入与命名空间导入原样保留。
+ */
+function pruneImport(text: string, wanted: Set<string>): string {
+    if (!/\{[\s\S]*?\}/.test(text)) return text;
+
+    const kept = (text.match(/\{([\s\S]*?)\}/)?.[1] ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter((spec) => {
+            if (!spec || spec.startsWith("type ")) return false;
+            const local = spec.match(/(?:[\w$]+\s+as\s+)?([A-Za-z_$][\w$]*)\s*$/)?.[1];
+            return !!local && wanted.has(local);
+        });
+
+    // 一个都没留下说明判断有偏差（如命名空间导入），保守起见原样返回
+    if (!kept.length) return text;
+    return text.replace(/\{[\s\S]*?\}/, `{ ${kept.join(", ")} }`);
+}
+
 /**
  * 按模板片段的依赖，从 demo 脚本里抽取所需块并拼成完整 SFC。
  * 抽不到任何依赖时也会补 <template> 包裹，保证结果始终是合法 SFC。
  */
 export function buildSectionSfc(sectionTemplate: string, demoScript: string): string {
     const blocks = parseScriptBlocks(demoScript);
-    const wanted = collectIdentifiers(sectionTemplate);
+    const wanted = collectTemplateIdentifiers(sectionTemplate);
     const included = new Set<ScriptBlock>();
 
     // 传递闭包：模板引用的块被纳入后，块内引用的其他顶层块也一并纳入
@@ -179,12 +265,18 @@ export function buildSectionSfc(sectionTemplate: string, demoScript: string): st
             if (included.has(block)) continue;
             if (!block.names.some((n) => wanted.has(n))) continue;
             included.add(block);
-            for (const id of collectIdentifiers(block.text)) wanted.add(id);
+            // 只有声明块会引用其他顶层绑定；import 只提供名字，不消费名字，
+            // 把它的文本也算进 wanted 会让同条 import 里没用到的具名项一直「被需要」
+            if (block.kind === "decl") {
+                for (const id of collectIdentifiers(block.text)) wanted.add(id);
+            }
             changed = true;
         }
     }
 
-    const imports = blocks.filter((b) => included.has(b) && b.kind === "import").map((b) => b.text);
+    const imports = blocks
+        .filter((b) => included.has(b) && b.kind === "import")
+        .map((b) => pruneImport(b.text, wanted));
     const decls = blocks.filter((b) => included.has(b) && b.kind === "decl").map((b) => b.text);
 
     const template = sectionTemplate
@@ -199,8 +291,8 @@ export function buildSectionSfc(sectionTemplate: string, demoScript: string): st
 }
 
 /**
- * 解析 demo 源文件，返回「分组标题 -> 可独立运行的完整 SFC」映射。
- * 与 extractDemoSections 同键，供「在 Playground 运行」使用。
+ * 解析 demo 源文件，返回「分组标题 -> 完整 SFC」映射。
+ * 与 extractDemoSections 同键，供卡片展示源码、复制、询问 AI 与 Playground 共用。
  */
 export function buildRunnableDemoSections(raw: string): DemoSectionSourceMap {
     const map: DemoSectionSourceMap = {};

@@ -32,7 +32,7 @@ const state = ref<Record<string, any>>({
   showClose: true,
   modal: true,
   resizable: false,
-  round: true,
+  round: false,
 });
 
 /** 演练场控制面板配置 */
@@ -70,7 +70,7 @@ const controls = [
       { label: "显示关闭按钮", key: "showClose", component: "checkbox" as const, defaultValue: true },
       { label: "显示遮罩层", key: "modal", component: "checkbox" as const, defaultValue: true },
       { label: "边缘拖拽缩放", key: "resizable", component: "checkbox" as const, defaultValue: false },
-      { label: "圆角样式", key: "round", component: "checkbox" as const, defaultValue: true },
+      { label: "圆角样式（默认无圆角）", key: "round", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
@@ -88,7 +88,7 @@ const popupCode = computed(() => {
   if (!s.showClose) props.push(":show-close=\"false\"");
   if (!s.modal) props.push(":modal=\"false\"");
   if (s.resizable) props.push("resizable");
-  if (!s.round) props.push(":round=\"false\"");
+  if (s.round) props.push("round");
 
   return `<RebornPopup\n  ${props.join("\n  ")}\n>\n  弹出层内容\n</RebornPopup>`;
 });
@@ -163,7 +163,7 @@ const maskFreeOpen = ref(false);
         :resizable="state.resizable"
         :round="state.round"
       >
-        <div class="flex flex-col gap-3 p-4">
+        <div class="flex flex-col gap-3">
           <p class="text-muted text-sm leading-relaxed">
             弹出层自带表面样式与阴影，内容区直接书写业务结构即可，无需再包一层卡片。
           </p>
@@ -206,7 +206,7 @@ const maskFreeOpen = ref(false);
         title="第一层"
         size="420px"
       >
-        <div class="flex flex-col gap-4 p-4">
+        <div class="flex flex-col gap-4">
           <p class="text-muted text-sm leading-relaxed">
             复杂业务里经常需要在当前会话之上再开一个子流程，此时直接嵌套即可。
           </p>
@@ -224,7 +224,7 @@ const maskFreeOpen = ref(false);
           title="第二层"
           size="340px"
         >
-          <div class="flex flex-col gap-4 p-4">
+          <div class="flex flex-col gap-4">
             <p class="text-muted text-sm leading-relaxed">层级与遮罩已自动处理，无需手写 z-index。</p>
             <RebornButton
               variant="soft"
@@ -241,7 +241,7 @@ const maskFreeOpen = ref(false);
             title="第三层"
             size="280px"
           >
-            <div class="flex flex-col items-center gap-3 p-4 text-center">
+            <div class="flex flex-col items-center gap-3 text-center">
               <Icon
                 name="lucide:check-circle"
                 class="text-success size-8"
@@ -288,7 +288,7 @@ const maskFreeOpen = ref(false);
         size="440px"
         :before-close="guardClose"
       >
-        <div class="flex flex-col gap-4 p-4">
+        <div class="flex flex-col gap-4">
           <p class="text-muted text-sm leading-relaxed">
             请先阅读并勾选下方协议，否则关闭动作会被 <code>before-close</code> 拦截。
           </p>
@@ -299,7 +299,7 @@ const maskFreeOpen = ref(false);
         </div>
 
         <template #footer>
-          <div class="flex w-full items-center justify-end gap-3 p-3">
+          <div class="flex w-full items-center justify-end gap-3">
             <RebornButton
               variant="soft"
               color="neutral"
@@ -340,7 +340,7 @@ const maskFreeOpen = ref(false);
         :modal="false"
         :lock-scroll="false"
       >
-        <div class="flex flex-col gap-3 p-4">
+        <div class="flex flex-col gap-3">
           <p class="text-muted text-sm leading-relaxed">
             没有遮罩，背后的页面依旧可以滚动与点击。
           </p>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {CSSProperties} from 'vue';
 import type { TooltipUI } from './reborn-tooltip.config';
+import type { Placement, PlacementAlias, PlacementAlign, PlacementSide } from '~/lib/placement';
 import {
   computed,
 
@@ -11,6 +12,7 @@ import {
   useId,
   useSlots, watch
 } from 'vue';
+import { resolvePlacement } from '~/lib/placement';
 import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
 import { rebornTooltip } from './reborn-tooltip.config';
@@ -40,31 +42,12 @@ const emit = defineEmits<{
   /** 显示隐藏变化时触发 */
   (e: 'openChange', open: boolean): void;
 }>();
-type TooltipSide = 'top' | 'bottom' | 'left' | 'right';
-type TooltipAlign = 'center' | 'start' | 'end';
-type TooltipPlacement =
-  | 'top'
-  | 'top-start'
-  | 'top-end'
-  | 'bottom'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left'
-  | 'left-start'
-  | 'left-end'
-  | 'right'
-  | 'right-start'
-  | 'right-end';
+/** 方位取值统一取自 ~/lib/placement，与 reborn-popconfirm 等浮层组件保持完全一致 */
+type TooltipSide = PlacementSide;
+type TooltipAlign = PlacementAlign;
+type TooltipPlacement = Placement;
 /** 驼峰风格的方位命名，作为 TooltipPlacement 的等价别名 */
-type TooltipPlacementAlias =
-  | 'topLeft'
-  | 'topRight'
-  | 'bottomLeft'
-  | 'bottomRight'
-  | 'leftTop'
-  | 'leftBottom'
-  | 'rightTop'
-  | 'rightBottom';
+type TooltipPlacementAlias = PlacementAlias;
 /** 触发行为 */
 type TooltipTrigger = 'hover' | 'focus' | 'click' | 'contextMenu';
 
@@ -139,20 +122,24 @@ const TRIGGER_GAP = 8;
 const ARROW_SIZE = 7;
 /** 箭头沿面板边缘方向的底边长（设计稿 18px） */
 const ARROW_LENGTH = 18;
-/** 非 pointAtCenter 时箭头中心距对齐端的内缩量：8px 边距 + 半个底边 */
-const ARROW_INSET = 17;
+/** 短面板下箭头底边的收缩下限，再短就细得看不出指向 */
+const ARROW_LENGTH_MIN = 12;
+/** 面板圆角（rounded-ui-sm = 8px），箭头底边压到这段弧线上连接处会露缺口 */
+const PANEL_RADIUS = 8;
+/** start / center / end 三档箭头位置至少要拉开的距离，不足时收缩箭头换取余量 */
+const ARROW_MIN_SPAN = 9;
 
-/** 驼峰方位命名 → 内部 side-align 命名 */
-const PLACEMENT_ALIAS_MAP: Record<TooltipPlacementAlias, TooltipPlacement> = {
-  topLeft: 'top-start',
-  topRight: 'top-end',
-  bottomLeft: 'bottom-start',
-  bottomRight: 'bottom-end',
-  leftTop: 'left-start',
-  leftBottom: 'left-end',
-  rightTop: 'right-start',
-  rightBottom: 'right-end',
-};
+/**
+ * 计算箭头底边长：标准取设计稿的 18px。
+ * 面板沿交叉轴（top / bottom 看宽度，left / right 看高度）过短时，箭头底边加两端圆角
+ * 会占满直边，start / center / end 三档挤在一起肉眼无法区分；此时按可用直边把底边
+ * 收缩到 ARROW_LENGTH_MIN，换出至少 ARROW_MIN_SPAN 的位移范围。面板够长则保持 18px 不变。
+ */
+const getArrowLength = (crossExtent: number) =>
+  Math.min(
+    ARROW_LENGTH,
+    Math.max(ARROW_LENGTH_MIN, crossExtent - PANEL_RADIUS * 2 - ARROW_MIN_SPAN),
+  );
 
 /** 主轴溢出时的翻转映射 */
 const FLIP_SIDE: Record<TooltipSide, TooltipSide> = {
@@ -173,6 +160,8 @@ const contentRef = ref<HTMLElement | null>(null);
 const isVisible = ref(false);
 const contentStyle = ref<CSSProperties>({ top: '0px', left: '0px' });
 const arrowStyle = ref<CSSProperties>({});
+/** 当前箭头底边长（px），短面板下会收缩，同时驱动 SVG 的渲染高度 */
+const arrowLength = ref(ARROW_LENGTH);
 
 const slots = useSlots();
 const hasContentSlot = computed(() => !!slots.content);
@@ -182,16 +171,7 @@ let closeTimer: ReturnType<typeof setTimeout> | null = null;
 let rafId: number | null = null;
 
 /** 解析 placement（兼容驼峰别名），拆分为方向与对齐方式 */
-const placementState = computed(() => {
-  const normalized =
-    PLACEMENT_ALIAS_MAP[props.placement as TooltipPlacementAlias] ?? (props.placement as TooltipPlacement);
-  const [side, rawAlign] = normalized.split('-') as [TooltipSide, TooltipAlign | undefined];
-
-  return {
-    side,
-    align: rawAlign ?? 'center',
-  };
-});
+const placementState = computed(() => resolvePlacement(props.placement));
 
 /** 实际渲染方向：autoAdjustOverflow 翻转后可能与 placement 声明的方向不同 */
 const actualSide = ref<TooltipSide>('bottom');
@@ -417,14 +397,14 @@ const syncArrowPosition = (
   }
 
   const halfThickness = ARROW_SIZE / 2;
-  const halfLength = ARROW_LENGTH / 2;
+  // 交叉轴长度决定底边能有多长：短面板收缩底边，换取 start / end 的可分辨位移范围
+  const crossExtent = side === 'top' || side === 'bottom' ? contentRect.width : contentRect.height;
+  const length = getArrowLength(crossExtent);
+  const halfLength = length / 2;
   // 箭头底边向面板内收 0.5px，保证连接处无缝
   const overlap = 0.5;
-  // 对齐端内缩量对极小面板做兜底，避免钳制上下限倒挂
-  const inset = Math.min(
-    ARROW_INSET,
-    (side === 'top' || side === 'bottom' ? contentRect.width : contentRect.height) / 2,
-  );
+  // 对齐端内缩量为圆角加半个底边；对极小面板做兜底，避免钳制上下限倒挂
+  const inset = Math.min(PANEL_RADIUS + halfLength, crossExtent / 2);
 
   let centerX: number;
   let centerY: number;
@@ -435,8 +415,8 @@ const syncArrowPosition = (
       pointAtCenter.value || align === 'center'
         ? triggerRect.left + triggerRect.width / 2 - position.left
         : align === 'start'
-          ? ARROW_INSET
-          : contentRect.width - ARROW_INSET;
+          ? inset
+          : contentRect.width - inset;
     centerX = Math.min(Math.max(ideal, inset), contentRect.width - inset);
     if (side === 'top') {
       // 面板在触发器上方：箭头贴面板底边，尖端向下
@@ -452,8 +432,8 @@ const syncArrowPosition = (
       pointAtCenter.value || align === 'center'
         ? triggerRect.top + triggerRect.height / 2 - position.top
         : align === 'start'
-          ? ARROW_INSET
-          : contentRect.height - ARROW_INSET;
+          ? inset
+          : contentRect.height - inset;
     centerY = Math.min(Math.max(ideal, inset), contentRect.height - inset);
     if (side === 'left') {
       // 面板在触发器左侧：箭头贴面板右边，尖端向右（SVG 原始方向）
@@ -466,7 +446,8 @@ const syncArrowPosition = (
     }
   }
 
-  // 布局盒固定为 7×18（SVG 原始方向，尖端向右），以中心点定位后绕中心旋转到目标方向
+  // 布局盒为 7×length（SVG 原始方向，尖端向右），以中心点定位后绕中心旋转到目标方向
+  arrowLength.value = length;
   arrowStyle.value = {
     left: `${centerX - halfThickness}px`,
     top: `${centerY - halfLength}px`,
@@ -787,11 +768,15 @@ onBeforeUnmount(() => {
           </slot>
         </div>
         <!-- 箭头取自设计稿（7×18 圆头曲线，尖端向右为原始方向），fill 走 currentColor 与面板同色 -->
+        <!-- 短面板下 arrowLength 会小于 18，用 preserveAspectRatio="none" 只压交叉轴，保住 7px 厚度不留缝 -->
         <span
           v-if="showArrow" :class="styles.arrow()" :style="[arrowStyle, props.color ? { color: props.color } : null]"
           aria-hidden="true"
         >
-          <svg class="block" width="7" height="18" viewBox="0 0 7 18" fill="currentColor">
+          <svg
+            class="block" width="7" :height="arrowLength" viewBox="0 0 7 18" preserveAspectRatio="none"
+            fill="currentColor"
+          >
             <path
               d="M0,0L0,18C0.322,15.745,1.46,13.687,3.199,12.216L5.647,10.145C6.355,9.546,6.355,8.454,5.647,7.855L3.199,5.784C1.46,4.313,0.322,2.255,0,0Z"
             />

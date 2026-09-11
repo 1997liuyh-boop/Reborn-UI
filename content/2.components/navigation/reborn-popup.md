@@ -98,6 +98,8 @@ function beforeClose(done: (cancel?: boolean) => void) {
 
 `header` 插槽替换默认标题区域；`footer` 插槽（仅 Web）固定在面板底部，常用于操作按钮组。
 
+Web 端抽屉视觉规格：头部为「关闭图标（20px）在前、标题在后」的左对齐布局，两者间隔 12px；header 底部与 footer 顶部为 `gray-2` 分隔线；header / footer 内边距 `py-16px px-24px`，body 内边距 `24px`；面板四周无圆角（`round` 可显式开启）。
+
 ```vue
 <template>
   <RebornPopup v-model="show" position="center" size="420px">
@@ -124,7 +126,7 @@ function beforeClose(done: (cancel?: boolean) => void) {
 | `title`                         | `string`                                              | `''`                         | 弹出层的标题                                                               | 通用   |
 | `showHeader`                    | `boolean`                                             | `true`                       | 是否显示头部（包含标题和关闭按钮）                                         | 通用   |
 | `showClose`                     | `boolean`                                             | `true`                       | 是否显示关闭按钮                                                           | 通用   |
-| `round`                         | `boolean`                                             | `true`                       | 是否显示圆角样式                                                           | 通用   |
+| `round`                         | `boolean`                                             | Web `false` / UniApp `true`  | 是否显示圆角样式；Web 端按抽屉规格默认无圆角，需要时显式开启               | 通用   |
 | `modal` / `showMask`            | `boolean`                                             | `true`                       | 是否需要遮罩层（两者互为别名）                                             | 通用   |
 | `closeOnClickModal` / `maskClosable` | `boolean`                                        | `true`                       | 是否可以通过点击遮罩层关闭（两者互为别名）                                 | 通用   |
 | `transition`                    | `string`                                              | `''`                         | 自定义过渡动画名称，覆盖 `position` 的默认动画                             | 通用   |
@@ -205,13 +207,13 @@ function beforeClose(done: (cancel?: boolean) => void) {
 | 键名       | 说明                                                                                                                                             |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `wrapper`  | 定位包装层。默认 `fixed pointer-events-none`，只负责把面板摆到视口的对应边；居中模式下它同时充当 flex 居中容器。层级由 `zIndex` 内联注入，别在这里写 `z-*`。 |
-| `root`     | 面板本体（过渡动画的目标节点）。默认 `fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50 box-border p-1`，底色、圆角、阴影、内边距都改这里；`class` 与 `customClass` 也会并到同一节点。 |
+| `root`     | 面板本体（过渡动画的目标节点）。默认 `fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50 box-border`（无内边距，三段内边距在各自节点上），底色、阴影改这里；`class` 与 `customClass` 也会并到同一节点。 |
 | `resizer`  | 拖拽改变尺寸的把手。**仅 `resizable` 为真且 `position` 不为 `center` 时渲染**，默认透明、悬浮时 `bg-primary/20`。                                     |
-| `header`   | 头部容器。**仅 `showHeader` 为真时渲染**，默认 `w-full flex items-center justify-between shrink-0`；`headerClass` 也会并到同一节点。                  |
-| `title`    | 标题文本。默认 `text-base font-medium`。**填充 `header` 插槽会替换掉整块兜底内容**，该节点随之消失，`ui.title` 失效。                                 |
-| `closeBtn` | 右上角关闭按钮（`RebornButton` 的圆形变体）。**仅 `showClose` 为真时渲染**。                                                                          |
-| `body`     | 内容区，包裹 default 插槽。默认 `flex-1 overflow-y-auto scrollbar-hide min-h-0`，内边距与滚动行为改这里；`bodyClass` 也会并到同一节点。               |
-| `footer`   | 页脚容器。**仅填充了 `footer` 插槽时才渲染**，默认 `border-t border-gray-1 shrink-0`；`footerClass` 也会并到同一节点。                                |
+| `header`   | 头部容器。**仅 `showHeader` 为真时渲染**，默认 `w-full flex items-center gap-[12px] shrink-0 border-b border-gray-2 py-[16px] px-[24px]`（关闭图标与标题间隔 12px、底部 `gray-2` 分隔线）；`headerClass` 也会并到同一节点。 |
+| `title`    | 标题文本。默认 `text-lg font-medium text-gray-10`（`text-lg` 令牌即 16px / 行高 24px）。**填充 `header` 插槽会替换掉整块兜底内容**，该节点随之消失，`ui.title` 失效。 |
+| `closeBtn` | 关闭按钮：位于**标题左侧**的 20px 纯图标按钮，默认 `text-gray-6` 悬停 `text-gray-8`。**仅 `showClose` 为真时渲染**。                                  |
+| `body`     | 内容区，包裹 default 插槽。默认 `flex-1 overflow-y-auto scrollbar-hide min-h-0 p-[24px]`，内边距与滚动行为改这里；`bodyClass` 也会并到同一节点。      |
+| `footer`   | 页脚容器。**仅填充了 `footer` 插槽时才渲染**，默认 `border-t border-gray-2 shrink-0 py-[16px] px-[24px]`；`footerClass` 也会并到同一节点。            |
 
 :::
 
@@ -233,7 +235,7 @@ function beforeClose(done: (cancel?: boolean) => void) {
 ```vue
 <template>
   <RebornPopup v-model="visible" position="bottom" round title="筛选" show-close
-    :ui="{ root: 'rounded-t-2xl p-0', header: 'px-4 py-3', body: 'p-4' }">
+    :ui="{ root: 'rounded-t-2xl', header: 'px-4 py-3', body: 'p-4' }">
     <div>内容</div>
   </RebornPopup>
 </template>

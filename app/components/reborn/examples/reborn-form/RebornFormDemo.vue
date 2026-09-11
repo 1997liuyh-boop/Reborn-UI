@@ -9,8 +9,8 @@ import { createRules, genderOptions, initialForm, type FormData } from "./reborn
 const formRef = ref<InstanceType<typeof RebornForm> | null>(null);
 
 const state = ref<Record<string, any>>({
-  labelPosition: "left",
-  labelWidth: "120px",
+  labelPosition: "right",
+  labelWidth: "80px",
   size: "sm",
   immediateValidate: true,
   hideRequiredAsterisk: false,
@@ -29,14 +29,14 @@ const controls = [
         label: "标签位置",
         key: "labelPosition",
         component: "select" as const,
-        defaultValue: "left",
+        defaultValue: "right",
         props: { options: formLabelPositions.map((p) => ({ label: p, value: p })) },
       },
       {
         label: "标签宽度",
         key: "labelWidth",
         component: "input" as const,
-        defaultValue: "120px",
+        defaultValue: "80px",
       },
       {
         label: "尺寸规格",
@@ -157,333 +157,146 @@ function scrollToBio() {
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground
-      v-model="state"
-      :controls="controls"
-      :code="formCode"
-      component-name="RebornForm"
-      title="交互演练场"
-      description="校验规则由 Zod 描述；trigger 决定是输入即校验还是仅在提交时校验，label-width 仅在标签左右布局时生效。"
-    >
-      <RebornForm
-        ref="formRef"
-        :model-value="form"
-        :rules="rules"
-        :label-width="state.labelWidth"
-        :label-position="state.labelPosition"
-        :size="state.size"
-        :trigger="formTrigger"
-        :hide-required-asterisk="state.hideRequiredAsterisk"
-        :require-asterisk-position="state.requireAsteriskPosition"
-        :status-icon="state.statusIcon"
-        :inline-message="state.inlineMessage"
-        :disabled="state.disabled"
-      >
-        <RebornFormItem
-          prop="username"
-          label="用户名"
-          required
-        >
-          <RebornInput
-            v-model="form.username"
-            placeholder="请输入用户名"
-          />
-        </RebornFormItem>
+    <Playground v-model="state" :controls="controls" :code="formCode" component-name="RebornForm" title="交互演练场"
+      description="校验规则由 Zod 描述；trigger 决定是输入即校验还是仅在提交时校验，label-width 仅在标签左右布局时生效。">
+      <div class="py-2">
+        <RebornForm ref="formRef" :model-value="form" :rules="rules" :label-width="state.labelWidth"
+          :label-position="state.labelPosition" :size="state.size" :trigger="formTrigger"
+          :hide-required-asterisk="state.hideRequiredAsterisk"
+          :require-asterisk-position="state.requireAsteriskPosition" :status-icon="state.statusIcon"
+          :inline-message="state.inlineMessage" :disabled="state.disabled">
+          <RebornFormItem prop="username" label="用户名" required>
+            <RebornInput v-model="form.username" placeholder="请输入用户名" />
+          </RebornFormItem>
 
-        <RebornFormItem
-          prop="interest"
-          label="兴趣爱好"
-          required
-        >
-          <div class="flex flex-wrap gap-4 py-2">
-            <RebornCheckbox
-              v-model="form.interest"
-              value="a"
-              label="篮球"
-            />
-            <RebornCheckbox
-              v-model="form.interest"
-              value="b"
-              label="足球"
-            />
-            <RebornCheckbox
-              v-model="form.interest"
-              value="c"
-              label="乒乓球"
-            />
-            <RebornCheckbox
-              v-model="form.interest"
-              value="d"
-              label="羽毛球"
-            />
-          </div>
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="gender"
-          label="性别"
-          required
-        >
-          <RebornSelect
-            v-model="form.gender"
-            :options="genderOptions"
-            placeholder="请选择性别"
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="birthday"
-          label="出生年月"
-          required
-        >
-          <RebornSelectDate
-            v-model="form.birthday"
-            type="date"
-            placeholder="请选择出生年月"
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="dateRange"
-          label="入职时间"
-          required
-        >
-          <RebornSelectDate
-            v-model="form.dateRange"
-            type="daterange"
-            rangeable
-            placeholder="起始日期 - 结束日期"
-            value-format="YYYY-MM-DD"
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="isAgree"
-          label="是否同意"
-          required
-        >
-          <div class="flex items-center gap-4 py-1">
-            <RebornSwitch v-model="form.isAgree" />
-            <span class="text-muted text-sm">同意《用户服务协议》</span>
-          </div>
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="password"
-          label="密码"
-          required
-        >
-          <RebornInput
-            v-model="form.password"
-            placeholder="请输入密码"
-            password
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="newPassword"
-          label="新密码"
-          required
-        >
-          <RebornInput
-            v-model="form.newPassword"
-            placeholder="再次确认新密码"
-            password
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="email"
-          label="验证邮箱"
-          required
-        >
-          <RebornInput
-            v-model="form.email"
-            placeholder="example@domain.com"
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="age"
-          label="年龄"
-          required
-        >
-          <RebornInputNumber
-            v-model="form.age"
-            placeholder="18-100"
-          />
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="height"
-          label="身高"
-          required
-        >
-          <div class="flex w-full items-center gap-4">
-            <RebornSlider
-              v-model="form.height"
-              :min="140"
-              :max="220"
-              class="flex-1"
-            />
-            <span class="text-muted w-12 font-mono text-sm">{{ form.height }}cm</span>
-          </div>
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="weight"
-          label="体重"
-          required
-        >
-          <div class="flex w-full items-center gap-4">
-            <RebornSlider
-              v-model="form.weight"
-              :min="30"
-              :max="150"
-              class="flex-1"
-            />
-            <span class="text-muted w-12 font-mono text-sm">{{ form.weight }}kg</span>
-          </div>
-        </RebornFormItem>
-
-        <RebornFormItem
-          prop="bio"
-          label="个人简介"
-        >
-          <RebornTextarea
-            v-model="form.bio"
-            placeholder="请输入简介 (至少10个字符，选填)"
-          />
-        </RebornFormItem>
-
-        <!-- 嵌套动态列表：prop 以 contacts-索引-字段 的形式与 Zod 数组规则对应 -->
-        <RebornFormItem
-          prop="contacts"
-          required
-          label-position="top"
-        >
-          <template #label>
-            <div class="mb-2 flex w-full items-center justify-between">
-              <span class="text-highlighted text-sm font-semibold">联系人列表</span>
-              <RebornButton
-                size="sm"
-                variant="outlined"
-                label="添加联系人"
-                @click="addContact"
-              >
-                <template #leading>
-                  <Icon name="lucide:plus" />
-                </template>
-              </RebornButton>
+          <RebornFormItem prop="interest" label="兴趣爱好" required>
+            <div class="flex flex-wrap gap-4">
+              <RebornCheckbox v-model="form.interest" value="a" label="篮球" />
+              <RebornCheckbox v-model="form.interest" value="b" label="足球" />
+              <RebornCheckbox v-model="form.interest" value="c" label="乒乓球" />
+              <RebornCheckbox v-model="form.interest" value="d" label="羽毛球" />
             </div>
-          </template>
+          </RebornFormItem>
 
-          <div
-            v-for="(contact, index) in form.contacts"
-            :key="index"
-            class="border-default rounded-ui-md mb-4 flex flex-col border p-4"
-          >
-            <div class="border-default mb-4 flex items-center justify-between border-b pb-3">
-              <span class="text-default text-sm font-medium">#{{ index + 1 }} 联系人信息</span>
-              <RebornButton
-                variant="text"
-                color="neutral"
-                size="sm"
-                @click="form.contacts.splice(index, 1)"
-              >
-                <Icon name="lucide:trash-2" />
-              </RebornButton>
-            </div>
+          <RebornFormItem prop="gender" label="性别" required>
+            <RebornSelect v-model="form.gender" :options="genderOptions" placeholder="请选择性别" />
+          </RebornFormItem>
 
-            <div class="grid grid-cols-1 gap-x-8 md:grid-cols-2">
-              <RebornFormItem
-                :prop="`contacts-${index}-name`"
-                label="姓名"
-                required
-                label-position="top"
-              >
-                <RebornInput
-                  v-model="contact.name"
-                  placeholder="请输入姓名"
-                />
-              </RebornFormItem>
-              <RebornFormItem
-                :prop="`contacts-${index}-phone`"
-                label="手机号"
-                required
-                label-position="top"
-              >
-                <RebornInput
-                  v-model="contact.phone"
-                  placeholder="1XXXXXXXXXX"
-                />
-              </RebornFormItem>
-              <RebornFormItem
-                :prop="`contacts-${index}-email`"
-                label="邮箱"
-                required
-                label-position="top"
-              >
-                <RebornInput
-                  v-model="contact.email"
-                  placeholder="example@domain.com"
-                />
-              </RebornFormItem>
-              <RebornFormItem
-                :prop="`contacts-${index}-no`"
-                label="序号"
-                required
-                label-position="top"
-              >
-                <RebornInputNumber
-                  v-model="contact.no"
-                  placeholder="用于递增校验"
-                />
-              </RebornFormItem>
+          <RebornFormItem prop="birthday" label="出生年月" required>
+            <RebornSelectDate v-model="form.birthday" type="date" placeholder="请选择出生年月" />
+          </RebornFormItem>
+
+          <RebornFormItem prop="dateRange" label="入职时间" required>
+            <RebornSelectDate v-model="form.dateRange" type="daterange" rangeable placeholder="起始日期 - 结束日期"
+              value-format="YYYY-MM-DD" />
+          </RebornFormItem>
+
+          <RebornFormItem prop="isAgree" label="是否同意" required>
+            <div class="flex items-center gap-4">
+              <RebornSwitch v-model="form.isAgree" />
+              <span class="text-muted text-sm">同意《用户服务协议》</span>
             </div>
+          </RebornFormItem>
+
+          <RebornFormItem prop="password" label="密码" required>
+            <RebornInput v-model="form.password" placeholder="请输入密码" password />
+          </RebornFormItem>
+
+          <RebornFormItem prop="newPassword" label="新密码" required>
+            <RebornInput v-model="form.newPassword" placeholder="再次确认新密码" password />
+          </RebornFormItem>
+
+          <RebornFormItem prop="email" label="验证邮箱" required>
+            <RebornInput v-model="form.email" placeholder="example@domain.com" />
+          </RebornFormItem>
+
+          <RebornFormItem prop="age" label="年龄" required>
+            <RebornInputNumber v-model="form.age" placeholder="18-100" />
+          </RebornFormItem>
+
+          <RebornFormItem prop="height" label="身高" required>
+            <div class="flex w-full items-center gap-4">
+              <RebornSlider v-model="form.height" :min="140" :max="220" class="flex-1" />
+              <span class="text-muted w-12 font-mono text-sm">{{ form.height }}cm</span>
+            </div>
+          </RebornFormItem>
+
+          <RebornFormItem prop="weight" label="体重" required>
+            <div class="flex w-full items-center gap-4">
+              <RebornSlider v-model="form.weight" :min="30" :max="150" class="flex-1" />
+              <span class="text-muted w-12 font-mono text-sm">{{ form.weight }}kg</span>
+            </div>
+          </RebornFormItem>
+
+          <RebornFormItem prop="bio" label="个人简介">
+            <RebornTextarea v-model="form.bio" placeholder="请输入简介 (至少10个字符，选填)" />
+          </RebornFormItem>
+
+          <!-- 嵌套动态列表：prop 以 contacts-索引-字段 的形式与 Zod 数组规则对应 -->
+          <RebornFormItem prop="contacts" required label-position="top">
+            <template #label>
+              <div class="mb-2 flex w-full items-center justify-between">
+                <span class="text-highlighted text-sm font-semibold">联系人列表</span>
+                <RebornButton size="sm" variant="outlined" label="添加联系人" @click="addContact">
+                  <template #leading>
+                    <Icon name="lucide:plus" />
+                  </template>
+                </RebornButton>
+              </div>
+            </template>
+
+            <div v-for="(contact, index) in form.contacts" :key="index"
+              class="border-default rounded-ui-md mb-4 flex flex-col border p-4">
+              <div class="border-default mb-4 flex items-center justify-between border-b pb-3">
+                <span class="text-default text-sm font-medium">#{{ index + 1 }} 联系人信息</span>
+                <RebornButton variant="text" color="neutral" size="sm" @click="form.contacts.splice(index, 1)">
+                  <Icon name="lucide:trash-2" />
+                </RebornButton>
+              </div>
+
+              <div class="grid grid-cols-1 gap-x-8 md:grid-cols-2">
+                <RebornFormItem :prop="`contacts-${index}-name`" label="姓名" required label-position="top">
+                  <RebornInput v-model="contact.name" placeholder="请输入姓名" />
+                </RebornFormItem>
+                <RebornFormItem :prop="`contacts-${index}-phone`" label="手机号" required label-position="top">
+                  <RebornInput v-model="contact.phone" placeholder="1XXXXXXXXXX" />
+                </RebornFormItem>
+                <RebornFormItem :prop="`contacts-${index}-email`" label="邮箱" required label-position="top">
+                  <RebornInput v-model="contact.email" placeholder="example@domain.com" />
+                </RebornFormItem>
+                <RebornFormItem :prop="`contacts-${index}-no`" label="序号" required label-position="top">
+                  <RebornInputNumber v-model="contact.no" placeholder="用于递增校验" />
+                </RebornFormItem>
+              </div>
+            </div>
+          </RebornFormItem>
+
+          <div class="border-default mt-6 flex flex-wrap gap-3 border-t pt-6">
+            <RebornButton label="提交表单" @click="submit" />
+            <RebornButton variant="outlined" label="重置" @click="reset" />
+            <RebornButton variant="soft" color="neutral" label="滚动到简介" @click="scrollToBio" />
           </div>
-        </RebornFormItem>
 
-        <div class="border-default mt-6 flex flex-wrap gap-3 border-t pt-6">
-          <RebornButton
-            label="提交表单"
-            @click="submit"
-          />
-          <RebornButton
-            variant="outlined"
-            label="重置"
-            @click="reset"
-          />
-          <RebornButton
-            variant="soft"
-            color="neutral"
-            label="滚动到简介"
-            @click="scrollToBio"
-          />
-        </div>
-
-        <DemoNote tone="dimmed">
-          <template v-if="lastResult === 'success'">
-            校验通过，<code>validate()</code> 返回 <code>true</code>。
-          </template>
-          <template v-else-if="lastResult === 'fail'">
-            校验未通过，共 <code>{{ errorCount }}</code> 个字段存在错误；联系人至少需要 3
-            个且序号必须递增。
-          </template>
-          <template v-else>
-            点击「提交表单」触发一次全量校验；<code>scrollToField</code> 可把指定字段滚动进视口。
-          </template>
-        </DemoNote>
-      </RebornForm>
+          <DemoNote tone="dimmed">
+            <template v-if="lastResult === 'success'">
+              校验通过，<code>validate()</code> 返回 <code>true</code>。
+            </template>
+            <template v-else-if="lastResult === 'fail'">
+              校验未通过，共 <code>{{ errorCount }}</code> 个字段存在错误；联系人至少需要 3
+              个且序号必须递增。
+            </template>
+            <template v-else>
+              点击「提交表单」触发一次全量校验；<code>scrollToField</code> 可把指定字段滚动进视口。
+            </template>
+          </DemoNote>
+        </RebornForm>
+      </div>
     </Playground>
 
-    <DemoSection
-      title="实时数据"
-      description="v-model 绑定的对象随输入同步更新，可直接观察 Zod 预处理后的取值类型。"
-    >
+    <DemoSection title="实时数据" description="v-model 绑定的对象随输入同步更新，可直接观察 Zod 预处理后的取值类型。">
       <pre
-        class="border-default rounded-ui-sm text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed"
-      >{{ JSON.stringify(form, null, 2) }}</pre>
+        class="border-default rounded-ui-sm text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">
+    {{ JSON.stringify(form, null, 2) }}</pre>
     </DemoSection>
   </div>
 </template>

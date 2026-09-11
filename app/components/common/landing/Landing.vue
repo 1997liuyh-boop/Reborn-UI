@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import VideoHero from "./VideoHero.vue";
+import RetargetingHero from "./RetargetingHero.vue";
 </script>
 
 <template>
-  <VideoHero />
+  <RetargetingHero />
 </template>

@@ -13,6 +13,12 @@ export interface LayoutProps {
    */
   direction?: LayoutDirection;
   /**
+   * 表示子元素里有 Aside（Sider），强制横向排列，一般不用指定。
+   * 可用于服务端渲染时避免自动判定造成的样式闪动。
+   * @defaultValue false
+   */
+  hasSider?: boolean;
+  /**
    * 容器渲染的 HTML 元素或组件
    * @defaultValue 'section'
    */
@@ -44,6 +50,7 @@ defineOptions({ name: "RebornLayout" });
 
 const props = withDefaults(defineProps<LayoutProps>(), {
   as: "section",
+  hasSider: false,
 });
 
 defineSlots<LayoutSlots>();
@@ -88,6 +95,8 @@ function componentNameOf(node: VNode): string {
  */
 function resolveDirection(): LayoutDirection {
   if (props.direction) return props.direction;
+  // 显式声明含 Sider 时强制横向，跳过子节点扫描，服务端渲染下也不会闪动
+  if (props.hasSider) return "horizontal";
   const nodes = flattenVNodes(slots.default?.() ?? []);
   return nodes.some((node) => VERTICAL_LAYOUT_CHILDREN.has(componentNameOf(node)))
     ? "vertical"

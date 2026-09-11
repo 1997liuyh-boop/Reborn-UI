@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, provide } from 'vue'
+import { computed, provide, useSlots } from 'vue'
 import { useFieldGroupItem } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
@@ -65,11 +65,16 @@ const labelStyle = computed(() => {
 const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})
 
+const slots = useSlots()
+// 是否有标签，决定表单项之间的间距（有标签 24px / 无标签 16px）
+const hasLabel = computed(() => !!(props.label || slots.label))
+
 const ui = computed(() => {
     const styles = b({
         error: !!error.value,
         labelPosition: labelPosition.value as any,
         size: size.value as any,
+        hasLabel: hasLabel.value,
     })
     return {
         root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.class, uiOverrides.value.root) }),

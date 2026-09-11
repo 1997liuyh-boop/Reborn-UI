@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import type { TabsItem } from "@nuxt/ui";
+import type { ComponentThemeGroup } from "~/utils/getComponentTheme";
+import { loadComponentThemeGroups } from "~/utils/getComponentTheme";
 import { demoContextKey } from "../demo/types";
 
 interface Props {
@@ -115,14 +117,24 @@ const demoSectionSources = computed(() => extractDemoSections(demoRawCode.value)
 /** 可独立运行版本：按模板依赖抽取 script 声明并补全 <template> 包裹，供「在 Playground 运行」 */
 const demoRunnableSources = computed(() => buildRunnableDemoSections(demoRawCode.value));
 
+/**
+ * 组件主题的 slot 结构：整页读一次，下发给每张示例卡片各自的 Theme slots 面板。
+ * 面板已下沉到 DemoSection（每个示例单独开关、单独作用域），这里只负责取数据。
+ */
+const themeGroups = ref<ComponentThemeGroup[]>([]);
+
+watch(() => componentId, async (id) => {
+  themeGroups.value = await loadComponentThemeGroups(id);
+}, { immediate: true });
+
 provide(demoContextKey, {
   sources: demoSectionSources,
   runnableSources: demoRunnableSources,
   componentId,
   demoFile,
   demoName: demoFile.replace(".vue", ""),
+  themeGroups,
 });
-
 </script>
 
 <template>
@@ -138,7 +150,7 @@ provide(demoContextKey, {
     }" :unmount-on-hide="false"
   >
     <template #preview>
-      <!-- 统一展示容器：分组各自成卡，动作与源码都在卡片头上 -->
+      <!-- 统一展示容器：分组各自成卡，动作、源码与 Theme slots 都在各自卡片上 -->
       <DemoStage :demo-name="demoFile.replace('.vue', '')">
         <ClientOnly>
           <component :is="config" />

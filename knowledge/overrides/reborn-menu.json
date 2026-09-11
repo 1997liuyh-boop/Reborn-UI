@@ -1,10 +1,11 @@
 {
-  "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠与多级子菜单。",
+  "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠、多级子菜单与配置式数据驱动。",
   "whenToUse": [
     "后台管理系统侧边导航（mode=\"vertical\"，可配 collapse 折叠）。",
-    "顶部水平导航栏（mode=\"horizontal\"）。",
+    "顶部水平导航栏（mode=\"horizontal\"，可配 ellipsis 折叠溢出条目）。",
     "启用 router 模式后点击菜单项以 index 作为 path 进行路由跳转。",
-    "需要 v-model:active / v-model:expanded 受控管理选中与展开状态时。"
+    "需要 v-model:selected-keys / v-model:open-keys 受控管理选中与展开状态时。",
+    "菜单树来自接口或权限过滤时，传 items 配置式数据由组件递归渲染。"
   ],
   "whenNotToUse": [
     "uniapp 端导航（本组件仅 web），底部页签改用 reborn-tabbar。",
@@ -13,7 +14,12 @@
   "pitfalls": [
     "仅 web 端可用。",
     "collapse 仅在 mode=\"vertical\" 时生效。",
-    "router 模式下菜单项的 index 会被当作路由 path 使用，命名需与路由一致。",
-    "子菜单展开方式由 expandType 控制（默认 popup），触发方式由 menuTrigger 控制（默认 hover）。"
+    "router 模式下菜单项的 index 会被当作路由 path 使用，命名需与路由一致；需要具名路由或带参跳转时改用 route 属性。",
+    "子菜单展开方式由 expandType 控制（默认 popup），触发方式由 menuTrigger 控制（默认 hover）。",
+    "selectedKeys 存的是从一级菜单到选中项的完整 indexPath（祖先高亮依赖该语义），而非 Element Plus 那样只存单个 key。",
+    "ellipsis 默认为 false（Element Plus 默认 true），需要水平溢出折叠时显式开启。",
+    "传了 items 后默认插槽会被忽略，两种写法不要混用。",
+    "选中态配色取 color 对应色阶的第 2 档（背景块）与第 6 档（文字），primary 落到 brand、neutral 的文字落到 gray-9；不需要色块时传 :show-active-background=\"false\"，投影会一并移除。",
+    "旧版的 v-model:active / v-model:expanded 已更名为 v-model:selected-keys / v-model:open-keys，不保留别名；实例方法 updateActive 更名为 updateActiveIndex。"
   ]
 }

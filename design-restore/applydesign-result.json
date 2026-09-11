@@ -1,0 +1,12 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"success\":true,\"filePath\":\"D:\\\\demo2\\\\Reborn-UI\\\\design-restore\\\\reborn-design-pc-overview.html\",\"fileName\":\"reborn-design-pc-overview.html\",\"report\":{\"svgTotal\":137,\"svgReplaced\":137,\"svgUnresolved\":[],\"textTotal\":4,\"textReplaced\":1,\"textUnresolved\":[\"T83|50:034736\",\"T120|37:093439\",\"T124|50:035569\"],\"fabricatedPaths\":[\"M10.501058,5.1607146L11.338559,5.1607146C11.454627,5.1607146\",\"M8.5714283,9.000001C8.5714283,9.0785685,8.5071392,9.1428576,\",\"M10.95386,5.0316687C11.032428,5.0316687,11.096718,5.0959582,\"]},\"warning\":\" 3 text placeholder(s) unresolved.\",\"error\":\"3 fabricated path(s) detected — replace with @@SVG:{svgKey}@@ placeholders and re-run. Examples: \\\"M10.501058,5.1607146L11.338559,5.1607146C11.454627,5.1607146...\\\", \\\"M8.5714283,9.000001C8.5714283,9.0785685,8.5071392,9.1428576,...\\\", \\\"M10.95386,5.0316687C11.032428,5.0316687,11.096718,5.0959582,...\\\"\"}"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 129
+}

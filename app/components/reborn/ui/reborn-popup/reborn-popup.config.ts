@@ -1,12 +1,18 @@
+/*
+ * 抽屉视觉规格：四周无圆角（round 需显式开启）；
+ * header / footer 内边距 py-16px px-24px，body 内边距 24px；
+ * header 底边与 footer 顶边均为 gray-2 分隔线；
+ * 标题 text-lg 令牌（16px/24px）/ gray-10，关闭图标 20px 在标题左侧、间隔 12px。
+ */
 export default {
     slots: {
         wrapper: 'fixed pointer-events-none',
-        root: 'pointer-events-auto fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50 box-border  p-1',
-        header: 'w-full flex items-center justify-between shrink-0',
-        title: 'text-base font-medium text-gray-900 dark:text-gray-100',
-        closeBtn: '',
-        body: 'flex-1 overflow-y-auto scrollbar-hide min-h-0',
-        footer: 'border-t border-gray-1 dark:border-gray-8 shrink-0',
+        root: 'pointer-events-auto fixed bg-white dark:bg-gray-9 flex flex-col shadow-xl z-50 box-border',
+        header: 'w-full flex items-center gap-[12px] shrink-0 border-b border-gray-2 py-[16px] px-[24px]',
+        title: 'text-lg font-medium text-gray-10',
+        closeBtn: 'inline-flex size-[20px] shrink-0 cursor-pointer items-center justify-center text-gray-6 transition-colors hover:text-gray-8',
+        body: 'flex-1 overflow-y-auto scrollbar-hide min-h-0 p-[24px]',
+        footer: 'border-t border-gray-2 shrink-0 py-[16px] px-[24px]',
         resizer: 'absolute bg-transparent hover:bg-primary/20 hover:backdrop-blur-sm transition-colors z-[100]'
     },
     variants: {
@@ -31,6 +37,6 @@ export default {
     ],
     defaultVariants: {
         position: 'center' as const,
-        round: true
+        round: false
     }
 }

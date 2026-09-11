@@ -15,6 +15,7 @@
   "files": [
     "dist",
     "knowledge",
+    "spec",
     "README.md"
   ],
   "publishConfig": {
@@ -25,7 +26,8 @@
     "dev": "tsx src/index.ts --kb-dir ../../knowledge",
     "clean": "rimraf dist",
     "kb:snapshot": "tsx src/scripts/snapshot-kb.ts",
-    "prepack": "npm run build && npm run kb:snapshot"
+    "spec:snapshot": "tsx src/scripts/snapshot-spec.ts",
+    "prepack": "npm run build && npm run kb:snapshot && npm run spec:snapshot"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

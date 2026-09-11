@@ -2,8 +2,8 @@
 /**
  * DemoActions —— 示例卡片的动作组
  *
- * 每张分组卡片（DemoSection）卡片头右侧的五个基础动作：
- *   收起/展开 · 复制代码 · 预览 · Playground · 询问 AI
+ * 每张分组卡片（DemoSection）卡片头右侧的基础动作：
+ *   收起/展开 · 复制代码 · 预览 · Playground · Theme slots · 询问 AI
  *
  * 「收起/展开」只负责翻 v-model:open，真正的折叠动画由调用方用
  * <RebornCollapse> 承载——动作组不关心源码面板长什么样。
@@ -26,6 +26,8 @@ interface Props {
     label?: string
     /** 「询问 AI」提示词中用于定位的主体，如：组件 `reborn-button` 的「尺寸与图标」 */
     askSubject?: string
+    /** 该组件是否有可覆盖的主题 slot；为 false 时隐藏「Theme slots」动作 */
+    hasThemeSlots?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -35,10 +37,14 @@ const props = withDefaults(defineProps<Props>(), {
     previewPath: '',
     label: '示例',
     askSubject: '',
+    hasThemeSlots: false,
 })
 
 /** 源码是否展开（由调用方持有折叠面板） */
 const open = defineModel<boolean>('open', { default: false })
+
+/** Theme slots 面板是否展开（面板同样由调用方渲染，动作组只负责翻开关） */
+const themeOpen = defineModel<boolean>('themeOpen', { default: false })
 
 const hasCode = computed(() => !!props.code.trim())
 
@@ -122,6 +128,15 @@ function askAi() {
       <UButton
         icon="tabler:player-play" size="xs" color="neutral" variant="ghost" aria-label="Playground"
         @click="openPlayground"
+      />
+    </UTooltip>
+
+    <UTooltip v-if="hasThemeSlots" :text="themeOpen ? '收起 Theme slots' : 'Theme slots（可覆盖的样式节点）'">
+      <UButton
+        :icon="themeOpen ? 'tabler:layout-sidebar-right-collapse' : 'tabler:layout-sidebar-right-expand'"
+        size="xs" :color="themeOpen ? 'primary' : 'neutral'" :variant="themeOpen ? 'soft' : 'ghost'"
+        :aria-label="themeOpen ? '收起 Theme slots' : '展开 Theme slots'"
+        @click="themeOpen = !themeOpen"
       />
     </UTooltip>
 

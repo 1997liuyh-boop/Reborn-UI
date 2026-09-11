@@ -113,6 +113,9 @@ knowledge/schema/
 # MCP 包内知识库快照：prepack 时由 kb:snapshot 从仓库根 knowledge/ 生成并内联示例源码
 packages/mcp/knowledge/
 
+# MCP 包内写作规范快照：prepack 时由 spec:snapshot 从 docs/authoring/ 与参考范本生成
+packages/mcp/spec/
+
 # ================================
 # 本地调试残留（不入库）
 # ================================
