@@ -56,7 +56,7 @@
       }
     },
     {
-      "path": "pages/reborn-tabs/index",
+      "path": "pages/reborn-tabs/RebornTabsDemo",
       "style": {
         "navigationBarTitleText": "Tabs"
       }
