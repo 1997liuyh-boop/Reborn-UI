@@ -2,15 +2,9 @@
 title: 评分
 description: 用于星级评分录入与展示的双端组件，支持半星与悬停预览。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, rate, rating, star, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornRateDemo.vue" config="RebornRateConfig" componentId="reborn-rate" :componentFiles='["RebornRate.vue", "reborn-rate.config.ts"]' :uniappFiles='["RebornRate.vue", "reborn-rate.config.ts"]'}

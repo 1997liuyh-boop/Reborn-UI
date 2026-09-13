@@ -1,16 +1,10 @@
 ---
 title: 滑动操作
 description: 用于列表项左滑露出右侧操作按钮的滑动单元格组件，支持 push / overlay 模式与同组互斥。
-category: 杂项
+category: 数据展示
+platform: uniapp
 tags: [css, tailwind, uniapp, swiper]
 badge: New
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornSwiperActionDemo.vue" config="RebornSwiperActionConfig" componentId="reborn-swiper-action" :componentFiles='[]' :uniappFiles='["RebornSwiperAction.vue", "reborn-swiper-action.config.ts"]'}

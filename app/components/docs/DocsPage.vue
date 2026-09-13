@@ -43,8 +43,8 @@ const mergedTexts = computed<DocsPageTexts>(() => ({
     ...props.texts,
 }))
 
-/** 当前页是否有右侧移动端 demo 面板（决定悬浮目录是否左移避让） */
-const { hasDemos: hasMobilePanel } = useUniDemoPanel()
+/** 右侧移动端 demo 面板是否可见（有 demo 且处于 UniApp 档；决定悬浮目录是否左移避让） */
+const { isPanelVisible: hasMobilePanel } = useUniDemoPanel()
 
 /** 目录链接节点（与 @nuxt/content 的 body.toc.links 结构一致） */
 interface TocLinkItem {

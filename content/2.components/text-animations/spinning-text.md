@@ -2,6 +2,7 @@
 title: 旋转文字
 description: 用于让一段文字沿圆形路径持续环绕旋转的动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

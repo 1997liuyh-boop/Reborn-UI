@@ -2,6 +2,7 @@
 title: 光晕搜索框
 description: 用于视觉展示的发光光环搜索输入框组件，无取值 API。
 category: 表单与输入
+platform: web
 tags: [css, tailwind, input, ui-verse]
 ---
 

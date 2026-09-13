@@ -2,15 +2,9 @@
 title: 多行输入框
 description: 用于多行文本输入的输入框组件，支持自动增高、字数统计与键盘行为配置。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, textarea, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornTextareaDemo.vue" config="RebornTextareaConfig" componentId="reborn-textarea" :componentFiles='["RebornTextarea.vue", "reborn-textarea.config.ts"]' :uniappFiles='["RebornTextarea.vue", "reborn-textarea.config.ts"]'}

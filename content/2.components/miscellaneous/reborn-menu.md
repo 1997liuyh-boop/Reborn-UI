@@ -2,14 +2,8 @@
 title: Menu 菜单
 description: 用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠、多级子菜单与配置式数据驱动。
 category: 导航
+platform: web
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornMenuDemo.vue" config="RebornMenuConfig" componentId="reborn-menu" :componentFiles='["reborn-menu.config.ts", "RebornMenu.vue", "RebornMenuItem.vue", "RebornMenuItemGroup.vue", "RebornMenuItems.vue", "RebornMenuDivider.vue", "RebornSubMenu.vue"]'}

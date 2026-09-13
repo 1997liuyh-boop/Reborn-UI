@@ -8,7 +8,7 @@ interface Props {
   category?: string
 }
 
-const { category = '杂项' } = defineProps<Props>()
+const { category = '其他' } = defineProps<Props>()
 
 /** 分类 → 示意变体 */
 const variant = computed(() => {
@@ -27,7 +27,7 @@ const variant = computed(() => {
       return 'text'
     case '特效':
       return 'effect'
-    case '数据':
+    case '数据展示':
       return 'data'
     case '反馈':
       return 'feedback'

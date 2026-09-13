@@ -1,14 +1,8 @@
 ---
 title: Transition 过渡
 description: 用于控制内容显隐过渡动画的容器组件，内置 fade、slide、zoom 等动画名称。
-category: 杂项
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
+category: 通用
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornTransitionDemo.vue" config="RebornTransitionConfig" componentId="reborn-transition" :componentFiles='["RebornTransition.vue", "reborn-transition.config.ts"]' :uniappFiles='["RebornTransition.vue", "reborn-transition.config.ts"]'}

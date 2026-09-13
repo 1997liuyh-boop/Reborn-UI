@@ -2,6 +2,7 @@
 title: 霓虹边框
 description: 用于给插槽内容包裹双色霓虹流转边框的装饰容器组件。
 category: 特效
+platform: web
 tags: [css, tailwind, border]
 ---
 

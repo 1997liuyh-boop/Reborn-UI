@@ -2,10 +2,7 @@
 title: 取色器
 description: 用于弹出面板选取颜色并以 v-model 绑定色值字符串的取色器组件，双端可用。
 category: 表单与输入
-navigation:
-  badges:
-    - label: 通用
-      color: primary
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornColorPickerDemo.vue" config="RebornColorPickerConfig" componentId="reborn-color-picker" :componentFiles='["RebornColorPicker.vue", "RebornColorPickerPanel.vue", "reborn-color-picker.config.ts", "reborn-color-picker-panel.config.ts"]' :uniappFiles='["RebornColorPicker.vue", "reborn-color-picker.config.ts"]'}

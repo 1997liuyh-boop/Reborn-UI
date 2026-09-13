@@ -1,15 +1,9 @@
 ---
 title: 标题
 description: 用于站点顶部导航的响应式头部组件，移动端可切换为弹窗菜单。
-category: 导航
+category: 布局
+platform: web
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 # RebornHeader 头部

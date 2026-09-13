@@ -1,14 +1,8 @@
 ---
 title: Draggable 拖拽排序
 description: 用于列表项拖拽排序并同步 v-model 数据顺序的容器组件，双端可用。
-category: 杂项
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
+category: 通用
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornDraggableDemo.vue" config="RebornDraggableConfig" componentId="reborn-draggable" :componentFiles='["RebornDraggable.vue", "reborn-draggable.config.ts"]' :uniappFiles='["RebornDraggable.vue", "reborn-draggable.config.ts"]'}

@@ -27,14 +27,15 @@ const threeColUi = {
 
 /**
  * 右侧移动端面板为 fixed 定位（贴视口右缘 420px 宽），不参与文档流；
- * 当前页有 demo 时正文加 2xl:pr-[420px] 避让，间隙由容器自身 px-8 提供。
+ * 面板可见（当前页有 uniapp demo 且顶栏开关处于 UniApp 档）时正文加 2xl:pr-[420px] 避让，
+ * 间隙由容器自身 px-8 提供。
  * 用 padding 而非 margin：正文包装器是 UContainer 的第一个子元素，
  * 会命中带 `&:first-child { margin-inline-end: 0 }` 的工具类（伪类特异性更高），
  * margin-right 会被清零。
- * hasDemos 在 SSR 期即由 ComponentPlayground 注册（useState 随 payload 下发），
- * 服务端与客户端首帧一致，不产生水合差异。
+ * demo 注册在 SSR 期即由 ComponentPlayground 完成（useState 随 payload 下发），
+ * 平台档位首屏固定为 web，水合后才恢复用户选择，服务端与客户端首帧一致。
  */
-const { hasDemos } = useUniDemoPanel();
+const { isPanelVisible } = useUniDemoPanel();
 </script>
 
 <template>
@@ -44,7 +45,7 @@ const { hasDemos } = useUniDemoPanel();
     <UContainer>
       <div
         class="min-w-0 transition-[padding] duration-200"
-        :class="hasDemos ? '2xl:pr-[420px]' : undefined"
+        :class="isPanelVisible ? '2xl:pr-[420px]' : undefined"
       >
         <!-- <UPage :key="route.fullPath"> -->
         <UPage
@@ -64,7 +65,7 @@ const { hasDemos } = useUniDemoPanel();
         </UPage>
       </div>
 
-      <!-- 右侧移动端 demo 面板：fixed 常驻右缘，置于 :key 之外，路由切换时 iframe 复用 -->
+      <!-- 右侧移动端 demo 面板：fixed 常驻右缘，置于 :key 之外，路由切换时 iframe 复用；仅 UniApp 档展示 -->
       <DocsMobilePanel />
     </UContainer>
   </UMain>

@@ -1,15 +1,9 @@
 ---
 title: 主体布局
 description: 用于渲染语义化 main 页面主体区域、默认最小高度撑满一屏的布局组件，仅 web 端。
-category: 导航
+category: 布局
+platform: web
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

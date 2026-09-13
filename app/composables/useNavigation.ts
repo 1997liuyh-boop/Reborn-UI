@@ -17,14 +17,16 @@ import type { ContentNavigationItem } from "@nuxt/content";
  */
 export function useNavigation(navigation?: Ref<ContentNavigationItem[]>) {
   const route = useRoute();
+  const { filterNavigation } = useDocsPlatform();
 
   /**
-   * 当前路由所属的顶级分区下的所有子项。
+   * 当前路由所属的顶级分区下的所有子项（已按顶栏平台开关裁剪）。
    *
    * 例如路由为 `/components/button` 时：
    * 1. 解析出第一级路径段 `components`
    * 2. 在导航树中查找 `path === '/components'` 的节点
-   * 3. 返回该节点的 `children`（即所有组件分类/页面）
+   * 3. 返回该节点的 `children`：组件分区已在 app.vue 重组为「系列 → 分类 → 组件」，
+   *    这里再按 Web / UniApp 档位过滤；其它分区原样返回
    */
   const children = computed(() => {
     const nav = toValue(navigation);
@@ -41,8 +43,9 @@ export function useNavigation(navigation?: Ref<ContentNavigationItem[]>) {
     // 构造顶级分区路径，例如 '/components'
     const topParentPath = `/${pathSegments[0]}`;
 
-    // 在导航树的第一层中查找匹配的节点
-    const topParent = nav?.find((item) => item.path === topParentPath);
+    // 先在整棵树上按平台裁剪再取分区：裁剪以 '/components' 节点为入口识别组件分区，
+    // 其下的系列 / 分类是虚拟节点（path 带 #），单独传子树进去会识别不出来
+    const topParent = filterNavigation(nav).find((item) => item.path === topParentPath);
 
     return topParent?.children || [];
   });
@@ -60,7 +63,8 @@ export function useNavigation(navigation?: Ref<ContentNavigationItem[]>) {
    *
    * - **扁平列表**：包装为单个 `{ title: 'Overview', children: [...] }` 分组，
    *   确保侧边栏仍能以分组形式统一渲染。
-   * - **多层结构**：直接透传 `children`，每个子项自身就是一个分组。
+   * - **多层结构**：直接透传 `children`，每个子项自身就是一个分组
+   *   （组件分区：系列是分组，分组下是虚拟的分类节点，再下一层才是组件页）。
    */
   const nav = computed(() => {
     if (isFlatList.value) {

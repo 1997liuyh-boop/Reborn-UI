@@ -2,6 +2,7 @@
 title: 抖动着色器
 description: 用于对图片实时应用有序抖动与像素化处理的复古风着色器组件。
 category: 特效
+platform: web
 tags: [tailwind, background, card, aceternity-ui]
 ---
 

@@ -1,16 +1,10 @@
 ---
 title: Progress 进度条
 description: 用于展示任务完成比例的进度组件，支持直线、圆环、仪表盘及步骤形态、渐变与分段颜色。
-category: 杂项
+category: 反馈
+platform: web
 tags: [progress, feedback, status, steps]
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornProgressDemo.vue" config="RebornProgressConfig" componentId="reborn-progress" :componentFiles='["RebornProgress.vue", "reborn-progress.config.ts", "reborn-progress.utils.ts"]'}

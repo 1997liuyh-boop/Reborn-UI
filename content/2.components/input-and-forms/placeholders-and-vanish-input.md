@@ -2,6 +2,7 @@
 title: 占位符滚动与消失输入框
 description: 用于占位符轮换滚动、提交时文字呈消失动画的单行输入组件。
 category: 表单与输入
+platform: web
 tags: [css, tailwind, input, aceternity-ui]
 ---
 

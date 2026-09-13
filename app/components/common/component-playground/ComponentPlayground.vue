@@ -2,7 +2,9 @@
 import DeviceFrame from '../device-frame/DeviceFrame.vue'
 
 const props = defineProps<{
+  /** 该组件是否有 UniApp 端 demo（配合 url 使用） */
   uniapp?: boolean
+  /** UniApp H5 demo 地址（站内 /uni-render/ 下的 hash 路由） */
   url?: string
 }>()
 
@@ -10,29 +12,24 @@ const open = ref(false);
 
 const isDesktop = useMediaQuery("(min-width: 768px)");
 
-// 注册移动端 demo 到页面级状态：2xl+ 由右侧 DocsMobilePanel 常驻展示
+// 注册移动端 demo 到页面级状态：面板是否真正展示由 useUniDemoPanel 结合平台开关决定
 if (props.uniapp && props.url) {
   const { register } = useUniDemoPanel()
   register({ url: props.url })
 }
 
+const { isUniapp } = useDocsPlatform()
+
 /**
- * 2xl+ 右侧面板可见（阈值与 DocsMobilePanel 严格一致）：
- * 内层不再渲染 Web/UniApp Tabs（避免同屏双 iframe），直接输出 Web demo；
- * <2xl 无右栏，保留原有 UniApp Tab 作为移动端预览的回退入口。
+ * 预览内容按顶栏平台开关分流：
+ * - Web 档：只输出 Web demo，不渲染任何 UniApp 预览；
+ * - UniApp 档 + 2xl+：右侧 DocsMobilePanel 常驻手机壳（阈值与其严格一致），
+ *   正文仍输出 Web demo（避免同屏双 iframe）；
+ * - UniApp 档 + <2xl：无右栏，正文内联手机壳承担 UniApp 预览。
  */
 const isPanelViewport = useMediaQuery("(min-width: 1536px)");
-const showInnerTabs = computed(() => props.uniapp && !isPanelViewport.value)
+const showInlineDevice = computed(() => props.uniapp && isUniapp.value && !isPanelViewport.value)
 
-const items = [{
-  label: 'Web',
-  icon: 'i-lucide-globe',
-  slot: 'web'
-}, {
-  label: 'UniApp',
-  icon: 'i-lucide-smartphone',
-  slot: 'uniapp'
-}]
 const { app } = useRuntimeConfig()
 
 const computedUrl = computed(() => {
@@ -48,21 +45,12 @@ const computedUrl = computed(() => {
       背景层级铁律：示例的表面层已由 DemoStage 画布承担，
       这里不再叠加任何卡片背景 / 描边 / 投影，只负责内容分发。
     -->
-    <UTabs v-if="showInnerTabs" :items="items" class="w-full min-w-0">
-      <template #web>
-        <div class="pt-4">
-          <slot name="component" />
-        </div>
-      </template>
-      <template #uniapp>
-        <div class="flex justify-center pt-4">
-          <DeviceFrame v-if="computedUrl" :src="computedUrl" />
-          <div v-else class="text-muted p-4 text-sm">
-            未提供预览地址
-          </div>
-        </div>
-      </template>
-    </UTabs>
+    <div v-if="showInlineDevice" class="flex w-full justify-center">
+      <DeviceFrame v-if="computedUrl" :src="computedUrl" />
+      <div v-else class="text-muted p-4 text-sm">
+        未提供预览地址
+      </div>
+    </div>
     <div v-else class="w-full min-w-0">
       <slot name="component" />
     </div>

@@ -2,14 +2,8 @@
 title: DropdownSelect 下拉选择
 description: 用于从 options 列表下拉选择单个值的选择器组件，仅 uniapp 端。
 category: 表单与输入
+platform: uniapp
 tags: [uniapp, dropdown, select, form]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

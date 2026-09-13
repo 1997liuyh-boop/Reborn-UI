@@ -2,11 +2,8 @@
 title: Tabbar 底部标签栏
 description: 用于 uniapp 页面底部导航的自定义标签栏，配合 RebornTabbarTrigger 子项使用，支持球形凸起动画与安全区适配。
 category: 导航
+platform: uniapp
 tags: [uniapp, tabbar, navigation]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
 ---
 ::warning
 仅 UniApp 端组件，Web 端无对应实现。页面内的内容区切换请改用 `reborn-tabs`。

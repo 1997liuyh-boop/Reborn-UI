@@ -2,14 +2,8 @@
 title: 商品规格 Sku
 description: 用于商品规格（SKU）选择的选项组件，按 options 渲染规格项并以对象形式双向绑定选中结果。
 category: 表单与输入
+platform: web
 tags: [web, sku, form, select]
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色、尺码」等一组组规格项，选中结果以对象形式通过 `v-model` 双向绑定：key 为属性组的 `key`，value 为选中项的值（`multiple` 多选时为数组）。单选组内再次点击已选项可取消选中；每次变化会同时触发 `update:modelValue` 与 `change`。

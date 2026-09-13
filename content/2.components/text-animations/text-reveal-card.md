@@ -2,6 +2,7 @@
 title: 文字揭示卡片
 description: 用于鼠标滑过卡片时揭示另一段隐藏文字、带星星粒子的卡片组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

@@ -2,15 +2,9 @@
 title: 引导 Guide
 description: 用于按步骤高亮页面元素并弹出说明的新手引导组件，仅 web 端。
 category: 反馈
+platform: web
 tags: [css, tailwind, guide, tour]
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornGuideDemo.vue" config="RebornGuideConfig" componentId="reborn-guide" :componentFiles='["RebornGuide.vue", "reborn-guide.config.ts"]'}

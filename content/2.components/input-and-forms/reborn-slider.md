@@ -2,15 +2,9 @@
 title: Slider 滑块
 description: 双端滑块：单值 / 范围 / 多节点编辑，支持刻度、间断点、垂直与反向、气泡提示与选区整体拖拽。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, slider, range, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornSliderDemo.vue" config="RebornSliderConfig" componentId="reborn-slider" :componentFiles='["RebornSlider.vue", "reborn-slider.config.ts"]' :uniappFiles='["RebornSlider.vue", "reborn-slider.config.ts"]'}

@@ -2,6 +2,7 @@
 title: 滚动文字揭示
 description: 用于随页面滚动进度将一句话逐词由淡变实显现的文字组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

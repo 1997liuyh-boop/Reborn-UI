@@ -2,15 +2,9 @@
 title: 下拉选择2
 description: 自定义下拉选择组件，支持键盘导航和动画过渡。
 category: 表单与输入
+platform: uniapp
 tags: [css, tailwind, select, dropdown, uniapp]
 badge: Update
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: UPDATE
-    color: warning
 ---
 
 

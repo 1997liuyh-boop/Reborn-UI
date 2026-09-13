@@ -2,14 +2,8 @@
 title: Waterfall 瀑布流
 description: 用于 uniapp 中按列分流渲染瀑布流布局的容器组件，数据经实例方法维护、每项由 item 插槽渲染。
 category: 布局
+platform: uniapp
 tags: [uniapp, waterfall, layout, list]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

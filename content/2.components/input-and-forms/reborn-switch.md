@@ -2,15 +2,9 @@
 title: Switch 开关
 description: 双端开关：三种形态 × 任意值双态映射，支持点内文本、切换前拦截、加载态与滑块状态插槽。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, switch, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornSwitchDemo.vue" config="RebornSwitchConfig" componentId="reborn-switch" :componentFiles='["RebornSwitch.vue", "reborn-switch.config.ts"]' :uniappFiles='["RebornSwitch.vue", "reborn-switch.config.ts"]'}
@@ -108,7 +102,7 @@ const on = ref(true);
 
 ### 点内文本
 
-`inlinePrompt` 为 `true` 时，`activeLabel` / `inactiveLabel` 不再渲染在两侧，而是渲染进开关内部：开态文本贴轨道左端（滑块滑到右侧后空出的区域），关态文本贴右端。固定宽度下超出的文本自动省略号截断；设置 `autoWidth` 后轨道按两态文案的较长者撑开（原固定宽降级为最小宽），切换时宽度保持稳定，文本完整显示不省略。两态文案持续挂载，以 200ms 水平滑入、滑出；系统开启减弱动效时立即切换。
+`inlinePrompt` 为 `true` 时，`activeLabel` / `inactiveLabel` 不再渲染在两侧，而是渲染进开关内部：开态文本落在轨道左侧（滑块滑到右侧后空出的区域），关态文本落在右侧，都在各自区域内居中。固定宽度下超出的文本自动省略号截断；设置 `autoWidth` 后轨道按两态文案的较长者撑开（原固定宽降级为最小宽），切换时宽度保持稳定，文本完整显示不省略。两态文案持续挂载，以 200ms 水平滑入、滑出；系统开启减弱动效时立即切换。
 
 ```vue
 <template>
@@ -432,6 +426,7 @@ function beforeChange() {
 | `inactiveTrack`  | 关闭态轨道样式，覆盖通用 track 中的同类样式。                                |
 | `wave`           | 切换波纹层；波纹颜色取 color 语义色。                                        |
 | `thumb`          | 滑块圆钮。                                                                   |
+| `inlineWrap`     | 仅 web。点内文案的容器（`inlinePrompt` 开启时渲染）；`autoWidth` 下改为不可收缩、按内容定宽。 |
 | `inlineActive`   | 点内开态文本（`inlinePrompt` 开启时渲染）。                                  |
 | `inlineInactive` | 点内关态文本。                                                               |
 | `loading`        | 仅 uniapp。默认加载图标（web 端加载图标是 Icon 组件，用 `thumb` 插槽替换）。 |

@@ -2,6 +2,7 @@
 title: 闪烁粒子
 description: 用于渲染可配置密度、大小与颜色的闪烁粒子背景层组件。
 category: 特效
+platform: web
 tags: [canvas, particles, aceternity-ui]
 ---
 

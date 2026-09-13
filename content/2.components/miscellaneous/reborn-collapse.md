@@ -1,16 +1,10 @@
 ---
 title: 折叠面板
 description: 用于点击触发区展开或收起内容区域的折叠组件，带高度过渡动画，双端可用。
-category: 通用
+category: 数据展示
+platform: both
 tags: [css, tailwind, collapse, accordion, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornCollapseDemo.vue" config="RebornCollapseConfig" componentId="reborn-collapse" :componentFiles='["RebornCollapse.vue", "reborn-collapse.config.ts"]' :uniappFiles='["RebornCollapse.vue", "reborn-collapse.config.ts"]'}

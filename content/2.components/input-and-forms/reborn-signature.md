@@ -1,15 +1,9 @@
 ---
 title: Signature 签名
 description: 用于手写签名并导出图片的画布组件，支持笔锋模拟、撤销恢复与透明背景导出。
-category: 输入与表单
+category: 表单与输入
+platform: uniapp
 tags: [uniapp, signature, canvas, form]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

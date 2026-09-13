@@ -1,16 +1,10 @@
 ---
 title: 礼花
 description: 用于给容器内元素附加点击礼花/烟花粒子特效的组件，仅 web 端。
-category: 杂项
+category: 特效
+platform: web
 tags: [css, tailwind, canvas]
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornFireworksDemo.vue" config="RebornFireworksConfig" componentId="reborn-fireworks" :componentFiles='["RebornFireworks.vue"]'}

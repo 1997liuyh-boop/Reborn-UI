@@ -2,15 +2,9 @@
 title: 提示点/标记
 description: 用于在元素角标位置显示提示点或数字标记的组件，双端可用。
 category: 按钮
+platform: both
 tags: [css, tailwind, chip, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornChipDemo.vue" config="RebornChipConfig" componentId="reborn-chip" :componentFiles='["RebornChip.vue", "chip.ts"]' :uniappFiles='["RebornChip.vue", "chip.ts"]'}

@@ -39,6 +39,12 @@ const sectionItems = computed(() =>
   }) ?? [],
 );
 
+/**
+ * 平台开关只在组件分区出现：它筛选的是组件列表与组件预览，
+ * 入门指南 / 更新日志等页面没有可筛选的对象，不展示以免误导。
+ */
+const showPlatformSwitch = computed(() => route.path.startsWith("/components"));
+
 const links = computed(() =>
   appConfig.github && appConfig.github.url
     ? [
@@ -64,6 +70,12 @@ const links = computed(() =>
     </template>
 
     <template #right>
+      <!-- 桌面端：组件分区的 Web / UniApp 平台开关，置于分类导航之前 -->
+      <template v-if="showPlatformSwitch">
+        <DocsPlatformSwitch class="hidden lg:flex" />
+        <USeparator orientation="vertical" class="mx-1 hidden h-5 lg:block" />
+      </template>
+
       <!-- 桌面端：分类导航贴近右侧工具区（Ask AI / 主题 / GitHub） -->
       <nav v-if="sectionItems.length" class="mr-1 hidden items-center gap-0.5 lg:flex" aria-label="文档分类">
         <UButton v-for="item in sectionItems" :key="String(item.to)" :to="item.to" :label="item.label" color="neutral"
@@ -104,7 +116,10 @@ const links = computed(() =>
     </template>
 
     <template #body>
-      <!-- 移动端抽屉：分类导航置顶，下面仍是完整内容树 -->
+      <!-- 移动端抽屉：平台开关 + 分类导航置顶，下面是按平台裁剪后的内容树 -->
+      <div v-if="showPlatformSwitch" class="mb-4 lg:hidden">
+        <DocsPlatformSwitch block />
+      </div>
       <div v-if="sectionItems.length" class="mb-4 flex flex-wrap gap-1 border-b border-default/40 pb-4 lg:hidden">
         <UButton v-for="item in sectionItems" :key="`m-${String(item.to)}`" :to="item.to" :label="item.label"
           color="neutral" variant="soft" size="sm" :class="item.active ? 'text-primary' : undefined" />

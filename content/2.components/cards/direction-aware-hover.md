@@ -2,6 +2,7 @@
 title: 方向感知悬停卡片
 description: 用于根据鼠标进入方向滑入内容覆盖层的图片悬停卡片组件。
 category: 卡片
+platform: web
 tags: [css, tailwind, card, aceternity-ui]
 ---
 

@@ -1,14 +1,8 @@
 ---
 title: RootPortal 根门户
 description: 用于把子节点渲染到页面根节点、脱离当前层级关系的双端传送组件。
-category: 杂项
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
+category: 通用
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornRootPortalDemo.vue" config="RebornRootPortalConfig" componentId="reborn-root-portal" :componentFiles='["RebornRootPortal.vue", "reborn-root-portal.config.ts"]' :uniappFiles='["RebornRootPortal.vue", "reborn-root-portal.config.ts"]'}

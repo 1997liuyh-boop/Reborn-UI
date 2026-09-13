@@ -2,15 +2,9 @@
 title: SearchBox 搜索框
 description: 用于带下拉面板的双端搜索框组件，支持历史记录、推荐词与 SKU 属性筛选。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, input, search, reborn]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornSearchBoxDemo.vue" config="RebornSearchBoxConfig" componentId="reborn-search-box" :componentFiles='["RebornSearchBox.vue", "reborn-search-box.config.ts"]' :uniappFiles='["RebornSearchBox.vue", "reborn-search-box.config.ts"]'}

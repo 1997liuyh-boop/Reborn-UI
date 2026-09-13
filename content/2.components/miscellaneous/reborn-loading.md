@@ -1,14 +1,8 @@
 ---
 title: Loading 加载器
 description: uniapp 单独展示。
-category: 杂项
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: uniapp
 ---
 ::warning
 web端组件描述：暂时不需要

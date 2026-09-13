@@ -1,7 +1,8 @@
 ---
 title: 照片画廊
 description: 用于以动画展开一组照片的画廊展示组件，图片经 items 传入。
-category: 杂项
+category: 数据展示
+platform: web
 tags: [css, tailwind, gallery]
 ---
 

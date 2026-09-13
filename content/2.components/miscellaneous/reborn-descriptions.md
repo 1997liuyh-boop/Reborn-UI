@@ -1,14 +1,8 @@
 ---
 title: 描述列表
 description: 用于以键值对多列布局展示详情信息的描述列表组件，仅 web 端。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 数据展示
+platform: web
 ---
 
 ## 基础用法

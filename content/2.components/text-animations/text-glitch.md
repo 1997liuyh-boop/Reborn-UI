@@ -2,6 +2,7 @@
 title: 文字故障
 description: 用于给文字叠加彩色错位故障（glitch）动画的文字效果组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind]
 ---
 

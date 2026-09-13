@@ -1,14 +1,8 @@
 ---
 title: 穿梭框
 description: 用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回与分页。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 表单与输入
+platform: web
 ---
 
 ## 基础用法

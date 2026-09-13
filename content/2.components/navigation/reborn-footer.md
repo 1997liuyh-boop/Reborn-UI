@@ -1,15 +1,9 @@
 ---
 title: Footer 底部栏
 description: 用于固定在页面底部放置操作按钮的容器组件，自动占位并适配安全区，目前仅 uniapp 端实现。
-category: 导航
+category: 布局
+platform: uniapp
 badge: New
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

@@ -2,15 +2,9 @@
 title: 数字输入框
 description: 用于在最小最大值范围内按步进增减数值的双端数字输入组件。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, input-number, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornInputNumberDemo.vue" config="RebornInputNumberConfig" componentId="reborn-input-number" :componentFiles='["RebornInputNumber.vue", "reborn-input-number.config.ts"]' :uniappFiles='["RebornInputNumber.vue", "reborn-input-number.config.ts"]'}

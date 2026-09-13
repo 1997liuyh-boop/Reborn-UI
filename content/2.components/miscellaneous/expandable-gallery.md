@@ -1,7 +1,8 @@
 ---
 title: 可扩展画廊
 description: 用于一行图片悬停时放大当前项的可扩展横向画廊组件。
-category: 杂项
+category: 数据展示
+platform: web
 tags: [css, tailwind, gallery]
 ---
 

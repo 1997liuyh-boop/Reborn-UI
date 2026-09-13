@@ -2,6 +2,7 @@
 title: 水波纹
 description: 用于渲染多圈同心圆扩散水波背景的装饰效果组件。
 category: 特效
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

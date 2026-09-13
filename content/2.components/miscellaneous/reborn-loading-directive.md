@@ -1,14 +1,8 @@
 ---
 title: Loading 加载指令
 description: 用于给元素或整页添加加载遮罩的组件，提供 v-loading 指令与 useLoading 服务式调用。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: web
 ---
 
 ::ComponentViewer{demoFile="RebornLoadingDirectiveDemo.vue" config="RebornLoadingDirectiveConfig" componentId="reborn-loading" :componentFiles='["RebornLoadingMask.vue", "reborn-loading-mask.config.ts"]'}

@@ -1,7 +1,8 @@
 ---
 title: Dock
 description: 用于悬停时邻近图标放大的 macOS 风格 Dock 图标栏组件。
-category: 杂项
+category: 导航
+platform: web
 tags: [css, tailwind]
 ---
 

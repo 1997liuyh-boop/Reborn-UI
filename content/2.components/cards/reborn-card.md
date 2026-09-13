@@ -1,15 +1,9 @@
 ---
 title: 卡片 Card
 description: 用于分组展示内容区块的基础卡片容器组件，带可选标题，仅 uniapp 端。
-category: 卡片
+category: 数据展示
+platform: uniapp
 tags: [uniapp, card, container]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ## 基础用法

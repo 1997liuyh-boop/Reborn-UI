@@ -2,14 +2,8 @@
 title: Menu 右键菜单
 description: 用于在目标区域右键、点击或悬浮弹出操作面板的上下文菜单组件，仅 web 端。
 category: 导航
+platform: web
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornContextMenuDemo.vue" config="RebornContextMenuConfig" componentId="reborn-context-menu" :componentFiles='["RebornContextMenu.vue", "reborn-context-menu.config.ts"]'}

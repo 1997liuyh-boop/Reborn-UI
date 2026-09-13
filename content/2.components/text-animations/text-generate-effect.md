@@ -2,6 +2,7 @@
 title: 文字生成效果
 description: 用于让段落文字逐字渐显、可带模糊过渡的入场动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

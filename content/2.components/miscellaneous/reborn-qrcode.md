@@ -1,16 +1,10 @@
 ---
 title: 二维码 Qrcode
 description: 用于生成二维码的双端组件，支持前景/背景色、码点样式、中央 Logo 与纠错级别。
-category: 杂项
+category: 数据展示
+platform: both
 tags: [qrcode, canvas, svg, uniapp, web]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornQrcodeDemo.vue" config="RebornQrcodeConfig" componentId="reborn-qrcode" :componentFiles='["RebornQrcode.vue", "qrcode.ts"]' :uniappFiles='["RebornQrcode.vue", "draw.ts", "qrcode.ts"]'}

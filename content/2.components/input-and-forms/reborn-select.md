@@ -2,15 +2,9 @@
 title: Select 下拉选择
 description: 用于从选项列表中单选或多选的双端下拉选择组件，uniapp 端为弹层滚动选择。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, select, dropdown, uniapp]
 badge: Update
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: UPDATE
-    color: warning
 ---
 
 ::ComponentViewer{demoFile="RebornSelectDemo.vue" config="RebornSelectConfig" componentId="reborn-select" :componentFiles='["RebornSelect.vue", "reborn-select.config.ts"]' :uniappFiles='["RebornSelect.vue", "reborn-select.config.ts", "index.ts"]'}

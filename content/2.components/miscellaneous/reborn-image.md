@@ -1,16 +1,10 @@
 ---
 title: 图片 Image
 description: 用于展示图片并提供预览、加载/错误状态与多种裁剪模式的双端图片组件。
-category: 杂项
+category: 通用
+platform: both
 tags: [css, tailwind, image, media, uniapp, viewerjs]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornImageDemo.vue" config="RebornImageConfig" componentId="reborn-image" :componentFiles='["RebornImage.vue", "reborn-image.config.ts"]' dependencies="[viewerjs, vue-lazyload]" :uniappFiles='["RebornImage.vue", "reborn-image.config.ts"]'}

@@ -1,7 +1,8 @@
 ---
 title: 链接预览
 description: 用于悬停链接文字时弹出目标网页预览图的行内链接组件。
-category: 杂项
+category: 反馈
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

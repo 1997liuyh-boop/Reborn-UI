@@ -2,15 +2,9 @@
 title: checkbox 多选框
 description: 用于开关单项或组合多选的多选框组件，双端可用，支持布尔与数组两种绑定。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, checkbox, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornCheckboxDemo.vue" config="RebornCheckboxConfig" componentId="reborn-checkbox" :componentFiles='["RebornCheckbox.vue", "RebornCheckboxGroup.vue", "reborn-checkbox.config.ts"]' :uniappFiles='["RebornCheckbox.vue", "RebornCheckboxGroup.vue", "reborn-checkbox.config.ts"]'}

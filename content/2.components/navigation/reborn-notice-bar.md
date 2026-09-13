@@ -1,15 +1,9 @@
 ---
 title: NoticeBar 通知栏
 description: 用于循环播放一组消息通知的通告栏组件，支持水平滚动与垂直轮播。
-category: 导航
+category: 数据展示
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornNoticeBarDemo.vue" config="RebornNoticeBarConfig" componentId="reborn-notice-bar" :componentFiles='["RebornNoticeBar.vue", "reborn-notice-bar.config.ts"]' :uniappFiles='["RebornNoticeBar.vue", "reborn-notice-bar.config.ts"]'}

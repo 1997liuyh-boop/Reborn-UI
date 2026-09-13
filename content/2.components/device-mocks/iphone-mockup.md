@@ -2,6 +2,7 @@
 title: iPhone 模型
 description: 用于以 iPhone SVG 外壳包裹展示截图的设备模型组件。
 category: 设备模型
+platform: web
 tags: [css, tailwind, device-mockup, magic-ui]
 badge: New
 ---

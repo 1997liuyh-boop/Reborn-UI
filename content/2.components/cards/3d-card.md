@@ -2,6 +2,7 @@
 title: 3D 卡片效果
 description: 用于悬停时随鼠标产生透视倾斜、子元素分层浮起的 3D 卡片组件。
 category: 卡片
+platform: web
 tags: [css, tailwind, card, aceternity-ui]
 ---
 

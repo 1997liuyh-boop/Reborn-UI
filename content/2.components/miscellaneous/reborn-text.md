@@ -1,16 +1,10 @@
 ---
 title: 文本 Text
 description: 用于展示文本并内置类型格式化、脱敏与多行省略的增强文本组件。
-category: 杂项
+category: 通用
+platform: both
 tags: [css, tailwind, text, format, mask, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornTextDemo.vue" config="RebornTextConfig" componentId="reborn-text" :componentFiles='["RebornText.vue", "reborn-text.config.ts"]' :uniappFiles='["RebornText.vue", "reborn-text.config.ts"]'}

@@ -2,6 +2,7 @@
 title: 流星雨
 description: 用于在卡片等容器内渲染划过的流星雨背景动画的装饰组件。
 category: 特效
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

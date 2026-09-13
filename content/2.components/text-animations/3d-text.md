@@ -2,6 +2,7 @@
 title: 3D 文字
 description: 用于以描边加双层阴影模拟 3D 立体字并可选晃动动画的文字组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, 3d]
 ---
 

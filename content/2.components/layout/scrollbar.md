@@ -2,6 +2,8 @@
 title: 滚动条 Scrollbar
 description: 浮层式滚动条组件，滚动条悬浮于内容之上不挤压布局，提供 4/6/8 三档尺寸与颜色变量定制。
 category: 布局
+platform: web
+series: reborn
 tags: [vue, component, scrollbar, layout]
 ---
 

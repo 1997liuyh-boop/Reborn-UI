@@ -2,15 +2,9 @@
 title: 按钮
 description: 双端基础按钮：7 种语义色 × 7 种变体，支持尺寸、形状、加载与禁用状态。
 category: 按钮
+platform: both
 tags: [css, tailwind, button, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]'  :uniappFiles='["RebornButton.vue", "reborn-button.config.ts"]'}

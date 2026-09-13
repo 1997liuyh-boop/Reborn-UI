@@ -2,6 +2,7 @@
 title: 模糊揭示
 description: 用于让子元素依次从模糊状态淡入上移进场的揭示动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

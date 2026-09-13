@@ -2,14 +2,8 @@
 title: Pagination 分页
 description: 用于大数据量列表分页切换的分页组件，支持布局组合、简洁模式与页码折叠。
 category: 导航
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornPaginationDemo.vue" config="RebornPaginationConfig" componentId="reborn-pagination" :componentFiles='["RebornPagination.vue", "reborn-pagination.config.ts"]' :uniappFiles='["RebornPagination.vue", "reborn-pagination.config.ts"]'}

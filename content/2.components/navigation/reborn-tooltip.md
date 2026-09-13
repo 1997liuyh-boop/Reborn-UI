@@ -1,14 +1,8 @@
 ---
 title: Tooltip 文字提示
 description: 文字提示气泡组件：多触发行为、自动翻转与贴边偏移、可控显隐，仅 web 端。
-category: 导航
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: web
 ---
 
 ::ComponentViewer{demoFile="RebornTooltipDemo.vue" config="RebornTooltipConfig" componentId="reborn-tooltip" :componentFiles='["RebornTooltip.vue", "reborn-tooltip.config.ts"]'}

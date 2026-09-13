@@ -1,16 +1,10 @@
 ---
 title: Tree 树形控件
 description: 层级数据展示：展开/点选/勾选三组受控 keys，支持父子联动、异步加载、拖拽与虚拟滚动。
-category: 数据
+category: 数据展示
+platform: web
 tags: [css, tailwind, tree, data]
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

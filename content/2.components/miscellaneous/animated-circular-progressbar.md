@@ -1,7 +1,8 @@
 ---
 title: 动画圆形进度条
 description: 用于以圆形仪表盘动画展示当前数值百分比的进度条组件。
-category: 杂项
+category: 反馈
+platform: web
 tags: [css, tailwind, input, magic-ui]
 ---
 

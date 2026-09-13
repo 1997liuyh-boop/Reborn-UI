@@ -1,14 +1,8 @@
 ---
 title: Notification 通知
 description: 屏幕四角弹出的全局通知：标题 + 正文 + 底部操作区三段结构，支持倒计时进度条、悬停暂停、同 key 更新，属性对齐 Element Plus Notification，仅 web 端。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: web
 ---
 
 ::ComponentViewer{demoFile="RebornNotificationDemo.vue" config="RebornNotificationConfig" componentId="reborn-notification" :componentFiles='["RebornNotification.vue", "index.ts", "reborn-notification.config.ts"]'}

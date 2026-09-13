@@ -7,9 +7,9 @@
  *   iframe 里的 uniapp H5 运行时得以复用；切换 demo 走 same-document 的 hash 导航
  *   （location.replace），不整页重载、不污染父页 history；
  * - fixed 右栏：贴视口右缘、占满主顶栏以下整个高度（管理台式固定侧栏），
- *   不参与文档流，正文的右侧避让由 docs.vue 依据 hasDemos 加 2xl:pr 实现；
- * - 仅 2xl+（≥1536px）展示；iframe 挂载由 useMediaQuery 门控（而非纯 CSS 隐藏），
- *   窄屏 / 移动端不会偷跑下载 uniapp H5 包；
+ *   不参与文档流，正文的右侧避让由 docs.vue 依据 isPanelVisible 加 2xl:pr 实现；
+ * - 仅在顶栏开关处于 UniApp 档且 2xl+（≥1536px）时展示；iframe 挂载同时由平台档位与
+ *   useMediaQuery 门控（而非纯 CSS 隐藏），Web 档 / 窄屏 / 移动端都不会偷跑下载 uniapp H5 包；
  * - 缺 H5 构建产物（纯 pnpm dev 场景）时 HEAD 探测并展示兜底提示，
  *   避免文档站 404 页被渲染进手机壳；
  * - 主题通过 postMessage 与 uniapp 侧同步（协议与 DeviceFrame 一致）。
@@ -33,7 +33,7 @@ const devices: Device[] = [
     { label: "HUAWEI MATE 70", width: 374, height: 827 },
 ]
 
-const { entries, activeEntry, activeUrl, hasDemos, setActive, clear } = useUniDemoPanel()
+const { entries, activeEntry, activeUrl, isPanelVisible, setActive, clear } = useUniDemoPanel()
 
 const route = useRoute()
 
@@ -86,8 +86,11 @@ async function probeH5() {
 
 // ---- iframe 生命周期 ----
 
-/** 面板视口门控：与 ComponentPlayground 的内层 Tab 移除阈值严格一致（2xl） */
+/** 面板视口门控：与 ComponentPlayground 的内联手机壳阈值严格一致（2xl） */
 const isWide = useMediaQuery("(min-width: 1536px)")
+
+/** iframe 是否应挂载：面板可见（UniApp 档 + 有 demo）且视口够宽 */
+const shouldMountFrame = computed(() => isPanelVisible.value && isWide.value)
 
 const frameRef = ref<HTMLIFrameElement>()
 const isLoading = ref(true)
@@ -98,11 +101,17 @@ const shownUrl = ref<string | null>(null)
 /** 手动刷新时递增，强制重建 iframe */
 const reloadKey = ref(0)
 
-onMounted(() => {
-    if (h5Available.value === null) {
-        probeH5()
-    }
-})
+// 面板首次需要挂载 iframe 时再探测产物：Web 档下不发起任何与 H5 相关的请求；
+// 从 Web 档切回时 iframe 会重新挂载，先恢复加载占位
+watch(
+    shouldMountFrame,
+    (mount) => {
+        if (!import.meta.client || !mount) return
+        isLoading.value = true
+        if (h5Available.value === null) probeH5()
+    },
+    { immediate: true },
+)
 
 // activeUrl 变化：首次赋值挂载 iframe；后续通过 hash 导航切换页面（不重载运行时）
 watch(activeUrl, (url) => {
@@ -162,9 +171,9 @@ watch(
 </script>
 
 <template>
-  <!-- v-show 保持 iframe 常驻：切到无 demo 页面时仅隐藏，不销毁 uniapp 运行时 -->
+  <!-- v-show 保持 iframe 常驻：切到无 demo 页面时仅隐藏，不销毁 uniapp 运行时；Web 档整体隐藏 -->
   <aside
-    v-show="hasDemos"
+    v-show="isPanelVisible"
     class="border-default bg-default/70 fixed top-(--ui-header-height) right-0 bottom-0 z-30 hidden w-[420px] border-l backdrop-blur-xl 2xl:block"
     aria-label="移动端预览"
   >
@@ -230,7 +239,7 @@ watch(
                   <UIcon name="svg-spinners:blocks-wave" class="text-primary size-12" />
                 </div>
                 <iframe
-                  v-if="isWide && h5Available && initialUrl" ref="frameRef" :key="reloadKey"
+                  v-if="shouldMountFrame && h5Available && initialUrl" ref="frameRef" :key="reloadKey"
                   :src="initialUrl" class="h-full w-full touch-none border-none bg-white" title="移动端 demo 预览"
                   @load="onIframeLoad"
                 />

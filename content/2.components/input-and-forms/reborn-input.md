@@ -2,15 +2,9 @@
 title: input 输入框
 description: 用于文本录入的双端输入框组件，支持圆角胶囊样式、多尺寸、清除与密码态。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, input, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornInputDemo.vue" config="RebornInputConfig" componentId="reborn-input" :componentFiles='["RebornInput.vue", "reborn-input.config.ts"]' :uniappFiles='["RebornInput.vue", "reborn-input.config.ts"]'}

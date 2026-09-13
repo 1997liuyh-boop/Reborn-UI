@@ -2,6 +2,7 @@
 title: 分隔面板 Splitter
 description: 用于将区域按水平或垂直方向分隔、可拖动调整各面板大小的布局组件。
 category: 布局
+platform: web
 tags: [css, tailwind, splitter, layout]
 badge: New
 ---

@@ -1,14 +1,8 @@
 ---
 title: 卡券 Coupon
 description: 用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 数据展示
+platform: web
 ---
 
 ## 基础用法

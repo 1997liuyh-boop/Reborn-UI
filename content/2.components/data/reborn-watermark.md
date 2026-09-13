@@ -1,16 +1,10 @@
 ---
 title: 水印 Watermark
 description: 用于在内容容器上平铺文本或图片水印的组件。
-category: 数据
+category: 数据展示
+platform: both
 tags: [data, watermark]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornWatermarkDemo.vue" config="RebornWatermarkConfig" componentId="reborn-watermark" :componentFiles='["RebornWatermark.vue", "reborn-watermark.config.ts"]' :uniappFiles='["RebornWatermark.vue", "reborn-watermark.config.ts"]'}

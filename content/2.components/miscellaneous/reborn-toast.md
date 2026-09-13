@@ -1,14 +1,8 @@
 ---
 title: Toast 消息提示
 description: 全局命令式消息提示：五种类型静态方法、Promise 接口、同 key 更新与全局配置，web 端由 Toast 升级而来。
-category: 杂项
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornToastDemo.vue" config="RebornToastConfig" componentId="reborn-toast" :componentFiles='["RebornToast.vue", "index.ts", "reborn-toast.config.ts"]' :uniappFiles='["RebornToast.vue", "index.ts", "reborn-toast.config.ts"]'}

@@ -2,6 +2,7 @@
 title: 取色器
 description: 用于弹层中选取颜色的取色器组件，支持 hex/hsl/rgb 等格式与预设色板。
 category: 表单与输入
+platform: web
 tags: [css, tailwind, input, color-picker, uplusion23]
 ---
 

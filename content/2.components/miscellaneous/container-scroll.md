@@ -1,7 +1,8 @@
 ---
 title: 容器滚动
 description: 用于随页面滚动对卡片内容做旋转缩放过渡的首屏展示组件。
-category: 杂项
+category: 特效
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

@@ -1,7 +1,8 @@
 ---
 title: 放大镜
 description: 用于在图片等插槽内容上叠加圆形放大镜的局部放大组件。
-category: 杂项
+category: 数据展示
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

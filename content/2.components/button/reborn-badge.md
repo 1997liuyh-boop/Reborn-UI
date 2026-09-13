@@ -2,12 +2,9 @@
 title: 徽章 Badge
 description: 用于展示状态、数量或标识的跨端徽标组件，支持圆角胶囊、可关闭、可选中（Check Tag）与显隐绑定。
 category: 按钮
+platform: both
 tags: [css, tailwind, badge, uniapp, cross-platform]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornBadgeDemo.vue" config="RebornBadgeConfig" componentId="reborn-badge" :componentFiles='["RebornBadge.vue", "reborn-badge.config.ts"]' :uniappFiles='["RebornBadge.vue", "reborn-badge.config.ts"]'}

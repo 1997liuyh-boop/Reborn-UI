@@ -1,7 +1,8 @@
 ---
 title: 变形标签页
 description: 用于在切换标签时呈现胶体粘连变形效果的字符串标签页组件。
-category: 杂项
+category: 导航
+platform: web
 tags: [css, tailwind]
 ---
 

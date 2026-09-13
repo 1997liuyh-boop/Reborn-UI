@@ -2,14 +2,8 @@
 title: Layout布局容器
 description: 由顶栏、侧边栏、主区域、底栏拼装后台页面骨架的容器组件，方向可自动推断。
 category: 布局
+platform: web
 tags: [css, tailwind, layout, container, flex]
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornLayoutDemo.vue" config="RebornLayoutConfig" componentId="reborn-layout" :componentFiles='["RebornLayout.vue", "RebornLayoutHeader.vue", "RebornLayoutAside.vue", "RebornLayoutMain.vue", "RebornLayoutFooter.vue", "reborn-layout.config.ts"]'}

@@ -2,14 +2,8 @@
 title: BackTop
 description: 用于长页面滚动超过阈值后显示返回顶部按钮的跨端导航组件。
 category: 导航
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::tip

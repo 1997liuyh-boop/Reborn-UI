@@ -1,7 +1,8 @@
 ---
 title: 评价滑块
 description: 用于轮播展示用户评价（头像、引言、姓名、职位）的轻量滑块组件。
-category: 杂项
+category: 数据展示
+platform: web
 tags: [css, tailwind]
 ---
 

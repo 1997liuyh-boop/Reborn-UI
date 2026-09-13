@@ -2,6 +2,7 @@
 title: 文字高亮
 description: 用于以背景填充动画突出句中重点文字的高亮组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, aceternity-ui]
 ---
 

@@ -2,14 +2,8 @@
 title: Form 表单
 description: 用于组织表单项并基于 zod schema 校验数据的表单容器组件，双端可用。
 category: 表单与输入
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornFormDemo.vue" config="RebornFormConfig" componentId="reborn-form" :componentFiles='["RebornForm.vue", "reborn-form.config.ts", "RebornFormItem.vue", "reborn-form-item.config.ts"]' :uniappFiles='["RebornForm.vue", "reborn-form.config.ts", "RebornFormItem.vue", "reborn-form-item.config.ts"]' dependencies="zod"}

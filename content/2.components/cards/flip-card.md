@@ -2,6 +2,7 @@
 title: 翻转卡片
 description: 用于沿 X 或 Y 轴 180 度翻转、展示正反两面内容的卡片组件。
 category: 卡片
+platform: web
 tags: [css, tailwind, card]
 ---
 

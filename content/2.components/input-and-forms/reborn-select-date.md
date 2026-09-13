@@ -2,14 +2,8 @@
 title: 日期选择
 description: 用于通过弹出面板选择日期时间的选择器组件，支持年月日时分秒多粒度与范围选择。
 category: 表单与输入
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornSelectDateDemo.vue" config="RebornSelectDateConfig" componentId="reborn-select-date" dependencies="dayjs" :componentFiles='["RebornSelectDate.vue", "reborn-select-date.config.ts"]' :uniappFiles='["RebornSelectDate.vue", "reborn-select-date.config.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]'}

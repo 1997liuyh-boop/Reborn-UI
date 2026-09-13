@@ -2,14 +2,8 @@
 title: 页面容器 Page
 description: 用于 uniapp 页面最外层的页面容器组件，可配置页面标题与描述文案。
 category: 布局
+platform: uniapp
 tags: [uniapp, layout, page]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ## 基础用法

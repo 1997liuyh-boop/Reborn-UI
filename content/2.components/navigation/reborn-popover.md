@@ -1,15 +1,9 @@
 ---
 title: Popover
 description: 用于点击或悬停触发气泡浮层的双端组件，可配置定位方向、箭头与遮罩。
-category: 导航
+category: 反馈
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: NEW
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornPopoverDemo.vue" config="RebornPopoverConfig" componentId="reborn-popover" :componentFiles='["RebornPopover.vue", "reborn-popover.config.ts"]' :uniappFiles='["RebornPopover.vue", "reborn-popover.config.ts"]'}

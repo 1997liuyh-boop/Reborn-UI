@@ -2,6 +2,7 @@
 title: 盒子揭示
 description: 用于内容被色块滑开后显现的揭示入场动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

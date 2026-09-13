@@ -1,15 +1,9 @@
 ---
 title: Popconfirm 气泡确认框
 description: 点击触发的轻量确认气泡，标题、描述加确认取消按钮，适合低风险操作的二次确认。
-category: 杂项
+category: 反馈
+platform: web
 tags: [popconfirm, confirm, feedback, popover]
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornPopconfirmDemo.vue" config="RebornPopconfirmConfig" componentId="reborn-popconfirm" :componentFiles='["RebornPopconfirm.vue", "reborn-popconfirm.config.ts"]'}

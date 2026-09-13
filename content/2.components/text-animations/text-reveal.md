@@ -2,6 +2,7 @@
 title: 文字揭示
 description: 用于基于 GSAP SplitText 将段落按行依次入场的文字动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, gsap]
 ---
 

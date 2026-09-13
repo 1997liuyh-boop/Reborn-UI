@@ -1,7 +1,8 @@
 ---
 title: 动画列表
 description: 用于让列表项按固定延迟逐条进场的通知流列表组件。
-category: 杂项
+category: 数据展示
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

@@ -1,14 +1,8 @@
 ---
 title: Alert 警告提示
 description: 静态警告提示条：五种消息类型、按钮同款视觉变体、顶部公告模式与消息轮播通知栏。
-category: 杂项
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornAlertDemo.vue" config="RebornAlertConfig" componentId="reborn-alert" :componentFiles='["RebornAlert.vue", "reborn-alert.config.ts"]' :uniappFiles='["RebornAlert.vue", "reborn-alert.config.ts"]'}

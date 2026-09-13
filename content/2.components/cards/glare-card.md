@@ -2,6 +2,7 @@
 title: 高光卡片
 description: 用于悬停时表面扫过高光光泽的展示卡片组件，风格源自 Linear。
 category: 卡片
+platform: web
 tags: [css, tailwind, card, aceternity-ui]
 ---
 

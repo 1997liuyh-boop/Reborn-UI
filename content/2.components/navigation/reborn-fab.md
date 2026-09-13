@@ -2,14 +2,8 @@
 title: 悬浮按钮 (Fab)
 description: 用于固定位置悬浮操作入口的按钮组件，支持拖拽吸边与展开动作面板，双端可用。
 category: 导航
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary 
 ---
 
 ::ComponentViewer{demoFile="RebornFabDemo.vue" config="RebornFabConfig" componentId="reborn-fab" :componentFiles='["RebornFab.vue", "reborn-fab.config.ts"]' :uniappFiles='["RebornFab.vue", "reborn-fab.config.ts"]' dependencies="clsx, tailwind-variants"}

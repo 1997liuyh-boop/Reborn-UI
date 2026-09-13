@@ -1,15 +1,9 @@
 ---
 title: 走马灯 Carousel
 description: 用于循环展示多个内容项的轮播组件，支持多项显示、卡片模式与纵向布局，仅 web 端。
-category: 导航
+category: 数据展示
+platform: web
 tags: [css, tailwind, carousel, slider, motion]
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 

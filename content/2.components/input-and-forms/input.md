@@ -2,6 +2,7 @@
 title: 输入框
 description: 用于带鼠标径向渐变悬停高亮效果的单行文本输入组件。
 category: 表单与输入
+platform: web
 tags: [css, tailwind, input, aceternity-ui]
 ---
 

@@ -2,15 +2,9 @@
 title: Radio 单选框
 description: 用于在一组互斥选项中选择单项的单选框组件，支持圆点与按钮两种类型。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, radio, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornRadioDemo.vue" config="RebornRadioConfig" componentId="reborn-radio" :componentFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]' :uniappFiles='["RebornRadio.vue", "RebornRadioGroup.vue", "reborn-radio.config.ts"]'}

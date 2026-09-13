@@ -2,14 +2,8 @@
 title: 时间选择器
 description: 用于选择时分秒的时间选择器组件，支持滚轮与箭头两种调节方式及时间范围选择。
 category: 表单与输入
+platform: web
 badge: Update
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: UPDATE
-    color: warning
 ---
 
 ::ComponentViewer{demoFile="RebornTimePickerDemo.vue" config="RebornTimePickerConfig" componentId="reborn-time-picker" dependencies="dayjs" :componentFiles='["RebornTimePicker.vue", "RebornTimePanel.vue", "reborn-time-picker.config.ts", "reborn-time-panel.config.ts", "index.ts"]'}

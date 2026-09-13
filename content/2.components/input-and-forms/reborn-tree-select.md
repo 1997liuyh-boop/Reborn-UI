@@ -1,16 +1,10 @@
 ---
 title: Tree Select 树选择器
 description: Web 层级选值：沿用 select 的三档尺寸与四种形态，下拉复用 tree，支持单选、独立多选和清空。
-category: 输入与表单
+category: 表单与输入
+platform: web
 tags: [tree-select, tree, select, form, web]
 badge: New
-navigation:
-  badges:
-    - label: Web
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

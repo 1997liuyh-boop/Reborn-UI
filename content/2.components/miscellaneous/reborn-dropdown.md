@@ -1,14 +1,8 @@
 ---
 title: Dropdown 下拉菜单
 description: 当页面上的操作命令过多时，用此组件收纳操作元素；点击或移入触点展开菜单，选择后执行相应命令。仅 Web 端。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 导航
+platform: web
 ---
 
 ::ComponentViewer{demoFile="RebornDropdownDemo.vue" config="RebornDropdownConfig" componentId="reborn-dropdown" :componentFiles='["reborn-dropdown.config.ts", "RebornDropdown.vue", "RebornDoption.vue", "RebornDsubmenu.vue", "RebornDgroup.vue"]'}

@@ -2,6 +2,7 @@
 title: 平衡滑块
 description: 用于在左右两侧间拖动分配比例的双色平衡滑块展示组件。
 category: 表单与输入
+platform: web
 tags: [css, tailwind, input]
 ---
 

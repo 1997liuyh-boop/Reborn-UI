@@ -2,14 +2,8 @@
 title: 打字机效果
 description: 用于让文本以打字机方式逐字输入与删除的文字动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, animation]
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornTypewriterDemo.vue" config="RebornTypewriterConfig" componentId="reborn-typewriter" :componentFiles='["RebornTypewriter.vue"]'}

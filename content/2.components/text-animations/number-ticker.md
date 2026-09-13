@@ -2,6 +2,7 @@
 title: 数字滚动
 description: 用于让数字从起点平滑滚动到目标值的数值动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

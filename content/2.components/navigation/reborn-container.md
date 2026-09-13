@@ -1,14 +1,8 @@
 ---
 title: 容器
 description: 用于将页面内容水平居中并按屏幕断点限制最大宽度的布局容器组件，仅 web 端。
-category: 导航
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 布局
+platform: web
 ---
 
 ::warning

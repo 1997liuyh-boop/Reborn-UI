@@ -1,7 +1,8 @@
 ---
 title: Bento 网格
 description: 用于以不等宽卡片拼贴展示功能特性的 Bento 风格网格布局组件。
-category: 杂项
+category: 卡片
+platform: web
 tags: [css, tailwind, bento, aceternity-ui]
 ---
 

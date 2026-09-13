@@ -1,15 +1,9 @@
 ---
 title: Sticky 吸顶
 description: 用于页面滚动时将内容吸附在顶部或底部的吸顶组件。
-category: 导航
+category: 布局
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::tip

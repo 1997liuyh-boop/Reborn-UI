@@ -2,14 +2,8 @@
 title: PickerView 选择器视图
 description: 用于内嵌页面滚动选择多列选项的 uniapp 选择器视图组件。
 category: 表单与输入
+platform: uniapp
 tags: [uniapp, picker, picker-view, form]
-navigation:
-  badges:
-    - label: UniApp
-      color: success
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::warning

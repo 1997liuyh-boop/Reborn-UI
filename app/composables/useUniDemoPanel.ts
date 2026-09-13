@@ -8,6 +8,10 @@
  *
  * 采用 useState 而非 provide/inject：注册发生在 ContentRenderer 深处的动态组件里，
  * 与右栏（布局层）没有稳定的祖先关系，全局状态 + 路由清理是最稳的通路。
+ *
+ * 面板显隐由两个条件共同决定：当前页注册过 uniapp demo（hasDemos），
+ * 且顶栏平台开关处于 UniApp 档（useDocsPlatform）。Web 档下不展示任何移动端预览，
+ * 布局避让、目录左移与 iframe 挂载都以 isPanelVisible 为准。
  */
 
 export interface UniDemoEntry {
@@ -84,8 +88,12 @@ export function useUniDemoPanel() {
     )
     /** 当前激活 demo 的 iframe 地址 */
     const activeUrl = computed(() => activeEntry.value?.url ?? null)
-    /** 当前页是否有移动端 demo（决定右栏显隐） */
+    /** 当前页是否注册过移动端 demo */
     const hasDemos = computed(() => entries.value.length > 0)
 
-    return { entries, activeId, activeEntry, activeUrl, hasDemos, register, setActive, clear }
+    const { isUniapp } = useDocsPlatform()
+    /** 右侧面板是否展示：有 demo 且开关处于 UniApp 档（布局避让、目录避让、iframe 挂载均以此为准） */
+    const isPanelVisible = computed(() => hasDemos.value && isUniapp.value)
+
+    return { entries, activeId, activeEntry, activeUrl, hasDemos, isPanelVisible, register, setActive, clear }
 }

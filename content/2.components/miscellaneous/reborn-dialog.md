@@ -1,14 +1,8 @@
 ---
 title: Dialog 对话框
 description: 用于模态确认与内容展示的对话框组件，属性对齐 Element Plus Dialog，附 Modal 命令式确认框，仅 web 端。
-category: 杂项
-navigation:
-  badges:
-    - label: Web
-      color: info
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: web
 ---
 
 ::ComponentViewer{demoFile="RebornDialogDemo.vue" config="RebornDialogConfig" componentId="reborn-dialog" :componentFiles='["RebornDialog.vue", "reborn-dialog.config.ts", "index.ts"]'}

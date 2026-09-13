@@ -2,6 +2,7 @@
 title: 图案背景
 description: 用于为区块提供图案纹理背景的容器组件，内容经默认插槽传入。
 category: 特效
+platform: web
 tags: [css, tailwind, background]
 ---
 

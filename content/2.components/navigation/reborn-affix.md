@@ -1,15 +1,9 @@
 ---
 title: Affix 悬浮
 description: 用于固定悬浮元素并支持拖拽、自动吸附屏幕边缘的跨端悬浮组件。
-category: 导航
+category: 布局
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornAffixDemo.vue" config="RebornAffixConfig" componentId="reborn-affix" :componentFiles='["RebornAffix.vue", "reborn-affix.config.ts"]' :uniappFiles='["RebornAffix.vue", "reborn-affix.config.ts"]'}

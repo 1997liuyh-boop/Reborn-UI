@@ -1,14 +1,8 @@
 ---
 title: Popup 弹出层
 description: 用于从上下左右四个方向弹出面板的双端弹出层组件，支持手势滑动关闭与安全区适配。
-category: 导航
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
+category: 反馈
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornPopupDemo.vue" config="RebornPopupConfig" componentId="reborn-popup" :componentFiles='["RebornPopup.vue", "reborn-popup.config.ts", "RebornTransition.vue", "reborn-transition.config.ts", "RebornOverlay.vue", "reborn-overlay.config.ts", "RebornRootPortal.vue", "reborn-root-portal.config.ts"]' :uniappFiles='["RebornPopup.vue", "reborn-popup.config.ts", "RebornTransition.vue", "reborn-transition.config.ts", "RebornOverlay.vue", "reborn-overlay.config.ts", "RebornRootPortal.vue", "reborn-root-portal.config.ts"]'}

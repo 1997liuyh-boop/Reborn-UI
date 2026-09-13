@@ -1,14 +1,8 @@
 ---
 title: Overlay 遮罩
 description: 用于弹层背后的全屏或局部遮罩组件，支持点击关闭与滚动锁定。
-category: 杂项
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
+category: 通用
+platform: both
 ---
 
 ::ComponentViewer{demoFile="RebornOverlayDemo.vue" config="RebornOverlayConfig" componentId="reborn-overlay" :componentFiles='["RebornOverlay.vue", "reborn-overlay.config.ts"]' :uniappFiles='["RebornOverlay.vue", "reborn-overlay.config.ts"]'}

@@ -2,6 +2,7 @@
 title: 文字变形
 description: 用于在一组文本间以模糊渐变变形循环切换的文字动画组件。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

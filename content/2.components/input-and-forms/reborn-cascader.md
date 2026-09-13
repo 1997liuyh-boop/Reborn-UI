@@ -2,14 +2,8 @@
 title: 级联选择器
 description: 用于在树形多层级数据中逐级选择的级联选择器组件，双端可用。
 category: 表单与输入
+platform: both
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornCascaderDemo.vue" config="RebornCascaderConfig" componentId="reborn-cascader" :uniappFiles='["RebornCascader.vue", "reborn-cascader.config.ts"]'}

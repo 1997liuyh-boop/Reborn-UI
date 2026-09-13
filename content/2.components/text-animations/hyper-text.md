@@ -2,6 +2,7 @@
 title: 超能文字
 description: 用于文字以字符快速乱序滚动后定格显现的动画组件，悬停可重播。
 category: 文字动画
+platform: web
 tags: [css, tailwind, magic-ui]
 ---
 

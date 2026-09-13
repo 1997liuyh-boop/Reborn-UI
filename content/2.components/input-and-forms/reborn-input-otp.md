@@ -2,15 +2,9 @@
 title: 验证码输入
 description: 用于短信验证码、OTP 等固定位数分格输入的双端组件。
 category: 表单与输入
+platform: both
 tags: [css, tailwind, otp, input, uniapp]
 badge: New
-navigation:
-  badges:
-    - label: 通用
-      color: primary
-  chip:
-    label: NEW
-    color: primary
 ---
 
 ::ComponentViewer{demoFile="RebornInputOtpDemo.vue" config="RebornInputOtpConfig" componentId="reborn-input-otp" :componentFiles='["RebornInputOtp.vue", "reborn-input-otp.config.ts"]' :uniappFiles='["RebornInputOtp.vue", "reborn-input-otp.config.ts"]'}
