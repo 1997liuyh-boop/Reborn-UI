@@ -17,12 +17,12 @@ export default {
     thumb:
       "absolute left-[2px] right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-[2px] w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
     loading: "size-full p-0.5 animate-spin text-gray-400 border-2 border-current border-t-transparent rounded-full",
-    /** 两态文案共享网格占位，以较长内容撑宽；只过渡位移，不切换节点。 */
+    /** 两态文案共享网格占位，以较长内容撑宽，在滑块留出的区域内居中；只过渡位移，不切换节点。 */
     inlineActive:
-      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-white leading-none pointer-events-none select-none",
+      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-white leading-none pointer-events-none select-none",
     /** 关态文案向右滑出，开态文案从左滑入；裁剪仅作用于文本容器。 */
     inlineInactive:
-      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-gray-7 leading-none pointer-events-none select-none",
+      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-gray-7 leading-none pointer-events-none select-none",
     /** 切换波纹：盖满轨道的空壳节点，动画（扩散 box-shadow + 淡出）在组件 scoped 样式里定义 */
     wave: "absolute inset-0 rounded-full pointer-events-none",
     // 两侧标签字号固定 28rpx（14px 设计稿），不随 size 变化
@@ -56,21 +56,21 @@ export default {
       sm: {
         track: "h-[16px] w-[28px]",
         thumb: "[--re-switch-thumb-size:12px] h-[var(--re-switch-thumb-size)]",
-        // 点内文本：滑块侧内边距 = 滑块直径 + 6px 间隙，外侧 6px
+        // 点内文本：外侧 = 2px 边距 + 间隙，滑块侧 = 2px 边距 + 滑块直径 + 间隙；两侧间隙相等（sm/md/lg 为 4/5/6px），文案才在留出的区域内居中
         inlineActive: "pl-[6px] pr-[18px]",
         inlineInactive: "pl-[18px] pr-[6px]",
       },
       md: {
         track: "h-[24px] w-[44px]",
         thumb: "[--re-switch-thumb-size:20px] h-[var(--re-switch-thumb-size)]",
-        inlineActive: "pl-[8px] pr-[26px]",
-        inlineInactive: "pl-[26px] pr-[8px]",
+        inlineActive: "pl-[7px] pr-[27px]",
+        inlineInactive: "pl-[27px] pr-[7px]",
       },
       lg: {
         track: "h-[32px] w-[60px]",
         thumb: "[--re-switch-thumb-size:28px] h-[var(--re-switch-thumb-size)]",
-        inlineActive: "pl-[10px] pr-[34px]",
-        inlineInactive: "pl-[34px] pr-[10px]",
+        inlineActive: "pl-[8px] pr-[36px]",
+        inlineInactive: "pl-[36px] pr-[8px]",
       },
     },
     /** 轨道宽度是否随点内文本撑开：开启后固定宽变为最小宽，文本完整显示不省略 */

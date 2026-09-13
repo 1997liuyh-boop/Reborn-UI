@@ -49,7 +49,7 @@ export interface SwitchProps {
   color?: typeof switchColors[number];
   beforeChange?: () => boolean | Promise<boolean>; // 切换前拦截钩子：返回 false、Promise 解析为 false 或 Promise reject 时取消本次切换，常用于二次确认/异步校验
   class?: any;
-  /** 覆盖内部各区域样式类：wrapper 根容器、track 通用轨道、activeTrack/inactiveTrack 两态轨道、thumb 滑块、activeLabel/inactiveLabel 两侧文案 */
+  /** 覆盖内部各区域样式类：wrapper 根容器、track 通用轨道、activeTrack/inactiveTrack 两态轨道、thumb 滑块、inlineWrap 点内文案容器、inlineActive/inlineInactive 点内两态文案、activeLabel/inactiveLabel 两侧文案 */
   ui?: Partial<{
     wrapper: ClassValue;
     input: ClassValue;
@@ -58,6 +58,7 @@ export interface SwitchProps {
     inactiveTrack: ClassValue;
     thumb: ClassValue;
     wave: ClassValue;
+    inlineWrap: ClassValue;
     inlineActive: ClassValue;
     inlineInactive: ClassValue;
     activeLabel: ClassValue;
@@ -110,6 +111,7 @@ const ui = computed(() => {
     }),
     thumb: (opts?: { class?: any }) => styles.thumb({ class: cn(opts?.class, uiOverrides.value.thumb) }),
     wave: (opts?: { class?: any }) => styles.wave({ class: cn(opts?.class, uiOverrides.value.wave) }),
+    inlineWrap: (opts?: { class?: any }) => styles.inlineWrap({ class: cn(opts?.class, uiOverrides.value.inlineWrap) }),
     inlineActive: (opts?: { class?: any }) => styles.inlineActive({ class: cn(opts?.class, uiOverrides.value.inlineActive) }),
     inlineInactive: (opts?: { class?: any }) => styles.inlineInactive({ class: cn(opts?.class, uiOverrides.value.inlineInactive) }),
     activeLabel: (opts?: { class?: any }) => styles.activeLabel({ class: cn(opts?.class, uiOverrides.value.activeLabel) }),
@@ -202,7 +204,7 @@ defineExpose({
       <span v-if="props.wave && waveKey" :key="waveKey" class="re-switch-wave" :class="ui.wave()" :style="waveStyle" />
 
       <!-- 两态文本持续挂载并水平滑动；网格稳定宽度，独立裁剪不影响滑块和波纹。 -->
-      <span v-if="inlinePromptActive" class="grid min-w-0 flex-1 grid-cols-1 self-stretch overflow-hidden rounded-[inherit]">
+      <span v-if="inlinePromptActive" :class="ui.inlineWrap()">
         <span v-if="props.activeLabel || $slots.activeLabel" :aria-hidden="!isChecked" :class="ui.inlineActive()">
           <slot name="activeLabel">
             {{ props.activeLabel }}

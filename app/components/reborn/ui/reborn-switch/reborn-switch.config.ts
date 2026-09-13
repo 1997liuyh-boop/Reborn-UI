@@ -16,12 +16,17 @@ export default {
     // 参考 Ant Design 的位置过渡；左右边界始终留白 2px，不叠加横向位移和负边距。
     thumb:
       "absolute left-[2px] right-[max(2px,calc(100%_-_var(--re-switch-thumb-size)_-_2px))] top-[2px] w-auto flex items-center justify-center rounded-full bg-white shadow transition-[left,right] duration-200 ease-[ease-in-out] motion-reduce:transition-none",
-    /** 两态文案共享网格占位，以较长内容撑宽；只过渡位移，不切换节点。 */
+    /**
+     * 点内文案的网格容器：两态文案叠在同一格里，独立裁剪不影响滑块和波纹。
+     * 固定宽度下 flex-1 + min-w-0 只吃轨道剩余空间，超出由文案自己省略。
+     */
+    inlineWrap: "grid min-w-0 flex-1 grid-cols-1 self-stretch overflow-hidden rounded-[inherit]",
+    /** 两态文案共享网格占位，以较长内容撑宽，在滑块留出的区域内居中；只过渡位移，不切换节点。 */
     inlineActive:
-      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-white leading-none pointer-events-none select-none",
+      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-white leading-none pointer-events-none select-none",
     /** 关态文案向右滑出，开态文案从左滑入；裁剪仅作用于文本容器。 */
     inlineInactive:
-      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-gray-1 leading-none pointer-events-none select-none",
+      "col-start-1 row-start-1 self-center min-w-0 max-w-full truncate text-center transition-transform duration-200 ease-[ease-in-out] motion-reduce:transition-none text-gray-1 leading-none pointer-events-none select-none",
     /** 切换波纹：盖满轨道的空壳节点，动画（扩散 box-shadow + 淡出）在组件 scoped 样式里定义 */
     wave: "absolute inset-0 rounded-full pointer-events-none",
     // 两侧标签字号固定 14px（text-base），不随 size 变化
@@ -38,26 +43,35 @@ export default {
       sm: {
         track: "h-[16px] w-[28px]",
         thumb: "[--re-switch-thumb-size:12px] h-[var(--re-switch-thumb-size)]",
-        // 点内文本：滑块侧内边距 = 滑块直径 + 6px 间隙，外侧 6px
+        // 点内文本：外侧 = 2px 边距 + 间隙，滑块侧 = 2px 边距 + 滑块直径 + 间隙；两侧间隙相等（sm/md/lg 为 4/5/6px），文案才在留出的区域内居中
         inlineActive: "pl-[6px] pr-[18px]",
         inlineInactive: "pl-[18px] pr-[6px]",
       },
       md: {
         track: "h-[24px] w-[44px]",
         thumb: "[--re-switch-thumb-size:20px] h-[var(--re-switch-thumb-size)]",
-        inlineActive: "pl-[8px] pr-[26px]",
-        inlineInactive: "pl-[26px] pr-[8px]",
+        inlineActive: "pl-[7px] pr-[27px]",
+        inlineInactive: "pl-[27px] pr-[7px]",
       },
       lg: {
         track: "h-[32px] w-[60px]",
         thumb: "[--re-switch-thumb-size:28px] h-[var(--re-switch-thumb-size)]",
-        inlineActive: "pl-[10px] pr-[34px]",
-        inlineInactive: "pl-[34px] pr-[10px]",
+        inlineActive: "pl-[8px] pr-[36px]",
+        inlineInactive: "pl-[36px] pr-[8px]",
       },
     },
-    /** 轨道宽度是否随点内文本撑开：开启后固定宽变为最小宽，文本完整显示不省略 */
+    /**
+     * 轨道宽度是否随点内文本撑开：开启后固定宽变为最小宽（见 compoundVariants），文本完整显示不省略。
+     * 撑开要靠文案给出真实的最小内容宽：容器改为不可收缩（flex-none）、列按内容（auto），
+     * 文案 min-w-max 且不限最大宽；否则轨道在被挤压的 flex 行（如顶栏）里会被压回最小宽，
+     * 文案仍被省略——固定宽下的 min-w-0 / truncate 让它们对外的最小宽是 0。
+     */
     autoWidth: {
-      true: {},
+      true: {
+        inlineWrap: "min-w-max flex-none grid-cols-[auto]",
+        inlineActive: "min-w-max max-w-none whitespace-nowrap",
+        inlineInactive: "min-w-max max-w-none whitespace-nowrap",
+      },
       false: {},
     },
     /**
