@@ -22,7 +22,7 @@ const tabsColors = [
 
 export { tabsColors, tabsDirections, tabsPositions, tabsSizes, tabsTriggers, tabsTypes }
 
-/** 选项卡类型：line 下划线 / card 相接卡片 / card-gutter 间隔卡片 / card-fill 无边框填充卡片 / text 纯文本 / rounded 圆角胶囊 / capsule 分段胶囊 */
+/** 选项卡类型：line 下划线 / card 相接卡片（无边框） / card-gutter 间隔卡片（带边框） / card-fill 填充卡片 / text 纯文本 / rounded 圆角胶囊 / capsule 分段胶囊 */
 export type TabsType = (typeof tabsTypes)[number]
 /** 选项卡尺寸 */
 export type TabsSize = (typeof tabsSizes)[number]
@@ -166,15 +166,18 @@ const theme = tv({
       // line 与 text 不画盒子，标签之间靠 64rpx 间距拉开，标签本身不留水平内边距
       'line': { list: 'gap-[64rpx]' },
       'text': { list: 'gap-[64rpx]' },
-      'card': { list: 'gap-0', tab: 'border border-gray-3' },
+      // card 不画边框：相邻标签靠 gap-0 直接相接成一排，只有选中底板是 gray-1 的亮块
+      'card': { list: 'gap-0' },
       'card-gutter': {
         list: 'gap-[8rpx]',
         tab: 'rounded-t-ui-xs border border-gray-3',
       },
       // card-fill 不画边框，只有选中项有底色，标签之间靠各自 32rpx 内边距拉开
       'card-fill': { list: 'gap-0' },
-      'rounded': { list: 'gap-[8rpx]', tab: 'rounded-full' },
-      'capsule': { list: 'gap-[8rpx] rounded-full bg-gray-2 p-[8rpx]', tab: 'rounded-full' },
+      // rounded / capsule 的悬浮底色瞬时切换、只让文字色过渡：底板的滑动才是「切换动画」，
+      // 悬停不该有任何动效；文字色保留 150ms 过渡（与底板 110ms 行程同量级）是为了在行程中遮住 rounded 反白文字的空档
+      'rounded': { list: 'gap-[8rpx]', tab: 'rounded-full transition-[color] duration-150' },
+      'capsule': { list: 'gap-[8rpx] rounded-full bg-gray-2 p-[8rpx]', tab: 'rounded-full transition-[color] duration-150' },
     },
     // 此处高度是 line、text 的高度；卡片与胶囊类型另有更矮的盒子高度，见 compoundVariants
     // addButton 只写宽度，高度与字号都从标签样式继承；宽度逐档镜像标签高度，保证按钮是正方形
@@ -325,27 +328,15 @@ const theme = tv({
       size: ['small', 'medium'],
       class: { tab: 'h-[64rpx]', addButton: 'w-[64rpx]' },
     },
-    // card 类型相邻标签共用一条边，只在背离内容的两个角保留圆角（首末位置由 tabPlace 显式判定）；
+    // card 类型相邻标签无边框直接相接成一排，只在背离内容的两个角保留圆角（首末位置由 tabPlace 显式判定）；
     // 增加按钮不在标签列内、与标签列之间隔着 16rpx，首尾圆角规则对它不成立，改为整条背离内容的边都倒角
-    {
-      type: 'card',
-      position: 'top',
-      class: { list: '[&>*+*]:-ml-px', addButton: 'rounded-t-ui-xs' },
-    },
+    { type: 'card', position: 'top', class: { addButton: 'rounded-t-ui-xs' } },
     { type: 'card', position: 'top', tabPlace: ['first', 'both'], class: { tab: 'rounded-tl-ui-xs' } },
     { type: 'card', position: 'top', tabPlace: ['last', 'both'], class: { tab: 'rounded-tr-ui-xs' } },
-    {
-      type: 'card',
-      position: 'bottom',
-      class: { list: '[&>*+*]:-ml-px', addButton: 'rounded-b-ui-xs' },
-    },
+    { type: 'card', position: 'bottom', class: { addButton: 'rounded-b-ui-xs' } },
     { type: 'card', position: 'bottom', tabPlace: ['first', 'both'], class: { tab: 'rounded-bl-ui-xs' } },
     { type: 'card', position: 'bottom', tabPlace: ['last', 'both'], class: { tab: 'rounded-br-ui-xs' } },
-    {
-      type: 'card',
-      position: ['left', 'right'],
-      class: { list: '[&>*+*]:-mt-px', addButton: 'rounded-ui-xs' },
-    },
+    { type: 'card', position: ['left', 'right'], class: { addButton: 'rounded-ui-xs' } },
     { type: 'card', position: ['left', 'right'], tabPlace: ['first', 'both'], class: { tab: 'rounded-t-ui-xs' } },
     { type: 'card', position: ['left', 'right'], tabPlace: ['last', 'both'], class: { tab: 'rounded-b-ui-xs' } },
     // ===== 三种卡片类型的选中态：底色、边框、圆角全部交给 tabSlider 这块底板 =====
@@ -358,17 +349,20 @@ const theme = tv({
       active: true,
       class: { tab: 'font-bold text-[var(--re-tabs-color)]' },
     },
-    { type: ['card', 'card-gutter'], class: { tabSlider: 'border border-gray-3 bg-gray-1' } },
+    // card 的底板与标签一样不画边框，只靠 gray-1 亮块区分选中；card-gutter 保留 gray-3 边框撑出卡片轮廓
+    { type: 'card', class: { tabSlider: 'bg-gray-1' } },
+    { type: 'card-gutter', class: { tabSlider: 'border border-gray-3 bg-gray-1' } },
     // card-fill 不用边框也不用分隔线区分头部与内容：未选中只是文字，底板铺与内容区同一档的
     // gray-2 底色，两块背景直接连成一片，所以内容区也要跟着铺 gray-2
     { type: 'card-fill', class: { tabSlider: 'bg-gray-2', content: 'bg-gray-2 p-[32rpx]' } },
-    // 底板去掉贴着内容那一侧的边框，让自身底色吃掉 nav 内阴影画的那条线，与内容连成一体。
+    // card-gutter 的底板去掉贴着内容那一侧的边框，让自身底色吃掉 nav 内阴影画的那条线，与内容连成一体
+    //（card 已无边框，底板的不透明底色本身就盖住了那条线）。
     // 这里不能改用负外边距外移：标签列是 items-end 对齐，负外边距会把选中项整体压低 1px，
     // 相邻标签的顶边就会高出一截，且外移的部分也会被滚动容器裁掉
-    { type: ['card', 'card-gutter'], position: 'top', class: { tabSlider: 'border-b-0' } },
-    { type: ['card', 'card-gutter'], position: 'bottom', class: { tabSlider: 'border-t-0' } },
-    { type: ['card', 'card-gutter'], position: 'left', class: { tabSlider: 'border-r-0' } },
-    { type: ['card', 'card-gutter'], position: 'right', class: { tabSlider: 'border-l-0' } },
+    { type: 'card-gutter', position: 'top', class: { tabSlider: 'border-b-0' } },
+    { type: 'card-gutter', position: 'bottom', class: { tabSlider: 'border-t-0' } },
+    { type: 'card-gutter', position: 'left', class: { tabSlider: 'border-r-0' } },
+    { type: 'card-gutter', position: 'right', class: { tabSlider: 'border-l-0' } },
     // 圆角只开在背离内容的那一侧，贴着内容的两个角保持直角才能与内容区无缝拼接。
     // card-gutter 每张卡片形态一致，底板照搬标签的圆角即可
     { type: 'card-gutter', class: { tabSlider: 'rounded-t-ui-xs' } },

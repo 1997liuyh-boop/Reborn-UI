@@ -327,10 +327,10 @@ const sliderStyle = computed<Record<string, string>>(() => {
 })
 
 /** 行程段：前缘直奔目标、后缘留在原地，底板被拉成两个标签的并集 */
-const LIQUID_TRAVEL_DURATION = 180
+const LIQUID_TRAVEL_DURATION = 110
 const LIQUID_TRAVEL_EASING = 'cubic-bezier(0.215, 0.61, 0.355, 1)'
 /** 收拢段：后缘追上前缘，back-out 越过目标再弹回，就是「到位后回弹」 */
-const LIQUID_SETTLE_DURATION = 240
+const LIQUID_SETTLE_DURATION = 150
 const LIQUID_SETTLE_EASING = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
 
 /** 上一次提交的落点，液体形变的起点。快速连点时取的是提交值而非飞行中的视觉位置 */
@@ -338,12 +338,10 @@ let sliderRect: AxisRect | undefined
 let liquidTimer: ReturnType<typeof setTimeout> | undefined
 /** 只有真正切换标签才跑两段动画；每次 refresh() 重测也会走到写入口，靠这个标志区分 */
 let liquidPending = false
-/** 鼠标靠近未选中标签时给主轴落点叠的偏移量，不进响应式，写入时直接参与计算 */
-let hoverOffset = 0
 
 /** 把一次落点写进行内样式；duration 为 0 表示不覆盖类名上的默认过渡 */
 function applySlider(rect: AxisRect, squash: number, duration: number, easing: string) {
-  sliderOffset.value = rect.offset + hoverOffset
+  sliderOffset.value = rect.offset
   sliderSize.value = rect.size
   sliderSquash.value = squash
   sliderDuration.value = duration ? `${duration}ms` : ''
@@ -374,12 +372,6 @@ function runLiquid(from: AxisRect, to: AxisRect) {
     liquidTimer = undefined
     applySlider(to, 0, LIQUID_SETTLE_DURATION, LIQUID_SETTLE_EASING)
   }, LIQUID_TRAVEL_DURATION)
-}
-
-/** 悬停跟随：底板朝鼠标所在标签轻微前倾，尺寸不变。形变飞行中不打断，落位后才跟随 */
-function applyHoverSlider() {
-  if (!sliderRect || !isLiquid.value || liquidTimer !== undefined) return
-  applySlider(sliderRect, 0, LIQUID_TRAVEL_DURATION, LIQUID_TRAVEL_EASING)
 }
 
 /** scroll-view 的横纵滚动量必须分别绑定，非当前轴恒为 0 */
@@ -532,29 +524,14 @@ function handleTabClick(pane: TabPaneMeta) {
   switchTo(pane.key)
 }
 
-function handleTabHover(pane: TabPaneMeta, index: number) {
-  if (props.trigger === 'hover') {
-    if (pane.disabled) return
-    switchTo(pane.key)
-    return
-  }
-  // 点击触发时悬停只做底板的轻微前倾，给 trigger=hover 的直接切换让位。
-  // 标签矩形取自缓存的测量结果，小程序端拿不到事件源节点的布局
-  if (!sliderRect || !isLiquid.value) return
-  if (pane.disabled || pane.key === currentKey.value) return
-  const item = itemRects.value[index]
-  if (!item) return
-  const targetCenter = item.offset + item.size / 2
-  const selfCenter = sliderRect.offset + sliderRect.size / 2
-  hoverOffset = (targetCenter - selfCenter) * 0.15
-  applyHoverSlider()
-}
-
-/** 归位挂在整条标签列上而不是单个标签，标签之间移动时底板持续跟随 */
-function handleListLeave() {
-  if (!hoverOffset) return
-  hoverOffset = 0
-  applyHoverSlider()
+/**
+ * 悬停只在 trigger="hover" 下起作用（直接切换，仅 H5 有该事件）。
+ * 点击触发时悬停不做任何动画：底板只在真正切换时才移动，
+ * 未选中标签的悬浮底色也是瞬时切换（见 config 里 rounded / capsule 的 transition 设置）
+ */
+function handleTabHover(pane: TabPaneMeta) {
+  if (props.trigger !== 'hover' || pane.disabled) return
+  switchTo(pane.key)
 }
 
 function handleDelete(pane: TabPaneMeta) {
@@ -564,8 +541,6 @@ function handleDelete(pane: TabPaneMeta) {
 
 watch(currentKey, (_key, previous) => {
   liquidPending = true
-  // 点击后底板真正吸附到目标标签，不再保留悬停的前倾
-  hoverOffset = 0
   // 首次确定选中项时还没有缓存到的起点高度，跳过这一次高度过渡
   if (previous === undefined || !canFluidHeight.value) return
   lockStage()
@@ -620,14 +595,14 @@ defineExpose({
         :scroll-with-animation="true"
         :show-scrollbar="false"
       >
-        <view :class="ui.list()" @mouseleave="handleListLeave">
+        <view :class="ui.list()">
           <view
             v-for="(pane, index) in panes"
             :key="pane.key"
             class="reborn-tabs__item"
             :class="tabClass(pane, index)"
             @tap="handleTabClick(pane)"
-            @mouseenter="handleTabHover(pane, index)"
+            @mouseenter="handleTabHover(pane)"
           >
             <view :class="ui.tabTitle()">{{ pane.title }}</view>
             <view

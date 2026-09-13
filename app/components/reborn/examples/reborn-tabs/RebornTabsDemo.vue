@@ -673,7 +673,7 @@ function handleDelete(key: TabKey) {
               key="note"
               title="备注"
             >
-              <p class="text-muted text-sm">鼠标移到未选中标签上时，滑块会朝那个方向轻微前倾。</p>
+              <p class="text-muted text-sm">悬停时底板不动，点击真正切换时才有拉伸回弹的形变。</p>
             </RebornTabPane>
           </RebornTabs>
         </div>
@@ -750,7 +750,7 @@ function handleDelete(key: TabKey) {
     <DemoSection title="样式定制">
       <template #description>
         <code>color</code> 只改
-        <code>--re-tabs-color</code> 一个变量，指示器、选中态文字与卡片边框一起跟着变； 需要 7
+        <code>--re-tabs-color</code> 一个变量，指示器、选中态文字与胶囊底色一起跟着变； 需要 7
         个语义色之外的色值时不用逐个改
         <code>ui</code> 键，直接在根节点覆盖这个变量即可；更细的调整再用
         <code>ui</code> 按槽位覆写。

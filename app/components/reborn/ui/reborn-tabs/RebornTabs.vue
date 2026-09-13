@@ -266,9 +266,9 @@ interface SliderRect {
 }
 
 /** 液体形变两段的节奏：行程直奔目标，回弹越过目标再弹回 */
-const LIQUID_TRAVEL_DURATION = 180;
+const LIQUID_TRAVEL_DURATION = 110;
 const LIQUID_TRAVEL_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
-const LIQUID_SETTLE_DURATION = 240;
+const LIQUID_SETTLE_DURATION = 150;
 const LIQUID_SETTLE_EASING = "cubic-bezier(0.175, 0.885, 0.32, 1.275)";
 
 /** 底板要整块盖住选中标签，两个轴向都得写，不像指示条只需要主轴 */
@@ -279,8 +279,6 @@ let sliderRect: SliderRect | undefined;
 let liquidTimer: ReturnType<typeof setTimeout> | undefined;
 /** 只有真正换标签才跑形变；resize 与 refresh 引发的重量走直接落位 */
 let liquidPending = false;
-/** 悬停跟随的主轴偏移量。底板本来就是手写行内样式，用普通变量即可，不必触发重渲染 */
-let hoverOffset = 0;
 
 /** transition-none 只能关掉过渡、关不掉行内 transform 的瞬时生效，所以形变要在 JS 里判定 */
 function prefersReducedMotion() {
@@ -289,18 +287,10 @@ function prefersReducedMotion() {
   );
 }
 
-/** 把悬停偏移叠到主轴起点上，长度不变 */
-function withHoverOffset(rect: SliderRect): SliderRect {
-  if (!hoverOffset) return rect;
-  return isVertical.value
-    ? { ...rect, top: rect.top + hoverOffset }
-    : { ...rect, left: rect.left + hoverOffset };
-}
-
 /**
  * 把落点写成行内样式。
- * margin 归零是为了抹掉 card 类型挂在标签列上的 [&>*+*]:-ml-px —— 底板作为末位兄弟同样会命中，
- * 行内样式优先级高于类名，清零后底板才会正好落在量到的位置上
+ * margin 归零是防御：底板是标签列的末位兄弟，若使用方通过 ui.list 给相邻子节点加了负外边距
+ * （如早先 card 类型共用边框时的 [&>*+*]:-ml-px），底板同样会命中，行内清零后才会正好落在量到的位置上
  */
 function applySlider(rect: SliderRect, extra?: Record<string, string>) {
   sliderStyle.value = {
@@ -343,7 +333,7 @@ function runLiquid(from: SliderRect, to: SliderRect) {
 
   liquidTimer = setTimeout(() => {
     liquidTimer = undefined;
-    applySlider(withHoverOffset(to), {
+    applySlider(to, {
       transform: vertical ? "scaleX(1)" : "scaleY(1)",
       transitionDuration: `${LIQUID_SETTLE_DURATION}ms`,
       transitionTimingFunction: LIQUID_SETTLE_EASING,
@@ -384,19 +374,9 @@ function updateSlider() {
   }
   // 卡片类型不写行内时长与 transform，节奏交回 tabSlider 槽上的 duration-300，行为与改动前一致
   applySlider(
-    withHoverOffset(next),
+    next,
     isLiquid.value ? { transform: isVertical.value ? "scaleX(1)" : "scaleY(1)" } : undefined,
   );
-}
-
-/** 悬停跟随：底板朝鼠标所在标签轻微前倾，尺寸不变。形变飞行中不打断，落位后才跟随 */
-function applyHoverSlider() {
-  if (!sliderRect || !isLiquid.value || liquidTimer !== undefined) return;
-  applySlider(withHoverOffset(sliderRect), {
-    transform: isVertical.value ? "scaleX(1)" : "scaleY(1)",
-    transitionDuration: `${LIQUID_TRAVEL_DURATION}ms`,
-    transitionTimingFunction: LIQUID_TRAVEL_EASING,
-  });
 }
 
 /** 指示条与底板都挂在标签列上，任何一次重排都要一起重量 */
@@ -479,34 +459,14 @@ function handleTabClick(pane: TabPaneMeta) {
   switchTo(pane.key);
 }
 
-function handleTabHover(pane: TabPaneMeta, event: MouseEvent) {
-  if (props.trigger === "hover") {
-    if (pane.disabled) return;
-    switchTo(pane.key);
-    return;
-  }
-  // 点击触发时悬停只做底板的轻微前倾，给 trigger=hover 的直接切换让位
-  const list = listRef.value;
-  const target = event.currentTarget as HTMLElement | null;
-  if (!list || !target || !sliderRect || !isLiquid.value) return;
-  if (pane.disabled || pane.key === currentKey.value) return;
-  const listRect = list.getBoundingClientRect();
-  const rect = target.getBoundingClientRect();
-  const targetCenter = isVertical.value
-    ? rect.top - listRect.top + rect.height / 2
-    : rect.left - listRect.left + rect.width / 2;
-  const selfCenter = isVertical.value
-    ? sliderRect.top + sliderRect.height / 2
-    : sliderRect.left + sliderRect.width / 2;
-  hoverOffset = (targetCenter - selfCenter) * 0.15;
-  applyHoverSlider();
-}
-
-/** 归位挂在整条标签列上而不是单个标签，标签之间移动时底板持续跟随 */
-function handleListLeave() {
-  if (!hoverOffset) return;
-  hoverOffset = 0;
-  applyHoverSlider();
+/**
+ * 悬停只在 trigger="hover" 下起作用（直接切换）。
+ * 点击触发时悬停不做任何动画：底板只在真正切换时才移动，
+ * 未选中标签的悬浮底色也是瞬时切换（见 config 里 rounded / capsule 的 transition 设置）
+ */
+function handleTabHover(pane: TabPaneMeta) {
+  if (props.trigger !== "hover" || pane.disabled) return;
+  switchTo(pane.key);
 }
 
 function handleDelete(pane: TabPaneMeta) {
@@ -578,8 +538,6 @@ watch(
   currentKey,
   (_key, previous) => {
     liquidPending = true;
-    // 点击后底板真正吸附到目标标签，不再保留悬停的前倾
-    hoverOffset = 0;
     // 首次确定选中项时没有可用的起点高度，跳过这一次高度过渡
     if (previous !== undefined) void lockStageHeight();
   },
@@ -626,15 +584,12 @@ defineExpose({
   <div :class="ui.root({ class: props.class })" :data-position="resolvedPosition">
     <div :class="ui.nav()">
       <div ref="wrapperRef" :class="ui.navWrapper()">
-        <div
-          ref="listRef" role="tablist" :class="ui.list()" :aria-orientation="isVertical ? 'vertical' : 'horizontal'"
-          @mouseleave="handleListLeave"
-        >
+        <div ref="listRef" role="tablist" :class="ui.list()" :aria-orientation="isVertical ? 'vertical' : 'horizontal'">
           <button
             v-for="(pane, index) in panes" :key="pane.key" type="button" role="tab" :class="tabClass(pane, index)"
             :disabled="pane.disabled" :aria-selected="pane.key === currentKey"
             :data-tab-active="pane.key === currentKey" @click="handleTabClick(pane)"
-            @mouseenter="handleTabHover(pane, $event)"
+            @mouseenter="handleTabHover(pane)"
           >
             <span data-tab-title :class="ui.tabTitle()">
               <component :is="pane.titleSlot" v-if="pane.titleSlot" />

@@ -153,7 +153,7 @@ function handleDelete(key: TabKey) {
     <!-- 类型 -->
     <RebornCard title="类型" custom-class="space-y-4">
       <text class="text-24 text-gray-6">
-        line 下划线跟随标题滑动；card / card-gutter 用边框围出卡片，区别是标签之间是否留缝；card-fill
+        line 下划线跟随标题滑动；card 无边框、相邻标签直接相接成一排；card-gutter 用边框围出一张张留缝的卡片；card-fill
         不画边框，只给选中项铺一层与内容区同色的底，两块背景连成一片；text
         去掉一切容器只留文字；rounded 选中态填充主题色；capsule 把整条标签栏做成分段控件
       </text>
