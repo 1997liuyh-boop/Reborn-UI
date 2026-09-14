@@ -2,6 +2,7 @@
 import type {
   AnchorColor,
   AnchorDirection,
+  AnchorItem,
   AnchorLinkMeta,
   AnchorMarker,
   AnchorType,
@@ -11,6 +12,8 @@ import { useEventListener, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, watch } from "vue";
 import { cn } from "~/lib/utils";
 import theme, { ANCHOR_INJECTION_KEY } from "./reborn-anchor.config";
+// RebornAnchorItems 由 Nuxt 全局自动注册（nuxt.config 的 pathPrefix: false），这里刻意不写静态 import：
+// 它在子级里渲染自己，与 RebornAnchorLink 也互相引用，静态导入会形成 ESM 循环依赖。
 
 defineOptions({
   name: "RebornAnchor",
@@ -35,6 +38,11 @@ const emit = defineEmits<{
 }>();
 
 export interface RebornAnchorProps {
+  /**
+   * 数据化配置链接内容，支持通过 children 嵌套。
+   * 传了它就由组件递归渲染链接，默认插槽不再生效；两种写法择一使用
+   */
+  items?: AnchorItem[];
   /** 滚动的容器，传选择器字符串时在客户端挂载后才查询；留空监听整个窗口 */
   container?: string | HTMLElement | Window;
   /** 锚点滚动的偏移量，滚动后目标元素距容器顶部的距离 */
@@ -100,9 +108,20 @@ const itemClass = computed(() => styles.value.item({ class: uiOverrides.value.it
 const linkTitleClass = computed(() => styles.value.linkTitle({ class: uiOverrides.value.linkTitle }));
 const sublistClass = computed(() => styles.value.sublist({ class: uiOverrides.value.sublist }));
 
-/** 选中态逐个链接不同，不能并入根节点那次一次性计算 */
+/**
+ * 选中态逐个链接不同，不能并入根节点那次一次性计算。
+ * 但结果只有选中、未选中两种，先各算一份缓存起来：
+ * 否则每个链接各自求值一次，n 个链接就是 n 次 theme()，而其中 n-1 次的入参完全一样
+ */
+const linkClassActive = computed(() =>
+  theme({ ...baseVariants.value, active: true }).link({ class: uiOverrides.value.link }),
+);
+const linkClassIdle = computed(() =>
+  theme({ ...baseVariants.value, active: false }).link({ class: uiOverrides.value.link }),
+);
+
 function linkClass(active: boolean) {
-  return theme({ ...baseVariants.value, active }).link({ class: uiOverrides.value.link });
+  return active ? linkClassActive.value : linkClassIdle.value;
 }
 
 function addLink(meta: AnchorLinkMeta) {
@@ -123,13 +142,36 @@ function sortLinks() {
 }
 
 /**
+ * href 到目标元素的缓存。滚动时每一帧都要把所有锚点量一遍，
+ * 不缓存就是每帧 n 次 getElementById；命中缓存只需一次 Map 查找加一次 isConnected 判断，都不触发布局
+ */
+const targetCache = new Map<string, HTMLElement>();
+
+/**
  * href 形如 `#section-id`，取井号之后的部分按 id 查找。
  * 用 getElementById 而不是 querySelector：数字开头、含冒号或点号的 id 不是合法选择器，会直接抛错
  */
 function resolveTarget(href?: string) {
   if (!href || typeof document === "undefined") return undefined;
+  const cached = targetCache.get(href);
+  // 页面可能把目标区块整个换掉，命中缓存也要确认它还挂在文档上，否则量到的是一份已脱离文档的旧节点
+  if (cached?.isConnected) return cached;
   const id = href.startsWith("#") ? href.slice(1) : href;
-  return id ? (document.getElementById(id) ?? undefined) : undefined;
+  const el = id ? (document.getElementById(id) ?? undefined) : undefined;
+  if (el) targetCache.set(href, el);
+  else targetCache.delete(href);
+  return el;
+}
+
+/** 按 href 取链接登记表里的单项，用于读取该锚点自己的 offset */
+function findLink(href?: string) {
+  if (!href) return undefined;
+  return links.value.find(item => item.href === href);
+}
+
+/** 该锚点的滚动偏移量：单项的 offset 优先，没写才用组件级的 */
+function resolveOffset(meta?: AnchorLinkMeta) {
+  return meta?.offset ?? props.offset;
 }
 
 /** 解析滚动容器。字符串在此刻查询 DOM，查不到就不监听滚动，不回落到窗口以免监听错对象 */
@@ -226,9 +268,29 @@ function updateActive() {
   // 不提前跳出循环：链接顺序是锚点列表的 DOM 顺序，目标区块未必按同样的顺序排布
   for (const item of candidates) {
     const el = resolveTarget(item.href);
-    if (el && getOffsetTop(el) - props.offset <= threshold) next = item.href;
+    // 判定线要跟着该锚点自己的 offset 走，否则设了单独偏移量的区块会在错误的时机点亮
+    if (el && getOffsetTop(el) - resolveOffset(item) <= threshold) next = item.href;
   }
   setActive(next);
+}
+
+/**
+ * 滚动事件的触发频率远高于刷新率，而 updateActive 里每个锚点都要读 getBoundingClientRect，
+ * 这是会强制布局的操作。合并到每帧最多跑一次，同一帧内的重复滚动不再反复量
+ */
+let activeFrame: number | undefined;
+
+function requestUpdateActive() {
+  if (activeFrame !== undefined) return;
+  activeFrame = requestAnimationFrame(() => {
+    activeFrame = undefined;
+    updateActive();
+  });
+}
+
+function cancelActiveFrame() {
+  if (activeFrame !== undefined) cancelAnimationFrame(activeFrame);
+  activeFrame = undefined;
 }
 
 /** 标记位置由测量选中链接得到，写成行内样式，避免为每个位置生成一套类名 */
@@ -237,7 +299,8 @@ const markerStyle = shallowRef<Record<string, string>>({ opacity: "0" });
 function updateMarker() {
   const list = listRef.value;
   if (!list || markerShape.value === "none") return;
-  const link = list.querySelector<HTMLElement>("[data-anchor-active=\"true\"]");
+  // 直接从登记表取选中链接的节点：这个 a 节点本来就登记在册，没必要再查一次 DOM
+  const link = findLink(activeHref.value)?.el;
   if (!link) {
     markerStyle.value = { opacity: "0" };
     return;
@@ -259,7 +322,10 @@ function scrollTo(href: string) {
   const el = resolveTarget(href);
   if (!el || !scrollTarget.value) return;
   const from = getScroll();
-  const to = Math.min(Math.max(0, from + getOffsetTop(el) - props.offset), getMaxScroll());
+  const to = Math.min(
+    Math.max(0, from + getOffsetTop(el) - resolveOffset(findLink(href))),
+    getMaxScroll(),
+  );
   cancelTween();
   setActive(href);
   if (from === to) return;
@@ -283,15 +349,23 @@ function scrollTo(href: string) {
   tweenFrame = requestAnimationFrame(step);
 }
 
-function handleClick(event: MouseEvent, href?: string) {
-  emit("click", event, href);
+function handleClick(event: MouseEvent, meta: AnchorLinkMeta) {
+  emit("click", event, meta.href);
   // 消费者在 click 里 preventDefault 就是完全接管跳转，组件不再滚动
   if (event.defaultPrevented) return;
+  // 写了 target 就是要让浏览器在别处打开这个链接，这里既不拦默认行为也不滚动
+  if (meta.target) return;
   event.preventDefault();
-  if (href) scrollTo(href);
+  if (!meta.href) return;
+  scrollTo(meta.href);
+  // 组件默认不动地址栏。replace 为真才写，且走 replaceState：
+  // 换成默认 push 会让已接入的页面突然开始堆历史记录，返回键要连按多次才退得出去
+  if (meta.replace && typeof history !== "undefined") {
+    history.replaceState(history.state, "", meta.href);
+  }
 }
 
-useEventListener(scrollTarget, "scroll", updateActive, { passive: true });
+useEventListener(scrollTarget, "scroll", requestUpdateActive, { passive: true });
 useResizeObserver(listRef, updateMarker);
 
 watch([activeHref, links, () => props.type, () => props.direction, markerShape], async () => {
@@ -310,10 +384,14 @@ onMounted(() => {
   updateMarker();
 });
 
-onBeforeUnmount(cancelTween);
+onBeforeUnmount(() => {
+  cancelTween();
+  cancelActiveFrame();
+});
 
 provide(ANCHOR_INJECTION_KEY, {
   activeHref: computed(() => activeHref.value),
+  direction: computed(() => props.direction),
   itemClass,
   linkTitleClass,
   sublistClass,
@@ -341,7 +419,11 @@ defineExpose({
         :class="ui.marker()"
         :style="markerStyle"
       />
-      <slot />
+
+      <!-- items 模式：链接由组件递归渲染 -->
+      <RebornAnchorItems v-if="props.items?.length" :items="props.items" />
+      <!-- 插槽模式：链接由使用方逐个写出 -->
+      <slot v-else />
     </div>
   </div>
 </template>

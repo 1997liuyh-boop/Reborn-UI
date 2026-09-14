@@ -11,16 +11,16 @@ badge: New
 仅 Web 端组件。小程序没有同步几何测量与 `href="#id"` 锚点语义，UniApp 端暂无对应实现；移动端的章节定位可用 `scroll-view` 的 `scroll-into-view` 自行实现。
 ::
 
-::ComponentViewer{demoFile="RebornAnchorDemo.vue" config="RebornAnchorConfig" componentId="reborn-anchor" :componentFiles='["RebornAnchor.vue", "RebornAnchorLink.vue", "reborn-anchor.config.ts"]'}
+::ComponentViewer{demoFile="RebornAnchorDemo.vue" config="RebornAnchorConfig" componentId="reborn-anchor" :componentFiles='["RebornAnchor.vue", "RebornAnchorLink.vue", "RebornAnchorItems.vue", "reborn-anchor.config.ts"]'}
 ::
 
 ## 简介
 
-Anchor 是一份跟着滚动走的目录：链接的 `href` 指向页面里某个元素的 `id`，用户滚到哪一段，对应的链接就自动高亮；点链接则把那一段滚到视口里。API 对齐 Element Plus 的 Anchor（`RebornAnchor` + `RebornAnchorLink` 父子成对使用）。
+Anchor 是一份跟着滚动走的目录：链接的 `href` 指向页面里某个元素的 `id`，用户滚到哪一段，对应的链接就自动高亮；点链接则把那一段滚到视口里。API 对齐 Element Plus 的 Anchor（`RebornAnchor` + `RebornAnchorLink` 父子成对使用），另外提供 Ant Design 那一套 `items` 数据化写法，两种择一使用。
 
 判定逻辑是一条**触发线**：`container` 指到真正发生滚动的那一层（留空则监听整个窗口），组件在滚动时逐个量各目标元素的顶部距容器顶部还有多远，取最后一个越过触发线的链接作为选中项。触发线的位置由 `bound` 决定（默认 15px），开启 `select-scroll-top` 后阈值压到 0、`bound` 不再参与；容器滚到底时强制选中最后一项，末尾的短区块才有机会亮起来。
 
-其余 API 按职责分三组：**外观**有 `marker` 决定跟随选中项滑动的标记长什么样（竖条 / 实心圆 / 空心圆 / 不显示）、`type` 决定画不画那条贯穿的轨道线、`direction` 决定链接竖排还是横排、`color` 换强调色，配合 `ui` 做细粒度覆盖；**行为**有 `offset` 控制滚完之后目标停在距顶多远、`duration` 控制滚动时长，实例方法 `scrollTo(href)` 供页面别处触发，`click` 事件在滚动前给出拦截时机；**结构**由 `RebornAnchorLink` 的 `title` / `href` 与 `default` / `sub-link` 两个插槽承担。
+其余 API 按职责分三组：**外观**有 `marker` 决定跟随选中项滑动的标记长什么样（竖条 / 实心圆 / 空心圆 / 不显示）、`type` 决定画不画那条贯穿的轨道线、`direction` 决定链接竖排还是横排、`color` 换强调色，配合 `ui` 做细粒度覆盖；**行为**有 `offset` 控制滚完之后目标停在距顶多远、`duration` 控制滚动时长，实例方法 `scrollTo(href)` 供页面别处触发，`click` 事件在滚动前给出拦截时机；**结构**有两种写法——逐个写 `RebornAnchorLink`（`title` / `href` 与 `default` / `sub-link` 两个插槽），或者把一个数组交给 `items` 由组件递归渲染。
 
 ### 何时使用
 
@@ -57,6 +57,36 @@ Anchor 是一份跟着滚动走的目录：链接的 `href` 指向页面里某�
   </div>
 </template>
 ```
+
+### items 数据化配置
+
+链接来自接口、路由表或 Markdown 目录时，逐个写 `RebornAnchorLink` 就得自己套一层 `v-for`，有嵌套还要再套一层。把数组交给 `items`，组件按 `children` 递归渲染出同样的结构，条目字段与 `RebornAnchorLink` 的属性一一对应。
+
+```vue
+<script setup lang="ts">
+import type { AnchorItem } from "~/components/reborn/ui/reborn-anchor";
+
+const items: AnchorItem[] = [
+  {
+    key: "start",
+    href: "#start",
+    title: "开始使用",
+    children: [
+      { key: "install", href: "#install", title: "安装" },
+      // 单独设偏移量，只影响这一项，其余项仍按组件的 offset 走
+      { key: "import", href: "#import", title: "引入", offset: 72 },
+    ],
+  },
+  { key: "api", href: "#api", title: "API" },
+];
+</script>
+
+<template>
+  <RebornAnchor :items="items" container="#doc-body" />
+</template>
+```
+
+传了 `items`，默认插槽就不再渲染，两种写法择一使用。`title` 只收字符串——要在链接里放图标、徽标这类内容，得用 `RebornAnchorLink` 的默认插槽，`items` 没有对应的出口。`children` 在 `direction="horizontal"` 下不渲染，与 Ant Design 的约定一致：嵌套层会把标记的横向测量基准打乱。
 
 ### 水平锚点
 
@@ -168,7 +198,7 @@ const boxRef = ref<HTMLElement>();
 
 ### 子链接嵌套
 
-往 `sub-link` 插槽里再放 `RebornAnchorLink` 就是下一级链接：缩进一层，但和上级共用同一套滚动判定与同一个标记。子链接始终竖排，横向锚点下不适用。
+往 `sub-link` 插槽里再放 `RebornAnchorLink` 就是下一级链接：缩进一层，但和上级共用同一套滚动判定与同一个标记。子链接始终竖排，横向锚点下不适用。同样的结构用 `items` 的 `children` 也能写出来，区别只在链接由谁渲染。
 
 ```vue
 <template>
@@ -182,6 +212,29 @@ const boxRef = ref<HTMLElement>();
   </RebornAnchor>
 </template>
 ```
+
+### 在别处打开与写入地址栏
+
+`target` 和 `replace` 都写在单个链接上（`RebornAnchorLink` 的属性，或 `items` 条目的同名字段），管的是点击那一下：
+
+| 字段 | 点击后发生什么 |
+| --- | --- |
+| 都不填（默认） | 组件拦下默认行为，在容器里补间滚动，地址栏不动 |
+| `target` | 组件完全不接管，交给浏览器按 `target` 打开这个 `href`（`_blank` 即新开标签页） |
+| `replace` | 照常滚动，滚完用 `history.replaceState` 把 `href` 写进地址栏，替换当前记录而不新增历史条目 |
+
+```vue
+<template>
+  <RebornAnchor container="#doc-body">
+    <!-- 滚动之后地址栏变成 #usage，但按返回键不会退回上一个锚点 -->
+    <RebornAnchorLink href="#usage" title="基础用法" replace />
+    <!-- 交给浏览器新开标签页，组件不滚动 -->
+    <RebornAnchorLink href="#changelog" title="更新日志" target="_blank" />
+  </RebornAnchor>
+</template>
+```
+
+不填 `replace` 时组件不碰地址栏，这一点与 Ant Design 不同——它默认 `pushState`，`replace` 只是换个写法。这里选择默认不写：组件此前从不动地址栏，改成默认 push 会让已经接入的页面突然开始堆历史记录，返回键要连按好几次才退得出去。
 
 ### 手动滚动
 
@@ -211,8 +264,9 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
+| `items` | `AnchorItem[]` | - | 数据化配置链接内容，支持通过 `children` 嵌套。传了它就由组件递归渲染链接，默认插槽不再生效。 |
 | `container` | `string \| HTMLElement \| Window` | - | 滚动的容器。传选择器字符串时在客户端挂载后才查询 DOM，查不到就不监听；留空监听整个窗口。 |
-| `offset` | `number` | `0` | 锚点滚动的偏移量：滚动结束后目标元素距容器顶部的距离，页面有吸顶栏时填吸顶栏高度。 |
+| `offset` | `number` | `0` | 锚点滚动的偏移量：滚动结束后目标元素距容器顶部的距离，页面有吸顶栏时填吸顶栏高度。单个链接写了自己的 `offset` 时以它为准。 |
 | `bound` | `number` | `15` | 触发锚点的元素的位置偏移量：目标顶部进到这条线以内即视为选中。`selectScrollTop` 为 `true` 时不生效。 |
 | `duration` | `number` | `300` | 容器滚动持续时间（毫秒）。小于等于 0、或系统开启「减少动态效果」时直接跳转。 |
 | `marker` | `boolean \| 'bar' \| 'dot' \| 'hollow' \| 'none'` | `true` | 标记形态：`bar` 竖条、`dot` 实心圆、`hollow` 空心圆、`none` 不显示；`true` 等价于 `bar`、`false` 等价于 `none`。横向锚点只支持 `bar` 与 `none`，传圆点会按 `bar` 渲染。 |
@@ -223,6 +277,20 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 | `class` | `any` | - | 追加到根元素的自定义类名。 |
 | `ui` | `AnchorUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
+### AnchorItem
+
+`items` 的单个条目，字段与 `RebornAnchorLink` 的属性一一对应：
+
+| 属性名 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `key` | `string \| number` | - | 唯一标志。只用于列表渲染的键，缺省时依次回退到 `href` 与下标。 |
+| `href` | `string` | - | 锚点链接，形如 `#section-id`。留空的条目不参与滚动判定。 |
+| `target` | `string` | - | 该属性指定在何处显示链接的资源。填了它就交给浏览器打开，组件不再接管滚动。 |
+| `title` | `string` | - | 文字内容。只收字符串，要放图标、徽标这类内容请改用 `RebornAnchorLink` 的默认插槽。 |
+| `children` | `AnchorItem[]` | - | 嵌套的子锚点。`direction="horizontal"` 时不支持，传了也不会渲染。 |
+| `replace` | `boolean` | `false` | 点击后是否把 `href` 同步进地址栏。为 `true` 时走 `replaceState`，替换当前记录而不新增历史条目；默认不写地址栏。 |
+| `offset` | `number` | - | 该锚点单独的滚动偏移量，覆盖组件的 `offset`。Ant Design 那边这个字段叫 `targetOffset`，这里跟组件的同名属性对齐，仍叫 `offset`。 |
+
 ### AnchorLink Props
 
 `RebornAnchorLink` 的属性：
@@ -231,6 +299,9 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 | --- | --- | --- | --- |
 | `title` | `string` | - | 链接的文本内容。写了 `default` 插槽时以插槽为准。 |
 | `href` | `string` | - | 链接的地址，形如 `#section-id`，按井号之后的部分查 `id`。留空的链接不参与滚动判定。 |
+| `target` | `string` | - | 落到 `a` 节点上的 `target`。填了它组件就完全不接管点击，交给浏览器打开。 |
+| `replace` | `boolean` | `false` | 点击滚动后是否用 `history.replaceState` 把 `href` 写进地址栏。默认不写。 |
+| `offset` | `number` | - | 该链接单独的滚动偏移量，覆盖 `RebornAnchor` 的 `offset`。 |
 
 ### Emits
 
@@ -243,7 +314,7 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 
 | 插槽名 | 作用域参数 | 描述 |
 | --- | --- | --- |
-| `default` | - | `RebornAnchorLink` 组件列表。链接的先后顺序即滚动判定的顺序（挂载后按 DOM 位置自动校正）。 |
+| `default` | - | `RebornAnchorLink` 组件列表。链接的先后顺序即滚动判定的顺序（挂载后按 DOM 位置自动校正）。传了 `items` 时这个插槽不渲染。 |
 
 ### AnchorLink Slots
 
@@ -301,7 +372,8 @@ const anchorRef = ref<InstanceType<typeof RebornAnchor>>();
 - **`select-scroll-top` 与 `bound` 不叠加**。触发线阈值取的是 `selectScrollTop ? 0 : bound`，开启前者后 `bound` 完全不参与判定。想微调换选中的时机就只调 `bound`，两个一起改只会让人以为 `bound` 失灵。
 - **容器滚到底时强制选中最后一项**。末尾区块不足一屏高时，它的顶部永远越不过触发线，按常规判定会停在倒数第二项。因此触底（`scrollTop >= maxScroll - 1`）时直接选中最后一个链接——这是有意为之，不是判定失灵。
 - **没有 `v-model`，选中态只能从 `change` 事件读**。与 Element Plus 一致：选中项是由滚动位置算出来的结果，从外部写回去没有意义。需要在别处显示当前章节，就在 `change` 回调里把 `href` 存下来。
-- **`click` 在滚动之前触发，`event.preventDefault()` 可以接管**。组件先外发 `click`，再检查 `defaultPrevented`：被拦下就既不滚动也不改选中态，跳转完全交给使用方（比如改成路由跳转）。未被拦下时组件会自行 `preventDefault()`，不让浏览器再做一次原生锚点跳转。
+- **`click` 在滚动之前触发，`event.preventDefault()` 可以接管**。组件先外发 `click`，再检查 `defaultPrevented`：被拦下就既不滚动也不改选中态，跳转完全交给使用方（比如改成路由跳转）。未被拦下时组件会自行 `preventDefault()`，不让浏览器再做一次原生锚点跳转。写了 `target` 的链接是第三条路：组件既不 `preventDefault()` 也不滚动，整个交给浏览器按 `target` 打开。
+- **默认不写地址栏，`replace` 才写，且只用 `replaceState`**。不填 `replace` 时点击链接地址栏不变。填了则滚动照做，滚完用 `history.replaceState` 把 `href` 换上去。Ant Design 默认是 `pushState`、`replace` 只是换个写法，这里没有跟：组件此前从不动地址栏，改成默认 push 会让已经接入的页面突然开始堆历史记录，返回键要连按好几次才退得出去。
 - **`container` 传选择器时在客户端挂载后才解析，查不到就什么都不监听**。SSR 阶段不查询 DOM；挂载后 `document.querySelector` 落空时组件不会回落到窗口——宁可不动，也好过监听错对象。点了链接没反应，先确认这个选择器、以及 `href` 指向的 `id` 是否真的存在于页面上。
 - **`direction` 只改链接排布，滚动判定始终是纵向的**。`horizontal` 把链接横排、标记移到底部，算的仍是目标元素的垂直位置。子链接（`sub-link`）在横向锚点下不适用：嵌套层会把标记的横向测量基准打乱。横向下 `marker` 只认 `bar` 与 `none`，`dot` / `hollow` 会被收敛成 `bar`——不是传参失效，是圆点在贴底的横轨道上没有对应画法。
 - **根元素带 `data-reborn-anchor` 标记**。组件自己管着滚动容器与偏移量，页面若另有全局的「同页 hash 链接跳转」逻辑（本文档站就有一个挂在 `document` 上的捕获阶段监听），必须靠这个属性把锚点内的链接放行。否则外层的 `stopPropagation()` 会让点击根本到不了组件，表现是点了链接页面整体跳走、目标容器纹丝不动。

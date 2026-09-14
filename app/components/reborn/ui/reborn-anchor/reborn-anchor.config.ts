@@ -29,18 +29,46 @@ export type AnchorColor = (typeof anchorColors)[number];
 /** 标记形态：bar 竖条 / dot 实心圆 / hollow 空心圆 / none 不显示；横向锚点只有 bar 与 none */
 export type AnchorMarker = (typeof anchorMarkers)[number];
 
+// --- 数据驱动结构（对齐 Ant Design 的 AnchorItem） ---
+
+/** items 的单个条目 */
+export interface AnchorItem {
+  /** 唯一标志。只用于列表渲染的键，缺省时依次回退到 href 与下标 */
+  key?: string | number;
+  /** 锚点链接，形如 `#section-id`；留空的条目不参与滚动判定 */
+  href?: string;
+  /** 该属性指定在何处显示链接的资源。填了它就交给浏览器打开，组件不再接管滚动 */
+  target?: string;
+  /** 文字内容。要放图标、徽标这类富内容请改用 RebornAnchorLink 插槽写法 */
+  title?: string;
+  /** 嵌套的子锚点。横向锚点不支持该属性，传了也不会渲染 */
+  children?: AnchorItem[];
+  /** 点击后是否把 href 同步进地址栏。为真时走 replaceState，替换当前记录而不新增历史条目 */
+  replace?: boolean;
+  /** 该锚点单独的滚动偏移量，覆盖组件的 offset */
+  offset?: number;
+}
+
 /** 单个链接登记到父级的元信息，父级据此判定选中项并测量标记位置 */
 export interface AnchorLinkMeta {
   /** 链接地址，形如 `#section-id`；未填写的链接不参与滚动判定 */
   href?: string;
   /** 链接的 a 节点，用于测量标记位置并按 DOM 先后校正顺序 */
   el?: HTMLElement;
+  /** 该链接单独的滚动偏移量，覆盖组件的 offset */
+  offset?: number;
+  /** a 节点的 target 属性，填了就交给浏览器打开 */
+  target?: string;
+  /** 点击后是否用 replaceState 把 href 写进地址栏 */
+  replace?: boolean;
 }
 
 /** 父级下发给 anchor-link 的上下文 */
 export interface AnchorContext {
   /** 当前选中的链接 href */
   activeHref: ComputedRef<string | undefined>;
+  /** 锚点方向，子级据此决定要不要渲染嵌套层 */
+  direction: ComputedRef<AnchorDirection>;
   /** 单个链接外层容器的样式类 */
   itemClass: ComputedRef<string>;
   /** 子链接容器的样式类 */
@@ -55,8 +83,8 @@ export interface AnchorContext {
   sortLinks: () => void;
   /** 注销链接 */
   removeLink: (meta: AnchorLinkMeta) => void;
-  /** 处理链接点击：先外发 click 事件，未被消费者阻止才滚动 */
-  handleClick: (event: MouseEvent, href?: string) => void;
+  /** 处理链接点击：先外发 click 事件，未被消费者阻止才滚动。target、replace、offset 都从元信息上读 */
+  handleClick: (event: MouseEvent, meta: AnchorLinkMeta) => void;
 }
 
 /** 可覆盖的样式区域 */
