@@ -14,7 +14,7 @@ badge: New
 
 Tabs 用于在多个平级内容区之间切换，Web 与 UniApp 两端同名同构，均由 `RebornTabs` 父组件 + `RebornTabPane` 子组件组合而成。标签头部由父组件根据子组件的注册信息统一渲染，使用者只需按内容的自然顺序写 `RebornTabPane`。
 
-它的样式体系由两个正交维度构成：`type` 决定**标签的形态**（下划线、卡片、胶囊还是纯文字），`color` 决定**选中态的语义色**。7 种类型 × 7 种语义色覆盖了从页面级主导航到局部分段控件的完整梯度；`color` 只写入一个 CSS 变量 `--re-tabs-color`，下划线、选中态文字、胶囊底色都从这个变量取值，因此换色不需要为每种类型单独定制。
+它的样式体系由两个正交维度构成：`type` 决定**标签的形态**（下划线、卡片、胶囊还是纯文字），`color` 决定**选中态的语义色**。7 种类型 × 7 种语义色覆盖了从页面级主导航到局部分段控件的完整梯度；`color` 直接落成色板的语义类名（`bg-primary`、`text-primary` 这类），下划线、选中态文字、胶囊底色都取同一档色值，因此换色不需要为每种类型单独定制。
 
 在此之上，其余 API 分成四组：**布局**由 `position`（四向）、`direction`、`justify`、`header-padding` 控制；**尺寸**由 `size` 的 4 档控制；**渲染策略**由 `lazy-load`、`destroy-on-hide`、`animation`、`hide-content` 控制；**交互**由 `trigger`、`scroll-position`、`editable` / `show-add-button` / `auto-switch` 控制。其中 `animation` 是一个总开关而不只是淡入淡出：开启后内容切换走缩放、位移与模糊的复合过渡，内容区高度也随之平滑过渡，详见[切换动画](#切换动画)。选中项统一用 `key` 标识（`v-model:active-key`），而不是索引，因此增删标签不会让选中项发生漂移。
 
@@ -350,6 +350,16 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 </template>
 ```
 
+`color` 的 7 个取值直接映射到色板的语义类名，组件不再定义自己的 CSS 变量。需要色板之外的颜色时，在实例上局部改写对应的色板变量即可，指示条、选中态文字与底板会一起跟着变，不必逐个改 `ui` 键：
+
+```vue
+<template>
+  <RebornTabs class="[--color-primary:#7c3aed]">
+    <RebornTabPane key="a" title="标签 A">A</RebornTabPane>
+  </RebornTabs>
+</template>
+```
+
 ## API
 
 以下 Props / Emits / Slots 两端完全一致，仅 `RebornTabPane` 的 `title` 插槽为 Web 独有（见「两端差异对照」）。
@@ -366,7 +376,7 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 | `size` | `"mini" \| "small" \| "medium" \| "large"` | `"medium"` | 标签尺寸。 |
 | `type` | `"line" \| "card" \| "card-gutter" \| "card-fill" \| "text" \| "rounded" \| "capsule"` | `"line"` | 标签形态。 |
 | `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | 排布方向，`position` 为 `left` / `right` 时强制纵向。 |
-| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 选中态语义色，写入 `--re-tabs-color`。 |
+| `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 选中态语义色，落成同名语义类名；`neutral` 实际取 `gray-9`（`--color-neutral` 是浅灰，当强调色看不清）。 |
 | `editable` | `boolean` | `false` | 开启可编辑模式，标签上显示关闭按钮。 |
 | `showAddButton` | `boolean` | `false` | 是否显示新增按钮，仅在 `editable` 为真时生效。 |
 | `destroyOnHide` | `boolean` | `false` | 标签不显示时销毁其内容。 |
@@ -442,24 +452,6 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 | `stage` | `content` 与面板之间的无内边距中间层，高度过渡锁在这一层。它不带内边距是刻意的：量到的进场面板净高就是要写进行内样式的目标高度，不必把 `content` 的单边内边距算进去（UniApp 端没有 `getComputedStyle` 可读）。`animation` 开启时它还是离场面板 `absolute inset-0` 的定位基准，`relative` 勿移除。 |
 | `pane` | 单个内容面板（`RebornTabPane` 根节点）。 |
 
-### CSS 变量
-
-两端通用，定义在各自的 `reborn-tabs.config.ts` 中：
-
-| 变量名 | 写入方 | 消费方 |
-| --- | --- | --- |
-| `--re-tabs-color` | `color` prop 写在根节点上（`neutral` 取 `--color-gray-9`，其余取同名语义色） | 指示条底色、各类型选中态的文字色、`rounded` 的选中底板填充色 |
-
-需要单个实例换成任意颜色时，直接在 `class` 里覆盖这个变量即可，不必逐个改 `ui` 键：
-
-```vue
-<template>
-  <RebornTabs class="[--re-tabs-color:#7c3aed]">
-    <RebornTabPane key="a" title="标签 A">A</RebornTabPane>
-  </RebornTabs>
-</template>
-```
-
 ## 两端差异对照
 
 | 维度 | Web | UniApp |
@@ -484,9 +476,9 @@ UniApp 端 `hover` 仅在 H5 生效。小程序与 APP 没有鼠标悬停事件�
 - **组件只派发增删事件，不改数据**。`add` / `delete` 不会自动增删 `RebornTabPane`，也不会在删掉当前项后自动切换。删除当前项后如果不重设 `activeKey`，头部将没有任何选中项——回退到相邻标签的逻辑需要使用方自己写（见「可编辑模式」示例）。
 - **`destroy-on-hide` 与 `lazy-load` 同时开启时前者优先**。`destroy-on-hide` 意味着离开即销毁，`lazy-load` 的「挂载后保留」不再成立，此时两者等价于只开 `destroy-on-hide`。
 - **切换标签默认不丢失内容状态**。面板用 `v-show` 控制显隐，表单填写与滚动位置都会保留；如果期望每次进入都是干净状态，必须显式开 `destroy-on-hide`。
-- **指示条只属于 `line`，另外五种类型换成滑动底板，只有 `text` 两者都不渲染**。`card` / `card-gutter` / `card-fill` / `rounded` / `capsule` 不渲染指示器节点而渲染 `ui.tabSlider`。所以在这五种类型上覆盖 `ui.indicator` 没有任何视觉变化，要改选中态得覆盖 `ui.tabSlider`；在 `text` 上两者都无效，只能改 `ui.tab` 或 `--re-tabs-color`。
+- **指示条只属于 `line`，另外五种类型换成滑动底板，只有 `text` 两者都不渲染**。`card` / `card-gutter` / `card-fill` / `rounded` / `capsule` 不渲染指示器节点而渲染 `ui.tabSlider`。所以在这五种类型上覆盖 `ui.indicator` 没有任何视觉变化，要改选中态得覆盖 `ui.tabSlider`；在 `text` 上两者都无效，只能改 `ui.tab` 或换 `color`。
 - **这五种类型的选中态整块搬到了底板上，标签自己不再换底色**。底色、边框、圆角都写在 `ui.tabSlider` 上，选中标签只剩文字色与字重；标签的底色改为恒定（`card` / `card-gutter` 恒为 `gray-2`，`card-fill` / `rounded` / `capsule` 恒为透明；三种卡片里只有 `card-gutter` 带边框）。这是滑动动画能被看见的前提：若底色仍随选中切换，新标签会在底板滑到之前就自己亮起来、旧标签立刻变灰，结果先于动画呈现，滑动也就没有意义。三处连带的机制不要改动——① 标签列有 `isolate`，底板取 `z-index: 0` 恰好压住所有标签的背景与边框（标签本身不定位，属于更下层），标题与关闭图标取 `z-[1]` 压在底板之上，底板才能滑过沿途标签而不遮字；② 底板是标签列的**末位**子节点，并由行内 `margin: 0` 抹掉任何落在相邻子节点上的负外边距（早先 `card` 共用边框时的 `[&>*+*]:-ml-px` 就曾命中它），放到首位则会让首个标签整体偏移；③ `card` 的圆角按标签在列中的首尾分配，而底板永远既非首也非末，用不了 `first:` / `last:`，因此组件按选中项下标推导端位（首 / 末 / 唯一 / 中间）再取对应圆角——圆角也参与过渡，从端部滑向中间时能看到外角逐渐收平。
-- **`rounded` 的选中文字靠底板托底，覆盖 `ui.tabSlider` 关掉底色会让它在浅色模式下看不见**。这个类型的选中标题是近白的 `gray-1`，自身没有任何底色，可读性完全来自底板那块主题色实心胶囊。若用 `ui.tabSlider` 把背景改成透明或浅色，浅色模式下就是白字打在页面底色上。要改配色得同时改 `ui.tab` 的选中文字色，或直接调 `--re-tabs-color`。
+- **`rounded` 的选中文字靠底板托底，覆盖 `ui.tabSlider` 关掉底色会让它在浅色模式下看不见**。这个类型的选中标题是近白的 `gray-1`，自身没有任何底色，可读性完全来自底板那块主题色实心胶囊。若用 `ui.tabSlider` 把背景改成透明或浅色，浅色模式下就是白字打在页面底色上。要改配色得同时改 `ui.tab` 的选中文字色，或换 `color` / 在实例上改写色板变量（`class="[--color-primary:#7c3aed]"`）。
 - **底板形变期间会写行内过渡时长，在 `ui.tabSlider` 上写过渡时长无效**。`rounded` / `capsule` 的两段形变靠行内 `transition-duration` / `transition-timing-function` 驱动（行内优先级高于类名，两端都成立），行程中你在 `ui.tabSlider` 里写的时长会被覆盖。要改节奏只能改组件里的那两组常量，`ui.tabSlider` 留给形态。
 - **高度过渡的那段时间内容区是 `overflow-hidden`**。`animation` 开启时，切换后约 280ms 内容区外层是裁剪状态，面板里需要溢出容器的浮层（下拉、气泡、`tooltip`）会被切掉一截，过渡结束即释放。若面板一打开就有溢出容器的浮层，关掉 `animation`，或把浮层挂到 `body` 上。
 - **`justify` 或 `hide-content` 开启时不做高度过渡**。`justify` 下内容区高度由容器给（根节点撑满、内容区是弹性列），再锁一个固定高度会和版式打架；`hide-content` 下内容整块不渲染，没有高度可过渡。这两种情况下 `animation` 只剩内容的复合过渡（`hide-content` 连内容都没有，等于完全不生效）。

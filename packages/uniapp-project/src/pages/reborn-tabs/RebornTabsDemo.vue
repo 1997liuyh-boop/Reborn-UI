@@ -376,7 +376,7 @@ function handleDelete(key: TabKey) {
 
     <!-- 样式定制 -->
     <RebornCard title="样式定制" custom-class="space-y-4">
-      <text class="text-24 text-gray-6">color 只改 --re-tabs-color 这一个变量，指示器与选中态一起跟着变</text>
+      <text class="text-24 text-gray-6">color 落成色板的语义类名，指示器与选中态取同一档色值</text>
       <RebornTabs v-model:active-key="typeKey" color="success">
         <RebornTabPane key="all" title="全部">
           <text class="text-26 text-gray-7">全部内容</text>

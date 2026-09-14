@@ -749,10 +749,9 @@ function handleDelete(key: TabKey) {
 
     <DemoSection title="样式定制">
       <template #description>
-        <code>color</code> 只改
-        <code>--re-tabs-color</code> 一个变量，指示器、选中态文字与胶囊底色一起跟着变； 需要 7
+        <code>color</code> 落成色板的语义类名，指示器、选中态文字与胶囊底色取同一档色值； 需要 7
         个语义色之外的色值时不用逐个改
-        <code>ui</code> 键，直接在根节点覆盖这个变量即可；更细的调整再用
+        <code>ui</code> 键，在根节点改写对应的色板变量即可；更细的调整再用
         <code>ui</code> 按槽位覆写。
       </template>
       <DemoBlock
@@ -762,7 +761,7 @@ function handleDelete(key: TabKey) {
         <RebornTabs
           v-model:active-key="styledColorKey"
           :class="
-            styledColorKey === 'top' ? '[--re-tabs-color:#FF2442]' : '[--re-tabs-color:#3491FA]'
+            styledColorKey === 'top' ? '[--color-primary:#FF2442]' : '[--color-primary:#3491FA]'
           "
         >
           <RebornTabPane

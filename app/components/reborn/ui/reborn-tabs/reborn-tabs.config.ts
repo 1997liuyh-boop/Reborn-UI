@@ -107,9 +107,9 @@ const theme = tv({
     tabTitle: "relative z-[1] truncate",
     tabClose:
       "relative z-[1] -mr-1 inline-flex shrink-0 items-center justify-center rounded-ui-2xs text-gray-6 transition-colors hover:bg-gray-2 hover:text-gray-9 motion-reduce:transition-none",
-    // 指示器位置由组件测量标题后写入行内样式，这里只负责形态与过渡
+    // 指示器位置由组件测量标题后写入行内样式，这里只负责形态与过渡；底色由 color 变体给
     indicator:
-      "pointer-events-none absolute rounded-full bg-[var(--re-tabs-color)] transition-all duration-300 ease-out motion-reduce:transition-none",
+      "pointer-events-none absolute rounded-full transition-all duration-300 ease-out motion-reduce:transition-none",
     // 三种卡片类型的选中底板：位置与尺寸由组件测量选中标签后写入行内样式，这里只负责形态与过渡。
     // z-0 在标签列的层叠上下文里恰好压住所有标签的背景与边框（标签本身不定位，属于更下层），
     // 又被 z-[1] 的标题压在下面，于是底板能从旧标签滑到新标签而不遮挡沿途的文字
@@ -201,18 +201,25 @@ const theme = tv({
         addButton: "w-14",
       },
     },
+    // 强调色直接落成语义类名，不再经由组件私有的 CSS 变量中转（与本仓库其余组件一致）。
+    // 这里只能写「无条件生效」的两处：指示条底色、悬浮文字色；
+    // 选中文字色与 rounded 底板色都要跨 active / type 取值，见下面的 compoundVariants。
+    // 悬浮色放在这里而不是 active.false 上：除 rounded 外各类型的选中文字本就是同一个强调色，
+    // 选中项悬停与否看不出差别；rounded 的选中文字是反白的，由它自己把悬浮色压回 gray-1
     color: {
-      primary: { root: "[--re-tabs-color:var(--color-primary)]" },
-      secondary: { root: "[--re-tabs-color:var(--color-secondary)]" },
-      success: { root: "[--re-tabs-color:var(--color-success)]" },
-      info: { root: "[--re-tabs-color:var(--color-info)]" },
-      warning: { root: "[--re-tabs-color:var(--color-warning)]" },
-      error: { root: "[--re-tabs-color:var(--color-error)]" },
-      neutral: { root: "[--re-tabs-color:var(--color-gray-9)]" },
+      primary: { indicator: "bg-primary", tab: "hover:text-primary" },
+      secondary: { indicator: "bg-secondary", tab: "hover:text-secondary" },
+      success: { indicator: "bg-success", tab: "hover:text-success" },
+      info: { indicator: "bg-info", tab: "hover:text-info" },
+      warning: { indicator: "bg-warning", tab: "hover:text-warning" },
+      error: { indicator: "bg-error", tab: "hover:text-error" },
+      // --color-neutral 是 gray-4 / gray-5 的浅灰，当强调色看不清，这里改取 gray-9
+      neutral: { indicator: "bg-gray-9", tab: "hover:text-gray-9" },
     },
     active: {
-      true: { tab: "font-medium text-[var(--re-tabs-color)]" },
-      false: { tab: "text-gray-9 hover:text-[var(--re-tabs-color)]" },
+      // 选中文字色要按 color 档取值，见下面的 color × active 组合
+      true: { tab: "font-medium" },
+      false: { tab: "text-gray-9" },
     },
     disabled: {
       true: { tab: "cursor-not-allowed text-gray-5 hover:text-gray-5" },
@@ -328,7 +335,8 @@ const theme = tv({
     {
       type: ["card", "card-gutter", "card-fill"],
       active: true,
-      class: { tab: "font-bold text-[var(--re-tabs-color)]" },
+      // 文字色由下面的 color × active 组合统一给，这里只加粗
+      class: { tab: "font-bold" },
     },
     // card 的底板与标签一样不画边框，只靠 gray-1 亮块区分选中；card-gutter 保留 gray-3 边框撑出卡片轮廓
     { type: "card", class: { tabSlider: "bg-gray-1" } },
@@ -377,14 +385,33 @@ const theme = tv({
       edge: "both",
       class: { tabSlider: "rounded-ui-xs" },
     },
+    // ===== 选中态的文字色：按 color 档取对应语义色 =====
+    // 写不进 active.true，那里拿不到当前 color；必须排在下面 rounded 的反白规则之前，
+    // compoundVariants 按数组顺序合并，排在后面的 text-gray-1 才能盖住这里的强调色
+    { color: "primary", active: true, class: { tab: "text-primary" } },
+    { color: "secondary", active: true, class: { tab: "text-secondary" } },
+    { color: "success", active: true, class: { tab: "text-success" } },
+    { color: "info", active: true, class: { tab: "text-info" } },
+    { color: "warning", active: true, class: { tab: "text-warning" } },
+    { color: "error", active: true, class: { tab: "text-error" } },
+    { color: "neutral", active: true, class: { tab: "text-gray-9" } },
     // ===== 实心与分段胶囊的选中态：底色同样搬到 tabSlider 这块底板上 =====
     // rounded 的选中文字是近白的 gray-1，浅色模式下只有踩在主题色底板上才看得见。
     // 底板从旧标签滑到新标签的这段行程里，两个标签的文字都处在反色状态，
     // 所以行程中底板必须同时覆盖它们 —— 见 RebornTabs.vue 的 runLiquid：
     // 阶段 A 把底板主轴区间拉成两个标签的并集，阶段 B 才收拢到目标标签
-    { type: "rounded", class: { tabSlider: "rounded-full bg-[var(--re-tabs-color)]" } },
-    { type: "rounded", active: true, class: { tab: "text-gray-1" } },
-    // capsule 的选中文字沿用 active 变体给的主题色，这里只搬底色与投影
+    { type: "rounded", class: { tabSlider: "rounded-full" } },
+    { color: "primary", type: "rounded", class: { tabSlider: "bg-primary" } },
+    { color: "secondary", type: "rounded", class: { tabSlider: "bg-secondary" } },
+    { color: "success", type: "rounded", class: { tabSlider: "bg-success" } },
+    { color: "info", type: "rounded", class: { tabSlider: "bg-info" } },
+    { color: "warning", type: "rounded", class: { tabSlider: "bg-warning" } },
+    { color: "error", type: "rounded", class: { tabSlider: "bg-error" } },
+    { color: "neutral", type: "rounded", class: { tabSlider: "bg-gray-9" } },
+    // 选中的反白文字连悬浮态一起压住：color 变体给的 hover:text-* 是无条件的，
+    // 不在这里压回 gray-1，鼠标移上去就会变成主题色踩主题色底板，文字直接消失
+    { type: "rounded", active: true, class: { tab: "text-gray-1 hover:text-gray-1" } },
+    // capsule 的选中文字沿用上面 color × active 给的主题色，这里只搬底色与投影
     { type: "capsule", class: { tabSlider: "rounded-full bg-gray-1 shadow-sm" } },
     { type: ["rounded", "capsule"], active: false, class: { tab: "hover:bg-gray-2" } },
     { type: "capsule", active: false, class: { tab: "hover:bg-gray-3" } },

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-11T10:20:30.667Z",
+  "generatedAt": "2026-09-14T04:03:42.775Z",
   "components": [
     {
       "id": "animate-grid",
@@ -722,6 +722,21 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-anchor",
+      "title": "Anchor 锚点",
+      "description": "跟随滚动高亮的目录导航：container 指定滚动层，offset / bound 控制落点与触发线，marker 选标记形态（竖条 / 实心圆 / 空心圆 / 不显示），支持水平排布与子链接嵌套。",
+      "category": "navigation",
+      "tags": [
+        "css",
+        "tailwind",
+        "anchor",
+        "navigation"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {

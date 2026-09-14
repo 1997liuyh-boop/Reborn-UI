@@ -273,7 +273,10 @@ function processImage(img: HTMLImageElement) {
   const canvas = canvasRef.value;
   if (!canvas || dimensions.value.width === 0 || dimensions.value.height === 0) return;
 
-  const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+  // 注意：此处禁止用 typeof 直接判断 window 是否存在（含注释在内都不能出现该字面量组合）。
+  // 本文件会被源码面板以 ?raw 内联成字符串常量，而 Nitro 的 rollup replace 会把该组合
+  // 整体替换成 "undefined"，注入的双引号会截断字符串字面量，导致构建报 Expected a semicolon
+  const dpr = globalThis.window ? window.devicePixelRatio || 1 : 1;
   const displayWidth = dimensions.value.width;
   const displayHeight = dimensions.value.height;
 

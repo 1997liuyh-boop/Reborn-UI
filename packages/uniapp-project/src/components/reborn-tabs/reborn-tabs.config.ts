@@ -104,9 +104,9 @@ const theme = tv({
     // z-[1] 让标题浮在选中底板之上：底板滑过相邻标签时不会把它们的文字盖住
     tabTitle: 'reborn-tabs__title relative z-[1] overflow-hidden whitespace-nowrap',
     tabClose: 'i-lucide-x relative z-[1] shrink-0 text-gray-6 transition-colors',
-    // 指示器位移与长度由组件量取后写成行内样式，这里只负责形态与过渡
+    // 指示器位移与长度由组件量取后写成行内样式，这里只负责形态与过渡；底色由 color 变体给
     indicator:
-      'pointer-events-none absolute rounded-full bg-[var(--re-tabs-color)] transition-all duration-300 ease-out will-change-transform',
+      'pointer-events-none absolute rounded-full transition-all duration-300 ease-out will-change-transform',
     // 三种卡片类型的选中底板：主轴位移与长度由组件量取选中标签后写成行内样式，交叉轴由 position
     // 变体钉住（同一 size 下所有标签等高，纵向标签列又是 items-stretch，交叉轴无需测量）。
     // z-0 在标签列的层叠上下文里恰好压住所有标签的背景与边框（标签本身不定位，属于更下层），
@@ -204,17 +204,22 @@ const theme = tv({
         addButton: 'w-[112rpx]',
       },
     },
+    // 强调色直接落成语义类名，不再经由组件私有的 CSS 变量中转（与 web 端及本仓库其余组件一致）。
+    // 这里只能写无条件生效的指示条底色；选中文字色与 rounded 底板色都要跨 active / type 取值，
+    // 见下面的 compoundVariants
     color: {
-      primary: { root: '[--re-tabs-color:var(--color-primary)]' },
-      secondary: { root: '[--re-tabs-color:var(--color-secondary)]' },
-      success: { root: '[--re-tabs-color:var(--color-success)]' },
-      info: { root: '[--re-tabs-color:var(--color-info)]' },
-      warning: { root: '[--re-tabs-color:var(--color-warning)]' },
-      error: { root: '[--re-tabs-color:var(--color-error)]' },
-      neutral: { root: '[--re-tabs-color:var(--color-gray-9)]' },
+      primary: { indicator: 'bg-primary' },
+      secondary: { indicator: 'bg-secondary' },
+      success: { indicator: 'bg-success' },
+      info: { indicator: 'bg-info' },
+      warning: { indicator: 'bg-warning' },
+      error: { indicator: 'bg-error' },
+      // --color-neutral 是 gray-4 / gray-5 的浅灰，当强调色看不清，这里改取 gray-9
+      neutral: { indicator: 'bg-gray-9' },
     },
     active: {
-      true: { tab: 'font-medium text-[var(--re-tabs-color)]' },
+      // 选中文字色要按 color 档取值，见下面的 color × active 组合
+      true: { tab: 'font-medium' },
       false: { tab: 'text-gray-9' },
     },
     disabled: {
@@ -347,7 +352,8 @@ const theme = tv({
     {
       type: ['card', 'card-gutter', 'card-fill'],
       active: true,
-      class: { tab: 'font-bold text-[var(--re-tabs-color)]' },
+      // 文字色由下面的 color × active 组合统一给，这里只加粗
+      class: { tab: 'font-bold' },
     },
     // card 的底板与标签一样不画边框，只靠 gray-1 亮块区分选中；card-gutter 保留 gray-3 边框撑出卡片轮廓
     { type: 'card', class: { tabSlider: 'bg-gray-1' } },
@@ -396,14 +402,31 @@ const theme = tv({
       edge: 'both',
       class: { tabSlider: 'rounded-ui-xs' },
     },
+    // ===== 选中态的文字色：按 color 档取对应语义色 =====
+    // 写不进 active.true，那里拿不到当前 color；必须排在下面 rounded 的反白规则之前，
+    // compoundVariants 按数组顺序合并，排在后面的 text-gray-1 才能盖住这里的强调色
+    { color: 'primary', active: true, class: { tab: 'text-primary' } },
+    { color: 'secondary', active: true, class: { tab: 'text-secondary' } },
+    { color: 'success', active: true, class: { tab: 'text-success' } },
+    { color: 'info', active: true, class: { tab: 'text-info' } },
+    { color: 'warning', active: true, class: { tab: 'text-warning' } },
+    { color: 'error', active: true, class: { tab: 'text-error' } },
+    { color: 'neutral', active: true, class: { tab: 'text-gray-9' } },
     // ===== 实心与分段胶囊的选中态：底色同样搬到 tabSlider 这块底板上 =====
     // rounded 的选中文字是近白的 gray-1，浅色模式下只有踩在主题色底板上才看得见。
     // 底板从旧标签滑到新标签的这段行程里，两个标签的文字都处在反色状态，
     // 所以行程中底板必须同时覆盖它们 —— 见 RebornTabs.vue 的 runLiquid：
     // 阶段 A 把底板主轴区间拉成两个标签的并集，阶段 B 才收拢到目标标签
-    { type: 'rounded', class: { tabSlider: 'rounded-full bg-[var(--re-tabs-color)]' } },
+    { type: 'rounded', class: { tabSlider: 'rounded-full' } },
+    { color: 'primary', type: 'rounded', class: { tabSlider: 'bg-primary' } },
+    { color: 'secondary', type: 'rounded', class: { tabSlider: 'bg-secondary' } },
+    { color: 'success', type: 'rounded', class: { tabSlider: 'bg-success' } },
+    { color: 'info', type: 'rounded', class: { tabSlider: 'bg-info' } },
+    { color: 'warning', type: 'rounded', class: { tabSlider: 'bg-warning' } },
+    { color: 'error', type: 'rounded', class: { tabSlider: 'bg-error' } },
+    { color: 'neutral', type: 'rounded', class: { tabSlider: 'bg-gray-9' } },
     { type: 'rounded', active: true, class: { tab: 'text-gray-1' } },
-    // capsule 的选中文字沿用 active 变体给的主题色，这里只搬底色与投影
+    // capsule 的选中文字沿用上面 color × active 给的主题色，这里只搬底色与投影
     { type: 'capsule', class: { tabSlider: 'rounded-full bg-gray-1 shadow-sm' } },
     // 头部边距只在 line、text 上生效，且随方向切换轴向
     {

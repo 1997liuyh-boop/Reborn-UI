@@ -1,0 +1,32 @@
+{
+  "description": "跟随滚动高亮的目录导航：container 指定滚动层，offset / bound 控制落点与触发线，marker 选标记形态（竖条 / 实心圆 / 空心圆 / 不显示），支持水平排布与子链接嵌套。",
+  "whenToUse": [
+    "长文档、详情页的章节导航：container 指向滚动层，每个 href 指到一个区块 id。",
+    "设置页、表单分组的侧边目录：默认 type='default' 会画一条轨道线，把分组串成视觉主轴。",
+    "内容区上方的横排小节切换：direction='horizontal'，链接横排、标记移到底部。",
+    "页面有吸顶栏、滚动后区块不能贴着容器顶部：用 offset 留出吸顶栏的高度。",
+    "从页面别处（搜索结果、目录按钮）跳到某个区块：调实例方法 scrollTo(href)。"
+  ],
+  "whenNotToUse": [
+    "切换的是内容而不是滚动位置，改用 reborn-tabs，它按 key 换面板，不动滚动条。",
+    "跨页面 / 路由的导航，改用 reborn-menu，锚点只在当前容器内滚动，不做路由跳转。",
+    "只想平滑滚到某个元素、不需要目录和高亮，直接用 element.scrollIntoView({ behavior: 'smooth' })。"
+  ],
+  "pitfalls": [
+    "duration 走 JS 补间而非原生 scroll-behavior: smooth（原生方案不提供时长控制）：组件用 rAF 逐帧写 scrollTop 并显式传 behavior: 'instant'，避免与容器 CSS 上的平滑滚动叠成两层动画；系统开启减少动态效果时直接跳转，duration 不生效。",
+    "selectScrollTop 与 bound 不叠加：触发线阈值取 selectScrollTop ? 0 : bound，开启前者后 bound 完全不参与判定，想微调换选中时机只调 bound。",
+    "容器滚到底（scrollTop >= maxScroll - 1）时强制选中最后一项：末尾区块不足一屏高时顶部永远越不过触发线，这是有意为之，不是判定失灵。",
+    "没有 v-model，选中态只能从 change 事件读（与 Element Plus 一致）：选中项由滚动位置算出，从外部写回没有意义。",
+    "click 在滚动之前触发，event.preventDefault() 即接管跳转：被拦下时组件既不滚动也不改选中态；未被拦下时组件自行 preventDefault，不让浏览器再做原生锚点跳转。",
+    "container 传选择器字符串时在客户端挂载后才解析，SSR 阶段不查询 DOM；querySelector 落空时不监听也不回落到窗口，链接点了没反应先查选择器与 href 指向的 id 是否存在。",
+    "container 传 HTMLElement 时要确保元素已挂载：父组件首帧模板 ref 还是 undefined，需用 v-if 等它有值再渲染锚点。",
+    "direction 只改链接排布，滚动判定始终按目标元素的垂直位置算；子链接（sub-link）在横向锚点下不适用，嵌套层会打乱标记的横向测量基准。",
+    "横向锚点只支持 marker='bar' 与 'none'，传 dot / hollow 会被组件收敛成 bar：圆点是骑在竖轨道上的形态，贴底的横轨道上没有对应画法。",
+    "marker 收 boolean 与四种形态字符串，true 等价于 bar、false 等价于 none（保留 Element Plus 的布尔签名）；type='default' 配 marker='none' 会留下一条永远不亮的轨道线，要彻底去掉标记需同时设 type='underline'。",
+    "color 只改选中文字与标记颜色，取各色阶的 -6 档，落成 bg-primary / text-primary 这类语义类名，组件不额外定义自己的 CSS 变量；要色板之外的颜色就在锚点上局部改写色板变量，如 class=\"[--color-primary:#7c3aed]\"。",
+    "轨道线固定 bg-gray-2、空心标记的洞固定 bg-gray-1，都不跟随 color（它们是背景而非强调色），要改得用 ui.list 覆盖 before:bg-* 或 ui.marker 覆盖 after:bg-*。",
+    "color='neutral' 用的是 gray-9 不是 gray-6：gray 色阶在本仓库是会随暗色模式反转的文本色阶，gray-6 是浅灰，当强调色看不清。",
+    "组件根元素带 data-reborn-anchor 标记，供页面级的全局 hash 跳转逻辑放行（本仓库 plugins/anchor-scroll.client.ts 就是这样一个 document 捕获阶段监听）。外层若不放行，stopPropagation 会让点击到不了组件，表现是点链接后页面整体跳走、目标容器纹丝不动。",
+    "仅 Web 端组件，依赖 getBoundingClientRect 同步测量与 href='#id' 锚点语义，UniApp 端暂无对应实现；移动端章节定位请用 scroll-view 的 scroll-into-view 自行实现。"
+  ]
+}

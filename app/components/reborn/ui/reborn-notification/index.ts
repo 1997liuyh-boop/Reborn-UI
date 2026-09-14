@@ -124,7 +124,10 @@ function levelMethod(type: NotificationType) {
 
 /** 当前环境是否具备原生系统通知能力；需要 HTTPS 或 localhost 的安全上下文 */
 function systemSupported(): boolean {
-  return typeof window !== 'undefined' && 'Notification' in window;
+  // 注意：此处禁止用 typeof 直接判断 window 是否存在（含注释在内都不能出现该字面量组合）。
+  // 本文件会被源码面板以 ?raw 内联成字符串常量，而 Nitro 的 rollup replace 会把该组合
+  // 整体替换成 "undefined"，注入的双引号会截断字符串字面量，导致构建报 Expected a semicolon
+  return !!globalThis.window && 'Notification' in window;
 }
 
 /** 请求授权：兼容旧版 Safari 只支持回调形态的 requestPermission */

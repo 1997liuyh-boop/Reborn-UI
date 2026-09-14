@@ -31,6 +31,12 @@ function getSamePageHashLink(event: MouseEvent): HTMLAnchorElement | null {
     return null;
   }
 
+  // 锚点组件自己管着滚动容器与偏移量，这里要放行：
+  // 本插件是 document 上的捕获阶段监听，抢下来会 stopPropagation，点击根本到不了组件的 click 处理
+  if (link.closest("[data-reborn-anchor]")) {
+    return null;
+  }
+
   const rawHref = link.getAttribute("href");
   if (!rawHref) {
     return null;
