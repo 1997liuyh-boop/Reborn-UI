@@ -13,10 +13,13 @@ on:
   # 允许在 Actions 页面手动触发一次部署
   workflow_dispatch:
 
-# 同一时间只跑一次部署，新的 push 会取消进行中的旧部署
+# 同一时间只跑一次部署；新的 push 排队等待，绝不打断进行中的部署。
+# 严禁改回 cancel-in-progress: true——「同步产物」与「重启进程」必须作为一个整体走完。
+# 一旦在两者之间被掐断，磁盘上是新构建、pm2 里还是旧 server bundle，
+# Nitro 会用旧清单的 Content-Length 去发新文件，首页直接 ERR_INCOMPLETE_CHUNKED_ENCODING。
 concurrency:
   group: deploy-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -88,10 +91,13 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
 
-          # 同步构建产物到服务器。
+          # 第一趟同步：只增不删。
+          # 这里刻意不带 --delete——整个 rsync 要跑几分钟，期间线上仍在服务旧 HTML，
+          # 它引用的是旧的 _nuxt 哈希资源。若此刻就删旧文件，这几分钟内整站静态资源全 404。
+          # 新旧资源哈希不同，可以安全共存，等重启完成后再由第二趟清理。
           # --exclude '.data'：AI 聊天 SQLite；--exclude 'ecosystem.config.cjs'：运行时密钥文件，
-          # 二者都属于服务器本地状态，绝不能被 --delete 清掉。
-          rsync -avz --delete \
+          # 二者都属于服务器本地状态，绝不能被第二趟的 --delete 清掉。
+          rsync -avz \
             --exclude '.data' \
             --exclude 'ecosystem.config.cjs' \
             .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
@@ -151,6 +157,13 @@ jobs:
             pm2 show index | sed -n '1,40p'
           "
 
+          # 第二趟同步：进程已经加载新 bundle，此时才回收上一版遗留的旧哈希资源。
+          # 放在重启之后，是为了保证「旧资源可用」的窗口一直覆盖到切换完成为止。
+          rsync -avz --delete \
+            --exclude '.data' \
+            --exclude 'ecosystem.config.cjs' \
+            .output/ "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/"
+
           echo "🎉 GitHub Actions 自动部署完成！"
 
       - name: 部署后探针（AI 运行时）
@@ -162,6 +175,39 @@ jobs:
           set -euo pipefail
           # 等进程起来
           sleep 5
+
+          echo "---- GET / 首页完整性 ----"
+          # 2026-09-14 事故的直接症状：pm2 没加载新 bundle，Nitro 拿旧清单的 Content-Length
+          # 去发新的 index.html，响应体提前断流，浏览器报 ERR_INCOMPLETE_CHUNKED_ENCODING。
+          # curl 对这种「收到的字节数少于声明」会以 18(PARTIAL_FILE) 退出，正好当断言用。
+          if ! curl -fsS --max-time 30 -o /tmp/deploy-home.html "http://${SERVER_IP}/"; then
+            echo "❌ 首页响应不完整：Content-Length 与实际字节数不符。"
+            echo "   多半是产物已同步但 pm2 进程仍是旧 server bundle，去服务器重启 index 进程。"
+            exit 1
+          fi
+          # 再确认文档确实闭合——防止 SSR 中途抛错却仍返回 200 的情况被放过
+          tail -c 32 /tmp/deploy-home.html | grep -q '</html>' || {
+            echo "❌ 首页 HTML 未正常闭合，SSR 可能中途抛错"; exit 1; }
+          echo "首页完整性 ok（$(wc -c < /tmp/deploy-home.html) 字节）"
+
+          echo "---- GET / 首页内容正确性 ----"
+          # 上面两条只验了「字节完整 + 标签闭合」，而全站是预渲染的：
+          # 构建期若 landing 集合查空，app/pages/index.vue 会 throw 404，
+          # Nuxt 把错误页当成 / 的产物写进 index.html —— 那同样是一份闭合的完整 HTML，还带 200。
+          # 2026-09-14 线上「Page not found: / in collection landing」就是这么溜过去的。
+          # 注意写成 if 而不是 `grep -q ... && { exit 1; }`：后者在健康路径下
+          # grep 返回非零会让整个 && 复合命令非零，set -e 直接把脚本打死。
+          if grep -q 'Page not found' /tmp/deploy-home.html; then
+            echo "❌ 首页返回的是预渲染错误页（HTTP 200 但内容是 404）。"
+            echo "   构建期 landing 集合为空，多半是 content 的 SQL dump 下载被截断或失败。"
+            grep -o 'Page not found[^"<]\{0,80\}' /tmp/deploy-home.html | head -1
+            exit 1
+          fi
+          # 正向断言：landing 分支特有的导航地标，文档页与错误页都不会有。
+          grep -q '首页导航' /tmp/deploy-home.html || {
+            echo "❌ 首页缺少 landing 页地标，渲染出的不是首页本体"; exit 1; }
+          echo "首页内容 ok"
+
           echo "---- GET /api/ai/status ----"
           status="$(curl -fsS --max-time 20 "http://${SERVER_IP}/api/ai/status")"
           echo "$status"
@@ -169,21 +215,43 @@ jobs:
           # ok 本身即「密钥存在 + baseUrl 存在 + provider 已注册 + 路径带 /v1」的合取，断言它就够了
           echo "$status" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True, d'
 
-          echo "---- POST /__docus__/assistant smoke ----"
           payload='{"messages":[{"role":"user","parts":[{"type":"text","text":"只回复：你好"}]}]}'
+
+          echo "---- POST /__docus__/assistant 封禁回归 ----"
+          # Docus 自带的助手处理器不鉴权也不限流，是个可被直接 POST 的免费 token 入口，
+          # 已由 server/middleware/ai-guard.ts 封死返回 410。这里断言它一直是封死的：
+          # 若某次 docus 升级重新注册了该路径而中间件没兜住，这条会先红。
+          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 -X POST "http://${SERVER_IP}/__docus__/assistant" \
+            -H "Content-Type: application/json" \
+            -H "Accept: text/event-stream" \
+            --data "$payload")"
+          echo "HTTP $code"
+          [ "$code" = "410" ] || { echo "❌ 旧助手端点应为 410(已封禁)，实际 $code"; exit 1; }
+          echo "旧端点封禁 ok"
+
+          echo "---- POST /api/assistant smoke ----"
           if [ -z "${SMOKE_COOKIE:-}" ]; then
-            # 助手端点受 ai-guard 保护，未登录应返回 401：证明进程在线且鉴权生效
-            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 -X POST "http://${SERVER_IP}/__docus__/assistant" \
+            # 未登录不会返回 401：登录校验在处理器内部，以「正常助手回复」的形式告知用户
+            # （理由见 server/api/assistant.post.ts 头部注释），因此这里期望 200 + SSE 文本流。
+            # 断言 200 与 text-delta 同时成立，可证明进程在线、路由存在、流式响应正常，
+            # 且未登录分支不会打到模型（不消耗网关 token）。
+            resp="$(curl -sS --max-time 60 -w '\n%{http_code}' -X POST "http://${SERVER_IP}/api/assistant" \
               -H "Content-Type: application/json" \
               -H "Accept: text/event-stream" \
               --data "$payload")"
-            echo "HTTP $code（未提供 DEPLOY_SMOKE_COOKIE，仅校验鉴权拦截）"
-            [ "$code" = "401" ] || { echo "❌ 期望 401，实际 $code"; exit 1; }
-            echo "assistant guard ok"
+            code="$(printf '%s' "$resp" | tail -n1)"
+            body="$(printf '%s' "$resp" | sed '$d')"
+            echo "HTTP $code（未提供 DEPLOY_SMOKE_COOKIE，仅校验未登录回复链路）"
+            printf '%s' "$body" | head -c 400
+            echo
+            [ "$code" = "200" ] || { echo "❌ 期望 200，实际 $code"; exit 1; }
+            printf '%s' "$body" | grep -q 'text-delta' || {
+              echo "❌ 未登录回复里没有 text-delta，助手链路可能没起来"; exit 1; }
+            echo "assistant 未登录回复 ok"
             exit 0
           fi
 
-          body="$(curl -fsS --max-time 90 -X POST "http://${SERVER_IP}/__docus__/assistant" \
+          body="$(curl -fsS --max-time 90 -X POST "http://${SERVER_IP}/api/assistant" \
             -H "Content-Type: application/json" \
             -H "Accept: text/event-stream" \
             -H "Cookie: ${SMOKE_COOKIE}" \
