@@ -1,5 +1,11 @@
 import type { Object3D } from "three";
 import type { GLTF } from "three/addons/loaders/GLTFLoader.js";
+// 下面这组 import 的顺序有语义，整组关掉排序规则：
+// ./webgpuGlobals 必须排在 three/webgpu 之前 —— three 0.182 在模块顶层读
+// self.GPUShaderStage.VERTEX，非安全上下文（http）下会直接抛 TypeError，详见 webgpuGlobals.ts。
+// 只在单行上 disable 没用：perfectionist 会把错误报到下一条 import 上，逐行打补丁打不完。
+/* eslint-disable perfectionist/sort-imports */
+import "./webgpuGlobals";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { retargetClip } from "three/addons/utils/SkeletonUtils.js";
 import { color, mix, reflector } from "three/tsl";
@@ -9,6 +15,7 @@ import {
   PerspectiveCamera, Scene, Skeleton, SkeletonHelper, SkinnedMesh, Texture, WebGPURenderer,
 } from "three/webgpu";
 import { retargetingModels } from "../../components/common/landing/retargetingHero.config";
+/* eslint-enable perfectionist/sort-imports */
 
 export interface RetargetingController {
   syncPlayback: () => void;
