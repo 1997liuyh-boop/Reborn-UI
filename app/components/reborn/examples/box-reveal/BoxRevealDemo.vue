@@ -11,7 +11,7 @@
         color="#E1251B"
         :duration="0.8"
       >
-        <h2 class="text-muted mt-[.5rem] text-[1rem]">
+        <h2 class="text-muted mt-[.5rem] text-lg">
           为
           <span class="text-[#E1251B]">Vue &amp; Nuxt</span>
           准备的精美组件。

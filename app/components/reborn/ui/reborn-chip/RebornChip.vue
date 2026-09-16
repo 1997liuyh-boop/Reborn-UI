@@ -45,6 +45,12 @@ const show = computed({
   set: (value) => emit('update:show', value)
 })
 
+/**
+ * xs / sm 两档圆点只有 10px / 12px 高，装不下最小字号令牌（--text-sm 12px），
+ * 按纯圆点渲染：即使传了 text 也不显示，只留圆点本身做提示。
+ */
+const dotOnly = computed(() => props.size === 'xs' || props.size === 'sm')
+
 const ui = computed(() => {
   const styles = b({
     color: props.color as ChipColor,
@@ -65,7 +71,7 @@ const ui = computed(() => {
   <span :class="ui.root({ class: props.class })">
     <slot />
     <div v-if="show" :class="ui.base()">
-      <div v-if="props.text" :class="ui.label()">
+      <div v-if="props.text && !dotOnly" :class="ui.label()">
         {{ props.text }}
       </div>
     </div>

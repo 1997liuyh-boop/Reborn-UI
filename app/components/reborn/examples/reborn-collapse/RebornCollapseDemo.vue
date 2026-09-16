@@ -38,7 +38,7 @@ const panels = ref([
         >
           <template #default="{ open }">
             <div
-              class="border-default rounded-ui-sm flex cursor-pointer items-center justify-between border px-4 py-3"
+              class="border-default rounded-lg flex cursor-pointer items-center justify-between border px-4 py-3"
             >
               <span class="text-default text-sm font-medium">点击展开 / 收起</span>
               <Icon
@@ -72,7 +72,7 @@ const panels = ref([
       description="每一项各自持有一份状态即可组合出列表；这里用一条分隔线代替卡片外壳，避免层层嵌套的背景块。"
     >
       <DemoBlock layout="stack">
-        <div class="divide-default border-default rounded-ui-md w-full divide-y border">
+        <div class="divide-default border-default rounded-xl w-full divide-y border">
           <RebornCollapse
             v-for="panel in panels"
             :key="panel.title"

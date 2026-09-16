@@ -447,7 +447,7 @@ function getRankClass(description: string): string {
                   <span
                     :class="
                       cn(
-                        'rounded-ui-2xs px-1.5 py-px text-[10px] font-semibold',
+                        'rounded-sm px-1.5 py-px text-[10px] font-semibold',
                         getRankClass(item.description),
                       )
                     "

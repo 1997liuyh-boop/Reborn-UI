@@ -6,7 +6,7 @@
     >
       <h1 class="text-highlighted text-center text-4xl font-bold text-balance">
         你是一位
-        <TextHighlight class="rounded-ui-sm bg-linear-to-r from-indigo-300 to-purple-300">
+        <TextHighlight class="rounded-lg bg-linear-to-r from-indigo-300 to-purple-300">
           了不起的开发者
         </TextHighlight>
       </h1>

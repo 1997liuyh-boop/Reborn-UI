@@ -108,23 +108,23 @@ const formatTime = (ts: number) => {
 
                     <!-- 滚动占位：只描边不填充，用来把下方曝光埋点推出可视区 -->
                     <div
-                        class="border-default text-dimmed rounded-ui-sm flex h-64 shrink-0 items-center justify-center border border-dashed text-xs">
+                        class="border-default text-dimmed rounded-lg flex h-64 shrink-0 items-center justify-center border border-dashed text-xs">
                         继续向下滚动，触发曝光类埋点
                     </div>
 
                     <div v-track:view="{ event: 'section_view_3s', stay: 3000 }"
-                        class="bg-info/10 text-info rounded-ui-sm shrink-0 px-4 py-3 text-center text-sm">
+                        class="bg-info/10 text-info rounded-lg shrink-0 px-4 py-3 text-center text-sm">
                         停留 3 秒触发
                     </div>
 
                     <div v-track:view="{ event: 'section_levels', stay: [3000, 10000] }"
-                        class="bg-secondary/10 text-secondary rounded-ui-sm shrink-0 px-4 py-3 text-center">
+                        class="bg-secondary/10 text-secondary rounded-lg shrink-0 px-4 py-3 text-center">
                         <p class="text-sm font-medium">停留分档追踪（3s &amp; 10s）</p>
                         <p class="mt-1 text-xs opacity-80">分次发送埋点并携带 stayed 参数</p>
                     </div>
 
                     <div v-track:view="'item_visible_at_once'"
-                        class="bg-warning/10 text-warning rounded-ui-sm shrink-0 px-4 py-3 text-center text-sm font-medium">
+                        class="bg-warning/10 text-warning rounded-lg shrink-0 px-4 py-3 text-center text-sm font-medium">
                         元素出现即记录
                     </div>
                 </div>

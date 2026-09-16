@@ -19,7 +19,7 @@ const config = {
   /** 徽章插槽样式配置 */
   slots: {
     root: 'reborn-badge cursor-pointer',
-    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color] max-w-full min-w-0 select-none',
+    base: 'inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 overflow-hidden transition-[color,box-shadow,background-color,border-color] max-w-full min-w-0 select-none rounded-sm',
     label: 'inline-flex items-center justify-center truncate max-w-full min-w-0',
     leadingIcon: 'shrink-0',
     trailingIcon: 'shrink-0',
@@ -53,7 +53,7 @@ const config = {
     /** 尺寸配置：sm 18px / md 24px / lg 32px（h-badge-* 令牌），水平内边距统一 6px */
     size: {
       sm: {
-        base: 'h-badge-sm px-1.5 text-sm rounded-ui-2xs gap-1',
+        base: 'h-badge-sm px-1.5 text-sm gap-1',
         label: 'leading-none',
         // 前后图标与字号同尺寸（本项目 text-sm = 12px、text-base = 14px，见 assets/theme/typography.css）
         leadingIcon: 'size-3',
@@ -61,14 +61,14 @@ const config = {
         closeIcon: 'size-3'
       },
       md: {
-        base: 'h-badge-md px-1.5 text-sm rounded-ui-xs gap-1',
+        base: 'h-badge-md px-1.5 text-sm gap-1',
         label: 'leading-none',
         leadingIcon: 'size-3',
         trailingIcon: 'size-3',
         closeIcon: 'size-3.5'
       },
       lg: {
-        base: 'h-badge-lg px-1.5 text-base rounded-ui-sm gap-1',
+        base: 'h-badge-lg px-1.5 text-base gap-1',
         label: 'leading-none',
         leadingIcon: 'size-3.5',
         trailingIcon: 'size-3.5',
@@ -81,8 +81,9 @@ const config = {
     },
     /**
      * 圆角标签：与按钮的 round 一致做成全圆角胶囊。
-     * 圆角带 ! 强制：size 轴的 rounded-ui-* 是自定义令牌，tailwind-merge 不会把它与
-     * rounded-full 判为冲突组而合并掉，不加 ! 会被形状圆角反向覆盖
+     * ! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在 tailwind-merge 的
+     * border-radius 冲突组里，两个圆角类会共存、由 CSS 源序决定胜负。现在 size 轴
+     * 已改回原生 rounded-*，合并正常，! 只剩提权作用；保留是为了不动既有覆盖顺序。
      */
     round: {
       true: {

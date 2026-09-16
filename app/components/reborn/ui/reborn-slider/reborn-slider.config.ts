@@ -28,7 +28,7 @@ export default {
          * 数值气泡：默认拖拽时显示在滑块上方（垂直模式显示在右侧），gray-9/gray-1 随主题自动反色；
          * 箭头用 after 伪元素的透明边框三角实现，指向方位由 vertical 变体给出。
          */
-        tooltip: "absolute z-[3] rounded-ui-2xs bg-gray-9 px-2 py-1 text-xs text-gray-1 whitespace-nowrap pointer-events-none shadow-md after:absolute after:border-4 after:border-transparent after:content-['']",
+        tooltip: "absolute z-[3] rounded-sm bg-gray-9 px-2 py-1 text-sm text-gray-1 whitespace-nowrap pointer-events-none shadow-md after:absolute after:border-4 after:border-transparent after:content-['']",
         /**
          * 轨道节点统一样式（间断点与刻度点共用）：5px 圆点、gray-1 底、1.5px 边框，
          * 边框色由 color 变体取对应色板的第 3 阶。
@@ -45,7 +45,9 @@ export default {
     },
     variants: {
         size: {
-            sm: { value: "text-xs", prefix: "text-sm", suffix: "text-sm" },
+            // sm 档的 value 原先写 Tailwind 原生 text-xs，与令牌 text-sm 同为 12px，
+            // 换回令牌后字号不变，只有行高从 16px 回到 20px
+            sm: { value: "text-sm", prefix: "text-sm", suffix: "text-sm" },
             md: { value: "text-sm", prefix: "text-base", suffix: "text-base" },
             lg: { value: "text-base", prefix: "text-lg", suffix: "text-lg" },
         },

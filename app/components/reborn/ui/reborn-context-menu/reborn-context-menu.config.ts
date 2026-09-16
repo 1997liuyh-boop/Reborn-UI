@@ -22,15 +22,18 @@ export default tv({
     group: "flex flex-col gap-[2px]",
     separator: "my-[4px] h-px bg-gray-3",
     item:
-      "group/item relative flex w-full cursor-pointer select-none items-center gap-2 rounded-ui-2xs px-[6px] py-[4px] text-left text-base leading-[1.5] outline-none transition-colors",
+      "group/item relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-[6px] py-[4px] text-left text-base outline-none transition-colors",
     itemLeading: "flex size-4 shrink-0 items-center justify-center text-gray-5",
     itemBody: "min-w-0 flex-1",
     itemLabel: "truncate",
-    itemDescription: "mt-0.5 text-xs leading-[1.5] text-gray-5",
+    // 描述行字号从原生 text-xs（0.75rem）改回七级令牌 text-sm：两者都是 12px，
+    // 但令牌是 px 且自带 20px 行高，删掉 leading-[1.5] 后不会掉回 rem 行高
+    itemDescription: "mt-0.5 text-sm text-gray-5",
     itemTrailing: "ml-auto flex items-center gap-1 pl-3",
-    itemKbd: "rounded-ui-2xs border border-gray-3 bg-gray-2 px-1 py-px text-[11px] font-medium uppercase tracking-wide text-gray-5",
+    // 快捷键徽标：11px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
+    itemKbd: "rounded-sm border border-gray-3 bg-gray-2 px-1 py-px text-[11px] font-medium uppercase tracking-wide text-gray-5",
     itemArrow: "text-gray-5 transition-transform duration-200 group-hover/item:translate-x-0.5",
-    empty: "px-[6px] py-[4px] text-base leading-[1.5] text-gray-5",
+    empty: "px-[6px] py-[4px] text-base text-gray-5",
     bridge: "absolute inset-0 z-[-1]",
     mask: "fixed inset-0 z-[9999] bg-black/15 backdrop-blur-[1px]",
   },

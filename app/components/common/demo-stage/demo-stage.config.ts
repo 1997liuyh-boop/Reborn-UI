@@ -23,7 +23,7 @@ const config = {
         /** 画布：示例区的唯一表面层，具体样式由 viewport 变体给出 */
         canvas: '',
         /** iframe 外框：手机 / 平板宽度模拟（设备档下由它承担表面层） */
-        frame: 'mx-auto h-full overflow-hidden rounded-ui-md border border-default bg-default shadow-sm shadow-zinc-950/5 dark:shadow-none',
+        frame: 'mx-auto h-full overflow-hidden rounded-xl border border-default bg-default shadow-sm shadow-zinc-950/5 dark:shadow-none',
         /** iframe 本体 */
         iframe: 'h-full w-full border-0',
     },

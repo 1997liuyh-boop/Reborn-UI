@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-ui-md relative flex h-[450px] w-full flex-col items-center justify-center overflow-hidden"
+    class="rounded-xl relative flex h-[450px] w-full flex-col items-center justify-center overflow-hidden"
   >
     <p class="text-highlighted z-10 text-center text-5xl font-medium tracking-tighter">Blobs</p>
     <small class="text-muted z-10">不规则圆角也能正常扩散</small>

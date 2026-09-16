@@ -21,7 +21,7 @@ defineOptions({ inheritAttrs: false });
 </script>
 
 <template>
-  <div class="rounded-ui-lg h-[500px] w-72 overflow-hidden border border-white/10 bg-gray-950">
+  <div class="rounded-3xl h-[500px] w-72 overflow-hidden border border-white/10 bg-gray-950">
     <RebornFireworks
       v-bind="$attrs"
       class="h-full"

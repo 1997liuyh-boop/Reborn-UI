@@ -92,7 +92,7 @@ const props = withDefaults(defineProps<Props>(), {
   <!-- 卡片本身就是被演示的对象，其表面样式属于组件效果，不视为额外嵌套 -->
   <CardContainer>
     <CardBody
-      class="group/card border-default bg-elevated rounded-ui-base relative h-auto w-fit border p-6 sm:w-[30rem]">
+      class="group/card border-default bg-elevated rounded-2xl relative h-auto w-fit border p-6 sm:w-[30rem]">
       <CardItem v-bind="props.title" class="text-highlighted text-xl font-bold">
         让元素浮在空中
       </CardItem>
@@ -102,15 +102,15 @@ const props = withDefaults(defineProps<Props>(), {
       <CardItem v-bind="props.image" class="mt-4 w-full">
         <img
           src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          height="1000" width="1000" class="rounded-ui-md h-60 w-full object-cover" alt="示例图片" />
+          height="1000" width="1000" class="rounded-xl h-60 w-full object-cover" alt="示例图片" />
       </CardItem>
       <div class="mt-12 flex items-center justify-between">
         <CardItem v-bind="props.btnLeft" as="a" href="https://rahulv.dev" target="__blank"
-          class="text-default rounded-ui-md px-4 py-2 text-xs font-normal">
+          class="text-default rounded-xl px-4 py-2 text-xs font-normal">
           访问 →
         </CardItem>
         <CardItem v-bind="props.btnRight" as="button"
-          class="bg-inverted text-inverted rounded-ui-md px-4 py-2 text-xs font-bold">
+          class="bg-inverted text-inverted rounded-xl px-4 py-2 text-xs font-bold">
           立即开始
         </CardItem>
       </div>

@@ -396,7 +396,7 @@ function onChange(value: any) {
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="滚动容器内" note="展开后滚动下方区域：浮层实时跟随触发器，且不会被容器的 overflow-hidden 裁掉">
                     <!-- 滚动容器本身就是被演示的对象，属规范里唯一允许的那层浅填充 -->
-                    <div class="bg-elevated rounded-ui-sm h-56 w-full overflow-y-auto p-4">
+                    <div class="bg-elevated rounded-lg h-56 w-full overflow-y-auto p-4">
                         <DemoNote tone="dimmed" class="pb-4 text-xs">向下滚动一段距离后再展开选择器 ↓</DemoNote>
                         <div class="h-24" />
                         <RebornSelect v-model="scrollBoxValue" :options="cityOptions" color="info" class="w-full" />
@@ -407,7 +407,7 @@ function onChange(value: any) {
 
                 <DemoItem label="对照组：:portal=&quot;false&quot;"
                     note="浮层留在触发器内，被容器 overflow 截断；需要浮层随父容器一起滚动、一起裁剪时才关掉 portal">
-                    <div class="bg-elevated rounded-ui-sm h-56 w-full overflow-y-auto p-4">
+                    <div class="bg-elevated rounded-lg h-56 w-full overflow-y-auto p-4">
                         <DemoNote tone="dimmed" class="pb-4 text-xs">展开后与左侧对比 ↓</DemoNote>
                         <div class="h-24" />
                         <RebornSelect v-model="clippedValue" :options="cityOptions" color="error" :portal="false"
@@ -464,7 +464,7 @@ function onChange(value: any) {
                         :trigger-ui="{ trigger: 'h-auto p-0 border-none bg-transparent' }" class="w-full">
                         <template #cover="{ displayText, placeholder, isOpen }">
                             <div
-                                class="rounded-ui-base flex w-full cursor-pointer items-center gap-3 bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white transition-all active:scale-[0.98]">
+                                class="rounded-2xl flex w-full cursor-pointer items-center gap-3 bg-linear-to-r from-violet-500 to-fuchsia-500 px-5 py-3.5 text-white transition-all active:scale-[0.98]">
                                 <Icon name="lucide:sparkles" class="size-4 shrink-0" />
                                 <span class="flex-1 truncate text-sm font-semibold">
                                     {{ displayText || placeholder }}
@@ -508,9 +508,9 @@ function onChange(value: any) {
         <!-- 10. 深度样式定制 -->
         <DemoSection title="深度样式定制" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
             <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="{
-                trigger: 'border-dashed border-2 rounded-ui-base border-indigo-200 dark:border-indigo-800 px-4 h-14',
+                trigger: 'border-dashed border-2 rounded-2xl border-indigo-200 dark:border-indigo-800 px-4 h-14',
             }" :ui="{
-                dropdown: 'rounded-ui-base border-indigo-100 dark:border-indigo-900',
+                dropdown: 'rounded-2xl border-indigo-100 dark:border-indigo-900',
                 optionHighlight: 'bg-indigo-50 dark:bg-indigo-900/40',
             }" class="w-full max-w-md" />
         </DemoSection>

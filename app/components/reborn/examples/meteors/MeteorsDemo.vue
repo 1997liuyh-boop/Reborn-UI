@@ -10,7 +10,7 @@
       >
         <!-- 卡片本体即被演示的载体，深色表面是流星效果的一部分 -->
         <div
-          class="rounded-ui-lg border-gray-8/40 relative flex w-full max-w-xs flex-col items-start justify-end overflow-hidden border bg-gray-10 px-4 py-8 dark:bg-gray-1"
+          class="rounded-3xl border-gray-8/40 relative flex w-full max-w-xs flex-col items-start justify-end overflow-hidden border bg-gray-10 px-4 py-8 dark:bg-gray-1"
         >
           <Icon
             name="lucide:arrow-up-right"
@@ -25,7 +25,7 @@
 
           <button
             type="button"
-            class="rounded-ui-2xs border-gray-6 text-gray-6 hover:text-white border px-4 py-1 text-sm transition-colors hover:border-white"
+            class="rounded-sm border-gray-6 text-gray-6 hover:text-white border px-4 py-1 text-sm transition-colors hover:border-white"
           >
             了解更多
           </button>

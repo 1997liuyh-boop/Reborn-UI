@@ -66,7 +66,7 @@ const gradientVisible = ref(false);
       <div class="flex w-full flex-col items-center gap-4">
         <!-- 局部遮罩宿主：仅描边不填充，保证遮罩的覆盖范围可见 -->
         <div
-          class="border-default rounded-ui-sm relative flex h-[260px] w-full max-w-md items-center justify-center overflow-hidden border border-dashed"
+          class="border-default rounded-lg relative flex h-[260px] w-full max-w-md items-center justify-center overflow-hidden border border-dashed"
         >
           <span class="text-dimmed text-sm">遮罩仅覆盖这个虚线区域</span>
 
@@ -77,7 +77,7 @@ const gradientVisible = ref(false);
             :close-on-click-overlay="state.closeOnClickOverlay"
           >
             <div class="flex h-full items-center justify-center">
-              <div class="bg-default border-default rounded-ui-md w-[240px] border p-5 text-center">
+              <div class="bg-default border-default rounded-xl w-[240px] border p-5 text-center">
                 <p class="text-highlighted text-sm font-medium">局部遮罩内容</p>
                 <p class="text-muted mt-1 text-xs">
                   {{ state.closeOnClickOverlay ? "点击遮罩可关闭" : "已禁止点击遮罩关闭" }}
@@ -118,7 +118,7 @@ const gradientVisible = ref(false);
 
       <RebornOverlay v-model="fullscreenVisible">
         <div class="flex h-full items-center justify-center">
-          <div class="bg-default border-default rounded-ui-md w-[280px] border p-6 text-center">
+          <div class="bg-default border-default rounded-xl w-[280px] border p-6 text-center">
             <p class="text-highlighted text-base font-medium">全屏遮罩</p>
             <p class="text-muted mt-1.5 text-sm">页面滚动已被锁定，点击遮罩或按钮均可关闭。</p>
             <RebornButton

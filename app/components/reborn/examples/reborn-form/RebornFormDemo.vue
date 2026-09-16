@@ -246,7 +246,7 @@ function scrollToBio() {
             </template>
 
             <div v-for="(contact, index) in form.contacts" :key="index"
-              class="border-default rounded-ui-md mb-4 flex flex-col border p-4">
+              class="border-default rounded-xl mb-4 flex flex-col border p-4">
               <div class="border-default mb-4 flex items-center justify-between border-b pb-3">
                 <span class="text-default text-sm font-medium">#{{ index + 1 }} 联系人信息</span>
                 <RebornButton variant="text" color="neutral" size="sm" @click="form.contacts.splice(index, 1)">
@@ -295,7 +295,7 @@ function scrollToBio() {
 
     <DemoSection title="实时数据" description="v-model 绑定的对象随输入同步更新，可直接观察 Zod 预处理后的取值类型。">
       <pre
-        class="border-default rounded-ui-sm text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">
+        class="border-default rounded-lg text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">
     {{ JSON.stringify(form, null, 2) }}</pre>
     </DemoSection>
   </div>

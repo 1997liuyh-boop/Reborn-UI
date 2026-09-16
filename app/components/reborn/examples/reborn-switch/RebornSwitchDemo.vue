@@ -302,7 +302,7 @@ function handleBeforeChange() {
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">方形轨道 · <code>ui.track</code> / <code>ui.thumb</code></span>
           <RebornSwitch v-model="styledValue" active-label="方形 UI"
-            :ui="{ track: 'rounded-ui-2xs', thumb: 'rounded-ui-2xs' }" />
+            :ui="{ track: 'rounded-sm', thumb: 'rounded-sm' }" />
         </div>
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">超大尺寸 · 设置滑块尺寸变量，位移自动适配</span>

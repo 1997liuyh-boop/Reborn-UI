@@ -543,7 +543,7 @@ type SelectValue = string | number | (string | number)[] | null;
 | `collapseTag`      | 折叠后的 `+N` 标签                                         |
 
 ::tip
-覆盖 `tag` 的圆角或高度时必须带 `!` 提权。`tailwind-merge` 不认识自定义的 `rounded-ui-*` / `h-badge-*` 属于同一冲突组，不提权会与 `RebornBadge` 自带的档位值同时留在类名里，最终由 CSS 顺序决定胜负。
+覆盖 `tag` 的**高度**时必须带 `!` 提权：`RebornBadge` 的档位用自定义的 `h-badge-*`，没注册进 `app/lib/utils.ts` 的 `tailwind-merge` 冲突组，不提权会与你写的高度同时留在类名里，最终由 CSS 顺序决定胜负。圆角不再有这个限制——`size` 轴已改回原生 `rounded-*`，`tailwind-merge` 能正常合并，组件内保留的 `!` 只是没有一并移除。
 ::
 :::
 
@@ -644,11 +644,11 @@ type SelectValue = string | number | (string | number)[] | null;
 | 标签关闭图标 | 10px | 12px | 14px |
 | 标签换行态纵向内边距 | 3px | 5px | 7px |
 
-- 触发器圆角固定 `rounded-ui-xs`（6px），**不随尺寸变化**，与 `RebornInput` 的 md 档位保持同一视觉语言；`underlined` 形态强制压平为直角。
+- 触发器圆角固定 `rounded-md`（6px），**不随尺寸变化**，与 `RebornInput` 的 md 档位保持同一视觉语言；`underlined` 形态强制压平为直角。
 - 行高统一 150%（不用 `text-sm` / `text-base` / `text-lg`，那三个 token 自带 20/22/24px 的固定行高会覆盖 150%）。
 - 多选形态下触发器水平内边距收敛为 4px（标签自带描边与内边距，沿用档位值留白会明显偏大）。
-- 选项：圆角 `rounded-ui-2xs`（4px）、内边距 6/4、行距 4px；下拉内容区内边距 4/6、最大高度 240px。
-- 浮层外壳圆角 `rounded-ui-sm`（8px），描边 `gray-3`；页头页脚字号 13px，空态与加载态字号 14px、纵向内边距 24px。
+- 选项：圆角 `rounded-sm`（4px）、内边距 6/4、行距 4px；下拉内容区内边距 4/6、最大高度 240px。
+- 浮层外壳圆角 `rounded-lg`（8px），描边 `gray-3`；页头页脚字号 13px，空态与加载态字号 14px、纵向内边距 24px。
 - 虚拟列表默认步长 33px，即 md 档位选项的实测高度加 4px 行距。
 - 标签换行态的纵向内边距按 `(档位高度 - 标签高度) / 2 - 1px 描边` 反推，因此只有一行标签时与固定高度档位严格等高，不产生 1px 抖动。
   :::

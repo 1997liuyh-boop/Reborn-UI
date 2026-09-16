@@ -269,7 +269,7 @@ export const notificationTheme = tv({
     wrapper: 'fixed flex w-[360px] max-w-[calc(100vw-32px)] flex-col gap-[16px] pointer-events-none',
     /** 通知面板：三段结构由 gap-[20px] 分隔 */
     root:
-      'reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-ui-sm border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]',
+      'reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-lg border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]',
     /** 侧边飘带：3px 竖条通栏，压在面板内边距上，不挤占内容宽度 */
     ribbon: 'pointer-events-none absolute inset-y-0 w-[3px]',
     /** 头部：图标 / 文字区 / 关闭图标三列，顶部对齐，图标与文字间距 12px */

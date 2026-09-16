@@ -345,7 +345,7 @@ function beforeChange() {
   <!-- 方形轨道 -->
   <RebornSwitch
     v-model="on"
-    :ui="{ track: 'rounded-ui-2xs', thumb: 'rounded-ui-2xs' }"
+    :ui="{ track: 'rounded-sm', thumb: 'rounded-sm' }"
   />
 
   <!-- 自定义 XL：36×64 滑块 32，位移自动适配 -->

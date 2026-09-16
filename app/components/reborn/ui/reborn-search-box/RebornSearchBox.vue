@@ -70,7 +70,7 @@ export interface SearchBoxProps {
   size?: typeof searchBoxSizes[number];
   /** 颜色变体 */
   color?: typeof inputColors[number];
-  /** 外形轮廓，与 RebornInput 的 shape 对齐：circle 胶囊 / square 统一取 rounded-ui-xs 令牌（不分尺寸）；底色卡片与下拉面板的圆角随之与输入框对齐 */
+  /** 外形轮廓，与 RebornInput 的 shape 对齐：circle 胶囊 / square 统一取 rounded-md 令牌（不分尺寸）；底色卡片与下拉面板的圆角随之与输入框对齐 */
   shape?: typeof inputShapes[number];
   /** 是否展示下拉面板（面板内容完全由 dropdown 插槽提供） */
   showDropdown?: boolean;

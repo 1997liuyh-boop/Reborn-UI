@@ -103,17 +103,17 @@ const previewList = ref([
         <RebornImage
           :src="src"
           lazy-load
-          custom-class="rounded-ui-sm"
+          custom-class="rounded-lg"
         />
         <RebornImage
           :src="src"
           lazy-load
-          custom-class="rounded-ui-md"
+          custom-class="rounded-xl"
         />
         <RebornImage
           :src="src"
           lazy-load
-          custom-class="rounded-ui-lg"
+          custom-class="rounded-3xl"
         />
         <RebornImage
           :src="src"
@@ -128,22 +128,22 @@ const previewList = ref([
         <RebornImage
           src="https://picsum.photos/200/200"
           lazy-load
-          custom-class="rounded-ui-sm"
+          custom-class="rounded-lg"
         />
         <RebornImage
           src="https://p.upyun.com/demo/webp/webp/animated-gif-0.webp"
           lazy-load
-          custom-class="rounded-ui-md"
+          custom-class="rounded-xl"
         />
         <RebornImage
           src="https://img.iplaysoft.com/wp-content/uploads/2019/free-images/free_stock_photo.jpg!0x0.webp"
           lazy-load
-          custom-class="rounded-ui-lg"
+          custom-class="rounded-3xl"
         />
         <RebornImage
           src="https://img.iplaysoft.com/wp-content/uploads/2019/free-images/unsplash.jpg!0x0.webp"
           lazy-load
-          custom-class="rounded-ui-lg"
+          custom-class="rounded-3xl"
         />
       </DemoBlock>
     </DemoSection>

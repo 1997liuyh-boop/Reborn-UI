@@ -56,7 +56,7 @@ const readableValue = computed(() => {
           >
             <template #leading>
               <span
-                class="border-default rounded-ui-2xs size-4 border"
+                class="border-default rounded-sm size-4 border"
                 :style="swatchStyle"
               />
             </template>
@@ -72,7 +72,7 @@ const readableValue = computed(() => {
       title="输出格式"
       description="每次变更都会回传完整的色值对象，可按业务需要取用其中任意一种表示。"
     >
-      <pre class="border-default rounded-ui-sm text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">{{ JSON.stringify(readableValue, null, 2) }}</pre>
+      <pre class="border-default rounded-lg text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">{{ JSON.stringify(readableValue, null, 2) }}</pre>
     </DemoSection>
   </div>
 </template>

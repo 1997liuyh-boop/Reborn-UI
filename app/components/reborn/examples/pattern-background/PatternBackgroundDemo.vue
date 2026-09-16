@@ -20,7 +20,7 @@ import {
         :variant="PATTERN_BACKGROUND_VARIANT.Grid"
         size="md"
         :speed="PATTERN_BACKGROUND_SPEED.Default"
-        class="flex h-56 w-full items-center justify-center rounded-ui-md"
+        class="flex h-56 w-full items-center justify-center rounded-xl"
       >
         <span class="text-highlighted relative z-10 text-xl font-semibold">
           网格 / 向上滚动
@@ -32,7 +32,7 @@ import {
         :variant="PATTERN_BACKGROUND_VARIANT.Dot"
         size="sm"
         :mask="PATTERN_BACKGROUND_MASK.Ellipse"
-        class="flex h-56 w-full items-center justify-center rounded-ui-md"
+        class="flex h-56 w-full items-center justify-center rounded-xl"
       >
         <span class="text-highlighted relative z-10 text-xl font-semibold">
           点阵 / 椭圆遮罩
@@ -47,7 +47,7 @@ import {
         size="lg"
         :speed="PATTERN_BACKGROUND_SPEED.Fast"
         :mask="PATTERN_BACKGROUND_MASK.EllipseTop"
-        class="flex h-56 w-full items-center justify-center rounded-ui-md"
+        class="flex h-56 w-full items-center justify-center rounded-xl"
       >
         <span class="text-highlighted relative z-10 text-xl font-semibold">
           大点阵 / 快速

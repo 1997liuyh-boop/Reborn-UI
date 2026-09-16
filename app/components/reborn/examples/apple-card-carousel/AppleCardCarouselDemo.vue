@@ -52,7 +52,7 @@ const data = [
           >
             <div
               :key="`dummy-content${index}`"
-              class="bg-elevated rounded-ui-lg mb-4 p-8 md:p-14"
+              class="bg-elevated rounded-3xl mb-4 p-8 md:p-14"
             >
               <p class="text-muted mx-auto max-w-3xl text-base md:text-2xl">
                 <span class="text-highlighted font-bold">第一法则：大胆展示你的作品。</span>

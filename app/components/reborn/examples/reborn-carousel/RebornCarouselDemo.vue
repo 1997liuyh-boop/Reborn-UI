@@ -374,7 +374,7 @@ const timelineSlides = [
           <div class="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
             <p class="max-w-[38ch] text-sm leading-7 text-white/80 md:text-base">{{ slide.description }}</p>
             <!-- 幻灯片内部只描边不填充，避免在渐变底上再叠一层背景 -->
-            <div class="rounded-ui-lg border border-white/25 p-5">
+            <div class="rounded-3xl border border-white/25 p-5">
               <p class="text-xs tracking-[0.24em] text-white/60 uppercase">Preview Notes</p>
               <p class="mt-3 text-lg leading-7 text-white/90">
                 缩略图轨道始终与主轨道保持同步，因此非常适合媒体图库、活动物料和内容密集的展示页。
@@ -445,7 +445,7 @@ const timelineSlides = [
         <div
           v-for="(item, index) in timelineSlides"
           :key="item.title"
-          class="border-default bg-elevated rounded-ui-lg flex h-full flex-col justify-between border p-7"
+          class="border-default bg-elevated rounded-3xl flex h-full flex-col justify-between border p-7"
         >
           <div class="flex items-center justify-between">
             <span class="text-dimmed text-sm">0{{ index + 1 }}</span>
@@ -473,7 +473,7 @@ const timelineSlides = [
         <div
           v-for="slide in featureSlides.slice(0, 3)"
           :key="slide.title"
-          :class="`rounded-ui-lg flex flex-col items-center justify-center bg-linear-to-br ${slide.tone} p-12 text-center text-white`"
+          :class="`rounded-3xl flex flex-col items-center justify-center bg-linear-to-br ${slide.tone} p-12 text-center text-white`"
         >
           <h4 class="mb-4 text-4xl font-bold">{{ slide.title }}</h4>
           <p class="opacity-80">{{ slide.description }}</p>
@@ -483,7 +483,7 @@ const timelineSlides = [
         <template #prev="{ prev }">
           <button
             type="button"
-            class="rounded-ui-sm border-current/40 hover:border-current pointer-events-auto flex size-12 items-center justify-center border bg-black/30 text-white transition-all active:scale-95"
+            class="rounded-lg border-current/40 hover:border-current pointer-events-auto flex size-12 items-center justify-center border bg-black/30 text-white transition-all active:scale-95"
             @click="prev"
           >
             <Icon
@@ -495,7 +495,7 @@ const timelineSlides = [
         <template #next="{ next }">
           <button
             type="button"
-            class="rounded-ui-sm border-current/40 hover:border-current pointer-events-auto flex size-12 items-center justify-center border bg-black/30 text-white transition-all active:scale-95"
+            class="rounded-lg border-current/40 hover:border-current pointer-events-auto flex size-12 items-center justify-center border bg-black/30 text-white transition-all active:scale-95"
             @click="next"
           >
             <Icon
@@ -508,7 +508,7 @@ const timelineSlides = [
         <!-- 自定义指示器 -->
         <template #indicators="{ activeIndex: current, count, goTo }">
           <div
-            class="rounded-ui-sm pointer-events-auto absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-3 bg-black/30 p-1.5 text-white"
+            class="rounded-lg pointer-events-auto absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-3 bg-black/30 p-1.5 text-white"
           >
             <button
               v-for="i in count"

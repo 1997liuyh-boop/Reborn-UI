@@ -19,7 +19,7 @@ const features = [
       description="RebornMain 作为页面主体包裹层，最小高度为「视口高度 − 头部高度」；下方描边即它撑开的实际范围。"
     >
       <DemoBlock layout="stack">
-        <RebornMain class="border-default rounded-ui-md w-full border">
+        <RebornMain class="border-default rounded-xl w-full border">
           <RebornContainer class="py-10">
             <div class="flex flex-col gap-8">
               <p class="text-muted mx-auto max-w-2xl text-center text-sm leading-relaxed">

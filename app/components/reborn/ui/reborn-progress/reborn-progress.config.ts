@@ -41,7 +41,9 @@ export default {
     // 条纹作为独立覆盖层叠在填充之上，不干扰纯色、渐变与分段背景。
     stripes: 'pointer-events-none absolute inset-y-0 left-0 bg-[length:1.25em_1.25em] bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] transition-[width] duration-300 ease-out motion-reduce:transition-none',
     circle: 'block size-full overflow-visible',
-    text: 'shrink-0 whitespace-nowrap text-center tabular-nums text-default text-[14px] leading-none',
+    // 百分比文字：字号走令牌，但行高保留 leading-none。
+    // root 是 inline-flex items-center，谁高谁撑高整条进度条；令牌自带的 22px 行高会让 line 型平白长高 8px。
+    text: 'shrink-0 whitespace-nowrap text-center tabular-nums text-default text-base leading-none',
     icon: 'block size-[18px] shrink-0 text-primary',
   },
   variants: {
@@ -78,10 +80,12 @@ export default {
     // 中号和大号节点带 2px 圆角，小号节点仅 2px 宽保持直角。
     { type: 'line' as const, stepped: true, size: 'md' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-[32px] rounded-[2px]' } },
     { type: 'line' as const, stepped: true, size: 'lg' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-[32px] rounded-[2px]' } },
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'sm' as const, class: { root: 'size-[48px]', text: 'text-[14px]', icon: 'size-[18px]' } },
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'md' as const, class: { root: 'size-[76px]', text: 'text-[16px]', icon: 'size-[20px]' } },
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'lg' as const, class: { root: 'size-[114px]', text: 'text-[24px]', icon: 'size-[28px]' } },
+    // 环形中心文字按直径分档：48/76/114px 对应 14/16/24px 字号，均取自 7 级字号令牌。
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'sm' as const, class: { root: 'size-[48px]', text: 'text-base', icon: 'size-[18px]' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'md' as const, class: { root: 'size-[76px]', text: 'text-lg', icon: 'size-[20px]' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'lg' as const, class: { root: 'size-[114px]', text: 'text-2xl', icon: 'size-[28px]' } },
     // 内嵌文字不改变设计高度；极细进度条允许字形溢出，避免文字被裁掉。
+    // 10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
     { type: 'line' as const, textInside: true, class: { text: 'pointer-events-none absolute inset-y-0 left-0 flex min-w-max items-center justify-end px-[4px] text-[10px] text-white' } },
   ],
   defaultVariants: { type: 'line' as const, size: 'md' as const, status: 'default' as const, stepped: false, textInside: false, reversed: false, stripedFlow: false },

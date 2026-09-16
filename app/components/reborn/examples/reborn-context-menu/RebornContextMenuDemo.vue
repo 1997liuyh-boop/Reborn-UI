@@ -222,7 +222,7 @@ const automationItems: RebornContextMenuItem[][] = [
           </div>
 
           <!-- 回执面板本身就是被演示的反馈载体，属规范里唯一允许的那层浅填充 -->
-          <div class="bg-elevated rounded-ui-sm flex min-h-24 flex-col gap-3 p-4">
+          <div class="bg-elevated rounded-lg flex min-h-24 flex-col gap-3 p-4">
             <div class="text-dimmed flex items-center gap-2 text-[11px] tracking-[0.24em] uppercase">
               <span class="bg-success size-2 animate-pulse rounded-full" />
               Latest Event
@@ -258,7 +258,7 @@ const automationItems: RebornContextMenuItem[][] = [
 
       <RebornContextMenu :items="items" :size="state.size" :modal="state.modal" :disabled="state.disabled">
         <!-- 右键触发区：只描边不填充，让它可辨认又不形成第二层表面 -->
-        <div class="border-default rounded-ui-base flex w-full flex-col gap-5 border border-dashed p-5">
+        <div class="border-default rounded-2xl flex w-full flex-col gap-5 border border-dashed p-5">
           <div class="flex items-center justify-between">
             <div class="flex flex-col gap-1">
               <span class="text-dimmed text-[11px] tracking-[0.24em] uppercase">Scene Focus</span>
@@ -320,7 +320,7 @@ const automationItems: RebornContextMenuItem[][] = [
       <DemoBlock layout="stack">
         <RebornContextMenu v-slot="{ selectionText }" :items="selectionItems" trigger="selection">
           <div class="flex flex-col gap-3">
-            <p class="border-default text-default rounded-ui-base border border-dashed p-5 text-sm leading-7 select-text">
+            <p class="border-default text-default rounded-2xl border border-dashed p-5 text-sm leading-7 select-text">
               增长实验主画布支持在同一页面内对多个流量分组做 A/B 对比。选中这段文字里的任意片段，
               例如「流量分组」或「A/B 对比」，松开鼠标后会在选区上方弹出操作菜单；点击菜单项时选区不会被清掉，
               回调里可以直接拿到选中的文字用于复制、搜索或标记。
@@ -334,7 +334,7 @@ const automationItems: RebornContextMenuItem[][] = [
     <DemoSection title="更多用法" description="小尺寸菜单适配二级操作；不传 items 时用 #content 完全自定义菜单面板。">
       <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
         <RebornContextMenu :items="automationItems" size="sm">
-          <div class="border-default rounded-ui-base flex flex-col gap-3 border border-dashed p-6">
+          <div class="border-default rounded-2xl flex flex-col gap-3 border border-dashed p-6">
             <div class="flex items-center justify-between">
               <span class="text-info text-xs font-semibold tracking-[0.24em] uppercase">Automation Board</span>
               <Icon name="lucide:workflow" class="text-info size-5" />
@@ -346,7 +346,7 @@ const automationItems: RebornContextMenuItem[][] = [
 
         <RebornContextMenu :size="state.size">
           <template #default>
-            <div class="border-default rounded-ui-base flex flex-col gap-3 border border-dashed p-6">
+            <div class="border-default rounded-2xl flex flex-col gap-3 border border-dashed p-6">
               <div class="flex items-center justify-between">
                 <span class="text-warning text-xs font-semibold tracking-[0.24em] uppercase">Custom Content</span>
                 <Icon name="lucide:palette" class="text-warning size-5" />
@@ -365,7 +365,7 @@ const automationItems: RebornContextMenuItem[][] = [
               </div>
               <div class="grid grid-cols-3 gap-3">
                 <button v-for="tone in ['Ocean', 'Glow', 'Sand']" :key="tone"
-                  class="border-default rounded-ui-sm hover:border-primary/40 hover:text-primary cursor-pointer border px-3 py-3 text-sm font-semibold transition"
+                  class="border-default rounded-lg hover:border-primary/40 hover:text-primary cursor-pointer border px-3 py-3 text-sm font-semibold transition"
                   @click="latestAction = `已切换主题：${tone}`; close()">
                   {{ tone }}
                 </button>

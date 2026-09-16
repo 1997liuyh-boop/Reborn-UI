@@ -204,7 +204,7 @@ function onCheckAll(value: boolean) {
   <RebornCheckbox v-model="fruits" value="apple">
     <template #checkbox="{ checked }">
       <div
-        class="rounded-ui-xs border border-solid px-4 py-2 transition-colors"
+        class="rounded-md border border-solid px-4 py-2 transition-colors"
         :class="checked ? 'border-primary text-primary' : 'border-gray-3'"
       >
         苹果

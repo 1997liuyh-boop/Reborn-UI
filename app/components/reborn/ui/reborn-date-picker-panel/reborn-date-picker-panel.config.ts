@@ -48,12 +48,12 @@ export default {
         wrapper: "w-full bg-white dark:bg-gray-8 transition-all overflow-hidden",
         container: "flex h-full",
         shortcuts: `border-r border-gray-2 dark:border-gray-7 p-4 flex flex-col gap-4 overflow-y-auto ${scrollbarHide}`,
-        shortcut: "min-w-15 text-xs text-gray-6 dark:text-gray-4 hover:bg-gray-1 dark:hover:bg-gray-7 hover:text-primary cursor-pointer transition-colors whitespace-nowrap",
+        shortcut: "min-w-15 text-sm text-gray-6 dark:text-gray-4 hover:bg-gray-1 dark:hover:bg-gray-7 hover:text-primary cursor-pointer transition-colors whitespace-nowrap",
         header: "flex items-center justify-between py-4",
         navBtn: "flex items-center p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3",
         navBtnHidden: "p-1 opacity-0 pointer-events-none",
         title: "text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors",
-        weekdays: "grid grid-cols-7 gap-0 text-center justify-items-center text-xs text-gray-4 dark:text-gray-5 mb-4",
+        weekdays: "grid grid-cols-7 gap-0 text-center justify-items-center text-sm text-gray-4 dark:text-gray-5 mb-4",
         days: "grid grid-cols-7 justify-items-center gap-4",
         day: "flex items-center justify-center text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7 aspect-square w-full h-full",
         yearMonthItem: "flex items-center justify-center cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7 w-full rounded-lg",
@@ -67,7 +67,10 @@ export default {
         grid4Year: "grid grid-cols-4 gap-y-2 justify-items-center overflow-auto",
         grid4Month: "grid grid-cols-4 gap-y-2 justify-items-center py-2",
         dateTimeHeader: "flex items-center justify-center gap-2 w-full",
-        dateTimeSegment: "ring-1 ring-gray-3 dark:ring-gray-6 text-xs h-6 leading-6 w-24 text-center rounded-md transition-all text-gray-7 dark:text-gray-2 flex-1",
+        // 日期/时间切换段。字号取七级令牌 text-sm（12px），原先的 text-xs 是 Tailwind 原生值，
+        // 字号同为 12px，只是行高不同。这里的 leading-6 保留：它不是排版覆写，而是让 24px 行盒
+        // 撑满 h-6 的盒子做垂直居中（该元素是 flex 子项但自身不是 flex 容器，去掉会让文字贴顶）。
+        dateTimeSegment: "ring-1 ring-gray-3 dark:ring-gray-6 text-sm h-6 leading-6 w-24 text-center rounded-md transition-all text-gray-7 dark:text-gray-2 flex-1",
         dateTimeSegmentActive: "cursor-pointer hover:ring-primary/50 hover:text-primary",
         dateTimeSegmentDisabled: "cursor-not-allowed",
         dateTimeSeparator: "text-gray-3 dark:text-gray-6 font-light",
@@ -107,11 +110,15 @@ export default {
             false: { wrapper: "" },
         },
         size: {
+            // sm 档原先整档写 Tailwind 原生 text-xs，与令牌 text-sm 同为 12px，
+            // 换回令牌后字号不变，只有行高从 16px 回到 20px；
+            // yearMonthItem 的 h-8（32px）装得下 20px 行盒，格子高度不受影响。
+            // 副作用：sm 与 md 的字号本就相同（都是 12px），换令牌后这一点在代码里也看得出来了。
             sm: {
-                day: "max-w-[32px] text-xs",
-                yearMonthItem: "max-w-[56px] h-8 text-xs",
+                day: "max-w-[32px] text-sm",
+                yearMonthItem: "max-w-[56px] h-8 text-sm",
                 navBtn: "p-0.5",
-                title: "text-xs",
+                title: "text-sm",
                 icon: "size-3.5",
             },
             md: {

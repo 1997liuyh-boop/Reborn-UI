@@ -130,7 +130,7 @@ Modal.destroyAll();
 | `backdrop`      | 遮罩层，默认 `absolute inset-0 bg-black/45`（刻意不做 backdrop-blur——全屏背景模糊在动画期间每帧重算会严重掉帧）；`modal=false` 时转为透明拦截层。               |
 | `shell`         | 面板定位壳（静态层，不参与动画）。负责水平居中与垂直落点：`align-center` 时 flex 垂直居中，否则顶部按 `top` 落位；点击面板外空白等同点击遮罩。                   |
 | `panelWrapper`  | 面板动画包裹层（过渡动画作用在这一层）：只有面板大小，避免整屏尺寸图层参与缩放导致每帧重栅格化。                                                                 |
-| `panel`         | 弹窗面板本体。默认 `relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-ui-md border bg-white py-[20px] px-[24px] shadow-…`；内边距与三段间距统一在此，`width` prop 与 `class` prop 也作用于该节点。 |
+| `panel`         | 弹窗面板本体。默认 `relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border bg-white py-[20px] px-[24px] shadow-…`；内边距与三段间距统一在此，`width` prop 与 `class` prop 也作用于该节点。 |
 | `header`        | 头部条（无分隔线）。**仅传了 `title` / `describe` 或填充 `header` 插槽时渲染**，默认 `flex items-start justify-between gap-4`，拖拽手柄绑定在它身上。             |
 | `headerContent` | 头部左侧的文字区容器，默认 `flex min-w-0 flex-1 flex-col gap-[8px]`（标题与描述间隔 8px）；它在 `header` 插槽外层，填充插槽后依然生效。                          |
 | `title`         | 标题节点（`role="heading"`，层级由 `header-aria-level` 指定），16px / `font-medium` / `text-gray-10`。**仅在传了 `title` 且未填充 `header` 插槽时渲染**。         |

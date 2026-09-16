@@ -191,7 +191,7 @@ Carousel 是仅 web 端的轮播组件，基于原生 CSS Scroll Snap 实现，�
 | `thumbsViewport`    | 缩略图滚动视口，默认 `min-w-0 min-h-0` 并隐藏滚动条。                                                                        |
 | `thumbsTrack`       | 缩略图轨道，默认 `flex gap-3`；缩略图之间的间距改这里。                                                                       |
 | `thumb`             | 单张缩略图外层，默认 `group/thumb relative overflow-hidden transition-all duration-300`；宽高由 `thumbs` 配置给出。            |
-| `thumbActive`       | **当前**缩略图的追加类名，默认 `border border-[#252626] rounded-ui-md`——并入 `thumb`，选中描边改这里。                        |
+| `thumbActive`       | **当前**缩略图的追加类名，默认 `border border-[#252626] rounded-xl`——并入 `thumb`，选中描边改这里。                        |
 | `thumbInactive`     | **非当前**缩略图的追加类名，默认带 `opacity-70` 与 hover 提亮，同样并入 `thumb`。                                              |
 | `thumbPreview`      | 缩略图内的预览容器（复用 default 插槽内容并强制铺满），默认 `pointer-events-none h-full w-full overflow-hidden rounded-[inherit]`。 |
 | `thumbOverlay`      | 缩略图上的渐变蒙层，默认 `pointer-events-none absolute inset-0 bg-linear-to-t …`；组件按选中态给它 `opacity-40` / `opacity-10`，写在这里的类名会追加在后面。 |

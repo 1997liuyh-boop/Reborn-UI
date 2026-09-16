@@ -361,7 +361,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
           />
           <button
             type="button"
-            class="border-default rounded-ui-md hover:border-inverted text-muted w-fit cursor-pointer border px-3 py-1 text-xs transition-colors"
+            class="border-default rounded-xl hover:border-inverted text-muted w-fit cursor-pointer border px-3 py-1 text-xs transition-colors"
             @click="roleDirection = roleDirection === 'horizontal' ? 'vertical' : 'horizontal'"
           >
             切换为 {{ roleDirection === "horizontal" ? "vertical" : "horizontal" }}
@@ -407,7 +407,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
         <label
           v-for="plan in plans"
           :key="plan.value"
-          class="border-default rounded-ui-md hover:border-inverted flex cursor-pointer items-start gap-4 border p-4 transition-colors"
+          class="border-default rounded-xl hover:border-inverted flex cursor-pointer items-start gap-4 border p-4 transition-colors"
         >
           <RebornCheckbox
             v-model="selectedPlans"
@@ -442,7 +442,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
         >
           <template #checkbox="{ checked }">
             <span
-              class="rounded-ui-md border px-3 py-1 text-xs font-medium transition-colors"
+              class="rounded-xl border px-3 py-1 text-xs font-medium transition-colors"
               :class="checked ? 'border-primary bg-primary text-inverted' : 'border-default text-muted'"
             >
               {{ tag }}

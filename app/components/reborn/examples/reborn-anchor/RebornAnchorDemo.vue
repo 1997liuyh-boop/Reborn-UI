@@ -379,7 +379,7 @@ function scrollToBlock(key: string) {
           <!-- 横排时外层是纵向 flex，flex-1 会顺着纵轴把高度撑到内容全高、h-64 失效，容器就不滚了 -->
           <div
             id="anchor-playground-box" ref="playgroundBox"
-            class="border-default rounded-ui-sm h-64 min-w-0 overflow-y-auto border px-4"
+            class="border-default rounded-lg h-64 min-w-0 overflow-y-auto border px-4"
             :class="state.direction === 'horizontal' ? 'w-full' : 'flex-1'"
           >
             <!--

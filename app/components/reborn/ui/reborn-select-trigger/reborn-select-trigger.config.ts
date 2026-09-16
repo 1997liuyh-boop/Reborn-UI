@@ -49,8 +49,8 @@ export default {
         // 浮层锚点：relative 提供行内模式的定位参照，group + tabindex（由组件模板给出）支撑子级触发器的聚焦描边
         wrapper: "relative inline-flex w-full group outline-none",
         // 背景与描边只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 bg-white / dark: 前缀，否则深色模式下会二次翻转
-        // 圆角 8px（rounded-ui-sm）；内边距不放这里，展开动画走 height:0 → scrollHeight，border-box 下内边距会撑出一段残留高度
-        dropdown: "absolute z-50 w-full flex flex-col rounded-ui-sm border border-gray-3 bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
+        // 圆角 8px（rounded-lg）；内边距不放这里，展开动画走 height:0 → scrollHeight，border-box 下内边距会撑出一段残留高度
+        dropdown: "absolute z-50 w-full flex flex-col rounded-lg border border-gray-3 bg-gray-1 shadow-lg overflow-y-auto overscroll-contain scrollbar-hide",
         dropdownInner: "w-full shrink-0",
         // 指向触发器的小箭头：12px 正方形旋转 45°，与浮层同底色同描边。
         // 它是浮层的同级节点而非子节点：浮层展开 / 收起动画期间是 overflow-hidden，探出盒子的箭头会被瞬间裁掉；

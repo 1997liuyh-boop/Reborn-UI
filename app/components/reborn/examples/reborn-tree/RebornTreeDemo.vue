@@ -649,7 +649,7 @@ function scrollToGroup25() {
               {{ childCount(node) }}
             </span>
             <button
-              class="flex size-5 items-center justify-center rounded-ui-2xs text-dimmed hover:bg-elevated hover:text-default"
+              class="flex size-5 items-center justify-center rounded-sm text-dimmed hover:bg-elevated hover:text-default"
               @click="toggleStar(node.key)"
             >
               <Icon

@@ -58,7 +58,7 @@ const dummyContent = [
               v-if="item.image"
               :src="item.image"
               alt="文章配图"
-              class="mb-10 rounded-ui-md object-cover"
+              class="mb-10 rounded-xl object-cover"
             >
             <div>
               <p

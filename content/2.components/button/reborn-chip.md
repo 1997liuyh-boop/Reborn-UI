@@ -92,8 +92,8 @@ const hasUnread = ref(true);
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 角标背景色（语义色）。 |
-| `size` | Web：`"xs" \| "sm" \| "md" \| "lg" \| "xl"`；UniApp：`"3xs"`–`"3xl"` 九档 | `"md"` | 角标尺寸，两端档位不同（web 为 px、uniapp 为 rpx 标尺）。 |
-| `text` | `string \| number` | `-` | 角标文本内容；不传（或空）时仅显示纯色小圆点。 |
+| `size` | Web：`"xs" \| "sm" \| "md" \| "lg" \| "xl"`；UniApp：`"3xs"`–`"3xl"` 九档 | `"md"` | 角标尺寸，两端档位不同（web 为 px、uniapp 为 rpx 标尺）。Web 的 `xs`/`sm` 为纯圆点档，不渲染文本。 |
+| `text` | `string \| number` | `-` | 角标文本内容；不传（或空）时仅显示纯色小圆点。Web 端 `size` 为 `xs`/`sm` 时该属性不生效。 |
 | `position` | `"top-right" \| "bottom-right" \| "top-left" \| "bottom-left"` | `"top-right"` | 相对宿主的四角定位。 |
 | `show` | `boolean` | `true` | 是否显示角标，可配合 `v-model:show` 使用。 |
 | `inset` | `boolean` | `false` | 是否内嵌贴合宿主边缘（默认角标中心压在宿主角上）。 |
@@ -132,3 +132,4 @@ const hasUnread = ref(true);
 - `text` 按 truthy 判断渲染：传数字 `0` 或空字符串时不显示文本、只保留小圆点，需要展示「0」请传字符串 `"0"`。
 - 组件自身没有关闭交互，`update:show` 不会由组件内部触发，`v-model:show` 实际由外部赋值驱动。
 - 两端 `size` 档位不同：web 为 `xs`–`xl` 五档，uniapp 为 `3xs`–`3xl` 九档（尺寸单位 rpx）。
+- Web 端 `xs`(10px) / `sm`(12px) 两档是纯圆点：圆点本身装不下最小字号令牌（`--text-sm` 12px），组件在这两档不渲染文本节点，传了 `text` 也不显示。需要带文字的角标请用 `md` 及以上。

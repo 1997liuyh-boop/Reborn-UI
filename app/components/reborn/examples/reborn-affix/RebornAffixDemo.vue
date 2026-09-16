@@ -21,7 +21,7 @@ function handleDrag() {
       description="按住浮动按钮拖动即可移动（同时支持鼠标与触摸）；松手后默认吸附到距离最近的左右边缘，可通过 no-snapping 关闭吸附。"
     >
       <DemoBlock layout="stack">
-        <div class="border-default rounded-ui-md text-dimmed flex h-40 w-full items-center justify-center border border-dashed text-sm">
+        <div class="border-default rounded-xl text-dimmed flex h-40 w-full items-center justify-center border border-dashed text-sm">
           浮动按钮悬浮于视口之上，不占据此处的文档流空间
         </div>
 

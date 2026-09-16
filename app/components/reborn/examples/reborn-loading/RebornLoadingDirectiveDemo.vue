@@ -313,7 +313,7 @@ onUnmounted(() => {
         :reborn-loading-text="state.text || null" :reborn-loading-type="state.type"
         :reborn-loading-color="playgroundColor" :reborn-loading-size="state.size + 'px'"
         :reborn-loading-background="playgroundBackground"
-        class="bg-elevated rounded-ui-base h-[400px] w-full max-w-2xl overflow-y-auto">
+        class="bg-elevated rounded-2xl h-[400px] w-full max-w-2xl overflow-y-auto">
         <!-- 表头需遮挡下方滚过的行，沿用与容器同色的底，视觉上仍是同一层表面 -->
         <div class="bg-elevated border-default sticky top-0 z-[1] flex items-center justify-between border-b px-6 py-4">
           <div class="flex flex-col">
@@ -348,7 +348,7 @@ onUnmounted(() => {
       <DemoBlock layout="stack" class="gap-4">
         <!-- 看板同样是遮罩宿主，沿用那唯一一层浅填充 -->
         <div v-loading="boardLoading" reborn-loading-text="正在同步看板数据…"
-          class="bg-elevated rounded-ui-sm flex w-full flex-col gap-5 p-5">
+          class="bg-elevated rounded-lg flex w-full flex-col gap-5 p-5">
           <div class="divide-default grid grid-cols-3 sm:divide-x">
             <div v-for="(stat, i) in boardStats" :key="stat.label" class="flex flex-col gap-1.5"
               :class="i === 0 ? 'sm:pr-4' : i === boardStats.length - 1 ? 'sm:pl-4' : 'sm:px-4'">
@@ -395,7 +395,7 @@ onUnmounted(() => {
           <div v-loading="true" :reborn-loading-type="item.type" :reborn-loading-color="item.color"
             :reborn-loading-text="item.text" :reborn-loading-size="item.size"
             :reborn-loading-background="item.background"
-            class="border-default rounded-ui-sm relative h-40 overflow-hidden border border-dashed" />
+            class="border-default rounded-lg relative h-40 overflow-hidden border border-dashed" />
         </div>
       </DemoBlock>
     </DemoSection>
@@ -408,7 +408,7 @@ onUnmounted(() => {
         </DemoNote>
 
         <pre
-          class="bg-elevated rounded-ui-sm text-muted w-fit px-4 py-3 font-mono text-[11px] leading-relaxed"><code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code></pre>
+          class="bg-elevated rounded-lg text-muted w-fit px-4 py-3 font-mono text-[11px] leading-relaxed"><code>&lt;section v-loading.fullscreen.lock="submitting"&gt;</code></pre>
 
         <div class="flex items-center gap-4">
           <RebornButton label="触发全屏加载" color="primary" variant="filled" :disabled="fullscreenOn"
@@ -441,7 +441,7 @@ onUnmounted(() => {
 
         <!-- 调用日志面板：它同时是局部遮罩的 target 容器，即被演示的宿主，故保留这层浅填充 -->
         <div id="reborn-loading-service-panel"
-          class="bg-elevated rounded-ui-sm flex min-h-[220px] w-full flex-col gap-2 overflow-hidden p-5 font-mono text-[11px]">
+          class="bg-elevated rounded-lg flex min-h-[220px] w-full flex-col gap-2 overflow-hidden p-5 font-mono text-[11px]">
           <div class="text-dimmed mb-1 flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase">
             <span class="flex gap-1.5">
               <span class="bg-error/70 size-2 rounded-full" />

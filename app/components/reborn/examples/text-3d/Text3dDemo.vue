@@ -3,7 +3,7 @@
     title="基础用法"
     description="3D 文字需要深色舞台才看得清阴影层；两种模式都保持深色。"
   >
-    <div class="flex flex-col items-center justify-center overflow-hidden rounded-ui-md bg-gray-10 px-4 py-16 dark:bg-gray-1">
+    <div class="flex flex-col items-center justify-center overflow-hidden rounded-xl bg-gray-10 px-4 py-16 dark:bg-gray-1">
       <Text3d
         class="text-8xl font-bold max-md:text-7xl"
         shadow-color="red"

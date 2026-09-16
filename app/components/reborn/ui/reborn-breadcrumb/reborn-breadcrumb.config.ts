@@ -62,7 +62,7 @@ export default {
      */
     link: "text-gray-9 transition-colors flex items-center gap-1",
     separator:
-      "text-gray-4 select-none flex items-center justify-center text-xs group-last/breadcrumb:hidden",
+      "text-gray-4 select-none flex items-center justify-center text-sm group-last/breadcrumb:hidden",
     /** 超出 max-count 后的折叠占位内容 */
     more: "text-gray-9 flex items-center",
     moreIcon: "size-4",
@@ -78,10 +78,11 @@ export default {
     /**
      * 下拉菜单项。字号 14px（text-base）与其余 Reborn 浮层保持一致：
      * 浮层默认传送到 body，拿不到面包屑根节点的 text-sm，必须自带字号。
+     * 行高随字号令牌走 22px，不再叠 leading-[1.5]。
      * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 dark: 前缀。
      */
     droplistItem:
-      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-sm px-[6px] py-[4px] text-base text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
     /** 菜单项分隔线，与浮层描边同一阶 */
     droplistDivider: "my-[4px] border-t border-gray-3",
   },

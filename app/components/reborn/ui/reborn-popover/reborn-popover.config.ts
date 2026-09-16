@@ -26,9 +26,9 @@ export const popoverAnimations = {
 export default {
     slots: {
         wrapper: "relative inline-block",
-        trigger: "inline-block",
+        trigger: "inline-flex max-w-full",
         contentWrapper: "fixed top-0 left-0 z-[9999]",
-        content: "relative bg-gray-1 border border-gray-1 shadow-xl rounded-ui-sm p-[12px]",
+        content: "relative bg-gray-1 border border-gray-1 shadow-xl rounded-lg p-[12px]",
         arrow: "absolute w-3 h-3 border border-gray-1 bg-gray-1",
         bridge: "absolute inset-0 z-[-1]",
         mask: "fixed inset-0 bg-black/30 z-[9998]",

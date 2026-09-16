@@ -244,7 +244,7 @@ UniApp 端多行垂直轮播由内置 `swiper` 的 `display-multiple-items` 承�
 | 纵向内边距       | 8px       | 16rpx      |
 | 元素间距（gap）  | 8px       | 16rpx      |
 | 标题与内容间距   | 8px       | 16rpx      |
-| 圆角             | `rounded-ui-sm`（8px） | `rounded-ui-sm` |
+| 圆角             | `rounded-lg`（8px） | `rounded-lg` |
 | 图标尺寸         | 16px      | 32rpx      |
 | 关闭图标尺寸     | 14px      | 28rpx      |
 | 关闭按钮热区     | `1.5em` 圆形 | `1.5em` 圆形 |

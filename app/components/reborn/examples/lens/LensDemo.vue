@@ -16,7 +16,7 @@ function setHovering(value: boolean) {
       align="center"
     >
       <!-- 深色舞台是放大镜效果的一部分，两种模式都保持深色 -->
-      <div class="rounded-ui-lg relative w-full max-w-lg overflow-hidden bg-gray-10 p-8 dark:bg-gray-1">
+      <div class="rounded-3xl relative w-full max-w-lg overflow-hidden bg-gray-10 p-8 dark:bg-gray-1">
         <Rays />
         <Beams />
         <div class="relative z-10">
@@ -29,7 +29,7 @@ function setHovering(value: boolean) {
               alt="Vision Pro 配图"
               width="500"
               height="500"
-              class="rounded-ui-md"
+              class="rounded-xl"
             >
           </Lens>
           <div

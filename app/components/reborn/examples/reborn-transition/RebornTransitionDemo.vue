@@ -114,7 +114,7 @@ onUnmounted(() => {
 
       <!-- 动画舞台：滑动类动画需要一个有边界的可视区域才说得清，此处仅描边不填充 -->
       <div
-        class="border-default rounded-ui-md relative flex h-44 w-full items-center justify-center overflow-hidden border"
+        class="border-default rounded-xl relative flex h-44 w-full items-center justify-center overflow-hidden border"
       >
         <span
           v-if="!show"
@@ -128,7 +128,7 @@ onUnmounted(() => {
           class="absolute"
         >
           <div
-            class="bg-primary rounded-ui-sm flex size-24 items-center justify-center text-xs font-medium text-white"
+            class="bg-primary rounded-lg flex size-24 items-center justify-center text-xs font-medium text-white"
           >
             {{ state.name }}
           </div>
@@ -157,7 +157,7 @@ onUnmounted(() => {
         </RebornButton>
 
         <div
-          class="border-default rounded-ui-md relative flex h-44 w-full items-center justify-center overflow-hidden border"
+          class="border-default rounded-xl relative flex h-44 w-full items-center justify-center overflow-hidden border"
         >
           <span
             v-if="!customShow"
@@ -176,7 +176,7 @@ onUnmounted(() => {
             class="absolute"
           >
             <div
-              class="bg-error rounded-ui-sm flex size-24 items-center justify-center text-xs font-medium text-white"
+              class="bg-error rounded-lg flex size-24 items-center justify-center text-xs font-medium text-white"
             >
               custom
             </div>

@@ -26,7 +26,7 @@ function handleConfirm() {
     :title="title || '精简模式'"
     :show-close="false"
     :ui="{
-      panel: 'max-w-[360px] rounded-ui-lg',
+      panel: 'max-w-[360px] rounded-3xl',
       header: 'border-0 pb-0',
       body: 'text-center pt-2 pb-6',
       footer: 'border-0 pt-0 justify-center pb-6',

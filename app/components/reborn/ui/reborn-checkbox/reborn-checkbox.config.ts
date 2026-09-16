@@ -32,13 +32,13 @@ export default {
     // 显形规则用 :not([data-dot]) 排除半选方块：方块靠自身的 scale-50 缩小，
     // 若被 [&>*]:scale-100 命中就会被顶回原尺寸撑满整个勾选框
     control:
-      "flex items-center justify-center rounded-ui-2xs border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-checked:[&>*:not([data-dot])]:opacity-100 peer-checked:[&>*:not([data-dot])]:scale-100 data-[indeterminate=true]:[&>*:not([data-dot])]:opacity-100 data-[indeterminate=true]:[&>*:not([data-dot])]:scale-100",
+      "flex items-center justify-center rounded-sm border border-gray-4 bg-white text-white transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-checked:[&>*:not([data-dot])]:opacity-100 peer-checked:[&>*:not([data-dot])]:scale-100 data-[indeterminate=true]:[&>*:not([data-dot])]:opacity-100 data-[indeterminate=true]:[&>*:not([data-dot])]:scale-100",
     icon: "size-4 opacity-0 scale-75 transition-all",
     // outlined 变体的半选方块：与勾选框同尺寸同圆角，再整体缩到 50%。
     // 这样圆角随之等比减半，形状与外框一致；transform 以中心为原点，也不会像
     // size-1/2 那样因为 18px 的一半是奇数而出现半像素偏移导致视觉不居中。
     // 只在半选时挂载，故不写 opacity-0 这类入场过渡（永远看不到）。
-    dot: "size-full rounded-ui-2xs scale-50",
+    dot: "size-full rounded-sm scale-50",
     label: "text-gray-9",
   },
   variants: {

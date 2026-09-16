@@ -1,5 +1,5 @@
 ---
-title: 按钮
+title: Button 按钮
 description: 双端基础按钮：7 种语义色 × 7 种变体，支持尺寸、形状、加载与禁用状态。
 category: 按钮
 platform: both
@@ -7,7 +7,7 @@ tags: [css, tailwind, button, uniapp]
 badge: New
 ---
 
-::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]'  :uniappFiles='["RebornButton.vue", "reborn-button.config.ts"]'}
+::ComponentViewer{demoFile="RebornButtonDemo.vue" config="RebornButtonConfig" componentId="reborn-button" :componentFiles='["RebornButton.vue", "reborn-button.config.ts"]' :uniappFiles='["RebornButton.vue", "reborn-button.config.ts"]'}
 ::
 
 ## 简介
@@ -50,23 +50,39 @@ Button 是 Reborn UI 中最基础的操作触发组件，Web 与 UniApp 两端�
 
 `color` 控制语义色，`variant` 控制视觉强度，两者自由组合：
 
-| 变体 | 外观 | 典型用途 |
-| --- | --- | --- |
-| `filled` | 实心填充，白色文字 | 页面主行动（每屏建议只有一个） |
-| `outlined` | 透明底 + 1px 描边 | 次级操作，如「取消」 |
-| `soft` | 10% 透明度浅色底，无边框 | 并列的多个同级操作 |
-| `subtle` | 浅色底 + 同色描边 | 需要比 `soft` 更明确边界的场景 |
-| `text` | 无背景无边框，高度与内边距归零 | 表格行内操作、辅助链接 |
-| `round` | 胶囊形（`!rounded-full`），着色同 `filled` | 需要胶囊形状的主行动 |
-| `circle` | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `filled` | 收起、收藏、关闭等图标操作 |
+| 变体       | 外观                                                  | 典型用途                       |
+| ---------- | ----------------------------------------------------- | ------------------------------ |
+| `filled`   | 实心填充，白色文字                                    | 页面主行动（每屏建议只有一个） |
+| `outlined` | 透明底 + 1px 描边                                     | 次级操作，如「取消」           |
+| `soft`     | 10% 透明度浅色底，无边框                              | 并列的多个同级操作             |
+| `subtle`   | 浅色底 + 同色描边                                     | 需要比 `soft` 更明确边界的场景 |
+| `text`     | 无背景无边框，高度与内边距归零                        | 表格行内操作、辅助链接         |
+| `round`    | 胶囊形（`!rounded-full`），着色同 `filled`            | 需要胶囊形状的主行动           |
+| `circle`   | 圆形纯图标按钮，宽高相等、内边距归零，着色同 `filled` | 收起、收藏、关闭等图标操作     |
 
 ```vue
 <template>
   <RebornButton color="primary">确认提交</RebornButton>
-  <RebornButton color="neutral" variant="outlined">取消</RebornButton>
-  <RebornButton color="error" variant="soft">删除</RebornButton>
-  <RebornButton color="success" variant="subtle">已完成</RebornButton>
-  <RebornButton color="primary" variant="text">查看详情</RebornButton>
+  <RebornButton
+    color="neutral"
+    variant="outlined"
+    >取消</RebornButton
+  >
+  <RebornButton
+    color="error"
+    variant="soft"
+    >删除</RebornButton
+  >
+  <RebornButton
+    color="success"
+    variant="subtle"
+    >已完成</RebornButton
+  >
+  <RebornButton
+    color="primary"
+    variant="text"
+    >查看详情</RebornButton
+  >
 </template>
 ```
 
@@ -78,7 +94,11 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 ```vue
 <template>
-  <RebornButton variant="outlined" border-style="dashed">添加字段</RebornButton>
+  <RebornButton
+    variant="outlined"
+    border-style="dashed"
+    >添加字段</RebornButton
+  >
 </template>
 ```
 
@@ -91,27 +111,30 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 :::tabs-item{label="Web" icon="tabler:world"}
 三档，高度固定 px，水平内边距统一 12px；非形状变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
 
-| `size` | 高度 | 字号 | 直角圆角 |
-| --- | --- | --- | --- |
-| `sm` | 24px | `text-sm`（12px） | 4px（`--radius-ui-2xs`） |
-| `md`（默认） | 32px | `text-base`（14px） | 6px（`--radius-ui-xs`） |
-| `lg` | 40px | `text-lg`（16px） | 8px（`--radius-ui-sm`） |
+| `size`       | 高度 | 字号                | 直角圆角             |
+| ------------ | ---- | ------------------- | -------------------- |
+| `sm`         | 24px | `text-sm`（12px）   | 4px（`--radius-sm`） |
+| `md`（默认） | 32px | `text-base`（14px） | 6px（`--radius-md`） |
+| `lg`         | 40px | `text-lg`（16px）   | 8px（`--radius-lg`） |
+
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
 七档，高度用 `rpx` 随屏宽缩放；非形状变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
 
-| `size` | 高度 | 水平内边距 | 字号 | 直角圆角 |
-| --- | --- | --- | --- | --- |
-| `xs` | 48rpx | 12rpx | 22rpx | 4rpx（`--radius-ui-2xs`） |
-| `sm` | 56rpx | 12rpx | 24rpx | 4rpx（`--radius-ui-2xs`） |
-| `default` | 64rpx | 16rpx | 26rpx | 6rpx（`--radius-ui-xs`） |
-| `md`（默认） | 64rpx | 16rpx | 26rpx | 6rpx（`--radius-ui-xs`） |
-| `lg` | 76rpx | 24rpx | 28rpx | 8rpx（`--radius-ui-sm`） |
-| `xl` | 86rpx | 24rpx | 30rpx | 8rpx（`--radius-ui-sm`） |
-| `2xl` | 96rpx | 24rpx | 32rpx | 8rpx（`--radius-ui-sm`） |
+| `size`       | 高度  | 水平内边距 | 字号  | 直角圆角                  |
+| ------------ | ----- | ---------- | ----- | ------------------------- |
+| `xs`         | 48rpx | 12rpx      | 22rpx | 4rpx（`--radius-ui-2xs`） |
+| `sm`         | 56rpx | 12rpx      | 24rpx | 4rpx（`--radius-ui-2xs`） |
+| `default`    | 64rpx | 16rpx      | 26rpx | 6rpx（`--radius-ui-xs`）  |
+| `md`（默认） | 64rpx | 16rpx      | 26rpx | 6rpx（`--radius-ui-xs`）  |
+| `lg`         | 76rpx | 24rpx      | 28rpx | 8rpx（`--radius-ui-sm`）  |
+| `xl`         | 86rpx | 24rpx      | 30rpx | 8rpx（`--radius-ui-sm`）  |
+| `2xl`        | 96rpx | 24rpx      | 32rpx | 8rpx（`--radius-ui-sm`）  |
 
 `default` 与 `md` 完全等价，前者保留用于对齐旧代码。
+
+圆角令牌名两端不一致：Web 已改用 Tailwind 原生档名（`--radius-sm` / `--radius-md` / `--radius-lg`），uniapp 仍是 `--radius-ui-*`、值为 `rpx`。两边指的是各自端上的同一档圆角，只是取值口径不同（px 对 rpx），不是笔误。
 :::
 
 ::
@@ -130,12 +153,13 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 - `variant="round"`：胶囊形（`!rounded-full`），着色规则同 `filled`。
 - `variant="circle"`：圆形纯图标按钮，宽高相等、内边距归零，着色规则同 `filled`。Web 端额外用 `has-[>svg]:!p-0` 约束直接子级 svg 的内边距。
-- 形状圆角带 `!` 是刻意的：`size` 轴的 `rounded-ui-*` 是自定义令牌类，`tailwind-merge` 不会把它与 `rounded-full` 判为冲突而合并，且其生成 CSS 顺序靠后，不加强制覆盖会反向吃掉形状圆角。
+- 形状圆角带 `!` 是历史遗留：`size` 轴原先用自定义的 `rounded-ui-*` 令牌类，`tailwind-merge` 不认它属于 `border-radius` 冲突组，两个圆角类会共存、由 CSS 源序决定胜负。现在 `size` 轴已改回原生 `rounded-*`，`tailwind-merge` 能正常合并，`!` 只剩提权作用，保留是为了不改动既有覆盖顺序。
 - 其余变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随 `size` 取设计令牌（Web 4 / 6 / 8px，UniApp 4 / 6 / 8rpx）；`text` 无背景、不施加圆角。需要自定义圆角时直接用 `class`（Web）或 `customClass`（UniApp）覆盖即可（自定义类名优先级最高）。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
+
 ```vue
 <template>
   <!-- 胶囊按钮 -->
@@ -150,9 +174,11 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
   </RebornButton>
 </template>
 ```
+
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
 ```vue
 <template>
   <!-- 胶囊按钮 -->
@@ -167,6 +193,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
   </RebornButton>
 </template>
 ```
+
 :::
 
 ::
@@ -182,22 +209,24 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 
 ```vue
 <script setup lang="ts">
-const submitting = ref(false)
+const submitting = ref(false);
 
 async function onSubmit() {
-  submitting.value = true
+  submitting.value = true;
   try {
-    await save()
-  }
-  finally {
-    submitting.value = false
+    await save();
+  } finally {
+    submitting.value = false;
   }
 }
 </script>
 
 <template>
-  <RebornButton :loading="submitting" @click="onSubmit">
-    {{ submitting ? '保存中' : '保存' }}
+  <RebornButton
+    :loading="submitting"
+    @click="onSubmit"
+  >
+    {{ submitting ? "保存中" : "保存" }}
   </RebornButton>
   <RebornButton disabled>不可用</RebornButton>
 </template>
@@ -240,7 +269,11 @@ UniApp 端额外提供 `block`：为 `true` 时按钮占满整行（`flex w-full
   <RebornButton gap>下一步</RebornButton>
 
   <!-- UniApp：整行按钮 -->
-  <RebornButton block size="lg">立即支付</RebornButton>
+  <RebornButton
+    block
+    size="lg"
+    >立即支付</RebornButton
+  >
 </template>
 ```
 
@@ -253,7 +286,10 @@ UniApp 端额外提供 `block`：为 `true` 时按钮占满整行（`flex w-full
 
 ```vue
 <template>
-  <RebornForm size="lg" :disabled="readonly">
+  <RebornForm
+    size="lg"
+    :disabled="readonly"
+  >
     <!-- 自动变为 lg 尺寸 -->
     <RebornButton form-type="submit">提交</RebornButton>
   </RebornForm>
@@ -268,11 +304,11 @@ UniApp 端在容器内叠了一个透明的原生 `button` 作为点击层，因
 <script setup lang="ts">
 function onGetPhone(e: any) {
   // e.detail.code 交由服务端换取真实手机号
-  console.log(e.detail.code)
+  console.log(e.detail.code);
 }
 
 function onError(e: any) {
-  console.warn('开放能力调用失败', e.detail)
+  console.warn("开放能力调用失败", e.detail);
 }
 </script>
 
@@ -298,56 +334,60 @@ function onError(e: any) {
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
+
 #### Web 端全部属性
 
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
-| `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
-| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
-| `variant` | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'filled'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸，三档固定 px；处于表单组内时被组尺寸覆盖。 |
-| `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
-| `disabled` | `boolean` | `false` | 是否禁用。 |
-| `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
-| `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
-| `class` | `any` | - | 追加到根元素的自定义类名。 |
-| `borderStyle` | `'solid' \| 'dashed'` | `'solid'` | 边框线型；宽度固定 1px，仅对 `outlined` / `subtle` 生效。 |
+| 属性名        | 类型                                                                                   | 默认值      | 描述                                                            |
+| ------------- | -------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------- |
+| `label`       | `string`                                                                               | -           | 按钮文本；提供默认插槽时被插槽内容覆盖。                        |
+| `color`       | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。                                                        |
+| `variant`     | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'`        | `'filled'`  | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
+| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 尺寸，三档固定 px；处于表单组内时被组尺寸覆盖。                 |
+| `loading`     | `boolean`                                                                              | `false`     | 是否加载中；显示加载动画并同时禁用点击。                        |
+| `disabled`    | `boolean`                                                                              | `false`     | 是否禁用。                                                      |
+| `gap`         | `boolean`                                                                              | `false`     | 紧邻上一个按钮时自动添加 8px 左边距。                           |
+| `ui`          | `object`                                                                               | -           | 细粒度样式覆盖，键位见「自定义样式（ui）」。                    |
+| `class`       | `any`                                                                                  | -           | 追加到根元素的自定义类名。                                      |
+| `borderStyle` | `'solid' \| 'dashed'`                                                                  | `'solid'`   | 边框线型；宽度固定 1px，仅对 `outlined` / `subtle` 生效。       |
+
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
 #### UniApp 端全部属性
 
-| 属性名 | 类型 | 默认值 | 描述 |
-| --- | --- | --- | --- |
-| `label` | `string` | - | 按钮文本；提供默认插槽时被插槽内容覆盖。 |
-| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。 |
-| `variant` | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'` | `'filled'` | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。 |
-| `size` | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'` | `'md'` | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。 |
-| `loading` | `boolean` | `false` | 是否加载中；显示加载动画并同时禁用点击。 |
-| `disabled` | `boolean` | `false` | 是否禁用。 |
-| `gap` | `boolean` | `false` | 紧邻上一个按钮时自动添加 8px 左边距。 |
-| `ui` | `object` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
-| `customClass` | `any` | - | 追加到根节点的自定义类名（对应 Web 端 `class`）。 |
-| `block` | `boolean` | `false` | 是否占满整行（`flex w-full`），否则为 `inline-flex`。 |
-| `fluid` | `boolean` | `false` | 预留的 flex-1 布局开关，当前版本尚未接入样式，暂无视觉效果。 |
-| `hoverClass` | `string` | - | 按钮点击态样式类。 |
-| `hoverStopPropagation` | `boolean` | - | 是否阻止点击态冒泡。 |
-| `hoverStartTime` | `number` | `20` | 按住后出现点击态的延迟，单位毫秒。 |
-| `hoverStayTime` | `number` | `70` | 松手后点击态保留时长，单位毫秒。 |
-| `formType` | `'submit' \| 'reset'` | - | 表单提交类型，配合 form 组件使用。 |
-| `openType` | `string` | - | 小程序开放能力类型（`contact` / `getPhoneNumber` / `openSetting` / `launchApp` / `chooseAvatar` 等），回调见 Emits。 |
-| `lang` | `string` | - | 返回用户信息的语言。 |
-| `sessionFrom` | `string` | - | `openType="contact"` 时的会话来源。 |
-| `sendMessageTitle` | `string` | - | `openType="contact"` 时的会话内消息卡片标题。 |
-| `sendMessagePath` | `string` | - | `openType="contact"` 时的会话内消息卡片路径。 |
-| `sendMessageImg` | `string` | - | `openType="contact"` 时的会话内消息卡片图片。 |
-| `showMessageCard` | `boolean` | - | `openType="contact"` 时是否显示会话内消息卡片。 |
-| `appParameter` | `string` | - | `openType="launchApp"` 时向 APP 传递的参数。 |
-| `groupId` | `string` | - | 群 ID（QQ 开放能力）。 |
-| `guildId` | `string` | - | 频道 / 公会 ID（QQ 开放能力）。 |
-| `publicId` | `string` | - | 公众号 ID（QQ 开放能力）。 |
-| `phoneNumberNoQuotaToast` | `boolean` | - | 获取手机号因额度不足失败时，是否弹出错误提示。 |
-| `createliveactivity` | `boolean` | - | 是否创建直播活动。 |
+| 属性名                    | 类型                                                                                   | 默认值      | 描述                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `label`                   | `string`                                                                               | -           | 按钮文本；提供默认插槽时被插槽内容覆盖。                                                                             |
+| `color`                   | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。                                                                                                             |
+| `variant`                 | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'`        | `'filled'`  | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。                                                      |
+| `size`                    | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'`                           | `'md'`      | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。                                                            |
+| `loading`                 | `boolean`                                                                              | `false`     | 是否加载中；显示加载动画并同时禁用点击。                                                                             |
+| `disabled`                | `boolean`                                                                              | `false`     | 是否禁用。                                                                                                           |
+| `gap`                     | `boolean`                                                                              | `false`     | 紧邻上一个按钮时自动添加 8px 左边距。                                                                                |
+| `ui`                      | `object`                                                                               | -           | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                         |
+| `customClass`             | `any`                                                                                  | -           | 追加到根节点的自定义类名（对应 Web 端 `class`）。                                                                    |
+| `block`                   | `boolean`                                                                              | `false`     | 是否占满整行（`flex w-full`），否则为 `inline-flex`。                                                                |
+| `fluid`                   | `boolean`                                                                              | `false`     | 预留的 flex-1 布局开关，当前版本尚未接入样式，暂无视觉效果。                                                         |
+| `hoverClass`              | `string`                                                                               | -           | 按钮点击态样式类。                                                                                                   |
+| `hoverStopPropagation`    | `boolean`                                                                              | -           | 是否阻止点击态冒泡。                                                                                                 |
+| `hoverStartTime`          | `number`                                                                               | `20`        | 按住后出现点击态的延迟，单位毫秒。                                                                                   |
+| `hoverStayTime`           | `number`                                                                               | `70`        | 松手后点击态保留时长，单位毫秒。                                                                                     |
+| `formType`                | `'submit' \| 'reset'`                                                                  | -           | 表单提交类型，配合 form 组件使用。                                                                                   |
+| `openType`                | `string`                                                                               | -           | 小程序开放能力类型（`contact` / `getPhoneNumber` / `openSetting` / `launchApp` / `chooseAvatar` 等），回调见 Emits。 |
+| `lang`                    | `string`                                                                               | -           | 返回用户信息的语言。                                                                                                 |
+| `sessionFrom`             | `string`                                                                               | -           | `openType="contact"` 时的会话来源。                                                                                  |
+| `sendMessageTitle`        | `string`                                                                               | -           | `openType="contact"` 时的会话内消息卡片标题。                                                                        |
+| `sendMessagePath`         | `string`                                                                               | -           | `openType="contact"` 时的会话内消息卡片路径。                                                                        |
+| `sendMessageImg`          | `string`                                                                               | -           | `openType="contact"` 时的会话内消息卡片图片。                                                                        |
+| `showMessageCard`         | `boolean`                                                                              | -           | `openType="contact"` 时是否显示会话内消息卡片。                                                                      |
+| `appParameter`            | `string`                                                                               | -           | `openType="launchApp"` 时向 APP 传递的参数。                                                                         |
+| `groupId`                 | `string`                                                                               | -           | 群 ID（QQ 开放能力）。                                                                                               |
+| `guildId`                 | `string`                                                                               | -           | 频道 / 公会 ID（QQ 开放能力）。                                                                                      |
+| `publicId`                | `string`                                                                               | -           | 公众号 ID（QQ 开放能力）。                                                                                           |
+| `phoneNumberNoQuotaToast` | `boolean`                                                                              | -           | 获取手机号因额度不足失败时，是否弹出错误提示。                                                                       |
+| `createliveactivity`      | `boolean`                                                                              | -           | 是否创建直播活动。                                                                                                   |
+
 :::
 
 ::
@@ -443,11 +483,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ```vue
 <template>
-  <RebornButton
-    :ui="{ base: 'shadow-lg', label: 'tracking-wide' }"
-  >
-    自定义样式
-  </RebornButton>
+  <RebornButton :ui="{ base: 'shadow-lg', label: 'tracking-wide' }"> 自定义样式 </RebornButton>
 </template>
 ```
 
@@ -460,24 +496,25 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 :::tabs-item{label="Web" icon="tabler:world"}
 定义在 `app/assets/theme/typography.css`，固定 px：
 
-| 变量名 | 对应 `size` | 值 |
-| --- | --- | --- |
-| `--height-button-sm` | `sm` | `24px` |
-| `--height-button-md` | `md` | `32px` |
-| `--height-button-lg` | `lg` | `40px` |
+| 变量名               | 对应 `size` | 值     |
+| -------------------- | ----------- | ------ |
+| `--height-button-sm` | `sm`        | `24px` |
+| `--height-button-md` | `md`        | `32px` |
+| `--height-button-lg` | `lg`        | `40px` |
+
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
 定义在 `packages/uniapp-project/src/styles/theme.css`，`rpx` 随屏宽缩放：
 
-| 变量名 | 对应 `size` | 值 |
-| --- | --- | --- |
-| `--button-xs-height` | `xs` | `48rpx` |
-| `--button-sm-height` | `sm` | `56rpx` |
-| `--button-md-height` | `md` / `default` | `64rpx` |
-| `--button-lg-height` | `lg` | `76rpx` |
-| `--button-xl-height` | `xl` | `86rpx` |
-| `--button-2xl-height` | `2xl` | `96rpx` |
+| 变量名                | 对应 `size`      | 值      |
+| --------------------- | ---------------- | ------- |
+| `--button-xs-height`  | `xs`             | `48rpx` |
+| `--button-sm-height`  | `sm`             | `56rpx` |
+| `--button-md-height`  | `md` / `default` | `64rpx` |
+| `--button-lg-height`  | `lg`             | `76rpx` |
+| `--button-xl-height`  | `xl`             | `86rpx` |
+| `--button-2xl-height` | `2xl`            | `96rpx` |
 
 `default` 档位不单独设变量，直接复用 `--button-md-height`。UniApp 主题变量挂载在 `:root, body, page` 上（避免 `:root` 在微信小程序下报错），覆盖时请对齐同一选择器。
 :::
@@ -486,20 +523,20 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ## 两端差异对照
 
-| 维度 | Web | UniApp |
-| --- | --- | --- |
-| 自定义类名 | `class` | `customClass` |
-| 尺寸档位 | `sm` / `md` / `lg`（3 档，px） | `xs` ~ `2xl`（7 档，rpx） |
-| 形状 API | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 |
-| 直角圆角 | 随 `size` 取令牌 4 / 6 / 8px | 随 `size` 取令牌 4 / 6 / 8rpx |
-| 水平内边距 | 统一 12px | 随 `size` 递进 12 / 16 / 24rpx |
-| 边框线型 | 支持 `borderStyle` | 不支持，固定实线 |
-| 块级布局 | 用 `class` 自行控制 | `block` prop |
-| `ui` 键位 | `base` / `label` / `leadingIcon` / `leadingAvatar` / `leadingAvatarSize` / `trailingIcon` | `base` / `inner` / `label` / `loading` |
-| 加载动画尺寸 | `1.25em`，跟随字号 | 按 `size` 取固定值 |
-| 表单组禁用 | 仅自身 `disabled` / `loading` 生效 | `Form` 级 `disabled` 会强制禁用 |
-| 点击态 | 由变体的 hover 样式内置 | `hoverClass` / `hoverStartTime` / `hoverStayTime` |
-| 开放能力 | 不支持 | 完整代理 `openType` 及全部回调 |
+| 维度         | Web                                                                                       | UniApp                                               |
+| ------------ | ----------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 自定义类名   | `class`                                                                                   | `customClass`                                        |
+| 尺寸档位     | `sm` / `md` / `lg`（3 档，px）                                                            | `xs` ~ `2xl`（7 档，rpx）                            |
+| 形状 API     | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮                                      | 并入 `variant`：`round` 胶囊 / `circle` 圆形图标按钮 |
+| 直角圆角     | 随 `size` 取令牌 4 / 6 / 8px                                                              | 随 `size` 取令牌 4 / 6 / 8rpx                        |
+| 水平内边距   | 统一 12px                                                                                 | 随 `size` 递进 12 / 16 / 24rpx                       |
+| 边框线型     | 支持 `borderStyle`                                                                        | 不支持，固定实线                                     |
+| 块级布局     | 用 `class` 自行控制                                                                       | `block` prop                                         |
+| `ui` 键位    | `base` / `label` / `leadingIcon` / `leadingAvatar` / `leadingAvatarSize` / `trailingIcon` | `base` / `inner` / `label` / `loading`               |
+| 加载动画尺寸 | `1.25em`，跟随字号                                                                        | 按 `size` 取固定值                                   |
+| 表单组禁用   | 仅自身 `disabled` / `loading` 生效                                                        | `Form` 级 `disabled` 会强制禁用                      |
+| 点击态       | 由变体的 hover 样式内置                                                                   | `hoverClass` / `hoverStartTime` / `hoverStayTime`    |
+| 开放能力     | 不支持                                                                                    | 完整代理 `openType` 及全部回调                       |
 
 ## 注意事项
 

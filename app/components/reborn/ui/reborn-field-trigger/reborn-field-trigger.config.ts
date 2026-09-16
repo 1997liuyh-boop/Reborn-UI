@@ -27,11 +27,14 @@ export default {
         /**
          * 触发器盒子。
          * group/field 供尾部图标区做「悬停时箭头淡出、清空按钮盖上来」的联动。
-         * 圆角固定 6px（rounded-ui-xs），不随尺寸变化，与 Input 的 md 档保持一致的视觉语言。
+         * 圆角固定 6px（rounded-md），不随尺寸变化，与 Input 的 md 档保持一致的视觉语言。
          * 背景与边框不在此声明，全部交给 variant 形态变体，避免相互覆盖。
+         * 行高不写 leading-：字号由 size 档的 text-sm / text-base / text-lg 给，
+         * 令牌自带「字号 + 8px」的行高；且盒子是固定高 h-input-* 加 items-center，
+         * 行盒不参与撑高，叠比例档只会覆盖掉令牌行高而看不出任何差别。
          */
         trigger:
-            "group/field box-border flex w-full cursor-pointer items-center justify-between gap-2 rounded-ui-xs leading-normal transition-colors select-none outline-none",
+            "group/field box-border flex w-full cursor-pointer items-center justify-between gap-2 rounded-md transition-colors select-none outline-none",
         /** 已选中的文本：填充色 gray-9 */
         triggerText: "truncate text-gray-9",
         /** 尾部图标区：relative 为清空按钮的绝对覆盖提供定位参照 */
@@ -68,7 +71,9 @@ export default {
                 trigger: "border-0 bg-transparent",
             },
             underlined: {
-                // 用 ! 提权压平圆角：tailwind-merge 不认识自定义的 rounded-ui-* 属于 border-radius 冲突组
+                // 压平圆角。! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在
+                // tailwind-merge 的 border-radius 冲突组里，rounded-none 与它会共存。
+                // 现在已改回原生 rounded-*，合并正常，! 保留是为了不动既有覆盖顺序。
                 trigger: "rounded-none! border-0 border-b border-gray-4 bg-transparent",
             },
         },

@@ -11,7 +11,7 @@
         <NeonBorder animation-type="none">
           <input
             type="text"
-            class="bg-default size-full rounded-ui-sm px-4 text-sm"
+            class="bg-default size-full rounded-lg px-4 text-sm"
             placeholder="无动画"
           >
         </NeonBorder>
@@ -19,7 +19,7 @@
         <NeonBorder>
           <input
             type="text"
-            class="bg-default size-full rounded-ui-sm px-4 text-sm"
+            class="bg-default size-full rounded-lg px-4 text-sm"
             placeholder="半圈描边动画"
           >
         </NeonBorder>
@@ -27,7 +27,7 @@
         <NeonBorder animation-type="full">
           <input
             type="text"
-            class="bg-default size-full rounded-ui-sm px-4 text-sm"
+            class="bg-default size-full rounded-lg px-4 text-sm"
             placeholder="全圈描边动画"
           >
         </NeonBorder>

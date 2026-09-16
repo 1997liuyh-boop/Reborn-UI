@@ -31,12 +31,12 @@ export default {
         /**
          * 触发器盒子。
          * group/field 供尾部图标区做「悬停时箭头淡出、清空按钮盖上来」的联动。
-         * 圆角固定 6px（rounded-ui-xs），不随尺寸变化，与 Input 的 md 档保持一致的视觉语言。
+         * 圆角固定 6px（rounded-md），不随尺寸变化，与 Input 的 md 档保持一致的视觉语言。
          * 背景与边框不在此声明，全部交给 variant 形态变体，避免相互覆盖。
-         * 字号基线 14px、行高 150%，由 size 变体按档位覆写。
+         * 字号基线 text-base（14px），由 size 变体按档位覆写；行高跟随令牌。
          */
         trigger:
-            "group/field box-border flex w-full cursor-pointer items-center justify-between gap-2 rounded-ui-xs text-[14px] leading-[1.5] transition-colors select-none outline-none",
+            "group/field box-border flex w-full cursor-pointer items-center justify-between gap-2 rounded-md text-base transition-colors select-none outline-none",
         /** 已选中的文本：填充色 gray-9 */
         triggerText: "truncate text-gray-9",
         /** 尾部图标区：relative 为清空按钮的绝对覆盖提供定位参照 */
@@ -68,20 +68,20 @@ export default {
         /* ---------------- 下拉列表 ---------------- */
 
         /**
-         * 下拉选项。字号基线 14px、行高 150%；内边距 6/4、圆角 4px（rounded-ui-2xs）。
+         * 下拉选项。字号基线 text-base（14px / 22px 行高）；内边距 6/4、圆角 4px（rounded-sm）。
          * 文字色不在此声明：未选中的 gray-6 由 active 变体给出，与 optionActive 的选中色
          * 落在同一维度上，二者永不同时出现（原因见下方 active 变体的注释）。
          * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），
          * 写 dark: 前缀会二次翻转，深色模式下反而更暗。
          */
         option:
-            "flex cursor-pointer items-center rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] transition-colors data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
+            "flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
         optionContent: "flex w-full items-center gap-1",
         optionLabel: "truncate",
         optionActive: "",
         optionActiveIcon: "size-4 shrink-0 opacity-75",
         optionHighlight: "bg-gray-2",
-        empty: "flex items-center justify-center py-6 text-[14px] leading-[1.5] text-gray-5",
+        empty: "flex items-center justify-center py-6 text-base text-gray-5",
         /**
          * 下拉框的内容区：内边距 4/6。
          * 内边距放在这里而不是浮层外壳上，是因为外壳的展开动画走 height 0 → scrollHeight，
@@ -93,14 +93,15 @@ export default {
          * 下拉菜单页头 / 页脚。
          * 两者与选项列表是兄弟节点、位于滚动容器之外，因此列表滚动时它们固定不动；
          * 分隔线用 gray-3，与浮层描边同一阶。
+         * 字号比选项弱一档：text-sm（12px / 20px 行高）。
          */
         dropdownHeader:
-            "shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-[13px] leading-[1.5] text-gray-6",
+            "shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
         dropdownFooter:
-            "shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-[13px] leading-[1.5] text-gray-6",
+            "shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
         /** 下拉列表的加载中占位，与 empty 同一套排版 */
         loading:
-            "flex items-center justify-center gap-2 py-6 text-[14px] leading-[1.5] text-gray-5",
+            "flex items-center justify-center gap-2 py-6 text-base text-gray-5",
         /** 下拉列表加载中占位里的转圈图标 */
         loadingIcon: "size-4 shrink-0 animate-spin",
 
@@ -126,13 +127,7 @@ export default {
          * gap 同时作用于主轴与交叉轴，因此换行后的行间距无需额外声明。
          */
         tagList: "flex min-w-0 flex-1 items-center gap-1 overflow-hidden",
-        /**
-         * 单个标签的盒子，作为 RebornBadge 的 base 覆盖下发。
-         * 圆角与高度都要带 ! 提权：tailwind-merge 不认识自定义的 rounded-ui-* / h-badge-*
-         * 属于同一冲突组，不提权就会与 Badge 自带的档位值同时留在类名里，
-         * 最终由 CSS 顺序决定胜负（实测 Badge 的 28px 会压过我们的 20px，把触发器撑满）。
-         */
-        tag: "rounded-ui-2xs! border-gray-3 bg-gray-2 text-gray-9",
+        tag: "rounded-sm! border-gray-3 bg-gray-2 text-gray-9",
         tagLabel: "truncate",
         tagClose: "shrink-0 text-gray-5 transition-colors hover:text-gray-8",
         /** 标签关闭图标的尺寸 */
@@ -175,37 +170,41 @@ export default {
                 trigger: "border-0 bg-transparent px-0!",
             },
             underlined: {
-                // 用 ! 提权压平圆角、抹掉水平内边距：
-                // tailwind-merge 不认识自定义的 rounded-ui-* / px-input-px-* 属于同一冲突组，
-                // 不提权就会与 size 档位的值同时留在类名里，最终由 CSS 顺序决定胜负。
-                // 下划线形态的横向留白归零，让下划线与文字左右边缘齐平。
+                // 压平圆角、抹掉水平内边距，让下划线与文字左右边缘齐平。
+                // 两处 ! 都是历史遗留：圆角原先是自定义的 rounded-ui-*，水平内边距是
+                // px-input-px-*，当时都不在 tailwind-merge 的冲突组里，会与 size 档位的值
+                // 共存并由 CSS 顺序决定胜负。现在圆角已改回原生 rounded-*，px-input-px-*
+                // 也已注册进 app/lib/utils.ts 的 px 冲突组，两者都能正常合并；
+                // ! 保留只为不动既有覆盖顺序。
                 trigger: "rounded-none! border-0 border-b border-gray-4 bg-transparent px-0!",
             },
         },
         /**
          * 尺寸档位。触发器高度取自 --height-input-*、水平内边距取自 --spacing-input-px-*。
-         * 字号：sm 12px、md 14px、lg 16px，行高统一 150%（不用 text-sm/base/lg，
-         * 那三个 token 自带 20/22/24px 的固定行高，会把 150% 覆盖掉）。
-         * 选项与标签跟随同一套档位，标签始终比宿主字号小一档，避免撑破触发器高度。
+         * 字号走 7 级字号令牌：sm → text-sm（12px）、md → text-base（14px）、lg → text-lg（16px），
+         * 行高用令牌自带的 20/22/24px，不再写 leading-[1.5]：触发器是定高盒子 + items-center 单行居中，
+         * 行高只决定文本盒高度、不决定字形位置，18/21/24 与 20/22/24 的差别在视觉上不可见。
+         * 选项与标签跟随同一套档位，标签始终比宿主字号小一档，避免撑破触发器高度；
+         * 标签是 h-4!/h-5!/h-6! 的定高盒子，10px 低于令牌下限只能写字面量。
          */
         size: {
             sm: {
-                trigger: "h-input-sm px-input-px-sm text-[12px] leading-[1.5]",
+                trigger: "h-input-sm px-input-px-sm text-sm",
                 triggerIconWrapper: "size-3",
                 tagList: "gap-0.5",
                 tag: "h-4! px-1 text-[10px]",
                 tagClose: "size-2.5",
             },
             md: {
-                trigger: "h-input-md px-input-px-md text-[14px] leading-[1.5]",
+                trigger: "h-input-md px-input-px-md text-base",
                 triggerIconWrapper: "size-4",
-                tag: "h-5! px-1.5 text-[12px]",
+                tag: "h-5! px-1.5 text-sm",
                 tagClose: "size-3",
             },
             lg: {
-                trigger: "h-input-lg px-input-px-lg text-[16px] leading-[1.5]",
+                trigger: "h-input-lg px-input-px-lg text-lg",
                 triggerIconWrapper: "size-4",
-                tag: "h-6! px-2 text-[14px]",
+                tag: "h-6! px-2 text-base",
                 tagClose: "size-3.5",
             },
         },

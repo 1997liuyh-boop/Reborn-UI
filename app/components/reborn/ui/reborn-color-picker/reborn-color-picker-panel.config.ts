@@ -12,8 +12,9 @@ export default {
         alphaCursor: "absolute h-4 w-4 -mt-0.5 -ml-2 bg-white rounded-full shadow-md border border-gray-100 pointer-events-none",
         inputs: "space-y-2",
         formatToggles: "flex gap-1",
-        input: "w-full text-xs font-mono",
+        input: "w-full text-sm font-mono",
         presets: "pt-3 border-t border-gray-100 dark:border-gray-800",
+        // 预设分组标题：10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
         presetTitle: "text-[10px] text-gray-400 font-bold mb-2 uppercase tracking-tight",
         presetGrid: "grid grid-cols-10 gap-1.5",
         presetSwatch: "aspect-square ring-1 ring-black/5 hover:scale-110 transition-transform p-0!"

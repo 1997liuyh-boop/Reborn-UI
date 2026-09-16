@@ -56,7 +56,7 @@ const images = {
         <!-- 改圆角 + 内容层加底部渐变，保证文字在浅色图片上依然可读 -->
         <DirectionAwareHover
           :image-url="images.city"
-          class="rounded-ui-lg"
+          class="rounded-3xl"
           children-class="inset-x-0 bottom-0 bg-linear-to-t from-black/80 to-transparent p-4"
         >
           <h4 class="text-lg font-semibold">
@@ -96,7 +96,7 @@ const images = {
       >
         <DirectionAwareHover
           :image-url="images.food"
-          class="rounded-ui-lg"
+          class="rounded-3xl"
           children-class="inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/40 to-transparent p-4"
         >
           <h4 class="text-lg font-semibold">

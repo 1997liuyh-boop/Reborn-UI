@@ -31,7 +31,7 @@ withDefaults(defineProps<NotificationProps>(), {
         <div class="flex flex-row items-center text-lg font-medium whitespace-pre dark:text-white">
           <span class="text-sm sm:text-lg">{{ name }}</span>
           <span class="mx-1">·</span>
-          <span class="text-xs text-gray-500">{{ time }}</span>
+          <span class="text-sm text-gray-500">{{ time }}</span>
         </div>
         <p class="text-sm font-normal dark:text-white/60">{{ description }}</p>
       </div>

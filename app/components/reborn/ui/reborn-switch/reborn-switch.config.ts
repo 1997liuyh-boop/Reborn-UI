@@ -81,9 +81,9 @@ export default {
     type: {
       circle: {},
       round: {
-        track: "rounded-ui-2xs",
-        thumb: "rounded-ui-2xs",
-        wave: "rounded-ui-2xs",
+        track: "rounded-sm",
+        thumb: "rounded-sm",
+        wave: "rounded-sm",
       },
       line: {
         track: "overflow-visible",
@@ -149,10 +149,12 @@ export default {
     { type: "line" as (typeof type)[number], size: "sm" as (typeof size)[number], class: { track: "h-[8px]" } },
     { type: "line" as (typeof type)[number], size: "md" as (typeof size)[number], class: { track: "h-[12px]" } },
     { type: "line" as (typeof type)[number], size: "lg" as (typeof size)[number], class: { track: "h-[16px]" } },
-    // inline-prompt 文本字号随尺寸收缩（sm 轨道仅 16px 高）
+    // inline-prompt 文本字号随尺寸收缩（sm 轨道仅 16px 高）。
+    // 8px / 10px 低于 7 级字号令牌的下限（--text-sm 12px），只能写字面量；lg 档 12px 用 text-sm。
+    // 行高由基础槽的 leading-none 统一接管，令牌自带的 20px 行高在这里会撑破轨道。
     { size: "sm" as (typeof size)[number], class: { inlineActive: "text-[8px]", inlineInactive: "text-[8px]" } },
     { size: "md" as (typeof size)[number], class: { inlineActive: "text-[10px]", inlineInactive: "text-[10px]" } },
-    { size: "lg" as (typeof size)[number], class: { inlineActive: "text-[12px]", inlineInactive: "text-[12px]" } },
+    { size: "lg" as (typeof size)[number], class: { inlineActive: "text-sm", inlineInactive: "text-sm" } },
     { color: "primary" as (typeof color)[number], active: true, class: { activeLabel: "text-primary" } },
     { color: "secondary" as (typeof color)[number], active: true, class: { activeLabel: "text-secondary" } },
     { color: "success" as (typeof color)[number], active: true, class: { activeLabel: "text-success" } },

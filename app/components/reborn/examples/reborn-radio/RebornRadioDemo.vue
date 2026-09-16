@@ -235,16 +235,16 @@ const plans = [
           >
             <template #radio="{ checked }">
               <div
-                class="w-[140px] rounded-ui-xs border border-solid px-4 py-3 transition-colors"
+                class="w-[140px] rounded-md border border-solid px-4 py-3 transition-colors"
                 :class="checked ? 'border-primary bg-primary/5' : 'border-gray-3'"
               >
                 <div
-                  class="text-[14px] font-medium"
+                  class="text-base font-medium"
                   :class="checked ? 'text-primary' : 'text-gray-8'"
                 >
                   {{ plan.label }}
                 </div>
-                <div class="text-gray-5 mt-1 text-[12px]">{{ plan.desc }}</div>
+                <div class="text-gray-5 mt-1 text-sm">{{ plan.desc }}</div>
               </div>
             </template>
           </RebornRadio>

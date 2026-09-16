@@ -18,7 +18,7 @@
     "宽度默认 w-full 撑满父容器，组件自身不设固定宽度；需要固定宽度时通过 class（如 w-40）或 ui.wrapper 传入。",
     "variant=underlined 会强制压平圆角并隐藏按钮间的竖直分割线，此时传 shape 不会有效果。",
     "variant=borderless 平时没有描边，仅在表单校验失败时补一圈红色描边，否则错误态不可见。",
-    "改 web 端圆角时必须加 ! 提权（如 rounded-none!）：项目自定义的 rounded-ui-* 没有注册进 app/lib/utils.ts 的 tailwind-merge 冲突组，不提权时它会与 rounded-none 共存并由 CSS 源码顺序决定胜负，变体级覆盖会失效。uniapp 端用的是标准 rounded-* 类，不受此限。",
+    "源码里的 rounded-none! 带 ! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，没注册进 app/lib/utils.ts 的 tailwind-merge 冲突组，不提权时它会与 rounded-none 共存并由 CSS 源码顺序决定胜负。现在两端都用原生 rounded-*，tailwind-merge 能正常合并，覆盖圆角不需要再加 !。",
     "web 端配色背景一律使用 gray-1/gray-2 等灰阶 token（base.css 的 .dark 会整条翻转），不可写 bg-white；uniapp 端 theme.css 没有 .dark 代码块、灰阶不翻转，深色适配必须逐条写显式 dark: 变体。两端策略相反，互抄样式会出错。",
     "change-on-wheel 只在输入框已聚焦时接管滚轮，未聚焦时不影响页面滚动；这与 Element Plus 的默认行为不同，需要留意。",
     "change-on-wheel 在 uniapp 端是空实现：小程序与 App 没有鼠标滚轮事件，该属性仅为与 web 端同名同签名而保留，便于同一份业务代码跨端复用。",

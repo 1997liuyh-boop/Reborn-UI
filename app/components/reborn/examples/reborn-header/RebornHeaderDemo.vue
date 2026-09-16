@@ -59,7 +59,7 @@ const links = [
     <Playground v-model="state" :controls="controls" :code="headerCode" component-name="RebornHeader" title="交互演练场"
       description="在下方可滚动的宿主区域内滚动内容，即可观察吸顶行为；窄屏时右上角会出现侧边栏开关。">
       <!-- 宿主区域：仅描边不填充，模拟一个独立的滚动视口 -->
-      <div class="border-default rounded-ui-sm relative h-[420px] w-full overflow-y-auto border">
+      <div class="border-default rounded-lg relative h-[420px] w-full overflow-y-auto border">
         <RebornHeader :title="state.title" to="/" :toggle-side="state.toggleSide" :sticky="state.sticky">
           <!-- 中间导航：默认插槽 -->
           <nav class="flex items-center gap-8">
@@ -92,7 +92,7 @@ const links = [
                 </p>
                 <nav class="mt-4 flex flex-col gap-1">
                   <NuxtLink v-for="link in links" :key="link.label" :to="link.to"
-                    class="text-default hover:text-highlighted rounded-ui-sm px-3 py-2 text-base font-medium transition-colors"
+                    class="text-default hover:text-highlighted rounded-lg px-3 py-2 text-base font-medium transition-colors"
                     @click="close">
                     {{ link.label }}
                   </NuxtLink>
@@ -111,7 +111,7 @@ const links = [
           <p class="text-muted text-sm">
             向下滚动这块区域，{{ state.sticky ? "顶栏将保持吸顶" : "顶栏会随内容一起滚走" }}。
           </p>
-          <div v-for="i in 6" :key="i" class="border-default rounded-ui-sm h-32 shrink-0 border border-dashed" />
+          <div v-for="i in 6" :key="i" class="border-default rounded-lg h-32 shrink-0 border border-dashed" />
         </div>
       </div>
     </Playground>

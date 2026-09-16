@@ -72,7 +72,7 @@ export default {
     thumb:
       "group/thumb relative overflow-hidden transition-all duration-300",
     // 激活状态缩略图：边框，阴影效果
-    thumbActive: "border border-[#252626] rounded-ui-md",
+    thumbActive: "border border-[#252626] rounded-xl",
     // 未激活状态缩略图：透明度，悬停效果
     thumbInactive:
       "border-slate-200/80 opacity-70 hover:opacity-100 hover:border-slate-300 dark:border-white/10 dark:hover:border-white/20",
@@ -201,6 +201,8 @@ export default {
       // 按钮型：圆形按钮，显示数字
       button: {
         indicators: "border-none shadow-none p-1 dark:bg-transparent gap-2",
+        // 指示器是 size-5（20px）的圆点，序号要塞进圆内。
+        // 10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
         indicator: "flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer select-none size-5 text-[10px] text-white",
         indicatorActive: "text-white border-transparent",
         indicatorInactive: "bg-gray-2 ring-1 ring-gray-5 text-gray-5",

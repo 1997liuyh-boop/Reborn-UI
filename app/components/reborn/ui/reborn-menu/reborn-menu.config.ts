@@ -256,13 +256,13 @@ const theme = tv({
       "flex shrink-0 items-center justify-center transition-all duration-300 ease-in-out",
     subMenu: "relative",
     subMenuPopup:
-      "absolute z-50 overflow-visible border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-ui-xs",
+      "absolute z-50 overflow-visible border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md",
     // 浮层内条目间距 4px，与根级垂直菜单的 gap-y-1 对齐
     subMenuContent: "flex flex-col gap-y-1",
     menuItemGroup: "flex flex-col",
     // 分组内条目间距 4px，与根级垂直菜单及浮层内容的 gap-y-1 对齐
     menuItemGroupContent: "flex flex-col gap-y-1",
-    menuItemGroupTitle: "px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400",
+    menuItemGroupTitle: "px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-400",
     menuDivider: "my-1 list-none",
   },
   variants: {

@@ -85,8 +85,8 @@ export default {
     },
     /** 零宽触发器贴边：默认贴右外缘（侧边栏在左），reverseArrow 时贴左外缘（侧边栏在右） */
     zeroTriggerSide: {
-      right: { zeroTrigger: "-right-[36px] rounded-r-ui-2xs" },
-      left: { zeroTrigger: "-left-[36px] rounded-l-ui-2xs" },
+      right: { zeroTrigger: "-right-[36px] rounded-r-sm" },
+      left: { zeroTrigger: "-left-[36px] rounded-l-sm" },
     },
   },
   defaultVariants: {

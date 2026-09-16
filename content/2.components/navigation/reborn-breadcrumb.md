@@ -329,7 +329,7 @@ const droplist = [
 | `moreIcon`     | 省略号图标，默认 `size-4`。**仅在未填充 `more-icon` 插槽时渲染**，填充该插槽会替换掉图标，`ui.moreIcon` 随之失效。                                       |
 | `dropIcon`     | 下拉箭头图标，默认 `size-3.5 shrink-0 transition-transform duration-200`。**仅该条目有下拉菜单时渲染。**                                                |
 | `droplist`     | 下拉面板的内容区，默认 `min-w-32 max-h-60 overflow-y-auto px-[4px] py-[6px] space-y-[4px] scrollbar-hide`。面板宽度、内边距、最大高度改这里。**内边距必须留在这一层**：外层浮层壳的展开动画走 `height: 0 → scrollHeight`，内边距放到壳上会在收起时露出一条残留色块。浮层外壳（描边、底色、阴影、圆角）由 `RebornSelectTrigger` 提供，需要改用 `dropdown-props` 的 `ui.dropdown`。 |
-| `droplistItem` | 下拉菜单项，默认 `flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-ui-2xs px-[6px] py-[4px] text-base leading-[1.5] text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50`。**字号必须自带**：浮层默认传送到 body，拿不到面包屑根节点的 `text-sm`。**颜色只用灰阶 token**（暗色由主题整条翻转），不要写 `dark:` 前缀。填充 `droplist` 插槽时该键仍生效——插槽里的 `RebornDropdownItem` 会自动套用这份样式。 |
+| `droplistItem` | 下拉菜单项，默认 `flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-sm px-[6px] py-[4px] text-base leading-[1.5] text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50`。**字号必须自带**：浮层默认传送到 body，拿不到面包屑根节点的 `text-sm`。**颜色只用灰阶 token**（暗色由主题整条翻转），不要写 `dark:` 前缀。填充 `droplist` 插槽时该键仍生效——插槽里的 `RebornDropdownItem` 会自动套用这份样式。 |
 | `droplistDivider` | 下拉菜单项之间的分隔线，默认 `my-[4px] border-t border-gray-3`。**仅 `droplist` 插槽里的 `RebornDropdownItem` 带 `divided` 时渲染。**                 |
 
 :::
@@ -345,7 +345,7 @@ const droplist = [
 | `more`         | 折叠省略号的容器。**仅 `max-count` 触发折叠时渲染**，默认 `text-gray-8 flex flex-row items-center`（与条目同色）。                                          |
 | `moreIcon`     | 省略号图标，默认 `w-[32rpx] h-[32rpx]`。**仅在未填充 `more-icon` 插槽时渲染**，填充该插槽会使其失效。                                                      |
 | `dropIcon`     | 下拉箭头图标，默认 `w-[28rpx] h-[28rpx] shrink-0 transition-transform duration-200`（与 Web 端 `size-3.5` 对齐）。**仅该条目有下拉菜单时渲染。**            |
-| `droplist`     | 下拉面板（组件内置的绝对定位面板），默认 `absolute left-0 top-full z-[999] mt-[8rpx] min-w-[200rpx] rounded-ui-base bg-white dark:bg-gray-8 border border-gray-2 dark:border-gray-7 shadow-lg py-[8rpx]`。**仅面板展开时渲染**，宽度、层级、底色改这里。 |
+| `droplist`     | 下拉面板（组件内置的绝对定位面板），默认 `absolute left-0 top-full z-[999] mt-[8rpx] min-w-[200rpx] rounded-2xl bg-white dark:bg-gray-8 border border-gray-2 dark:border-gray-7 shadow-lg py-[8rpx]`。**仅面板展开时渲染**，宽度、层级、底色改这里。 |
 | `droplistItem` | 下拉菜单项，默认 `px-[24rpx] py-[16rpx] text-28 leading-normal text-gray-7 dark:text-gray-2 active:bg-gray-2 dark:active:bg-gray-7`（配色与 Web 端一致，hover 换为按压反馈）。**仅在未填充 `droplist` 插槽时渲染**，填充该插槽会使其失效。 |
 | `droplistMask` | 面板展开时铺满全屏的点击遮罩（用于点击外部收起），默认 `fixed inset-0 z-[998]`。**仅面板展开时渲染**，层级要与 `droplist` 配套调整。**该键仅 UniApp 端存在**（Web 端的收起由浮层容器接管）。 |
 

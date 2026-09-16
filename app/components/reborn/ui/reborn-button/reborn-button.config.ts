@@ -40,18 +40,20 @@ export default {
     },
     /**
      * 三档尺寸：高度 24 / 32 / 40，水平内边距统一 12px（px-3）；text 变体另见 compoundVariants。
-     * 直角圆角随尺寸取设计令牌：sm → rounded-ui-2xs(4px) / md → rounded-ui-xs(6px) / lg → rounded-ui-sm(8px)；
+     * 行高由字号令牌自带（12/20、14/22、16/24），不再叠 leading-：按钮是定高盒子 + 单行居中，
+     * 行高只影响行盒高度、不影响按钮外形。
+     * 直角圆角随尺寸取设计令牌：sm → rounded-sm(4px) / md → rounded-md(6px) / lg → rounded-lg(8px)；
      * round / circle / text 变体在 variant 轴覆盖此圆角（本轴刻意置于 variant 之前，保证后者在 tailwind-merge 中胜出）。
      */
     size: {
       sm: {
-        base: "h-button-sm text-sm leading-[1.5] gap-1.5 px-3 rounded-ui-2xs",
+        base: "h-button-sm text-sm gap-1.5 px-3 rounded-sm",
       },
       md: {
-        base: "h-button-md text-base leading-[1.5] px-3 rounded-ui-xs",
+        base: "h-button-md text-base px-3 rounded-md",
       },
       lg: {
-        base: "h-button-lg text-lg leading-[1.5] px-3 rounded-ui-sm",
+        base: "h-button-lg text-lg px-3 rounded-lg",
       },
     },
     variant: {
@@ -62,8 +64,9 @@ export default {
       // 文字按钮：无背景/边框，高度跟随文字（见 compoundVariants 覆盖 size 的固定高度）
       text: "",
       // 胶囊按钮：形状类，着色复合规则与 filled 一致（见 compoundVariants）
-      // 圆角带 ! 强制：size 轴的 rounded-ui-* 是自定义令牌，tailwind-merge 不会将其与
-      // rounded-full 判为冲突组而合并掉，且生成 CSS 顺序靠后，不加 ! 会反向覆盖形状圆角
+      // ! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在 tailwind-merge 的
+      // border-radius 冲突组里，两个圆角类会共存、由 CSS 源序决定胜负。现在 size 轴
+      // 已改回原生 rounded-*，合并正常，! 只剩提权作用；保留是为了不动既有覆盖顺序。
       round: "!rounded-full",
       // 圆形纯图标按钮：宽高相等、内边距归零，着色复合规则与 filled 一致（见 compoundVariants）
       circle: "!aspect-square !w-auto !p-0 has-[>svg]:!p-0 !rounded-full",
@@ -351,7 +354,7 @@ export default {
 
     // Text Variants：无背景/边框，高度与水平内边距跟随文字
     {
-      // text 无背景，不参与尺寸圆角令牌：显式归零，避免继承 size 的 rounded-ui-*
+      // text 无背景，不参与尺寸圆角：显式归零，避免继承 size 轴的 rounded-*
       variant: "text" as (typeof variant)[number],
       class: "rounded-none",
     },

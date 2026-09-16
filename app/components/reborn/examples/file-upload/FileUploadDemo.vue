@@ -4,7 +4,7 @@
     description="虚线框是组件自己的拖放区，不是脚手架。"
   >
     <DemoBlock layout="stack">
-      <FileUpload class="border-default rounded-ui-md border border-dashed">
+      <FileUpload class="border-default rounded-xl border border-dashed">
         <FileUploadGrid />
       </FileUpload>
     </DemoBlock>

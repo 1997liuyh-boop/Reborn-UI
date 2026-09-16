@@ -44,7 +44,7 @@ const items = [
       >
         <template #header>
           <div class="flex size-full animate-pulse space-x-4">
-            <div class="bg-elevated flex size-full flex-1 rounded-ui-sm" />
+            <div class="bg-elevated flex size-full flex-1 rounded-lg" />
           </div>
         </template>
 

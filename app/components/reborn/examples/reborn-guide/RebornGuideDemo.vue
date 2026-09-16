@@ -70,7 +70,7 @@ function restartGuide() {
 }
 
 /** 功能卡片本身是引导的落点，用描边盒标识，不填充 */
-const targetClass = "border-default rounded-ui-md border border-dashed p-6";
+const targetClass = "border-default rounded-xl border border-dashed p-6";
 
 /** 演练场控制面板配置 */
 const controls = [

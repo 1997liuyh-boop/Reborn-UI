@@ -38,7 +38,7 @@ function getInputValues(value: HslaColor | RgbaColor): number[] {
 
 function getInputClass(index: number, totalInputs: number): string {
   const baseClass =
-    "flex-1 w-0 h-8 px-2 py-1 text-xs border border-input bg-background text-center overflow-hidden focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0";
+    "flex-1 w-0 h-8 px-2 py-1 text-sm border border-input bg-background text-center overflow-hidden focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0";
 
   const isFirst = index === 0;
   const isLast = index === totalInputs - 1;

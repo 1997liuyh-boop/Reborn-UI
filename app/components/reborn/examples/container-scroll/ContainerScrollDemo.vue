@@ -17,7 +17,7 @@
         <template #card>
           <img
             src="https://cdn.reborn-ui.com/images/linear.webp"
-            class="mx-auto h-full rounded-ui-lg object-cover object-left-top"
+            class="mx-auto h-full rounded-3xl object-cover object-left-top"
             alt="滚动动画示意"
             height="720"
             width="1400"

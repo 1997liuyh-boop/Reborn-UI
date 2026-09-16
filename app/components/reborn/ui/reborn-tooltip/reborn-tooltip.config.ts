@@ -17,7 +17,7 @@ export const rebornTooltip = tv({
     trigger: 'inline-flex max-w-full',
     contentWrapper: 'fixed left-0 top-0 z-[9999] pointer-events-none flex',
     content:
-      'relative inline-flex max-w-60 items-center p-2 text-base leading-[1.5] rounded-ui-sm whitespace-pre-line break-words bg-gray-10 text-gray-1',
+      'relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line break-words bg-gray-10 text-gray-1',
     arrow: 'absolute text-gray-10',
   },
   variants: {

@@ -20,12 +20,21 @@ export default {
       error: { base: 'bg-error ring-error' },
       neutral: { base: 'bg-neutral ring-neutral' }
     },
+    /**
+     * 角标高度 10~18px，字号必须小于高度才塞得进圆点。
+     * xs(10px) / sm(12px) 装不下最小字号令牌（--text-sm 12px），这两档按纯圆点处理：
+     * 组件不渲染 label，传了 text 也不显示，只留圆点本身做提示，故此处不给 label 类。
+     * md/lg 的 8/10px 仍低于令牌下限，无对应档位，只能写字面量；xl 的 12px 落在令牌内，用 text-sm。
+     * 行高：md/lg 的字面量字号不带行高，继承 root 的 leading-none；xl 的 text-sm 自带 20px 行高，
+     * 且 --tw-leading 注册为 inherits:false，root 的 leading-none 压不到它——但 12px 字形在 20px
+     * 行盒里居中，实际仍落在 18px 圆点内，溢出的只是不可见的行盒。
+     */
     size: {
-      xs: { base: 'h-[10px] min-w-[10px]', label: 'text-[4px]' },
-      sm: { base: 'h-[12px] min-w-[12px]', label: 'text-[6px]' },
+      xs: { base: 'h-[10px] min-w-[10px]' },
+      sm: { base: 'h-[12px] min-w-[12px]' },
       md: { base: 'h-[14px] min-w-[14px]', label: 'text-[8px]' },
       lg: { base: 'h-[16px] min-w-[16px]', label: 'text-[10px]' },
-      xl: { base: 'h-[18px] min-w-[18px]', label: 'text-[12px]' }
+      xl: { base: 'h-[18px] min-w-[18px]', label: 'text-sm' }
     },
     position: {
       'top-right': { base: 'top-0 right-0' },

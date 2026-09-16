@@ -76,7 +76,7 @@ UniApp 端是**固定形态**的移动端搜索框，`v-model` 绑定字符串�
 | `placeholder` | `string` | `"请输入搜索内容"` | 占位文本。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"sm"` | 尺寸大小；高度由内部 `RebornInput` 承担，本组件另按尺寸给出输入框区的水平内边距。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 主题颜色，作用于聚焦描边（取对应色族 5 阶）。 |
-| `shape` | `"circle" \| "square"` | `"circle"` | 外形轮廓，与 `RebornInput` 的同名 API 对齐：circle 胶囊 / square 统一取 `rounded-ui-xs` 令牌（不分尺寸）；底色卡片圆角随之与输入框对齐，下拉面板只保留下半圆角。 |
+| `shape` | `"circle" \| "square"` | `"circle"` | 外形轮廓，与 `RebornInput` 的同名 API 对齐：circle 胶囊 / square 统一取 `rounded-md` 令牌（不分尺寸）；底色卡片圆角随之与输入框对齐，下拉面板只保留下半圆角。 |
 | `showDropdown` | `boolean` | `true` | 聚焦时是否展开下拉面板（面板内容完全由 `dropdown` 插槽提供）；置为 `false` 时会强制收起已展开的面板。 |
 | `saveHistory` | `(history: string[]) => void` | `undefined` | 自定义保存历史记录的方法，不传时写入 `localStorage`。 |
 | `removeHistory` | `() => void` | `undefined` | 自定义清空历史记录的方法，不传时清除 `localStorage`。 |
@@ -95,7 +95,7 @@ UniApp 端独有、Web 端没有的 props：`mode`、`skuAttributes`、`placehol
 | `placeholder` | `string` | `"请输入搜索内容"` | 占位文本。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"sm"` | 尺寸大小；仅影响转发给内部输入框的图标字号与图标间距（`md` 与 `lg` 取值相同），高度由 `RebornInput` 的尺寸体系承担。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 主题颜色；仅作用于「原/译」切换卡片的激活态边框与文字色。 |
-| `rounded` | `boolean` | `true` | 是否使用圆角（药丸形）外观，映射为内部输入框的 `shape`（`circle` / `square`）。实际圆角受内部 `!rounded-ui-base` 覆盖影响，见上方「圆角与外观」。 |
+| `rounded` | `boolean` | `true` | 是否使用圆角（药丸形）外观，映射为内部输入框的 `shape`（`circle` / `square`）。实际圆角受内部 `!rounded-2xl` 覆盖影响，见上方「圆角与外观」。 |
 | `border` | `boolean` | `false` | 是否显示输入框边框，映射为内部输入框的 `variant`（`outlined` / `filled`）。 |
 | `clearable` | `boolean` | `true` | 是否显示一键清空按钮。 |
 | `disabled` | `boolean` | `false` | 是否禁用输入。 |
@@ -220,7 +220,7 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 | 控件行高度         | `24px`                 | `32px`     | `40px`     | 取 `RebornInput` 的 `--height-input-sm/md/lg`               |
 | 内置图标字号       | `text-xl`              | `text-2xl` | `text-2xl` | 转发给输入框的图标覆盖                                      |
 | 内置图标间距       | `4px`                  | `6px`      | `6px`      | 输入框 `iconBox` 的 gap 覆盖                                |
-| `square` 圆角      | `rounded-ui-xs`（6px） | 同 sm      | 同 sm      | 不分尺寸，与 `RebornInput` 的 square 对齐                   |
+| `square` 圆角      | `rounded-md`（6px） | 同 sm      | 同 sm      | 不分尺寸，与 `RebornInput` 的 square 对齐                   |
 
 底色卡片外扩 6px（`-top-[6px]` / `-left-[6px]` / `w-[calc(100%+12px)]`），下拉面板同宽外扩；面板高度按内容 `scrollHeight` 动态计算，控件行高度由 `ResizeObserver` 实时测量。
 :::
@@ -231,14 +231,14 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 | 项目            | 取值            | 说明                                                   |
 | :-------------- | :-------------- | :----------------------------------------------------- |
 | 「原/译」切换区 | `64rpx × 64rpx` | 切换按钮的点击区                                       |
-| 切换卡片        | `32rpx × 32rpx` | 单张卡片，字号 `18rpx`、圆角 `rounded-ui-sm`、2px 描边 |
+| 切换卡片        | `32rpx × 32rpx` | 单张卡片，字号 `18rpx`、圆角 `rounded-lg`、2px 描边 |
 | 卡片位移动画    | `300ms`         | 切换时两张卡片互换层级与位移                           |
 | 分隔线          | `1px` 宽 / 半高 | `bg-gray-4`                                            |
 | 相机图标        | `48rpx`         | 默认插槽未覆盖时的 `i-lucide-camera` 字号              |
 | 前置放大镜      | `38 × 38`       | 内置远程图片，`mode="widthFix"`                        |
 | 站点选择器图标  | `30px` / `14px` | 站点图标与展开箭头，均为内置远程图片                   |
 
-`size` 只影响转发给输入框的图标字号（sm 较小、md 与 lg 相同）与图标间距；输入框 `wrapper` 被内部固定为 `bg-gray-3/80` + `!rounded-ui-base`。
+`size` 只影响转发给输入框的图标字号（sm 较小、md 与 lg 相同）与图标间距；输入框 `wrapper` 被内部固定为 `bg-gray-3/80` + `!rounded-2xl`。
 :::
 
 ::
@@ -254,7 +254,7 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 | 可用插槽          | `leading` / `trailing` / `input-leading` / `input-trailing` / `dropdown`（无默认插槽） | 仅默认插槽                                                     |
 | 下拉面板          | 已实现，内容由 `dropdown` 插槽提供                                                     | 未实现（`showDropdown` 声明保留）                              |
 | 外形属性          | `shape`（circle / square）                                                             | `rounded` / `border` 两个布尔量映射到输入框                    |
-| 圆角实际来源      | `shape` 变体                                                                           | 内部 `!rounded-ui-base` 覆盖（`rounded` 不改观感）             |
+| 圆角实际来源      | `shape` 变体                                                                           | 内部 `!rounded-2xl` 覆盖（`rounded` 不改观感）             |
 | 边框归属          | 外层边框在控件行，内部输入框恒 `borderless`                                            | 边框由输入框自身的 `variant` 承担                              |
 | 聚焦高亮          | 由 `focus` / `blur` 维护，分「点亮控件行」与「输入框区 `::before` 另起一圈」两种画法   | 交由 `RebornInput` 自身的聚焦样式                              |
 | `search` 触发方式 | 回车、`trailing` 作用域 `search()`、选中历史                                           | 键盘确认键（`confirm`）                                        |
@@ -276,7 +276,7 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 - **Web 端激活高亮只认输入框的焦点，且分两种画法**：无外置插槽时聚焦换掉控件行的边框色；有外置插槽时控件行恒为 `gray-4`，改在输入框区内用 `::before` 覆盖层另起一圈——两种情况下点中 `leading` 里的 `RebornSelect`、`trailing` 里的按钮都不会出现描边。
 - **Web 端插槽分两族、决定内容落在输入框内还是外**：`input-leading` / `input-trailing` 转发到 `RebornInput` 的 `prefix` / `suffix`，内容贴着输入文本排布；`leading` / `trailing` 与输入框区并列排在控件行里，间距按尺寸取 8px / 12px。
 - **UniApp 端有 4 个声明保留的 props**：`mode`、`showDropdown`、`skuAttributes`、`removeHistory` 当前实现均未消费，传值不会有任何效果；`selectSku` 事件同样声明保留、尚未触发。请不要依赖它们。
-- **UniApp 端的圆角不随 `rounded` 变化**：内部对输入框 `wrapper` 追加了 `!rounded-ui-base`，优先级高于 `rounded` 映射出的 `shape` 圆角。
+- **UniApp 端的圆角不随 `rounded` 变化**：内部对输入框 `wrapper` 追加了 `!rounded-2xl`，优先级高于 `rounded` 映射出的 `shape` 圆角。
 - 下拉面板与 SKU 组合仅 Web 端可用；UniApp 端的 `shape` / `ui` / `inputUi` / `inputAttrs` 属性不存在。
 - 历史记录 key 两端一致（`reborn-search-history`，最多保留 10 条）；即便面板不展示历史，`search` 仍会把非空关键字写入历史。
 - Web 端内部只组合 `RebornInput`，可通过 `inputUi` / `inputAttrs` 透传定制；选择器等内容一律经 `leading` 插槽由使用方组合。

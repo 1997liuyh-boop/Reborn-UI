@@ -210,7 +210,7 @@ function resetTask() {
     <DemoSection title="任务组合与作用域插槽" description="业务推进进度，插槽读取 percent/status；默认插槽优先于 format 和状态图标。">
       <DemoBlock layout="stack" class="gap-6">
         <RebornProgress :percent="taskPercent" :status="taskPercent === 100 ? 'success' : 'default'" aria-label="文件上传进度">
-          <template #default="{ percent, status }"><span class="text-[12px]">{{ status === 'success' ? '上传完成' : `已上传 ${percent}%` }}</span></template>
+          <template #default="{ percent, status }"><span class="text-sm">{{ status === 'success' ? '上传完成' : `已上传 ${percent}%` }}</span></template>
         </RebornProgress>
         <div class="flex flex-wrap gap-3">
           <RebornButton size="sm" :disabled="taskPercent === 100" @click="advanceTask">推进 10%</RebornButton>

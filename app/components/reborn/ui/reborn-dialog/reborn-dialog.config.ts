@@ -18,15 +18,15 @@ export default {
     panelWrapper: "flex w-full justify-center pointer-events-none",
     /** 弹窗面板：统一内边距 py-20/px-24，header / body / footer 三段之间由 gap-20 分隔 */
     panel:
-      "pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-ui-md border border-black/5 bg-white py-[20px] px-[24px] text-gray-900 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
+      "pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-white py-[20px] px-[24px] text-gray-900 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
     /** 头部：无分隔线，内边距交由面板统一承担 */
     header: "flex items-start justify-between gap-4",
     /** 头部文字区：标题与描述之间间隔 8px */
     headerContent: "flex min-w-0 flex-1 flex-col gap-[8px]",
-    /** 标题：16px / 500 字重 / gray-10（令牌语义为「title 标题」） */
-    title: "text-[16px] font-medium leading-[1.35] text-gray-10",
-    /** 描述：14px / gray-8（令牌语义为「secondary 辅助文字」） */
-    description: "text-[14px] leading-[1.6] text-gray-8",
+    /** 标题：text-lg（16px / 24px 行高）、500 字重、gray-10。改动须与 index.ts 里 confirm 的标题节点同步 */
+    title: "text-lg font-medium text-gray-10",
+    /** 描述：text-base（14px / 22px 行高）、gray-8 */
+    description: "text-base text-gray-8",
     /** 关闭图标：固定 18px，不随父级字号浮动 */
     close: "size-[18px] shrink-0 cursor-pointer text-gray-5 transition-colors hover:text-gray-7",
     body: "",

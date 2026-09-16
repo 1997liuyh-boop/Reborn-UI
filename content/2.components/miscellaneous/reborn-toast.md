@@ -201,7 +201,7 @@ message.config({
 | 单条高度          | 40px                               | 80rpx                                |
 | 水平内边距        | 12px                               | 24rpx                                |
 | 字号 / 行高       | 14px / 150%                        | 28rpx / 150%                         |
-| 圆角              | `rounded-ui-sm`（8px）             | `rounded-ui-sm`                      |
+| 圆角              | `rounded-lg`（8px）             | `rounded-lg`                      |
 | 图标与文字间距    | 8px                                | 16rpx                                |
 | 多条消息间距      | 8px                                | 16rpx                                |
 | 投影              | `0 2px 12px rgba(0,0,0,.15)`       | `0 4rpx 24rpx rgba(0,0,0,.15)`       |

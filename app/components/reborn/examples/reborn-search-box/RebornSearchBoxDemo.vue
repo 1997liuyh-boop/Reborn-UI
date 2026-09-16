@@ -186,7 +186,7 @@ const skuAttributes = ref<SkuOption[]>([
             <!-- 贴边色块需自带与外形一致的端部圆角，否则会被控件行的 overflow-hidden 裁出弧形缺口 -->
             <div
               class="bg-gray-2 text-gray-8 text-md px-[12px] h-full border-r border-r-gray-4 flex items-center justify-center"
-              :class="state.shape === 'circle' ? 'rounded-l-full pl-[16px]' : 'rounded-l-ui-xs'">
+              :class="state.shape === 'circle' ? 'rounded-l-full pl-[16px]' : 'rounded-l-md'">
               http://
             </div>
           </template>
@@ -203,7 +203,7 @@ const skuAttributes = ref<SkuOption[]>([
             <!-- 同 leading：贴边色块自带端部圆角，避免被胶囊外形裁出弧形缺口 -->
             <div
               class="text-md bg-brand-6 text-white px-[12px] flex items-center justify-center h-full border-l border-l-brand-5"
-              :class="state.shape === 'circle' ? 'rounded-r-full pr-[16px]' : 'rounded-r-ui-xs'">
+              :class="state.shape === 'circle' ? 'rounded-r-full pr-[16px]' : 'rounded-r-md'">
               <Icon name="lucide:search" />
             </div>
           </template>
@@ -235,7 +235,7 @@ const skuAttributes = ref<SkuOption[]>([
               </div>
               <div class="flex flex-col">
                 <div v-for="item in recommendKeywords" :key="item"
-                  class="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 rounded-ui-sm transition-colors text-base text-gray-8"
+                  class="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 rounded-lg transition-colors text-base text-gray-8"
                   @click="selectRecommend(item)">
                   <Icon name="lucide:trending-up" class="size-4 text-gray-4 shrink-0" />
                   <span>{{ item }}</span>
@@ -305,7 +305,7 @@ const skuAttributes = ref<SkuOption[]>([
 
     <DemoSection class="relative z-20" title="方形圆角与属性透传">
       <template #description>
-        <code>shape="square"</code> 统一取 <code>rounded-ui-xs</code> 令牌（不分尺寸），底色卡片上半圆角与输入框对齐、面板只保留下半圆角；
+        <code>shape="square"</code> 统一取 <code>rounded-md</code> 令牌（不分尺寸），底色卡片上半圆角与输入框对齐、面板只保留下半圆角；
         <code>input-attrs</code> 会 v-bind 透传给内部 <code>RebornInput</code>（显式 prop 优先）。
       </template>
       <DemoBlock layout="stack">
@@ -323,7 +323,7 @@ const skuAttributes = ref<SkuOption[]>([
               </div>
               <div class="flex flex-col">
                 <div v-for="item in recommendKeywords" :key="item"
-                  class="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 rounded-ui-sm transition-colors text-base text-gray-8"
+                  class="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-gray-1 rounded-lg transition-colors text-base text-gray-8"
                   @click="selectRecommend(item)">
                   <Icon name="lucide:trending-up" class="size-4 text-gray-4 shrink-0" />
                   <span>{{ item }}</span>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 const radiusList = [
-    { name: '24px', variable: 'rounded-tl-ui-lg', value: '24px' },
-    { name: '16px', variable: 'rounded-tl-ui-base', value: '16px' },
-    { name: '12px', variable: 'rounded-tl-ui-md', value: '12px' },
-    { name: '8px', variable: 'rounded-tl-ui-sm', value: '8px' },
-    { name: '6px', variable: 'rounded-tl-ui-xs', value: '6px' },
-    { name: '4px', variable: 'rounded-tl-ui-2xs', value: '4px' },
+    { name: '24px', variable: 'rounded-tl-3xl', value: '24px' },
+    { name: '16px', variable: 'rounded-tl-2xl', value: '16px' },
+    { name: '12px', variable: 'rounded-tl-xl', value: '12px' },
+    { name: '8px', variable: 'rounded-tl-lg', value: '8px' },
+    { name: '6px', variable: 'rounded-tl-md', value: '6px' },
+    { name: '4px', variable: 'rounded-tl-sm', value: '4px' },
 ]
 </script>
 
@@ -14,7 +14,7 @@ const radiusList = [
         <template #component>
             <div class="flex gap-4">
                 <div
-                    class="h-[220px] w-[220px] bg-red-5 rounded-ui-base flex flex-col items-center justify-between p-1 text-xs text-white">
+                    class="h-[220px] w-[220px] bg-red-5 rounded-2xl flex flex-col items-center justify-between p-1 text-xs text-white">
                     <div>Border-Radius</div>
                     <div>16px（常规）</div>
                 </div>

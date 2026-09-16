@@ -47,7 +47,7 @@ function handleChange(newList: { name: string }[]) {
         >
           <template #item="{ item }">
             <div
-              class="rounded-ui-sm flex h-16 items-center px-4 text-white"
+              class="rounded-lg flex h-16 items-center px-4 text-white"
               :class="item.color"
             >
               {{ item.name }}
@@ -75,7 +75,7 @@ function handleChange(newList: { name: string }[]) {
         >
           <template #item="{ item }">
             <div
-              class="rounded-ui-sm flex h-16 w-16 items-center justify-center text-white"
+              class="rounded-lg flex h-16 w-16 items-center justify-center text-white"
               :class="item.color"
             >
               {{ item.name }}
@@ -97,7 +97,7 @@ function handleChange(newList: { name: string }[]) {
         >
           <template #item="{ item }">
             <div
-              class="rounded-ui-sm flex h-16 items-center px-4 text-white"
+              class="rounded-lg flex h-16 items-center px-4 text-white"
               :class="item.color"
             >
               {{ item.name }}

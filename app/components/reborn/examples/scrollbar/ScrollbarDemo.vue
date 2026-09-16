@@ -23,7 +23,7 @@ interface ScrollbarExposed {
  * 滚动容器本身就是被演示的对象，按示例规范它是画布内唯一允许的那层浅填充；
  * 该层内部不得再出现任何填充盒，内容一律靠分隔线与留白区分。
  */
-const panelClass = 'bg-elevated rounded-ui-base'
+const panelClass = 'bg-elevated rounded-2xl'
 
 // ============ Playground 配置项 ============
 
@@ -37,9 +37,9 @@ const sizeOptions = [
 /** 容器圆角档位，用于验证轨道两端的圆角安全内缩 */
 const radiusOptions = [
   { label: '直角 rounded-none', value: 'rounded-none' },
-  { label: '小圆角 8px', value: 'rounded-ui-sm' },
-  { label: '中圆角 16px', value: 'rounded-ui-base' },
-  { label: '大圆角 24px', value: 'rounded-ui-lg' },
+  { label: '小圆角 8px', value: 'rounded-lg' },
+  { label: '中圆角 16px', value: 'rounded-2xl' },
+  { label: '大圆角 24px', value: 'rounded-3xl' },
 ]
 
 /** 内缩策略：auto 自动推算，其余为固定像素值 */
@@ -51,7 +51,7 @@ const insetOptions = [
 
 const defaultState = {
   size: '6',
-  radius: 'rounded-ui-base',
+  radius: 'rounded-2xl',
   insetMode: 'auto',
   track: false,
   thumbColor: '#71717a',
@@ -80,7 +80,7 @@ const controls = [
     title: '外观配置',
     children: [
       { label: '滚动条尺寸', key: 'size', component: 'select' as const, defaultValue: '6', props: { options: sizeOptions } },
-      { label: '容器圆角', key: 'radius', component: 'select' as const, defaultValue: 'rounded-ui-base', props: { options: radiusOptions } },
+      { label: '容器圆角', key: 'radius', component: 'select' as const, defaultValue: 'rounded-2xl', props: { options: radiusOptions } },
       { label: '圆角自适应 inset', key: 'insetMode', component: 'select' as const, defaultValue: 'auto', props: { options: insetOptions } },
       { label: '显示轨道 track', key: 'track', component: 'checkbox' as const, defaultValue: false },
     ],
@@ -431,7 +431,7 @@ onBeforeUnmount(() => {
           <template #label>
             auto · 24px 圆角 · <code>:inset="auto"</code>
           </template>
-          <RebornScrollbar ref="insetAutoRef" always :horizontal="false" class="bg-elevated rounded-ui-lg h-48">
+          <RebornScrollbar ref="insetAutoRef" always :horizontal="false" class="bg-elevated rounded-3xl h-48">
             <ol class="px-5 py-3">
               <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
                 {{ item.version }} · {{ item.text }}
@@ -445,7 +445,7 @@ onBeforeUnmount(() => {
             关闭内缩 · <code>:inset="0"</code>
           </template>
           <RebornScrollbar ref="insetOffRef" :inset="0" always :horizontal="false"
-            class="bg-elevated rounded-ui-lg h-48">
+            class="bg-elevated rounded-3xl h-48">
             <ol class="px-5 py-3">
               <li v-for="item in releases" :key="item.version" class="text-muted py-1.5 text-xs">
                 {{ item.version }} · {{ item.text }}
@@ -621,7 +621,7 @@ onBeforeUnmount(() => {
               <div class="flex h-full items-center gap-3 p-4">
                 <!-- 轨道卡片只描边不填充，避免在演示容器内再叠一层表面 -->
                 <div v-for="rail in rails" :key="rail.index"
-                  class="border-default rounded-ui-sm flex h-full w-52 shrink-0 flex-col justify-between border p-4">
+                  class="border-default rounded-lg flex h-full w-52 shrink-0 flex-col justify-between border p-4">
                   <span class="text-dimmed font-mono text-xs">{{ rail.title }}</span>
                   <div class="flex flex-col gap-1">
                     <span class="text-default text-sm font-medium">{{ rail.desc }}</span>

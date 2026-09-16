@@ -194,7 +194,7 @@ const actions = [
                 <div class="flex items-start justify-between gap-3">
                   <img
                     :src="profile.avatar"
-                    class="rounded-ui-md size-16 object-cover"
+                    class="rounded-xl size-16 object-cover"
                   >
                   <div class="flex gap-2">
                     <RebornButton
@@ -259,7 +259,7 @@ const actions = [
                     v-for="c in colors"
                     :key="c"
                     type="button"
-                    class="rounded-ui-2xs size-8 transition-transform hover:scale-110 active:scale-90"
+                    class="rounded-sm size-8 transition-transform hover:scale-110 active:scale-90"
                     :class="{ 'ring-primary ring-2 ring-offset-2': selectedColor === c }"
                     :style="{ backgroundColor: c }"
                     @click="selectedColor = c"
@@ -305,7 +305,7 @@ const actions = [
                     v-for="action in actions"
                     :key="action.label"
                     type="button"
-                    class="rounded-ui-2xs group hover:bg-primary/5 flex w-full items-center gap-3 px-2 py-2 text-left text-sm transition-colors"
+                    class="rounded-sm group hover:bg-primary/5 flex w-full items-center gap-3 px-2 py-2 text-left text-sm transition-colors"
                   >
                     <Icon
                       :name="action.icon"
@@ -316,7 +316,7 @@ const actions = [
                 </div>
                 <button
                   type="button"
-                  class="rounded-ui-2xs text-dimmed hover:bg-primary/5 mt-1 flex w-full items-center gap-3 px-2 py-2 text-left text-sm transition-colors"
+                  class="rounded-sm text-dimmed hover:bg-primary/5 mt-1 flex w-full items-center gap-3 px-2 py-2 text-left text-sm transition-colors"
                 >
                   <Icon
                     name="lucide:info"

@@ -12,7 +12,7 @@ export default {
     dropdown: "!w-auto !overflow-visible !border-transparent !bg-transparent !shadow-none p-0",
     panel: "flex w-max items-start gap-2 bg-transparent p-1",
     column:
-      "min-w-[160px] shrink-0 overflow-y-auto rounded-ui-md border border-gray-2 bg-white py-1 min-h-[280px] shadow-lg",
+      "min-w-[160px] shrink-0 overflow-y-auto rounded-xl border border-gray-2 bg-white py-1 min-h-[280px] shadow-lg",
     option:
       "relative flex items-center gap-2 px-3 py-2 text-base text-gray-900 cursor-pointer transition-colors hover:bg-gray-1",
     optionActive: "font-medium",
@@ -20,7 +20,7 @@ export default {
     optionLabel: "flex-1 truncate",
     optionIcon: "shrink-0 text-gray-5",
     empty:
-      "min-w-[160px] rounded-ui-md border border-gray-2 bg-white px-4 py-6 text-base text-gray-5 shadow-lg",
+      "min-w-[160px] rounded-xl border border-gray-2 bg-white px-4 py-6 text-base text-gray-5 shadow-lg",
   },
   variants: {
     size: {

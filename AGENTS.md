@@ -87,6 +87,53 @@ pnpm kb:check          # 提交前自检：schema / 集合一致性 / overrides 
 3. props/events/slots 以知识库为准（源码抽取），示例见 `examples` 字段。
 4. 涉及尺寸的样式优先使用 `rpx` 单位；组件代码使用 `defineModel` 与接口式 `defineProps`；所有注释必须中文。
 
+## 样式令牌规范
+
+### 为什么会乱：两种令牌策略并存
+
+表面看是单位制不同（自建令牌是 px，Tailwind 内置刻度是 rem），真正的根因是**同一套设计体系用了两种令牌策略**：
+
+| 维度 | 策略 | 结果 |
+|---|---|---|
+| 字号 | **覆盖**原生档（`--text-base: 14px` 盖掉原生 `1rem`） | 只有一套名字，值是 px |
+| 圆角 | **另起**命名空间（`--radius-ui-*`，原生档原封不动） | 两套名字并存，一套 px 一套 rem |
+
+圆角是那个不合群的决定。**统一方向是让圆角比照字号——覆盖原生档、值锁 px，而不是投降到原生的 rem 档**：后者会让圆角随根字号缩放、字号不动，把「写法不一致」换成更隐蔽的「行为不一致」。
+
+### 三条硬规则
+
+① **字号一律从 `app/assets/theme/typography.css` 的七级取**（`text-sm` 12 / `text-base` 14 / `text-lg` 16 / `text-xl` 20 / `text-2xl` 24 / `text-3xl` 30 / `text-4xl` 38），不写 `text-[14px]` 这种已有同值令牌的字面量。每级都配了同名的 `--text-*--line-height`，所以用了 `text-*` 就不要再叠 `leading-*`，否则等于只用令牌的一半又把另一半改掉。
+
+两条配套约束：
+
+- **七级之外的小字号不补令牌。** 12px 以下（8/9/10/11px）与 13px 都没有令牌，也不打算加——`--text-xs` 这条路被全仓 369 处既有用量堵死了。这类值就地写字面量，但**必须在 config 里用中文注释写明为什么不能落到七级**（通常是「跟随容器高度按比例缩放」）。
+- **组件里不要用 `text-xs`。** 它是 Tailwind 原生值（0.75rem），不属于本规范，typography.css:31 已写明仅文档站与落地页可用。坑在于默认根字号下 `text-xs` 与 `text-sm` 同为 12px，看着一样大但一个 rem 一个 px，而且行高差 4px（16px vs 20px）。`app/components/reborn/ui` 下的 40 处历史用法已全部换成令牌 `text-sm`，现在是零存量，别再新增。文档站（`app/components/common`、`app/components/docs`）、demo（`app/components/reborn/examples`）与落地页不在此列，可继续用。
+
+② **圆角走 Tailwind 原生档名，令牌值由 `base.css` 覆盖为 px**，不使用 `rounded-ui-*`。`--radius-ui-*` 是原生档的 1:1 重复、名字整体下移两档，这个错位是误用高发点——`rounded-ui-sm` 是 8px，而 `rounded-sm` 是 4px。对照关系：
+
+| 作废写法 | 改用 | 实际值 |
+|---|---|---|
+| `rounded-ui-2xs` | `rounded-sm` | 4px |
+| `rounded-ui-xs` | `rounded-md` | 6px |
+| `rounded-ui-sm` | `rounded-lg` | 8px |
+| `rounded-ui-md` | `rounded-xl` | 12px |
+| `rounded-ui-base` | `rounded-2xl` | 16px |
+| `rounded-ui-lg` | `rounded-3xl` | 24px |
+
+方向性变体同理（`rounded-t-ui-xs` → `rounded-t-md`）。裸写的 `rounded` 是 4px 硬编码字面量、不读令牌，同样别用，要 4px 就写 `rounded-sm`。
+
+> 现状：**Web 侧已收口**——`base.css` 用六行覆盖了原生 `--radius-sm/md/lg/xl/2xl/3xl`（值锁 px），`--radius-ui-*` 定义已删除，全仓 Web 代码、文档、`knowledge/overrides` 里的 342 处 `rounded-ui-*` 已全部换成原生档名。此后 Web 端再写 `rounded-ui-*` 不会有任何样式产出（令牌已不存在），按上表写即可。完整方案见仓库根 `样式令牌收口清单.md`。
+
+③ **`--radius-ui-*` 仅 uniapp 端保留**。uniapp 有自己的一份定义（`packages/uniapp-project/src/styles/theme.css:66`），值是 **rpx** 而非 px，并且 `--radius: var(--radius-ui-md)` 依赖它。rpx 才随设计稿缩放，**所以 uniapp 端不跟随 Web 迁移，也不要删这组变量**。
+
+> 已知欠账：uniapp 端同时有 248 处原生 `rounded-*`（rem）与 82 处 `rounded-ui-*`（rpx），按「尺寸优先 rpx」那 248 处本身就不对。修它意味着 248 处圆角在 375 屏上减半、需逐页回归，故单独立项，不在本轮范围。代价是**两端类名暂时分家**：Web 写 `rounded-lg`，uniapp 写 `rounded-ui-sm`。
+
+### 间距
+
+能落到 Tailwind 刻度的一律用刻度（`4px→1`、`8px→2`、`12px→3`、`16px→4`、`24px→6`；半档 `2px→0.5`、`6px→1.5`、`10px→2.5`），落不上的才写 `gap-[27px]` 这类字面量。注意刻度是 rem、字面量是 px，混用时两者在非默认根字号下会脱钩——同一组相邻元素的间距尽量只用其中一套。
+
+存量的 146 处 px 字面量（其中约 136 处能落到刻度）**本轮不做批量迁移**：逐处替换要全站回归，成本不划算。真要收口，正确做法是比照圆角在 `@theme` 里覆盖 `--spacing` 为 px——改一处全仓生效，`gap-2` 与 `gap-[8px]` 当场同值、同行为，比把字面量逐个改写成刻度类名可靠得多。
+
 ## 组件文档规范
 
 编写或修改 `content/2.components/**/*.md` 前，**必读 `docs/authoring/component-doc.md`**（规范正文唯一真源），或技能 `component-doc`（Claude 端 `.claude/skills/component-doc/SKILL.md`，Codex 端 `.codex/skills/component-doc/SKILL.md`，两份为镜像，改动须同步）。唯一参考范本是 `content/2.components/button/reborn-button.md`。

@@ -14,7 +14,9 @@ export default {
         calHeader: "flex items-center justify-between mb-2",
         calNavBtn: "p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3",
         calTitle: "text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors",
-        calWeekdays: "grid grid-cols-7 gap-0 text-center text-xs text-gray-4 dark:text-gray-5",
+        // 星期栏字号取七级令牌 text-sm（12px）。原先的 text-xs 是 Tailwind 原生值，字号同为 12px，
+        // 换令牌后只有行高从 16px 回到 20px
+        calWeekdays: "grid grid-cols-7 gap-0 text-center text-sm text-gray-4 dark:text-gray-5",
         calDays: "grid grid-cols-7 gap-0.5",
         calDay:
             "flex items-center justify-center rounded-md text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7",
@@ -26,7 +28,8 @@ export default {
         size: {
             sm: {
                 calWeekdays: " mb-2",
-                calDay: "text-xs",
+                // sm 与 md 的日期字号本就同为 12px（原生 text-xs 与令牌 text-sm 等值），这里只是换回令牌
+                calDay: "text-sm",
             },
             md: {
                 calWeekdays: " mb-3",

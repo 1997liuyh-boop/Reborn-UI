@@ -590,19 +590,19 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
         <div :class="boxClass">
           <RebornLayout class="h-full" :ui="{ root: 'gap-2 p-2' }">
             <RebornLayoutHeader
-              :ui="{ header: 'rounded-ui-sm bg-primary text-inverted flex items-center justify-center text-xs font-semibold' }"
+              :ui="{ header: 'rounded-lg bg-primary text-inverted flex items-center justify-center text-xs font-semibold' }"
             >
               自定义顶栏
             </RebornLayoutHeader>
             <RebornLayout>
               <RebornLayoutAside
                 width="140px"
-                :ui="{ aside: 'rounded-ui-sm bg-elevated text-muted flex items-center justify-center text-xs' }"
+                :ui="{ aside: 'rounded-lg bg-elevated text-muted flex items-center justify-center text-xs' }"
               >
                 自定义侧边栏
               </RebornLayoutAside>
               <RebornLayoutMain
-                :ui="{ main: 'rounded-ui-sm bg-muted/40 text-muted flex items-center justify-center text-xs' }"
+                :ui="{ main: 'rounded-lg bg-muted/40 text-muted flex items-center justify-center text-xs' }"
               >
                 自定义主区域
               </RebornLayoutMain>

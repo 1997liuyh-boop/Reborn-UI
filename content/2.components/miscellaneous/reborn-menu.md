@@ -314,7 +314,7 @@ interface MenuDividerType {
 | `menuItemExtra`      | 右侧附加内容位。**仅提供了 `extra` 属性或 `extra` 插槽时渲染**，默认 `ml-auto shrink-0 text-sm text-gray-5`（`text-sm` 在本主题为 12px，比标题低一档），快捷键提示的样式改这里。               |
 | `menuItemArrow`      | 子菜单的展开箭头。**仅在垂直方向的 `RebornSubMenu` 上渲染**（根级水平菜单不显示箭头），默认 `flex shrink-0 items-center justify-center transition-transform`，展开态由内部 `opened` 变体旋转。 |
 | `subMenu`            | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是浮层定位的参照物，非必要不要改 `position`。                                                                                              |
-| `subMenuPopup`       | 浮层展开时的子菜单面板（默认 Teleport 到 body）。**仅 `expandType="popup"` 时渲染**，默认 `absolute z-50 border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-ui-xs`，浮层底色与层级改这里。   |
+| `subMenuPopup`       | 浮层展开时的子菜单面板（默认 Teleport 到 body）。**仅 `expandType="popup"` 时渲染**，默认 `absolute z-50 border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md`，浮层底色与层级改这里。   |
 | `subMenuContent`     | 子菜单内部的 `<ul>`，默认 `flex flex-col gap-y-1`（条目间隔 4px）；平铺展开与浮层展开都会用到。                                                                                                |
 | `menuItemGroup`      | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                                                        |
 | `menuItemGroupTitle` | 分组标题容器，默认 `px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400`。该节点在 `title` 插槽外层，填充插槽后依然生效。                                                       |

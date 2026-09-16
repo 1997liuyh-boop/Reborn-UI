@@ -9,8 +9,9 @@ export default {
     body: 'flex w-max min-w-[244px] max-w-[280px] flex-col gap-[16px]',
     // 标题与描述间隔 8px；两者都缺省时整个文字区不渲染，避免残留空隙。
     header: 'flex flex-col gap-[8px]',
-    title: 'text-base leading-[22px] font-medium text-gray-10',
-    description: 'text-base leading-[22px] text-gray-8',
+    // 22px 行高就是 text-base 令牌自带的值，不用再写 leading-[22px]
+    title: 'text-base font-medium text-gray-10',
+    description: 'text-base text-gray-8',
     // 按钮之间间隔 8px，右对齐。
     footer: 'flex items-center justify-end gap-[8px]',
   },

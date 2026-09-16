@@ -15,7 +15,7 @@
   "props": [
     {
       "name": "variant",
-      "description": "视觉变体：filled 实心/outlined 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）。形状圆角带 ! 以覆盖 size 的 rounded-ui-* 令牌。默认 filled"
+      "description": "视觉变体：filled 实心/outlined 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）。形状圆角带 ! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在 tailwind-merge 的 border-radius 冲突组里；现已改回原生 rounded-*，合并正常，! 只剩提权作用。默认 filled"
     }
   ],
   "pitfalls": [

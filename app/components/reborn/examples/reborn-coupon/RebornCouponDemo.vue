@@ -264,10 +264,10 @@ const activeCode = computed(() => {
         <template #right>
           <div class="flex h-full flex-col justify-center px-6 py-2">
             <div class="flex flex-wrap gap-2">
-              <span class="rounded-ui-2xs border-current/40 border px-2 py-0.5 text-sm font-bold tracking-wider">
+              <span class="rounded-sm border-current/40 border px-2 py-0.5 text-sm font-bold tracking-wider">
                 NEW
               </span>
-              <span class="rounded-ui-2xs border-current/40 border px-2 py-0.5 text-sm font-bold tracking-wider">
+              <span class="rounded-sm border-current/40 border px-2 py-0.5 text-sm font-bold tracking-wider">
                 新人专享
               </span>
             </div>
@@ -309,7 +309,7 @@ const activeCode = computed(() => {
           :xl="{ width: 500, height: 90, offset: 363 }"
           :xxl="{ width: 444, height: 90, offset: 307 }"
           :ui="{ right: 'flex items-center justify-center' }"
-          class="bg-elevated rounded-ui-sm"
+          class="bg-elevated rounded-lg"
         >
           <template #left>
             <div class="flex h-full items-center justify-center gap-x-5">

@@ -56,16 +56,20 @@ export default {
     iconSection: "flex cursor-pointer items-center justify-center text-gray-5 transition-all hover:opacity-80",
     /** 尾部功能区内的竖分割线，聚焦时颜色跟随 color */
     separator: "w-px shrink-0 transition-colors bg-gray-4",
-    /** 字数统计文本（inside 位于尾部功能区 / textarea 右下角，outside 位于输入框下方） */
-    count: "pointer-events-none text-xs text-gray-5 tabular-nums",
+    /**
+     * 字数统计文本（inside 位于尾部功能区 / textarea 右下角，outside 位于输入框下方）。
+     * 字号取七级令牌 text-sm（12px）。原先的 text-xs 是 Tailwind 原生值，字号同为 12px，
+     * 换令牌后只有行高从 16px 回到 20px。
+     */
+    count: "pointer-events-none text-sm text-gray-5 tabular-nums",
   },
   variants: {
     /**
      * 尺寸档位，全部取自 app/assets/theme/typography.css 的设计令牌：
      * 高度 --height-input-*、水平内边距 --spacing-input-px-*、分割线高度 --spacing-input-sep-*。
      * 字号遵循全局 size 锚点：sm 12px（text-sm）/ md 14px（text-base）/ lg 16px（text-lg）。
-     * text-* 令牌自带「字号 + 8px」的行高，此处不再叠加 leading-*，否则会把令牌行高覆盖掉；
-     * 多行模式需要更宽松的行距，由 multiline 变体单独给 leading-relaxed。
+     * text-* 令牌自带「字号 + 8px」的行高，全部档位都不叠加 leading-*，否则会把令牌行高覆盖掉；
+     * 多行模式同样走令牌行高（md 档 14px 字号对应 22px），不再单开比例档。
      * wrapper 与 input 都要声明字号：input 管输入文本，wrapper 管 #prefix / #suffix
      * 等插槽内容的继承默认值，缺一档会导致插槽文字跟着外层容器走。
      */
@@ -193,7 +197,9 @@ export default {
       true: {
         group: "h-auto!",
         wrapper: "h-auto items-start py-2",
-        input: "h-auto resize-none leading-relaxed",
+        // 行高跟随 size 档的 text-* 令牌，不写 leading-：textarea 的可视高度按
+        // rows × 行高算，写死比例档会让三档行距各自偏离令牌 0.5~2px
+        input: "h-auto resize-none",
         count: "absolute bottom-1 right-2",
       },
     },
@@ -218,12 +224,13 @@ export default {
   },
   compoundVariants: [
     // square 外形的圆角按尺寸取令牌：sm 4px / md 6px / lg 8px
-    { shape: "square", size: "sm", class: { wrapper: "rounded-ui-2xs", prepend: "rounded-s-ui-2xs", append: "rounded-e-ui-2xs" } },
-    { shape: "square", size: "md", class: { wrapper: "rounded-ui-xs", prepend: "rounded-s-ui-xs", append: "rounded-e-ui-xs" } },
-    { shape: "square", size: "lg", class: { wrapper: "rounded-ui-sm", prepend: "rounded-s-ui-sm", append: "rounded-e-ui-sm" } },
+    { shape: "square", size: "sm", class: { wrapper: "rounded-sm", prepend: "rounded-s-sm", append: "rounded-e-sm" } },
+    { shape: "square", size: "md", class: { wrapper: "rounded-md", prepend: "rounded-s-md", append: "rounded-e-md" } },
+    { shape: "square", size: "lg", class: { wrapper: "rounded-lg", prepend: "rounded-s-lg", append: "rounded-e-lg" } },
     // 胶囊外形时前后置块随之取全圆角
     { shape: "circle", class: { prepend: "rounded-s-full", append: "rounded-e-full" } },
-    // 下划线形态必须压平圆角；用 ! 提权，tailwind-merge 不认识 rounded-ui-* 的冲突组
+    // 下划线形态必须压平圆角。! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，
+    // 不在 tailwind-merge 的 border-radius 冲突组里；现已改回原生 rounded-*，合并正常。
     { variant: "underlined", class: { wrapper: "rounded-none!", prepend: "rounded-none!", append: "rounded-none!" } },
     // borderless 形态没有描边宽度，错误态需要补一圈，否则完全不可见
     { variant: "borderless", error: true, class: { wrapper: "border-1 border-red-5" } },

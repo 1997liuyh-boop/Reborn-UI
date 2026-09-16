@@ -76,13 +76,13 @@ badge: New
 | `triggerText`    | 触发器中已选路径文本，默认 `truncate text-gray-8 dark:text-gray-1 flex-1`。**仅在未填充 default 插槽时渲染**，填充该插槽会替换掉该节点，`ui.triggerText` 随之失效。 |
 | `placeholder`    | 触发器中的占位文本，默认 `truncate text-gray-4 dark:text-gray-5 flex-1`。**仅在未填充 default 插槽时渲染**，填充该插槽会替换掉该节点，`ui.placeholder` 随之失效。 |
 | `panel`          | 浮层内部「多列并排」的横向容器，默认 `flex w-max items-start gap-2 bg-transparent p-1`；列间距改这里。浮层本身（定位、阴影）属于 `RebornSelectTrigger`，请用它的 `ui.dropdown`。 |
-| `column`         | 单列容器，默认 `min-w-[160px] shrink-0 overflow-y-auto rounded-ui-md border border-gray-2 bg-white py-1 min-h-[280px] shadow-lg`；列宽、列高、边框改这里。      |
+| `column`         | 单列容器，默认 `min-w-[160px] shrink-0 overflow-y-auto rounded-xl border border-gray-2 bg-white py-1 min-h-[280px] shadow-lg`；列宽、列高、边框改这里。      |
 | `option`         | 单个选项行，默认 `relative flex items-center gap-2 px-3 py-2 text-base text-gray-900 cursor-pointer transition-colors hover:bg-gray-1`。                       |
 | `optionActive`   | 高亮（当前展开路径上的）选项的附加样式，默认 `font-medium`。**不是独立节点**——高亮时被合并进 `option` 所在节点。                                              |
 | `optionDisabled` | 禁用选项的附加样式，默认 `cursor-not-allowed opacity-50 hover:bg-transparent`。同样是合并进 `option`。                                                        |
 | `optionLabel`    | 选项文字节点，默认 `flex-1 truncate`。**仅在未填充 `option` 插槽时渲染**，填充该插槽会替换掉该节点，`ui.optionLabel` 随之失效。                                |
 | `optionIcon`     | 非叶子节点右侧的箭头图标，默认 `shrink-0 text-gray-5`。**仅在未填充 `option` 插槽时渲染**，填充该插槽会替换掉该节点，`ui.optionIcon` 随之失效。                |
-| `empty`          | `options` 为空数组时的空态提示，默认 `min-w-[160px] rounded-ui-md border border-gray-2 bg-white px-4 py-6 text-base text-gray-5 shadow-lg`。                   |
+| `empty`          | `options` 为空数组时的空态提示，默认 `min-w-[160px] rounded-xl border border-gray-2 bg-white px-4 py-6 text-base text-gray-5 shadow-lg`。                   |
 
 :::
 

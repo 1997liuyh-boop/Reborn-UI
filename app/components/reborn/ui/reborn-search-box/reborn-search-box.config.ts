@@ -6,7 +6,7 @@ export { sizes as searchBoxSizes };
 /**
  * 各 size 对应的 RebornInput 内部 UI 覆盖配置
  * 边框与内边距由控件行外壳（control）承担：内部输入框恒为 borderless、水平内边距归零；
- * 圆角由 shape 变体控制：circle 不覆盖，square 统一取 rounded-ui-xs（压掉 RebornInput 自身的按尺寸圆角，与控件行外框保持一致）
+ * 圆角由 shape 变体控制：circle 不覆盖，square 统一取 rounded-md（压掉 RebornInput 自身的按尺寸圆角，与控件行外框保持一致）
  */
 export const inputTheme = {
     slots: {
@@ -23,7 +23,7 @@ export const inputTheme = {
         /** 外形轮廓：与 RebornInput 的 shape 取值对齐 */
         shape: {
             circle: { wrapper: "" },
-            square: { wrapper: "rounded-ui-xs!" },
+            square: { wrapper: "rounded-md!" },
         },
     },
     defaultVariants: {
@@ -111,7 +111,7 @@ export default {
         },
         /**
          * 外形轮廓：与 RebornInput 的 shape 取值对齐。
-         * circle 为胶囊；square 不分尺寸、统一取 rounded-ui-xs（6px）令牌，
+         * circle 为胶囊；square 不分尺寸、统一取 rounded-md（6px）令牌，
          * 底色卡片的上半部分圆角随之与输入框的上半部分完全对齐。
          * 下拉面板只保留下半部分圆角——其上半部分被底色卡片覆盖、需与卡片无缝衔接，不做圆角。
          */
@@ -119,12 +119,12 @@ export default {
             circle: {
                 backdropCard: "rounded-full",
                 control: "rounded-full",
-                dropdown: "rounded-b-ui-sm",
+                dropdown: "rounded-b-lg",
             },
             square: {
-                backdropCard: "rounded-ui-xs",
-                control: "rounded-ui-xs",
-                dropdown: "rounded-b-ui-xs",
+                backdropCard: "rounded-md",
+                control: "rounded-md",
+                dropdown: "rounded-b-md",
             },
         },
         /** 下拉面板展开状态：本身不出样式，供组件传入状态位（展开时的动画由内联 style 驱动） */
@@ -153,9 +153,9 @@ export default {
         { color: "error" as const, focused: true, hasOuterSlots: true, class: { inputWrapper: "before:border-red-5" } },
         { color: "neutral" as const, focused: true, hasOuterSlots: true, class: { inputWrapper: "before:border-gray-5" } },
 
-        // 描边仅在未接触外置插槽的一侧保留圆角：首项保留左侧，末项保留右侧，避免接缝处出现圆角（square 统一 rounded-ui-xs，不分尺寸）
+        // 描边仅在未接触外置插槽的一侧保留圆角：首项保留左侧，末项保留右侧，避免接缝处出现圆角（square 统一 rounded-md，不分尺寸）
         { hasOuterSlots: true, shape: "circle" as const, class: { inputWrapper: "first:before:rounded-l-full last:before:rounded-r-full" } },
-        { hasOuterSlots: true, shape: "square" as const, class: { inputWrapper: "first:before:rounded-l-ui-xs last:before:rounded-r-ui-xs" } },
+        { hasOuterSlots: true, shape: "square" as const, class: { inputWrapper: "first:before:rounded-l-md last:before:rounded-r-md" } },
     ],
 
     defaultVariants: {

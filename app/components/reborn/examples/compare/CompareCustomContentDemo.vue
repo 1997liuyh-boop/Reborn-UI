@@ -1,7 +1,7 @@
 <template>
   <div class="flex w-full justify-center">
     <Compare
-      class="rounded-ui-md overflow-hidden"
+      class="rounded-xl overflow-hidden"
       :autoplay="true"
       :autoplay-duration="3000"
       slide-mode="hover"

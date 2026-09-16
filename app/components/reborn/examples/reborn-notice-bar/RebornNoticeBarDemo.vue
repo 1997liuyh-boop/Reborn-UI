@@ -129,7 +129,7 @@ function handleClose() {
           >
             <template #default="{ item, index }">
               <div class="flex items-center gap-2">
-                <span class="bg-primary/20 text-primary rounded-ui-2xs px-1.5 py-0.5 text-sm font-bold">
+                <span class="bg-primary/20 text-primary rounded-sm px-1.5 py-0.5 text-sm font-bold">
                   {{ index === 0 ? "安全" : index === 1 ? "公告" : "福利" }}
                 </span>
                 <span class="cursor-pointer font-medium underline">{{ item }}</span>

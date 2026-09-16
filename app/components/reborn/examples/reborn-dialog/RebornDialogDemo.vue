@@ -426,7 +426,7 @@ async function openCustomIconDialog() {
 
           <!-- 业务内容占位：只描边不填充，避免在弹窗面板内再叠一层表面 -->
           <div
-            class="border-default text-dimmed rounded-ui-sm flex items-center justify-center border border-dashed py-10 text-sm">
+            class="border-default text-dimmed rounded-lg flex items-center justify-center border border-dashed py-10 text-sm">
             第一层业务内容区域
           </div>
 
@@ -473,7 +473,7 @@ async function openCustomIconDialog() {
           </template>
 
           <!-- 弹窗面板内的语义提示条，属原子标记而非嵌套容器 -->
-          <div class="bg-secondary/10 text-secondary rounded-ui-sm flex items-center gap-3 p-3">
+          <div class="bg-secondary/10 text-secondary rounded-lg flex items-center gap-3 p-3">
             <Icon name="lucide:cloud-upload" class="size-5 shrink-0" />
             <span class="text-xs font-medium">系统检测到 3 项配置需要合并同步。</span>
           </div>
@@ -513,7 +513,7 @@ async function openCustomIconDialog() {
           <span class="text-dimmed text-xs font-medium">精简模式 · <code>ui</code> 深度重写</span>
           <DemoBlock>
             <RebornDialog :show-close="false" title="精简模式" :ui="{
-              panel: 'max-w-[360px] rounded-ui-lg',
+              panel: 'max-w-[360px] rounded-3xl',
               header: 'border-0 pb-0',
               body: 'text-center pt-2 pb-6',
               footer: 'border-0 pt-0 justify-center pb-6',

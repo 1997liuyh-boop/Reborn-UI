@@ -146,7 +146,8 @@ const config = {
     /** 单个列表项 */
     item: 'flex items-center cursor-pointer transition-colors select-none',
     itemContent: 'flex-1 min-w-0',
-    itemLabel: 'text-gray-800 dark:text-gray-100 leading-normal',
+    /** 条目主文案。行高跟随 size 档的 text-* 令牌，不写 leading-（令牌行高 = 字号 + 8px） */
+    itemLabel: 'text-gray-800 dark:text-gray-100',
     itemDesc: 'text-gray-400 dark:text-gray-500 truncate mt-0.5',
 
     /** 单向模式右侧条目撤回按钮 */
@@ -179,23 +180,31 @@ const config = {
         itemCheck: 'rounded-full',
       },
     },
+    /**
+     * 尺寸档位。其中 panelCount / itemDesc / operationBtnLabel 的 9~11px
+     * 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
+     * 其余档位一律取七级令牌，行高由字号令牌自带，不再叠 leading-normal。
+     * 原先 sm 档整档与 md/lg 档的 panelCount、md 档的 itemDesc 用的是 Tailwind 原生 text-xs
+     * （0.75rem / 行高 1rem），现已换成令牌 text-sm：两者字号同为 12px，视觉字号不变，
+     * 行高从 16px 回到令牌的 20px，列表条目会相应变高。
+     */
     size: {
       sm: {
         panelHeader: 'px-3 py-2 gap-2',
         headerSelectControls: 'gap-2',
-        headerSelectItem: 'py-1.5 text-xs',
-        panelTitle: 'text-xs',
+        headerSelectItem: 'py-1.5 text-sm',
+        panelTitle: 'text-sm',
         panelCount: 'text-[10px]',
         panelSearch: 'px-2.5 py-1.5',
         searchWrapper: 'gap-1.5',
         searchIcon: 'size-3.5',
-        searchInput: 'px-2.5 py-1 text-xs leading-normal',
+        searchInput: 'px-2.5 py-1 text-sm',
         panelContent: 'min-h-[100px] max-h-[200px]',
         panelBody: 'min-h-[100px] max-h-[200px]',
-        panelEmpty: 'min-h-[100px] text-xs',
+        panelEmpty: 'min-h-[100px] text-sm',
         item: 'px-3 gap-2',
         itemContent: 'py-1.5',
-        itemLabel: 'text-xs',
+        itemLabel: 'text-sm',
         itemDesc: 'text-[10px]',
         itemUndoBtn: 'size-6',
         operationBtn: 'size-7',
@@ -207,18 +216,18 @@ const config = {
         headerSelectControls: 'gap-2',
         headerSelectItem: 'py-2 text-sm',
         panelTitle: 'text-sm',
-        panelCount: 'text-xs',
+        panelCount: 'text-sm',
         panelSearch: 'px-3 py-2',
         searchWrapper: 'gap-2',
         searchIcon: 'size-4',
-        searchInput: 'px-3 py-1.5 text-sm leading-normal',
+        searchInput: 'px-3 py-1.5 text-sm',
         panelContent: 'min-h-[160px] max-h-[300px]',
         panelBody: 'min-h-[160px] max-h-[300px]',
         panelEmpty: 'min-h-[160px] text-sm',
         item: 'px-4 gap-3',
         itemContent: 'py-2.5',
         itemLabel: 'text-sm',
-        itemDesc: 'text-xs',
+        itemDesc: 'text-sm',
         itemUndoBtn: 'size-7',
         operationBtn: 'size-8',
         operationBtnLabeled: 'px-2.5 gap-1.5',
@@ -229,11 +238,11 @@ const config = {
         headerSelectControls: 'gap-3',
         headerSelectItem: 'py-2 text-sm',
         panelTitle: 'text-base',
-        panelCount: 'text-xs',
+        panelCount: 'text-sm',
         panelSearch: 'px-4 py-2.5',
         searchWrapper: 'gap-2',
         searchIcon: 'size-4',
-        searchInput: 'px-3 py-2 text-sm leading-normal',
+        searchInput: 'px-3 py-2 text-sm',
         panelContent: 'min-h-[200px] max-h-[380px]',
         panelBody: 'min-h-[200px] max-h-[380px]',
         panelEmpty: 'min-h-[200px] text-sm',

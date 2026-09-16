@@ -16,7 +16,7 @@ const listC = Array.from({ length: 16 }, (_, i) => i + 1);
         tone="inset"
       >
         <RebornSticky>
-          <div class="bg-primary rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white">
+          <div class="bg-primary rounded-sm flex h-10 items-center px-3 text-sm text-white">
             默认吸顶 · offset 0
           </div>
         </RebornSticky>
@@ -30,7 +30,7 @@ const listC = Array.from({ length: 16 }, (_, i) => i + 1);
         </div>
 
         <RebornSticky :offset-top="40">
-          <div class="bg-warning rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white">
+          <div class="bg-warning rounded-sm flex h-10 items-center px-3 text-sm text-white">
             吸顶 · offset 40px
           </div>
         </RebornSticky>
@@ -44,7 +44,7 @@ const listC = Array.from({ length: 16 }, (_, i) => i + 1);
         </div>
 
         <RebornSticky :offset-top="80">
-          <div class="bg-success rounded-ui-2xs flex h-10 items-center px-3 text-sm text-white">
+          <div class="bg-success rounded-sm flex h-10 items-center px-3 text-sm text-white">
             吸顶 · offset 80px
           </div>
         </RebornSticky>

@@ -75,7 +75,7 @@ platform: web
 | `wrapper`        | 根节点（触发器外层容器），`class` prop 也并到这里；整体占位改这里                            |
 | `trigger`        | 触发元素的外框，默认 `inline-flex max-w-full`                                                |
 | `contentWrapper` | 浮层定位外壳，默认 `fixed left-0 top-0 z-[9999] pointer-events-none flex`；层级改这里        |
-| `content`        | 提示面板，默认 `bg-gray-10 text-gray-1 p-2 text-base rounded-ui-sm max-w-60`；底色、文字、内边距、圆角、最大宽度改这里 |
+| `content`        | 提示面板，默认 `bg-gray-10 text-gray-1 p-2 text-base rounded-lg max-w-60`；底色、文字、内边距、圆角、最大宽度改这里 |
 | `arrow`          | 箭头容器，默认 `absolute text-gray-10`；箭头颜色随 `text-*` 类（与面板同色时需一起改）       |
 
 ```vue

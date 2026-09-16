@@ -41,7 +41,7 @@ function handleCancel() {
 
     <template #default>
       <!-- 业务内容占位：只描边不填充，避免在弹窗面板内再叠一层表面 -->
-      <div class="border-default text-dimmed rounded-ui-sm flex items-center justify-center border border-dashed py-10 text-sm">
+      <div class="border-default text-dimmed rounded-lg flex items-center justify-center border border-dashed py-10 text-sm">
         第一层业务内容区域
       </div>
     </template>

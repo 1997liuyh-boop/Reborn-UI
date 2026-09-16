@@ -163,10 +163,10 @@ const steps: GuideStep[] = [
 | --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `overlay`       | popup    | 全屏遮罩层。**仅 `showOverlay` 为真时渲染**，默认 `fixed inset-0 z-[--guide-z]`；它本身透明，实际的暗色来自 `highlightMask` 的巨型 `box-shadow`。          |
 | `highlightMask` | popup    | 高亮挖洞框（贴合目标元素）。默认 `absolute rounded-lg transition-all duration-300 pointer-events-none`；圆角与移动过渡改这里。步骤级 `stepOverlayClass` 也会并到该节点。 |
-| `guideBox`      | popup    | 贴靠目标元素的指引框。默认 `fixed z-[--guide-box-z] bg-white rounded-ui-lg shadow-xl border min-w-[260px] max-w-[360px]`，宽度、底色、圆角改这里；`class` prop 也并到该节点。 |
+| `guideBox`      | popup    | 贴靠目标元素的指引框。默认 `fixed z-[--guide-box-z] bg-white rounded-3xl shadow-xl border min-w-[260px] max-w-[360px]`，宽度、底色、圆角改这里；`class` prop 也并到该节点。 |
 | `guideArrow`    | popup    | 指引框的箭头。**仅命中目标元素且箭头方向不为 `none` 时渲染**，默认 `absolute w-3 h-3 rotate-45 bg-white border-gray-2`；改底色时要与 `guideBox` 一起改。   |
 | `dialogOverlay` | dialog   | 居中对话框的遮罩兼定位层，默认 `fixed inset-0 z-[--guide-z] bg-gray-900/60 flex items-center justify-center p-4`，遮罩深浅改这里。步骤级 `stepOverlayClass` 也会并到该节点。 |
-| `dialogBox`     | dialog   | 对话框面板，默认 `bg-white rounded-ui-lg shadow-xl w-full max-w-[480px]`，宽度与圆角改这里；`class` prop 也并到该节点。                                    |
+| `dialogBox`     | dialog   | 对话框面板，默认 `bg-white rounded-3xl shadow-xl w-full max-w-[480px]`，宽度与圆角改这里；`class` prop 也并到该节点。                                    |
 | `guideHeader`   | 共用     | 标题条。**仅该步骤配了 `title` 时渲染**，默认 `flex items-center justify-between px-5 pt-5 pb-2`。                                                         |
 | `guideTitle`    | 共用     | 标题 `<h3>`，默认 `text-base font-semibold text-gray-9`。                                                                                                 |
 | `guideBody`     | 共用     | 正文容器，默认 `px-5 py-2 text-sm text-gray-6 leading-relaxed`；步骤的 `content` 插槽渲染在它内部，容器本身始终生效。                                     |

@@ -1,18 +1,28 @@
 {
-  "description": "用于以键值对多列布局展示详情信息的描述列表组件，仅 web 端。",
+  "description": "成组展示只读字段的键值对排版件：items 数据驱动或子组件声明式，支持边框底色、水平/垂直布局、按容器宽度响应的列数与跨列，仅 web 端。",
   "whenToUse": [
-    "详情页、信息面板中以「标签: 内容」形式罗列字段。",
-    "需要多列（column）、跨列（span）与容器宽度自适应列数（responsive）的信息表格。",
-    "通过 items 数组数据驱动渲染，或用 RebornDescriptionsItem 子组件声明式书写。"
+    "详情页、信息面板中成组罗列只读字段，数据直接来自接口数组时传 items 即可渲染。",
+    "字段值需要图标、状态色、链接等富内容时，用 RebornDescriptionsItem 子组件，或给 item 写 slot 指向 content-{name} 具名插槽。",
+    "信息区要像表格一样逐格对齐时开 bordered，标签会独占带 bg-gray-2 底色的单元格。",
+    "同一份信息要塞进宽窄不同的容器时，column 写成 { xs: 1, sm: 2, lg: 3 } 按断点降列。",
+    "个别字段明显更长时用 span 占多列，或写 'filled' 吃掉当前行剩余部分。"
   ],
   "whenNotToUse": [
     "uniapp 端不可用（仅 web）。",
-    "字段需要编辑与校验时，改用 reborn-form。"
+    "字段需要录入、校验与提交时，改用 reborn-form。",
+    "多条同构记录要按列横向比较时不适用：描述列表没有表头概念，一项就是一个独立字段。",
+    "只有一两条短文本、不需要成列对齐时，改用 reborn-text。"
   ],
   "pitfalls": [
     "仅 web 端可用。",
-    "默认插槽内须放置 RebornDescriptionsItem 子组件；也可改用 items prop 数据驱动，二者取其一。",
-    "responsive 默认 true：容器 <480px 强制 1 列、<640px 最多 2 列，需固定列数时应关闭。",
-    "末项会自动延伸填满当前行剩余列（span 行为）。"
+    "本版本对旧 API 做了破坏性重写：border / direction / responsive / rounded / labelBackground / contentBackground / labelColor / contentColor / labelBold / contentBold / labelLineHeight / contentLineHeight 全部移除；border → bordered，direction → layout，responsive → 把 column 写成断点对象，配色与字重覆盖统一改走 ui 或 class。",
+    "items 与默认插槽二选一，同时传入时 items 优先，插槽内容被忽略。",
+    "冒号只在「无边框 + 水平」下渲染，bordered 或 vertical 时 colon 会被静默忽略。",
+    "每行末项会自动延伸补齐剩余列，所以写在最后一项上的 span: 'filled' 没有可观察效果，它只有写在非末项上才有意义。",
+    "响应式断点比对的是组件容器宽度而不是视口宽度，同一份 column 参数在侧栏和主区域会得到不同列数。",
+    "labelAlign / contentAlign 在「无边框 + 水平」下几乎不可见：标签与内容是同一单元格内的两个 flex 子项，宽度被内容撑满，只有同时设了足够大的 labelWidth 时 labelAlign 才会显现。",
+    "size 只在 bordered 下生效：它改的是单元格行高（36 / 48 / 56px）与上下内边距。标题固定 24px、左右内边距固定 16px 都不随 size 变化；无边框形态完全不吃这套值，那里的行距是固定的 4px（标签与内容之间）与 16px（项与项之间）。行高按最小高度生效，内容换行时该行会照常撑开。",
+    "标签与内容的轻重关系随 bordered 反转：带边框时标签 gray-9、内容 gray-8（标签更重，靠字段名逐格定位）；无边框时没有底色与边线作分层，改成标签 gray-7、内容 gray-9（内容更重）。需要另一套关系时用 ui.label / ui.content 覆盖。",
+    "bordered 的外框是直角，组件不加圆角；需要圆角时用 ui.tableWrapper 补。"
   ]
 }

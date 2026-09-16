@@ -19,7 +19,13 @@ const state = ref({
  * 角标必须挂在一个宿主元素上才看得出定位效果，这里用虚线框表示"任意宿主"，
  * 既说明了演示语义，又不会在画布上再叠一层背景。
  */
-const anchorClass = "border-default rounded-ui-sm border border-dashed";
+const anchorClass = "border-default rounded-lg border border-dashed";
+
+/**
+ * 纯圆点档位：这两档圆点只有 10px / 12px 高，装不下最小字号令牌（--text-sm 12px），
+ * 组件在这两档不渲染文本节点，传了 text 也不显示。用于在尺寸示例里标注这一行为。
+ */
+const dotOnlySizes = ["xs", "sm"];
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -96,7 +102,7 @@ const controls = [
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" component-name="RebornChip" title="交互演练场"
-      description="调节左侧属性，实时预览角标的颜色、尺寸与吸附位置。">
+      description="调节左侧属性，实时预览角标的颜色、尺寸与吸附位置。尺寸选 xs 或 sm 时角标退化为纯圆点，标签文本不再显示。">
       <RebornChip v-bind="state">
         <div :class="anchorClass" class="text-dimmed flex size-24 items-center justify-center">
           <Icon name="lucide:bell" class="size-8" />
@@ -115,7 +121,7 @@ const controls = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸规格" description="从细微装饰到醒目提示，多级尺寸随心切换。">
+    <DemoSection title="尺寸规格" description="五档对应 10~18px 的圆点高度。下面五个角标都传了 text=&quot;NEW&quot;，但 xs、sm 的圆点装不下最小字号，组件在这两档只渲染圆点、不渲染文本。">
       <DemoBlock layout="row" align="end" class="gap-10">
         <div v-for="s in chipSizes" :key="s" class="flex flex-col items-center gap-4">
           <RebornChip :size="s" color="error" text="NEW">
@@ -123,7 +129,9 @@ const controls = [
               {{ s }}
             </div>
           </RebornChip>
-          <span class="text-dimmed text-[10px] font-bold tracking-widest">{{ s.toUpperCase() }}</span>
+          <span class="text-dimmed text-[10px] font-bold tracking-widest">
+            {{ s.toUpperCase() }}<template v-if="dotOnlySizes.includes(s)"> · 纯圆点</template>
+          </span>
         </div>
       </DemoBlock>
     </DemoSection>

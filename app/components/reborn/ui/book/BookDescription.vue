@@ -10,7 +10,7 @@ defineProps<BookDescriptionProps>();
 
 <template>
   <p
-    class="text-xs/relaxed select-none"
+    class="text-sm select-none"
     :class="[$props.class]"
   >
     <slot />

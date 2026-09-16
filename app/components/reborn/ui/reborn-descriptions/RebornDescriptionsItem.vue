@@ -1,51 +1,38 @@
 <script setup lang="ts">
-/**
- * 描述列表子项组件
- *
- * 作为 RebornDescriptions 的直接子组件使用。父组件通过 VNode 解析识别此组件，
- * 将其 props 和插槽内容重新组织为行列布局。此组件本身不产生可见输出，
- * 所有渲染由父组件控制。
- *
- * 若在 RebornDescriptions 外部单独使用，则正常渲染默认插槽。
- */
-defineOptions({ name: "RebornDescriptionsItem" });
+import type { DescriptionsSpan } from "./reborn-descriptions.config";
 
-withDefaults(defineProps<DescriptionsItemProps>(), {
-  span: 1,
+defineOptions({
+  name: "RebornDescriptionsItem",
 });
 
+defineProps<DescriptionsItemProps>();
+
 defineSlots<{
-  /** 内容区插槽 */
-  default: () => any;
-  /** 标签区自定义插槽 */
-  label: () => any;
+  /** 本项的内容 */
+  default?: (props: Record<string, never>) => any;
+  /** 本项的标签，优先于 label 属性 */
+  label?: (props: Record<string, never>) => any;
 }>();
 
 export interface DescriptionsItemProps {
-  /** 标签文字 */
+  /** 内容的描述，即左侧标签文字；富内容改用 label 插槽 */
   label?: string;
-  /** 占据列数，默认 1 */
-  span?: number;
-  /** 自定义标签单元格 CSS 类 */
+  /** 包含列的数量，'filled' 表示铺满当前行剩余部分，也可按断点取值 */
+  span?: DescriptionsSpan;
+  /** 单独覆盖本项的冒号显隐，不传时跟随父级 colon */
+  colon?: boolean;
+  /** 追加到本项标签节点的类名 */
   labelClass?: string;
-  /** 自定义内容单元格 CSS 类 */
+  /** 追加到本项内容节点的类名 */
   contentClass?: string;
-  /** 单项标签单元格背景色（优先于组件全局 labelBackground） */
-  labelBackground?: string;
-  /** 单项内容单元格背景色（优先于组件全局 contentBackground） */
-  contentBackground?: string;
-  /** 单项标签字体颜色（优先于组件全局 labelColor） */
-  labelColor?: string;
-  /** 单项内容字体颜色（优先于组件全局 contentColor） */
-  contentColor?: string;
-  /** 单项标签字体加粗（优先于组件全局 labelBold） */
-  labelBold?: boolean;
-  /** 单项内容字体加粗（优先于组件全局 contentBold） */
-  contentBold?: boolean;
 }
+
 </script>
 
 <template>
-  <!-- 此组件内容由父级 RebornDescriptions 通过 VNode 解析后渲染 -->
+  <!--
+    这里不产出任何 DOM。父级 RebornDescriptions 需要把所有项统一编排进 <table> 才能对齐列宽与边线，
+    因此它直接读取本组件的 props 与插槽函数来渲染，子组件自身只作声明用。
+  -->
   <slot />
 </template>

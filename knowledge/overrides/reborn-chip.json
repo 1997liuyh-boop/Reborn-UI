@@ -11,6 +11,8 @@
   "pitfalls": [
     "web 与 uniapp 双端可用。",
     "默认以默认插槽内容为锚点定位（position 默认 top-right），无宿主独立使用时需设 standalone。",
-    "inset 使标记内嵌于宿主边缘，与 position 组合调整贴合位置。"
+    "inset 使标记内嵌于宿主边缘，与 position 组合调整贴合位置。",
+    "web 端 size 为 xs(10px) / sm(12px) 时按纯圆点渲染：圆点装不下最小字号令牌（--text-sm 12px），组件不渲染文本节点，传了 text 也不显示。需要带文字的角标请用 md 及以上。",
+    "两端 size 档位不同：web 为 xs–xl 五档（px 标尺），uniapp 为 3xs–3xl 九档（rpx 标尺），同名 size 在两端不等价。"
   ]
 }

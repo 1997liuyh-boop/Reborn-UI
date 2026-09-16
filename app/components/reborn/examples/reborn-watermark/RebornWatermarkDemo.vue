@@ -120,7 +120,7 @@ const payrollRows = [
         :z-index="9"
       >
         <!-- 被水印覆盖的文档本体：只描边不填充，画布已是唯一表面 -->
-        <div class="border-default rounded-ui-md mx-auto flex w-full max-w-2xl flex-col gap-10 border p-6 md:p-10">
+        <div class="border-default rounded-xl mx-auto flex w-full max-w-2xl flex-col gap-10 border p-6 md:p-10">
           <div class="flex items-start justify-between gap-6">
             <div class="flex flex-col gap-2">
               <Icon
@@ -182,7 +182,7 @@ const payrollRows = [
         :gap="[100, 100]"
       >
         <!-- 水印宿主：只描边不填充 -->
-        <div class="border-default rounded-ui-md flex h-[300px] items-center justify-center border">
+        <div class="border-default rounded-xl flex h-[300px] items-center justify-center border">
           <Icon
             name="lucide:image"
             class="text-dimmed size-12"
@@ -200,7 +200,7 @@ const payrollRows = [
         :font="{ fontSize: 12, color: 'rgba(239, 68, 68, 0.12)' }"
         :gap="[120, 120]"
       >
-        <div class="border-default rounded-ui-md text-dimmed flex h-[300px] items-center justify-center border italic">
+        <div class="border-default rounded-xl text-dimmed flex h-[300px] items-center justify-center border italic">
           敏感资产保护区域
         </div>
       </RebornWatermark>

@@ -81,7 +81,8 @@ function renderContent(content?: ModalContent) {
     return content();
   }
   if (typeof content === "string") {
-    return h("div", { class: "text-sm leading-[1.6] text-gray-500 whitespace-pre-line" }, content);
+    // 行高用 text-sm 令牌自带的 20px，不再写 leading-[1.6]
+    return h("div", { class: "text-sm text-gray-500 whitespace-pre-line" }, content);
   }
   return content;
 }
@@ -276,10 +277,10 @@ function createModal(type: ModalType, options: ModalMethodOptions = {}): ModalRe
                     name: icon || preset.icon,
                     class: `size-[24px] shrink-0 ${preset.iconClass}`,
                   }),
-                  // 标题样式与 RebornDialog 的 title slot 保持一致（16px / 500 / gray-10）
+                  // 标题样式与 RebornDialog 的 title slot 保持一致（text-lg / 500 / gray-10）
                   h(
                     "span",
-                    { class: "truncate text-[16px] font-medium leading-[1.35] text-gray-10" },
+                    { class: "truncate text-lg font-medium text-gray-10" },
                     dialogProps.title || "提示",
                   ),
                 ]),

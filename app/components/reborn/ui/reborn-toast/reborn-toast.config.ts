@@ -234,7 +234,7 @@ export function applyMessageConfig(config: Pick<MessageGlobalConfig, 'top' | 'du
 export const messageTheme = tv({
   slots: {
     wrapper: 'fixed inset-x-0 z-[2100] flex flex-col items-center gap-2 pointer-events-none',
-    root: 'reborn-message pointer-events-auto inline-flex max-w-[80vw] items-center gap-2 h-10 px-3 text-base leading-[1.5] rounded-ui-sm shadow-[0_2px_12px_0_rgba(0,0,0,0.15)]',
+    root: 'reborn-message pointer-events-auto inline-flex max-w-[80vw] items-center gap-2 h-10 px-3 text-base rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.15)]',
     iconWrapper: 'flex items-center justify-center shrink-0',
     icon: 'shrink-0',
     content: 'truncate',

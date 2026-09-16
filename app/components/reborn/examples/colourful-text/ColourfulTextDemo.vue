@@ -7,7 +7,7 @@ import { Motion } from "motion-v";
     title="基础用法"
     description="深色舞台是彩色文字效果的一部分，两种模式都保持深色。"
   >
-    <div class="relative flex h-[28rem] w-full items-center justify-center overflow-hidden rounded-ui-md bg-gray-10 dark:bg-gray-1">
+    <div class="relative flex h-[28rem] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-10 dark:bg-gray-1">
       <Motion
         as="img"
         src="https://assets.aceternity.com/linear-demo.webp"

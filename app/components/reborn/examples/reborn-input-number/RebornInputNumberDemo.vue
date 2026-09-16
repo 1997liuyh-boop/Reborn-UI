@@ -495,7 +495,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
         <DemoItem label="甜美主题">
           <RebornInputNumber
             v-model="themedValue" :ui="{
-              wrapper: 'bg-default ring-rose-200 focus-within:ring-rose-400 rounded-ui-md h-14 border-0',
+              wrapper: 'bg-default ring-rose-200 focus-within:ring-rose-400 rounded-xl h-14 border-0',
               button: 'text-rose-400 hover:bg-rose-50 active:scale-95 transition-all',
               input: 'text-rose-600 font-black',
             }"

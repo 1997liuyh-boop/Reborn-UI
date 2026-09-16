@@ -106,7 +106,7 @@ const theme = tv({
     // z-[1] 让标题浮在选中底板之上：底板滑过相邻标签时不会把它们的文字盖住
     tabTitle: "relative z-[1] truncate",
     tabClose:
-      "relative z-[1] -mr-1 inline-flex shrink-0 items-center justify-center rounded-ui-2xs text-gray-6 transition-colors hover:bg-gray-2 hover:text-gray-9 motion-reduce:transition-none",
+      "relative z-[1] -mr-1 inline-flex shrink-0 items-center justify-center rounded-sm text-gray-6 transition-colors hover:bg-gray-2 hover:text-gray-9 motion-reduce:transition-none",
     // 指示器位置由组件测量标题后写入行内样式，这里只负责形态与过渡；底色由 color 变体给
     indicator:
       "pointer-events-none absolute rounded-full transition-all duration-300 ease-out motion-reduce:transition-none",
@@ -167,7 +167,7 @@ const theme = tv({
       "text": { list: "gap-8" },
       // card 不画边框：相邻标签靠 gap-0 直接相接成一排，只有选中底板是 gray-1 的亮块
       "card": { list: "gap-0" },
-      "card-gutter": { list: "gap-1", tab: "rounded-t-ui-xs border border-gray-3" },
+      "card-gutter": { list: "gap-1", tab: "rounded-t-md border border-gray-3" },
       // card-fill 不画边框，只有选中项有底色，标签之间靠各自 16px 内边距拉开
       "card-fill": { list: "gap-0" },
       // rounded / capsule 的悬浮底色瞬时切换、只让文字色过渡：底板的滑动才是「切换动画」，
@@ -176,12 +176,15 @@ const theme = tv({
       "capsule": { list: "gap-1 rounded-full bg-gray-2 p-1", tab: "rounded-full transition-[color] duration-150" },
     },
     // 此处高度是 line、text 的高度；卡片与胶囊类型另有更矮的盒子高度，见 compoundVariants
-    // 字号走本仓库的排版令牌：text-xs 12px、text-base 14px、text-lg 16px（见 app/assets/theme/typography.css）
+    // 字号：mini 的 text-sm 12px、small / medium 的 text-base 14px、large 的 text-lg 16px，
+    // 四档全部取自本仓库七级排版令牌（见 app/assets/theme/typography.css）。
+    // mini 原先写的是 Tailwind 原生 text-xs，与 text-sm 同为 12px，换成令牌后字号不变，
+    // 只有行高从 16px 回到 20px；h-6 的 24px 盒子装得下 20px 行盒，标签高度不受影响
     // addButton 只写宽度，高度与字号都从标签样式继承；宽度逐档镜像标签高度，保证按钮是正方形
     // （不用 aspect-square：uniapp 端小程序支持不稳，两端统一写死宽度以便对照）
     size: {
       mini: {
-        tab: "h-6 text-xs",
+        tab: "h-6 text-sm",
         tabClose: "size-3.5",
         addButton: "w-6",
       },
@@ -318,15 +321,15 @@ const theme = tv({
     { type: "card-fill", size: ["small", "medium"], class: { tab: "h-8", addButton: "w-8" } },
     // card 类型相邻标签无边框直接相接成一排，只在背离内容的两个角保留 6px 圆角（首末位置由 tabPlace 显式判定）；
     // 增加按钮不在标签列内、与标签列之间隔着 8px，首尾圆角规则对它不成立，改为整条背离内容的边都倒角
-    { type: "card", position: "top", class: { addButton: "rounded-t-ui-xs" } },
-    { type: "card", position: "top", tabPlace: ["first", "both"], class: { tab: "rounded-tl-ui-xs" } },
-    { type: "card", position: "top", tabPlace: ["last", "both"], class: { tab: "rounded-tr-ui-xs" } },
-    { type: "card", position: "bottom", class: { addButton: "rounded-b-ui-xs" } },
-    { type: "card", position: "bottom", tabPlace: ["first", "both"], class: { tab: "rounded-bl-ui-xs" } },
-    { type: "card", position: "bottom", tabPlace: ["last", "both"], class: { tab: "rounded-br-ui-xs" } },
-    { type: "card", position: ["left", "right"], class: { addButton: "rounded-ui-xs" } },
-    { type: "card", position: ["left", "right"], tabPlace: ["first", "both"], class: { tab: "rounded-t-ui-xs" } },
-    { type: "card", position: ["left", "right"], tabPlace: ["last", "both"], class: { tab: "rounded-b-ui-xs" } },
+    { type: "card", position: "top", class: { addButton: "rounded-t-md" } },
+    { type: "card", position: "top", tabPlace: ["first", "both"], class: { tab: "rounded-tl-md" } },
+    { type: "card", position: "top", tabPlace: ["last", "both"], class: { tab: "rounded-tr-md" } },
+    { type: "card", position: "bottom", class: { addButton: "rounded-b-md" } },
+    { type: "card", position: "bottom", tabPlace: ["first", "both"], class: { tab: "rounded-bl-md" } },
+    { type: "card", position: "bottom", tabPlace: ["last", "both"], class: { tab: "rounded-br-md" } },
+    { type: "card", position: ["left", "right"], class: { addButton: "rounded-md" } },
+    { type: "card", position: ["left", "right"], tabPlace: ["first", "both"], class: { tab: "rounded-t-md" } },
+    { type: "card", position: ["left", "right"], tabPlace: ["last", "both"], class: { tab: "rounded-b-md" } },
     // ===== 三种卡片类型的选中态：底色、边框、圆角全部交给 tabSlider 这块底板 =====
     // 标签自身的底色不再随选中变化。若仍由标签自己换底色，切换瞬间旧标签会立刻变灰、
     // 新标签会立刻变亮，底板还没滑到人眼就已经看完了结果，滑动也就没了意义；
@@ -354,36 +357,36 @@ const theme = tv({
     { type: "card-gutter", position: "right", class: { tabSlider: "border-l-0" } },
     // 圆角只开在背离内容的那一侧，贴着内容的两个角保持直角才能与内容区无缝拼接。
     // card-gutter 每张卡片形态一致，底板照搬标签的圆角即可
-    { type: "card-gutter", class: { tabSlider: "rounded-t-ui-xs" } },
-    { type: "card-fill", position: "top", class: { tabSlider: "rounded-t-ui-xs" } },
-    { type: "card-fill", position: "bottom", class: { tabSlider: "rounded-b-ui-xs" } },
-    { type: "card-fill", position: "left", class: { tabSlider: "rounded-l-ui-xs" } },
-    { type: "card-fill", position: "right", class: { tabSlider: "rounded-r-ui-xs" } },
+    { type: "card-gutter", class: { tabSlider: "rounded-t-md" } },
+    { type: "card-fill", position: "top", class: { tabSlider: "rounded-t-md" } },
+    { type: "card-fill", position: "bottom", class: { tabSlider: "rounded-b-md" } },
+    { type: "card-fill", position: "left", class: { tabSlider: "rounded-l-md" } },
+    { type: "card-fill", position: "right", class: { tabSlider: "rounded-r-md" } },
     // card 的圆角按标签在列中的首尾分配，底板滑到哪一端就取哪一端的圆角，滑到中间段是直角；
     // 圆角本身也参与过渡，所以从首个标签滑向中间时能看到外角逐渐收平
-    { type: "card", position: "top", edge: "first", class: { tabSlider: "rounded-tl-ui-xs" } },
-    { type: "card", position: "top", edge: "last", class: { tabSlider: "rounded-tr-ui-xs" } },
-    { type: "card", position: "top", edge: "both", class: { tabSlider: "rounded-t-ui-xs" } },
-    { type: "card", position: "bottom", edge: "first", class: { tabSlider: "rounded-bl-ui-xs" } },
-    { type: "card", position: "bottom", edge: "last", class: { tabSlider: "rounded-br-ui-xs" } },
-    { type: "card", position: "bottom", edge: "both", class: { tabSlider: "rounded-b-ui-xs" } },
+    { type: "card", position: "top", edge: "first", class: { tabSlider: "rounded-tl-md" } },
+    { type: "card", position: "top", edge: "last", class: { tabSlider: "rounded-tr-md" } },
+    { type: "card", position: "top", edge: "both", class: { tabSlider: "rounded-t-md" } },
+    { type: "card", position: "bottom", edge: "first", class: { tabSlider: "rounded-bl-md" } },
+    { type: "card", position: "bottom", edge: "last", class: { tabSlider: "rounded-br-md" } },
+    { type: "card", position: "bottom", edge: "both", class: { tabSlider: "rounded-b-md" } },
     {
       type: "card",
       position: ["left", "right"],
       edge: "first",
-      class: { tabSlider: "rounded-t-ui-xs" },
+      class: { tabSlider: "rounded-t-md" },
     },
     {
       type: "card",
       position: ["left", "right"],
       edge: "last",
-      class: { tabSlider: "rounded-b-ui-xs" },
+      class: { tabSlider: "rounded-b-md" },
     },
     {
       type: "card",
       position: ["left", "right"],
       edge: "both",
-      class: { tabSlider: "rounded-ui-xs" },
+      class: { tabSlider: "rounded-md" },
     },
     // ===== 选中态的文字色：按 color 档取对应语义色 =====
     // 写不进 active.true，那里拿不到当前 color；必须排在下面 rounded 的反白规则之前，

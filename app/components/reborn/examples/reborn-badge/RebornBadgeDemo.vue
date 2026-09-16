@@ -194,7 +194,7 @@ function beforeCloseVerify(): Promise<boolean> {
 
         <RebornBadge color="warning" variant="subtle" closable>
           <template #close="{ close }">
-            <span class="bg-warning/20 hover:bg-warning/40 rounded-ui-2xs ms-2 cursor-pointer px-1 text-[10px]"
+            <span class="bg-warning/20 hover:bg-warning/40 rounded-sm ms-2 cursor-pointer px-1 text-[10px]"
               @click="close">
               HIDE
             </span>

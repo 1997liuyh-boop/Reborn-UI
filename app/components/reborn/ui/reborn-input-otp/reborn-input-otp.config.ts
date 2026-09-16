@@ -13,8 +13,10 @@ export default {
         cursor: "absolute w-[1px] h-[60%]",
     },
     variants: {
+        // 字号取七级排版令牌。sm 原先写 Tailwind 原生 text-xs，与 md 的 text-sm 同为 12px，
+        // 两档字号本就一致，换令牌后只是行高从 16px 回到 20px，h-8 的 32px 格子有余量
         size: {
-            sm: { item: "h-8 w-8 text-xs" },
+            sm: { item: "h-8 w-8 text-sm" },
             md: { item: "h-10 w-10 text-sm" },
             lg: { item: "h-12 w-12 text-base" },
         },

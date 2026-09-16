@@ -10,7 +10,7 @@
     >
       <DemoBlock layout="stack">
         <div
-          class="border-default rounded-ui-md text-dimmed flex min-h-[240px] w-full items-center justify-center border border-dashed text-sm"
+          class="border-default rounded-xl text-dimmed flex min-h-[240px] w-full items-center justify-center border border-dashed text-sm"
         >
           前端加紧开发中...
         </div>

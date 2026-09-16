@@ -158,14 +158,14 @@ const theme = tv({
     // 缩进列固定 24px 一层；showLine 时在列中心画一条竖线
     indentUnit: "relative w-6 shrink-0 self-stretch",
     switcher:
-      "flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-ui-2xs text-gray-6 transition-colors hover:bg-gray-2",
+      "flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-6 transition-colors hover:bg-gray-2",
     switcherIcon: "size-4 transition-transform duration-200",
     dragHandle: "flex size-5 shrink-0 cursor-grab items-center justify-center text-gray-5",
     checkbox: "mr-1 flex shrink-0 items-center",
     iconEle: "flex size-5 shrink-0 items-center justify-center text-gray-7",
     // 水平间距规范：左右内边距 6px（px-1.5，无图标时文字距左缘 6px），图标与文字间隔 6px（gap-1.5）
     content:
-      "flex min-w-0 cursor-pointer items-center gap-1.5 rounded-ui-2xs px-1.5 py-0.5 transition-colors duration-150 hover:bg-gray-2",
+      "flex min-w-0 cursor-pointer items-center gap-1.5 rounded-sm px-1.5 py-0.5 transition-colors duration-150 hover:bg-gray-2",
     title: "truncate",
     // ml-auto 在 blockNode（content 拉满整行）时把附加内容推到行尾；普通模式下紧跟标题
     extra: "ml-auto flex shrink-0 items-center gap-1 pl-2",

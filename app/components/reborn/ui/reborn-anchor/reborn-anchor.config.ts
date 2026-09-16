@@ -108,8 +108,9 @@ const theme = tv({
     marker: "pointer-events-none absolute transition-all duration-300 ease-out motion-reduce:transition-none",
     // 链接与它的子链接共用的外层容器：单根节点才能让使用方写在 anchor-link 上的 class 正常落下来
     item: "flex min-w-0 flex-col",
-    // text-base 在本仓库的字号阶梯里是 14px；行高单独覆盖成 150%，阶梯自带的 22px 比设计稿高 1px
-    link: "flex min-w-0 cursor-pointer items-center text-base leading-[150%] no-underline transition-colors duration-200 motion-reduce:transition-none",
+    // 字号走排版令牌 text-base（14px），行高用令牌自带的 22px，不再写 leading-：
+    // 链接是 items-center 的单行行盒，22 与 21 只差在行盒高度上，视觉无差别
+    link: "flex min-w-0 cursor-pointer items-center text-base no-underline transition-colors duration-200 motion-reduce:transition-none",
     linkTitle: "truncate",
     // 子链接始终竖排：横向锚点再嵌一层会把标记的横向测量基准打乱，见组件文档「子链接嵌套」
     sublist: "flex flex-col",
@@ -179,10 +180,11 @@ const theme = tv({
       },
     },
     // 纵向标记：三种形态都是固定尺寸，组件只写中线位置，靠 -translate-y-1/2 自己居中
+    // 竖条的 22px 取自 link 的字号令牌 text-base 自带行高，要与文字行盒等高，改字号时要一起改
     {
       direction: "vertical",
       marker: "bar",
-      class: { marker: "left-0 h-[21px] w-[2px] -translate-y-1/2" },
+      class: { marker: "left-0 h-[22px] w-[2px] -translate-y-1/2" },
     },
     // 圆点比 2px 的轨道宽，左移 2px 才能骑在轨道中线上
     {

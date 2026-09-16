@@ -80,7 +80,7 @@ function setActive(index: number) {
             :animate="{ x: 0, opacity: 1 }"
           >
             <p class="text-sm font-medium">{{ event.title }}</p>
-            <p class="text-muted-foreground text-xs">{{ event.day }}, {{ event.time }}</p>
+            <p class="text-muted-foreground text-sm">{{ event.day }}, {{ event.time }}</p>
           </Motion>
         </div>
       </Motion>
@@ -98,9 +98,9 @@ function setActive(index: number) {
           :transition="{ duration: 0.01 }"
           @click="setActive(index)"
         >
-          <span class="text-xs font-medium uppercase">{{ day.month }}</span>
+          <span class="text-sm font-medium uppercase">{{ day.month }}</span>
           <span class="font-semibold">{{ day.date }}</span>
-          <span class="text-primary text-xs font-medium uppercase duration-200">
+          <span class="text-primary text-sm font-medium uppercase duration-200">
             {{ day.day }}
           </span>
         </Motion>

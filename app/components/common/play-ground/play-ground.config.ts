@@ -27,7 +27,7 @@ export default {
          * 滑块头（left: calc(pct% - blockSize/2px)）在最小值时更是真的溢出到容器外被整块裁掉。
          * 方案：容器只留圆角不裁剪，把裁剪下移到 previewPanel —— 过宽示例仍被拦住，控制面板得以完整渲染。
          */
-        container: "rounded-ui-md",
+        container: "rounded-xl",
         /** 控制面板：无底色，与预览区靠 divide 分隔 */
         controlPanel: "flex flex-col gap-8 py-4 lg:pr-6",
         groupTitleWrapper: "flex items-center gap-2",
@@ -41,9 +41,9 @@ export default {
         /** 预览区：无底色、无光晕，示例本体直接落在画布表面上；这里承接容器让出的裁剪职责，拦住过宽示例 */
         previewPanel: "relative flex min-h-[420px] flex-col overflow-hidden",
         popoverWrapper: "absolute top-3 right-3 z-20",
-        popoverBtn: "border-default text-muted hover:text-highlighted hover:bg-elevated flex items-center gap-1.5 rounded-ui-xs border px-2.5 py-1.5 text-xs font-bold transition-colors active:scale-95",
+        popoverBtn: "border-default text-muted hover:text-highlighted hover:bg-elevated flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-bold transition-colors active:scale-95",
         popoverIcon: "size-4",
-        popoverContent: "w-[420px] overflow-hidden rounded-ui-sm bg-zinc-900 p-5 font-mono text-sm leading-relaxed text-zinc-100 ring-1 ring-white/10",
+        popoverContent: "w-[420px] overflow-hidden rounded-lg bg-zinc-900 p-5 font-mono text-sm leading-relaxed text-zinc-100 ring-1 ring-white/10",
         popoverPre: "overflow-x-auto",
 
         previewContent: "relative z-10 flex flex-1 items-center justify-center p-6",

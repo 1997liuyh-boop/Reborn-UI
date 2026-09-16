@@ -36,13 +36,16 @@ export const ALERT_TYPE_ICON: Record<AlertType, string> = {
 
 export const alertTheme = tv({
   slots: {
-    root: 'reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal leading-[1.5] rounded-ui-sm',
-    icon: 'flex h-[1.5em] shrink-0 items-center',
+    // 字号固定 text-sm（12px，本组件无 size 变体），行高用令牌自带的 20px，不再写 leading-[1.5]。
+    // 下面图标 / 操作区 / 关闭按钮三个盒子的 h-5 / min-h-5 / size-5 就是这 20px：
+    // 根节点是 items-start，它们必须与首行行盒等高才能和文字光学居中，改字号时要一起改。
+    root: 'reborn-alert relative flex w-full items-start gap-2 px-3 py-2 text-sm font-normal rounded-lg',
+    icon: 'flex h-5 shrink-0 items-center',
     content: 'flex min-w-0 flex-1 flex-col gap-2',
     title: 'font-medium',
     description: 'min-w-0',
-    action: 'flex min-h-[1.5em] shrink-0 items-center',
-    closeButton: 'flex size-[1.5em] shrink-0 items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none',
+    action: 'flex min-h-5 shrink-0 items-center',
+    closeButton: 'flex size-5 shrink-0 items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none',
     closeIcon: 'size-3.5 shrink-0',
     // 位于内容列中，不能带 flex-1：不定高列容器里 basis 0% 会退化为按内容计算，顶掉多行模式的显式高度
     carouselWrapper: 'relative min-w-0 overflow-hidden',

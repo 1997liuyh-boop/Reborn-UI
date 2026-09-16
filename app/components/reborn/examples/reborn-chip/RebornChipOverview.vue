@@ -10,20 +10,20 @@
       color="primary"
       text="8"
     >
-      <div class="border-default rounded-ui-md size-12 border" />
+      <div class="border-default rounded-xl size-12 border" />
     </RebornChip>
     <RebornChip
       color="error"
       text="NEW"
     >
-      <div class="border-default rounded-ui-md size-12 border" />
+      <div class="border-default rounded-xl size-12 border" />
     </RebornChip>
     <RebornChip
       color="success"
       size="sm"
       text=""
     >
-      <div class="border-default rounded-ui-md flex size-12 items-center justify-center border">
+      <div class="border-default rounded-xl flex size-12 items-center justify-center border">
         <Icon
           name="lucide:mail"
           class="text-muted size-5"

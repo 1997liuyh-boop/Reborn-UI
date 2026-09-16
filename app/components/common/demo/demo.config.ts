@@ -12,7 +12,7 @@ export const sectionConfig = {
          */
         root: [
             'group/demo-section relative mt-4 flex w-full min-w-0 flex-col overflow-hidden first:mt-0',
-            'border-default bg-default rounded-ui-md border',
+            'border-default bg-default rounded-xl border',
             'transition-colors duration-200 hover:border-inverted/15',
         ].join(' '),
         /** 卡片头：左标题区 / 右动作组 */
@@ -135,7 +135,7 @@ export const blockConfig = {
          */
         tone: {
             plain: {},
-            inset: { root: 'bg-elevated rounded-ui-sm p-4' },
+            inset: { root: 'bg-elevated rounded-lg p-4' },
         },
     },
     compoundVariants: [

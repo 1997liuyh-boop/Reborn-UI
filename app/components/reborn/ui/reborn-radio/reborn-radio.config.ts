@@ -58,8 +58,8 @@ export default {
         icon: "relative box-border inline-flex shrink-0 rounded-full border border-solid bg-transparent transition-all duration-200",
         /** 选中态实心圆点：绝对定位 + transform 居中，避免奇偶像素下 flex 居中出现半像素偏移 */
         dot: "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-200",
-        /** 标签文本 */
-        label: "leading-[1.5] transition-colors",
+        /** 标签文本；字号与行高都由 size 变体的字号令牌给出，此处不写 leading- */
+        label: "transition-colors",
     },
     variants: {
         type: {
@@ -70,8 +70,8 @@ export default {
             button: {
                 icon: "hidden",
                 dot: "hidden",
-                root: "justify-center rounded-ui-2xs",
-                group: "gap-[2px] rounded-ui-xs bg-gray-2 p-[2px]",
+                root: "justify-center rounded-sm",
+                group: "gap-[2px] rounded-md bg-gray-2 p-[2px]",
             },
             /**
              * 实体按钮拼接风格：每项渲染一个 RebornButton。
@@ -93,10 +93,11 @@ export default {
             horizontal: { group: "flex-row" },
             vertical: { group: "flex-col items-start" },
         },
+        // 标签字号走 7 级字号令牌（sm 12px / md 14px / lg 16px），行高由令牌自带。
         size: {
-            sm: { icon: "size-[12px]", dot: "size-[6px]", label: "text-[12px]" },
-            md: { icon: "size-[14px]", dot: "size-[7px]", label: "text-[14px]" },
-            lg: { icon: "size-[16px]", dot: "size-[8px]", label: "text-[16px]" },
+            sm: { icon: "size-[12px]", dot: "size-[6px]", label: "text-sm" },
+            md: { icon: "size-[14px]", dot: "size-[7px]", label: "text-base" },
+            lg: { icon: "size-[16px]", dot: "size-[8px]", label: "text-lg" },
         },
         color: {
             primary: {},
@@ -210,37 +211,37 @@ export default {
             type: "pure-button",
             direction: "horizontal",
             size: "sm",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-ui-2xs [&>.reborn-radio:last-child_button]:rounded-e-ui-2xs" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-sm [&>.reborn-radio:last-child_button]:rounded-e-sm" },
         },
         {
             type: "pure-button",
             direction: "horizontal",
             size: "md",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-ui-xs [&>.reborn-radio:last-child_button]:rounded-e-ui-xs" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-md [&>.reborn-radio:last-child_button]:rounded-e-md" },
         },
         {
             type: "pure-button",
             direction: "horizontal",
             size: "lg",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-ui-sm [&>.reborn-radio:last-child_button]:rounded-e-ui-sm" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-s-lg [&>.reborn-radio:last-child_button]:rounded-e-lg" },
         },
         {
             type: "pure-button",
             direction: "vertical",
             size: "sm",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-ui-2xs [&>.reborn-radio:last-child_button]:rounded-b-ui-2xs" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-sm [&>.reborn-radio:last-child_button]:rounded-b-sm" },
         },
         {
             type: "pure-button",
             direction: "vertical",
             size: "md",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-ui-xs [&>.reborn-radio:last-child_button]:rounded-b-ui-xs" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-md [&>.reborn-radio:last-child_button]:rounded-b-md" },
         },
         {
             type: "pure-button",
             direction: "vertical",
             size: "lg",
-            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-ui-sm [&>.reborn-radio:last-child_button]:rounded-b-ui-sm" },
+            class: { group: "[&>.reborn-radio:first-child_button]:rounded-t-lg [&>.reborn-radio:last-child_button]:rounded-b-lg" },
         },
     ] as const,
     defaultVariants: {

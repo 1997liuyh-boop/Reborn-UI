@@ -58,7 +58,7 @@ const count = ref(5);
 :::tabs-item{label="Web" icon="tabler:world"}
 `size` 支持 `sm` / `md` / `lg` 三档，尺寸全部取自 `app/assets/theme/typography.css` 的设计令牌：高度 24 / 32 / 40px，水平内边距 10 / 12 / 16px，加减图标 10 / 12 / 16px；字号 sm 与 md 同为 14px、lg 为 16px。
 
-`color` 影响聚焦环与按钮悬停色，`shape` 支持 `circle`（胶囊圆角）与 `square`（按尺寸取 `rounded-ui-2xs` / `rounded-ui-xs` / `rounded-ui-sm`），**默认值为 `square`**。
+`color` 影响聚焦环与按钮悬停色，`shape` 支持 `circle`（胶囊圆角）与 `square`（按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`），**默认值为 `square`**。
 
 ```vue
 <template>
@@ -390,7 +390,7 @@ UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，�
 | `precision` | `number` | `-` | 数值精度（小数位数）；小于 `step` 的小数位时按 `step` 的小数位生效。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | 尺寸档位，对应高度 24 / 32 / 40px。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 聚焦环与按钮悬停的强调色。 |
-| `shape` | `"circle" \| "square"` | `"square"` | 外形轮廓：circle 为胶囊圆角，square 按尺寸取 `rounded-ui-*`；`variant="underlined"` 时不生效。 |
+| `shape` | `"circle" \| "square"` | `"square"` | 外形轮廓：circle 为胶囊圆角，square 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`；`variant="underlined"` 时不生效。 |
 | `variant` | `"outlined" \| "filled" \| "borderless" \| "underlined"` | `"outlined"` | 形态变体：底色描边 / 灰底填充 / 无边框 / 仅下划线。 |
 | `align` | `"left" \| "center" \| "right"` | `"center"` | 内部输入文本的对齐方式。 |
 | `disabled` | `boolean` | `false` | 是否禁用（输入框与加减按钮同时禁用）。 |
@@ -590,7 +590,7 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 | `min` / `max` 默认值 | `Number.MIN_SAFE_INTEGER` / `Number.MAX_SAFE_INTEGER` | `0` / `200` |
 | `modelValue` / `defaultValue` | `number \| null`，无默认值 | `number`，默认 `0` |
 | `shape` 默认值 | `square` | `circle` |
-| `square` 圆角 | 按尺寸取 `rounded-ui-2xs / xs / sm` | 统一 `rounded-md` |
+| `square` 圆角 | 按尺寸取 `rounded-sm / xs / sm` | 统一 `rounded-md` |
 | `readonly` | 原生语义，默认 `false` | **语义相反**，默认 `true` 表示可键入 |
 | 文本对齐 | `align` 支持 left / center / right | 固定居中，无 `align` |
 | 隐藏按钮 | `hide-button` / `:controls="false"` | 不支持 |
@@ -613,7 +613,7 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 | 错误态描边 | `ring-red-5` | `ring-error` |
 | 分割线 | 固定 `gray-3`，不随 `color` 变化 | 聚焦时染成 `color` 主题色 |
 | 深色模式 | `base.css` 的 `.dark` 自动翻转灰阶 | 无 `.dark` 块，逐条写死 `dark:` 变体 |
-| Tailwind 版本 | v4（`border-b-1`、`rounded-ui-*` 可用） | v3（须写 `border-b`） |
+| Tailwind 版本 | v4（`border-b-1` 可用；圆角走 `base.css` 覆盖后的原生 `rounded-*`） | v3（须写 `border-b`） |
 
 ## 注意事项
 

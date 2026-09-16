@@ -79,7 +79,7 @@ const rows = Array.from({ length: 12 }, (_, i) => `占位内容 ${i + 1}`);
       description="组件监听窗口滚动，滚动距离超过 threshold 后从右侧滑入；按钮固定在视口右下角，请向下滚动本页查看效果。开启进度环后，按钮边缘会随滚动进度逐渐画满。"
     >
       <!-- 组件本身是固定定位的浮层，这里只用描边标出占位区域，避免再叠一层背景 -->
-      <div class="border-default rounded-ui-md w-full border">
+      <div class="border-default rounded-xl w-full border">
         <div class="divide-default divide-y">
           <p
             v-for="row in rows"
@@ -133,7 +133,7 @@ const rows = Array.from({ length: 12 }, (_, i) => `占位内容 ${i + 1}`);
           :bottom="100"
           :ui="{ wrapper: 'z-50' }"
         >
-          <div class="bg-success rounded-ui-sm flex size-12 cursor-pointer items-center justify-center text-xs font-bold text-white">
+          <div class="bg-success rounded-lg flex size-12 cursor-pointer items-center justify-center text-xs font-bold text-white">
             TOP
           </div>
         </RebornBackTop>

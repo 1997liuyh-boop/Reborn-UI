@@ -19,7 +19,7 @@ function handleComplete() {
         :width="250"
         :height="250"
         :min-scratch-percentage="50"
-        class="border-default bg-elevated mx-auto flex items-center justify-center overflow-hidden rounded-ui-lg border-2"
+        class="border-default bg-elevated mx-auto flex items-center justify-center overflow-hidden rounded-3xl border-2"
         :gradient-colors="['#A97CF8', '#F38CB8', '#FDCC92']"
         @complete="handleComplete"
       >

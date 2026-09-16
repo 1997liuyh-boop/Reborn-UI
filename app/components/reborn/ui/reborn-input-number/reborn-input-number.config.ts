@@ -210,12 +210,12 @@ export default {
     },
   },
   compoundVariants: [
-    { shape: "square", size: "sm", class: { wrapper: "rounded-ui-2xs" } },
-    { shape: "square", size: "md", class: { wrapper: "rounded-ui-xs" } },
-    { shape: "square", size: "lg", class: { wrapper: "rounded-ui-sm" } },
-    // 下划线形态必须压平圆角。这里用 ! 提权而非依赖顺序：
-    // tailwind-merge 不认识自定义的 rounded-ui-* 属于 border-radius 冲突组，
-    // 不加 ! 时 rounded-none 与 rounded-ui-* 会共存并由 CSS 源序决定胜负。
+    { shape: "square", size: "sm", class: { wrapper: "rounded-sm" } },
+    { shape: "square", size: "md", class: { wrapper: "rounded-md" } },
+    { shape: "square", size: "lg", class: { wrapper: "rounded-lg" } },
+    // 下划线形态必须压平圆角。! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，
+    // 不在 tailwind-merge 的 border-radius 冲突组里，rounded-none 与它会共存并由
+    // CSS 源序决定胜负。现在已改回原生 rounded-*，合并正常，! 保留只为不动覆盖顺序。
     { variant: "underlined", class: { wrapper: "rounded-none!" } },
     // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
     { variant: "borderless", error: true, class: { wrapper: "ring-1 ring-red-5" } },

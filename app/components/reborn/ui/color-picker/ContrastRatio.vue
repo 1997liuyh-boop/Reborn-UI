@@ -119,7 +119,7 @@ watch(() => props.color, calculateContrastRatios, { immediate: true, deep: true 
         >
       </div>
       <div class="flex flex-col justify-between">
-        <span class="text-muted-foreground text-xs text-nowrap whitespace-nowrap">
+        <span class="text-muted-foreground text-sm text-nowrap whitespace-nowrap">
           Contrast Ratio
         </span>
         <span class="text-sm">{{ currentContrastRatio }}</span>

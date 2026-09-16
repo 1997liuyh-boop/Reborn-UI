@@ -128,8 +128,8 @@ const rangeShortcuts = [
                 <div class="flex flex-col gap-2">
                     <span class="text-dimmed text-xs font-medium">UI 深度重写</span>
                     <RebornSelectDate type="datetime" :size="size" color="info" :ui="{
-                        trigger: 'border-2 border-info/30 rounded-ui-base bg-info/5 hover:border-info/60 transition-all',
-                        dropdown: 'rounded-ui-base border-info/20'
+                        trigger: 'border-2 border-info/30 rounded-2xl bg-info/5 hover:border-info/60 transition-all',
+                        dropdown: 'rounded-2xl border-info/20'
                     }" placeholder="深度重写 UI 样式" />
                 </div>
             </DemoBlock>
