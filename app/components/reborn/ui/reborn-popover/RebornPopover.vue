@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { FloatingPoint } from "~/lib/floating";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
 import { tv } from "~/lib/tv";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
 import theme from "./reborn-popover.config";
@@ -126,10 +128,9 @@ const onClickOutside = (event: MouseEvent) => {
   open.value = false;
 };
 
-const VIEWPORT_OFFSET = 8;
 /**
  * 箭头中心距面板端部的最小内缩量，与 reborn-tooltip 取同一口径：
- * 面板圆角 8px（rounded-ui-sm）加半个箭头底边（12px 方块旋转 45° 后底边 ≈16.97px，半边 ≈8.49px），取整 17。
+ * 面板圆角 8px（rounded-lg）加半个箭头底边（12px 方块旋转 45° 后底边 ≈16.97px，半边 ≈8.49px），取整 17。
  * 小于该值箭头底边会压到圆角的弧线上，连接处出现悬空缺口。
  */
 const ARROW_INSET = 17;
@@ -147,103 +148,42 @@ const arrowPosition = ref({
   y: "50%",
 });
 
-function getPosition(
+/**
+ * 同步箭头在面板内的坐标。落点规则与 reborn-tooltip 一致：
+ * start / end 停在对齐端的内缩位置，只有 center 才指向触发器中心，
+ * 这样三档对齐的箭头位置是稳定的，不随触发器宽度漂移。
+ *
+ * 箭头绝对定位在带边框的 .content 里，top / left 以内边距盒为原点，
+ * 而 position 是面板边框盒的位置，因此要把边框宽度算进面板起点。
+ */
+function syncArrowPosition(
   rect: DOMRect,
-  width: number,
-  height: number,
+  position: FloatingPoint,
   side: PopoverSide,
   align: PopoverAlign,
-  offset: number,
+  contentBox: HTMLElement,
 ) {
-  let x = rect.left;
-  let y = rect.bottom + offset;
-
-  if (side === "top") {
-    y = rect.top - height - offset;
-  }
-
-  if (side === "left") {
-    x = rect.left - width - offset;
-    y = rect.top + rect.height / 2 - height / 2;
-  }
-
-  if (side === "right") {
-    x = rect.right + offset;
-    y = rect.top + rect.height / 2 - height / 2;
-  }
-
-  if (side === "top" || side === "bottom") {
-    if (align === "center") {
-      x = rect.left + rect.width / 2 - width / 2;
-    } else if (align === "end") {
-      x = rect.right - width;
-    }
-  }
-
-  if (side === "left" || side === "right") {
-    if (align === "start") {
-      y = rect.top;
-    } else if (align === "end") {
-      y = rect.bottom - height;
-    }
-  }
-
-  return { x, y };
-}
-
-function getOverflow(x: number, y: number, width: number, height: number) {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = document.documentElement.clientHeight;
-
-  return {
-    top: y < VIEWPORT_OFFSET,
-    bottom: y + height > viewportHeight - VIEWPORT_OFFSET,
-    left: x < VIEWPORT_OFFSET,
-    right: x + width > viewportWidth - VIEWPORT_OFFSET,
-  };
-}
-
-function clampPosition(x: number, y: number, width: number, height: number) {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = document.documentElement.clientHeight;
-
-  return {
-    x: Math.min(Math.max(x, VIEWPORT_OFFSET), viewportWidth - width - VIEWPORT_OFFSET),
-    y: Math.min(Math.max(y, VIEWPORT_OFFSET), viewportHeight - height - VIEWPORT_OFFSET),
-  };
-}
-
-function getVerticalAlignFallbacks(align: PopoverAlign, direction: "top" | "bottom") {
-  if (direction === "bottom") {
-    if (align === "start") return ["center", "end"] as PopoverAlign[];
-    if (align === "center") return ["end"] as PopoverAlign[];
-    return [] as PopoverAlign[];
-  }
-
-  if (align === "end") return ["center", "start"] as PopoverAlign[];
-  if (align === "center") return ["start"] as PopoverAlign[];
-  return [] as PopoverAlign[];
-}
-
-/** 把箭头中心钳制在面板直边范围内；面板短到放不下两倍内缩量时退回正中，避免上下限倒挂。 */
-function clampArrowOffset(center: number, extent: number) {
-  if (extent < ARROW_INSET * 2) return extent / 2;
-  return Math.min(Math.max(center, ARROW_INSET), extent - ARROW_INSET);
-}
-
-/**
- * 同步箭头在面板内的坐标：箭头指向触发器中心，再按最小内缩量钳制到面板直边内。
- * 箭头绝对定位在带边框的 .content 里，top / left 以内边距盒为原点，
- * 而 x / y 是面板边框盒的位置，因此要扣掉边框宽度，箭头中心才能真正落在触发器中心上。
- */
-function syncArrowPosition(rect: DOMRect, x: number, y: number, contentBox: HTMLElement) {
   // clientLeft / clientTop 即左、上边框宽度，clientWidth / clientHeight 即内边距盒尺寸
-  const triggerCenterX = rect.left + rect.width / 2 - x - contentBox.clientLeft;
-  const triggerCenterY = rect.top + rect.height / 2 - y - contentBox.clientTop;
+  const isVertical = side === "top" || side === "bottom";
 
   arrowPosition.value = {
-    x: `${clampArrowOffset(triggerCenterX, contentBox.clientWidth)}px`,
-    y: `${clampArrowOffset(triggerCenterY, contentBox.clientHeight)}px`,
+    x: `${getArrowCenter({
+      panelStart: position.left + contentBox.clientLeft,
+      panelExtent: contentBox.clientWidth,
+      triggerStart: rect.left,
+      triggerExtent: rect.width,
+      // 主轴方向上没有对齐概念，那一轴的值也用不到，按 center 计算即可
+      align: isVertical ? align : "center",
+      inset: ARROW_INSET,
+    })}px`,
+    y: `${getArrowCenter({
+      panelStart: position.top + contentBox.clientTop,
+      panelExtent: contentBox.clientHeight,
+      triggerStart: rect.top,
+      triggerExtent: rect.height,
+      align: isVertical ? "center" : align,
+      inset: ARROW_INSET,
+    })}px`,
   };
 }
 
@@ -255,67 +195,26 @@ function calculatePosition(contentElement?: HTMLElement) {
   if (!contentBox) return;
 
   const rect = triggerRef.value.getBoundingClientRect();
-  const width = contentBox.offsetWidth;
-  const height = contentBox.offsetHeight;
-  const offset = props.content?.sideOffset ?? 8;
+  // 取 offsetWidth / offsetHeight 而非 getBoundingClientRect，入场动画的 scale 不会算进尺寸
+  const size = { width: contentBox.offsetWidth, height: contentBox.offsetHeight };
+  const align: PopoverAlign = props.content?.align || "center";
 
-  let side: PopoverSide = props.content?.side || "bottom";
-  let align: PopoverAlign = props.content?.align || "center";
-  const originAlign: PopoverAlign = props.content?.align || "center";
-  let position = getPosition(rect, width, height, side, align, offset);
-  let overflow = getOverflow(position.x, position.y, width, height);
+  // 翻转与贴边都交给共享的浮层几何，口径与 reborn-tooltip 保持一致
+  const { side, position } = resolveFloatingPosition({
+    triggerRect: rect,
+    size,
+    side: props.content?.side || "bottom",
+    align,
+    offset: props.content?.sideOffset ?? 8,
+  });
 
-  if (side === "bottom" && overflow.bottom) {
-    side = "top";
-    position = getPosition(rect, width, height, side, align, offset);
-    overflow = getOverflow(position.x, position.y, width, height);
-  } else if (side === "top" && overflow.top) {
-    side = "bottom";
-    position = getPosition(rect, width, height, side, align, offset);
-    overflow = getOverflow(position.x, position.y, width, height);
-  } else if (side === "left" || side === "right") {
-    if (side === "left" && overflow.left) {
-      side = "right";
-      position = getPosition(rect, width, height, side, align, offset);
-      overflow = getOverflow(position.x, position.y, width, height);
-    } else if (side === "right" && overflow.right) {
-      side = "left";
-      position = getPosition(rect, width, height, side, align, offset);
-      overflow = getOverflow(position.x, position.y, width, height);
-    }
-
-    if (overflow.bottom || overflow.top) {
-      const direction = overflow.bottom ? "bottom" : "top";
-
-      for (const nextAlign of getVerticalAlignFallbacks(align, direction)) {
-        align = nextAlign;
-        position = getPosition(rect, width, height, side, align, offset);
-        overflow = getOverflow(position.x, position.y, width, height);
-
-        if (
-          (direction === "bottom" && !overflow.bottom) ||
-          (direction === "top" && !overflow.top)
-        ) {
-          break;
-        }
-      }
-
-      if ((direction === "bottom" && overflow.bottom) || (direction === "top" && overflow.top)) {
-        side = direction === "bottom" ? "top" : "bottom";
-        align = originAlign;
-        position = getPosition(rect, width, height, side, align, offset);
-      }
-    }
-  }
-
-  const clamped = clampPosition(position.x, position.y, width, height);
   resolvedSide.value = side;
   resolvedAlign.value = align;
-  syncArrowPosition(rect, clamped.x, clamped.y, contentBox);
+  syncArrowPosition(rect, position, side, align, contentBox);
 
   style.value = {
-    left: `${clamped.x}px`,
-    top: `${clamped.y}px`,
+    left: `${position.left}px`,
+    top: `${position.top}px`,
   };
 }
 

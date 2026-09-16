@@ -29,7 +29,7 @@ Popover 是锚定在触发元素上的小型气泡浮层，双端可用。默认
 
 ### 定位与箭头
 
-`content` 属性对象控制弹出方位：`side` 为主轴方向（`top` / `bottom` / `left` / `right`），`align` 为交叉轴对齐（`start` / `center` / `end`），`sideOffset` 为与触发器的间距（px）。`arrow` 控制是否显示指向触发器的小箭头。
+`content` 属性对象控制弹出方位：`side` 为主轴方向（`top` / `bottom` / `left` / `right`），`align` 为交叉轴对齐（`start` / `center` / `end`），`sideOffset` 为与触发器的间距（px）。`arrow` 控制是否显示小箭头；箭头落点跟随 `align`：`start` / `end` 停在气泡两端 17px 处，`center` 才指向触发器中心。
 
 ```vue
 <template>
@@ -202,7 +202,7 @@ UniApp 端不传 `content` 插槽时，可用 `title` + `displayMode` 快速渲�
 - web、uniapp 双端可用；额外类名 Web 端用 `class`，UniApp 端用 `customClass`。
 - 定位由 `content` 对象配置；`sideOffset` 默认值双端不同（Web 8 / UniApp 0），`arrow` 默认值也不同（Web 关 / UniApp 开）。
 - `mode="hover"` 仅 Web 端有效；Web 端 hover 模式在气泡与触发器之间渲染透明「桥接层」防止移动途中关闭，`closeDelay` 默认 120ms。
-- Web 端使用 Teleport 挂载（`portal` 默认 `true`），带边缘越界翻转与位置修正；UniApp 端保持一致的定位思路，但不提供完整的越界翻转能力。
+- Web 端使用 Teleport 挂载（`portal` 默认 `true`），定位与 `reborn-tooltip`、`reborn-popconfirm` 共用同一套实现：主轴放不下翻到对侧（对侧同样放不下则保持原方向），交叉轴挪回视口内但与触发器保持至少 12px 交叠，触发器滚出视口时气泡跟着一起走。UniApp 端保持一致的定位思路，但不提供完整的越界翻转能力。
 - Web 端会根据 `side` 方向叠加 `fade-*` 位移与 `zoom-in` 缩放动画（如底部弹出为 fade-up + zoom-in）。
 - UniApp 端多个 Popover 同时使用时会自动互斥：打开一个会关闭其他已打开的实例。
 - UniApp 端 `displayMode="menu"` 时 `title` 必须传对象数组（每项含 `content` 或 `title` 字段），`normal` 模式必须传字符串，类型不符控制台会报错。

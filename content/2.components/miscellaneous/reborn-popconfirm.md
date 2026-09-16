@@ -55,7 +55,9 @@ tags: [popconfirm, confirm, feedback, popover]
 </template>
 ```
 
-`placement` 取值与 `reborn-tooltip` 完全一致（同一套 `PopconfirmPlacement` 定义），默认 `'top'`；同样接受 `topLeft` / `rightBottom` 这类驼峰别名。`sideOffset` 控制气泡与触发器的间距（默认 8px）。超出视口时自动翻转到对侧；`arrow` 默认显示。
+`placement` 取值与 `reborn-tooltip` 完全一致（同一套 `PopconfirmPlacement` 定义），默认 `'top'`；同样接受 `topLeft` / `rightBottom` 这类驼峰别名。`sideOffset` 控制气泡与触发器的间距（默认 8px）。`arrow` 默认显示。
+
+定位口径与 `reborn-tooltip` 共用同一套实现：主轴放不下时翻到对侧，对侧同样放不下就保持原方向（翻过去只会换个方向继续溢出）；交叉轴则把气泡挪回视口内，但始终与触发器保持至少 12px 交叠，触发器滚出视口时气泡跟着一起走，不会被钉在屏幕边缘。箭头落点也按 `placement` 的对齐档位固定：`-start` / `-end` 停在气泡两端 17px 处，只有居中档才指向触发器中心。
 
 ### PopconfirmPlacement
 
@@ -229,6 +231,6 @@ async function onConfirm() {
 ```vue
 <RebornPopconfirm
   title="确认操作？"
-  :ui="{ title: 'font-semibold', footer: 'justify-start', popover: { content: 'rounded-ui-sm' } }"
+  :ui="{ title: 'font-semibold', footer: 'justify-start', popover: { content: 'rounded-lg' } }"
 />
 ```

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {CSSProperties} from 'vue';
 import type { TooltipUI } from './reborn-tooltip.config';
+import type { FloatingPoint, FloatingSize } from '~/lib/floating';
 import type { Placement, PlacementAlias, PlacementAlign, PlacementSide } from '~/lib/placement';
 import {
   computed,
@@ -12,6 +13,12 @@ import {
   useId,
   useSlots, watch
 } from 'vue';
+import {
+  FLOATING_PANEL_RADIUS,
+  FLOATING_TRIGGER_GAP,
+  getArrowCenter,
+  resolveFloatingPosition,
+} from '~/lib/floating';
 import { resolvePlacement } from '~/lib/placement';
 import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
@@ -92,40 +99,18 @@ interface RebornTooltipProps {
   ui?: TooltipUI;
 }
 
-interface Position {
-  top: number;
-  left: number;
-}
-
-interface Overflow {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
-/** 仅包含 width/height 的尺寸描述，避免与 DOMRect 耦合 */
-interface ContentSize {
-  width: number;
-  height: number;
-}
-
 /** v-model:open 双向绑定 */
 const openModel = defineModel<boolean>('open', { default: undefined });
 
 /** 生成唯一 ID 用于 ARIA 关联 */
 const tooltipId = `tooltip-${useId()}`;
 
-const VIEWPORT_PADDING = 8;
-const TRIGGER_GAP = 8;
 /** 箭头伸出面板的厚度（设计稿 7px），同时作为面板与触发器的间距 */
 const ARROW_SIZE = 7;
 /** 箭头沿面板边缘方向的底边长（设计稿 18px） */
 const ARROW_LENGTH = 18;
 /** 短面板下箭头底边的收缩下限，再短就细得看不出指向 */
 const ARROW_LENGTH_MIN = 12;
-/** 面板圆角（rounded-ui-sm = 8px），箭头底边压到这段弧线上连接处会露缺口 */
-const PANEL_RADIUS = 8;
 /** start / center / end 三档箭头位置至少要拉开的距离，不足时收缩箭头换取余量 */
 const ARROW_MIN_SPAN = 9;
 
@@ -138,16 +123,8 @@ const ARROW_MIN_SPAN = 9;
 const getArrowLength = (crossExtent: number) =>
   Math.min(
     ARROW_LENGTH,
-    Math.max(ARROW_LENGTH_MIN, crossExtent - PANEL_RADIUS * 2 - ARROW_MIN_SPAN),
+    Math.max(ARROW_LENGTH_MIN, crossExtent - FLOATING_PANEL_RADIUS * 2 - ARROW_MIN_SPAN),
   );
-
-/** 主轴溢出时的翻转映射 */
-const FLIP_SIDE: Record<TooltipSide, TooltipSide> = {
-  top: 'bottom',
-  bottom: 'top',
-  left: 'right',
-  right: 'left',
-};
 
 const isMounted = ref(false);
 
@@ -257,7 +234,7 @@ const popupStyle = computed(() =>
 );
 
 /** 计算触发元素与提示层之间的间距，箭头正好填充这段距离 */
-const getOffset = () => (showArrow.value ? ARROW_SIZE : TRIGGER_GAP);
+const getOffset = () => (showArrow.value ? ARROW_SIZE : FLOATING_TRIGGER_GAP);
 
 /** 清理显隐定时器，避免快速移入移出时状态错乱 */
 const clearTimers = () => {
@@ -272,122 +249,11 @@ const clearTimers = () => {
   }
 };
 
-/** 根据方向与对齐方式计算初始坐标 */
-const getPosition = (
-  triggerRect: DOMRect,
-  contentRect: ContentSize,
-  side: TooltipSide,
-  align: TooltipAlign,
-): Position => {
-  const offset = getOffset();
-
-  if (side === 'top') {
-    return {
-      top: triggerRect.top - contentRect.height - offset,
-      left:
-        align === 'start'
-          ? triggerRect.left
-          : align === 'end'
-            ? triggerRect.right - contentRect.width
-            : triggerRect.left + triggerRect.width / 2 - contentRect.width / 2,
-    };
-  }
-
-  if (side === 'bottom') {
-    return {
-      top: triggerRect.bottom + offset,
-      left:
-        align === 'start'
-          ? triggerRect.left
-          : align === 'end'
-            ? triggerRect.right - contentRect.width
-            : triggerRect.left + triggerRect.width / 2 - contentRect.width / 2,
-    };
-  }
-
-  if (side === 'left') {
-    return {
-      top:
-        align === 'start'
-          ? triggerRect.top
-          : align === 'end'
-            ? triggerRect.bottom - contentRect.height
-            : triggerRect.top + triggerRect.height / 2 - contentRect.height / 2,
-      left: triggerRect.left - contentRect.width - offset,
-    };
-  }
-
-  return {
-    top:
-      align === 'start'
-        ? triggerRect.top
-        : align === 'end'
-          ? triggerRect.bottom - contentRect.height
-          : triggerRect.top + triggerRect.height / 2 - contentRect.height / 2,
-    left: triggerRect.right + offset,
-  };
-};
-
-/** 计算提示层相对视口的溢出量 */
-const getOverflow = (position: Position, contentRect: ContentSize): Overflow => ({
-  top: VIEWPORT_PADDING - position.top,
-  right:
-    position.left + contentRect.width - (window.innerWidth - VIEWPORT_PADDING),
-  bottom:
-    position.top + contentRect.height - (window.innerHeight - VIEWPORT_PADDING),
-  left: VIEWPORT_PADDING - position.left,
-});
-
-/** 取某一侧的主轴溢出量 */
-const getMainOverflow = (overflow: Overflow, side: TooltipSide) =>
-  side === 'top'
-    ? overflow.top
-    : side === 'bottom'
-      ? overflow.bottom
-      : side === 'left'
-        ? overflow.left
-        : overflow.right;
-
-/**
- * 贴边偏移：交叉轴方向把提示层挪回视口内，但始终与触发元素保持最小交叠——
- * 触发元素随滚动移出视口时，提示层跟着一同滚出，而不是钉死在屏幕边缘
- */
-const shiftCrossAxis = (
-  position: Position,
-  contentRect: ContentSize,
-  triggerRect: DOMRect,
-  side: TooltipSide,
-): Position => {
-  if (side === 'top' || side === 'bottom') {
-    const overlap = Math.min(12, triggerRect.width / 2);
-    let left = Math.min(
-      Math.max(position.left, VIEWPORT_PADDING),
-      window.innerWidth - contentRect.width - VIEWPORT_PADDING,
-    );
-    left = Math.min(
-      Math.max(left, triggerRect.left + overlap - contentRect.width),
-      triggerRect.right - overlap,
-    );
-    return { top: position.top, left };
-  }
-
-  const overlap = Math.min(12, triggerRect.height / 2);
-  let top = Math.min(
-    Math.max(position.top, VIEWPORT_PADDING),
-    window.innerHeight - contentRect.height - VIEWPORT_PADDING,
-  );
-  top = Math.min(
-    Math.max(top, triggerRect.top + overlap - contentRect.height),
-    triggerRect.bottom - overlap,
-  );
-  return { top, left: position.left };
-};
-
 /** 根据实际位置同步箭头坐标；默认停在对齐端，pointAtCenter 时指向触发元素中心 */
 const syncArrowPosition = (
   triggerRect: DOMRect,
-  contentRect: ContentSize,
-  position: Position,
+  contentRect: FloatingSize,
+  position: FloatingPoint,
   side: TooltipSide,
   align: TooltipAlign,
 ) => {
@@ -403,21 +269,23 @@ const syncArrowPosition = (
   const halfLength = length / 2;
   // 箭头底边向面板内收 0.5px，保证连接处无缝
   const overlap = 0.5;
-  // 对齐端内缩量为圆角加半个底边；对极小面板做兜底，避免钳制上下限倒挂
-  const inset = Math.min(PANEL_RADIUS + halfLength, crossExtent / 2);
+  // 对齐端内缩量为圆角加半个底边，钳制与极小面板的兜底由 getArrowCenter 统一处理
+  const inset = FLOATING_PANEL_RADIUS + halfLength;
 
   let centerX: number;
   let centerY: number;
   let rotate: string;
 
   if (side === 'top' || side === 'bottom') {
-    const ideal =
-      pointAtCenter.value || align === 'center'
-        ? triggerRect.left + triggerRect.width / 2 - position.left
-        : align === 'start'
-          ? inset
-          : contentRect.width - inset;
-    centerX = Math.min(Math.max(ideal, inset), contentRect.width - inset);
+    centerX = getArrowCenter({
+      panelStart: position.left,
+      panelExtent: contentRect.width,
+      triggerStart: triggerRect.left,
+      triggerExtent: triggerRect.width,
+      align,
+      inset,
+      pointAtCenter: pointAtCenter.value,
+    });
     if (side === 'top') {
       // 面板在触发器上方：箭头贴面板底边，尖端向下
       centerY = contentRect.height + halfThickness - overlap;
@@ -428,13 +296,15 @@ const syncArrowPosition = (
       rotate = 'rotate(-90deg)';
     }
   } else {
-    const ideal =
-      pointAtCenter.value || align === 'center'
-        ? triggerRect.top + triggerRect.height / 2 - position.top
-        : align === 'start'
-          ? inset
-          : contentRect.height - inset;
-    centerY = Math.min(Math.max(ideal, inset), contentRect.height - inset);
+    centerY = getArrowCenter({
+      panelStart: position.top,
+      panelExtent: contentRect.height,
+      triggerStart: triggerRect.top,
+      triggerExtent: triggerRect.height,
+      align,
+      inset,
+      pointAtCenter: pointAtCenter.value,
+    });
     if (side === 'left') {
       // 面板在触发器左侧：箭头贴面板右边，尖端向右（SVG 原始方向）
       centerX = contentRect.width + halfThickness - overlap;
@@ -466,26 +336,17 @@ const updatePosition = (el?: Element) => {
   const triggerRect = triggerRef.value.getBoundingClientRect();
   // offsetWidth/offsetHeight 不受 CSS transform（如 zoom-in 动画的 scale-90）影响，
   // 避免在 onBeforeEnter 期间测量到缩放后的错误尺寸
-  const contentRect: ContentSize = { width: htmlEl.offsetWidth, height: htmlEl.offsetHeight };
+  const contentRect: FloatingSize = { width: htmlEl.offsetWidth, height: htmlEl.offsetHeight };
   const { side, align } = placementState.value;
 
-  let usedSide = side;
-  let nextPosition = getPosition(triggerRect, contentRect, side, align);
-
-  if (props.autoAdjustOverflow) {
-    // 主轴放不下先尝试翻转到对侧；对侧也放不下则维持原方向
-    const overflow = getOverflow(nextPosition, contentRect);
-    if (getMainOverflow(overflow, side) > 0) {
-      const flippedSide = FLIP_SIDE[side];
-      const flippedPosition = getPosition(triggerRect, contentRect, flippedSide, align);
-      const flippedOverflow = getOverflow(flippedPosition, contentRect);
-      if (getMainOverflow(flippedOverflow, flippedSide) <= 0) {
-        usedSide = flippedSide;
-        nextPosition = flippedPosition;
-      }
-    }
-    nextPosition = shiftCrossAxis(nextPosition, contentRect, triggerRect, usedSide);
-  }
+  const { side: usedSide, position: nextPosition } = resolveFloatingPosition({
+    triggerRect,
+    size: contentRect,
+    side,
+    align,
+    offset: getOffset(),
+    autoAdjustOverflow: props.autoAdjustOverflow,
+  });
 
   actualSide.value = usedSide;
   contentStyle.value = {
