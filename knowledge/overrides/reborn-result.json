@@ -1,0 +1,30 @@
+{
+  "description": "操作结果的终态页：图标、标题加描述、操作区三段纵向居中，icon 收 info / success / warning / error 四种语义反馈加 403 / 404 / 500 三种状态码，传 null 则整段去掉图标区。",
+  "whenToUse": [
+    "表单、订单、支付流程走完后的独立结果页：icon='success' 配 title 说明结果，extra 插槽放「返回首页」「查看订单」。",
+    "失败终态且需要给出补救动作：icon='error'，sub-title 写清失败原因，extra 放「重试」。",
+    "路由级的异常页：icon 取 403 / 404 / 500，三者复用语义配色，不必自己配图。",
+    "结果部分成功、需要提醒但不算失败：icon='warning'，sub-title 写清哪几条没成功。",
+    "需要整幅插画而非图标：:icon='null' 配 icon 插槽，底板会退化成无尺寸透明容器，插画自己决定大小。"
+  ],
+  "whenNotToUse": [
+    "页面内常驻的一行状态说明，改用 reborn-alert，它是横向排布的提示条，不占整屏。",
+    "操作后的瞬时反馈（保存成功、已复制），改用 reborn-toast，Result 是需要用户停留并做下一步决策的终态页。",
+    "需要用户确认后才能继续的阻断式反馈，改用 reborn-dialog 或 reborn-popconfirm。",
+    "列表 / 表格的空数据占位：改用 reborn-empty，它的标题是 14px，嵌在卡片、表格里不会压过周围内容；Result 的标题固定 24px，是给整屏终态页用的。"
+  ],
+  "pitfalls": [
+    "七种状态共用同一套 lucide 图标，没有整幅插画：Arco 的 403 / 404 / 500 是三张手绘 SVG 插图，本实现统一收敛成圆形底板加语义色字形，视觉重量与前四种一致；需要插画得传 :icon='null' 并用 icon 插槽自己放。",
+    "icon 传 null 与不传是两回事：withDefaults 只在 prop 为 undefined 时填默认值，显式 :icon='null' 会原样传入并整段去掉图标区，漏写 icon 得到的是默认的 info。",
+    "空段不进 DOM，间距不会翻倍：三段各自带 v-if，某段无内容时连同它那份 24px（UniApp 48rpx）段间距一起消失；反过来也意味着不能靠 title='' 占位撑高度，空字符串会让整段跳过渲染，而 title=' ' 会渲染成一行空标题。",
+    "图标配色不可单独配置：配色由 icon 经 RESULT_ICON_COLOR 推导，组件没有 color prop；403 归 warning、404 归 info、500 归 error，要换色只能用 ui.icon 覆盖 bg-* / text-*，或者直接用 icon 插槽接管整块。",
+    "组件不派发任何事件，也不暴露实例方法：extra 插槽里的交互由放进去的元素自己承担，Result 上没有 click / confirm 这类 emit，也没有 defineExpose。",
+    "title / sub-title 只收纯文本：它们被插值进文本节点，写 HTML 不会被解析；要富文本改用同名插槽，插槽存在时对应的 prop 不渲染。",
+    "只有 spec 里的四个具名插槽（icon / title / sub-title / extra），没有默认插槽：想在描述下面塞一段正文得走 sub-title 插槽或 extra 插槽。",
+    "icon 插槽只换字形、底板仍在：圆形底板与语义色淡底由 icon 决定，要连底板一起去掉必须同时传 :icon='null'，此时底板退化成 size-auto rounded-none bg-transparent。",
+    "ui.iconGlyph 只管尺寸，UniApp 端的 i-lucide-* 字形类不要写进去：两个图标类叠在同一节点上会各画一层遮罩，组件把字形类单独挂在 :class 数组里。提供 icon 插槽时字形节点不渲染，ui.iconGlyph 随之失效，ui.extra 在没有 extra 插槽时同理。",
+    "描述用的是 text-base 不是 text-sm：本仓库在 app/assets/theme/typography.css 把 --text-sm 改写成 12px、--text-base 改写成 14px，按 Tailwind 默认刻度的直觉写 text-sm 会小一号。",
+    "两端文本色写法不同但呈现一致：Web 的 gray 色阶随暗色模式反转，直接写 text-gray-10 / text-gray-7；UniApp 的 gray 是静态色阶且止于 gray-8，必须写成 text-gray-8 dark:text-gray-1 / text-gray-7 dark:text-gray-4。",
+    "根元素类名入口两端不同：Web 用 class（any），UniApp 用 custom-class（string，默认 ''），后者是为了避开小程序原生 class 属性。"
+  ]
+}

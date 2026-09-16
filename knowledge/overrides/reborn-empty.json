@@ -1,0 +1,32 @@
+{
+  "description": "数据为空时的占位块：图片、标题加描述、操作区三段纵向居中，段间 24px（UniApp 48rpx），标题与描述之间 4px（UniApp 8rpx）。不传 image 用内置的 48×48 灰色空箱子（base64 内联），另附 box / folder / scene 三张示例插画。",
+  "whenToUse": [
+    "列表 / 表格 / 卡片流请求成功但返回 0 条：title 说明空的原因，extra 插槽放「新建」。",
+    "搜索或筛选没有命中：description 写清当前条件，extra 放「重置筛选」，让用户能退回去。",
+    "尚未初始化的功能区（还没有收藏、还没有上传文件）：配大一点的插画加一个主操作，充当引导位。",
+    "需要整幅插画而非小图标：image 指向自带的 empty-scene.svg，或用 image 插槽塞任意节点。",
+    "只要一行说明、不要图：:image='null' 去掉整个图片区，连同它那份段间距一起消失。"
+  ],
+  "whenNotToUse": [
+    "请求失败、无权限、服务异常：改用 reborn-result，它有 error / 403 / 500 等状态与配套配色；Empty 只表达「查到了，但是没有」。",
+    "数据还在路上：改用 reborn-loading 或骨架屏，先放 Empty 再切成有数据会闪一下。",
+    "页面内常驻的一行说明：改用 reborn-alert，它是横向提示条，不占整块区域。",
+    "操作后的瞬时反馈（已删除、已清空）：改用 reborn-toast。"
+  ],
+  "pitfalls": [
+    "标题和描述字号一样大：两者都是 14px（UniApp 28rpx），只靠 500 字重与 text-gray-10 / text-gray-8 的深浅拉开层次。这与 Result 不同，Result 的标题是 24px；Empty 常嵌在卡片、表格、抽屉里，标题再大就压过周围内容。",
+    "描述用的是 text-base 不是 text-sm：本仓库在 app/assets/theme/typography.css 把 --text-sm 改写成 12px、--text-base 改写成 14px，按 Tailwind 默认刻度的直觉写 text-sm 会小一号。",
+    "image-size 只管宽度：高度由 Web 的 h-auto 与 UniApp 的 mode='widthFix' 按原图比例推出来，所以别在 ui.imageGraphic 里加 h-*；要裁剪或固定比例请改用 image 插槽自己放节点。",
+    "换大插画一定要同时给 image-size：默认宽度是按内置的 48×48 定的，直接把 320×253 的 empty-scene.svg 填进 image 而不给尺寸，会得到一张缩到 48px 宽的小图。",
+    "数字单位两端不同：image-size 传数字时 Web 按 px、UniApp 按 rpx 处理，同一个 120 在两端不是同一个物理宽度；要两端一致请传带单位的字符串。",
+    "内置插画与三张示例插画都是固定灰阶，不随暗色模式变色：暗色下需要更柔和的观感，请换图或改用 image 插槽放图标字形（字形跟随 currentColor）。",
+    "image 传 null 与不传是两回事：withDefaults 只在 prop 为 undefined 时填默认值，显式 :image='null' 会原样传入并整段去掉图片区；漏写 image 得到的是默认空串，也就是内置插画。",
+    "空段不进 DOM，间距不会翻倍：三段各自带 v-if，某段无内容时连同它那份段间距一起消失；反过来也意味着不能靠 title='' 占位来撑高度。",
+    "组件不派发任何事件，也不暴露实例方法：extra 插槽里的交互由放进去的元素自己承担，别在 Empty 上找 @click / @refresh。",
+    "title / description 只收纯文本：它们被插值进文本节点，写 HTML 不会被解析；要富文本改用同名插槽，插槽存在时对应 prop 不渲染。",
+    "描述属性叫 description 不是 sub-title：与同仓库 Result 的命名不同，这里跟随 Empty 组件在各家库里的通用叫法；两个组件之间迁移时注意改名。操作区仍沿用 Result 的 extra 具名插槽，没有默认插槽。",
+    "两端文本色写法不同但呈现一致：Web 的 gray 色阶随暗色模式反转，直接写 text-gray-10 / text-gray-8；UniApp 的 gray 是静态色阶且止于 gray-8，必须写成 text-gray-8 dark:text-gray-1 / text-gray-7 dark:text-gray-4。",
+    "根元素类名入口两端不同：Web 用 class（any），UniApp 用 custom-class（string，默认 ''），后者是为了避开小程序原生 class 属性。",
+    "小程序端渲染不了内联 svg：图片区走的是 <image src>（Web 是 <img src>），所以 image 只收地址（URL、静态路径或 data URI），不能直接塞一段 SVG 源码；要内联矢量请用 image 插槽。"
+  ]
+}

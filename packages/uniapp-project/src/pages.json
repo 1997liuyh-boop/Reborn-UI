@@ -212,6 +212,18 @@
       }
     },
     {
+      "path": "pages/reborn-result/RebornResultDemo",
+      "style": {
+        "navigationBarTitleText": "Result Demo"
+      }
+    },
+    {
+      "path": "pages/reborn-empty/RebornEmptyDemo",
+      "style": {
+        "navigationBarTitleText": "Empty Demo"
+      }
+    },
+    {
       "path": "pages/reborn-loadmore/RebornLoadmoreDemo",
       "style": {
         "navigationBarTitleText": "Loadmore Demo"

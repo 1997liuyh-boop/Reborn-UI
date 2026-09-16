@@ -65,6 +65,8 @@ const menuItems = [
     children: [
       { label: '标签', icon: 'i-lucide-circle-dot', path: '/pages/reborn-chip/RebornChipDemo' },
       { label: '加载', icon: 'i-lucide-loader', path: '/pages/reborn-loading/RebornLoadingDemo' },
+      { label: '结果页', icon: 'i-lucide-clipboard-check', path: '/pages/reborn-result/RebornResultDemo' },
+      { label: '空状态', icon: 'i-lucide-package-open', path: '/pages/reborn-empty/RebornEmptyDemo' },
     ],
   },
   {
