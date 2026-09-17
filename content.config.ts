@@ -14,6 +14,10 @@ const createDocsSchema = () =>
     category: z.string(),
     tags: z.array(z.string()),
     badge: z.enum(["New", "Updated"]).optional(),
+    // 页头英文名的覆盖值，逃生舱而非常规字段：英文名默认由 title 推导（见 useDocTitleParts），
+    // 只有推导结果不对时才写。已知两例：context-menu 的 `Menu 右键菜单` 推导成 Menu（与 menu 组件重名）、
+    // loading-directive 的 `Loading 加载指令` 推导成 Loading（与 loading 组件重名）
+    titleEn: z.string().optional(),
     // 组件适用端：web 仅 Web / uniapp 仅 UniApp / both 双端通用；
     // 驱动侧栏、总览与移动端预览按顶栏的平台开关筛选，组件文档必填，缺省按 web 处理
     platform: z.enum(["web", "uniapp", "both"]).optional(),

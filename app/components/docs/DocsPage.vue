@@ -32,6 +32,13 @@ interface Props {
 
 const props = defineProps<Props>()
 
+/**
+ * 页头标题的两段：英文名作主标题，中文名紧随其后弱化显示。
+ * 各组件 frontmatter 的 title 写法不统一（中英前后次序都有），拆分规则见 useDocTitleParts；
+ * 个别推导不准的组件在 frontmatter 写 `titleEn` 覆盖。
+ */
+const titleParts = useDocTitleParts(() => props.page)
+
 const appConfig = useAppConfig()
 
 /** 合并默认英文文案与外部传入（i18n）文案 */
@@ -152,14 +159,28 @@ const editLink = computed(() => {
     <!-- hideHeader：组件总览等自带 Hero 的页面跳过默认页头，避免双标题 -->
     <UPageHeader
       v-if="!page.hideHeader"
-      :title="page.title" :description="page.description" :headline="headline" :ui="{
+      :description="page.description" :headline="headline" :ui="{
         wrapper: 'flex-row items-center flex-wrap justify-between',
       }"
     >
+      <!--
+        标题拆两段：英文名作主标题，中文名紧随其后弱化一档字色字重。
+        走 #title 插槽而不是把两段拼成一个字符串传 :title，否则无法分别设样式；
+        UPageHeader 的 h1 对 title prop 与 title 插槽二选一即渲染，所以不再传 :title。
+        插槽上的 v-if 不能省：个别内容文件是空的（如 content/3.changelogs/all/index.md），
+        标题为空时插槽必须整个不提供，否则 h1 判到「有插槽」照样渲染，落下一个空标题。
+        gray 色阶自带明暗反转，不要加 dark: 变体。
+      -->
+      <template v-if="titleParts.en || titleParts.zh" #title>
+        <span>{{ titleParts.en }}</span>
+        <span v-if="titleParts.zh" class="ml-2 font-normal text-gray-7">{{ titleParts.zh }}</span>
+      </template>
+
+      <!-- 技术栈徽章：间距写在 ui.base 上而非 class —— RebornBadge 把 class 同时并进 root 与 base，写 class 会得到双份内边距；高度由 h-badge-md 固定，不需要 py -->
       <div v-if="page.tags?.length" class="mt-4 flex flex-wrap items-center gap-2">
-        <UBadge
+        <RebornBadge
           v-for="tag in page.tags" :key="page.path + tag" :label="tag" variant="soft"
-          class="px-3 py-1 font-normal"
+          :ui="{ base: 'px-3 font-normal' }"
         />
       </div>
       <template #links>
