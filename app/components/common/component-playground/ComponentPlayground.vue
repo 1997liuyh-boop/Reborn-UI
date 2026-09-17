@@ -42,8 +42,8 @@ const computedUrl = computed(() => {
 <template>
   <div class="flex w-full min-w-0 flex-col items-start justify-start gap-6">
     <!--
-      背景层级铁律：示例的表面层已由 DemoStage 画布承担，
-      这里不再叠加任何卡片背景 / 描边 / 投影，只负责内容分发。
+      背景层级铁律：示例区唯一的底色层是页面环境层，
+      这里不叠加任何卡片背景 / 描边 / 投影，只负责内容分发。
     -->
     <div v-if="showInlineDevice" class="flex w-full justify-center">
       <DeviceFrame v-if="computedUrl" :src="computedUrl" />

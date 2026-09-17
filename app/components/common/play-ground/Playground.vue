@@ -56,9 +56,9 @@ export interface PlaygroundProps {
     /** 方向 */
     direction?: 'horizontal' | 'vertical';
     /**
-     * 是否补回表面样式（背景 + 描边）。
-     * 默认 false：组件渲染在 DemoStage 画布内，画布已是唯一表面层，再铺底色会形成双层背景。
-     * 脱离 DemoStage 独立使用时（如 /playground 页面）传 true。
+     * 是否自成一张卡片（补回描边与内边距，与 DemoSection 同形态：只描边、不填充）。
+     * 默认 true：演练场与相邻的分组卡片同级，需要一条边把自己圈出来。
+     * 嵌进别的表面里（例如已有卡片内部）时传 false，连描边一起去掉。
      */
     surface?: boolean;
 }

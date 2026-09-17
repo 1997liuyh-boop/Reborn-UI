@@ -2,11 +2,12 @@
  * Playground（交互演练场）样式配置
  *
  * ── 背景层级铁律 ────────────────────────────────────────────────
- * 示例分组已各自成卡（DemoSection），DemoStage 的全宽画布不再铺底，
- * 因此演练场默认 `surface=true`，自己就是一张卡片 —— 与相邻的分组卡片同级。
- * 卡片内部控制面板与预览区靠分隔线（divide-default）切分，各自不再铺底色。
- * 若要嵌进别的表面里（例如已有卡片内部），传 `:surface="false"` 去掉这层。
- * 完整规范见文档页 /getting-started/demo-guidelines。
+ * 演练场默认 `surface=true`，自己就是一张卡片 —— 与相邻的分组卡片（DemoSection）
+ * 同级，因此形态必须与它完全一致：**描边不填充**（border-gray-3 + rounded-sm，不铺底色）。
+ * 卡片内部控制面板与预览区靠分隔线（divide-default）切分，同样不铺底色。
+ * 若要嵌进别的表面里（例如已有卡片内部），传 `:surface="false"` 连描边一起去掉。
+ * 完整规范见 components/common/demo/demo.config.ts 顶部注释与
+ * 文档页 /getting-started/demo-guidelines。
  * ────────────────────────────────────────────────────────────────
  */
 export default {
@@ -27,7 +28,7 @@ export default {
          * 滑块头（left: calc(pct% - blockSize/2px)）在最小值时更是真的溢出到容器外被整块裁掉。
          * 方案：容器只留圆角不裁剪，把裁剪下移到 previewPanel —— 过宽示例仍被拦住，控制面板得以完整渲染。
          */
-        container: "rounded-xl",
+        container: "rounded-sm",
         /** 控制面板：无底色，与预览区靠 divide 分隔 */
         controlPanel: "flex flex-col gap-8 py-4 lg:pr-6",
         groupTitleWrapper: "flex items-center gap-2",
@@ -61,10 +62,10 @@ export default {
                 previewPanel: "",
             }
         },
-        /** 脱离 DemoStage 单独使用时补回表面样式（如 /playground 页面） */
+        /** 自成一张卡片时补回描边与内边距（与 DemoSection 同形态：只描边、不填充） */
         surface: {
             true: {
-                container: "border-default bg-default border",
+                container: "border-gray-3 border",
                 controlPanel: "px-4 lg:pr-6 lg:pl-4",
                 previewPanel: "lg:pr-4",
             },

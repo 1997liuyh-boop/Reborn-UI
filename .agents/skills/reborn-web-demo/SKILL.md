@@ -24,16 +24,19 @@ Demo 页面只允许用这三个原语组织内容，源码与完整铁律见 `a
 
 | 原语 | 职责 | 关键 Props |
 |------|------|-----------|
-| `DemoSection` | 示例分组：小标题 + 可选描述 + 内容；相邻分组靠自带上边框分隔 | `title`、`description`（或 `#description` 插槽承载富文本）、`divider` |
+| `DemoSection` | 示例分组：一张只描边不填充的独立卡片，卡片头（小标题 + 可选描述 + 动作组）+ 示例本体 + 折叠源码；相邻分组靠卡片自带的 `mt-4` 拉开（`divider` 仅为兼容既有写法保留，传值不产生视觉差异） | `title`、`description`（或 `#description` 插槽承载富文本） |
 | `DemoBlock` | 承载示例本体的排版容器，只管「怎么排」 | `layout="row \| grid \| stack"`、`align`、`tone="plain \| inset"` |
 | `DemoNote` | 说明性文字，纯文本无盒子 | `tone="muted \| dimmed"` |
 
 **背景铁律**（demo.config.ts 的核心约束，必须遵守）：
 
-- 画布内部**禁止** `bg-* + rounded-* + (border|ring|shadow)` 的卡片组合；分组一律靠分隔线、留白与小标题完成。
-- 唯一例外：被演示对象本身需要容器才说得清（滚动区、拖拽区、水印底、弹层落点）时，允许一层 `<DemoBlock tone="inset">`，其内部不得再出现填充盒。
-- Token 白名单：圆角只用 `rounded-ui-*`；颜色只用语义类（`bg-default / bg-elevated / text-muted / text-dimmed / text-highlighted / border-default / divide-default`）；禁用 `backdrop-blur-*`、`shadow-xl`、`bg-white/xx`、`bg-slate-*`、`rounded-[Npx]` 硬编码。
+- 示例区**只有一层底色**：环境层 —— 页面底色，由 `layouts/docs.vue` 的 pattern-background 提供，全站唯一。
+- 分组卡片**描边不填充**：`DemoSection` 只用 `border-gray-3` + `rounded-sm` 勾一条细边把一组示例圈出来，自身不铺底色，示例本体直接落在环境层上。
+- 正因为卡片自己都不填充，卡片内部**禁止** `bg-* + rounded-* + (border|ring|shadow)` 的盒子组合 —— 那会凭空造出一层底色，把唯一的环境层压在下面；桶内分组靠 `DemoItem` 的取值标签、`DemoBlock` 的排布与留白完成。
+- 例外只有两处：被演示对象本身需要容器才说得清（滚动区、拖拽区、水印底、弹层落点）时，允许一层 `<DemoBlock tone="inset">`，其内部不得再出现填充盒；设备档（tablet / mobile）的 iframe 外框必须铺底，否则设备屏幕会透出页面底纹。
+- Token 白名单：档位圆角只用 `rounded-sm | md | lg | xl | 2xl | 3xl`（对应 4 / 6 / 8 / 12 / 16 / 24px，`app/assets/theme/base.css` 里覆盖了 Tailwind 原生 `--radius-*` 并锁成固定像素），`rounded-full` / `rounded-none` 是形状关键词不受此限；颜色只用语义类（卡片描边与卡内分隔用 `border-gray-3`，其余用 `bg-default / bg-elevated / text-muted / text-dimmed / text-highlighted / border-default / divide-default`）；禁用 `backdrop-blur-*`、`shadow-xl`、`bg-white/xx`、`bg-slate-*`、`rounded-[Npx]` 硬编码（想要 4px 就写 `rounded-sm`）。
 - 必须双模式恒深的表面用 `bg-gray-10 dark:bg-gray-1`，其上弱文字用 `text-gray-6`；禁止 Tailwind 默认色板名（`gray-900` 等本项目不存在）。
+- `rounded-ui-*` 属于组件内部 `tv()` 配置用的另一套令牌，不在 demo 规范范围内，demo 文件里不要写。
 
 ## 2. 页面结构
 

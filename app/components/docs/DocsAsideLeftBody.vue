@@ -8,8 +8,8 @@
  * - 组件分区顶部给出一行当前平台与数量的说明，让「列表随开关变化」有迹可循；
  * - 组件分区是三级结构：系列（Reborn 组件 / 社区移植，可折叠）→ 分类小标题（虚拟节点，
  *   `page: false`，不是链接）→ 组件页；其它分区仍是「分组 → 页面」两级；
- * - 字号与颜色：一级 18px `text-gray-9`，二级 16px `text-gray-7`，组件链接 13px（设计稿指定，
- *   18px 不在 7 级字号令牌内，所以写成任意值）；
+ * - 字号与颜色：一级 18px `text-gray-9`，二级分类标题 12px `text-gray-7` + 右侧组件数 10px
+ *   `text-gray-5`，组件链接 14px（设计稿指定，这几档都不在 7 级字号令牌内，所以写成任意值）；
  * - 分组可折叠，激活项用左侧细条 + 浅底标记，路由切换后自动滚到可视区中部。
  */
 import type { ContentNavigationItem } from "@nuxt/content";
@@ -195,9 +195,15 @@ watch(nav, scrollActiveLinkIntoView, { deep: true });
           <div v-show="!isSectionCollapsed(section.path)" class="space-y-0.5 overflow-hidden">
             <template v-for="item in section.children" :key="item.path">
               <!-- 组件分区的分类小标题（二级菜单）：虚拟节点，不可点击，下面直接列组件页 -->
-              <div v-if="isVirtualGroup(item)" class="pt-3 first:pt-0">
-                <div class="mb-1 px-3 text-[16px] leading-[24px] font-medium text-gray-7">
-                  {{ item.title }}
+              <div v-if="isVirtualGroup(item)" class="pt-[14px] first:pt-0">
+                <div class="mb-1 flex items-center justify-between gap-2 px-3">
+                  <span class="text-[12px] leading-[18px] font-medium text-gray-7">
+                    {{ item.title }}
+                  </span>
+                  <!-- 该分类下的组件数：穿透子树数叶子，与顶部总数同一套口径 -->
+                  <span class="shrink-0 text-[10px] leading-none tabular-nums text-gray-5">
+                    {{ countNavigationLeaves(item.children) }}
+                  </span>
                 </div>
                 <div class="space-y-0.5">
                   <NuxtLink
@@ -205,7 +211,7 @@ watch(nav, scrollActiveLinkIntoView, { deep: true });
                     :key="child.path"
                     :to="child.path"
                     :data-nav-path="child.path"
-                    class="relative block truncate rounded-md px-3 py-1.5 text-[13px] transition-colors duration-150"
+                    class="relative block truncate rounded-md px-3 py-2 text-[14px] transition-colors duration-150"
                     :class="[
                       isActive(child)
                         ? 'bg-primary/8 font-medium text-primary before:absolute before:inset-y-1 before:left-0 before:w-[2px] before:rounded-full before:bg-primary before:content-[\'\']'
@@ -221,7 +227,7 @@ watch(nav, scrollActiveLinkIntoView, { deep: true });
                 v-else
                 :to="item.path"
                 :data-nav-path="item.path"
-                class="relative block truncate rounded-md px-3 py-1.5 text-[13px] transition-colors duration-150"
+                class="relative block truncate rounded-md px-3 py-2 text-[14px] transition-colors duration-150"
                 :class="[
                   isActive(item) || hasActiveChild(item)
                     ? 'bg-primary/8 font-medium text-primary before:absolute before:inset-y-1 before:left-0 before:w-[2px] before:rounded-full before:bg-primary before:content-[\'\']'

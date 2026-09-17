@@ -15,8 +15,9 @@
 /**
  * DemoStage —— 文档 Preview 区的统一展示容器
  *
- * - 画布不自带表面层：示例分组已各自成卡（见 components/common/demo/DemoSection.vue），
- *   画布再铺一层底就成了「卡中卡」的三层背景，这里只是个透明容器。
+ * - 画布不铺底色：示例区唯一的底色层是页面环境层，分组卡片（见
+ *   components/common/demo/DemoSection.vue）只描边不填充，画布再铺一层底
+ *   就把环境层压住了，这里只是个透明容器。
  * - 不再有工具条：收起/展开、复制代码、预览、Playground、询问 AI 五个动作都在
  *   每张分组卡片自己的卡片头上（DemoActions），整份 demo 的源码由顶层 Code 标签页承担。
  * - 视口档位仍保留 v-model:viewport 供外部驱动：375 / 768 档用 iframe 加载

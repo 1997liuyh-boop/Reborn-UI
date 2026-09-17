@@ -1,7 +1,17 @@
 /**
  * DemoSection —— 示例分组卡片：卡片头（标题 + 动作组）+ 示例本体 + 折叠源码
  *
- * 卡片本身即示例区的表面层；group/demo-section 供动作组做 hover 显隐。
+ * ── 背景层级铁律（全站示例统一遵守）────────────────────────────
+ * 示例区只有一层底色：环境层 —— 页面底色，由 layouts/docs.vue 的
+ * pattern-background 提供，全站唯一。
+ * 分组卡片**描边不填充**：只用 border-gray-3 勾一条细边把一组示例圈出来，
+ * 自身不铺底色，示例本体直接落在环境层上。
+ * 正因为卡片自己都不填充，卡片内部更不得出现「圆角 + 填充 + 描边/投影」
+ * 的盒子 —— 那会凭空造出一层底色，把唯一的环境层压在下面。
+ * 设备档（tablet / mobile）例外：iframe 外框必须铺底，否则设备屏幕会透出页面底纹。
+ * ────────────────────────────────────────────────────────────────
+ *
+ * group/demo-section 供动作组做 hover 显隐。
  */
 export const sectionConfig = {
     slots: {
@@ -12,11 +22,12 @@ export const sectionConfig = {
          */
         root: [
             'group/demo-section relative mt-4 flex w-full min-w-0 flex-col overflow-hidden first:mt-0',
-            'border-default bg-default rounded-xl border',
+            // 描边不填充：不写 bg-*，底色一律由环境层提供（见顶部铁律）
+            'border-gray-3 rounded-sm border',
             'transition-colors duration-200 hover:border-inverted/15',
         ].join(' '),
         /** 卡片头：左标题区 / 右动作组 */
-        header: 'border-default flex min-h-12 flex-wrap items-center justify-between gap-2 border-b px-4 py-2',
+        header: 'border-gray-3 flex min-h-12 flex-wrap items-center justify-between gap-2 border-b px-4 py-2',
         /** 标题区 */
         headerMain: 'flex min-w-0 flex-col gap-0.5',
         /** 小节标题：小字号加粗，不与文档页大标题抢层级 */
@@ -34,9 +45,9 @@ export const sectionConfig = {
          * Theme slots 面板列：仅在该示例展开面板时渲染。
          * 窄屏是示例下方的一段，lg 起变成右侧固定宽度的一栏。
          */
-        themePanel: 'border-default w-full min-w-0 shrink-0 border-t lg:w-64 lg:border-t-0 lg:border-l',
+        themePanel: 'border-gray-3 w-full min-w-0 shrink-0 border-t lg:w-64 lg:border-t-0 lg:border-l',
         /** 源码区：折叠展开后位于示例下方，与示例本体靠一条分隔线分开 */
-        code: 'border-default w-full min-w-0 border-t',
+        code: 'border-gray-3 w-full min-w-0 border-t',
     },
     variants: {
         /**
