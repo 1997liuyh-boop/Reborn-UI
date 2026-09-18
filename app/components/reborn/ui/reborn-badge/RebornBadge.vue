@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<BadgeProps>(), {
     variant: 'filled',
     size: 'md',
     closeIcon: 'i-lucide-x',
+    circle: false,
     gap: false
 })
 
@@ -61,10 +62,12 @@ export interface BadgeProps {
      * @defaultValue 'md'
      */
     size?: BadgeSize | (string & {})
-    /** 渲染徽章时各边具有相等的内边距。 */
+    /** 使用无内边距的正方形比例。 */
     square?: boolean
     /** 圆角标签：与按钮一致变为全圆角胶囊。 */
     round?: boolean
+    /** 固定等宽高的圆形，优先于 round 与 square；适合短数字或单个图标。 */
+    circle?: boolean
     /** 可选中模式：作为类复选框的 Check Tag 使用，配合 v-model:checked。 */
     check?: boolean
     /** 是否禁用（可选中模式下屏蔽选中与关闭交互）。 */
@@ -96,14 +99,19 @@ const checked = defineModel<boolean>('checked', { default: false })
 
 const { orientation, size: fieldGroupSize } = useFormInject(props)
 
+/** 数字零是有效内容；纯图标时不渲染空标签，避免额外间距。 */
+const hasLabel = computed(() => props.label !== undefined && props.label !== null && props.label !== '')
+const hasContent = computed(() => !!slots.default || hasLabel.value)
+
 const uiOverrides = computed(() => props.ui || {})
 const ui = computed(() => {
     const styles = b({
         color: props.color as BadgeColor,
         variant: props.variant as BadgeVariant,
         size: (fieldGroupSize.value || props.size) as BadgeSize,
-        square: props.square || (!slots.default && !props.label),
+        square: props.square || !hasContent.value,
         round: props.round,
+        circle: props.circle,
         unchecked: props.check && !checked.value,
         disabled: props.disabled,
         gap: props.gap,
@@ -152,9 +160,9 @@ const handleClose = async (e: MouseEvent) => {
     <component :is="props.as" :class="ui.base({ class: props.class })" @click="handleClick">
       <slot name="leading" :ui="ui" />
 
-      <span :class="ui.label()">
+      <span v-if="hasContent" :class="ui.label()">
         <slot :ui="ui">
-          <span v-if="label">
+          <span v-if="hasLabel">
             {{ label }}
           </span>
         </slot>

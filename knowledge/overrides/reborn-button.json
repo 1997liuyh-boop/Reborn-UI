@@ -1,5 +1,5 @@
 {
-  "description": "双端基础按钮：7 种语义色 × 7 种变体（含 round 胶囊 / circle 圆形图标按钮），支持尺寸、形状、加载与禁用状态。",
+  "description": "双端基础按钮：7 种语义色，Web 支持 5 种风格与独立胶囊、圆形参数，以及加载与禁用状态。",
   "whenToUse": [
     "表单提交、确认/取消、保存等常规操作触发。",
     "需要按强度分层的按钮体系：主操作 filled、次操作 outlined、弱操作 text。",
@@ -15,14 +15,14 @@
   "props": [
     {
       "name": "variant",
-      "description": "视觉变体：filled 实心/outlined 描边/soft 浅底/subtle 浅底加描边/text 文字按钮/round 胶囊（!rounded-full）/circle 圆形纯图标按钮（宽高相等、内边距归零）。形状圆角带 ! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在 tailwind-merge 的 border-radius 冲突组里；现已改回原生 rounded-*，合并正常，! 只剩提权作用。默认 filled"
+      "description": "视觉风格：filled / outlined / soft / subtle / text，默认 filled。Web 的 round / circle 取值仅保留旧样式兼容，新代码使用独立同名布尔参数；UniApp 仍通过这两个变体设置形状。"
     }
   ],
   "pitfalls": [
-    "形状并入 variant：round 胶囊 / circle 圆形图标按钮；默认 filled 不再是胶囊，直角圆角随 size 取令牌（Web 4/6/8px，UniApp 4/6/8rpx）。需要自定义圆角时直接用 class / customClass 覆盖。",
+    "Web round / circle 为独立形状参数，circle 优先；旧 variant=\"round\" / \"circle\" 保留配色和禁用样式。新 filled + round/circle 遵循 Filled 禁用配色，迁移可能改变外观。UniApp 本轮不变，仍使用形状变体。",
     "loading 为 true 时隐含禁用，不再派发 click/tap，无需额外绑 disabled；trailing 插槽在加载态不渲染。",
-    "text 变体用 !h-auto !px-0 覆盖了 size 的高度与水平内边距，与其他变体并排时基线不齐属预期行为。",
-    "borderStyle 仅 web 端提供，且只对渲染边框的 outlined/subtle 生效；filled/soft/text/round/circle 传 dashed 无视觉变化。",
+    "text 通常用 !h-auto !px-0 使高度随文字；Web 同时开启 circle 时按 size 固定等宽高，且表单尺寸优先于自身 size。",
+    "borderStyle 仅 Web 提供，对 outlined/subtle 生效，包含叠加 round/circle 布尔参数的组合；filled/soft/text 及旧 round/circle 变体不受影响。",
     "open-type 系列 props（openType/sessionFrom/appParameter 等）与 getphonenumber、contact 等事件仅在小程序开放能力场景生效，H5/APP 端无效。",
     "两端尺寸档位不同：web 为 sm/md/lg（px），uniapp 为 xs~2xl 共 7 档（rpx），其中 default 与 md 等价。",
     "表单组禁用传导不同：uniapp 端 Form 的 disabled 会强制禁用组内按钮，web 端按钮禁用态只由自身 disabled/loading 决定。",

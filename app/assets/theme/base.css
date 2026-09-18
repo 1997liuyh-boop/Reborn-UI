@@ -113,6 +113,7 @@
 
   /* --- 语义化颜色 (Semantic Colors) --- */
   --color-primary: var(--color-brand-6);
+  --color-primary-3: var(--color-brand-3);
   --color-secondary: var(--color-secondary-6);
   --color-success: var(--color-green-6);
   --color-info: var(--color-blue-6);
@@ -231,6 +232,7 @@
    * 故翻转为最深的中性色。实测 primary 6.25:1、success 12.4:1、warning 8.9:1、info 9.1:1。
    */
   --color-primary: var(--color-brand-5);
+  --color-primary-3: var(--color-brand-3);
   --color-secondary: var(--color-secondary-5);
   --color-success: var(--color-green-5);
   --color-info: var(--color-blue-5);
@@ -285,4 +287,34 @@ body.layout-admin-shell {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* 主色禁用背景跟随所选色系，统一使用第 3 阶。 */
+[data-theme-color="brand"] {
+  --color-primary-3: var(--color-brand-3);
+}
+[data-theme-color="orange"] {
+  --color-primary-3: var(--color-orange-3);
+}
+[data-theme-color="green"] {
+  --color-primary-3: var(--color-green-3);
+}
+[data-theme-color="red"] {
+  --color-primary-3: var(--color-red-3);
+}
+.dark[data-theme-color="brand"],
+.dark [data-theme-color="brand"] {
+  --color-primary-3: var(--color-brand-3);
+}
+.dark[data-theme-color="orange"],
+.dark [data-theme-color="orange"] {
+  --color-primary-3: var(--color-orange-3);
+}
+.dark[data-theme-color="green"],
+.dark [data-theme-color="green"] {
+  --color-primary-3: var(--color-green-3);
+}
+.dark[data-theme-color="red"],
+.dark [data-theme-color="red"] {
+  --color-primary-3: var(--color-red-3);
 }

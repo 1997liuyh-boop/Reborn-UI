@@ -1,16 +1,17 @@
 const color = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 
-const variant = ["filled", "outlined", "soft", "subtle", "text", "round", "circle"] as const;
+/** 视觉风格与形状独立；旧形状变体仅保留兼容，不展示在选项中。 */
+export const buttonVariants = ["filled", "outlined", "soft", "subtle", "text"] as const;
+const variant = [...buttonVariants, "round", "circle"] as const;
 
 const size = ["sm", "md", "lg"] as const;
 
 const borderStyle = ["solid", "dashed"] as const;
 
 export {
-  color as buttonColors,
-  variant as buttonVariants,
-  size as buttonSizes,
   borderStyle as buttonBorderStyles,
+  color as buttonColors,
+  size as buttonSizes,
 };
 
 export default {
@@ -83,6 +84,10 @@ export default {
         base: "border-dashed",
       },
     },
+    /** 胶囊只改变圆角，不改变风格配色。 */
+    round: { true: "!rounded-full" },
+    /** 圆形固定宽高，尺寸规则放在复合变体末尾，覆盖文字按钮的自动高度。 */
+    circle: { true: "!rounded-full !p-0 shrink-0" },
     gap: {
       true: {
         base: '[.reborn-button_+_&]:ml-2',
@@ -90,266 +95,295 @@ export default {
       false: '',
     },
     disabled: {
-      true: "cursor-not-allowed opacity-70",
+      true: "cursor-not-allowed",
       false: ""
     },
   },
   compoundVariants: [
-    // Filled Variants
+    // 实底按钮：悬停反馈仅在可用状态生效（加载状态也不触发）。
     {
       color: "primary" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-primary text-white hover:bg-primary/75",
+      class: "bg-primary text-white enabled:hover:bg-primary/75",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-secondary text-white hover:bg-secondary/75",
+      class: "bg-secondary text-white enabled:hover:bg-secondary/75",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-success text-white hover:bg-success/75",
+      class: "bg-success text-white enabled:hover:bg-success/75",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-info text-white hover:bg-info/75",
+      class: "bg-info text-white enabled:hover:bg-info/75",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-warning text-white hover:bg-warning/75",
+      class: "bg-warning text-white enabled:hover:bg-warning/75",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-error text-white hover:bg-error/75",
+      class: "bg-error text-white enabled:hover:bg-error/75",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-neutral text-gray-10 hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral/75",
     },
 
     // Round Variants：胶囊形状，着色规则与 filled 一致
     {
       color: "primary" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-primary text-white hover:bg-primary/75",
+      class: "bg-primary text-white enabled:hover:bg-primary/75",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-secondary text-white hover:bg-secondary/75",
+      class: "bg-secondary text-white enabled:hover:bg-secondary/75",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-success text-white hover:bg-success/75",
+      class: "bg-success text-white enabled:hover:bg-success/75",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-info text-white hover:bg-info/75",
+      class: "bg-info text-white enabled:hover:bg-info/75",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-warning text-white hover:bg-warning/75",
+      class: "bg-warning text-white enabled:hover:bg-warning/75",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-error text-white hover:bg-error/75",
+      class: "bg-error text-white enabled:hover:bg-error/75",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-neutral text-gray-10 hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral/75",
     },
 
     // Circle Variants：圆形纯图标按钮，着色规则与 filled 一致
     {
       color: "primary" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-primary text-white hover:bg-primary/75",
+      class: "bg-primary text-white enabled:hover:bg-primary/75",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-secondary text-white hover:bg-secondary/75",
+      class: "bg-secondary text-white enabled:hover:bg-secondary/75",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-success text-white hover:bg-success/75",
+      class: "bg-success text-white enabled:hover:bg-success/75",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-info text-white hover:bg-info/75",
+      class: "bg-info text-white enabled:hover:bg-info/75",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-warning text-white hover:bg-warning/75",
+      class: "bg-warning text-white enabled:hover:bg-warning/75",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-error text-white hover:bg-error/75",
+      class: "bg-error text-white enabled:hover:bg-error/75",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-neutral text-gray-10 hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral/75",
     },
 
     {
       color: "primary" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-primary border border-primary hover:bg-primary/10",
+        "bg-transparent text-primary border border-primary enabled:hover:bg-primary/10",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-secondary border border-secondary hover:bg-secondary/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-secondary border border-secondary enabled:hover:bg-secondary/10",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-success border border-success hover:bg-success/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-success border border-success enabled:hover:bg-success/10",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-info border border-info hover:bg-info/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-info border border-info enabled:hover:bg-info/10",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-warning border border-warning hover:bg-warning/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-warning border border-warning enabled:hover:bg-warning/10",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-error border border-error hover:bg-error/10 disabled:bg-gray-2 disabled:border-gray-4 disabled:text-gray-6",
+        "bg-transparent text-error border border-error enabled:hover:bg-error/10",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "outlined" as (typeof variant)[number],
       class:
-        "bg-transparent text-gary-10 border border-neutral hover:bg-neutral/10",
+        "bg-transparent text-gary-10 border border-neutral enabled:hover:bg-neutral/10",
+    },
+    // 实底与胶囊按钮使用对应色系的第 3 阶，不叠加整体透明度。
+    {
+      color: "primary" as (typeof color)[number],
+      variant: ["filled", "round"],
+      disabled: true,
+      class: "bg-primary-3",
     },
     {
-      variant: "filled" as (typeof variant)[number],
+      color: "secondary" as (typeof color)[number],
+      variant: ["filled", "round"],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 text-white/50",
+      class: "bg-secondary-3",
     },
     {
-      variant: "round" as (typeof variant)[number],
+      color: "success" as (typeof color)[number],
+      variant: ["filled", "round"],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 text-white/50",
+      class: "bg-green-3",
     },
     {
-      variant: "circle" as (typeof variant)[number],
+      color: "info" as (typeof color)[number],
+      variant: ["filled", "round"],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 text-white/50",
+      class: "bg-blue-3",
+    },
+    {
+      color: "warning" as (typeof color)[number],
+      variant: ["filled", "round"],
+      disabled: true,
+      class: "bg-orange-3",
+    },
+    {
+      color: "error" as (typeof color)[number],
+      variant: ["filled", "round"],
+      disabled: true,
+      class: "bg-red-3",
+    },
+    {
+      color: "neutral" as (typeof color)[number],
+      variant: ["filled", "round"],
+      disabled: true,
+      class: "bg-gray-3",
+    },
+    // 描边与圆形按钮的禁用态统一使用灰阶，圆形按钮同时补齐边框宽度。
+    {
+      variant: ["outlined", "circle"],
+      disabled: true,
+      class: "bg-gray-2 border border-gray-4 text-gray-5",
     },
     {
       variant: "soft" as (typeof variant)[number],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 text-gray-4",
+      class: "bg-gray-6 dark:bg-gray-2 text-gray-4 opacity-70",
     },
     {
       variant: "subtle" as (typeof variant)[number],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 border border-gray-7 text-gray-4",
-    },
-    {
-      variant: "outlined" as (typeof variant)[number],
-      disabled: true,
-      class: "bg-gray-2 dark:bg-gray-8 border-gray-4 text-gray-6",
+      class: "bg-gray-6 dark:bg-gray-2 border border-gray-7 text-gray-4 opacity-70",
     },
 
     {
       color: "primary" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-primary/10 text-primary hover:bg-primary/20",
+      class: "bg-primary/10 text-primary enabled:hover:bg-primary/20",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-secondary/10 text-secondary hover:bg-secondary/20",
+      class: "bg-secondary/10 text-secondary enabled:hover:bg-secondary/20",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-success/10 text-success hover:bg-success/20",
+      class: "bg-success/10 text-success enabled:hover:bg-success/20",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-info/10 text-info hover:bg-info/20",
+      class: "bg-info/10 text-info enabled:hover:bg-info/20",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-warning/10 text-warning hover:bg-warning/20",
+      class: "bg-warning/10 text-warning enabled:hover:bg-warning/20",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-error/10 text-error hover:bg-error/20",
+      class: "bg-error/10 text-error enabled:hover:bg-error/20",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "soft" as (typeof variant)[number],
-      class: "bg-gray-2 text-gray-10 hover:bg-gray-2/20",
+      class: "bg-gray-2 text-gray-10 enabled:hover:bg-gray-2/20",
     },
 
     {
       color: "primary" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-primary/10 border border-primary text-primary hover:bg-primary/20",
+      class: "bg-primary/10 border border-primary text-primary enabled:hover:bg-primary/20",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
       class:
-        "bg-secondary/10 border border-secondary text-secondary hover:bg-secondary/20",
+        "bg-secondary/10 border border-secondary text-secondary enabled:hover:bg-secondary/20",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-success/10 border border-success text-success hover:bg-success/20",
+      class: "bg-success/10 border border-success text-success enabled:hover:bg-success/20",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-info/10 border border-info text-info hover:bg-info/20",
+      class: "bg-info/10 border border-info text-info enabled:hover:bg-info/20",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-warning/10 border border-warning text-warning hover:bg-warning/20",
+      class: "bg-warning/10 border border-warning text-warning enabled:hover:bg-warning/20",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-error/10 border border-error text-error hover:bg-error/20",
+      class: "bg-error/10 border border-error text-error enabled:hover:bg-error/20",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "subtle" as (typeof variant)[number],
-      class: "bg-gray-2 border border-gray-4 text-gray-10 hover:bg-gray-2/20"
+      class: "bg-gray-2 border border-gray-4 text-gray-10 enabled:hover:bg-gray-2/20"
     },
 
     // Text Variants：无背景/边框，高度与水平内边距跟随文字
@@ -361,47 +395,63 @@ export default {
     {
       color: "primary" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-primary hover:text-primary/75 !h-auto !px-0",
+      class: "bg-transparent text-primary enabled:hover:text-primary/75 !h-auto !px-0",
     },
     {
       color: "secondary" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-secondary hover:text-secondary/75 !h-auto !px-0",
+      class: "bg-transparent text-secondary enabled:hover:text-secondary/75 !h-auto !px-0",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-success hover:text-success/75 !h-auto !px-0",
+      class: "bg-transparent text-success enabled:hover:text-success/75 !h-auto !px-0",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-info hover:text-info/75 !h-auto !px-0",
+      class: "bg-transparent text-info enabled:hover:text-info/75 !h-auto !px-0",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-warning hover:text-warning/75 !h-auto !px-0",
+      class: "bg-transparent text-warning enabled:hover:text-warning/75 !h-auto !px-0",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-error hover:text-error/75 !h-auto !px-0",
+      class: "bg-transparent text-error enabled:hover:text-error/75 !h-auto !px-0",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "text" as (typeof variant)[number],
-      class: "bg-transparent text-neutral hover:text-neutral/75 !h-auto !px-0",
+      class: "bg-transparent text-neutral enabled:hover:text-neutral/75 !h-auto !px-0",
     },
     {
       variant: "text" as (typeof variant)[number],
       disabled: true,
-      class: "bg-transparent text-gray-4 dark:text-gray-6",
+      class: "bg-transparent",
     },
+    // 胶囊按钮保留原有禁用文字颜色。
+    {
+      variant: "round" as (typeof variant)[number],
+      disabled: true,
+      class: "text-white/50",
+    },
+    // 仅实底、描边和文字按钮统一禁用文字颜色，明暗模式均使用灰阶 5。
+    {
+      variant: ["filled", "outlined", "text"],
+      disabled: true,
+      class: "text-gray-5",
+    },
+    // 形状尺寸最后应用，circle 与 round 同时开启时采用圆形。
+    { circle: true, size: "sm" as (typeof size)[number], class: "!h-[var(--height-button-sm)] !w-[var(--height-button-sm)]" },
+    { circle: true, size: "md" as (typeof size)[number], class: "!h-[var(--height-button-md)] !w-[var(--height-button-md)]" },
+    { circle: true, size: "lg" as (typeof size)[number], class: "!h-[var(--height-button-lg)] !w-[var(--height-button-lg)]" },
   ],
   defaultVariants: {
     color: "primary" as (typeof color)[number],
-    variant: "filled" as (typeof variant)[number],
+    variant: variant[0],
     size: "md" as (typeof size)[number],
     borderStyle: "solid" as (typeof borderStyle)[number],
   },

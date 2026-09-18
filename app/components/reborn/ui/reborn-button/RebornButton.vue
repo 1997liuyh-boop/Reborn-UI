@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import type { buttonBorderStyles, buttonColors, buttonSizes, buttonVariants } from './reborn-button.config';
 import { computed, toRef } from 'vue'
-import RebornLoading from '../reborn-loading/RebornLoading.vue'
-import theme, { buttonColors, buttonVariants, buttonSizes, buttonBorderStyles } from './reborn-button.config'
 import { useFormInject } from '~/composables/useFieldGroup'
 import { tv } from '~/lib/tv'
 import { cn } from '~/lib/utils'
+import RebornLoading from '../reborn-loading/RebornLoading.vue'
+import theme from './reborn-button.config'
 
 
 export interface ButtonProps {
@@ -12,8 +13,12 @@ export interface ButtonProps {
     label?: string
     /** 语义色，7 种取值：primary/secondary/success/info/warning/error/neutral，默认 primary */
     color?: typeof buttonColors[number]
-    /** 视觉变体：filled 实心 / outlined 描边 / soft 浅底 / subtle 浅底加描边 / text 文字按钮 / round 胶囊 / circle 圆形纯图标按钮，默认 filled；颜色由 color 控制 */
-    variant?: typeof buttonVariants[number]
+    /** 视觉风格：filled / outlined / soft / subtle / text；旧 round / circle 仅保留兼容，新用法请使用同名布尔参数 */
+    variant?: typeof buttonVariants[number] | 'round' | 'circle'
+    /** 全圆角胶囊，只改变形状。 */
+    round?: boolean
+    /** 固定等宽高的圆形，优先于 round；配合纯图标使用。 */
+    circle?: boolean
     /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；处于表单组内时被组尺寸覆盖 */
     size?: typeof buttonSizes[number]
     /** 边框线型：solid 实线 / dashed 虚线，默认 solid；边框宽度固定 1px，对有边框的变体（outlined / subtle）生效 */
@@ -34,6 +39,8 @@ const props = withDefaults(defineProps<ButtonProps>(), {
     variant: 'filled',
     size: 'md',
     borderStyle: 'solid',
+    round: false,
+    circle: false,
     loading: false,
     disabled: false,
     gap: false
@@ -41,11 +48,11 @@ const props = withDefaults(defineProps<ButtonProps>(), {
 
 const slots = defineSlots<{
     /** 前置内容（常放图标）；loading 时被加载动画替代 */
-    leading(props: { ui: any }): any
+    leading: (props: { ui: any }) => any
     /** 按钮主体内容，优先于 label prop 渲染 */
-    default(props: { ui: any }): any
+    default: (props: { ui: any }) => any
     /** 后置内容（常放图标）；loading 时不渲染 */
-    trailing(props: { ui: any }): any
+    trailing: (props: { ui: any }) => any
 }>()
 
 const { orientation, size: fieldGroupSize } = useFormInject(props)
@@ -68,7 +75,7 @@ const loadingSize = computed(() => {
 })
 
 const isIconOnly = computed(() => {
-    return props.variant === 'circle' || (!props.label && !slots.default)
+    return props.circle || props.variant === 'circle' || (!props.label && !slots.default)
 })
 
 const b = tv(theme)
@@ -82,6 +89,8 @@ const ui = computed(() => {
         borderStyle: props.borderStyle,
         fieldGroup: orientation.value,
         gap: props.gap,
+        round: props.round,
+        circle: props.circle,
         disabled: props.disabled
     })
 
@@ -103,28 +112,30 @@ const ui = computed(() => {
 </script>
 
 <template>
-    <button :disabled="isDisabled" :class="ui.base({ class: props.class })" v-bind="$attrs">
-        <div class="flex items-center justify-center gap-2 h-full w-full">
-            <!-- Leading / Spinner -->
-            <template v-if="props.loading">
-                <RebornLoading :color="loadingColor" :size="loadingSize" :ui="{
-                    root: ui.leadingIcon(),
-                }" />
-            </template>
-            <slot v-else name="leading" :ui="ui" />
+  <button :disabled="isDisabled" :class="ui.base({ class: props.class })" v-bind="$attrs">
+    <div class="flex items-center justify-center gap-2 h-full w-full">
+      <!-- 前置内容或加载动画 -->
+      <template v-if="props.loading">
+        <RebornLoading
+          :color="loadingColor" :size="loadingSize" :ui="{
+            root: ui.leadingIcon(),
+          }"
+        />
+      </template>
+      <slot v-else name="leading" :ui="ui" />
 
-            <!-- Content -->
-            <template v-if="!isIconOnly || !props.loading">
-                <slot :ui="ui">
-                    <span v-if="label" :class="ui.label()">
-                        {{ label }}
-                    </span>
-                    <slot v-else :ui="ui" />
-                </slot>
-            </template>
+      <!-- 主体内容 -->
+      <template v-if="!isIconOnly || !props.loading">
+        <slot :ui="ui">
+          <span v-if="label" :class="ui.label()">
+            {{ label }}
+          </span>
+          <slot v-else :ui="ui" />
+        </slot>
+      </template>
 
-            <!-- Trailing -->
-            <slot v-if="!props.loading" name="trailing" :ui="ui.trailingIcon()" />
-        </div>
-    </button>
+      <!-- 后置内容 -->
+      <slot v-if="!props.loading" name="trailing" :ui="ui.trailingIcon()" />
+    </div>
+  </button>
 </template>

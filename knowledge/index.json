@@ -752,8 +752,8 @@
     },
     {
       "id": "reborn-badge",
-      "title": "徽章 Badge",
-      "description": "用于展示状态、数量或标识的跨端徽标组件，支持圆角胶囊、可关闭、可选中（Check Tag）与显隐绑定。",
+      "title": "Badge 徽章",
+      "description": "双端状态标签：支持四种风格、胶囊、可关闭与可选中；Web 额外支持独立圆形参数。",
       "category": "basic",
       "tags": [
         "css",
@@ -783,8 +783,8 @@
     },
     {
       "id": "reborn-button",
-      "title": "按钮",
-      "description": "双端基础按钮：7 种语义色 × 7 种变体（含 round 胶囊 / circle 圆形图标按钮），支持尺寸、形状、加载与禁用状态。",
+      "title": "Button 按钮",
+      "description": "双端基础按钮：7 种语义色，Web 支持 5 种风格与独立胶囊、圆形参数，以及加载与禁用状态。",
       "category": "basic",
       "tags": [
         "css",

@@ -1,5 +1,5 @@
 {
-  "description": "用于展示状态、数量或标识的跨端徽标组件，支持圆角胶囊、可关闭、可选中（Check Tag）与显隐绑定。",
+  "description": "双端状态标签：支持四种风格、胶囊、可关闭与可选中；Web 额外支持独立圆形参数。",
   "whenToUse": [
     "标记条目状态（成功/警告/错误等语义色）或数量时。",
     "需要类复选框的可选中筛选标签时（check + v-model:checked + change）。",
@@ -12,10 +12,11 @@
   ],
   "pitfalls": [
     "web 与 uniapp 双端可用；closeIcon 默认值双端不同（web 为 i-lucide-x，uniapp 为 i-mdi-close-circle）。",
-    "icon prop 直接传图标类名，web 端建议改用 leading/trailing 插槽。",
+    "icon prop 仅 UniApp 支持；Web 使用 leading/trailing 插槽。",
     "uniapp 端为避免原生 class 冲突提供了 customClass。",
     "默认插槽内容会覆盖 label；gap 用于多个徽标并排时自动加左间距。",
     "check 未选中态会把配色整体退为灰阶；disabled 同时屏蔽选中切换与关闭交互。",
-    "配色取数字色阶（subtle/soft 背景 2 阶、边框 4 阶、文字 6 阶，filled 背景 6 阶）；uniapp 端无 secondary 色阶且 gray 只到 8 阶，secondary/neutral 表现与 web 端略有差异。"
+    "配色取数字色阶（subtle/soft 背景 2 阶、边框 4 阶、文字 6 阶，filled 背景 6 阶）；uniapp 端无 secondary 色阶且 gray 只到 8 阶，secondary/neutral 表现与 web 端略有差异。",
+    "Web 新增 circle 固定等宽高，优先于 round 与 square，配色仍由 variant 决定；UniApp 暂无 circle。圆形适合短数字或单图标，不建议放长文本或关闭按钮。"
   ]
 }
