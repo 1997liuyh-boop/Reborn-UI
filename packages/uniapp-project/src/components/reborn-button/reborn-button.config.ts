@@ -340,25 +340,60 @@ export default {
       class: 'bg-neutral/10 border-neutral text-neutral hover:bg-neutral/20',
     },
 
+    // 实底与胶囊按钮的禁用态保留自身色系，底色取第 3 阶；hover 同步钉死，禁用后不再变色
     {
-      variant: 'filled' as (typeof buttonVariants)[number],
+      color: 'primary' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
       disabled: true,
-      class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
+      class: '!bg-primary-3 !border-primary-3 hover:!bg-primary-3 hover:!border-primary-3',
     },
     {
-      variant: 'round' as (typeof buttonVariants)[number],
+      color: 'secondary' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
       disabled: true,
-      class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
+      class: '!bg-secondary-3 !border-secondary-3 hover:!bg-secondary-3 hover:!border-secondary-3',
     },
     {
-      variant: 'circle' as (typeof buttonVariants)[number],
+      color: 'success' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
       disabled: true,
-      class: '!bg-gray-4 !border-gray-4 !text-white hover:!bg-gray-4 hover:!border-gray-4',
+      class: '!bg-green-3 !border-green-3 hover:!bg-green-3 hover:!border-green-3',
     },
     {
-      variant: 'outlined' as (typeof buttonVariants)[number],
+      color: 'info' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
       disabled: true,
-      class: '!bg-gray-2 !border-gray-4 !text-gray-6 hover:!bg-gray-2 hover:!border-gray-4',
+      class: '!bg-blue-3 !border-blue-3 hover:!bg-blue-3 hover:!border-blue-3',
+    },
+    {
+      color: 'warning' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
+      disabled: true,
+      class: '!bg-orange-3 !border-orange-3 hover:!bg-orange-3 hover:!border-orange-3',
+    },
+    {
+      color: 'error' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
+      disabled: true,
+      class: '!bg-red-3 !border-red-3 hover:!bg-red-3 hover:!border-red-3',
+    },
+    {
+      color: 'neutral' as (typeof buttonColors)[number],
+      variant: ['filled', 'round'],
+      disabled: true,
+      class: '!bg-gray-3 !border-gray-3 hover:!bg-gray-3 hover:!border-gray-3',
+    },
+    // 底色是第 3 阶彩色，文字改用灰阶 1，与 Web 端一致
+    {
+      variant: ['filled', 'round'],
+      disabled: true,
+      class: '!text-gray-1 hover:!text-gray-1',
+    },
+    // 描边与圆形按钮的禁用态不跟随色系，统一走灰阶
+    {
+      variant: ['outlined', 'circle'],
+      disabled: true,
+      class: '!bg-gray-2 !border-gray-4 !text-gray-5 hover:!bg-gray-2 hover:!border-gray-4 hover:!text-gray-5',
     },
     {
       variant: 'soft' as (typeof buttonVariants)[number],
@@ -412,10 +447,11 @@ export default {
       variant: 'text' as (typeof buttonVariants)[number],
       class: 'bg-transparent border-transparent text-neutral hover:text-neutral/75 !h-auto !px-0',
     },
+    // 文字按钮禁用后 hover 不再高亮文字，颜色与描边按钮统一为灰阶 5
     {
       variant: 'text' as (typeof buttonVariants)[number],
       disabled: true,
-      class: '!bg-transparent !border-transparent !text-gray-6 hover:!bg-transparent',
+      class: '!bg-transparent !border-transparent !text-gray-5 hover:!bg-transparent hover:!text-gray-5',
     },
   ],
   defaultVariants: {

@@ -137,8 +137,9 @@
  *    自然是浅色，solid 变体须配深色前景（见块末 --color-inverted）。
  * 2. 中性色为纯灰（无蓝调），不同于浅色板的 #1d2129 蓝调系列。
  *
- * 语义色（--color-primary / --color-success 等）无需在此重复声明：
- * 它们是 var() 引用，会随下列色阶自动解析为暗色值。
+ * 语义色（--color-primary / --color-success 等）仍要在块末重复声明一遍：
+ * 它们虽是 var() 引用、会随色阶自动解析成暗色值，但取的阶数不同——
+ * 浅色取第 6 阶、暗色取第 5 阶，原因见块末的对比度注释。
  */
 .dark {
   /* 红色系 (Red) */
@@ -242,6 +243,56 @@
   --color-inverted: var(--color-gray-1);
 }
 
+/*
+ * --- 主题色切换 (Theme Color Override) ---
+ * AppThemePicker 把选中的色系名写在 <html data-theme-color="...">（SSR 阶段就写入，首屏不跳色）。
+ *
+ * 明暗各写一遍，不能只覆盖一个值：取阶规则与上面两块一致——浅色取第 6 阶、暗色取第 5 阶。
+ * 也正因为要跟着明暗走，这里不能像旧实现那样用 element.style 写 --color-primary：
+ * 内联样式权重高于 .dark 类选择器，暗色下的第 5 阶会被浅色档的取阶顶掉。
+ *
+ * 属性选择器不加 :root 前缀，色块按钮自己挂 data-theme-color 就能预览对应主色（所见即所得）。
+ * 权重：[data-theme-color] 与 :root / .dark 同为 (0,1,0)，靠源码次序压住浅色默认值；
+ * 暗色组用 .dark[...] / .dark [...] 提到 (0,2,0)，稳压同块的浅色规则。
+ */
+[data-theme-color="brand"] {
+  --color-primary: var(--color-brand-6);
+  --color-primary-3: var(--color-brand-3);
+}
+[data-theme-color="orange"] {
+  --color-primary: var(--color-orange-6);
+  --color-primary-3: var(--color-orange-3);
+}
+[data-theme-color="green"] {
+  --color-primary: var(--color-green-6);
+  --color-primary-3: var(--color-green-3);
+}
+[data-theme-color="red"] {
+  --color-primary: var(--color-red-6);
+  --color-primary-3: var(--color-red-3);
+}
+
+.dark[data-theme-color="brand"],
+.dark [data-theme-color="brand"] {
+  --color-primary: var(--color-brand-5);
+  --color-primary-3: var(--color-brand-3);
+}
+.dark[data-theme-color="orange"],
+.dark [data-theme-color="orange"] {
+  --color-primary: var(--color-orange-5);
+  --color-primary-3: var(--color-orange-3);
+}
+.dark[data-theme-color="green"],
+.dark [data-theme-color="green"] {
+  --color-primary: var(--color-green-5);
+  --color-primary-3: var(--color-green-3);
+}
+.dark[data-theme-color="red"],
+.dark [data-theme-color="red"] {
+  --color-primary: var(--color-red-5);
+  --color-primary-3: var(--color-red-3);
+}
+
 :root {
   /* 容器限制：加宽至 100rem，为组件 demo 提供更大画布（header 与正文共用，保持对齐） */
   --ui-container: min(100rem, 100%);
@@ -287,34 +338,4 @@ body.layout-admin-shell {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-/* 主色禁用背景跟随所选色系，统一使用第 3 阶。 */
-[data-theme-color="brand"] {
-  --color-primary-3: var(--color-brand-3);
-}
-[data-theme-color="orange"] {
-  --color-primary-3: var(--color-orange-3);
-}
-[data-theme-color="green"] {
-  --color-primary-3: var(--color-green-3);
-}
-[data-theme-color="red"] {
-  --color-primary-3: var(--color-red-3);
-}
-.dark[data-theme-color="brand"],
-.dark [data-theme-color="brand"] {
-  --color-primary-3: var(--color-brand-3);
-}
-.dark[data-theme-color="orange"],
-.dark [data-theme-color="orange"] {
-  --color-primary-3: var(--color-orange-3);
-}
-.dark[data-theme-color="green"],
-.dark [data-theme-color="green"] {
-  --color-primary-3: var(--color-green-3);
-}
-.dark[data-theme-color="red"],
-.dark [data-theme-color="red"] {
-  --color-primary-3: var(--color-red-3);
 }

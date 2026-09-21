@@ -219,15 +219,46 @@ function syncFloating() {
 }
 
 /**
- * 箭头中心点：落在浮层朝向触发器的那条边上、对准触发器中心，只由触发器几何与间距决定，
+ * 箭头中心距浮层端部的内缩量，与 reborn-popover / reborn-tooltip 同一口径：
+ * 浮层圆角 8px（rounded-lg）加半个箭头底边（12px 方块旋转 45° 后底边 ≈16.97px，半边 ≈8.49px），取整 17。
+ * 再小箭头底边就压到圆角弧线上，连接处露出缺口。
+ */
+const ARROW_INSET = 17;
+
+/**
+ * 箭头在交叉轴上的落点，以触发器该轴的起点为原点。
+ *
+ * 规则与 reborn-popover / reborn-tooltip 一致：start / end 停在浮层对齐端内缩 ARROW_INSET 处，
+ * 只有 center 才对准触发器中心。此前三档一律对准触发器中心：浮层最小宽度就是触发器宽度，
+ * 内容不比触发器宽多少时，bottomLeft / bottomRight 的箭头和 bottom 一样落在正中附近，
+ * 看不出浮层到底靠哪边对齐（实测 104px 触发器配 126px 浮层，左对齐的箭头距左边 52px、距右边 74px）。
+ *
+ * 不测浮层也能算：syncFloating 把浮层的对齐端钉在触发器同侧的边上（start 贴起边、end 贴终边），
+ * 对齐端的坐标就是触发器那条边的坐标；浮层再短也有一项 43px 高、38px 宽，装得下两倍内缩量，不必钳制。
+ * 行内模式的浮层恒为 start 对齐：top / bottom 下与 wrapper 等宽，三档都能按 wrapper 的边取到；
+ * left / right 下高度由内容决定、只有起边钉在 wrapper 上，end 没有可参照的终边，退回 start。
+ */
+function arrowCrossOffset(extent: number, vertical: boolean): number {
+  let align = props.align;
+  if (!props.portal && !vertical && align === "end") align = "start";
+
+  if (align === "center") return extent / 2;
+  return align === "start" ? ARROW_INSET : extent - ARROW_INSET;
+}
+
+/**
+ * 箭头中心点：落在浮层朝向触发器的那条边上，交叉轴落点见 arrowCrossOffset，只由触发器几何与间距决定，
  * 不需要测量浮层。传送模式换算成文档坐标（与浮层同一坐标系），行内模式相对 wrapper。
  */
 function syncArrow(rect: DOMRect, scrollX: number, scrollY: number) {
   const gap = props.offset;
-  let x = rect.width / 2;
-  let y = rect.height / 2;
+  const side = resolvedSide.value;
+  const vertical = side === "top" || side === "bottom";
+  // 交叉轴按对齐端取落点，主轴坐标在下面按方向贴到浮层朝向触发器的那条边外侧
+  let x = vertical ? arrowCrossOffset(rect.width, true) : 0;
+  let y = vertical ? 0 : arrowCrossOffset(rect.height, false);
 
-  switch (resolvedSide.value) {
+  switch (side) {
     case "bottom":
       y = rect.height + gap;
       break;

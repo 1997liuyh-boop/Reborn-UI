@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { sandboxContextKey } from '../component-viewer/types'
 import DeviceFrame from '../device-frame/DeviceFrame.vue'
 
 const props = defineProps<{
@@ -8,15 +9,26 @@ const props = defineProps<{
   url?: string
 }>()
 
-const open = ref(false);
-
-const isDesktop = useMediaQuery("(min-width: 768px)");
-
 // 注册移动端 demo 到页面级状态：面板是否真正展示由 useUniDemoPanel 结合平台开关决定
 if (props.uniapp && props.url) {
   const { register } = useUniDemoPanel()
   register({ url: props.url })
 }
+
+/**
+ * 参数调节区的去处。
+ *
+ * 在文档页里，这块内容归 ComponentTabs 的 Sandbox 面板管；但那张面板和这里隔着
+ * `<component :is="config" />` 这层动态组件，父子关系上够不着，只能用 Teleport 搬过去。
+ * 注入不到 sandbox 说明不在文档页（例如别处单独引用本组件），那就退回原地铺开。
+ */
+const sandbox = inject(sandboxContextKey, null)
+const slots = useSlots()
+
+// 有没有可调参数，只有本组件能从 #config 插槽看出来；挂载后回报上层，决定那张 Tab 要不要出现
+onMounted(() => {
+  if (slots.config) sandbox?.register()
+})
 
 const { isUniapp } = useDocsPlatform()
 
@@ -55,35 +67,27 @@ const computedUrl = computed(() => {
       <slot name="component" />
     </div>
 
-    <!-- 参数调节入口：仅少数需要大量可调项的组件使用（抽屉承载，不占画布面积） -->
-    <div v-if="$slots.config" class="border-default flex w-full flex-row items-center justify-between border-t pt-6">
-      <div class="flex flex-col items-start gap-1.5">
-        <span class="text-highlighted text-base font-semibold tracking-tight">交互演练场</span>
-        <span class="text-muted text-sm">调节参数，实时查看组件表现。</span>
+    <!-- 参数调节区：仅少数需要大量可调项的组件会写 #config -->
+    <template v-if="$slots.config">
+      <!--
+        文档页里搬进 Sandbox 面板。用 v-if 而不是 :disabled 卡住渲染时机：
+        Teleport 即使 disabled 也会去解析 to 选择器，目标还没挂上时会报 Invalid Teleport target。
+      -->
+      <Teleport v-if="sandbox && sandbox.ready.value" :to="`#${sandbox.targetId}`">
+        <slot name="config" />
+      </Teleport>
+
+      <!-- 没有承载面板才就地铺开；已登记但目标还没挂好的那一帧什么都不画，免得控件先在预览区闪一下 -->
+      <div v-else-if="!sandbox" class="border-default flex w-full flex-col gap-4 border-t pt-6">
+        <div class="flex flex-col gap-1">
+          <span class="text-highlighted text-base font-semibold tracking-tight">交互演练场</span>
+          <span class="text-muted text-sm">调节参数，实时查看组件表现。</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <slot name="config" />
+        </div>
       </div>
-      <UDrawer
-        v-model:open="open" :direction="isDesktop ? 'right' : 'bottom'" :overlay="!isDesktop"
-        :dismissible="!isDesktop" :handle="false" :modal="!isDesktop" :inset="isDesktop" :ui="{
-          header: 'flex items-center justify-between',
-          content: 'bg-default/35 backdrop-blur-3xl md:min-w-md',
-        }"
-      >
-        <UButton label="调节参数" variant="solid" trailing-icon="tabler:chevron-right" size="lg" />
-
-        <template #header>
-          <div class="flex flex-col gap-2">
-            <h2 class="text-highlighted font-semibold">交互演练场</h2>
-            <h2 class="text-muted text-sm font-light">调节下方参数，实时查看组件表现。</h2>
-          </div>
-
-          <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="open = false" />
-        </template>
-        <template #body>
-          <div class="mt-4 grid grid-cols-1 gap-4 overflow-y-auto p-1">
-            <slot name="config" />
-          </div>
-        </template>
-      </UDrawer>
-    </div>
+    </template>
   </div>
 </template>

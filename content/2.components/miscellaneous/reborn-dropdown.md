@@ -14,7 +14,7 @@ platform: web
 
 | 属性名 | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `show-arrow` | `boolean` | `false` | 下拉框箭头是否显示 |
+| `show-arrow` | `boolean` | `false` | 是否显示指向触发器的小箭头；落点跟随 `position` 的对齐端，见「平台差异与注意事项」 |
 | `disabled` | `boolean` | `false` | 菜单是否禁用 |
 | `options` | `DropdownOption[]` | `[]` | 菜单配置项，每项为 `{ label, value, disabled?, icon? }`；与 `content` 插槽二选一，插槽优先 |
 | `position` | `'top' \| 'topLeft' \| 'topRight' \| 'bottom' \| 'bottomLeft' \| 'bottomRight' \| 'left' \| 'leftTop' \| 'leftBottom' \| 'right' \| 'rightTop' \| 'rightBottom'` | `'bottom'` | 菜单弹出位置，靠近视口边缘时自动翻转 |
@@ -238,6 +238,7 @@ function handleSelect(value: DropdownValue) {
 ## 平台差异与注意事项
 
 - 仅 Web 端提供。浮层基于 `RebornSelectTrigger`（与 Select 共用同一套浮层外壳、定位与外部点击边界）：12 向 `position` 映射为其 `side` / `align`，目标侧空间不足时自动翻转到对侧；`show-arrow` 即其箭头。
+- 箭头落点跟随 `position` 的对齐端，与 Popover / Tooltip 同一口径：`topLeft` / `bottomLeft` / `leftTop` / `rightTop` 停在浮层起始端内缩 17px 处，`topRight` / `bottomRight` / `leftBottom` / `rightBottom` 停在末端 17px 处，只有 `top` / `bottom` / `left` / `right` 才指向触发器中心。之所以不让三档都指向触发器中心：浮层最小宽度就是触发器宽度，内容不比触发器宽多少时，左右对齐的箭头会和居中的一样落在正中附近，看不出浮层靠哪边对齐。17px 是浮层圆角 8px 加半个箭头底边，再小箭头底边会压到圆角弧线上露出缺口。
 - `trigger="hover"` 基于鼠标移入 / 移出实现，移入 100ms 后展开、移出 150ms 后收起以便鼠标移入面板；移动端无悬停，请使用默认的 `click`。
 - `RebornDoption` / `RebornDsubmenu` / `RebornDgroup` 通过 `provide/inject` 与 `RebornDropdown` 通信，嵌套层级不受限制；脱离 Dropdown 单独使用时不带样式也不触发事件。
 - 子菜单面板同样传送到 `body`，父级会把子级面板视为自身的一部分：悬停子面板不会让父级收起，子面板内的点击不算外部点击，子级选中会逐级冒泡到最外层的 `select` 并整体收起。子面板与父面板外缘之间固定留 4px 间隙。

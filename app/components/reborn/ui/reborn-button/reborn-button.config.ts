@@ -305,12 +305,12 @@ export default {
     {
       variant: "soft" as (typeof variant)[number],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 text-gray-4 opacity-70",
+      class: "bg-gray-6 dark:bg-gray-2 text-gray-4 opacity-60",
     },
     {
       variant: "subtle" as (typeof variant)[number],
       disabled: true,
-      class: "bg-gray-6 dark:bg-gray-2 border border-gray-7 text-gray-4 opacity-70",
+      class: "bg-gray-6 dark:bg-gray-2 border border-gray-7 text-gray-4 opacity-60",
     },
 
     {
@@ -432,15 +432,15 @@ export default {
       disabled: true,
       class: "bg-transparent",
     },
-    // 胶囊按钮保留原有禁用文字颜色。
+    // 实底与胶囊按钮的禁用底色是对应色系第 3 阶，文字改用灰阶 1，不再沿用半透明白。
     {
-      variant: "round" as (typeof variant)[number],
+      variant: ["filled", "round"],
       disabled: true,
-      class: "text-white/50",
+      class: "text-gray-1",
     },
-    // 仅实底、描边和文字按钮统一禁用文字颜色，明暗模式均使用灰阶 5。
+    // 描边与文字按钮的禁用底色是灰阶或透明，文字统一使用灰阶 5。
     {
-      variant: ["filled", "outlined", "text"],
+      variant: ["outlined", "text"],
       disabled: true,
       class: "text-gray-5",
     },

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ItemType } from "~/components/reborn/ui/reborn-menu";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   RebornMenu,
   RebornMenuItem,
@@ -23,6 +23,7 @@ const state = ref<Record<string, any>>({
   uniqueOpened: false,
   expandType: "popup",
   expandMutex: false,
+  defaultExpandAll: false,
   color: "primary",
   showActiveBackground: true,
   backgroundColor: "#ffffff",
@@ -32,6 +33,21 @@ const state = ref<Record<string, any>>({
 
 /** 演练场里被 v-model:open-keys 双向绑定的展开项 */
 const expandedMenus = ref<string[]>([]);
+
+/** 演练场菜单的重建标记，切换「默认全部展开」时自增 */
+const playgroundKey = ref(0);
+
+/**
+ * defaultExpandAll 只在挂载时判定一次，运行时改动不会让已收起的子菜单重新展开。
+ * 演练场需要勾选即可见效，因此清空已展开项并让菜单重建一次，等价于带着新属性重新进页面。
+ */
+watch(
+  () => state.value.defaultExpandAll,
+  () => {
+    expandedMenus.value = [];
+    playgroundKey.value += 1;
+  },
+);
 
 /** 演练场控制面板配置 */
 const controls: any = [
@@ -98,6 +114,12 @@ const controls: any = [
       {
         label: "同级互斥展开",
         key: "expandMutex",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+      {
+        label: "默认全部展开",
+        key: "defaultExpandAll",
         component: "checkbox" as const,
         defaultValue: false,
       },
@@ -194,6 +216,7 @@ const codeString = computed(
   :unique-opened='${state.value.uniqueOpened}'
   :expand-type='${state.value.expandType}'
   :expand-mutex='${state.value.expandMutex}'
+  :default-expand-all='${state.value.defaultExpandAll}'
   color='${state.value.color}'
   :show-active-background='${state.value.showActiveBackground}'
   background-color='${state.value.backgroundColor}'
@@ -215,6 +238,7 @@ const codeString = computed(
     >
       <div>
         <RebornMenu
+          :key="playgroundKey"
           v-model:selected-keys="activePath"
           v-model:open-keys="expandedMenus"
           :mode="state.mode"
@@ -223,6 +247,7 @@ const codeString = computed(
           :unique-opened="state.uniqueOpened"
           :expand-type="state.expandType"
           :expand-mutex="state.expandMutex"
+          :default-expand-all="state.defaultExpandAll"
           :color="state.color"
           :show-active-background="state.showActiveBackground"
           class="min-h-[400px] w-full"
@@ -612,6 +637,49 @@ const codeString = computed(
               <template #title>历史</template>
               <RebornMenuItem index="d2-1">记录A</RebornMenuItem>
               <RebornMenuItem index="d2-2">记录B</RebornMenuItem>
+            </RebornSubMenu>
+          </RebornMenu>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">默认全部展开 · <code>default-expand-all</code></span>
+          <DemoNote tone="dimmed">
+            进页面即展开全部层级，适合层级少、需要一眼看全的配置型导航。仅在平铺展开
+            <code>expand-type="normal"</code> 下生效，浮层形态下全部展开会让弹层互相遮挡。
+          </DemoNote>
+          <RebornMenu
+            v-model:selected-keys="activePath"
+            mode="vertical"
+            expand-type="normal"
+            default-expand-all
+            color="error"
+            class="min-h-[300px] w-full"
+          >
+            <RebornSubMenu index="f1">
+              <template #icon>
+                <Icon
+                  name="lucide:sliders-horizontal"
+                  class="size-5"
+                />
+              </template>
+              <template #title>基础配置</template>
+              <RebornMenuItem index="f1-1">站点信息</RebornMenuItem>
+              <RebornMenuItem index="f1-2">主题外观</RebornMenuItem>
+            </RebornSubMenu>
+            <RebornSubMenu index="f2">
+              <template #icon>
+                <Icon
+                  name="lucide:shield"
+                  class="size-5"
+                />
+              </template>
+              <template #title>安全设置</template>
+              <RebornMenuItem index="f2-1">登录策略</RebornMenuItem>
+              <RebornSubMenu index="f2-2">
+                <template #title>访问控制</template>
+                <RebornMenuItem index="f2-2-1">IP 名单</RebornMenuItem>
+                <RebornMenuItem index="f2-2-2">接口限流</RebornMenuItem>
+              </RebornSubMenu>
             </RebornSubMenu>
           </RebornMenu>
         </div>

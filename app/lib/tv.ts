@@ -28,6 +28,20 @@ function normalizeMarkerPart(value: string): string {
   return value.replace(/[^\w-]/g, '-');
 }
 
+/**
+ * 模块级主题没有归属组件时使用的前缀。
+ *
+ * 不能在求值阶段回读 getCurrentInstance() 来补名字：组件普遍把 slot 类名包一层
+ * computed（如 RebornTabs 的 paneClass），再 provide 给子组件渲染。服务端可能由
+ * 子组件（RebornTabPane）先触发求值，客户端 hydration 时却由父组件（RebornTabs）
+ * 先触发，computed 的缓存会把「首个求值者」的名字固化下来，两端类名不同就会报
+ * Hydration class mismatch。何况模块级主题本就被多个组件共用，用任一使用者的名字
+ * 命名也不准确。
+ *
+ * 退化成固定前缀不影响定位：getThemeSlotSelector 只按「-key-themeId」结尾匹配。
+ */
+const FALLBACK_MARKER_NAME = 'Component';
+
 /** 优先使用显式组件名称，其次使用 Vue 单文件组件推导的名称。 */
 function currentComponentName(): string | undefined {
   const component = getCurrentInstance()?.type;
@@ -54,12 +68,13 @@ export const tv = ((options: any, config?: any) => {
   // setup 中创建的主题保存所属组件名，避免响应式重算时丢失上下文。
   const ownerName = currentComponentName();
 
-  /** 模块级共享主题在实际使用时读取组件名，不把首个使用者写入共享状态。 */
+  /** 名字只认创建主题时的组件，求值时机不再影响类名，保证服务端与客户端一致。 */
+  const name = ownerName || FALLBACK_MARKER_NAME;
+
   const marked = (props?: any) => {
     const styles: unknown = themed(props);
     if (!styles || typeof styles !== 'object') return styles;
 
-    const componentName = ownerName || currentComponentName();
     const result: Record<string, unknown> = {};
     for (const [key, origin] of Object.entries(styles)) {
       if (typeof origin !== 'function') {
@@ -67,7 +82,6 @@ export const tv = ((options: any, config?: any) => {
         continue;
       }
       result[key] = (...args: any[]) => {
-        const name = componentName || currentComponentName() || 'Component';
         const marker = `${name}-${normalizeMarkerPart(key)}-${themeId}`;
         // slot 结果为空时 tailwind-variants 返回 undefined，不能直接进模板字符串
         const base = origin(...args);

@@ -224,6 +224,8 @@ export interface MenuContext {
   cancelCloseAll?: () => void;
   /** 通知父级重新计算高度 */
   notifyResize?: () => void;
+  /** 子菜单挂载时向根节点报到，供「默认全部展开」判定使用 */
+  registerSubMenu?: (index: string, indexPath: string[], disabled: boolean) => void;
 }
 
 /** 平铺展开时每下沉一层子菜单增加的缩进量（像素） */
@@ -499,6 +501,30 @@ const theme = tv({
       showActiveBackground: true,
       class: { menuItem: "shadow-sm" },
     },
+    // ── 祖先子菜单的选中态：平铺只留文字色，浮层换成中性底 ──
+    // hasSubmenu 为真即「带子菜单的条目」，它的选中态一定是后代被选中带来的祖先高亮：
+    // 子菜单标题自身只能展开 / 收起，永远不会进入 selectedKeys。
+    // ⚠️ 根因：祖先沿用了叶子那套主题色背景块（bg-brand-2 等），平铺展开时父子条目上下紧邻，
+    // 两块同色背景连成一片，看不出真正被选中的是哪一条。
+    // ✅ 修复：平铺态的祖先去掉背景与投影，只靠文字色标记层级；浮层态的祖先改用中性的 bg-gray-2，
+    // 与浮层内真正选中项的主题色背景拉开层次。
+    // 位置：排在主题色背景块之后（twMerge 后者胜才能盖掉 bg-*-2），又排在水平态规则之前
+    // （水平一级项另有 bg-transparent shadow-none，不受这里影响）。
+    {
+      active: true,
+      showActiveBackground: true,
+      hasSubmenu: true,
+      expandType: "normal",
+      // hover:bg-gray-2 是补回来的：去掉常驻背景后，这一行会成为列表里唯一没有悬浮反馈的条目
+      class: { menuItem: "bg-transparent shadow-none hover:bg-gray-2" },
+    },
+    {
+      active: true,
+      showActiveBackground: true,
+      hasSubmenu: true,
+      expandType: "popup",
+      class: { menuItem: "bg-gray-2" },
+    },
     // ⚠️ 根因：level 变体给 menuItemTitle 固定了 text-gray-10 / text-gray-9，
     // 会盖住选中态从 menuItem 继承下来的主题色。
     // ✅ 修复：选中时把标题色改回 inherit，让它跟随 menuItem 的主题色。
@@ -533,66 +559,17 @@ const theme = tv({
         menuItemArrow: "rotate-90",
       },
     },
-    // 展开态高亮：把主题色给到 menuItem，图标与文字都走 currentColor 一起变色。
-    // ⚠️ 根因：旧实现在标题上叠了 bg-gradient + background-clip:text 的流光动画，
-    // 由于默认 trigger 是 hover，鼠标一划过就会开始跑渐变，观感嘈杂。
-    // ✅ 修复：只保留纯色高亮，渐变与 keyframes 一并移除。
-    {
-      opened: true,
-      color: "primary",
-      class: {
-        menuItem: "text-primary",
-        menuItemTitle: "text-inherit",
-      },
-    },
-    {
-      opened: true,
-      color: "secondary",
-      class: {
-        menuItem: "text-secondary",
-        menuItemTitle: "text-inherit",
-      },
-    },
-    {
-      opened: true,
-      color: "success",
-      class: {
-        menuItem: "text-success",
-        menuItemTitle: "text-inherit",
-      },
-    },
-    {
-      opened: true,
-      color: "info",
-      class: {
-        menuItem: "text-info",
-        menuItemTitle: "text-inherit",
-      },
-    },
-    {
-      opened: true,
-      color: "warning",
-      class: {
-        menuItem: "text-warning",
-        menuItemTitle: "text-inherit",
-      },
-    },
-    {
-      opened: true,
-      color: "error",
-      class: {
-        menuItem: "text-error",
-        menuItemTitle: "text-inherit",
-      },
-    },
-    {
-      opened: true,
-      color: "neutral",
-      class: {
-        menuItem: "text-neutral",
-        menuItemTitle: "text-inherit",
-      },
-    },
+    // ── 展开态不再改字体颜色（七种色板一致）──
+    // 这里原先按 color 逐个给 menuItem 上主题色（text-primary / text-success …），
+    // 先前只为 neutral 单独摘掉过，现在对全部色板一并取消。
+    // ⚠️ 根因：展开态与「后代被选中」的祖先态用的是同一套主题色，两者在视觉上无法区分。
+    // 点击触发下子菜单被选中后不收起（见 RebornMenu.handleSelect），展开集合里会同时留着
+    // 用户先前手动展开的其他分支；再加上 defaultExpandAll 一次展开全部，
+    // 于是「系统管理 / 名单管理 / 白名单IP管理」这类仅仅是展开着的条目，
+    // 和真正被选中的那条祖先链一样上色，看起来就是上一个选中项的高亮没被取消。
+    // ✅ 修复：把字体颜色彻底让给选中态——祖先链用 text-brand-6，叶子另有背景块，
+    // 展开与否交给箭头旋转表达（见上一条 menuItemArrow: rotate-90 与浮层态的箭头朝向）。
+    // 副作用是正向的：同一条祖先无论展开还是收起，现在都是同一个颜色，不再因展开而变色。
     // ── 水平菜单的一级条目：只高亮图标与文字，不要背景块 ──
     // group-hover 是必需的：标题的灰阶由 level 变体钉死在 text-gray-10，
     // 光靠 menuItem 上的 hover:text-* 继承不下来，得反查父级悬浮态改回 inherit。

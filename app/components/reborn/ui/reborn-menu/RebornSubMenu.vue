@@ -3,7 +3,7 @@ import type { ClassValue } from "clsx";
 import type { CSSProperties } from "vue";
 import type { ItemType, MenuContext, MenuUI } from "./reborn-menu.config";
 import { useEventListener } from "@vueuse/core";
-import { computed, inject, nextTick, onBeforeUnmount, provide, ref, watch } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
 import { cn } from "~/lib/utils";
 import theme, { MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
 // RebornMenuItems 由 Nuxt 全局自动注册，不写静态 import 以避免递归组件的 ESM 循环依赖。
@@ -152,6 +152,14 @@ if (menuContext) {
   });
 }
 
+/**
+ * 挂载时向根节点报到，由根节点决定是否执行「默认全部展开」。
+ * 平铺态下整棵树在首次渲染时就全部挂载，因此一轮上报即可覆盖所有层级。
+ */
+onMounted(() => {
+  menuContext?.registerSubMenu?.(props.index, indexPath.value, props.disabled);
+});
+
 const subMenuUi = computed(() => {
   const styles = theme({
     mode: menuContext?.mode.value ?? "vertical",
@@ -237,6 +245,44 @@ const subMenuUi = computed(() => {
 const popupRef = ref<HTMLElement | null>(null);
 const liRef = ref<HTMLElement | null>(null);
 const popupStyle = ref<Record<string, string>>({});
+
+/**
+ * 浮层展开动画的缩放原点。
+ * 浮层是从触发条目「长出来」的，原点必须落在与条目贴合的那条边上，
+ * 否则缩放看起来像是从半空中凭空浮现。具体方位由 updatePopupPosition 按实际落位（含翻转）写入。
+ * 默认值对应未翻转的左上角，也是不 teleport 分支（纯 CSS 定位在条目右上）的正确原点。
+ */
+const popupOrigin = ref("left top");
+
+/**
+ * 浮层展开动画是否生效。
+ * 复用 collapseTransition 这一个开关：它在平铺态关掉高度过渡，在浮层态关掉出现/消失动画，
+ * 对使用者是同一句「不要菜单动画」。关闭时用 Transition 的 css=false 彻底跳过过渡，
+ * 而不是叠一个 transition-none 去和工具类抢优先级。
+ */
+const popupTransitionEnabled = computed(() => menuContext?.collapseTransition.value !== false);
+
+/**
+ * ⚠️ 根因：浮层此前只有 v-show，切的是 display，而 display 不可过渡，
+ * 所以展开是硬闪出来的；reborn-menu.config.ts 里 expandType.popup 又是一个空对象，
+ * 没有补上任何过渡类，「浮层展开动画」实际上从来没有存在过。
+ * ✅ 修复：用 Transition 承载动画，过渡类写在这里而不是配置文件里——
+ * 配置里 expandType 声明在 collapseTransition 之后，twMerge 会让 expandType.popup
+ * 盖掉 collapseTransition 为 false 时的 transition-none，关动画的开关就失效了。
+ *
+ * 只列 opacity、transform、scale 三项，不用 transition-all：
+ * top / left 是每次展开由 JS 重算的，一旦参与过渡，换位置时浮层会从上一个落点滑过来。
+ * transform 和 scale 都列上，是为了同时覆盖 Tailwind 两种缩放产物。
+ * 收起时加 pointer-events-none，避免正在淡出的浮层继续吃掉点击。
+ */
+const popupTransitionProps = {
+  enterActiveClass: "transition-[opacity,transform,scale] duration-200 ease-out",
+  enterFromClass: "scale-95 opacity-0",
+  enterToClass: "scale-100 opacity-100",
+  leaveActiveClass: "pointer-events-none transition-[opacity,transform,scale] duration-150 ease-in",
+  leaveFromClass: "scale-100 opacity-100",
+  leaveToClass: "scale-95 opacity-0",
+} as const;
 
 /** 浮层非持久化时，用于控制关闭后销毁 DOM */
 const popupMounted = ref(false);
@@ -362,7 +408,12 @@ async function updatePopupPosition() {
   await nextTick();
 
   const liRect = liRef.value.getBoundingClientRect();
-  const popupRect = popupRef.value.getBoundingClientRect();
+  // ⚠️ 条目自身不带 transform，用 getBoundingClientRect 量是准的；浮层不行：
+  // 展开动画靠 scale 缩放，getBoundingClientRect 量到的是「缩放之后」的尺寸，
+  // 起始帧只有真实尺寸的 95%，据此判断溢出会让贴边的浮层翻到错误的一侧。
+  // 所以浮层尺寸一律用不受 transform / scale 影响的 offsetWidth、offsetHeight。
+  const popupWidth = popupRef.value.offsetWidth;
+  const popupHeight = popupRef.value.offsetHeight;
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
 
@@ -375,20 +426,45 @@ async function updatePopupPosition() {
 
   let top = isRootHoriz ? liRect.bottom + offset : liRect.top;
   let left = isRootHoriz ? liRect.left : liRect.right + offset;
+  /** 是否因右侧空间不足翻到了条目左边 */
+  let flippedToLeft = false;
 
   // 底部溢出处理
-  if (top + popupRect.height > viewportHeight) {
-    top = Math.max(safeGap, viewportHeight - popupRect.height - safeGap);
+  if (top + popupHeight > viewportHeight) {
+    top = Math.max(safeGap, viewportHeight - popupHeight - safeGap);
   }
 
   // 右侧溢出处理
-  if (left + popupRect.width > viewportWidth) {
+  if (left + popupWidth > viewportWidth) {
     if (isRootHoriz) {
-      left = Math.max(safeGap, viewportWidth - popupRect.width - safeGap);
+      left = Math.max(safeGap, viewportWidth - popupWidth - safeGap);
     } else {
-      left = liRect.left - popupRect.width - offset;
+      // ⚠️ 根因：翻转分支此前无条件写 liRect.left - popupWidth - offset，不做任何钳位。
+      // 浮层最小宽度 200px，视口窄到约 470px 以下时左边同样塞不下，
+      // 这个减法会得到负数，浮层有一截被推出左边缘，里面的条目直接点不到。
+      // ✅ 修复：只有左侧确实放得下才翻转；两侧都放不下时退回较宽的一侧再钳进视口。
+      const flippedLeft = liRect.left - popupWidth - offset;
+      if (flippedLeft >= safeGap) {
+        left = flippedLeft;
+        flippedToLeft = true;
+      } else if (liRect.left > viewportWidth - liRect.right) {
+        // 条目左侧空间更大：贴左边缘摆放
+        left = safeGap;
+        flippedToLeft = true;
+      } else {
+        // 条目右侧空间更大：贴右边缘摆放
+        left = Math.max(safeGap, viewportWidth - popupWidth - safeGap);
+      }
+      // 走到后两支时浮层必然与触发条目重叠——视口已经容不下「菜单 + 浮层」并排，
+      // 重叠至少还能点，被裁在视口外则完全不可用。
     }
   }
+
+  // 缩放原点取浮层与触发条目贴合的那个点：横向是贴合的那条边（翻转后换成右边），
+  // 纵向是条目中线相对浮层顶边的偏移。根级水平菜单的浮层挂在条目下方，
+  // 这个偏移算出来是负数，钳到 0 正好落在浮层上边缘，方向仍然对。
+  const originY = Math.min(Math.max(liRect.top + liRect.height / 2 - top, 0), popupHeight);
+  popupOrigin.value = `${flippedToLeft ? "right" : "left"} ${Math.round(originY)}px`;
 
   popupStyle.value = {
     top: `${top}px`,
@@ -397,21 +473,25 @@ async function updatePopupPosition() {
   };
 }
 
-/** 手动拦截滚轮事件，防止滚动穿透 */
+/**
+ * 拦截子菜单列表内部的滚动边界溢出。
+ *
+ * ⚠️ 根因：此前第一支是「不可滚动就 preventDefault，防止背景页面滚动」，而 subMenuContent
+ * 默认只有 flex flex-col gap-y-1，既没有 max-height 也没有 overflow-y-auto，永远不可滚动。
+ * 于是这一支每次都命中：鼠标只要停在任何一个展开的子菜单上，滚轮就被整个吃掉，页面滚不动；
+ * 下面那段边界判断也因此一次都没执行过。
+ * ✅ 修复：只有元素确实是滚动容器、且这一下滚轮会越过它的上下边界时才拦截，其余一律放行。
+ * 浮层本就设计成「页面一滚就关」（见下方 scroll 监听），锁住页面反而让那条路径永远走不到。
+ */
 function handleWheel(e: WheelEvent) {
   const el = e.currentTarget as HTMLElement;
   if (!el) return;
 
+  // 不是滚动容器就没有「滚动穿透」可言，直接放行
+  // （只有使用者通过 ui.subMenuContent 传入 max-h-* / overflow-y-auto 时才会成为滚动容器）
+  if (el.scrollHeight <= el.clientHeight) return;
+
   const { deltaY } = e;
-  const isScrollable = el.scrollHeight > el.clientHeight;
-
-  // 1. 如果内容没超过最大高度（不可滚动），直接拦截滚轮事件，防止背景页面滚动
-  if (!isScrollable) {
-    if (e.cancelable) e.preventDefault();
-    return;
-  }
-
-  // 2. 如果内容可滚动，拦截边界溢出
   // 向上滚动且已达顶部
   if (deltaY < 0 && el.scrollTop <= 0) {
     if (e.cancelable) e.preventDefault();
@@ -427,11 +507,13 @@ watch(
   (val) => {
     // 非 teleport 浮层由 CSS 定位，无需 JS 计算
     if (!props.teleported) return;
-    if (val && effectiveExpandType.value === "popup") {
-      void updatePopupPosition();
-    } else {
-      popupStyle.value = {};
-    }
+    // ⚠️ 收起时不能再清空 popupStyle：浮层是 position: fixed，
+    // 清掉 top / left 会立刻落回类名里的 left-full top-0（视口最右侧之外），
+    // 收起动画就变成「先飞出屏幕再淡出」。
+    // 留着上一次的坐标没有副作用：下次展开时 updatePopupPosition 会整份覆盖，
+    // persistent 为 false 时元素本身也会被销毁。
+    if (!val || effectiveExpandType.value !== "popup") return;
+    void updatePopupPosition();
   },
   // ⚠️ 必须用 post：浮层受 shouldRenderPopup 的 v-if 控制，
   // 默认的 pre 时机下 DOM 尚未打补丁，popupRef 仍为 null，
@@ -512,14 +594,37 @@ onBeforeUnmount(() => {
 
     <!-- 浮层展开（teleport 到 body，由 JS 定位） -->
     <Teleport v-if="effectiveExpandType === 'popup' && props.teleported" to="body">
+      <Transition v-bind="popupTransitionProps" :css="popupTransitionEnabled">
+        <div
+          v-if="shouldRenderPopup" v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()"
+          :data-menu-path="indexPath.join(',')" :style="{
+            position: 'fixed',
+            margin: 0,
+            transformOrigin: popupOrigin,
+            backgroundColor: menuContext?.backgroundColor.value,
+            color: menuContext?.textColor.value,
+            ...popupStyle,
+            ...props.popperStyle,
+          }" @mouseenter="handleMouseEnter" @mouseleave="handlePopupMouseLeave"
+        >
+          <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
+            <RebornMenuItems v-if="props.items?.length" :items="props.items" />
+            <slot v-else />
+          </ul>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 浮层展开（不 teleport，由 CSS 相对父级定位） -->
+    <Transition
+      v-else-if="effectiveExpandType === 'popup'" v-bind="popupTransitionProps" :css="popupTransitionEnabled"
+    >
       <div
-        v-if="shouldRenderPopup" v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()"
+        v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()"
         :data-menu-path="indexPath.join(',')" :style="{
-          position: 'fixed',
-          margin: 0,
+          transformOrigin: popupOrigin,
           backgroundColor: menuContext?.backgroundColor.value,
           color: menuContext?.textColor.value,
-          ...popupStyle,
           ...props.popperStyle,
         }" @mouseenter="handleMouseEnter" @mouseleave="handlePopupMouseLeave"
       >
@@ -528,22 +633,7 @@ onBeforeUnmount(() => {
           <slot v-else />
         </ul>
       </div>
-    </Teleport>
-
-    <!-- 浮层展开（不 teleport，由 CSS 相对父级定位） -->
-    <div
-      v-else-if="effectiveExpandType === 'popup'" v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()"
-      :data-menu-path="indexPath.join(',')" :style="{
-        backgroundColor: menuContext?.backgroundColor.value,
-        color: menuContext?.textColor.value,
-        ...props.popperStyle,
-      }" @mouseenter="handleMouseEnter" @mouseleave="handlePopupMouseLeave"
-    >
-      <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
-        <RebornMenuItems v-if="props.items?.length" :items="props.items" />
-        <slot v-else />
-      </ul>
-    </div>
+    </Transition>
 
     <!-- 平铺展开：CSS Grid 高度动画 -->
     <div

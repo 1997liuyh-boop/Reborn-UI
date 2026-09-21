@@ -8,9 +8,9 @@ const isRoot = isRootPage();
  * 正文容器全部随变量放开到全宽，无需逐个改容器；root 落地页维持居中版式。
  */
 useHead({
-    bodyAttrs: {
-        class: computed(() => (isRoot.value ? "" : "layout-admin-shell")),
-    },
+  bodyAttrs: {
+    class: computed(() => (isRoot.value ? "" : "layout-admin-shell")),
+  },
 });
 
 /**
@@ -19,10 +19,10 @@ useHead({
  * Tailwind 按断点升序输出，2xl 类在 lg 类之后声明，媒体查询同时命中时 2xl 生效。
  */
 const threeColUi = {
-    // 侧栏略加宽至 248px，贴近 Arco ~260px 的文档导航密度
-    root: "2xl:grid-cols-[248px_minmax(0,1fr)]",
-    left: "2xl:col-span-1",
-    center: "2xl:col-span-1 min-w-0",
+  // 侧栏略加宽至 248px，贴近 Arco ~260px 的文档导航密度
+  root: "2xl:grid-cols-[248px_minmax(0,1fr)]",
+  left: "2xl:col-span-1",
+  center: "2xl:col-span-1 min-w-0",
 } as const;
 
 /**
@@ -40,22 +40,13 @@ const { isPanelVisible } = useUniDemoPanel();
 
 <template>
   <UMain class="relative -mt-16 pt-16">
-    <div class="dark:pattern-background-d pattern-background-l absolute inset-0 z-[-1]" />
+    <div class="bg-gray-1 absolute inset-0 z-[-1]" />
     <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
     <UContainer>
-      <div
-        class="min-w-0 transition-[padding] duration-200"
-        :class="isPanelVisible ? '2xl:pr-[420px]' : undefined"
-      >
+      <div class="min-w-0 transition-[padding] duration-200" :class="isPanelVisible ? '2xl:pr-[420px]' : undefined">
         <!-- <UPage :key="route.fullPath"> -->
-        <UPage
-          :key="route.path"
-          :ui="isRoot ? undefined : threeColUi"
-        >
-          <template
-            v-if="!isRoot"
-            #left
-          >
+        <UPage :key="route.path" :ui="isRoot ? undefined : threeColUi">
+          <template v-if="!isRoot" #left>
             <UPageAside>
               <DocsAsideLeftTop />
               <DocsAsideLeftBody />

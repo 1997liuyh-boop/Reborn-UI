@@ -36,6 +36,7 @@ const props = withDefaults(defineProps<RebornMenuProps>(), {
   collapse: false,
   expandType: "popup",
   defaultOpeneds: () => [],
+  defaultExpandAll: false,
   uniqueOpened: false,
   expandMutex: false,
   closeOnClickOutside: true,
@@ -83,6 +84,14 @@ export interface RebornMenuProps {
   collapse?: boolean;
   /** 默认展开的子菜单索引数组 */
   defaultOpeneds?: string[];
+  /**
+   * 是否默认展开全部子菜单。
+   * 只在平铺展开时生效（非折叠、非水平模式，且 expandType 为 normal）：
+   * 浮层形态下「全部展开」会让所有浮层同时弹出并互相遮挡，不是可用的状态。
+   * 只在子菜单挂载时判定一次，优先级低于 openKeys 与 defaultOpeneds；
+   * 用户手动收起后不会被再次展开，运行时改动该属性也不会重新展开。
+   */
+  defaultExpandAll?: boolean;
   /** 是否只保持一个子菜单的展开（手风琴模式） */
   uniqueOpened?: boolean;
   /** 子菜单打开的触发方式 (仅水平模式或折叠时生效) */
@@ -150,6 +159,14 @@ const openedMenus = ref<MenuValue[]>(
 );
 /** 记录已展开子菜单的完整路径关系：记录 key 为菜单 index，value 为路径数组 */
 const openedMenuPaths = ref<Record<string, string[]>>({});
+/**
+ * 是否执行「默认全部展开」。
+ * 初始化时判定一次即可：openKeys 与 defaultOpeneds 任一给出了初始值，
+ * 就说明调用方已明确指定展开项，此时不应被全部展开覆盖。
+ */
+const shouldExpandAll = props.defaultExpandAll && openedMenus.value.length === 0;
+/** 已自动展开过的子菜单 index，保证每个节点只自动展开一次，用户手动收起后不会被重新展开 */
+const autoExpandedMenus = new Set<string>();
 /** 记录延时关闭的定时器，用于防抖或平滑过渡 */
 const closeTimers = ref<Set<ReturnType<typeof setTimeout>>>(new Set());
 /** 记录所有 teleport 的 popup 元素，防止点击外部误判 */
@@ -191,11 +208,44 @@ function isPathPrefix(parentPath: string[], targetPath: string[]) {
   return parentPath.every((segment, index) => targetPath[index] === segment);
 }
 
+/**
+ * 是否处于浮层展开形态。
+ * 判定口径与 RebornSubMenu 的 effectiveExpandType 一致：折叠态与水平菜单强制走浮层，
+ * 其余跟随根组件的 expandType。浮层形态在整棵树上是统一的，不存在某条分支单独平铺。
+ */
+const isPopupExpand = computed(
+  () => props.collapse || props.mode === "horizontal" || props.expandType === "popup",
+);
+
 /** 收起全部子菜单并同步模型 */
 function closeAllMenus() {
   openedMenus.value = [];
   openedMenuPaths.value = {};
   openKeys.value = [];
+}
+
+/**
+ * 只保留选中路径上的祖先菜单，其余分支一并收起。
+ * @param indexPath 新选中项的完整路径（末位是选中项自身）
+ */
+function keepAncestorMenus(indexPath: string[]) {
+  // 选中项自身是叶子而非子菜单，去掉末位后剩下的就是应当保持展开的那条祖先链
+  const ancestorPath = indexPath.slice(0, -1);
+
+  openedMenus.value = openedMenus.value.filter((openedIndex) => {
+    const openedPath = openedMenuPaths.value[openedIndex] ?? [openedIndex];
+    return isPathPrefix(openedPath, ancestorPath);
+  });
+
+  // 清除被收起分支的路径记录，避免下次展开时读到过期路径
+  Object.keys(openedMenuPaths.value).forEach((openedIndex) => {
+    const openedPath = openedMenuPaths.value[openedIndex];
+    if (!openedPath || !isPathPrefix(openedPath, ancestorPath)) {
+      delete openedMenuPaths.value[openedIndex];
+    }
+  });
+
+  openKeys.value = [...openedMenus.value];
 }
 
 // --- 全局兜底关闭 ---
@@ -318,8 +368,26 @@ function handleSelect(index: string, indexPath: string[], route?: RouteLocationR
   selectedKeys.value = [...indexPath];
   clearCloseTimers();
   cancelCloseAll();
-  // 选中某项时，收起其他子菜单
-  closeAllMenus();
+  // ⚠️ 根因：旧实现对任何选中都无条件收起全部子菜单，于是点开一层、点其中一条，
+  // 刚展开的那层会随着这次点击立刻塌陷——click 与 hover 两种触发方式下都一样难用。
+  // ✅ 修复：只有一级菜单项（路径长度为 1）才收起全部子菜单，子菜单内的条目保持展开。
+  // 浮层形态并不会因此关不掉：点击外部走 handleClickOutside，移出浮层走 scheduleCloseAll。
+  //
+  // ⚠️ 根因（悬停触发的残留展开）：平铺展开下父级没有「移出即收起」的通道
+  // （见 RebornSubMenu.handleMouseLeave 对平铺态的提前返回），而上面这条只在一级项上收起全部，
+  // 于是先选「名单管理 / 白名单管理」再选同级的「权限管理」时，名单管理仍留在 openedMenus 里，
+  // 明明已经切走了，那一整条分支却还摊开着，与悬停「跟着指针走一条路径」的预期相悖。
+  // ✅ 修复：悬停态本就只维持一条展开路径（见 handleOpen 的 openedMenus = [...indexPath]），
+  // 选中后按同一口径裁剪——只保留选中项的祖先链，旧分支随之收起。
+  // 注：残留的**字体颜色**已在配置层解决（reborn-menu.config.ts 取消了展开态上色），
+  // 这里裁剪的是展开状态本身，两者各管一层，不可互相替代。
+  // 选中项所在的那条链不受影响，「点子项不收起」的行为依旧成立；祖先链为空时等价于收起全部。
+  // 点击触发保持原样：那里允许同时展开多条分支（含 defaultExpandAll），裁剪会把用户手动展开的分支一并关掉。
+  if (props.menuTrigger === "hover") {
+    keepAncestorMenus(indexPath);
+  } else if (indexPath.length <= 1) {
+    closeAllMenus();
+  }
   emit("select", index, indexPath);
 
   // 如果开启了 router 模式，则进行路由跳转
@@ -357,8 +425,15 @@ function handleOpen(index: string, indexPath: string[]) {
     openedMenus.value = openedMenus.value.filter((idx) => !toClose.includes(idx));
   }
 
-  if (props.menuTrigger === "hover" || props.uniqueOpened) {
-    // 悬浮触发或开启手风琴模式时，只保留当前路径的展开状态
+  // ⚠️ 根因：浮层 + 点击触发走的是下面的累加分支，openedMenus 只增不减，
+  // 点开 A 再点开同级的 B 会得到 ["A","B"]，两块浮层同时悬在页面上互相遮挡，
+  // 也看不出当前停在哪一支。平铺态多分支同时展开是合理的（条目就地撑开、互不重叠），
+  // 浮层态不是：浮层脱离文档流，同时开多块只会是干扰。
+  // ✅ 修复：浮层形态一律只保留当前路径。indexPath 自带祖先链，
+  // 所以点开浮层内的下级子菜单时父级浮层照常保留，被收起的只有其它分支。
+  // 平铺形态不受影响，仍然累加（defaultExpandAll 依赖多分支同时展开）。
+  if (props.menuTrigger === "hover" || props.uniqueOpened || isPopupExpand.value) {
+    // 悬浮触发、手风琴模式或浮层展开时，只保留当前路径的展开状态
     openedMenus.value = [...indexPath];
   } else {
     // 否则将新展开的项加入到展开列表中
@@ -410,6 +485,31 @@ function toggleSubMenu(index: string, indexPath: string[]) {
   } else {
     handleOpen(index, indexPath);
   }
+}
+
+/**
+ * 子菜单挂载时向根节点报到，用于「默认全部展开」。
+ * 之所以由子菜单自报而不是在根节点遍历 items，是因为菜单树也可以完全由插槽书写，
+ * 那种写法下根节点拿不到结构；自报则两种写法都能覆盖。
+ * @param index 子菜单标识
+ * @param indexPath 子菜单的完整路径
+ * @param disabled 子菜单是否禁用
+ */
+function registerSubMenu(index: string, indexPath: string[], disabled: boolean) {
+  if (!shouldExpandAll) return;
+  // 判定口径与 RebornSubMenu 的 effectiveExpandType 一致：折叠态与水平态强制浮层展开。
+  // 浮层形态下全部展开会让所有浮层同时弹出并互相遮挡，直接跳过。
+  if (props.collapse || props.mode === "horizontal" || props.expandType !== "normal") return;
+  // 溢出折叠触发器是内部保留节点，展开它会让「更多」浮层在初始化时就弹开
+  if (index === ELLIPSIS_INDEX) return;
+  if (disabled) return;
+  if (autoExpandedMenus.has(index)) return;
+  autoExpandedMenus.add(index);
+
+  // 先写路径再写 openKeys：openKeys 的 watch 会据此重建 openedMenuPaths，顺序与 handleOpen 保持一致
+  openedMenuPaths.value[index] = [...indexPath];
+  openedMenus.value = Array.from(new Set([...openedMenus.value, index]));
+  openKeys.value = [...openedMenus.value];
 }
 
 /** 监听外部 openKeys 模型变化，同步展开状态 */
@@ -683,6 +783,7 @@ provide(MENU_INJECTION_KEY, {
   unregisterPopup,
   scheduleCloseAll,
   cancelCloseAll,
+  registerSubMenu,
   /** 通知父级需要重新计算高度（根级无需操作） */
   notifyResize: () => {},
 });

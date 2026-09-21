@@ -143,7 +143,7 @@ const dropdownCode = computed(() => {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="弹出位置" description="position 支持 12 个方向；按钮落在与其弹出方向对应的位置上，靠近视口边缘时会自动翻转到对侧。">
+    <DemoSection title="弹出位置" description="position 支持 12 个方向；按钮落在与其弹出方向对应的位置上，靠近视口边缘时会自动翻转到对侧。箭头停在浮层的对齐端，只有居中的四个方向才指向按钮中心。">
       <DemoBlock layout="row" align="center">
         <div class="grid w-fit grid-cols-5 gap-2">
           <template v-for="(p, i) in placementGrid" :key="i">

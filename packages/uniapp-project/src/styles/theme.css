@@ -86,6 +86,11 @@
     --color-error: var(--color-red-6);
     --color-neutral: var(--color-gray-6);
 
+    /* 禁用态填充色：取语义色所属色系的第 3 阶。success/info/warning/error/neutral
+       直接用色系变量（green-3 等），这里只补 primary 与 secondary 两个没有同名色系的别名 */
+    --color-primary-3: var(--color-red-3);
+    --color-secondary-3: var(--color-gray-3);
+
     --color-inverted: #ffffff;
     --color-default: var(--color-gray-8);
     --color-elevated: var(--color-gray-2);
