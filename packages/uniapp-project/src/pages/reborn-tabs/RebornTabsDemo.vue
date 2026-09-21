@@ -41,6 +41,8 @@ const lazyKey = ref<TabKey>('first')
 const destroyKey = ref<TabKey>('first')
 /** 额外内容演示 */
 const extraKey = ref<TabKey>('inbox')
+/** 撑开标签演示 */
+const stretchKey = ref<TabKey>('day')
 /** 撑满高度演示 */
 const justifyKey = ref<TabKey>('list')
 
@@ -259,9 +261,12 @@ function handleDelete(key: TabKey) {
 
     <!-- 额外内容 -->
     <RebornCard title="额外内容" custom-class="space-y-4">
-      <text class="text-24 text-gray-6">extra 插槽挂在标签栏末尾，常用来放筛选、刷新一类和整块内容相关的操作</text>
+      <text class="text-24 text-gray-6">left-extra 挂在标签栏起始侧、right-extra 挂在末尾，常用来放标题、筛选、刷新一类和整块内容相关的操作</text>
       <RebornTabs v-model:active-key="extraKey">
-        <template #extra>
+        <template #left-extra>
+          <text class="mr-[16rpx] text-26 font-medium text-gray-7">邮箱</text>
+        </template>
+        <template #right-extra>
           <ReButton size="xs" variant="text" color="neutral">
             刷新
           </ReButton>
@@ -271,6 +276,24 @@ function handleDelete(key: TabKey) {
         </RebornTabPane>
         <RebornTabPane key="sent" title="已发送">
           <text class="text-26 text-gray-7">已发送内容</text>
+        </RebornTabPane>
+      </RebornTabs>
+    </RebornCard>
+
+    <!-- 撑开标签 -->
+    <RebornCard title="撑开标签" custom-class="space-y-4">
+      <text class="text-24 text-gray-6">
+        stretch 让标签均分头部宽度、标题居中，适合少量固定标签占满整行；仅水平方向生效，标签总宽超出容器时仍回到滚动浏览
+      </text>
+      <RebornTabs v-model:active-key="stretchKey" type="capsule" stretch>
+        <RebornTabPane key="day" title="日">
+          <text class="text-26 text-gray-7">按日统计</text>
+        </RebornTabPane>
+        <RebornTabPane key="week" title="周">
+          <text class="text-26 text-gray-7">按周统计</text>
+        </RebornTabPane>
+        <RebornTabPane key="month" title="月">
+          <text class="text-26 text-gray-7">按月统计</text>
         </RebornTabPane>
       </RebornTabs>
     </RebornCard>
@@ -344,8 +367,8 @@ function handleDelete(key: TabKey) {
           <text class="text-26 text-gray-7">第一次点进来才挂载</text>
         </RebornTabPane>
       </RebornTabs>
-      <text class="text-24 text-gray-6">destroy-on-hide 则相反，离开就销毁，面板里的临时状态会一并丢掉</text>
-      <RebornTabs v-model:active-key="destroyKey" destroy-on-hide>
+      <text class="text-24 text-gray-6">destroy-on-hidden 则相反，离开就销毁，面板里的临时状态会一并丢掉</text>
+      <RebornTabs v-model:active-key="destroyKey" destroy-on-hidden>
         <RebornTabPane key="first" title="首个">
           <input class="h-[64rpx] w-full rounded-ui-2xs border border-gray-3 px-[16rpx] text-26" placeholder="输入后切走再回来，内容已清空">
         </RebornTabPane>

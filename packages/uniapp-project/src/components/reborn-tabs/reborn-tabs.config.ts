@@ -48,7 +48,7 @@ export interface TabPaneMeta {
   /** 可编辑模式下是否允许关闭 */
   closable: boolean
   /** 不显示时是否销毁内容 */
-  destroyOnHide: boolean
+  destroyOnHidden: boolean
 }
 
 /** 父级下发给 tab-pane 的上下文 */
@@ -58,7 +58,7 @@ export interface TabsContext {
   /** 首次展示时才挂载内容 */
   lazyLoad: ComputedRef<boolean>
   /** 父级统一配置的销毁策略，与单个标签页的配置取或 */
-  destroyOnHide: ComputedRef<boolean>
+  destroyOnHidden: ComputedRef<boolean>
   /** 是否开启内容过渡动画 */
   animation: ComputedRef<boolean>
   /** 内容区面板的样式类 */
@@ -74,6 +74,7 @@ export type TabsUI = Partial<{
   root: ClassValue
   nav: ClassValue
   navWrapper: ClassValue
+  scrollBody: ClassValue
   list: ClassValue
   tab: ClassValue
   tabTitle: ClassValue
@@ -81,7 +82,8 @@ export type TabsUI = Partial<{
   indicator: ClassValue
   tabSlider: ClassValue
   addButton: ClassValue
-  extra: ClassValue
+  leftExtra: ClassValue
+  rightExtra: ClassValue
   content: ClassValue
   stage: ClassValue
   pane: ClassValue
@@ -94,6 +96,9 @@ const theme = tv({
     nav: 'relative flex shrink-0 flex-row items-center gap-[16rpx]',
     // reborn-tabs__scroll 是量取滚动偏移的锚点，不能删
     navWrapper: 'reborn-tabs__scroll relative min-w-0 flex-1',
+    // 滚动内容内层：标签列与增加按钮的并排容器，按钮因此紧贴末尾标签（间距 16rpx 与 nav 的 gap 一致）；
+    // 代价是标签溢出时按钮跟着滚动，与 web 端行为一致
+    scrollBody: 'flex',
     // isolate 把下面这套 z-index 关在标签列内部，选中底板与标题的层叠不会外溢到页面其他元素
     list: 'relative isolate flex w-max',
     // 量取标签矩形的锚点 reborn-tabs__item 写在模板的标签节点上，不能并进这里：
@@ -116,7 +121,10 @@ const theme = tv({
     // 增加按钮整体复用未选中标签的盒子样式（见 RebornTabs.vue 的 addButtonClass），
     // 这里只补图标按钮特有的部分：去掉标题用的水平内边距、改为居中摆放图标
     addButton: 'justify-center px-0',
-    extra: 'flex shrink-0 flex-row items-center',
+    // 头部两侧的额外内容：left-extra 在标签列之前、right-extra 在头部末尾，
+    // 水平方向即左 / 右，垂直方向（position=left/right）即顶 / 底
+    leftExtra: 'flex shrink-0 flex-row items-center',
+    rightExtra: 'flex shrink-0 flex-row items-center',
     content: 'min-w-0 flex-1',
     // 高度过渡锁在这层而不是 content 上：content 带着 position 变体给的单边内边距，
     // 锁在它身上就得把 32rpx 内边距硬编码进 JS（小程序端没有 getComputedStyle 可读）。
@@ -130,6 +138,7 @@ const theme = tv({
       top: {
         root: 'flex-col',
         nav: 'w-full flex-row',
+        scrollBody: 'w-max flex-row items-center gap-[16rpx]',
         list: 'flex-row items-end',
         indicator: 'bottom-0 left-0 h-[4rpx]',
         // 横向标签列的高度就是标签高度，交叉轴直接钉满；left-0 是 translateX 的起算点
@@ -139,6 +148,7 @@ const theme = tv({
       bottom: {
         root: 'flex-col-reverse',
         nav: 'w-full flex-row',
+        scrollBody: 'w-max flex-row items-center gap-[16rpx]',
         list: 'flex-row items-start',
         indicator: 'left-0 top-0 h-[4rpx]',
         tabSlider: 'inset-y-0 left-0',
@@ -147,6 +157,7 @@ const theme = tv({
       left: {
         root: 'flex-row',
         nav: 'h-full flex-col items-stretch',
+        scrollBody: 'w-full flex-col items-stretch gap-[16rpx]',
         list: 'w-full flex-col items-stretch',
         indicator: 'right-0 top-0 w-[4rpx]',
         // 纵向标签列是 items-stretch，标签宽度等于列宽，交叉轴同样直接钉满
@@ -156,6 +167,7 @@ const theme = tv({
       right: {
         root: 'flex-row-reverse',
         nav: 'h-full flex-col items-stretch',
+        scrollBody: 'w-full flex-col items-stretch gap-[16rpx]',
         list: 'w-full flex-col items-stretch',
         indicator: 'left-0 top-0 w-[4rpx]',
         tabSlider: 'inset-x-0 top-0',
@@ -228,6 +240,18 @@ const theme = tv({
     /** 头部与内容之间是否有分隔线，由组件按 type 推导 */
     divider: {
       true: {},
+    },
+    /**
+     * 标签宽度自撑开：标签用 grow 均分头部宽度，标题居中。由组件限定仅水平方向生效
+     * （纵向标签本就 items-stretch 撑满列宽）。grow 不带 shrink-basis-0，
+     * 标签总宽超出容器时保持自然宽度照常滚动，不会把标题挤到截断
+     */
+    stretch: {
+      true: {
+        scrollBody: 'w-full',
+        list: 'min-w-0 flex-1',
+        tab: 'grow justify-center',
+      },
     },
     /**
      * 选中标签处在标签列的哪一端，由组件按选中项下标推导，只用于 card 类型选中底板的圆角。
@@ -306,6 +330,28 @@ const theme = tv({
       position: 'right',
       class: { nav: 'border-l-0 shadow-[inset_1px_0_0_0_var(--color-gray-3)]' },
     },
+    // ===== 纵向 line 的标题与指示条之间的间距 =====
+    // 水平模式下这段间距来自标签高度与行盒的差值，逐档为 4/18/28/32rpx（与 web 端 2/9/14/16px 对应）。
+    // 纵向时指示条贴在列缘、标签又被 items-stretch 撑满列宽，最宽的标题会直接贴上指示条，
+    // 这里在指示条一侧补同样的内边距，让两种方向的呼吸空间逐档一致
+    { position: 'left', type: 'line', size: 'mini', class: { tab: 'pr-[4rpx]' } },
+    { position: 'left', type: 'line', size: 'small', class: { tab: 'pr-[18rpx]' } },
+    {
+      position: 'left',
+      type: 'line',
+      size: 'medium',
+      class: { tab: 'pr-[28rpx]' },
+    },
+    { position: 'left', type: 'line', size: 'large', class: { tab: 'pr-[32rpx]' } },
+    { position: 'right', type: 'line', size: 'mini', class: { tab: 'pl-[4rpx]' } },
+    { position: 'right', type: 'line', size: 'small', class: { tab: 'pl-[18rpx]' } },
+    {
+      position: 'right',
+      type: 'line',
+      size: 'medium',
+      class: { tab: 'pl-[28rpx]' },
+    },
+    { position: 'right', type: 'line', size: 'large', class: { tab: 'pl-[32rpx]' } },
     // 盒子型标签靠内边距撑开；line 与 text 只靠 list 的 64rpx 间距分隔，不留内边距
     { type: ['rounded', 'capsule'], size: 'mini', class: { tab: 'px-[16rpx]' } },
     {

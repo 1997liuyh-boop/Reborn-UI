@@ -4,13 +4,14 @@ import type {
   TabPaneMeta,
   TabsColor,
   TabsDirection,
+  TabsOverflow,
   TabsPosition,
   TabsSize,
   TabsTrigger,
   TabsType,
   TabsUI,
 } from "./reborn-tabs.config";
-import { useResizeObserver } from "@vueuse/core";
+import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, onBeforeUnmount, provide, shallowRef, watch } from "vue";
 import { cn } from "~/lib/utils";
 import theme, { TABS_INJECTION_KEY } from "./reborn-tabs.config";
@@ -27,13 +28,16 @@ const props = withDefaults(defineProps<RebornTabsProps>(), {
   color: "primary",
   editable: false,
   showAddButton: false,
-  destroyOnHide: false,
+  destroyOnHidden: false,
   lazyLoad: false,
   justify: false,
+  stretch: false,
   animation: false,
   autoSwitch: false,
   hideContent: false,
+  draggable: false,
   trigger: "click",
+  overflow: "scroll",
   scrollPosition: "auto",
 });
 
@@ -46,6 +50,8 @@ const emit = defineEmits<{
   (e: "add"): void;
   /** 用户点击删除按钮时触发，组件不会自行移除标签，需由外部维护列表 */
   (e: "delete", key: TabKey): void;
+  /** 拖拽排序松手后触发，载荷为新顺序的完整 key 数组，需持久化顺序时由外部保存 */
+  (e: "sort", keys: TabKey[]): void;
 }>();
 
 export interface RebornTabsProps {
@@ -65,24 +71,30 @@ export interface RebornTabsProps {
   editable?: boolean;
   /** 是否显示增加按钮，仅在可编辑模式可用 */
   showAddButton?: boolean;
-  /** 是否在不显示标签时销毁内容，对所有标签页生效 */
-  destroyOnHide?: boolean;
+  /** 是否在不显示标签时销毁 DOM 结构，对所有标签页生效 */
+  destroyOnHidden?: boolean;
   /** 是否在首次展示标签时才挂载内容 */
   lazyLoad?: boolean;
   /** 高度撑满容器，只在水平模式下生效 */
   justify?: boolean;
+  /** 标签宽度是否自撑开：标签均分头部宽度、标题居中，只在水平模式下生效；标签总宽仍超出容器时照常滚动 */
+  stretch?: boolean;
   /** 是否开启选项内容过渡动画 */
   animation?: boolean;
   /** 创建标签后是否切换到新标签（最后一个） */
   autoSwitch?: boolean;
   /** 是否隐藏内容区，隐藏时标签页仍保持挂载，头部不受影响 */
   hideContent?: boolean;
+  /** 是否允许拖拽标签头调整顺序，松手后通过 sort 事件通报新顺序；禁用标签不可拖动 */
+  draggable?: boolean;
   /** 切换标签的触发方式 */
   trigger?: TabsTrigger;
+  /** 标签超出容器时的导航方式：scroll 仅滚动，arrows 两端箭头分步滚动，dropdown 末尾下拉选标；后两者只在真正溢出时渲染按钮 */
+  overflow?: TabsOverflow;
   /** 被选中标签的滚动位置，auto 只在超出可视区域时滚动，数字为直接指定的滚动距离 */
   scrollPosition?: "start" | "end" | "center" | "auto" | number;
   class?: any;
-  /** 细粒度样式覆盖对象，键为 root/nav/navWrapper/list/tab/tabTitle/tabClose/indicator/tabSlider/addButton/extra/content/stage/pane */
+  /** 细粒度样式覆盖对象，键为 root/nav/navWrapper/scrollBody/list/tab/tabTitle/tabClose/indicator/tabSlider/addButton/navButton/dropdown/dropdownPanel/dropdownItem/leftExtra/rightExtra/content/stage/pane */
   ui?: TabsUI;
 }
 
@@ -123,6 +135,108 @@ const isLiquid = computed(() => ["rounded", "capsule"].includes(props.type));
 /** 可编辑模式才渲染增加按钮 */
 const showAdd = computed(() => props.editable && props.showAddButton);
 
+/** 标签列是否真的超出了滚动容器，箭头与下拉开关都只在此时渲染 */
+const hasOverflow = shallowRef(false);
+/** 是否还能向前 / 向后滚动，箭头据此置灰；1px 容差吸收亚像素误差 */
+const canScrollPrev = shallowRef(false);
+const canScrollNext = shallowRef(false);
+
+/** 当前未完整落在可视区域内的标签 key，下拉选标只列这些；随滚动与尺寸变化实时维护 */
+const hiddenKeys = shallowRef<TabKey[]>([]);
+
+/**
+ * 逐个标签与滚动容器的视口矩形对比，没完整露出的都算隐藏（半截露出的也点不准，一并收进下拉）。
+ * 用视口坐标对比而不是滚动量换算：标签列外面还包着 scrollBody，滚动量换算得把它的偏移也算进去
+ */
+function updateHiddenTabs() {
+  const wrapper = wrapperRef.value;
+  const list = listRef.value;
+  if (!wrapper || !list) return;
+  const vertical = isVertical.value;
+  const view = wrapper.getBoundingClientRect();
+  const viewStart = (vertical ? view.top : view.left) - 1;
+  const viewEnd = (vertical ? view.bottom : view.right) + 1;
+  const next: TabKey[] = [];
+  list.querySelectorAll<HTMLElement>("[role=\"tab\"]").forEach((tab, index) => {
+    const rect = tab.getBoundingClientRect();
+    const start = vertical ? rect.top : rect.left;
+    const end = vertical ? rect.bottom : rect.right;
+    const pane = panes.value[index];
+    if (pane && (start < viewStart || end > viewEnd)) next.push(pane.key);
+  });
+  // 滚动事件里每帧都会走到这，内容没变就不写，避免无谓地触发下拉列表重渲染
+  if (JSON.stringify(next) !== JSON.stringify(hiddenKeys.value)) hiddenKeys.value = next;
+}
+
+function updateOverflowState() {
+  const wrapper = wrapperRef.value;
+  if (!wrapper) return;
+  const vertical = isVertical.value;
+  const scrollSize = vertical ? wrapper.scrollHeight : wrapper.scrollWidth;
+  const view = vertical ? wrapper.clientHeight : wrapper.clientWidth;
+  const scrolled = vertical ? wrapper.scrollTop : wrapper.scrollLeft;
+  hasOverflow.value = scrollSize - view > 1;
+  canScrollPrev.value = scrolled > 1;
+  canScrollNext.value = scrolled + view < scrollSize - 1;
+  if (props.overflow === "dropdown") updateHiddenTabs();
+}
+
+const showArrows = computed(() => props.overflow === "arrows" && hasOverflow.value);
+const showDropdown = computed(() => props.overflow === "dropdown" && hasOverflow.value);
+
+/**
+ * 溢出导航模式下滚动容器两端做渐隐（mask-image）：标签自身淡出成透明，
+ * 读起来就是滑进箭头 / 下拉按钮下面。不用叠深色遮罩，明暗主题与任何底色天然成立。
+ * 渐隐段固定 28px，滚过哪一端才在哪一端开孔，滚到端点即恢复实心——
+ * 四种组合各写成完整的字面量类名，Tailwind 才能静态扫描到
+ */
+const scrollMaskClass = computed(() => {
+  if (props.overflow !== "arrows" && props.overflow !== "dropdown") return "";
+  if (!hasOverflow.value) return "";
+  const prev = canScrollPrev.value;
+  const next = canScrollNext.value;
+  if (!prev && !next) return "";
+  if (isVertical.value) {
+    if (prev && next)
+      return "[mask-image:linear-gradient(to_bottom,transparent,black_28px,black_calc(100%-28px),transparent)]";
+    if (prev) return "[mask-image:linear-gradient(to_bottom,transparent,black_28px)]";
+    return "[mask-image:linear-gradient(to_bottom,black_calc(100%-28px),transparent)]";
+  }
+  if (prev && next)
+    return "[mask-image:linear-gradient(to_right,transparent,black_28px,black_calc(100%-28px),transparent)]";
+  if (prev) return "[mask-image:linear-gradient(to_right,transparent,black_28px)]";
+  return "[mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]";
+});
+
+/** 箭头每次滚动可视区的八成，留两成重叠让人对得上滚动前后的位置 */
+function scrollByStep(direction: 1 | -1) {
+  const wrapper = wrapperRef.value;
+  if (!wrapper) return;
+  const vertical = isVertical.value;
+  const delta = direction * (vertical ? wrapper.clientHeight : wrapper.clientWidth) * 0.8;
+  wrapper.scrollBy(vertical ? { top: delta, behavior: "smooth" } : { left: delta, behavior: "smooth" });
+}
+
+/** 下拉选标只列被滚出可视区域的标签：看得见的标签直接点头部就行，列全量反而要在长列表里找 */
+const dropdownPanes = computed(() => {
+  const hidden = new Set(hiddenKeys.value);
+  return panes.value.filter(pane => hidden.has(pane.key));
+});
+
+/** 下拉选标的展开状态；点面板外任意处收起 */
+const dropdownOpen = shallowRef(false);
+const dropdownRef = shallowRef<HTMLElement>();
+onClickOutside(dropdownRef, () => {
+  dropdownOpen.value = false;
+});
+
+function handleDropdownPick(pane: TabPaneMeta) {
+  if (pane.disabled) return;
+  dropdownOpen.value = false;
+  emit("tabClick", pane.key);
+  switchTo(pane.key);
+}
+
 const uiOverrides = computed<TabsUI>(() => props.ui || {});
 
 const baseVariants = computed(() => ({
@@ -131,8 +245,9 @@ const baseVariants = computed(() => ({
   size: props.size,
   color: props.color,
   divider: hasDivider.value,
-  // justify 只在水平方向生效
+  // justify 与 stretch 都只在水平方向生效：纵向标签本就撑满列宽
   justify: props.justify && !isVertical.value,
+  stretch: props.stretch && !isVertical.value,
   animation: props.animation,
 }));
 
@@ -185,13 +300,18 @@ const ui = computed(() => ({
   root: (opts?: { class?: any }) => styles.value.root({ class: cn(opts?.class, uiOverrides.value.root) }),
   nav: () => styles.value.nav({ class: uiOverrides.value.nav }),
   navWrapper: () => styles.value.navWrapper({ class: uiOverrides.value.navWrapper }),
+  scrollBody: () => styles.value.scrollBody({ class: uiOverrides.value.scrollBody }),
   list: () => styles.value.list({ class: uiOverrides.value.list }),
   tabTitle: () => styles.value.tabTitle({ class: uiOverrides.value.tabTitle }),
   tabClose: () => styles.value.tabClose({ class: uiOverrides.value.tabClose }),
   indicator: () => styles.value.indicator({ class: uiOverrides.value.indicator }),
   tabSlider: () => sliderClass.value,
   addButton: () => addButtonClass.value,
-  extra: () => styles.value.extra({ class: uiOverrides.value.extra }),
+  navButton: () => styles.value.navButton({ class: uiOverrides.value.navButton }),
+  dropdown: () => styles.value.dropdown({ class: uiOverrides.value.dropdown }),
+  dropdownPanel: () => styles.value.dropdownPanel({ class: uiOverrides.value.dropdownPanel }),
+  leftExtra: () => styles.value.leftExtra({ class: uiOverrides.value.leftExtra }),
+  rightExtra: () => styles.value.rightExtra({ class: uiOverrides.value.rightExtra }),
   content: () => styles.value.content({ class: uiOverrides.value.content }),
   // 只在高度锁定期间裁剪：过渡中新内容高出目标高度的那一截必须藏住，静息态再裁会切掉面板内的浮层
   stage: () =>
@@ -217,6 +337,15 @@ function tabClass(pane: TabPaneMeta, index: number) {
   }).tab({ class: uiOverrides.value.tab });
 }
 
+/** 下拉选标的单项样式逐个计算：选中与禁用态复用标签的 active / disabled 变体 */
+function dropdownItemClass(pane: TabPaneMeta) {
+  return theme({
+    ...baseVariants.value,
+    active: pane.key === currentKey.value,
+    disabled: pane.disabled,
+  }).dropdownItem({ class: uiOverrides.value.dropdownItem });
+}
+
 /** 未写 key 的标签页按登记顺序补序号，计数器随组件实例独立 */
 let autoKey = 0;
 
@@ -229,13 +358,61 @@ function removePane(meta: TabPaneMeta) {
   panes.value = panes.value.filter(item => item !== meta);
 }
 
+// ─── 拖拽排序 ───────────────────────────────────────────────────
+
+/** 拖拽起点在登记表中的下标；null 表示当前没有拖拽 */
+let dragFromIndex: number | null = null;
+/** 本次拖拽是否发生过换位，松手时据此决定要不要对外通报 */
+let dragMoved = false;
+/** 用户拖拽排序过一次后置真，此后 sortPanes 的 DOM 顺序重排永久让位 */
+let userSorted = false;
+
 /** setup 顺序在标签被插入到中间时会失真，挂载后按内容节点的 DOM 先后重排 */
 function sortPanes() {
+  // 用户拖拽排序过后不再按 DOM 顺序接管：内容节点仍按书写顺序排列，重排会把拖出来的顺序打回去
+  if (userSorted) return;
   const next = [...panes.value].sort((a, b) => {
     if (!a.el || !b.el) return 0;
     return a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
   });
   if (next.some((item, index) => item !== panes.value[index])) panes.value = next;
+}
+
+function handleDragStart(index: number, event: DragEvent) {
+  if (!props.draggable) return;
+  dragFromIndex = index;
+  dragMoved = false;
+  // Firefox 不写 dataTransfer 不会真正开始拖拽，内容随意
+  event.dataTransfer?.setData("text/plain", "");
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+}
+
+function handleDragOver(index: number, event: DragEvent) {
+  if (dragFromIndex === null) return;
+  // 不 preventDefault 浏览器会把标签列当成不可放置区域，光标一直是禁止样式
+  event.preventDefault();
+  if (index === dragFromIndex) return;
+  // 指针越过目标标签的中点才换位：宽窄标签相邻时，换位本身会让指针落回旧标签，不加阈值会来回抖
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+  const pointer = isVertical.value ? event.clientY : event.clientX;
+  const middle = isVertical.value ? rect.top + rect.height / 2 : rect.left + rect.width / 2;
+  if (index > dragFromIndex ? pointer < middle : pointer > middle) return;
+  const next = [...panes.value];
+  const [moved] = next.splice(dragFromIndex, 1);
+  if (!moved) return;
+  next.splice(index, 0, moved);
+  panes.value = next;
+  dragFromIndex = index;
+  dragMoved = true;
+  userSorted = true;
+}
+
+/** dragend 在源元素上必然触发（包括拖出窗口取消），收尾统一放这里 */
+function handleDragEnd() {
+  if (dragFromIndex === null) return;
+  dragFromIndex = null;
+  if (dragMoved) emit("sort", panes.value.map(pane => pane.key));
+  dragMoved = false;
 }
 
 /** 指示器位置由测量标题得到，写成行内样式避免为每个位置生成一套类名 */
@@ -379,10 +556,11 @@ function updateSlider() {
   );
 }
 
-/** 指示条与底板都挂在标签列上，任何一次重排都要一起重量 */
+/** 指示条与底板都挂在标签列上，任何一次重排都要一起重量；溢出状态由同一批尺寸决定，也一起刷 */
 function updateOverlays() {
   updateIndicator();
   updateSlider();
+  updateOverflowState();
 }
 
 /** 按 scroll-position 把选中标签滚进可视区域 */
@@ -544,7 +722,8 @@ watch(
   { flush: "pre" },
 );
 
-watch([currentKey, () => panes.value, () => props.type, () => props.size, resolvedPosition], refresh);
+// overflow 也在列：运行时切到 dropdown 时隐藏标签清单还没算过，要补一次测量
+watch([currentKey, () => panes.value, () => props.type, () => props.size, () => props.overflow, resolvedPosition], refresh);
 
 watch(
   () => panes.value.length,
@@ -556,6 +735,8 @@ watch(
 );
 
 useResizeObserver(listRef, updateOverlays);
+// 容器一侧的尺寸变化（窗口缩放、父级布局变动）不会触发标签列的观察者，溢出判定要单独盯滚动容器
+useResizeObserver(wrapperRef, updateOverflowState);
 
 onBeforeUnmount(() => {
   if (liquidTimer !== undefined) clearTimeout(liquidTimer);
@@ -566,7 +747,7 @@ onBeforeUnmount(() => {
 provide(TABS_INJECTION_KEY, {
   activeKey: currentKey,
   lazyLoad: computed(() => props.lazyLoad),
-  destroyOnHide: computed(() => props.destroyOnHide),
+  destroyOnHidden: computed(() => props.destroyOnHidden),
   animation: computed(() => props.animation),
   paneClass,
   addPane,
@@ -583,45 +764,102 @@ defineExpose({
 <template>
   <div :class="ui.root({ class: props.class })" :data-position="resolvedPosition">
     <div :class="ui.nav()">
-      <div ref="wrapperRef" :class="ui.navWrapper()">
-        <div ref="listRef" role="tablist" :class="ui.list()" :aria-orientation="isVertical ? 'vertical' : 'horizontal'">
-          <button
-            v-for="(pane, index) in panes" :key="pane.key" type="button" role="tab" :class="tabClass(pane, index)"
-            :disabled="pane.disabled" :aria-selected="pane.key === currentKey"
-            :data-tab-active="pane.key === currentKey" @click="handleTabClick(pane)"
-            @mouseenter="handleTabHover(pane)"
-          >
-            <span data-tab-title :class="ui.tabTitle()">
-              <component :is="pane.titleSlot" v-if="pane.titleSlot" />
-              <template v-else>{{ pane.title }}</template>
-            </span>
-            <span
-              v-if="props.editable && pane.closable" :class="ui.tabClose()" role="button"
-              :aria-label="`关闭 ${pane.title ?? pane.key}`" @click.stop="handleDelete(pane)"
+      <!-- 头部起始侧的额外内容：水平方向靠左、垂直方向靠顶，排在箭头与标签列之前 -->
+      <div v-if="$slots['left-extra']" :class="ui.leftExtra()">
+        <slot name="left-extra" />
+      </div>
+
+      <!-- 向前箭头。只在 overflow="arrows" 且标签真正溢出时渲染，滚到起点后置灰 -->
+      <button
+        v-if="showArrows" type="button" :class="ui.navButton()" :disabled="!canScrollPrev"
+        aria-label="向前滚动标签" @click="scrollByStep(-1)"
+      >
+        <Icon :name="isVertical ? 'lucide:chevron-up' : 'lucide:chevron-left'" class="size-[1.2em]" />
+      </button>
+
+      <!-- 溢出导航模式下 mask 让两端的标签渐隐成透明，滚过哪端哪端才开孔（见 scrollMaskClass） -->
+      <div
+        ref="wrapperRef" :class="[ui.navWrapper(), scrollMaskClass]"
+        @scroll.passive="updateOverflowState"
+      >
+        <!--
+          scrollBody 把标签列与新增按钮包进同一份滚动内容：按钮紧贴末尾标签而不是被推到头部最右端，
+          代价是标签溢出时按钮跟着滚动（与 uniapp 端一致）
+        -->
+        <div :class="ui.scrollBody()">
+          <div ref="listRef" role="tablist" :class="ui.list()" :aria-orientation="isVertical ? 'vertical' : 'horizontal'">
+            <button
+              v-for="(pane, index) in panes" :key="pane.key" type="button" role="tab" :class="tabClass(pane, index)"
+              :disabled="pane.disabled" :aria-selected="pane.key === currentKey"
+              :data-tab-active="pane.key === currentKey"
+              :draggable="props.draggable && !pane.disabled ? true : undefined" @click="handleTabClick(pane)"
+              @mouseenter="handleTabHover(pane)" @dragstart="handleDragStart(index, $event)"
+              @dragover="handleDragOver(index, $event)" @dragend="handleDragEnd" @drop.prevent
             >
-              <Icon name="lucide:x" class="size-full" />
-            </span>
+              <span data-tab-title :class="ui.tabTitle()">
+                <component :is="pane.titleSlot" v-if="pane.titleSlot" />
+                <template v-else>{{ pane.title }}</template>
+              </span>
+              <span
+                v-if="props.editable && pane.closable" :class="ui.tabClose()" role="button"
+                :aria-label="`关闭 ${pane.title ?? pane.key}`" @click.stop="handleDelete(pane)"
+              >
+                <Icon name="lucide:x" class="size-full" />
+              </span>
+            </button>
+
+            <!-- 指示器跟随选中标题滑动，位置由测量写入行内样式 -->
+            <span v-if="showIndicator" aria-hidden="true" :class="ui.indicator()" :style="indicatorStyle" />
+
+            <!--
+              选中底板。放在标签之后是为了不让 card 的 [&>*+*]:-ml-px 落到首个标签上，
+              层叠顺序与这里的先后无关：底板有 z-index 而标签不定位，底板天然画在所有标签的背景之上，
+              标题与关闭图标又提了 z-[1] 压在底板之上，于是底板滑过沿途标签时不会盖住它们的文字
+            -->
+            <span v-if="showSlider" aria-hidden="true" :class="ui.tabSlider()" :style="sliderStyle" />
+          </div>
+
+          <button v-if="showAdd" type="button" :class="ui.addButton()" aria-label="新增标签" @click="emit('add')">
+            <Icon name="lucide:plus" class="size-[1.2em]" />
           </button>
-
-          <!-- 指示器跟随选中标题滑动，位置由测量写入行内样式 -->
-          <span v-if="showIndicator" aria-hidden="true" :class="ui.indicator()" :style="indicatorStyle" />
-
-          <!--
-            选中底板。放在标签之后是为了不让 card 的 [&>*+*]:-ml-px 落到首个标签上，
-            层叠顺序与这里的先后无关：底板有 z-index 而标签不定位，底板天然画在所有标签的背景之上，
-            标题与关闭图标又提了 z-[1] 压在底板之上，于是底板滑过沿途标签时不会盖住它们的文字
-          -->
-          <span v-if="showSlider" aria-hidden="true" :class="ui.tabSlider()" :style="sliderStyle" />
         </div>
       </div>
 
-      <button v-if="showAdd" type="button" :class="ui.addButton()" aria-label="新增标签" @click="emit('add')">
-        <Icon name="lucide:plus" class="size-[1.2em]" />
+      <!-- 向后箭头。贴在滚动容器之后，滚到终点后置灰 -->
+      <button
+        v-if="showArrows" type="button" :class="ui.navButton()" :disabled="!canScrollNext"
+        aria-label="向后滚动标签" @click="scrollByStep(1)"
+      >
+        <Icon :name="isVertical ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="size-[1.2em]" />
       </button>
 
-      <!-- 额外内容贴在头部末尾，水平方向靠右、垂直方向靠底 -->
-      <div v-if="$slots.extra" :class="ui.extra()">
-        <slot name="extra" />
+      <!-- 下拉选标。开关与面板包在同一个定位锚点里，点面板外任意处收起 -->
+      <div v-if="showDropdown" ref="dropdownRef" :class="ui.dropdown()">
+        <button
+          type="button" :class="ui.navButton()" aria-label="展开标签列表" aria-haspopup="listbox"
+          :aria-expanded="dropdownOpen" @click="dropdownOpen = !dropdownOpen"
+        >
+          <Icon
+            name="lucide:chevron-down"
+            class="size-[1.2em] transition-transform duration-200 motion-reduce:transition-none"
+            :class="dropdownOpen && 'rotate-180'"
+          />
+        </button>
+        <div v-if="dropdownOpen" role="listbox" :class="ui.dropdownPanel()">
+          <button
+            v-for="pane in dropdownPanes" :key="pane.key" type="button" role="option"
+            :aria-selected="pane.key === currentKey" :disabled="pane.disabled" :class="dropdownItemClass(pane)"
+            @click="handleDropdownPick(pane)"
+          >
+            <component :is="pane.titleSlot" v-if="pane.titleSlot" />
+            <template v-else>{{ pane.title }}</template>
+          </button>
+        </div>
+      </div>
+
+      <!-- 头部末尾侧的额外内容：水平方向靠右、垂直方向靠底 -->
+      <div v-if="$slots['right-extra']" :class="ui.rightExtra()">
+        <slot name="right-extra" />
       </div>
     </div>
 

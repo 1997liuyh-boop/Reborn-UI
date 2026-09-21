@@ -21,7 +21,7 @@ defineOptions({
 const props = withDefaults(defineProps<RebornTabPaneProps>(), {
   disabled: false,
   closable: true,
-  destroyOnHide: false,
+  destroyOnHidden: false,
 });
 
 export interface RebornTabPaneProps {
@@ -31,8 +31,8 @@ export interface RebornTabPaneProps {
   disabled?: boolean;
   /** 是否允许关闭此选项卡，仅在可编辑模式生效 */
   closable?: boolean;
-  /** 是否在不显示此标签时销毁内容，与父级同名参数取或 */
-  destroyOnHide?: boolean;
+  /** 是否在不显示此标签时销毁 DOM 结构，与父级同名参数取或 */
+  destroyOnHidden?: boolean;
 }
 
 const slots = useSlots();
@@ -48,7 +48,7 @@ const meta = shallowReactive<TabPaneMeta>({
   title: props.title,
   disabled: props.disabled,
   closable: props.closable,
-  destroyOnHide: props.destroyOnHide,
+  destroyOnHidden: props.destroyOnHidden,
   // 包一层始终调用当前插槽，避免父级重渲染后头部仍渲染旧的插槽函数
   titleSlot: slots.title ? () => slots.title?.() : undefined,
 });
@@ -57,13 +57,13 @@ watchEffect(() => {
   meta.title = props.title;
   meta.disabled = props.disabled;
   meta.closable = props.closable;
-  meta.destroyOnHide = props.destroyOnHide;
+  meta.destroyOnHidden = props.destroyOnHidden;
 });
 
 ctx.addPane(meta);
 
 const isActive = computed(() => ctx.activeKey.value === meta.key);
-const destroyOnHide = computed(() => props.destroyOnHide || ctx.destroyOnHide.value);
+const destroyOnHidden = computed(() => props.destroyOnHidden || ctx.destroyOnHidden.value);
 const paneClass = computed(() => ctx.paneClass.value);
 
 /** 记录是否被展示过，lazy-load 据此决定首次挂载时机 */
@@ -73,7 +73,7 @@ watchEffect(() => {
 });
 
 const shouldRender = computed(() => {
-  if (destroyOnHide.value) return isActive.value;
+  if (destroyOnHidden.value) return isActive.value;
   if (ctx.lazyLoad.value) return shown.value;
   return true;
 });

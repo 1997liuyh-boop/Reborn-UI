@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-14T04:03:42.775Z",
+  "generatedAt": "2026-09-18T09:57:06.962Z",
   "components": [
     {
       "id": "animate-grid",
@@ -872,7 +872,7 @@
     },
     {
       "id": "reborn-collapse",
-      "title": "折叠面板",
+      "title": "Collapse 折叠面板",
       "description": "用于点击触发区展开或收起内容区域的折叠组件，带高度过渡动画，双端可用。",
       "category": "misc",
       "tags": [
@@ -946,10 +946,15 @@
     },
     {
       "id": "reborn-descriptions",
-      "title": "描述列表",
-      "description": "用于以键值对多列布局展示详情信息的描述列表组件，仅 web 端。",
+      "title": "Descriptions 描述列表",
+      "description": "成组展示只读字段的键值对排版件：items 数据驱动或子组件声明式，支持边框底色、水平/垂直布局、按容器宽度响应的列数与跨列，仅 web 端。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "css",
+        "tailwind",
+        "descriptions",
+        "detail"
+      ],
       "platforms": [
         "web"
       ]
@@ -997,6 +1002,23 @@
         "form"
       ],
       "platforms": [
+        "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-empty",
+      "title": "Empty 空状态",
+      "description": "数据为空时的占位块：图片、标题加描述、操作区三段纵向居中，段间 24px（UniApp 48rpx），标题与描述之间 4px（UniApp 8rpx）。不传 image 用内置的 48×48 灰色空箱子（base64 内联），另附 box / folder / scene 三张示例插画。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "empty",
+        "placeholder",
+        "uniapp"
+      ],
+      "platforms": [
+        "web",
         "uniapp"
       ]
     },
@@ -1389,6 +1411,23 @@
         "rate",
         "rating",
         "star",
+        "uniapp"
+      ],
+      "platforms": [
+        "web",
+        "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-result",
+      "title": "Result 结果页",
+      "description": "操作结果的终态页：图标、标题加描述、操作区三段纵向居中，icon 收 info / success / warning / error 四种语义反馈加 403 / 404 / 500 三种状态码，传 null 则整段去掉图标区。",
+      "category": "misc",
+      "tags": [
+        "css",
+        "tailwind",
+        "result",
+        "feedback",
         "uniapp"
       ],
       "platforms": [

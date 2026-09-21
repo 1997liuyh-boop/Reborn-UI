@@ -10,6 +10,7 @@ const tabsSizes = ["mini", "small", "medium", "large"] as const;
 const tabsPositions = ["top", "bottom", "left", "right"] as const;
 const tabsDirections = ["horizontal", "vertical"] as const;
 const tabsTriggers = ["click", "hover"] as const;
+const tabsOverflows = ["scroll", "arrows", "dropdown"] as const;
 const tabsColors = [
   "primary",
   "secondary",
@@ -20,7 +21,7 @@ const tabsColors = [
   "neutral",
 ] as const;
 
-export { tabsColors, tabsDirections, tabsPositions, tabsSizes, tabsTriggers, tabsTypes };
+export { tabsColors, tabsDirections, tabsOverflows, tabsPositions, tabsSizes, tabsTriggers, tabsTypes };
 
 /** 选项卡类型：line 下划线 / card 相接卡片（无边框） / card-gutter 间隔卡片（带边框） / card-fill 填充卡片 / text 纯文本 / rounded 圆角胶囊 / capsule 分段胶囊 */
 export type TabsType = (typeof tabsTypes)[number];
@@ -32,6 +33,8 @@ export type TabsPosition = (typeof tabsPositions)[number];
 export type TabsDirection = (typeof tabsDirections)[number];
 /** 标签切换的触发方式 */
 export type TabsTrigger = (typeof tabsTriggers)[number];
+/** 标签超出容器时的导航方式：scroll 仅滚动 / arrows 两端箭头分步滚动 / dropdown 末尾下拉选标 */
+export type TabsOverflow = (typeof tabsOverflows)[number];
 /** 选项卡主题色 */
 export type TabsColor = (typeof tabsColors)[number];
 /** 标签唯一标识 */
@@ -48,7 +51,7 @@ export interface TabPaneMeta {
   /** 可编辑模式下是否允许关闭 */
   closable: boolean;
   /** 不显示时是否销毁内容 */
-  destroyOnHide: boolean;
+  destroyOnHidden: boolean;
   /** 自定义标题插槽，由父级在头部渲染 */
   titleSlot?: Slot;
   /** 内容根节点，用于按 DOM 先后校正标签顺序 */
@@ -62,7 +65,7 @@ export interface TabsContext {
   /** 首次展示时才挂载内容 */
   lazyLoad: ComputedRef<boolean>;
   /** 父级统一配置的销毁策略，与单个标签页的配置取或 */
-  destroyOnHide: ComputedRef<boolean>;
+  destroyOnHidden: ComputedRef<boolean>;
   /** 是否开启内容过渡动画 */
   animation: ComputedRef<boolean>;
   /** 内容区各 slot 的样式类 */
@@ -86,8 +89,14 @@ export type TabsUI = Partial<{
   tabClose: ClassValue;
   indicator: ClassValue;
   tabSlider: ClassValue;
+  scrollBody: ClassValue;
   addButton: ClassValue;
-  extra: ClassValue;
+  navButton: ClassValue;
+  dropdown: ClassValue;
+  dropdownPanel: ClassValue;
+  dropdownItem: ClassValue;
+  leftExtra: ClassValue;
+  rightExtra: ClassValue;
   content: ClassValue;
   stage: ClassValue;
   pane: ClassValue;
@@ -97,8 +106,15 @@ const theme = tv({
   slots: {
     root: "flex w-full min-w-0",
     nav: "relative flex shrink-0 items-center gap-2",
-    // 头部滚动容器：标签超出时可滚动，但不出现滚动条
+    // 头部滚动容器：标签超出时可滚动，但不出现滚动条。
+    // flex-1（basis 0）不能去掉：换成 basis auto 后它的 max-content 会把 nav 乃至组件根节点的
+    // 内在宽度撑成标签总宽，宽度没约束死的祖先布局会被整体顶破。
+    // 增加按钮要紧贴标签列，靠的是把按钮挪进滚动内容里（见模板的 scrollBody 层），不是收缩这层。
+    // 溢出导航模式下组件还会在这层追加 mask-image，让两端的标签渐隐（见 RebornTabs.vue 的 scrollMaskClass）
     navWrapper: "relative min-w-0 flex-1 overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    // 滚动内容内层：标签列与增加按钮的并排容器，按钮因此紧贴末尾标签（间距 8px 与 nav 的 gap-2 一致）；
+    // 代价是标签溢出时按钮跟着滚动，与 uniapp 端行为一致
+    scrollBody: "flex",
     // isolate 把下面这套 z-index 关在标签列内部，选中底板与标题的层叠不会外溢到页面其他元素
     list: "relative isolate flex w-max",
     // gap 是标题与关闭图标之间的间距，固定 8px，不随 size 变化
@@ -118,7 +134,22 @@ const theme = tv({
     // 增加按钮整体复用未选中标签的盒子样式（见 RebornTabs.vue 的 addButtonClass），
     // 这里只补图标按钮特有的部分：去掉标题用的水平内边距、改为居中摆放图标
     addButton: "justify-center px-0",
-    extra: "flex shrink-0 items-center",
+    // 溢出导航按钮（箭头 / 下拉开关）：不复用标签盒子，是一枚固定尺寸的幽灵图标按钮，
+    // 仅在标签真正溢出时渲染，禁用态（已滚到端点）压掉悬浮反馈
+    navButton:
+      "flex size-6 shrink-0 cursor-pointer select-none items-center justify-center rounded-md text-gray-6 transition-colors duration-200 hover:bg-gray-2 hover:text-gray-9 disabled:cursor-not-allowed disabled:text-gray-4 disabled:hover:bg-transparent motion-reduce:transition-none",
+    // 下拉选标的定位锚点：面板相对开关按钮摆放，展开方向见 position 变体
+    dropdown: "relative flex shrink-0 items-center",
+    // 投影取 reborn-context-menu 同款：菜单类面板的统一投影，比 shadow-lg 更看得出悬浮感
+    dropdownPanel:
+      "absolute z-10 flex max-h-64 min-w-32 flex-col overflow-auto rounded-lg border border-gray-3 bg-gray-1 p-1 shadow-[0_2px_16px_0_rgba(1,27,70,0.1)]",
+    // 下拉选标的单个选项，选中 / 禁用态与标签共用 active / disabled 变体
+    dropdownItem:
+      "flex w-full shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-left text-sm text-gray-9 transition-colors duration-200 hover:bg-gray-2 motion-reduce:transition-none",
+    // 头部两侧的额外内容：left-extra 在标签列之前、right-extra 在头部末尾，
+    // 水平方向即左 / 右，垂直方向（position=left/right）即顶 / 底
+    leftExtra: "flex shrink-0 items-center",
+    rightExtra: "flex shrink-0 items-center",
     content: "min-w-0 flex-1",
     // 高度过渡锁在这层而不是 content 上：content 带着 position 变体给的单边内边距，
     // 锁在它身上就得把内边距算进目标高度，而 uniapp 端没有 getComputedStyle 可读。
@@ -132,33 +163,41 @@ const theme = tv({
         root: "flex-col",
         nav: "w-full flex-row",
         navWrapper: "overflow-y-hidden",
+        scrollBody: "w-max flex-row items-center gap-2",
         list: "flex-row items-end",
         indicator: "bottom-0 h-[2px]",
         content: "pt-4",
+        dropdownPanel: "right-0 top-full mt-2",
       },
       bottom: {
         root: "flex-col-reverse",
         nav: "w-full flex-row",
         navWrapper: "overflow-y-hidden",
+        scrollBody: "w-max flex-row items-center gap-2",
         list: "flex-row items-start",
         indicator: "top-0 h-[2px]",
         content: "pb-4",
+        dropdownPanel: "bottom-full right-0 mb-2",
       },
       left: {
         root: "flex-row",
         nav: "flex-col items-stretch",
         navWrapper: "overflow-x-hidden",
+        scrollBody: "w-full flex-col items-stretch gap-2",
         list: "w-full flex-col items-stretch",
         indicator: "right-0 w-[2px]",
         content: "pl-4",
+        dropdownPanel: "left-0 top-full mt-2",
       },
       right: {
         root: "flex-row-reverse",
         nav: "flex-col items-stretch",
         navWrapper: "overflow-x-hidden",
+        scrollBody: "w-full flex-col items-stretch gap-2",
         list: "w-full flex-col items-stretch",
         indicator: "left-0 w-[2px]",
         content: "pr-4",
+        dropdownPanel: "right-0 top-full mt-2",
       },
     },
     type: {
@@ -221,15 +260,26 @@ const theme = tv({
     },
     active: {
       // 选中文字色要按 color 档取值，见下面的 color × active 组合
-      true: { tab: "font-medium" },
+      true: { tab: "font-medium", dropdownItem: "font-medium" },
       false: { tab: "text-gray-9" },
     },
     disabled: {
-      true: { tab: "cursor-not-allowed text-gray-5 hover:text-gray-5" },
+      true: {
+        tab: "cursor-not-allowed text-gray-5 hover:text-gray-5",
+        dropdownItem: "cursor-not-allowed text-gray-5 hover:bg-transparent hover:text-gray-5",
+      },
     },
     /** 头部与内容之间是否有分隔线，由组件按 type 推导 */
     divider: {
       true: {},
+    },
+    /**
+     * 标签宽度自撑开：标签用 grow 均分头部宽度，标题居中。由组件限定仅水平方向生效
+     * （纵向标签本就 items-stretch 撑满列宽）。grow 不带 shrink-basis-0，
+     * 标签总宽超出容器时保持自然宽度照常滚动，不会把标题挤到截断
+     */
+    stretch: {
+      true: { scrollBody: "w-full", list: "min-w-0 flex-1", tab: "grow justify-center" },
     },
     /**
      * 选中标签处在标签列的哪一端，由组件按选中项下标推导，只用于 card 类型选中底板的圆角。
@@ -300,6 +350,18 @@ const theme = tv({
       position: "right",
       class: { nav: "border-l-0 shadow-[inset_1px_0_0_0_var(--color-gray-3)]" },
     },
+    // ===== 纵向 line 的标题与指示条之间的间距 =====
+    // 水平模式下这段间距来自标签高度与行盒的差值：(标签高 - 行高) / 2，逐档为 2/9/14/16px。
+    // 纵向时指示条贴在列缘、标签又被 items-stretch 撑满列宽，最宽的标题会直接贴上指示条，
+    // 这里在指示条一侧补同样的内边距，让两种方向的呼吸空间逐档一致
+    { position: "left", type: "line", size: "mini", class: { tab: "pr-[2px]" } },
+    { position: "left", type: "line", size: "small", class: { tab: "pr-[9px]" } },
+    { position: "left", type: "line", size: "medium", class: { tab: "pr-3.5" } },
+    { position: "left", type: "line", size: "large", class: { tab: "pr-4" } },
+    { position: "right", type: "line", size: "mini", class: { tab: "pl-[2px]" } },
+    { position: "right", type: "line", size: "small", class: { tab: "pl-[9px]" } },
+    { position: "right", type: "line", size: "medium", class: { tab: "pl-3.5" } },
+    { position: "right", type: "line", size: "large", class: { tab: "pl-4" } },
     // 盒子型标签靠内边距撑开；line 与 text 只靠 list 的 32px 间距分隔，不留内边距
     { type: ["rounded", "capsule"], size: "mini", class: { tab: "px-2" } },
     { type: ["rounded", "capsule"], size: ["small", "medium", "large"], class: { tab: "px-4" } },
@@ -391,13 +453,14 @@ const theme = tv({
     // ===== 选中态的文字色：按 color 档取对应语义色 =====
     // 写不进 active.true，那里拿不到当前 color；必须排在下面 rounded 的反白规则之前，
     // compoundVariants 按数组顺序合并，排在后面的 text-gray-1 才能盖住这里的强调色
-    { color: "primary", active: true, class: { tab: "text-primary" } },
-    { color: "secondary", active: true, class: { tab: "text-secondary" } },
-    { color: "success", active: true, class: { tab: "text-success" } },
-    { color: "info", active: true, class: { tab: "text-info" } },
-    { color: "warning", active: true, class: { tab: "text-warning" } },
-    { color: "error", active: true, class: { tab: "text-error" } },
-    { color: "neutral", active: true, class: { tab: "text-gray-9" } },
+    // dropdownItem 与标签取同一档选中文字色，下拉选标里的当前项才与头部呼应
+    { color: "primary", active: true, class: { tab: "text-primary", dropdownItem: "text-primary" } },
+    { color: "secondary", active: true, class: { tab: "text-secondary", dropdownItem: "text-secondary" } },
+    { color: "success", active: true, class: { tab: "text-success", dropdownItem: "text-success" } },
+    { color: "info", active: true, class: { tab: "text-info", dropdownItem: "text-info" } },
+    { color: "warning", active: true, class: { tab: "text-warning", dropdownItem: "text-warning" } },
+    { color: "error", active: true, class: { tab: "text-error", dropdownItem: "text-error" } },
+    { color: "neutral", active: true, class: { tab: "text-gray-9", dropdownItem: "text-gray-9" } },
     // ===== 实心与分段胶囊的选中态：底色同样搬到 tabSlider 这块底板上 =====
     // rounded 的选中文字是近白的 gray-1，浅色模式下只有踩在主题色底板上才看得见。
     // 底板从旧标签滑到新标签的这段行程里，两个标签的文字都处在反色状态，

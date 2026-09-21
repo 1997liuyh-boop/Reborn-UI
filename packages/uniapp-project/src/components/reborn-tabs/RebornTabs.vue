@@ -35,9 +35,10 @@ const props = withDefaults(defineProps<RebornTabsProps>(), {
   color: 'primary',
   editable: false,
   showAddButton: false,
-  destroyOnHide: false,
+  destroyOnHidden: false,
   lazyLoad: false,
   justify: false,
+  stretch: false,
   animation: false,
   headerPadding: false,
   autoSwitch: false,
@@ -74,12 +75,14 @@ export interface RebornTabsProps {
   editable?: boolean
   /** 是否显示增加按钮，仅在可编辑模式可用 */
   showAddButton?: boolean
-  /** 是否在不显示标签时销毁内容，对所有标签页生效 */
-  destroyOnHide?: boolean
+  /** 是否在不显示标签时销毁 DOM 结构，对所有标签页生效 */
+  destroyOnHidden?: boolean
   /** 是否在首次展示标签时才挂载内容 */
   lazyLoad?: boolean
   /** 高度撑满容器，只在水平模式下生效 */
   justify?: boolean
+  /** 标签宽度是否自撑开：标签均分头部宽度、标题居中，只在水平模式下生效；标签总宽仍超出容器时照常滚动 */
+  stretch?: boolean
   /** 是否开启选项内容过渡动画 */
   animation?: boolean
   /** 选项卡头部是否相对容器缩进一段边距，仅对 line、text 类型生效；默认贴边对齐 */
@@ -93,7 +96,7 @@ export interface RebornTabsProps {
   /** 被选中标签的滚动位置，auto 只在超出可视区域时滚动，数字为直接指定的滚动距离 */
   scrollPosition?: 'start' | 'end' | 'center' | 'auto' | number
   class?: any
-  /** 细粒度样式覆盖对象，键为 root/nav/navWrapper/list/tab/tabTitle/tabClose/indicator/tabSlider/addButton/extra/content/stage/pane */
+  /** 细粒度样式覆盖对象，键为 root/nav/navWrapper/scrollBody/list/tab/tabTitle/tabClose/indicator/tabSlider/addButton/leftExtra/rightExtra/content/stage/pane */
   ui?: TabsUI
 }
 
@@ -140,8 +143,9 @@ const baseVariants = computed(() => ({
   color: props.color,
   divider: hasDivider.value,
   headerPadding: props.headerPadding,
-  // justify 只在水平方向生效
+  // justify 与 stretch 都只在水平方向生效：纵向标签本就撑满列宽
   justify: props.justify && !isVertical.value,
+  stretch: props.stretch && !isVertical.value,
   animation: props.animation,
 }))
 
@@ -201,13 +205,15 @@ const ui = computed(() => ({
     styles.value.root({ class: cn(opts?.class, uiOverrides.value.root) }),
   nav: () => styles.value.nav({ class: uiOverrides.value.nav }),
   navWrapper: () => styles.value.navWrapper({ class: uiOverrides.value.navWrapper }),
+  scrollBody: () => styles.value.scrollBody({ class: uiOverrides.value.scrollBody }),
   list: () => styles.value.list({ class: uiOverrides.value.list }),
   tabTitle: () => styles.value.tabTitle({ class: uiOverrides.value.tabTitle }),
   tabClose: () => styles.value.tabClose({ class: uiOverrides.value.tabClose }),
   indicator: () => styles.value.indicator({ class: uiOverrides.value.indicator }),
   tabSlider: () => sliderClass.value,
   addButton: () => addButtonClass.value,
-  extra: () => styles.value.extra({ class: uiOverrides.value.extra }),
+  leftExtra: () => styles.value.leftExtra({ class: uiOverrides.value.leftExtra }),
+  rightExtra: () => styles.value.rightExtra({ class: uiOverrides.value.rightExtra }),
   content: () => styles.value.content({ class: uiOverrides.value.content }),
   // overflow-hidden 只在锁定期间挂着：静息态不裁剪，面板里的下拉与浮层照样能溢出
   stage: () =>
@@ -570,7 +576,7 @@ onBeforeUnmount(() => {
 provide(TABS_INJECTION_KEY, {
   activeKey: currentKey,
   lazyLoad: computed(() => props.lazyLoad),
-  destroyOnHide: computed(() => props.destroyOnHide),
+  destroyOnHidden: computed(() => props.destroyOnHidden),
   animation: computed(() => props.animation),
   paneClass,
   addPane,
@@ -586,6 +592,11 @@ defineExpose({
 <template>
   <view :class="ui.root({ class: props.class })">
     <view :class="ui.nav()">
+      <!-- 头部起始侧的额外内容：水平方向靠左、垂直方向靠顶，排在标签列之前 -->
+      <view v-if="$slots['left-extra']" :class="ui.leftExtra()">
+        <slot name="left-extra" />
+      </view>
+
       <scroll-view
         :class="ui.navWrapper()"
         :scroll-x="!isVertical"
@@ -595,42 +606,48 @@ defineExpose({
         :scroll-with-animation="true"
         :show-scrollbar="false"
       >
-        <view :class="ui.list()">
-          <view
-            v-for="(pane, index) in panes"
-            :key="pane.key"
-            class="reborn-tabs__item"
-            :class="tabClass(pane, index)"
-            @tap="handleTabClick(pane)"
-            @mouseenter="handleTabHover(pane)"
-          >
-            <view :class="ui.tabTitle()">{{ pane.title }}</view>
+        <!--
+          scrollBody 把标签列与新增按钮包进同一份滚动内容：按钮紧贴末尾标签而不是被推到头部最右端；
+          代价是标签溢出时按钮跟着滚动，要滚到末尾才能看到（与 web 端一致）
+        -->
+        <view :class="ui.scrollBody()">
+          <view :class="ui.list()">
             <view
-              v-if="props.editable && pane.closable"
-              :class="ui.tabClose()"
-              @tap.stop="handleDelete(pane)"
-            />
+              v-for="(pane, index) in panes"
+              :key="pane.key"
+              class="reborn-tabs__item"
+              :class="tabClass(pane, index)"
+              @tap="handleTabClick(pane)"
+              @mouseenter="handleTabHover(pane)"
+            >
+              <view :class="ui.tabTitle()">{{ pane.title }}</view>
+              <view
+                v-if="props.editable && pane.closable"
+                :class="ui.tabClose()"
+                @tap.stop="handleDelete(pane)"
+              />
+            </view>
+
+            <!-- 指示器跟随选中标题滑动，位置由测量写入行内样式 -->
+            <view v-if="showIndicator" :class="ui.indicator()" :style="indicatorStyle" />
+
+            <!--
+              选中底板。放在标签之后是为了不让 card 的 [&>*+*]:-ml-px 落到首个标签上，
+              层叠顺序与这里的先后无关：底板有 z-index 而标签不定位，底板天然画在所有标签的背景之上，
+              标题与关闭图标又提了 z-[1] 压在底板之上，于是底板滑过沿途标签时不会盖住它们的文字
+            -->
+            <view v-if="showSlider" :class="ui.tabSlider()" :style="sliderStyle" />
           </view>
 
-          <!-- 指示器跟随选中标题滑动，位置由测量写入行内样式 -->
-          <view v-if="showIndicator" :class="ui.indicator()" :style="indicatorStyle" />
-
-          <!--
-            选中底板。放在标签之后是为了不让 card 的 [&>*+*]:-ml-px 落到首个标签上，
-            层叠顺序与这里的先后无关：底板有 z-index 而标签不定位，底板天然画在所有标签的背景之上，
-            标题与关闭图标又提了 z-[1] 压在底板之上，于是底板滑过沿途标签时不会盖住它们的文字
-          -->
-          <view v-if="showSlider" :class="ui.tabSlider()" :style="sliderStyle" />
+          <view v-if="showAdd" :class="ui.addButton()" @tap="emit('add')">
+            <view class="i-lucide-plus" />
+          </view>
         </view>
       </scroll-view>
 
-      <view v-if="showAdd" :class="ui.addButton()" @tap="emit('add')">
-        <view class="i-lucide-plus" />
-      </view>
-
-      <!-- 额外内容贴在头部末尾，水平方向靠右、垂直方向靠底 -->
-      <view v-if="$slots.extra" :class="ui.extra()">
-        <slot name="extra" />
+      <!-- 头部末尾侧的额外内容：水平方向靠右、垂直方向靠底 -->
+      <view v-if="$slots['right-extra']" :class="ui.rightExtra()">
+        <slot name="right-extra" />
       </view>
     </view>
 

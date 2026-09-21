@@ -3,7 +3,8 @@
   "whenToUse": [
     "页面内多个平级视图之间切换，例如概览/详情/日志。",
     "标签数量随用户操作增减，需要新增与关闭标签（editable + showAddButton）。",
-    "标签较多需要横向滚动，且希望选中项自动进入可视区域（scrollPosition）。",
+    "标签较多需要横向滚动，且希望选中项自动进入可视区域（scrollPosition）；需要可点击的滚动入口再加 overflow=arrows 或 dropdown（仅 web）。",
+    "标签顺序应由用户自己整理，如工作台的自定义页签（draggable + sort 事件，仅 web）。",
     "内容区较重（图表、长表单），希望首次展示时才挂载（lazyLoad）。",
     "需要纵向排布的侧边分区导航（position=left/right）。"
   ],
@@ -21,13 +22,29 @@
     {
       "name": "scrollPosition",
       "description": "选中标签的滚动落点：auto 仅在超出可视区域时补齐差值/start 对齐可视区起点/center 居中/end 对齐终点；传 number 则直接把滚动容器滚到该偏移量（px），不做测量。默认 auto"
+    },
+    {
+      "name": "overflow",
+      "description": "仅 web。标签溢出时的导航方式：scroll 只靠滚轮/触摸滑动（默认）/arrows 头部两端箭头按钮分步滚动（每次滚可视区八成，端点置灰）/dropdown 头部末尾下拉选标（只列当前被滚出可视区域的标签，点选后按 scrollPosition 滚回可视区域）。按钮只在标签真正溢出时渲染，未溢出时与默认表现一致；这两种模式下滚动容器经 mask-image 让两端标签渐隐成透明（28px，内容自身淡出而非叠深色遮罩，任何主题底色下观感一致），滚到端点的一侧恢复实心；与 scrollPosition 不冲突。默认 scroll"
+    },
+    {
+      "name": "stretch",
+      "description": "标签宽度自撑开：标签用 flex-grow 均分头部宽度、标题居中，适合数量固定的少量标签占满整行（capsule 配合即通栏分段控件）。仅水平方向生效（纵向标签本就撑满列宽）；grow 不带压缩，标签总宽超出容器时保持自然宽度回到滚动浏览，不会把标题挤到截断。默认 false"
+    },
+    {
+      "name": "draggable",
+      "description": "仅 web。允许按住标签头拖动调整顺序，禁用标签不可拖动；顺序改动只发生在头部渲染层，松手后通过 sort 事件给出完整的新顺序（key 数组），组件不改使用方数据。默认 false"
     }
   ],
   "pitfalls": [
     "选中标识取自 RebornTabPane 的 Vue key 属性，不是同名 prop；省略时父组件按注册顺序补 0、1、2… 序号，动态列表增删会让 key 整体错位、选中项漂移，因此必须显式写 key。",
     "组件只派发 add / delete 事件、不改数据：不会自动增删 RebornTabPane，也不会在删掉当前项后自动切换；删除当前项后需使用方自行把 activeKey 重设为相邻标签，否则头部没有选中项。",
-    "destroyOnHide 与 lazyLoad 同时开启时前者优先，lazyLoad 的“挂载后保留”不再成立。子级 RebornTabPane 的 destroyOnHide 与父级同名参数取或。",
-    "面板默认用 v-show 控制显隐，切换不丢失内容状态（表单填写、滚动位置都保留）；需要每次进入都是干净状态必须显式开 destroyOnHide。",
+    "destroyOnHidden 与 lazyLoad 同时开启时前者优先，lazyLoad 的“挂载后保留”不再成立。子级 RebornTabPane 的 destroyOnHidden 与父级同名参数取或。",
+    "面板默认用 v-show 控制显隐，切换不丢失内容状态（表单填写、滚动位置都保留）；需要每次进入都是干净状态必须显式开 destroyOnHidden。",
+    "纵向（position=left/right）line 类型的标签在指示条一侧带逐档内边距（4/18/28/32rpx，web 端 2/9/14/16px），与水平模式下标签高度减行高除二的呼吸空间逐档一致；纵向标签被 items-stretch 撑满列宽，没有这段内边距时最宽的标题会直接贴上指示条。",
+    "overflow=arrows/dropdown 的按钮只在标签真正溢出时渲染，容器够宽时不出现；容器尺寸变化由 ResizeObserver 跟踪，缩窄到溢出的瞬间才补进来（仅 web）。",
+    "拖拽排序过一次后，组件不再按内容节点的 DOM 顺序重排头部（否则面板增删会把拖出的顺序打回书写顺序），此后 v-if 插入中间的新标签会排到末尾；动态列表应在 sort 事件里同步调整数据顺序（仅 web）。",
+    "新增按钮与标签列同处 ui.scrollBody 这层滚动内容里，紧贴末尾标签（隔 8px / 16rpx）而非被推到头部最右端；代价是标签溢出时按钮跟着滚动，要滚到末尾才能看到（两端一致）。",
     "指示条只属于 line 类型：card、card-gutter、card-fill、rounded、capsule 五种不渲染指示器而渲染 ui.tabSlider 这块滑动底板，只有 text 两个节点都不渲染。所以这五种类型上覆盖 ui.indicator 无视觉变化（要改选中态得覆盖 ui.tabSlider），text 上两者都无效，只能改 ui.tab 或换 color。",
     "这五种类型的选中态整块搬到 ui.tabSlider 上：底色、边框、圆角都在底板上，选中标签只留文字色与字重，标签自身底色恒定（card、card-gutter 恒为 gray-2，card-fill、rounded、capsule 恒为透明）。底色若仍随选中切换，新标签会在底板滑到之前就自己亮起来、旧标签立刻变灰，结果先于动画呈现，滑动便失去意义。三处连带机制不要改：① 标签列有 isolate，底板 z-index: 0 恰好压住所有标签的背景与边框（标签本身不定位，属更下层），标题与关闭图标 z-[1] 压在底板之上，底板才能滑过沿途标签而不遮字；② 底板是标签列的末位子节点，放到首位会让首个标签命中 card 的 [&>*+*]:-ml-px 而偏移 1px（且被滚动容器裁掉），它自己命中的那一份由行内 margin: 0 抹平；③ card 的圆角按标签首尾分配，而底板永远既非首也非末、用不了 first:/last:，组件按选中项下标推导端位（首/末/唯一/中间）再取圆角，圆角同样参与过渡。web 端两轴都测量写 left/top/width/height，uniapp 端只测主轴写 transform 位移，交叉轴由 position 变体钉满。",
     "rounded 的选中文字靠底板托底：选中标题是近白的 gray-1、自身无底色，可读性完全来自底板那块主题色实心胶囊。用 ui.tabSlider 把背景改成透明或浅色，浅色模式下就是白字打在页面底色上；要改配色必须同时改 ui.tab 的选中文字色，或换 color / 在实例上改写色板变量（如 class=\"[--color-primary:#7c3aed]\"）。这也是 rounded、capsule 的底板在行程中先拉成两个标签并集的原因——底板同时覆盖旧标签与新标签，两边的反色文字全程都有底色托着，等宽平移则会有一段时间新标签已反色而底板还没到。",
@@ -36,7 +53,7 @@
     "高度过渡期间（切换后约 280ms）内容区外层是 overflow-hidden，面板里需要溢出容器的浮层（下拉、气泡、tooltip）会被裁掉一截，过渡结束即释放；面板一打开就有溢出浮层时应关掉 animation 或把浮层挂到 body 上。justify 开启（高度由容器给）或 hideContent 开启（内容整块不渲染）时不做高度过渡。",
     "高度锁在 ui.content 与面板之间的 ui.stage 这层无内边距中间层上，不是锁在 ui.content 上：量到的进场面板净高就是要写进行内样式的目标高度，不必把 content 的单边内边距算进去（uniapp 端没有 getComputedStyle 可读）。animation 开启时 stage 还是离场面板 absolute inset-0 的定位基准，覆盖 ui.stage 时不要移除 relative。",
     "鼠标移到未选中标签上时，rounded、capsule 的底板会朝该方向前倾约 15% 位移（尺寸不变），移出整条标签列才归位，点击后吸附到目标并把前倾量清零；trigger=hover 下悬停本身就会切换，此时跟随自动让位。该行为仅 web / H5 生效。",
-    "headerPadding 默认 false（头部贴容器边缘，首个标签与内容左对齐），且仅对 line、text 生效，其余类型标签自带背景或边框，组件直接忽略该参数。",
+    "headerPadding 是 uniapp 端独有参数，默认 false（头部贴容器边缘，首个标签与内容左对齐），且仅对 line、text 生效，其余类型标签自带背景或边框，组件直接忽略该参数。",
     "size 在盒子型标签上不等于行高：line、text 用整行行高（medium 48px / 96rpx），card、card-gutter、rounded、capsule 走另一套更矮的盒子高度（medium 40px / 80rpx），card-fill 在 medium 上再矮一档（32px / 64rpx）；同一个 size 在不同形态下量出的高度不同是预期行为。水平内边距则完全不随 size 变化，card、card-gutter、card-fill 全档固定 16px / 32rpx（rounded、capsule 的 mini 仍是 8px / 16rpx）。",
     "card 与 card-gutter 的分隔线不是 nav 的下边框，而是用内阴影画进 nav 自身最后 1px（头部滚动容器 overflow-auto 会裁掉溢出的标签，所以选中项不能靠负外边距外移去盖线，外移还会因标签列底对齐而把选中项整体压低 1px）；选中底板只去掉贴内容那一侧的边框，它的不透明底色就盖住了这条线（后代节点总是画在祖先背景之上），card-gutter 的 4px 间隙处分隔线会透出来属预期，用 ui.nav 覆盖 box-shadow 会让分隔线整条消失。",
     "card-fill 的底色一半画在内容区上：选中底板（ui.tabSlider）与内容区（ui.content）两块 gray-2 拼成一整面，gray-2 与 16px / 32rpx 的内边距都写在 ui.content 上，用 ui.content 覆盖背景色会只剩底板那一小块底色浮着；覆盖内边距要连四边一起给，组件是用 p-4 整体压掉 position 变量原本只给一边的 pt-4，只写 pt-* 会让左右重新贴边。圆角只开在背离内容的一侧，贴内容的两角必须保持直角才能无缝拼接。",
@@ -44,7 +61,7 @@
     "标题与关闭图标之间的 8px / 16rpx 间距来自 tab 槽的 gap，全档固定不随 size 变化；覆盖 ui.tabClose 改不动这段间距，要改得覆盖 ui.tab。",
     "position 取 left/right 时滚动发生在标签列自身，外层必须有确定高度，否则标签列被内容撑开而不滚动（uniapp 的 scroll-view 尤其如此）。",
     "color 直接落成色板的语义类名（bg-primary / text-primary 这类），组件不额外定义自己的 CSS 变量：指示条底色、各类型选中态文字、rounded 的选中底板填充都取同一档色值（卡片边框固定 gray-3，不随 color 变）。color='neutral' 用的是 gray-9 不是同名的 --color-neutral，后者是 gray-4 / gray-5 的浅灰、当强调色看不清。要色板之外的颜色就在实例上局部改写色板变量，如 class=\"[--color-primary:#7c3aed]\"。",
-    "两端 Props/Emits 完全一致（自定义类名两端都是 class，非 customClass），但 RebornTabPane 的 title 插槽仅 web 端支持——小程序渲染层无法把子组件插槽函数交给父组件渲染，uniapp 端标题只能用 title prop 传纯文本。",
+    "两端 API 大体同构但不完全一致：web 端多 overflow、draggable 与 sort，uniapp 端多 headerPadding；自定义类名两端都是 class（非 customClass）。RebornTabPane 的 title 插槽仅 web 端支持——小程序渲染层无法把子组件插槽函数交给父组件渲染，uniapp 端标题只能用 title prop 传纯文本。头部两侧的额外内容用 left-extra / right-extra 插槽（两端一致），水平方向即左右、垂直方向即顶底。",
     "uniapp 端无 Transition，animation 只有入场面板做过渡、离场直接隐藏，且入场过渡刻意与 web 有两处不同：① 不加模糊——小程序渲染层对 filter: blur 支持不稳；② 只缩放 X 轴——高度过渡要靠 boundingClientRect 异步量进场面板的净高，而它返回的是形变后的盒子，纵向缩放 0.98 会把高度量少约 2%、过渡末尾跳一下。高度过渡的起点来自静息时缓存的上一次测量值，首次切换没有缓存、那一次直接落位；新高度要等约 50ms 的异步查询才写入。另无 prefers-reduced-motion 判定（web 端命中时过渡类名与底板两段形变都会关掉）。无 DOM 查询，面板顺序即注册顺序，v-if 插到中间会排到末尾；指示条与选中底板经 uni.createSelectorQuery 五次查询测量（末一次量选中面板高度）、切换后约 50ms 延迟刷新且无 ResizeObserver 兜底。",
     "trigger=hover 在 uniapp 端仅 H5 生效，小程序/APP 无鼠标悬停事件，退化为点击切换。",
     "标签宽度异步变化（字体加载完成、标题异步替换）两端都测不到，指示条与选中底板会停在旧位置、长度也是旧的，需通过模板 ref 调 expose 的 refresh()。",
