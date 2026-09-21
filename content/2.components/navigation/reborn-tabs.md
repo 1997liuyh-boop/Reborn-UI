@@ -16,7 +16,7 @@ Tabs 用于在多个平级内容区之间切换，Web 与 UniApp 两端同名同
 
 它的样式体系由两个正交维度构成：`type` 决定**标签的形态**（下划线、卡片、胶囊还是纯文字），`color` 决定**选中态的语义色**。7 种类型 × 7 种语义色覆盖了从页面级主导航到局部分段控件的完整梯度；`color` 直接落成色板的语义类名（`bg-primary`、`text-primary` 这类），下划线、选中态文字、胶囊底色都取同一档色值，因此换色不需要为每种类型单独定制。
 
-在此之上，其余 API 分成四组：**布局**由 `position`（四向）、`direction`、`justify`、`stretch`、`header-padding`（仅 UniApp）控制；**尺寸**由 `size` 的 4 档控制；**渲染策略**由 `lazy-load`、`destroy-on-hidden`、`animation`、`hide-content` 控制；**交互**由 `trigger`、`scroll-position`、`overflow`（仅 Web）、`draggable`（仅 Web）、`editable` / `show-add-button` / `auto-switch` 控制。其中 `animation` 是一个总开关而不只是淡入淡出：开启后内容切换走缩放、位移与模糊的复合过渡，内容区高度也随之平滑过渡，详见[切换动画](#切换动画)。选中项统一用 `key` 标识（`v-model:active-key`），而不是索引，因此增删标签不会让选中项发生漂移。
+在此之上，其余 API 分成四组：**布局**由 `position`（四向）、`direction`、`justify`、`stretch`、`header-padding`（仅 UniApp）控制；**尺寸**由 `size` 的 3 档控制；**渲染策略**由 `lazy-load`、`destroy-on-hidden`、`animation`、`hide-content` 控制；**交互**由 `trigger`、`scroll-position`、`overflow`（仅 Web）、`draggable`（仅 Web）、`editable` / `show-add-button` / `auto-switch` 控制。其中 `animation` 是一个总开关而不只是淡入淡出：开启后内容切换走缩放、位移与模糊的复合过渡，内容区高度也随之平滑过渡，详见[切换动画](#切换动画)。选中项统一用 `key` 标识（`v-model:active-key`），而不是索引，因此增删标签不会让选中项发生漂移。
 
 ### 何时使用
 
@@ -121,11 +121,11 @@ const activeKey = ref("overview");
 
 ### 尺寸
 
-`size` 有 4 档，两端档位名一致，度量单位按各自的屏幕适配方式分化。
+`size` 有 `sm` / `md` / `lg` 三档，与本仓库其余组件的档位名一致；两端档位名相同，度量单位按各自的屏幕适配方式分化。
 
-同一档位下高度分两套：`line` / `text` 是整行的行高，要与页面标题栏对齐；其余类型是盒子本身的高度，比行高矮一截才不会显得笨重。`card-fill` 在 `medium` 上又比别的盒子矮一档，因为它没有边框撑形，做到 40px 会让那块底色显得过重。
+同一档位下高度分两套：`line` / `text` 是整行的行高，要与页面标题栏对齐；其余类型是盒子本身的高度，比行高矮一截才不会显得笨重。`card-fill` 在 `md` 上又比别的盒子矮一档，因为它没有边框撑形，做到 40px 会让那块底色显得过重。
 
-水平内边距不跟着 `size` 变：`card` / `card-gutter` / `card-fill` 三种卡片全档固定 16px——它们之间没有间距或只有 4px，全靠这段内边距把标题拉开，缩到 8px 会让相邻标题几乎贴在一起。`rounded` / `capsule` 的标签之间另有 4px 间距，所以 `mini` 仍收到 8px。`line` / `text` 不留内边距，标签之间只靠列表的 32px 间距分隔。
+水平内边距完全不跟着 `size` 变：`card` / `card-gutter` / `card-fill` / `rounded` / `capsule` 五种盒子型全档固定 16px——卡片之间没有间距或只有 4px，全靠这段内边距把标题拉开，缩到 8px 会让相邻标题几乎贴在一起。`line` / `text` 不留内边距，标签之间只靠列表的 32px 间距分隔。
 
 ::tabs{sync="platform"}
 
@@ -134,10 +134,9 @@ const activeKey = ref("overview");
 
 | `size` | `line` / `text` 高度 | 盒子型高度 | 盒子型水平内边距 | 字号 | 关闭图标 |
 | --- | --- | --- | --- | --- | --- |
-| `mini` | 24px | 24px | 16px（`rounded` / `capsule` 为 8px） | `text-xs`（12px） | 14px |
-| `small` | 38px | 32px | 16px | `text-base`（14px） | 16px |
-| `medium`（默认） | 48px | 40px（`card-fill` 为 32px） | 16px | `text-base`（14px） | 16px |
-| `large` | 56px | 40px | 16px | `text-lg`（16px） | 18px |
+| `sm` | 40px | 32px | 16px | `text-base`（14px） | 16px |
+| `md`（默认） | 48px | 40px（`card-fill` 为 32px） | 16px | `text-base`（14px） | 16px |
+| `lg` | 56px | 40px | 16px | `text-lg`（16px） | 18px |
 
 字号列写的是本仓库重映射过的排版令牌，不是 Tailwind 默认值：`app/assets/theme/typography.css` 把 `--text-base` 定为 14px、`--text-lg` 定为 16px，所以 `text-base` 量出来是 14px 而非 16px。
 :::
@@ -147,13 +146,14 @@ const activeKey = ref("overview");
 
 | `size` | `line` / `text` 高度 | 盒子型高度 | 盒子型水平内边距 | 字号 | 关闭图标 |
 | --- | --- | --- | --- | --- | --- |
-| `mini` | 48rpx | 48rpx | 32rpx（`rounded` / `capsule` 为 16rpx） | 24rpx | 28rpx |
-| `small` | 76rpx | 64rpx | 32rpx | 28rpx | 32rpx |
-| `medium`（默认） | 96rpx | 80rpx（`card-fill` 为 64rpx） | 32rpx | 28rpx | 32rpx |
-| `large` | 112rpx | 80rpx | 32rpx | 32rpx | 36rpx |
+| `sm` | 80rpx | 64rpx | 32rpx | 28rpx | 32rpx |
+| `md`（默认） | 96rpx | 80rpx（`card-fill` 为 64rpx） | 32rpx | 28rpx | 32rpx |
+| `lg` | 112rpx | 80rpx | 32rpx | 32rpx | 36rpx |
 :::
 
 ::
+
+`position` 取 `left` / `right` 时上表整个不适用，只对 `line` / `text` 生效：标签高度交还给内容（行高加上下内边距，不再吃表里那个数），宽度也不写死、由最长的标题撑开列宽，标签之间的间距从横向的 32px / 64rpx 收到 16px / 32rpx。`size` 在纵向只剩一处体现——标题与列缘指示条之间的内边距，`sm` / `md` / `lg` 分别是 8 / 12 / 16px（16 / 24 / 32rpx）。其余五种盒子型不参与，纵向仍按上表走：宽度撑满列、高度吃 `size`。
 
 ### 位置与方向
 
@@ -450,7 +450,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 | `activeKey` | `string \| number` | - | 当前选中标签的 key，支持 `v-model:active-key`。 |
 | `defaultActiveKey` | `string \| number` | - | 非受控模式下默认选中的 key，为空时选中第一个标签。 |
 | `position` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | 标签头部相对内容区的位置，`left` / `right` 自动转为纵向。 |
-| `size` | `"mini" \| "small" \| "medium" \| "large"` | `"medium"` | 标签尺寸，4 档固定 px。 |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | 标签尺寸，3 档固定 px。 |
 | `type` | `"line" \| "card" \| "card-gutter" \| "card-fill" \| "text" \| "rounded" \| "capsule"` | `"line"` | 标签形态。 |
 | `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | 排布方向，`position` 为 `left` / `right` 时强制纵向。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 选中态语义色，落成同名语义类名；`neutral` 实际取 `gray-9`（`--color-neutral` 是浅灰，当强调色看不清）。 |
@@ -481,7 +481,7 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 | `activeKey` | `string \| number` | - | 当前选中标签的 key，支持 `v-model:active-key`。 |
 | `defaultActiveKey` | `string \| number` | - | 非受控模式下默认选中的 key，为空时选中第一个标签。 |
 | `position` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | 标签头部相对内容区的位置，`left` / `right` 自动转为纵向；纵向滚动须给根节点明确高度。 |
-| `size` | `"mini" \| "small" \| "medium" \| "large"` | `"medium"` | 标签尺寸，4 档 `rpx` 随屏宽缩放，档位名与 Web 一致。 |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | 标签尺寸，3 档 `rpx` 随屏宽缩放，档位名与 Web 一致。 |
 | `type` | `"line" \| "card" \| "card-gutter" \| "card-fill" \| "text" \| "rounded" \| "capsule"` | `"line"` | 标签形态。 |
 | `direction` | `"horizontal" \| "vertical"` | `"horizontal"` | 排布方向，`position` 为 `left` / `right` 时强制纵向。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 选中态语义色，落成同名语义类名；`neutral` 实际取 `gray-9`（`--color-neutral` 是浅灰，当强调色看不清）。 |
@@ -679,7 +679,9 @@ Props / Emits / Slots 按端分列。两端 API 大体同构：UniApp 端没有 
 - **快速连点时底板的起点取上一次提交的落点，不是当前视觉位置**。形变的 `from` 读的是组件缓存的上一次落点，所以在上一段形变还没走完时再点下一个标签，新的一段会从「上一次该停的地方」起算，而不是它此刻实际停在的位置，看起来会有一次轻微跳接。这是为了避免每次切换都同步读一次布局（UniApp 端根本读不到），常规点击频率下看不出来。
 - **UniApp 端的高度过渡首次切换不生效**。它的起点高度来自静息时缓存的上一次测量值，首次切换还没有缓存，那一次直接落位；之后每次切换都正常过渡。该端的内容过渡也刻意与 Web 不同：不加模糊（小程序渲染层对 `filter: blur` 支持不稳）、只缩放 X 轴（`boundingClientRect` 量的是形变后的盒子，纵向缩放会把高度量少约 2%），且无 `prefers-reduced-motion` 判定。
 - **`header-padding`（仅 UniApp）默认关闭，且只对 `line` / `text` 生效**。默认头部贴着容器边缘，首个标签的文字与下方内容左对齐；需要缩进时显式写 `header-padding`。其余类型的标签自带背景或边框，再加头部边距会让首尾标签与容器边缘对不齐，因此组件在这些类型上直接忽略该参数。
-- **`size` 在盒子型标签上不等于行高，也不改卡片的水平内边距**。`line` / `text` 的高度是整行行高（`medium` 为 48px），而 `card` / `card-gutter` / `rounded` / `capsule` 走另一套更矮的盒子高度（`medium` 为 40px），`card-fill` 在 `medium` 上再矮一档到 32px。水平内边距则完全不随 `size` 变：三种卡片类型全档固定 16px / 32rpx。同一个 `size` 在不同形态下量出的高度不同是预期行为，不是漏改。
+- **纵向时 `size` 既不控制高度也不控制宽度**。`position` 取 `left` / `right` 后，`line` / `text` 的高度由标题内容撑开、宽度由最长的标题决定，`size` 只剩标题与指示条之间的内边距那一处体现（8 / 12 / 16px）。所以纵向下量标签高度会量到行高而不是尺寸表里的 40 / 48 / 56px；标签之间那 16px 来自列表的间距，不是标签自身的内边距。五种盒子型不参与，纵向仍是宽度撑满列、高度吃 `size`。
+
+- **`size` 在盒子型标签上不等于行高，也不改卡片的水平内边距**。`line` / `text` 的高度是整行行高（`md` 为 48px），而 `card` / `card-gutter` / `rounded` / `capsule` 走另一套更矮的盒子高度（`md` 为 40px），`card-fill` 在 `md` 上再矮一档到 32px。水平内边距则完全不随 `size` 变：五种盒子型全档固定 16px / 32rpx。同一个 `size` 在不同形态下量出的高度不同是预期行为，不是漏改。
 - **`card` / `card-gutter` 的分隔线画在 `nav` 内部而不是 `nav` 的下边框上**。头部的滚动容器带 `overflow: auto`，标签一旦向外溢出就会被裁掉，所以这两种类型改用内阴影把这条线画进 `nav` 自身最后 1px：选中底板的不透明底色直接盖住这条线（`card-gutter` 还要去掉贴内容那一侧的边框）（后代节点总是画在祖先背景之上），不需要负外边距外移（外移还会因为标签列是底对齐而把选中项整体压低 1px，让相邻标签的顶边高出一截）。`card-gutter` 的 4px 间隙没有标签遮挡，分隔线会在间隙处透出来，这是预期效果。若用 `ui.nav` 覆盖了 `box-shadow`，这条分隔线会整条消失。
 - **`card-fill` 的底色一半画在内容区上，覆盖 `ui.content` 会把它拆散**。这个类型靠「选中底板」与「内容区」两块 `gray-2` 拼成一整面，所以 `gray-2` 与 16px / 32rpx 的内边距都写在 `ui.content` 上：用 `ui.content` 覆盖背景色会只剩底板那一小块底色浮在页面上；覆盖内边距则要连四边一起给，因为组件是用 `p-4` 整体压掉 `position` 变量原本只给一边的 `pt-4`，只写 `pt-*` 会让左右两侧重新贴边。圆角只开在背离内容的一侧（`position="top"` 时是上方两角），贴内容的两角必须保持直角才能无缝拼接。
 - **新增按钮是「未选中标签」的复用，不是一套独立外观**。它的高度、底色、边框、圆角、文字色与悬浮反馈全部取自当前 `type` / `size` / `position` 下未选中标签的那一套，`ui.addButton` 只在其后追加图标按钮特有的部分：去掉标题用的水平内边距，再按标签高度补一个等宽的方形。所以换类型、换尺寸时按钮会自动跟上，不必逐档配；反过来，`ui.tab` 的覆盖内容不会并到按钮上，两者只共用变体结果。另有一处按钮不跟随标签：`card` 类型的圆角按首尾分配，而按钮独立在标签列之外，若照搬首尾规则就只会剩一个孤零零的角，因此它背离内容的那条边两角都倒角。按钮与标签列同处 `ui.scrollBody` 这层滚动内容里，紧贴末尾标签（隔 8px / 16rpx）而不是被推到头部最右端；代价是标签溢出时按钮跟着滚动，要滚到末尾才能看到（两端一致）。

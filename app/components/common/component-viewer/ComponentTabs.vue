@@ -144,7 +144,7 @@ provide(demoContextKey, {
       z-index 约定：header z-50 > 悬浮目录 z-40 > 吸顶 Tab 栏 z-20 > 内容
     -->
     <RebornTabs
-      v-model:active-key="activeTab" type="capsule" size="medium" position="top" color="primary" :editable="false"
+      v-model:active-key="activeTab" type="capsule" size="md" position="top" color="primary" :editable="false"
       :show-add-button="false" :animation="false" :hide-content="false" :destroy-on-hidden="false" :lazy-load="false"
       :ui="{
         nav: 'sticky top-16 z-20 bg-gray-1/75 py-2 backdrop-blur-xl',
@@ -253,7 +253,7 @@ provide(demoContextKey, {
           </div>
 
           <!-- 内层同样是 capsule，但收到 small（32px），与外层 40px 的主 Tab 栏拉开层级 -->
-          <RebornTabs type="capsule" size="small">
+          <RebornTabs type="capsule" size="sm">
             <RebornTabPane key="cli">
               <template #title>
                 <span class="inline-flex items-center gap-1.5">
@@ -289,7 +289,7 @@ provide(demoContextKey, {
                   把下面的代码复制到项目里，再按自己的目录结构改一下 import 路径。
                 </div>
 
-                <RebornTabs type="capsule" size="small">
+                <RebornTabs type="capsule" size="sm">
                   <RebornTabPane key="web">
                     <template #title>
                       <span class="inline-flex items-center gap-1.5">

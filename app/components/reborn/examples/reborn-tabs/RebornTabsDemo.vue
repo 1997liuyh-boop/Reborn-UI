@@ -20,7 +20,7 @@ const colorOptions = tabsColors.map((c) => ({ label: c, value: c }));
 /** 演练场默认状态 */
 const defaultState: Record<string, any> = {
   type: "line",
-  size: "medium",
+  size: "md",
   position: "top",
   color: "primary",
   editable: false,
@@ -38,7 +38,7 @@ const changeCount = ref(0);
 const tabsProps = ref({
   position: "top",
   type: "line",
-  size: "medium",
+  size: "md",
 });
 
 function resetState() {
@@ -63,7 +63,7 @@ const controls: any = [
         label: "尺寸",
         key: "size",
         component: "select" as const,
-        defaultValue: "medium",
+        defaultValue: "md",
         props: { options: sizeOptions },
       },
       {
@@ -164,7 +164,7 @@ const scrollPanes = Array.from({ length: 40 }, (_, index) => ({
 const overflowProps = ref({
   overflow: "arrows" as (typeof tabsOverflows)[number],
   position: "top" as (typeof tabsPositions)[number],
-  size: "medium" as (typeof tabsSizes)[number],
+  size: "md" as (typeof tabsSizes)[number],
   type: "line" as (typeof tabsTypes)[number],
   scrollPosition: "auto" as (typeof scrollModes)[number],
 });

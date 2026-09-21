@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<RebornTabsProps>(), {
   position: 'top',
   type: 'line',
   direction: 'horizontal',
-  size: 'medium',
+  size: 'md',
   color: 'primary',
   editable: false,
   showAddButton: false,

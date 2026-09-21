@@ -13,7 +13,7 @@ import RebornTabs from '@/components/reborn-tabs/RebornTabs.vue'
 /** 演练场选中的标签 key */
 const playKey = ref<TabKey>('overview')
 const currentType = ref<TabsType>('line')
-const currentSize = ref<TabsSize>('medium')
+const currentSize = ref<TabsSize>('md')
 const currentPosition = ref<TabsPosition>('top')
 
 /** change 触发次数，让切换「有回应」 */
@@ -179,7 +179,7 @@ function handleDelete(key: TabKey) {
     <RebornCard title="尺寸" custom-class="space-y-4">
       <text class="text-24 text-gray-6">
         size 只影响标签高度与字号，水平内边距不跟着变——三种卡片类型固定 32rpx。下面 card-gutter 的高度是
-        mini 48 / small 64 / medium 80 / large 80（rpx）；line 与 text 走整行行高，同一个 size 量出来更高
+        sm 64 / md 80 / lg 80（rpx）；line 与 text 走整行行高，同一个 size 量出来更高
       </text>
       <view v-for="s in tabsSizes" :key="s" class="flex flex-col gap-2">
         <text class="text-24 text-gray-5 font-mono">{{ s }}</text>

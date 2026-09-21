@@ -6,7 +6,7 @@ import { tv } from '@/lib/tv'
 export const TABS_INJECTION_KEY = 'reborn-tabs'
 
 const tabsTypes = ['line', 'card', 'card-gutter', 'card-fill', 'text', 'rounded', 'capsule'] as const
-const tabsSizes = ['mini', 'small', 'medium', 'large'] as const
+const tabsSizes = ['sm', 'md', 'lg'] as const
 const tabsPositions = ['top', 'bottom', 'left', 'right'] as const
 const tabsDirections = ['horizontal', 'vertical'] as const
 const tabsTriggers = ['click', 'hover'] as const
@@ -194,23 +194,19 @@ const theme = tv({
     // 此处高度是 line、text 的高度；卡片与胶囊类型另有更矮的盒子高度，见 compoundVariants
     // addButton 只写宽度，高度与字号都从标签样式继承；宽度逐档镜像标签高度，保证按钮是正方形
     // （不用 aspect-square：小程序支持不稳，与 reborn-button 的做法保持一致）
+    // sm 的 80rpx 由原 small 档的 76rpx 规整而来，与 web 端 sm 的 40px 保持两倍关系
     size: {
-      mini: {
-        tab: 'h-[48rpx] text-24',
-        tabClose: 'size-[28rpx]',
-        addButton: 'w-[48rpx]',
-      },
-      small: {
-        tab: 'h-[76rpx] text-28',
+      sm: {
+        tab: 'h-[80rpx] text-28',
         tabClose: 'size-[32rpx]',
-        addButton: 'w-[76rpx]',
+        addButton: 'w-[80rpx]',
       },
-      medium: {
+      md: {
         tab: 'h-[96rpx] text-28',
         tabClose: 'size-[32rpx]',
         addButton: 'w-[96rpx]',
       },
-      large: {
+      lg: {
         tab: 'h-[112rpx] text-32',
         tabClose: 'size-[36rpx]',
         addButton: 'w-[112rpx]',
@@ -330,53 +326,42 @@ const theme = tv({
       position: 'right',
       class: { nav: 'border-l-0 shadow-[inset_1px_0_0_0_var(--color-gray-3)]' },
     },
-    // ===== 纵向 line 的标题与指示条之间的间距 =====
-    // 水平模式下这段间距来自标签高度与行盒的差值，逐档为 4/18/28/32rpx（与 web 端 2/9/14/16px 对应）。
-    // 纵向时指示条贴在列缘、标签又被 items-stretch 撑满列宽，最宽的标题会直接贴上指示条，
-    // 这里在指示条一侧补同样的内边距，让两种方向的呼吸空间逐档一致
-    { position: 'left', type: 'line', size: 'mini', class: { tab: 'pr-[4rpx]' } },
-    { position: 'left', type: 'line', size: 'small', class: { tab: 'pr-[18rpx]' } },
+    // ===== 纵向（position=left/right）的排版，只对 line 与 text 生效（与 web 端同构，数值取两倍）=====
+    // 横向那一套在纵向全部换掉：标签高度交还给内容（h-auto），宽度不写死、由最长的标题撑开列宽，
+    // 标签之间的间距从横向的 64rpx 收到 32rpx。size 在纵向只剩一处体现：
+    // 标题与列缘指示条之间的那段内边距，逐档写死 16 / 24 / 32rpx
     {
-      position: 'left',
-      type: 'line',
-      size: 'medium',
-      class: { tab: 'pr-[28rpx]' },
+      position: ['left', 'right'],
+      type: ['line', 'text'],
+      class: { tab: 'h-auto', list: 'gap-[32rpx]' },
     },
-    { position: 'left', type: 'line', size: 'large', class: { tab: 'pr-[32rpx]' } },
-    { position: 'right', type: 'line', size: 'mini', class: { tab: 'pl-[4rpx]' } },
-    { position: 'right', type: 'line', size: 'small', class: { tab: 'pl-[18rpx]' } },
-    {
-      position: 'right',
-      type: 'line',
-      size: 'medium',
-      class: { tab: 'pl-[28rpx]' },
-    },
-    { position: 'right', type: 'line', size: 'large', class: { tab: 'pl-[32rpx]' } },
-    // 盒子型标签靠内边距撑开；line 与 text 只靠 list 的 64rpx 间距分隔，不留内边距
-    { type: ['rounded', 'capsule'], size: 'mini', class: { tab: 'px-[16rpx]' } },
-    {
-      type: ['rounded', 'capsule'],
-      size: ['small', 'medium', 'large'],
-      class: { tab: 'px-[32rpx]' },
-    },
+    { position: 'left', type: 'line', size: 'sm', class: { tab: 'pr-[16rpx]' } },
+    { position: 'left', type: 'line', size: 'md', class: { tab: 'pr-[24rpx]' } },
+    { position: 'left', type: 'line', size: 'lg', class: { tab: 'pr-[32rpx]' } },
+    { position: 'right', type: 'line', size: 'sm', class: { tab: 'pl-[16rpx]' } },
+    { position: 'right', type: 'line', size: 'md', class: { tab: 'pl-[24rpx]' } },
+    { position: 'right', type: 'line', size: 'lg', class: { tab: 'pl-[32rpx]' } },
+    // 盒子型标签靠内边距撑开；line 与 text 只靠 list 的 64rpx 间距分隔，不留内边距。
+    // 三档统一 32rpx：原先只有已删除的 mini 档收到 16rpx，size 轴至此不再需要
+    { type: ['rounded', 'capsule'], class: { tab: 'px-[32rpx]' } },
     // 三种卡片类型的内边距不随尺寸变化：标签之间没有间距或只有 8rpx，全靠这 32rpx 拉开标题
     { type: ['card', 'card-gutter', 'card-fill'], class: { tab: 'px-[32rpx]' } },
-    // 盒子型标签不跟随 line 的行高，固定 80rpx，small 及以下收到 64rpx；addButton 宽度同步跟上保持正方形
+    // 盒子型标签不跟随 line 的行高，固定 80rpx，sm 收到 64rpx；addButton 宽度同步跟上保持正方形
     {
       type: ['card', 'card-gutter', 'rounded', 'capsule'],
-      size: ['medium', 'large'],
+      size: ['md', 'lg'],
       class: { tab: 'h-[80rpx]', addButton: 'w-[80rpx]' },
     },
     {
       type: ['card', 'card-gutter', 'rounded', 'capsule'],
-      size: 'small',
+      size: 'sm',
       class: { tab: 'h-[64rpx]', addButton: 'w-[64rpx]' },
     },
-    // card-fill 比其余卡片再矮一档：只有 large 是 80rpx，medium 与 small 都收到 64rpx
-    { type: 'card-fill', size: 'large', class: { tab: 'h-[80rpx]', addButton: 'w-[80rpx]' } },
+    // card-fill 比其余卡片再矮一档：只有 lg 是 80rpx，md 与 sm 都收到 64rpx
+    { type: 'card-fill', size: 'lg', class: { tab: 'h-[80rpx]', addButton: 'w-[80rpx]' } },
     {
       type: 'card-fill',
-      size: ['small', 'medium'],
+      size: ['sm', 'md'],
       class: { tab: 'h-[64rpx]', addButton: 'w-[64rpx]' },
     },
     // card 类型相邻标签无边框直接相接成一排，只在背离内容的两个角保留圆角（首末位置由 tabPlace 显式判定）；
@@ -493,7 +478,7 @@ const theme = tv({
   defaultVariants: {
     position: 'top',
     type: 'line',
-    size: 'medium',
+    size: 'md',
     color: 'primary',
     active: false,
     edge: 'middle',

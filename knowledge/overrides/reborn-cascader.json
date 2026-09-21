@@ -1,19 +1,25 @@
 {
-  "description": "用于在树形多层级数据中逐级选择的级联选择器组件，双端可用。",
+  "description": "多层级数据的逐级选择器：Web 端多列面板、父子关联勾选与搜索，UniApp 端底部弹窗。",
   "whenToUse": [
-    "省市区、组织架构等多级联动选择。",
-    "商品分类等树形结构数据的逐级选择。",
-    "需要通过 labelKey/valueKey/childrenKey 适配任意字段名的树形数据源。"
+    "省市区、组织架构等多级联动选择，用 options 传树形数据。",
+    "需要一次选多个分支，且勾父节点等于勾下面全部叶子：开 multiple，保持 check-strictly 关闭。",
+    "需要允许选中中间层级（如「选到市即可」）：开 check-strictly。",
+    "层级深、用户更习惯搜索：开 allow-search，命中的选项拍平成一列。",
+    "下级数据按需请求：传 load-more，并在数据里标好 isLeaf。"
   ],
   "whenNotToUse": [
     "单层扁平选项选择，改用 reborn-select。",
+    "需要展示整棵树并任意展开收起、跨层级勾选，改用 reborn-tree-select。",
     "uniapp 端的滚动列选择交互，可改用 reborn-picker-view。"
   ],
   "pitfalls": [
-    "web 与 uniapp 双端可用。",
-    "modelValue 为数组（各层级选中值路径），v-model 绑定时注意类型。",
-    "leafLevel 可限制必选层级，0 表示不限制；textSeparator 控制触发器回显文本的分隔符。",
-    "portal 仅 Web 生效：默认浮层传送到 body 不受祖先 overflow/transform 裁剪，关闭后浮层留在触发器内随父容器裁剪。",
-    "showTrigger 设为 false 可隐藏默认触发器自行触发；组件暴露 open/close/clear 方法。"
+    "Web 与 UniApp 的 API 尚未对齐：Web 端已换成 path-mode / multiple / check-strictly / load-more 等新参数集，UniApp 端仍是 labelKey / textSeparator / lazy / leafLevel 等旧参数集，同一份业务代码不能两端直接复用。",
+    "Web 端绑定值默认是选中那一项的 value，开 path-mode 才是整条路径；多选则是它们组成的数组。",
+    "值按「类型 + 值」严格比对，数字 1 匹配不上字符串 '1'；对象值只比对 value-key 指定的属性。匹配不上的值交给 fallback 兜底展示，不会消失。",
+    "多选且父子关联时，绑定值里只会出现叶子；需要拿到父节点本身请开 check-strictly。",
+    "子树里有禁用且未勾选的叶子时，父节点会一直停在半选——勾选联动只写未禁用的叶子。",
+    "懒加载必须自己标 isLeaf，否则组件无从区分「到底了」与「还没请求」；done 回传的子节点写回的是传入的选项对象，options 必须是响应式数据。",
+    "RebornCascaderPanel 是浮层里那块面板的独立版本，可单独放进页面；它默认自带外框（bordered），被 RebornCascader 内嵌时会关掉。",
+    "virtual-list-props 要求每项等高，改了 ui.option 的字号或内边距必须同步改 height。"
   ]
 }

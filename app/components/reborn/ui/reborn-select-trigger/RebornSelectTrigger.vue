@@ -39,6 +39,12 @@ export interface SelectTriggerProps {
    */
   portal?: boolean;
   /**
+   * 浮层传送的目标容器，默认 body，仅 portal 开启时生效。
+   * 传选择器字符串或 DOM 元素皆可；目标容器必须已经在文档里，
+   * 否则 Teleport 找不到挂载点会直接报错。
+   */
+  container?: string | HTMLElement;
+  /**
    * 浮层展开方向：
    * - 'auto'（默认）：向下展开，下方空间不足且上方更宽裕时自动向上
    * - 显式 top / bottom / left / right：按指定方向展开，该侧空间不足且对侧更宽裕时翻转
@@ -63,6 +69,7 @@ const props = withDefaults(defineProps<SelectTriggerProps>(), {
   size: "md",
   closeOn: "click",
   portal: true,
+  container: "body",
   side: "auto",
   align: "start",
   offset: 4,
@@ -500,7 +507,7 @@ defineExpose({
       若不摘掉 pointer-events，这块「看不见的板子」会吃掉落在它下方的点击，
       表现就是「点了下一个选择器却没反应、要点第二次才展开」，故非展开态一律 pointer-events-none。
     -->
-    <Teleport to="body" :disabled="!portal">
+    <Teleport :to="container" :disabled="!portal">
       <RebornTransition ref="transitionRef" :show="isOpen" :duration="{ enter: 300, leave: 200 }"
         @before-enter="onBeforeEnter" @enter="onEnter" @after-enter="onAfterEnter" @after-leave="onAfterLeave"
         :custom-class="ui.dropdown({ class: isOpen ? undefined : 'pointer-events-none' })" name="select-collapse">

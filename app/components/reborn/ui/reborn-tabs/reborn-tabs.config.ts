@@ -6,7 +6,7 @@ import { tv } from "~/lib/tv";
 export const TABS_INJECTION_KEY = "reborn-tabs";
 
 const tabsTypes = ["line", "card", "card-gutter", "card-fill", "text", "rounded", "capsule"] as const;
-const tabsSizes = ["mini", "small", "medium", "large"] as const;
+const tabsSizes = ["sm", "md", "lg"] as const;
 const tabsPositions = ["top", "bottom", "left", "right"] as const;
 const tabsDirections = ["horizontal", "vertical"] as const;
 const tabsTriggers = ["click", "hover"] as const;
@@ -215,29 +215,24 @@ const theme = tv({
       "capsule": { list: "gap-1 rounded-full bg-gray-2 p-1", tab: "rounded-full transition-[color] duration-150" },
     },
     // 此处高度是 line、text 的高度；卡片与胶囊类型另有更矮的盒子高度，见 compoundVariants
-    // 字号：mini 的 text-sm 12px、small / medium 的 text-base 14px、large 的 text-lg 16px，
-    // 四档全部取自本仓库七级排版令牌（见 app/assets/theme/typography.css）。
-    // mini 原先写的是 Tailwind 原生 text-xs，与 text-sm 同为 12px，换成令牌后字号不变，
-    // 只有行高从 16px 回到 20px；h-6 的 24px 盒子装得下 20px 行盒，标签高度不受影响
+    // 字号：sm / md 的 text-base 14px、lg 的 text-lg 16px，三档全部取自本仓库七级排版令牌
+    // （见 app/assets/theme/typography.css），text-base 在本仓库是 14px 而非 Tailwind 默认的 16px。
+    // sm 的 40px 由原 small 档的 38px 规整而来，换成 Tailwind 原生刻度 h-10：
+    // 纵向 line 那侧的内边距按 (标签高 - 行高) / 2 算恰好是已写死的 9px，38px 时差 1px
     // addButton 只写宽度，高度与字号都从标签样式继承；宽度逐档镜像标签高度，保证按钮是正方形
     // （不用 aspect-square：uniapp 端小程序支持不稳，两端统一写死宽度以便对照）
     size: {
-      mini: {
-        tab: "h-6 text-sm",
-        tabClose: "size-3.5",
-        addButton: "w-6",
-      },
-      small: {
-        tab: "h-[38px] text-base",
+      sm: {
+        tab: "h-10 text-base",
         tabClose: "size-4",
-        addButton: "w-[38px]",
+        addButton: "w-10",
       },
-      medium: {
+      md: {
         tab: "h-12 text-base",
         tabClose: "size-4",
         addButton: "w-12",
       },
-      large: {
+      lg: {
         tab: "h-14 text-lg",
         tabClose: "size-[18px]",
         addButton: "w-14",
@@ -350,37 +345,42 @@ const theme = tv({
       position: "right",
       class: { nav: "border-l-0 shadow-[inset_1px_0_0_0_var(--color-gray-3)]" },
     },
-    // ===== 纵向 line 的标题与指示条之间的间距 =====
-    // 水平模式下这段间距来自标签高度与行盒的差值：(标签高 - 行高) / 2，逐档为 2/9/14/16px。
-    // 纵向时指示条贴在列缘、标签又被 items-stretch 撑满列宽，最宽的标题会直接贴上指示条，
-    // 这里在指示条一侧补同样的内边距，让两种方向的呼吸空间逐档一致
-    { position: "left", type: "line", size: "mini", class: { tab: "pr-[2px]" } },
-    { position: "left", type: "line", size: "small", class: { tab: "pr-[9px]" } },
-    { position: "left", type: "line", size: "medium", class: { tab: "pr-3.5" } },
-    { position: "left", type: "line", size: "large", class: { tab: "pr-4" } },
-    { position: "right", type: "line", size: "mini", class: { tab: "pl-[2px]" } },
-    { position: "right", type: "line", size: "small", class: { tab: "pl-[9px]" } },
-    { position: "right", type: "line", size: "medium", class: { tab: "pl-3.5" } },
-    { position: "right", type: "line", size: "large", class: { tab: "pl-4" } },
-    // 盒子型标签靠内边距撑开；line 与 text 只靠 list 的 32px 间距分隔，不留内边距
-    { type: ["rounded", "capsule"], size: "mini", class: { tab: "px-2" } },
-    { type: ["rounded", "capsule"], size: ["small", "medium", "large"], class: { tab: "px-4" } },
+    // ===== 纵向（position=left/right）的排版，只对 line 与 text 生效 =====
+    // 横向那一套在纵向全部换掉：标签高度交还给内容（h-auto，不再吃 size 轴的 40/48/56px），
+    // 宽度不写死、由最长的标题撑开列宽，标签之间的间距从横向的 32px 收到 16px。
+    // 于是 size 在纵向只剩一处体现：标题与列缘指示条之间的那段内边距。
+    // 它不再由「标签高 - 行高」推导，而是逐档写死 8 / 12 / 16px——纵向的标签被
+    // items-stretch 撑满列宽，最宽的标题会直接贴上指示条，这段内边距是唯一的呼吸空间
+    {
+      position: ["left", "right"],
+      type: ["line", "text"],
+      class: { tab: "h-auto", list: "gap-4" },
+    },
+    { position: "left", type: "line", size: "sm", class: { tab: "pr-2" } },
+    { position: "left", type: "line", size: "md", class: { tab: "pr-3" } },
+    { position: "left", type: "line", size: "lg", class: { tab: "pr-4" } },
+    { position: "right", type: "line", size: "sm", class: { tab: "pl-2" } },
+    { position: "right", type: "line", size: "md", class: { tab: "pl-3" } },
+    { position: "right", type: "line", size: "lg", class: { tab: "pl-4" } },
+    // 盒子型标签靠内边距撑开；line 与 text 只靠 list 的 32px 间距分隔，不留内边距。
+    // 三档统一 16px：原先只有已删除的 mini 档收到 8px，size 轴至此不再需要
+    { type: ["rounded", "capsule"], class: { tab: "px-4" } },
     // 三种卡片类型的内边距不随尺寸变化：标签之间没有间距或只有 4px，全靠这 16px 拉开标题
     { type: ["card", "card-gutter", "card-fill"], class: { tab: "px-4" } },
-    // 盒子型标签不跟随 line 的行高，固定 40px，small 及以下收到 32px；addButton 宽度同步跟上保持正方形
+    // 盒子型标签不跟随 line 的行高，固定 40px，sm 收到 32px；addButton 宽度同步跟上保持正方形
     {
       type: ["card", "card-gutter", "rounded", "capsule"],
-      size: ["medium", "large"],
+      size: ["md", "lg"],
       class: { tab: "h-10", addButton: "w-10" },
     },
     {
       type: ["card", "card-gutter", "rounded", "capsule"],
-      size: "small",
+      size: "sm",
       class: { tab: "h-8", addButton: "w-8" },
     },
-    // card-fill 比其余卡片再矮一档：只有 large 是 40px，medium 与 small 都收到 32px
-    { type: "card-fill", size: "large", class: { tab: "h-10", addButton: "w-10" } },
-    { type: "card-fill", size: ["small", "medium"], class: { tab: "h-8", addButton: "w-8" } },
+    // card-fill 比其余卡片再矮一档：只有 lg 是 40px，md 与 sm 都收到 32px
+    { type: "card-fill", size: "lg", class: { tab: "h-10", addButton: "w-10" } },
+    { type: "card-fill", size: ["sm", "md"], class: { tab: "h-8", addButton: "w-8" } },
     // card 类型相邻标签无边框直接相接成一排，只在背离内容的两个角保留 6px 圆角（首末位置由 tabPlace 显式判定）；
     // 增加按钮不在标签列内、与标签列之间隔着 8px，首尾圆角规则对它不成立，改为整条背离内容的边都倒角
     { type: "card", position: "top", class: { addButton: "rounded-t-md" } },
@@ -490,7 +490,7 @@ const theme = tv({
   defaultVariants: {
     position: "top",
     type: "line",
-    size: "medium",
+    size: "md",
     color: "primary",
     active: false,
     edge: "middle",
