@@ -4,6 +4,7 @@ import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components"
 import { computed, ref, watch } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import {
+  cascaderColors,
   cascaderSizes,
   cascaderVariants,
 } from "~/components/reborn/ui/reborn-cascader/reborn-cascader.config";
@@ -88,6 +89,8 @@ const defaultState: Record<string, any> = {
   allowSearch: false,
   allowClear: true,
   maxTagCount: 0,
+  placeholder: "请选择地区",
+  color: "primary",
   size: "md",
   variant: "outlined",
   disabled: false,
@@ -146,11 +149,19 @@ const controls: any = [
         defaultValue: 0,
         props: { min: 0, max: 6 },
       },
+      { label: "占位文字（placeholder）", key: "placeholder", component: "input" as const, defaultValue: "请选择地区" },
     ],
   },
   {
     title: "外观与状态",
     children: [
+      {
+        label: "配色方案",
+        key: "color",
+        component: "select" as const,
+        defaultValue: "primary",
+        props: { options: cascaderColors.map(c => ({ label: c, value: c })) },
+      },
       {
         label: "尺寸规格",
         key: "size",
@@ -172,8 +183,8 @@ const controls: any = [
   },
 ];
 
-/** 演练场右上角的传参明细里补上 options 与占位符 */
-const codeExtras = [`  :options="options"`, `  placeholder="请选择地区"`];
+/** 演练场右上角的传参明细里补上 options（placeholder 已随控件自动生成） */
+const codeExtras = [`  :options="options"`];
 
 /** 演练场当前选中值的可读回显 */
 const playgroundText = computed(() => {
@@ -202,6 +213,11 @@ const strictValue = ref<any>("hangzhou");
 const multipleValue = ref<any[]>(["xihu", "yuhang"]);
 /** 多选：父子不关联，各级独立勾选 */
 const multipleStrictValue = ref<any[]>(["hangzhou", "xihu"]);
+
+/** 自定义标签：单选触发器的回显内容 */
+const labelValue = ref<any>("xihu");
+/** 自定义标签：多选的每个标签 */
+const labelTagsValue = ref<any[]>(["xihu", "yuhang"]);
 
 /** 搜索：整条路径参与匹配 */
 const searchValue = ref<any>(undefined);
@@ -267,9 +283,9 @@ function onChange(value: any) {
           :path-mode="state.pathMode" :check-strictly="state.checkStrictly"
           :expand-trigger="state.expandTrigger" :expand-child="state.expandChild"
           :allow-search="state.allowSearch" :allow-clear="state.allowClear"
-          :max-tag-count="state.maxTagCount" :size="state.size" :variant="state.variant"
-          :disabled="state.disabled" :error="state.error" :loading="state.loading"
-          placeholder="请选择地区"
+          :max-tag-count="state.maxTagCount" :color="state.color" :size="state.size"
+          :variant="state.variant" :disabled="state.disabled" :error="state.error"
+          :loading="state.loading" :placeholder="state.placeholder"
         />
         <DemoNote tone="dimmed">当前值：{{ playgroundText }}</DemoNote>
       </div>
@@ -330,6 +346,34 @@ function onChange(value: any) {
         <DemoNote tone="dimmed">
           关联模式：{{ JSON.stringify(multipleValue) }} · 严格模式：{{ JSON.stringify(multipleStrictValue) }}
         </DemoNote>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="自定义标签"
+      description="label 插槽接管触发器的回显内容：单选替换整段回显文本，多选逐个标签渲染。插槽参数 data 是命中的选项对象，值不在选项里（如懒加载未到达的层级）时为 null，自定义渲染要自己兜底。"
+    >
+      <DemoBlock layout="stack">
+        <!-- 单选：默认回显整条路径，插槽里只取该级文本并配图标 -->
+        <RebornCascader v-model="labelValue" :options="options" placeholder="自定义回显内容">
+          <template #label="{ data }">
+            <span class="flex items-center gap-1">
+              <Icon name="lucide:map-pin" size="14" />
+              {{ data?.label ?? "未知选项" }}
+            </span>
+          </template>
+        </RebornCascader>
+        <!-- 多选：每个标签都会走一遍插槽 -->
+        <RebornCascader
+          v-model="labelTagsValue" :options="options" multiple allow-clear placeholder="自定义多选标签"
+        >
+          <template #label="{ data }">
+            <span class="flex items-center gap-1">
+              <Icon name="lucide:map-pin" size="12" />
+              {{ data?.label ?? "未知选项" }}
+            </span>
+          </template>
+        </RebornCascader>
       </DemoBlock>
     </DemoSection>
 

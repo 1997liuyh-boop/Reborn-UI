@@ -166,8 +166,11 @@ export default {
     /**
      * 选项行内的勾选框。它是可点的：非叶子节点点行体是「展开下一级」，点勾选框才是「勾选整棵子树」，
      * 两件事必须分开落点。搜索结果那一列没有展开动作，组件会另外给它补上 pointer-events-none。
+     * 用 flex 而不是默认的行内布局：行内布局会给内部的 inline-flex 勾选框留出基线下空隙，
+     * 勾选框会比文字略微偏上，摆成 flex + items-center 才是真正的垂直居中。
+     * 与文字的间隔定为 8px：optionContent 的 gap 出 4px，这里的右边距再补 4px。
      */
-    optionCheckbox: "shrink-0",
+    optionCheckbox: "mr-1 flex shrink-0 items-center",
     /** 非叶子节点行尾的箭头 */
     optionArrow: "size-4 shrink-0 text-gray-5",
     /** 懒加载子节点时行尾的转圈图标，替换箭头 */

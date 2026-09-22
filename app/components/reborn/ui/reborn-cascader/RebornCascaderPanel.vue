@@ -492,10 +492,14 @@ defineExpose({
   <div :class="ui.panel({ class: props.class })" @mouseleave="onPanelMouseLeave">
     <template v-if="tree.roots.length">
       <template v-for="(column, columnIndex) in columnViews" :key="column.key">
-        <!-- 列分割线：1px 的 gray-2 竖线，第一列之前不画 -->
-        <div v-if="columnIndex > 0" :class="ui.columnDivider()" />
+        <!-- 列分割线：1px 的 gray-2 竖线，第一列之前不画；随所属列一起做入场动画 -->
+        <div v-if="columnIndex > 0" :class="ui.columnDivider({ class: 'reborn-cascader-column-in' })" />
 
-        <div :class="ui.column()" @scroll="onColumnScroll(column.key, $event)">
+        <!-- 第二列起是「下级面板」：列以父节点 key 为键，展开 / 切换父节点都会重新挂载，入场动画因此每次都会播 -->
+        <div
+          :class="ui.column({ class: columnIndex > 0 ? 'reborn-cascader-column-in' : undefined })"
+          @scroll="onColumnScroll(column.key, $event)"
+        >
           <!-- 占位层 + 窗口层：非虚拟模式下两层不带任何样式，纯粹是透明的结构层 -->
           <div
             :class="column.virtual ? ui.virtualPhantom() : undefined"
@@ -521,11 +525,13 @@ defineExpose({
                 >
                   <div :class="ui.optionContent()">
                     <!-- 多选：勾选框只管切换勾选，点击不再冒泡给整行，免得顺带把子菜单也展开 -->
+                    <!-- 严格模式没有半选、各级独立勾选，勾选框改成圆形与关联模式区分 -->
                     <span v-if="multiple" :class="ui.optionCheckbox()" @click.stop>
                       <RebornCheckbox
                         size="sm" :color="color" :model-value="row.checked"
                         :indeterminate="row.indeterminate"
                         :disabled="row.node.disabled || disabled"
+                        :ui="checkStrictly ? { control: 'rounded-full' } : undefined"
                         @change="toggleCheck(row.node, $event === true)"
                       />
                     </span>
@@ -555,3 +561,28 @@ defineExpose({
     </div>
   </div>
 </template>
+
+<style scoped>
+/*
+ * 下级列的入场动画：淡入 + 从左侧轻微滑入。
+ * 走关键帧而不是「-enter-from 类 + 过渡」：入场偏移只存在于动画内部，
+ * 页面在后台（rAF 挂起）时元素直接落在最终位置，不会卡在半透明的中间态。
+ */
+.reborn-cascader-column-in {
+  animation: reborn-cascader-column-in 0.15s ease-out;
+}
+
+@keyframes reborn-cascader-column-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+/* 用户声明减少动态效果时不做位移与淡入，列直接呈现 */
+@media (prefers-reduced-motion: reduce) {
+  .reborn-cascader-column-in {
+    animation: none;
+  }
+}
+</style>

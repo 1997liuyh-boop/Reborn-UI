@@ -76,6 +76,9 @@ const onChange = (val: any) => {
 const valueMultiple = ref<(string | number)[][]>([])
 const valueLazy = ref<(string | number)[]>([])
 const valueLeaf = ref<(string | number)[]>([])
+// 严格选择模式：单选可停在任意层级，多选父子勾选互不关联
+const valueStrict = ref<(string | number)[]>([])
+const valueStrictMultiple = ref<(string | number)[][]>([])
 
 const cunt = ref(0)
 const lazyLoad = (node: any, resolve: any) => {
@@ -162,6 +165,18 @@ const lazyLoad = (node: any, resolve: any) => {
             <RebornCascader v-model="valueMultiple" :options="options" multiple placeholder="支持多选" />
             <view class="mt-4 text-[24rpx] text-gray-500">
                 已选路径数量: {{ valueMultiple.length }}
+            </view>
+        </RebornCard>
+
+        <RebornCard title="严格选择模式">
+            <view class="flex flex-col gap-4">
+                <RebornCascader v-model="valueStrict" :options="options" check-strictly placeholder="任意层级都可选中" />
+                <RebornCascader v-model="valueStrictMultiple" :options="options" multiple check-strictly
+                    placeholder="父子勾选互不关联" />
+                <view class="text-[24rpx] text-gray-500">
+                    开启 check-strictly 后单选点任意节点即选中（叶子才收起弹窗）；多选各级独立勾选，勾父节点不再写入整棵子树的叶子。
+                    当前单选值: {{ JSON.stringify(valueStrict) }}
+                </view>
             </view>
         </RebornCard>
 

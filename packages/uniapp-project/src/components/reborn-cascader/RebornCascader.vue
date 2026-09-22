@@ -41,6 +41,7 @@ const props = withDefaults(defineProps<CascaderProps>(), {
     childrenKey: 'children',
     leafLevel: 0,
     multiple: false,
+    checkStrictly: false,
     ellipsis: true,
     lines: 1,
 })
@@ -302,8 +303,9 @@ const onLabelTap = (index: number) => {
 }
 
 const toggleMultiSelection = (node: CascaderOption, path: (string | number)[], isCheck: boolean) => {
-    const leafPaths = getLeafPaths(node, path.slice(0, -1))
-    leafPaths.forEach(p => {
+    // 严格模式解除父子关联：只写节点自身的路径；关联模式则摊平成该节点名下的全部叶子路径
+    const targetPaths = props.checkStrictly ? [path] : getLeafPaths(node, path.slice(0, -1))
+    targetPaths.forEach(p => {
         const pStr = JSON.stringify(p)
         const index = selectedPaths.value.findIndex(sp => JSON.stringify(sp) === pStr)
         if (isCheck && index === -1) {
@@ -370,6 +372,11 @@ const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox =
             close()
         }
     } else {
+        // 严格模式单选：非叶子节点点一下即选中，值落在当前路径上；弹窗不关，下一级照常展开供继续往下选
+        if (props.checkStrictly && !props.multiple) {
+            emit('update:modelValue', [...activePath.value])
+            emit('change', [...activePath.value])
+        }
         // 需要加载子节点或者显示下一级
         if (props.lazy && !item.leaf && (!item[childrenKey] || item[childrenKey].length === 0)) {
             const nodeId = String(val)
@@ -418,6 +425,11 @@ const isItemSelected = (item: CascaderOption, listIndex: number) => {
         // 当前列必须与 activePath 前缀对齐，避免小程序端重绘时列与路径短暂不同步导致误判（含 getLeafPaths 异常结果）
         if (prefix.length !== listIndex) {
             return false
+        }
+        // 严格模式只认节点自身的路径是否在选中集合里，父子勾选互不影响，也不存在「叶子全选则父选中」的推导
+        if (props.checkStrictly) {
+            const ownStr = JSON.stringify([...prefix, item[props.valueKey]])
+            return selectedPaths.value.some(sp => JSON.stringify(sp) === ownStr)
         }
         const leaves = getLeafPaths(item, prefix)
         // [].every(...) 恒为 true，会导致未选却短暂显示为勾选

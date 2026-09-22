@@ -81,6 +81,8 @@ export interface CascaderProps {
     leafLevel?: number
     /** 是否多选 */
     multiple?: boolean
+    /** 是否开启严格选择模式：单选时点击任意层级节点即可选中；多选时解除父子节点的勾选关联 */
+    checkStrictly?: boolean
     /** 是否显示省略号 */
     ellipsis?: boolean
     /** 省略号行数 */

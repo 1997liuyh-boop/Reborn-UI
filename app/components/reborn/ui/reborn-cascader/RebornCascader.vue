@@ -541,10 +541,12 @@ const overlayUi = computed(() => ({
 const fieldUi = computed(() => splitUi.value.field as CascaderFieldUI);
 const uiOverrides = computed(() => props.ui || {});
 
-/** 多选且未开启 max-tag-count 时标签逐行铺开，触发器高度随之增长 */
-const wrapTags = computed(
-  () => props.multiple && props.maxTagCount === 0 && displayEntries.value.length > 0,
-);
+/**
+ * 多选有标签时逐行铺开，触发器高度随之增长。
+ * max-tag-count 只限制「显示几个标签」，不代表一行一定装得下：
+ * 前 N 个标签加上折叠的 “+N” 超宽时同样要换行，否则尾部的标签与 “+N” 会被整体裁掉。
+ */
+const wrapTags = computed(() => props.multiple && displayEntries.value.length > 0);
 
 const ui = computed(() => {
   const styles = b({
@@ -755,10 +757,12 @@ defineExpose({
                 >
                   <div :class="ui.optionContent()">
                     <!-- 搜索结果没有「展开下一级」这回事，勾选交回整行，勾选框只负责显示 -->
+                    <!-- 严格模式下勾选框与面板同步改成圆形，两处形状不一致会像是两个组件 -->
                     <span v-if="multiple" :class="ui.optionCheckbox({ class: 'pointer-events-none' })">
                       <RebornCheckbox
                         size="sm" :color="color" :model-value="searchStateOf(node).checked"
                         :indeterminate="searchStateOf(node).indeterminate" :disabled="node.disabled"
+                        :ui="checkStrictly ? { control: 'rounded-full' } : undefined"
                       />
                     </span>
                     <span :class="ui.optionLabel()">{{ searchLabelOf(node) }}</span>

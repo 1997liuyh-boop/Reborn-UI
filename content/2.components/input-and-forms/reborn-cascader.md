@@ -78,9 +78,9 @@ const options = [
 
 ### 多选与父子关联
 
-开启 `multiple` 后，每个选项前会渲染一个 `reborn-checkbox`。默认父子关联：勾父节点等于勾它名下全部未禁用的叶子，只勾了一部分时父节点显示**半选**；此时绑定值里只会出现叶子。开启 `check-strictly` 后各级独立勾选，绑定值里出现什么就是你勾了什么，也不再有半选。
+开启 `multiple` 后，每个选项前会渲染一个 `reborn-checkbox`。默认父子关联：勾父节点等于勾它名下全部未禁用的叶子，只勾了一部分时父节点显示**半选**；此时绑定值里只会出现叶子。开启 `check-strictly` 后各级独立勾选，绑定值里出现什么就是你勾了什么，也不再有半选；勾选框同时从方形换成圆形，让「各级独立」在视觉上与关联模式区分开。
 
-`max-tag-count` 大于 0 时只显示前 N 个标签，其余收敛成一个 `+N`，悬停可看到被折叠的内容。
+`max-tag-count` 大于 0 时只显示前 N 个标签，其余收敛成一个 `+N`，悬停可看到被折叠的内容；显示中的标签连同 `+N` 一行放不下时会换行，触发器高度随之增长，不会裁掉尾部的标签。
 
 ```vue
 <template>
@@ -92,6 +92,23 @@ const options = [
 
   <!-- 最多显示 2 个标签 -->
   <RebornCascader v-model="value" :options="options" multiple :max-tag-count="2" />
+</template>
+```
+
+### 自定义标签
+
+触发器上的回显内容由 `label` 插槽接管：单选时替换整段回显文本，多选时逐个标签渲染其内容。插槽参数 `data` 是该显示项命中的选项对象；值在选项里找不到（如懒加载未到达的层级）时为 `null`，自定义渲染时要自己兜底。
+
+```vue
+<template>
+  <RebornCascader v-model="value" :options="options">
+    <template #label="{ data }">
+      <span class="flex items-center gap-1">
+        <Icon name="lucide:map-pin" size="14" />
+        {{ data?.label ?? '未知选项' }}
+      </span>
+    </template>
+  </RebornCascader>
 </template>
 ```
 
@@ -281,6 +298,7 @@ function loadMore(option, done) {
 | `lazyLoad` | `(node, resolve, reject) => void` | - | 加载动态数据的方法 |
 | `leafLevel` | `number` | `0` | 查询次级菜单层级，`0` 为不限制 |
 | `multiple` | `boolean` | `false` | 是否多选 |
+| `checkStrictly` | `boolean` | `false` | 是否开启严格选择模式：单选点击任意层级节点即可选中；多选解除父子节点的勾选关联 |
 | `ellipsis` | `boolean` | `true` | 选项文本是否省略 |
 | `lines` | `number` | `1` | 省略行数 |
 | `ui` | `CascaderUI` | `{}` | 样式覆盖对象 |
