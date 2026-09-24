@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-18T09:57:06.962Z",
+  "generatedAt": "2026-09-24T09:15:14.049Z",
   "components": [
     {
       "id": "animate-grid",
@@ -829,10 +829,16 @@
     },
     {
       "id": "reborn-cascader",
-      "title": "级联选择器",
-      "description": "用于在树形多层级数据中逐级选择的级联选择器组件，双端可用。",
+      "title": "Cascader 级联选择器",
+      "description": "多层级数据的逐级选择器：Web 端多列面板、父子关联勾选与搜索，UniApp 端底部弹窗。",
       "category": "form",
-      "tags": [],
+      "tags": [
+        "cascader",
+        "select",
+        "tree",
+        "form",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -930,7 +936,7 @@
     },
     {
       "id": "reborn-date-picker-panel",
-      "title": "日期选择面板",
+      "title": "DatePickerPanel 日期选择面板",
       "description": "用于内嵌展示的日期/月份/年份选择面板组件，支持范围选择与视图切换，仅 web 端。",
       "category": "form",
       "tags": [
@@ -1141,7 +1147,7 @@
     },
     {
       "id": "reborn-input-number",
-      "title": "数字输入框",
+      "title": "InputNumber 数字输入框",
       "description": "用于在最小最大值范围内按步进增减数值的双端数字输入组件，支持四种形态变体、精度控制、步进倍数约束、键盘与滚轮增减、前后缀插槽与自定义增减图标。",
       "category": "form",
       "tags": [
@@ -1402,7 +1408,7 @@
     },
     {
       "id": "reborn-rate",
-      "title": "评分",
+      "title": "Rate 评分",
       "description": "用于星级评分录入与展示的双端组件，支持半星与悬停预览。",
       "category": "form",
       "tags": [
