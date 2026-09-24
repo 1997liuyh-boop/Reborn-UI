@@ -80,9 +80,13 @@ export default {
             true: { thumb: "ring-[3px]" },
             false: {},
         },
-        /** 单柄禁用（disabled 传数组时）：外圆置灰，永远不会成为激活态 */
+        /**
+         * 单柄禁用（disabled 传数组时）：外圆置灰，永远不会成为激活态。
+         * 滑块基础样式是 pointer-events-none，禁用光标写在它身上不生效，这里单独放开命中；
+         * 按下事件照样冒泡到 inner，由最近可用滑块的查找逻辑跳过禁用柄，拖拽行为不变。
+         */
         handleDisabled: {
-            true: { thumb: "cursor-not-allowed bg-gray-5" },
+            true: { thumb: "pointer-events-auto cursor-not-allowed bg-gray-5" },
             false: {},
         },
         /** 可编辑模式下正被拖离滑轨的节点：隐去作为「松手即删除」的预览 */
@@ -120,8 +124,19 @@ export default {
             true: {},
             false: {},
         },
+        /**
+         * 整体禁用：只置灰并换成禁用光标。
+         * ⚠️ 根因：此前 wrapper 带 pointer-events-none，元素不再参与命中测试，光标取的是下层元素的样式，
+         * 禁用光标根本出不来。
+         * ✅ 修复：保留指针事件（交互已在 onPointerDown / onMarkClick / onThumbKeydown 入口按 isDisabled 拦截），
+         * 由 inner 与刻度文字显式把 cursor-pointer 换成 cursor-not-allowed。
+         */
         disabled: {
-            true: { wrapper: "opacity-50 pointer-events-none" },
+            true: {
+                wrapper: "opacity-50 cursor-not-allowed",
+                inner: "cursor-not-allowed",
+                markLabel: "cursor-not-allowed",
+            },
         },
         error: {
             true: {
