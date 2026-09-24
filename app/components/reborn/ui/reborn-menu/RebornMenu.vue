@@ -6,6 +6,7 @@ import type {
   ItemType,
   MenuColor,
   MenuMode,
+  MenuTooltipConfig,
   MenuTrigger,
   MenuUI,
 } from "./reborn-menu.config";
@@ -43,6 +44,9 @@ const props = withDefaults(defineProps<RebornMenuProps>(), {
   menuTrigger: "hover",
   router: false,
   collapseTransition: true,
+  tooltip: true,
+  autoScrollIntoView: false,
+  scrollConfig: undefined,
   noIndent: false,
   ellipsis: false,
   ellipsisIcon: "lucide:more-horizontal",
@@ -101,6 +105,24 @@ export interface RebornMenuProps {
   router?: boolean;
   /** 是否开启折叠过渡动画 */
   collapseTransition?: boolean;
+  /**
+   * 折叠态下一级菜单项悬停时的文字提示。
+   * 默认开启：折叠后标题被隐藏，只剩图标，靠提示补回可读性；
+   * 传 false 关闭，传对象则透传给 RebornTooltip（placement 默认 right）。
+   */
+  tooltip?: boolean | MenuTooltipConfig;
+  /**
+   * 是否自动把选中项滚动到可见区域。
+   * 选中项变化时（含首次挂载）生效，适合菜单很长、选中项由路由或外部值驱动的侧栏；
+   * 选中项所在子菜单未展开时，退而滚动到被高亮的祖先子菜单标题。
+   */
+  autoScrollIntoView?: boolean;
+  /**
+   * 自动滚动的配置，block / inline / behavior 语义同原生 scrollIntoView，默认 { block: 'nearest', inline: 'nearest' }。
+   * 与原生不同：只滚动选中项最近的可滚动祖先容器，不会连带滚动页面。
+   * behavior 缺省时挂载即时定位、之后的选中变化平滑滚动；显式传入则两种时机都按它来
+   */
+  scrollConfig?: ScrollIntoViewOptions;
   /**
    * 平铺展开（expand-type="normal"）时子菜单是否取消缩进。
    * 默认逐层缩进 16px；开启后各级条目一律左对齐，适合侧栏窄、层级深的场景。
@@ -222,6 +244,18 @@ function isPathPrefix(parentPath: string[], targetPath: string[]) {
  */
 const isPopupExpand = computed(
   () => props.collapse || props.mode === "horizontal" || props.expandType === "popup",
+);
+
+/**
+ * 实际生效的子菜单触发方式：悬停只作用于浮层展开，平铺展开一律按点击处理。
+ * ⚠️ 根因：平铺 + 悬停时，鼠标在标题上停满 showTimeout 就已经展开，用户随后那一下点击
+ * 又走 toggle 把它收了回去，表现为「点了没反应、要点两三次」；悬停展开还会让下方条目
+ * 在指针底下跟着上下跳，指针一路划过就连环展开别的分支。
+ * ✅ 修复：与 menuTrigger 的声明口径（仅水平模式或折叠时生效）对齐，平铺态只认点击。
+ * 点击外部关闭仍按使用者传入的 menuTrigger 判定，不受这里影响。
+ */
+const effectiveMenuTrigger = computed<MenuTrigger>(() =>
+  isPopupExpand.value ? props.menuTrigger : "click",
 );
 
 /** 收起全部子菜单并同步模型 */
@@ -390,7 +424,8 @@ function handleSelect(index: string, indexPath: string[], route?: RouteLocationR
   // 这里裁剪的是展开状态本身，两者各管一层，不可互相替代。
   // 选中项所在的那条链不受影响，「点子项不收起」的行为依旧成立；祖先链为空时等价于收起全部。
   // 点击触发保持原样：那里允许同时展开多条分支（含 defaultExpandAll），裁剪会把用户手动展开的分支一并关掉。
-  if (props.menuTrigger === "hover") {
+  // 平铺展开已统一按点击处理（见 effectiveMenuTrigger），裁剪实际只发生在浮层形态。
+  if (effectiveMenuTrigger.value === "hover") {
     keepAncestorMenus(indexPath);
   } else if (indexPath.length <= 1) {
     closeAllMenus();
@@ -439,8 +474,9 @@ function handleOpen(index: string, indexPath: string[]) {
   // ✅ 修复：浮层形态一律只保留当前路径。indexPath 自带祖先链，
   // 所以点开浮层内的下级子菜单时父级浮层照常保留，被收起的只有其它分支。
   // 平铺形态不受影响，仍然累加（defaultExpandAll 依赖多分支同时展开）。
-  if (props.menuTrigger === "hover" || props.uniqueOpened || isPopupExpand.value) {
-    // 悬浮触发、手风琴模式或浮层展开时，只保留当前路径的展开状态
+  // effectiveMenuTrigger 为 hover 时必然是浮层形态，已被 isPopupExpand 覆盖，这里不再单列
+  if (props.uniqueOpened || isPopupExpand.value) {
+    // 手风琴模式或浮层展开（含悬停触发）时，只保留当前路径的展开状态
     openedMenus.value = [...indexPath];
   } else {
     // 否则将新展开的项加入到展开列表中
@@ -732,8 +768,166 @@ function handleClickOutside(event: MouseEvent) {
   closeAllMenus();
 }
 
+// --- 选中项自动滚入可见区域 ---
+
+/** 元素是否实际占位：display:none 的祖先或收起到 0 高度的平铺子菜单里的条目都不算 */
+function isRendered(el: HTMLElement) {
+  const rect = el.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+/** 自下而上找到在指定轴上真正可滚动的最近祖先；到 body 为止，页面本身不算 */
+function findScrollContainer(el: HTMLElement, axis: "x" | "y") {
+  let node = el.parentElement;
+  while (node && node !== document.body && node !== document.documentElement) {
+    const style = getComputedStyle(node);
+    const overflow = axis === "y" ? style.overflowY : style.overflowX;
+    const overflowing =
+      axis === "y" ? node.scrollHeight > node.clientHeight : node.scrollWidth > node.clientWidth;
+    if (overflowing && /auto|scroll|overlay/.test(overflow)) return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/** 按原生 scrollIntoView 的对齐规则，算出容器在单个轴上需要滚动的距离 */
+function getScrollDelta(
+  position: ScrollLogicalPosition,
+  itemStart: number,
+  itemSize: number,
+  boxStart: number,
+  boxSize: number,
+) {
+  const itemEnd = itemStart + itemSize;
+  const boxEnd = boxStart + boxSize;
+  if (position === "start") return itemStart - boxStart;
+  if (position === "end") return itemEnd - boxEnd;
+  if (position === "center") return itemStart + itemSize / 2 - (boxStart + boxSize / 2);
+  // nearest：已完整可见就不动；比容器还大时与原生一样优先对齐起始边
+  if (itemStart < boxStart || itemSize > boxSize) return itemStart - boxStart;
+  if (itemEnd > boxEnd) return itemEnd - boxEnd;
+  return 0;
+}
+
+/** 平滑滚动的时长，与 RebornAnchor 的默认补间时长一致 */
+const SCROLL_TWEEN_DURATION = 300;
+
+/** 每个轴各自一条补间，新的滚动开始时先停掉同轴上还没跑完的那条 */
+const scrollTweenFrames: Record<"x" | "y", number | undefined> = { x: undefined, y: undefined };
+
+function cancelScrollTween(axis: "x" | "y") {
+  const frame = scrollTweenFrames[axis];
+  if (frame !== undefined) cancelAnimationFrame(frame);
+  scrollTweenFrames[axis] = undefined;
+}
+
+/** ease-in-out：起步与收尾都慢，与 RebornAnchor 的滚动曲线相同 */
+function easeInOut(t: number) {
+  return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+}
+
+/** JS 补间不受 CSS 的减弱动画设置约束，需要自己判断 */
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/**
+ * 在单个轴上把元素滚进最近的滚动容器。
+ * 平滑滚动用 rAF 补间而不交给原生 behavior: 'smooth'：原生平滑滚动的时长与曲线由浏览器各自决定，
+ * 部分环境（如关闭了平滑滚动的系统设置）还会直接跳到终点，自己补间才能保证各端观感一致。
+ * ⚠️ 不用原生 scrollIntoView：它会连带滚动所有祖先滚动容器（包括页面），
+ * 菜单一挂载就把整页拽到菜单所在位置，侧栏与内容区各自滚动的布局里尤其突兀。
+ */
+function scrollAxisIntoView(
+  el: HTMLElement,
+  axis: "x" | "y",
+  position: ScrollLogicalPosition,
+  behavior?: ScrollBehavior,
+) {
+  const container = findScrollContainer(el, axis);
+  if (!container) return;
+
+  const itemRect = el.getBoundingClientRect();
+  const boxRect = container.getBoundingClientRect();
+  // 可视区从边框内侧算起，clientWidth / clientHeight 已排除滚动条
+  const delta =
+    axis === "y"
+      ? getScrollDelta(position, itemRect.top, itemRect.height, boxRect.top + container.clientTop, container.clientHeight)
+      : getScrollDelta(position, itemRect.left, itemRect.width, boxRect.left + container.clientLeft, container.clientWidth);
+  cancelScrollTween(axis);
+  if (Math.abs(delta) < 1) return;
+
+  const setScroll = (value: number) => {
+    if (axis === "y") container.scrollTop = value;
+    else container.scrollLeft = value;
+  };
+  const from = axis === "y" ? container.scrollTop : container.scrollLeft;
+  const max =
+    axis === "y"
+      ? container.scrollHeight - container.clientHeight
+      : container.scrollWidth - container.clientWidth;
+  // 终点先夹到可滚范围内，否则补间后半段会一直顶着边界空跑
+  const to = Math.min(Math.max(0, from + delta), max);
+
+  if (behavior !== "smooth" || prefersReducedMotion()) {
+    setScroll(to);
+    return;
+  }
+
+  const start = performance.now();
+  const step = (now: number) => {
+    const progress = Math.min(1, (now - start) / SCROLL_TWEEN_DURATION);
+    setScroll(from + (to - from) * easeInOut(progress));
+    scrollTweenFrames[axis] = progress < 1 ? requestAnimationFrame(step) : undefined;
+  };
+  scrollTweenFrames[axis] = requestAnimationFrame(step);
+}
+
+/**
+ * 把选中项滚到可见区域。
+ * 候选为选中的菜单项（aria-current）与被高亮的子菜单（data-menu-active），按文档顺序取最后一个可见的：
+ * 叶子项总排在其祖先子菜单之后，可见时优先命中叶子；叶子藏在未展开的子菜单里时落到祖先标题上。
+ * 浮层子菜单被 teleport 到 body，不在 menuRef 内，天然不参与。
+ * @param initial 是否为挂载时的首次定位：页面刚渲染就看着列表滚一段像是一次多余的跳动，缺省 behavior 时直接到位
+ */
+async function scrollActiveIntoView(initial = false) {
+  if (!props.autoScrollIntoView) return;
+  await nextTick();
+
+  const menuEl = menuRef.value;
+  if (!menuEl) return;
+
+  const candidates = Array.from(
+    menuEl.querySelectorAll<HTMLElement>('[aria-current="page"], [data-menu-active]'),
+  ).filter(isRendered);
+  const target = candidates.at(-1);
+  if (!target) return;
+
+  // 子菜单 li 包含已展开的整棵子树，只滚它的标题行，否则 block: nearest 会按整棵子树的高度对齐
+  const anchor = target.hasAttribute("data-menu-active")
+    ? ((target.firstElementChild as HTMLElement | null) ?? target)
+    : target;
+
+  const {
+    block = "nearest",
+    inline = "nearest",
+    behavior = initial ? "instant" : "smooth",
+  } = props.scrollConfig ?? {};
+  scrollAxisIntoView(anchor, "y", block, behavior);
+  scrollAxisIntoView(anchor, "x", inline, behavior);
+}
+
+watch(
+  () => [selectedKeys.value, props.autoScrollIntoView] as const,
+  () => {
+    void scrollActiveIntoView();
+  },
+  { deep: true },
+);
+
 onMounted(() => {
   document.addEventListener("click", handleClickOutside, true);
+  void scrollActiveIntoView(true);
 
   if (menuRef.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -748,6 +942,8 @@ onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside, true);
   resizeObserver?.disconnect();
   resizeObserver = null;
+  cancelScrollTween("x");
+  cancelScrollTween("y");
   clearCloseTimers();
   cancelCloseAll();
 });
@@ -763,7 +959,7 @@ provide(MENU_INJECTION_KEY, {
   parentIndexPath: computed(() => [] as string[]),
   mode: computed(() => props.mode),
   collapse: computed(() => props.collapse),
-  menuTrigger: computed(() => props.menuTrigger),
+  menuTrigger: effectiveMenuTrigger,
   color: computed(() => props.color),
   showActiveBackground: computed(() => props.showActiveBackground),
   /** 根级条目不缩进，平铺子菜单逐层 +1（见 RebornSubMenu 的再次下发） */
@@ -779,6 +975,10 @@ provide(MENU_INJECTION_KEY, {
   showTimeout: computed(() => props.showTimeout),
   hideTimeout: computed(() => props.hideTimeout),
   collapseTransition: computed(() => props.collapseTransition),
+  tooltip: computed<false | MenuTooltipConfig>(() => {
+    if (props.tooltip === false) return false;
+    return props.tooltip === true ? {} : props.tooltip;
+  }),
   ui,
   uiOverrides: overrides,
   handleSelect,

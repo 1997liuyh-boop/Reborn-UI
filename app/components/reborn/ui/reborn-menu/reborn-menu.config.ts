@@ -1,6 +1,8 @@
 import type { ClassValue } from "clsx";
 import type { ComputedRef, ModelRef } from "vue";
 import type { RouteLocationRaw } from "vue-router";
+import type { TooltipUI } from "../reborn-tooltip/reborn-tooltip.config";
+import type { Placement, PlacementAlias } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 
 /** 父子组件通信用的 provide/inject 键 */
@@ -153,6 +155,29 @@ export interface MenuUI {
 }
 
 /**
+ * 折叠态一级菜单项的文字提示配置，字段与 RebornTooltip 同名同义，未列出的沿用 RebornTooltip 默认值。
+ * placement 默认 right：折叠后菜单是一条窄竖栏，提示只能往外侧弹才不压住相邻条目。
+ */
+export interface MenuTooltipConfig {
+  /** 弹出位置，默认 right */
+  placement?: Placement | PlacementAlias;
+  /** 背景色 */
+  color?: string;
+  /** 是否显示箭头 */
+  arrow?: boolean | { pointAtCenter?: boolean };
+  /** 鼠标移入后延时多久显示（毫秒） */
+  openDelay?: number;
+  /** 鼠标移出后延时多久隐藏（毫秒） */
+  closeDelay?: number;
+  /** 浮层层级 */
+  zIndex?: number;
+  /** 浮层挂载容器 */
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
+  /** 提示的样式覆盖，常用 content（面板）与 arrow（箭头）两个键 */
+  ui?: TooltipUI;
+}
+
+/**
  * 菜单上下文：由 RebornMenu 下发，RebornSubMenu 逐层扩展后再下发。
  * 唯一定义在此处，禁止在各子组件里内联重复声明。
  */
@@ -200,6 +225,8 @@ export interface MenuContext {
   hideTimeout: ComputedRef<number>;
   /** 是否开启折叠过渡动画 */
   collapseTransition: ComputedRef<boolean>;
+  /** 折叠态一级菜单项的文字提示配置，为 false 时关闭 */
+  tooltip: ComputedRef<false | MenuTooltipConfig>;
   /** 根节点计算出的样式函数集合 */
   ui: ComputedRef<Record<string, (opts?: Record<string, unknown>) => string>>;
   /** 用户传入的样式覆盖对象 */
@@ -400,8 +427,12 @@ const theme = tv({
     expandType: {
       normal: {
         // 平铺容器不需要浮层底色，bg-transparent 直接盖掉基础槽的 bg-gray-1（单一色阶，无需再写 dark: 变体）
+        // ⚠️ 根因：基础槽为浮层准备的 rounded-md 没被摘掉，平铺容器又带着 overflow-hidden，
+        // 首个子条目的选中背景被裁出两个上圆角，选中投影的上半截也被切掉，只剩底边一道阴影。
+        // ✅ 修复：rounded-none 摘掉圆角；overflow-hidden 只在收起与动画期间保留，
+        // 展开落定后由 RebornSubMenu 换成 overflow-visible，投影因此完整显示。
         subMenuPopup:
-          "relative z-auto left-auto top-auto ml-0 mt-0 border-0 shadow-none p-0 bg-transparent overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out grid",
+          "relative z-auto left-auto top-auto ml-0 mt-0 rounded-none border-0 shadow-none p-0 bg-transparent overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out grid",
         // ⚠️ 根因：缩进原先写在容器 ul 上（ml-4），整列条目被一起右推，
         // 悬浮态与选中态的背景块跟着缩进，行首露出 16px 空白，背景铺不满整行。
         // ✅ 修复：容器不再缩进，缩进改由条目自身的 paddingLeft 承担（见 MENU_INLINE_INDENT），

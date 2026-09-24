@@ -285,6 +285,25 @@ const popupTransitionProps = {
   leaveToClass: "scale-95 opacity-0",
 } as const;
 
+/**
+ * 平铺展开是否已落定（完全展开且高度动画结束）。
+ * 高度动画靠 grid-template-rows 从 0fr 到 1fr，收起与过渡期间必须 overflow-hidden 才能裁掉未露出的部分；
+ * 但展开后一直裁着，会把首尾子条目的选中投影切掉一半。所以只在落定后放开裁剪，
+ * 一旦开始收起就立刻恢复，收起动画照常被裁住。
+ */
+const inlineSettled = ref(isOpened.value);
+
+watch(isOpened, (val) => {
+  // 关掉过渡时不会有 transitionend，展开即落定
+  inlineSettled.value = val && !popupTransitionEnabled.value;
+});
+
+/** 平铺容器的高度动画结束：仍处于展开态才算落定，避免收起途中的事件误放开裁剪 */
+function handleInlineTransitionEnd(event: TransitionEvent) {
+  if (event.propertyName !== "grid-template-rows") return;
+  if (isOpened.value) inlineSettled.value = true;
+}
+
 /** 浮层非持久化时，用于控制关闭后销毁 DOM */
 const popupMounted = ref(false);
 
@@ -575,6 +594,7 @@ onBeforeUnmount(() => {
     ref="liRef"
     :class="subMenuUi.subMenu({ class: props.class })"
     role="menuitem"
+    :data-menu-active="isActive || undefined"
     @click.stop="handleClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -685,13 +705,14 @@ onBeforeUnmount(() => {
     <!-- 平铺展开：CSS Grid 高度动画 -->
     <div
       v-else
-      :class="subMenuUi.subMenuPopup()"
+      :class="subMenuUi.subMenuPopup({ class: inlineSettled ? 'overflow-visible' : undefined })"
       :style="{
         gridTemplateRows: isOpened ? '1fr' : '0fr',
         backgroundColor: menuContext?.backgroundColor.value,
         color: menuContext?.textColor.value,
         ...props.popperStyle,
       }"
+      @transitionend.self="handleInlineTransitionEnd"
     >
       <div class="min-h-0">
         <ul

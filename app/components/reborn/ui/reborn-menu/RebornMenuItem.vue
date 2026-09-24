@@ -3,6 +3,7 @@ import type { RouteLocationRaw } from "vue-router";
 import type { MenuContext, MenuUI } from "./reborn-menu.config";
 import { computed, inject } from "vue";
 import { cn } from "~/lib/utils";
+import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import theme, { MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
 
 /**
@@ -19,7 +20,10 @@ export interface RebornMenuItemProps {
   danger?: boolean;
   /** 右侧额外内容，常用于展示快捷键，也可用 extra 插槽自定义 */
   extra?: string;
-  /** 原生 title 提示文案 */
+  /**
+   * 提示文案：展开态作为原生 title；折叠态作为一级菜单项的文字提示内容，
+   * 缺省时提示内容取默认插槽（即菜单项标题）
+   */
   title?: string;
   /** 自定义类名 */
   class?: any;
@@ -51,6 +55,30 @@ const indexPath = computed(() => [...(menuContext?.parentIndexPath.value ?? []),
 const level = computed(() =>
   (menuContext?.parentIndexPath.value ?? []).length === 0 ? "root" : "sub",
 );
+
+/**
+ * 文字提示配置，为 false 表示不包提示。
+ * 只有垂直模式的一级菜单项需要：折叠仅在垂直模式生效且只隐藏一级标题，子级都在浮层里完整展示标题。
+ * 是否包提示不随 collapse 变化，折叠切换时 DOM 结构保持不变，标题的淡出过渡才不会因重建节点而丢失；
+ * 展开态靠 tooltipDisabled 停用。
+ */
+const tooltipConfig = computed(() => {
+  if (!menuContext || level.value !== "root" || menuContext.mode.value !== "vertical") return false;
+  const config = menuContext.tooltip.value;
+  if (config === false) return false;
+  return { placement: "right" as const, ...config };
+});
+
+/**
+ * 提示按触发器定位，而触发器位于 li 的内边距之内，直接用会让提示贴着图标弹出、压住条目自身的背景块。
+ * 用与垂直模式 menuItem（px-4 py-3）等量的负外边距 + 内边距把触发器撑到 li 的边框盒：
+ * 内容位置不变，提示改为对齐整行，悬停整行（含内边距）也都能触发。
+ */
+// max-w-none 用来覆盖提示默认的 max-w-full，否则宽度仍被卡在包裹层（内容盒）以内
+const TOOLTIP_TRIGGER_CLASS = "flex max-w-none -mx-4 -my-3 px-4 py-3";
+
+/** 仅折叠态启用提示 */
+const tooltipDisabled = computed(() => !menuContext?.collapse.value);
 
 const itemStyle = computed(() => {
   if (!menuContext) return undefined;
@@ -144,27 +172,47 @@ function handleClick() {
     :class="itemUi.menuItem({ class: props.class })"
     :style="itemStyle"
     role="menuitem"
-    :title="props.title"
+    :title="tooltipConfig && !tooltipDisabled ? undefined : props.title"
     :aria-current="isActive ? 'page' : undefined"
     :aria-disabled="props.disabled || undefined"
     @click.stop="handleClick"
   >
-    <div :class="itemUi.menuItemContent()">
-      <div
-        v-if="$slots.icon"
-        :class="itemUi.menuItemIcon()"
+    <!-- 提示包在 li 内而非 li 外，保住 ul > li 的结构与 role="menu" 语义；
+         无提示时退化为 display: contents 的 div，不参与 li 的 flex 布局 -->
+    <component
+      :is="tooltipConfig ? RebornTooltip : 'div'"
+      v-bind="tooltipConfig ? {
+        ...tooltipConfig,
+        disabled: tooltipDisabled,
+        ui: { wrapper: 'block w-full min-w-0', trigger: TOOLTIP_TRIGGER_CLASS, ...tooltipConfig.ui },
+      } : { class: 'contents' }"
+    >
+      <div :class="itemUi.menuItemContent()">
+        <div
+          v-if="$slots.icon"
+          :class="itemUi.menuItemIcon()"
+        >
+          <slot name="icon" />
+        </div>
+        <div :class="itemUi.menuItemTitle()">
+          <slot />
+        </div>
+        <div
+          v-if="$slots.extra || props.extra"
+          :class="itemUi.menuItemExtra()"
+        >
+          <slot name="extra">{{ props.extra }}</slot>
+        </div>
+      </div>
+      <template
+        v-if="tooltipConfig"
+        #content
       >
-        <slot name="icon" />
-      </div>
-      <div :class="itemUi.menuItemTitle()">
-        <slot />
-      </div>
-      <div
-        v-if="$slots.extra || props.extra"
-        :class="itemUi.menuItemExtra()"
-      >
-        <slot name="extra">{{ props.extra }}</slot>
-      </div>
-    </div>
+        <template v-if="props.title">
+          {{ props.title }}
+        </template>
+        <slot v-else />
+      </template>
+    </component>
   </li>
 </template>

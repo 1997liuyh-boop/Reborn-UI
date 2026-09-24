@@ -19,6 +19,7 @@ import {
 const state = ref<Record<string, any>>({
   mode: "vertical",
   collapse: false,
+  tooltip: true,
   menuTrigger: "hover",
   uniqueOpened: false,
   expandType: "popup",
@@ -106,6 +107,7 @@ const controls: any = [
     title: "交互控制",
     children: [
       { label: "折叠菜单", key: "collapse", component: "checkbox" as const, defaultValue: false },
+      { label: "折叠态文字提示", key: "tooltip", component: "checkbox" as const, defaultValue: true },
       {
         label: "单一展开（手风琴）",
         key: "uniqueOpened",
@@ -220,6 +222,37 @@ const indentShowcases = [
   { label: "no-indent 取消缩进", note: "各级条目左对齐，靠箭头与分组区分层级。", noIndent: true },
 ];
 
+// ─── 折叠态文字提示 ─────────────────────────────────────────────
+
+const tooltipPath = ref(["t1"]);
+/** 三种提示配置并排对照：默认、自定义、关闭 */
+const tooltipShowcases = [
+  { label: "默认开启", note: "悬停图标，右侧弹出菜单项标题。", tooltip: true as const },
+  {
+    label: "自定义提示",
+    note: "改为向下弹出、去掉箭头、缩短显示延时。",
+    tooltip: { placement: "bottom" as const, arrow: false, openDelay: 0 },
+  },
+  { label: "tooltip=false", note: "关闭后回落为原生 title。", tooltip: false as const },
+];
+const tooltipEntries = [
+  { index: "t1", icon: "lucide:home", label: "工作台", title: undefined },
+  { index: "t2", icon: "lucide:inbox", label: "消息", title: "消息中心（3 条未读）" },
+  { index: "t3", icon: "lucide:bar-chart-3", label: "数据报表", title: undefined },
+];
+
+// ─── 自动滚动到选中项 ───────────────────────────────────────────
+
+const scrollEntries = Array.from({ length: 30 }, (_, i) => `scroll-${i + 1}`);
+/** 初值落在可视区之外，挂载时即可看到自动滚动 */
+const scrollPath = ref(["scroll-25"]);
+const autoScroll = ref(true);
+
+/** 从外部改选中项，模拟路由跳转等非点击来源 */
+function jumpTo(n: number) {
+  scrollPath.value = [`scroll-${n}`];
+}
+
 /** 演练场右上角展示的等价代码 */
 const codeString = computed(
   () => `<RebornMenu
@@ -227,6 +260,7 @@ const codeString = computed(
   v-model:open-keys='[${expandedMenus.value.join(", ")}]'
   :mode='${state.value.mode}'
   :collapse='${state.value.collapse}'
+  :tooltip='${state.value.tooltip}'
   :menu-trigger='${state.value.menuTrigger}'
   :unique-opened='${state.value.uniqueOpened}'
   :expand-type='${state.value.expandType}'
@@ -259,6 +293,7 @@ const codeString = computed(
           v-model:open-keys="expandedMenus"
           :mode="state.mode"
           :collapse="state.collapse"
+          :tooltip="state.tooltip"
           :menu-trigger="state.menuTrigger"
           :unique-opened="state.uniqueOpened"
           :expand-type="state.expandType"
@@ -523,6 +558,89 @@ const codeString = computed(
                 <RebornMenuItem index="i2-2-2">二级分类</RebornMenuItem>
               </RebornSubMenu>
             </RebornSubMenu>
+          </RebornMenu>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="折叠态文字提示">
+      <template #description>
+        折叠后一级菜单项只剩图标，<code>tooltip</code> 默认开启，悬停时在右侧补回标题；
+        内容缺省取菜单项标题，需要不同文案时再传 <code>title</code>（第二项）。
+        传对象可调整提示本身，传 <code>false</code> 关闭。展开态标题完整可见，不会弹出提示。
+      </template>
+      <DemoBlock
+        layout="grid"
+        align="start"
+      >
+        <div
+          v-for="opt in tooltipShowcases"
+          :key="opt.label"
+          class="flex flex-col gap-3"
+        >
+          <span class="text-dimmed text-xs font-medium">{{ opt.label }}</span>
+          <DemoNote tone="dimmed">{{ opt.note }}</DemoNote>
+          <RebornMenu
+            v-model:selected-keys="tooltipPath"
+            mode="vertical"
+            collapse
+            :tooltip="opt.tooltip"
+          >
+            <RebornMenuItem
+              v-for="entry in tooltipEntries"
+              :key="entry.index"
+              :index="entry.index"
+              :title="entry.title"
+            >
+              <template #icon>
+                <Icon
+                  :name="entry.icon"
+                  class="size-5"
+                />
+              </template>
+              {{ entry.label }}
+            </RebornMenuItem>
+          </RebornMenu>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="自动滚动到选中项">
+      <template #description>
+        开启 <code>auto-scroll-into-view</code> 后，挂载时与选中项变化时都会把选中项滚进可见区域，
+        适合选中项由路由或外部值驱动的长侧栏。默认 <code>block: 'nearest'</code>，已可见就不动。
+        点下方按钮从外部切换选中项，再关掉开关对比。
+      </template>
+      <DemoBlock layout="stack">
+        <div class="flex flex-wrap items-center gap-2">
+          <RebornButton
+            v-for="n in [3, 15, 28]"
+            :key="n"
+            size="sm"
+            variant="soft"
+            color="neutral"
+            :label="`选中第 ${n} 项`"
+            @click="jumpTo(n)"
+          />
+          <RebornSwitch
+            v-model="autoScroll"
+            size="sm"
+          />
+          <span class="text-dimmed text-xs">auto-scroll-into-view</span>
+        </div>
+        <div class="h-60 w-full max-w-xs overflow-auto">
+          <RebornMenu
+            v-model:selected-keys="scrollPath"
+            mode="vertical"
+            :auto-scroll-into-view="autoScroll"
+          >
+            <RebornMenuItem
+              v-for="(key, i) in scrollEntries"
+              :key="key"
+              :index="key"
+            >
+              菜单项 {{ i + 1 }}
+            </RebornMenuItem>
           </RebornMenu>
         </div>
       </DemoBlock>
