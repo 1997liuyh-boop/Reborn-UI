@@ -44,9 +44,12 @@ export default {
          * - 无外置插槽时：输入框区就是整行，聚焦高亮直接落在这一层（focused × color 复合变体）
          * - 有外置插槽时：这一层恒为 border-gray-4 不变色，高亮改由输入框区自己另起一圈（见 inputWrapper）
          * items-stretch 让两个外置插槽包裹层与输入框区一样撑满整行高度（插槽内容再由各自的 items-center 居中）。
-         * 水平内边距落在输入框区（见 size 变体），圆角由 shape 变体控制
+         * 水平内边距落在输入框区（见 size 变体），圆角由 shape 变体控制。
+         * 裁切用 clip-path 而不是 overflow-hidden：overflow 的裁切边界是 padding box（缩在 1px 边框之内），
+         * 输入框区的聚焦描边永远盖不到外框线上，看起来会比外置插槽那段外框矮一圈；
+         * clip-path 的 inset(0 round R) 以含边框的 border box 为界，描边外扩 1px 后能与外框线完全重合
          */
-        control: "flex items-stretch flex-1 relative z-20 transition-colors border border-gray-4 overflow-hidden",
+        control: "flex items-stretch flex-1 relative z-20 transition-colors border border-gray-4",
         /**
          * 输入框区：撑满剩余空间的结构层，自身不占边框宽度。
          * 存在外置插槽时由 hasOuterSlots 变体挂上 ::before 覆盖层，在这块区域内单独画一圈聚焦描边——
@@ -104,8 +107,13 @@ export default {
          */
         hasOuterSlots: {
             true: {
+                /**
+                 * 聚焦描边覆盖层。上下各外扩 1px、位于行首/行尾时同侧再外扩 1px，
+                 * 让描边线恰好压在控件行的外框线上（控件行以 clip-path 按 border box 裁切，不会被裁掉）——
+                 * 若贴着 inset-0 画，描边整体缩在外框之内，激活时会比外置插槽那段外框矮一圈
+                 */
                 inputWrapper:
-                    "before:content-[''] before:absolute before:inset-0 before:pointer-events-none before:border before:border-transparent before:transition-colors",
+                    "before:content-[''] before:absolute before:inset-x-0 before:-inset-y-px first:before:-left-px last:before:-right-px before:pointer-events-none before:border before:border-transparent before:transition-colors",
             },
             false: {},
         },
@@ -118,12 +126,12 @@ export default {
         shape: {
             circle: {
                 backdropCard: "rounded-full",
-                control: "rounded-full",
+                control: "rounded-full [clip-path:inset(0_round_9999px)]",
                 dropdown: "rounded-b-lg",
             },
             square: {
                 backdropCard: "rounded-md",
-                control: "rounded-md",
+                control: "rounded-md [clip-path:inset(0_round_var(--radius-md))]",
                 dropdown: "rounded-b-md",
             },
         },

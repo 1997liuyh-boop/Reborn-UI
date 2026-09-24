@@ -121,6 +121,7 @@ const {
     disabled: fieldGroupDisabled,
     size: fieldGroupSize,
     isError,
+    validate,
 } = useFormInject(props);
 
 /**
@@ -244,14 +245,22 @@ const thumbSize = computed(() => {
     }
 });
 
-/** 交互带厚度取滑块外径（色晕溢出不占位），长度水平自适应、垂直取 height */
+/** 滑块半径：交互带两端的内边距，也是滑块定位时要折算掉的偏移 */
+const thumbInset = computed(() => thumbSize.value / 2);
+
+/**
+ * 交互带厚度取滑块外径（色晕溢出不占位），长度水平自适应、垂直取 height。
+ * 沿滑轨方向两端各留半个滑块的内边距：滑块中心停在轨道两端时本体仍完整落在交互带内，
+ * 不会溢出去压住旁边的数值文本或图标（范围整体拖到最右侧时尤其明显）
+ */
 const innerStyle = computed(() => {
     const thickness = `${thumbSize.value}px`;
+    const inset = `${thumbInset.value}px`;
     if (props.vertical) {
         const h = typeof props.height === "number" ? `${props.height}px` : (props.height || "200px");
-        return { width: thickness, height: h };
+        return { width: thickness, height: h, padding: `${inset} 0` };
     }
-    return { height: thickness };
+    return { height: thickness, padding: `0 ${inset}` };
 });
 
 function toPct(val: number) {
@@ -289,8 +298,19 @@ const progressStyle = computed(() => {
         : { left: `${start}%`, width: `${size}%` };
 });
 
-/** 尺寸交由 size × active 变体类控制，这里只负责沿滑轨方向的定位（translate 已居中） */
+/**
+ * 滑块与刻度文字的定位（它们是交互带的子元素）：尺寸交由 size × active 变体类控制，这里只负责沿滑轨方向的位置。
+ * 轨道被交互带的内边距缩进了半个滑块，百分比要先折算到轨道长度上：inset + (100% - 2 × inset) × 比例；translate 已居中
+ */
 function thumbStyle(pct: number) {
+    const d = toDisplayPct(pct);
+    const inset = thumbInset.value;
+    const pos = `calc(${inset}px + (100% - ${inset * 2}px) * ${d / 100})`;
+    return props.vertical ? { top: pos } : { left: pos };
+}
+
+/** 轨道内部节点（间断点、刻度点）的定位：以轨道自身为定位上下文，直接用百分比 */
+function trackNodeStyle(pct: number) {
     const d = toDisplayPct(pct);
     return props.vertical ? { top: `${d}%` } : { left: `${d}%` };
 }
@@ -447,12 +467,13 @@ function canDragTrack(): boolean {
     return true;
 }
 
-/** 提交节点数组：写内部状态并向外发 update:values + change（changing 兼容保留） */
+/** 提交节点数组：写内部状态并向外发 update:values + change（changing 兼容保留），同时触发表单的 change 校验 */
 function commitNodes(arr: number[]) {
     rangeValue.value = arr;
     emit("update:values", [...arr]);
     emit("change", [...arr]);
     emit("changing", [...arr]);
+    validate("change");
 }
 
 function updateValue(newValue: number) {
@@ -463,11 +484,14 @@ function updateValue(newValue: number) {
         emit("update:modelValue", newValue);
         emit("change", newValue);
         emit("changing", newValue);
+        validate("change");
     }
 }
 
+/** 交互结束（松开指针 / 按键）：滑块没有失焦概念，以此时机对齐表单的 blur 校验 */
 function emitChangeComplete() {
     emit("changeComplete", props.range ? [...rangeValue.value] : value.value);
+    validate("blur");
 }
 
 /**
@@ -712,12 +736,12 @@ watch(() => props.values, (v) => {
         <!-- 间断点：按步长撒点 -->
         <div
           v-for="v in stopValues" :key="`stop-${v}`" :class="ui.stopDot()"
-          :style="thumbStyle(toPct(v))"
+          :style="trackNodeStyle(toPct(v))"
         />
         <!-- 刻度点：位置与滑块共用显示轴换算 -->
         <div
           v-for="m in markList" :key="`dot-${m.value}`" :class="ui.markDot()"
-          :style="thumbStyle(toPct(m.value))"
+          :style="trackNodeStyle(toPct(m.value))"
         />
       </div>
 

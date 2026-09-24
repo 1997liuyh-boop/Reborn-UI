@@ -56,12 +56,14 @@ const itemStyle = computed(() => {
   if (!menuContext) return undefined;
 
   const depth = menuContext.inlineDepth.value;
+  // noIndent 打开时不下发左内边距，沿用 mode 变体给的 px-4，各级条目因此左对齐
+  const indented = depth > 0 && !menuContext.noIndent.value;
 
   return {
     color: isActive.value ? menuContext.activeTextColor.value : menuContext.textColor.value,
     // 平铺展开的缩进由条目自身承担（容器 ul 不再缩进），悬浮态与选中态的背景块才能铺满整行。
     // depth 1 得 32px = 原容器 ml-4(16px) + 条目 px-4(16px)，与改造前观感一致。
-    ...(depth > 0 ? { paddingLeft: `${MENU_INLINE_INDENT * (depth + 1)}px` } : {}),
+    ...(indented ? { paddingLeft: `${MENU_INLINE_INDENT * (depth + 1)}px` } : {}),
   };
 });
 
@@ -139,18 +141,28 @@ function handleClick() {
 
 <template>
   <li
-    :class="itemUi.menuItem({ class: props.class })" :style="itemStyle" role="menuitem" :title="props.title"
-    :aria-current="isActive ? 'page' : undefined" :aria-disabled="props.disabled || undefined"
+    :class="itemUi.menuItem({ class: props.class })"
+    :style="itemStyle"
+    role="menuitem"
+    :title="props.title"
+    :aria-current="isActive ? 'page' : undefined"
+    :aria-disabled="props.disabled || undefined"
     @click.stop="handleClick"
   >
     <div :class="itemUi.menuItemContent()">
-      <div v-if="$slots.icon" :class="itemUi.menuItemIcon()">
+      <div
+        v-if="$slots.icon"
+        :class="itemUi.menuItemIcon()"
+      >
         <slot name="icon" />
       </div>
       <div :class="itemUi.menuItemTitle()">
         <slot />
       </div>
-      <div v-if="$slots.extra || props.extra" :class="itemUi.menuItemExtra()">
+      <div
+        v-if="$slots.extra || props.extra"
+        :class="itemUi.menuItemExtra()"
+      >
         <slot name="extra">{{ props.extra }}</slot>
       </div>
     </div>

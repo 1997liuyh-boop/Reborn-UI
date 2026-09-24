@@ -1,0 +1,156 @@
+/*
+ * Reborn 动效层：时长阶梯 + 缓动曲线 + 基础关键帧
+ *
+ * 曲线来源：参考动画（Claw'd Labs 短片）在片头写死的一份运动规范——
+ *   MOTION  squash/stretch on every body, anticipation before big moves,
+ *           overshoot + settle after, secondary motion
+ * 它用一组手写缓动函数实现这套语汇，这里把那几条函数逐一拟合成 CSS 可用的形式，
+ * 曲线名与原函数一一对应，括号里是拟合残差（20 个采样点的平方和）：
+ *
+ *   eOut  = 1-(1-u)³                    → --ease-out        (1.7e-5)
+ *   eOut2 = 1-(1-u)²                    → --ease-out-soft   (5.3e-6)
+ *   eIn   = u³                          → --ease-in         (1.7e-5)
+ *   eIO   = 三次 in-out                  → --ease-in-out     (5.8e-4)
+ *   eOB   = easeOutBack，c1 = 1.9        → --ease-back       (2.9e-4)
+ *   spring(u) = 1 - e⁻⁷ᵘ·cos(16u)        → --ease-spring     (按 41 点采样，无需拟合)
+ *
+ * ⚠️ --ease-out / --ease-in / --ease-in-out 覆盖的是 Tailwind 自带的同名令牌，
+ * 组件里已有的 ease-out、ease-in-out 因此一并换成参考动画的曲线，不必逐个改写调用处。
+ */
+
+@theme static {
+  /* --- 时长阶梯 (Durations) ---
+   * 五档覆盖组件里实际用到的绝大多数取值（300 / 200 / 150 / 500 占了九成以上）。
+   * 用法：duration-(--duration-base)，或在自定义 CSS 里 var(--duration-base)。
+   */
+  --duration-instant: 75ms; /* 悬停变色、图标换色这类「不该被察觉」的反馈 */
+  --duration-fast: 150ms; /* 小位移、小尺寸变化 */
+  --duration-base: 200ms; /* 默认档：大多数状态切换 */
+  --duration-slow: 300ms; /* 展开收起、浮层进出 */
+  --duration-slower: 500ms; /* 大面积位移、跨区域的转场 */
+
+  /* --- 缓动曲线 (Easings) --- */
+
+  /* 三次缓出：收尾平缓，界面里最常用的一条，作为默认出场曲线 */
+  --ease-out: cubic-bezier(0.33, 1, 0.67, 1);
+  /* 二次缓出：比上面更克制，适合高频、小幅度的反馈 */
+  --ease-out-soft: cubic-bezier(0.45, 0.9, 0.81, 1);
+  /* 三次缓入：用于离场，越走越快，符合「东西被收走」的直觉 */
+  --ease-in: cubic-bezier(0.33, 0, 0.67, 0);
+  /* 三次缓入缓出：两端都平缓，用于位置迁移这类首尾都要交代清楚的动作 */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* 超调回落：冲过终点约 12% 再落回，对应规范里的 overshoot + settle */
+  --ease-back: cubic-bezier(0.35, 1.7, 0.71, 0.95);
+  /* 预备 + 超调：起步先反向退 12% 再冲出，对应规范里的 anticipation；只用于幅度大的主动作 */
+  --ease-anticipate: cubic-bezier(0.73, -0.6, 0.27, 1.6);
+  /*
+   * 阻尼弹簧：把 1 - e⁻⁷ᵘ·cos(16u) 按 41 点采样成 linear()，末值归一到 1。
+   * 峰值约 1.28、两次半回弹，是参考动画的招牌手感；只给庆祝、点赞这类需要「弹一下」的时刻，
+   * 不要拿它做常规状态切换。
+   */
+  --ease-spring: linear(
+    0,
+    0.227,
+    0.509,
+    0.785,
+    1.014,
+    1.172,
+    1.257,
+    1.276,
+    1.245,
+    1.185,
+    1.113,
+    1.044,
+    0.988,
+    0.951,
+    0.932,
+    0.93,
+    0.939,
+    0.955,
+    0.973,
+    0.99,
+    1.004,
+    1.012,
+    1.016,
+    1.017,
+    1.014,
+    1.01,
+    1.005,
+    1.001,
+    0.998,
+    0.996,
+    0.995,
+    0.995,
+    0.996,
+    0.997,
+    0.998,
+    0.999,
+    1,
+    1,
+    1,
+    1,
+    1
+  );
+
+  /* --- 关键帧动画 (Animations) ---
+   * 关键帧只交代起止状态，「手感」全部交给上面的曲线，两者分工不重叠。
+   */
+  --animate-pop: reborn-pop var(--duration-slow) var(--ease-back) both;
+  --animate-squash: reborn-squash var(--duration-fast) var(--ease-out-soft) both;
+  --animate-settle: reborn-settle var(--duration-slower) var(--ease-spring) both;
+}
+
+/* 出场：轻微放大到位，超调由 --ease-back 提供（0.94 起跳，峰值约 1.007） */
+@keyframes reborn-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/*
+ * 按压挤压：对应规范里的 squash/stretch。
+ * 横向撑开的同时纵向压扁，总面积基本不变，物体才像有重量而不是单纯被缩放。
+ */
+@keyframes reborn-squash {
+  0% {
+    transform: scale(1, 1);
+  }
+  40% {
+    transform: scale(1.06, 0.94);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+/* 落位回弹：小幅下落到位，回弹由 --ease-spring 提供 */
+@keyframes reborn-settle {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * 降低动态偏好：只把时长压到近乎为零，不做 `* { animation: none }` 这类全局封杀——
+ * 后者会连同「折叠面板高度过渡」这类承担信息含义的动效一起掐掉，反而让人看不懂界面发生了什么。
+ * 这样处理后，凡是走令牌的动效自动变成瞬时，写死时长的调用处不受影响。
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0.01ms;
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
+    --duration-slower: 0.01ms;
+  }
+}

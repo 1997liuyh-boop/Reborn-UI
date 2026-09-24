@@ -178,6 +178,8 @@ export interface MenuContext {
    * 浮层子菜单会把它重置回 0——浮层是独立面板，内部条目不该继承外层缩进。
    */
   inlineDepth: ComputedRef<number>;
+  /** 平铺展开时是否取消子菜单缩进：为真时各级条目左对齐，inlineDepth 仍照常累加 */
+  noIndent: ComputedRef<boolean>;
   /** 自定义背景色 */
   backgroundColor: ComputedRef<string>;
   /** 自定义文字色 */

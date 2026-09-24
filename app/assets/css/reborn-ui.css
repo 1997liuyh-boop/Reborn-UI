@@ -4,6 +4,7 @@
 
 @import "../theme/typography.css";
 @import "../theme/base.css";
+@import "../theme/motion.css";
 @import "../../components/reborn/ui/scrollbar/scrollbar.css";
 
 @theme static {

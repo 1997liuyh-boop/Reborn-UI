@@ -126,11 +126,12 @@ const currentExpandIcon = computed(() => {
  * 平铺展开的缩进：写在条目自身的左内边距上，而不是容器 ul 上。
  * ⚠️ 根因：缩进若给容器，整列条目一起右移，悬浮态与选中态的背景块也跟着缩进，行首露白。
  * ✅ 修复：容器铺满整行、条目自己缩进，背景块因此始终占满整行宽度。
- * 根级（depth 为 0）不下发内联值，沿用 mode 变体给的 px-4。
+ * 根级（depth 为 0）不下发内联值，沿用 mode 变体给的 px-4；
+ * 菜单开了 no-indent 时同样不下发，各级标题左对齐。
  */
 const inlineIndentStyle = computed<CSSProperties | undefined>(() => {
   const depth = menuContext?.inlineDepth.value ?? 0;
-  if (depth <= 0) return undefined;
+  if (depth <= 0 || menuContext?.noIndent.value) return undefined;
 
   // depth 1 得 32px = 原容器 ml-4(16px) + 条目 px-4(16px)，与改造前观感一致
   return { paddingLeft: `${MENU_INLINE_INDENT * (depth + 1)}px` };
@@ -571,13 +572,23 @@ onBeforeUnmount(() => {
 
 <template>
   <li
-    ref="liRef" :class="subMenuUi.subMenu({ class: props.class })" role="menuitem" @click.stop="handleClick"
-    @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
+    ref="liRef"
+    :class="subMenuUi.subMenu({ class: props.class })"
+    role="menuitem"
+    @click.stop="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <!-- 禁用态样式已下沉到 disabled 布尔变体，模板不再手拼状态类 -->
-    <div :class="subMenuUi.menuItem()" :style="inlineIndentStyle">
+    <div
+      :class="subMenuUi.menuItem()"
+      :style="inlineIndentStyle"
+    >
       <div :class="subMenuUi.menuItemContent()">
-        <div v-if="$slots.icon" :class="subMenuUi.menuItemIcon()">
+        <div
+          v-if="$slots.icon"
+          :class="subMenuUi.menuItemIcon()"
+        >
           <slot name="icon" />
         </div>
         <div :class="subMenuUi.menuItemTitle()">
@@ -587,17 +598,30 @@ onBeforeUnmount(() => {
           v-if="!isRootHorizontal"
           :class="subMenuUi.menuItemArrow({ opened: hasCustomExpandIcon ? false : isOpened })"
         >
-          <Icon :name="hasCustomExpandIcon ? currentExpandIcon! : 'lucide:chevron-right'" class="size-4" />
+          <Icon
+            :name="hasCustomExpandIcon ? currentExpandIcon! : 'lucide:chevron-right'"
+            class="size-4"
+          />
         </div>
       </div>
     </div>
 
     <!-- 浮层展开（teleport 到 body，由 JS 定位） -->
-    <Teleport v-if="effectiveExpandType === 'popup' && props.teleported" to="body">
-      <Transition v-bind="popupTransitionProps" :css="popupTransitionEnabled">
+    <Teleport
+      v-if="effectiveExpandType === 'popup' && props.teleported"
+      to="body"
+    >
+      <Transition
+        v-bind="popupTransitionProps"
+        :css="popupTransitionEnabled"
+      >
         <div
-          v-if="shouldRenderPopup" v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()"
-          :data-menu-path="indexPath.join(',')" :style="{
+          v-if="shouldRenderPopup"
+          v-show="isOpened"
+          ref="popupRef"
+          :class="subMenuUi.subMenuPopup()"
+          :data-menu-path="indexPath.join(',')"
+          :style="{
             position: 'fixed',
             margin: 0,
             transformOrigin: popupOrigin,
@@ -605,10 +629,19 @@ onBeforeUnmount(() => {
             color: menuContext?.textColor.value,
             ...popupStyle,
             ...props.popperStyle,
-          }" @mouseenter="handleMouseEnter" @mouseleave="handlePopupMouseLeave"
+          }"
+          @mouseenter="handleMouseEnter"
+          @mouseleave="handlePopupMouseLeave"
         >
-          <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
-            <RebornMenuItems v-if="props.items?.length" :items="props.items" />
+          <ul
+            :class="subMenuUi.subMenuContent()"
+            role="menu"
+            @wheel="handleWheel"
+          >
+            <RebornMenuItems
+              v-if="props.items?.length"
+              :items="props.items"
+            />
             <slot v-else />
           </ul>
         </div>
@@ -617,19 +650,33 @@ onBeforeUnmount(() => {
 
     <!-- 浮层展开（不 teleport，由 CSS 相对父级定位） -->
     <Transition
-      v-else-if="effectiveExpandType === 'popup'" v-bind="popupTransitionProps" :css="popupTransitionEnabled"
+      v-else-if="effectiveExpandType === 'popup'"
+      v-bind="popupTransitionProps"
+      :css="popupTransitionEnabled"
     >
       <div
-        v-show="isOpened" ref="popupRef" :class="subMenuUi.subMenuPopup()"
-        :data-menu-path="indexPath.join(',')" :style="{
+        v-show="isOpened"
+        ref="popupRef"
+        :class="subMenuUi.subMenuPopup()"
+        :data-menu-path="indexPath.join(',')"
+        :style="{
           transformOrigin: popupOrigin,
           backgroundColor: menuContext?.backgroundColor.value,
           color: menuContext?.textColor.value,
           ...props.popperStyle,
-        }" @mouseenter="handleMouseEnter" @mouseleave="handlePopupMouseLeave"
+        }"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handlePopupMouseLeave"
       >
-        <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
-          <RebornMenuItems v-if="props.items?.length" :items="props.items" />
+        <ul
+          :class="subMenuUi.subMenuContent()"
+          role="menu"
+          @wheel="handleWheel"
+        >
+          <RebornMenuItems
+            v-if="props.items?.length"
+            :items="props.items"
+          />
           <slot v-else />
         </ul>
       </div>
@@ -637,7 +684,9 @@ onBeforeUnmount(() => {
 
     <!-- 平铺展开：CSS Grid 高度动画 -->
     <div
-      v-else :class="subMenuUi.subMenuPopup()" :style="{
+      v-else
+      :class="subMenuUi.subMenuPopup()"
+      :style="{
         gridTemplateRows: isOpened ? '1fr' : '0fr',
         backgroundColor: menuContext?.backgroundColor.value,
         color: menuContext?.textColor.value,
@@ -645,8 +694,15 @@ onBeforeUnmount(() => {
       }"
     >
       <div class="min-h-0">
-        <ul :class="subMenuUi.subMenuContent()" role="menu" @wheel="handleWheel">
-          <RebornMenuItems v-if="props.items?.length" :items="props.items" />
+        <ul
+          :class="subMenuUi.subMenuContent()"
+          role="menu"
+          @wheel="handleWheel"
+        >
+          <RebornMenuItems
+            v-if="props.items?.length"
+            :items="props.items"
+          />
           <slot v-else />
         </ul>
       </div>

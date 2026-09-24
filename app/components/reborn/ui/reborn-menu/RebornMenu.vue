@@ -43,6 +43,7 @@ const props = withDefaults(defineProps<RebornMenuProps>(), {
   menuTrigger: "hover",
   router: false,
   collapseTransition: true,
+  noIndent: false,
   ellipsis: false,
   ellipsisIcon: "lucide:more-horizontal",
   popperOffset: 8,
@@ -100,6 +101,12 @@ export interface RebornMenuProps {
   router?: boolean;
   /** 是否开启折叠过渡动画 */
   collapseTransition?: boolean;
+  /**
+   * 平铺展开（expand-type="normal"）时子菜单是否取消缩进。
+   * 默认逐层缩进 16px；开启后各级条目一律左对齐，适合侧栏窄、层级深的场景。
+   * 浮层展开本就不缩进，该属性对它没有影响。
+   */
+  noIndent?: boolean;
   /** 水平模式下宽度不足时是否把溢出菜单项折叠进「更多」子菜单 */
   ellipsis?: boolean;
   /** 溢出折叠触发器的图标名称 */
@@ -761,6 +768,7 @@ provide(MENU_INJECTION_KEY, {
   showActiveBackground: computed(() => props.showActiveBackground),
   /** 根级条目不缩进，平铺子菜单逐层 +1（见 RebornSubMenu 的再次下发） */
   inlineDepth: computed(() => 0),
+  noIndent: computed(() => props.noIndent),
   backgroundColor: computed(() => props.backgroundColor),
   textColor: computed(() => props.textColor),
   activeTextColor: computed(() => props.activeTextColor),

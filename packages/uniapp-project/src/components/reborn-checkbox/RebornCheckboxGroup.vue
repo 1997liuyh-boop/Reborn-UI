@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
-import type { CheckboxOption, CheckboxValue, checkboxColors, checkboxDirections, checkboxSizes, checkboxVariants } from './reborn-checkbox.config'
+import type { CheckboxFieldNames, CheckboxOption, CheckboxValue, checkboxColors, checkboxDirections, checkboxSizes, checkboxVariants } from './reborn-checkbox.config'
 import { computed, provide, ref, toRef } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
@@ -32,7 +32,9 @@ export interface CheckboxGroupProps {
   /** 支持最多选中的数量，达到上限后未选中项自动禁用 */
   max?: number
   /** 选项数据。传入后由组自行渲染子项，默认插槽不再生效 */
-  options?: (string | number | CheckboxOption)[]
+  options?: (string | number | CheckboxOption | Record<string, any>)[]
+  /** options 的字段别名配置：按这里给出的字段名去数据里取 label / value / disabled / indeterminate */
+  props?: CheckboxFieldNames
   /** 复选框的排列方向 */
   direction?: typeof checkboxDirections[number]
   /** 是否整组禁用 */
@@ -62,13 +64,32 @@ const currentValue = computed<CheckboxValue[]>(() => model.value ?? innerValue.v
 /** 选中数量是否已达 max 上限 */
 const limitReached = computed(() => props.max !== undefined && currentValue.value.length >= props.max)
 
-/** options 归一化：字符串/数字写法统一补全为对象 */
+/** options 字段别名，未配置的键回落到默认字段名 */
+const fieldNames = computed(() => ({
+  label: props.props?.label ?? 'label',
+  value: props.props?.value ?? 'value',
+  disabled: props.props?.disabled ?? 'disabled',
+  indeterminate: props.props?.indeterminate ?? 'indeterminate',
+}))
+
+/**
+ * options 归一化：字符串/数字写法统一补全为对象；
+ * 对象写法按 props 别名取字段，原始字段随展开保留，label 插槽仍能从 data 参数里拿到
+ */
 const normalizedOptions = computed<CheckboxOption[]>(() =>
-  (props.options ?? []).map(item =>
-    typeof item === 'object' && item !== null
-      ? item
-      : { label: String(item), value: item },
-  ),
+  (props.options ?? []).map((item) => {
+    if (typeof item !== 'object' || item === null) {
+      return { label: String(item), value: item }
+    }
+    const f = fieldNames.value
+    return {
+      ...item,
+      label: item[f.label],
+      value: item[f.value],
+      disabled: item[f.disabled],
+      indeterminate: item[f.indeterminate],
+    }
+  }),
 )
 
 const uiOverrides = computed(() => props.ui || {})

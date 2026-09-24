@@ -34,6 +34,17 @@ const roles = ref<string[]>(['dev'])
 /** max 限制：选满两项后未选中的选项自动禁用 */
 const limitedRoles = ref<string[]>([])
 
+/** 手动排布的复选框组：预选中的禁用项保持选中态但不可操作 */
+const checkList = ref<string[]>(['A', 'selectedDisabled'])
+
+/** 字段别名：接口原样返回的 id / name 数据，交给组上的 props 做映射而不必改造数据 */
+const apiRoleOptions = [
+  { id: 'admin', name: '管理员' },
+  { id: 'dev', name: '开发' },
+  { id: 'qa', name: '测试' },
+]
+const apiRoles = ref<string[]>(['admin'])
+
 /** 样式变体矩阵：两种变体各演示未选、选中、半选三态 */
 const variantMatrix = [
   { variant: 'filled' as const, note: '默认值。选中与半选都填充配色，图标为白色。' },
@@ -176,6 +187,22 @@ const variantColors = ['primary', 'success', 'warning', 'error'] as const
             text-sm text-slate-500
             dark:text-slate-200
           ">
+          手动排布 · 禁用项不可操作，预选中的禁用项保持选中态（已选 {{ checkList.join('、') || '空' }}）
+        </text>
+        <RebornCheckboxGroup v-model="checkList">
+          <RebornCheckbox value="A" label="选项 A" />
+          <RebornCheckbox value="B" label="选项 B" />
+          <RebornCheckbox value="C" label="选项 C" />
+          <RebornCheckbox value="disabled" label="禁用" disabled />
+          <RebornCheckbox value="selectedDisabled" label="选中且禁用" disabled />
+        </RebornCheckboxGroup>
+      </view>
+
+      <view class="flex flex-col gap-[12rpx]">
+        <text class="
+            text-sm text-slate-500
+            dark:text-slate-200
+          ">
           options 数据驱动 · 横向排列
         </text>
         <RebornCheckboxGroup v-model="roles" :options="roleOptions" />
@@ -199,6 +226,18 @@ const variantColors = ['primary', 'success', 'warning', 'error'] as const
             </view>
           </template>
         </RebornCheckboxGroup>
+      </view>
+
+      <view class="flex flex-col gap-[12rpx]">
+        <text class="
+            text-sm text-slate-500
+            dark:text-slate-200
+          ">
+          props 字段别名（数据是 id / name，已选 {{ apiRoles.join('、') || '空' }}）
+        </text>
+        <RebornCheckboxGroup
+          v-model="apiRoles" :options="apiRoleOptions" :props="{ label: 'name', value: 'id' }"
+        />
       </view>
     </RebornCard>
 

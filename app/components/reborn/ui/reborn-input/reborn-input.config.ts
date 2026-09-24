@@ -203,6 +203,14 @@ export default {
         count: "absolute bottom-1 right-2",
       },
     },
+    /** 原生手柄被外层内边距挤入统计区：改由文本域承接内边距，并为统计预留底部与右侧空间。 */
+    resizeWithCount: {
+      true: {
+        wrapper: "px-0! py-0",
+        input: "py-2 pb-6",
+        count: "right-6",
+      },
+    },
     fieldGroup: {
       horizontal: {
         wrapper:
@@ -223,6 +231,11 @@ export default {
     },
   },
   compoundVariants: [
+    { resizeWithCount: true, size: "sm", class: { input: "px-input-px-sm" } },
+    { resizeWithCount: true, size: "md", class: { input: "px-input-px-md" } },
+    { resizeWithCount: true, size: "lg", class: { input: "px-input-px-lg" } },
+    // 下划线形态保留原有的窄文本边距，不套用描边输入框的尺寸内边距。
+    { resizeWithCount: true, variant: "underlined", class: { input: "px-0.5" } },
     // square 外形的圆角按尺寸取令牌：sm 4px / md 6px / lg 8px
     { shape: "square", size: "sm", class: { wrapper: "rounded-sm", prepend: "rounded-s-sm", append: "rounded-e-sm" } },
     { shape: "square", size: "md", class: { wrapper: "rounded-md", prepend: "rounded-s-md", append: "rounded-e-md" } },

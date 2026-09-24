@@ -334,7 +334,8 @@ function parseThousands(text: string) {
         </DemoItem>
 
         <DemoItem label="resize=&quot;vertical&quot;（允许纵向拖拽）" mono>
-          <RebornInput v-model="textareaValue" type="textarea" :rows="3" resize="vertical" placeholder="右下角可拖拽" />
+          <RebornInput v-model="textareaValue" type="textarea" :rows="3" resize="vertical" maxlength="100"
+            show-word-limit placeholder="右下角可拖拽" />
         </DemoItem>
       </DemoBlock>
     </DemoSection>

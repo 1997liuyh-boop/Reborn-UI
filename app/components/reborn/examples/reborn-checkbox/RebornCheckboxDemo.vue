@@ -122,6 +122,17 @@ const roleDirection = ref<"horizontal" | "vertical">("horizontal");
 /** max 限制：选满两项后未选中的选项自动禁用 */
 const limitedRoles = ref<string[]>([]);
 
+/** 手动排布的复选框组：预选中的禁用项保持选中态但不可操作 */
+const checkList = ref<string[]>(["A", "selectedDisabled"]);
+
+/** 字段别名：接口原样返回的 id / name 数据，交给组上的 props 做映射而不必改造数据 */
+const apiRoleOptions = [
+  { id: "admin", name: "管理员" },
+  { id: "dev", name: "开发" },
+  { id: "qa", name: "测试" },
+];
+const apiRoles = ref<string[]>(["admin"]);
+
 /** 自定义勾选框：checkbox 插槽整体替换方块 */
 const tagOptions = ["Vue", "React", "Svelte"];
 const tags = ref<string[]>(["Vue"]);
@@ -288,25 +299,28 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
 
     <DemoSection
       title="复选框组"
-      description="RebornCheckboxGroup 统一托管数组值，并向下派发 size 与 color。"
+      description="RebornCheckboxGroup 统一托管数组值，并向下派发 size 与 color：options 一行完成数据驱动渲染，也可在默认插槽里手动排布子项（以 value 参与数组存取）。禁用项不可操作，预选中的禁用项保持选中态。"
     >
       <DemoBlock layout="stack">
+        <!-- options 数据驱动：字符串数组即最简写法，布局由组自身的 flex + gap 负责 -->
         <RebornCheckboxGroup
           v-model="brands"
           color="secondary"
-          class="flex flex-wrap items-center gap-8"
-        >
-          <RebornCheckbox
-            v-for="option in brandOptions"
-            :key="option"
-            :value="option"
-            :label="option"
-          />
+          :options="brandOptions"
+        />
+
+        <!-- 手动排布：最后两项一个禁用、一个选中且禁用（值在数组里但不可再操作） -->
+        <RebornCheckboxGroup v-model="checkList">
+          <RebornCheckbox value="A" label="选项 A" />
+          <RebornCheckbox value="B" label="选项 B" />
+          <RebornCheckbox value="C" label="选项 C" />
+          <RebornCheckbox value="disabled" label="禁用" disabled />
+          <RebornCheckbox value="selectedDisabled" label="选中且禁用" disabled />
         </RebornCheckboxGroup>
       </DemoBlock>
 
       <DemoNote tone="dimmed">
-        已选：<code>{{ brands.length ? brands.join("、") : "空" }}</code>
+        品牌组已选：<code>{{ brands.length ? brands.join("、") : "空" }}</code>；手动排布组已选：<code>{{ checkList.join("、") || "空" }}</code>
       </DemoNote>
     </DemoSection>
 
@@ -343,7 +357,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
 
     <DemoSection
       title="数据驱动的复选框组"
-      description="options 传入数据后由组自行渲染子项，此时默认插槽不再生效；direction 控制排列方向，max 限制最多选中数量。"
+      description="options 传入数据后由组自行渲染子项，此时默认插槽不再生效；direction 控制排列方向，max 限制最多选中数量；数据字段名对不上时用 props 配置别名，不必先把数据改造一遍。"
     >
       <DemoBlock
         layout="grid"
@@ -387,6 +401,20 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
               </span>
             </template>
           </RebornCheckboxGroup>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">
+            <code>:props</code> 字段别名
+          </span>
+          <!-- 数据源是 id / name，别名映射后组件照常取到值与文本 -->
+          <RebornCheckboxGroup
+            v-model="apiRoles"
+            :options="apiRoleOptions"
+            :props="{ label: 'name', value: 'id' }"
+            direction="vertical"
+          />
+          <DemoNote tone="dimmed">已选：<code>{{ apiRoles.join("、") || "空" }}</code></DemoNote>
         </div>
       </DemoBlock>
 

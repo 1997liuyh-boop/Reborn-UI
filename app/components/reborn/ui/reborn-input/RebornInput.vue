@@ -258,6 +258,8 @@ const ui = computed(() => {
     shape: props.shape,
     fieldGroup: orientation.value,
     multiline: isMultiline.value,
+    resizeWithCount: isMultiline.value && showLimit.value && props.wordLimitPosition === "inside"
+      && !!props.resize && props.resize !== "none",
     error: isError.value,
     disabled: isDisabled.value,
     hasPrepend: !isMultiline.value && !!slots.prepend,

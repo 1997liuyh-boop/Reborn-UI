@@ -30,6 +30,22 @@ export const genderOptions = [
     { label: '女', value: 2 },
 ]
 
+/** 兴趣爱好选项：交给 RebornCheckboxGroup 的 options 数据驱动渲染 */
+export const interestOptions = [
+    { label: '篮球', value: 'a' },
+    { label: '足球', value: 'b' },
+    { label: '乒乓球', value: 'c' },
+    { label: '羽毛球', value: 'd' },
+    { label: '网球', value: 'e' },
+    { label: '高尔夫', value: 'f' },
+    { label: '游泳', value: 'g' },
+    { label: '健身', value: 'h' },
+    { label: '阅读', value: 'i' },
+    { label: '写作', value: 'j' },
+    { label: '编程', value: 'k' },
+    { label: '其他', value: 'l' },
+]
+
 export const initialForm: FormData = {
     username: '乐一番',
     gender: 1,

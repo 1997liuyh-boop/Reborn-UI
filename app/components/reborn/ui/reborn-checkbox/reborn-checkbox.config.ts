@@ -23,6 +23,23 @@ export interface CheckboxOption {
   disabled?: boolean;
   /** 该选项是否为半选状态 */
   indeterminate?: boolean;
+  /** 其他自定义属性，label 插槽可从 data 参数里拿到 */
+  [key: string]: any;
+}
+
+/**
+ * 复选框组 options 的字段别名配置（对应组上的 props 属性）：
+ * 数据源字段名与组件预期不一致（如接口返回 id / name）时在组上做映射，不必先把数据改造一遍。
+ */
+export interface CheckboxFieldNames {
+  /** 文本字段名，默认 'label' */
+  label?: string;
+  /** 值字段名，默认 'value' */
+  value?: string;
+  /** 禁用字段名，默认 'disabled' */
+  disabled?: string;
+  /** 半选字段名，默认 'indeterminate' */
+  indeterminate?: string;
 }
 
 export default {

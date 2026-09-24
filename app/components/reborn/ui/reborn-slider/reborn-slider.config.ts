@@ -41,7 +41,11 @@ export default {
         /** 滑轨两侧的业务含义图标（#prefix / #suffix 插槽或 prefix-icon / suffix-icon 属性） */
         prefix: "shrink-0 inline-flex items-center text-gray-6 mr-[8px]",
         suffix: "shrink-0 inline-flex items-center text-gray-6 ml-[8px]",
-        value: "text-center w-[50px] text-gray-8 dark:text-gray-1",
+        /**
+         * 末尾数值：与 suffix 一样离交互带 8px，拖拽时溢出交互带的 3px 色晕才不会贴到数字上。
+         * 只写 text-gray-8：灰阶令牌在暗色主题下自动翻转，原先的 dark:text-gray-1 在暗色下等于深底深字，数字看不见
+         */
+        value: "text-center w-[50px] text-gray-8 ml-[8px]",
     },
     variants: {
         size: {
@@ -102,6 +106,7 @@ export default {
                 markLabel: "top-auto mt-0 translate-x-0 left-full ml-[12px] -translate-y-1/2",
                 prefix: "mr-0 mb-[8px]",
                 suffix: "ml-0 mt-[8px]",
+                value: "ml-0 mt-[8px]",
                 // 气泡在滑块右侧，箭头贴气泡左缘、指向左
                 tooltip: "left-full top-1/2 -translate-y-1/2 ml-[10px] after:right-full after:top-1/2 after:-translate-y-1/2 after:border-r-gray-9",
             },

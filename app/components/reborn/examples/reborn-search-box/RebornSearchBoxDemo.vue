@@ -183,9 +183,13 @@ const skuAttributes = ref<SkuOption[]>([
           :placeholder="state.placeholder" :show-dropdown="state.showDropdown" @search="onSearch">
           <!-- 外置前置插槽（在边框内、输入框之外，聚焦不点亮边框）：自行组合 RebornSelect，分隔线等装饰样式自行提供 -->
           <template #leading>
-            <!-- 贴边色块需自带与外形一致的端部圆角，否则会被控件行的 overflow-hidden 裁出弧形缺口 -->
+            <!--
+              贴边色块自带与外形一致的端部圆角，并向外扩 1px（负边距 + 高度补 2px）盖到控件行的外框线上：
+              控件行按外形以 clip-path（border box 边界）裁切，色块的端部弧线因此与外框轮廓完全重合，
+              不外扩的话色块缩在 1px 边框之内，端头会露出一圈灰色边框弧、与聚焦描边差 1px 高
+            -->
             <div
-              class="bg-gray-2 text-gray-8 text-md px-[12px] h-full border-r border-r-gray-4 flex items-center justify-center"
+              class="bg-gray-2 text-gray-8 text-md px-[12px] -my-px -ml-px h-[calc(100%+2px)] border-r border-r-gray-4 flex items-center justify-center"
               :class="state.shape === 'circle' ? 'rounded-l-full pl-[16px]' : 'rounded-l-md'">
               http://
             </div>
@@ -200,9 +204,9 @@ const skuAttributes = ref<SkuOption[]>([
 
           <!-- 外置后置插槽：搜索按钮，点击调用作用域的 search 触发搜索 -->
           <template #trailing>
-            <!-- 同 leading：贴边色块自带端部圆角，避免被胶囊外形裁出弧形缺口 -->
+            <!-- 同 leading：端部圆角 + 外扩 1px 盖到外框线上，色块弧线与外形轮廓重合、与聚焦描边等高 -->
             <div
-              class="text-md bg-brand-6 text-white px-[12px] flex items-center justify-center h-full border-l border-l-brand-5"
+              class="text-md bg-brand-6 text-white px-[12px] flex items-center justify-center -my-px -mr-px h-[calc(100%+2px)] border-l border-l-brand-5"
               :class="state.shape === 'circle' ? 'rounded-r-full pr-[16px]' : 'rounded-r-md'">
               <Icon name="lucide:search" />
             </div>

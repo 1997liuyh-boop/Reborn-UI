@@ -109,32 +109,32 @@ export default {
     {
       color: "secondary" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-secondary text-white enabled:hover:bg-secondary/75",
+      class: "bg-secondary text-white enabled:hover:bg-secondary-5",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-success text-white enabled:hover:bg-success/75",
+      class: "bg-success text-white enabled:hover:bg-success-5",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-info text-white enabled:hover:bg-info/75",
+      class: "bg-info text-white enabled:hover:bg-info-5",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-warning text-white enabled:hover:bg-warning/75",
+      class: "bg-warning text-white enabled:hover:bg-warning-5",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-error text-white enabled:hover:bg-error/75",
+      class: "bg-error text-white enabled:hover:bg-error-5",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "filled" as (typeof variant)[number],
-      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral-5",
     },
 
     // Round Variants：胶囊形状，着色规则与 filled 一致
@@ -146,32 +146,32 @@ export default {
     {
       color: "secondary" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-secondary text-white enabled:hover:bg-secondary/75",
+      class: "bg-secondary text-white enabled:hover:bg-secondary-5",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-success text-white enabled:hover:bg-success/75",
+      class: "bg-success text-white enabled:hover:bg-success-5",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-info text-white enabled:hover:bg-info/75",
+      class: "bg-info text-white enabled:hover:bg-info-5",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-warning text-white enabled:hover:bg-warning/75",
+      class: "bg-warning text-white enabled:hover:bg-warning-5",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-error text-white enabled:hover:bg-error/75",
+      class: "bg-error text-white enabled:hover:bg-error-5",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "round" as (typeof variant)[number],
-      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral-5",
     },
 
     // Circle Variants：圆形纯图标按钮，着色规则与 filled 一致
@@ -183,32 +183,32 @@ export default {
     {
       color: "secondary" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-secondary text-white enabled:hover:bg-secondary/75",
+      class: "bg-secondary text-white enabled:hover:bg-secondary-5",
     },
     {
       color: "success" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-success text-white enabled:hover:bg-success/75",
+      class: "bg-success text-white enabled:hover:bg-success-5",
     },
     {
       color: "info" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-info text-white enabled:hover:bg-info/75",
+      class: "bg-info text-white enabled:hover:bg-info-5",
     },
     {
       color: "warning" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-warning text-white enabled:hover:bg-warning/75",
+      class: "bg-warning text-white enabled:hover:bg-warning-5",
     },
     {
       color: "error" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-error text-white enabled:hover:bg-error/75",
+      class: "bg-error text-white enabled:hover:bg-error-5",
     },
     {
       color: "neutral" as (typeof color)[number],
       variant: "circle" as (typeof variant)[number],
-      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral/75",
+      class: "bg-neutral text-gray-10 enabled:hover:bg-neutral-5",
     },
 
     {

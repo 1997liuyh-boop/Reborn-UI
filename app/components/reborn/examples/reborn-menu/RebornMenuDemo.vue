@@ -23,6 +23,7 @@ const state = ref<Record<string, any>>({
   uniqueOpened: false,
   expandType: "popup",
   expandMutex: false,
+  noIndent: false,
   defaultExpandAll: false,
   color: "primary",
   showActiveBackground: true,
@@ -118,6 +119,12 @@ const controls: any = [
         defaultValue: false,
       },
       {
+        label: "子菜单不缩进",
+        key: "noIndent",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+      {
         label: "默认全部展开",
         key: "defaultExpandAll",
         component: "checkbox" as const,
@@ -205,6 +212,14 @@ const ellipsisNavs = [
   "关于我们",
 ];
 
+/** 子菜单缩进示例：两块用同一份选中与展开状态，只差 no-indent */
+const indentPath = ref<string[]>(["i2-2-1"]);
+const indentOpened = ref<string[]>(["i2", "i2-2"]);
+const indentShowcases = [
+  { label: "默认逐层缩进", note: "每下沉一层向右 16px，层级关系直观。", noIndent: false },
+  { label: "no-indent 取消缩进", note: "各级条目左对齐，靠箭头与分组区分层级。", noIndent: true },
+];
+
 /** 演练场右上角展示的等价代码 */
 const codeString = computed(
   () => `<RebornMenu
@@ -216,6 +231,7 @@ const codeString = computed(
   :unique-opened='${state.value.uniqueOpened}'
   :expand-type='${state.value.expandType}'
   :expand-mutex='${state.value.expandMutex}'
+  :no-indent='${state.value.noIndent}'
   :default-expand-all='${state.value.defaultExpandAll}'
   color='${state.value.color}'
   :show-active-background='${state.value.showActiveBackground}'
@@ -247,6 +263,7 @@ const codeString = computed(
           :unique-opened="state.uniqueOpened"
           :expand-type="state.expandType"
           :expand-mutex="state.expandMutex"
+          :no-indent="state.noIndent"
           :default-expand-all="state.defaultExpandAll"
           :color="state.color"
           :show-active-background="state.showActiveBackground"
@@ -451,6 +468,61 @@ const codeString = computed(
               </template>
               数据分析
             </RebornMenuItem>
+          </RebornMenu>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="子菜单缩进">
+      <template #description>
+        平铺展开（<code>expand-type="normal"</code>）时，子菜单默认逐层向右缩进
+        16px，层级关系一眼可辨。侧栏窄、层级深的场景里缩进会把文字挤到右侧， 这时用
+        <code>no-indent</code> 取消缩进，各级条目一律左对齐，改由展开箭头和分组标题区分层级。
+        浮层展开本就不缩进，该属性对它没有影响。
+      </template>
+      <DemoBlock
+        layout="grid"
+        align="start"
+      >
+        <div
+          v-for="opt in indentShowcases"
+          :key="opt.label"
+          class="flex flex-col gap-3"
+        >
+          <span class="text-dimmed text-xs font-medium">{{ opt.label }}</span>
+          <DemoNote tone="dimmed">{{ opt.note }}</DemoNote>
+          <RebornMenu
+            v-model:selected-keys="indentPath"
+            v-model:open-keys="indentOpened"
+            mode="vertical"
+            expand-type="normal"
+            :no-indent="opt.noIndent"
+            class="w-full"
+          >
+            <RebornMenuItem index="i1">
+              <template #icon>
+                <Icon
+                  name="lucide:home"
+                  class="size-5"
+                />
+              </template>
+              工作台
+            </RebornMenuItem>
+            <RebornSubMenu index="i2">
+              <template #icon>
+                <Icon
+                  name="lucide:folder"
+                  class="size-5"
+                />
+              </template>
+              <template #title>内容管理</template>
+              <RebornMenuItem index="i2-1">文章列表</RebornMenuItem>
+              <RebornSubMenu index="i2-2">
+                <template #title>分类设置</template>
+                <RebornMenuItem index="i2-2-1">一级分类</RebornMenuItem>
+                <RebornMenuItem index="i2-2-2">二级分类</RebornMenuItem>
+              </RebornSubMenu>
+            </RebornSubMenu>
           </RebornMenu>
         </div>
       </DemoBlock>

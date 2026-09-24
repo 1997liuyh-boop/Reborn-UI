@@ -143,13 +143,11 @@ provide(demoContextKey, {
       再往上叠一层半透明底色会和它撞在同一个 bg-* 上（tailwind-merge 只会留一个）。
       z-index 约定：header z-50 > 悬浮目录 z-40 > 吸顶 Tab 栏 z-20 > 内容
     -->
-    <RebornTabs
-      v-model:active-key="activeTab" type="capsule" size="md" position="top" color="primary" :editable="false"
+    <RebornTabs v-model:active-key="activeTab" type="capsule" size="md" position="top" color="primary" :editable="false"
       :show-add-button="false" :animation="false" :hide-content="false" :destroy-on-hidden="false" :lazy-load="false"
       :ui="{
-        nav: 'sticky top-16 z-20 bg-gray-1/75 py-2 backdrop-blur-xl',
-      }" @tab-click="handleTabClick" @change="handleTabChange"
-    >
+        nav: 'sticky top-16 z-40 bg-gray-1/75 py-2 backdrop-blur-xl',
+      }" @tab-click="handleTabClick" @change="handleTabChange">
       <RebornTabPane key="preview">
         <template #title>
           <span class="inline-flex items-center gap-1.5">

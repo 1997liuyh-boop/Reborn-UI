@@ -22,35 +22,36 @@ badge: New
 
 ## Menu Props
 
-| 属性名                | 类型                                                                              | 默认值                    | 说明                                                                                   |
-| :-------------------- | :-------------------------------------------------------------------------------- | :------------------------ | :------------------------------------------------------------------------------------- |
-| `mode`                | `'horizontal' \| 'vertical'`                                                       | `'vertical'`              | 菜单展示模式                                                                           |
-| `items`               | `ItemType[]`                                                                       | -                         | 配置式菜单数据，传入后由组件递归渲染并忽略默认插槽                                     |
-| `selectedKeys`        | `string[]`                                                                         | `[]`                      | 当前选中项的**完整路径**，配合 `v-model:selected-keys` 使用，父级节点按路径包含关系高亮 |
-| `openKeys`            | `string[]`                                                                         | `[]`                      | 当前展开的子菜单 `index` 集合，配合 `v-model:open-keys` 使用                            |
-| `collapse`            | `boolean`                                                                          | `false`                   | 是否折叠菜单，仅在 `mode="vertical"` 时生效                                            |
-| `defaultOpeneds`      | `string[]`                                                                         | `[]`                      | 默认展开的子菜单 `index` 数组，仅在 `openKeys` 为空时作为初值生效                       |
-| `defaultExpandAll`    | `boolean`                                                                          | `false`                   | 是否默认展开全部子菜单。仅在平铺展开下生效，只在挂载时判定一次，优先级低于 `openKeys` 与 `defaultOpeneds` |
-| `uniqueOpened`        | `boolean`                                                                          | `false`                   | 是否只保持一个子菜单展开（手风琴模式）                                                 |
-| `expandMutex`         | `boolean`                                                                          | `false`                   | 同级子菜单是否互斥展开                                                                 |
-| `expandType`          | `'normal' \| 'popup'`                                                              | `'popup'`                 | 二级菜单展开方式：平铺展开 / 浮层展开。折叠态与水平模式下强制为 `popup`；浮层展开同一时刻只保留一条展开路径 |
-| `menuTrigger`         | `'hover' \| 'click'`                                                               | `'hover'`                 | 子菜单的触发方式                                                                       |
-| `closeOnClickOutside` | `boolean`                                                                          | `true`                    | 点击菜单外部时是否关闭已展开的子菜单                                                   |
-| `showTimeout`         | `number`                                                                           | `300`                     | 浮层子菜单的展开延时（毫秒）                                                           |
-| `hideTimeout`         | `number`                                                                           | `300`                     | 浮层子菜单的关闭延时（毫秒）                                                           |
-| `popperOffset`        | `number`                                                                           | `8`                       | 浮层子菜单相对触发元素的偏移量（像素）                                                 |
-| `persistent`          | `boolean`                                                                          | `true`                    | 浮层关闭后是否保留其 DOM，为 `false` 时关闭即销毁                                      |
-| `ellipsis`            | `boolean`                                                                          | `false`                   | 水平模式下宽度不足时，是否把溢出条目折叠进末尾的「更多」子菜单                         |
-| `ellipsisIcon`        | `string`                                                                           | `'lucide:more-horizontal'` | 溢出折叠触发器的图标名称                                                               |
-| `router`              | `boolean`                                                                          | `false`                   | 是否启用 `vue-router` 模式。启用后点击菜单项会使用 `index` 作为 `path` 进行跳转         |
-| `collapseTransition`  | `boolean`                                                                          | `true`                    | 是否启用菜单动画：折叠过渡、平铺展开的高度过渡、浮层的出现/消失。为 `false` 时三者一并变为瞬时 |
-| `color`               | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'`               | 选中态的主题色：选中项文字取该色阶第 6 档，背景块取第 2 档；展开态不参与配色           |
-| `showActiveBackground` | `boolean`                                                                          | `true`                    | 选中项是否展示背景块，关闭后仅保留文字高亮（投影一并移除）                             |
-| `backgroundColor`     | `string`                                                                           | `''`                      | 菜单背景色，留空则使用主题默认底色                                                     |
-| `textColor`           | `string`                                                                           | `''`                      | 普通菜单项文字颜色，留空则使用 `level` 规范灰阶                                        |
-| `activeTextColor`     | `string`                                                                           | `''`                      | 选中菜单项文字颜色，留空则使用 `color` 主题色                                          |
-| `class`               | `any`                                                                              | -                         | 最外层容器的自定义类名                                                                 |
-| `ui`                  | `MenuUI`                                                                           | `{}`                      | 内置 UI 部件的类名覆盖，见「自定义样式（ui）」                                         |
+| 属性名                 | 类型                                                                                   | 默认值                     | 说明                                                                                                                                                                                                           |
+| :--------------------- | :------------------------------------------------------------------------------------- | :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`                 | `'horizontal' \| 'vertical'`                                                           | `'vertical'`               | 菜单展示模式                                                                                                                                                                                                   |
+| `items`                | `ItemType[]`                                                                           | -                          | 配置式菜单数据，传入后由组件递归渲染并忽略默认插槽                                                                                                                                                             |
+| `selectedKeys`         | `string[]`                                                                             | `[]`                       | 当前选中项的**完整路径**，配合 `v-model:selected-keys` 使用，父级节点按路径包含关系高亮                                                                                                                        |
+| `openKeys`             | `string[]`                                                                             | `[]`                       | 当前展开的子菜单 `index` 集合，配合 `v-model:open-keys` 使用                                                                                                                                                   |
+| `collapse`             | `boolean`                                                                              | `false`                    | 是否折叠菜单，仅在 `mode="vertical"` 时生效                                                                                                                                                                    |
+| `defaultOpeneds`       | `string[]`                                                                             | `[]`                       | 默认展开的子菜单 `index` 数组，仅在 `openKeys` 为空时作为初值生效                                                                                                                                              |
+| `defaultExpandAll`     | `boolean`                                                                              | `false`                    | 是否默认展开全部子菜单。仅在平铺展开下生效，只在挂载时判定一次，优先级低于 `openKeys` 与 `defaultOpeneds`                                                                                                      |
+| `uniqueOpened`         | `boolean`                                                                              | `false`                    | 是否只保持一个子菜单展开（手风琴模式）                                                                                                                                                                         |
+| `expandMutex`          | `boolean`                                                                              | `false`                    | 同级子菜单是否互斥展开                                                                                                                                                                                         |
+| `noIndent`             | `boolean`                                                                              | `false`                    | 平铺展开（`expandType="normal"`）时子菜单是否取消缩进。默认每下沉一层向右缩进 16px；开启后各级条目一律左对齐，改由展开箭头与分组标题区分层级，适合侧栏窄、层级深的场景。浮层展开本就不缩进，该属性对它没有影响 |
+| `expandType`           | `'normal' \| 'popup'`                                                                  | `'popup'`                  | 二级菜单展开方式：平铺展开 / 浮层展开。折叠态与水平模式下强制为 `popup`；浮层展开同一时刻只保留一条展开路径                                                                                                    |
+| `menuTrigger`          | `'hover' \| 'click'`                                                                   | `'hover'`                  | 子菜单的触发方式                                                                                                                                                                                               |
+| `closeOnClickOutside`  | `boolean`                                                                              | `true`                     | 点击菜单外部时是否关闭已展开的子菜单                                                                                                                                                                           |
+| `showTimeout`          | `number`                                                                               | `300`                      | 浮层子菜单的展开延时（毫秒）                                                                                                                                                                                   |
+| `hideTimeout`          | `number`                                                                               | `300`                      | 浮层子菜单的关闭延时（毫秒）                                                                                                                                                                                   |
+| `popperOffset`         | `number`                                                                               | `8`                        | 浮层子菜单相对触发元素的偏移量（像素）                                                                                                                                                                         |
+| `persistent`           | `boolean`                                                                              | `true`                     | 浮层关闭后是否保留其 DOM，为 `false` 时关闭即销毁                                                                                                                                                              |
+| `ellipsis`             | `boolean`                                                                              | `false`                    | 水平模式下宽度不足时，是否把溢出条目折叠进末尾的「更多」子菜单                                                                                                                                                 |
+| `ellipsisIcon`         | `string`                                                                               | `'lucide:more-horizontal'` | 溢出折叠触发器的图标名称                                                                                                                                                                                       |
+| `router`               | `boolean`                                                                              | `false`                    | 是否启用 `vue-router` 模式。启用后点击菜单项会使用 `index` 作为 `path` 进行跳转                                                                                                                                |
+| `collapseTransition`   | `boolean`                                                                              | `true`                     | 是否启用菜单动画：折叠过渡、平铺展开的高度过渡、浮层的出现/消失。为 `false` 时三者一并变为瞬时                                                                                                                 |
+| `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'`                | 选中态的主题色：选中项文字取该色阶第 6 档，背景块取第 2 档；展开态不参与配色                                                                                                                                   |
+| `showActiveBackground` | `boolean`                                                                              | `true`                     | 选中项是否展示背景块，关闭后仅保留文字高亮（投影一并移除）                                                                                                                                                     |
+| `backgroundColor`      | `string`                                                                               | `''`                       | 菜单背景色，留空则使用主题默认底色                                                                                                                                                                             |
+| `textColor`            | `string`                                                                               | `''`                       | 普通菜单项文字颜色，留空则使用 `level` 规范灰阶                                                                                                                                                                |
+| `activeTextColor`      | `string`                                                                               | `''`                       | 选中菜单项文字颜色，留空则使用 `color` 主题色                                                                                                                                                                  |
+| `class`                | `any`                                                                                  | -                          | 最外层容器的自定义类名                                                                                                                                                                                         |
+| `ui`                   | `MenuUI`                                                                               | `{}`                       | 内置 UI 部件的类名覆盖，见「自定义样式（ui）」                                                                                                                                                                 |
 
 ::callout{icon="i-lucide-info" color="info"}
 **`selectedKeys` 存的是路径而非单个 key。** 这是与 Element Plus 有意不同的一点：Element Plus 的 `selected-keys` 只放当前选中项的 key，而本组件放的是从一级菜单到选中项的完整 `indexPath`（例如 `['2', '2-1']`），祖先节点的高亮依赖这个语义。只想拿选中项本身时取数组末位即可。
@@ -64,77 +65,77 @@ badge: New
 
 ## Menu Events
 
-| 事件名                | 说明                   | 回调参数                                       |
-| :-------------------- | :--------------------- | :--------------------------------------------- |
-| `update:selectedKeys` | 选中路径变化时触发     | `(indexPath: string[]) => void`                |
-| `update:openKeys`     | 展开集合变化时触发     | `(openKeys: string[]) => void`                 |
-| `select`              | 菜单项被选中时触发     | `(index: string, indexPath: string[]) => void` |
-| `open`                | 子菜单展开时触发       | `(index: string, indexPath: string[]) => void` |
-| `close`               | 子菜单收起时触发       | `(index: string, indexPath: string[]) => void` |
+| 事件名                | 说明               | 回调参数                                       |
+| :-------------------- | :----------------- | :--------------------------------------------- |
+| `update:selectedKeys` | 选中路径变化时触发 | `(indexPath: string[]) => void`                |
+| `update:openKeys`     | 展开集合变化时触发 | `(openKeys: string[]) => void`                 |
+| `select`              | 菜单项被选中时触发 | `(index: string, indexPath: string[]) => void` |
+| `open`                | 子菜单展开时触发   | `(index: string, indexPath: string[]) => void` |
+| `close`               | 子菜单收起时触发   | `(index: string, indexPath: string[]) => void` |
 
 ## Menu Methods
 
-| 方法名              | 说明                                                         | 类型                            |
-| :------------------ | :----------------------------------------------------------- | :------------------------------ |
-| `open`              | 打开指定子菜单                                               | `(index: string) => void`       |
-| `close`             | 关闭指定子菜单                                               | `(index: string) => void`       |
-| `updateActiveIndex` | 通过路径数组手动更新当前选中项                               | `(indexPath: string[]) => void` |
+| 方法名              | 说明                                                               | 类型                            |
+| :------------------ | :----------------------------------------------------------------- | :------------------------------ |
+| `open`              | 打开指定子菜单                                                     | `(index: string) => void`       |
+| `close`             | 关闭指定子菜单                                                     | `(index: string) => void`       |
+| `updateActiveIndex` | 通过路径数组手动更新当前选中项                                     | `(indexPath: string[]) => void` |
 | `handleResize`      | 主动触发一次溢出折叠测量，用于容器宽度被 JS 改动而未触发 resize 时 | `() => void`                    |
 
 ## Menu Slots
 
-| 插槽名    | 说明                             |
-| :-------- | :------------------------------- |
+| 插槽名    | 说明                            |
+| :-------- | :------------------------------ |
 | `default` | 菜单内容，传了 `items` 时不生效 |
 
 ## SubMenu Props
 
-| 属性名              | 类型                     | 默认值 | 说明                                                       |
-| :------------------ | :----------------------- | :----- | :--------------------------------------------------------- |
-| `index`             | `string`                 | -      | 唯一标识，必填                                             |
-| `items`             | `ItemType[]`             | -      | 配置式子菜单数据，传入后由组件递归渲染并忽略默认插槽       |
-| `disabled`          | `boolean`                | `false` | 是否禁用                                                   |
-| `popperClass`       | `ClassValue`             | -      | 浮层的自定义类名                                           |
-| `popperStyle`       | `CSSProperties`          | -      | 浮层的自定义内联样式                                       |
-| `popperOffset`      | `number`                 | -      | 浮层偏移量，缺省时继承菜单根节点的 `popperOffset`          |
-| `showTimeout`       | `number`                 | -      | 浮层展开延时，缺省时继承菜单根节点的 `showTimeout`         |
-| `hideTimeout`       | `number`                 | -      | 浮层关闭延时，缺省时继承菜单根节点的 `hideTimeout`         |
-| `teleported`        | `boolean`                | `true` | 浮层是否传送到 `body`，关闭后浮层将跟随父级定位            |
-| `expandCloseIcon`   | `string`                 | -      | 平铺（`normal`）态下的收起图标，需与 `expandOpenIcon` 成对提供 |
-| `expandOpenIcon`    | `string`                 | -      | 平铺（`normal`）态下的展开图标，需与 `expandCloseIcon` 成对提供 |
-| `collapseCloseIcon` | `string`                 | -      | 折叠（`collapse`）态下的收起图标，需与 `collapseOpenIcon` 成对提供 |
-| `collapseOpenIcon`  | `string`                 | -      | 折叠（`collapse`）态下的展开图标，需与 `collapseCloseIcon` 成对提供 |
-| `class`             | `any`                    | -      | 自定义类名                                                 |
-| `ui`                | `MenuUI`                 | `{}`   | 内置 UI 部件的类名覆盖                                     |
+| 属性名              | 类型            | 默认值  | 说明                                                                |
+| :------------------ | :-------------- | :------ | :------------------------------------------------------------------ |
+| `index`             | `string`        | -       | 唯一标识，必填                                                      |
+| `items`             | `ItemType[]`    | -       | 配置式子菜单数据，传入后由组件递归渲染并忽略默认插槽                |
+| `disabled`          | `boolean`       | `false` | 是否禁用                                                            |
+| `popperClass`       | `ClassValue`    | -       | 浮层的自定义类名                                                    |
+| `popperStyle`       | `CSSProperties` | -       | 浮层的自定义内联样式                                                |
+| `popperOffset`      | `number`        | -       | 浮层偏移量，缺省时继承菜单根节点的 `popperOffset`                   |
+| `showTimeout`       | `number`        | -       | 浮层展开延时，缺省时继承菜单根节点的 `showTimeout`                  |
+| `hideTimeout`       | `number`        | -       | 浮层关闭延时，缺省时继承菜单根节点的 `hideTimeout`                  |
+| `teleported`        | `boolean`       | `true`  | 浮层是否传送到 `body`，关闭后浮层将跟随父级定位                     |
+| `expandCloseIcon`   | `string`        | -       | 平铺（`normal`）态下的收起图标，需与 `expandOpenIcon` 成对提供      |
+| `expandOpenIcon`    | `string`        | -       | 平铺（`normal`）态下的展开图标，需与 `expandCloseIcon` 成对提供     |
+| `collapseCloseIcon` | `string`        | -       | 折叠（`collapse`）态下的收起图标，需与 `collapseOpenIcon` 成对提供  |
+| `collapseOpenIcon`  | `string`        | -       | 折叠（`collapse`）态下的展开图标，需与 `collapseCloseIcon` 成对提供 |
+| `class`             | `any`           | -       | 自定义类名                                                          |
+| `ui`                | `MenuUI`        | `{}`    | 内置 UI 部件的类名覆盖                                              |
 
 > 四个图标属性都不传时保持内置观感（`lucide:chevron-right` 配合旋转动画）。它们需要成对提供，只给其中一个不会生效。
 
 ## SubMenu Events
 
-| 事件名       | 说明                 | 回调参数                       |
-| :----------- | :------------------- | :----------------------------- |
-| `titleClick` | 点击子菜单标题时触发 | `(event: MouseEvent) => void`  |
+| 事件名       | 说明                 | 回调参数                      |
+| :----------- | :------------------- | :---------------------------- |
+| `titleClick` | 点击子菜单标题时触发 | `(event: MouseEvent) => void` |
 
 ## SubMenu Slots
 
-| 插槽名    | 说明                                 |
-| :-------- | :----------------------------------- |
-| `default` | 子菜单内容，传了 `items` 时不生效   |
-| `title`   | 子菜单标题                           |
-| `icon`    | 子菜单图标                           |
+| 插槽名    | 说明                              |
+| :-------- | :-------------------------------- |
+| `default` | 子菜单内容，传了 `items` 时不生效 |
+| `title`   | 子菜单标题                        |
+| `icon`    | 子菜单图标                        |
 
 ## MenuItem Props
 
-| 属性名     | 类型                | 默认值  | 说明                                                                       |
-| :--------- | :------------------ | :------ | :------------------------------------------------------------------------- |
-| `index`    | `string`            | -       | 唯一标识，必填。启用 `router` 模式时同时作为跳转路径                       |
-| `route`    | `RouteLocationRaw`  | -       | 显式指定跳转目标，支持字符串路径与具名路由对象。**仅在菜单开启 `router` 时生效**，传入后优先于 `index` |
-| `disabled` | `boolean`           | `false` | 是否禁用。禁用后文字置灰为 `gray-5` 并保留 `cursor: not-allowed` 光标      |
-| `danger`   | `boolean`           | `false` | 是否为危险项，渲染为错误色                                                 |
-| `extra`    | `string`            | -       | 右侧附加文本，常用于展示快捷键。也可用 `extra` 插槽自定义                  |
-| `title`    | `string`            | -       | 原生 `title` 提示，折叠态下文字被隐藏时尤其有用                            |
-| `class`    | `any`               | -       | 自定义类名                                                                 |
-| `ui`       | `MenuUI`            | `{}`    | 内置 UI 部件的类名覆盖                                                     |
+| 属性名     | 类型               | 默认值  | 说明                                                                                                   |
+| :--------- | :----------------- | :------ | :----------------------------------------------------------------------------------------------------- |
+| `index`    | `string`           | -       | 唯一标识，必填。启用 `router` 模式时同时作为跳转路径                                                   |
+| `route`    | `RouteLocationRaw` | -       | 显式指定跳转目标，支持字符串路径与具名路由对象。**仅在菜单开启 `router` 时生效**，传入后优先于 `index` |
+| `disabled` | `boolean`          | `false` | 是否禁用。禁用后文字置灰为 `gray-5` 并保留 `cursor: not-allowed` 光标                                  |
+| `danger`   | `boolean`          | `false` | 是否为危险项，渲染为错误色                                                                             |
+| `extra`    | `string`           | -       | 右侧附加文本，常用于展示快捷键。也可用 `extra` 插槽自定义                                              |
+| `title`    | `string`           | -       | 原生 `title` 提示，折叠态下文字被隐藏时尤其有用                                                        |
+| `class`    | `any`              | -       | 自定义类名                                                                                             |
+| `ui`       | `MenuUI`           | `{}`    | 内置 UI 部件的类名覆盖                                                                                 |
 
 ## MenuItem Events
 
@@ -144,35 +145,35 @@ badge: New
 
 ## MenuItem Slots
 
-| 插槽名    | 说明                                   |
-| :-------- | :------------------------------------- |
-| `default` | 菜单项内容                             |
-| `icon`    | 菜单项图标                             |
+| 插槽名    | 说明                                    |
+| :-------- | :-------------------------------------- |
+| `default` | 菜单项内容                              |
+| `icon`    | 菜单项图标                              |
 | `extra`   | 右侧附加内容，缺省时回退到 `extra` 属性 |
 
 ## MenuItemGroup Props
 
-| 属性名  | 类型         | 默认值 | 说明                                                 |
-| :------ | :----------- | :----- | :--------------------------------------------------- |
-| `title` | `string`     | `''`   | 分组标题                                             |
-| `items` | `ItemType[]` | -      | 配置式分组数据，传入后由组件递归渲染并忽略默认插槽   |
-| `class` | `any`        | -      | 自定义类名                                           |
-| `ui`    | `MenuUI`     | `{}`   | 内置 UI 部件的类名覆盖                               |
+| 属性名  | 类型         | 默认值 | 说明                                               |
+| :------ | :----------- | :----- | :------------------------------------------------- |
+| `title` | `string`     | `''`   | 分组标题                                           |
+| `items` | `ItemType[]` | -      | 配置式分组数据，传入后由组件递归渲染并忽略默认插槽 |
+| `class` | `any`        | -      | 自定义类名                                         |
+| `ui`    | `MenuUI`     | `{}`   | 内置 UI 部件的类名覆盖                             |
 
 ## MenuItemGroup Slots
 
-| 插槽名    | 说明                               |
-| :-------- | :--------------------------------- |
+| 插槽名    | 说明                                  |
+| :-------- | :------------------------------------ |
 | `default` | 分组内的菜单项，传了 `items` 时不生效 |
-| `title`   | 自定义标题内容                     |
+| `title`   | 自定义标题内容                        |
 
 ## MenuDivider Props
 
-| 属性名   | 类型      | 默认值  | 说明                             |
-| :------- | :-------- | :------ | :------------------------------- |
-| `dashed` | `boolean` | `false` | 是否为虚线样式                   |
-| `class`  | `any`     | -       | 自定义类名                       |
-| `ui`     | `MenuUI`  | `{}`    | 内置 UI 部件的类名覆盖           |
+| 属性名   | 类型      | 默认值  | 说明                   |
+| :------- | :-------- | :------ | :--------------------- |
+| `dashed` | `boolean` | `false` | 是否为虚线样式         |
+| `class`  | `any`     | -       | 自定义类名             |
+| `ui`     | `MenuUI`  | `{}`    | 内置 UI 部件的类名覆盖 |
 
 ## 配置式数据类型
 
@@ -229,11 +230,11 @@ interface MenuDividerType {
 
 一级与次级菜单的字号、字重、灰阶由内部 `level` 变体自动区分，无需手动传类名：
 
-| 层级                              | 字号   | 字重     | 颜色         |
-| :-------------------------------- | :----- | :------- | :----------- |
-| 一级菜单（`parentIndexPath` 为空） | `14px` | `500`    | `text-gray-10` |
-| 次级及以下菜单                    | `14px` | `400`    | `text-gray-9`  |
-| 禁用态（任意层级）                | `14px` | 继承     | `text-gray-5` + `cursor: not-allowed` |
+| 层级                               | 字号   | 字重  | 颜色                                  |
+| :--------------------------------- | :----- | :---- | :------------------------------------ |
+| 一级菜单（`parentIndexPath` 为空） | `14px` | `500` | `text-gray-10`                        |
+| 次级及以下菜单                     | `14px` | `400` | `text-gray-9`                         |
+| 禁用态（任意层级）                 | `14px` | 继承  | `text-gray-5` + `cursor: not-allowed` |
 
 `--color-gray-*` 在暗色模式下已在主题层重定义，因此上述灰阶**不需要额外写 `dark:` 变体**，明暗两态自动切换。
 
@@ -261,10 +262,10 @@ interface MenuDividerType {
 
 子菜单标题只能展开 / 收起，永远不会自己进入 `selectedKeys`。因此一个带子菜单的条目显示为选中态只有一种来源：**它的某个后代被选中**（`selectedKeys` 存的是完整路径，祖先按路径包含关系高亮）。这类「祖先高亮」不与真正被选中的叶子共用一套样式：
 
-| 展开方式             | 祖先条目的选中态                               |
-| :------------------- | :--------------------------------------------- |
-| 平铺展开（`normal`） | 只换文字色，**不画背景块、不带投影**           |
-| 浮层展开（`popup`）  | 背景固定为 `bg-gray-2`，文字色仍跟随 `color`   |
+| 展开方式             | 祖先条目的选中态                             |
+| :------------------- | :------------------------------------------- |
+| 平铺展开（`normal`） | 只换文字色，**不画背景块、不带投影**         |
+| 浮层展开（`popup`）  | 背景固定为 `bg-gray-2`，文字色仍跟随 `color` |
 
 平铺展开下父子条目上下紧邻，祖先若沿用主题色背景块（`bg-brand-2` 等），两块同色背景会连成一片，看不出真正被选中的是哪一条。浮层展开里祖先与后代分处两个面板，不存在连片问题，但仍要与后代的主题色背景拉开层次，所以改用中性灰底。
 
@@ -276,12 +277,12 @@ interface MenuDividerType {
 
 `mode="horizontal"` 的一级条目走一套独立规则，与垂直菜单不同：
 
-| 场景            | 表现                                                                                       |
-| :-------------- | :----------------------------------------------------------------------------------------- |
-| 条目间距        | `16px`（`menu` 上的 `gap-x-4`）                                                             |
-| `hover`         | **图标与文字一起高亮为 `color` 色值，不出现背景块**。图标由 Iconify 以 `currentColor` 填充，跟随文字自动变色 |
-| `active`（选中）| 文字高亮，同样不加背景块                                                                    |
-| `active` 且无子菜单 | 额外在底部绘制 `2px` 指示器（`::after`，取 `bg-current` 跟随当前文字色）                 |
+| 场景                | 表现                                                                                                         |
+| :------------------ | :----------------------------------------------------------------------------------------------------------- |
+| 条目间距            | `16px`（`menu` 上的 `gap-x-4`）                                                                              |
+| `hover`             | **图标与文字一起高亮为 `color` 色值，不出现背景块**。图标由 Iconify 以 `currentColor` 填充，跟随文字自动变色 |
+| `active`（选中）    | 文字高亮，同样不加背景块                                                                                     |
+| `active` 且无子菜单 | 额外在底部绘制 `2px` 指示器（`::after`，取 `bg-current` 跟随当前文字色）                                     |
 
 带子菜单的一级项选中时**不画底部指示器**——此时的高亮通常来自子项带来的祖先高亮，再加下划线会与浮层的指向产生冲突。
 
@@ -331,11 +332,11 @@ interface MenuDividerType {
 
 `expandType` 与 `menuTrigger` 组合出两套手感：
 
-| 组合                                | 展开                     | 收起                                                            |
-| :---------------------------------- | :----------------------- | :-------------------------------------------------------------- |
-| `expandType="popup"` + `menuTrigger="hover"`  | 悬停 `showTimeout`（默认 300ms）后弹出 | 移出后 `hideTimeout`（默认 300ms）自动关闭                |
-| `expandType="normal"` + `menuTrigger="hover"` | 悬停后就地平铺展开       | **移开不收起**，交由手风琴逻辑在展开同级菜单时互斥关闭          |
-| 任意 `expandType` + `menuTrigger="click"`     | 点击标题切换             | 再次点击标题，或点击菜单外部                                    |
+| 组合                                          | 展开                                   | 收起                                                   |
+| :-------------------------------------------- | :------------------------------------- | :----------------------------------------------------- |
+| `expandType="popup"` + `menuTrigger="hover"`  | 悬停 `showTimeout`（默认 300ms）后弹出 | 移出后 `hideTimeout`（默认 300ms）自动关闭             |
+| `expandType="normal"` + `menuTrigger="hover"` | 悬停后就地平铺展开                     | **移开不收起**，交由手风琴逻辑在展开同级菜单时互斥关闭 |
+| 任意 `expandType` + `menuTrigger="click"`     | 点击标题切换                           | 再次点击标题，或点击菜单外部                           |
 
 平铺展开之所以不做「移出关闭」：子项是在父项下方撑开的，鼠标移向子项的路上必然先离开父项，若此时按 hover 语义倒计时关闭，刚展开的子项会当场收回而根本点不到。
 
@@ -349,10 +350,10 @@ interface MenuDividerType {
 
 收起与否按**选中项所在层级**区分，两种触发方式的差别只在「其余分支怎么办」：
 
-| 选中的是                         | `menuTrigger="click"`                    | `menuTrigger="hover"`                        |
-| :------------------------------- | :--------------------------------------- | :------------------------------------------- |
-| 一级菜单项（路径长度为 `1`）     | 收起全部子菜单                           | 收起全部子菜单（祖先链为空，结果相同）       |
-| 子菜单内的条目（路径长度 > `1`） | **保持展开**，其余已展开的分支也原样不动 | **只保留选中项的祖先链**，其余分支一并收起   |
+| 选中的是                         | `menuTrigger="click"`                    | `menuTrigger="hover"`                      |
+| :------------------------------- | :--------------------------------------- | :----------------------------------------- |
+| 一级菜单项（路径长度为 `1`）     | 收起全部子菜单                           | 收起全部子菜单（祖先链为空，结果相同）     |
+| 子菜单内的条目（路径长度 > `1`） | **保持展开**，其余已展开的分支也原样不动 | **只保留选中项的祖先链**，其余分支一并收起 |
 
 判定依据是 `selectedKeys` 的**路径长度**而非父节点类型：`RebornMenuItemGroup` 不会加深路径，所以分组内的一级条目仍按一级处理。
 
@@ -395,23 +396,23 @@ interface MenuDividerType {
 
 `ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；**把 `ui` 传给最外层 `RebornMenu` 即可**，所有键会通过依赖注入下发到 `RebornSubMenu` / `RebornMenuItem` / `RebornMenuItemGroup` / `RebornMenuDivider`（后四者也接受自己的 `ui`，用于只改某一个分支）。
 
-| 键名                 | 落在哪个节点                                                                                                                                                                                   |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `root`               | 菜单最外层容器 `<div>`。默认 `relative shadow-sm bg-gray-1 transition-[width]`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。**折叠态的宽度由内联样式下发，不走这里**（见下方「折叠动画」）。 |
-| `menu`               | 顶层 `<ul>`。默认 `flex transition-all duration-300`，主轴方向由 `mode` 决定；条目间距也在这里（水平 `gap-x-4` = 16px，垂直 `gap-y-1` = 4px）。                                                |
-| `menuItem`           | 单个菜单项（`RebornMenuItem` 的 `<li>`，以及 `RebornSubMenu` 内部那一行标题）。默认 `group relative flex cursor-pointer select-none items-center transition-all`，行高、hover 底色、圆角改这里。`group` 供水平一级菜单的 hover 高亮反查父级状态，覆盖时请保留。 |
-| `menuItemContent`    | 菜单项内部的横向排布容器，默认 `flex w-full items-center gap-2`；图标与文字的间距改这里。                                                                                                      |
-| `menuItemIcon`       | 图标位。**仅填充了 `icon` 插槽时渲染**，默认 `flex w-5 shrink-0 items-center justify-center`——定宽一列、图形居中，折叠动画依赖这个定值（见「折叠动画」）；容器本身不受插槽内容影响，`ui.menuItemIcon` 始终生效。 |
-| `menuItemTitle`      | 文字节点，默认 `flex-1 truncate`，字号字重灰阶由 `level` 变体补上；它在 default / `title` 插槽的外层，填充插槽后依然生效。                                                                     |
-| `menuItemExtra`      | 右侧附加内容位。**仅提供了 `extra` 属性或 `extra` 插槽时渲染**，默认 `ml-auto shrink-0 text-sm text-gray-5`（`text-sm` 在本主题为 12px，比标题低一档），快捷键提示的样式改这里。               |
-| `menuItemArrow`      | 子菜单的展开箭头。**仅在垂直方向的 `RebornSubMenu` 上渲染**（根级水平菜单不显示箭头），默认 `flex shrink-0 items-center justify-center transition-transform`，展开态由内部 `opened` 变体旋转。 |
-| `subMenu`            | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是浮层定位的参照物，非必要不要改 `position`。                                                                                              |
-| `subMenuPopup`       | 浮层展开时的子菜单面板（默认 Teleport 到 body）。**仅 `expandType="popup"` 时渲染**，默认 `absolute z-50 border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md`，浮层底色与层级改这里。   |
-| `subMenuContent`     | 子菜单内部的 `<ul>`，默认 `flex flex-col gap-y-1`（条目间隔 4px）；平铺展开与浮层展开都会用到。                                                                                                |
-| `menuItemGroup`      | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                                                        |
-| `menuItemGroupTitle` | 分组标题容器，默认 `px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400`。该节点在 `title` 插槽外层，填充插槽后依然生效。                                                       |
-| `menuItemGroupContent` | 分组内部承载子项的 `<ul>`，默认 `flex flex-col gap-y-1`（组内条目间隔 4px）；只想调分组内的疏密改这里，不影响分组标题。                                                                      |
-| `menuDivider`        | `RebornMenuDivider` 的 `<li>`，默认 `my-1 list-none`，线条本身由 `dashed` 变体给出（`false` → `h-px bg-gray-2`，`true` → `h-0 border-t border-dashed border-gray-2`）。                        |
+| 键名                   | 落在哪个节点                                                                                                                                                                                                                                                    |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`                 | 菜单最外层容器 `<div>`。默认 `relative shadow-sm bg-gray-1 transition-[width]`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。**折叠态的宽度由内联样式下发，不走这里**（见下方「折叠动画」）。                                           |
+| `menu`                 | 顶层 `<ul>`。默认 `flex transition-all duration-300`，主轴方向由 `mode` 决定；条目间距也在这里（水平 `gap-x-4` = 16px，垂直 `gap-y-1` = 4px）。                                                                                                                 |
+| `menuItem`             | 单个菜单项（`RebornMenuItem` 的 `<li>`，以及 `RebornSubMenu` 内部那一行标题）。默认 `group relative flex cursor-pointer select-none items-center transition-all`，行高、hover 底色、圆角改这里。`group` 供水平一级菜单的 hover 高亮反查父级状态，覆盖时请保留。 |
+| `menuItemContent`      | 菜单项内部的横向排布容器，默认 `flex w-full items-center gap-2`；图标与文字的间距改这里。                                                                                                                                                                       |
+| `menuItemIcon`         | 图标位。**仅填充了 `icon` 插槽时渲染**，默认 `flex w-5 shrink-0 items-center justify-center`——定宽一列、图形居中，折叠动画依赖这个定值（见「折叠动画」）；容器本身不受插槽内容影响，`ui.menuItemIcon` 始终生效。                                                |
+| `menuItemTitle`        | 文字节点，默认 `flex-1 truncate`，字号字重灰阶由 `level` 变体补上；它在 default / `title` 插槽的外层，填充插槽后依然生效。                                                                                                                                      |
+| `menuItemExtra`        | 右侧附加内容位。**仅提供了 `extra` 属性或 `extra` 插槽时渲染**，默认 `ml-auto shrink-0 text-sm text-gray-5`（`text-sm` 在本主题为 12px，比标题低一档），快捷键提示的样式改这里。                                                                                |
+| `menuItemArrow`        | 子菜单的展开箭头。**仅在垂直方向的 `RebornSubMenu` 上渲染**（根级水平菜单不显示箭头），默认 `flex shrink-0 items-center justify-center transition-transform`，展开态由内部 `opened` 变体旋转。                                                                  |
+| `subMenu`              | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是浮层定位的参照物，非必要不要改 `position`。                                                                                                                                                               |
+| `subMenuPopup`         | 浮层展开时的子菜单面板（默认 Teleport 到 body）。**仅 `expandType="popup"` 时渲染**，默认 `absolute z-50 border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md`，浮层底色与层级改这里。                                                                       |
+| `subMenuContent`       | 子菜单内部的 `<ul>`，默认 `flex flex-col gap-y-1`（条目间隔 4px）；平铺展开与浮层展开都会用到。                                                                                                                                                                 |
+| `menuItemGroup`        | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                                                                                                                         |
+| `menuItemGroupTitle`   | 分组标题容器，默认 `px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400`。该节点在 `title` 插槽外层，填充插槽后依然生效。                                                                                                                        |
+| `menuItemGroupContent` | 分组内部承载子项的 `<ul>`，默认 `flex flex-col gap-y-1`（组内条目间隔 4px）；只想调分组内的疏密改这里，不影响分组标题。                                                                                                                                         |
+| `menuDivider`          | `RebornMenuDivider` 的 `<li>`，默认 `my-1 list-none`，线条本身由 `dashed` 变体给出（`false` → `h-px bg-gray-2`，`true` → `h-0 border-t border-dashed border-gray-2`）。                                                                                         |
 
 ```vue
 <template>
@@ -669,12 +670,12 @@ const openKeys = ref<string[]>(["2"]);
 
 本次重构对齐 Element Plus 的属性命名，包含**破坏性变更**：
 
-| 旧写法                      | 新写法                             |
-| :-------------------------- | :--------------------------------- |
-| `v-model:active="path"`     | `v-model:selected-keys="path"`     |
-| `v-model:expanded="opened"` | `v-model:open-keys="opened"`       |
-| `@update:active`            | `@update:selected-keys`            |
-| 实例方法 `updateActive()`   | 实例方法 `updateActiveIndex()`     |
+| 旧写法                      | 新写法                         |
+| :-------------------------- | :----------------------------- |
+| `v-model:active="path"`     | `v-model:selected-keys="path"` |
+| `v-model:expanded="opened"` | `v-model:open-keys="opened"`   |
+| `@update:active`            | `@update:selected-keys`        |
+| 实例方法 `updateActive()`   | 实例方法 `updateActiveIndex()` |
 
 不提供向后兼容别名，请全量替换。此外有几处**行为与视觉变化**需要留意：
 

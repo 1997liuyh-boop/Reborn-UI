@@ -2,7 +2,7 @@
 import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
 import RebornFormItem from "~/components/reborn/ui/reborn-form/RebornFormItem.vue";
 import { formLabelPositions } from "~/components/reborn/ui/reborn-form/reborn-form.config";
-import { createRules, genderOptions, initialForm, type FormData } from "./reborn-form-demo.config";
+import { createRules, genderOptions, initialForm, interestOptions, type FormData } from "./reborn-form-demo.config";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -159,7 +159,7 @@ function scrollToBio() {
   <div class="flex w-full min-w-0 flex-col">
     <Playground v-model="state" :controls="controls" :code="formCode" component-name="RebornForm" title="交互演练场"
       description="校验规则由 Zod 描述；trigger 决定是输入即校验还是仅在提交时校验，label-width 仅在标签左右布局时生效。">
-      <div class="py-2">
+      <div class="py-2 w-150">
         <RebornForm ref="formRef" :model-value="form" :rules="rules" :label-width="state.labelWidth"
           :label-position="state.labelPosition" :size="state.size" :trigger="formTrigger"
           :hide-required-asterisk="state.hideRequiredAsterisk"
@@ -169,13 +169,9 @@ function scrollToBio() {
             <RebornInput v-model="form.username" placeholder="请输入用户名" />
           </RebornFormItem>
 
+          <!-- 复选框组接管数组值与布局，并通过表单注入继承尺寸/禁用、在勾选时触发校验 -->
           <RebornFormItem prop="interest" label="兴趣爱好" required>
-            <div class="flex flex-wrap gap-4">
-              <RebornCheckbox v-model="form.interest" value="a" label="篮球" />
-              <RebornCheckbox v-model="form.interest" value="b" label="足球" />
-              <RebornCheckbox v-model="form.interest" value="c" label="乒乓球" />
-              <RebornCheckbox v-model="form.interest" value="d" label="羽毛球" />
-            </div>
+            <RebornCheckboxGroup v-model="form.interest" :options="interestOptions" />
           </RebornFormItem>
 
           <RebornFormItem prop="gender" label="性别" required>
