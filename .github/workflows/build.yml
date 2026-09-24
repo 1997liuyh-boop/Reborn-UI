@@ -8,6 +8,8 @@ on:
       - "feature/**"
       - "feature-*"
       - "refactor/**"
+      # refactor/pc-components 为长期重构分支，不跑 CI；以 ! 取反排除（须排在 refactor/** 之后才生效）
+      - "!refactor/pc-components"
       - "fix/**"
   workflow_dispatch:
 

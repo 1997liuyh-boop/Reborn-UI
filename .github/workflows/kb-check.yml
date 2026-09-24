@@ -16,12 +16,16 @@ on:
       - "feature/**"
       - "feature-*"
       - "refactor/**"
+      # refactor/pc-components 为长期重构分支，不跑 CI；以 ! 取反排除（须排在 refactor/** 之后才生效）
+      - "!refactor/pc-components"
       - "fix/**"
   # 分支名不在上列前缀内时，可在 Actions 页面手动指定分支跑一次
   workflow_dispatch:
 
 jobs:
   check:
+    # pull_request 的分支过滤只看目标分支，来源分支须在 job 级排除
+    if: github.head_ref != 'refactor/pc-components'
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
