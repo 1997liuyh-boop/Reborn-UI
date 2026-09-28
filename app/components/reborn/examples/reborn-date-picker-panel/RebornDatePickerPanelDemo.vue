@@ -219,20 +219,31 @@ const rangeShortcuts = [
 const disabledPanelValue = ref("2024-04-10");
 const weekendValue = ref("");
 const boundedValue = ref("");
+const unitValue = ref("");
 
-/** 周末不可选：disabledDate 返回 true 即禁用该天 */
+/** 周末不可选：disabledMethod 返回 true 即禁用该项（这里只用到日期本身，忽略粒度参数） */
 function disableWeekend(date: Date) {
   const day = date.getDay();
   return day === 0 || day === 6;
 }
 
-/** 只允许选未来 14 天内的工作日：可以把多条规则写在一个函数里 */
+/** 只允许选未来 14 天内：可以把多条规则写在一个函数里 */
 function disablePast(date: Date) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const max = new Date(today);
   max.setDate(max.getDate() + 14);
   return date < today || date > max;
+}
+
+/**
+ * 按粒度禁用：同一个方法通过 unit 参数分流——月粒度只开放 3-8 月，
+ * 年粒度禁用 2024 年以前；点标题切到年视图时能看到两套规则同时生效
+ */
+function disableByUnit(date: Date, unit: "year" | "month" | "quarter" | "week" | "date") {
+  if (unit === "year") return date.getFullYear() < 2024;
+  if (unit === "month") return date.getMonth() < 2 || date.getMonth() > 7;
+  return false;
 }
 
 // ─── 自定义选中样式 ─────────────────────────────────────────────
@@ -370,10 +381,12 @@ const dashedRangeUi = {
 
     <DemoSection title="禁用与部分日期禁用">
       <template #description>
-        <code>disabled</code> 让整个面板置灰且不可交互；<code>disabled-date</code> 逐日判定，返回
-        <code>true</code> 即该天不可选；<code>start</code> /
-        <code>end</code> 则直接划定可选边界。三者可以叠加，被排除的日期一律取
-        <code>dayDisabled</code> 样式并屏蔽点击。
+        <code>disabled</code> 让所有日期格进入禁用样式、标题与翻页按钮不可点击；<code>disabled-method</code> 逐项判定，返回
+        <code>true</code> 即该项不可选——第二个参数是判定粒度（<code>year</code> /
+        <code>month</code> / <code>quarter</code> / <code>week</code> /
+        <code>date</code>），同一个方法能限制任意档位；<code>start</code> /
+        <code>end</code> 则直接划定可选边界。被排除的日期连成灰底带子（<code>dayDisabledBand</code>），
+        文字取 <code>dayDisabled</code> 的灰色，悬停显示禁用光标，点击被拦截。
       </template>
       <DemoBlock layout="stack">
         <div class="flex min-w-0 flex-col gap-3">
@@ -390,11 +403,11 @@ const dashedRangeUi = {
         </div>
 
         <div class="flex min-w-0 flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium"><code>disabled-date</code> 周末不可选</span>
+          <span class="text-dimmed text-xs font-medium"><code>disabled-method</code> 周末不可选</span>
           <RebornDatePickerPanel
             v-model="weekendValue"
             type="date"
-            :disabled-date="disableWeekend"
+            :disabled-method="disableWeekend"
             :color="state.color"
             :size="state.size"
             value-format="YYYY-MM-DD"
@@ -407,12 +420,12 @@ const dashedRangeUi = {
 
         <div class="flex min-w-0 flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">
-            <code>disabled-date</code> 只开放今天起 14 天
+            <code>disabled-method</code> 只开放今天起 14 天
           </span>
           <RebornDatePickerPanel
             v-model="boundedValue"
             type="daterange"
-            :disabled-date="disablePast"
+            :disabled-method="disablePast"
             :color="state.color"
             :size="state.size"
             value-format="YYYY-MM-DD"
@@ -420,6 +433,26 @@ const dashedRangeUi = {
           />
           <DemoNote tone="dimmed">
             绑定值：<code>{{ formatDisplay(boundedValue) }}</code>
+          </DemoNote>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">
+            <code>disabled-method</code> 按粒度限制：月份只开放 3-8 月，年份禁用 2024 以前
+          </span>
+          <RebornDatePickerPanel
+            v-model="unitValue"
+            type="month"
+            :disabled-method="disableByUnit"
+            :color="state.color"
+            :size="state.size"
+            value-format="YYYY-MM"
+            border
+          />
+          <DemoNote tone="dimmed">
+            点标题切到年视图可看到年粒度规则同时生效。绑定值：<code>{{
+              formatDisplay(unitValue)
+            }}</code>
           </DemoNote>
         </div>
       </DemoBlock>
