@@ -7,7 +7,9 @@ export { color as switchColors, size as switchSizes, type as switchTypes };
 
 export default {
   slots: {
-    wrapper: "group/switch inline-flex items-center gap-3 cursor-pointer select-none",
+    // relative 不可省：input 用 sr-only（position:absolute）隐藏，外壳必须充当它的包含块，
+    // 否则在内滚动布局里 input 会锚定到 <html> 的初始位置，把整页文档撑高出一段空白
+    wrapper: "group/switch relative inline-flex items-center gap-3 cursor-pointer select-none",
     activeTrack: "",
     inactiveTrack: "bg-gray-5",
     input: "peer sr-only",

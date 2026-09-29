@@ -44,7 +44,9 @@ export interface CheckboxFieldNames {
 
 export default {
   slots: {
-    wrapper: "inline-flex items-center gap-3 cursor-pointer select-none",
+    // relative 不可省：input 用 sr-only（position:absolute）隐藏，外壳必须充当它的包含块，
+    // 否则在内滚动布局里 input 会锚定到 <html> 的初始位置，把整页文档撑高出一段空白
+    wrapper: "relative inline-flex items-center gap-3 cursor-pointer select-none",
     input: "peer sr-only",
     // 显形规则用 :not([data-dot]) 排除半选方块：方块靠自身的 scale-50 缩小，
     // 若被 [&>*]:scale-100 命中就会被顶回原尺寸撑满整个勾选框
