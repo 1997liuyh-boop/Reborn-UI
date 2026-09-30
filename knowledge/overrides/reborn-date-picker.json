@@ -1,0 +1,21 @@
+{
+  "description": "带触发器的表单日期选择器，触发器与 reborn-select 同一套形态、尺寸、配色，下拉内容为 reborn-date-picker-panel，支持 15 种类型，仅 web 端。",
+  "whenToUse": [
+    "表单中的日期字段，需要与 reborn-select、reborn-input 保持同一套 variant 与 size。",
+    "按年、季度、月、周、日或日期时间选择（type），或选择区间（daterange 等范围类型，起止相隔远时配 unlinkPanels）。",
+    "一次勾选多个日期（dates/months/quarters/years），标签过多时用 collapseTags 折叠为 +N。",
+    "需要接入 RebornForm 校验：写回触发 change 校验，点击外部收起触发 blur 校验。"
+  ],
+  "whenNotToUse": [
+    "日期面板常驻页面、不需要触发器，改用 reborn-date-picker-panel。",
+    "只选时分秒，改用 reborn-time-picker。",
+    "UniApp 端日期选择，改用 reborn-select-date。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用；面板参数（type、valueFormat、start/end、disabledMethod、shortcuts、showWeekNumber、unlinkPanels、singlePanel、showToday）原样透传给 reborn-date-picker-panel。",
+    "写回时机随类型不同：单值与范围选定即写回并收起，多选每点一项写回且不收起，datetime/datetimerange 值完整时写回但不自动收起；范围只选了起点就收起会被丢弃。",
+    "清空后单值为 null、多选与范围为 []，不是空字符串；不传 valueFormat 时绑定值为 Date / Date[]。",
+    "样式分三条通道：triggerUi 管触发器盒子与浮层外壳（triggerUi.arrow 是浮层小箭头，不是尾部日历图标），panelUi 原样透传给面板，ui 管页头页脚与多选标签。",
+    "style 属性不生效（关闭了属性继承），宽度用 class 设置；clear() 通过实例调用时不检查 disabled。"
+  ]
+}

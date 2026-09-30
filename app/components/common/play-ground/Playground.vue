@@ -49,7 +49,7 @@ export interface PlaygroundProps {
     codeExtras?: string[];
     /** 组件名称，用于自动生成代码（如 'RebornButton'） */
     componentName?: string;
-    /** 标题 */
+    /** 标题；同时作为标题 h2 的 id，文档页的本页目录据此给演练场加一条锚点（见 DocsPage 的 tocLinks） */
     title?: string;
     /** 描述 */
     description?: string;
@@ -192,7 +192,7 @@ const ui = computed(() => tv(config)({ direction: props.direction, surface: prop
         <!-- 标题栏 -->
         <div :class="ui.header()">
             <div :class="ui.headerTitleWrapper()">
-                <h2 :class="ui.headerTitle()">
+                <h2 :id="title" :class="ui.headerTitle()">
                     {{ title }}
                 </h2>
                 <p :class="ui.headerDesc()">{{ description }}</p>

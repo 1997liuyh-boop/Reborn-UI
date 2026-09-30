@@ -103,9 +103,8 @@ const mergedButtonProps = computed<ButtonProps>(() => ({
  */
 const pureButtonClass = computed(() => {
   if (isChecked.value) return "";
-  // bg 用 ! 提权：RebornButton 的 outlined 禁用态遗留了 dark:bg-gray-8（带 dark: 前缀，
-  // 与灰阶自动翻转叠加成二次翻转），不同修饰符不在同一冲突组，必须 important 才能压住
-  if (computedDisabled.value) return "border-gray-4 bg-gray-2! text-gray-5";
+  // RebornButton 以 ui.base({ class }) 合并外部类名，tailwind-merge 会让这里的 bg-gray-2 压过变体底色，无需 ! 提权
+  if (computedDisabled.value) return "border-gray-4 bg-gray-2 text-gray-5";
   return "border-gray-4 text-gray-9";
 });
 

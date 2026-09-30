@@ -137,7 +137,7 @@ const ui = computed(() => b({
           :name="layout === 'horizontal'
             ? (collapsedStates[index] ? 'lucide:chevron-right' : 'lucide:chevron-left')
             : (collapsedStates[index] ? 'lucide:chevron-down' : 'lucide:chevron-up')"
-          class="w-3 h-3"
+          class="size-3"
         />
       </button>
 
@@ -158,7 +158,7 @@ const ui = computed(() => b({
           :name="layout === 'horizontal'
             ? (collapsedStates[index + 1] ? 'lucide:chevron-left' : 'lucide:chevron-right')
             : (collapsedStates[index + 1] ? 'lucide:chevron-up' : 'lucide:chevron-down')"
-          class="w-3 h-3"
+          class="size-3"
         />
       </button>
     </div>

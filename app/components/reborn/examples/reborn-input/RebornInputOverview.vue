@@ -1,37 +1,23 @@
 <script setup lang="ts">
 /**
- * 总览卡片缩略：描边 / 填充 / 下划线三种变体
+ * 总览卡片缩略：带前缀图标、可清空的描边输入框
  *
- * 卡片宽度有限，统一用 sm 尺寸并限宽 210px，避免被裁切。
+ * 卡片宽度有限，用 sm 尺寸并限宽 210px，避免被裁切。
  */
 import { ref } from 'vue'
 import RebornInput from '~/components/reborn/ui/reborn-input/RebornInput.vue'
 
-const outlined = ref('Reborn UI')
-const filled = ref('')
-const underlined = ref('')
+const value = ref('Reborn UI')
 </script>
 
 <template>
-  <div class="flex w-full max-w-[210px] flex-col gap-3">
+  <div class="w-full max-w-[210px]">
     <RebornInput
-      v-model="outlined"
+      v-model="value"
       size="sm"
       variant="outlined"
       clearable
       prefix-icon="lucide:search"
-    />
-    <RebornInput
-      v-model="filled"
-      size="sm"
-      variant="filled"
-      placeholder="填充"
-    />
-    <RebornInput
-      v-model="underlined"
-      size="sm"
-      variant="underlined"
-      placeholder="下划线"
     />
   </div>
 </template>

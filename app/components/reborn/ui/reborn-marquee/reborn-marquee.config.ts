@@ -25,14 +25,14 @@ const rebornMarquee = tv({
             horizontal: {
                 root: 'flex-row w-full',
                 content: 'animate-marquee flex-row items-center',
-                overlayStart: 'absolute inset-y-0 left-0 w-24 z-10 bg-gradient-to-r from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80',
-                overlayEnd: 'absolute inset-y-0 right-0 w-24 z-10 bg-gradient-to-l from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80',
+                overlayStart: 'absolute inset-y-0 left-0 w-24 z-10 bg-gradient-to-r from-gray-1 via-gray-1/80 to-transparent',
+                overlayEnd: 'absolute inset-y-0 right-0 w-24 z-10 bg-gradient-to-l from-gray-1 via-gray-1/80 to-transparent',
             },
             vertical: {
                 root: 'flex-col',
                 content: 'animate-marquee-vertical flex-col',
-                overlayStart: 'absolute inset-x-0 top-0 h-24 z-10 bg-gradient-to-b from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80',
-                overlayEnd: 'absolute inset-x-0 bottom-0 h-24 z-10 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-gray-900 dark:via-gray-900/80',
+                overlayStart: 'absolute inset-x-0 top-0 h-24 z-10 bg-gradient-to-b from-gray-1 via-gray-1/80 to-transparent',
+                overlayEnd: 'absolute inset-x-0 bottom-0 h-24 z-10 bg-gradient-to-t from-gray-1 via-gray-1/80 to-transparent',
             },
         },
         pauseOnHover: {

@@ -4,6 +4,14 @@ export default defineAppConfig({
       neutral: "zinc",
     },
     /**
+     * 主题切换按钮（UColorModeButton）的图标：亮色下显示 light、暗色下显示 dark，
+     * 换成 line-md 的动态线条图标（日出 / 日转月），与侧栏折叠按钮同一套图标集。
+     */
+    icons: {
+      light: "line-md:sun-rising-loop",
+      dark: "line-md:sunny-outline-to-moon-loop-transition",
+    },
+    /**
      * 顶部头部（分类导航已并入主顶栏）：
      * Arco 气质——实心底 + 细底边，避免过重毛玻璃造成「悬浮感过强」。
      */
@@ -42,10 +50,12 @@ export default defineAppConfig({
     /**
      * 左侧菜单：单层顶栏吸顶；
      * 2xl+ 细右分隔线，对齐 Arco 侧栏「1px #e5e6eb」式 hairline。
+     * min-h 与 max-h 取同一个值，侧栏始终占满顶栏以下一屏：高度若由内容撑，
+     * 菜单折叠成两枚图标或分区页面很少时侧栏会缩短，右侧分隔线跟着变短，折叠时能看到它跳一下。
      */
     pageAside: {
       slots: {
-        root: "lg:top-(--ui-header-height) lg:max-h-[calc(100vh-var(--ui-header-height))] 2xl:border-r 2xl:border-default/50 2xl:pr-5",
+        root: "lg:top-(--ui-header-height) lg:min-h-[calc(100vh-var(--ui-header-height))] lg:max-h-[calc(100vh-var(--ui-header-height))] 2xl:border-r 2xl:border-default/50 2xl:pr-5",
       },
     },
   },
@@ -55,6 +65,10 @@ export default defineAppConfig({
    * 按使用场景分组;问题措辞与知识库口径一致,便于模型命中文档
    */
   assistant: {
+    /** 顶栏 Ask AI 按钮的图标（Docus 助手读 assistant.icons.trigger，缺省是 lucide 的 sparkles） */
+    icons: {
+      trigger: "carbon:ai-business-impact-assessment",
+    },
     faqQuestions: [
       {
         category: "快速上手",
@@ -98,39 +112,9 @@ export default defineAppConfig({
       title: "社区",
       links: [
         {
-          label: "Star on Github",
-          icon: "lucide:star",
-          to: "https://github.com/unovue/reborn-ui",
-          target: "_blank",
-        },
-        {
-          label: "Create Issue",
-          icon: "lucide:circle-dot",
-          to: "https://github.com/unovue/reborn-ui/issues",
-          target: "_blank",
-        },
-        {
-          label: "Join Discord",
-          icon: "ri:discord-line",
-          to: "https://discord.gg/Xbh5DwJRc9",
-          target: "_blank",
-        },
-        {
-          label: "Forum",
-          icon: "lucide:newspaper",
-          to: "https://github.com/unovue/reborn-ui/discussions",
-          target: "_blank",
-        },
-        {
-          label: "Follow on X",
-          icon: "prime:twitter",
-          to: "https://x.com/rahulv_dev",
-          target: "_blank",
-        },
-        {
-          label: "Follow On Bluesky",
-          icon: "ri:bluesky-line",
-          to: "http://bsky.app/profile/reborn-ui.com",
+          label: "查看 Web 设计系统",
+          icon: "lucide:palette",
+          to: "http://110.42.242.107:3333/popover",
           target: "_blank",
         },
       ],

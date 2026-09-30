@@ -16,9 +16,9 @@ export const inputTheme = {
     },
     variants: {
         size: {
-            sm: { icon: "!text-xl", iconBox: "gap-4!" },
-            md: { icon: "!text-2xl", iconBox: "gap-6!" },
-            lg: { icon: "!text-2xl", iconBox: "gap-6!" },
+            sm: { icon: "text-xl!", iconBox: "gap-4!" },
+            md: { icon: "text-2xl!", iconBox: "gap-6!" },
+            lg: { icon: "text-2xl!", iconBox: "gap-6!" },
         },
         /** 外形轮廓：与 RebornInput 的 shape 取值对齐 */
         shape: {

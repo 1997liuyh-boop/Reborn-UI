@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DropdownContext, DropdownPosition, DropdownTrigger } from './reborn-dropdown.config';
+import type { DropdownContext, DropdownPlacement, DropdownTrigger } from './reborn-dropdown.config';
 import { computed, inject, useSlots } from 'vue';
 import { cn } from '~/lib/utils';
 import { DROPDOWN_INJECTION_KEY, SUBMENU_POPUP_OFFSET } from './reborn-dropdown.config';
@@ -10,7 +10,7 @@ defineOptions({ name: 'RebornDsubmenu' });
 const props = withDefaults(defineProps<DsubmenuProps>(), {
   disabled: false,
   trigger: 'hover',
-  position: 'rightTop',
+  placement: 'right-start',
 });
 
 export interface DsubmenuProps {
@@ -28,9 +28,9 @@ export interface DsubmenuProps {
   trigger?: DropdownTrigger;
   /**
    * 子菜单弹出位置
-   * @defaultValue 'rightTop'
+   * @defaultValue 'right-start'
    */
-  position?: DropdownPosition;
+  placement?: DropdownPlacement;
   class?: any;
 }
 
@@ -58,7 +58,7 @@ const ui = computed(() => {
     悬停链路维持、子面板内点击不算外部、选中向上冒泡，均由 RebornDropdown 的嵌套逻辑处理。
   -->
   <RebornDropdown
-    :trigger="trigger" :position="position" :disabled="disabled" :popup-offset="SUBMENU_POPUP_OFFSET"
+    :trigger="trigger" :placement="placement" :disabled="disabled" :popup-offset="SUBMENU_POPUP_OFFSET"
     class="w-full" :ui="{ trigger: 'w-full' }"
   >
     <div :class="ui.item({ class: props.class })" :data-disabled="disabled" role="menuitem" aria-haspopup="menu">

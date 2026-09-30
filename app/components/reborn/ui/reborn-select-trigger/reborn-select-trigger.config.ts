@@ -67,7 +67,7 @@ export default {
          */
         portal: {
             true: {
-                dropdown: "absolute top-0 left-0 z-[9999] w-auto min-w-[var(--rb-trigger-width)]",
+                dropdown: "absolute top-0 left-0 z-[9999] w-auto min-w-(--rb-trigger-width)",
                 arrow: "z-[9999]",
             },
             false: {

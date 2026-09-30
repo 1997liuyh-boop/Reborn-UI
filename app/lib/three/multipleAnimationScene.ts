@@ -5,9 +5,11 @@ import {
   Matrix4, Mesh, PCFSoftShadowMap, PerspectiveCamera,
   PlaneGeometry, Scene, ShadowMaterial, SkinnedMesh, Texture, WebGLRenderer,
 } from "three";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { retargetingModels } from "../../components/common/landing/retargetingHero.config";
+import { loadModelBuffer, resolveModelURL } from "./modelAssets";
 
 // 改编自 Three.js 官方 webgl_animation_multiple（MIT），复用本站 Soldier 资源。
 export function prepareMultipleActors(model: GLTF, shared = false) {
@@ -186,12 +188,11 @@ export async function createMultipleAnimationScene(
     floor.receiveShadow = true;
     scene.add(floor);
     stage = "多角色模型加载失败，请检查网络后重试。";
-    const url = new URL(retargetingModels[1].slice(1), new URL(options.baseURL, window.location.origin));
-    const response = await fetch(url, { signal: loading.signal });
-    if (!response.ok) throw new Error(`模型请求失败：${response.status}`);
-    const data = await response.arrayBuffer();
+    // 与主舞台共用同一份 Soldier.glb 下载（见 modelAssets），不再重复请求
+    const url = resolveModelURL(retargetingModels[1], options.baseURL);
+    const data = await loadModelBuffer(url, loading.signal);
     loading.signal.throwIfAborted();
-    model = await new GLTFLoader().parseAsync(data, new URL(".", url).href);
+    model = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(data, new URL(".", url).href);
     // 解码无法取消，若期间切页，仍需释放刚完成的模型资源。
     if (disposed) { disposeResources(model.scene); signal.throwIfAborted(); throw new Error("场景已销毁"); }
     loading.signal.throwIfAborted();

@@ -255,7 +255,15 @@ const skuAttributes = ref<SkuOption[]>([
       </div>
     </Playground>
 
-    <DemoSection class="relative z-40" title="外置插槽：leading / trailing">
+    <DemoSection class="relative z-50" title="基础用法"
+      description="不填任何插槽并关闭 show-dropdown，即为一只只剩输入能力的搜索框；回车仍会触发 search 并写入历史。">
+      <DemoBlock layout="stack">
+        <RebornSearchBox v-model="pureValue" :show-dropdown="false" placeholder="无插槽 + 不展开面板，回车触发搜索"
+          @search="onSearch" />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection class="relative z-40" title="外置插槽：选择器与搜索按钮">
       <template #description>
         <code>leading</code> / <code>trailing</code> 是搜索框自身的插槽，与输入框区并列排在<strong>控件行</strong>里，
         因此同样被外层边框囊括在内，高度也与输入框区一样撑满整行。存在外置插槽时，外层边框恒为 <code>gray-4</code> 不变色，
@@ -283,7 +291,7 @@ const skuAttributes = ref<SkuOption[]>([
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection class="relative z-30" title="内置插槽：input-leading / input-trailing">
+    <DemoSection class="relative z-30" title="内置插槽：输入框内图标">
       <template #description>
         <code>input-leading</code> / <code>input-trailing</code> 会转发到内部 <code>RebornInput</code> 的
         <code>prefix</code> / <code>suffix</code>，内容落在<strong>输入框内部</strong>、贴着文本排布，
@@ -307,7 +315,7 @@ const skuAttributes = ref<SkuOption[]>([
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection class="relative z-20" title="方形圆角与属性透传">
+    <DemoSection class="relative z-20" title="形状与输入框属性透传">
       <template #description>
         <code>shape="square"</code> 统一取 <code>rounded-md</code> 令牌（不分尺寸），底色卡片上半圆角与输入框对齐、面板只保留下半圆角；
         <code>input-attrs</code> 会 v-bind 透传给内部 <code>RebornInput</code>（显式 prop 优先）。
@@ -339,15 +347,7 @@ const skuAttributes = ref<SkuOption[]>([
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection class="relative z-10" title="纯搜索框形态"
-      description="不填任何插槽并关闭 show-dropdown，即为一只只剩输入能力的搜索框；回车仍会触发 search 并写入历史。">
-      <DemoBlock layout="stack">
-        <RebornSearchBox v-model="pureValue" :show-dropdown="false" placeholder="无插槽 + 不展开面板，回车触发搜索"
-          @search="onSearch" />
-      </DemoBlock>
-    </DemoSection>
-
-    <DemoSection class="relative z-1" title="SKU 属性搜索">
+    <DemoSection class="relative z-1" title="下拉面板：SKU 属性筛选">
       <template #description>
         面板即插槽：把 <code>RebornSku</code> 直接放进 <code>dropdown</code> 插槽即可组合出属性筛选面板，
         带 <code>slots</code> 的属性项可用 <code>RebornSku</code> 的同名插槽自定义选择方式。

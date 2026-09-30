@@ -1,22 +1,11 @@
 import type { ComputedRef } from 'vue';
+import type { Placement } from '~/lib/placement';
+import { placements } from '~/lib/placement';
 import { tv } from '~/lib/tv';
 
-/** 菜单弹出位置：12 向，命名对齐 Arco */
-export const dropdownPositions = [
-  'top',
-  'topLeft',
-  'topRight',
-  'bottom',
-  'bottomLeft',
-  'bottomRight',
-  'left',
-  'leftTop',
-  'leftBottom',
-  'right',
-  'rightTop',
-  'rightBottom',
-] as const;
-export type DropdownPosition = (typeof dropdownPositions)[number];
+/** 菜单弹出位置：12 向，取值与 reborn-tooltip 的 placement 一致（方向-对齐的连字符写法） */
+export const dropdownPlacements = placements;
+export type DropdownPlacement = Placement;
 
 /**
  * 触发下拉的行为；移动端不支持 hover。
@@ -31,25 +20,6 @@ export type DropdownTrigger = (typeof dropdownTriggers)[number];
  * 使子面板与父面板外缘之间正好留出 4px。
  */
 export const SUBMENU_POPUP_OFFSET = 9;
-
-/** position → 底层 Popover 的 side / align */
-export const DROPDOWN_POSITION_MAP: Record<
-  DropdownPosition,
-  { side: 'top' | 'bottom' | 'left' | 'right'; align: 'start' | 'center' | 'end' }
-> = {
-  top: { side: 'top', align: 'center' },
-  topLeft: { side: 'top', align: 'start' },
-  topRight: { side: 'top', align: 'end' },
-  bottom: { side: 'bottom', align: 'center' },
-  bottomLeft: { side: 'bottom', align: 'start' },
-  bottomRight: { side: 'bottom', align: 'end' },
-  left: { side: 'left', align: 'center' },
-  leftTop: { side: 'left', align: 'start' },
-  leftBottom: { side: 'left', align: 'end' },
-  right: { side: 'right', align: 'center' },
-  rightTop: { side: 'right', align: 'start' },
-  rightBottom: { side: 'right', align: 'end' },
-};
 
 /** 选项值 */
 export type DropdownValue = string | number | Record<string, any>;

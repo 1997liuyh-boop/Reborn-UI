@@ -143,7 +143,7 @@ function openLayoutDialog(mode: "top" | "alignCenter" | "center") {
   layoutOpen.value = true;
 }
 
-// ─── Modal 命令式调用 ───────────────────────────────────────────
+// ─── 命令式调用：Modal 类型方法 ───────────────────────────────────────────
 
 function openModalInfo() {
   Modal.info({
@@ -370,7 +370,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </Playground>
 
-    <DemoSection title="Modal 命令式调用"
+    <DemoSection title="命令式调用：Modal 类型方法"
       description="Modal.info / success / warning / error / confirm 直接以函数打开确认框；onBeforeOk 支持返回 false 阻断或 done 异步关闭，onOk / onCancel 返回 Promise 时 resolve 关闭、reject 保持；Modal.destroyAll() 可在路由切换等场景批量销毁。">
       <DemoBlock>
         <RebornButton label="Modal.info" color="info" variant="soft" @click="openModalInfo" />
@@ -384,7 +384,7 @@ async function openCustomIconDialog() {
       <DemoNote tone="dimmed" class="mt-3">confirm 的回调结果会打印在浏览器控制台。</DemoNote>
     </DemoSection>
 
-    <DemoSection title="布局与对齐"
+    <DemoSection title="布局：顶部落位、垂直居中与头尾居中"
       description="默认按 top（15vh）顶部落位；align-center 改为水平垂直居中；center 让 header 与 footer 内容居中排列；width 支持数字（px）或任意 CSS 宽度。">
       <DemoBlock>
         <RebornButton label="top: 8vh 顶部落位" variant="outlined" @click="openLayoutDialog('top')" />
@@ -401,7 +401,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="过渡动画"
+    <DemoSection title="过渡动画预设"
       description="transition 支持四种语义预设：scale 缩放（默认，带回弹）/ slide 滑动（自上方滑入）/ fade 淡入淡出 / bounce 弹跳（关键帧入场）；也接受任意 RebornTransition 过渡名或属性对象。">
       <DemoBlock>
         <RebornButton label="scale 缩放" color="primary" variant="outlined" @click="openTransitionDialog('scale')" />
@@ -417,7 +417,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="嵌套弹窗" description="Dialog 支持多层嵌套，自动管理层级与遮罩，确保交互闭环。">
+    <DemoSection title="嵌套弹窗" description="内层 Dialog 写在外层的插槽里即可叠放；各层 z-index 相同，靠挂载先后决定上下，内层后挂载所以在上。">
       <DemoBlock>
         <RebornDialog v-model="nestedOpen1" title="第一层对话框" description="您可以点击下方按钮开启更深一层的交互。">
           <template #trigger>
@@ -447,7 +447,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="长内容滚动" description="开启 scrollable 属性，使正文区域在高度受限时独立滚动，页头与页脚保持固定。">
+    <DemoSection title="长内容：scrollable 正文滚动" description="开启 scrollable 属性，使正文区域在高度受限时独立滚动，页头与页脚保持固定。">
       <DemoBlock>
         <RebornDialog title="用户服务协议" scrollable description="更新日期：2026年3月">
           <template #trigger>
@@ -463,7 +463,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="异步关闭逻辑" description="confirmBtn 传入对象可携带 loading 状态，模拟后端请求成功后再关闭弹窗。">
+    <DemoSection title="异步确认：按钮 loading" description="confirmBtn 传入对象可携带 loading 状态，模拟后端请求成功后再关闭弹窗。">
       <DemoBlock>
         <RebornDialog v-model="asyncOpen" title="同步云端设置" description="正在将您的配置上传至私有云端节点..."
           :confirm-btn="{ label: '立即同步', loading: saving }" :cancel-btn="saving ? false : '稍后再说'"
@@ -483,7 +483,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="拖拽与样式定制" description="draggable 允许按住标题区域平移，默认限制在可视区内，开启 overflow 后可拖出屏幕；ui 对象可精细重写面板、页头与页脚。">
+    <DemoSection title="拖拽与 ui 样式定制" description="draggable 允许按住标题区域平移，默认限制在可视区内，开启 overflow 后可拖出屏幕；ui 对象可精细重写面板、页头与页脚。">
       <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">自由拖拽 · <code>draggable</code> / <code>overflow</code></span>
@@ -538,7 +538,7 @@ async function openCustomIconDialog() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="服务式调用" description="useOverlay 创建的实例可在任意逻辑中直接唤起，无需在模板里预先占位。">
+    <DemoSection title="服务式调用：延迟、全屏与关闭图标" description="useOverlay 创建的实例可在任意逻辑中直接唤起，无需在模板里预先占位。">
       <DemoBlock>
         <RebornButton label="延迟 500ms 开关" color="neutral" variant="outlined" @click="openDelayedDialog" />
         <RebornButton label="全屏模式" color="neutral" variant="outlined" @click="openFullscreenDialog" />

@@ -8,7 +8,7 @@
     "需要可拖拽（draggable，配 overflow 可拖出屏幕）或全屏（fullscreen）展示的弹窗。"
   ],
   "whenNotToUse": [
-    "uniapp 端不可用（仅 web），双端弹层改用 reborn-popup。",
+    "uniapp 端不可用（仅 web），UniApp 弹层改用 reborn-popup。",
     "轻量操作结果提示，改用 reborn-toast。"
   ],
   "pitfalls": [

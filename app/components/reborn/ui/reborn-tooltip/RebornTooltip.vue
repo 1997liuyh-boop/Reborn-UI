@@ -2,7 +2,7 @@
 import type {CSSProperties} from 'vue';
 import type { TooltipUI } from './reborn-tooltip.config';
 import type { FloatingPoint, FloatingSize } from '~/lib/floating';
-import type { Placement, PlacementAlias, PlacementAlign, PlacementSide } from '~/lib/placement';
+import type { Placement, PlacementAlign, PlacementSide } from '~/lib/placement';
 import {
   computed,
 
@@ -53,8 +53,6 @@ const emit = defineEmits<{
 type TooltipSide = PlacementSide;
 type TooltipAlign = PlacementAlign;
 type TooltipPlacement = Placement;
-/** 驼峰风格的方位命名，作为 TooltipPlacement 的等价别名 */
-type TooltipPlacementAlias = PlacementAlias;
 /** 触发行为 */
 type TooltipTrigger = 'hover' | 'focus' | 'click' | 'contextMenu';
 
@@ -63,8 +61,8 @@ interface RebornTooltipProps {
   content?: string;
   /** 提示文字。显式传 null 或空字符串可禁用提示；未传时回落到 content */
   title?: string | null;
-  /** 出现方向与对齐方式，同时接受驼峰命名别名（topLeft 等） */
-  placement?: TooltipPlacement | TooltipPlacementAlias;
+  /** 出现方向与对齐方式 */
+  placement?: TooltipPlacement;
   /** 自定义背景颜色，面板与箭头同步着色 */
   color?: string;
   /** 箭头显隐；对象形式的 pointAtCenter 让箭头指向触发元素中心而非对齐端 */

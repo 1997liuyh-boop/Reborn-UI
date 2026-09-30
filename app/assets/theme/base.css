@@ -307,6 +307,15 @@ body.layout-admin-shell {
   --ui-container: 100%;
 }
 
+/*
+ * 文档正文标题的锚点偏移：带 hash 直接打开页面、或浏览器原生的 hash 跳转时，
+ * 让出吸顶顶栏（--ui-header-height，64px）再留 24px，标题才不会停在顶栏后面。
+ * 右栏目录（RebornAnchor）自己算滚动位置、不读这个值，它的偏移见 DocsToc.vue。
+ */
+.docs-prose :where(h2, h3, h4)[id] {
+  scroll-margin-top: calc(var(--ui-header-height) + 1.5rem);
+}
+
 /* 常用工具类 (Utilities) */
 @utility scrollbar-hide {
   scrollbar-width: none;

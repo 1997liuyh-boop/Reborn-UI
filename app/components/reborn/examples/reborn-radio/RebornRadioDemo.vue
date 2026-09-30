@@ -114,6 +114,17 @@ const selectedColor = ref("primary");
 const selectedCity = ref("beijing");
 const selectedPay = ref("wechat");
 const selectedPlan = ref("basic");
+const selectedMode = ref("day");
+const selectedAlign = ref("居中");
+const selectedVariant = ref("apple");
+
+/** 非受控用法的最新值，仅由 change 事件回填展示 */
+const uncontrolledValue = ref("banana");
+
+/** 非受控模式下通过 change 事件拿到最新值 */
+function onUncontrolledChange(value: string | number | boolean) {
+  uncontrolledValue.value = String(value);
+}
 
 const cityOptions = ["beijing", "shanghai", "guangzhou", { label: "深圳（禁用）", value: "shenzhen", disabled: true }];
 
@@ -175,10 +186,78 @@ const plans = [
       </DemoNote>
     </DemoSection>
 
-    <DemoSection
-      title="语义色彩"
-      description="color 覆盖全部语义色板，选中态的圆点/高亮随之变化；组内单个 Radio 也可用自身 color 覆盖。"
-    >
+    <DemoSection title="类型与尺寸">
+      <template #description><code>type="button"</code> 呈现分段按钮；<code>size</code> 由 Group 统一下发，分段按钮高度取 RebornButton 同款高度令牌。</template>
+      <DemoBlock
+        layout="col"
+        class="gap-4"
+      >
+        <RebornRadioGroup
+          v-for="s in radioSizes"
+          :key="s"
+          v-model="selectedMode"
+          type="button"
+          :size="s"
+        >
+          <RebornRadio value="day">日视图</RebornRadio>
+          <RebornRadio value="week">周视图</RebornRadio>
+          <RebornRadio value="month">月视图</RebornRadio>
+        </RebornRadioGroup>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="实体按钮拼接：pure-button">
+      <template #description><code>type="pure-button"</code> 每项复用 RebornButton，首尾圆角、相邻边框折叠；<code>button-props</code> 统一透传按钮参数。</template>
+      <DemoBlock
+        layout="col"
+        class="gap-4"
+      >
+        <RebornRadioGroup
+          v-model="selectedAlign"
+          type="pure-button"
+          color="success"
+          :options="['左对齐', '居中', '右对齐']"
+        />
+        <RebornRadioGroup
+          v-model="selectedAlign"
+          type="pure-button"
+          color="success"
+          :button-props="{ borderStyle: 'dashed' }"
+          :options="['左对齐', '居中', '右对齐']"
+        />
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        当前值：<span class="text-primary font-mono font-medium">{{ selectedAlign }}</span>
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="变体：outlined 与 filled">
+      <template #description><code>variant</code> 只改变选中态外观：outlined 为语义色描边与前景，filled 为语义色实底加白色前景。</template>
+      <DemoBlock
+        layout="col"
+        class="gap-4"
+      >
+        <RebornRadioGroup
+          v-model="selectedVariant"
+          variant="outlined"
+          :options="fruits"
+        />
+        <RebornRadioGroup
+          v-model="selectedVariant"
+          variant="filled"
+          :options="fruits"
+        />
+        <RebornRadioGroup
+          v-model="selectedVariant"
+          type="button"
+          variant="filled"
+          :options="fruits"
+        />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="语义色与单项覆盖">
+      <template #description><code>color</code> 覆盖全部语义色板，选中态的圆点与高亮随之变化；组内单个 Radio 也可用自身 <code>color</code> 覆盖。</template>
       <DemoBlock
         layout="row"
         align="center"
@@ -196,10 +275,8 @@ const plans = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="options 快捷传参"
-      description="options 接受 string | number | RadioOption 混合数组，对象形式可携带 disabled；label 插槽可统一定制选项文案。"
-    >
+    <DemoSection title="数据驱动：options 与 label 插槽">
+      <template #description><code>options</code> 接受 string | number | RadioOption 混合数组，对象形式可携带 <code>disabled</code>；<code>label</code> 插槽可统一定制选项文案。</template>
       <DemoBlock
         layout="col"
         class="gap-4"
@@ -219,10 +296,26 @@ const plans = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="radio 插槽深度定制"
-      description="radio 插槽（作用域含 checked / disabled）可完全接管单选框的渲染，例如做成卡片式选择。"
-    >
+    <DemoSection title="方向与非受控">
+      <template #description><code>direction="vertical"</code> 纵向排列；不绑 v-model 时用 <code>default-value</code> 给初始值，通过 <code>change</code> 事件读取最新值。</template>
+      <DemoBlock
+        layout="row"
+        align="center"
+      >
+        <RebornRadioGroup
+          default-value="banana"
+          direction="vertical"
+          :options="fruits"
+          @change="onUncontrolledChange"
+        />
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        change 事件最新值：<span class="text-primary font-mono font-medium">{{ uncontrolledValue }}</span>
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="自定义渲染：radio 插槽">
+      <template #description><code>radio</code> 插槽（作用域含 checked / disabled）完全接管单选框的渲染，例如做成卡片式选择；此时 ui 的 icon / dot / label 键不再生效。</template>
       <DemoBlock
         layout="row"
         align="center"

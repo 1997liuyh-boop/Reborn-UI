@@ -119,21 +119,21 @@ function askAi() {
 
     <UTooltip v-if="previewPath" text="预览（新标签页）">
       <UButton
-        icon="tabler:eye" size="xs" color="neutral" variant="ghost" aria-label="预览" :to="previewPath"
+        icon="mage:preview" size="xs" color="neutral" variant="ghost" aria-label="预览" :to="previewPath"
         target="_blank"
       />
     </UTooltip>
 
     <UTooltip v-if="hasCode" text="在 Playground 运行">
       <UButton
-        icon="tabler:player-play" size="xs" color="neutral" variant="ghost" aria-label="Playground"
+        icon="cib:codesandbox" size="xs" color="neutral" variant="ghost" aria-label="Playground"
         @click="openPlayground"
       />
     </UTooltip>
 
     <UTooltip v-if="hasThemeSlots" :text="themeOpen ? '收起 Theme slots' : 'Theme slots（可覆盖的样式节点）'">
       <UButton
-        :icon="themeOpen ? 'tabler:layout-sidebar-right-collapse' : 'tabler:layout-sidebar-right-expand'"
+        icon="ix:theme-filled"
         size="xs" :color="themeOpen ? 'primary' : 'neutral'" :variant="themeOpen ? 'soft' : 'ghost'"
         :aria-label="themeOpen ? '收起 Theme slots' : '展开 Theme slots'"
         @click="themeOpen = !themeOpen"
@@ -142,7 +142,7 @@ function askAi() {
 
     <UTooltip v-if="canAsk" text="询问 AI">
       <UButton
-        icon="tabler:sparkles" size="xs" color="neutral" variant="ghost" aria-label="询问 AI"
+        icon="ri:ai-generate-2" size="xs" color="neutral" variant="ghost" aria-label="询问 AI"
         @click="askAi"
       />
     </UTooltip>

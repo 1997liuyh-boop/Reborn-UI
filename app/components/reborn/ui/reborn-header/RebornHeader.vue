@@ -4,12 +4,23 @@ import { createReusableTemplate } from '@vueuse/core';
 import { computed, watch } from 'vue';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
-import RebornPopup from '../reborn-popup/RebornPopup.vue';
+import RebornDrawer from '../reborn-drawer/RebornDrawer.vue';
 import theme from './reborn-header.config';
 
-const b = tv(theme);
-
 defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<RebornHeaderProps>(), {
+    title: 'Nuxt UI',
+    to: '/',
+    toggleSide: 'right',
+    mode: 'popup',
+    as: 'header',
+    sticky: false,
+    autoClose: true,
+    ui: () => ({}),
+});
+
+const b = tv(theme);
 
 export type HeaderMode = 'modal' | 'slideover' | 'popup';
 
@@ -48,17 +59,6 @@ export interface RebornHeaderProps {
     }>;
 }
 
-const props = withDefaults(defineProps<RebornHeaderProps>(), {
-    title: 'Nuxt UI',
-    to: '/',
-    toggleSide: 'right',
-    mode: 'popup',
-    as: 'header',
-    sticky: false,
-    autoClose: true,
-    ui: () => ({}),
-});
-
 const isMenuOpen = defineModel<boolean>('open', { default: false });
 const route = useRoute();
 
@@ -87,7 +87,7 @@ const ui = computed(() => {
         center: (opts?: { class?: any }) => styles.center({ class: cn(opts?.class, overrides.center) }),
         right: (opts?: { class?: any }) => styles.right({ class: cn(opts?.class, overrides.right) }),
         toggle: (opts?: { class?: any }) => styles.toggle({ class: cn(opts?.class, overrides.toggle) }),
-        // 移动端弹窗根节点：本组件没有对应的 tv slot，直接把用户覆盖透传给内部 RebornPopup 的 root
+        // 移动端弹窗根节点：本组件没有对应的 tv slot，直接把用户覆盖透传给内部 RebornDrawer 的 root
         popup: (opts?: { class?: any }) => cn(opts?.class, overrides.popup),
         popupHeader: (opts?: { class?: any }) => styles.popupHeader({ class: cn(opts?.class, overrides.popupHeader) }),
         popupBody: (opts?: { class?: any }) => styles.popupBody({ class: cn(opts?.class, overrides.popupBody) }),
@@ -119,84 +119,91 @@ async function toggleMenu() {
 </script>
 
 <template>
-    <!-- 切换按钮模板 (复用) -->
-    <DefineToggleTemplate>
-        <slot name="toggle" :open="isMenuOpen" :toggle="toggleMenu">
-            <div :class="ui.toggle()" @click="toggleMenu">
-                <Icon :name="isMenuOpen ? 'lucide:x' : 'lucide:menu'" class="size-6" />
-            </div>
-        </slot>
-    </DefineToggleTemplate>
+  <!-- 切换按钮模板 (复用) -->
+  <DefineToggleTemplate>
+    <slot name="toggle" :open="isMenuOpen" :toggle="toggleMenu">
+      <div :class="ui.toggle()" @click="toggleMenu">
+        <Icon :name="isMenuOpen ? 'lucide:x' : 'lucide:menu'" class="size-6" />
+      </div>
+    </slot>
+  </DefineToggleTemplate>
 
-    <!-- 左侧区域模板 (复用) -->
-    <DefineLeftTemplate>
-        <div v-if="$slots.left || $slots.title || title || toggleSide === 'left'" :class="ui.left()">
-            <ReuseToggleTemplate v-if="toggleSide === 'left'" />
+  <!-- 左侧区域模板 (复用) -->
+  <DefineLeftTemplate>
+    <div v-if="$slots.left || $slots.title || title || toggleSide === 'left'" :class="ui.left()">
+      <ReuseToggleTemplate v-if="toggleSide === 'left'" />
 
-            <slot name="left">
-                <NuxtLink v-if="to && (title || $slots.title)" :to="to" :class="ui.title()" @click="isMenuOpen = false">
-                    <slot name="title">
-                        {{ title }}
-                    </slot>
-                </NuxtLink>
-            </slot>
+      <slot name="left">
+        <NuxtLink v-if="to && (title || $slots.title)" :to="to" :class="ui.title()" @click="isMenuOpen = false">
+          <slot name="title">
+            {{ title }}
+          </slot>
+        </NuxtLink>
+      </slot>
+    </div>
+  </DefineLeftTemplate>
+
+  <!-- 右侧区域模板 (复用) -->
+  <DefineRightTemplate>
+    <div v-if="$slots.right || toggleSide === 'right'" :class="ui.right()">
+      <div class="hidden md:flex">
+        <slot name="right" />
+      </div>
+
+      <ReuseToggleTemplate v-if="toggleSide === 'right'" />
+    </div>
+  </DefineRightTemplate>
+
+  <!-- 导航栏根容器 -->
+  <component :is="as" v-bind="$attrs" :class="ui.root()">
+    <slot name="top" />
+
+    <div :class="ui.container()">
+      <ReuseLeftTemplate />
+
+      <div v-if="$slots.default" :class="ui.center()">
+        <slot />
+      </div>
+
+      <ReuseRightTemplate />
+    </div>
+
+    <slot name="bottom" />
+  </component>
+
+  <!-- 移动端菜单抽屉，保留原有 ui.popup 样式入口。 -->
+  <RebornDrawer
+    v-model="isMenuOpen" :direction="toggleSide" size="100%" with-header :z-index="980" :ui="{
+      // 位于吸顶导航栏下方 (Header 通常 z-1000)；层级通过 z-index 控制
+      root: ui.popup(),
+      body: 'p-0',
+      footer: 'p-0',
+    }"
+  >
+    <!-- 弹窗头部 (除非被插槽覆盖，否则始终可见) -->
+    <template #header="{ close }">
+      <slot name="header" :close="close">
+        <div :class="ui.popupHeader()">
+          <button type="button" aria-label="关闭菜单" class="flex size-5 shrink-0 items-center justify-center text-gray-9" @click="close"><Icon name="lucide:x" class="size-5" /></button>
+          <NuxtLink
+            v-if="to && (title || $slots.title)" :to="to" :class="ui.title()"
+            @click="isMenuOpen = false"
+          >
+            {{ title }}
+          </NuxtLink>
         </div>
-    </DefineLeftTemplate>
+      </slot>
+    </template>
 
-    <!-- 右侧区域模板 (复用) -->
-    <DefineRightTemplate>
-        <div v-if="$slots.right || toggleSide === 'right'" :class="ui.right()">
-            <div class="hidden md:flex">
-                <slot name="right" />
-            </div>
+    <div v-if="$slots.body || $slots.default || $slots.content" :class="ui.popupBody()">
+      <slot name="content" :close="() => isMenuOpen = false">
+        <slot name="body" />
+        <slot v-if="!$slots.body" />
+      </slot>
+    </div>
 
-            <ReuseToggleTemplate v-if="toggleSide === 'right'" />
-        </div>
-    </DefineRightTemplate>
-
-    <!-- 导航栏根容器 -->
-    <component :is="as" v-bind="$attrs" :class="ui.root()">
-        <slot name="top" />
-
-        <div :class="ui.container()">
-            <ReuseLeftTemplate />
-
-            <div v-if="$slots.default" :class="ui.center()">
-                <slot />
-            </div>
-
-            <ReuseRightTemplate />
-        </div>
-
-        <slot name="bottom" />
-    </component>
-
-    <!-- 移动端菜单弹窗 (支持从 Drawer 映射为 Popup) -->
-    <RebornPopup v-model="isMenuOpen" :position="toggleSide" size="100%" :round="false" :ui="{
-        // 位于吸顶导航栏下方 (Header 通常 z-1000)；ui.popup 可继续覆盖
-        root: ui.popup({ class: 'z-[980]' }),
-    }">
-        <!-- 弹窗头部 (除非被插槽覆盖，否则始终可见) -->
-        <template #header>
-            <slot name="header" :close="() => isMenuOpen = false">
-                <div :class="ui.popupHeader()">
-                    <NuxtLink v-if="to && (title || $slots.title)" :to="to" :class="ui.title()"
-                        @click="isMenuOpen = false">
-                        {{ title }}
-                    </NuxtLink>
-                </div>
-            </slot>
-        </template>
-
-        <div v-if="$slots.body || $slots.default || $slots.content" :class="ui.popupBody()">
-            <slot name="content" :close="() => isMenuOpen = false">
-                <slot name="body" />
-                <slot v-if="!$slots.body" />
-            </slot>
-        </div>
-
-        <div v-if="$slots.footer" :class="ui.popupFooter()">
-            <slot name="footer" />
-        </div>
-    </RebornPopup>
+    <template v-if="$slots.footer" #footer>
+      <div :class="ui.popupFooter()"><slot name="footer" /></div>
+    </template>
+  </RebornDrawer>
 </template>

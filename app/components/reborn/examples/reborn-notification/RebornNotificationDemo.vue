@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { NotificationHandle } from "~/components/reborn/ui/reborn-notification";
+import type { NotificationHandle, NotificationPlacement } from "~/components/reborn/ui/reborn-notification";
 import { h } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import { notification } from "~/components/reborn/ui/reborn-notification";
 import {
-  notificationPositions,
+  notificationPlacements,
   notificationTypes,
 } from "~/components/reborn/ui/reborn-notification/reborn-notification.config";
 
@@ -12,7 +12,14 @@ const typeOptions = [
   { label: "无类型（不显示图标）", value: "" },
   ...notificationTypes.map(t => ({ label: t, value: t })),
 ];
-const positionOptions = notificationPositions.map(p => ({ label: p, value: p }));
+/** 四角对应的中文方位：start / end 是抽象写法，标上实际落点便于对照 */
+const placementCorner: Record<NotificationPlacement, string> = {
+  "top-end": "右上",
+  "top-start": "左上",
+  "bottom-end": "右下",
+  "bottom-start": "左下",
+};
+const placementOptions = notificationPlacements.map(p => ({ label: `${p}（${placementCorner[p]}）`, value: p }));
 /** 侧边飘带选项：空串表示不显示 */
 const ribbonOptions = [
   { label: "不显示", value: "" },
@@ -27,7 +34,7 @@ const defaultState: Record<string, any> = {
   title: "部署完成",
   message: "订单服务已发布到生产环境，耗时 42 秒。",
   type: "success",
-  position: "top-right",
+  placement: "top-end",
   ribbon: "",
   duration: 4500,
   showClose: true,
@@ -68,10 +75,10 @@ const controls: any = [
       },
       {
         label: "弹出位置",
-        key: "position",
+        key: "placement",
         component: "select" as const,
-        defaultValue: "top-right",
-        props: { options: positionOptions },
+        defaultValue: "top-end",
+        props: { options: placementOptions },
       },
       {
         label: "侧边飘带",
@@ -105,7 +112,7 @@ const notificationCode = computed(() => {
   const config: string[] = [
     `title: '${s.title}'`,
     `message: '${s.message}'`,
-    `position: '${s.position}'`,
+    `placement: '${s.placement}'`,
     `ribbon: ${s.ribbon ? `'${s.ribbon}'` : false}`,
     `duration: ${s.duration}`,
     `showClose: ${s.showClose}`,
@@ -122,7 +129,7 @@ function fireFromPlayground() {
   const options = {
     title: s.title,
     message: s.message,
-    position: s.position,
+    placement: s.placement,
     ribbon: s.ribbon || false,
     duration: s.duration,
     showClose: s.showClose,
@@ -289,7 +296,7 @@ function fireClickableDemo() {
       </div>
     </Playground>
 
-    <DemoSection title="基本用法">
+    <DemoSection title="基础用法">
       <template #description>
         四个类型方法对应四种语义色与默认图标；<code>notification.open</code> 不带类型，即无图标、无着色。
         默认 <code>4500</code> 毫秒后自动关闭。
@@ -313,21 +320,21 @@ function fireClickableDemo() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="弹出位置">
+    <DemoSection title="弹出位置：placement 四角">
       <template #description>
-        <code>position</code> 支持屏幕四角；顶部两角向下堆叠，底部两角向上堆叠，新通知始终贴着锚定边。
+        <code>placement</code> 支持屏幕四角，取值沿用浮层组件的连字符写法，end 贴右、start 贴左；顶部两角向下堆叠，底部两角向上堆叠，新通知始终贴着锚定边。
       </template>
       <DemoBlock layout="row" align="center">
         <RebornButton
-          v-for="p in notificationPositions" :key="p" variant="outlined"
-          @click="notification.info({ title: p, message: `这条通知弹在 ${p}。`, position: p })"
+          v-for="p in notificationPlacements" :key="p" variant="outlined"
+          @click="notification.info({ title: p, message: `这条通知弹在${placementCorner[p]}角。`, placement: p })"
         >
-          {{ p }}
+          {{ p }}（{{ placementCorner[p] }}）
         </RebornButton>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="倒计时进度条">
+    <DemoSection title="倒计时进度条：progress">
       <template #description>
         <code>progress</code> 设为 <code>true</code> 显示默认进度条；传对象可自定义 <code>strokeColor</code> /
         <code>size</code> / <code>striped</code> / <code>stripedFlow</code>。
@@ -352,7 +359,7 @@ function fireClickableDemo() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="侧边飘带">
+    <DemoSection title="侧边飘带：ribbon">
       <template #description>
         <code>ribbon</code> 在面板内边加一条 3px 竖条，颜色取 <code>type</code> 的语义色（未设 <code>type</code> 时用主色）：
         <code>true</code> 或 <code>'left'</code> 贴左，<code>'right'</code> 贴右。飘带压在面板内边距上，不挤占正文宽度。
@@ -379,7 +386,7 @@ function fireClickableDemo() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="富文本与自定义正文">
+    <DemoSection title="富文本与 VNode 正文">
       <template #description>
         <code>message</code> 为字符串时贴在标题下方（间隔 8px）；开启 <code>dangerouslyUseHTMLString</code>
         会按 HTML 片段渲染。传 VNode 或返回 VNode 的函数时，正文独立成段（与头部间隔 20px），
@@ -391,7 +398,7 @@ function fireClickableDemo() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义图标与点击回调">
+    <DemoSection title="自定义图标、关闭图标与点击回调">
       <template #description>
         <code>icon</code> 支持图标名或 VNode，但设置了 <code>type</code> 时会被类型图标覆盖；
         <code>closeIcon</code> 同理可换。绑定 <code>onClick</code> 后整块面板可点击（光标变为手型）。
@@ -402,7 +409,7 @@ function fireClickableDemo() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="手动关闭与更新">
+    <DemoSection title="手动关闭与同 key 更新">
       <template #description>
         方法返回实例句柄，调用 <code>close()</code> 关闭当前通知；传相同 <code>key</code> 会原位更新内容并重置计时；
         <code>notification.destroy(key)</code> 按 key 关闭，不传 key 则关闭全部。
@@ -419,7 +426,7 @@ function fireClickableDemo() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="系统级通知">
+    <DemoSection title="系统级通知：system">
       <template #description>
         <code>notification.system()</code> 调用浏览器原生 Notification 在操作系统层面弹出提示，页面切到后台甚至最小化时依然可见。
         首次点击会请求授权；被拒绝或环境不支持（需 HTTPS / localhost）时默认回退为站内通知，返回值的

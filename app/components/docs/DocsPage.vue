@@ -6,12 +6,16 @@
  * 四个页面的文档分支共用本组件，布局调整只需改这一处。
  *
  * 布局要点：
- * - lg+ 正文占满 UPage 全部栅格（lg:col-span-10），不再为 TOC 保留右列；
- *   目录由 DocsFloatingToc 悬浮在视口右缘。
- * - <lg 保留 #right 槽的原生 UContentToc（移动端置顶折叠条），行为与改版前一致。
+ * - 本页目录走 UPage 的 #right 槽，由 DocsToc（RebornAnchor）渲染：
+ *   lg+ 与正文并排成右栏（UPage 默认 8:2 栅格）并随页面吸顶，<lg 退化为置顶折叠条；
+ * - 没有目录的页面不提供 #right 槽，正文占满整行。
  */
 
 import { suggestionContextKey } from '~/components/common/component-viewer/types'
+import { demoUsageContextKey } from '~/components/common/demo/types'
+import { extractDemoSections } from '~/utils/extractDemoSections'
+import { getComponentCode } from '~/utils/getComponentCode'
+import { trimComponentDocBody } from '~/utils/trimComponentDocBody'
 
 /** 页脚文案（i18n 页面传入 t() 结果，默认英文） */
 interface DocsPageTexts {
@@ -52,15 +56,14 @@ const mergedTexts = computed<DocsPageTexts>(() => ({
     ...props.texts,
 }))
 
-/** 右侧移动端 demo 面板是否可见（有 demo 且处于 UniApp 档；决定悬浮目录是否左移避让） */
-const { isPanelVisible: hasMobilePanel } = useUniDemoPanel()
-
 /** 目录链接节点（与 @nuxt/content 的 body.toc.links 结构一致） */
 interface TocLinkItem {
     id: string
     text: string
     depth: number
     children?: TocLinkItem[]
+    /** 锚点落在 ComponentTabs 的 Preview 面板里（示例卡片标题），目录滚动时要多让出吸顶 Tab 栏 */
+    inDemo?: boolean
 }
 
 /**
@@ -72,18 +75,61 @@ interface TocLinkItem {
  */
 const SUGGESTION_HEADING_IDS = ['何时使用', '何时不使用', '注意事项']
 
+/** 正文里的 ::ComponentViewer 节点属性：据此定位 demo 源文件 */
+const viewerAttrs = computed(() => {
+    const value = props.page?.body?.value
+    if (!Array.isArray(value)) return null
+    const node = value.find(n => Array.isArray(n) && n[0] === 'component-viewer') as any[] | undefined
+    if (!node) return null
+    const attrs = node[1] ?? {}
+    const demoFile = attrs.demoFile ?? attrs['demo-file']
+    const componentId = attrs.componentId ?? attrs['component-id']
+    return { demoFile: demoFile ? String(demoFile) : '', componentId: componentId ? String(componentId) : '' }
+})
+
+/** 从 demo 源码里取到的、正文裁剪与目录都要用的信息 */
+interface DemoMeta {
+    /** 所有 DemoSection 的标题 */
+    titles: string[]
+    /** Playground 的标题（title="…" 字面量），没写演练场时为空 */
+    playgroundTitle: string
+}
+
 /**
- * 按标题把正文 AST 切成「留在正文」与「搬进 suggestion 面板」两份。
+ * demo 里所有 DemoSection 的标题，以及演练场的标题。
+ * 走 useAsyncData 而不是等 ComponentTabs 客户端加载源码：正文裁剪要在 SSR 阶段就定下来，
+ * 否则首屏先渲染出「用法」各小节、水合后再消失，会有一次明显跳动。只序列化标题，不带源码。
+ */
+const { data: demoMeta } = useAsyncData(
+    () => `demo-meta:${viewerAttrs.value?.componentId || 'none'}`,
+    async (): Promise<DemoMeta> => {
+        const empty: DemoMeta = { titles: [], playgroundTitle: '' }
+        const attrs = viewerAttrs.value
+        if (!attrs?.demoFile || !attrs.componentId) return empty
+        const load = getComponentCode({ fileName: attrs.demoFile, id: attrs.componentId, type: 'examples' })
+        if (!load) return empty
+        const raw = await (load as unknown as () => Promise<string>)()
+        // 只认字面量 title="…"，与 DemoSection 标题的抽取口径一致（动态绑定拿不到值）
+        const playgroundTitle = raw.match(/<Playground\s[^>]*?\stitle="([^"]*)"/)?.[1] ?? ''
+        return { titles: Object.keys(extractDemoSections(raw)), playgroundTitle }
+    },
+    { default: (): DemoMeta => ({ titles: [], playgroundTitle: '' }) },
+)
+
+/**
+ * 按标题把正文 AST 切成「留在正文」与「搬进 suggestion 面板」两份，
+ * 再把留在正文里、已由示例卡片承担的部分裁掉（见 utils/trimComponentDocBody）。
  *
  * body.value 是一维数组：标题与它下面的内容是平级兄弟，不存在嵌套结构，
  * 所以只能顺序扫描——遇到目标标题开始收集，遇到同级或更高级的标题收尾。
- * 返回 null 表示不切分，正文原样渲染。
+ * 必须先搬再裁：何时使用 / 何时不使用是 `## 简介` 下的三级标题，先裁简介就把它们一起丢了。
+ * 返回 null 表示非组件文档，正文原样渲染。
  */
 const splitBody = computed(() => {
     const value = props.page?.body?.value
     if (!Array.isArray(value)) return null
-    // 只有组件文档才搬。普通文档同样可能写「注意事项」，但没有承接它的面板，搬走就是内容丢失
-    if (!value.some(node => Array.isArray(node) && node[0] === 'component-viewer')) return null
+    // 只有组件文档才处理。普通文档同样可能写「注意事项」，但没有承接它的面板，搬走就是内容丢失
+    if (!viewerAttrs.value) return null
 
     const main: unknown[] = []
     const suggestion: unknown[] = []
@@ -105,22 +151,33 @@ const splitBody = computed(() => {
         ;(capturing ? suggestion : main).push(node)
     }
 
-    return suggestion.length ? { main, suggestion } : null
+    const trimmed = trimComponentDocBody(main, demoMeta.value?.titles ?? [])
+    return { main: trimmed.value, suggestion, removedH2: trimmed.removedH2, usage: trimmed.usage }
 })
 
-/** 去掉已搬走的标题，否则悬浮目录会指向隐藏面板里的锚点，点了没反应 */
-function pruneTocLinks(links: TocLinkItem[]): TocLinkItem[] {
-    return links
-        .filter(link => !SUGGESTION_HEADING_IDS.includes(link.id))
-        .map((link) => {
-            if (!link.children?.length) return link
-            const { children: _original, ...rest } = link
-            const children = pruneTocLinks(link.children)
-            return children.length ? { ...rest, children } : rest
-        })
+/**
+ * 目录裁剪：
+ * - 去掉已搬进 suggestion 面板的标题，否则目录会指向隐藏面板里的锚点，点了没反应；
+ * - 去掉已裁掉的二级标题（简介 / 用法）。用法的子项原样提到顶层：
+ *   示例卡片标题沿用了这些小节的锚点 id，链接仍然有效。这些锚点落在 Preview 面板里、
+ *   上方压着吸顶 Tab 栏，打上 inDemo 让 DocsToc 滚过去时多让出这条栏的高度。
+ */
+function pruneTocLinks(links: TocLinkItem[], removedH2: Set<string>): TocLinkItem[] {
+    return links.flatMap((link): TocLinkItem[] => {
+        if (SUGGESTION_HEADING_IDS.includes(link.id)) return []
+        if (removedH2.has(link.id)) {
+            return link.id === '用法'
+                ? (link.children ?? []).map(child => ({ ...child, depth: 2, inDemo: true }))
+                : []
+        }
+        if (!link.children?.length) return [link]
+        const { children: _original, ...rest } = link
+        const children = pruneTocLinks(link.children, removedH2)
+        return [children.length ? { ...rest, children } : rest]
+    })
 }
 
-/** 真正交给 ContentRenderer 的文档：切分过则用删减版正文，否则原样透传 */
+/** 真正交给 ContentRenderer 的文档：处理过则用删减版正文，否则原样透传 */
 const renderedPage = computed<Record<string, any>>(() => {
     const split = splitBody.value
     if (!split) return props.page
@@ -130,7 +187,7 @@ const renderedPage = computed<Record<string, any>>(() => {
         body: {
             ...body,
             value: split.main,
-            toc: { ...body?.toc, links: pruneTocLinks(body?.toc?.links ?? []) },
+            toc: { ...body?.toc, links: pruneTocLinks(body?.toc?.links ?? [], split.removedH2) },
         },
     }
 })
@@ -138,7 +195,7 @@ const renderedPage = computed<Record<string, any>>(() => {
 /** 搬出来的那几节，包成一份只含正文的文档片段给 ComponentTabs 渲染 */
 const suggestionPage = computed<Record<string, any> | null>(() => {
     const split = splitBody.value
-    if (!split) return null
+    if (!split?.suggestion.length) return null
     const body = props.page.body
     return {
         ...props.page,
@@ -146,6 +203,7 @@ const suggestionPage = computed<Record<string, any> | null>(() => {
     }
 })
 
+provide(demoUsageContextKey, computed(() => splitBody.value?.usage ?? {}))
 provide(suggestionContextKey, { value: suggestionPage })
 
 /**
@@ -218,10 +276,19 @@ onUnmounted(() => {
 // 布局层 UPage 以 route.path 为 key，路由切换会整体重挂载；watch 仅兜底同路径内容热替换
 watch(() => props.page?.path, () => nextTick(collectDomToc))
 
-/** 目录链接：优先构建期 TOC（取删减后的那份），为空时回退 DOM 扫描结果 */
+/**
+ * 目录链接：优先构建期 TOC（取删减后的那份），为空时回退 DOM 扫描结果。
+ * 组件文档再把演练场排在最前：它不是 md 标题，构建期目录里没有它，
+ * 但 Playground 把标题渲染成带 id 的 h2（id 就是标题文本），锚点是现成的。
+ * 它同样在 Preview 面板里、上方压着吸顶 Tab 栏，所以也打 inDemo。
+ */
 const tocLinks = computed<TocLinkItem[]>(() => {
     const server = renderedPage.value?.body?.toc?.links ?? []
-    return server.length ? server : domTocLinks.value
+    const links = server.length ? server : domTocLinks.value
+    const playground = viewerAttrs.value ? demoMeta.value?.playgroundTitle : ''
+    // DOM 兜底目录扫的是 h2[id]，走到那条路时演练场已经在列表里，不再重复加
+    if (!playground || links.some(link => link.id === playground)) return links
+    return [{ id: playground, text: playground, depth: 2, inDemo: true }, ...links]
 })
 
 /** 目录标题：优先 app.config 配置，其次 i18n 文案 */
@@ -249,7 +316,8 @@ const editLink = computed(() => {
 </script>
 
 <template>
-  <UPage :ui="{ right: 'lg:hidden', center: 'lg:col-span-10' }">
+  <!-- 右栏目录：lg+ 与正文并排（UPage 默认 8:2 栅格），<lg 由同一组件退化为置顶折叠条 -->
+  <UPage>
     <!-- hideHeader：组件总览等自带 Hero 的页面跳过默认页头，避免双标题 -->
     <UPageHeader
       v-if="!page.hideHeader"
@@ -310,12 +378,9 @@ const editLink = computed(() => {
       <UContentSurround :surround="(surround as any)" />
     </UPageBody>
 
-    <!-- <lg：保留原生 TOC 折叠条（UContentToc 自带移动端 sticky 折叠行为）；lg+ 该栅格列整体隐藏 -->
+    <!-- 本页目录（RebornAnchor 滚动跟随 + 社区链接）；槽内只能有这一个根节点，栅格类由 UPage 合并到它身上 -->
     <template v-if="tocLinks.length" #right>
-      <UContentToc highlight :title="tocTitle" :links="(tocLinks as any)" />
+      <DocsToc :links="tocLinks" :title="tocTitle" />
     </template>
-
-    <!-- lg+：右缘悬浮目录（刻度条 + 展开卡片，含社区链接）；有移动端面板时左移避让 -->
-    <DocsFloatingToc :links="tocLinks" :title="tocTitle" :inset="hasMobilePanel" />
   </UPage>
 </template>

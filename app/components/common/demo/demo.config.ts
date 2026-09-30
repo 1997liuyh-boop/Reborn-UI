@@ -1,5 +1,5 @@
 /**
- * DemoSection —— 示例分组卡片：卡片头（标题 + 动作组）+ 示例本体 + 折叠源码
+ * DemoSection —— 示例分组：标题 + 描述（卡片外）→ 卡片（示例本体 + 底栏）→ 折叠源码
  *
  * ── 背景层级铁律（全站示例统一遵守）────────────────────────────
  * 示例区只有一层底色：环境层 —— 页面底色，由 layouts/docs.vue 的
@@ -11,7 +11,8 @@
  * 设备档（tablet / mobile）例外：iframe 外框必须铺底，否则设备屏幕会透出页面底纹。
  * ────────────────────────────────────────────────────────────────
  *
- * group/demo-section 供动作组做 hover 显隐。
+ * 源码区是唯一的例外：它不是卡片内的盒子而是卡片的下半截，与卡片共用描边与圆角，
+ * 铺 bg-gray-2 把「读代码」与「看效果」两块区域分开。
  */
 export const sectionConfig = {
     slots: {
@@ -20,20 +21,30 @@ export const sectionConfig = {
          * 间距由卡片自带 mt-4（首张归零）而非父级 gap —— demo 文件普遍把分组包在
          * 自己的 <div class="flex flex-col"> 里，父级的 gap 传不到分组上。
          */
-        root: [
-            'group/demo-section relative mt-4 flex w-full min-w-0 flex-col overflow-hidden first:mt-0',
-            // 描边不填充：不写 bg-*，底色一律由环境层提供（见顶部铁律）
+        root: 'relative mt-8 flex w-full min-w-0 flex-col gap-3 first:mt-0',
+        /** 卡片外的标题区：标题在上、描述在下，先交代「这组示例演示什么」再看效果 */
+        header: 'flex min-w-0 flex-col gap-1',
+        /** 小节标题：小字号加粗，不与文档页大标题抢层级 */
+        title: 'text-highlighted text-sm font-semibold tracking-tight',
+        /** 小节描述：显式 description，或文档「用法」同名小节的首段 */
+        description: 'text-muted text-sm leading-relaxed',
+        /** 描述里的行内代码：与正文 prose 的行内代码同一套观感 */
+        descCode: 'bg-gray-2 text-highlighted rounded-xs px-1 py-0.5 font-mono text-[0.85em]',
+        /** 涉及参数行：标签 + 参数名，换行不溢出 */
+        params: 'mt-1 flex min-w-0 flex-wrap items-center gap-1.5',
+        /** 「涉及参数」标签 */
+        paramsLabel: 'text-dimmed me-0.5 text-xs',
+        /** 单个参数名：等宽小字，描边不填充，与示例卡片同一条边线色 */
+        param: 'border-gray-3 text-toned rounded-xs border px-1.5 py-px font-mono text-xs',
+        /**
+         * 示例卡片：示例本体 + 底栏 + 折叠源码，三段共用一条描边与圆角。
+         * 描边不填充：不写 bg-*，底色一律由环境层提供（见顶部铁律）。
+         */
+        card: [
+            'group/demo-section flex w-full min-w-0 flex-col overflow-hidden',
             'border-gray-3 rounded-sm border',
             'transition-colors duration-200 hover:border-inverted/15',
         ].join(' '),
-        /** 卡片头：左标题区 / 右动作组 */
-        header: 'border-gray-3 flex min-h-12 flex-wrap items-center justify-between gap-2 border-b px-4 py-2',
-        /** 标题区 */
-        headerMain: 'flex min-w-0 flex-col gap-0.5',
-        /** 小节标题：小字号加粗，不与文档页大标题抢层级 */
-        title: 'text-highlighted text-sm font-semibold tracking-tight',
-        /** 小节描述 */
-        description: 'text-muted text-sm leading-relaxed',
         /**
          * 示例本体 + Theme slots 面板的并排容器。
          * 窄屏纵向堆叠（面板落到示例下方），lg 起分成左右两栏。
@@ -46,8 +57,17 @@ export const sectionConfig = {
          * 窄屏是示例下方的一段，lg 起变成右侧固定宽度的一栏。
          */
         themePanel: 'border-gray-3 w-full min-w-0 shrink-0 border-t lg:w-64 lg:border-t-0 lg:border-l',
-        /** 源码区：折叠展开后位于示例下方，与示例本体靠一条分隔线分开 */
-        code: 'border-gray-3 w-full min-w-0 border-t',
+        /** 卡片底栏：左侧示例代码名称（仅展开源码时显示），右侧动作组 */
+        footer: 'border-gray-3 flex min-h-10 items-center gap-2 border-t px-3 py-1',
+        /** 示例代码名称：等宽小字，超长截断，不挤压动作组 */
+        codeName: 'text-muted flex min-w-0 items-center gap-1.5 font-mono text-xs',
+        /** 代码名称前的文件类型图标 */
+        codeIcon: 'size-4 shrink-0',
+        /**
+         * 源码区：卡片的下半截而非独立盒子，无描边、无内边距，只铺 bg-gray-2
+         * 把「读代码」与「看效果」分开；高度完全由代码撑开。
+         */
+        code: 'bg-gray-2 w-full min-w-0',
     },
     variants: {
         /**
@@ -67,24 +87,19 @@ export const sectionConfig = {
 /**
  * DemoActions —— 示例动作组（收起/展开 · 复制代码 · 预览 · Playground · 询问 AI）
  *
- * 卡片头右侧常驻位；默认淡出，悬停或键盘聚焦所属卡片时浮出，
- * 无 hover 能力的触屏（<md）与源码展开时常驻。
+ * 位于卡片底栏右侧，常驻显示：底栏本身就是动作区，再做悬停淡出只会留下一条空栏。
+ * ms-auto 保证左侧代码名称未显示时动作组仍然靠右。
  */
 export const actionsConfig = {
     slots: {
-        root: [
-            'flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-150',
-            'group-hover/demo-section:opacity-100 group-focus-within/demo-section:opacity-100',
-            'max-md:opacity-100',
-        ].join(' '),
+        root: 'ms-auto flex shrink-0 items-center gap-0.5',
         /** 收起/展开按钮上的箭头：展开时翻转 */
         chevron: 'transition-transform duration-200',
     },
     variants: {
-        /** 源码是否展开：展开时动作组常驻、箭头翻转 */
+        /** 源码是否展开：展开时箭头翻转 */
         open: {
             true: {
-                root: 'opacity-100',
                 chevron: 'rotate-180',
             },
             false: {},
@@ -98,14 +113,17 @@ export const actionsConfig = {
 /**
  * DemoCode —— 源码面板
  *
- * 文件名头部由代码块围栏标注（```vue [文件名]）渲染，这里只负责收口外边距、
- * 并给长示例加定高滚动，避免把卡片撑到几屏高。
+ * 代码名称已由卡片底栏承担，这里不再渲染文件名头部。
+ * 代码块自带的描边、圆角、底色、外边距一律清掉，只留 pre 的行内边距，底色交给外层 bg-gray-2；
+ * 不设定高，折叠面板的高度完全由代码撑开。
+ * 代码块自带的复制 / 运行浮动按钮与底栏动作组重复，一并隐藏。
  */
 export const codeConfig = {
     base: [
-        'w-full min-w-0 p-4',
-        '[&_pre]:max-h-[420px] [&_pre]:overflow-auto',
-        '[&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+        'w-full min-w-0',
+        '[&_pre]:m-0 [&_pre]:rounded-none [&_pre]:border-0 [&_pre]:bg-transparent [&_pre]:px-4 [&_pre]:py-3',
+        '[&_pre]:overflow-x-auto [&_button]:hidden',
+        '[&_*]:my-0',
     ].join(' '),
 } as const
 

@@ -86,6 +86,8 @@ const switchCode = computed(() => {
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
+/** 基础用法演示 */
+const basicValue = ref(true);
 /** 颜色矩阵演示 */
 const colorValue = ref(true);
 /** 形态演示 */
@@ -143,13 +145,25 @@ function handleBeforeChange() {
       </div>
     </Playground>
 
-    <DemoSection title="颜色" description="开启态轨道取语义色，关闭态统一为中性灰；两侧文案跟随开关状态与语义色联动高亮。">
+    <DemoSection title="基础用法">
+      <template #description>
+        <code>v-model</code> 绑定开关状态，<code>active-label</code> / <code>inactive-label</code>
+        放在轨道两侧，当前状态一侧的文案高亮；<code>disabled</code> 后轨道置灰且不响应点击。
+      </template>
+      <DemoBlock class="items-center gap-8">
+        <RebornSwitch v-model="basicValue" />
+        <RebornSwitch v-model="basicValue" active-label="开启" inactive-label="关闭" />
+        <RebornSwitch v-model="basicValue" disabled active-label="禁用" />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="语义色：color" description="开启态轨道取语义色，关闭态统一为中性灰；两侧文案跟随开关状态与语义色联动高亮。">
       <DemoBlock class="gap-6">
         <RebornSwitch v-for="c in switchColors" :key="c" v-model="colorValue" :color="c" />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸">
+    <DemoSection title="尺寸：size">
       <template #description>
         三档圆形规格：<code>sm</code> 16×28 / 滑块 12px、<code>md</code> 24×44 / 滑块 20px、<code>lg</code> 32×60 / 滑块
         28px，滑块四周留白固定 2px。
@@ -159,20 +173,7 @@ function handleBeforeChange() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义颜色">
-      <template #description>
-        <code>ui.activeTrack</code> / <code>ui.inactiveTrack</code> 分别覆盖开、关状态的背景与 ring，
-        <code>ui.track</code> 设置通用轨道样式，状态样式优先于通用样式。
-      </template>
-      <DemoBlock class="items-center gap-8">
-        <RebornSwitch v-model="customColorValue"
-          :ui="{ activeTrack: 'bg-[#13ce66] ring-[#0f9d4e]', inactiveTrack: 'bg-[#ff4949] ring-[#d9363e]' }" />
-        <RebornSwitch v-model="customColorValue"
-          :ui="{ track: 'ring-2', activeTrack: 'bg-primary ring-primary/40', inactiveTrack: 'bg-[#f5f7fa] ring-[#dcdfe6]' }" />
-      </DemoBlock>
-    </DemoSection>
-
-    <DemoSection title="形态">
+    <DemoSection title="形态：type">
       <template #description>
         <code>type</code> 提供三种形态：<code>circle</code> 胶囊圆形（默认）、<code>round</code>
         圆角方形、<code>line</code> 细线轨道 + 悬浮滑块——轨道压成滑块直径一半的细线，滑块骑在线上居中滑动。
@@ -184,12 +185,12 @@ function handleBeforeChange() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="文字描述">
+    <DemoSection title="点内文本：inline-prompt 与 auto-width">
       <template #description>
-        使用<code>inline-prompt</code>属性来控制文本是否显示在点内
-        <p>
-          使用 <code>active-label</code> / <code>inactive-label</code> 属性来设置开关的文字描述。
-        </p>
+        <code>inline-prompt</code> 把 <code>active-label</code> / <code>inactive-label</code>
+        搬进轨道内，适合空间紧凑、不便在两侧放文案的场景；轨道宽度固定，文案超出时截断省略。需要完整展示时加
+        <code>auto-width</code>，轨道随文案撑宽；第三行用 <code>#activeLabel</code> / <code>#inactiveLabel</code>
+        插槽换成图文混排，<code>#active</code> / <code>#inactive</code> 插槽替换滑块内容。
       </template>
       <DemoBlock class="items-center gap-8">
         <RebornSwitch v-model="inlineValue" inline-prompt active-label="开" inactive-label="关" />
@@ -230,7 +231,7 @@ function handleBeforeChange() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="切换波纹">
+    <DemoSection title="切换波纹：wave">
       <template #description>
         <code>wave</code> 在每次切换成功后从轨道边缘向外扩散一圈开态色并淡出（0.5s），给没有文案的开关补一个「这一下点到了」的反馈；波纹色取 <code>color</code> 语义色，不跟随
         <code>ui</code> 背景覆盖。默认关闭，开启后只是装饰，不影响取值与事件。
@@ -242,29 +243,36 @@ function handleBeforeChange() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="取值与拦截">
+    <DemoSection title="自定义取值：active-value 与 inactive-value">
       <template #description>
-        <code>active-value</code> / <code>inactive-value</code> 可绑定任意类型；<code>before-change</code> 返回
-        <code>false</code> 或 Promise 解析为 <code>false</code> 时取消本次切换。
+        后端字段不是布尔时（如 <code>'yes'</code> / <code>'no'</code>、<code>1</code> / <code>0</code>），用
+        <code>active-value</code> / <code>inactive-value</code> 直接绑定原值，省去来回转换；<code>v-model</code> 与
+        <code>change</code> 载荷都是这两个值之一。
       </template>
-      <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
-        <div class="flex flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">
-            自定义取值 · 当前 <code class="text-primary font-mono">{{ customValue }}</code>
-          </span>
-          <RebornSwitch v-model="customValue" active-value="yes" inactive-value="no" active-label="Yes"
-            inactive-label="No" />
-        </div>
-        <div class="flex flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">拦截切换 · <code>before-change</code>（Promise + Confirm）</span>
-          <RebornSwitch v-model="beforeChangeValue" :before-change="handleBeforeChange" active-label="需要确认" />
-        </div>
+      <DemoBlock class="flex-col items-start gap-3">
+        <span class="text-dimmed text-xs font-medium">
+          当前值 <code class="text-primary font-mono">{{ customValue }}</code>
+        </span>
+        <RebornSwitch v-model="customValue" active-value="yes" inactive-value="no" active-label="Yes"
+          inactive-label="No" />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="加载与插槽">
+    <DemoSection title="切换前拦截：before-change">
       <template #description>
-        <code>loading</code> 期间锁定交互；<code>#thumb</code> 插槽（作用域 <code>{ checked, loading }</code>）可完全接管滑块内容。
+        <code>before-change</code> 在点击后、改值前执行：返回 <code>false</code> 或 Promise 解析为
+        <code>false</code> / 被 reject 时取消本次切换，适合二次确认或等待接口结果。等待期间开关不会提前翻转。
+      </template>
+      <DemoBlock class="items-center gap-8">
+        <RebornSwitch v-model="beforeChangeValue" :before-change="handleBeforeChange" active-label="需要确认" />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="加载与滑块插槽：loading、thumb 与 active / inactive">
+      <template #description>
+        <code>loading</code> 期间锁定交互并在滑块内显示旋转图标；<code>#thumb</code> 插槽（作用域
+        <code>{ checked, loading }</code>）可完全接管滑块内容，<code>#active</code> / <code>#inactive</code>
+        只按状态替换滑块内图标。
       </template>
       <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
         <div class="flex flex-col gap-3">
@@ -293,10 +301,24 @@ function handleBeforeChange() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="样式定制">
+    <DemoSection title="轨道配色：ui.activeTrack 与 ui.inactiveTrack">
+      <template #description>
+        语义色不够用时，<code>ui.activeTrack</code> / <code>ui.inactiveTrack</code> 分别覆盖开、关状态的背景与 ring；
+        <code>ui.track</code> 写两态通用的轨道样式。状态样式在通用样式之后合并，所以同类原子类以状态样式为准。
+      </template>
+      <DemoBlock class="items-center gap-8">
+        <RebornSwitch v-model="customColorValue"
+          :ui="{ activeTrack: 'bg-[#13ce66] ring-[#0f9d4e]', inactiveTrack: 'bg-[#ff4949] ring-[#d9363e]' }" />
+        <RebornSwitch v-model="customColorValue"
+          :ui="{ track: 'ring-2', activeTrack: 'bg-primary ring-primary/40', inactiveTrack: 'bg-[#f5f7fa] ring-[#dcdfe6]' }" />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="样式定制：ui.track 与滑块尺寸变量">
       <template #description>
         <code>ui</code> 对象可覆写 <code>track</code> / <code>thumb</code>
-        的原子类；选中位移按「右缘贴轨道右端收 2px」自动计算，自定义宽高无需改位移。
+        的原子类；选中位移按「右缘贴轨道右端收 2px」自动计算，改轨道宽高时只需同步
+        <code>--re-switch-thumb-size</code> 变量，不必改位移。
       </template>
       <DemoBlock layout="grid" align="start" class="lg:grid-cols-2">
         <div class="flex flex-col gap-3">

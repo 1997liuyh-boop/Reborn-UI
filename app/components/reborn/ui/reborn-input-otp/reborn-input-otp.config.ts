@@ -8,7 +8,7 @@ export default {
         root: "relative inline-flex items-center",
         inner: "absolute top-0 h-full z-10 opacity-0 w-full left-0",
         list: "flex flex-row relative gap-1",
-        item: "flex flex-row items-center justify-center duration-100 border border-solid border-gray-3 dark:border-gray-6 rounded-lg bg-gray-1 dark:bg-gray-8",
+        item: "flex flex-row items-center justify-center duration-100 border border-solid border-gray-3 rounded-lg bg-gray-1",
         value: "text-inherit font-medium",
         cursor: "absolute w-[1px] h-[60%]",
     },
@@ -53,7 +53,7 @@ export default {
         disabled: {
             true: {
                 root: "opacity-50 pointer-events-none",
-                item: "bg-gray-100 dark:bg-gray-700",
+                item: "bg-gray-2",
             },
         },
     },

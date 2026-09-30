@@ -14,7 +14,7 @@
  *   避免文档站 404 页被渲染进手机壳；
  * - 主题通过 postMessage 与 uniapp 侧同步（协议与 DeviceFrame 一致）。
  *
- * z-index 约定：header z-50 > 悬浮目录 z-40 > 本面板（fixed）z-30 > 吸顶 Tab z-20
+ * z-index 约定：header z-50 > 本面板（fixed）z-30 > 吸顶 Tab z-20 > 右栏目录 z-10
  */
 import { useMediaQuery, useWindowSize } from "@vueuse/core"
 

@@ -7,7 +7,7 @@
   ],
   "whenNotToUse": [
     "层级数据逐级选择改用 reborn-cascader。",
-    "日期选择改用 reborn-select-date。",
+    "日期选择：web 端改用 reborn-date-picker，uniapp 端改用 reborn-select-date。",
     "带输入联想、历史记录的搜索改用 reborn-search-box。"
   ],
   "pitfalls": [

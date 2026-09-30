@@ -1,6 +1,7 @@
 import type { InjectionKey, Ref } from 'vue'
 import type { DemoSectionSourceMap } from '~/utils/extractDemoSections'
 import type { ComponentThemeGroup } from '~/utils/getComponentTheme'
+import type { DemoUsage } from '~/utils/trimComponentDocBody'
 
 /**
  * 示例容器的边界标记属性，由 DemoSection 写在自己的示例本体容器上。
@@ -36,3 +37,9 @@ export interface DemoContext {
 
 /** demo 上下文注入键（由 ComponentTabs 提供，DemoSection 消费） */
 export const demoContextKey: InjectionKey<DemoContext> = Symbol('reborn.demo-context')
+
+/**
+ * 文档正文「用法」小节收进示例卡片的补充信息（分组标题 -> 描述 + 参数），
+ * 由 DocsPage 裁剪正文时生成，DemoSection 按自己的 title 取用。
+ */
+export const demoUsageContextKey: InjectionKey<Ref<Record<string, DemoUsage>>> = Symbol('reborn.demo-usage')

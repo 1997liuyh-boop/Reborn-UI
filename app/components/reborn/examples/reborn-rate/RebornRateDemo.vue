@@ -72,6 +72,10 @@ const controls = [
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
+/** 基础用法：整星、半星与只读展示 */
+const basicScore = ref(3);
+const halfScore = ref(3.5);
+
 /** 触发方式：click 悬停仅预览、点击提交；hover 悬停即改分 */
 const clickScore = ref(3);
 const hoverScore = ref(3);
@@ -147,7 +151,76 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
       />
     </Playground>
 
-    <DemoSection title="触发方式">
+    <DemoSection title="基础用法">
+      <template #description>
+        <code>v-model</code> 绑定分值，<code>allow-half</code> 允许半星、<code>show-value</code>
+        在末尾显示分数；<code>readonly</code> 只展示不可改，<code>disabled</code> 在此基础上整体半透明并屏蔽指针事件。
+      </template>
+      <DemoBlock layout="stack">
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-16 text-xs">整星</span>
+          <RebornRate
+            v-model="basicScore"
+            show-value
+          />
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-16 text-xs">半星</span>
+          <RebornRate
+            v-model="halfScore"
+            allow-half
+            show-value
+          />
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-16 text-xs">readonly</span>
+          <RebornRate
+            :model-value="4"
+            readonly
+            show-value
+          />
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-dimmed w-16 text-xs">disabled</span>
+          <RebornRate
+            :model-value="2"
+            disabled
+            show-value
+          />
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="语义色与尺寸">
+      <template #description>
+        <code>color</code> 与全站语义色板对齐，默认 <code>warning</code>，只作用于选中图标；
+        <code>size</code> 提供 sm / md / lg 三档，图标分别为 16 / 20 / 28px，分数字号随之变化。
+      </template>
+      <DemoBlock layout="stack">
+        <RebornRate
+          v-for="c in rateColors"
+          :key="c"
+          :model-value="3"
+          :color="c"
+        />
+      </DemoBlock>
+      <DemoBlock layout="stack">
+        <div
+          v-for="s in rateSizes"
+          :key="s"
+          class="flex items-center gap-4"
+        >
+          <span class="text-dimmed w-16 text-xs">{{ s }}</span>
+          <RebornRate
+            :model-value="3"
+            :size="s"
+            show-value
+          />
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="触发方式：click 与 hover">
       <template #description>
         默认 <code>click</code>：悬停只做预览，点击才提交；<code>trigger="hover"</code>
         让指针滑到哪颗就改到哪颗，适合快速打分。触控端没有悬停，该值等同 <code>click</code>。
@@ -173,7 +246,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
     </DemoSection>
 
     <DemoSection
-      title="可清空"
+      title="可清空：clearable"
       description="默认再次点击当前分值不会有变化；开启 clearable 后再点同一分值即清零。"
     >
       <DemoBlock layout="stack">
@@ -196,7 +269,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
     </DemoSection>
 
     <DemoSection
-      title="自定义文案"
+      title="自定义文案：format-text 与 value 插槽"
       description="format-text 接收当前分值、返回要显示的文案，传入后无需 show-value；需要更复杂的内容可用 value 插槽自行渲染（会替换默认的文本节点）。不传时分数区域没有默认文案。"
     >
       <DemoBlock layout="stack">
@@ -221,7 +294,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="分段颜色">
+    <DemoSection title="分段颜色：colors 与阈值">
       <template #description>
         <code>colors</code> 传数组时按 <code>low-threshold</code>（默认 2，含）与
         <code>high-threshold</code>（默认
@@ -254,7 +327,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
     </DemoSection>
 
     <DemoSection
-      title="未选中颜色"
+      title="未选中颜色：void-color"
       description="void-color 指定未选中图标的实色；不传时未选中图标取文字色的 30% 不透明度。"
     >
       <DemoBlock layout="stack">
@@ -278,7 +351,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="分段图标">
+    <DemoSection title="分段图标：icons">
       <template #description>
         <code>icons</code> 的分段规则与 <code>colors</code> 相同，值为 <code>{ type, url }</code>：
         <code>type</code> 为 <code>icon</code> 时 <code>url</code> 是 Nuxt Icon 名，为
@@ -296,13 +369,13 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
         </div>
       </DemoBlock>
       <DemoNote tone="dimmed">
-        低分段哭脸、中分段平脸、5 分换成图片：<code>{ 2: { type: 'icon', url: 'lucide:frown' }, 4: { type: 'icon', url: 'lucide:meh',
-          excluded: true }, 5: { type: 'image', url: '.../logo.png' } }</code>
+        0 ~ 3 分哭脸、3 ~ 6 分（不含 6）平脸、6 ~ 8 分换成图片；超过 8 分没有命中任何分段，回退到 active-icon：<code>{ 3: { type: 'icon', url: 'lucide:frown' }, 6: { type: 'icon', url: 'lucide:meh',
+          excluded: true }, 8: { type: 'image', url: '.../logo.png' } }</code>
       </DemoNote>
     </DemoSection>
 
     <DemoSection
-      title="实例方法"
+      title="实例方法：setCurrentValue 与 resetCurrentValue"
       description="setCurrentValue 直接写入分数（按 count 夹取、按 allowHalf 取整，并触发 update:modelValue 与 change）；resetCurrentValue 清除悬停预览并把内部值同步回 modelValue。这里用非受控写法，重置后会退回传入的 3 分。"
     >
       <DemoBlock layout="stack">
@@ -336,7 +409,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
     </DemoSection>
 
     <DemoSection
-      title="自定义图标"
+      title="自定义图标：icon 属性与 icon 插槽"
       description="icon 与 activeIcon 接受任意 Nuxt Icon 名，整套换图标时最省事；#icon 插槽拿到 index 与 active，可放任意内容。选中色都由 color 决定。"
     >
       <DemoBlock layout="stack">
@@ -390,7 +463,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
     </DemoSection>
 
     <DemoSection
-      title="图片图标"
+      title="图片图标：icon 插槽与半星裁切"
       description="#icon 插槽同时渲染未选中层与选中层，用 active 区分：未选中的图片压成灰度，叠加组件自带的 30% 不透明度拉开对比；半星同样按 clip-path 只露出左半边。"
     >
       <DemoBlock layout="stack">
@@ -433,7 +506,7 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
     </DemoSection>
 
     <DemoSection
-      title="横版图片"
+      title="横版图片：ui 覆盖图标尺寸"
       description="图标层默认是 20px 正方形，横版图片会被压扁；用 ui 的 icon 与 iconActive 按原图比例覆盖尺寸即可，星距与分数间距不受影响。"
     >
       <DemoBlock layout="stack">
@@ -479,21 +552,6 @@ const wideUi = { icon: "h-5 w-20", iconActive: "h-5 w-20" };
       <DemoNote tone="dimmed">
         示例图原尺寸 208×52，按 4:1 覆盖成 <code>h-5 w-20</code>（20×80）。
       </DemoNote>
-    </DemoSection>
-
-    <DemoSection
-      title="颜色"
-      description="与全站语义色板对齐。"
-    >
-      <DemoBlock layout="stack">
-        <RebornRate
-          v-for="c in rateColors"
-          :key="c"
-          :model-value="3"
-          :color="c"
-          :size="state.size"
-        />
-      </DemoBlock>
     </DemoSection>
   </div>
 </template>

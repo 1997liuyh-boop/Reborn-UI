@@ -83,6 +83,9 @@ const uncheckedValue = ref(false);
 const checkedValue = ref(true);
 const disabledValue = ref(true);
 
+/** 尺寸对照共用的选中状态 */
+const sizeValue = ref(true);
+
 /** 自定义真假值：未选中时也会写入具体文案 */
 const noticeValue = ref("系统更新");
 
@@ -178,8 +181,8 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </Playground>
 
     <DemoSection
-      title="基础状态"
-      description="未选中、已选中与禁用三种状态；禁用后仍会保留当前勾选结果。"
+      title="基础用法"
+      description="绑定布尔值即单项开关：未选中、已选中与禁用三种状态；禁用后仍会保留当前勾选结果。"
     >
       <DemoBlock
         layout="row"
@@ -203,8 +206,8 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="样式变体"
-      description="variant 控制选中态的表现形式：filled 填充配色，outlined 只染边框与图标。半选样式跟随变体，无需额外配置。"
+      title="颜色与变体"
+      description="variant 控制选中态的表现形式：filled 填充配色，outlined 只染边框与图标；color 切换语义色。半选样式跟随变体，无需额外配置。"
     >
       <DemoBlock
         layout="grid"
@@ -262,7 +265,26 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="自定义真假值"
+      title="尺寸"
+      description="size 同时决定勾选框边长（16 / 20 / 24px）与标签字号；放进 RebornCheckboxGroup 时由组统一下发。"
+    >
+      <DemoBlock
+        layout="row"
+        align="center"
+        class="gap-10"
+      >
+        <RebornCheckbox
+          v-for="s in checkboxSizes"
+          :key="s"
+          v-model="sizeValue"
+          :size="s"
+          :label="s"
+        />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection
+      title="自定义真假值：true-value 与 false-value"
       description="true-value 与 false-value 让单个勾选框直接绑定业务文案，而不局限于布尔值。"
     >
       <DemoBlock
@@ -298,7 +320,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="复选框组"
+      title="复选框组：options 与手动排布"
       description="RebornCheckboxGroup 统一托管数组值，并向下派发 size 与 color：options 一行完成数据驱动渲染，也可在默认插槽里手动排布子项（以 value 参与数组存取）。禁用项不可操作，预选中的禁用项保持选中态。"
     >
       <DemoBlock layout="stack">
@@ -356,7 +378,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="数据驱动的复选框组"
+      title="数据驱动：max、direction 与字段别名"
       description="options 传入数据后由组自行渲染子项，此时默认插槽不再生效；direction 控制排列方向，max 限制最多选中数量；数据字段名对不上时用 props 配置别名，不必先把数据改造一遍。"
     >
       <DemoBlock
@@ -425,7 +447,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="卡片式多选"
+      title="数组绑定：卡片式多选"
       description="value 与数组型 v-model 配合，可把勾选框嵌入到整块可点击的描边卡片中。"
     >
       <DemoBlock
@@ -454,7 +476,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="自定义勾选框"
+      title="自定义渲染：checkbox 插槽"
       description="checkbox 插槽整体替换勾选方块，作用域提供 checked / disabled / indeterminate；填充后 ui 的 control 与 icon 两个键会失效。"
     >
       <DemoBlock
@@ -485,7 +507,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
     </DemoSection>
 
     <DemoSection
-      title="进阶自定义"
+      title="样式覆盖：ui 与 icon 插槽"
       description="ui 可逐槽覆盖 control / icon / label 的样式，icon 插槽还能整体替换勾选标记。"
     >
       <DemoBlock

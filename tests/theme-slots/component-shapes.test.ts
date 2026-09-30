@@ -7,8 +7,8 @@ import { tv } from '../../app/lib/tv'
 
 it('按钮风格选项不再包含形状，旧变体仍可使用', () => {
   assert.deepEqual(buttonVariants, ['filled', 'outlined', 'soft', 'subtle', 'text'])
-  assert.match(tv(buttonTheme)({ variant: 'round' }).base(), /!rounded-full/)
-  assert.match(tv(buttonTheme)({ variant: 'circle' }).base(), /!aspect-square/)
+  assert.match(tv(buttonTheme)({ variant: 'round' }).base(), /rounded-full!/)
+  assert.match(tv(buttonTheme)({ variant: 'circle' }).base(), /aspect-square!/)
 })
 
 for (const [name, theme, variants, sizes] of [
@@ -25,17 +25,17 @@ for (const [name, theme, variants, sizes] of [
           for (const cls of base.filter(c => /^(?:bg-|text-|border-(?:gray|primary|brand|secondary|green|blue|orange|red))/.test(c))) {
             assert.ok(shaped.includes(cls), `${name  } 应保留 ${  cls}`)
           }
-          assert.ok(shaped.includes('!rounded-full'))
+          assert.ok(shaped.includes('rounded-full!'))
         }
       }
     })
     for (const size of sizes) {
       it(`${name  } 的 ${  variant  } 圆形 ${  size  } 固定宽高且优先于其他形状`, () => {
         const classes = styles({ variant, size, circle: true, round: true, square: true } as any).base().split(/\s+/)
-        assert.ok(classes.includes(`!w-[var(--height-${  name  }-${  size  })]`))
-        assert.ok(classes.includes(`!h-[var(--height-${  name  }-${  size  })]`))
-        assert.ok(classes.includes('!p-0'))
-        assert.ok(!classes.includes('!h-auto'))
+        assert.ok(classes.includes(`w-(--height-${  name  }-${  size  })!`))
+        assert.ok(classes.includes(`h-(--height-${  name  }-${  size  })!`))
+        assert.ok(classes.includes('p-0!'))
+        assert.ok(!classes.includes('h-auto!'))
       })
     }
   }

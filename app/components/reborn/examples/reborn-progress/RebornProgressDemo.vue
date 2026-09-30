@@ -101,7 +101,21 @@ function resetTask() {
       </div>
     </Playground>
 
-    <DemoSection title="直线进度条" description="三档高度严格为 6px、8px、16px。状态由业务显式控制，不随百分比自动改变。">
+    <DemoSection title="基础用法">
+      <template #description>
+        <code>percent</code> 传入 0–100 的完成比例，默认渲染直线形态并在右侧显示百分比；<code>status</code> 需要业务显式指定，到 100% 不会自动变为成功。
+      </template>
+      <DemoBlock layout="stack" class="gap-4">
+        <RebornProgress :percent="30" />
+        <RebornProgress :percent="100" status="success" />
+        <RebornProgress :percent="45" status="error" />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="尺寸与状态：size 与 status">
+      <template #description>
+        <code>size</code> 三档直线高度为 6px / 8px / 16px；<code>status</code> 的 <code>success</code> / <code>error</code> 切换语义色，并把右侧百分比换成状态图标。
+      </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex w-full flex-col gap-4">
           <DemoNote tone="dimmed">{{ size.toUpperCase() }}</DemoNote>
@@ -110,7 +124,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="圆环进度条" description="外径 48px / 76px / 114px，成功与失败状态在中央显示对应图标。">
+    <DemoSection title="形态：圆环 circle">
+      <template #description>
+        <code>type="circle"</code> 渲染圆环，三档外径为 48px / 76px / 114px，成功与失败状态在中央显示对应图标。
+      </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex flex-wrap items-center gap-8">
           <DemoNote tone="dimmed" class="w-[30px]">{{ size.toUpperCase() }}</DemoNote>
@@ -119,7 +136,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="仪表盘形进度条" description="底部保留 90° 缺口，尺寸、文字和状态图标与普通圆环一致。">
+    <DemoSection title="形态：仪表盘 dashboard">
+      <template #description>
+        <code>type="dashboard"</code> 只绘制 270° 圆弧，底部保留 90° 缺口；尺寸、文字和状态图标与圆环一致。
+      </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex flex-wrap items-center gap-8">
           <DemoNote tone="dimmed" class="w-[30px]">{{ size.toUpperCase() }}</DemoNote>
@@ -128,7 +148,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="步骤进度条" description="节点间隔 2px；小号节点宽 2px，中号和大号节点宽 32px 且带 2px 圆角。当前节点可部分填充。">
+    <DemoSection title="步骤：steps 与逐节点配色">
+      <template #description>
+        <code>steps</code> 把轨道切成等分节点，节点间隔 2px；小号节点宽 2px，中号和大号节点宽 32px 且带 2px 圆角，当前节点可部分填充。<code>stroke-color</code> 传数组时逐节点着色，缺少的节点回退到状态色。
+      </template>
       <DemoBlock layout="stack" class="gap-6">
         <div v-for="size in progressSizes" :key="size" class="flex flex-wrap items-center gap-8">
           <DemoNote tone="dimmed" class="w-[30px]">{{ size.toUpperCase() }}</DemoNote>
@@ -138,19 +161,28 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="步骤进度圈" description="环厚 6px / 8px / 16px，沿圆弧留出 2px 间距，支持逐节点配色。">
+    <DemoSection title="步骤圆环：circle 与 steps">
+      <template #description>
+        圆环启用 <code>steps</code> 后环厚变为 6px / 8px / 16px，节点沿圆弧留出 2px 间距，同样支持逐节点配色。
+      </template>
       <DemoBlock layout="grid" class="gap-8">
         <RebornProgress v-for="size in progressSizes" :key="size" type="circle" :size="size" :steps="5" :percent="60" :stroke-color="stepColors" />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="仪表盘步骤进度圈" description="底部开口与步骤节点组合，支持全部尺寸和状态。">
+    <DemoSection title="步骤仪表盘：dashboard 与 steps">
+      <template #description>
+        仪表盘与 <code>steps</code> 组合，节点只分布在 270° 圆弧上，底部缺口保持不变。
+      </template>
       <DemoBlock layout="grid" class="gap-8">
         <RebornProgress v-for="size in progressSizes" :key="size" type="dashboard" :size="size" :steps="5" :percent="60" :stroke-color="stepColors" />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义渐变色" description="设置角度与百分比色标，连续、步骤、圆环和仪表盘均可使用。">
+    <DemoSection title="颜色：stroke-color 渐变">
+      <template #description>
+        <code>stroke-color</code> 传 <code>{ angle, stops }</code> 渐变配置，色标锚定完整轨道而不随进度移动；连续、步骤、圆环和仪表盘均可使用。
+      </template>
       <DemoBlock layout="stack" class="gap-8">
         <RebornProgress :percent="80" size="lg" :stroke-color="gradient" />
         <RebornProgress :percent="80" :steps="10" :stroke-color="gradient" />
@@ -163,7 +195,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="分段颜色" description="按累计终点绘制固定区间；只着色到当前进度。分段之间无间隔，每一段只在行进方向一侧带圆弧，流动方向反转时圆弧换边。">
+    <DemoSection title="颜色：segments 分段">
+      <template #description>
+        <code>segments</code> 按累计终点绘制固定颜色区间，只着色到当前进度；分段之间无间隔，每一段只在行进方向一侧带圆弧，流动方向反转时圆弧换边。
+      </template>
       <DemoBlock layout="stack" class="gap-8">
         <RebornProgress size="lg" :percent="85" :segments="segments" />
         <RebornProgress size="lg" :percent="85" :segments="segments" flow-direction="reverse" />
@@ -176,7 +211,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="流动方向" description="flow-direction 设为 reverse 时，直线从右往左填充，圆环与仪表盘逆时针绘制，分段圆弧与条纹流向随之翻转。">
+    <DemoSection title="方向：flow-direction 反向填充">
+      <template #description>
+        <code>flow-direction="reverse"</code> 时直线从右往左填充，圆环与仪表盘逆时针绘制，分段圆弧与条纹流向随之翻转。
+      </template>
       <DemoBlock layout="stack" class="gap-8">
         <RebornProgress size="lg" :percent="60" flow-direction="reverse" />
         <RebornProgress :steps="5" :percent="60" flow-direction="reverse" />
@@ -188,7 +226,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="条纹进度条" description="striped 叠加条纹装饰，striped-flow 让条纹流动，duration 控制一个周期的秒数，条纹流向跟随 flow-direction；仅直线形态生效，系统开启减少动态效果时自动停止流动。">
+    <DemoSection title="条纹：striped、striped-flow 与 duration">
+      <template #description>
+        <code>striped</code> 叠加条纹装饰，<code>striped-flow</code> 让条纹流动，<code>duration</code> 控制一个周期的秒数，流向跟随 <code>flow-direction</code>；仅直线形态生效，系统开启减少动态效果时停止流动。
+      </template>
       <DemoBlock layout="stack" class="gap-8">
         <RebornProgress size="lg" :percent="70" striped />
         <RebornProgress size="lg" :percent="70" striped striped-flow />
@@ -198,7 +239,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="内嵌文字与格式化" description="textInside 改变直线文字位置，format 改变内容；不自动增高轨道，建议内嵌文字使用 lg。">
+    <DemoSection title="文字：text-inside 与 format">
+      <template #description>
+        <code>text-inside</code> 把直线文字移到已完成区域内部，<code>format</code> 改写文字内容；内嵌时轨道不会自动增高，建议搭配 <code>size="lg"</code>。
+      </template>
       <DemoBlock layout="stack" class="gap-8">
         <RebornProgress size="lg" :percent="60" text-inside />
         <RebornProgress size="lg" :percent="60" text-inside :format="formatPercent" />
@@ -207,7 +251,10 @@ function resetTask() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="任务组合与作用域插槽" description="业务推进进度，插槽读取 percent/status；默认插槽优先于 format 和状态图标。">
+    <DemoSection title="作用域插槽：上传任务">
+      <template #description>
+        默认插槽读取 <code>percent</code> / <code>status</code> 自定义文字，优先级高于 <code>format</code> 和状态图标；进度由业务推进，组件不修改数值。
+      </template>
       <DemoBlock layout="stack" class="gap-6">
         <RebornProgress :percent="taskPercent" :status="taskPercent === 100 ? 'success' : 'default'" aria-label="文件上传进度">
           <template #default="{ percent, status }"><span class="text-sm">{{ status === 'success' ? '上传完成' : `已上传 ${percent}%` }}</span></template>

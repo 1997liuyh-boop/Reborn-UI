@@ -121,7 +121,7 @@ function fireMaxCountDemo() {
     </Playground>
 
     <DemoSection
-      title="基本用法"
+      title="基础用法"
       description="五个静态方法对应五种消息类型；基础变体为白底浮层 + 语义色圆形图标，3 秒后自动关闭。"
     >
       <DemoBlock layout="row" align="center">
@@ -148,7 +148,7 @@ function fireMaxCountDemo() {
     </DemoSection>
 
     <DemoSection
-      title="Promise 接口"
+      title="关闭回调：Promise 串联"
       description="静态方法返回 Promise，在消息关闭后兑现，可用 then 串联后续动作。"
     >
       <DemoBlock layout="row" align="center">
@@ -157,7 +157,7 @@ function fireMaxCountDemo() {
     </DemoSection>
 
     <DemoSection
-      title="更新内容与全局方法"
+      title="同 key 更新与全局配置"
       description="传相同 key 可原位更新消息并重置计时；message.config 设置 maxCount 等全局项，message.destroy 立即关闭。"
     >
       <DemoBlock layout="row" align="center">

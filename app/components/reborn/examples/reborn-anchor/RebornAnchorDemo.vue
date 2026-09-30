@@ -441,7 +441,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="items 数据化配置">
+    <DemoSection title="数据化配置：items 递归渲染">
       <template #description>
         链接来自接口或路由表时，逐个写 <code>RebornAnchorLink</code> 就得自己套一层 <code>v-for</code>，嵌套还要再套一层。把数组交给
         <code>items</code>，组件按 <code>children</code> 递归渲染出同样的结构。传了 <code>items</code> 默认插槽就不再生效，两种写法择一使用。
@@ -467,7 +467,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="水平锚点">
+    <DemoSection title="排列方向：水平锚点">
       <template #description>
         <code>direction="horizontal"</code> 把链接横排、标记移到底部，适合压在内容区正上方。它只改链接的排布，滚动判定始终是纵向的。横向下标记只有贴底的滑块一种形态，传
         <code>dot</code> / <code>hollow</code> 会按 <code>bar</code> 渲染。
@@ -497,7 +497,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="标记样式">
+    <DemoSection title="标记形态：竖条、圆点与隐藏">
       <template #description>
         <code>marker</code> 决定跟随选中项滑动的那个标记长什么样：<code>bar</code> 竖条、<code>dot</code> 实心圆、<code>hollow</code>
         空心圆、<code>none</code> 不显示。布尔值仍然可用，<code>true</code> 等价于 <code>bar</code>、<code>false</code> 等价于
@@ -557,7 +557,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="轨道线类型">
+    <DemoSection title="轨道线：default 与 underline">
       <template #description>
         <code>type</code> 只管画不画那条贯穿的灰色轨道线：<code>default</code> 画，标记像是轨道被逐段点亮；<code>underline</code> 不画，只剩标记本身。
       </template>
@@ -597,7 +597,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="强调色">
+    <DemoSection title="强调色：color">
       <template #description>
         <code>color</code> 同时改选中文字与标记的颜色，轨道线不跟着变（它是背景而非强调色）。下面四个锚点盯的是同一个容器。
       </template>
@@ -628,7 +628,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="指定滚动容器">
+    <DemoSection title="滚动容器：container 联动">
       <template #description>
         <code>container</code> 收选择器字符串、<code>HTMLElement</code> 或
         <code>Window</code>。锚点不必放在容器里面，指得到就能联动——下面两个锚点盯的是中间同一个容器。
@@ -670,7 +670,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="偏移量与触发线">
+    <DemoSection title="偏移量与触发线：offset、bound">
       <template #description>
         <code>offset</code> 决定滚完之后目标停在距顶多远，<code>bound</code> 决定目标顶部进到哪条线以内才算选中。开了 <code>select-scroll-top</code> 触发线压到
         0，此时 <code>bound</code> 不再参与判定，两者不叠加。
@@ -720,7 +720,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="子链接嵌套">
+    <DemoSection title="子链接嵌套：sub-link 插槽">
       <template #description>
         往 <code>sub-link</code> 插槽里再放 <code>RebornAnchorLink</code> 就是下一级链接，缩进一层，但和上级共用同一套滚动判定。子链接始终竖排，横向锚点下不适用。同样的结构用
         <code>items</code> 的 <code>children</code> 也能写出来，区别只在链接由谁渲染。
@@ -768,7 +768,7 @@ function scrollToBlock(key: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="手动滚动">
+    <DemoSection title="手动滚动：scrollTo 方法">
       <template #description>
         组件实例暴露 <code>scrollTo(href)</code>，不点链接也能滚到指定区块，选中态同步跟上。适合从页面别处触发跳转，比如目录按钮或搜索结果。
       </template>

@@ -44,8 +44,8 @@ for (const color of buttonColors) {
       assert.ok(classes.includes('cursor-pointer'));
       assert.ok(!classes.includes('cursor-not-allowed'));
       assert.ok(classes.some((value: string) => /^enabled:hover:/.test(value)));
-      if (variant === 'round' || variant === 'circle') assert.ok(classes.includes('!rounded-full'));
-      if (variant === 'circle') assert.ok(classes.includes('!aspect-square'));
+      if (variant === 'round' || variant === 'circle') assert.ok(classes.includes('rounded-full!'));
+      if (variant === 'circle') assert.ok(classes.includes('aspect-square!'));
     });
   }
 }

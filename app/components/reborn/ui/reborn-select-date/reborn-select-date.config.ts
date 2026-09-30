@@ -12,8 +12,8 @@ export default {
         dropdown: "w-[var(--rb-trigger-width,100%)]",
         content: "w-full",
         calHeader: "flex items-center justify-between mb-2",
-        calNavBtn: "p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3",
-        calTitle: "text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors",
+        calNavBtn: "p-1 rounded-md hover:bg-gray-2 transition-colors cursor-pointer text-gray-6",
+        calTitle: "text-sm font-medium text-gray-8 cursor-pointer hover:text-primary transition-colors",
         // 星期栏字号取七级令牌 text-sm（12px）。原先的 text-xs 是 Tailwind 原生值，字号同为 12px，
         // 换令牌后只有行高从 16px 回到 20px
         calWeekdays: "grid grid-cols-7 gap-0 text-center text-sm text-gray-4 dark:text-gray-5",

@@ -309,7 +309,7 @@ const getRoundRectPath = (x: number, y: number, w: number, h: number, r: number)
 
     <img v-if="finalLogo" :src="finalLogo" alt="logo"
       class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-      :class="[logoShape === 'circle' ? 'rounded-full' : 'rounded']" :style="{
+      :class="[logoShape === 'circle' ? 'rounded-full' : 'rounded-sm']" :style="{
         width: `${finalLogoSize}px`,
         height: `${finalLogoSize}px`,
         filter: logoShadow ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' : 'none'

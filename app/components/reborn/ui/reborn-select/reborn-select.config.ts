@@ -308,17 +308,17 @@ export default {
         {
             wrapTags: true,
             size: "sm",
-            class: { trigger: "min-h-[var(--height-input-sm)] py-[3px]" },
+            class: { trigger: "min-h-input-sm py-[3px]" },
         },
         {
             wrapTags: true,
             size: "md",
-            class: { trigger: "min-h-[var(--height-input-md)] py-[5px]" },
+            class: { trigger: "min-h-input-md py-[5px]" },
         },
         {
             wrapTags: true,
             size: "lg",
-            class: { trigger: "min-h-[var(--height-input-lg)] py-[7px]" },
+            class: { trigger: "min-h-input-lg py-[7px]" },
         },
     ] as any,
     defaultVariants: {

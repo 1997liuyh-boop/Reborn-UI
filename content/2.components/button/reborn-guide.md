@@ -145,7 +145,7 @@ const steps: GuideStep[] = [
 | `title`            | `string`                           | -          | 步骤标题                                 | N    |
 | `content`          | `string`                           | -          | 自定义弹框正文的插槽名（优先于 `body`）  | N    |
 | `highlightContent` | `string`                           | -          | 自定义高亮框内容的插槽名                 | N    |
-| `placement`        | `string`                           | `'bottom'` | 引导框位置（12种popup + 2种dialog）      | N    |
+| `placement`        | `Placement \| 'center'`            | `'bottom'` | 引导框位置：popup 模式取值与 `reborn-tooltip` 的 `placement` 一致（12 种），dialog 模式仅 `'top'` / `'center'` | N    |
 | `offset`           | `[number\|string, number\|string]` | `[0, 0]`   | 相对 placement 的偏移                    | N    |
 | `mode`             | `'popup' \| 'dialog'`              | -          | 步骤级模式覆盖                           | N    |
 | `highlightPadding` | `number`                           | -          | 步骤级高亮内边距                         | N    |

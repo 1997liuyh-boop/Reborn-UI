@@ -237,7 +237,7 @@ const ARROW_INSET = 17;
  *
  * 规则与 reborn-popover / reborn-tooltip 一致：start / end 停在浮层对齐端内缩 ARROW_INSET 处，
  * 只有 center 才对准触发器中心。此前三档一律对准触发器中心：浮层最小宽度就是触发器宽度，
- * 内容不比触发器宽多少时，bottomLeft / bottomRight 的箭头和 bottom 一样落在正中附近，
+ * 内容不比触发器宽多少时，bottom-start / bottom-end 的箭头和 bottom 一样落在正中附近，
  * 看不出浮层到底靠哪边对齐（实测 104px 触发器配 126px 浮层，左对齐的箭头距左边 52px、距右边 74px）。
  *
  * 不测浮层也能算：syncFloating 把浮层的对齐端钉在触发器同侧的边上（start 贴起边、end 贴终边），
@@ -386,8 +386,10 @@ function onViewportScroll(event: Event) {
   // mousedown 时机的语义是「外部只要有动静就立刻收起」，页面滚动同样计入。
   // 但下拉面板内部的列表滚动属于组件自身的交互，必须排除，
   // 否则用滚轮翻选项会当场把面板关掉。
+  // 原生事件一并上报：浮层里再套了传送到 body 的子浮层（如日期面板的时间列）时，
+  // 父组件要靠 event.target 认出「这是子浮层自己的滚动」而放行。
   if (props.closeOn === "mousedown" && props.isOpen && !containsNode(event.target as Node)) {
-    emit("close");
+    emit("close", event);
     return;
   }
 

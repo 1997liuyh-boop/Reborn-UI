@@ -33,7 +33,7 @@ badge: New
 
 ### 基础用法
 
-`v-model` 绑定当前值，`min` / `max` 限定范围，`step` 控制每次增减的幅度。
+`v-model` 绑定当前值，`min` / `max` 限定范围，`step` 控制每次增减的幅度。数值到达边界时，对应方向的按钮自动置为禁用。
 
 ```vue
 <script setup lang="ts">
@@ -56,14 +56,16 @@ const count = ref(5);
 `min` / `max` 的默认值两端不同：Web 端为 `Number.MIN_SAFE_INTEGER` / `Number.MAX_SAFE_INTEGER`（等于不限制），UniApp 端为 `0` / `200`。同一段业务代码要跨端复用时，务必显式传入这两个值，否则 UniApp 端会在 200 处意外截断。
 ::
 
-### 尺寸、颜色与形状
+### 形状：shape
+
+`shape` 控制外框圆角，两端都提供 `circle`（胶囊圆角）与 `square`，但 `square` 的圆角档位与默认值不同；同一节一并说明 `size` 与 `color`，因为 `square` 的圆角随尺寸变化。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-`size` 支持 `sm` / `md` / `lg` 三档，尺寸全部取自 `app/assets/theme/typography.css` 的设计令牌：高度 24 / 32 / 40px，水平内边距 10 / 12 / 16px，加减图标 10 / 12 / 16px；字号 sm 与 md 同为 14px、lg 为 16px。
+`shape="square"` 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`，**默认值为 `square`**。
 
-`color` 影响聚焦环与按钮悬停色，`shape` 支持 `circle`（胶囊圆角）与 `square`（按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`），**默认值为 `square`**。
+`size` 支持 `sm` / `md` / `lg` 三档，尺寸全部取自 `app/assets/theme/typography.css` 的设计令牌：高度 24 / 32 / 40px，水平内边距 10 / 12 / 16px，加减图标 10 / 12 / 16px；字号 sm 与 md 同为 14px、lg 为 16px。`color` 影响聚焦环、光标与按钮悬停色。
 
 ```vue
 <template>
@@ -79,9 +81,9 @@ const count = ref(5);
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-`size` 同为 `sm` / `md` / `lg` 三档，但尺寸由字号令牌派生而非独立高度令牌：高度取 `--text-size-26 / 28 / 32` 的两倍，即 52 / 56 / 64rpx，字号对应 26 / 28 / 32rpx，加减图标为 `size-3.5` / `size-4` / `size-5`。
+`shape="square"` 统一映射为 `rounded-md`（不随尺寸变化），**默认值为 `circle`**。
 
-`shape` 的 `square` 统一映射为 `rounded-md`（不随尺寸变化），**默认值为 `circle`**。此外 UniApp 端的分割线会随 `color` 一起变色（聚焦时染成主题色），Web 端始终保持 `gray-3`。
+`size` 同为 `sm` / `md` / `lg` 三档，但尺寸由字号令牌派生而非独立高度令牌：高度取 `--text-size-26 / 28 / 32` 的两倍，即 52 / 56 / 64rpx，字号对应 26 / 28 / 32rpx，加减图标为 `size-3.5` / `size-4` / `size-5`。此外 UniApp 端的分割线会随 `color` 一起变色（聚焦时染成主题色），Web 端始终保持 `gray-3`。
 
 ```vue
 <template>
@@ -99,72 +101,10 @@ const count = ref(5);
 ::
 
 ::warning
-`shape` 的默认值两端相反（Web `square` / UniApp `circle`）。跨端复用同一份模板时请显式写出 `shape`，不要依赖默认值。
+`shape` 的默认值两端相反（Web `square` / UniApp `circle`）。跨端复用同一份模板时请显式写出 `shape`，不要依赖默认值。`variant="underlined"` 会把圆角压平，此时 `shape` 不再生效。
 ::
 
-### 数值精度
-
-`precision` 指定保留的小数位数，展示时会定长补零。当 `precision` 小于 `step` 的小数位时，实际精度取 `step` 的小数位，否则步进结果会被截断。
-
-```vue
-<template>
-  <!-- 展示 1.50，步进后仍保留两位 -->
-  <RebornInputNumber
-    v-model="amount"
-    :precision="2"
-    :step="1"
-  />
-
-  <!-- precision 传 0，但 step 有 1 位小数，实际精度按 1 位生效 -->
-  <RebornInputNumber
-    v-model="ratio"
-    :precision="0"
-    :step="0.1"
-  />
-</template>
-```
-
-::tip
-UniApp 端在不传 `precision` 时保留了一条旧行为：`input-type="digit"` 会自动按两位小数补零，`input-type="number"` 则不做定长补零。需要确定精度时显式传 `precision` 覆盖即可。
-::
-
-### 只能输入步进倍数（仅 Web）
-
-`step-strictly` 为 `true` 时只接受 `step` 的倍数，键入的非倍数值会在提交（失焦 / 回车）时就近吸附到最近的倍数。UniApp 端没有该属性。
-
-```vue
-<template>
-  <!-- 输入 13 会被吸附为 15 -->
-  <RebornInputNumber
-    v-model="count"
-    :step="5"
-    step-strictly
-    :min="0"
-    :max="100"
-  />
-</template>
-```
-
-### 绑定值的更新时机（仅 Web）
-
-默认在失焦或按下 Enter 时才写回绑定值。设置 `model-event="input"` 让组件在键入时即时更新。
-
-注意：`input` 模式下键入的值允许临时超出 `min` / `max`，组件会在失焦时统一修正。
-
-UniApp 端没有 `model-event`：键入过程通过独立的 `input` 事件透传原生事件对象，`v-model` 始终在失焦与按钮增减时写回修正后的值。
-
-```vue
-<template>
-  <RebornInputNumber
-    v-model="count"
-    model-event="input"
-    :min="0"
-    :max="100"
-  />
-</template>
-```
-
-### 形态变体
+### 形态：variant
 
 `variant` 两端均提供四种形态，各自负责背景与边框：
 
@@ -173,7 +113,7 @@ UniApp 端没有 `model-event`：键入过程通过独立的 `input` 事件透�
 | `outlined`   | 底色 + 四周描边（默认）              | 常规表单                     |
 | `filled`     | 灰底填充、无描边，聚焦时转为底色描边 | 灰色背景页面上的表单         |
 | `borderless` | 无背景无描边                         | 嵌入已有边框的单元格、卡片内 |
-| `underlined` | 仅保留底部下划线                     | 极简风格、行内编辑           |
+| `underlined` | 仅保留底部下划线                     | 行内编辑、紧凑的表格单元格   |
 
 `underlined` 会强制把圆角压平，此时 `shape` 不再生效，左右按钮之间的竖直分割线也会隐藏。`borderless` 平时没有描边，仅在校验失败时才补一圈描边色，否则错误态不可见。
 
@@ -199,29 +139,24 @@ UniApp 端没有 `model-event`：键入过程通过独立的 `input` 事件透�
 形态实现细节的端差异不影响用法，但会影响你覆盖样式时的写法：Web 端错误态描边用 `ring-red-5`、深浅色由 `base.css` 的 `.dark` 自动翻转灰阶；UniApp 端错误态用 `ring-error`，且 `theme.css` 没有 `.dark` 代码块，深色适配是逐条写死的 `dark:` 变体。
 ::
 
-### 键盘与滚轮
+### 禁用与只读：disabled / readonly
+
+`disabled` 两端语义一致：输入框不可聚焦键入，加减按钮一并禁用。`readonly` 两端同名但语义相反，必须分端看。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-`keyboard` 默认为 `true`，输入框聚焦后按 ↑ / ↓ 即按 `step` 步进；设为 `false` 后方向键回归原生文本框行为（光标跳到文本首尾）。Enter 提交不受该开关影响。
-
-`change-on-wheel` 默认为 `false`。开启后滚动鼠标滚轮可增减数值，向上滚为增、向下滚为减。为避免误吞页面滚动，它只在输入框已聚焦时才接管滚轮事件。
+`readonly` 为原生语义，默认 `false`。设为 `true` 后输入框仍可聚焦、可选中复制文本，但键入被拦截，加减按钮同时禁用。容器上会写入 `data-readonly="true"`，需要单独给只读态配色时可用 `data-[readonly=true]:` 选择器挂到 `ui.wrapper` 上。
 
 ```vue
 <template>
-  <!-- 关闭方向键步进 -->
   <RebornInputNumber
     v-model="count"
-    :keyboard="false"
+    disabled
   />
-
-  <!-- 聚焦后可用滚轮增减 -->
   <RebornInputNumber
     v-model="count"
-    change-on-wheel
-    :min="0"
-    :max="100"
+    readonly
   />
 </template>
 ```
@@ -229,17 +164,18 @@ UniApp 端没有 `model-event`：键入过程通过独立的 `input` 事件透�
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-两个属性同名同签名，但受端能力限制：
-
-- `keyboard`**仅 H5 生效**。小程序与 App 的原生输入框不派发 `keydown` 事件，方向键步进在这些端不会发生。
-- `change-on-wheel`**为空实现**。小程序与 App 没有鼠标滚轮事件，保留该属性只是为了与 Web 端保持同名同签名，传入不会报错也不会有效果。
+`readonly` **与原生语义相反**，默认 `true` 表示允许直接键入；设为 `false` 后输入框只读，但加减按钮不受影响，仍可点击与长按增减。需要彻底锁定时请用 `disabled`。
 
 ```vue
 <template>
-  <!-- H5 下关闭方向键步进；小程序 / App 下该属性无实际影响 -->
   <RebornInputNumber
     v-model="count"
-    :keyboard="false"
+    disabled
+  />
+  <!-- 只能通过按钮增减，不能直接键入 -->
+  <RebornInputNumber
+    v-model="count"
+    :readonly="false"
   />
 </template>
 ```
@@ -248,51 +184,37 @@ UniApp 端没有 `model-event`：键入过程通过独立的 `input` 事件透�
 
 ::
 
-### 程序化聚焦
+### 数值精度：precision
 
-两端 `focus()` 的**签名完全一致**：可通过 `cursor` 指定焦点落位，`start` 光标置于文本首、`end` 置于文本尾、`all` 全选文本，不传则沿用平台默认；`focus('all')` 与 `focus({ cursor: 'all' })` 两种写法等价。
+`precision` 指定保留的小数位数，展示时会定长补零。当 `precision` 小于 `step` 的小数位时，实际精度取 `step` 的小数位，否则步进结果会被截断。
 
 ```vue
-<script setup lang="ts">
-import { ref } from "vue";
-
-const count = ref(1234);
-const inputRef = ref();
-
-function selectAll() {
-  inputRef.value?.focus({ cursor: "all" });
-}
-</script>
-
 <template>
+  <!-- 展示 1.50，步进后仍保留两位 -->
   <RebornInputNumber
-    ref="inputRef"
-    v-model="count"
+    v-model="amount"
+    :precision="2"
+    :step="1"
   />
-  <button
-    type="button"
-    @click="selectAll"
-  >
-    全选
-  </button>
+
+  <!-- precision 传 0，但 step 有 1 位小数，实际精度按 1 位生效 -->
+  <RebornInputNumber
+    v-model="ratio"
+    :precision="0"
+    :step="0.1"
+  />
 </template>
 ```
 
-::tabs{sync="platform"}
-
-:::tabs-item{label="Web" icon="tabler:world"}
-内部使用 `type="text"` 的原生输入框，落位通过命令式调用 `setSelectionRange` / `select()` 实现，三种 `cursor` 取值都精确可用。同时通过 `inputRef` 暴露原生 input 元素，可直接做更细的原生操作。
-:::
-
-:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end` 属性**声明式**指定落位，无法命令式调用 `setSelectionRange`。组件内部因此先复位、再于下一帧置位，保证连续两次同参调用也能重新触发。不暴露 `inputRef`（UniApp 无原生 DOM 元素可取）。
-:::
-
+::tip
+UniApp 端在不传 `precision` 时保留了一条旧行为：`input-type="digit"` 会自动按两位小数补零，`input-type="number"` 则不做定长补零。需要确定精度时显式传 `precision` 覆盖即可。
 ::
 
-### 前缀与后缀
+### 前缀与后缀插槽：prefix / suffix
 
-`prefix` 与 `suffix` 插槽在输入框内部添加固定内容，不参与数值解析，适合货币符号与单位。两端插槽名与行为一致。
+`prefix` 与 `suffix` 插槽在输入框内部添加固定内容，不参与数值解析，适合货币符号与单位。两端插槽名与行为一致，只有传入插槽时才渲染对应容器。
+
+带单位的金额通常右对齐更便于纵向比对位数。Web 端可用 `align` 切换 `left` / `center` / `right`（默认 `center`）；UniApp 端输入区固定居中，没有该属性。
 
 ```vue
 <template>
@@ -300,6 +222,7 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
     v-model="price"
     :min="0"
     :step="10"
+    align="right"
   >
     <template #prefix>
       <span>￥</span>
@@ -319,20 +242,21 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
 </template>
 ```
 
-### 文本对齐（仅 Web）
+### 格式化与解析：formatter / parser
 
-`align` 支持 `left` / `center` / `right`，默认 `center`。UniApp 端输入区固定居中，没有该属性。
+仅 Web 端支持。`formatter` 负责把数值转成展示文本，`parser` 负责从展示文本中取回数值，两者必须配对使用：只传 `formatter` 时，带千分位或符号的文本无法被解析回数值。UniApp 端没有这两个属性。
 
 ```vue
 <template>
   <RebornInputNumber
-    v-model="price"
-    align="right"
+    v-model="amount"
+    :formatter="(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+    :parser="(text) => text.replace(/\$\s?|(,*)/g, '')"
   />
 </template>
 ```
 
-### 自定义加减按钮图标
+### 增减图标插槽：minus / plus
 
 **两端主插槽名一致**：`minus` / `plus`，作用域均提供 `iconClass`（当前尺寸下的图标类名）。插槽替换的只是按钮内部的图标位内容，按钮容器与点击、禁用逻辑仍由组件维护。各端另有一套保留兼容的旧插槽名，仅在未提供 `minus` / `plus` 时作为回退。
 
@@ -388,7 +312,32 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
 
 ::
 
-### 按钮位置与隐藏按钮
+::tip
+`iconClass` 就是 `ui.icon` 合并后的结果。自定义图标上不绑定 `iconClass` 时，图标尺寸不再跟随 `size`，`ui.icon` 的覆盖也不会作用到它。
+::
+
+### 绑定值更新时机：model-event
+
+仅 Web 端支持。默认在失焦或按下 Enter 时才写回绑定值；设置 `model-event="input"` 让组件在键入时即时更新。
+
+注意：`input` 模式下键入的值允许临时超出 `min` / `max`，组件会在失焦时统一修正。
+
+UniApp 端没有 `model-event`：键入过程通过独立的 `input` 事件透传原生事件对象，`v-model` 始终在失焦与按钮增减时写回修正后的值。
+
+```vue
+<template>
+  <RebornInputNumber
+    v-model="count"
+    model-event="input"
+    :min="0"
+    :max="100"
+  />
+</template>
+```
+
+### 步进倍数与按钮布局：step-strictly / controls-position
+
+`step-strictly` 仅 Web 端支持：为 `true` 时只接受 `step` 的倍数，键入的非倍数值会在提交（失焦 / 回车）时就近吸附到最近的倍数。
 
 `controls-position` 两端同名：不传为左右分列，`left` / `right` 改为在对应侧上下堆叠，并与输入区之间以分割线隔开。
 
@@ -401,6 +350,14 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
 
 ```vue
 <template>
+  <!-- 输入 13 会被吸附为 15 -->
+  <RebornInputNumber
+    v-model="count"
+    :step="5"
+    step-strictly
+    :min="0"
+    :max="100"
+  />
   <RebornInputNumber
     v-model="count"
     controls-position="right"
@@ -422,7 +379,7 @@ UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end`
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-触屏端没有 hover 态，堆叠按钮为**常显**，不做滑入动画，输入框也不需要让出内边距。
+没有 `step-strictly`。触屏端没有 hover 态，堆叠按钮为**常显**，不做滑入动画，输入框也不需要让出内边距。
 
 UniApp 端没有 `hide-button` / `controls`，无法隐藏加减按钮；只需要纯数字录入时请改用 `reborn-input`。按钮按下时有 `active:scale-[0.85]` 的缩放反馈（Web 端没有）。
 
@@ -443,34 +400,107 @@ UniApp 端没有 `hide-button` / `controls`，无法隐藏加减按钮；只需�
 
 ::
 
-### 长按连续增减（仅 UniApp）
+### 键盘与滚轮：keyboard / change-on-wheel
 
-UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，松手（`touchend` / `touchcancel`）停止。这是触屏端的原生交互习惯，无需任何属性开启。Web 端不提供该行为，连续增减请依赖键盘方向键或滚轮。
+::tabs{sync="platform"}
 
-### 格式化与解析（仅 Web）
+:::tabs-item{label="Web" icon="tabler:world"}
+`keyboard` 默认为 `true`，输入框聚焦后按 ↑ / ↓ 即按 `step` 步进；设为 `false` 后方向键回归原生文本框行为（光标跳到文本首尾）。Enter 提交不受该开关影响。
 
-`formatter` 负责把数值转成展示文本，`parser` 负责从展示文本中取回数值，两者必须配对使用。UniApp 端没有这两个属性。
+`change-on-wheel` 默认为 `false`。开启后滚动鼠标滚轮可增减数值，向上滚为增、向下滚为减。为避免误吞页面滚动，它只在输入框已聚焦时才接管滚轮事件。
 
 ```vue
 <template>
+  <!-- 关闭方向键步进 -->
   <RebornInputNumber
-    v-model="amount"
-    :formatter="(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-    :parser="(text) => text.replace(/\$\s?|(,*)/g, '')"
+    v-model="count"
+    :keyboard="false"
+  />
+
+  <!-- 聚焦后可用滚轮增减 -->
+  <RebornInputNumber
+    v-model="count"
+    change-on-wheel
+    :min="0"
+    :max="100"
   />
 </template>
 ```
 
-### 深度定制（ui）
+:::
 
-`ui` 对象按键位覆盖内部节点类名，可调整高度、宽度、配色甚至隐藏分割线。**两端 `ui` 键名完全一致**，同一份 `ui` 对象可跨端复用（仅具体类名需按各端的 Tailwind 版本与单位调整）。
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+两个属性同名同签名，但受端能力限制：
+
+- `keyboard`**仅 H5 生效**。小程序与 App 的原生输入框不派发 `keydown` 事件，方向键步进在这些端不会发生。
+- `change-on-wheel`**为空实现**。小程序与 App 没有鼠标滚轮事件，保留该属性只是为了与 Web 端保持同名同签名，传入不会报错也不会有效果。
+
+```vue
+<template>
+  <!-- H5 下关闭方向键步进；小程序 / App 下该属性无实际影响 -->
+  <RebornInputNumber
+    v-model="count"
+    :keyboard="false"
+  />
+</template>
+```
+
+:::
+
+::
+
+### 程序化聚焦：focus 方法
+
+两端 `focus()` 的**签名完全一致**：可通过 `cursor` 指定焦点落位，`start` 光标置于文本首、`end` 置于文本尾、`all` 全选文本，不传则沿用平台默认；`focus('all')` 与 `focus({ cursor: 'all' })` 两种写法等价。
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const count = ref(1234);
+const inputRef = ref();
+
+function selectAll() {
+  inputRef.value?.focus({ cursor: "all" });
+}
+</script>
+
+<template>
+  <RebornInputNumber
+    ref="inputRef"
+    v-model="count"
+  />
+  <button
+    type="button"
+    @click="selectAll"
+  >
+    全选
+  </button>
+</template>
+```
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+内部使用 `type="text"` 的原生输入框，落位通过命令式调用 `setSelectionRange` / `select()` 实现，三种 `cursor` 取值都精确可用。同时通过 `inputRef` 暴露原生 input 元素，可直接做更细的原生操作。
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+UniApp 的 `<input>` 只能通过 `cursor` / `selection-start` / `selection-end` 属性**声明式**指定落位，无法命令式调用 `setSelectionRange`。组件内部因此先复位、再于下一帧置位，保证连续两次同参调用也能重新触发。不暴露 `inputRef`（UniApp 无原生 DOM 元素可取）。
+:::
+
+::
+
+### 自定义样式：ui
+
+`ui` 按键位覆盖内部节点类名，每个键都以 `cn(内置类, ui.键)` 合并，冲突时调用方的类胜出。**两端键名一致**，但各键的默认类名与渲染条件不同，同一份 `ui` 对象跨端复用时需按各端的单位与 Tailwind 版本调整类名。完整键位见「自定义样式（ui）」。
 
 ```vue
 <template>
   <RebornInputNumber
     v-model="count"
     :ui="{
-      wrapper: 'h-12 w-full rounded-2xl ring-purple-300',
+      wrapper: 'h-12 rounded-lg ring-purple-300',
       button: 'text-purple-500 hover:bg-purple-50',
       input: 'font-bold text-purple-700',
       divider: 'hidden',
@@ -478,6 +508,10 @@ UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，�
   />
 </template>
 ```
+
+## 长按连续增减（仅 UniApp）
+
+UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，松手（`touchend` / `touchcancel`）停止。这是触屏端的原生交互习惯，无需任何属性开启。Web 端不提供该行为，连续增减请依赖键盘方向键或滚轮。
 
 ## API
 
@@ -527,7 +561,7 @@ UniApp 端的加减按钮绑定了长按手势：按住不放会连续增减，�
 | `inputmode`          | `"none" \| "text" \| "decimal" \| "numeric" \| "tel" \| "search" \| "email" \| "url"`  | `"decimal"`               | 等价于原生 input `inputmode`，决定移动端软键盘类型。                                                                       |
 | `tabindex`           | `string \| number`                                                                     | `0`                       | 输入框的 tabindex。                                                                                                        |
 | `class`              | `any`                                                                                  | `-`                       | 追加到根节点的自定义类名（宽度默认 `w-full`，需固定宽度时在此传入，如 `w-40`）。                                           |
-| `ui`                 | `object`                                                                               | `-`                       | UI 定制对象，键名见「自定义样式（ui）」。                                                                                  |
+| `ui`                 | `object`                                                                               | `-`                       | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                                  |
 
 UniApp 端没有的属性：`stepStrictly`、`align`、`controls`、`hideButton`、`modelEvent`、`valueOnClear`、`disabledScientific`、`formatter`、`parser`、`validateEvent`、`name`、`id`、`ariaLabel`、`inputmode`、`tabindex`、`class`（UniApp 用 `customClass`）。
 :::
@@ -556,7 +590,7 @@ UniApp 端没有的属性：`stepStrictly`、`align`、`controls`、`hideButton`
 | `changeOnWheel`    | `boolean`                                                                              | `false`      | 与 Web 端保持同名同签名的占位属性，**UniApp 侧为空实现**（无鼠标滚轮事件）。                              |
 | `placeholder`      | `string`                                                                               | `""`         | 输入框占位文本。                                                                                          |
 | `customClass`      | `any`                                                                                  | `-`          | 追加到根节点的自定义类名（对应 Web 端 `class`）。                                                         |
-| `ui`               | `object`                                                                               | `{}`         | UI 定制对象，键名见「自定义样式（ui）」。                                                                 |
+| `ui`               | `object`                                                                               | `{}`         | 细粒度样式覆盖，键位见「自定义样式（ui）」。                                                                 |
 
 Web 端没有的属性：`inputType`、`customClass`（Web 用 `class`）。另有 `readonly` 虽两端同名，但 UniApp 侧语义与默认值都与 Web 相反。
 :::
@@ -647,19 +681,72 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 
 ### 自定义样式（ui）
 
-**两端 `ui` 键名完全一致**，共 9 个键，无需分端查看。
+两端都是 9 个键，键名逐字来自各端 `reborn-input-number.config.ts` 的 `slots`，完全一致；但默认类名、渲染条件不同（Web 端按钮受 `controls` / `hide-button` 控制，UniApp 端按钮始终渲染），因此分端列出。每个键都以 `cn(内置类, ui.键)` 合并，调用方的类排在最后，冲突时胜出。
 
-| 键名          | 说明                                                      |
-| ------------- | --------------------------------------------------------- |
-| `wrapper`     | 最外层容器，控制背景、边框、圆角、宽度等。                |
-| `button`      | 左右分列布局下的加减按钮容器。                            |
-| `stack`       | `controls-position="left" / "right"` 时堆叠按钮组的容器。 |
-| `stackButton` | 堆叠布局下的单个按钮。                                    |
-| `input`       | 中间输入框，控制文字样式。                                |
-| `divider`     | 按钮与输入区之间的竖直分割线。                            |
-| `prefix`      | 输入框内的前缀区（`prefix` 插槽的容器）。                 |
-| `suffix`      | 输入框内的后缀区（`suffix` 插槽的容器）。                 |
-| `icon`        | 加减图标，控制大小（如 `size-5`）或颜色。                 |
+::tabs{sync="platform"}
+:::tabs-item{label="Web" icon="tabler:world"}
+
+| 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
+| --- | --- | --- | --- |
+| `wrapper` | 根容器 `div`，点击时把焦点交给输入框；`class` 也合并到这一层 | `group/number relative flex w-full items-center overflow-hidden text-gray-8`；`size` 追加 `h-input-sm/md/lg` 与 `--stack-w`，`variant` 追加背景与描边（如 outlined 为 `bg-gray-1 ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`，`square` 按尺寸追加 `rounded-sm/md/lg` | 始终渲染；`underlined` 形态带 `rounded-none!`，覆盖圆角须写 `!` |
+| `button` | 左右分列布局下的加减按钮（原生 `button`） | `flex h-full shrink-0 items-center justify-center bg-transparent p-0 text-gray-6 disabled:text-gray-5`；`size` 追加 `w-(--height-input-*)`，`color` 追加 `hover:text-*` | 仅按钮显示（`controls` 为 `true` 且未开 `hide-button`）且未设 `controls-position` 时渲染 |
+| `stack` | 堆叠布局下的按钮组容器，绝对定位在输入区一侧 | `absolute inset-y-0 flex w-(--stack-w) flex-col bg-inherit opacity-0 group-hover/number:opacity-100 group-focus-within/number:opacity-100`；`left` 追加 `start-0 -translate-x-full border-e`，`right` 追加 `end-0 translate-x-full border-s` | 仅按钮显示且 `controls-position` 为 `left` / `right` 时渲染 |
+| `stackButton` | 堆叠布局下的单个按钮，上为加、下为减 | `flex min-h-0 flex-1 items-center justify-center text-gray-6 first:border-b first:border-gray-4 enabled:hover:grow-[1.5]` | 同 `stack` |
+| `input` | 中间的原生输入框（`type="text"`） | `h-full min-w-0 flex-1 bg-transparent text-gray-9 outline-none placeholder:text-gray-5`；`size` 追加 `px-input-px-*`，`align` 追加 `text-left/center/right`，`color` 追加 `caret-*`；堆叠布局悬停 / 聚焦时追加对应侧 `ps-(--stack-w)` / `pe-(--stack-w)` | 始终渲染 |
+| `divider` | 分列按钮与输入区之间的竖线，左右各一条 | `h-full w-px shrink-0 bg-gray-3` | 同 `button`；`underlined` 形态追加 `hidden` |
+| `prefix` | 前缀容器，包住 `prefix` 插槽 | `flex shrink-0 items-center pe-0 text-gray-6`；`size` 追加 `ps-input-px-*` | 仅传入 `prefix` 插槽时渲染 |
+| `suffix` | 后缀容器，包住 `suffix` 插槽 | `flex shrink-0 items-center ps-0 text-gray-6`；`size` 追加 `pe-input-px-*` | 仅传入 `suffix` 插槽时渲染 |
+| `icon` | 加减图标（默认 `lucide:minus` / `lucide:plus`，堆叠时为 chevron） | `shrink-0`；`size` 追加 `size-(--size-input-icon-*)` | 随按钮渲染；同时作为 `iconClass` 下发给 `minus` / `plus` 插槽，插槽内不绑定 `iconClass` 时对自定义图标失效 |
+
+```vue
+<template>
+  <RebornInputNumber
+    v-model="count"
+    controls-position="right"
+    :ui="{
+      wrapper: 'rounded-lg ring-purple-300',
+      stack: 'bg-purple-50',
+      stackButton: 'text-purple-500',
+      input: 'font-bold text-purple-700',
+      icon: 'size-3',
+    }"
+  />
+</template>
+```
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
+| --- | --- | --- | --- |
+| `wrapper` | 根 `view`；`custom-class` 也合并到这一层 | `group relative inline-flex items-center overflow-hidden text-gray-8`；`size` 追加 `h-[calc(var(--text-size-26/28/32)*2)]` 与对应字号，`variant` 追加背景与描边（如 outlined 为 `bg-white ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`、`square` 追加 `rounded-md` | 始终渲染；`underlined` 形态追加 `rounded-none` |
+| `button` | 左右分列布局下的加减按钮 `view`，绑定点击与长按 | `flex h-full items-center justify-center text-gray-8 active:scale-[0.85]`；禁用态为 `data-[disabled=true]:!text-gray-4` 等带 `!` 的类；`size` 追加 `p-1.5` / `p-2` / `p-2` | 未设 `controls-position` 时渲染，本端无法隐藏；覆盖禁用态颜色须同样写 `!` |
+| `stack` | 堆叠布局下的按钮组容器，参与正常布局 | `flex h-full flex-col self-stretch`；`left` 追加 `order-first border-r border-gray-4`，`right` 追加 `border-l border-gray-4` | 仅 `controls-position` 为 `left` / `right` 时渲染，常显 |
+| `stackButton` | 堆叠布局下的单个按钮，上为加、下为减 | `flex min-h-0 flex-1 items-center justify-center text-gray-8 first:border-b first:border-gray-4 active:scale-[0.85]`；`size` 追加 `px-1.5` / `px-2` | 同 `stack` |
+| `input` | 中间的 `input`，类型由 `input-type` 决定 | `min-w-0 flex-1 bg-transparent text-center text-gray-8 outline-none placeholder:text-gray-4`；`size` 追加 `w-[calc(var(--text-size-*)*2.5)]`（lg 为 `*5`） | 始终渲染；文本固定居中 |
+| `divider` | 分列按钮与输入区之间的竖线，左右各一条 | `h-full w-[1px] bg-gray-4`；`color` 追加 `group-focus-within:bg-*` | 同 `button`；`underlined` 形态追加 `hidden`，校验失败时追加 `bg-error` |
+| `prefix` | 前缀容器，包住 `prefix` 插槽 | `flex shrink-0 items-center text-gray-7`；`size` 追加 `pl-*` | 仅传入 `prefix` 插槽时渲染 |
+| `suffix` | 后缀容器，包住 `suffix` 插槽 | `flex shrink-0 items-center text-gray-7`；`size` 追加 `pr-*` | 仅传入 `suffix` 插槽时渲染 |
+| `icon` | 加减图标 `view`（默认 `i-lucide-minus` / `i-lucide-plus`，堆叠时为 chevron） | `shrink-0`；`size` 追加 `size-3.5` / `size-4` / `size-5` | 随按钮渲染；同时作为 `iconClass` 下发给 `minus` / `plus` 插槽，插槽内不绑定 `iconClass` 时对自定义图标失效 |
+
+```vue
+<template>
+  <RebornInputNumber
+    v-model="count"
+    shape="square"
+    :ui="{
+      wrapper: 'ring-purple-300',
+      button: 'text-purple-500',
+      input: 'w-[120rpx] font-bold text-purple-700',
+      divider: 'bg-purple-200',
+    }"
+  />
+</template>
+```
+
+:::
+::
 
 ### 设计令牌
 
@@ -705,7 +792,7 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 | `min` / `max` 默认值          | `Number.MIN_SAFE_INTEGER` / `Number.MAX_SAFE_INTEGER`               | `0` / `200`                                  |
 | `modelValue` / `defaultValue` | `number \| null`，无默认值                                          | `number`，默认 `0`                           |
 | `shape` 默认值                | `square`                                                            | `circle`                                     |
-| `square` 圆角                 | 按尺寸取 `rounded-sm / xs / sm`                                     | 统一 `rounded-md`                            |
+| `square` 圆角                 | 按尺寸取 `rounded-sm / rounded-md / rounded-lg`                     | 统一 `rounded-md`                            |
 | `readonly`                    | 原生语义，默认 `false`                                              | **语义相反**，默认 `true` 表示可键入         |
 | 文本对齐                      | `align` 支持 left / center / right                                  | 固定居中，无 `align`                         |
 | 隐藏按钮                      | `hide-button` / `:controls="false"`                                 | 不支持                                       |

@@ -128,6 +128,10 @@ const tabsCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 /** 不同类型演示：六种类型共用一个选中项，切换类型时选中位置不变才好对比 */
+/** 基础用法选中的标签 */
+const basicKey = ref<TabKey>("overview");
+/** 尺寸示例三档各自的选中标签 */
+const sizeKeys = ref<Record<string, TabKey>>({ sm: "all", md: "all", lg: "all" });
 const typeKey = ref<TabKey>("all");
 /** 禁用演示 */
 const disabledKey = ref<TabKey>("normal");
@@ -264,8 +268,34 @@ function handleDelete(key: TabKey) {
       </div>
     </Playground>
 
-    <DemoSection title="不同类型">
-      <template #description> 通过 <code>type</code> 可以设置标签的类型。 </template>
+    <DemoSection title="基础用法">
+      <template #description>
+        <code>v-model:active-key</code> 绑定选中标签的 key，key 取自每个 <code>tab-pane</code> 的 Vue
+        <code>key</code> 属性，<code>title</code> 决定头部文本。
+      </template>
+      <DemoBlock layout="stack">
+        <RebornTabs v-model:active-key="basicKey">
+          <RebornTabPane key="overview" title="概览">
+            <p class="text-muted text-sm">概览内容</p>
+          </RebornTabPane>
+          <RebornTabPane key="detail" title="详情">
+            <p class="text-muted text-sm">详情内容</p>
+          </RebornTabPane>
+          <RebornTabPane key="log" title="日志">
+            <p class="text-muted text-sm">日志内容</p>
+          </RebornTabPane>
+        </RebornTabs>
+        <DemoNote tone="dimmed" class="font-mono text-xs">
+          active-key: '{{ basicKey }}'
+        </DemoNote>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="类型与位置">
+      <template #description>
+        <code>type</code> 切换 7 种标签形态，<code>position</code> 决定头部贴在哪一边；取
+        <code>left</code> / <code>right</code> 时自动转成纵向排布。
+      </template>
       <DemoBlock layout="stack">
         <RebornRadioGroup v-model="tabsProps.position" type="button">
           <RebornRadio v-for="position in tabsPositions" :key="position" :value="position">
@@ -298,7 +328,26 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="禁用">
+    <DemoSection title="尺寸">
+      <template #description>
+        <code>size</code> 有 <code>sm</code> / <code>md</code> / <code>lg</code> 三档，改变标签高度与字号；水平内边距不随档位变化。
+      </template>
+      <DemoBlock layout="stack" class="gap-6">
+        <div v-for="size in tabsSizes" :key="size" class="flex w-full min-w-0 flex-col gap-2">
+          <p class="text-dimmed text-xs italic">size="{{ size }}"</p>
+          <RebornTabs v-model:active-key="sizeKeys[size]" :size="size" type="card-gutter">
+            <RebornTabPane key="all" title="全部">
+              <p class="text-muted text-sm">全部内容</p>
+            </RebornTabPane>
+            <RebornTabPane key="doing" title="进行中">
+              <p class="text-muted text-sm">进行中内容</p>
+            </RebornTabPane>
+          </RebornTabs>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="禁用标签">
       <template #description>
         <code>tab-pane</code> 的
         <code>disabled</code> 让该标签既不响应点击也不响应悬停，指示器不会移过去。
@@ -318,7 +367,7 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="可编辑">
+    <DemoSection title="可编辑：增删标签">
       <template #description>
         <code>editable</code> 给每个标签补上关闭按钮，<code>show-add-button</code>
         再补一个新增按钮。组件只抛 <code>add</code> /
@@ -373,7 +422,7 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="额外内容">
+    <DemoSection title="头部额外内容">
       <template #description>
         <code>left-extra</code> 插槽挂在标签栏起始侧、<code>right-extra</code>
         挂在末尾，分别用来放标题和与整块内容相关的操作；水平方向即左右两端，垂直方向即顶部与底部。
@@ -425,7 +474,7 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="溢出导航">
+    <DemoSection title="溢出导航：箭头与下拉">
       <template #description>
         默认溢出后只能靠滚轮或触摸滑动，没有任何可点的入口。<code>overflow="arrows"</code>
         在头部两端补一对箭头按钮分步滚动，适合鼠标为主的场景；<code>overflow="dropdown"</code>
@@ -474,7 +523,7 @@ function handleDelete(key: TabKey) {
             </RebornRadio>
           </RebornRadioGroup>
         </div>
-        <!-- 左右位置滚动依赖外层定高，与「位置与方向」小节的约束一致 -->
+        <!-- 左右位置滚动依赖外层定高，与「类型与位置」小节的约束一致 -->
         <div
           class="w-full"
           :class="{ 'h-56': overflowProps.position === 'left' || overflowProps.position === 'right' }"
@@ -554,7 +603,7 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="触发方式">
+    <DemoSection title="触发方式：悬停切换">
       <template #description>
         <code>trigger="hover"</code>
         让鼠标移入即切换，适合内容轻、需要快速预览的场景。触控端没有悬停，该值等同
@@ -575,7 +624,7 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="渲染策略">
+    <DemoSection title="渲染策略：懒加载与销毁">
       <template #description>
         默认所有面板一次性挂载并保留。<code>lazy-load</code> 推迟到首次展示再挂载；<code>destroy-on-hidden</code>
         则离开就销毁，面板里的临时状态会一并丢掉。两者可按单个 <code>tab-pane</code> 单独开启。
@@ -692,7 +741,7 @@ function handleDelete(key: TabKey) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="样式定制">
+    <DemoSection title="主题色与样式定制">
       <template #description>
         <code>color</code> 落成色板的语义类名，指示器、选中态文字与胶囊底色取同一档色值； 需要 7
         个语义色之外的色值时不用逐个改

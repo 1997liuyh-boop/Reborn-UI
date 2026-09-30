@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { chipColors, chipPositions, chipSizes } from "~/components/reborn/ui/reborn-chip/reborn-chip.config";
 import RebornChip from "~/components/reborn/ui/reborn-chip/RebornChip.vue";
-import { chipColors, chipSizes, chipPositions } from "~/components/reborn/ui/reborn-chip/reborn-chip.config";
 
 /** 演练场状态 */
 const state = ref({
@@ -26,6 +26,9 @@ const anchorClass = "border-default rounded-lg border border-dashed";
  * 组件在这两档不渲染文本节点，传了 text 也不显示。用于在尺寸示例里标注这一行为。
  */
 const dotOnlySizes = ["xs", "sm"];
+
+/** 显隐控制演示：组件内部不会改写 show，由外部按钮切换 */
+const hasUnread = ref(true);
 
 /** 演练场控制面板配置 */
 const controls = [
@@ -101,8 +104,13 @@ const controls = [
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" component-name="RebornChip" title="交互演练场"
-      description="调节左侧属性，实时预览角标的颜色、尺寸与吸附位置。尺寸选 xs 或 sm 时角标退化为纯圆点，标签文本不再显示。">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      component-name="RebornChip"
+      title="交互演练场"
+      description="调节左侧属性，实时预览角标的颜色、尺寸与吸附位置。尺寸选 xs 或 sm 时角标退化为纯圆点，标签文本不再显示。"
+    >
       <RebornChip v-bind="state">
         <div :class="anchorClass" class="text-dimmed flex size-24 items-center justify-center">
           <Icon name="lucide:bell" class="size-8" />
@@ -110,7 +118,35 @@ const controls = [
       </RebornChip>
     </Playground>
 
-    <DemoSection title="色彩体系" description="支持全套语义化色彩，覆盖提示、成功、警告、错误等反馈场景。">
+    <DemoSection title="基础用法">
+      <template #description>
+        把宿主元素放进默认插槽，角标默认吸附在右上角；<code>text</code> 传数字或短文本显示计数，不传则只渲染纯色圆点。
+      </template>
+      <DemoBlock layout="row" align="center" class="gap-10">
+        <RebornChip text="9">
+          <div :class="anchorClass" class="text-dimmed flex size-12 items-center justify-center">
+            <Icon name="lucide:bell" class="size-6" />
+          </div>
+        </RebornChip>
+
+        <RebornChip text="99+" size="lg">
+          <div :class="anchorClass" class="text-dimmed flex size-12 items-center justify-center">
+            <Icon name="lucide:mail" class="size-6" />
+          </div>
+        </RebornChip>
+
+        <RebornChip>
+          <div :class="anchorClass" class="text-dimmed flex size-12 items-center justify-center">
+            <Icon name="lucide:message-circle" class="size-6" />
+          </div>
+        </RebornChip>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="颜色：7 种语义色">
+      <template #description>
+        <code>color</code> 切换角标背景与描边色，默认 <code>primary</code>；按提醒的紧急程度选色，例如错误与未读用 <code>error</code>。
+      </template>
       <DemoBlock layout="grid" align="center">
         <div v-for="c in chipColors" :key="c" class="flex flex-col items-center gap-3">
           <RebornChip :color="c" text="8">
@@ -121,7 +157,10 @@ const controls = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸规格" description="五档对应 10~18px 的圆点高度。下面五个角标都传了 text=&quot;NEW&quot;，但 xs、sm 的圆点装不下最小字号，组件在这两档只渲染圆点、不渲染文本。">
+    <DemoSection title="尺寸：五档与纯圆点档">
+      <template #description>
+        <code>size</code> 五档对应 10~18px 的圆点高度。下面五个角标都传了 <code>text="NEW"</code>，但 <code>xs</code>、<code>sm</code> 的圆点装不下最小字号，组件在这两档只渲染圆点、不渲染文本。
+      </template>
       <DemoBlock layout="row" align="end" class="gap-10">
         <div v-for="s in chipSizes" :key="s" class="flex flex-col items-center gap-4">
           <RebornChip :size="s" color="error" text="NEW">
@@ -136,7 +175,44 @@ const controls = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="典型应用" description="结合头像、图标按钮与操作按钮，构成常见的状态提示组合。">
+    <DemoSection title="位置与内嵌：position 与 inset">
+      <template #description>
+        <code>position</code> 选择四角之一；默认角标中心压在宿主角上（向外平移半个自身），<code>inset</code> 取消平移，让角标整个落在宿主内部。
+      </template>
+      <DemoBlock layout="row" align="center" class="gap-10">
+        <div v-for="p in chipPositions" :key="p" class="flex flex-col items-center gap-3">
+          <RebornChip :position="p" color="error" text="3">
+            <div :class="anchorClass" class="size-12" />
+          </RebornChip>
+          <span class="text-dimmed text-xs font-medium">{{ p }}</span>
+        </div>
+
+        <div v-for="p in chipPositions" :key="`inset-${p}`" class="flex flex-col items-center gap-3">
+          <RebornChip :position="p" color="success" inset>
+            <div :class="anchorClass" class="size-12" />
+          </RebornChip>
+          <span class="text-dimmed text-xs font-medium">{{ p }} · inset</span>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="显隐控制：v-model:show">
+      <template #description>
+        <code>show</code> 为 <code>false</code> 时不渲染角标节点，宿主内容不受影响；组件自身没有关闭交互，显隐完全由外部赋值驱动。
+      </template>
+      <DemoBlock layout="row" align="center" class="gap-10">
+        <RebornChip v-model:show="hasUnread" text="3" color="error">
+          <div :class="anchorClass" class="text-dimmed flex size-12 items-center justify-center">
+            <Icon name="lucide:inbox" class="size-6" />
+          </div>
+        </RebornChip>
+        <RebornButton size="sm" color="neutral" variant="outlined" @click="hasUnread = !hasUnread">
+          {{ hasUnread ? '标为已读' : '模拟新消息' }}
+        </RebornButton>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="组合场景：在线状态、未读圆点与促销标" description="角标叠在头像、图标按钮与操作按钮上，分别表达在线状态、有未读和活动标记。">
       <DemoBlock layout="row" align="center" class="gap-10">
         <div class="flex flex-col items-center gap-3">
           <!-- 头像在线状态：inset 让角标嵌入圆形边缘内部 -->

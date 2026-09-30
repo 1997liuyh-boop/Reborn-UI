@@ -115,6 +115,15 @@ export default defineNuxtConfig({
     preference: "dark",
     fallback: "dark",
   },
+  /**
+   * 图标改为内联 SVG 渲染。
+   * 默认的 css 模式在图标首次出现时往 head 最前面插一个 style，浏览器要整页重算样式：
+   * 文档页有六千多个节点、上百枚图标，任何让新图标挂载的交互（折叠侧栏、切 Tab、滚到懒加载区块）
+   * 都会连吃几次一两百毫秒的重算，表现为明显卡顿。svg 模式没有样式注入，代价只是 SSR 的 HTML 大一些。
+   */
+  icon: {
+    mode: "svg",
+  },
 
   css: ["~/assets/css/reborn-ui.css"],
 
@@ -205,6 +214,10 @@ export default defineNuxtConfig({
   robots: {
     // 明确禁用 robots.txt 的生成
     robotsTxt: false,
+  },
+  // 首页角色模型体积大且极少变动：给一周强缓存，回访不再重新下载；换模型时改文件名即可绕开旧缓存
+  routeRules: {
+    "/models/**": { headers: { "cache-control": "public, max-age=604800, stale-while-revalidate=86400" } },
   },
   nitro: {
     publicAssets: [

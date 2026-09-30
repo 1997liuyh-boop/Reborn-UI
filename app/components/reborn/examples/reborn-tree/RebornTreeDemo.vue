@@ -460,18 +460,20 @@ function scrollToGroup25() {
     <DemoSection title="基础用法">
       <template #description>
         <code>treeData</code> 一次性传入整棵树（<code>key</code> 在整树范围内必须唯一），
-        <code>defaultExpandedKeys</code> 指定初始展开的节点；点击箭头展开，点击标题选中。
+        <code>defaultExpandedKeys</code> 指定初始展开的节点；点击箭头展开。点选默认关闭，
+        本例传了 <code>selectable</code>，点击标题即可选中。
       </template>
       <DemoBlock layout="stack">
         <RebornTree
           class="w-full max-w-sm"
           :tree-data="makeTreeData()"
           :default-expanded-keys="['engineering', 'frontend']"
+          selectable
         />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="主题色">
+    <DemoSection title="主题色：color">
       <template #description>
         <code>color</code> 统一控制选中背景/文字、筛选高亮、复选框与拖拽指示的用色：
         选中填充取色阶 1 档、文字与描边取 6 档（neutral 例外：填充取 2 档避免与页面底色同色，文字取 9 档正文色），默认 primary。
@@ -495,7 +497,7 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="受控展开">
+    <DemoSection title="受控展开：定位到深层节点">
       <template #description>
         <code>v-model:expanded-keys</code> 让展开集合由外部持有；配合 <code>useTree</code> 的
         <code>getPath</code> 可以把任意深层节点的父链一次性并入展开集合。
@@ -521,28 +523,30 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="点选与多选">
+    <DemoSection title="点选与多选：selectable / multiple">
       <template #description>
-        点击标题切换选中；<code>multiple</code> 让点选累加，<code>blockNode</code>
+        点选默认关闭，需传 <code>selectable</code> 开启；点击标题切换选中，<code>multiple</code> 让点选累加，<code>blockNode</code>
         让点击区拉满整行（选中背景随之铺满）。再次点击已选节点会取消选中。
         点选只存在于非 <code>checkable</code> 树——复选树的标题点击切换的是勾选。
       </template>
       <DemoBlock layout="grid" :columns="2">
-        <DemoItem label="单选（默认）" mono>
+        <DemoItem label="selectable（单选）" mono>
           <RebornTree
             v-model:selected-keys="singleSelectedKeys"
             class="w-full"
             :tree-data="makeTreeData()"
             :default-expanded-keys="['engineering']"
+            selectable
           />
           <template #note>selectedKeys: [{{ singleSelectedKeys.join(", ") }}]</template>
         </DemoItem>
-        <DemoItem label="multiple + blockNode" mono>
+        <DemoItem label="selectable + multiple + blockNode" mono>
           <RebornTree
             v-model:selected-keys="multiSelectedKeys"
             class="w-full"
             :tree-data="makeTreeData()"
             :default-expanded-keys="['engineering']"
+            selectable
             multiple
             block-node
           />
@@ -551,7 +555,7 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="复选与父子联动">
+    <DemoSection title="复选与父子联动：checkable">
       <template #description>
         <code>checkable</code> 在节点前渲染复选框，点击标题等同于点击复选框：默认父子联动（子级全选则父级全选、部分选中则父级半选），
         <code>checkStrictly</code> 切断联动、逐节点独立勾选。禁用节点会阻断联动传导。
@@ -620,7 +624,7 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义节点内容与筛选">
+    <DemoSection title="自定义节点插槽与筛选高亮">
       <template #description>
         <code>title</code> 插槽整体接管标题，<code>extra</code> 在标题后渲染徽标或行内操作
         （容器自带 click.stop，点击不会误触点选/勾选，<code>blockNode</code> 下推到行尾）；
@@ -639,6 +643,7 @@ function scrollToGroup25() {
           :filter-tree-node="filterByKeyword"
           default-expand-all
           block-node
+          selectable
         >
           <template #title="{ node }">{{ node.title }}</template>
           <template #extra="{ node, leaf }">
@@ -666,7 +671,7 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="异步加载">
+    <DemoSection title="异步加载：loadData">
       <template #description>
         <code>loadData</code> 在展开未加载的父节点时被调用，Promise 内由使用方把子级写回
         <code>treeData</code>；同一节点只请求一次（由 <code>loadedKeys</code> 记账），
@@ -684,7 +689,7 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="拖拽调整结构">
+    <DemoSection title="拖拽调整结构：draggable">
       <template #description>
         <code>draggable</code> 开启拖拽后，节点前 1/4 高度落在目标之前、后 1/4 落在目标之后、
         中间落入目标内部；<code>allowDrop</code> 拦截非法位置。<code>drop</code> 事件不代改数据，
@@ -707,7 +712,7 @@ function scrollToGroup25() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="虚拟滚动">
+    <DemoSection title="虚拟滚动与按 key 定位">
       <template #description>
         设置 <code>height</code> 后成为定高滚动容器并默认启用虚拟滚动，1000+ 节点也只渲染视口内的行；
         行高由 <code>itemHeight</code>（默认 28px）参与换算，<code>scrollTo</code> 可按 key 定位，

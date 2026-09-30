@@ -1,6 +1,6 @@
 export type {
   DropdownOption,
-  DropdownPosition,
+  DropdownPlacement,
   DropdownTrigger,
   DropdownUI,
   DropdownValue,

@@ -82,6 +82,13 @@ const controls = [
   },
 ];
 
+// ─── 受控与手动关闭 ─────────────────────────────────────────────
+
+/** v-model:open 绑定的显隐状态 */
+const controlledOpen = ref(false);
+/** 通过 ref 调用 expose 出来的 close() */
+const popoverRef = ref<{ close: () => void } | null>(null);
+
 // ─── 场景演示数据 ───────────────────────────────────────────────
 
 const profile = {
@@ -172,10 +179,115 @@ const actions = [
       </RebornPopover>
     </Playground>
 
-    <DemoSection
-      title="典型场景"
-      description="浮层内容完全由 #content 插槽决定，可承载资料卡、调色盘、操作菜单等复合交互。"
-    >
+    <DemoSection title="基础用法">
+      <template #description>默认插槽放触发器，<code>#content</code> 插槽放气泡内容；默认点击触发、向下弹出、点击外部关闭。</template>
+      <DemoBlock>
+        <RebornPopover>
+          <RebornButton label="点击打开" />
+          <template #content>
+            <p class="text-muted w-56 text-sm leading-relaxed">
+              气泡自带底色、边框与内边距，内容区直接放文字即可。
+            </p>
+          </template>
+        </RebornPopover>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="方位、对齐与箭头">
+      <template #description><code>content.side</code> 决定弹出方向，<code>content.align</code> 决定交叉轴对齐，<code>content.sideOffset</code> 是与触发器的间距；<code>arrow</code> 打开箭头后，<code>start</code> / <code>end</code> 的箭头停在气泡两端内缩处，<code>center</code> 才指向触发器中心。</template>
+      <DemoBlock>
+        <RebornPopover
+          v-for="side in (['top', 'bottom', 'left', 'right'] as const)"
+          :key="side"
+          :content="{ side, align: 'center', sideOffset: 8 }"
+          arrow
+        >
+          <RebornButton variant="outlined" :label="side" />
+          <template #content>
+            <span class="text-sm">side: {{ side }}</span>
+          </template>
+        </RebornPopover>
+      </DemoBlock>
+      <DemoBlock>
+        <RebornPopover
+          v-for="align in (['start', 'center', 'end'] as const)"
+          :key="align"
+          :content="{ side: 'bottom', align, sideOffset: 8 }"
+          arrow
+        >
+          <RebornButton variant="soft" :label="`bottom-${align}`" />
+          <template #content>
+            <p class="w-48 text-sm">align: {{ align }}，注意箭头落点的差别。</p>
+          </template>
+        </RebornPopover>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="悬停触发与显隐延迟">
+      <template #description><code>mode="hover"</code> 改为悬停触发；<code>openDelay</code> 过滤鼠标路过时的误触发，<code>closeDelay</code>（默认 120ms）给鼠标从触发器移到气泡留出时间。</template>
+      <DemoBlock>
+        <RebornPopover
+          mode="hover"
+          :open-delay="150"
+          :close-delay="200"
+          arrow
+        >
+          <span class="text-muted cursor-help text-sm underline decoration-dotted">悬停查看说明</span>
+          <template #content>
+            <p class="w-52 text-sm">悬停 150ms 后打开，移出 200ms 后关闭；鼠标移入气泡内不会关闭。</p>
+          </template>
+        </RebornPopover>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="受控与手动关闭">
+      <template #description><code>v-model:open</code> 由外部持有显隐状态；气泡内的操作完成后通过 ref 调用 <code>close()</code> 收起。</template>
+      <DemoBlock>
+        <RebornPopover
+          ref="popoverRef"
+          v-model:open="controlledOpen"
+          :content="{ side: 'top' }"
+        >
+          <RebornButton :label="controlledOpen ? '已打开' : '点击打开'" />
+          <template #content>
+            <div class="flex w-56 flex-col gap-3">
+              <p class="text-muted text-sm">确认后调用 close() 收起气泡。</p>
+              <RebornButton
+                size="sm"
+                label="完成"
+                @click="popoverRef?.close()"
+              />
+            </div>
+          </template>
+        </RebornPopover>
+        <RebornButton
+          variant="outlined"
+          :label="controlledOpen ? '外部关闭' : '外部打开'"
+          @click="controlledOpen = !controlledOpen"
+        />
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="遮罩与点击外部关闭">
+      <template #description><code>modal</code> 打开时在页面上铺一层半透明遮罩，点击遮罩按 <code>dismissible</code> 决定是否关闭；<code>dismissible</code> 为 false 时点击外部不再关闭，只能再次点击触发器或调用 <code>close()</code>。</template>
+      <DemoBlock>
+        <RebornPopover modal>
+          <RebornButton label="带遮罩" />
+          <template #content>
+            <p class="w-48 text-sm">点击遮罩关闭。</p>
+          </template>
+        </RebornPopover>
+        <RebornPopover :dismissible="false">
+          <RebornButton variant="outlined" label="点击外部不关闭" />
+          <template #content>
+            <p class="w-48 text-sm">再次点击触发器才会关闭。</p>
+          </template>
+        </RebornPopover>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="复合内容：资料卡、调色盘与操作菜单">
+      <template #description>浮层内容完全由 <code>#content</code> 插槽决定，可承载资料卡、调色盘、操作菜单等复合交互。</template>
       <DemoBlock layout="grid" align="center">
         <!-- 场景一：个人资料卡 -->
         <div class="flex flex-col items-center gap-4">
@@ -328,6 +440,15 @@ const actions = [
             </template>
           </RebornPopover>
         </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="菜单模式（仅 UniApp）">
+      <template #description>UniApp 端不传 <code>#content</code> 插槽时，<code>displayMode="menu"</code> 把 <code>title</code> 数组渲染成可点击菜单，点击项触发 <code>menuclick</code>。</template>
+      <DemoBlock>
+        <DemoNote tone="dimmed">
+          Web 端没有 <code>title</code> / <code>displayMode</code>，菜单内容直接写进 <code>#content</code> 插槽（见上一节的操作菜单）；UniApp 端的写法见文档「菜单模式（仅 UniApp）」一节的代码。
+        </DemoNote>
       </DemoBlock>
     </DemoSection>
   </div>

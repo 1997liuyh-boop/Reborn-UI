@@ -86,20 +86,39 @@ const noticeMessages = [
   "组件库知识库与 AI 助手已上线，欢迎试用",
 ];
 const noticeIndex = ref(0);
+
+/** 自定义关闭元素示例的显隐状态 */
+const closeElementShow = ref(true);
 </script>
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="alertCode" component-name="RebornAlert" title="交互演练场"
-      description="调节参数实时预览警告提示；banner 模式会去除边框和圆角作为顶部公告使用。">
-      <RebornAlert :key="`${state.closable}`" :type="state.type" :variant="state.variant"
-        :title="state.title || undefined" :show-icon="state.showIcon" :closable="state.closable" :banner="state.banner"
-        :center="state.center">
+    <Playground
+      v-model="state"
+      :controls="controls"
+      :code="alertCode"
+      component-name="RebornAlert"
+      title="交互演练场"
+      description="调节参数实时预览警告提示；banner 模式会去除边框和圆角作为顶部公告使用。"
+    >
+      <RebornAlert
+        :key="`${state.closable}`"
+        :type="state.type"
+        :variant="state.variant"
+        :title="state.title || undefined"
+        :show-icon="state.showIcon"
+        :closable="state.closable"
+        :banner="state.banner"
+        :center="state.center"
+      >
         {{ state.content }}
       </RebornAlert>
     </Playground>
 
-    <DemoSection title="基本用法" description="五种消息类型对应五种语义配色与默认图标；normal 为 2.41.0 新增类型，用于公告等中性场景。">
+    <DemoSection title="基础用法">
+      <template #description>
+        <code>type</code> 同时决定默认图标与配色，五种类型对应五种语义；<code>normal</code> 用于公告等中性场景，配色映射为 <code>neutral</code>。
+      </template>
       <DemoBlock layout="stack">
         <RebornAlert v-for="t in alertTypes" :key="t" :type="t">
           这是一条 {{ t }} 类型的警告提示
@@ -107,7 +126,10 @@ const noticeIndex = ref(0);
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="视觉变体" description="六种视觉变体对齐按钮组件的同名变体（不含 circle），默认为 soft 浅底。">
+    <DemoSection title="变体：六种 variant">
+      <template #description>
+        <code>variant</code> 与 <code>RebornButton</code> 的同名变体着色规则一致（不含 <code>circle</code>），默认 <code>soft</code> 浅底；<code>round</code> 只把圆角改为胶囊。
+      </template>
       <DemoBlock layout="stack">
         <RebornAlert v-for="v in alertVariants" :key="v" type="success" :variant="v">
           {{ v }} 变体的警告提示
@@ -115,31 +137,60 @@ const noticeIndex = ref(0);
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="标题与操作项" description="通过 title 属性（或 title 插槽）设置标题，action 插槽放置右侧操作项。">
+    <DemoSection title="标题与操作区：title 与 action 插槽">
+      <template #description>
+        <code>title</code> 属性（或 <code>title</code> 插槽）设置加粗标题；<code>action</code> 插槽放在关闭按钮左侧，适合放一个跳转或处理按钮。
+      </template>
       <DemoBlock layout="stack">
         <RebornAlert type="warning" title="存储空间不足">
           当前可用空间不足 10%，可能影响新数据写入，请及时清理。
           <template #action>
-            <RebornButton size="sm" color="warning" variant="outlined">去清理</RebornButton>
+            <RebornButton size="sm" color="warning" variant="outlined">
+              去清理
+            </RebornButton>
           </template>
         </RebornAlert>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="可关闭" description="closable 展示关闭按钮，点击触发 close 事件；关闭动画结束后触发 after-close，支持 v-model:show 受控。">
+    <DemoSection title="关闭与受控显隐：closable 与 v-model:show">
+      <template #description>
+        <code>closable</code> 展示关闭按钮，点击后把 <code>show</code> 置为 <code>false</code> 并触发 <code>close</code>；200ms 淡出结束后触发 <code>after-close</code>。绑定 <code>v-model:show</code> 才能从外部重新唤起。
+      </template>
       <DemoBlock layout="stack">
         <RebornAlert v-model:show="closableShow" type="info" closable @after-close="handleAfterClose">
           点击右侧按钮关闭这条提示
         </RebornAlert>
         <div class="flex items-center gap-3">
-          <RebornButton v-if="!closableShow" size="sm" @click="closableShow = true; afterCloseLog = ''">重新显示
+          <RebornButton v-if="!closableShow" size="sm" @click="closableShow = true; afterCloseLog = ''">
+            重新显示
           </RebornButton>
           <span v-if="afterCloseLog" class="text-sm text-gray-6">{{ afterCloseLog }}</span>
         </div>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="顶部公告（banner）" description="banner 模式去除边框和圆角，适合置于页面顶部；可配合 center 让内容居中。">
+    <DemoSection title="自定义关闭元素：close-element 插槽">
+      <template #description>
+        <code>close-element</code> 插槽替换默认的关闭图标，仍需开启 <code>closable</code>。插槽外层已绑定关闭点击，插槽内的元素点击会冒泡触发关闭，无需再调用作用域参数 <code>close</code>。
+      </template>
+      <DemoBlock layout="stack">
+        <RebornAlert v-model:show="closeElementShow" type="warning" closable>
+          检测到新版本，刷新页面后生效。
+          <template #close-element>
+            <span class="whitespace-nowrap text-xs">不再提示</span>
+          </template>
+        </RebornAlert>
+        <RebornButton v-if="!closeElementShow" size="sm" class="self-start" @click="closeElementShow = true">
+          重新显示
+        </RebornButton>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="顶部公告与居中：banner 与 center">
+      <template #description>
+        <code>banner</code> 去除圆角与边框，适合贴着页面顶部通栏铺开；<code>center</code> 让图标与内容整体居中。
+      </template>
       <DemoBlock layout="stack">
         <RebornAlert title="重要消息提示" type="warning" banner closable>
           注意：本环境为演示环境，数据每日凌晨重置。
@@ -160,13 +211,19 @@ const noticeIndex = ref(0);
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="消息轮播通知栏"
-      description="通过 messages 传入消息即变为轮播通知栏，三种形态：默认单条逐条垂直轮播；direction=horizontal 全部消息拼成一行水平跑马灯，speed 控制速率；rows 大于 1 时多条消息同时可见并逐行向上滚动。interval 控制间隔，悬停暂停。"
-    >
+    <DemoSection title="消息轮播：messages、direction 与 rows">
+      <template #description>
+        传入 <code>messages</code> 即变为轮播通知栏，默认插槽不再渲染。默认单条逐条垂直切换，间隔由 <code>interval</code> 控制；<code>direction="horizontal"</code> 把全部消息拼成一行跑马灯，<code>speed</code> 为每秒滚动像素；<code>rows</code> 大于 1 时多条同时可见并逐行上移。鼠标移入时暂停。
+      </template>
       <DemoBlock layout="stack">
-        <RebornAlert type="normal" banner :messages="noticeMessages" :interval="2500" closable
-          @change="noticeIndex = $event" />
+        <RebornAlert
+          type="normal"
+          banner
+          :messages="noticeMessages"
+          :interval="2500"
+          closable
+          @change="noticeIndex = $event"
+        />
         <span class="text-sm text-gray-6">单条逐条垂直轮播：当前第 {{ noticeIndex + 1 }} / {{ noticeMessages.length }} 条</span>
         <RebornAlert type="info" banner :messages="noticeMessages" direction="horizontal" :speed="60" closable />
         <span class="text-sm text-gray-6">水平跑马灯滚动（speed = 60 px/s）</span>

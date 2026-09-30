@@ -231,6 +231,12 @@ function setActive(href: string | undefined) {
 /** 补间期间置位，滚动监听据此跳过判定，避免程序滚动与滚动判定互相打架 */
 let scrolling = false;
 let tweenFrame: number | undefined;
+/**
+ * 点击定位后的落点滚动值。落点之后高亮钉在被点的链接上，直到滚动位置真的变了才恢复按位置判定：
+ * 落点线与触发线之间隔着 bound 的余量，紧随其后的小节（如 API 标题下面紧跟的 Props）此时已经越线，
+ * 补间结束那一帧的滚动事件一到，按位置判定会把高亮从被点的链接上抢走
+ */
+let pinnedScroll: number | undefined;
 
 function cancelTween() {
   if (tweenFrame !== undefined) cancelAnimationFrame(tweenFrame);
@@ -253,6 +259,11 @@ function prefersReducedMotion() {
 /** 按当前滚动位置挑出选中的链接 */
 function updateActive() {
   if (scrolling || !scrollTarget.value) return;
+  if (pinnedScroll !== undefined) {
+    // 还停在点击定位的落点上，就维持被点链接的高亮；用户一滚动就解除
+    if (Math.abs(getScroll() - pinnedScroll) < 1) return;
+    pinnedScroll = undefined;
+  }
   const candidates = links.value.filter(item => item.href);
   const last = candidates.at(-1);
   if (!last) return;
@@ -328,6 +339,7 @@ function scrollTo(href: string) {
   );
   cancelTween();
   setActive(href);
+  pinnedScroll = to;
   if (from === to) return;
 
   if (props.duration <= 0 || prefersReducedMotion()) {

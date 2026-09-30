@@ -44,20 +44,20 @@ export default {
     size: {
       sm: {
         track: "h-[16px] w-[28px]",
-        thumb: "[--re-switch-thumb-size:12px] h-[var(--re-switch-thumb-size)]",
+        thumb: "[--re-switch-thumb-size:12px] h-(--re-switch-thumb-size)",
         // 点内文本：外侧 = 2px 边距 + 间隙，滑块侧 = 2px 边距 + 滑块直径 + 间隙；两侧间隙相等（sm/md/lg 为 4/5/6px），文案才在留出的区域内居中
         inlineActive: "pl-[6px] pr-[18px]",
         inlineInactive: "pl-[18px] pr-[6px]",
       },
       md: {
         track: "h-[24px] w-[44px]",
-        thumb: "[--re-switch-thumb-size:20px] h-[var(--re-switch-thumb-size)]",
+        thumb: "[--re-switch-thumb-size:20px] h-(--re-switch-thumb-size)",
         inlineActive: "pl-[7px] pr-[27px]",
         inlineInactive: "pl-[27px] pr-[7px]",
       },
       lg: {
         track: "h-[32px] w-[60px]",
-        thumb: "[--re-switch-thumb-size:28px] h-[var(--re-switch-thumb-size)]",
+        thumb: "[--re-switch-thumb-size:28px] h-(--re-switch-thumb-size)",
         inlineActive: "pl-[8px] pr-[36px]",
         inlineInactive: "pl-[36px] pr-[8px]",
       },

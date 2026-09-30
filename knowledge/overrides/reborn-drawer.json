@@ -1,0 +1,6 @@
+{
+  "description": "Web 边缘滑入抽屉，支持四向展开、关闭拦截、局部挂载、焦点管理与尺寸调整。",
+  "whenToUse": ["使用 direction 与 size 构建不离开原任务的侧边编辑面板。", "使用 beforeClose 在关闭前保存或确认。", "使用 appendTo 在定位父容器内打开面板。", "使用 resizable 允许用户调整面板尺寸。"],
+  "whenNotToUse": ["居中确认改用 reborn-dialog。", "锚定元素的小型浮层改用 reborn-popover。", "UniApp 手势弹层改用 reborn-popup。"],
+  "pitfalls": ["withHeader 默认 false，所有头部插槽都受其控制。", "beforeClose 的 done(false) 放行，done() 或 done(true) 取消。", "父组件直接修改 v-model 不经过 beforeClose。", "modalPenetrable 仅 modal=false 时有效，lockScroll 独立控制。", "自定义 appendTo 目标需存在并建立定位上下文。"]
+}

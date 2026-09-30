@@ -12,7 +12,7 @@ import {
   
 } from './reborn-toast.config'
 
-export type { MessageGlobalConfig, MessageOptions, MessageType } from './reborn-toast.config'
+export type { MessageGlobalConfig, MessageOptions, MessagePlacement, MessageType } from './reborn-toast.config'
 
 let containerEl: HTMLElement | null = null
 let getContainer: (() => HTMLElement) | undefined

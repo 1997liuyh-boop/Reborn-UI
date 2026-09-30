@@ -187,21 +187,21 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
       </div>
     </Playground>
 
-    <DemoSection title="默认用法" description="传入 total 与 page-size，v-model 绑定当前页码，切换时触发 current-change。">
+    <DemoSection title="基础用法" description="传入 total 与 page-size，v-model 绑定当前页码，切换时触发 current-change。">
       <DemoBlock layout="stack" align="start">
         <RebornPagination v-model="basicPage" :total="50" @current-change="handleCurrentChange" />
         <DemoNote tone="dimmed">当前页：<code>{{ basicPage }}</code></DemoNote>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="背景模式"
+    <DemoSection title="按钮背景：background"
       description="background 为页码按钮添加浅色背景：非激活 bg-gray-2 text-gray-5，激活 bg-primary/50 text-primary。">
       <DemoBlock layout="row" align="center">
         <RebornPagination v-model="bgPage" :total="60" background />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="简洁模式" description="simple 忽略 layout，只保留上一页 + 当前页/总页数文本 + 下一页；prev-text 与 next-text 可把箭头换成文字。">
+    <DemoSection title="简洁模式：simple 与翻页文字" description="simple 忽略 layout，只保留上一页 + 当前页/总页数文本 + 下一页；prev-text 与 next-text 可把箭头换成文字。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="simple（默认箭头）" mono>
           <RebornPagination v-model="simplePage" :total="80" simple />
@@ -213,7 +213,7 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="布局组合" description="layout 用逗号组合 prev / pager / next / jumper / total / sizes，未知 token 会被忽略。">
+    <DemoSection title="布局组合：layout 与每页条数" description="layout 用逗号组合 prev / pager / next / jumper / total / sizes，未知 token 会被忽略。">
       <DemoBlock layout="stack" align="start">
         <RebornPagination v-model="layoutPage" v-model:page-size="layoutSize" :total="200" :page-sizes="[5, 10, 20, 50]"
           layout="prev, pager, next, jumper, total, sizes" @current-change="handleCurrentChange"
@@ -224,13 +224,13 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="页码折叠" description="pagerCount 控制页码按钮数量（不小于 3 的整数，奇偶均可，过小的值钳到 3），超长时自动折叠并显示省略号，点击省略号向对应方向跳页。">
+    <DemoSection title="页码折叠：pager-count" description="pagerCount 控制页码按钮数量（不小于 3 的整数，奇偶均可，过小的值钳到 3），超长时自动折叠并显示省略号，点击省略号向对应方向跳页。">
       <DemoBlock layout="row" align="center">
         <RebornPagination v-model="foldPage" :total="200" :pager-count="9" background />
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="单页隐藏" description="hideOnSinglePage 在总页数不超过 1 时整组件不渲染，点击按钮切换数据量观察显隐。">
+    <DemoSection title="单页隐藏：hide-on-single-page" description="hideOnSinglePage 在总页数不超过 1 时整组件不渲染，点击按钮切换数据量观察显隐。">
       <DemoBlock layout="stack" align="start">
         <div class="flex flex-wrap items-center gap-6">
           <RebornPagination v-model="singlePage" :total="singleTotal" hide-on-single-page />
@@ -242,7 +242,7 @@ function jumpFromInput(e: Event, jump: (page: number) => void) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="插槽自定义" description="prev / next / pager-item / jumper / total / sizes 六个插槽均可完全接管默认内容。">
+    <DemoSection title="插槽定制：接管翻页、页码与附加区" description="prev / next / pager-item / jumper / total / sizes 六个插槽均可完全接管默认内容。">
       <DemoBlock layout="stack" class="gap-6">
         <DemoItem>
           <template #label>

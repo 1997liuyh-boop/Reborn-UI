@@ -57,7 +57,7 @@ badge: New
 
 ### 自定义样式（ui）
 
-`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；后四个键作用于移动端弹出的抽屉（内部渲染的 `RebornPopup`）：
+`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；后四个键作用于移动端弹出的抽屉（内部渲染的 `RebornDrawer`）：
 
 | 键名          | 说明                                                                                                                                                       |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -68,7 +68,7 @@ badge: New
 | `center`      | 中间区域。**仅填充了 default 插槽时渲染**，默认 `hidden lg:flex items-center justify-center gap-8 flex-1`——桌面端才显示，导航项间距改这里。                    |
 | `right`       | 右侧区域。**仅填充了 `right` 插槽或切换按钮在右侧时渲染**，默认 `flex items-center justify-end gap-3 lg:flex-1`。                                             |
 | `toggle`      | 移动端汉堡按钮。默认 `desktop:hidden text-text-secondary hover:bg-bg-sub rounded-lg transition-colors`。**仅在未填充 `toggle` 插槽时渲染**，填充该插槽会替换掉按钮，`ui.toggle` 随之失效。 |
-| `popup`       | 移动端抽屉的根节点（透传给内部 `RebornPopup` 的 `ui.root`）。默认带 `z-[980]` 使其位于吸顶导航栏之下，层级与整体底色改这里。                                 |
+| `popup`       | 移动端抽屉的根节点（透传给内部 `RebornDrawer` 的 `ui.root`）。内部抽屉使用 `zIndex=980`；此键仅覆盖面板外观，不控制定位层的层级。                                 |
 | `popupHeader` | 抽屉头部。默认 `w-full flex items-center justify-between`。**仅在未填充 `header` 插槽时渲染**，填充该插槽会替换掉这块兜底内容（连带里面的标题链接）。          |
 | `popupBody`   | 抽屉内容区。**仅存在 `body` / `content` / default 插槽时渲染**，默认无类名，内边距与滚动行为改这里。                                                          |
 | `popupFooter` | 抽屉底部。**仅填充了 `footer` 插槽时渲染**，默认 `p-4 border-t border-border-divider`。                                                                       |

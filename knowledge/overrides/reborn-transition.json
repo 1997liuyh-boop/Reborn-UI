@@ -7,7 +7,7 @@
   ],
   "whenNotToUse": [
     "web 端简单显隐动画可直接用 Vue 内置 Transition。",
-    "只是给已有弹层加动画时，reborn-popup / reborn-dialog 等组件已内置过渡。"
+    "只是给已有弹层加动画时，reborn-drawer / reborn-popup / reborn-dialog 等组件已内置过渡。"
   ],
   "pitfalls": [
     "web 与 uniapp 双端均可用。",

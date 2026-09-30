@@ -5,7 +5,7 @@ export type CouponSplit = 'dashed' | 'dotted'
 
 export default {
     slots: {
-        root: 'flex overflow-hidden box-border bg-[#f5f5f5] transition duration-300 ease-in-out cursor-pointer antialiased',
+        root: 'flex overflow-hidden box-border bg-gray-2 transition duration-300 ease-in-out cursor-pointer antialiased',
         left: 'shrink-0',
         right: 'grow flex-1',
         center: 'py-2',

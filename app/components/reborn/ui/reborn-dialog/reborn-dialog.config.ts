@@ -18,7 +18,7 @@ export default {
     panelWrapper: "flex w-full justify-center pointer-events-none",
     /** 弹窗面板：统一内边距 py-20/px-24，header / body / footer 三段之间由 gap-20 分隔 */
     panel:
-      "pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-white py-[20px] px-[24px] text-gray-900 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
+      "pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
     /** 头部：无分隔线，内边距交由面板统一承担 */
     header: "flex items-start justify-between gap-4",
     /** 头部文字区：标题与描述之间间隔 8px */

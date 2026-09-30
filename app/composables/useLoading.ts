@@ -33,7 +33,7 @@ export interface LoadingOptions {
   color?: string;
   /** 图标尺寸，默认 '24px' */
   size?: string | number;
-  /** 遮罩背景色（任意 CSS 颜色，覆盖默认的 bg-white/80 dark:bg-gray-9/80） */
+  /** 遮罩背景色（任意 CSS 颜色，覆盖默认的 bg-gray-1/80） */
   background?: string;
   /** 遮罩根节点附加类名 */
   customClass?: ClassValue;

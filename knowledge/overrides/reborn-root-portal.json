@@ -5,7 +5,7 @@
     "uniapp 端需要脱离当前页面层级的全局浮层内容时。"
   ],
   "whenNotToUse": [
-    "组件自带传送能力时无需再包裹，如 reborn-popover 的 portal、reborn-popup 的 appendToBody/rootPortal。"
+    "组件自带传送能力时无需再包裹，如 reborn-popover 的 portal、Web reborn-drawer 的 appendTo、UniApp reborn-popup 的 rootPortal。"
   ],
   "pitfalls": [
     "web、uniapp 双端可用。",

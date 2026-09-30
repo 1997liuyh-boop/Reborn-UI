@@ -1,4 +1,5 @@
 import type { CSSProperties, VNode } from 'vue';
+import type { Placement } from '~/lib/placement';
 import { reactive } from 'vue';
 import { tv } from '~/lib/tv';
 
@@ -6,9 +7,12 @@ import { tv } from '~/lib/tv';
 export const notificationTypes = ['success', 'warning', 'info', 'error'] as const;
 export type NotificationType = (typeof notificationTypes)[number];
 
-/** 弹出位置：屏幕四角 */
-export const notificationPositions = ['top-right', 'top-left', 'bottom-right', 'bottom-left'] as const;
-export type NotificationPosition = (typeof notificationPositions)[number];
+/**
+ * 弹出位置：屏幕四角，取值沿用浮层组件 placement 的连字符写法；
+ * 通知没有 rtl 配置，start 固定贴左、end 固定贴右
+ */
+export const notificationPlacements = ['top-end', 'top-start', 'bottom-end', 'bottom-start'] as const satisfies readonly Placement[];
+export type NotificationPlacement = (typeof notificationPlacements)[number];
 
 /** 飘带位置：贴面板左侧或右侧内边的竖条；true 等价于 'left' */
 export type NotificationRibbon = boolean | 'left' | 'right';
@@ -72,8 +76,8 @@ export interface NotificationOptions {
   customClass?: string;
   /** 显示时间，单位为毫秒。值为 0 则不会自动关闭 */
   duration?: number;
-  /** 自定义弹出位置 */
-  position?: NotificationPosition;
+  /** 自定义弹出位置，默认 'top-end'（右上角） */
+  placement?: NotificationPlacement;
   /** 是否显示关闭按钮 */
   showClose?: boolean;
   /** 关闭时的回调函数 */
@@ -108,7 +112,7 @@ export interface NotificationOptions {
 export interface NotificationInstance extends NotificationOptions {
   id: number;
   type: NotificationType | '';
-  position: NotificationPosition;
+  placement: NotificationPlacement;
   duration: number;
   showClose: boolean;
   pauseOnHover: boolean;
@@ -230,7 +234,7 @@ export function addNotification(options: NotificationOptions): NotificationHandl
   const merged: Omit<NotificationInstance, 'id' | 'paused'> = {
     ...options,
     type: options.type ?? '',
-    position: options.position ?? 'top-right',
+    placement: options.placement ?? 'top-end',
     duration: options.duration ?? 4500,
     showClose: options.showClose ?? true,
     pauseOnHover: options.pauseOnHover ?? true,
@@ -302,13 +306,13 @@ export const notificationTheme = tv({
       'pointer-events-none absolute inset-0 bg-[length:1.25em_1.25em] bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)]',
   },
   variants: {
-    /** 弹出位置：左右决定对齐与入场方向，上下决定堆叠生长方向（贴边值走行内样式） */
-    position: {
-      'top-right': { wrapper: 'items-end' },
-      'top-left': { wrapper: 'items-start' },
+    /** 弹出位置：start / end 决定对齐与入场方向，top / bottom 决定堆叠生长方向（贴边值走行内样式） */
+    placement: {
+      'top-end': { wrapper: 'items-end' },
+      'top-start': { wrapper: 'items-start' },
       // 底部两角改为倒序排列，新通知始终贴着底边、旧通知向上顶
-      'bottom-right': { wrapper: 'flex-col-reverse items-end' },
-      'bottom-left': { wrapper: 'flex-col-reverse items-start' },
+      'bottom-end': { wrapper: 'flex-col-reverse items-end' },
+      'bottom-start': { wrapper: 'flex-col-reverse items-start' },
     },
     /** 类型：只给图标、飘带与进度条着色（语义色即各色阶的 -6），面板底色保持中性 */
     type: {
@@ -344,7 +348,7 @@ export const notificationTheme = tv({
     },
   },
   defaultVariants: {
-    position: 'top-right' as NotificationPosition,
+    placement: 'top-end' as NotificationPlacement,
     type: '' as NotificationType | '',
     ribbon: 'none' as 'none' | 'left' | 'right',
     clickable: false,

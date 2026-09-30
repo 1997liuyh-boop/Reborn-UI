@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useHead } from "#imports";
+import { useHead, useRuntimeConfig } from "#imports";
 import { onClickOutside, useMediaQuery } from "@vueuse/core";
 import { motion } from "motion-v";
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from "vue";
 import AppHeaderLogo from "~/components/app/AppHeaderLogo.vue";
+import { prefetchLandingModels } from "~/lib/three/modelAssets";
 import MultipleAnimationScene from "./MultipleAnimationScene.vue";
 import { installCommand } from "./retargetingHero.config";
 import RetargetingScene from "./RetargetingScene.vue";
@@ -52,7 +53,12 @@ async function copyInstall() {
   copyTimer = setTimeout(() => { copyStatus.value = ""; }, 4000);
 }
 onClickOutside(menu, () => closeMenu());
-onMounted(() => { hydrated.value = true; });
+const baseURL = useRuntimeConfig().app.baseURL;
+onMounted(() => {
+  hydrated.value = true;
+  // 模型下载不必等 three 大包和渲染器初始化，先发出去，两段耗时并行
+  prefetchLandingModels(baseURL);
+});
 onBeforeUnmount(() => { clearTimeout(copyTimer); });
 </script>
 

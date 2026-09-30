@@ -219,7 +219,7 @@ defineExpose({
 
       <span :class="ui.thumb()">
         <slot name="thumb" :checked="isChecked" :loading="props.loading">
-          <Icon v-if="props.loading" name="lucide:loader-2" class="size-full p-0.5 animate-spin text-gray-400" />
+          <Icon v-if="props.loading" name="lucide:loader-2" class="size-full p-0.5 animate-spin text-gray-5" />
           <!-- 滑块内按状态显示的内容：开态渲染 #active、关态渲染 #inactive -->
           <slot v-else-if="isChecked" name="active" :checked="isChecked" />
           <slot v-else name="inactive" :checked="isChecked" />

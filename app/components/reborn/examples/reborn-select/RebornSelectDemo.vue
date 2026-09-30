@@ -143,6 +143,18 @@ const controls: any = [
 // --- 各展示区块的独立状态 ---
 
 /** 本地搜索：默认的 label 包含匹配 */
+// --- 基础用法 ---
+
+const basicValue = ref(null);
+const basicNoClearValue = ref("vue");
+const basicDisabledValue = ref("react");
+
+// --- 多选与标签折叠 ---
+
+const multipleValue = ref<string[]>(["vue", "react", "svelte"]);
+const collapseValue = ref<string[]>(["vue", "react", "svelte", "solid"]);
+const limitValue = ref<string[]>(["vue"]);
+
 const searchValue = ref("vue");
 /** 自定义过滤：filter-option 传函数，关键词同时命中 label 与 desc */
 const customFilterValue = ref<string[]>([]);
@@ -293,8 +305,113 @@ function onChange(value: any) {
                 @change="onChange" />
         </Playground>
 
-        <!-- 2. 选项搜索 -->
-        <DemoSection title="选项搜索"
+    <!-- 2. 基础用法 -->
+    <DemoSection
+      title="基础用法"
+      description="传入 options 与 v-model 即可使用；选项上的 disabled 只禁用该项，组件级 disabled 让整个触发器不可展开。"
+    >
+      <DemoBlock
+        layout="grid"
+        :columns="3"
+        align="start"
+      >
+        <DemoItem
+          label="默认"
+          note="Angular 带 disabled 字段，展开后半透明且点击无效；选中后悬停触发器，箭头淡出、清空按钮盖上来"
+        >
+          <RebornSelect
+            v-model="basicValue"
+            :options="frameworkOptions"
+            placeholder="请选择框架"
+            class="w-full"
+          />
+        </DemoItem>
+
+        <DemoItem
+          label=":clearable=&quot;false&quot;"
+          note="clearable 默认为 true；关掉后尾部只剩箭头，适合必须有值的字段"
+        >
+          <RebornSelect
+            v-model="basicNoClearValue"
+            :options="frameworkOptions"
+            :clearable="false"
+            class="w-full"
+          />
+        </DemoItem>
+
+        <DemoItem
+          label="disabled"
+          note="触发器切到灰底灰字，点击不再展开；外层 RebornForm 的 disabled 也会下发到这里"
+        >
+          <RebornSelect
+            v-model="basicDisabledValue"
+            :options="frameworkOptions"
+            disabled
+            class="w-full"
+          />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
+
+    <!-- 3. 多选与标签折叠 -->
+    <DemoSection
+      title="多选与标签折叠：multiple / collapse-tags"
+      description="multiple 让 v-model 变为数组、已选项渲染为标签；标签默认逐行铺开，collapse-tags 把超出 max-collapse-tags 的部分收成一枚 +N。"
+    >
+      <DemoBlock
+        layout="grid"
+        :columns="3"
+        align="start"
+      >
+        <DemoItem
+          label="multiple"
+          note="未开启 collapse-tags 时标签换行铺开，触发器高度随之增长；点标签上的 × 单独移除"
+        >
+          <RebornSelect
+            v-model="multipleValue"
+            :options="frameworkOptions"
+            multiple
+            class="w-full"
+          />
+        </DemoItem>
+
+        <DemoItem
+          label="collapse-tags + collapse-tags-tooltip"
+          note="只保留前 2 枚标签，其余收成 +N；悬停 +N 以气泡列出被折叠的选项"
+          mono
+        >
+          <RebornSelect
+            v-model="collapseValue"
+            :options="frameworkOptions"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            :max-collapse-tags="2"
+            color="success"
+            class="w-full"
+          />
+        </DemoItem>
+
+        <DemoItem
+          label="multiple-limit"
+          note="最多选 2 项；达到上限后未选中的选项不置灰，但点击会被忽略"
+          mono
+        >
+          <RebornSelect
+            v-model="limitValue"
+            :options="frameworkOptions"
+            multiple
+            :multiple-limit="2"
+            color="info"
+            placeholder="最多选择 2 项"
+            class="w-full"
+          />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
+
+        <!-- 4. 搜索过滤 -->
+        <DemoSection title="搜索过滤：allow-search / filter-option"
             description="allow-search 让触发器在展开后变成输入框；filter-option 决定匹配规则：默认按 label 包含匹配，传函数可自定义，传 false 则关闭本地过滤、把列表交给远程数据源。">
             <DemoBlock layout="grid" :columns="3" align="start">
                 <DemoItem label="allow-search" note="默认按选项 label 做不区分大小写的包含匹配，无结果时展示「无匹配结果」">
@@ -315,8 +432,8 @@ function onChange(value: any) {
             </DemoBlock>
         </DemoSection>
 
-        <!-- 3. 加载状态 -->
-        <DemoSection title="加载状态" description="loading 同时作用于两处：触发器箭头替换为转圈图标，下拉面板改为加载中占位。">
+        <!-- 5. 加载状态 -->
+        <DemoSection title="加载状态：loading" description="loading 同时作用于两处：触发器箭头替换为转圈图标，下拉面板改为加载中占位。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="loading" note="加载期间清空按钮自动让位，避免与转圈图标争抢同一格；展开可见面板占位">
                     <RebornSelect v-model="loadingValue" :options="frameworkOptions" loading class="w-full" />
@@ -328,8 +445,8 @@ function onChange(value: any) {
             </DemoBlock>
         </DemoSection>
 
-        <!-- 4. 页头与页脚 -->
-        <DemoSection title="页头与页脚" description="header 与 footer 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。">
+        <!-- 6. 页头与页脚 -->
+        <DemoSection title="页头与页脚插槽：header / footer" description="header 与 footer 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="header + footer" note="页头展示已选统计，页脚放置操作入口；点击页脚不会收起面板">
                     <RebornSelect v-model="headerFooterValue" :options="frameworkOptions" multiple placeholder="可多选框架"
@@ -354,8 +471,8 @@ function onChange(value: any) {
             </DemoBlock>
         </DemoSection>
 
-        <!-- 5. 滚动加载 -->
-        <DemoSection title="滚动加载" description="dropdown-scroll 原样透出下拉列表的原生滚动事件，据此判断触底即可实现分页续接。">
+        <!-- 7. 滚动加载 -->
+        <DemoSection title="滚动加载：dropdown-scroll" description="dropdown-scroll 原样透出下拉列表的原生滚动事件，据此判断触底即可实现分页续接。">
             <DemoItem label="dropdown-scroll" note="初始只有 12 项，滚动到底部自动追加下一页；加载提示放在固定不动的页脚里，滚动位置不会丢失">
                 <RebornSelect v-model="scrollLoadValue" :options="scrollLoadOptions" color="warning"
                     placeholder="向下滚动加载更多" class="w-full max-w-md" @dropdown-scroll="onDropdownScroll">
@@ -375,8 +492,8 @@ function onChange(value: any) {
             </DemoItem>
         </DemoSection>
 
-        <!-- 6. 虚拟滚动 -->
-        <DemoSection title="虚拟滚动"
+        <!-- 8. 虚拟滚动 -->
+        <DemoSection title="虚拟滚动：virtual"
             description="virtual 开启后只渲染可视区内的选项，DOM 数量与数据量脱钩；代价是每项高度必须恒定，由 virtual-item-height 声明（默认 33px = 29px 行高 + 4px 行距）。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="virtual" note="一万条选项，展开仍是瞬时的；已选项照旧被定位到可视区中央，键盘上下键也能正常翻越">
@@ -391,8 +508,8 @@ function onChange(value: any) {
             </DemoBlock>
         </DemoSection>
 
-        <!-- 7. 浮层定位 -->
-        <DemoSection title="浮层定位" description="浮层传送至 body，始终锚定触发器。">
+        <!-- 9. 浮层定位 -->
+        <DemoSection title="浮层定位：portal 与自动翻转" description="portal 默认开启，浮层传送至 body 并按文档坐标锚定触发器，不受祖先 overflow 裁剪；auto-adjust-overflow 在下方空间不足时向上展开。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="滚动容器内" note="展开后滚动下方区域：浮层实时跟随触发器，且不会被容器的 overflow-hidden 裁掉">
                     <!-- 滚动容器本身就是被演示的对象，属规范里唯一允许的那层浅填充 -->
@@ -440,8 +557,8 @@ function onChange(value: any) {
             </div>
         </DemoSection>
 
-        <!-- 8. 插槽定制 -->
-        <DemoSection title="插槽定制" description="接管选项与触发器的渲染。">
+        <!-- 10. 自定义渲染 -->
+        <DemoSection title="自定义渲染：option / cover 插槽" description="option 插槽替换单个选项的内容，作用域给出 option 与 active；cover 插槽接管触发器盒子内的全部内容，连箭头与清空按钮一并交给调用方。">
             <DemoBlock layout="grid" :columns="2" align="start">
                 <DemoItem label="option 插槽" note="在选项内渲染图标与副标题，作用域提供 option 与 active" mono>
                     <RebornSelect v-model="slotOptionValue" :options="frameworkOptions"
@@ -478,8 +595,8 @@ function onChange(value: any) {
             </DemoBlock>
         </DemoSection>
 
-        <!-- 9. 表单集成 -->
-        <DemoSection title="表单集成" description="尺寸、禁用与校验态由 RebornForm 下发。">
+        <!-- 11. 与表单联动 -->
+        <DemoSection title="与表单联动" description="尺寸、禁用与校验态由 RebornForm 下发。">
             <DemoBlock layout="stack" class="gap-6">
                 <DemoNote class="text-xs">
                     选择器不需要自己接错误状态：<code>size</code>、<code>disabled</code>、<code>error</code>
@@ -505,8 +622,8 @@ function onChange(value: any) {
             </DemoBlock>
         </DemoSection>
 
-        <!-- 10. 深度样式定制 -->
-        <DemoSection title="深度样式定制" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
+        <!-- 12. 自定义样式 -->
+        <DemoSection title="自定义样式：ui / triggerUi" description="triggerUi 覆盖触发器各槽位，ui 覆盖下拉列表各槽位，二者都会与内置类做 twMerge 合并。">
             <RebornSelect v-model="customUiValue" :options="frameworkOptions" :trigger-ui="{
                 trigger: 'border-dashed border-2 rounded-2xl border-indigo-200 dark:border-indigo-800 px-4 h-14',
             }" :ui="{

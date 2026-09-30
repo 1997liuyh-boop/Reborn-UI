@@ -91,51 +91,51 @@ const config = {
 
     /** 单个列表面板容器（overflow-hidden 保证外框圆角与边框一致） */
     panel:
-      'flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-900 flex-1 min-w-0',
+      'flex flex-col overflow-hidden rounded-xl border border-gray-3 bg-gray-1 flex-1 min-w-0',
 
     /** 面板头部（rounded-t-xl 与面板顶角对齐，避免背景溢出圆角） */
     panelHeader:
-      'relative z-10 flex shrink-0 items-center rounded-t-xl border-b border-gray-200 bg-gray-50 dark:border-gray-700/60 dark:bg-gray-800/60',
+      'relative z-10 flex shrink-0 items-center rounded-t-xl border-b border-gray-3 bg-gray-2',
 
     /** 头部勾选控件区（全选框 / 扩展菜单），与列表条目复选框列对齐 */
     headerSelectControls: 'flex shrink-0 items-center',
     /** 头部全选下拉：触发器 + 菜单容器（宽高与 checkAll / itemCheck 一致） */
     headerSelectMenu: 'relative flex size-4 shrink-0 items-center justify-center',
     headerSelectTrigger:
-      'flex size-4 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-200/80 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700/60 dark:hover:text-gray-200',
+      'flex size-4 items-center justify-center rounded-md text-gray-7 transition-colors hover:bg-gray-3/80 hover:text-gray-9',
     headerSelectIcon: 'size-3 shrink-0 transition-transform duration-200',
     headerSelectDropdown:
-      'absolute top-full left-0 z-50 mt-1 min-w-[7.5rem] rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900',
+      'absolute top-full left-0 z-50 mt-1 min-w-[7.5rem] rounded-lg border border-gray-3 bg-gray-1 shadow-lg',
     headerSelectDropdownInner: 'w-full py-1',
     headerSelectItem:
-      'block w-full cursor-pointer whitespace-nowrap px-3 text-left text-gray-700 transition-colors hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-200 dark:hover:bg-primary/15',
+      'block w-full cursor-pointer whitespace-nowrap px-3 text-left text-gray-9 transition-colors hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-primary/15',
 
     /** 标题 + 计数区域 */
     panelTitleArea: 'flex-1 min-w-0 flex items-baseline justify-between',
-    panelTitle: 'font-semibold text-gray-700 dark:text-gray-200 truncate',
-    panelCount: 'text-gray-400 dark:text-gray-500 shrink-0',
+    panelTitle: 'font-semibold text-gray-9 truncate',
+    panelCount: 'text-gray-5 shrink-0',
 
     /** 搜索框外层容器 */
-    panelSearch: 'border-b border-gray-200 dark:border-gray-700/60 shrink-0',
+    panelSearch: 'border-b border-gray-3 shrink-0',
     /** 搜索框：图标与输入框横向排列，聚焦样式作用于输入框本体 */
     searchWrapper: 'flex w-full items-center',
-    searchIcon: 'shrink-0 text-gray-400 dark:text-gray-500',
+    searchIcon: 'shrink-0 text-gray-5',
     searchInput:
-      'min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 outline-none transition-all placeholder:text-gray-400 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200 dark:placeholder:text-gray-500',
+      'min-w-0 flex-1 rounded-lg border border-gray-3 bg-gray-2 text-gray-9 outline-none transition-all placeholder:text-gray-5 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60',
 
     /** 列表 + 分页容器（开启分页时占满面板剩余高度，分页贴底） */
     panelContent: 'flex min-h-0 flex-1 flex-col overflow-hidden',
     /** 可滚动列表区域 */
-    panelBody: 'overflow-x-hidden overflow-y-auto bg-white dark:bg-gray-900',
+    panelBody: 'overflow-x-hidden overflow-y-auto bg-gray-1',
     /** 开启分页时列表区撑满内容区剩余空间 */
     panelBodyFill: 'flex min-h-0 flex-1 flex-col',
     panelBodyRounded: 'rounded-b-xl',
     /** 分页栏（固定在面板底部） */
     panelFooter:
-      'mt-auto shrink-0 flex justify-center border-t border-gray-200 bg-gray-50/80 px-2 py-2 dark:border-gray-700/60 dark:bg-gray-800/40',
+      'mt-auto shrink-0 flex justify-center border-t border-gray-3 bg-gray-2/80 px-2 py-2',
 
     /** 空状态容器 */
-    panelEmpty: 'flex flex-col items-center justify-center gap-1.5 text-gray-400 dark:text-gray-500',
+    panelEmpty: 'flex flex-col items-center justify-center gap-1.5 text-gray-5',
 
     /** 全选复选框 */
     checkAll: 'flex shrink-0 items-center justify-center size-4 border transition-all',
@@ -147,19 +147,19 @@ const config = {
     item: 'flex items-center cursor-pointer transition-colors select-none',
     itemContent: 'flex-1 min-w-0',
     /** 条目主文案。行高跟随 size 档的 text-* 令牌，不写 leading-（令牌行高 = 字号 + 8px） */
-    itemLabel: 'text-gray-800 dark:text-gray-100',
-    itemDesc: 'text-gray-400 dark:text-gray-500 truncate mt-0.5',
+    itemLabel: 'text-gray-9',
+    itemDesc: 'text-gray-5 truncate mt-0.5',
 
     /** 单向模式右侧条目撤回按钮 */
     itemUndoBtn:
-      'flex shrink-0 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-200/80 hover:text-primary active:scale-95 dark:text-gray-500 dark:hover:bg-gray-700/60 dark:hover:text-primary',
+      'flex shrink-0 items-center justify-center rounded-md text-gray-5 transition-colors hover:bg-gray-3/80 hover:text-primary active:scale-95',
     itemUndoIcon: 'size-3.5 shrink-0',
 
     /** 中间操作按钮区 */
     operations: 'flex flex-col items-center justify-center gap-2.5 shrink-0 self-center px-1',
     operationBtn: 'flex items-center justify-center rounded-lg border transition-all active:scale-95',
     /** 带可见文案时的操作按钮（横向排列；仅放宽宽度，高度仍由 size 变体控制） */
-    operationBtnLabeled: '!w-auto min-w-0 max-w-none shrink-0 gap-1.5 px-2.5',
+    operationBtnLabeled: 'w-auto! min-w-0 max-w-none shrink-0 gap-1.5 px-2.5',
     /** 操作按钮内图标容器，防止 flex 挤压导致图标不可见 */
     operationBtnIcon: 'inline-flex shrink-0 items-center justify-center',
     operationBtnLabel: 'shrink-0 whitespace-nowrap font-medium leading-none text-current',

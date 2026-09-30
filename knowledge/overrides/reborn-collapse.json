@@ -6,7 +6,7 @@
     "需要程序化控制展开（暴露 show/hide/toggle/resize 方法）的折叠区域。"
   ],
   "whenNotToUse": [
-    "内容需要浮层覆盖页面而非推挤布局时，改用 reborn-popup 或 reborn-dialog。"
+    "内容需要浮层覆盖页面而非推挤布局时，改用 reborn-drawer（Web）、reborn-popup（UniApp）或 reborn-dialog。"
   ],
   "pitfalls": [
     "web 与 uniapp 双端可用。",

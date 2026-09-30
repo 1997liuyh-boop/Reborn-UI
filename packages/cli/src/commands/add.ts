@@ -69,6 +69,7 @@ export function addCommand() {
     .argument("[components...]", "组件名（可多个）")
     .option("--cwd <path>", "目标项目目录", process.cwd())
     .option("--pm <pm>", "包管理器：pnpm|npm|yarn|bun")
+    .option("--platform <platform>", "目标平台：web|uniapp（不传则交互选择；配合 --yes 时默认 web）")
     .option("--yes", "跳过交互", false)
     .option("--overwrite", "覆盖已存在文件", false)
     .option("--config <path>", "配置文件路径（相对 cwd）", "components.json")
@@ -119,27 +120,41 @@ export function addCommand() {
         targets = res.selected ?? [];
       }
 
-      // 询问平台 (Web / UniApp)
-      const { platform } = await prompts({
-        type: "select",
-        name: "platform",
-        message: "选择目标平台",
-        choices: [
-          { title: "Web (默认)", value: "web" },
-          { title: "UniApp", value: "uniapp" },
-        ],
-        initial: 0,
-      });
+      // 确定目标平台 (Web / UniApp)：
+      // 1. 命令行显式传了 --platform 就直接使用，供脚本化调用；
+      // 2. --yes 且未指定平台时默认 web；
+      // 3. 其余情况保持原有的交互式询问
+      let platform: "web" | "uniapp";
+      if (opts.platform) {
+        if (opts.platform !== "web" && opts.platform !== "uniapp") {
+          throw new Error(`--platform 仅支持 web 或 uniapp，收到：${opts.platform}`);
+        }
+        platform = opts.platform;
+      } else if (opts.yes) {
+        platform = "web";
+      } else {
+        const res = await prompts({
+          type: "select",
+          name: "platform",
+          message: "选择目标平台",
+          choices: [
+            { title: "Web (默认)", value: "web" },
+            { title: "UniApp", value: "uniapp" },
+          ],
+          initial: 0,
+        });
 
-      if (!platform) {
-        throw new Error("已取消");
+        if (!res.platform) {
+          throw new Error("已取消");
+        }
+        platform = res.platform;
       }
 
       // 基于 registry 内容解析前置组件与 npm 依赖（替代旧的手写映射表）
       const deps = resolveDependencies({
         registryComponents: registry.components,
         targets,
-        platform: platform as "web" | "uniapp",
+        platform,
       });
 
       const additionalComponents = deps.components.filter(c => !targets.includes(c));
@@ -151,12 +166,15 @@ export function addCommand() {
         const missingDeps = getMissingDeps(pkg, npmDependenciesArray);
         if (missingDeps.length > 0) {
           console.log(chalk.blue(`\n检测到当前组件需要以下未安装的 npm 依赖：${missingDeps.join(", ")}`));
-          const { installNpm } = await prompts({
-            type: "confirm",
-            name: "installNpm",
-            message: `是否需要为这些组件安装以上 npm 依赖?`,
-            initial: true,
-          });
+          // --yes 时按默认值（安装）处理，不再询问
+          const { installNpm } = opts.yes
+            ? { installNpm: true }
+            : await prompts({
+                type: "confirm",
+                name: "installNpm",
+                message: `是否需要为这些组件安装以上 npm 依赖?`,
+                initial: true,
+              });
 
           if (installNpm) {
             console.log(chalk.cyan("正在安装 npm 依赖..."));
@@ -178,12 +196,15 @@ export function addCommand() {
 
         if (missingComponents.length > 0) {
           console.log(chalk.blue(`\n检测到需要前置或关联组件：${missingComponents.join(", ")}`));
-          const { installComponents } = await prompts({
-            type: "confirm",
-            name: "installComponents",
-            message: `是否自动安装缺失的前置组件?`,
-            initial: true,
-          });
+          // --yes 时按默认值（自动带上前置组件）处理，不再询问
+          const { installComponents } = opts.yes
+            ? { installComponents: true }
+            : await prompts({
+                type: "confirm",
+                name: "installComponents",
+                message: `是否自动安装缺失的前置组件?`,
+                initial: true,
+              });
           if (installComponents) {
             finalTargets = [...finalTargets, ...missingComponents];
           }
@@ -201,6 +222,12 @@ export function addCommand() {
 
         if (existingComponents.length > 0) {
           console.log(chalk.yellow(`\n遇到已存在的组件：${existingComponents.join(", ")}`));
+          // 覆盖属于破坏性操作，--yes 不代为决定：要求显式传 --overwrite
+          if (opts.yes) {
+            throw new Error(
+              "存在同名组件目录；--yes 模式下请显式传 --overwrite 覆盖更新，或先移除旧目录。",
+            );
+          }
           const { overwrite } = await prompts({
             type: "confirm",
             name: "overwrite",

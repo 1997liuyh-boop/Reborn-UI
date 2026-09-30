@@ -10,9 +10,10 @@ const card2Ref = ref<HTMLElement | null>(null);
 const actionBtnRef = ref<HTMLElement | null>(null);
 
 const placementOptions = [
-  "top", "bottom", "left", "right",
-  "top-left", "top-right", "bottom-left", "bottom-right",
-  "left-top", "left-bottom", "right-top", "right-bottom",
+  "top", "top-start", "top-end",
+  "bottom", "bottom-start", "bottom-end",
+  "left", "left-start", "left-end",
+  "right", "right-start", "right-end",
 ];
 
 /** 演练场绑定值 */

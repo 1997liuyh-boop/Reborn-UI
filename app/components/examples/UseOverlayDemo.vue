@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useOverlay } from '~/composables/useOverlay';
 import RebornDialog from '~/components/reborn/ui/reborn-dialog/RebornDialog.vue';
-import RebornPopup from '~/components/reborn/ui/reborn-popup/RebornPopup.vue';
+import RebornDrawer from '~/components/reborn/ui/reborn-drawer/RebornDrawer.vue';
 
 const overlay = useOverlay();
 
@@ -13,12 +13,12 @@ const dialog = overlay.create(RebornDialog, {
   },
 });
 
-// 创建 Popup 实例
-const popup = overlay.create(RebornPopup, {
+// 创建 Drawer 实例
+const popup = overlay.create(RebornDrawer, {
   props: {
-    position: 'bottom',
+    direction: 'bottom',
     title: '底部弹出',
-    round: true,
+    withHeader: true,
   },
 });
 
@@ -44,14 +44,14 @@ function updateDialog() {
   });
 }
 
-// 打开 Popup
+// 打开抽屉
 function openPopup() {
   popup.open({
     title: '底部弹出菜单',
   });
 }
 
-// 关闭 Popup
+// 关闭抽屉
 function closePopup() {
   popup.close();
 }
@@ -64,7 +64,7 @@ function closeAll() {
 // 检查状态
 function checkStatus() {
   console.log('Dialog 状态:', overlay.isOpen(dialog.id));
-  console.log('Popup 状态:', overlay.isOpen(popup.id));
+  console.log('抽屉状态:', overlay.isOpen(popup.id));
   console.log('所有 overlays:', overlay.overlays);
 }
 </script>
@@ -104,13 +104,13 @@ function checkStatus() {
           class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
           @click="openPopup"
         >
-          打开 Popup
+          打开抽屉
         </button>
         <button
           class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
           @click="closePopup"
         >
-          关闭 Popup
+          关闭抽屉
         </button>
       </div>
     </div>

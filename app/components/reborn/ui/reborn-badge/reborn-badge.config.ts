@@ -84,14 +84,15 @@ const config = {
      * ! 是历史遗留：size 轴原先用自定义的 rounded-ui-*，不在 tailwind-merge 的
      * border-radius 冲突组里，两个圆角类会共存、由 CSS 源序决定胜负。现在 size 轴
      * 已改回原生 rounded-*，合并正常，! 只剩提权作用；保留是为了不动既有覆盖顺序。
+     * 统一写成 Tailwind v4 的后缀形式（rounded-full!），与仓库其余组件一致。
      */
     round: {
       true: {
-        base: '!rounded-full'
+        base: 'rounded-full!'
       }
     },
     /** 圆形只改变轮廓和尺寸，不改变配色与选中态。 */
-    circle: { true: { base: '!rounded-full !p-0 shrink-0' } },
+    circle: { true: { base: 'rounded-full! p-0! shrink-0' } },
     /** 可选中模式的未选中态：本轴只声明维度，具体灰阶样式按 variant 在复合变体中给出 */
     unchecked: {
       true: {}
@@ -154,9 +155,9 @@ const config = {
     { variant: 'outlined' as any, unchecked: true, class: 'border-gray-2 text-gray-6' },
     { variant: 'filled' as any, unchecked: true, class: 'bg-gray-2 text-gray-6' },
     // 仅基底固定等宽高，外层过渡容器与图标保持原有布局。
-    { circle: true, size: 'sm' as (typeof badgeSizes)[number], class: { base: '!h-[var(--height-badge-sm)] !w-[var(--height-badge-sm)]' } },
-    { circle: true, size: 'md' as (typeof badgeSizes)[number], class: { base: '!h-[var(--height-badge-md)] !w-[var(--height-badge-md)]' } },
-    { circle: true, size: 'lg' as (typeof badgeSizes)[number], class: { base: '!h-[var(--height-badge-lg)] !w-[var(--height-badge-lg)]' } }
+    { circle: true, size: 'sm' as (typeof badgeSizes)[number], class: { base: 'h-(--height-badge-sm)! w-(--height-badge-sm)!' } },
+    { circle: true, size: 'md' as (typeof badgeSizes)[number], class: { base: 'h-(--height-badge-md)! w-(--height-badge-md)!' } },
+    { circle: true, size: 'lg' as (typeof badgeSizes)[number], class: { base: 'h-(--height-badge-lg)! w-(--height-badge-lg)!' } }
   ],
   /** 默认变体值 */
   defaultVariants: {

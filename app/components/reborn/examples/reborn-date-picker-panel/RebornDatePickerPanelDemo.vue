@@ -1,17 +1,56 @@
 <script setup lang="ts">
-import type { DatePickerType } from "~/components/reborn/ui/reborn-date-picker-panel/reborn-date-picker-panel.config";
+import type {
+  DatePickerType,
+  ViewType,
+} from "~/components/reborn/ui/reborn-date-picker-panel/reborn-date-picker-panel.config";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, ref, useTemplateRef, watch } from "vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import {
   datePickerActiveTypes,
   datePickerPanelColors,
   datePickerPanelSizes,
   datePickerTypes,
 } from "~/components/reborn/ui/reborn-date-picker-panel/reborn-date-picker-panel.config";
+import RebornDatePickerPanel from "~/components/reborn/ui/reborn-date-picker-panel/RebornDatePickerPanel.vue";
+
+// ─── 通用工具 ───────────────────────────────────────────────────
+
+/** 本地时区的 YYYY-MM-DD，用于回显 Date 与比对节假日 */
+function toDateKey(date: Date) {
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${m}-${d}`;
+}
+
+/** 把绑定值格式化为可读文本：Date 标出类型，字符串原样，数组逐项展开 */
+function formatDisplay(val: unknown): string {
+  if (Array.isArray(val)) return val.length ? `[${val.map(formatDisplay).join(", ")}]` : "空数组";
+  if (val instanceof Date) return `Date(${toDateKey(val)})`;
+
+  return val ? `"${val}"` : "未选择";
+}
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref<Record<string, any>>({
-  value: "2024-04-03" as string | string[],
-  type: "date" as DatePickerType,
+/** 多选与范围类型的绑定值是数组 */
+const arrayValueTypes: DatePickerType[] = [
+  "dates",
+  "months",
+  "quarters",
+  "years",
+  "week",
+  "daterange",
+  "monthrange",
+  "quarterrange",
+  "yearrange",
+  "datetimerange",
+];
+
+/** 演练场默认状态 */
+const defaultState: Record<string, any> = {
+  value: "2024-04-03",
+  type: "date",
   color: "primary",
   activeType: "fill",
   width: "auto",
@@ -19,26 +58,33 @@ const state = ref<Record<string, any>>({
   disabled: false,
   border: true,
   shortcuts: true,
-});
+  showWeekNumber: false,
+  unlinkPanels: false,
+  singlePanel: false,
+  showToday: false,
+};
 
-/** 多选与范围类型的绑定值是数组，切换类型时需要重置以免类型错位 */
+const state = ref<Record<string, any>>({ ...defaultState });
+
+/** 最近一次事件，让预览区的操作「有回应」 */
+const lastEvent = ref("");
+
+/** 重置演练场配置，事件回显一并清空 */
+function resetState() {
+  state.value = { ...defaultState };
+  lastEvent.value = "";
+}
+
+/**
+ * 切换类型时重置绑定值：单值与数组形态不同，取值精度也不同，沿用旧值会被按新格式误读。
+ * 重置配置回到默认类型时保留默认值，否则刚恢复的示例值会被立刻清掉。
+ */
 watch(
   () => state.value.type,
   (newType: DatePickerType) => {
-    const isMultiple = [
-      "dates",
-      "months",
-      "quarters",
-      "years",
-      "week",
-      "daterange",
-      "monthrange",
-      "quarterrange",
-      "yearrange",
-      "datetimerange",
-    ].includes(newType);
-
-    state.value.value = isMultiple ? [] : "";
+    if (newType === defaultState.type && state.value.value === defaultState.value) return;
+    state.value.value = arrayValueTypes.includes(newType) ? [] : "";
+    lastEvent.value = "";
   },
 );
 
@@ -56,7 +102,7 @@ const valueFormat = computed(() => {
 });
 
 /** 演练场控制面板配置 */
-const controls = [
+const controls: any = [
   {
     title: "面板类型",
     children: [
@@ -67,13 +113,32 @@ const controls = [
         defaultValue: "date",
         props: { options: datePickerTypes.map((t) => ({ label: t, value: t })) },
       },
-      {
-        label: "显示快捷选项",
-        key: "shortcuts",
-        component: "checkbox" as const,
-        defaultValue: true,
-      },
+      { label: "显示快捷选项", key: "shortcuts", component: "checkbox" as const, defaultValue: true },
+      { label: "底部显示「今天」栏", key: "showToday", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
+    ],
+  },
+  {
+    title: "范围与周数",
+    children: [
+      {
+        label: "显示周数（week 类型无效）",
+        key: "showWeekNumber",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+      {
+        label: "取消面板联动（仅范围类型）",
+        key: "unlinkPanels",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
+      {
+        label: "只显示一个面板（仅范围类型）",
+        key: "singlePanel",
+        component: "checkbox" as const,
+        defaultValue: false,
+      },
     ],
   },
   {
@@ -124,26 +189,32 @@ const controls = [
   },
 ];
 
-/** 演练场右上角展示的等价代码 */
+/** 演练场右上角展示的等价代码：完整列出当前所有参数（含默认值） */
 const panelCode = computed(() => {
   const s = state.value;
-  const props: string[] = ['v-model="value"', `type="${s.type}"`];
-
-  if (s.color !== "primary") props.push(`color="${s.color}"`);
-  if (s.size !== "md") props.push(`size="${s.size}"`);
-  if (s.activeType !== "fill") props.push(`active-type="${s.activeType}"`);
-  if (s.width !== "auto") props.push(`width="${s.width}"`);
-  if (!s.border) props.push(':border="false"');
-  if (s.disabled) props.push("disabled");
-  if (s.shortcuts) props.push(':shortcuts="shortcuts"');
-  props.push(`value-format="${valueFormat.value}"`);
+  const props: string[] = [
+    'v-model="value"',
+    `type="${s.type}"`,
+    `value-format="${valueFormat.value}"`,
+    `color="${s.color}"`,
+    `size="${s.size}"`,
+    `active-type="${s.activeType}"`,
+    `width="${s.width}"`,
+    `:border="${s.border}"`,
+    `:disabled="${s.disabled}"`,
+    s.shortcuts ? ':shortcuts="shortcuts"' : ':shortcuts="[]"',
+    `:show-week-number="${s.showWeekNumber}"`,
+    `:unlink-panels="${s.unlinkPanels}"`,
+    `:single-panel="${s.singlePanel}"`,
+    `:show-today="${s.showToday}"`,
+  ];
 
   return `<RebornDatePickerPanel\n  ${props.join("\n  ")}\n/>`;
 });
 
 /** 快捷选项：value 可以是日期，也可以是返回日期的函数 */
 const globalShortcuts = [
-  { text: "今天", value: new Date() },
+  { text: "今天", value: () => new Date() },
   {
     text: "一周前",
     value: () => {
@@ -162,19 +233,62 @@ const globalShortcuts = [
   },
 ];
 
-/** 把绑定值格式化为可读文本 */
-function formatDisplay(val: string | string[]) {
-  if (Array.isArray(val)) return val.length ? `[${val.join(", ")}]` : "空数组";
-
-  return val || "未选择";
+function onPlaygroundCalendarChange(value: [Date, Date | null]) {
+  lastEvent.value = `calendar-change ${formatDisplay(value[0])} → ${value[1] ? formatDisplay(value[1]) : "null"}`;
 }
 
-// ─── 宽度模式 ───────────────────────────────────────────────────
+function onPlaygroundPanelChange(date: Date | [Date, Date], mode: "month" | "year", view: ViewType) {
+  lastEvent.value = `panel-change ${formatDisplay(date)} · mode="${mode}" · view="${view}"`;
+}
 
-/** 两块放在同宽的父容器里对比 */
-const widthDemoValue = ref("2024-04-03");
+function onPlaygroundChange(value: unknown) {
+  lastEvent.value = `change ${formatDisplay(value)}`;
+}
 
-// ─── 自定义快捷按钮 ─────────────────────────────────────────────
+// ─── 基础用法 ───────────────────────────────────────────────────
+
+const basicDateValue = ref<Date | "">("");
+const basicStringValue = ref("2024-04-03");
+
+// ─── 选择类型 ───────────────────────────────────────────────────
+
+const quarterValue = ref("2024-Q2");
+const typeRangeValue = ref(["2024-04-01", "2024-04-05"]);
+
+// ─── 范围与双面板 ───────────────────────────────────────────────
+
+const linkedRangeValue = ref(["2024-04-22", "2024-05-06"]);
+const unlinkedRangeValue = ref(["2024-01-15", "2024-06-10"]);
+const singleRangeValue = ref(["2024-04-08", "2024-04-12"]);
+
+// ─── 周数 ───────────────────────────────────────────────────────
+
+const weekNumberValue = ref("2024-04-03");
+
+// ─── 禁用规则 ───────────────────────────────────────────────────
+
+const disabledPanelValue = ref("2024-04-10");
+const weekendValue = ref("");
+const boundedValue = ref(["2024-04-10", "2024-04-12"]);
+const unitValue = ref("");
+
+/** 周末不可选：只在日期粒度判定，否则切到月视图时「1 号恰逢周末」的月份也会被误禁 */
+function disableWeekend(date: Date, unit: "year" | "month" | "quarter" | "week" | "date") {
+  const day = date.getDay();
+  return unit === "date" && (day === 0 || day === 6);
+}
+
+/**
+ * 按粒度禁用：同一个方法通过 unit 参数分流——月粒度只开放 3-8 月，
+ * 年粒度禁用 2024 年以前；点标题切到年视图时能看到两套规则同时生效
+ */
+function disableByUnit(date: Date, unit: "year" | "month" | "quarter" | "week" | "date") {
+  if (unit === "year") return date.getFullYear() < 2024;
+  if (unit === "month") return date.getMonth() < 2 || date.getMonth() > 7;
+  return false;
+}
+
+// ─── 快捷选项 ───────────────────────────────────────────────────
 
 /** 从今天出发偏移若干天，快捷项的 value 写成函数才能每次点击都按当天重新计算 */
 function daysFromToday(offset: number) {
@@ -214,39 +328,12 @@ const rangeShortcuts = [
   },
 ];
 
-// ─── 禁用与部分日期禁用 ─────────────────────────────────────────
+// ─── 今天栏 ─────────────────────────────────────────────────────
 
-const disabledPanelValue = ref("2024-04-10");
-const weekendValue = ref("");
-const boundedValue = ref("");
-const unitValue = ref("");
+const todayDateValue = ref("");
+const todayMonthValue = ref("");
 
-/** 周末不可选：disabledMethod 返回 true 即禁用该项（这里只用到日期本身，忽略粒度参数） */
-function disableWeekend(date: Date) {
-  const day = date.getDay();
-  return day === 0 || day === 6;
-}
-
-/** 只允许选未来 14 天内：可以把多条规则写在一个函数里 */
-function disablePast(date: Date) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const max = new Date(today);
-  max.setDate(max.getDate() + 14);
-  return date < today || date > max;
-}
-
-/**
- * 按粒度禁用：同一个方法通过 unit 参数分流——月粒度只开放 3-8 月，
- * 年粒度禁用 2024 年以前；点标题切到年视图时能看到两套规则同时生效
- */
-function disableByUnit(date: Date, unit: "year" | "month" | "quarter" | "week" | "date") {
-  if (unit === "year") return date.getFullYear() < 2024;
-  if (unit === "month") return date.getMonth() < 2 || date.getMonth() > 7;
-  return false;
-}
-
-// ─── 自定义选中样式 ─────────────────────────────────────────────
+// ─── 选中样式 ───────────────────────────────────────────────────
 
 const activeTypeShowcases = ref(
   datePickerActiveTypes.map((value) => ({
@@ -263,8 +350,6 @@ const customActiveUi = {
   dayToday: "text-gray-10 underline underline-offset-4",
 };
 
-// ─── 区间样式自定义 ─────────────────────────────────────────────
-
 const rangeStyleValue = ref(["2024-04-09", "2024-04-18"]);
 /** 首尾用 dayActive，中间项用 dayInRange；两者都要把 hover 写上，否则悬停会被灰底盖掉 */
 const customRangeUi = {
@@ -277,6 +362,61 @@ const dashedRangeUi = {
   dayActive: "border border-dashed border-warning bg-transparent text-warning rounded-[4px]",
   dayInRange: "bg-orange-1 text-gray-9 rounded-[4px] hover:bg-orange-1",
 };
+
+// ─── 自定义单元格 ───────────────────────────────────────────────
+
+const cellValue = ref("2024-04-03");
+
+/** 2024 年清明与劳动节的放假、调休安排 */
+const holidayMarks: Record<string, "休" | "班"> = {
+  "2024-04-04": "休",
+  "2024-04-05": "休",
+  "2024-04-06": "休",
+  "2024-04-07": "班",
+  "2024-04-28": "班",
+  "2024-05-01": "休",
+  "2024-05-02": "休",
+  "2024-05-03": "休",
+  "2024-05-04": "休",
+  "2024-05-05": "休",
+  "2024-05-11": "班",
+};
+
+function holidayMark(date: Date) {
+  return holidayMarks[toDateKey(date)];
+}
+
+// ─── 导航图标 ───────────────────────────────────────────────────
+
+const navIconValue = ref("2024-04-03");
+
+// ─── 事件 ───────────────────────────────────────────────────────
+
+const eventPanel = useTemplateRef<InstanceType<typeof RebornDatePickerPanel>>("eventPanel");
+const eventValue = ref(["2024-04-08", "2024-04-12"]);
+const eventLogs = ref<{ id: number; name: string; detail: string }[]>([]);
+let eventSeq = 0;
+
+/** 新事件插到最前，只保留最近 8 条 */
+function pushLog(name: string, detail: string) {
+  eventLogs.value = [{ id: ++eventSeq, name, detail }, ...eventLogs.value].slice(0, 8);
+}
+
+function onCalendarChange(value: [Date, Date | null]) {
+  pushLog("calendar-change", `[${formatDisplay(value[0])}, ${value[1] ? formatDisplay(value[1]) : "null"}]`);
+}
+
+function onPanelChange(date: Date | [Date, Date], mode: "month" | "year", view: ViewType) {
+  pushLog("panel-change", `${formatDisplay(date)}, "${mode}", "${view}"`);
+}
+
+function onChange(value: unknown) {
+  pushLog("change", formatDisplay(value));
+}
+
+function onClear() {
+  pushLog("clear", "()");
+}
 </script>
 
 <template>
@@ -287,117 +427,204 @@ const dashedRangeUi = {
       :code="panelCode"
       component-name="RebornDatePickerPanel"
       title="交互演练场"
-      description="type 决定面板的选择粒度与绑定值形态：单选返回字符串，多选与范围返回数组；value-format 随类型自动切换。"
+      description="调节左侧参数，实时查看面板在各类型下的表现与绑定值。"
     >
+      <template #tag>
+        <RebornButton
+          size="sm"
+          variant="soft"
+          color="neutral"
+          @click="resetState"
+        >
+          <template #leading>
+            <Icon
+              name="lucide:rotate-ccw"
+              size="12"
+            />
+          </template>
+          重置配置
+        </RebornButton>
+      </template>
+
       <div class="flex w-full flex-col items-center gap-4">
         <RebornDatePickerPanel
           v-model="state.value"
           :type="state.type"
+          :value-format="valueFormat"
           :color="state.color"
+          :size="state.size"
           :active-type="state.activeType"
           :width="state.width"
-          :size="state.size"
-          :disabled="state.disabled"
           :border="state.border"
+          :disabled="state.disabled"
           :shortcuts="state.shortcuts ? globalShortcuts : []"
-          :value-format="valueFormat"
+          :show-week-number="state.showWeekNumber"
+          :unlink-panels="state.unlinkPanels"
+          :single-panel="state.singlePanel"
+          :show-today="state.showToday"
+          @calendar-change="onPlaygroundCalendarChange"
+          @panel-change="onPlaygroundPanelChange"
+          @change="onPlaygroundChange"
         />
 
         <DemoNote tone="dimmed">
           当前绑定值：<code class="break-all">{{ formatDisplay(state.value) }}</code>
         </DemoNote>
+        <DemoNote tone="dimmed">
+          最近事件：<code class="break-all">{{ lastEvent || "暂无" }}</code>
+        </DemoNote>
       </div>
     </Playground>
 
-    <DemoSection title="宽度模式">
-      <template #description>
-        默认 <code>width="auto"</code>，面板由内部元素撑开——各视图的网格共用同一套最小宽度， 切换年
-        / 月 / 季度视图时宽度不会跳动；<code>width="full"</code> 占满父容器，
-        适合嵌在定宽卡片里。下面两块的父容器同宽，差别只在这个属性。
-      </template>
-      <DemoBlock layout="stack">
-        <div
-          v-for="w in ['auto', 'full'] as const"
-          :key="w"
-          class="flex w-full min-w-0 flex-col gap-3"
-        >
-          <span class="text-dimmed text-xs font-medium">
-            <code>width="{{ w }}"</code>
-          </span>
-          <div class="border-gray-3 w-full rounded-sm border border-dashed p-2">
-            <RebornDatePickerPanel
-              v-model="widthDemoValue"
-              type="date"
-              :width="w"
-              :color="state.color"
-              :size="state.size"
-            />
-          </div>
-        </div>
-      </DemoBlock>
-    </DemoSection>
-
-    <DemoSection title="自定义快捷按钮">
-      <template #description>
-        <code>shortcuts</code> 传 <code>{ text, value }</code> 数组即在左侧长出一列快捷按钮。
-        <code>value</code>
-        可以是一个日期，也可以是返回日期的函数——需要「相对今天」的快捷项就写成函数，
-        否则日期会固定在组件创建的那一刻。范围类型的 <code>value</code> 返回长度为 2 的数组。
-      </template>
+    <DemoSection title="基础用法">
       <DemoBlock layout="stack">
         <div class="flex min-w-0 flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">单选：今天 / 昨天 / 一周前 / 本月 1 号</span>
+          <span class="text-dimmed text-xs font-medium">不传 <code>value-format</code>：绑定值是 <code>Date</code></span>
           <RebornDatePickerPanel
-            v-model="singleShortcutValue"
-            type="date"
-            :shortcuts="singleShortcuts"
-            :color="state.color"
-            :size="state.size"
-            value-format="YYYY-MM-DD"
+            v-model="basicDateValue"
             border
           />
           <DemoNote tone="dimmed">
-            绑定值：<code>{{ formatDisplay(singleShortcutValue) }}</code>
+            绑定值：<code>{{ formatDisplay(basicDateValue) }}</code>
           </DemoNote>
         </div>
 
         <div class="flex min-w-0 flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">范围：最近 7 天 / 最近 30 天 / 本月</span>
+          <span class="text-dimmed text-xs font-medium"><code>value-format="YYYY-MM-DD"</code>：绑定值是字符串</span>
           <RebornDatePickerPanel
-            v-model="rangeShortcutValue"
+            v-model="basicStringValue"
+            value-format="YYYY-MM-DD"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(basicStringValue) }}</code>
+          </DemoNote>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="选择类型">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium"><code>type="quarter"</code> · <code>value-format="YYYY-[Q]Q"</code></span>
+          <RebornDatePickerPanel
+            v-model="quarterValue"
+            type="quarter"
+            value-format="YYYY-[Q]Q"
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(quarterValue) }}</code>
+          </DemoNote>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium"><code>type="daterange"</code> · <code>value-format="YYYY-MM-DD"</code></span>
+          <RebornDatePickerPanel
+            v-model="typeRangeValue"
             type="daterange"
-            :shortcuts="rangeShortcuts"
+            value-format="YYYY-MM-DD"
             :color="state.color"
             :size="state.size"
-            value-format="YYYY-MM-DD"
             border
           />
           <DemoNote tone="dimmed">
-            绑定值：<code>{{ formatDisplay(rangeShortcutValue) }}</code>
+            绑定值：<code>{{ formatDisplay(typeRangeValue) }}</code>
           </DemoNote>
         </div>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="禁用与部分日期禁用">
-      <template #description>
-        <code>disabled</code> 让所有日期格进入禁用样式、标题与翻页按钮不可点击；<code>disabled-method</code> 逐项判定，返回
-        <code>true</code> 即该项不可选——第二个参数是判定粒度（<code>year</code> /
-        <code>month</code> / <code>quarter</code> / <code>week</code> /
-        <code>date</code>），同一个方法能限制任意档位；<code>start</code> /
-        <code>end</code> 则直接划定可选边界。被排除的日期连成灰底带子（<code>dayDisabledBand</code>），
-        文字取 <code>dayDisabled</code> 的灰色，悬停显示禁用光标，点击被拦截。
-      </template>
+    <DemoSection title="范围与双面板">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">默认：双面板联动</span>
+          <RebornDatePickerPanel
+            v-model="linkedRangeValue"
+            type="daterange"
+            value-format="YYYY-MM-DD"
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(linkedRangeValue) }}</code>
+          </DemoNote>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium"><code>unlink-panels</code>：左右各自翻页</span>
+          <RebornDatePickerPanel
+            v-model="unlinkedRangeValue"
+            type="daterange"
+            value-format="YYYY-MM-DD"
+            unlink-panels
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(unlinkedRangeValue) }}</code>
+          </DemoNote>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium"><code>single-panel</code>：只渲染一个面板</span>
+          <RebornDatePickerPanel
+            v-model="singleRangeValue"
+            type="daterange"
+            value-format="YYYY-MM-DD"
+            single-panel
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(singleRangeValue) }}</code>
+          </DemoNote>
+        </div>
+      </DemoBlock>
+
+      <DemoNote>
+        取消联动后左侧必须早于右侧：两侧已相邻时，左侧的「下一页」与右侧的「上一页」置灰不响应，
+        以免两个面板显示同一个月、区间无从落点。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="周数">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <RebornDatePickerPanel
+            v-model="weekNumberValue"
+            value-format="YYYY-MM-DD"
+            show-week-number
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(weekNumberValue) }}</code>
+          </DemoNote>
+        </div>
+      </DemoBlock>
+
+      <DemoNote>
+        周数按每一行的周一计算，所以跨年那一行会显示第 1 周或第 52 / 53 周，与行首的周日所在年份不一定相同。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="禁用规则">
       <DemoBlock layout="stack">
         <div class="flex min-w-0 flex-col gap-3">
           <span class="text-dimmed text-xs font-medium"><code>disabled</code> 整个面板禁用</span>
           <RebornDatePickerPanel
             v-model="disabledPanelValue"
-            type="date"
             disabled
+            value-format="YYYY-MM-DD"
             :color="state.color"
             :size="state.size"
-            value-format="YYYY-MM-DD"
             border
           />
         </div>
@@ -406,11 +633,10 @@ const dashedRangeUi = {
           <span class="text-dimmed text-xs font-medium"><code>disabled-method</code> 周末不可选</span>
           <RebornDatePickerPanel
             v-model="weekendValue"
-            type="date"
             :disabled-method="disableWeekend"
+            value-format="YYYY-MM-DD"
             :color="state.color"
             :size="state.size"
-            value-format="YYYY-MM-DD"
             border
           />
           <DemoNote tone="dimmed">
@@ -420,15 +646,16 @@ const dashedRangeUi = {
 
         <div class="flex min-w-0 flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">
-            <code>disabled-method</code> 只开放今天起 14 天
+            <code>start="2024-04-08"</code> · <code>end="2024-04-24"</code> 划定可选边界
           </span>
           <RebornDatePickerPanel
             v-model="boundedValue"
             type="daterange"
-            :disabled-method="disablePast"
+            start="2024-04-08"
+            end="2024-04-24"
+            value-format="YYYY-MM-DD"
             :color="state.color"
             :size="state.size"
-            value-format="YYYY-MM-DD"
             border
           />
           <DemoNote tone="dimmed">
@@ -444,28 +671,104 @@ const dashedRangeUi = {
             v-model="unitValue"
             type="month"
             :disabled-method="disableByUnit"
+            value-format="YYYY-MM"
             :color="state.color"
             :size="state.size"
-            value-format="YYYY-MM"
             border
           />
           <DemoNote tone="dimmed">
-            点标题切到年视图可看到年粒度规则同时生效。绑定值：<code>{{
-              formatDisplay(unitValue)
-            }}</code>
+            点标题切到年视图可看到年粒度规则同时生效。绑定值：<code>{{ formatDisplay(unitValue) }}</code>
           </DemoNote>
         </div>
       </DemoBlock>
+
+      <DemoNote>
+        <code>disabled-method</code> 在年 / 月 / 季度视图也会被调用，传入的是该项首日。
+        只想约束日期时要判断 <code>unit === "date"</code>，否则 1 号恰逢周末的月份会在月视图里一起被禁。
+      </DemoNote>
     </DemoSection>
 
-    <DemoSection title="自定义选中样式">
-      <template #description>
-        先用 <code>active-type</code> 在四种内置表现里挑：<code>fill</code> 背景填色、
-        <code>fillRound</code> 背景填色且为正圆、<code>outline</code> 描边加文字、<code>text</code>
-        仅文字变色。下面用 <code>week</code> 演示，好看清范围里的表现：中间项的底色逐格相接、
-        连成一条不断的带子，只有首尾两端按激活类型收圆角。还不够就用 <code>ui.dayActive</code>
-        直接写类名，它会并进日期格节点，冲突的类名交给 tailwind-merge 裁决，写全即可覆盖默认值。
-      </template>
+    <DemoSection title="快捷选项">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">单选：今天 / 昨天 / 一周前 / 本月 1 号</span>
+          <RebornDatePickerPanel
+            v-model="singleShortcutValue"
+            :shortcuts="singleShortcuts"
+            value-format="YYYY-MM-DD"
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(singleShortcutValue) }}</code>
+          </DemoNote>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">范围：最近 7 天 / 最近 30 天 / 本月</span>
+          <RebornDatePickerPanel
+            v-model="rangeShortcutValue"
+            type="daterange"
+            :shortcuts="rangeShortcuts"
+            value-format="YYYY-MM-DD"
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(rangeShortcutValue) }}</code>
+          </DemoNote>
+        </div>
+      </DemoBlock>
+
+      <DemoNote>
+        「相对今天」的快捷项必须把 <code>value</code> 写成函数：直接写日期会固定在组件创建的那一刻，
+        页面跨过零点后「今天」仍指向前一天。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="今天栏">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">date：点击「今天」选中当天，视图同时翻回本月</span>
+          <RebornDatePickerPanel
+            v-model="todayDateValue"
+            value-format="YYYY-MM-DD"
+            show-today
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(todayDateValue) }}</code>
+          </DemoNote>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">month：文案变为「本月」，选中当前月份</span>
+          <RebornDatePickerPanel
+            v-model="todayMonthValue"
+            type="month"
+            value-format="YYYY-MM"
+            show-today
+            :color="state.color"
+            :size="state.size"
+            border
+          />
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(todayMonthValue) }}</code>
+          </DemoNote>
+        </div>
+      </DemoBlock>
+
+      <DemoNote>
+        文字颜色跟随 <code>color</code>。当前时间所在的单位被 <code>start</code> / <code>end</code> / <code>disabled-method</code>
+        排除，或面板整体 <code>disabled</code> 时，这一栏置灰且点击无效。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="选中样式">
       <DemoBlock
         layout="grid"
         :columns="2"
@@ -482,9 +785,9 @@ const dashedRangeUi = {
             v-model="at.model"
             type="week"
             :active-type="at.value"
+            value-format="YYYY-MM-DD"
             :color="state.color"
             :size="state.size"
-            value-format="YYYY-MM-DD"
             border
           />
         </div>
@@ -497,56 +800,192 @@ const dashedRangeUi = {
           </span>
           <RebornDatePickerPanel
             v-model="customActiveValue"
-            type="date"
             :ui="customActiveUi"
-            :size="state.size"
             value-format="YYYY-MM-DD"
+            :size="state.size"
             border
           />
         </div>
-      </DemoBlock>
 
-      <DemoNote tone="dimmed">
-        自定义时记得把 <code>hover:</code> 一并写上：日期格基类带着
-        <code>hover:bg-gray-2</code>，不覆盖回来的话鼠标停上去选中格会变灰。
-      </DemoNote>
-    </DemoSection>
-
-    <DemoSection title="区间样式自定义">
-      <template #description>
-        范围类型下，首尾两端取 <code>ui.dayActive</code>，中间项取 <code>ui.dayInRange</code>。
-        底色画在日期格外面的格位（<code>ui.dayCell</code>）上，宽度撑满所在列，相邻两列因此首尾相接、
-        连成一条不断的带子；两端的圆角由 <code>ui.dayRangeStart</code> /
-        <code>ui.dayRangeEnd</code> 收口。
-      </template>
-      <DemoBlock layout="stack">
         <div class="flex min-w-0 flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">两端正圆实心，中间连成整条</span>
+          <span class="text-dimmed text-xs font-medium">范围两端正圆实心，中间连成整条</span>
           <RebornDatePickerPanel
             v-model="rangeStyleValue"
             type="daterange"
             :ui="customRangeUi"
-            :size="state.size"
             value-format="YYYY-MM-DD"
+            :size="state.size"
             border
           />
-          <DemoNote tone="dimmed">
-            绑定值：<code>{{ formatDisplay(rangeStyleValue) }}</code>
-          </DemoNote>
         </div>
 
         <div class="flex min-w-0 flex-col gap-3">
-          <span class="text-dimmed text-xs font-medium">两端虚线描边，中间浅底</span>
+          <span class="text-dimmed text-xs font-medium">范围两端虚线描边，中间浅底</span>
           <RebornDatePickerPanel
             v-model="dashedRangeValue"
             type="daterange"
             :ui="dashedRangeUi"
-            :size="state.size"
             value-format="YYYY-MM-DD"
+            :size="state.size"
             border
           />
         </div>
       </DemoBlock>
+
+      <DemoNote>
+        自定义时记得把 <code>hover:</code> 一并写上：日期格基类带着 <code>hover:bg-gray-2</code>，
+        不覆盖回来的话鼠标停上去选中格会变灰。范围首尾取 <code>ui.dayActive</code>、中间项取
+        <code>ui.dayInRange</code>，两者要分别覆盖。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="自定义单元格">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">2024 年清明、劳动节的放假与调休</span>
+          <RebornDatePickerPanel
+            v-model="cellValue"
+            value-format="YYYY-MM-DD"
+            :color="state.color"
+            :size="state.size"
+            border
+          >
+            <template #default="{ type, text, date, selected }">
+              <div
+                v-if="type === 'date'"
+                class="flex flex-col items-center leading-none"
+              >
+                <span>{{ text }}</span>
+                <span
+                  v-if="holidayMark(date)"
+                  class="text-[10px]"
+                  :class="selected ? '' : holidayMark(date) === '休' ? 'text-success' : 'text-error'"
+                >{{ holidayMark(date) }}</span>
+              </div>
+              <template v-else-if="type === 'month'">
+                {{ text }}月
+              </template>
+              <template v-else-if="type === 'quarter'">
+                第{{ text }}季度
+              </template>
+              <template v-else>
+                {{ text }}
+              </template>
+            </template>
+          </RebornDatePickerPanel>
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(cellValue) }}</code>
+          </DemoNote>
+        </div>
+      </DemoBlock>
+
+      <DemoNote>
+        四种视图共用这一个插槽，必须按 <code>type</code> 分支并补回默认文案：只写日期分支的话，点标题切到月视图后
+        格子里只剩数字，「月」字会丢掉。选中格的角标不写颜色，直接继承选中态的文字色，避免与实心底色撞色。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="导航图标">
+      <DemoBlock layout="stack">
+        <RebornDatePickerPanel
+          v-model="navIconValue"
+          value-format="YYYY-MM-DD"
+          :color="state.color"
+          :size="state.size"
+          border
+        >
+          <template #prev-year>
+            <Icon
+              name="lucide:arrow-left-to-line"
+              class="size-4"
+            />
+          </template>
+          <template #prev-month>
+            <Icon
+              name="lucide:arrow-left"
+              class="size-4"
+            />
+          </template>
+          <template #next-month>
+            <Icon
+              name="lucide:arrow-right"
+              class="size-4"
+            />
+          </template>
+          <template #next-year>
+            <Icon
+              name="lucide:arrow-right-to-line"
+              class="size-4"
+            />
+          </template>
+        </RebornDatePickerPanel>
+      </DemoBlock>
+
+      <DemoNote>
+        插槽内容替换的是默认图标，不会套用 <code>ui.icon</code> 的尺寸，需要自己给出大小；
+        年 / 月 / 季度视图只用 <code>prev-year</code> / <code>next-year</code>，这两个插槽在所有视图里都会生效。
+      </DemoNote>
+    </DemoSection>
+
+    <DemoSection title="事件">
+      <DemoBlock layout="stack">
+        <div class="flex min-w-0 flex-col gap-3">
+          <RebornDatePickerPanel
+            ref="eventPanel"
+            v-model="eventValue"
+            type="daterange"
+            value-format="YYYY-MM-DD"
+            :color="state.color"
+            :size="state.size"
+            border
+            @calendar-change="onCalendarChange"
+            @panel-change="onPanelChange"
+            @change="onChange"
+            @clear="onClear"
+          />
+          <div class="flex flex-wrap items-center gap-2">
+            <RebornButton
+              size="sm"
+              variant="outlined"
+              @click="eventPanel?.clear()"
+            >
+              调用 clear()
+            </RebornButton>
+            <RebornButton
+              size="sm"
+              variant="soft"
+              color="neutral"
+              @click="eventLogs = []"
+            >
+              清空日志
+            </RebornButton>
+          </div>
+          <DemoNote tone="dimmed">
+            绑定值：<code>{{ formatDisplay(eventValue) }}</code>
+          </DemoNote>
+          <ul class="flex flex-col gap-1 font-mono text-xs">
+            <li
+              v-for="log in eventLogs"
+              :key="log.id"
+              class="text-gray-7 break-all"
+            >
+              <span class="text-primary">{{ log.name }}</span> {{ log.detail }}
+            </li>
+            <li
+              v-if="!eventLogs.length"
+              class="text-gray-5"
+            >
+              点选日期、翻页或切换视图后，事件与参数会记录在这里。
+            </li>
+          </ul>
+        </div>
+      </DemoBlock>
+
+      <DemoNote>
+        点下起点就会抛 <code>calendar-change</code>，此时终点为 <code>null</code>；<code>change</code>
+        要等起止都选定才抛。依赖完整区间的逻辑监听 <code>change</code>，想在选完起点时给提示才用
+        <code>calendar-change</code>。
+      </DemoNote>
     </DemoSection>
   </div>
 </template>

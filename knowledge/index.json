@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-24T09:15:14.049Z",
+  "generatedAt": "2026-09-30T09:40:57.912Z",
   "components": [
     {
       "id": "animate-grid",
@@ -718,7 +718,13 @@
       "title": "Alert 警告提示",
       "description": "静态警告提示条：五种消息类型、按钮同款六种视觉变体、顶部公告模式与消息轮播通知栏（逐条垂直轮播 / 水平跑马灯 / 多行滚动），双端可用。",
       "category": "misc",
-      "tags": [],
+      "tags": [
+        "alert",
+        "notice",
+        "banner",
+        "marquee",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -862,13 +868,13 @@
     },
     {
       "id": "reborn-chip",
-      "title": "提示点/标记",
+      "title": "Chip 角标",
       "description": "用于在元素角标位置显示提示点或数字标记的组件，双端可用。",
       "category": "basic",
       "tags": [
-        "css",
-        "tailwind",
         "chip",
+        "dot",
+        "corner-mark",
         "uniapp"
       ],
       "platforms": [
@@ -935,6 +941,21 @@
       ]
     },
     {
+      "id": "reborn-date-picker",
+      "title": "DatePicker 日期选择器",
+      "description": "带触发器的表单日期选择器，触发器与 reborn-select 同一套形态、尺寸、配色，下拉内容为 reborn-date-picker-panel，支持 15 种类型，仅 web 端。",
+      "category": "form",
+      "tags": [
+        "calendar",
+        "date",
+        "picker",
+        "select"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-date-picker-panel",
       "title": "DatePickerPanel 日期选择面板",
       "description": "用于内嵌展示的日期/月份/年份选择面板组件，支持范围选择与视图切换，仅 web 端。",
@@ -943,8 +964,7 @@
         "calendar",
         "date",
         "select",
-        "panel",
-        "uniapp"
+        "panel"
       ],
       "platforms": [
         "web"
@@ -984,6 +1004,21 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-drawer",
+      "title": "Drawer 抽屉",
+      "description": "Web 边缘滑入抽屉，支持四向展开、关闭拦截、局部挂载、焦点管理与尺寸调整。",
+      "category": "navigation",
+      "tags": [
+        "vue",
+        "tailwind",
+        "drawer",
+        "overlay"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {
@@ -1180,7 +1215,7 @@
     },
     {
       "id": "reborn-layout",
-      "title": "Layout布局容器",
+      "title": "Layout 布局",
       "description": "由顶栏、侧边栏、主区域、底栏拼装后台页面骨架的 flex 布局容器，排列方向可自动推断。",
       "category": "layout",
       "tags": [
@@ -1263,7 +1298,7 @@
     {
       "id": "reborn-notification",
       "title": "Notification 通知",
-      "description": "屏幕四角弹出的全局通知：标题 + 正文 + 底部操作区三段结构，支持倒计时进度条、悬停暂停、同 key 更新，属性对齐 Element Plus Notification，仅 web 端。",
+      "description": "屏幕四角弹出的全局通知：标题 + 正文 + 底部操作区三段结构，支持倒计时进度条、悬停暂停、同 key 更新，属性基本对齐 Element Plus Notification，仅 web 端。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1338,10 +1373,15 @@
     },
     {
       "id": "reborn-popover",
-      "title": "Popover",
+      "title": "Popover 气泡卡片",
       "description": "用于点击或悬停触发气泡浮层的双端组件，可配置定位方向、箭头与遮罩。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "popover",
+        "floating",
+        "overlay",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -1350,11 +1390,14 @@
     {
       "id": "reborn-popup",
       "title": "Popup 弹出层",
-      "description": "用于从上下左右四个方向弹出面板的双端弹出层组件，支持手势滑动关闭与安全区适配。",
+      "description": "UniApp 弹出层，支持四向或居中显示、底部手势关闭、圆角与安全区适配。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "uniapp",
+        "tailwind",
+        "popup"
+      ],
       "platforms": [
-        "web",
         "uniapp"
       ]
     },
@@ -1690,9 +1733,29 @@
     {
       "id": "reborn-time-picker",
       "title": "时间选择器",
-      "description": "用于选择时分秒的时间选择器组件，支持滚轮与箭头两种调节方式及时间范围选择。",
+      "description": "Web 单点时间录入：支持时分秒六种组合、手动输入、两种中心选中样式，并保留范围与毫秒选择。",
       "category": "form",
-      "tags": [],
+      "tags": [
+        "vue",
+        "tailwind",
+        "time-picker",
+        "input"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-timeline",
+      "title": "Timeline 时间线",
+      "description": "按时间顺序展示事件节点：支持竖向与横向、倒序、左右交替、自定义节点图标与时间戳落位。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "timeline",
+        "data"
+      ],
       "platforms": [
         "web"
       ]
@@ -1713,7 +1776,11 @@
       "title": "Tooltip 文字提示",
       "description": "文字提示气泡组件：多触发行为、自动翻转与贴边偏移、自定义背景色、可控显隐。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "tooltip",
+        "floating",
+        "hint"
+      ],
       "platforms": [
         "web"
       ]

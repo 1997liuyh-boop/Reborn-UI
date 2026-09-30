@@ -61,6 +61,8 @@ const options = [
 </template>
 ```
 
+`clearable` 默认开启，必须有值的字段传 `:clearable="false"`。选项上的 `disabled` 只禁用该项，组件级 `disabled` 让整个触发器不可展开。
+
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -91,9 +93,9 @@ const options = [
 :::
 ::
 
-### 多选与标签折叠（仅 Web）
+### 多选与标签折叠：multiple / collapse-tags
 
-开启 `multiple` 后 `v-model` 的值变为数组，触发器内渲染 `RebornBadge` 标签。标签默认单行铺开、超出换行；开启 `collapse-tags` 则收敛为一行加一段 `+N`，再配 `collapse-tags-tooltip` 可悬停查看被折叠的具体选项。
+仅 Web 端支持。开启 `multiple` 后 `v-model` 的值变为数组，触发器内渲染 `RebornBadge` 标签。未开启 `collapse-tags` 时标签逐行铺开、触发器高度随之增长；开启后只保留前 `max-collapse-tags` 枚（默认 `1`），其余收成一段 `+N`，再配 `collapse-tags-tooltip` 可悬停查看被折叠的具体选项。
 
 ```vue
 <script setup lang="ts">
@@ -118,9 +120,9 @@ const value = ref(["beijing", "shanghai", "guangzhou"]);
 `multiple-limit` 为 `0` 时不限制个数。达到上限后未选中的选项不会自动置灰，超限的点击会被直接忽略。
 ::
 
-### 搜索过滤（仅 Web）
+### 搜索过滤：allow-search / filter-option
 
-`allow-search` 会在触发器内嵌一个输入框，展开时可直接键入关键词。`filter-option` 控制过滤策略：`true` 按 `label` 做不区分大小写的包含匹配，`false` 关闭本地过滤（配合 `search` 事件做远程搜索），也可传函数自定义。
+仅 Web 端支持。`allow-search` 会在触发器内嵌一个输入框，展开时可直接键入关键词。`filter-option` 控制过滤策略：`true` 按 `label` 做不区分大小写的包含匹配，`false` 关闭本地过滤（配合 `search` 事件做远程搜索），也可传函数自定义。有关键词但无匹配项时，空态文案由「暂无数据」换成「无匹配结果」。
 
 ```vue
 <template>
@@ -154,9 +156,74 @@ const value = ref(["beijing", "shanghai", "guangzhou"]);
 </template>
 ```
 
-### 虚拟滚动（仅 Web）
+### 加载状态：loading
 
-数据量上千时开启 `virtual`，只渲染可视区域内的选项，DOM 数量与数据量解耦。代价是**每一项高度必须恒定**，由 `virtual-item-height` 给出（默认 `33`，即 md 尺寸下选项的实测步长，含 4px 行距）。
+仅 Web 端支持。`loading` 同时作用于两处：触发器尾部的箭头换成转圈图标，下拉面板改为「加载中...」占位、不渲染选项列表。远程搜索时配合 `search` 事件在请求期间打开它，用户能区分「还在查」和「查无结果」。
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    loading
+    :options="options"
+    class="w-60"
+  />
+</template>
+```
+
+### 页头与页脚插槽：header / footer
+
+仅 Web 端支持。`header` 与 `footer` 位于滚动列表之外，列表滚动时二者固定不动，适合放统计信息、批量操作或「新建」入口。只有传入对应插槽时才渲染这两块。
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    class="w-60"
+  >
+    <template #header> 共 {{ options.length }} 项 </template>
+    <template #footer>
+      <span class="cursor-pointer">+ 新建选项</span>
+    </template>
+  </RebornSelect>
+</template>
+```
+
+### 滚动加载：dropdown-scroll
+
+仅 Web 端支持。`dropdown-scroll` 原样透出下拉列表滚动层的原生 `scroll` 事件，据此判断触底即可追加下一页数据。
+
+```vue
+<script setup lang="ts">
+const options = ref(firstPage);
+const pending = ref(false);
+
+function onScroll(e: Event) {
+  const el = e.target as HTMLElement;
+  // 距底部 24px 以内且没有在途请求时才取下一页
+  if (pending.value || el.scrollHeight - el.scrollTop - el.clientHeight > 24) return;
+  pending.value = true;
+  fetchNextPage().then((list) => {
+    options.value = [...options.value, ...list];
+    pending.value = false;
+  });
+}
+</script>
+
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    class="w-60"
+    @dropdown-scroll="onScroll"
+  />
+</template>
+```
+
+### 虚拟滚动：virtual
+
+仅 Web 端支持。数据量上千时开启 `virtual`，只渲染可视区域内的选项，DOM 数量与数据量解耦。代价是**每一项高度必须恒定**，由 `virtual-item-height` 给出（默认 `33`，即 md 尺寸下选项的实测步长，含 4px 行距）。
 
 ```vue
 <template>
@@ -175,7 +242,146 @@ const value = ref(["beijing", "shanghai", "guangzhou"]);
 若通过 `ui.option` 改了选项的字号或内边距，必须同步改 `virtual-item-height`，否则滚动条长度与内容会错位。
 ::
 
-### 多列与级联（仅 UniApp）
+### 浮层定位：portal 与自动翻转
+
+仅 Web 端支持。`portal` 默认开启，浮层传送到 `body` 并按文档坐标锚定触发器，因此不会被祖先的 `overflow: hidden` 裁剪；`auto-adjust-overflow` 默认开启，下方空间不足时向上展开。只有需要浮层留在触发器所在的 DOM 树里时才关掉 `portal`。
+
+```vue
+<template>
+  <!-- 放在带 overflow 的滚动容器里，保持默认 portal，浮层不会被截断 -->
+  <div class="h-56 overflow-y-auto">
+    <RebornSelect
+      v-model="value"
+      :options="options"
+    />
+  </div>
+
+  <!-- 关闭 portal 与自动翻转：浮层留在原位，并固定向下展开 -->
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    :portal="false"
+    :auto-adjust-overflow="false"
+  />
+</template>
+```
+
+### 自定义渲染：option / cover 插槽
+
+两端都提供 `option` 插槽，但作用域参数与平台限制不同；`cover` 插槽仅 Web 端有。
+
+::tabs{sync="platform"}
+:::tabs-item{label="Web" icon="tabler:world"}
+
+`option` 替换单个选项的内容，作用域为 `{ option, active }`；使用后内置的文本与多选勾选图标不再渲染，需要自己画。`cover` 接管触发器盒子内的全部内容，连尾部箭头与清空按钮一并交给调用方，作用域为 `{ displayText, placeholder, isOpen, ui }`。触发器盒子本身的边框与内边距仍在，需要时用 `trigger-ui` 去掉。
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    class="w-60"
+  >
+    <template #option="{ option, active }">
+      <div class="flex w-full items-center justify-between">
+        <span>{{ option.label }}</span>
+        <Icon
+          v-if="active"
+          name="lucide:check"
+        />
+      </div>
+    </template>
+  </RebornSelect>
+
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    :trigger-ui="{ trigger: 'h-auto p-0 border-none bg-transparent' }"
+    class="w-60"
+  >
+    <template #cover="{ displayText, placeholder, isOpen }">
+      <div class="flex w-full items-center gap-2 rounded-ui-base px-4 py-2">
+        <span class="flex-1 truncate">{{ displayText || placeholder }}</span>
+        <Icon
+          name="lucide:chevron-down"
+          :class="isOpen && 'rotate-180'"
+        />
+      </div>
+    </template>
+  </RebornSelect>
+</template>
+```
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    title="请选择"
+  >
+    <template #option="{ item, index }">
+      <text>{{ index + 1 }}. {{ item.label }}</text>
+    </template>
+  </RebornSelect>
+</template>
+```
+
+::warning
+**`option` 插槽在微信小程序上不可用。** 组件内部对该插槽的转发包在 `#ifndef MP-WEIXIN` 条件编译里，小程序端会回落为 `RebornPickerView` 的默认文本渲染。`tag` 插槽同理做了分端处理：非小程序端无条件渲染插槽内容，小程序端改为 `v-if="$slots.tag"` 判断并回落到内置的文本 / 占位符。
+::
+:::
+::
+
+### 与表单联动
+
+两端都通过 `useFormInject` 接入 `reborn-form`：外层 `RebornForm` 的 `disabled` 会向下透传，选值变动后自动触发 `change` 时机的校验。
+
+```vue
+<template>
+  <RebornForm
+    :model="form"
+    :rules="rules"
+  >
+    <RebornFormItem
+      label="城市"
+      prop="city"
+    >
+      <RebornSelect
+        v-model="form.city"
+        :options="options"
+      />
+    </RebornFormItem>
+  </RebornForm>
+</template>
+```
+
+::tip
+Web 端额外接收表单上下文的 `size` 与 `isError`：尺寸会被表单统一档位覆盖，校验失败时触发器自动切到红色描边（`borderless` 形态会补一圈边框，`underlined` 只标红底边）。UniApp 端只消费 `disabled` 与校验触发，不接管尺寸与错误态描边。
+::
+
+### 自定义样式：ui / triggerUi
+
+Web 端有两条样式通道：`trigger-ui` 改触发器盒子与浮层外壳，`ui` 改下拉列表与多选标签，二者都与内置类做 `tailwind-merge` 合并，冲突时调用方的类胜出。键位见「自定义样式（ui）」与「子组件样式入口」。
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    :trigger-ui="{ trigger: 'rounded-full px-4' }"
+    :ui="{ option: 'rounded-md', optionActive: 'font-semibold' }"
+    class="w-60"
+  />
+</template>
+```
+
+UniApp 端的 `ui` 只覆盖空态与底部按钮区，触发器、弹层、滚轮分别走 `triggerUi` / `popupUi` / `pickerUi`。
+
+## 多列与级联（仅 UniApp）
 
 `column-count` 大于 1 时渲染多列滚轮，此时 `v-model` 是各列 `value` 组成的数组，触发器展示文本用 `splitor` 拼接。级联数据靠**选项的 `children` 字段**逐层下钻：第一列取 `options`，第二列取第一列选中项的 `children`，以此类推。
 
@@ -218,7 +424,7 @@ const options = [
 不带 `children` 的平铺数据配 `column-count="2"` 时，两列会渲染同一份候选项、彼此独立不联动——适合「小时 / 分钟」这类同源多列场景。
 ::
 
-### 命令式打开（仅 UniApp）
+## 命令式打开（仅 UniApp）
 
 组件通过 `defineExpose` 暴露了 `open` / `close`。把 `show-trigger` 关掉即可完全自定义触发入口；`open()` 还能接收一个回调，在用户点「确定」时拿到本次选中值。
 
@@ -249,86 +455,6 @@ function pick() {
 
 ::warning
 `open()` 每次调用都会强制重挂 `RebornPickerView`（内部 `renderKey` 自增），把滚轮位置重置到当前 `v-model` 对应的档位。因此弹层关闭后再打开，滚轮不会停在上次滑动到的临时位置。
-::
-
-### 自定义选项渲染
-
-两端都提供 `option` 插槽，但作用域参数与平台限制不同。
-
-::tabs{sync="platform"}
-:::tabs-item{label="Web" icon="tabler:world"}
-
-```vue
-<template>
-  <RebornSelect
-    v-model="value"
-    :options="options"
-    class="w-60"
-  >
-    <template #option="{ option, active }">
-      <div class="flex w-full items-center justify-between">
-        <span>{{ option.label }}</span>
-        <span class="text-gray-5 text-[12px]">{{ option.desc }}</span>
-      </div>
-    </template>
-
-    <template #header> 共 {{ options.length }} 项 </template>
-    <template #footer>
-      <span class="cursor-pointer">+ 新建选项</span>
-    </template>
-  </RebornSelect>
-</template>
-```
-
-:::
-
-:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-
-```vue
-<template>
-  <RebornSelect
-    v-model="value"
-    :options="options"
-    title="请选择"
-  >
-    <template #option="{ item, index }">
-      <text>{{ index + 1 }}. {{ item.label }}</text>
-    </template>
-  </RebornSelect>
-</template>
-```
-
-::warning
-**`option` 插槽在微信小程序上不可用。** 组件内部对该插槽的转发包在 `#ifndef MP-WEIXIN` 条件编译里，小程序端会回落为 `RebornPickerView` 的默认文本渲染。`tag` 插槽同理做了分端处理：非小程序端无条件渲染插槽内容，小程序端改为 `v-if="$slots.tag"` 判断并回落到内置的文本 / 占位符。
-::
-:::
-::
-
-### 表单校验（通用）
-
-两端都通过 `useFormInject` 接入 `reborn-form`：外层 `RebornForm` 的 `disabled` 会向下透传，选值变动后自动触发 `change` 时机的校验。
-
-```vue
-<template>
-  <RebornForm
-    :model="form"
-    :rules="rules"
-  >
-    <RebornFormItem
-      label="城市"
-      prop="city"
-    >
-      <RebornSelect
-        v-model="form.city"
-        :options="options"
-      />
-    </RebornFormItem>
-  </RebornForm>
-</template>
-```
-
-::tip
-Web 端额外接收表单上下文的 `size` 与 `isError`：尺寸会被表单统一档位覆盖，校验失败时触发器自动切到红色描边（`borderless` 形态会补一圈边框，`underlined` 只标红底边）。UniApp 端只消费 `disabled` 与校验触发，不接管尺寸与错误态描边。
 ::
 
 ## API
@@ -369,7 +495,7 @@ Web 端额外接收表单上下文的 `size` 与 `isError`：尺寸会被表单�
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`。关掉后浮层留在触发器内，会随父容器滚动并被 `overflow` 裁剪 |
 | `autoAdjustOverflow` | `boolean` | `true` | 下方空间不足且上方更宽裕时向上展开；关闭后固定向下 |
 | `class` | `any` | `-` | 追加到触发器外层容器的类名 |
-| `ui` | `Record<string, ClassValue>` | `-` | 下拉列表与标签区的样式覆盖，见「自定义样式」 |
+| `ui` | `Record<string, ClassValue>` | `-` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `triggerUi` | `Record<string, ClassValue>` | `-` | 触发器盒子与浮层的样式覆盖（两部分键混写，组件内部自动拆分） |
 
 > UniApp 端独有的 `title`、`showTrigger`、`columnCount`、`splitor`、`confirmText`、`showConfirm`、`cancelText`、`showCancel`、`popupUi`、`pickerUi` 在 Web 端**不存在**。
@@ -393,7 +519,7 @@ Web 端额外接收表单上下文的 `size` 与 `isError`：尺寸会被表单�
 | `showCancel` | `boolean` | `true` | 是否显示取消按钮。与 `showConfirm` 同时为 `false` 时整个按钮区隐藏 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 配色，同时下发给触发器、滚轮选择器与底部按钮 |
 | `size` | `"sm" \| "md" \| "lg"` | `"lg"` | 尺寸档位，透传给触发器与底部按钮 |
-| `ui` | `Record<string, ClassValue>` | `-` | 空态与按钮区的样式覆盖，见「自定义样式」 |
+| `ui` | `Record<string, ClassValue>` | `-` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `triggerUi` | `Record<string, ClassValue>` | `-` | 触发器 `RebornSelectTrigger` 的样式覆盖 |
 | `popupUi` | `Record<string, ClassValue>` | `-` | 底部弹层 `RebornPopup` 的样式覆盖 |
 | `pickerUi` | `Record<string, ClassValue>` | `-` | 滚轮选择器 `RebornPickerView` 的样式覆盖 |
@@ -475,8 +601,8 @@ type SelectValue = string | number | (string | number)[] | null;
 :::tabs-item{label="Web" icon="tabler:world"}
 | 插槽名 | 作用域参数 | 描述 |
 | --------- | --------------------------------------------------- | ---------------------------------------------------------------- |
-| `default` | `{ displayText, placeholder, isOpen, ui }` | 自定义触发器内容，内置的标签区、搜索框、占位符仍由组件负责 |
-| `cover` | `-` | 完全接管触发器，内置结构全部不渲染 |
+| `default` | `{ displayText, placeholder, isOpen, ui }` | 替换触发器内的标签区、搜索框与文本 / 占位符；尾部的箭头、清空按钮、加载图标仍由组件渲染 |
+| `cover` | `{ displayText, placeholder, isOpen, ui }` | 接管触发器盒子内的全部内容，连尾部箭头与清空按钮一并不渲染；盒子本身的边框与内边距仍在 |
 | `option` | `{ option: SelectOption, active: boolean }` | 自定义单个选项的渲染 |
 | `header` | `-` | 下拉面板页头，位于滚动容器之外，列表滚动时固定不动 |
 | `footer` | `-` | 下拉面板页脚，位于滚动容器之外，列表滚动时固定不动 |
@@ -514,57 +640,88 @@ type SelectValue = string | number | (string | number)[] | null;
 
 ::tabs{sync="platform"}
 :::tabs-item{label="Web" icon="tabler:world"}
-`ui` 管下拉列表内部与多选标签。触发器盒子与浮层外壳属于 `RebornSelectTrigger`，走 `triggerUi` 下发，键位见下一节「子组件样式入口」。
+`ui` 管下拉列表内部与多选标签，21 个键逐字来自 `reborn-select.config.ts` 的 `slots` 中非触发器部分。触发器盒子与浮层外壳走 `triggerUi` 下发，键位见下一节「子组件样式入口」。每个键都以 `cn(内置类, ui.键)` 合并，调用方的类排在最后，冲突时胜出。
 
-**`ui`（21 个键）**
-
-| 键名               | 描述                                                       |
-| ------------------ | ---------------------------------------------------------- |
-| `dropdown`         | 下拉内容区（最大高度 240px、内边距、滚动）                 |
-| `dropdownHeader`   | 页头，带底部分隔线                                         |
-| `dropdownFooter`   | 页脚，带顶部分隔线                                         |
-| `optionList`       | 选项行容器，行间距 4px 在此给出                            |
-| `option`           | 单个选项（圆角 4px、内边距 6/4、禁用态半透明）             |
-| `optionContent`    | 选项内部的横向布局容器                                     |
-| `optionLabel`      | 选项文本（默认单行裁剪）                                   |
-| `optionActive`     | 选中态选项（底色取色阶第 2 阶、文字取第 6 阶）             |
-| `optionActiveIcon` | 选中态勾选图标                                             |
-| `optionHighlight`  | 键盘导航高亮的选项                                         |
-| `empty`            | 无匹配选项时的空态占位                                     |
-| `loading`          | 加载中占位                                                 |
-| `loadingIcon`      | 加载中占位里的转圈图标                                     |
-| `virtualPhantom`   | 虚拟列表占位层，高度由 JS 按「总条数 × 步长」写成行内样式  |
-| `virtualWindow`    | 虚拟列表窗口层，靠行内 `translateY` 滑到当前区间           |
-| `tagList`          | 多选标签区（默认单行裁剪，未开 `collapseTags` 时逐行铺开） |
-| `tag`              | 单个标签盒子，作为 `RebornBadge` 的 `base` 覆盖下发        |
-| `tagLabel`         | 标签文本                                                   |
-| `tagClose`         | 标签关闭按钮                                               |
-| `tagCloseIcon`     | 标签关闭图标                                               |
-| `collapseTag`      | 折叠后的 `+N` 标签                                         |
+| 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
+| --- | --- | --- | --- |
+| `dropdown` | 下拉列表的滚动层，`dropdown-scroll` 事件挂在这一层 | `max-h-60 overflow-y-auto px-[4px] py-[6px] scrollbar-hide space-y-[4px]` | 始终渲染；与 `triggerUi.dropdown`（浮层外壳）是两个不同节点 |
+| `dropdownHeader` | 页头容器，滚动层的上方兄弟节点 | `shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6` | 仅传入 `header` 插槽时渲染 |
+| `dropdownFooter` | 页脚容器，滚动层的下方兄弟节点 | `shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6` | 仅传入 `footer` 插槽时渲染 |
+| `loading` | 加载中占位（转圈图标 +「加载中...」） | `flex items-center justify-center gap-2 py-6 text-base text-gray-5` | 仅 `loading` 为 `true` 时渲染，此时不渲染选项列表 |
+| `loadingIcon` | 加载占位里的 `lucide:loader-2` 图标 | `size-4 shrink-0 animate-spin` | 同 `loading`；触发器上的加载图标是另一个节点，走 `triggerUi.triggerLoadingIcon` |
+| `empty` | 空态占位（「暂无数据」/「无匹配结果」） | `flex items-center justify-center py-6 text-base text-gray-5` | 非加载态且过滤后无选项时渲染 |
+| `optionList` | 非虚拟模式下的选项行容器 | `space-y-[4px]` | 非加载态时渲染；开启 `virtual` 时与 `virtualWindow` 叠在同一节点上 |
+| `virtualPhantom` | 虚拟列表占位层，高度由行内样式按「总条数 × 步长」写入 | `relative w-full` | 节点始终存在，仅 `virtual` 开启时挂上该类 |
+| `virtualWindow` | 虚拟列表窗口层，即 `optionList` 节点，靠行内 `translateY` 滑到当前区间 | `absolute inset-x-0 top-0` | 仅 `virtual` 开启时挂上该类 |
+| `option` | 单个选项行 | `flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors`，禁用态 `opacity-50` 且不可点 | 每个选项都渲染；未选中时的文字色由 `color` 变体给出 |
+| `optionActive` | 选中态选项，叠加在 `option` 上 | 默认空，底色与文字色由 `color` 变体给出（如 primary 为 `bg-brand-1 text-primary`） | 仅选项被选中时生效 |
+| `optionHighlight` | 键盘 / 鼠标高亮态选项，叠加在 `option` 上 | `bg-gray-2` | 仅高亮且未被选中时生效 |
+| `optionContent` | 选项内部的横向布局容器 | `flex w-full items-center gap-1` | 使用 `option` 插槽后不渲染 |
+| `optionLabel` | 选项文本 | `truncate` | 使用 `option` 插槽后不渲染 |
+| `optionActiveIcon` | 多选时选中项右侧的勾选图标 | `size-4 shrink-0 opacity-75` | 仅 `multiple` 且该项选中时渲染；使用 `option` 插槽后不渲染 |
+| `tagList` | 触发器内的多选标签区 | `flex min-w-0 flex-1 items-center gap-1 overflow-hidden`；未开 `collapse-tags` 时追加 `flex-wrap overflow-visible` | 仅 `multiple` 且有已选项时渲染；使用 `default` / `cover` 插槽后不渲染 |
+| `tag` | 单个标签盒子，作为 `RebornBadge` 的 `base` 下发 | `rounded-sm! border-gray-3 bg-gray-2 text-gray-9`；尺寸档位 `h-4!` / `h-5!` / `h-6!` | 同 `tagList` |
+| `tagLabel` | 标签文本 | `truncate` | 同 `tagList` |
+| `tagClose` | 标签关闭按钮 | `shrink-0 text-gray-5 transition-colors hover:text-gray-8` | 组件禁用时标签不可关闭，不渲染该按钮（`disabled` 变体另追加 `pointer-events-none`） |
+| `tagCloseIcon` | 标签关闭按钮里的 `lucide:x` 图标 | `size-full` | 同 `tagClose` |
+| `collapseTag` | 折叠后的 `+N` 标签，以 `ui.tag({ class: ui.collapseTag() })` 叠加在 `tag` 之上 | 默认空 | 仅 `collapse-tags` 开启且有被折叠的标签时渲染 |
 
 ::tip
-覆盖 `tag` 的**高度**时必须带 `!` 提权：`RebornBadge` 的档位用自定义的 `h-badge-*`，没注册进 `app/lib/utils.ts` 的 `tailwind-merge` 冲突组，不提权会与你写的高度同时留在类名里，最终由 CSS 顺序决定胜负。圆角不再有这个限制——`size` 轴已改回原生 `rounded-*`，`tailwind-merge` 能正常合并，组件内保留的 `!` 只是没有一并移除。
+覆盖 `tag` 的**圆角或高度**时必须带 `!`：内置类是 `rounded-sm!` 与 `h-4!` / `h-5!` / `h-6!`，`tailwind-merge` 把带 `!` 与不带 `!` 的类视为不同的类，两者会同时留在类名里，最终带 `!` 的内置值胜出。写成 `rounded-full!`、`h-7!` 才能替换掉。
 ::
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    multiple
+    :options="options"
+    :ui="{
+      dropdown: 'max-h-80',
+      option: 'rounded-md',
+      optionActive: 'font-semibold',
+      optionHighlight: 'bg-brand-1',
+      tag: 'rounded-full! bg-brand-1 text-primary',
+      empty: 'py-10',
+    }"
+  />
+</template>
+```
+
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-`ui` 只管组件自身的空态与底部按钮区。触发器、弹层、滚轮分别是三个独立子组件，走 `triggerUi` / `popupUi` / `pickerUi` 下发，键位见下一节「子组件样式入口」。
+`ui` 只管组件自身的空态与底部按钮区，7 个键逐字来自 `reborn-select.config.ts` 的 `slots`。触发器、弹层、滚轮分别是三个独立子组件，走 `triggerUi` / `popupUi` / `pickerUi` 下发，键位见下一节「子组件样式入口」。
 
-**`ui`（7 个键，组件自身）**
-
-| 键名            | 描述                              |
-| --------------- | --------------------------------- |
-| `empty`         | 空态容器                          |
-| `emptyText`     | 空态文字                          |
-| `buttons`       | 底部按钮区容器                    |
-| `cancel`        | 取消按钮外层容器                  |
-| `cancelButton`  | 取消按钮本体（下发给按钮 `base`） |
-| `confirm`       | 确认按钮外层容器                  |
-| `confirmButton` | 确认按钮本体（下发给按钮 `base`） |
+| 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
+| --- | --- | --- | --- |
+| `empty` | 空态容器，包住 `empty` 插槽 | `py-3 text-center text-gray-400 text-sm` | 仅 `options` 为空时渲染 |
+| `emptyText` | 空态插槽的默认文案「暂无数据」 | `text-gray-400 text-sm` | 同 `empty`；传入 `empty` 插槽后不渲染 |
+| `buttons` | 底部按钮区容器 | `flex flex-row items-center justify-center gap-2 p-3` | `showCancel` 与 `showConfirm` 同为 `false` 时 `hideButtons` 变体追加 `hidden` |
+| `cancel` | 取消按钮外层容器 | `flex-1` | 始终渲染（即使 `showCancel` 为 `false`，也保留这一格） |
+| `cancelButton` | 取消按钮本体，作为 `RebornButton` 的 `base` 下发 | `w-full`，按钮为 `variant="outlined"`、`block` | 仅 `showCancel` 为 `true` 时渲染 |
+| `confirm` | 确认按钮外层容器 | `flex-1` | 仅 `showConfirm` 为 `true` 且有选项数据时渲染 |
+| `confirmButton` | 确认按钮本体，作为 `RebornButton` 的 `base` 下发 | `w-full`，按钮为 `variant="filled"`、`block` | 同 `confirm` |
 
 ::tip
-`showCancel` 与 `showConfirm` 同时为 `false` 时，组件自身的 `hideButtons` 变体会把整个按钮区设为 `hidden`，此时通过 `ui.buttons` 追加的类名不会让它重新显示。
+`hideButtons` 变体只追加一个 `hidden`。`ui.buttons` 的类排在它之后参与合并，所以传 `flex` 这类 display 类会把 `hidden` 替换掉、让空按钮区重新占位；只改间距、内边距则不影响隐藏。
 ::
+
+```vue
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="options"
+    :ui="{
+      buttons: 'gap-3 px-4 pb-6',
+      cancelButton: 'rounded-full',
+      confirmButton: 'rounded-full',
+      emptyText: 'text-gray-500',
+    }"
+  />
+</template>
+```
+
 :::
 ::
 
@@ -645,10 +802,9 @@ type SelectValue = string | number | (string | number)[] | null;
 | 标签换行态纵向内边距 | 3px | 5px | 7px |
 
 - 触发器圆角固定 `rounded-md`（6px），**不随尺寸变化**，与 `RebornInput` 的 md 档位保持同一视觉语言；`underlined` 形态强制压平为直角。
-- 行高统一 150%（不用 `text-sm` / `text-base` / `text-lg`，那三个 token 自带 20/22/24px 的固定行高会覆盖 150%）。
 - 多选形态下触发器水平内边距收敛为 4px（标签自带描边与内边距，沿用档位值留白会明显偏大）。
 - 选项：圆角 `rounded-sm`（4px）、内边距 6/4、行距 4px；下拉内容区内边距 4/6、最大高度 240px。
-- 浮层外壳圆角 `rounded-lg`（8px），描边 `gray-3`；页头页脚字号 13px，空态与加载态字号 14px、纵向内边距 24px。
+- 浮层外壳圆角 `rounded-lg`（8px），描边 `gray-3`；页头页脚字号 12px（`text-sm`），空态与加载态字号 14px、纵向内边距 24px。
 - 虚拟列表默认步长 33px，即 md 档位选项的实测高度加 4px 行距。
 - 标签换行态的纵向内边距按 `(档位高度 - 标签高度) / 2 - 1px 描边` 反推，因此只有一行标签时与固定高度档位严格等高，不产生 1px 抖动。
   :::
@@ -706,6 +862,6 @@ type SelectValue = string | number | (string | number)[] | null;
 - Web 端 `loading` 与 `clearable` 共用尾部同一块空间：加载中时清空按钮不渲染。
 - Web 端开启 `virtual` 后每项高度必须恒定，改了 `ui.option` 的排版必须同步改 `virtual-item-height`。
 - Web 端 `portal` 关掉后浮层留在触发器内，会随父容器滚动并被 `overflow: hidden` 裁剪，仅在浮层需要跟随内部滚动容器时才关。
-- Web 端覆盖 `ui.tag` 的圆角 / 高度必须带 `!` 提权，否则会被 `RebornBadge` 自带档位值压过。
+- Web 端覆盖 `ui.tag` 的圆角 / 高度必须带 `!`：内置类是 `rounded-sm!` 与 `h-4!` / `h-5!` / `h-6!`，不带 `!` 的覆盖不会与之合并，最终仍是内置值生效。
 - 两端配色 token 自身已随主题切换，**不要再写 `dark:` 前缀**，否则深色模式下会二次翻转。
-- UniApp 端 `showCancel` 与 `showConfirm` 同时为 `false` 时按钮区被整块 `hidden`，用 `ui.buttons` 追加类名无法让它恢复显示。
+- UniApp 端 `showCancel` 与 `showConfirm` 同时为 `false` 时按钮区被追加 `hidden`；`ui.buttons` 里若写了 `flex` 等 display 类会把它替换掉，只想调间距时不要带 display 类。

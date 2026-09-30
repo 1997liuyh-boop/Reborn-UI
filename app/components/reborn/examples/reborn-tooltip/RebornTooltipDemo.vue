@@ -114,10 +114,10 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
       </RebornTooltip>
     </Playground>
 
-    <DemoSection
-      title="基本用法"
-      description="最简单的用法：title 传入提示文字，鼠标移入显示、移出消失，可代替系统默认的 title 提示。"
-    >
+    <DemoSection title="基础用法">
+      <template #description>
+        <code>title</code> 传入提示文字，鼠标移入显示、移出消失，用来代替浏览器原生的 <code>title</code> 提示；长文字在 240px 处自动换行。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornTooltip title="这是一个文字提示">
           <RebornButton>悬停查看提示</RebornButton>
@@ -129,10 +129,10 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="位置"
-      description="12 种方位：top / bottom / left / right 及其 -start / -end 对齐，另接受 topLeft 等驼峰别名。"
-    >
+    <DemoSection title="方位：12 种 placement">
+      <template #description>
+        <code>placement</code> 由方向 <code>top</code> / <code>bottom</code> / <code>left</code> / <code>right</code> 与对齐 <code>-start</code> / <code>-end</code> 组合出 12 种方位。
+      </template>
       <DemoBlock layout="stack" align="center">
         <div class="grid w-fit grid-cols-5 gap-3">
           <div class="col-start-2">
@@ -203,10 +203,10 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="自定义背景颜色"
-      description="color 直接指定气泡背景色，面板与箭头同步着色、文字固定白色。"
-    >
+    <DemoSection title="颜色：自定义背景色">
+      <template #description>
+        <code>color</code> 直接指定气泡背景色，面板与箭头同步着色，文字固定为白色。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornTooltip v-for="c in colors" :key="c" :title="c" :color="c">
           <RebornButton size="sm" :style="{ backgroundColor: c, borderColor: c }">
@@ -216,10 +216,10 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="显示 HTML 内容"
-      description="content 插槽可承载任意 HTML 结构（多行、快捷键、加粗、链接等），优先级高于 title / content 属性。"
-    >
+    <DemoSection title="富内容插槽">
+      <template #description>
+        <code>content</code> 插槽可承载任意 HTML 结构（多行、快捷键、加粗、链接等），优先级高于 <code>title</code> / <code>content</code> 属性。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornTooltip placement="right">
           <template #content>
@@ -241,10 +241,10 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection
-      title="触发行为"
-      description="trigger 支持 hover / focus / click / contextMenu，可传数组组合；click 与 contextMenu 打开后点击外部区域关闭。"
-    >
+    <DemoSection title="触发方式">
+      <template #description>
+        <code>trigger</code> 支持 <code>hover</code> / <code>focus</code> / <code>click</code> / <code>contextMenu</code>，可传数组组合；<code>click</code> 与 <code>contextMenu</code> 打开后点击外部区域关闭。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornTooltip title="hover 触发（默认）">
           <RebornButton>悬停</RebornButton>
@@ -268,23 +268,30 @@ const colors = ["#8358F6", "#1b6dfa", "#f50", "#2db7f5", "#87d068", "#108ee9"];
       </DemoNote>
     </DemoSection>
 
-    <DemoSection
-      title="更多配置"
-      description="箭头显隐与指向、秒级延时、禁用、title 置空即禁用、defaultOpen 初始展示。"
-    >
+    <DemoSection title="箭头：显隐与指向中心">
+      <template #description>
+        <code>:arrow="false"</code> 隐藏箭头；<code>-start</code> / <code>-end</code> 方位下箭头默认停在对齐端，<code>:arrow="{ pointAtCenter: true }"</code> 改为指向触发元素中心。
+      </template>
       <DemoBlock layout="row" align="center">
         <RebornTooltip title="无箭头文字提示" :arrow="false">
           <RebornButton>无箭头</RebornButton>
         </RebornTooltip>
 
-        <RebornTooltip title="驼峰命名的方位别名" placement="topLeft">
-          <RebornButton>topLeft</RebornButton>
+        <RebornTooltip title="箭头停在对齐端" placement="top-start">
+          <RebornButton>top-start</RebornButton>
         </RebornTooltip>
 
-        <RebornTooltip title="箭头指向元素中心" placement="topLeft" :arrow="{ pointAtCenter: true }">
+        <RebornTooltip title="箭头指向元素中心" placement="top-start" :arrow="{ pointAtCenter: true }">
           <RebornButton>pointAtCenter</RebornButton>
         </RebornTooltip>
+      </DemoBlock>
+    </DemoSection>
 
+    <DemoSection title="延时、禁用与初始展示">
+      <template #description>
+        <code>mouse-enter-delay</code> 以秒为单位设置显示延时；<code>disabled</code> 或把 <code>title</code> 置空都会禁用提示；<code>default-open</code> 让提示挂载后立即展示。
+      </template>
+      <DemoBlock layout="row" align="center">
         <RebornTooltip title="mouseEnterDelay 1 秒" :mouse-enter-delay="1">
           <RebornButton>延时 1s</RebornButton>
         </RebornTooltip>

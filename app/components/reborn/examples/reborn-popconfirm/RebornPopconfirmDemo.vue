@@ -8,7 +8,7 @@ import DemoSection from '~/components/common/demo/DemoSection.vue';
 import Playground from '~/components/common/play-ground/Playground.vue';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
 import RebornPopconfirm from '~/components/reborn/ui/reborn-popconfirm/RebornPopconfirm.vue';
-import { placementAliases, placements } from '~/lib/placement';
+import { placements } from '~/lib/placement';
 
 /** 12 种基础方位，取值与 reborn-tooltip 的 placement 完全一致。 */
 const placementOptions = placements.map(value => ({ label: value, value }));
@@ -126,7 +126,7 @@ function onAsyncConfirm() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="弹出方位">
+    <DemoSection title="弹出方位：placement 十二向">
       <template #description>
         <code>placement</code> 取值与 <code>reborn-tooltip</code> 完全一致：四个方向各带 <code>-start</code> / <code>-end</code> 对齐，共 12 种；超出视口时自动翻转到对侧，<code>sideOffset</code> 调整与触发器的间距。
       </template>
@@ -141,18 +141,7 @@ function onAsyncConfirm() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="驼峰方位别名">
-      <template #description>
-        与 <code>reborn-tooltip</code> 一样接受 <code>topLeft</code> / <code>rightBottom</code> 这类驼峰写法，等价于对应的连字符取值。
-      </template>
-      <DemoBlock layout="row" class="gap-6 py-14">
-        <RebornPopconfirm v-for="alias in placementAliases" :key="alias" title="确定执行该操作吗？" :placement="alias">
-          <RebornButton size="sm" variant="outlined" color="neutral">{{ alias }}</RebornButton>
-        </RebornPopconfirm>
-      </DemoBlock>
-    </DemoSection>
-
-    <DemoSection title="按钮定制" description="confirmColor / cancelColor 换语义色，confirmText / cancelText 换文案，hideCancel 只留确认按钮。">
+    <DemoSection title="按钮定制：文案、语义色与隐藏取消" description="confirmColor / cancelColor 换语义色，confirmText / cancelText 换文案，hideCancel 只留确认按钮。">
       <DemoBlock layout="row" class="gap-6 py-10">
         <RebornPopconfirm title="确定移除该成员吗？" description="移除后对方将立即失去项目访问权限。" confirm-color="error" confirm-text="移除" cancel-text="再想想">
           <RebornButton size="sm" variant="outlined" color="error">危险操作</RebornButton>
@@ -163,7 +152,7 @@ function onAsyncConfirm() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="异步确认" description="loading 让确认按钮进入加载态且点击不再自动关闭，配合 v-model:open 在异步完成后手动收起。">
+    <DemoSection title="异步确认：loading 与 v-model:open" description="loading 让确认按钮进入加载态且点击不再自动关闭，配合 v-model:open 在异步完成后手动收起。">
       <DemoBlock layout="row" class="gap-6 py-10">
         <RebornPopconfirm v-model:open="asyncOpen" title="确定删除所选的 3 项吗？" description="删除请求完成前请勿关闭页面。" :loading="asyncLoading" confirm-color="error" confirm-text="删除" @confirm="onAsyncConfirm" @cancel="lastAction = '异步删除已取消'">
           <RebornButton size="sm" variant="outlined" color="error">异步删除</RebornButton>
@@ -172,7 +161,7 @@ function onAsyncConfirm() {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义内容" description="title / description 插槽替换文字内容，footer 插槽接管按钮区并拿到 confirm / cancel 回调。">
+    <DemoSection title="自定义内容：标题与按钮区插槽" description="title / description 插槽替换文字内容，footer 插槽接管按钮区并拿到 confirm / cancel 回调。">
       <DemoBlock layout="row" class="gap-6 py-10">
         <RebornPopconfirm description="发布后将对全部用户可见，可随时在后台下线。" @confirm="lastAction = '自定义标题：确认'">
           <template #title>

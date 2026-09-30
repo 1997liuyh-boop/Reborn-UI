@@ -1,29 +1,58 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
-import RebornButton from "../reborn-button/RebornButton.vue";
-
-import dayjs from "dayjs";
-import { cn } from "~/lib/utils";
-import { tv } from "~/lib/tv";
-import theme, {
+import type { ClassValue } from "clsx";
+import type { ComponentPublicInstance } from "vue";
+import type {
   timePickerColors,
   timePickerSizes,
-  type TimeRangeRole,
-  type TimeUnit,
+  TimeRangeRole,
+  TimeUnit,
 } from "./reborn-time-panel.config";
-import type { ClassValue } from "clsx";
+import type { TimeState } from "./time-picker.utils";
+import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
+import { tv } from "~/lib/tv";
+import { cn } from "~/lib/utils";
+import RebornButton from "../reborn-button/RebornButton.vue";
+import RebornScrollbar from "../scrollbar/RebornScrollbar.vue";
+import theme from "./reborn-time-panel.config";
+
+import {
+  formatTimeValue,
+  getCenteredScrollTop,
+  getScrollValue,
+  getTimeUnits,
+  parseTimeValue,
+} from "./time-picker.utils";
+
+const props = withDefaults(defineProps<TimePanelProps>(), {
+  modelValue: "",
+  variant: "filled",
+  disabled: false,
+  format: "HH:mm:ss",
+  isRange: false,
+  arrowControl: false,
+  showFooter: true,
+  size: "md",
+  color: "primary",
+  disabledHours: () => [],
+  disabledMinutes: () => [],
+  disabledSeconds: () => [],
+  disabledMilliseconds: () => [],
+});
+
+const emit = defineEmits<{
+  (e: "change", value: string | string[]): void;
+  /** 点击底部「清空」按钮清空值后触发 */
+  (e: "clear"): void;
+  /** 点击底部「确定」按钮时触发，携带当前选中值（范围模式为 [start, end]） */
+  (e: "confirm", value: string | string[]): void;
+}>();
 
 dayjs.extend(customParseFormat);
 
 const b = tv(theme);
-
-type TimeState = {
-  hour: number;
-  minute: number;
-  second: number;
-  millisecond: number;
-};
 
 type DisabledHours = (role?: TimeRangeRole, comparingValue?: string | null) => number[];
 type DisabledMinutes = (
@@ -47,9 +76,15 @@ type DisabledMilliseconds = (
 
 export interface TimePanelProps {
   modelValue?: string | string[];
+  /** 中心选中区域的填充或上下描边 */
+  variant?: "filled" | "outlined";
+  /** 禁用面板全部交互 */
+  disabled?: boolean;
   format?: string;
   isRange?: boolean;
   arrowControl?: boolean;
+  /** 是否显示底部操作区，包含自定义 footer 插槽 */
+  showFooter?: boolean;
   size?: (typeof timePickerSizes)[number];
   color?: (typeof timePickerColors)[number];
   /** 追加到面板根元素的自定义类名 */
@@ -61,6 +96,7 @@ export interface TimePanelProps {
   disabledMilliseconds?: DisabledMilliseconds;
   ui?: Partial<{
     wrapper: ClassValue;
+    body: ClassValue;
     rangeWrapper: ClassValue;
     rangeSeparator: ClassValue;
     section: ClassValue;
@@ -78,34 +114,13 @@ export interface TimePanelProps {
   }>;
 }
 
-const props = withDefaults(defineProps<TimePanelProps>(), {
-  modelValue: "",
-  format: "HH:mm:ss",
-  isRange: false,
-  arrowControl: false,
-  size: "md",
-  color: "primary",
-  disabledHours: () => [],
-  disabledMinutes: () => [],
-  disabledSeconds: () => [],
-  disabledMilliseconds: () => [],
-});
-
 const modelValue = defineModel<string | string[]>({ default: "" });
 
-const emit = defineEmits<{
-  (e: "change", value: string | string[]): void;
-  /** 点击底部「清空」按钮清空值后触发 */
-  (e: "clear"): void;
-  /** 点击底部「确定」按钮时触发，携带当前选中值（范围模式为 [start, end]） */
-  (e: "confirm", value: string | string[]): void;
-}>();
-
 const unitLabels: Record<TimeUnit, string> = {
-  hour: "Hour",
-  minute: "Minute",
-  second: "Second",
-  millisecond: "Millisecond",
+  hour: "时",
+  minute: "分",
+  second: "秒",
+  millisecond: "毫秒",
 };
 
 const unitMax: Record<TimeUnit, number> = {
@@ -118,47 +133,64 @@ const unitMax: Record<TimeUnit, number> = {
 const startState = ref<TimeState>({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 const endState = ref<TimeState>({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
-const columnRefs = new Map<string, HTMLElement>();
-
+type ScrollbarInstance = InstanceType<typeof RebornScrollbar>;
+const panelId = useId();
+const columnRefs = new Map<string, ScrollbarInstance>();
+const scrollTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const scrollTargets = new Map<string, number>();
 const uiOverrides = computed(() => props.ui || {});
-const activeUnits = computed(() => {
-  const units: TimeUnit[] = [];
-  const f = props.format.toLowerCase();
-
-  if (f.includes('h')) units.push('hour');
-  if (f.includes('m')) units.push('minute');
-  if (f.includes('s')) {
-    units.push('second');
-    // If format contains 's' and also millisecond indicators like 'S'
-    if (props.format.includes('S')) {
-      units.push('millisecond');
-    }
-  } else if (props.format.includes('S')) {
-    // Some formats might only have milliseconds without seconds (rare but possible)
-    units.push('millisecond');
-  }
-
-  return units;
-});
-
-const gridColsClass = computed(() => {
-  const count = activeUnits.value.length;
-  if (count === 1) return "grid-cols-1";
-  if (count === 2) return "grid-cols-2";
-  if (count === 3) return "grid-cols-3";
-  return "grid-cols-4";
-});
+const activeUnits = computed(() => getTimeUnits(props.format));
+const roles = computed<TimeRangeRole[]>(() => (props.isRange ? ["start", "end"] : ["start"]));
+const options = computed(
+  () =>
+    Object.fromEntries(
+      activeUnits.value.map((unit) => [
+        unit,
+        Array.from({ length: (unitMax[unit] + 1) * 3 }, (_, index) => ({
+          index,
+          value: index % (unitMax[unit] + 1),
+        })),
+      ]),
+    ) as Record<TimeUnit, { index: number; value: number }[]>,
+);
+// 每次状态变更只计算一次可选集合，避免毫秒列重复构建千项数组。
+const availableValues = computed(
+  () =>
+    Object.fromEntries(
+      roles.value.map((role) => [
+        role,
+        Object.fromEntries(
+          activeUnits.value.map((unit) => [
+            unit,
+            new Set(getAvailableValues(role, unit, getState(role))),
+          ]),
+        ),
+      ]),
+    ) as Record<TimeRangeRole, Partial<Record<TimeUnit, Set<number>>>>,
+);
+const canConfirm = computed(
+  () =>
+    !props.disabled &&
+    activeUnits.value.length > 0 &&
+    roles.value.every((role) =>
+      activeUnits.value.every((unit) => !isDisabledValue(role, unit, getState(role)[unit])),
+    ),
+);
 
 const ui = computed(() => {
   const styles = b({
     size: props.size,
     color: props.color,
     arrowControl: props.arrowControl,
+    variant: props.variant,
+    disabled: props.disabled,
   });
 
   return {
     wrapper: (opts?: { class?: any }) =>
       styles.wrapper({ class: cn(opts?.class, uiOverrides.value.wrapper) }),
+    body: (opts?: { class?: any }) =>
+      styles.body({ class: cn(opts?.class, uiOverrides.value.body) }),
     rangeWrapper: (opts?: { class?: any }) =>
       styles.rangeWrapper({ class: cn(opts?.class, uiOverrides.value.rangeWrapper) }),
     rangeSeparator: (opts?: { class?: any }) =>
@@ -166,7 +198,7 @@ const ui = computed(() => {
     section: (opts?: { class?: any }) =>
       styles.section({ class: cn(opts?.class, uiOverrides.value.section) }),
     columns: (opts?: { class?: any }) =>
-      styles.columns({ class: cn(opts?.class, gridColsClass.value, uiOverrides.value.columns) }),
+      styles.columns({ class: cn(opts?.class, uiOverrides.value.columns) }),
     column: (opts?: { class?: any }) =>
       styles.column({ class: cn(opts?.class, uiOverrides.value.column) }),
     arrowButton: (opts?: { class?: any }) =>
@@ -194,13 +226,14 @@ function columnKey(role: TimeRangeRole, unit: TimeUnit) {
   return `${role}-${unit}`;
 }
 
-function setColumnRef(role: TimeRangeRole, unit: TimeUnit, el: Element | null) {
+function setColumnRef(
+  role: TimeRangeRole,
+  unit: TimeUnit,
+  el: Element | ComponentPublicInstance | null,
+) {
   const key = columnKey(role, unit);
-  if (el instanceof HTMLElement) {
-    columnRefs.set(key, el);
-    return;
-  }
-  columnRefs.delete(key);
+  if (el && "wrapRef" in el) columnRefs.set(key, el as ScrollbarInstance);
+  else columnRefs.delete(key);
 }
 
 function pad(value: number, length = 2) {
@@ -221,26 +254,11 @@ function cloneState(state: TimeState): TimeState {
 }
 
 function parseTime(value?: string | null): TimeState | null {
-  if (!value) return null;
-
-  const parsed = dayjs(value, [props.format, "HH:mm:ss.SSS", "HH:mm:ss", "HH:mm"], true);
-  if (!parsed.isValid()) return null;
-
-  return {
-    hour: parsed.hour(),
-    minute: parsed.minute(),
-    second: parsed.second(),
-    millisecond: parsed.millisecond(),
-  };
+  return value ? parseTimeValue(value, props.format) : null;
 }
 
 function formatTime(state: TimeState) {
-  return dayjs()
-    .hour(state.hour)
-    .minute(state.minute)
-    .second(state.second)
-    .millisecond(state.millisecond)
-    .format(props.format);
+  return formatTimeValue(state, props.format);
 }
 
 function getState(role: TimeRangeRole) {
@@ -278,13 +296,8 @@ function getAvailableValues(role: TimeRangeRole, unit: TimeUnit, state: TimeStat
   return values.filter((value) => !disabled.has(value));
 }
 
-function isDisabledValue(
-  role: TimeRangeRole,
-  unit: TimeUnit,
-  value: number,
-  state = getState(role),
-) {
-  return !getAvailableValues(role, unit, state).includes(value);
+function isDisabledValue(role: TimeRangeRole, unit: TimeUnit, value: number) {
+  return !availableValues.value[role]?.[unit]?.has(value);
 }
 
 function pickNearest(candidates: number[], current: number, direction: 1 | -1 = 1): number {
@@ -304,17 +317,11 @@ function pickNearest(candidates: number[], current: number, direction: 1 | -1 = 
 
 function sanitizeState(role: TimeRangeRole, incomingState: TimeState, direction: 1 | -1 = 1) {
   const nextState = cloneState(incomingState);
-  const hours = getAvailableValues(role, "hour", nextState);
-  nextState.hour = pickNearest(hours, nextState.hour, direction);
-
-  const minutes = getAvailableValues(role, "minute", nextState);
-  nextState.minute = pickNearest(minutes, nextState.minute, direction);
-
-  const seconds = getAvailableValues(role, "second", nextState);
-  nextState.second = pickNearest(seconds, nextState.second, direction);
-
-  const milliseconds = getAvailableValues(role, "millisecond", nextState);
-  nextState.millisecond = pickNearest(milliseconds, nextState.millisecond, direction);
+  for (const unit of ["hour", "minute", "second", "millisecond"] as const) {
+    nextState[unit] = activeUnits.value.includes(unit)
+      ? pickNearest(getAvailableValues(role, unit, nextState), nextState[unit], direction)
+      : 0;
+  }
 
   return nextState;
 }
@@ -336,9 +343,10 @@ function normalizeRangeOrder() {
   endState.value = cachedStart;
 }
 
-function emitValue(triggerChange = true) {
+function emitValue() {
+  normalizeRangeOrder();
+  if (!canConfirm.value) return false;
   if (props.isRange) {
-    normalizeRangeOrder();
     const value = [formatTime(startState.value), formatTime(endState.value)];
     const isSame =
       Array.isArray(modelValue.value) &&
@@ -348,19 +356,21 @@ function emitValue(triggerChange = true) {
 
     if (!isSame) {
       modelValue.value = value;
-      if (triggerChange) emit("change", value);
+      emit("change", value);
     }
-    return;
+    return true;
   }
 
   const value = formatTime(startState.value);
   if (modelValue.value !== value) {
     modelValue.value = value;
-    if (triggerChange) emit("change", value);
+    emit("change", value);
   }
+  return true;
 }
 
 function updateState(role: TimeRangeRole, incomingState: TimeState, direction: 1 | -1 = 1) {
+  if (props.disabled) return;
   const nextState = sanitizeState(role, incomingState, direction);
   syncState(role, nextState);
   emitValue();
@@ -384,21 +394,15 @@ function cycleValue(role: TimeRangeRole, unit: TimeUnit, step: 1 | -1) {
 }
 
 function setValue(role: TimeRangeRole, unit: TimeUnit, value: number) {
+  if (props.disabled || isDisabledValue(role, unit, value)) return;
   const state = cloneState(getState(role));
   state[unit] = value;
   updateState(role, state, 1);
 }
 
-function onWheel(role: TimeRangeRole, unit: TimeUnit, event: WheelEvent) {
-  if (event.deltaY === 0) return;
-  cycleValue(role, unit, event.deltaY > 0 ? 1 : -1);
-}
-
-function displayValue(role: TimeRangeRole) {
-  return formatTime(getState(role));
-}
-
 function clear() {
+  if (props.disabled) return;
+  cancelScrollTimers();
   const empty = props.isRange ? ["", ""] : "";
   modelValue.value = empty;
   emit("change", empty);
@@ -406,74 +410,110 @@ function clear() {
 }
 
 function confirm() {
-  emit("confirm", modelValue.value);
+  flushScroll();
+  if (!emitValue()) return;
+  emit(
+    "confirm",
+    props.isRange
+      ? [formatTime(startState.value), formatTime(endState.value)]
+      : formatTime(startState.value),
+  );
 }
 
-function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit, instant = false) {
-  const column = columnRefs.get(columnKey(role, unit));
-  if (!column || column.clientHeight === 0) return false;
-
-  const value = getState(role)[unit];
-  const items = column.querySelectorAll<HTMLElement>("[data-value]");
-  // 目标索引位于中间那一组
-  const targetIndex = unitMax[unit] + 1 + value;
-  const active = items[targetIndex];
-
-  if (!active) return false;
-
-  // 使用 getBoundingClientRect 计算相对于滚动容器的真实偏移
-  const columnRect = column.getBoundingClientRect();
-  const activeRect = active.getBoundingClientRect();
-  const actualOffset = activeRect.top - columnRect.top + column.scrollTop;
-  const targetScroll = actualOffset - column.clientHeight / 2 + active.clientHeight / 2;
-
-  column.scrollTo({
-    top: Math.max(0, targetScroll),
-    behavior: instant ? "auto" : "smooth",
-  });
-  return true;
+/** 此刻也经过禁用规则校正；没有可选项时不会写入无效值。 */
+function selectNow() {
+  if (props.disabled) return;
+  cancelScrollTimers();
+  for (const role of roles.value) syncState(role, sanitizeState(role, getCurrentTimeState()));
+  confirm();
 }
 
-function handleScroll(role: TimeRangeRole, unit: TimeUnit, event: Event) {
-  const column = event.target as HTMLElement;
-  if (!column) return;
+function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit) {
+  const key = columnKey(role, unit);
+  const scrollbar = columnRefs.get(key);
+  const column = scrollbar?.wrapRef;
+  const item = column?.querySelector<HTMLElement>("[data-value]");
+  if (!column || !item || !column.clientHeight) return;
+  const target = getCenteredScrollTop(
+    getState(role)[unit],
+    unitMax[unit] + 1,
+    item.offsetHeight,
+    column.clientHeight,
+  );
+  if (scrollTimers.has(key)) return;
+  scrollTargets.set(key, target);
+  scrollbar?.setScrollTop(target, { animated: false });
+}
 
-  const paddingTop = parseFloat(getComputedStyle(column).paddingTop) || 0;
-  const paddingBottom = parseFloat(getComputedStyle(column).paddingBottom) || 0;
-  const contentHeight = column.scrollHeight - paddingTop - paddingBottom;
-  const sectionHeight = contentHeight / 3;
+/** 原生滚动、触摸与拖动滚动条统一在停止后提交，再对齐中间组。 */
+function settleScroll(role: TimeRangeRole, unit: TimeUnit) {
+  const key = columnKey(role, unit);
+  const timer = scrollTimers.get(key);
+  if (timer) clearTimeout(timer);
+  scrollTimers.delete(key);
+  const column = columnRefs.get(key)?.wrapRef;
+  const item = column?.querySelector<HTMLElement>("[data-value]");
+  if (!column || !item || !item.offsetHeight) return;
+  const state = cloneState(getState(role));
+  state[unit] = getScrollValue(
+    column.scrollTop,
+    unitMax[unit] + 1,
+    item.offsetHeight,
+    column.clientHeight,
+  );
+  updateState(role, state);
+  scrollColumnToActive(role, unit);
+}
 
-  const adjustedScroll = column.scrollTop - paddingTop;
+function handleScroll(role: TimeRangeRole, unit: TimeUnit) {
+  const key = columnKey(role, unit);
+  const column = columnRefs.get(key)?.wrapRef;
+  if (!column || props.disabled) return;
+  const target = scrollTargets.get(key);
+  if (target !== undefined && Math.abs(column.scrollTop - target) < 1) return;
+  const timer = scrollTimers.get(key);
+  if (timer) clearTimeout(timer);
+  scrollTimers.set(
+    key,
+    setTimeout(() => settleScroll(role, unit), 120),
+  );
+}
 
-  // 如果滚动到第一组或第三组，则瞬间重置回中间那一组
-  if (adjustedScroll < sectionHeight * 0.3) {
-    column.scrollTop += sectionHeight;
-  } else if (adjustedScroll > sectionHeight * 1.7) {
-    column.scrollTop -= sectionHeight;
+function flushScroll() {
+  for (const role of roles.value) {
+    for (const unit of activeUnits.value) {
+      if (scrollTimers.has(columnKey(role, unit))) settleScroll(role, unit);
+    }
   }
 }
 
-function syncColumns(instant = false) {
-  const trySync = (retryCount = 0) => {
-    const roles: TimeRangeRole[] = props.isRange ? ["start", "end"] : ["start"];
-    let allSynced = true;
+function cancelScrollTimers() {
+  for (const timer of scrollTimers.values()) clearTimeout(timer);
+  scrollTimers.clear();
+}
 
-    for (const role of roles) {
-      for (const unit of activeUnits.value) {
-        if (!scrollColumnToActive(role, unit, instant)) {
-          allSynced = false;
-        }
-      }
-    }
-
-    if (!allSynced && retryCount < 10) {
-      requestAnimationFrame(() => trySync(retryCount + 1));
-    }
-  };
-
+function syncColumns() {
   nextTick(() => {
-    requestAnimationFrame(() => trySync());
+    for (const role of roles.value) {
+      for (const unit of activeUnits.value) scrollColumnToActive(role, unit);
+    }
   });
+}
+
+function onColumnKeydown(role: TimeRangeRole, unit: TimeUnit, event: KeyboardEvent) {
+  if (props.disabled) return;
+  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+    event.preventDefault();
+    cycleValue(role, unit, event.key === "ArrowUp" ? -1 : 1);
+  } else if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    const candidates = getAvailableValues(role, unit, getState(role));
+    const value = event.key === "Home" ? candidates[0] : candidates.at(-1);
+    if (value !== undefined) setValue(role, unit, value);
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    confirm();
+  }
 }
 
 function getCurrentTimeState(): TimeState {
@@ -490,149 +530,167 @@ function initFromModel() {
   const defaultState = getCurrentTimeState();
 
   if (props.isRange && Array.isArray(props.modelValue)) {
-    const start = sanitizeState(
-      "start",
-      parseTime(props.modelValue[0]) ?? defaultState,
-    );
+    const start = sanitizeState("start", parseTime(props.modelValue[0]) ?? defaultState);
     const end = sanitizeState("end", parseTime(props.modelValue[1]) ?? cloneState(start));
     startState.value = start;
     endState.value = end;
     normalizeRangeOrder();
-    emitValue(false);
-    syncColumns(true);
+    syncColumns();
     return;
   }
 
   const parsed = typeof props.modelValue === "string" ? parseTime(props.modelValue) : null;
   startState.value = sanitizeState("start", parsed ?? defaultState);
   endState.value = cloneState(startState.value);
-  emitValue(false);
-  syncColumns(true);
+  syncColumns();
 }
 
-watch(() => props.modelValue, initFromModel, { immediate: true });
-
 watch(
-  [startState, endState, () => props.arrowControl],
-  () => {
-    syncColumns(props.arrowControl); // 如果是箭头控制且在大规模移动，可能需要平滑
-  },
-  { deep: true },
+  [
+    () => props.modelValue,
+    () => props.format,
+    () => props.isRange,
+    () => props.disabled,
+    () => props.disabledHours,
+    () => props.disabledMinutes,
+    () => props.disabledSeconds,
+    () => props.disabledMilliseconds,
+  ],
+  initFromModel,
+  { immediate: true, deep: true },
 );
+watch([startState, endState, () => props.arrowControl], syncColumns, { deep: true });
+onBeforeUnmount(cancelScrollTimers);
+defineExpose({ syncColumns, clear, confirm });
 </script>
 
 <template>
-  <div :class="ui.wrapper({ class: props.class })">
-    <!-- 范围选择模式 -->
-    <div v-if="isRange" :class="ui.rangeWrapper()">
-      <!-- 开始时间部分 -->
-      <div :class="ui.section()">
-        <div :class="ui.columns()">
-          <!-- 选中指示器与遮罩 -->
-          <div :class="ui.indicator()" />
-          <div :class="ui.mask()" />
-          <!-- 时间列 -->
-          <div v-for="unit in activeUnits" :key="`start-${unit}`" :class="ui.column()">
-            <Icon name="lucide:chevron-up" :class="ui.arrowButton()"
-              @click="cycleValue('start', unit as TimeUnit, -1)" />
-            <div :ref="(el: any) => setColumnRef('start', unit as TimeUnit, el)" :class="ui.list()"
-              @wheel.prevent="onWheel('start', unit as TimeUnit, $event)"
-              @scroll="handleScroll('start', unit as TimeUnit, $event)">
-              <!-- 三组数据实现无限滚动 -->
-              <div v-for="i in 3" :key="i" class="flex flex-col">
-                <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
-                  :key="`start-${unit}-${i}-${value}`" :class="[
-                    ui.item(),
-                    isDisabledValue('start', unit, value)
-                      ? ui.itemDisabled()
-                      : getState('start')[unit] === value
-                        ? ui.itemActive()
-                        : ui.itemIdle(),
-                  ]" :data-active="getState('start')[unit] === value" :data-value="value"
-                  @click="setValue('start', unit, value)">
-                  {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
-                </div>
+  <div
+    :class="ui.wrapper({ class: props.class })"
+    :aria-disabled="disabled"
+  >
+    <div :class="[ui.body(), isRange ? ui.rangeWrapper() : undefined]">
+      <template
+        v-for="role in roles"
+        :key="role"
+      >
+        <div
+          v-if="role === 'end'"
+          :class="ui.rangeSeparator()"
+        >
+          至
+        </div>
+        <div :class="ui.section()">
+          <div :class="ui.columns()">
+            <div
+              v-for="unit in activeUnits"
+              :key="unit"
+              :class="ui.column()"
+              role="listbox"
+              :aria-label="(isRange ? (role === 'start' ? '开始' : '结束') : '') + unitLabels[unit]"
+              :aria-disabled="disabled"
+              :tabindex="disabled ? -1 : 0"
+              :aria-activedescendant="`${panelId}-${role}-${unit}-${unitMax[unit] + 1 + getState(role)[unit]}`"
+              @keydown="onColumnKeydown(role, unit, $event)"
+            >
+              <button
+                v-if="arrowControl"
+                type="button"
+                :class="ui.arrowButton()"
+                :disabled="disabled"
+                :aria-label="`上一${unitLabels[unit]}`"
+                @click="cycleValue(role, unit, -1)"
+              >
+                ⌃
+              </button>
+              <div class="relative">
+                <div :class="ui.indicator()" />
+                <RebornScrollbar
+                  :ref="(el) => setColumnRef(role, unit, el)"
+                  :class="ui.list()"
+                  :horizontal="false"
+                  :size="4"
+                  :inset="0"
+                  :scroll-duration="0"
+                  @scroll="handleScroll(role, unit)"
+                >
+                  <div
+                    v-for="option in options[unit]"
+                    :id="`${panelId}-${role}-${unit}-${option.index}`"
+                    :key="option.index"
+                    role="option"
+                    :data-value="option.value"
+                    :aria-hidden="option.index < unitMax[unit] + 1 || option.index >= (unitMax[unit] + 1) * 2"
+                    :aria-selected="getState(role)[unit] === option.value"
+                    :aria-disabled="disabled || isDisabledValue(role, unit, option.value)"
+                    :class="[
+                      ui.item(),
+                      isDisabledValue(role, unit, option.value)
+                        ? ui.itemDisabled()
+                        : getState(role)[unit] === option.value
+                          ? ui.itemActive()
+                          : ui.itemIdle(),
+                    ]"
+                    @click="setValue(role, unit, option.value)"
+                  >
+                    {{ pad(option.value, unit === "millisecond" ? 3 : 2) }}
+                  </div>
+                </RebornScrollbar>
+                <div :class="ui.mask()" />
               </div>
+              <button
+                v-if="arrowControl"
+                type="button"
+                :class="ui.arrowButton()"
+                :disabled="disabled"
+                :aria-label="`下一${unitLabels[unit]}`"
+                @click="cycleValue(role, unit, 1)"
+              >
+                ⌄
+              </button>
             </div>
-            <Icon name="lucide:chevron-down" :class="ui.arrowButton()"
-              @click="cycleValue('start', unit as TimeUnit, 1)" />
           </div>
         </div>
-      </div>
-
-      <!-- 范围分隔符 -->
-      <div :class="ui.rangeSeparator()">
-        <Icon name="lucide:minus" class="size-4" />
-      </div>
-
-      <!-- 结束时间部分 -->
-      <div :class="ui.section()">
-        <div :class="ui.columns()">
-          <div :class="ui.indicator()" />
-          <div :class="ui.mask()" />
-          <div v-for="unit in activeUnits" :key="`end-${unit}`" :class="ui.column()">
-            <Icon name="lucide:chevron-up" :class="ui.arrowButton()" @click="cycleValue('end', unit as TimeUnit, -1)" />
-            <div :ref="(el: any) => setColumnRef('end', unit as TimeUnit, el)" :class="ui.list()"
-              @wheel.prevent="onWheel('end', unit as TimeUnit, $event)"
-              @scroll="handleScroll('end', unit as TimeUnit, $event)">
-              <div v-for="i in 3" :key="i" class="flex flex-col">
-                <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
-                  :key="`end-${unit}-${i}-${value}`" :class="[
-                    ui.item(),
-                    isDisabledValue('end', unit, value)
-                      ? ui.itemDisabled()
-                      : getState('end')[unit] === value
-                        ? ui.itemActive()
-                        : ui.itemIdle(),
-                  ]" :data-active="getState('end')[unit] === value" :data-value="value"
-                  @click="setValue('end', unit, value)">
-                  {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
-                </div>
-              </div>
-            </div>
-            <Icon name="lucide:chevron-down" :class="ui.arrowButton()"
-              @click="cycleValue('end', unit as TimeUnit, 1)" />
-          </div>
-        </div>
-      </div>
+      </template>
     </div>
-
-    <!-- 单个时间选择模式 -->
-    <div v-else :class="ui.section()">
-      <div :class="ui.columns()">
-        <div :class="ui.indicator()" />
-        <div :class="ui.mask()" />
-        <div v-for="unit in activeUnits" :key="unit" :class="ui.column()">
-          <Icon name="lucide:chevron-up" :class="ui.arrowButton()" @click="cycleValue('start', unit as TimeUnit, -1)" />
-          <div :ref="(el: any) => setColumnRef('start', unit as TimeUnit, el)" :class="ui.list()"
-            @wheel.prevent="onWheel('start', unit as TimeUnit, $event)"
-            @scroll="handleScroll('start', unit as TimeUnit, $event)">
-            <div v-for="i in 3" :key="i" class="flex flex-col">
-              <div v-for="value in Array.from({ length: unitMax[unit] + 1 }, (_, index) => index)"
-                :key="`${unit}-${i}-${value}`" :class="[
-                  ui.item(),
-                  isDisabledValue('start', unit, value)
-                    ? ui.itemDisabled()
-                    : getState('start')[unit] === value
-                      ? ui.itemActive()
-                      : ui.itemIdle(),
-                ]" :data-active="getState('start')[unit] === value" :data-value="value"
-                @click="setValue('start', unit, value)">
-                {{ pad(value, unit === 'millisecond' ? 3 : 2) }}
-              </div>
-            </div>
-          </div>
-          <Icon name="lucide:chevron-down" :class="ui.arrowButton()"
-            @click="cycleValue('start', unit as TimeUnit, 1)" />
+    <div v-if="showFooter" :class="ui.footer()">
+      <slot
+        name="footer"
+        :confirm="confirm"
+        :clear="clear"
+        :now="selectNow"
+      >
+        <!-- 网格平分外框宽度，避免文本按钮与实体按钮的内边距差异影响等宽。 -->
+        <div class="grid w-full grid-cols-2 gap-2">
+          <RebornButton
+            class="w-full min-w-0 justify-center"
+            color="primary"
+            variant="text"
+            size="sm"
+            border-style="solid"
+            :disabled="disabled"
+            :loading="false"
+            :round="false"
+            :circle="false"
+            @click="selectNow"
+          >
+            此刻
+          </RebornButton>
+          <RebornButton
+            class="w-full min-w-0 justify-center"
+            color="primary"
+            variant="filled"
+            size="sm"
+            border-style="solid"
+            :disabled="!canConfirm"
+            :loading="false"
+            :round="false"
+            :circle="false"
+            @click="confirm"
+          >
+            确定
+          </RebornButton>
         </div>
-      </div>
-    </div>
-
-    <!-- 底部操作栏 -->
-    <div :class="ui.footer()">
-      <slot name="footer">
-        <RebornButton variant="outlined" size="sm" @click="clear">清空</RebornButton>
-        <RebornButton size="sm" @click="confirm">确定</RebornButton>
       </slot>
     </div>
   </div>

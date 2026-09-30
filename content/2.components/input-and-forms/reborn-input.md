@@ -58,40 +58,7 @@ const keyword = ref("");
 </template>
 ```
 
-### 多行文本
-
-两端都用 `type="textarea"` 切多行，但高度策略不同。
-
-::tabs{sync="platform"}
-
-:::tabs-item{label="Web" icon="tabler:world"}
-行数由 `rows` 控制（旧属性 `as="textarea"` 仍兼容）；`autosize` 让高度随内容自适应，可传 `{ minRows, maxRows }` 限定范围；`resize` 控制是否允许用户拖拽缩放。
-
-```vue
-<template>
-  <RebornInput v-model="remark" type="textarea" :rows="3" placeholder="备注" />
-  <RebornInput v-model="remark" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="高度自适应" />
-  <RebornInput v-model="remark" type="textarea" resize="none" placeholder="禁止缩放" />
-</template>
-```
-:::
-
-:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-原生 `textarea` 没有 `rows`，`rows` 只作为参考行数用于估算固定高度；`autosize` 传布尔值映射为原生 `auto-height`，`{ minRows, maxRows }` 对象形式仅为与 Web 端同签名，**不会生效**；没有 `resize`（小程序不支持用户拖拽缩放）。
-
-```vue
-<template>
-  <view class="p-[24rpx]">
-    <RebornInput v-model="remark" type="textarea" :rows="3" placeholder="备注" />
-    <RebornInput v-model="remark" type="textarea" autosize placeholder="高度自适应" />
-  </view>
-</template>
-```
-:::
-
-::
-
-### 尺寸、形态与外形
+### 形状与尺寸
 
 `size`（`sm` / `md` / `lg`）、`color`（7 档语义色）、`variant`（`outlined` / `filled` / `borderless` / `underlined`）、`shape`（`square` / `circle`）四个属性两端同名同义，**但 `size` 与 `variant` 的默认值不同**。
 
@@ -127,67 +94,134 @@ const keyword = ref("");
 跨端复用同一份组件配置时，`size` 与 `variant` 请显式写出，不要依赖默认值——同一段 props 在两端会得到不同外观。
 ::
 
-### 密码框、清除与前后缀
+### 前后缀与前后置块
 
-`show-password`（旧名 `password` 兼容）开启掩码显示并出现明文/密文切换按钮，`#password-icon` 作用域插槽（参数 `visible`）可自定义图标；`clearable` 显示清除按钮，`clear-icon` 可替换图标。前后缀有三层能力：`prefix-icon` / `suffix-icon` 快捷图标，`#prefix` / `#suffix` 插槽（作用域提供 `ui` 类名生成器），以及输入框外的 `#prepend` / `#append` 连体块；`separator` 控制清除按钮、密码开关与后缀之间的竖分割线。
+前后缀有三层能力：`prefix-icon` / `suffix-icon` 快捷图标，`#prefix` / `#suffix` 插槽（作用域提供 `ui` 类名生成器），以及输入框外的 `#prepend` / `#append` 连体块。三者都只在单行模式渲染，`type="textarea"` 时不出现。
 
-插槽名与开关属性两端一致，唯一差异是图标属性的取值格式：**Web 端传 Iconify 图标名（`lucide:x-circle`），UniApp 端传 Iconify class（`i-lucide-x-circle`）**。
+插槽名两端一致，唯一差异是图标属性的取值格式：**Web 端传 Iconify 图标名（`lucide:search`），UniApp 端传 Iconify class（`i-lucide-search`）**。
 
 ```vue
 <template>
-  <RebornInput v-model="pwd" show-password clearable placeholder="请输入密码" />
-
   <!-- Web：图标名 / UniApp：改传 prefix-icon="i-lucide-search" -->
-  <RebornInput v-model="keyword" clearable prefix-icon="lucide:search" placeholder="搜索" />
+  <RebornInput v-model="keyword" prefix-icon="lucide:search" suffix-icon="lucide:calendar" placeholder="搜索日期" />
 
   <RebornInput v-model="domain" variant="outlined" placeholder="域名前缀">
-    <template #prepend>https://</template>
-    <template #append>.com</template>
+    <template #prepend>
+      <div class="px-[12px]">https://</div>
+    </template>
+    <template #append>
+      <div class="px-[8px]">.com</div>
+    </template>
   </RebornInput>
 </template>
 ```
 
-### 字数统计与格式化
+### 前后置块：搜索按钮与禁用配色
 
-`show-word-limit` 配合 `maxlength` 显示字数统计（仅 `type` 为 text / textarea 时生效），`word-limit-position` 可选 `inside`（默认）/ `outside`；`formatter` / `parser` 配对使用可实现千分位等格式化展示（仅 `type="text"`）。这两组能力两端通用，差异集中在 `maxlength` 的默认值与 Web 端独有的 `count-graphemes`。
+`#append` 常用来拼一个搜索按钮。Web 端连体块默认没有内边距（UniApp 端默认带 `px-3`），按钮外观通过 `ui.append` 覆盖底色、文字色与边框。`ui.append` 写的文字色会盖过禁用态自带的 `text-gray-5`，所以禁用时要单独给一套配色，否则禁用输入框旁边仍是一个高亮按钮。
+
+```vue
+<template>
+  <RebornInput
+    v-model="keyword"
+    placeholder="请输入内容"
+    :ui="{ append: 'bg-brand-6 text-white px-[12px] border border-brand-6' }"
+  >
+    <template #append>搜索</template>
+  </RebornInput>
+
+  <RebornInput
+    v-model="keyword"
+    disabled
+    placeholder="请输入内容"
+    :ui="{ append: 'bg-brand-3 text-gray-2 px-[12px] border border-brand-3' }"
+  >
+    <template #append>搜索</template>
+  </RebornInput>
+</template>
+```
+
+### 字数统计：show-word-limit
+
+`show-word-limit` 配合 `maxlength` 显示字数统计（仅 `type` 为 text / textarea 时生效），`word-limit-position` 可选 `inside`（默认）/ `outside`；多行模式下 `inside` 的统计落在文本域右下角。两端通用，差异集中在 `maxlength` 的默认值与 Web 端独有的 `count-graphemes`。
 
 ```vue
 <template>
   <!-- Web 默认不限长；UniApp 默认 140，设为 -1 不限制 -->
-  <RebornInput v-model="bio" :maxlength="20" show-word-limit placeholder="最多 20 字" />
-
-  <RebornInput
-    v-model="amount"
-    :formatter="(v) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-    :parser="(t) => t.replace(/,/g, '')"
-    placeholder="千分位金额"
-  />
+  <RebornInput v-model="bio" :maxlength="10" show-word-limit placeholder="最多 10 字" />
+  <RebornInput v-model="bio" :maxlength="10" show-word-limit word-limit-position="outside" />
 
   <!-- 仅 Web：自定义字素计数（emoji 按 1 个字算），设置后绕过原生 maxlength 约束 -->
   <RebornInput v-model="bio" :maxlength="20" show-word-limit :count-graphemes="countByGrapheme" />
 </template>
 ```
 
-### 键盘控制（UniApp）
+### 格式化与解析：formatter / parser
 
-UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文案并配合 `confirm` 事件提交；`adjustPosition` / `holdKeyboard` / `cursorSpacing`（单位 px）控制键盘弹起行为；`keyboardheightchange` 事件感知键盘高度变化。这些属性与事件在 Web 端不存在。
+`formatter` 决定展示文本，`parser` 从格式化文本中还原绑定值，两者要配对使用：只给 `formatter` 时，带千分位的文本会原样写回 `v-model`。仅 `type="text"` 生效，两端通用。
+
+```vue
+<template>
+  <RebornInput
+    v-model="amount"
+    :formatter="(v) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+    :parser="(t) => t.replace(/,/g, '')"
+    placeholder="千分位金额"
+  />
+</template>
+```
+
+### 密码框与清除
+
+`show-password`（旧名 `password` 兼容）开启掩码显示并出现明文/密文切换按钮，`#password-icon` 作用域插槽（参数 `visible`）可自定义图标；`clearable` 在有内容且非禁用、非只读时显示清除按钮，`clear-icon` 可替换图标；`separator` 控制清除按钮、密码开关与后缀之间的竖分割线。两者都只在单行模式渲染。
+
+```vue
+<template>
+  <RebornInput v-model="pwd" show-password clearable placeholder="请输入密码" />
+
+  <RebornInput v-model="pwd" show-password placeholder="请输入密码">
+    <template #password-icon="{ visible }">
+      <Icon :name="visible ? 'lucide:unlock' : 'lucide:lock'" />
+    </template>
+  </RebornInput>
+
+  <!-- Web：图标名 / UniApp：改传 clear-icon="i-lucide-trash-2" -->
+  <RebornInput v-model="text" clearable clear-icon="lucide:trash-2" placeholder="可清空" />
+</template>
+```
+
+### 多行文本：rows / autosize / resize
+
+两端都用 `type="textarea"` 切多行，但高度策略不同。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+行数由 `rows` 控制（旧属性 `as="textarea"` 仍兼容）；`autosize` 让高度随内容自适应，可传 `{ minRows, maxRows }` 限定范围；`resize` 控制是否允许用户拖拽缩放。
+
+```vue
+<template>
+  <RebornInput v-model="remark" type="textarea" :rows="3" placeholder="备注" />
+  <RebornInput v-model="remark" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="高度自适应" />
+  <RebornInput v-model="remark" type="textarea" resize="none" placeholder="禁止缩放" />
+</template>
+```
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+原生 `textarea` 没有 `rows`，`rows` 只作为参考行数用于估算固定高度；`autosize` 传布尔值映射为原生 `auto-height`，`{ minRows, maxRows }` 对象形式仅为与 Web 端同签名，**不会生效**；没有 `resize`（小程序不支持用户拖拽缩放）。
 
 ```vue
 <template>
   <view class="p-[24rpx]">
-    <RebornInput
-      v-model="keyword"
-      confirm-type="search"
-      :cursor-spacing="10"
-      :maxlength="50"
-      hold-keyboard
-      placeholder="回车搜索"
-      @confirm="onSearch"
-      @keyboardheightchange="(e) => console.log(e.detail.height)"
-    />
+    <RebornInput v-model="remark" type="textarea" :rows="3" placeholder="备注" />
+    <RebornInput v-model="remark" type="textarea" autosize placeholder="高度自适应" />
   </view>
 </template>
 ```
+:::
+
+::
 
 ## API
 
@@ -247,7 +281,7 @@ UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文�
 | `separator` | `boolean` | `true` | 是否在清除按钮、密码开关与后缀之间显示竖分割线。 |
 | `as` | `'input' \| 'textarea'` | `'input'` | 旧属性，等价于 `type="textarea"`，保留以兼容既有用法。 |
 | `class` | `any` | - | 追加到输入框主体 wrapper 的自定义类名。 |
-| `ui` | `InputUi` | `{}` | 按内部结构键覆盖类名，键位见「自定义样式（ui）」。 |
+| `ui` | `InputUi` | `{}` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
 Web 端额外支持 `v-model` 修饰符：`.trim` 失焦后去除首尾空格、`.number` 转为数字（`v-model.trim.number="value"` 可叠加）。UniApp 端未接入修饰符。
 :::
@@ -290,7 +324,7 @@ Web 端额外支持 `v-model` 修饰符：`.trim` 失焦后去除首尾空格、
 | `holdKeyboard` | `boolean` | `false` | 聚焦时点击页面其他区域是否保持键盘不收起。 |
 | `separator` | `boolean` | `true` | 是否在清除按钮、密码开关与后缀之间显示竖分割线。 |
 | `customClass` | `any` | - | 追加到根节点的自定义类名（对应 Web 端 `class`，但落点是 `root` 而非 `wrapper`）。 |
-| `ui` | `InputUI` | - | 按内部结构键覆盖类名，键位见「自定义样式（ui）」。 |
+| `ui` | `InputUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
 UniApp 端没有原生表单属性（`name` / `form` / `max` / `min` / `step` / `autocomplete` / `minlength` / `tabindex` / `inputmode` / `id`）、无障碍属性（`ariaLabel` / `label`）、`resize`、`countGraphemes`、`inputStyle`、`validateEvent` 与 `as`。
 :::
@@ -388,46 +422,48 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 
 ### 自定义样式（ui）
 
-`ui` 按内部结构键覆盖对应节点的类名。两端结构相近但不完全一致：Web 端多一个 `icon`，UniApp 端多一个 `inputItem`。
+`ui` 按键名把类名合并到对应节点（`cn` 合并，冲突时覆盖默认类名）。两端各有 14 个键，但与 config 的 `slots` 不是一一同名：`suffix` / `clear` / `password` 三个键没有同名 slot，而是共用 config 里的 `iconSection` 样式；`iconSection` 本身不能作为键传入。两端键位与默认类名都不同，分开列出。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-| 键名 | 说明 |
-| --- | --- |
-| `root` | 最外层容器，纵向容纳「输入组 + 外置字数统计」。 |
-| `group` | 输入组容器（prepend + 输入框 + append）。 |
-| `prepend` | 前置连体块。 |
-| `append` | 后置连体块。 |
-| `wrapper` | 输入框主体容器；`class` prop 也并到该节点。 |
-| `input` | 原生 input / textarea 元素本体。 |
-| `prefix` | 前缀插槽容器。 |
-| `iconBox` | 右侧图标区容器（清除 / 密码 / 字数 / 后缀）。 |
-| `icon` | 清除与密码图标的尺寸类。 |
-| `suffix` | 后缀插槽容器。 |
-| `clear` | 清除按钮。 |
-| `password` | 密码明文/密文切换按钮。 |
-| `separator` | 竖分割线。 |
-| `count` | 字数统计文本。 |
+| 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
+| --- | --- | --- | --- |
+| `root` | 最外层容器 | `flex w-full min-w-0 flex-col gap-1` | 始终渲染；`outside` 位置的字数统计也在这一层。 |
+| `group` | 输入组（prepend + 输入框 + append） | `flex w-full min-w-0 grow items-stretch`，尺寸档追加 `h-input-sm/md/lg` | 始终渲染；多行模式高度改为 `h-auto!`。 |
+| `prepend` | 前置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border border-gray-4 border-r-0` | 仅传了 `#prepend` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
+| `append` | 后置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border-gray-4 border-l-0` | 仅传了 `#append` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
+| `wrapper` | 输入框主体容器 | `group/input relative inline-flex w-full min-w-0 items-center overflow-hidden text-gray-9`，另按尺寸加 `px-input-px-*`、按 `variant` 加背景与边框 | 始终渲染；`class` prop 也合并到这里；有前 / 后置块时对应一侧圆角被压平。 |
+| `input` | 原生 input / textarea 元素 | `h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-gray-5`，聚焦光标色跟随 `color` | 始终渲染；多行模式改为 `h-auto resize-none`。 |
+| `prefix` | 前缀容器 | `inline-flex shrink-0 items-center text-gray-6`，组件另加 `mr-1` | 仅有 `#prefix` 或 `prefixIcon` 且单行时渲染。 |
+| `iconBox` | 尾部功能区（清除 / 密码 / 字数 / 后缀） | `inline-flex shrink-0 items-center gap-2` | 仅单行渲染，`type="textarea"` 时整块不存在。 |
+| `icon` | 内置图标（`prefixIcon` / `suffixIcon` / 清除 / 默认密码图标） | 无基础类名，尺寸档追加 `text-sm` / `text-base` / `text-lg` | 只作用于组件自己渲染的 `Icon`；插槽里自定义的内容不受影响。 |
+| `suffix` | 后缀容器 | 共用 `iconSection`：`flex cursor-pointer items-center justify-center text-gray-5 hover:opacity-80` | 仅有 `#suffix` 或 `suffixIcon` 且单行时渲染。 |
+| `clear` | 清除按钮 | 共用 `iconSection`（同上） | `clearable` 且有值、非禁用、非只读、单行时渲染。 |
+| `password` | 明文 / 密文切换按钮 | 共用 `iconSection`（同上） | 开启 `show-password`（或旧名 `password`）且单行时渲染。 |
+| `separator` | 竖分割线 | `w-px shrink-0 bg-gray-4`，尺寸档追加 `h-input-sep-*`，聚焦时 `group-focus-within/input:bg-<color>` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
+| `count` | 字数统计文本 | `pointer-events-none text-sm text-gray-5 tabular-nums` | `showWordLimit` 生效时渲染；多行 `inside` 追加 `absolute bottom-1 right-2`，`outside` 追加 `self-end`。 |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
-| 键名 | 说明 |
-| --- | --- |
-| `root` | 最外层容器，纵向容纳「输入组 + 外置字数统计」；`customClass` 也并到该节点。 |
-| `group` | 输入组容器（prepend + 输入框 + append）。 |
-| `prepend` | 前置连体块。 |
-| `append` | 后置连体块。 |
-| `wrapper` | 输入框主体容器。 |
-| `input` | 包裹原生 input 的容器（**不是元素本体**）。 |
-| `inputItem` | 原生 input 元素本体。 |
-| `prefix` | 前缀插槽容器（绝对定位在左侧）。 |
-| `iconBox` | 右侧图标区容器（清除 / 密码 / 字数 / 后缀）。 |
-| `suffix` | 后缀插槽容器。 |
-| `clear` | 清除按钮。 |
-| `password` | 密码明文/密文切换按钮。 |
-| `separator` | 竖分割线。 |
-| `count` | 字数统计文本。 |
+| 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
+| --- | --- | --- | --- |
+| `root` | 最外层容器 | `flex w-full min-w-0 flex-col gap-1` | 始终渲染；`customClass` 也合并到这里。 |
+| `group` | 输入组（prepend + 输入框 + append） | `flex w-full min-w-0 grow items-stretch`，尺寸档追加 `h-input-sm/md/lg` | 始终渲染。 |
+| `prepend` | 前置连体块 | `flex shrink-0 items-center px-3 bg-gray-2 text-gray-6` | 仅传了 `#prepend` 且单行时渲染；与 Web 不同，默认带 `px-3`。 |
+| `append` | 后置连体块 | `flex shrink-0 items-center px-3 bg-gray-2 text-gray-6` | 仅传了 `#append` 且单行时渲染；默认带 `px-3`。 |
+| `wrapper` | 输入框主体容器 | `relative flex w-full min-w-0 items-center overflow-hidden text-gray-9 data-[disabled=true]:text-gray-5`，按 `variant` 加背景与边框 | 始终渲染。 |
+| `input` | 包裹原生 input / textarea 的 `view`（**不是元素本体**） | `flex-1 min-w-0 h-full pl-3 text-gray-9`，有前缀时改为 `pl-9` | 始终渲染；多行模式组件追加 `h-auto pr-3 py-1`。 |
+| `inputItem` | 原生 input 元素本体 | `h-full w-full` | 仅单行渲染；多行的原生 textarea 固定为 `w-full`，不接受覆盖。 |
+| `prefix` | 前缀容器 | `absolute left-3 top-0 bottom-0 flex items-center justify-center text-gray-6` | 仅有 `#prefix` 或 `prefixIcon` 且单行时渲染；绝对定位，改宽度时要同步调整 `input` 的左内边距。 |
+| `iconBox` | 尾部功能区 | `h-full flex-shrink-0 flex items-center gap-[16rpx] pr-3` | 仅单行渲染。 |
+| `suffix` | 后缀容器 | 共用 `iconSection`：`flex cursor-pointer items-center justify-center text-gray-5 hover:opacity-80` | 仅有 `#suffix` 或 `suffixIcon` 时渲染。 |
+| `clear` | 清除按钮 | 取自 `icon` 槽（无基础类名，尺寸档 `text-40`），组件另加 `right-0` | `clearable` 且有值、非禁用、非只读时渲染；与 Web 不同，默认不带 `cursor-pointer` / `text-gray-5`。 |
+| `password` | 明文 / 密文切换按钮 | 共用 `iconSection`，组件另加 `h-full` | 开启 `show-password`（或旧名 `password`）时渲染。 |
+| `separator` | 竖分割线 | `w-px bg-gray-4`，尺寸档追加 `h-[var(--text-size-32/36/40)]`，聚焦时颜色跟随 `color` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
+| `count` | 字数统计文本 | `pointer-events-none text-22 text-gray-5` | `showWordLimit` 生效时渲染；`outside` 追加 `self-end`。 |
+
+UniApp 端 config 里的 `icon` slot 没有同名 `ui` 键，`prefixIcon` / `suffixIcon` 直接以图标 class 渲染，不经过 `ui`。
 :::
 
 ::
@@ -436,8 +472,15 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 <template>
   <RebornInput
     v-model="value"
-    :ui="{ wrapper: 'shadow-sm', count: 'text-primary' }"
-  />
+    :ui="{
+      wrapper: 'shadow-sm',
+      append: 'bg-brand-6 text-white px-[12px]',
+      clear: 'text-gray-7',
+      count: 'text-primary',
+    }"
+  >
+    <template #append>搜索</template>
+  </RebornInput>
 </template>
 ```
 
@@ -505,7 +548,30 @@ UniApp 端只抽出高度令牌，水平内边距与图标尺寸直接写在配�
 | 字数统计 | 可用 `countGraphemes` 自定义计数 | 仅按原生长度统计 |
 | 表单校验开关 | `validateEvent` | 无开关，始终参与 |
 | `ui` 独有键位 | `icon` | `inputItem` |
+| `prepend` / `append` 默认内边距 | 无，需在插槽内容或 `ui` 里自己给 | `px-3` |
+| `ui.clear` 默认样式 | 共用 `iconSection`（手型光标、`text-gray-5`） | 取自 `icon` 槽，无基础类名 |
 | Expose | 含原生元素引用、`blur` / `select` / `resizeTextarea` 等 11 项 | 仅 `focus` / `clear` / `isFocus` / `passwordVisible` |
+
+## 键盘控制（仅 UniApp）
+
+UniApp 端透传原生 input 的键盘能力：`confirmType` 设定确认键文案并配合 `confirm` 事件提交；`adjustPosition` / `holdKeyboard` / `cursorSpacing`（单位 px）控制键盘弹起行为；`keyboardheightchange` 事件感知键盘高度变化。这些属性与事件在 Web 端不存在。
+
+```vue
+<template>
+  <view class="p-[24rpx]">
+    <RebornInput
+      v-model="keyword"
+      confirm-type="search"
+      :cursor-spacing="10"
+      :maxlength="50"
+      hold-keyboard
+      placeholder="回车搜索"
+      @confirm="onSearch"
+      @keyboardheightchange="(e) => console.log(e.detail.height)"
+    />
+  </view>
+</template>
+```
 
 ## 注意事项
 
@@ -514,4 +580,3 @@ UniApp 端只抽出高度令牌，水平内边距与图标尺寸直接写在配�
 - **UniApp 端 `focus` prop 当前未接入内部逻辑**，需要程序聚焦时请用 `autofocus` 或通过 ref 调用 `focus()`。
 - **事件时序差异**：UniApp 端同一次输入依次触发 `update:modelValue`、`input`、`change`（参数相同）；Web 端 `input` 随键入触发（输入法合成期间静默），`change` 仅在失焦或 Enter 且值变化时触发。跨端共用的「值确认」逻辑请挂在 `blur` 上。
 - **放入 FieldGroup / 表单中时**，尺寸与禁用态会被表单注入的 size / disabled 覆盖，并在值变化与失焦时自动触发表单校验（Web 端可用 `validateEvent` 关闭，UniApp 端无此开关）。
-- **UniApp 端 `type` 的类型联合暂未收录 `'textarea'`**，但实现已支持该取值；TS 报错时可先按 `type="textarea" as any` 处理，或直接使用多行场景的封装。

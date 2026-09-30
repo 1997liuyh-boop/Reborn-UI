@@ -38,8 +38,8 @@ async function render(component: Component, props: Record<string, unknown>, slot
 
 it('Button 声明独立形状参数，描边圆形不变为实底配色', async () => {
   const html = await render(Button, { variant: 'outlined', circle: true, round: true, label: '加' })
-  assert.match(html, /!rounded-full/)
-  assert.match(html, /!w-\[var\(--height-button-md\)\]/)
+  assert.match(html, /rounded-full!/)
+  assert.match(html, /w-\(--height-button-md\)!/)
   assert.doesNotMatch(html, / circle[= >]/)
   assert.doesNotMatch(html, /bg-primary[ "]/)
 })
@@ -47,9 +47,9 @@ it('Button 声明独立形状参数，描边圆形不变为实底配色', async 
 it('Button text 圆形及 Badge 圆形继承表单尺寸', async () => {
   for (const [component, name, variant] of [[Button, 'button', 'text'], [Badge, 'badge', 'soft']] as const) {
     const html = await render(component, { circle: true, variant, size: 'sm', label: '1' }, undefined, 'lg')
-    assert.ok(html.includes(`!w-[var(--height-${  name  }-lg)]`))
-    assert.ok(html.includes(`!h-[var(--height-${  name  }-lg)]`))
-    assert.doesNotMatch(html, /!h-auto/)
+    assert.ok(html.includes(`w-(--height-${  name  }-lg)!`))
+    assert.ok(html.includes(`h-(--height-${  name  }-lg)!`))
+    assert.doesNotMatch(html, /h-auto!/)
   }
 })
 
@@ -76,7 +76,7 @@ it('圆形 Badge 保留数字零，纯图标不插入空标签', async () => {
   const icon = await render(Badge, { circle: true }, { leading: () => h('svg', { 'data-leading-icon': '' }) })
   assert.match(icon, /data-leading-icon/)
   assert.doesNotMatch(icon, /truncate/)
-  assert.ok(icon.includes('!w-[var(--height-badge-md)]'))
+  assert.ok(icon.includes('w-(--height-badge-md)!'))
 })
 
 it('Badge 形状不影响默认内容和关闭插槽', async () => {

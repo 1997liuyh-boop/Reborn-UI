@@ -28,19 +28,19 @@ export default {
          */
         size: {
             sm: {
-                label: 'min-h-[var(--height-input-sm)]',
+                label: 'min-h-input-sm',
                 content:
-                    'min-h-[var(--height-input-sm)] [&_.reborn-checkbox-group>*]:min-h-[var(--height-input-sm)] [&_.reborn-radio-group>*]:min-h-[var(--height-input-sm)]',
+                    'min-h-input-sm [&_.reborn-checkbox-group>*]:min-h-input-sm [&_.reborn-radio-group>*]:min-h-input-sm',
             },
             md: {
-                label: 'min-h-[var(--height-input-md)]',
+                label: 'min-h-input-md',
                 content:
-                    'min-h-[var(--height-input-md)] [&_.reborn-checkbox-group>*]:min-h-[var(--height-input-md)] [&_.reborn-radio-group>*]:min-h-[var(--height-input-md)]',
+                    'min-h-input-md [&_.reborn-checkbox-group>*]:min-h-input-md [&_.reborn-radio-group>*]:min-h-input-md',
             },
             lg: {
-                label: 'min-h-[var(--height-input-lg)]',
+                label: 'min-h-input-lg',
                 content:
-                    'min-h-[var(--height-input-lg)] [&_.reborn-checkbox-group>*]:min-h-[var(--height-input-lg)] [&_.reborn-radio-group>*]:min-h-[var(--height-input-lg)]',
+                    'min-h-input-lg [&_.reborn-checkbox-group>*]:min-h-input-lg [&_.reborn-radio-group>*]:min-h-input-lg',
             },
         },
         error: {

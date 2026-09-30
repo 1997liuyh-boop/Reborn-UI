@@ -20,13 +20,13 @@ export default {
         },
         size: {
             sm: {
-                root: "h-[var(--button-sm-height)] w-[var(--button-sm-height)]",
+                root: "size-(--height-button-sm)",
             },
             md: {
-                root: "h-[var(--button-base-height)] w-[var(--button-base-height)]",
+                root: "size-(--height-button-md)",
             },
             lg: {
-                root: "h-[var(--button-lg-height)] w-[var(--button-lg-height)]",
+                root: "size-(--height-button-lg)",
             },
         },
     },

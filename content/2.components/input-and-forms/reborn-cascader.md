@@ -95,7 +95,7 @@ const options = [
 </template>
 ```
 
-### 自定义标签
+### 回显插槽：label
 
 触发器上的回显内容由 `label` 插槽接管：单选时替换整段回显文本，多选时逐个标签渲染其内容。插槽参数 `data` 是该显示项命中的选项对象；值在选项里找不到（如懒加载未到达的层级）时为 `null`，自定义渲染时要自己兜底。
 
@@ -112,7 +112,7 @@ const options = [
 </template>
 ```
 
-### 搜索
+### 搜索与结果展示
 
 `allow-search` 把触发器变成输入框，多选模式下默认开启。输入后面板被一列拍平的结果顶掉，默认按整条路径文本匹配；`search-option-only-label` 改成只显示（并只匹配）选项自身的文本。`filter-option` 可以整条换掉匹配规则，`search-delay` 只影响 `search` 事件的防抖节奏，本地过滤始终立即生效。
 
@@ -130,7 +130,7 @@ const options = [
 </template>
 ```
 
-### 异步加载
+### 异步加载：load-more
 
 传入 `load-more` 即开启懒加载：展开一个非叶子节点时调用它，`done(children)` 回传的子节点会写回该选项对象。数据里必须自己标 `isLeaf`——组件看到「没有 children」时，无从判断是「真的到底了」还是「还没请求」。
 
@@ -163,7 +163,7 @@ function loadMore(option, done) {
 </template>
 ```
 
-### 独立面板
+### 独立面板：RebornCascaderPanel
 
 `RebornCascaderPanel` 就是浮层里的那块多列面板，可以单独放进页面当常驻控件。它自带外框（`bordered` 默认 `true`），被 `RebornCascader` 内嵌时会关掉，免得和浮层的描边叠成两圈。
 
@@ -221,7 +221,7 @@ function loadMore(option, done) {
 | `variant` | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'` | `'outlined'` | 形态变体 |
 | `class` | `any` | - | 自定义类名，落在浮层锚点（组件根节点）上 |
 | `triggerUi` | `SelectTriggerUI & CascaderFieldUI` | - | 触发器盒子与浮层的样式覆盖，组件内部自动拆分下发 |
-| `ui` | `CascaderUI` | - | 下拉面板与多选标签的样式覆盖 |
+| `ui` | `CascaderUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
 #### RebornCascaderPanel 全部属性
 
@@ -244,7 +244,7 @@ function loadMore(option, done) {
 | `disabled` | `boolean` | `false` | 整体禁用 |
 | `virtualListProps` | `VirtualListProps` | - | 传入即开启虚拟滚动 |
 | `class` | `any` | - | 自定义类名 |
-| `ui` | `CascaderPanelUI` | - | 面板内部的样式覆盖 |
+| `ui` | `CascaderPanelUI` | - | 细粒度样式覆盖，键位见「自定义样式（ui）」；只接受面板相关的 15 个键。 |
 
 #### CascaderOption
 
@@ -301,7 +301,7 @@ function loadMore(option, done) {
 | `checkStrictly` | `boolean` | `false` | 是否开启严格选择模式：单选点击任意层级节点即可选中；多选解除父子节点的勾选关联 |
 | `ellipsis` | `boolean` | `true` | 选项文本是否省略 |
 | `lines` | `number` | `1` | 省略行数 |
-| `ui` | `CascaderUI` | `{}` | 样式覆盖对象 |
+| `ui` | `CascaderUI` | `{}` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
 :::
 
@@ -443,7 +443,7 @@ Web 端还有一个独立入口 `triggerUi`：它承接触发器盒子与浮层�
 | `optionLabel` | 选项文字节点，默认 `min-w-0 flex-1 truncate`。**填充 `option` 插槽后不再渲染。** |
 | `optionActive` | 选中项的附加样式，由 `color` 给出（如 `bg-brand-1 text-primary`）。**不是独立节点**，命中时合并进 `option`。 |
 | `optionHighlight` | 展开路径上或鼠标悬停项的附加样式，默认 `bg-gray-2`。同样合并进 `option`，且选中态优先。 |
-| `optionCheckbox` | 多选时选项行首勾选框的外层节点，默认 `shrink-0`；勾选框本体是 `reborn-checkbox`，样式请用它自己的 props。**仅 `multiple` 为真时渲染。** |
+| `optionCheckbox` | 多选时选项行首勾选框的外层节点，默认 `mr-1 flex shrink-0 items-center`；勾选框本体是 `reborn-checkbox`，样式请用它自己的 props。**仅 `multiple` 为真时渲染。** |
 | `optionArrow` | 非叶子节点行尾的箭头，默认 `size-4 shrink-0 text-gray-5`。 |
 | `optionLoading` | 懒加载子节点时行尾的转圈图标，默认 `size-4 shrink-0 animate-spin text-gray-5`。 |
 | `optionList` | 选项行的排布容器，默认 `space-y-[4px]`；行间距改这里。 |
@@ -460,6 +460,21 @@ Web 端还有一个独立入口 `triggerUi`：它承接触发器盒子与浮层�
 | `tagClose` | 标签关闭按钮，默认 `shrink-0 text-gray-5 transition-colors hover:text-gray-8`。 |
 | `tagCloseIcon` | 标签关闭图标，默认 `size-full`。 |
 | `collapseTag` | `max-tag-count` 折叠出的 `+N` 标签的附加样式，默认空。 |
+
+以上 26 键即 `CascaderUI` 的全部键。config 的 `slots` 里另有几项**不经 `ui` 暴露**：触发器盒子 8 键（`trigger` / `triggerText` / `triggerIconWrapper` / `placeholder` / `clearBtn` / `arrow` / `searchInput` / `triggerLoadingIcon`）走 `triggerUi`；`searchIcon`（搜索态替换箭头的图标，默认 `size-full text-gray-6`）组件内未接入任何覆盖入口，只能换 `search-icon` 插槽；`optionActiveIcon` / `dropdownHeader` / `dropdownFooter` 是从 `reborn-select` 整体继承来的键，级联模板里不渲染对应节点，传了也无效。
+
+`RebornCascaderPanel` 的 `ui` 只认面板相关的 15 键：`panel` / `column` / `columnDivider` / `option` / `optionContent` / `optionLabel` / `optionActive` / `optionHighlight` / `optionCheckbox` / `optionArrow` / `optionLoading` / `optionList` / `virtualPhantom` / `virtualWindow` / `empty`。`RebornCascader` 会把自己的 `ui` 整个转交给内部面板，所以这 15 键在两个组件上写法相同。
+
+```vue
+<template>
+  <RebornCascader
+    v-model="value"
+    :options="options"
+    :ui="{ column: 'min-w-[200px]', optionHighlight: 'bg-gray-3', columnDivider: 'bg-gray-3' }"
+    :trigger-ui="{ trigger: 'rounded-full' }"
+  />
+</template>
+```
 
 :::
 
@@ -490,6 +505,18 @@ Web 端还有一个独立入口 `triggerUi`：它承接触发器盒子与浮层�
 | `footer` | 多选模式底部操作栏。**仅 `multiple` 为真时渲染。** |
 | `footerText` | 底部「已选 N 项」文案。 |
 | `footerActions` | 底部按钮组容器；「清空」「确认」是 `RebornButton`，样式请用它自己的 props。 |
+
+> config 里还声明了 `tabActive` 键，但组件没有节点消费它，传了无效；当前导航标签的高亮由 `RebornBadge` 的颜色 props 决定。
+
+```vue
+<template>
+  <RebornCascader
+    v-model="value"
+    :options="options"
+    :ui="{ popup: 'rounded-t-[24rpx]', item: 'py-[28rpx]', nodeArrow: 'text-gray-400' }"
+  />
+</template>
+```
 
 :::
 

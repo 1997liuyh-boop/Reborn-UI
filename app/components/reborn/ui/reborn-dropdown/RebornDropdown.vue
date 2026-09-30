@@ -2,15 +2,16 @@
 import type {
   DropdownContext,
   DropdownOption,
-  DropdownPosition,
+  DropdownPlacement,
   DropdownTrigger,
   DropdownUI,
   DropdownValue,
 } from './reborn-dropdown.config';
 import { computed, inject, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from 'vue';
+import { resolvePlacement } from '~/lib/placement';
 import { cn } from '~/lib/utils';
 import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue';
-import { DROPDOWN_INJECTION_KEY, DROPDOWN_POSITION_MAP, dropdownTheme } from './reborn-dropdown.config';
+import { DROPDOWN_INJECTION_KEY, dropdownTheme } from './reborn-dropdown.config';
 import RebornDoption from './RebornDoption.vue';
 
 defineOptions({ name: 'RebornDropdown' });
@@ -19,7 +20,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
   showArrow: false,
   disabled: false,
   options: () => [],
-  position: 'bottom',
+  placement: 'bottom',
   trigger: 'click',
   hideOnSelect: true,
   portal: true,
@@ -50,7 +51,7 @@ export interface DropdownProps {
    * 菜单弹出位置
    * @defaultValue 'bottom'
    */
-  position?: DropdownPosition;
+  placement?: DropdownPlacement;
   /**
    * 触发下拉的行为，移动端不支持 hover；manual 由使用者通过插槽下发的 open / close / toggle 或 v-model:popup-visible 控制
    * @defaultValue 'click'
@@ -69,7 +70,7 @@ export interface DropdownProps {
    */
   portal?: boolean;
   /**
-   * 下拉框是否自动调整位置：position 指定的一侧空间不足时翻转到对侧；关闭后严格按 position 弹出
+   * 下拉框是否自动调整位置：placement 指定的一侧空间不足时翻转到对侧；关闭后严格按 placement 弹出
    * @defaultValue true
    */
   autoAdjustOverflow?: boolean;
@@ -212,7 +213,7 @@ function handleSelect(value: DropdownValue, ev: Event) {
 }
 
 /** 12 向位置映射为 SelectTrigger 的 side / align；间距显式传入优先，否则带箭头时留出箭头高度 */
-const placement = computed(() => DROPDOWN_POSITION_MAP[props.position]);
+const resolvedPlacement = computed(() => resolvePlacement(props.placement));
 const offset = computed(() => props.popupOffset ?? (props.showArrow ? 8 : 4));
 
 // ─── 样式 ───────────────────────────────────────────────────────
@@ -269,7 +270,7 @@ defineExpose({
   <RebornSelectTrigger
     ref="triggerRef"
     :is-open="popupVisible" :disabled="disabled" :portal="portal" :auto-adjust-overflow="autoAdjustOverflow"
-    :side="placement.side" :align="placement.align" :offset="offset" :arrow="showArrow"
+    :side="resolvedPlacement.side" :align="resolvedPlacement.align" :offset="offset" :arrow="showArrow"
     :class="ui.wrapper()" :ui="{
       /* 浮层宽度由菜单内容撑开，不跟随触发器 */
       dropdown: 'w-auto!',

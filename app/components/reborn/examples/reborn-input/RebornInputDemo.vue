@@ -99,6 +99,7 @@ const codeExtras = ['placeholder="请输入内容"', '@change="handleChange"'];
 
 // 各 section 独立持有绑定值，避免调整一处示例牵连其他示例
 const variantValue = ref("Reborn UI");
+const basicValue = ref("");
 const iconValue = ref("");
 const groupValue = ref("");
 const limitValue = ref("字数统计");
@@ -151,56 +152,30 @@ function parseThousands(text: string) {
       </div>
     </Playground>
 
-    <DemoSection title="插槽">
+    <DemoSection title="基础用法">
       <template #description>
-        使用插槽
+        <code>v-model</code> 绑定输入值；<code>clearable</code> 在有内容时显示清除按钮；<code>readonly</code>
+        只读仍可选中复制，<code>disabled</code> 禁用后不可聚焦。
       </template>
-      <DemoBlock layout="grid" :columns="2" align="start">
-        <DemoItem mono>
-          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
-            append: 'bg-brand-6 text-white px-[12px] border border-brand-6'
-          }">
-            <template #append>
-              搜索
-            </template>
-          </RebornInput>
+      <DemoBlock layout="grid" align="start">
+        <DemoItem label="clearable" mono>
+          <RebornInput
+            v-model="basicValue"
+            clearable
+            placeholder="请输入关键词"
+          />
         </DemoItem>
-        <DemoItem mono>
-          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
-            append: 'bg-brand-3 text-gray-2 px-[12px] border border-brand-3'
-          }">
-            <template #append>
-              搜索
-            </template>
-          </RebornInput>
+        <DemoItem label="readonly" mono>
+          <RebornInput
+            model-value="只读内容"
+            readonly
+          />
         </DemoItem>
-        <DemoItem mono>
-          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
-            append: 'bg-white text-gray-10 px-[8px]'
-          }">
-            <template #prepend>
-              <div class="px-[12px]">
-                https://
-              </div>
-            </template>
-            <template #append>
-              <Icon name="lucide:search" />
-            </template>
-          </RebornInput>
-        </DemoItem>
-        <DemoItem mono>
-          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
-            append: 'bg-gray-2 text-gray-5 px-[8px]'
-          }">
-            <template #prepend>
-              <div class="px-[12px] text-gray-5">
-                https://
-              </div>
-            </template>
-            <template #append>
-              <Icon name="lucide:search" />
-            </template>
-          </RebornInput>
+        <DemoItem label="disabled" mono>
+          <RebornInput
+            placeholder="禁用状态"
+            disabled
+          />
         </DemoItem>
       </DemoBlock>
     </DemoSection>
@@ -259,7 +234,63 @@ function parseThousands(text: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="字数统计">
+    <DemoSection title="前后置块：搜索按钮与禁用配色">
+      <template #description>
+        <code>#append</code> 放按钮文字或图标，<code>#prepend</code> 放协议前缀；连体块默认不带内边距，需要在插槽内容或
+        <code>ui.append</code> 里自己给。<code>ui.append</code> 里写的文字色会盖过禁用态自带的 <code>text-gray-5</code>，
+        所以禁用时要单独给一套配色（右列）。
+      </template>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
+            append: 'bg-brand-6 text-white px-[12px] border border-brand-6'
+          }">
+            <template #append>
+              搜索
+            </template>
+          </RebornInput>
+        </DemoItem>
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
+            append: 'bg-brand-3 text-gray-2 px-[12px] border border-brand-3'
+          }">
+            <template #append>
+              搜索
+            </template>
+          </RebornInput>
+        </DemoItem>
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" placeholder="请输入内容" :ui="{
+            append: 'bg-white text-gray-10 px-[8px]'
+          }">
+            <template #prepend>
+              <div class="px-[12px]">
+                https://
+              </div>
+            </template>
+            <template #append>
+              <Icon name="lucide:search" />
+            </template>
+          </RebornInput>
+        </DemoItem>
+        <DemoItem mono>
+          <RebornInput v-model="variantValue" disabled placeholder="请输入内容" :ui="{
+            append: 'bg-gray-2 text-gray-5 px-[8px]'
+          }">
+            <template #prepend>
+              <div class="px-[12px] text-gray-5">
+                https://
+              </div>
+            </template>
+            <template #append>
+              <Icon name="lucide:search" />
+            </template>
+          </RebornInput>
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="字数统计：show-word-limit">
       <template #description>
         <code>show-word-limit</code> 配合 <code>maxlength</code> 显示字数统计，仅 type 为 text / textarea 时生效；
         <code>word-limit-position</code> 可选 inside（默认）/ outside。
@@ -281,7 +312,7 @@ function parseThousands(text: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="格式化与解析">
+    <DemoSection title="格式化与解析：formatter / parser">
       <template #description>
         <code>formatter</code> 决定展示文本，<code>parser</code> 从格式化文本中还原绑定值，两者配对使用，仅
         <code>type="text"</code> 时生效。
@@ -318,7 +349,7 @@ function parseThousands(text: string) {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="多行文本">
+    <DemoSection title="多行文本：rows / autosize / resize">
       <template #description>
         <code>type="textarea"</code> 渲染为多行输入，<code>rows</code> 控制初始行数；<code>autosize</code>
         让高度随内容自适应，可传 <code>{ minRows, maxRows }</code> 限定范围；<code>resize</code> 控制是否允许用户拖拽缩放。

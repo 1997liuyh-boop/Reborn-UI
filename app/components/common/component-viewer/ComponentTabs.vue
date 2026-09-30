@@ -141,7 +141,7 @@ provide(demoContextKey, {
       Tab 栏吸顶：分类导航已并入主顶栏，各断点均按单层 header（64px）补偿。
       吸顶写在 nav 而不是 list：capsule 形态下 list 自身就是那条 bg-gray-2 + rounded-full 的胶囊底轨，
       再往上叠一层半透明底色会和它撞在同一个 bg-* 上（tailwind-merge 只会留一个）。
-      z-index 约定：header z-50 > 悬浮目录 z-40 > 吸顶 Tab 栏 z-20 > 内容
+      z-index 约定：header z-50 > 吸顶 Tab 栏 > 右栏目录 z-10 > 内容
     -->
     <RebornTabs v-model:active-key="activeTab" type="capsule" size="md" position="top" color="primary" :editable="false"
       :show-add-button="false" :animation="false" :hide-content="false" :destroy-on-hidden="false" :lazy-load="false"
@@ -151,7 +151,7 @@ provide(demoContextKey, {
       <RebornTabPane key="preview">
         <template #title>
           <span class="inline-flex items-center gap-1.5">
-            <Icon name="tabler:eye" class="size-4" />
+            <Icon name="mage:preview" class="size-4" />
             Preview
           </span>
         </template>

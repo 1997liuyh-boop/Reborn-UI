@@ -609,7 +609,7 @@ const ui = computed(() => {
           opts.class,
           overrides.value.slide,
           effectiveHeight.value === "auto" && "h-auto",
-          effectiveAutoSize.value && "!w-auto !h-auto self-center",
+          effectiveAutoSize.value && "w-auto! h-auto! self-center",
         ),
       });
       if (opts.active === undefined) return base;
@@ -626,7 +626,7 @@ const ui = computed(() => {
           opts.class,
           overrides.value.slideInner,
           effectiveHeight.value === "auto" ? "h-auto" : "h-full",
-          effectiveAutoSize.value && "!w-auto !h-auto inline-block",
+          effectiveAutoSize.value && "w-auto! h-auto! inline-block",
         ),
       }),
     arrowGroup: (opts: { class?: any } = {}) =>
@@ -1846,7 +1846,7 @@ defineExpose({
             :style="indicatorWrapperStyle">
             <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
               <div v-if="isFractionPagination"
-                class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-white/60 bg-white/72 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
+                class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-white/60 bg-gray-1/72 shadow-lg backdrop-blur-md dark:border-white/10 pointer-events-auto">
                 <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
                 <span class="mx-1 opacity-50">/</span>
                 <span>{{ slideCount }}</span>
@@ -1881,7 +1881,7 @@ defineExpose({
           :style="indicatorWrapperStyle">
           <slot name="indicators" :active-index="currentIndex" :count="slideCount" :go-to="goTo">
             <div v-if="isFractionPagination"
-              class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-900/60 pointer-events-auto">
+              class="px-2 py-1 text-sm font-medium tabular-nums flex items-center justify-center min-w-20 rounded-full border border-gray-3 bg-gray-1 pointer-events-auto">
               <span :class="`text-${props.color}`">{{ currentIndex + 1 }}</span>
               <span class="mx-1 opacity-50">/</span>
               <span>{{ slideCount }}</span>

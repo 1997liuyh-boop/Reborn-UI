@@ -2,7 +2,7 @@ import type { ClassValue } from "clsx";
 import type { ComputedRef, ModelRef } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 import type { TooltipUI } from "../reborn-tooltip/reborn-tooltip.config";
-import type { Placement, PlacementAlias } from "~/lib/placement";
+import type { Placement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 
 /** 父子组件通信用的 provide/inject 键 */
@@ -160,7 +160,7 @@ export interface MenuUI {
  */
 export interface MenuTooltipConfig {
   /** 弹出位置，默认 right */
-  placement?: Placement | PlacementAlias;
+  placement?: Placement;
   /** 背景色 */
   color?: string;
   /** 是否显示箭头 */
@@ -293,7 +293,7 @@ const theme = tv({
     menuItemGroup: "flex flex-col",
     // 分组内条目间距 4px，与根级垂直菜单及浮层内容的 gap-y-1 对齐
     menuItemGroupContent: "flex flex-col gap-y-1",
-    menuItemGroupTitle: "px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-400",
+    menuItemGroupTitle: "px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-5",
     menuDivider: "my-1 list-none",
   },
   variants: {
@@ -452,38 +452,38 @@ const theme = tv({
     {
       active: true,
       color: "primary",
-      class: { menuItem: "text-brand-6" },
+      class: { menuItem: "text-brand-6", menuItemExtra: "text-brand-6" },
     },
     {
       active: true,
       color: "secondary",
-      class: { menuItem: "text-secondary-6" },
+      class: { menuItem: "text-secondary-6", menuItemExtra: "text-secondary-6" },
     },
     {
       active: true,
       color: "success",
-      class: { menuItem: "text-green-6" },
+      class: { menuItem: "text-green-6", menuItemExtra: "text-green-6" },
     },
     {
       active: true,
       color: "info",
-      class: { menuItem: "text-blue-6" },
+      class: { menuItem: "text-blue-6", menuItemExtra: "text-blue-6" },
     },
     {
       active: true,
       color: "warning",
-      class: { menuItem: "text-orange-6" },
+      class: { menuItem: "text-orange-6", menuItemExtra: "text-orange-6" },
     },
     {
       active: true,
       color: "error",
-      class: { menuItem: "text-red-6" },
+      class: { menuItem: "text-red-6", menuItemExtra: "text-red-6" },
     },
     // neutral 的文字取 gray-9（正文色），gray-6 在灰阶里属于弱化文本，压不住选中态
     {
       active: true,
       color: "neutral",
-      class: { menuItem: "text-gray-9" },
+      class: { menuItem: "text-gray-9", menuItemExtra: "text-gray-9" },
     },
     // ── 选中态背景块：取色阶第 2 档，由 showActiveBackground 控制是否给出 ──
     {

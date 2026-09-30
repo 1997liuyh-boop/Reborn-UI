@@ -57,12 +57,12 @@ export default {
   slots: {
     /** flex-auto + basis-auto 让嵌套的 Layout 能被父级 flex 撑开；min-w/h-0 避免内容溢出时挤爆兄弟节点 */
     root: "box-border flex min-h-0 min-w-0 flex-auto basis-auto",
-    header: "box-border shrink-0 px-5 h-[var(--reborn-layout-header-height)]",
+    header: "box-border shrink-0 px-5 h-(--reborn-layout-header-height)",
     /**
      * 侧边栏改为纵向 flex：内容滚动区 + 底部触发器。
      * relative 供零宽触发器绝对定位；宽度变化带过渡，配合折叠动画。
      */
-    aside: "relative box-border flex shrink-0 flex-col w-[var(--reborn-layout-aside-width)] transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
+    aside: "relative box-border flex shrink-0 flex-col w-(--reborn-layout-aside-width) transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
     /** 内容滚动区：滚动行为从侧边栏根节点下放到这里，收起到 0 宽时内容随之隐藏 */
     asideContent: "min-h-0 min-w-0 flex-1 overflow-auto",
     /** 底部折叠触发器：48px 高通栏，箭头居中 */
@@ -71,7 +71,7 @@ export default {
     zeroTrigger: "absolute top-[64px] z-[1] flex h-[42px] w-[36px] cursor-pointer items-center justify-center bg-gray-9 text-gray-1 transition-colors hover:bg-gray-8",
     /** 主区域独立滚动，长内容不会把整页撑高 */
     main: "box-border block min-w-0 flex-1 basis-auto overflow-auto p-5",
-    footer: "box-border shrink-0 px-5 h-[var(--reborn-layout-footer-height)]",
+    footer: "box-border shrink-0 px-5 h-(--reborn-layout-footer-height)",
   },
   variants: {
     /** 排列方向；未显式指定时由 RebornLayout 扫描子节点自动判定 */

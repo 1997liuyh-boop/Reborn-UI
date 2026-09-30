@@ -364,12 +364,12 @@ function onOutsideClose() {
                 </div>
                 <template #content>
                   <div
-                    class="dark:bg-gray-8 border-gray-1 dark:border-gray-7 flex max-w-[280px] flex-col overflow-hidden rounded-xl border bg-white shadow-xl"
+                    class="border-gray-2 flex max-w-[280px] flex-col overflow-hidden rounded-xl border bg-gray-1 shadow-xl"
                   >
                     <div
-                      class="border-gray-1 dark:border-gray-7 flex items-center justify-between border-b bg-gray-50 px-3 py-2 dark:bg-gray-800/50"
+                      class="border-gray-2 flex items-center justify-between border-b bg-gray-2 px-3 py-2"
                     >
-                      <span class="text-sm font-bold tracking-wider text-gray-400">已选清单 ({{ selectionList.length }})</span>
+                      <span class="text-sm font-bold tracking-wider text-gray-5">已选清单 ({{ selectionList.length }})</span>
                       <div
                         class="text-primary cursor-pointer text-sm hover:underline"
                         @click="clear"

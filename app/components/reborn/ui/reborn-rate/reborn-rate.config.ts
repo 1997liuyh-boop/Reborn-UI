@@ -38,7 +38,7 @@ export default {
         wrapper: "inline-flex flex-row items-center gap-1",
         star: "relative cursor-pointer transition-all duration-200 ease-out",
         // 两层图标只过渡颜色：visibility / clip-path 必须瞬时切换，否则分段图标切换时未选中层会与选中层重叠 200ms
-        icon: "transition-colors duration-200 ease-out dark:text-gray-2",
+        icon: "transition-colors duration-200 ease-out",
         iconActive: "transition-colors duration-200 ease-out",
         /**
          * 分数 / 辅助文字：取正文色 text-gray-9（灰阶令牌在暗色主题下自动翻转，不必再写 dark:）。

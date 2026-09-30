@@ -7,6 +7,7 @@ import type { GLTF } from "three/addons/loaders/GLTFLoader.js";
 /* eslint-disable perfectionist/sort-imports */
 import "./webgpuGlobals";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { retargetClip } from "three/addons/utils/SkeletonUtils.js";
 import { color, mix, reflector } from "three/tsl";
 import {
@@ -15,6 +16,7 @@ import {
   PerspectiveCamera, Scene, Skeleton, SkeletonHelper, SkinnedMesh, Texture, WebGPURenderer,
 } from "three/webgpu";
 import { retargetingModels } from "../../components/common/landing/retargetingHero.config";
+import { loadModelBuffer, resolveModelURL } from "./modelAssets";
 /* eslint-enable perfectionist/sort-imports */
 
 export interface RetargetingController {
@@ -100,7 +102,8 @@ export async function createRetargetingScene(
   const camera = new PerspectiveCamera(40, 1, 0.1, 60);
   const mixers: AnimationMixer[] = [];
   const group = new Group();
-  const loader = new GLTFLoader();
+  // 模型经 meshopt 压缩几何与动画、贴图转 WebP，解析前必须挂上解码器
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const loading = new AbortController();
   let loadTimer: ReturnType<typeof setTimeout> | undefined;
   let retryWithWebGL = true;
@@ -201,9 +204,9 @@ export async function createRetargetingScene(
     stage = "角色模型加载失败，请检查网络及 /models/retargeting/ 资源是否已部署。";
     loadTimer = setTimeout(() => loading.abort(), 20000);
     const models = await Promise.allSettled(retargetingModels.map(async (url) => {
-      const response = await fetch(new URL(url.slice(1), new URL(options.baseURL ?? "/", window.location.origin)), { signal: loading.signal });
-      if (!response.ok) throw new Error(`模型加载失败：${response.status}`);
-      const model = await loader.parseAsync(await response.arrayBuffer(), "");
+      // 下载可能早在首页挂载时就已开始（见 modelAssets），这里只是接上同一份数据
+      const data = await loadModelBuffer(resolveModelURL(url, options.baseURL), loading.signal);
+      const model = await loader.parseAsync(data, "");
       if (disposed || signal.aborted) { disposeObject(model.scene); throw new Error("场景已卸载"); }
       group.add(model.scene);
       return model;

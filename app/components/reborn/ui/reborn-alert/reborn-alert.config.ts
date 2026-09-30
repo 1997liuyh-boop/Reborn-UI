@@ -66,7 +66,7 @@ export const alertTheme = tv({
       // 文字提示：无背景/边框，仅保留语义色文字
       text: '',
       // 胶囊提示：形状类，着色规则与 filled 一致（见 compoundVariants）
-      round: { root: '!rounded-full' },
+      round: { root: 'rounded-full!' },
     },
     color: {
       primary: {},
@@ -79,7 +79,7 @@ export const alertTheme = tv({
     },
     /** 顶部公告模式：去除边框和圆角，铺满容器宽度 */
     banner: {
-      true: { root: '!rounded-none !border-none' },
+      true: { root: 'rounded-none! border-none!' },
     },
     /** 内容居中显示 */
     center: {

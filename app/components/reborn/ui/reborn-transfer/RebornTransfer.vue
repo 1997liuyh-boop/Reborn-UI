@@ -902,7 +902,7 @@ function getItemClass(isSelected: boolean, isDisabled: boolean | undefined) {
     isSelected && "bg-primary/8 dark:bg-primary/10",
     isDisabled || props.disabled
       ? "opacity-50 cursor-not-allowed"
-      : "hover:bg-gray-50 dark:hover:bg-gray-800/50",
+      : "hover:bg-gray-2",
   );
 }
 
@@ -913,7 +913,7 @@ function getRightItemClass(item: TransferDataRecord) {
       "cursor-default",
       isItemDisabled(item) || props.disabled
         ? "opacity-50"
-        : "hover:bg-gray-50 dark:hover:bg-gray-800/50",
+        : "hover:bg-gray-2",
     );
   }
   return getItemClass(rightChecked.value.includes(getItemKey(item)), isItemDisabled(item));
@@ -929,8 +929,8 @@ function getOperationBtnClass(isDisabled: boolean, config: ResolvedOperationButt
     ui.value.operationBtn(),
     !isIconOnlyOperationBtn(config) && ui.value.operationBtnLabeled(),
     isDisabled
-      ? "opacity-40 cursor-not-allowed pointer-events-none bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600"
-      : "cursor-pointer bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-primary/5 hover:border-primary/60 hover:text-primary dark:hover:bg-primary/10 dark:hover:border-primary/50 dark:hover:text-primary",
+      ? "opacity-40 cursor-not-allowed pointer-events-none bg-gray-2 border-gray-3 text-gray-5"
+      : "cursor-pointer bg-gray-1 border-gray-4 text-gray-8 hover:bg-primary/5 hover:border-primary/60 hover:text-primary dark:hover:bg-primary/10 dark:hover:border-primary/50 dark:hover:text-primary",
   );
 }
 
@@ -939,7 +939,7 @@ function getCheckAllClass(isChecked: boolean, isIndeterminate: boolean, isEmpty:
     ui.value.checkAll(),
     isChecked || isIndeterminate
       ? "bg-primary border-primary"
-      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600",
+      : "bg-gray-1 border-gray-4",
     isEmpty || props.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
   );
 }
@@ -949,7 +949,7 @@ function getItemCheckClass(isSelected: boolean) {
     ui.value.itemCheck(),
     isSelected
       ? "bg-primary border-primary"
-      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600",
+      : "bg-gray-1 border-gray-4",
   );
 }
 </script>

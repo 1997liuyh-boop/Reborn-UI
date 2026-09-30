@@ -40,7 +40,7 @@ Tree 用于展示文件目录、组织架构、权限点这类具有父子层级
 
 ### 基础用法
 
-`treeData` 一次性传入整棵树，节点的 `key` 在**整树范围内**必须唯一（展开、选中、勾选三组集合都以它为索引）；`defaultExpandedKeys` 指定初始展开的节点，`defaultExpandAll` 则直接摊开全部。字段名不叫 `title` / `key` / `children` 时用 `fieldNames` 重新映射。
+`treeData` 一次性传入整棵树，节点的 `key` 在**整树范围内**必须唯一（展开、选中、勾选三组集合都以它为索引）；`defaultExpandedKeys` 指定初始展开的节点，`defaultExpandAll` 则直接摊开全部。字段名不叫 `title` / `key` / `children` 时用 `fieldNames` 重新映射。点选默认关闭（`selectable` 默认 `false`），只浏览、不需要高亮当前节点的树不必额外配置；要点击标题选中时显式传 `selectable`。
 
 ```vue
 <script setup lang="ts">
@@ -57,11 +57,11 @@ const treeData = [
 </script>
 
 <template>
-  <RebornTree :tree-data="treeData" :default-expanded-keys="['engineering']" />
+  <RebornTree :tree-data="treeData" :default-expanded-keys="['engineering']" selectable />
 </template>
 ```
 
-### 主题色
+### 主题色：color
 
 `color` 统一控制树上所有强调色的落点：选中背景/文字、`filterTreeNode` 高亮、复选框（透传给内部的 `RebornCheckbox`）与拖拽指示（线与内部描边）。配方：选中填充取色阶 1 档、文字与描边取 6 档；拖拽内部放置的填充取 2 档，比选中重一档以示区分。
 
@@ -81,7 +81,7 @@ const treeData = [
 </template>
 ```
 
-### 受控展开
+### 受控展开：定位到深层节点
 
 `v-model:expanded-keys` 让展开集合由外部持有；`autoExpandParent` 为 `true` 时，外部写入的 keys 会自动补全父链（否则深层 key 因父级收起而不可见）。`useTree` 的 `getPath(key)` 返回根到目标的节点路径，适合「定位到某个深层节点」时一次性算出要并入的父链。
 
@@ -106,9 +106,9 @@ function locate(key: string) {
 `getPath` 的函数引用保持稳定、调用时才读取最新 `treeData`。若对它的派生结果做 `computed` 缓存，请把 `treeData` 与查询 key 一并列入依赖——依赖追踪感知不到 `getPath` 内部惰性读取的数据。
 ::
 
-### 点选与多选
+### 点选与多选：selectable / multiple
 
-点击标题切换选中，再次点击已选节点取消选中。`multiple` 让点选累加为多选；`blockNode` 把点击区拉满整行，选中背景随之铺满，适合行级操作的树。节点级 `selectable: false` 或 `disabled: true` 都会让该节点不可点选，组件级 `selectable={false}` 关闭整树点选。
+点选需要显式传 `selectable` 开启（默认 `false`，与 antd 默认开启不同）。开启后点击标题切换选中，再次点击已选节点取消选中。`multiple` 让点选累加为多选；`blockNode` 把点击区拉满整行，选中背景随之铺满，适合行级操作的树。开启点选后，节点级 `selectable: false` 或 `disabled: true` 仍可让单个节点不可点选。
 
 注意：点选（`selectedKeys` 高亮）只存在于**非 checkable** 树。树开启 `checkable` 后，点击标题切换的是复选框勾选，`multiple` / `selectable` 不再起作用——复选树的多选天生由复选框承担。
 
@@ -117,13 +117,14 @@ function locate(key: string) {
   <RebornTree
     v-model:selected-keys="selectedKeys"
     :tree-data="treeData"
+    selectable
     multiple
     block-node
   />
 </template>
 ```
 
-### 复选与父子联动
+### 复选与父子联动：checkable
 
 `checkable` 在节点前渲染复选框，**点击标题等同于点击复选框**（不再产生点选高亮——复选树的选中语义由复选框承担，叠一层 selected 背景会出现两套「选中」）。默认父子联动：勾选父节点自动勾满子级、子级全选则父级全选、部分选中则父级半选；传入 `checkedKeys` 时同样先做联动归一（传父节点 key 即视为整枝勾选）。`checkStrictly` 切断联动、逐节点独立勾选，此时 `checkedKeys` 用 `{ checked, halfChecked }` 对象形态。
 
@@ -161,7 +162,7 @@ const checkedKeys = ref<(string | number)[]>(["frontend"]);
 </template>
 ```
 
-### 自定义节点内容与筛选
+### 自定义节点插槽与筛选高亮
 
 节点行的每个视觉单元都开放了同名插槽：`title` 整体接管标题（等价于 antd 的 `titleRender`）、`icon` 节点图标、`switcherIcon` 展开/折叠图标（作用域含 `leaf`，showLine 的叶子图标也归它）、`checkbox` 复选框（作用域给出 `toggle` 回调，自定义控件点击时调用即接入父子联动）、`dragHandle` 拖拽手柄。`extra` 在标题后渲染附加内容——徽标、行内操作按钮等，容器自带 `@click.stop`（行内按钮不会误触点选/勾选），`blockNode` 下被推到行尾。
 
@@ -169,7 +170,7 @@ const checkedKeys = ref<(string | number)[]>(["frontend"]);
 
 ```vue
 <template>
-  <RebornTree :tree-data="treeData" block-node :filter-tree-node="(node) => node.title?.includes(keyword)">
+  <RebornTree :tree-data="treeData" block-node selectable :filter-tree-node="(node) => node.title?.includes(keyword)">
     <template #title="{ node, selected }">
       <span :class="{ 'font-semibold': selected }">{{ node.title }}</span>
     </template>
@@ -184,7 +185,7 @@ const checkedKeys = ref<(string | number)[]>(["frontend"]);
 </template>
 ```
 
-### 异步加载
+### 异步加载：loadData
 
 `loadData` 在展开「无子级且未加载过」的父节点时被调用，加载期间展开图标替换为旋转的加载图标（可用 `switcherLoadingIcon` 换）。Promise 内由使用方把子级写回 `treeData`；同一节点只请求一次，由 `loadedKeys` 记账（可 `v-model:loaded-keys` 受控）。子节点声明 `isLeaf: true` 即按叶子渲染、终止加载链；反之 `isLeaf: false` 可把暂无子级的节点强制按父节点渲染。
 
@@ -204,7 +205,7 @@ async function loadChildren(node: any) {
 </template>
 ```
 
-### 拖拽调整结构
+### 拖拽调整结构：draggable
 
 `draggable` 开启拖拽（布尔整树开关 / 函数按节点判定 / 对象写法 `{ nodeDraggable, icon }`，`icon: false` 隐藏拖拽手柄）。悬停位置按行高三分：前 1/4 落在目标**之前**、后 1/4 落在**之后**、中间落入目标**内部**；`allowDrop` 返回 `false` 的位置不亮起指示且拒绝放置。悬停在收起的父节点上约 700ms 自动展开。
 
@@ -234,7 +235,7 @@ function handleDrop({ node, dragNode, dropPosition }) {
 </template>
 ```
 
-### 虚拟滚动
+### 虚拟滚动与按 key 定位
 
 设置 `height`（像素）后根节点成为定高滚动容器（横向滚动按规格关闭），并默认启用虚拟滚动：只渲染视口内外各 5 行，千级节点不掉帧。滚动位置按 `itemHeight`（默认 28px）定高换算；`virtual={false}` 关闭虚拟化后退化为普通滚动容器。实例方法 `scrollTo({ key, align, offset, autoExpand, behavior })` 按 key 定位，`autoExpand` 在非受控展开下先自动展开目标的父链，`behavior: "smooth"` 启用平滑滚动动画。
 
@@ -260,7 +261,7 @@ function locate() {
 | --- | --- | --- | --- |
 | `treeData` | `TreeDataNode[]` | `[]` | 整棵树的数据，节点 `key` 在整树范围内必须唯一；节点字段见下方 TreeDataNode 表。 |
 | `fieldNames` | `{ title?: string; key?: string; children?: string }` | `{ title: 'title', key: 'key', children: 'children' }` | 自定义节点的标题 / 唯一标识 / 子级字段名。 |
-| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 主题色：统一控制选中背景/文字、筛选高亮、复选框与拖拽指示的用色，取值见「主题色」。 |
+| `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 主题色：统一控制选中背景/文字、筛选高亮、复选框与拖拽指示的用色，取值见「主题色：color」。 |
 | `expandedKeys` | `(string \| number)[]` | - | （受控）展开的节点，用 `v-model:expanded-keys` 绑定；不绑定时由内部状态承担，初值来自 `defaultExpandedKeys` / `defaultExpandAll`。 |
 | `selectedKeys` | `(string \| number)[]` | - | （受控）点选的节点，用 `v-model:selected-keys` 绑定；多选需配合 `multiple`。 |
 | `checkedKeys` | `(string \| number)[] \| { checked: (string \| number)[]; halfChecked: (string \| number)[] }` | - | （受控）勾选的节点，用 `v-model:checked-keys` 绑定。非 `checkStrictly` 下传数组即可，父子自动联动补全；`checkStrictly` 下用对象形态，父子不再关联。 |
@@ -271,7 +272,7 @@ function locate() {
 | `defaultSelectedKeys` | `(string \| number)[]` | `[]` | 非受控模式的初始选中集合。 |
 | `defaultCheckedKeys` | `(string \| number)[]` | `[]` | 非受控模式的初始勾选集合，非 `checkStrictly` 下同样经过联动归一。 |
 | `autoExpandParent` | `boolean` | `false` | 外部改写 `expandedKeys` 时自动补全父链；组件内部的展开/收起操作不受影响（否则收起父级会被立刻撑回）。 |
-| `selectable` | `boolean` | `true` | 整树是否可点选；节点级 `selectable: false` 可单独关闭某节点。`checkable` 树没有点选，本项不再起作用。 |
+| `selectable` | `boolean` | `false` | 整树是否可点选，默认关闭，需要标题点选高亮时显式开启；开启后节点级 `selectable: false` 可单独关闭某节点。`checkable` 树没有点选，本项不再起作用。 |
 | `multiple` | `boolean` | `false` | 点选是否累加为多选；单选模式下点新节点会替换旧选中。只作用于 `selectedKeys`——复选框勾选天生多选，与它无关。 |
 | `checkable` | `boolean` | `false` | 节点前是否渲染复选框；开启后点击标题等同于点击复选框，点选高亮随之停用。 |
 | `checkStrictly` | `boolean` | `false` | 勾选完全受控：父子勾选状态不再关联，`checkedKeys` 改用 `{ checked, halfChecked }` 对象形态。 |
@@ -301,7 +302,7 @@ function locate() {
 | `children` | `TreeDataNode[]` | - | 子节点数据。 |
 | `disabled` | `boolean` | `false` | 禁用整个节点：点选、勾选、拖拽失效，且阻断勾选联动传导。 |
 | `disableCheckbox` | `boolean` | `false` | 仅禁用复选框（标题仍可点选），同样阻断联动传导。 |
-| `selectable` | `boolean` | `true` | 该节点是否可被点选。 |
+| `selectable` | `boolean` | `true` | 该节点是否可被点选；仅在组件级 `selectable` 开启时有意义。 |
 | `checkable` | `boolean` | - | 树为 `checkable` 时单独隐藏该节点的复选框（设为 `false`），不影响联动计算。 |
 | `isLeaf` | `boolean` | - | 强制叶子（`true`）或强制父节点（`false`）；配合 `loadData` 用于终止/触发加载链。 |
 | `icon` | `string` | - | 节点图标名称（如 `lucide:folder`），需 `showIcon` 开启才渲染。 |
@@ -346,38 +347,49 @@ function locate() {
 
 ### 自定义样式（ui）
 
-`ui` 按内部结构键覆盖对应节点的类名：
+`ui` 按结构键把类名合并到对应节点上（经 `cn` 合并，同类工具类以传入值为准）。共 13 个键，键名与 `reborn-tree.config.ts` 的 `slots` 一一对应：
 
-| 键名 | 说明 |
-| --- | --- |
-| `root` | 根容器；设置 `height` 后同时是滚动容器。 |
-| `list` | 节点列表（`ul`）；虚拟滚动的位移变换落在它身上。 |
-| `node` | 单个节点行（`li`），放置指示线以它为定位基准。 |
-| `indentUnit` | 单层缩进列，固定 24px 宽；`showLine` 的竖线画在这里。 |
-| `switcher` | 展开/折叠开关容器，叶子节点也保留占位以维持对齐。 |
-| `switcherIcon` | 展开/折叠图标本体，非 `showLine` 下展开态旋转 90°。 |
-| `dragHandle` | 拖拽手柄图标容器，仅 `draggable` 且节点可拖拽时渲染；排在 switcher 占位列之后、紧贴内容区。 |
-| `checkbox` | 复选框容器，仅 `checkable` 时渲染。 |
-| `iconEle` | 节点图标容器，仅 `showIcon` 开启且有图标或 `icon` 插槽时渲染；空插槽内容不占位。 |
-| `content` | 标题点击区（含图标与文本），选中背景与悬浮反馈落在这里；`blockNode` 时拉满整行。 |
-| `title` | 标题文本，默认 `truncate`；`filterTreeNode` 命中的高亮也作用在它上面。 |
-| `extra` | 标题后的附加内容容器（extra 插槽），`ml-auto` 在 `blockNode` 下把它推到行尾。 |
-| `dropIndicator` | 拖拽放置指示线（仅前/后两个间隙位置渲染，放入内部走 `content` 的描边高亮）。 |
+| 键名 | 作用节点 | 默认关键类 | 渲染条件 |
+| --- | --- | --- | --- |
+| `root` | 根容器 `div[role=tree]`；设置 `height` 后同时是滚动容器 | `relative text-base text-gray-9 select-none` | 始终 |
+| `list` | 节点列表 `ul`（`TransitionGroup` 渲染）；虚拟滚动的 `translateY` 位移落在它身上 | `relative flex flex-col` | 始终 |
+| `node` | 单个节点行 `li`，放置指示线以它为定位基准 | `relative flex items-center`；拖拽源追加 `opacity-50` | 每个可见节点 |
+| `indentUnit` | 单层缩进列 | `w-6 shrink-0 self-stretch`；`showLine` 下以 `before:` 伪元素画 `bg-gray-3` 竖线 | 节点层级 ≥ 1 时，每层一个 |
+| `switcher` | 展开/折叠开关容器，叶子也保留占位以维持对齐 | `size-6 rounded-sm text-gray-6 hover:bg-gray-2`；叶子去掉手型与悬浮底色 | 每个节点 |
+| `switcherIcon` | 父节点的展开/折叠图标与加载图标 | `size-4 transition-transform duration-200`；非 `showLine` 下展开态 `rotate-90` | 非叶子节点，且未用 `switcherIcon` 插槽替换；`showLine` 的叶子图标不走此键 |
+| `dragHandle` | 拖拽手柄容器，排在 switcher 之后、紧贴内容区 | `size-5 cursor-grab text-gray-5` | `draggable` 开启、未设 `icon: false`，且该节点可拖拽 |
+| `checkbox` | 复选框容器 | `mr-1 flex shrink-0 items-center` | `checkable` 开启且节点未设 `checkable: false` |
+| `iconEle` | 节点图标容器，额外附加 `empty:hidden` | `size-5 shrink-0 text-gray-7` | `showIcon` 开启，且节点有 `icon` 字段或传了 `icon` 插槽 |
+| `content` | 标题点击区（含图标、标题与 extra），选中、悬浮、放入内部的高亮都落在这里 | `gap-1.5 rounded-sm px-1.5 py-0.5 hover:bg-gray-2`；`blockNode` 下追加 `flex-1` | 每个节点 |
+| `title` | 标题文本 | `truncate`；`filterTreeNode` 命中时追加 `font-medium` 与主题色文字 | 每个节点 |
+| `extra` | 标题后的附加内容容器（自带 `@click.stop`） | `ml-auto shrink-0 gap-1 pl-2` | 传了 `extra` 插槽 |
+| `dropIndicator` | 拖拽放置指示线 | `absolute right-0 z-10 h-0.5 rounded-full`，颜色随 `color` | 拖拽悬停在节点前/后间隙且 `allowDrop` 放行；放入内部不渲染，改由 `content` 描边高亮 |
 
 ```vue
 <template>
   <RebornTree
     :tree-data="treeData"
-    :ui="{ content: 'gap-2', title: 'text-sm' }"
+    selectable
+    :item-height="32"
+    :ui="{
+      content: 'gap-2 py-1',
+      title: 'text-sm',
+      indentUnit: 'w-5',
+    }"
   />
 </template>
 ```
+
+::tip
+改动 `content` 的纵向内边距会改变行高。不设 `height` 时没有影响；启用虚拟滚动时要同步调整 `itemHeight`（上例从 28 调到 32），否则切片与 `scrollTo` 的落点会漂移。
+::
 
 ## 注意事项
 
 - **展开动画是行级过渡，不是容器高度过渡**。内部按「拍平可见节点」的单列表渲染（这是虚拟滚动的前提），节点没有独立的收合容器，因此动画由 `TransitionGroup` 承担：新行淡入下滑、下方行 FLIP 位移让位（`animated` 控制，默认开启）。虚拟滚动生效时强制关闭——滚动过程中切片不断增删行，过渡会退化成滚动闪烁。antd 的 `motion` 参数由布尔 `animated` 替代。
 - **`drop` 不代改数据**。组件只负责拖拽交互与位置判定，放置后 `treeData` 原样不动；不在回调里落库的话界面会「弹回」原状，这是预期行为而非 bug。
 - **`checkable` 树的标题点击切换的是勾选，不是点选**。这是对 antd 的有意偏离：antd 里点标题走 `selectedKeys`、点复选框走 `checkedKeys` 两套并存，实际使用中点了节点复选框却不勾选是高频困惑；本组件在 `checkable` 下把标题点击并入勾选，`selectable` / `multiple` 随之停用，也不再渲染点选高亮背景。
+- **点选默认关闭**。`selectable` 默认 `false`，与 antd 默认开启不同：不传时点击标题没有任何高亮，也不会触发 `select` 事件；`defaultSelectedKeys` / `v-model:selected-keys` 仍会按传入值显示高亮。
 - **`multiple` 只作用于点选**。它控制的是 `selectedKeys`（标题高亮）能否累加；复选框勾选（`checkedKeys`）天生就是多选，不受 `multiple` 影响——两组状态相互独立。
 - **非 `checkStrictly` 下 `checkedKeys` 会被联动归一**。传入父节点 key 等于整枝勾选，取消一个子级会同时摘掉父链再重算——受控方拿到的回写值是归一后的完整集合，不是原样透传。
 - **禁用节点阻断勾选联动**。`disabled` / `disableCheckbox` 的节点不参与父子传导；而节点级 `checkable: false` 只隐藏复选框、仍参与联动计算，两者语义不同。

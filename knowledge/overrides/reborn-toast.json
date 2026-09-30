@@ -16,6 +16,7 @@
     "消息容器首次调用时自动挂载（默认 body），无需在模板放组件；getContainer 变更会移动容器节点。",
     "悬停消息默认暂停自动关闭计时（pauseOnHover: true）。",
     "soft / subtle 变体底色用同色相 1 阶实色令牌替代按钮的半透明底，outlined 垫 gray-1，避免悬浮层透出页面内容。",
-    "堆叠折叠（stack）未实现，用 maxCount 控制同屏数量。"
+    "堆叠折叠（stack）未实现，用 maxCount 控制同屏数量。",
+    "placement 仅 web 端，取值 top / top-start / top-end / bottom / bottom-start / bottom-end，与浮层组件 placement 同一套连字符写法（旧的 top-left / top-right 等已移除）；start / end 是逻辑方向，message.config({ rtl: true }) 后左右互换。"
   ]
 }

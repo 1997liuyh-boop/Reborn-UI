@@ -1,18 +1,24 @@
 {
-  "description": "用于选择时分秒的时间选择器组件，支持滚轮与箭头两种调节方式及时间范围选择。",
+  "description": "Web 单点时间录入：支持时分秒六种组合、手动输入、两种中心选中样式，并保留范围与毫秒选择。",
   "whenToUse": [
-    "表单中选择具体时间（format 默认 HH:mm:ss）。",
-    "选择时间段（isRange，配 startPlaceholder / endPlaceholder / rangeSeparator）。",
-    "需要禁用特定时 / 分 / 秒（disabledHours、disabledMinutes、disabledSeconds 函数）。"
+    "精确到秒的单点录入：format 默认 HH:mm:ss，allowInput 支持手动输入。",
+    "按 format 选择 HH、mm、ss、HH:mm 或 mm:ss，减少无关时间列。",
+    "使用 panelVariant 在 filled 和 outlined 中心样式之间切换，variant 独立控制触发器。",
+    "通过 disabledHours、disabledMinutes、disabledSeconds 排除指定时间，输入与选择遵循相同规则。",
+    "使用 isRange 选择起止时段，modelValue 为 [start, end]。"
   ],
   "whenNotToUse": [
-    "需要选日期或日期加时间改用 reborn-select-date（且其为双端组件）。",
-    "uniapp 端项目：platforms 仅 web，可用 reborn-select-date 的时间粒度替代。"
+    "选择日期或日期加时间，改用 reborn-date-picker。",
+    "选择上午、下午等文案时段，改用 reborn-select。",
+    "UniApp 项目改用 reborn-select-date，本组件仅支持 Web。"
   ],
   "pitfalls": [
-    "platforms 仅 web 端提供。",
-    "默认模式用鼠标滚轮切换，arrowControl=true 改为上下箭头调节。",
-    "isRange 时 modelValue 为 string[] 数组，单选时为 string。",
-    "触发器基于 RebornSelectTrigger；portal 默认 true 浮层传送到 body，关闭后随父容器裁剪滚动。"
+    "打开空值面板不会自动写值；点击或滚动选择会即时提交，确定只结束选择。",
+    "手动输入严格匹配 format，非法或被禁用值触发 invalid，不覆盖已提交值。",
+    "allowInput 仅作用于默认单点触发器，范围和自定义触发器通过面板选择。",
+    "此刻按禁用规则校正；没有可选组合则不确认、不写入。",
+    "时间项统一 29px、视口 174px；通过 panelUi 更改行高时应同步 indicator 与 list。",
+    "portal 默认 true，关闭后浮层可能被父容器裁剪。",
+    "范围会自动排序，不表示跨午夜的倒序区间。"
   ]
 }

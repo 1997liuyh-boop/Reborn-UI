@@ -272,7 +272,7 @@ function selectPreset(color: string) {
                 <!-- 格式切换按钮：10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量 -->
                 <RebornButton v-for="f in (['hex', 'rgb', 'rgba'] as const)" :key="f" size="sm"
                     :variant="format === f ? 'filled' : 'soft'" :color="format === f ? 'primary' : 'neutral'"
-                    class="px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors" @click="format = f">
+                    class="px-2 py-1 text-[10px] uppercase font-bold rounded-sm transition-colors" @click="format = f">
                     {{ f }}
                 </RebornButton>
             </div>

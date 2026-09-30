@@ -47,17 +47,104 @@ UniApp 端是**固定形态**的移动端搜索框，`v-model` 绑定字符串�
 
 ::
 
-适用场景：
+### 何时使用
 
 - 电商、文档站搜索框，需要历史记录与推荐搜索下拉面板时（Web 端经 `dropdown` 插槽构建）。
 - 按商品属性筛选：把 `RebornSku` 放进 `dropdown` 插槽组合使用（仅 Web）。
 - 需要目录选择器、图片搜索等自定义入口时（Web 端经 `leading` / `trailing` 插槽提供并自行处理交互）。
 - 移动端带相机入口与站点切换的搜索栏（UniApp 端开箱即用）。
 
-不适用场景：
+### 何时不使用
 
-- 普通文本录入改用 `reborn-input`。
-- 从固定选项集中选择改用 `reborn-select`。
+- 普通文本录入、不需要历史记录与下拉面板 —— 改用 `reborn-input`。
+- 从固定选项集中选择 —— 改用 `reborn-select`。
+
+## 用法
+
+以下示例均为 Web 端写法；UniApp 端是固定形态，只有默认插槽可替换相机区域，`v-model` 绑定字符串，见 API 小节。
+
+### 基础用法
+
+不填任何插槽并关闭 `showDropdown`，就只剩一个输入框：回车仍会触发 `search`，非空关键字照常写入历史记录。`v-model` 绑定的是对象，输入文本在 `inputValue` 字段。
+
+```vue
+<script setup lang="ts">
+const keyword = ref({ inputValue: "", selectValue: "" });
+</script>
+
+<template>
+  <RebornSearchBox v-model="keyword" :show-dropdown="false" @search="(v) => console.log(v.inputValue)" />
+</template>
+```
+
+### 外置插槽：选择器与搜索按钮
+
+`leading` / `trailing` 与输入框区并列排在控件行里，被外层边框一并围住、高度撑满整行。存在任一外置插槽时外框恒为 `gray-4`，聚焦描边只画在输入框区内，所以点选择器或按钮不会点亮描边。`trailing` 作用域透出 `search()`，自定义按钮调用即可触发搜索。
+
+```vue
+<template>
+  <RebornSearchBox v-model="keyword" size="md" shape="square" :show-dropdown="false">
+    <template #leading>
+      <RebornSelect v-model="keyword.selectValue" :options="sources" :bordered="false" @click.stop />
+    </template>
+    <template #trailing="{ search }">
+      <RebornButton size="md" @click.stop="search">搜索</RebornButton>
+    </template>
+  </RebornSearchBox>
+</template>
+```
+
+### 内置插槽：输入框内图标
+
+`input-leading` / `input-trailing` 转发到内部 `RebornInput` 的 `prefix` / `suffix`，内容落在输入框内部、贴着文本排布，并随输入框一起进入激活态；作用域比外置插槽多一个 `inputUi`，可复用输入框自身的样式键。
+
+```vue
+<template>
+  <RebornSearchBox v-model="keyword" size="md" :show-dropdown="false">
+    <template #input-leading>
+      <Icon name="lucide:search" />
+    </template>
+    <template #input-trailing>
+      <Icon name="lucide:camera" class="cursor-pointer" @click.stop="openCamera" />
+    </template>
+  </RebornSearchBox>
+</template>
+```
+
+### 形状与输入框属性透传
+
+`shape` 取 `circle`（默认，胶囊）或 `square`（不分尺寸统一 `rounded-md`）；底色卡片上半圆角随之与输入框对齐，下拉面板只保留下半圆角。`inputAttrs` 整体 v-bind 到内部 `RebornInput`，但 `variant` 恒为 `borderless` 不可覆盖，`size` / `color` / `placeholder` 等显式 prop 优先级更高。
+
+| `shape` | 外观 | 典型用途 |
+| --- | --- | --- |
+| `circle` | 胶囊，两端全圆 | 首页、导航栏里的独立搜索入口 |
+| `square` | 6px 圆角 | 与表单、筛选条等直角控件并排时保持轮廓一致 |
+
+```vue
+<template>
+  <RebornSearchBox v-model="keyword" shape="square" :input-attrs="{ maxlength: 20 }">
+    <template #dropdown="{ selectRecommend }">
+      <div v-for="item in hot" :key="item" @click="selectRecommend(item)">{{ item }}</div>
+    </template>
+  </RebornSearchBox>
+</template>
+```
+
+### 下拉面板：SKU 属性筛选
+
+面板内容完全来自 `dropdown` 插槽，组件只负责聚焦展开、高度过渡与失焦收起。把 `RebornSku` 放进去即可组成属性筛选面板；筛选结果可直接并入 `v-model` 对象的扩展字段，`search` 触发时一并带出。
+
+```vue
+<template>
+  <RebornSearchBox v-model="query" size="lg" @search="onSearch">
+    <template #dropdown>
+      <RebornSku v-model="query" :options="skuOptions" @click.stop />
+    </template>
+  </RebornSearchBox>
+</template>
+```
+
+`dropdown` 作用域还透出 `history` 与 `selectHistory` / `removeHistoryItem` / `clearHistory` / `selectRecommend`，历史记录面板由这些方法自行拼装。
 
 ## API
 
@@ -81,7 +168,7 @@ UniApp 端是**固定形态**的移动端搜索框，`v-model` 绑定字符串�
 | `saveHistory` | `(history: string[]) => void` | `undefined` | 自定义保存历史记录的方法，不传时写入 `localStorage`。 |
 | `removeHistory` | `() => void` | `undefined` | 自定义清空历史记录的方法，不传时清除 `localStorage`。 |
 | `class` | `any` | `undefined` | 追加到根节点的自定义类名。 |
-| `ui` | `SearchBoxUi` | `{}` | 组件自身 UI 覆盖，见下方「自定义样式（ui）」。 |
+| `ui` | `SearchBoxUi` | `{}` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 | `inputUi` | `InputUi` | `{}` | 内部 `RebornInput` 的 UI 覆盖（键见 `reborn-input`）。 |
 | `inputAttrs` | `Partial<InputProps>` | `undefined` | v-bind 透传给内部 `RebornInput` 的属性；`variant` 不可覆盖（恒为 `borderless`，外层边框统一由控件行承担），`size` / `color` / `shape` / `placeholder` 等显式 prop 优先级更高。 |
 
@@ -95,7 +182,7 @@ UniApp 端独有、Web 端没有的 props：`mode`、`skuAttributes`、`placehol
 | `placeholder` | `string` | `"请输入搜索内容"` | 占位文本。 |
 | `size` | `"sm" \| "md" \| "lg"` | `"sm"` | 尺寸大小；仅影响转发给内部输入框的图标字号与图标间距（`md` 与 `lg` 取值相同），高度由 `RebornInput` 的尺寸体系承担。 |
 | `color` | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"` | 主题颜色；仅作用于「原/译」切换卡片的激活态边框与文字色。 |
-| `rounded` | `boolean` | `true` | 是否使用圆角（药丸形）外观，映射为内部输入框的 `shape`（`circle` / `square`）。实际圆角受内部 `!rounded-2xl` 覆盖影响，见上方「圆角与外观」。 |
+| `rounded` | `boolean` | `true` | 是否使用圆角（药丸形）外观，映射为内部输入框的 `shape`（`circle` / `square`）。实际圆角受内部 `!rounded-ui-base` 覆盖影响，见「注意事项」。 |
 | `border` | `boolean` | `false` | 是否显示输入框边框，映射为内部输入框的 `variant`（`outlined` / `filled`）。 |
 | `clearable` | `boolean` | `true` | 是否显示一键清空按钮。 |
 | `disabled` | `boolean` | `false` | 是否禁用输入。 |
@@ -189,23 +276,33 @@ UniApp 端**只有默认插槽**：`leading` / `trailing` / `input-leading` / `i
 ### 自定义样式（ui）
 
 ::warning
-`ui` / `inputUi` 是 **Web 端专属**，UniApp 端不接受这两个属性，样式定制只能经 `customClass` 追加根节点类名。
+`ui` / `inputUi` 是 **Web 端专属**。UniApp 端的 config 虽然声明了 `wrapper` / `translateWrapper` / `translateCardBase` / `translateCardActive` / `translateCardInactive` / `trailing` / `separator` / `cameraIcon` / `siteSelector` 九个样式槽，但组件没有 `ui` prop，这些槽只供内部使用，外部定制只能经 `customClass` 追加根节点类名。
 ::
 
-Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
+Web 端 `ui` 按 `SearchBoxUi` 的键覆盖对应节点类名，覆盖类经 `cn` 合并在默认类之后：
 
-| 键名              | 说明                                                                                                             |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `wrapper`         | 根容器。                                                                                                         |
-| `backdropCard`    | 展开状态下的底色卡片。                                                                                           |
-| `control`         | 控件行：横向排布「外置前置插槽 + 输入框区 + 外置后置插槽」，承担**外层边框**；无外置插槽时聚焦高亮也落在这一层。 |
-| `inputWrapper`    | 输入框区（结构层，承担水平内边距；有外置插槽时聚焦描边以 `::before` 覆盖层画在这一层内）。                       |
-| `dropdownOuter`   | 下拉面板外层（负责高度过渡动画）。                                                                               |
-| `dropdown`        | 下拉面板内容容器。                                                                                               |
-| `leadingWrapper`  | 外置前置区（高度撑满整行，内容自身居中）。                                                                       |
-| `trailingWrapper` | 外置后置区（高度撑满整行，内容自身居中）。                                                                       |
+| 键名 | 说明 |
+| --- | --- |
+| `wrapper` | 根容器，默认 `relative z-10`；`class` prop 也合并到这一层。 |
+| `backdropCard` | 展开时出现的底色卡片，默认 `absolute` 外扩 6px、`bg-gray-1`、上方投影、`pointer-events-none`，圆角随 `shape`（`rounded-full` / `rounded-md`）。**始终渲染**，收起时靠内联 `opacity: 0` 隐藏；高度由内联 style 按控件行高度 +12px 写死，`ui.backdropCard` 里的高度类会被覆盖。 |
+| `control` | 控件行，默认 `flex items-stretch flex-1 relative z-20 border border-gray-4`，承担外层边框；圆角与 `clip-path` 随 `shape`。无外置插槽时聚焦边框色也落在这一层（`color` 对应色族 5 阶）。 |
+| `inputWrapper` | 输入框区，默认 `flex items-center flex-1 min-w-0 relative`，水平内边距随 `size`（8px / 12px / 12px）。存在外置插槽时额外挂上 `::before` 聚焦描边覆盖层，改圆角或描边需用 `before:` 前缀类。 |
+| `dropdownOuter` | 下拉面板外层，默认 `absolute overflow-hidden transition-[height] drop-shadow-xl`，负责高度过渡。高度、`top`、`pointer-events` 由内联 style 驱动，同名类无效。 |
+| `dropdown` | 下拉面板内容容器，默认 `bg-gray-1 py-4 px-5 flex flex-col gap-6`，下半圆角随 `shape`。`padding-top` 与淡入位移由内联 style 驱动；**即使不传 `dropdown` 插槽也会渲染空容器**，只是 `showDropdown=false` 时不会展开。 |
+| `leadingWrapper` | 外置前置区包裹层，默认 `flex items-center shrink-0`。**仅在传入 `leading` 插槽时渲染**，点击会收起面板并阻止冒泡。 |
+| `trailingWrapper` | 外置后置区包裹层，默认 `flex gap-x-[24px] items-center shrink-0`。**仅在传入 `trailing` 插槽时渲染**。 |
 
-另有 `inputUi`（键见 `reborn-input`）用于覆盖内部输入框样式。外层边框落在 `control` 这一层，默认 `border-gray-4`；激活态由组件内部的 `focus` / `blur` 事件维护，而非 CSS `focus-within`，因此点中 `leading` 里的 `RebornSelect` 等可聚焦元素不会点亮任何描边。聚焦描边画在哪一层由**有无外置插槽**决定：无外置插槽时直接把 `control` 的边框换成 `color` 对应色族 5 阶（primary→brand-5、success→green-5 …）；有外置插槽时 `control` 恒为 `gray-4`，改由 `inputWrapper` 的 `::before` 覆盖层在输入框区内画一圈同色描边（绝对定位、`inset-0` 撑满输入框区、不参与布局，只在未接触外置插槽的一侧保留圆角，圆角随 `shape` 对齐）。组件样式统一走浅色令牌，不内置 `dark:` 前缀样式；需要深色适配时经 `ui` / `inputUi` 覆盖。
+`inputUi` 的键见 `reborn-input`，其中 `wrapper` / `icon` / `iconBox` 三键会先叠上搜索框按尺寸给出的覆盖（`px-0!`、图标字号与间距），再合并你传入的值。外层边框的激活态由组件内部 `focus` / `blur` 事件维护而非 CSS `focus-within`，因此点中 `leading` 里的 `RebornSelect` 等可聚焦元素不会点亮描边。组件不内置 `dark:` 前缀样式，深色适配需经 `ui` / `inputUi` 覆盖。
+
+```vue
+<template>
+  <RebornSearchBox
+    v-model="keyword"
+    :ui="{ control: 'border-gray-3', inputWrapper: 'px-4', dropdown: 'gap-3 px-3' }"
+    :input-ui="{ base: 'text-base' }"
+  />
+</template>
+```
 
 ### 设计令牌
 
@@ -231,14 +328,14 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 | 项目            | 取值            | 说明                                                   |
 | :-------------- | :-------------- | :----------------------------------------------------- |
 | 「原/译」切换区 | `64rpx × 64rpx` | 切换按钮的点击区                                       |
-| 切换卡片        | `32rpx × 32rpx` | 单张卡片，字号 `18rpx`、圆角 `rounded-lg`、2px 描边 |
+| 切换卡片        | `32rpx × 32rpx` | 单张卡片，字号 `18rpx`、圆角 `rounded-ui-sm`、2px 描边 |
 | 卡片位移动画    | `300ms`         | 切换时两张卡片互换层级与位移                           |
 | 分隔线          | `1px` 宽 / 半高 | `bg-gray-4`                                            |
 | 相机图标        | `48rpx`         | 默认插槽未覆盖时的 `i-lucide-camera` 字号              |
 | 前置放大镜      | `38 × 38`       | 内置远程图片，`mode="widthFix"`                        |
 | 站点选择器图标  | `30px` / `14px` | 站点图标与展开箭头，均为内置远程图片                   |
 
-`size` 只影响转发给输入框的图标字号（sm 较小、md 与 lg 相同）与图标间距；输入框 `wrapper` 被内部固定为 `bg-gray-3/80` + `!rounded-2xl`。
+`size` 只影响转发给输入框的图标字号（sm 较小、md 与 lg 相同）与图标间距；输入框 `wrapper` 被内部固定为 `bg-gray-3/80` + `!rounded-ui-base`。
 :::
 
 ::
@@ -254,14 +351,14 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 | 可用插槽          | `leading` / `trailing` / `input-leading` / `input-trailing` / `dropdown`（无默认插槽） | 仅默认插槽                                                     |
 | 下拉面板          | 已实现，内容由 `dropdown` 插槽提供                                                     | 未实现（`showDropdown` 声明保留）                              |
 | 外形属性          | `shape`（circle / square）                                                             | `rounded` / `border` 两个布尔量映射到输入框                    |
-| 圆角实际来源      | `shape` 变体                                                                           | 内部 `!rounded-2xl` 覆盖（`rounded` 不改观感）             |
+| 圆角实际来源      | `shape` 变体                                                                           | 内部 `!rounded-ui-base` 覆盖（`rounded` 不改观感）         |
 | 边框归属          | 外层边框在控件行，内部输入框恒 `borderless`                                            | 边框由输入框自身的 `variant` 承担                              |
 | 聚焦高亮          | 由 `focus` / `blur` 维护，分「点亮控件行」与「输入框区 `::before` 另起一圈」两种画法   | 交由 `RebornInput` 自身的聚焦样式                              |
 | `search` 触发方式 | 回车、`trailing` 作用域 `search()`、选中历史                                           | 键盘确认键（`confirm`）                                        |
 | `search` 后置动作 | 收起面板 + 输入框失焦                                                                  | `uni.hideKeyboard()`                                           |
 | 相机事件          | 无（经插槽自行处理点击）                                                               | `clickCamera`                                                  |
 | `selectSku` 事件  | 不声明                                                                                 | 声明保留，未触发                                               |
-| 样式覆盖          | `class` / `ui` / `inputUi` / `inputAttrs`                                              | 仅 `customClass`                                               |
+| 样式覆盖          | `class` / `ui`（8 键）/ `inputUi` / `inputAttrs`                                       | 仅 `customClass`（无 `ui` prop）                               |
 | 历史记录存储      | `localStorage`                                                                         | `uni.setStorageSync`                                           |
 | 清空历史          | `clearHistory()`（`dropdown` 作用域）+ `removeHistory` 回调                            | 无入口（`removeHistory` 不会被调用）                           |
 | 内置装饰          | 无                                                                                     | 放大镜图片、原/译切换、分隔线、站点选择器 + `RebornPopup` 弹层 |
@@ -276,7 +373,7 @@ Web 端 `ui` 属性按 `SearchBoxUi` 的键覆盖对应节点类名：
 - **Web 端激活高亮只认输入框的焦点，且分两种画法**：无外置插槽时聚焦换掉控件行的边框色；有外置插槽时控件行恒为 `gray-4`，改在输入框区内用 `::before` 覆盖层另起一圈——两种情况下点中 `leading` 里的 `RebornSelect`、`trailing` 里的按钮都不会出现描边。
 - **Web 端插槽分两族、决定内容落在输入框内还是外**：`input-leading` / `input-trailing` 转发到 `RebornInput` 的 `prefix` / `suffix`，内容贴着输入文本排布；`leading` / `trailing` 与输入框区并列排在控件行里，间距按尺寸取 8px / 12px。
 - **UniApp 端有 4 个声明保留的 props**：`mode`、`showDropdown`、`skuAttributes`、`removeHistory` 当前实现均未消费，传值不会有任何效果；`selectSku` 事件同样声明保留、尚未触发。请不要依赖它们。
-- **UniApp 端的圆角不随 `rounded` 变化**：内部对输入框 `wrapper` 追加了 `!rounded-2xl`，优先级高于 `rounded` 映射出的 `shape` 圆角。
+- **UniApp 端的圆角不随 `rounded` 变化**：内部对输入框 `wrapper` 追加了 `!rounded-ui-base`，优先级高于 `rounded` 映射出的 `shape` 圆角。
 - 下拉面板与 SKU 组合仅 Web 端可用；UniApp 端的 `shape` / `ui` / `inputUi` / `inputAttrs` 属性不存在。
 - 历史记录 key 两端一致（`reborn-search-history`，最多保留 10 条）；即便面板不展示历史，`search` 仍会把非空关键字写入历史。
 - Web 端内部只组合 `RebornInput`，可通过 `inputUi` / `inputAttrs` 透传定制；选择器等内容一律经 `leading` 插槽由使用方组合。

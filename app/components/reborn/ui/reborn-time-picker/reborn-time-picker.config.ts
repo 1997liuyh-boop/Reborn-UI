@@ -1,17 +1,19 @@
 const sizes = ["sm", "md", "lg"] as const;
 const colors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
 
-export { sizes as timePickerSizes, colors as timePickerColors };
+export { colors as timePickerColors, sizes as timePickerSizes };
 
 export default {
   slots: {
     wrapper: "relative inline-flex w-full group outline-none",
     trigger: "",
-    triggerText: "truncate text-gray-8 dark:text-gray-1 flex-1",
-    placeholder: "truncate text-gray-4 dark:text-gray-5 flex-1",
+    input:
+      "min-w-0 w-full flex-1 bg-transparent text-gray-9 outline-none [font:inherit] placeholder:text-gray-5 disabled:cursor-not-allowed disabled:text-gray-5",
+    triggerText: "truncate text-gray-9 flex-1",
+    placeholder: "truncate text-gray-5 flex-1",
     dropdown: "",
-    rangeText: "flex items-center gap-2 truncate w-full",
-    separator: "shrink-0 text-gray-4 dark:text-gray-5",
+    rangeText: "flex items-center gap-2 truncate w-full text-center",
+    separator: "shrink-0 text-gray-5",
   },
   variants: {
     size: {

@@ -51,8 +51,35 @@ export interface CalDay {
   isDisabledBand: boolean;
 }
 
+/** default 插槽的作用域参数：年 / 月 / 季度 / 日期四种视图的单元格统一成同一结构 */
+export interface DatePickerCell {
+  /** 单元格所属视图 */
+  type: "year" | "month" | "quarter" | "date";
+  /** 默认显示的数字：年份 / 月份（1-12）/ 季度号（1-4）/ 日 */
+  text: number;
+  /** 单元格代表的日期：年、月、季度取其首日 */
+  date: Date;
+  /** 是否不可选 */
+  disabled: boolean;
+  /** 是否为选中项（范围类型仅首尾两端） */
+  selected: boolean;
+  /** 是否落在范围之内（含悬停预览） */
+  inRange: boolean;
+  /** 是否为今天 / 本月 / 本季度 / 今年 */
+  isToday: boolean;
+  /** 是否为补位格：日期视图的上下月、年份视图的十年页之外 */
+  outside: boolean;
+}
+
 const scrollbarHide =
   "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
+
+/**
+ * 面板内嵌时间选择器的浮层标记类。
+ * 时间浮层传送到 body，不在面板 DOM 里；面板再被套进另一层浮层（如 reborn-date-picker）时，
+ * 外层会把「点时间选项」判成外部点击而收起。外层用 closest 命中此类即可放行。
+ */
+export const DATE_PANEL_NESTED_OVERLAY_CLASS = "rb-date-panel-nested-overlay";
 
 export {
   activeTypes as datePickerActiveTypes,
@@ -76,11 +103,20 @@ export default {
     navBtn:
       "flex items-center rounded-md hover:bg-gray-2 transition-colors cursor-pointer text-gray-6",
     navBtnHidden: "opacity-0 pointer-events-none",
+    /** 翻页按钮不可用（取消联动时两侧面板已相邻，再翻就会交叉） */
+    navBtnDisabled: "opacity-40 cursor-not-allowed hover:bg-transparent",
     /** 标题：14px / 500 字重 / 标题色 */
     title: "text-base font-medium text-gray-10 cursor-pointer hover:text-primary transition-colors",
     /** 星期表头：与日期格同宽同高，保证两套栅格逐列对齐；上 8px 下 12px 与头部/日期网格拉开间距 */
     weekdays: "grid grid-cols-7 justify-items-center text-sm text-gray-6 px-[20px] pt-[8px] pb-[12px]",
     weekday: "size-[30px] flex items-center justify-center",
+    /** 周数列表头：与星期表头同尺寸，位于第一列 */
+    weekNumberHeader: "size-[30px] flex items-center justify-center",
+    /**
+     * 周数格：占日期网格第一列，高度等于日期格的布局高度（30px），不参与范围带子，
+     * 用弱化的文字色与日期区分。
+     */
+    weekNumber: "flex h-[30px] w-full items-center justify-center text-sm text-gray-5",
     /**
      * 日期网格：行距 12px。列宽由 grid-cols-7 均分，日期格固定 30px 居中，
      * 左右间隔靠列宽富余实现（min-w 保证每列 ≥ 42px），相邻两格之间因此空出 12px——
@@ -155,6 +191,17 @@ export default {
     panelRight: "flex-1",
     /** 翻页图标：16px */
     icon: "transition-all size-[16px]",
+    /**
+     * 底部「今天」栏（show-today 开启时渲染）：14px、行高 150%、上下 8px，顶部 1px 分隔线。
+     * 文字色跟随 color 变体。
+     */
+    footer:
+      "text-base leading-[1.5] py-[8px] text-center border-t border-gray-2 cursor-pointer transition-opacity hover:opacity-80",
+    /**
+     * 「今天」不可选（落在禁用范围内）时合并进 footer：转 gray-5 并换禁用光标，悬停不再变淡。
+     * 由脚本以 class 形式传给 footer 走同一次合并，才能压掉 color 变体给的主题色。
+     */
+    footerDisabled: "text-gray-5 cursor-not-allowed hover:opacity-100",
   },
   variants: {
     border: {
@@ -200,11 +247,11 @@ export default {
      */
     activeType: {
       fill: {
-        day: "rounded-[4px]",
-        yearMonthItem: "rounded-[4px]",
-        dayActive: "rounded-[4px]",
-        dayRangeStart: "rounded-l-[4px]",
-        dayRangeEnd: "rounded-r-[4px]",
+        day: "rounded-sm",
+        yearMonthItem: "rounded-sm",
+        dayActive: "rounded-sm",
+        dayRangeStart: "rounded-l-sm",
+        dayRangeEnd: "rounded-r-sm",
         // 范围中间项的浅色底直接画在 yearMonthItem 上，必须压掉它自带的圆角才能连成不断的直带
         yearMonthInRange: "rounded-none",
         // 端点内侧圆角压平，与中间项直带无缝相接
@@ -224,18 +271,18 @@ export default {
         yearMonthRangeEnd: "rounded-l-none",
       },
       outline: {
-        day: "rounded-[4px]",
-        yearMonthItem: "rounded-[4px]",
-        dayActive: "rounded-[4px] border",
-        dayRangeStart: "rounded-l-[4px]",
-        dayRangeEnd: "rounded-r-[4px]",
+        day: "rounded-sm",
+        yearMonthItem: "rounded-sm",
+        dayActive: "rounded-sm border",
+        dayRangeStart: "rounded-l-sm",
+        dayRangeEnd: "rounded-r-sm",
         // 同 fill：中间项浅色底拉直
         yearMonthInRange: "rounded-none",
         yearMonthRangeStart: "rounded-r-none",
         yearMonthRangeEnd: "rounded-l-none",
       },
       // 仅文字类型的选中项没有底色，圆角只影响悬停底
-      text: { day: "rounded-[4px]", yearMonthItem: "rounded-[4px]" },
+      text: { day: "rounded-sm", yearMonthItem: "rounded-sm" },
     },
     dual: {
       true: {
@@ -251,6 +298,14 @@ export default {
       true: { wrapper: "min-w-50" },
       false: { wrapper: "" },
     },
+    /**
+     * 显示周数：星期表头与日期网格都多出第一列放周数，列数 7 → 8。
+     * 最小宽度按 8 列重算：42px × 8 + 左右内边距 40 = 376；sm / lg 档见复合变体。
+     */
+    weekNumber: {
+      true: { weekdays: "grid-cols-8", days: "grid-cols-8 min-w-[376px]" },
+      false: {},
+    },
     size: {
       // md 为设计规范基准档（日期格 30px、字号 14px）；sm / lg 等比缩放。
       sm: {
@@ -258,6 +313,8 @@ export default {
         // 26px 日期格 + 上下各 4px 带子超出
         dayCell: "h-[34px]",
         weekday: "size-[26px] text-sm",
+        weekNumberHeader: "size-[26px] text-sm",
+        weekNumber: "h-[26px]",
         // 端点带子宽度按 26px 档换算：半格 13px + 外侧超出 4px
         dayRangeStart: "w-[calc(50%+17px)]",
         dayRangeEnd: "w-[calc(50%+17px)]",
@@ -269,6 +326,8 @@ export default {
         yearMonthItem: "h-[26px] text-sm",
         title: "text-sm",
         icon: "size-[14px]",
+        // 换字号会被 twMerge 连带清掉行高，这里重申 150%
+        footer: "text-sm leading-[1.5]",
       },
       md: {},
       lg: {
@@ -276,6 +335,8 @@ export default {
         // 34px 日期格 + 上下各 4px 带子超出
         dayCell: "h-[42px]",
         weekday: "size-[34px] text-lg",
+        weekNumberHeader: "size-[34px] text-lg",
+        weekNumber: "h-[34px] text-lg",
         // 端点带子宽度按 34px 档换算：半格 17px + 外侧超出 4px
         dayRangeStart: "w-[calc(50%+21px)]",
         dayRangeEnd: "w-[calc(50%+21px)]",
@@ -287,16 +348,21 @@ export default {
         yearMonthItem: "h-[34px] text-lg",
         title: "text-lg",
         icon: "size-[18px]",
+        footer: "text-lg leading-[1.5]",
       },
     },
     color: {
-      primary: { dayToday: "text-primary", title: "hover:text-primary" },
-      secondary: { dayToday: "text-secondary", title: "hover:text-secondary" },
-      success: { dayToday: "text-success", title: "hover:text-success" },
-      info: { dayToday: "text-info", title: "hover:text-info" },
-      warning: { dayToday: "text-warning", title: "hover:text-warning" },
-      error: { dayToday: "text-error", title: "hover:text-error" },
-      neutral: { dayToday: "text-gray-6", title: "hover:text-gray-6" },
+      primary: { dayToday: "text-primary", title: "hover:text-primary", footer: "text-primary" },
+      secondary: {
+        dayToday: "text-secondary",
+        title: "hover:text-secondary",
+        footer: "text-secondary",
+      },
+      success: { dayToday: "text-success", title: "hover:text-success", footer: "text-success" },
+      info: { dayToday: "text-info", title: "hover:text-info", footer: "text-info" },
+      warning: { dayToday: "text-warning", title: "hover:text-warning", footer: "text-warning" },
+      error: { dayToday: "text-error", title: "hover:text-error", footer: "text-error" },
+      neutral: { dayToday: "text-gray-6", title: "hover:text-gray-6", footer: "text-gray-6" },
     },
   },
   /**
@@ -557,6 +623,11 @@ export default {
         yearMonthInRange: "text-gray-6",
       },
     },
+    // ---- 周数列 × 尺寸：8 列网格的最小宽度随日期格尺寸换算 ----
+    // size 变体里的 days min-w 按 7 列写死，显示周数时需在其后覆盖
+    { weekNumber: true, size: "sm", class: { days: "min-w-[344px]" } },
+    { weekNumber: true, size: "md", class: { days: "min-w-[376px]" } },
+    { weekNumber: true, size: "lg", class: { days: "min-w-[408px]" } },
     // ---- 整面板禁用 ----
     // 放在最后：color 变体给标题上了 hover:text-xxx，复合变体在其后合并，才能把悬停色压回 gray-4
     {
@@ -565,6 +636,8 @@ export default {
         title: "text-gray-4 cursor-not-allowed hover:text-gray-4",
         // 「今天」的主题色强调也收掉，与其余禁用格保持同一灰度
         dayToday: "text-gray-5 font-normal",
+        // 底部「今天」栏同理：压掉 color 变体的主题色
+        footer: "text-gray-5 cursor-not-allowed hover:opacity-100",
       },
     },
   ] as any,

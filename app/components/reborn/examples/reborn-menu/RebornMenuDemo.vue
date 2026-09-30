@@ -388,7 +388,7 @@ const codeString = computed(
     </Playground>
 
     <DemoSection
-      title="布局模式"
+      title="基础用法：垂直与水平布局"
       description="mode 决定主轴方向：vertical 适合侧边导航，horizontal 适合顶栏；菜单自带表面样式，无需再包一层卡片。"
     >
       <DemoBlock
@@ -508,7 +508,7 @@ const codeString = computed(
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="子菜单缩进">
+    <DemoSection title="子菜单缩进：no-indent">
       <template #description>
         平铺展开（<code>expand-type="normal"</code>）时，子菜单默认逐层向右缩进
         16px，层级关系一眼可辨。侧栏窄、层级深的场景里缩进会把文字挤到右侧， 这时用
@@ -563,7 +563,7 @@ const codeString = computed(
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="折叠态文字提示">
+    <DemoSection title="折叠与文字提示">
       <template #description>
         折叠后一级菜单项只剩图标，<code>tooltip</code> 默认开启，悬停时在右侧补回标题；
         内容缺省取菜单项标题，需要不同文案时再传 <code>title</code>（第二项）。
@@ -647,7 +647,7 @@ const codeString = computed(
     </DemoSection>
 
     <DemoSection
-      title="展开模式"
+      title="展开方式：内嵌、浮层与互斥"
       description="expand-type 控制子菜单形态：normal 内嵌下推、popup 浮层弹出；expand-mutex 让同级子菜单互斥展开。"
     >
       <DemoBlock
@@ -877,7 +877,7 @@ const codeString = computed(
     </DemoSection>
 
     <DemoSection
-      title="配置式数据"
+      title="配置式数据：items"
       description="传入 items 即可由组件递归渲染，无需手写嵌套模板；节点类型与 Ant Design 对齐，支持普通项、子菜单、分组（type: 'group'）与分割线（type: 'divider'）。"
     >
       <DemoBlock
@@ -917,7 +917,7 @@ const codeString = computed(
     </DemoSection>
 
     <DemoSection
-      title="溢出折叠"
+      title="溢出折叠：ellipsis"
       description="水平模式下开启 ellipsis，容器放不下的条目会自动收进「更多」子菜单；拖动滑块改变容器宽度即可看到折叠点随之变化。"
     >
       <DemoBlock
@@ -990,7 +990,7 @@ const codeString = computed(
     </DemoSection>
 
     <DemoSection
-      title="配色与样式自定义"
+      title="配色与样式定制"
       description="background-color / text-color / active-text-color 直接改写菜单自身的表面配色；ui 则用于覆盖各插槽类名。"
     >
       <DemoBlock

@@ -40,19 +40,5 @@ const appConfig = useAppConfig()
                 </NuxtLink>
             </div>
         </div>
-
-        <!-- 装饰性导向卡片 -->
-        <div
-            class="relative overflow-hidden rounded-4xl bg-linear-to-br from-primary/10 via-transparent to-secondary/10 p-6 border border-primary/10 dark:border-primary/20 group mt-10">
-            <div class="relative z-10">
-                <h5 class="text-sm font-black text-gray-900 dark:text-white mb-1.5">Reborn Evolution</h5>
-                <p class="text-[11px] text-gray-500 leading-relaxed font-medium">
-                    Join our journey to redefine high-end UI standards.
-                </p>
-            </div>
-            <!-- 背景装饰图标 -->
-            <Icon name="lucide:orbit"
-                class="absolute -right-4 -bottom-4 size-24 text-primary/5 -rotate-12 transition-transform duration-700 group-hover:scale-125 group-hover:rotate-45" />
-        </div>
     </div>
 </template>

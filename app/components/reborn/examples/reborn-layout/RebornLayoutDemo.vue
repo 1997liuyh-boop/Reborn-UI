@@ -168,7 +168,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
     </Playground>
 
     <DemoSection
-      title="常见布局"
+      title="基础用法"
       description="Layout 的直接子元素为 Header / Aside / Main / Footer 中的一个或多个；出现 Header 或 Footer 时自动纵向排列，否则横向。"
     >
       <DemoBlock layout="stack">
@@ -248,7 +248,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
       </DemoNote>
     </DemoSection>
 
-    <DemoSection title="顶部-侧边布局-通栏" description="顶部是通栏的深色导航（水平菜单），下方左侧为子导航菜单、右侧为内容区。适合顶级导航 + 二级导航的经典后台骨架。">
+    <DemoSection title="顶部通栏 + 侧边子导航" description="顶部是通栏的深色导航（水平菜单），下方左侧为子导航菜单、右侧为内容区。适合顶级导航 + 二级导航的经典后台骨架。">
       <DemoBlock layout="stack">
         <div :class="tallBoxClass">
           <RebornLayout class="h-full">
@@ -301,7 +301,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="侧边布局" description="深色侧边栏通高、可收起（collapsible），右侧为顶栏 + 内容 + 底栏。收起后菜单进入折叠态，只显示图标。">
+    <DemoSection title="侧边布局：可收起侧栏" description="深色侧边栏通高、可收起（collapsible），右侧为顶栏 + 内容 + 底栏。收起后菜单进入折叠态，只显示图标。">
       <DemoBlock layout="stack">
         <div :class="tallBoxClass">
           <RebornLayout has-sider class="h-full">
@@ -338,7 +338,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
     </DemoSection>
 
     <DemoSection
-      title="自定义触发器"
+      title="折叠触发器：插槽与外部控制"
       description="trigger 插槽（参数 collapsed）替换默认箭头；prop trigger 设为 null 隐藏触发器，改由外部按钮通过 v-model:collapsed 控制。collapse 事件区分 clickTrigger 与 responsive 两种来源。"
     >
       <DemoBlock layout="grid" align="start">
@@ -426,7 +426,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
     </DemoSection>
 
     <DemoSection
-      title="折叠覆盖布局"
+      title="零宽收起与右侧侧栏"
       description="collapsedWidth 为 0 时侧边栏完全收起，特殊触发器悬浮覆盖在内容区上（样式可用 zero-width-trigger-style 定制）；侧边栏在右侧时用 reverse-arrow 让触发器贴左外缘。"
     >
       <DemoBlock layout="grid" align="start">
@@ -495,7 +495,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
       </DemoNote>
     </DemoSection>
 
-    <DemoSection title="固定头部 + 固定侧边栏" description="Main 自带独立滚动（overflow-auto），因此顶栏与侧边栏天然固定：长内容只在内容区内滚动，头部与菜单保持原位。">
+    <DemoSection title="固定头部与侧栏：主区独立滚动" description="Main 自带独立滚动（overflow-auto），因此顶栏与侧边栏天然固定：长内容只在内容区内滚动，头部与菜单保持原位。">
       <DemoBlock layout="stack">
         <div :class="tallBoxClass">
           <RebornLayout class="h-full">
@@ -527,7 +527,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="显式指定方向" description="direction 会覆盖自动推断。下面两组子元素完全相同，只是方向不同。">
+    <DemoSection title="排列方向：显式覆盖推断" description="direction 会覆盖自动推断。下面两组子元素完全相同，只是方向不同。">
       <DemoBlock layout="grid" align="start">
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium"><code>direction="vertical"</code>（含 Header，与自动推断一致）</span>
@@ -559,7 +559,7 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸定制" description="Header / Footer 用 height，Aside 用 width，接受任意合法 CSS 长度（px、rem、百分比、auto）。">
+    <DemoSection title="尺寸：顶栏高度与侧栏宽度" description="Header / Footer 用 height，Aside 用 width，接受任意合法 CSS 长度（px、rem、百分比、auto）。">
       <DemoBlock layout="stack">
         <div :class="boxClass">
           <RebornLayout class="h-full">
@@ -583,8 +583,8 @@ const flatMenuUi = { root: "rounded-none p-0 shadow-none bg-transparent dark:bg-
     </DemoSection>
 
     <DemoSection
-      title="样式覆盖"
-      description="每个组件都支持 class 与 ui；ui 的键名与内部 slot 同名（root / header / aside / main / footer）。"
+      title="自定义样式：class 与 ui"
+      description="每个组件都支持 class 与 ui；ui 的键名与内部 slot 同名，各组件只认自己的键（Layout 为 root，Header 为 header，Main 为 main，Footer 为 footer，Aside 另有 asideContent / trigger / zeroTrigger）。"
     >
       <DemoBlock layout="stack">
         <div :class="boxClass">

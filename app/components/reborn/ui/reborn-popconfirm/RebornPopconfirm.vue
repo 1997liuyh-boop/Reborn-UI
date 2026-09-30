@@ -3,7 +3,7 @@ import type { ClassValue } from 'tailwind-variants';
 import type { ButtonProps } from '../reborn-button/RebornButton.vue';
 import type { PopoverContentProps, PopoverProps } from '../reborn-popover/RebornPopover.vue';
 import type { PopconfirmUi } from './reborn-popconfirm.config';
-import type { Placement, PlacementAlias } from '~/lib/placement';
+import type { Placement } from '~/lib/placement';
 import { computed, nextTick, ref } from 'vue';
 import { resolvePlacement } from '~/lib/placement';
 import { tv } from '~/lib/tv';
@@ -38,8 +38,8 @@ defineSlots<{
   footer?: (props: { confirm: () => void; cancel: () => void }) => unknown;
 }>();
 
-/** 气泡方位取值，与 reborn-tooltip 的 placement 完全一致（含驼峰别名）。 */
-export type PopconfirmPlacement = Placement | PlacementAlias;
+/** 气泡方位取值，与 reborn-tooltip 的 placement 完全一致。 */
+export type PopconfirmPlacement = Placement;
 
 export interface PopconfirmProps {
   /** 标题文字，14px 标题色（gray-10）。 */
@@ -58,7 +58,7 @@ export interface PopconfirmProps {
   hideCancel?: boolean;
   /** 确认按钮加载中；加载时点击确认不会自动关闭气泡，配合 v-model:open 做异步确认。 */
   loading?: boolean;
-  /** 出现方向与对齐方式，同时接受驼峰命名别名（topLeft 等），取值与 reborn-tooltip 一致；默认 top（触发器上方居中）。 */
+  /** 出现方向与对齐方式，取值与 reborn-tooltip 一致；默认 top（触发器上方居中）。 */
   placement?: PopconfirmPlacement;
   /** 气泡与触发器的间距（px）。 */
   sideOffset?: number;

@@ -157,6 +157,9 @@ const codeExtras = ['@change="handleChange"'];
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 // 各 section 独立持有绑定值，避免调整一处示例牵连其他示例
+// 基础用法
+const basicValue = ref(5);
+
 const shapeValue = ref(5);
 const variantValue = ref(12);
 const layoutValue = ref(5);
@@ -272,9 +275,25 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </div>
     </Playground>
 
-    <DemoSection title="外形 shape">
+    <DemoSection title="基础用法">
       <template #description>
-        <code>shape</code> 控制外框圆角：circle 胶囊 / square 方角。
+        <code>v-model</code> 绑定数值，<code>min</code> / <code>max</code> 限定边界，<code>step</code> 决定每次增减的幅度；到达边界时对应按钮自动禁用。
+      </template>
+      <DemoBlock layout="grid" :columns="2" align="start">
+        <DemoItem label="min=0 max=20 step=5" mono>
+          <RebornInputNumber
+            v-model="basicValue"
+            :min="0"
+            :max="20"
+            :step="5"
+          />
+        </DemoItem>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="形状：shape">
+      <template #description>
+        <code>shape</code> 控制外框圆角：circle 胶囊 / square 按尺寸取 sm / md / lg 圆角。
         注意 <code>variant="underlined"</code> 会强制压平圆角，此时 shape 不再生效。
       </template>
       <DemoBlock layout="grid" :columns="2" align="start">
@@ -284,7 +303,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="形态 variant">
+    <DemoSection title="形态：variant">
       <template #description>
         <code>variant</code> 提供 outlined / filled / borderless / underlined 四种形态。
       </template>
@@ -299,7 +318,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="禁用与只读">
+    <DemoSection title="禁用与只读：disabled / readonly">
       <template #description>
         <code>disabled</code> 整体灰显且不可交互；<code>readonly</code> 可聚焦、可选中复制文本，但键入与按钮增减均被拦截。
       </template>
@@ -314,7 +333,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="数值精度">
+    <DemoSection title="数值精度：precision">
       <template #description>
         <code>precision</code> 指定保留的小数位数。当 precision 小于 step 的小数位时，精度取 step 的小数位，否则步进结果会被截断。
       </template>
@@ -332,7 +351,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="前缀与后缀">
+    <DemoSection title="前缀与后缀插槽：prefix / suffix">
       <template #description>
         <code>#prefix</code> 与 <code>#suffix</code> 插槽在输入框内部添加固定内容，不参与数值解析。
       </template>
@@ -355,7 +374,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="格式化与解析">
+    <DemoSection title="格式化与解析：formatter / parser">
       <template #description>
         <code>formatter</code> 决定输入框展示的文本，<code>parser</code> 负责在提交前把文本还原为数值，两者必须配对使用；
         按钮步进与键入提交都会经过这对转换。
@@ -377,7 +396,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="自定义增减图标">
+    <DemoSection title="增减图标插槽：minus / plus">
       <template #description>
         <code>#plus</code> 与 <code>#minus</code> 插槽替换增减按钮内的图标，作用域参数 <code>iconClass</code>
         是当前尺寸对应的图标类名。
@@ -407,7 +426,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="绑定值更新时机">
+    <DemoSection title="绑定值更新时机：model-event">
       <template #description>
         默认在失焦或按下 Enter 时更新绑定值；<code>model-event="input"</code> 改为键入时即时更新，
         此时允许临时超出 min / max，失焦时自动修正。
@@ -423,7 +442,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="步进倍数与按钮布局">
+    <DemoSection title="步进倍数与按钮布局：step-strictly / controls-position">
       <template #description>
         <code>step-strictly</code> 只允许步进的倍数，键入非倍数值会在提交时就近吸附；
         <code>controls-position</code> 支持 left / right 上下堆叠，堆叠时按钮默认隐藏，悬停或聚焦时从所在侧滑入；
@@ -448,7 +467,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="键盘与滚轮">
+    <DemoSection title="键盘与滚轮：keyboard / change-on-wheel">
       <template #description>
         <code>keyboard</code> 默认开启，聚焦后按 ↑ / ↓ 即按 step 步进；设为 false 后方向键回归原生文本框行为。
         <code>change-on-wheel</code> 开启鼠标滚轮增减，仅在输入框已聚焦时接管滚动，未聚焦时不影响页面滚动。
@@ -468,7 +487,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="程序化聚焦（focus cursor）">
+    <DemoSection title="程序化聚焦：focus 方法">
       <template #description>
         组件通过 <code>defineExpose</code> 暴露 <code>focus()</code>，可传 cursor 决定焦点落位：start 光标置于文本首，
         end 置于文本尾，all 全选文本。两种调用形式等价：<code>focus('all')</code> 与
@@ -487,7 +506,7 @@ function focusWithCursor(cursor: "start" | "end" | "all") {
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="进阶自定义（ui）">
+    <DemoSection title="自定义样式：ui">
       <template #description>
         <code>ui</code> 可逐槽覆盖 wrapper / input / button / divider / prefix / suffix 的类名。
       </template>

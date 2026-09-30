@@ -9,7 +9,27 @@ badge: New
 ::ComponentViewer{demoFile="RebornMenuDemo.vue" config="RebornMenuConfig" componentId="reborn-menu" :componentFiles='["reborn-menu.config.ts", "RebornMenu.vue", "RebornMenuItem.vue", "RebornMenuItemGroup.vue", "RebornMenuItems.vue", "RebornMenuDivider.vue", "RebornSubMenu.vue"]'}
 ::
 
-# 两种写法
+## 简介
+
+Menu 用于站点的侧边导航与顶部导航，由 `RebornMenu`（容器）、`RebornSubMenu`（子菜单）、`RebornMenuItem`（菜单项）、`RebornMenuItemGroup`（分组）与 `RebornMenuDivider`（分割线）组合而成。该组件仅 Web 端提供。
+
+`mode` 决定主轴方向，`expandType` 决定子菜单是内嵌下推（`normal`）还是浮层弹出（`popup`），`collapse` 把垂直菜单收成只剩图标的窄轨道。选中状态用 `v-model:selected-keys` 维护，存的是从一级到选中项的**完整路径**，祖先条目据此高亮；展开状态用 `v-model:open-keys` 维护。
+
+### 何时使用
+
+- 后台、控制台一类需要多级分类导航的侧栏，层级深时配合 `collapse` 与 `autoScrollIntoView`。
+- 站点顶栏的一级导航，条目数不定时开启 `ellipsis`，放不下的条目收进「更多」。
+- 菜单树来自接口或按权限过滤，用 `items` 配置式数据交给组件递归渲染。
+- 菜单项与路由一一对应，开启 `router` 由点击直接触发跳转。
+
+### 何时不使用
+
+- 同一页面内的内容视图切换 —— 改用 `reborn-tabs`，它不改变路由层级语义。
+- 点击按钮后弹出的一次性操作列表 —— 改用 `reborn-dropdown`，菜单是常驻导航，不适合承载临时操作。
+- 长文档内的章节跳转 —— 改用 `reborn-anchor`。
+- 只展示当前所处位置、不需要切换 —— 改用 `reborn-breadcrumb`。
+
+### 两种写法
 
 菜单支持**插槽式**与**配置式**两种写法，二选一，不要混用：
 
@@ -18,9 +38,528 @@ badge: New
 
 传了 `items` 时默认插槽会被忽略。
 
-# API
+## 用法
 
-## Menu Props
+### 基础用法：垂直与水平布局
+
+`mode="vertical"` 适合侧边导航，`mode="horizontal"` 适合顶栏。菜单自带底色与阴影（落在 `ui.root` 上），不需要再包一层卡片。`selectedKeys` 存完整路径，所以选中「用户管理」后，它所在的「系统管理」也会以祖先态高亮。
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    mode="vertical"
+  >
+    <RebornMenuItem index="1">
+      <template #icon>
+        <Icon
+          name="material-symbols:home"
+          class="size-5"
+        />
+      </template>
+      首页
+    </RebornMenuItem>
+
+    <RebornSubMenu index="2">
+      <template #icon>
+        <Icon
+          name="material-symbols:settings"
+          class="size-5"
+        />
+      </template>
+      <template #title>系统管理</template>
+
+      <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
+      <RebornMenuItem index="2-2">角色管理</RebornMenuItem>
+      <RebornMenuItem index="2-3">权限管理</RebornMenuItem>
+    </RebornSubMenu>
+  </RebornMenu>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import { RebornMenu, RebornSubMenu, RebornMenuItem } from "~/components/reborn/ui/reborn-menu";
+
+// 存的是完整路径，选中「用户管理」时为 ['2', '2-1']
+const selectedKeys = ref(["1"]);
+</script>
+```
+
+#### 水平菜单的交互样式
+
+`mode="horizontal"` 的一级条目走一套独立规则，与垂直菜单不同：
+
+| 场景                | 表现                                                                                                         |
+| :------------------ | :----------------------------------------------------------------------------------------------------------- |
+| 条目间距            | `16px`（`menu` 上的 `gap-x-4`）                                                                              |
+| `hover`             | **图标与文字一起高亮为 `color` 色值，不出现背景块**。图标由 Iconify 以 `currentColor` 填充，跟随文字自动变色 |
+| `active`（选中）    | 文字高亮，同样不加背景块                                                                                     |
+| `active` 且无子菜单 | 额外在底部绘制 `2px` 指示器（`::after`，取 `bg-current` 跟随当前文字色）                                     |
+
+带子菜单的一级项选中时**不画底部指示器**——此时的高亮通常来自子项带来的祖先高亮，再加下划线会与浮层的指向产生冲突。
+
+### 子菜单缩进：no-indent
+
+平铺展开（`expand-type="normal"`）时，子菜单默认每下沉一层向右缩进 16px，层级关系一眼可辨。侧栏窄、层级深时缩进会把文字挤到右侧，这时开启 `no-indent`，各级条目一律左对齐，改由展开箭头与分组标题区分层级。浮层展开本就不缩进，该属性对它没有影响。
+
+缩进落在条目自身的 `padding-left` 上，而不是 `subMenuContent` 容器的外边距，因此 hover 与选中背景块始终铺满整行。
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    v-model:open-keys="openKeys"
+    mode="vertical"
+    expand-type="normal"
+    no-indent
+  >
+    <RebornSubMenu index="content">
+      <template #title>内容管理</template>
+      <RebornMenuItem index="content-list">文章列表</RebornMenuItem>
+      <RebornSubMenu index="content-category">
+        <template #title>分类设置</template>
+        <RebornMenuItem index="content-category-1">一级分类</RebornMenuItem>
+      </RebornSubMenu>
+    </RebornSubMenu>
+  </RebornMenu>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+const selectedKeys = ref<string[]>([]);
+const openKeys = ref<string[]>(["content", "content-category"]);
+</script>
+```
+
+### 折叠与文字提示
+
+`collapse` 只对 `mode="vertical"` 生效，折叠后宽度收到 64px、一级菜单项只剩图标，子菜单强制改为浮层展开。`tooltip` 默认开启，悬停一级菜单项时在右侧补回标题；内容缺省取菜单项的默认插槽，只有提示文案要与标题不同时才需要传 `title`。
+
+```vue
+<template>
+  <div>
+    <button @click="isCollapse = !isCollapse">
+      {{ isCollapse ? "展开" : "折叠" }}
+    </button>
+
+    <RebornMenu
+      v-model:selected-keys="selectedKeys"
+      mode="vertical"
+      :collapse="isCollapse"
+    >
+      <RebornMenuItem
+        index="1"
+        title="首页"
+      >
+        <template #icon>
+          <Icon
+            name="material-symbols:home"
+            class="size-5"
+          />
+        </template>
+        首页
+      </RebornMenuItem>
+
+      <RebornSubMenu index="2">
+        <template #icon>
+          <Icon
+            name="material-symbols:settings"
+            class="size-5"
+          />
+        </template>
+        <template #title>系统管理</template>
+        <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
+      </RebornSubMenu>
+    </RebornMenu>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+const isCollapse = ref(false);
+</script>
+```
+
+> 折叠态下悬停一级菜单项会在右侧弹出标题提示，内容缺省取菜单项的默认插槽，`title` 只在提示文案要与标题不同时才需要传。不需要提示时传 `:tooltip="false"`，此时回落为原生 `title`。
+
+#### 折叠动画
+
+`collapse` 切换时，根容器宽度与条目内容同步过渡（`300ms`，`ease-in-out`）。整套动画的目标是**单向收起**——文字只朝图标那一侧退，左内边距与图标列左边缘全程不动，不会出现「两端往中间挤」的观感：
+
+- **宽度**：折叠宽度以内联样式 `width: 4rem` 下发到 `root`，优先级高于任何 `class`。垂直模式下 `root` 展开态为 `w-full`——宽度插值需要两端都是确定值，`auto → 64px` 不会产生动画。
+- **文字 / 尾注 / 箭头**：折叠态用 `w-0 + opacity-0 + overflow-hidden` 收起，而**不是** `display: none`（`display` 不可过渡，会让文字瞬间消失、宽度动画看起来像卡帧）。
+- **对齐与内边距不参与动画**：折叠态沿用展开态的 `px-4` 与 `items-start` 对齐，**不切 `justify-center`**。`justify-content` 不可过渡，在第 0 帧就会把「图标 + 文字」整组钉到行中线上，之后随容器变窄来回摆动。
+- **图标列定宽**：`menuItemIcon` 是一列固定宽度的盒子，展开态 `w-5`（20px）、折叠态 `w-8`（32px = 轨道 `64px` 减去左右各 `16px` 内边距），图形本身（16px 或 20px）由盒子自身的 `justify-center` 居中。折叠完成时图标正好落在轨道正中。这与 Element Plus 给菜单图标定死 24px 列宽是同一套做法；`min-width` 不能替代 `width`——实际宽度取 `max(图形宽, min-width)`，前段纹丝不动、后段才追上，会与同时收缩的间隙错开相位而产生回摆。
+- **间隙同步归零**：`menuItemContent` 的 `gap-2`（8px）在折叠态收到 `gap-0`。图标列 `20 → 32px` 与间隙 `8 → 0px` 共用同一条曲线，两者之和 `28 → 32px` 严格单调，动画全程内容既不溢出 64px 轨道也不留空。
+
+传 `:collapse-transition="false"` 会一并移除上述所有 `transition`（含图标列宽度与间隙），切换变为瞬时；浮层的展开动画也同时关掉，见「浮层的展开动画」。
+
+::callout{icon="i-lucide-info" color="info"}
+因为折叠宽度走的是内联样式，给 `RebornMenu` 传 `class="w-full max-w-xs"` 之类的宽度类**不会**影响折叠态尺寸，两者可以共存。
+::
+
+#### 折叠态的文字提示
+
+折叠后一级菜单项只剩图标，`tooltip` 默认开启，悬停时在右侧弹出 `RebornTooltip` 补回标题。提示内容优先取 `title`，缺省时取默认插槽，因此大多数菜单**不用额外写任何属性**。
+
+- **只作用于一级菜单项**：折叠只隐藏一级标题；子菜单在折叠态本就以浮层展开，浮层里的条目标题完整可见，再叠一层提示只会遮挡。
+- **展开态不弹提示**：标题已经完整显示。提示组件在两种状态下都挂着，只切换它的 `disabled`——折叠切换时 DOM 结构不变，标题的淡出过渡才不会因节点重建而丢失。
+- **默认向右弹出**：折叠轨道只有 64px 宽，上下弹出会盖住相邻条目。
+
+传对象可调整提示本身，未列出的 `RebornTooltip` 属性不开放：
+
+```ts
+interface MenuTooltipConfig {
+  /** 弹出位置，默认 right */
+  placement?: Placement;
+  /** 背景色 */
+  color?: string;
+  /** 是否显示箭头 */
+  arrow?: boolean | { pointAtCenter?: boolean };
+  /** 鼠标移入后的显示延时（毫秒） */
+  openDelay?: number;
+  /** 鼠标移出后的隐藏延时（毫秒） */
+  closeDelay?: number;
+  /** 浮层层级 */
+  zIndex?: number;
+  /** 浮层挂载容器 */
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
+  /** 提示的样式覆盖，常用 content（面板）与 arrow（箭头）两个键 */
+  ui?: TooltipUI;
+}
+```
+
+不开放 `class`：`RebornTooltip` 的 `class` 落在触发器外壳上而不是浮层上，在这里传只会改到菜单项自身。要改浮层样式请用 `ui.content`。
+
+### 自动滚动到选中项
+
+开启 `autoScrollIntoView` 后，菜单在三个时机把选中项滚到可见区域：首次挂载、`selectedKeys` 变化，以及 `autoScrollIntoView` 从关闭切到开启。适合条目很多、选中项由路由或外部值驱动的侧栏——刷新页面或从别处跳转进来时，高亮项可能落在滚动区域之外。
+
+- **滚动目标**：可见的选中菜单项；它所在的子菜单未展开（或折叠态下只剩一级图标）时，退而滚到被高亮的祖先子菜单标题。滚子菜单时只对齐标题行，不按整棵已展开的子树对齐。
+- **浮层不参与**：浮层子菜单挂载在 `body` 下，不在菜单滚动容器里，滚动它没有意义。
+- **只滚最近的滚动容器**：纵向、横向各自向上找第一个真正可滚动（`overflow` 为 `auto` / `scroll` 且内容溢出）的祖先，只调整它的滚动位置，不会像原生 `scrollIntoView` 那样连带滚动页面——否则菜单一挂载就会把整页拽到菜单所在位置。反过来，菜单没有放进滚动容器、只靠页面滚动时，这个属性不起作用。
+- **默认 `nearest`**：已经可见就不动，只在超出时滚最短距离。`scrollConfig` 的 `block`、`inline` 与原生同义，例如 `{ block: 'center' }` 把选中项滚到容器中间。
+- **滚动动画**：`behavior` 缺省时，挂载那一次直接定位（页面刚渲染就看着列表滚一段像多余的跳动），之后选中项变化用 300ms 的 ease-in-out 平滑滚动；传 `'smooth'` 或 `'instant'` / `'auto'` 则两种时机都按它来。动画由组件自己补间，不走原生平滑滚动——后者的时长和曲线因浏览器而异，关掉系统平滑滚动的环境里还会直接跳到终点。系统开启「减弱动画」时一律直接定位。
+
+```vue
+<template>
+  <div class="h-60 overflow-auto">
+    <RebornMenu
+      v-model:selected-keys="selectedKeys"
+      auto-scroll-into-view
+    >
+      <RebornMenuItem
+        v-for="i in 30"
+        :key="i"
+        :index="`item-${i}`"
+      >
+        菜单项 {{ i }}
+      </RebornMenuItem>
+    </RebornMenu>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+// 挂载时第 25 项在可视区外，会被自动滚进来
+const selectedKeys = ref<string[]>(["item-25"]);
+</script>
+```
+
+### 展开方式：内嵌、浮层与互斥
+
+`expandType` 决定子菜单形态：`normal` 在父项下方就地撑开并下推后续条目，适合树形侧栏；`popup` 以浮层弹出，不占文档流，适合顶栏与折叠态。`expandMutex` 让同级子菜单互斥展开，`default-expand-all` 在挂载时展开全部层级（仅平铺展开下生效），`v-model:open-keys` 用于外部读取或控制展开集合。
+
+#### 子菜单的展开与收起语义
+
+`menuTrigger` 只作用于浮层展开，组合下来是两套手感：
+
+| 组合                                            | 展开                                   | 收起                                                       |
+| :---------------------------------------------- | :------------------------------------- | :--------------------------------------------------------- |
+| `expandType="popup"` + `menuTrigger="hover"`    | 悬停 `showTimeout`（默认 300ms）后弹出 | 移出后 `hideTimeout`（默认 300ms）自动关闭                 |
+| `expandType="popup"` + `menuTrigger="click"`    | 点击标题切换                           | 再次点击标题，或点击菜单外部                               |
+| `expandType="normal"`（`menuTrigger` 不论取值） | 点击标题切换                           | 再次点击标题；`menuTrigger="click"` 时点击菜单外部也会收起 |
+
+平铺展开不接受悬停展开，有两个原因：一是悬停停满 `showTimeout` 时子菜单已经展开，用户随后落下的那次点击又把它切回收起，表现为「点了没反应、要点两三次才开」；二是子项在父项下方就地撑开，悬停展开会让下方条目在指针底下跳动，指针一路划过就会连环展开别的分支。
+
+`uniqueOpened` 为 `true`、`expandType="popup"` 这两种情况下，同一时刻只保留一条展开路径（**单一展开 / 手风琴**）；`expandMutex` 则进一步保证**同级互斥**。
+
+浮层展开无条件走单一路径，与 `menuTrigger` 无关：浮层脱离文档流悬在正文上方，多条分支同时展开只会得到几块互相遮挡的浮层，也看不出当前停在哪一支。平铺展开没有这个问题——条目是就地撑开的，彼此不重叠，因此仍允许多条分支并存，`defaultExpandAll` 正是依赖这一点。保留下来的那条路径含完整祖先链，所以在浮层里点开下一级子菜单时父级浮层照常留着，被收起的只有其它分支。
+
+> 折叠态与 `mode="horizontal"` 下 `expandType` 被强制为 `popup`，因此平铺展开只存在于展开状态的垂直菜单中。
+
+##### 选中菜单项后的收起规则
+
+收起与否按**选中项所在层级**区分，两种触发方式的差别只在「其余分支怎么办」。平铺展开总按点击处理，所以右列只会出现在浮层展开里：
+
+| 选中的是                         | 点击触发（含全部平铺展开）               | 浮层展开 + `menuTrigger="hover"`           |
+| :------------------------------- | :--------------------------------------- | :----------------------------------------- |
+| 一级菜单项（路径长度为 `1`）     | 收起全部子菜单                           | 收起全部子菜单（祖先链为空，结果相同）     |
+| 子菜单内的条目（路径长度 > `1`） | **保持展开**，其余已展开的分支也原样不动 | **只保留选中项的祖先链**，其余分支一并收起 |
+
+判定依据是 `selectedKeys` 的**路径长度**而非父节点类型：`RebornMenuItemGroup` 不会加深路径，所以分组内的一级条目仍按一级处理。
+
+之所以按层级分：点开一层再点其中一条，如果整棵树随这次点击一起塌陷，用户会立刻失去所处位置的上下文，连续选同一子菜单下的几项时每次都得重新展开。一级菜单项则不同——它本身就是一次层级切换，收起旧的展开路径正是预期。
+
+两种触发方式对「其余分支」的处理不同，是因为它们对展开集合的约束本来就不同：悬停触发同一时刻只维持一条展开路径，选中后按同一口径裁剪才自洽；`menuTrigger="click"` 允许多条分支同时展开（`expandMutex` 默认 `false`，`defaultExpandAll` 更是一次展开全部），裁剪会把用户手动展开的分支一起关掉。
+
+这里裁剪的是**展开状态本身**，与字体颜色无关：展开态不参与配色（见「基础样式规范」），两者各管一层，不可互相替代。
+
+浮层形态不会因此关不掉：点击菜单外部走 `closeOnClickOutside`，鼠标移出浮层走 `hideTimeout`，页面滚动走下一节，三条关闭路径都保留。
+
+##### 页面滚动时的行为
+
+浮层按展开瞬间的视口位置定位（`position: fixed`，见「浮层的落位」），页面一滚，触发条目就移走了，浮层留在原处会与条目脱节。因此 `teleported`（默认 `true`）的浮层在页面滚动时**直接关闭**，只有两种情况例外：滚动发生在浮层自身内部，或发生在它某一级后代浮层内部——此时只重算位置、不关闭，后者靠浮层上的 `data-menu-path` 比对祖先关系，否则在浮层里点开下一级就会把父级浮层一起滚没。监听走捕获阶段，所以页面里某个局部滚动容器滚动也算数。
+
+平铺展开不受影响：条目在文档流里跟着页面一起滚，位置本来就不会失真。`teleported="false"` 的浮层同理，它由 CSS 相对父级定位，同样随页面移动。
+
+子菜单列表默认**不是滚动容器**（`subMenuContent` 只有 `flex flex-col gap-y-1`，既无 `max-height` 也无 `overflow-y-auto`），因此鼠标停在展开的子菜单上时页面照常滚动，浮层随即按上面的规则关闭。只有通过 `ui.subMenuContent` 传入 `max-h-*` 与 `overflow-y-auto` 把它变成滚动容器之后，组件才会接管滚轮：没滚到头时正常滚列表，滚到顶 / 底后继续同方向滚的那一下被拦下，不让它穿透到页面。
+
+##### 默认全部展开（`defaultExpandAll`）
+
+传入 `default-expand-all` 后，菜单挂载时会自动展开所有子菜单，适合层级少、希望一眼看全的配置型导航。有三处约束需要知道：
+
+- **仅在平铺展开下生效**，即同时满足 `expandType="normal"`、非折叠态、`mode="vertical"`。浮层形态下「全部展开」会让每层浮层同时弹出、互相遮挡并盖住正文，不是可用的状态，因此直接跳过。
+- **只在挂载时判定一次**，与 `default` 前缀的语义一致。用户手动收起后不会被重新展开，运行时改动该属性也不会让已收起的子菜单再展开——需要重新生效请给 `RebornMenu` 换一个 `key` 触发重建。
+- **优先级最低**：`openKeys` 或 `defaultOpeneds` 任一给出了初值，就说明调用方已明确指定展开项，此时不做全部展开。禁用的子菜单与溢出折叠的「更多」触发器也不在展开范围内。
+
+```vue
+<RebornMenu
+  v-model:selected-keys="activePath"
+  mode="vertical"
+  expand-type="normal"
+  default-expand-all
+/>
+```
+
+#### 受控展开
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    v-model:open-keys="openKeys"
+    mode="vertical"
+    expand-type="normal"
+    menu-trigger="click"
+  >
+    <RebornSubMenu index="2">
+      <template #title>系统管理</template>
+      <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
+    </RebornSubMenu>
+  </RebornMenu>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+const selectedKeys = ref<string[]>([]);
+// 直接改这个数组即可外部控制展开态
+const openKeys = ref<string[]>(["2"]);
+</script>
+```
+
+#### 浮层的展开动画
+
+浮层展开（`expandType="popup"`）的出现与消失由 `<Transition>` 承载，平铺展开则是另一套——由 `grid-template-rows` 在 `0fr` 与 `1fr` 之间过渡撑开高度，两者互不相干。
+
+- **展开**：`200ms`、`ease-out`，`scale` 由 `0.95` 到 `1`，`opacity` 由 `0` 到 `1`。
+- **收起**：`150ms`、`ease-in` 反向播放，过渡期间加 `pointer-events: none`，正在淡出的浮层不会继续截走点击。
+- **缩放原点**取浮层与触发条目贴合的那条边：垂直菜单挂在条目右侧时取左边缘，右侧空间不足翻到左边时取右边缘，水平菜单挂在条目下方时取上边缘，纵向再对齐到触发条目的中线。浮层是从条目「长出来」的，原点落在贴合边上才不像凭空浮现在半空。
+- **只过渡 `opacity` / `transform` / `scale` 三项**，不用 `transition-all`。浮层是 `position: fixed`，`top` / `left` 每次展开都按视口重新计算，一旦参与过渡，换位置时浮层会从上一次的落点滑过来。
+
+传 `:collapse-transition="false"` 同样关掉这套动画，展开与收起变为瞬时——对使用者是同一句「不要菜单动画」，不必再记第二个开关。
+
+::callout{icon="i-lucide-info" color="info"}
+`ui.subMenuPopup` 上的自定义类名与这套动画共存，但请避免在其中写 `transition-*` 或 `scale-*`：过渡类由组件在 `<Transition>` 的各阶段动态挂载，自定义类会与之抢优先级。
+::
+
+#### 浮层的落位
+
+浮层是 `position: fixed`，每次展开都按当前视口重算 `top` / `left`，不沿用上一次的结果。
+
+- **默认方向**：垂直菜单挂在触发条目右侧，一级水平菜单挂在条目正下方，与条目的间距由 `popperOffset`（默认 8px）给出。
+- **右侧放不下**时翻到条目左侧，缩放原点同步换到右边缘。
+- **两侧都放不下**时——视口容不下「菜单 + 间距 + 浮层」并排，浮层最小宽度 200px，窄屏下不难触发——取条目左右空间较大的一侧贴视口边缘摆放。此时浮层与触发条目必然重叠，但重叠还点得到，被推出视口则整块用不了。
+- **底部放不下**时向上挪，至多贴到距视口顶端 8px。
+
+视口安全距离固定 8px，与 `popperOffset` 是两件事：后者只管触发条目与浮层之间的间距，改它不会影响浮层与视口边缘的留白。
+
+### 配置式数据：items
+
+给 `RebornMenu` 传 `items` 数组，组件会递归渲染，不必手写嵌套模板；节点类型与 Ant Design 的 `ItemType` 对齐，靠 `children` 判别子菜单、靠 `type: "group"` / `type: "divider"` 判别分组与分割线，完整类型见 API 的「配置式数据类型」。传了 `items` 时默认插槽会被忽略。
+
+节点上的 `extra` 渲染为右侧快捷键提示，`danger` 渲染为错误色，`disabled` 置灰并保留 `not-allowed` 光标，分割线的 `dashed` 切为虚线。
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    :items="items"
+    mode="vertical"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import { RebornMenu, type ItemType } from "~/components/reborn/ui/reborn-menu";
+
+const selectedKeys = ref(["home"]);
+
+const items: ItemType[] = [
+  { key: "home", label: "首页", icon: "lucide:home", extra: "⌘H" },
+  { type: "divider" },
+  {
+    type: "group",
+    label: "工作台",
+    children: [
+      { key: "project", label: "项目管理", icon: "lucide:folder-kanban" },
+      {
+        key: "team",
+        label: "团队协作",
+        icon: "lucide:users",
+        children: [
+          { key: "team-member", label: "成员列表" },
+          { type: "divider", dashed: true },
+          { key: "team-audit", label: "操作审计", disabled: true },
+        ],
+      },
+    ],
+  },
+  { key: "logout", label: "退出登录", icon: "lucide:log-out", danger: true },
+];
+</script>
+```
+
+#### 插槽式的分组与分割线
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    mode="vertical"
+  >
+    <RebornSubMenu index="1">
+      <template #title>数据分析</template>
+
+      <RebornMenuItemGroup title="报表">
+        <RebornMenuItem index="1-1">日报表</RebornMenuItem>
+        <RebornMenuItem index="1-2">周报表</RebornMenuItem>
+      </RebornMenuItemGroup>
+
+      <RebornMenuDivider />
+
+      <RebornMenuItemGroup title="图表">
+        <RebornMenuItem index="1-3">柱状图</RebornMenuItem>
+        <RebornMenuItem
+          index="1-4"
+          extra="⌘L"
+        >
+          折线图
+        </RebornMenuItem>
+      </RebornMenuItemGroup>
+    </RebornSubMenu>
+  </RebornMenu>
+</template>
+```
+
+### 溢出折叠：ellipsis
+
+`mode="horizontal"` 下开启 `ellipsis`，组件监听容器宽度，把放不下的条目收进末尾的「更多」子菜单，容器变宽时自动还原；触发器图标用 `ellipsisIcon` 替换。`ellipsis` 默认为 `false`，关闭时条目不收纳，超出宽度会被裁切或换行。
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    mode="horizontal"
+    ellipsis
+  >
+    <RebornMenuItem index="1">首页</RebornMenuItem>
+    <RebornMenuItem index="2">产品中心</RebornMenuItem>
+    <RebornMenuItem index="3">解决方案</RebornMenuItem>
+    <RebornMenuItem index="4">开发者文档</RebornMenuItem>
+    <RebornMenuItem index="5">社区论坛</RebornMenuItem>
+  </RebornMenu>
+</template>
+```
+
+> 开启 `ellipsis` 后组件会监听容器宽度变化，把放不下的条目收进末尾的「更多」子菜单，容器变宽时自动还原。若容器宽度是被 JS 直接改写而没有触发 `resize`，可以调用实例方法 `handleResize()` 手动重算。
+
+### 配色与样式定制
+
+`color` 决定选中态主题色；需要跳出主题配色（例如深色侧栏）时，用 `backgroundColor` / `textColor` / `activeTextColor` 直接写色值，它们以内联样式下发，优先级高于默认类名。只想改布局、间距、圆角等结构样式时用 `ui`，键位见 API 的「自定义样式（ui）」。
+
+```vue
+<template>
+  <RebornMenu
+    v-model:selected-keys="selectedKeys"
+    mode="vertical"
+    background-color="#1f2937"
+    text-color="#e5e7eb"
+    active-text-color="#818cf8"
+  >
+    <RebornMenuItem index="1">首页</RebornMenuItem>
+    <RebornSubMenu index="2">
+      <template #title>系统管理</template>
+      <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
+    </RebornSubMenu>
+  </RebornMenu>
+</template>
+```
+
+#### 基础样式规范
+
+一级与次级菜单的字号、字重、灰阶由内部 `level` 变体自动区分，无需手动传类名：
+
+| 层级                               | 字号   | 字重  | 颜色                                  |
+| :--------------------------------- | :----- | :---- | :------------------------------------ |
+| 一级菜单（`parentIndexPath` 为空） | `14px` | `500` | `text-gray-10`                        |
+| 次级及以下菜单                     | `14px` | `400` | `text-gray-9`                         |
+| 禁用态（任意层级）                 | `14px` | 继承  | `text-gray-5` + `cursor: not-allowed` |
+
+`--color-gray-*` 在暗色模式下已在主题层重定义，因此上述灰阶**不需要额外写 `dark:` 变体**，明暗两态自动切换。
+
+选中态（`active`）的色值由 `color` 属性决定，层叠优先级高于上表的默认灰阶。
+
+**展开态（`opened`）不参与配色**：一个子菜单展开与否，只由箭头旋转表达（平铺态转 90°，见 `menuItemArrow`）。展开态此前也按 `color` 给标题上主题色，与「后代被选中」的祖先高亮撞成同一个颜色——两者含义不同却长得一样。再加上点击触发下选中子项不会收起（见「选中菜单项后的收起规则」）、`defaultExpandAll` 更是一次展开全部，屏幕上会同时留着好几条「只是展开着、并没有被选中」的彩色标题，看起来就像上一个选中项的高亮没被取消。让出颜色之后，同一条祖先无论展开还是收起都是同一个颜色。
+
+选中态取**同一色阶的两档**：文字用第 6 档、背景块用第 2 档，与 `RebornBadge` 的 `soft` 变体同一套配方。语义别名没有数字档位（不存在 `bg-primary-2`），因此实际落到各色阶本名：
+
+| `color`     | 背景块           | 文字               |
+| :---------- | :--------------- | :----------------- |
+| `primary`   | `bg-brand-2`     | `text-brand-6`     |
+| `secondary` | `bg-secondary-2` | `text-secondary-6` |
+| `success`   | `bg-green-2`     | `text-green-6`     |
+| `info`      | `bg-blue-2`      | `text-blue-6`      |
+| `warning`   | `bg-orange-2`    | `text-orange-6`    |
+| `error`     | `bg-red-2`       | `text-red-6`       |
+| `neutral`   | `bg-gray-2`      | `text-gray-9`      |
+
+`neutral` 的文字取 `gray-9`（正文色）而非 `gray-6`——灰阶里第 6 档属于弱化文本，压不住选中态。这些档位在暗色模式下已在主题层整体反转，同样**不需要写 `dark:` 变体**。
+
+不需要色块时传 `:show-active-background="false"`，选中项只保留文字高亮，依附于背景块的投影会一并移除。水平模式的一级条目本就不画背景块（见「水平菜单的交互样式」），该属性对它无影响。
+
+#### 祖先条目的选中态
+
+子菜单标题只能展开 / 收起，永远不会自己进入 `selectedKeys`。因此一个带子菜单的条目显示为选中态只有一种来源：**它的某个后代被选中**（`selectedKeys` 存的是完整路径，祖先按路径包含关系高亮）。这类「祖先高亮」不与真正被选中的叶子共用一套样式：
+
+| 展开方式             | 祖先条目的选中态                             |
+| :------------------- | :------------------------------------------- |
+| 平铺展开（`normal`） | 只换文字色，**不画背景块、不带投影**         |
+| 浮层展开（`popup`）  | 背景固定为 `bg-gray-2`，文字色仍跟随 `color` |
+
+平铺展开下父子条目上下紧邻，祖先若沿用主题色背景块（`bg-brand-2` 等），两块同色背景会连成一片，看不出真正被选中的是哪一条。浮层展开里祖先与后代分处两个面板，不存在连片问题，但仍要与后代的主题色背景拉开层次，所以改用中性灰底。
+
+> 去掉常驻背景后，平铺态的祖先条目会成为列表里唯一没有悬浮反馈的一行，因此补了 `hover:bg-gray-2`。
+>
+> 水平模式的一级条目另有一套「不画背景」的规则（见下一节），优先级更高，不受这里影响；水平浮层内的次级条目仍按 `popup` 一行处理。
+
+## API
+
+### Menu Props
 
 | 属性名                 | 类型                                                                                   | 默认值                     | 说明                                                                                                                                                                                                           |
 | :--------------------- | :------------------------------------------------------------------------------------- | :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -54,7 +593,7 @@ badge: New
 | `textColor`            | `string`                                                                               | `''`                       | 普通菜单项文字颜色，留空则使用 `level` 规范灰阶                                                                                                                                                                |
 | `activeTextColor`      | `string`                                                                               | `''`                       | 选中菜单项文字颜色，留空则使用 `color` 主题色                                                                                                                                                                  |
 | `class`                | `any`                                                                                  | -                          | 最外层容器的自定义类名                                                                                                                                                                                         |
-| `ui`                   | `MenuUI`                                                                               | `{}`                       | 内置 UI 部件的类名覆盖，见「自定义样式（ui）」                                                                                                                                                                 |
+| `ui` | `MenuUI` | `{}` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
 ::callout{icon="i-lucide-info" color="info"}
 **`selectedKeys` 存的是路径而非单个 key。** 这是与 Element Plus 有意不同的一点：Element Plus 的 `selected-keys` 只放当前选中项的 key，而本组件放的是从一级菜单到选中项的完整 `indexPath`（例如 `['2', '2-1']`），祖先节点的高亮依赖这个语义。只想拿选中项本身时取数组末位即可。
@@ -64,9 +603,7 @@ badge: New
 **`ellipsis` 默认为 `false`**，与 Element Plus 的默认 `true` 不同。溢出折叠会改变既有水平菜单的渲染结果，因此本组件要求显式传 `ellipsis` 开启，避免升级时产生非预期的视觉变化。
 ::
 
-> `router` 为 `true` 时，请将 `RebornMenuItem` 的 `index` 设置为真实路由路径，例如 `/dashboard`。首次加载高亮项请通过 `v-model:selected-keys` 传入路径数组，例如 `['/dashboard']`。
-
-## Menu Events
+### Menu Emits
 
 | 事件名                | 说明               | 回调参数                                       |
 | :-------------------- | :----------------- | :--------------------------------------------- |
@@ -76,7 +613,7 @@ badge: New
 | `open`                | 子菜单展开时触发   | `(index: string, indexPath: string[]) => void` |
 | `close`               | 子菜单收起时触发   | `(index: string, indexPath: string[]) => void` |
 
-## Menu Methods
+### Menu Expose
 
 | 方法名              | 说明                                                               | 类型                            |
 | :------------------ | :----------------------------------------------------------------- | :------------------------------ |
@@ -85,13 +622,13 @@ badge: New
 | `updateActiveIndex` | 通过路径数组手动更新当前选中项                                     | `(indexPath: string[]) => void` |
 | `handleResize`      | 主动触发一次溢出折叠测量，用于容器宽度被 JS 改动而未触发 resize 时 | `() => void`                    |
 
-## Menu Slots
+### Menu Slots
 
 | 插槽名    | 说明                            |
 | :-------- | :------------------------------ |
 | `default` | 菜单内容，传了 `items` 时不生效 |
 
-## SubMenu Props
+### SubMenu Props
 
 | 属性名              | 类型            | 默认值  | 说明                                                                |
 | :------------------ | :-------------- | :------ | :------------------------------------------------------------------ |
@@ -109,17 +646,17 @@ badge: New
 | `collapseCloseIcon` | `string`        | -       | 折叠（`collapse`）态下的收起图标，需与 `collapseOpenIcon` 成对提供  |
 | `collapseOpenIcon`  | `string`        | -       | 折叠（`collapse`）态下的展开图标，需与 `collapseCloseIcon` 成对提供 |
 | `class`             | `any`           | -       | 自定义类名                                                          |
-| `ui`                | `MenuUI`        | `{}`    | 内置 UI 部件的类名覆盖                                              |
+| `ui`                | `MenuUI`        | `{}`    | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
 > 四个图标属性都不传时保持内置观感（`lucide:chevron-right` 配合旋转动画）。它们需要成对提供，只给其中一个不会生效。
 
-## SubMenu Events
+### SubMenu Emits
 
 | 事件名       | 说明                 | 回调参数                      |
 | :----------- | :------------------- | :---------------------------- |
 | `titleClick` | 点击子菜单标题时触发 | `(event: MouseEvent) => void` |
 
-## SubMenu Slots
+### SubMenu Slots
 
 | 插槽名    | 说明                              |
 | :-------- | :-------------------------------- |
@@ -127,7 +664,7 @@ badge: New
 | `title`   | 子菜单标题                        |
 | `icon`    | 子菜单图标                        |
 
-## MenuItem Props
+### MenuItem Props
 
 | 属性名     | 类型               | 默认值  | 说明                                                                                                                                             |
 | :--------- | :----------------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -138,15 +675,15 @@ badge: New
 | `extra`    | `string`           | -       | 右侧附加文本，常用于展示快捷键。也可用 `extra` 插槽自定义                                                                                        |
 | `title`    | `string`           | -       | 提示文案。展开态作为原生 `title`；折叠态的一级菜单项改作文字提示的内容（菜单 `tooltip` 为 `false` 时仍用原生 `title`）。缺省时提示内容取默认插槽 |
 | `class`    | `any`              | -       | 自定义类名                                                                                                                                       |
-| `ui`       | `MenuUI`           | `{}`    | 内置 UI 部件的类名覆盖                                                                                                                           |
+| `ui`       | `MenuUI`           | `{}`    | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
-## MenuItem Events
+### MenuItem Emits
 
 | 事件名  | 说明             | 回调参数                  |
 | :------ | :--------------- | :------------------------ |
 | `click` | 点击菜单项时触发 | `(index: string) => void` |
 
-## MenuItem Slots
+### MenuItem Slots
 
 | 插槽名    | 说明                                    |
 | :-------- | :-------------------------------------- |
@@ -154,31 +691,31 @@ badge: New
 | `icon`    | 菜单项图标                              |
 | `extra`   | 右侧附加内容，缺省时回退到 `extra` 属性 |
 
-## MenuItemGroup Props
+### MenuItemGroup Props
 
 | 属性名  | 类型         | 默认值 | 说明                                               |
 | :------ | :----------- | :----- | :------------------------------------------------- |
 | `title` | `string`     | `''`   | 分组标题                                           |
 | `items` | `ItemType[]` | -      | 配置式分组数据，传入后由组件递归渲染并忽略默认插槽 |
 | `class` | `any`        | -      | 自定义类名                                         |
-| `ui`    | `MenuUI`     | `{}`   | 内置 UI 部件的类名覆盖                             |
+| `ui`    | `MenuUI`     | `{}`   | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
-## MenuItemGroup Slots
+### MenuItemGroup Slots
 
 | 插槽名    | 说明                                  |
 | :-------- | :------------------------------------ |
 | `default` | 分组内的菜单项，传了 `items` 时不生效 |
 | `title`   | 自定义标题内容                        |
 
-## MenuDivider Props
+### MenuDivider Props
 
 | 属性名   | 类型      | 默认值  | 说明                   |
 | :------- | :-------- | :------ | :--------------------- |
 | `dashed` | `boolean` | `false` | 是否为虚线样式         |
 | `class`  | `any`     | -       | 自定义类名             |
-| `ui`     | `MenuUI`  | `{}`    | 内置 UI 部件的类名覆盖 |
+| `ui`     | `MenuUI`  | `{}`    | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
 
-## 配置式数据类型
+### 配置式数据类型
 
 `items` 的元素是四类节点的联合，与 Ant Design 的 `ItemType` 对齐：
 
@@ -229,234 +766,29 @@ interface MenuDividerType {
 >
 > 判别函数 `isMenuDivider` / `isMenuGroup` / `isSubMenu` 一并从 `~/components/reborn/ui/reborn-menu` 导出，自行处理菜单树时可直接复用。
 
-# 基础样式规范
-
-一级与次级菜单的字号、字重、灰阶由内部 `level` 变体自动区分，无需手动传类名：
-
-| 层级                               | 字号   | 字重  | 颜色                                  |
-| :--------------------------------- | :----- | :---- | :------------------------------------ |
-| 一级菜单（`parentIndexPath` 为空） | `14px` | `500` | `text-gray-10`                        |
-| 次级及以下菜单                     | `14px` | `400` | `text-gray-9`                         |
-| 禁用态（任意层级）                 | `14px` | 继承  | `text-gray-5` + `cursor: not-allowed` |
-
-`--color-gray-*` 在暗色模式下已在主题层重定义，因此上述灰阶**不需要额外写 `dark:` 变体**，明暗两态自动切换。
-
-选中态（`active`）的色值由 `color` 属性决定，层叠优先级高于上表的默认灰阶。
-
-**展开态（`opened`）不参与配色**：一个子菜单展开与否，只由箭头旋转表达（平铺态转 90°，见 `menuItemArrow`）。展开态此前也按 `color` 给标题上主题色，与「后代被选中」的祖先高亮撞成同一个颜色——两者含义不同却长得一样。再加上点击触发下选中子项不会收起（见「选中菜单项后的收起规则」）、`defaultExpandAll` 更是一次展开全部，屏幕上会同时留着好几条「只是展开着、并没有被选中」的彩色标题，看起来就像上一个选中项的高亮没被取消。让出颜色之后，同一条祖先无论展开还是收起都是同一个颜色。
-
-选中态取**同一色阶的两档**：文字用第 6 档、背景块用第 2 档，与 `RebornBadge` 的 `soft` 变体同一套配方。语义别名没有数字档位（不存在 `bg-primary-2`），因此实际落到各色阶本名：
-
-| `color`     | 背景块           | 文字               |
-| :---------- | :--------------- | :----------------- |
-| `primary`   | `bg-brand-2`     | `text-brand-6`     |
-| `secondary` | `bg-secondary-2` | `text-secondary-6` |
-| `success`   | `bg-green-2`     | `text-green-6`     |
-| `info`      | `bg-blue-2`      | `text-blue-6`      |
-| `warning`   | `bg-orange-2`    | `text-orange-6`    |
-| `error`     | `bg-red-2`       | `text-red-6`       |
-| `neutral`   | `bg-gray-2`      | `text-gray-9`      |
-
-`neutral` 的文字取 `gray-9`（正文色）而非 `gray-6`——灰阶里第 6 档属于弱化文本，压不住选中态。这些档位在暗色模式下已在主题层整体反转，同样**不需要写 `dark:` 变体**。
-
-不需要色块时传 `:show-active-background="false"`，选中项只保留文字高亮，依附于背景块的投影会一并移除。水平模式的一级条目本就不画背景块（见下一节），该属性对它无影响。
-
-## 祖先条目的选中态
-
-子菜单标题只能展开 / 收起，永远不会自己进入 `selectedKeys`。因此一个带子菜单的条目显示为选中态只有一种来源：**它的某个后代被选中**（`selectedKeys` 存的是完整路径，祖先按路径包含关系高亮）。这类「祖先高亮」不与真正被选中的叶子共用一套样式：
-
-| 展开方式             | 祖先条目的选中态                             |
-| :------------------- | :------------------------------------------- |
-| 平铺展开（`normal`） | 只换文字色，**不画背景块、不带投影**         |
-| 浮层展开（`popup`）  | 背景固定为 `bg-gray-2`，文字色仍跟随 `color` |
-
-平铺展开下父子条目上下紧邻，祖先若沿用主题色背景块（`bg-brand-2` 等），两块同色背景会连成一片，看不出真正被选中的是哪一条。浮层展开里祖先与后代分处两个面板，不存在连片问题，但仍要与后代的主题色背景拉开层次，所以改用中性灰底。
-
-> 去掉常驻背景后，平铺态的祖先条目会成为列表里唯一没有悬浮反馈的一行，因此补了 `hover:bg-gray-2`。
->
-> 水平模式的一级条目另有一套「不画背景」的规则（见下一节），优先级更高，不受这里影响；水平浮层内的次级条目仍按 `popup` 一行处理。
-
-## 水平菜单的交互样式
-
-`mode="horizontal"` 的一级条目走一套独立规则，与垂直菜单不同：
-
-| 场景                | 表现                                                                                                         |
-| :------------------ | :----------------------------------------------------------------------------------------------------------- |
-| 条目间距            | `16px`（`menu` 上的 `gap-x-4`）                                                                              |
-| `hover`             | **图标与文字一起高亮为 `color` 色值，不出现背景块**。图标由 Iconify 以 `currentColor` 填充，跟随文字自动变色 |
-| `active`（选中）    | 文字高亮，同样不加背景块                                                                                     |
-| `active` 且无子菜单 | 额外在底部绘制 `2px` 指示器（`::after`，取 `bg-current` 跟随当前文字色）                                     |
-
-带子菜单的一级项选中时**不画底部指示器**——此时的高亮通常来自子项带来的祖先高亮，再加下划线会与浮层的指向产生冲突。
-
-## 折叠动画
-
-`collapse` 切换时，根容器宽度与条目内容同步过渡（`300ms`，`ease-in-out`）。整套动画的目标是**单向收起**——文字只朝图标那一侧退，左内边距与图标列左边缘全程不动，不会出现「两端往中间挤」的观感：
-
-- **宽度**：折叠宽度以内联样式 `width: 4rem` 下发到 `root`，优先级高于任何 `class`。垂直模式下 `root` 展开态为 `w-full`——宽度插值需要两端都是确定值，`auto → 64px` 不会产生动画。
-- **文字 / 尾注 / 箭头**：折叠态用 `w-0 + opacity-0 + overflow-hidden` 收起，而**不是** `display: none`（`display` 不可过渡，会让文字瞬间消失、宽度动画看起来像卡帧）。
-- **对齐与内边距不参与动画**：折叠态沿用展开态的 `px-4` 与 `items-start` 对齐，**不切 `justify-center`**。`justify-content` 不可过渡，在第 0 帧就会把「图标 + 文字」整组钉到行中线上，之后随容器变窄来回摆动。
-- **图标列定宽**：`menuItemIcon` 是一列固定宽度的盒子，展开态 `w-5`（20px）、折叠态 `w-8`（32px = 轨道 `64px` 减去左右各 `16px` 内边距），图形本身（16px 或 20px）由盒子自身的 `justify-center` 居中。折叠完成时图标正好落在轨道正中。这与 Element Plus 给菜单图标定死 24px 列宽是同一套做法；`min-width` 不能替代 `width`——实际宽度取 `max(图形宽, min-width)`，前段纹丝不动、后段才追上，会与同时收缩的间隙错开相位而产生回摆。
-- **间隙同步归零**：`menuItemContent` 的 `gap-2`（8px）在折叠态收到 `gap-0`。图标列 `20 → 32px` 与间隙 `8 → 0px` 共用同一条曲线，两者之和 `28 → 32px` 严格单调，动画全程内容既不溢出 64px 轨道也不留空。
-
-传 `:collapse-transition="false"` 会一并移除上述所有 `transition`（含图标列宽度与间隙），切换变为瞬时；浮层的展开动画也同时关掉，见下一节。
-
-::callout{icon="i-lucide-info" color="info"}
-因为折叠宽度走的是内联样式，给 `RebornMenu` 传 `class="w-full max-w-xs"` 之类的宽度类**不会**影响折叠态尺寸，两者可以共存。
-::
-
-## 折叠态的文字提示
-
-折叠后一级菜单项只剩图标，`tooltip` 默认开启，悬停时在右侧弹出 `RebornTooltip` 补回标题。提示内容优先取 `title`，缺省时取默认插槽，因此大多数菜单**不用额外写任何属性**。
-
-- **只作用于一级菜单项**：折叠只隐藏一级标题；子菜单在折叠态本就以浮层展开，浮层里的条目标题完整可见，再叠一层提示只会遮挡。
-- **展开态不弹提示**：标题已经完整显示。提示组件在两种状态下都挂着，只切换它的 `disabled`——折叠切换时 DOM 结构不变，标题的淡出过渡才不会因节点重建而丢失。
-- **默认向右弹出**：折叠轨道只有 64px 宽，上下弹出会盖住相邻条目。
-
-传对象可调整提示本身，未列出的 `RebornTooltip` 属性不开放：
-
-```ts
-interface MenuTooltipConfig {
-  /** 弹出位置，默认 right */
-  placement?: Placement | PlacementAlias;
-  /** 背景色 */
-  color?: string;
-  /** 是否显示箭头 */
-  arrow?: boolean | { pointAtCenter?: boolean };
-  /** 鼠标移入后的显示延时（毫秒） */
-  openDelay?: number;
-  /** 鼠标移出后的隐藏延时（毫秒） */
-  closeDelay?: number;
-  /** 浮层层级 */
-  zIndex?: number;
-  /** 浮层挂载容器 */
-  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
-  /** 提示的样式覆盖，常用 content（面板）与 arrow（箭头）两个键 */
-  ui?: TooltipUI;
-}
-```
-
-不开放 `class`：`RebornTooltip` 的 `class` 落在触发器外壳上而不是浮层上，在这里传只会改到菜单项自身。要改浮层样式请用 `ui.content`。
-
-## 自动滚动到选中项
-
-开启 `autoScrollIntoView` 后，菜单在三个时机把选中项滚到可见区域：首次挂载、`selectedKeys` 变化，以及 `autoScrollIntoView` 从关闭切到开启。适合条目很多、选中项由路由或外部值驱动的侧栏——刷新页面或从别处跳转进来时，高亮项可能落在滚动区域之外。
-
-- **滚动目标**：可见的选中菜单项；它所在的子菜单未展开（或折叠态下只剩一级图标）时，退而滚到被高亮的祖先子菜单标题。滚子菜单时只对齐标题行，不按整棵已展开的子树对齐。
-- **浮层不参与**：浮层子菜单挂载在 `body` 下，不在菜单滚动容器里，滚动它没有意义。
-- **只滚最近的滚动容器**：纵向、横向各自向上找第一个真正可滚动（`overflow` 为 `auto` / `scroll` 且内容溢出）的祖先，只调整它的滚动位置，不会像原生 `scrollIntoView` 那样连带滚动页面——否则菜单一挂载就会把整页拽到菜单所在位置。反过来，菜单没有放进滚动容器、只靠页面滚动时，这个属性不起作用。
-- **默认 `nearest`**：已经可见就不动，只在超出时滚最短距离。`scrollConfig` 的 `block`、`inline` 与原生同义，例如 `{ block: 'center' }` 把选中项滚到容器中间。
-- **滚动动画**：`behavior` 缺省时，挂载那一次直接定位（页面刚渲染就看着列表滚一段像多余的跳动），之后选中项变化用 300ms 的 ease-in-out 平滑滚动；传 `'smooth'` 或 `'instant'` / `'auto'` 则两种时机都按它来。动画由组件自己补间，不走原生平滑滚动——后者的时长和曲线因浏览器而异，关掉系统平滑滚动的环境里还会直接跳到终点。系统开启「减弱动画」时一律直接定位。
-
-## 浮层的展开动画
-
-浮层展开（`expandType="popup"`）的出现与消失由 `<Transition>` 承载，平铺展开则是另一套——由 `grid-template-rows` 在 `0fr` 与 `1fr` 之间过渡撑开高度，两者互不相干。
-
-- **展开**：`200ms`、`ease-out`，`scale` 由 `0.95` 到 `1`，`opacity` 由 `0` 到 `1`。
-- **收起**：`150ms`、`ease-in` 反向播放，过渡期间加 `pointer-events: none`，正在淡出的浮层不会继续截走点击。
-- **缩放原点**取浮层与触发条目贴合的那条边：垂直菜单挂在条目右侧时取左边缘，右侧空间不足翻到左边时取右边缘，水平菜单挂在条目下方时取上边缘，纵向再对齐到触发条目的中线。浮层是从条目「长出来」的，原点落在贴合边上才不像凭空浮现在半空。
-- **只过渡 `opacity` / `transform` / `scale` 三项**，不用 `transition-all`。浮层是 `position: fixed`，`top` / `left` 每次展开都按视口重新计算，一旦参与过渡，换位置时浮层会从上一次的落点滑过来。
-
-传 `:collapse-transition="false"` 同样关掉这套动画，展开与收起变为瞬时——对使用者是同一句「不要菜单动画」，不必再记第二个开关。
-
-::callout{icon="i-lucide-info" color="info"}
-`ui.subMenuPopup` 上的自定义类名与这套动画共存，但请避免在其中写 `transition-*` 或 `scale-*`：过渡类由组件在 `<Transition>` 的各阶段动态挂载，自定义类会与之抢优先级。
-::
-
-## 浮层的落位
-
-浮层是 `position: fixed`，每次展开都按当前视口重算 `top` / `left`，不沿用上一次的结果。
-
-- **默认方向**：垂直菜单挂在触发条目右侧，一级水平菜单挂在条目正下方，与条目的间距由 `popperOffset`（默认 8px）给出。
-- **右侧放不下**时翻到条目左侧，缩放原点同步换到右边缘。
-- **两侧都放不下**时——视口容不下「菜单 + 间距 + 浮层」并排，浮层最小宽度 200px，窄屏下不难触发——取条目左右空间较大的一侧贴视口边缘摆放。此时浮层与触发条目必然重叠，但重叠还点得到，被推出视口则整块用不了。
-- **底部放不下**时向上挪，至多贴到距视口顶端 8px。
-
-视口安全距离固定 8px，与 `popperOffset` 是两件事：后者只管触发条目与浮层之间的间距，改它不会影响浮层与视口边缘的留白。
-
-## 子菜单的展开与收起语义
-
-`menuTrigger` 只作用于浮层展开，组合下来是两套手感：
-
-| 组合                                            | 展开                                   | 收起                                                       |
-| :---------------------------------------------- | :------------------------------------- | :--------------------------------------------------------- |
-| `expandType="popup"` + `menuTrigger="hover"`    | 悬停 `showTimeout`（默认 300ms）后弹出 | 移出后 `hideTimeout`（默认 300ms）自动关闭                 |
-| `expandType="popup"` + `menuTrigger="click"`    | 点击标题切换                           | 再次点击标题，或点击菜单外部                               |
-| `expandType="normal"`（`menuTrigger` 不论取值） | 点击标题切换                           | 再次点击标题；`menuTrigger="click"` 时点击菜单外部也会收起 |
-
-平铺展开不接受悬停展开，有两个原因：一是悬停停满 `showTimeout` 时子菜单已经展开，用户随后落下的那次点击又把它切回收起，表现为「点了没反应、要点两三次才开」；二是子项在父项下方就地撑开，悬停展开会让下方条目在指针底下跳动，指针一路划过就会连环展开别的分支。
-
-`uniqueOpened` 为 `true`、`expandType="popup"` 这两种情况下，同一时刻只保留一条展开路径（**单一展开 / 手风琴**）；`expandMutex` 则进一步保证**同级互斥**。
-
-浮层展开无条件走单一路径，与 `menuTrigger` 无关：浮层脱离文档流悬在正文上方，多条分支同时展开只会得到几块互相遮挡的浮层，也看不出当前停在哪一支。平铺展开没有这个问题——条目是就地撑开的，彼此不重叠，因此仍允许多条分支并存，`defaultExpandAll` 正是依赖这一点。保留下来的那条路径含完整祖先链，所以在浮层里点开下一级子菜单时父级浮层照常留着，被收起的只有其它分支。
-
-> 折叠态与 `mode="horizontal"` 下 `expandType` 被强制为 `popup`，因此平铺展开只存在于展开状态的垂直菜单中。
-
-### 选中菜单项后的收起规则
-
-收起与否按**选中项所在层级**区分，两种触发方式的差别只在「其余分支怎么办」。平铺展开总按点击处理，所以右列只会出现在浮层展开里：
-
-| 选中的是                         | 点击触发（含全部平铺展开）               | 浮层展开 + `menuTrigger="hover"`           |
-| :------------------------------- | :--------------------------------------- | :----------------------------------------- |
-| 一级菜单项（路径长度为 `1`）     | 收起全部子菜单                           | 收起全部子菜单（祖先链为空，结果相同）     |
-| 子菜单内的条目（路径长度 > `1`） | **保持展开**，其余已展开的分支也原样不动 | **只保留选中项的祖先链**，其余分支一并收起 |
-
-判定依据是 `selectedKeys` 的**路径长度**而非父节点类型：`RebornMenuItemGroup` 不会加深路径，所以分组内的一级条目仍按一级处理。
-
-之所以按层级分：点开一层再点其中一条，如果整棵树随这次点击一起塌陷，用户会立刻失去所处位置的上下文，连续选同一子菜单下的几项时每次都得重新展开。一级菜单项则不同——它本身就是一次层级切换，收起旧的展开路径正是预期。
-
-两种触发方式对「其余分支」的处理不同，是因为它们对展开集合的约束本来就不同：悬停触发同一时刻只维持一条展开路径，选中后按同一口径裁剪才自洽；`menuTrigger="click"` 允许多条分支同时展开（`expandMutex` 默认 `false`，`defaultExpandAll` 更是一次展开全部），裁剪会把用户手动展开的分支一起关掉。
-
-这里裁剪的是**展开状态本身**，与字体颜色无关：展开态不参与配色（见「基础样式规范」），两者各管一层，不可互相替代。
-
-浮层形态不会因此关不掉：点击菜单外部走 `closeOnClickOutside`，鼠标移出浮层走 `hideTimeout`，页面滚动走下一节，三条关闭路径都保留。
-
-### 页面滚动时的行为
-
-浮层按展开瞬间的视口位置定位（`position: fixed`，见「浮层的落位」），页面一滚，触发条目就移走了，浮层留在原处会与条目脱节。因此 `teleported`（默认 `true`）的浮层在页面滚动时**直接关闭**，只有两种情况例外：滚动发生在浮层自身内部，或发生在它某一级后代浮层内部——此时只重算位置、不关闭，后者靠浮层上的 `data-menu-path` 比对祖先关系，否则在浮层里点开下一级就会把父级浮层一起滚没。监听走捕获阶段，所以页面里某个局部滚动容器滚动也算数。
-
-平铺展开不受影响：条目在文档流里跟着页面一起滚，位置本来就不会失真。`teleported="false"` 的浮层同理，它由 CSS 相对父级定位，同样随页面移动。
-
-子菜单列表默认**不是滚动容器**（`subMenuContent` 只有 `flex flex-col gap-y-1`，既无 `max-height` 也无 `overflow-y-auto`），因此鼠标停在展开的子菜单上时页面照常滚动，浮层随即按上面的规则关闭。只有通过 `ui.subMenuContent` 传入 `max-h-*` 与 `overflow-y-auto` 把它变成滚动容器之后，组件才会接管滚轮：没滚到头时正常滚列表，滚到顶 / 底后继续同方向滚的那一下被拦下，不让它穿透到页面。
-
-### 默认全部展开（`defaultExpandAll`）
-
-传入 `default-expand-all` 后，菜单挂载时会自动展开所有子菜单，适合层级少、希望一眼看全的配置型导航。有三处约束需要知道：
-
-- **仅在平铺展开下生效**，即同时满足 `expandType="normal"`、非折叠态、`mode="vertical"`。浮层形态下「全部展开」会让每层浮层同时弹出、互相遮挡并盖住正文，不是可用的状态，因此直接跳过。
-- **只在挂载时判定一次**，与 `default` 前缀的语义一致。用户手动收起后不会被重新展开，运行时改动该属性也不会让已收起的子菜单再展开——需要重新生效请给 `RebornMenu` 换一个 `key` 触发重建。
-- **优先级最低**：`openKeys` 或 `defaultOpeneds` 任一给出了初值，就说明调用方已明确指定展开项，此时不做全部展开。禁用的子菜单与溢出折叠的「更多」触发器也不在展开范围内。
-
-```vue
-<RebornMenu
-  v-model:selected-keys="activePath"
-  mode="vertical"
-  expand-type="normal"
-  default-expand-all
-/>
-```
-
-## 自定义样式（ui）
-
-`ui` 按内部结构键覆盖对应节点的类名。该组件仅 Web 端提供；**把 `ui` 传给最外层 `RebornMenu` 即可**，所有键会通过依赖注入下发到 `RebornSubMenu` / `RebornMenuItem` / `RebornMenuItemGroup` / `RebornMenuDivider`（后四者也接受自己的 `ui`，用于只改某一个分支）。
-
-| 键名                   | 落在哪个节点                                                                                                                                                                                                                                                    |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `root`                 | 菜单最外层容器 `<div>`。默认 `relative shadow-sm bg-gray-1 transition-[width]`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。**折叠态的宽度由内联样式下发，不走这里**（见下方「折叠动画」）。                                           |
-| `menu`                 | 顶层 `<ul>`。默认 `flex transition-all duration-300`，主轴方向由 `mode` 决定；条目间距也在这里（水平 `gap-x-4` = 16px，垂直 `gap-y-1` = 4px）。                                                                                                                 |
-| `menuItem`             | 单个菜单项（`RebornMenuItem` 的 `<li>`，以及 `RebornSubMenu` 内部那一行标题）。默认 `group relative flex cursor-pointer select-none items-center transition-all`，行高、hover 底色、圆角改这里。`group` 供水平一级菜单的 hover 高亮反查父级状态，覆盖时请保留。 |
-| `menuItemContent`      | 菜单项内部的横向排布容器，默认 `flex w-full items-center gap-2`；图标与文字的间距改这里。                                                                                                                                                                       |
-| `menuItemIcon`         | 图标位。**仅填充了 `icon` 插槽时渲染**，默认 `flex w-5 shrink-0 items-center justify-center`——定宽一列、图形居中，折叠动画依赖这个定值（见「折叠动画」）；容器本身不受插槽内容影响，`ui.menuItemIcon` 始终生效。                                                |
-| `menuItemTitle`        | 文字节点，默认 `flex-1 truncate`，字号字重灰阶由 `level` 变体补上；它在 default / `title` 插槽的外层，填充插槽后依然生效。                                                                                                                                      |
-| `menuItemExtra`        | 右侧附加内容位。**仅提供了 `extra` 属性或 `extra` 插槽时渲染**，默认 `ml-auto shrink-0 text-sm text-gray-5`（`text-sm` 在本主题为 12px，比标题低一档），快捷键提示的样式改这里。                                                                                |
-| `menuItemArrow`        | 子菜单的展开箭头。**仅在垂直方向的 `RebornSubMenu` 上渲染**（根级水平菜单不显示箭头），默认 `flex shrink-0 items-center justify-center transition-transform`，展开态由内部 `opened` 变体旋转。                                                                  |
-| `subMenu`              | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是浮层定位的参照物，非必要不要改 `position`。                                                                                                                                                               |
-| `subMenuPopup`         | 浮层展开时的子菜单面板（默认 Teleport 到 body）。**仅 `expandType="popup"` 时渲染**，默认 `absolute z-50 border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md`，浮层底色与层级改这里。                                                                       |
-| `subMenuContent`       | 子菜单内部的 `<ul>`，默认 `flex flex-col gap-y-1`（条目间隔 4px）；平铺展开与浮层展开都会用到。                                                                                                                                                                 |
-| `menuItemGroup`        | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                                                                                                                         |
-| `menuItemGroupTitle`   | 分组标题容器，默认 `px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400`。该节点在 `title` 插槽外层，填充插槽后依然生效。                                                                                                                        |
-| `menuItemGroupContent` | 分组内部承载子项的 `<ul>`，默认 `flex flex-col gap-y-1`（组内条目间隔 4px）；只想调分组内的疏密改这里，不影响分组标题。                                                                                                                                         |
-| `menuDivider`          | `RebornMenuDivider` 的 `<li>`，默认 `my-1 list-none`，线条本身由 `dashed` 变体给出（`false` → `h-px bg-gray-2`，`true` → `h-0 border-t border-dashed border-gray-2`）。                                                                                         |
+### 自定义样式（ui）
+
+`ui` 按内部结构键覆盖对应节点的类名，共 15 个键，与 `reborn-menu.config.ts` 的 `slots` 一一对应。**把 `ui` 传给最外层 `RebornMenu` 即可**，所有键会通过依赖注入下发到 `RebornSubMenu` / `RebornMenuItem` / `RebornMenuItemGroup` / `RebornMenuDivider`；后四者也接受自己的 `ui`，用于只改某一个分支。
+
+| 键名                   | 对应节点与默认关键类名                                                                                                                                                                                                                                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`                 | 菜单最外层容器 `<div>`。默认 `relative shadow-sm bg-gray-1 transition-[width] duration-300 ease-in-out`，整块菜单的底色、圆角、内边距、阴影改这里；`class` prop 也并到该节点。**折叠态宽度由内联样式 `width: 4rem` 下发，不走这里**（见「折叠动画」）；传了 `backgroundColor` 时内联底色会盖过这里的 `bg-*`。                 |
+| `menu`                 | 顶层 `<ul>`。默认 `flex transition-all duration-300 ease-in-out`，主轴方向由 `mode` 决定；条目间距也在这里（水平 `gap-x-4` = 16px，垂直 `gap-y-1` = 4px）。                                                                                                                                                                      |
+| `menuItem`             | 单个菜单项（`RebornMenuItem` 的 `<li>`，以及 `RebornSubMenu` 内部那一行标题）。默认 `group relative flex cursor-pointer select-none items-center transition-all duration-200 ease-in-out`，行高、hover 底色、圆角改这里。`group` 供水平一级菜单的 hover 高亮反查父级状态，覆盖时请保留。                                          |
+| `menuItemContent`      | 菜单项内部的横向排布容器。默认 `flex w-full items-center gap-2 transition-all duration-300 ease-in-out`，折叠态 `gap-2` 收到 `gap-0`；图标与文字的间距改这里。                                                                                                                                                                  |
+| `menuItemTitle`        | 文字节点。默认 `flex-1 truncate transition-all duration-300 ease-in-out`，字号字重灰阶由内部 `level` 变体补上；它在默认插槽 / `title` 插槽的外层，填充插槽后依然生效。折叠态的一级条目上以 `w-0 opacity-0` 收起。                                                                                                               |
+| `menuItemIcon`         | 图标位。**仅填充了 `icon` 插槽时渲染**（配置式节点带 `icon` 字段时由组件代为填充），默认 `flex w-5 shrink-0 items-center justify-center transition-all duration-300 ease-in-out`，折叠态为 `w-8`。定宽一列、图形居中，折叠动画依赖这个定值，改宽度会让折叠后图标偏离轨道中线。                                                  |
+| `menuItemExtra`        | 右侧附加内容位，只存在于 `RebornMenuItem`。**仅提供了 `extra` 属性或 `extra` 插槽时渲染**，默认 `ml-auto shrink-0 text-sm text-gray-5`（`text-sm` 在本主题为 12px，比标题低一档），快捷键提示的样式改这里。                                                                                                                     |
+| `menuItemArrow`        | 子菜单的展开箭头，只存在于 `RebornSubMenu`。**根级水平菜单的一级子菜单不渲染**，其余位置（垂直菜单、水平浮层内的次级子菜单）都会渲染。默认 `flex shrink-0 items-center justify-center transition-all duration-300 ease-in-out`，展开态由内部 `opened` 变体旋转；折叠态以 `w-0 opacity-0` 收起；传了成对的自定义展开图标时不旋转。 |
+| `subMenu`              | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是非传送浮层的定位参照物，非必要不要改 `position`。                                                                                                                                                                                                                          |
+| `subMenuPopup`         | 子菜单面板容器，**浮层展开与平铺展开都会渲染**，两种形态的默认类名不同：浮层展开（`popup`，默认 Teleport 到 body）为 `absolute z-50 overflow-visible border border-gray-2 bg-gray-1 p-1 shadow-xl rounded-md`，浮层底色与层级改这里；平铺展开（`normal`）改作高度过渡容器，变体换成 `relative grid border-0 shadow-none p-0 bg-transparent overflow-hidden transition-[grid-template-rows]`，落定后放开 `overflow-visible`。请避免在其中写 `transition-*` 或 `scale-*`，会与展开动画抢优先级。 |
+| `subMenuContent`       | 子菜单内部的 `<ul>`。默认 `flex flex-col gap-y-1`（条目间隔 4px），平铺展开时追加 `min-w-0`；两种展开形态都会用到。默认不是滚动容器，传入 `max-h-*` 与 `overflow-y-auto` 后组件才接管滚轮（见「页面滚动时的行为」）。                                                                                                            |
+| `menuItemGroup`        | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                                                                                                                                                                                          |
+| `menuItemGroupContent` | 分组内部承载子项的 `<ul>`，默认 `flex flex-col gap-y-1`（组内条目间隔 4px）；只想调分组内的疏密改这里，不影响分组标题。                                                                                                                                                                                                          |
+| `menuItemGroupTitle`   | 分组标题容器，默认 `px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-400`。该节点始终渲染，在 `title` 插槽外层，填充插槽后依然生效。                                                                                                                                                                                |
+| `menuDivider`          | `RebornMenuDivider` 的 `<li>`，默认 `my-1 list-none`，线条本身由 `dashed` 变体给出（`false` → `h-px bg-gray-2`，`true` → `h-0 border-t border-dashed border-gray-2 bg-transparent`）。                                                                                                                                           |
+
+传 `:collapse-transition="false"` 时，`root` / `menu` / `menuItemContent` / `menuItemTitle` / `menuItemIcon` / `menuItemExtra` / `menuItemArrow` / `subMenuPopup` 的过渡会被 `transition-none` 覆盖；`menuItem` 的 hover 过渡不受影响。
 
 ```vue
 <template>
@@ -473,114 +805,17 @@ interface MenuTooltipConfig {
 </template>
 ```
 
-# 示例代码
+## 注意事项
 
-## 基础垂直菜单
+- **`selectedKeys` 是路径不是单个 key**：只想拿选中项本身时取数组末位。手动赋值时也要给完整路径，否则祖先条目不会高亮。
+- **`items` 与默认插槽二选一**：传了 `items` 后默认插槽不渲染，两种写法混用时插槽内容会静默丢失。
+- **`collapse` 只对垂直菜单生效**，折叠宽度走内联样式，给 `RebornMenu` 传的宽度类不影响折叠态尺寸。
+- **折叠态与水平模式下 `expandType` 强制为 `popup`**，此时传 `normal`、`noIndent`、`defaultExpandAll` 都不起作用。
+- **`menuTrigger` 只作用于浮层展开**，平铺展开一律按点击处理，原因见「子菜单的展开与收起语义」。
 
-```vue
-<template>
-  <RebornMenu
-    v-model:selected-keys="selectedKeys"
-    mode="vertical"
-  >
-    <RebornMenuItem index="1">
-      <template #icon>
-        <Icon
-          name="material-symbols:home"
-          class="size-5"
-        />
-      </template>
-      首页
-    </RebornMenuItem>
+### Router 模式
 
-    <RebornSubMenu index="2">
-      <template #icon>
-        <Icon
-          name="material-symbols:settings"
-          class="size-5"
-        />
-      </template>
-      <template #title>系统管理</template>
-
-      <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
-      <RebornMenuItem index="2-2">角色管理</RebornMenuItem>
-      <RebornMenuItem index="2-3">权限管理</RebornMenuItem>
-    </RebornSubMenu>
-  </RebornMenu>
-</template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import { RebornMenu, RebornSubMenu, RebornMenuItem } from "~/components/reborn/ui/reborn-menu";
-
-// 存的是完整路径，选中「用户管理」时为 ['2', '2-1']
-const selectedKeys = ref(["1"]);
-</script>
-```
-
-## 配置式数据（items）
-
-```vue
-<template>
-  <RebornMenu
-    v-model:selected-keys="selectedKeys"
-    :items="items"
-    mode="vertical"
-  />
-</template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import { RebornMenu, type ItemType } from "~/components/reborn/ui/reborn-menu";
-
-const selectedKeys = ref(["home"]);
-
-const items: ItemType[] = [
-  { key: "home", label: "首页", icon: "lucide:home", extra: "⌘H" },
-  { type: "divider" },
-  {
-    type: "group",
-    label: "工作台",
-    children: [
-      { key: "project", label: "项目管理", icon: "lucide:folder-kanban" },
-      {
-        key: "team",
-        label: "团队协作",
-        icon: "lucide:users",
-        children: [
-          { key: "team-member", label: "成员列表" },
-          { type: "divider", dashed: true },
-          { key: "team-audit", label: "操作审计", disabled: true },
-        ],
-      },
-    ],
-  },
-  { key: "logout", label: "退出登录", icon: "lucide:log-out", danger: true },
-];
-</script>
-```
-
-## 水平菜单与溢出折叠
-
-```vue
-<template>
-  <RebornMenu
-    v-model:selected-keys="selectedKeys"
-    mode="horizontal"
-    ellipsis
-  >
-    <RebornMenuItem index="1">首页</RebornMenuItem>
-    <RebornMenuItem index="2">产品中心</RebornMenuItem>
-    <RebornMenuItem index="3">解决方案</RebornMenuItem>
-    <RebornMenuItem index="4">开发者文档</RebornMenuItem>
-    <RebornMenuItem index="5">社区论坛</RebornMenuItem>
-  </RebornMenu>
-</template>
-```
-
-> 开启 `ellipsis` 后组件会监听容器宽度变化，把放不下的条目收进末尾的「更多」子菜单，容器变宽时自动还原。若容器宽度是被 JS 直接改写而没有触发 `resize`，可以调用实例方法 `handleResize()` 手动重算。
-
-## Router 模式
+> `router` 为 `true` 时，请将 `RebornMenuItem` 的 `index` 设置为真实路由路径，例如 `/dashboard`。首次加载高亮项请通过 `v-model:selected-keys` 传入路径数组，例如 `['/dashboard']`。
 
 ```vue
 <template>
@@ -601,144 +836,7 @@ const items: ItemType[] = [
 </template>
 ```
 
-## 折叠菜单
-
-```vue
-<template>
-  <div>
-    <button @click="isCollapse = !isCollapse">
-      {{ isCollapse ? "展开" : "折叠" }}
-    </button>
-
-    <RebornMenu
-      v-model:selected-keys="selectedKeys"
-      mode="vertical"
-      :collapse="isCollapse"
-    >
-      <RebornMenuItem
-        index="1"
-        title="首页"
-      >
-        <template #icon>
-          <Icon
-            name="material-symbols:home"
-            class="size-5"
-          />
-        </template>
-        首页
-      </RebornMenuItem>
-
-      <RebornSubMenu index="2">
-        <template #icon>
-          <Icon
-            name="material-symbols:settings"
-            class="size-5"
-          />
-        </template>
-        <template #title>系统管理</template>
-        <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
-      </RebornSubMenu>
-    </RebornMenu>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-
-const isCollapse = ref(false);
-</script>
-```
-
-> 折叠态下悬停一级菜单项会在右侧弹出标题提示，内容缺省取菜单项的默认插槽，`title` 只在提示文案要与标题不同时才需要传。不需要提示时传 `:tooltip="false"`，此时回落为原生 `title`。
-
-## 自动滚动到选中项
-
-```vue
-<template>
-  <div class="h-60 overflow-auto">
-    <RebornMenu
-      v-model:selected-keys="selectedKeys"
-      auto-scroll-into-view
-    >
-      <RebornMenuItem
-        v-for="i in 30"
-        :key="i"
-        :index="`item-${i}`"
-      >
-        菜单项 {{ i }}
-      </RebornMenuItem>
-    </RebornMenu>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-
-// 挂载时第 25 项在可视区外，会被自动滚进来
-const selectedKeys = ref<string[]>(["item-25"]);
-</script>
-```
-
-## 菜单项分组与分割线
-
-```vue
-<template>
-  <RebornMenu
-    v-model:selected-keys="selectedKeys"
-    mode="vertical"
-  >
-    <RebornSubMenu index="1">
-      <template #title>数据分析</template>
-
-      <RebornMenuItemGroup title="报表">
-        <RebornMenuItem index="1-1">日报表</RebornMenuItem>
-        <RebornMenuItem index="1-2">周报表</RebornMenuItem>
-      </RebornMenuItemGroup>
-
-      <RebornMenuDivider />
-
-      <RebornMenuItemGroup title="图表">
-        <RebornMenuItem index="1-3">柱状图</RebornMenuItem>
-        <RebornMenuItem
-          index="1-4"
-          extra="⌘L"
-        >
-          折线图
-        </RebornMenuItem>
-      </RebornMenuItemGroup>
-    </RebornSubMenu>
-  </RebornMenu>
-</template>
-```
-
-## 受控展开
-
-```vue
-<template>
-  <RebornMenu
-    v-model:selected-keys="selectedKeys"
-    v-model:open-keys="openKeys"
-    mode="vertical"
-    expand-type="normal"
-    menu-trigger="click"
-  >
-    <RebornSubMenu index="2">
-      <template #title>系统管理</template>
-      <RebornMenuItem index="2-1">用户管理</RebornMenuItem>
-    </RebornSubMenu>
-  </RebornMenu>
-</template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-
-const selectedKeys = ref<string[]>([]);
-// 直接改这个数组即可外部控制展开态
-const openKeys = ref<string[]>(["2"]);
-</script>
-```
-
-# 从旧版本迁移
+### 从旧版本迁移
 
 本次重构对齐 Element Plus 的属性命名，包含**破坏性变更**：
 

@@ -10,8 +10,8 @@ export default {
   slots: {
     root: 'relative flex w-full h-full overflow-hidden select-none',
     panel: 'relative flex shrink-0 hover:z-50',
-    bar: 'relative flex items-center justify-center shrink-0 bg-gray-200 hover:bg-primary-500 transition-colors select-none z-20',
-    collapseButton: 'absolute flex items-center justify-center size-5 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-50 opacity-20 group-hover:opacity-100 transition-opacity z-30 cursor-pointer'
+    bar: 'relative flex items-center justify-center shrink-0 bg-gray-3 hover:bg-primary transition-colors select-none z-20',
+    collapseButton: 'absolute flex items-center justify-center size-5 rounded-full bg-gray-1 border border-gray-4 shadow-sm hover:bg-gray-2 opacity-20 group-hover:opacity-100 transition-opacity z-30 cursor-pointer'
   },
   variants: {
     layout: {
@@ -29,14 +29,14 @@ export default {
     isDragging: {
       true: {
         root: 'pointer-events-none', // 拖拽时禁用根部交互，通过 document 监听
-        bar: 'bg-primary-500'
+        bar: 'bg-primary'
       },
       false: {}
     },
     resizable: {
       true: {},
       false: {
-        bar: 'cursor-default hover:bg-gray-200'
+        bar: 'cursor-default hover:bg-gray-3'
       }
     },
     collapsible: {

@@ -7,7 +7,7 @@ const config = {
         inner: "h-full flex-1 text-sm text-gray-7 bg-transparent disabled:cursor-not-allowed disabled:opacity-50 outline-none border-none",
         // 字数统计文本。字号取七级令牌 text-sm（12px），原先的 text-xs 是 Tailwind 原生值，
         // 字号同为 12px，换令牌后只有行高从 16px 回到 20px
-        text: "absolute right-4 bottom-2 text-sm text-gray-500 pointer-events-none",
+        text: "absolute right-4 bottom-2 text-sm text-gray-7 pointer-events-none",
     },
     variants: {
         size: {

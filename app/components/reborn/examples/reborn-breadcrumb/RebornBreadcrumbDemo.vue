@@ -140,7 +140,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="分隔符定制" description="separator 传文本、separator-icon 传图标；条目上的同名属性与 #separator 插槽优先级更高。">
+    <DemoSection title="分隔符：文本、图标与插槽" description="separator 传文本、separator-icon 传图标；条目上的同名属性与 #separator 插槽优先级更高。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem>
           <template #label>
@@ -193,7 +193,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸与配色" description="通过 ui 传入细粒度类名覆盖根节点与条目样式：父级 ui 会级联到所有子条目，条目级 ui 可给单项单独配色且优先级更高。">
+    <DemoSection title="自定义样式：ui 级联与覆盖" description="通过 ui 传入细粒度类名覆盖根节点与条目样式：父级 ui 会级联到所有子条目，条目级 ui 可给单项单独配色且优先级更高。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="缩小字号" mono>
           <RebornBreadcrumb :ui="{ root: 'text-xs', separator: 'text-2xs' }">
@@ -236,7 +236,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="routes 数据驱动" description="传入 routes 后由组件渲染条目；item-render 插槽可接管单项内容，custom-url 可改写跳转地址。">
+    <DemoSection title="数据驱动：routes 与 item-render" description="传入 routes 后由组件渲染条目；item-render 插槽可接管单项内容，custom-url 可改写跳转地址。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="routes（默认渲染）" mono>
           <RebornBreadcrumb :routes="routes" />
@@ -262,7 +262,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="下拉菜单" description="routes 项的 children 或条目的 droplist 属性都会渲染成下拉菜单，也可用 #droplist 插槽完全自定义。">
+    <DemoSection title="下拉菜单：droplist 与 children" description="routes 项的 children 或条目的 droplist 属性都会渲染成下拉菜单，也可用 #droplist 插槽完全自定义。">
       <DemoBlock layout="stack" align="start">
         <DemoItem>
           <template #label>
@@ -306,7 +306,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="超出折叠" description="max-count 指定最多展示的条目数量，超出部分折叠为省略号，始终保留首项与末尾若干项。">
+    <DemoSection title="超出折叠：max-count" description="max-count 指定最多展示的条目数量，超出部分折叠为省略号，始终保留首项与末尾若干项。">
       <DemoBlock layout="grid" :columns="2" align="start">
         <DemoItem label="max-count = 3" mono note="原始 6 项，折叠后只留首项与末两项。">
           <RebornBreadcrumb :routes="longRoutes" :max-count="3" />
@@ -328,7 +328,7 @@ const lastSelected = ref("");
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="链接与跳转方式" description="每一项通过 to 指定跳转地址，replace 控制以 push / replace / blank 三种方式打开。">
+    <DemoSection title="跳转方式：to 与 replace" description="每一项通过 to 指定跳转地址，replace 控制以 push / replace / blank 三种方式打开。">
       <DemoBlock layout="stack">
         <RebornBreadcrumb separator="/">
           <RebornBreadcrumbItem to="/" class="text-red-5!">首页</RebornBreadcrumbItem>

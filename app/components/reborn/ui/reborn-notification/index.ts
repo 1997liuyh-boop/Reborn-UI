@@ -11,7 +11,7 @@ import { addNotification, destroyNotifications, notificationState } from './rebo
 export type {
   NotificationHandle,
   NotificationOptions,
-  NotificationPosition,
+  NotificationPlacement,
   NotificationProgressOptions,
   NotificationType,
 } from './reborn-notification.config';

@@ -10,19 +10,33 @@ platform: both
 
 ## 简介
 
-全局命令式的轻量反馈：一句 `message.success('已保存')` 即在页面顶部弹出一条消息，到时自动消失，不打断用户操作。组件本身不需要写在模板里，也没有 Props 与插槽——所有能力都通过 `message` 对象调用。
+全局命令式的轻量反馈：一句 `message.success('已保存')` 即在页面顶部弹出一条消息，到时自动消失，不打断用户操作。组件本身不需要写在模板里，也没有 Props 与插槽——所有能力都通过 `message` 对象调用。两端导出同名的 `message` 对象，方法名与参数逐一对齐。
+
+`type` 决定语义（`info` / `success` / `warning` / `error` / `loading`，静态方法会自动带上），`variant` 决定视觉强度（`base` / `filled` / `outlined` / `soft` / `subtle`），`color` 缺省由 `type` 映射、也可单独覆盖，三者组合覆盖从中性浮层到强语义色块的梯度。
+
+其余能力分三组：`duration` / `pauseOnHover` 控制自动关闭计时；`key` 让同一条消息原位更新，配合返回的 Promise 做「loading → 结果」的串联；`message.config` / `message.destroy` 是全局配置与销毁入口，`classNames` / `styles` 按 `root` / `icon` / `content` 三个节点覆盖样式。
 
 ::tip
 **两端 API 已对齐**：方法名（`open` / `info` / `success` / `warning` / `error` / `loading` / `config` / `destroy`）、静态方法签名、`config` 对象字段名、全局配置字段名逐一相同，下方表格为两端通用。差异集中在 `content` / `icon` 的取值形态、`top` 默认值单位与容器挂载方式，详见「两端差异对照」。
 ::
 
-**适用场景**：保存 / 删除 / 复制等操作后的成功或失败反馈；请求中的 loading 占位（配合同 `key` 更新为最终结果）；无需用户处理的轻量提示。
+### 何时使用
 
-**不适用场景**：需要用户确认或选择（用 `RebornDialog`）；页面内常驻的状态说明或公告（用 `RebornAlert`）；字段级校验错误（用 `RebornFormItem` 的错误态）。
+- 保存 / 删除 / 复制等操作后的结果反馈——用 `message.success` / `message.error`，3 秒后自动消失。
+- 请求中的占位提示——`message.loading({ duration: 0, key })` 起一条，完成后用同 `key` 更新为最终结果。
+- 提示关闭后才执行下一步（如跳转）——`await message.success(...)`，利用返回的 Promise。
+- 高频触发、需要限制同屏条数的提示——`message.config({ maxCount })`。
+
+### 何时不使用
+
+- 需要用户确认或选择 —— 改用 `reborn-dialog` 或 `reborn-popconfirm`。
+- 带标题、正文与操作按钮的较长通知 —— 改用 `reborn-notification`。
+- 页面内常驻的状态说明或公告 —— 改用 `reborn-alert`。
+- 字段级校验错误 —— 改用 `reborn-form-item` 的错误态。
 
 ## 用法
 
-### 导入
+### 基础用法
 
 两端从各自组件目录的 `index.ts` 导入同名的 `message` 对象：
 
@@ -40,7 +54,7 @@ import { message } from '@/components/reborn-toast'
 **小程序端必须在页面里渲染 `<RebornToast />`**（`RebornPage` 已内置，用 `RebornPage` 包页面则无需处理）。小程序无 DOM，容器无法像 Web / H5 那样在首次调用时动态挂载。
 ::
 
-### 静态方法
+五个静态方法对应五种消息类型，签名一致：
 
 ```ts
 message.success(content, [duration], onClose);
@@ -61,24 +75,17 @@ message.error("网络异常，请重试", 5);
 message.info("已复制到剪贴板", 3, () => console.log("closed"));
 ```
 
-### Promise 接口
+### 视觉变体
 
-所有方法都返回消息关闭时兑现的 Promise，`onClose` 与 `.then()` 可同时使用：
+需要用到 `variant`、`color`、`key` 等进阶配置时改传 config 对象，此时第二、三个参数被忽略。`variant` 默认 `base`，其余四种配色与按钮组件的同名变体一致：
 
-```ts
-message[level](content, [duration]).then(afterClose);
-message[level](content, [duration], onClose).then(afterClose);
-```
-
-```ts
-await message.success("已提交");
-// 消息关闭后才执行后续逻辑
-router.push("/list");
-```
-
-### 对象形式调用
-
-需要用到 `variant`、`color`、`key` 等进阶配置时改传 config 对象，此时第二、三个参数被忽略：
+| 变体 | 外观 | 典型用途 |
+| --- | --- | --- |
+| `base`（默认） | `gray-1` 白底 + 投影，图标为语义色圆形底 + 白色符号 | 绝大多数操作反馈，不抢页面主色 |
+| `filled` | 语义色实底 + 白字 | 需要强提醒的失败 / 警告 |
+| `outlined` | `gray-1` 底 + 语义色 1px 描边与文字 | 深色或花哨背景上需要清晰边界 |
+| `soft` | 同色相 1 阶实色浅底 + 语义色文字 | 语义明确但不想太重的提示 |
+| `subtle` | `soft` 的浅底 + 语义色描边 | 比 `soft` 更明确的边界 |
 
 ```ts
 message.open(config);
@@ -97,7 +104,22 @@ message.warning({
 Web 端第一个参数为对象时会先判断是否为 VNode（`__v_isVNode`）——是则按提示内容处理，否则视作 config，因此传 VNode 内容不会被误判成配置。
 ::
 
-### 同 key 更新（loading → 结果）
+### 关闭回调：Promise 串联
+
+所有方法都返回消息关闭时兑现的 Promise，`onClose` 与 `.then()` 可同时使用：
+
+```ts
+message[level](content, [duration]).then(afterClose);
+message[level](content, [duration], onClose).then(afterClose);
+```
+
+```ts
+await message.success("已提交");
+// 消息关闭后才执行后续逻辑
+router.push("/list");
+```
+
+### 同 key 更新与全局配置
 
 传相同 `key` 再次调用会**原位更新内容并重置计时**，不新增一条，最典型的用法是把 loading 换成最终结果：
 
@@ -116,7 +138,7 @@ try {
 `duration: 0` 的消息不会自动关闭，必须靠同 `key` 更新或 `message.destroy(key)` 收尾，否则会一直留在页面上。同 key 更新时旧的 Promise 与新的 Promise 都在**最终关闭**时一起兑现。
 ::
 
-### 全局方法与配置
+`message.config` 修改全局默认值，`message.destroy` 立即关闭消息：
 
 ```ts
 message.config(options);
@@ -164,10 +186,15 @@ message.config({
 | `color`        | 配色覆盖；缺省由类型映射（loading → primary）                   | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | -        |
 | `icon`         | 自定义图标。Web 传图标名或 VNode，UniApp 传图标类名（如 `i-lucide-star`） | `MessageNode`                                                                | 按 `type` 取 |
 | `pauseOnHover` | 悬停（UniApp 小程序端为按住）时是否暂停计时器                   | `boolean`                                                                              | `true`   |
+| `showClose`    | 是否显示关闭按钮（**Web 端**）                                  | `boolean`                                                                              | `false`  |
+| `closeIcon`    | 自定义关闭图标：图标名或 VNode（**Web 端**）                    | `MessageNode`                                                                          | `lucide:x` |
+| `dangerouslyUseHTMLString` | 是否将字符串 `content` 作为 HTML 片段渲染，**务必只传可信内容**（**Web 端**） | `boolean`                                                          | `false`  |
+| `grouping`     | 合并内容相同的消息：重复触发时不新增，改为在右上角累加次数徽标并重置计时（**Web 端**） | `boolean`                                                       | `false`  |
+| `placement`    | 消息出现的位置，写法与 `reborn-tooltip` 等浮层的 `placement` 一致；每个位置各自堆叠（**Web 端**） | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end'` | `'top'`  |
 | `key`          | 当前提示的唯一标志；同 key 再次调用会原位更新并重置计时         | `string \| number`                                                                     | -        |
 | `className`    | 自定义根节点 class                                              | `string`                                                                               | -        |
 | `style`        | 自定义根节点行内样式                                            | `CSSProperties`                                                                        | -        |
-| `classNames`   | 按语义化结构（root / icon / content）覆盖 class，支持对象或函数 | `Record<SemanticDOM, string> \| (info: { props }) => Record<...>`                      | -        |
+| `classNames`   | 按语义化结构（root / icon / content / close / badge）覆盖 class，支持对象或函数 | `Record<SemanticDOM, string> \| (info: { props }) => Record<...>`                      | -        |
 | `styles`       | 按语义化结构覆盖行内样式，支持对象或函数                        | `Record<SemanticDOM, CSSProperties> \| (info: { props }) => Record<...>`               | -        |
 | `onClick`      | 点击消息时触发的回调函数                                        | `(e) => void`                                                                          | -        |
 | `onClose`      | 关闭时触发的回调函数                                            | `() => void`                                                                           | -        |
@@ -176,21 +203,36 @@ message.config({
 
 | 参数           | 说明                                                 | 类型                | 默认值                                  |
 | -------------- | ---------------------------------------------------- | ------------------- | --------------------------------------- |
-| `top`          | 消息距离顶部的位置；传数字时 Web 按 px、UniApp 按 rpx | `string \| number`  | Web `8`（px）/ UniApp `'16rpx'`         |
+| `top`          | 消息距离顶部的位置；传数字时 Web 按 px、UniApp 按 rpx。Web 端底部方位复用此值作为距底距离 | `string \| number`  | Web `8`（px）/ UniApp `'16rpx'`         |
 | `duration`     | 默认自动关闭延时，单位秒                             | `number`            | `3`                                     |
 | `maxCount`     | 最大显示数，超过限制时最早的消息会被自动关闭；0 不限 | `number`            | `0`                                     |
-| `rtl`          | 是否开启 RTL 模式                                    | `boolean`           | `false`                                 |
+| `rtl`          | 是否开启 RTL 模式；Web 端开启后 `placement` 的 start / end 左右互换 | `boolean`           | `false`                                 |
 | `getContainer` | 配置渲染节点的输出位置，但依旧为全屏展示（**仅 Web / H5 生效**） | `() => HTMLElement` | `() => document.body`       |
 
-### 语义化结构键
+### 自定义样式（ui）
 
-`classNames` / `styles` 按以下键覆盖对应节点，两端一致：
+`message` 是命令式 API，**不提供 `ui` prop**。样式覆盖改为在每次调用的 config 里传 `classNames` / `styles`，按下表语义键作用到对应节点，`root` / `icon` / `content` 两端键名与节点一致，`close` / `badge` 目前仅 Web 端有。config.ts 的 `slots` 另有 `wrapper`（全屏定位容器，基础类 `fixed z-[2100] flex gap-2 pointer-events-none`，横向位置与堆叠方向由 `placement` 变体给出，距边距离由行内样式给出）与 `iconWrapper`，其中 `wrapper` 由所有消息共享、不对外开放覆盖；`iconWrapper` 通过语义键 `icon` 覆盖。
 
-| 键名      | 说明                                       |
-| --------- | ------------------------------------------ |
-| `root`    | 单条消息的根节点（高度、内边距、配色、投影） |
-| `icon`    | 类型图标                                   |
-| `content` | 提示文本，默认 `truncate` 单行截断         |
+| 语义键 | 对应节点 | 默认关键类名 | 说明 |
+| --- | --- | --- | --- |
+| `root` | 单条消息根节点 | `inline-flex max-w-[80vw] items-center gap-2 h-10 px-3 text-base rounded-lg` + 投影（UniApp 为 `h-[80rpx]` 等 rpx 值） | 背景、描边、文字色随 `variant` × `color` 变化；与 `className` / `style` 叠加生效 |
+| `icon` | 图标**外层容器**（config 里的 `iconWrapper`），不是图标本身 | `flex items-center justify-center shrink-0`；`base` 变体额外 `size-5 rounded-full text-white`（UniApp `size-[40rpx]`） | `base` 变体下它就是语义色圆形底，改背景色要写在这个键上；内部图标字形尺寸（`base` 为 `size-3.5`，其余 `size-4`）无法单独覆盖 |
+| `content` | 提示文本 | `truncate` | 默认单行截断，写 `whitespace-normal` 可放开多行 |
+| `close` | 关闭按钮（`showClose` 开启时，**Web 端**） | `size-3.5 opacity-65 hover:opacity-100` | 颜色继承当前文字色 |
+| `badge` | 合并次数徽标（`grouping` 合并 ≥2 次时，**Web 端**） | `absolute -top-2 -right-2 h-4 min-w-4 rounded-full text-sm text-white ring-2 ring-gray-1` | 背景随 `color` 取语义色实底；超过 99 显示 `99+` |
+
+`classNames` / `styles` 也可以传函数 `(info: { props }) => ({ ... })`，按当前消息的 `type`、`variant` 动态返回类名。
+
+```ts
+message.success({
+  content: "这是一条较长的提示，允许换行显示",
+  classNames: {
+    root: "h-auto py-2 rounded-full",
+    icon: "bg-primary",
+    content: "whitespace-normal",
+  },
+});
+```
 
 ## 视觉规格
 
@@ -229,6 +271,7 @@ message.config({
 | `onClick` 参数    | `MouseEvent`                                                  | 原生事件对象                                                                 |
 | loading 图标      | `lucide:loader-2`                                             | `i-lucide-loader-circle`                                                     |
 | 尺寸单位          | px                                                            | rpx                                                                          |
+| `showClose` / `closeIcon` / `dangerouslyUseHTMLString` / `grouping` / `placement` | 已支持 | 暂未支持，传入会被忽略 |
 
 ::tip
 UniApp 端 `closing` 只影响节点何时从队列移出：`onClose` 与 Promise 的兑现时机与 Web 端一致，都在**关闭那一刻**立即触发，不会等动画结束。
@@ -242,3 +285,5 @@ UniApp 端 `closing` 只影响节点何时从队列移出：`onClose` 与 Promis
 - `maxCount` 超限时关闭的是**最早**的那条，被关闭的消息照常触发 `onClose` 与 Promise。
 - `content` 默认单行 `truncate`，长文本会被截断；需要多行请用 `classNames: { content: 'whitespace-normal' }` 放开。
 - 堆叠折叠（stack）暂未实现；多条消息始终纵向排列，可用 `maxCount` 控制数量上限。
+- `grouping` 只合并**字符串**内容、且两条都开启了 `grouping`、位于同一 `placement` 的消息；同 `key` 更新优先于合并。
+- `dangerouslyUseHTMLString` 会直接把字符串交给 `innerHTML`，拼接用户输入前必须转义，否则存在 XSS 风险。

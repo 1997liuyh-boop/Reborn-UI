@@ -90,7 +90,7 @@ function buildSlots(state: OverlayState): Record<string, () => VNode> {
 
 /**
  * useOverlay composable
- * 用于全局管理 reborn-dialog 和 reborn-popup 组件及其二次封装组件
+ * 用于全局管理 reborn-dialog 和 reborn-drawer 组件及其二次封装组件
  */
 export const useOverlay = () => {
   /**

@@ -10,7 +10,7 @@ navigation:
 
 # useOverlay
 
-`useOverlay` 是一个面向浮层的编程式管理工具，适合用于 `reborn-dialog`、`reborn-popup` 以及基于它们封装的业务弹层组件。
+`useOverlay` 是一个面向浮层的编程式管理工具，适合用于 `reborn-dialog`、`reborn-drawer` 以及基于它们封装的业务弹层组件。
 
 它通过 `createApp()` 动态挂载组件，并在内部维护全局 overlay 状态表。
 

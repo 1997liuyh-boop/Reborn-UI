@@ -82,7 +82,7 @@ function renderContent(content?: ModalContent) {
   }
   if (typeof content === "string") {
     // 行高用 text-sm 令牌自带的 20px，不再写 leading-[1.6]
-    return h("div", { class: "text-sm text-gray-500 whitespace-pre-line" }, content);
+    return h("div", { class: "text-sm text-gray-7 whitespace-pre-line" }, content);
   }
   return content;
 }

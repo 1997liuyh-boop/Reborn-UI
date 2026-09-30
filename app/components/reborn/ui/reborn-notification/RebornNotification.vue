@@ -3,6 +3,7 @@ import type { CSSProperties } from 'vue';
 import type {
   NotificationInstance,
   NotificationNode,
+  NotificationPlacement,
   NotificationProgressOptions,
 } from './reborn-notification.config';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
@@ -11,7 +12,7 @@ import {
   closeNotification,
   NOTIFICATION_EDGE_GAP,
   NOTIFICATION_TYPE_ICON,
-  notificationPositions,
+  notificationPlacements,
   notificationState,
   notificationTheme,
   pauseNotification,
@@ -22,9 +23,9 @@ defineOptions({ name: 'RebornNotification' });
 
 /** 按位置分组：四个角各自维护一条堆叠队列 */
 const stacks = computed(() =>
-  notificationPositions.map(position => ({
-    position,
-    items: notificationState.list.filter(item => item.position === position),
+  notificationPlacements.map(placement => ({
+    placement,
+    items: notificationState.list.filter(item => item.placement === placement),
   })),
 );
 
@@ -37,7 +38,7 @@ function ribbonSide(item: NotificationInstance): 'none' | 'left' | 'right' {
 /** 取单条通知的样式构建器 */
 function themeOf(item: NotificationInstance) {
   return notificationTheme({
-    position: item.position,
+    placement: item.placement,
     type: item.type,
     ribbon: ribbonSide(item),
     clickable: Boolean(item.onClick),
@@ -85,10 +86,11 @@ onBeforeUnmount(() => {
  * 贴视口时按所在侧扣掉滚动条占位；offset 只叠加在锚定的纵向边（top / bottom）上；
  * zIndex 为 0 时用内置层级 2200（高于 message 的 2100）
  */
-function wrapperStyle(position: (typeof notificationPositions)[number]): CSSProperties {
+function wrapperStyle(placement: NotificationPlacement): CSSProperties {
   const anchored = notificationState.viewportAnchored;
-  const isTop = position.startsWith('top');
-  const isRight = position.endsWith('right');
+  const isTop = placement.startsWith('top');
+  // 没有 rtl 配置，end 固定对应右侧、start 固定对应左侧
+  const isRight = placement.endsWith('end');
   // 滚动条只占右侧与底部，另外两条边无需补偿
   const trimY = !isTop && anchored ? gutter.value.y : 0;
   const trimX = isRight && anchored ? gutter.value.x : 0;
@@ -105,9 +107,9 @@ function wrapperStyle(position: (typeof notificationPositions)[number]): CSSProp
   return style;
 }
 
-/** 左右两侧入场方向不同，过渡名按侧边区分 */
-function transitionName(position: (typeof notificationPositions)[number]) {
-  return position.endsWith('right') ? 'reborn-notification-right' : 'reborn-notification-left';
+/** 左右两侧入场方向不同，过渡名按物理侧边区分（end 贴右、start 贴左） */
+function transitionName(placement: NotificationPlacement) {
+  return placement.endsWith('end') ? 'reborn-notification-right' : 'reborn-notification-left';
 }
 
 /** VNode（或返回 VNode 的函数）走 component :is 渲染 */
@@ -185,10 +187,10 @@ function handleMouseLeave(item: NotificationInstance) {
 
 <template>
   <TransitionGroup
-    v-for="stack in stacks" :key="stack.position"
-    tag="div" :name="transitionName(stack.position)"
-    :class="cn(notificationTheme({ position: stack.position }).wrapper(), stack.items[0]?.ui?.wrapper)"
-    :style="wrapperStyle(stack.position)"
+    v-for="stack in stacks" :key="stack.placement"
+    tag="div" :name="transitionName(stack.placement)"
+    :class="cn(notificationTheme({ placement: stack.placement }).wrapper(), stack.items[0]?.ui?.wrapper)"
+    :style="wrapperStyle(stack.placement)"
   >
     <div
       v-for="item in stack.items" :key="item.id"

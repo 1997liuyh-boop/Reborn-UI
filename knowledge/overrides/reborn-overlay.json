@@ -6,13 +6,13 @@
     "需要自定义遮罩显隐动画时长（duration）时。"
   ],
   "whenNotToUse": [
-    "完整弹窗交互直接用自带遮罩的 reborn-popup 或 reborn-dialog。",
+    "完整弹窗交互直接用自带遮罩的 reborn-drawer（Web）、reborn-popup（UniApp）或 reborn-dialog。",
     "加载中的遮罩状态改用 reborn-loading。"
   ],
   "pitfalls": [
     "web、uniapp 双端可用。",
     "absolute=true 时在最近的非 static 定位祖先内展示，用于局部遮罩。",
-    "zIndex 默认仅 10，与其他弹层（如 reborn-popup 默认 25）叠放时注意层级。",
+    "zIndex 默认仅 10，与其他弹层（如 Web reborn-drawer 默认 2000、UniApp reborn-popup 默认 25）叠放时注意层级。",
     "closeOnClickOverlay 与 lockScroll 默认均为 true。"
   ]
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
+import type { Placement } from "~/lib/placement";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
@@ -8,11 +9,8 @@ import theme from "./reborn-guide.config";
 
 // ==================== 类型定义 ====================
 
-/** popup 模式下的 12 种定位 */
-type GuidePopupPlacement =
-  | "top" | "left" | "right" | "bottom"
-  | "top-left" | "top-right" | "bottom-left" | "bottom-right"
-  | "left-top" | "left-bottom" | "right-top" | "right-bottom";
+/** popup 模式下的 12 种定位，取值与 reborn-tooltip 的 placement 一致 */
+type GuidePopupPlacement = Placement;
 
 /** dialog 模式下的 2 种定位 */
 type GuideDialogPlacement = "top" | "center";
@@ -283,42 +281,42 @@ function calcGuideBoxPosition(): { left: number; top: number; arrowSide: string 
       top = rect.top + rect.height / 2 - boxH / 2 + oy;
       arrowSide = "left";
       break;
-    case "top-left":
+    case "top-start":
       left = rect.left + ox;
       top = rect.top - boxH - gap + oy;
       arrowSide = "bottom";
       break;
-    case "top-right":
+    case "top-end":
       left = rect.right - boxW + ox;
       top = rect.top - boxH - gap + oy;
       arrowSide = "bottom";
       break;
-    case "bottom-left":
+    case "bottom-start":
       left = rect.left + ox;
       top = rect.bottom + gap + oy;
       arrowSide = "top";
       break;
-    case "bottom-right":
+    case "bottom-end":
       left = rect.right - boxW + ox;
       top = rect.bottom + gap + oy;
       arrowSide = "top";
       break;
-    case "left-top":
+    case "left-start":
       left = rect.left - boxW - gap + ox;
       top = rect.top + oy;
       arrowSide = "right";
       break;
-    case "left-bottom":
+    case "left-end":
       left = rect.left - boxW - gap + ox;
       top = rect.bottom - boxH + oy;
       arrowSide = "right";
       break;
-    case "right-top":
+    case "right-start":
       left = rect.right + gap + ox;
       top = rect.top + oy;
       arrowSide = "left";
       break;
-    case "right-bottom":
+    case "right-end":
       left = rect.right + gap + ox;
       top = rect.bottom - boxH + oy;
       arrowSide = "left";

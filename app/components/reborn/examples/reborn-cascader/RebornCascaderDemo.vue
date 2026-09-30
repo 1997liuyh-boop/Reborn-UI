@@ -350,7 +350,7 @@ function onChange(value: any) {
     </DemoSection>
 
     <DemoSection
-      title="自定义标签"
+      title="回显插槽：label"
       description="label 插槽接管触发器的回显内容：单选替换整段回显文本，多选逐个标签渲染。插槽参数 data 是命中的选项对象，值不在选项里（如懒加载未到达的层级）时为 null，自定义渲染要自己兜底。"
     >
       <DemoBlock layout="stack">
@@ -378,7 +378,7 @@ function onChange(value: any) {
     </DemoSection>
 
     <DemoSection
-      title="搜索"
+      title="搜索与结果展示"
       description="allow-search 把触发器变成输入框，命中的选项拍平成一列；多选默认已开启。search-option-only-label 只显示选项自身文本，不显示整条路径。"
     >
       <DemoBlock layout="stack">
@@ -395,7 +395,7 @@ function onChange(value: any) {
     </DemoSection>
 
     <DemoSection
-      title="异步加载"
+      title="异步加载：load-more"
       description="传入 load-more 即开启懒加载：展开非叶子节点时调用它，done 回传的子节点会写回该选项。数据未标 isLeaf 时组件无从判断能否继续展开，必须自己标。"
     >
       <DemoBlock layout="stack">
@@ -427,7 +427,7 @@ function onChange(value: any) {
     </DemoSection>
 
     <DemoSection
-      title="独立面板"
+      title="独立面板：RebornCascaderPanel"
       description="RebornCascaderPanel 就是下拉里的那块面板，可以直接放进页面当常驻控件用；bordered 决定它自带不自带外框。"
     >
       <DemoBlock layout="stack">

@@ -11,7 +11,7 @@
  *
  * 面板显隐由两个条件共同决定：当前页注册过 uniapp demo（hasDemos），
  * 且顶栏平台开关处于 UniApp 档（useDocsPlatform）。Web 档下不展示任何移动端预览，
- * 布局避让、目录左移与 iframe 挂载都以 isPanelVisible 为准。
+ * 布局避让与 iframe 挂载都以 isPanelVisible 为准。
  */
 
 export interface UniDemoEntry {
@@ -92,7 +92,7 @@ export function useUniDemoPanel() {
     const hasDemos = computed(() => entries.value.length > 0)
 
     const { isUniapp } = useDocsPlatform()
-    /** 右侧面板是否展示：有 demo 且开关处于 UniApp 档（布局避让、目录避让、iframe 挂载均以此为准） */
+    /** 右侧面板是否展示：有 demo 且开关处于 UniApp 档（布局避让、iframe 挂载均以此为准） */
     const isPanelVisible = computed(() => hasDemos.value && isUniapp.value)
 
     return { entries, activeId, activeEntry, activeUrl, hasDemos, isPanelVisible, register, setActive, clear }
