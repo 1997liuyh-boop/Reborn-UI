@@ -159,7 +159,7 @@ const droplist = [
 ```
 
 ::warning
-`dropdown-props` 的支持度两端相差很大：Web 端透传给底层浮层容器 `RebornSelectTrigger`（`portal` / `size` / `closeOn` / `ui` 等），且写在组件内置默认值之后，连 `close-on` 与 `ui` 都能覆盖；UniApp 端为组件内置的绝对定位面板、**仅支持 `hideOnClick`**（默认 `true`，即点菜单项后自动收起，传 `false` 可保持展开）。
+`dropdown-props` 的支持度两端相差很大：Web 端透传给底层浮层容器 `RebornSelectTrigger`（`portal` / `size` / `closeOn` / `ui` 等），且写在组件内置默认值之后，连 `ui` 都能覆盖，`closeOn` 默认沿用 `RebornSelectTrigger` 的 `mousedown`，可改为 `click`；UniApp 端为组件内置的绝对定位面板、**仅支持 `hideOnClick`**（默认 `true`，即点菜单项后自动收起，传 `false` 可保持展开）。
 ::
 
 ### 超出折叠：max-count
@@ -405,7 +405,7 @@ const droplist = [
 | `target`           | 未声明；新窗口打开用 `replace="blank"`                                           | 已声明但不参与跳转逻辑（预留属性）                                    |
 | `separator-icon`   | Iconify 名称或组件，如 `lucide:chevron-right`                                    | 仅图标类名，如 `i-lucide-chevron-right`                               |
 | 下拉菜单实现       | 借 `RebornSelectTrigger` 做浮层容器，默认传送到 body，支持完整 `dropdown-props`  | 组件内置的绝对定位面板 + 全屏点击遮罩，`dropdown-props` 仅 `hideOnClick` |
-| 下拉菜单关闭时机   | 内置 `close-on="mousedown"`，面板外按下任意鼠标键或页面滚动即收起，可用 `dropdown-props` 覆盖 | 点击 `droplistMask` 全屏遮罩收起；`hideOnClick`（默认 `true`）时点菜单项也收起 |
+| 下拉菜单关闭时机   | 沿用 `RebornSelectTrigger` 默认的 `mousedown`，面板外按下任意鼠标键或页面滚动即收起；`dropdown-props` 传 `closeOn: 'click'` 可改为点击完成后收起 | 点击 `droplistMask` 全屏遮罩收起；`hideOnClick`（默认 `true`）时点菜单项也收起 |
 | 交互反馈           | hover 变 `text-primary`                                                          | 按压（`active:`）变 `text-primary`，触屏无 hover                      |
 | 不可跳转条目的命中 | 仅 `cursor-default`，节点仍可接收点击                                            | 追加 `pointer-events-none`，节点收不到点击（带下拉时补回 `pointer-events-auto`） |
 | 暗色适配           | 只用灰阶 token，暗色由主题整条翻转，**禁写 `dark:` 前缀**                         | 下拉面板与菜单项显式写 `dark:` 变体                                   |

@@ -38,7 +38,7 @@ export type RadioVariant = (typeof radioVariants)[number]
 /** 单选绑定值类型 */
 export type RadioValue = string | number | boolean
 
-/** options 传参时的选项对象 */
+/** options 传参时的选项对象；其余字段原样保留，label 插槽的 data 可以读到 */
 export interface RadioOption {
   /** 选项文案 */
   label?: string
@@ -46,6 +46,17 @@ export interface RadioOption {
   value: string | number
   /** 是否禁用该选项 */
   disabled?: boolean
+  [key: string]: any
+}
+
+/** options 的字段别名映射：数据字段名与默认的 label / value / disabled 不一致时配置 */
+export interface RadioFieldNames {
+  /** 展示文案字段名，默认 `label` */
+  label?: string
+  /** 选项值字段名，默认 `value` */
+  value?: string
+  /** 禁用字段名，默认 `disabled` */
+  disabled?: string
 }
 
 /**

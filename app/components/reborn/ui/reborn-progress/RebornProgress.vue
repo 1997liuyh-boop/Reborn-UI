@@ -6,7 +6,7 @@ import { computed, useId } from 'vue';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
 import theme from './reborn-progress.config';
-import { getArcGeometry, getArcPath, getColorRanges, getGradientStops, getStepRanges, normalizePercent, normalizeSteps } from './reborn-progress.utils';
+import { getArcGeometry, getArcPath, getColorRanges, getGradientStops, getStepRanges, normalizePercent, normalizeSteps, roundCoord } from './reborn-progress.utils';
 
 export interface RebornProgressProps {
   /** 当前百分比，限制在 0–100，非有限数字回退为零。 */
@@ -77,7 +77,8 @@ const gradientVector = computed(() => {
   const x = Math.sin(angle) * geometry.value.diameter / 2;
   const y = -Math.cos(angle) * geometry.value.diameter / 2;
   const center = geometry.value.diameter / 2;
-  return { x1: center - x, y1: center - y, x2: center + x, y2: center + y };
+  // 与圆弧坐标同理取整，避免两端三角函数精度差异造成水合不一致
+  return { x1: roundCoord(center - x), y1: roundCoord(center - y), x2: roundCoord(center + x), y2: roundCoord(center + y) };
 });
 const fallback = computed(() => typeof props.strokeColor === 'string' && props.strokeColor ? props.strokeColor : 'currentColor');
 const colorRanges = computed(() => getColorRanges(props.segments, gradientStops.value.length ? `url(#${gradientId})` : fallback.value));

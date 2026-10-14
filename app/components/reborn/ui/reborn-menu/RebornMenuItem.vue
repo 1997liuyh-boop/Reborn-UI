@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from "vue-router";
 import type { MenuContext, MenuUI } from "./reborn-menu.config";
-import { computed, inject } from "vue";
+import { computed, inject, useSlots } from "vue";
 import { cn } from "~/lib/utils";
 import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
-import theme, { MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
+import theme, { getMenuFallbackChar, MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
 
 /**
  * 菜单项组件属性接口
@@ -47,6 +47,7 @@ const emit = defineEmits<{
 }>();
 
 const menuContext = inject<MenuContext>(MENU_INJECTION_KEY);
+const slots = useSlots();
 
 const isActive = computed(() => menuContext?.selectedKeys.value.includes(props.index) ?? false);
 const indexPath = computed(() => [...(menuContext?.parentIndexPath.value ?? []), props.index]);
@@ -79,6 +80,24 @@ const TOOLTIP_TRIGGER_CLASS = "flex max-w-none -mx-4 -my-3 px-4 py-3";
 
 /** 仅折叠态启用提示 */
 const tooltipDisabled = computed(() => !menuContext?.collapse.value);
+
+/**
+ * 是否渲染首字兜底（没有 icon 插槽时才会走到这一分支）。
+ * 条件与 tooltipConfig 同源：折叠只发生在垂直模式、只收起一级标题，其余位置标题始终可见，不需要替身。
+ * 不随 collapse 变化，展开态兜底也留在 DOM 里（宽度为 0），折叠切换时才有宽度与透明度的过渡。
+ */
+const showFallback = computed(
+  () => level.value === "root" && (menuContext?.mode.value ?? "vertical") === "vertical",
+);
+
+/**
+ * 首字兜底的文字，取默认插槽（标题）的首字，取不到时退回 title 属性。
+ * 写成函数在模板里调用而不是 computed：slots 对象本身不是响应式的，computed 的缓存感知不到父组件换了插槽内容；
+ * 模板里调用则每次渲染都取当次的插槽，同时满足 Vue「插槽只在渲染期间调用」的约定。
+ */
+function fallbackChar() {
+  return getMenuFallbackChar(slots.default?.(), props.title);
+}
 
 const itemStyle = computed(() => {
   if (!menuContext) return undefined;
@@ -146,6 +165,13 @@ const itemUi = computed(() => {
         rootOverrides.menuItemIcon,
         localOverrides.menuItemIcon,
       ),
+    menuItemIconFallback: (opts?: { class?: any }) =>
+      cn(
+        styles.menuItemIconFallback?.(),
+        opts?.class,
+        rootOverrides.menuItemIconFallback,
+        localOverrides.menuItemIconFallback,
+      ),
     menuItemExtra: (opts?: { class?: any }) =>
       cn(
         styles.menuItemExtra?.(),
@@ -193,6 +219,14 @@ function handleClick() {
           :class="itemUi.menuItemIcon()"
         >
           <slot name="icon" />
+        </div>
+        <!-- 首字只是视觉替身，读屏已能读到标题，这里对辅助技术隐藏，避免同一个字被念两遍 -->
+        <div
+          v-else-if="showFallback"
+          :class="itemUi.menuItemIconFallback()"
+          aria-hidden="true"
+        >
+          {{ fallbackChar() }}
         </div>
         <div :class="itemUi.menuItemTitle()">
           <slot />

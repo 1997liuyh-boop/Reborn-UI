@@ -210,6 +210,7 @@ function onVisibleChange(v: boolean) {
 | `popup-offset` | `number` | - | 浮层与触发器的间距（px）；未传时无箭头为 4、带箭头为 8 |
 | `auto-adjust-overflow` | `boolean` | `true` | `placement` 指定的一侧空间不足时是否翻转到对侧；关闭后严格按 `placement` 弹出 |
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`；关闭后浮层留在触发器内，随父容器一起滚动与裁剪，且只支持 start 对齐 |
+| `close-on` | `'click' \| 'mousedown'` | `'mousedown'` | 外部关闭的时机：`mousedown` 在面板外按下、滚轮或页面滚动时收起，面板与子菜单内的操作不算外部；`click` 在面板外完成一次点击后才收起，期间页面滚动时面板跟随触发器 |
 | `disabled` | `boolean` | `false` | 菜单是否禁用；不改变触发元素外观 |
 | `hide-on-select` | `boolean` | `true` | 用户选择后是否自动收起菜单 |
 | `v-model:popup-visible` | `boolean` | `false` | 下拉框显隐（受控） |

@@ -241,6 +241,11 @@ const tooltipEntries = [
   { index: "t3", icon: "lucide:bar-chart-3", label: "数据报表", title: undefined },
 ];
 
+/** 「无图标时的折叠」示例的折叠开关，默认折叠，进页面就能看到首字与分隔线 */
+const fallbackCollapse = ref(true);
+/** 「无图标时的折叠」示例的选中项 */
+const fallbackPath = ref(["f-orders"]);
+
 // ─── 自动滚动到选中项 ───────────────────────────────────────────
 
 const scrollEntries = Array.from({ length: 30 }, (_, i) => `scroll-${i + 1}`);
@@ -568,6 +573,7 @@ const codeString = computed(
         折叠后一级菜单项只剩图标，<code>tooltip</code> 默认开启，悬停时在右侧补回标题；
         内容缺省取菜单项标题，需要不同文案时再传 <code>title</code>（第二项）。
         传对象可调整提示本身，传 <code>false</code> 关闭。展开态标题完整可见，不会弹出提示。
+        条目没有 <code>icon</code> 插槽时以标题首字占位，不想要首字传 <code>:ui="{ menuItemIconFallback: 'hidden' }"</code>。
       </template>
       <DemoBlock
         layout="grid"
@@ -602,6 +608,61 @@ const codeString = computed(
             </RebornMenuItem>
           </RebornMenu>
         </div>
+      </DemoBlock>
+      <DemoBlock
+        layout="stack"
+        class="gap-3"
+      >
+        <div class="flex items-center justify-between gap-4">
+          <span class="text-dimmed text-xs font-medium">无图标时的折叠</span>
+          <RebornButton
+            size="sm"
+            variant="soft"
+            color="neutral"
+            :label="fallbackCollapse ? '展开' : '折叠'"
+            @click="fallbackCollapse = !fallbackCollapse"
+          />
+        </div>
+        <DemoNote tone="dimmed">
+          条目都没有 icon 插槽：折叠后图标位显示标题首字，英文首字母转大写，颜色跟随选中与危险态；
+          分组标题在 64px 轨道里放不下，收成分隔线。悬停「S」打开浮层，浮层里的分组仍保留标题。
+        </DemoNote>
+        <RebornMenu
+          v-model:selected-keys="fallbackPath"
+          mode="vertical"
+          :collapse="fallbackCollapse"
+          class="w-full max-w-xs"
+        >
+          <RebornMenuItemGroup title="工作台">
+            <RebornMenuItem index="f-dashboard">
+              dashboard
+            </RebornMenuItem>
+            <RebornMenuItem index="f-orders">
+              订单管理
+            </RebornMenuItem>
+          </RebornMenuItemGroup>
+          <RebornMenuItemGroup title="配置">
+            <RebornSubMenu index="f-settings">
+              <template #title>
+                Settings
+              </template>
+              <RebornMenuItemGroup title="账号">
+                <RebornMenuItem index="f-profile">
+                  个人资料
+                </RebornMenuItem>
+                <RebornMenuItem index="f-security">
+                  安全设置
+                </RebornMenuItem>
+              </RebornMenuItemGroup>
+            </RebornSubMenu>
+            <RebornMenuItem
+              index="f-logout"
+              danger
+            >
+              退出登录
+            </RebornMenuItem>
+          </RebornMenuItemGroup>
+        </RebornMenu>
       </DemoBlock>
     </DemoSection>
 

@@ -142,8 +142,6 @@ const skuAttributes = ref<SkuOption[]>([
   {
     title: "发货地",
     key: "origin",
-    labelKey: "label",
-    valueKey: "value",
     multiple: true,
     children: [
       { label: "日本", value: "jp" },
@@ -153,8 +151,6 @@ const skuAttributes = ref<SkuOption[]>([
   {
     title: "平台",
     key: "platform",
-    labelKey: "label",
-    valueKey: "value",
     multiple: false,
     children: [
       { label: "Mercari", value: "mercari" },

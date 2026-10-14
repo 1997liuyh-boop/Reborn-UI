@@ -36,6 +36,7 @@ const props = withDefaults(defineProps<SelectDateProps>(), {
   showArrow: true,
   arrowAnimation: true,
   portal: true,
+  closeOn: "mousedown",
   autoAdjustOverflow: true,
   labelFormat: "YYYY-MM-DD",
 });
@@ -73,6 +74,12 @@ export interface SelectDateProps {
    * 关掉后浮层留在触发器内，会随父容器一起滚动、也一起被 overflow 裁剪。
    */
   portal?: SelectTriggerProps["portal"];
+  /**
+   * 外部关闭的时机（透传给 RebornSelectTrigger，默认 mousedown）。
+   * mousedown 在面板外按下、滚轮或页面滚动时收起，面板内部的滚动不算外部；
+   * click 在面板外完成一次点击后才收起，期间页面滚动时面板跟随触发器。
+   */
+  closeOn?: SelectTriggerProps["closeOn"];
   /** 下拉框是否自动调整位置：下方空间不足且上方更宽裕时向上展开；关闭后固定向下 */
   autoAdjustOverflow?: SelectTriggerProps["autoAdjustOverflow"];
   /** 触发器 (Trigger) 的 UI 微调配置：触发器盒子与浮层的键混写在一起，组件内部自动拆分下发 */
@@ -280,7 +287,7 @@ function clear(e: Event) {
 }
 
 /**
- * 收起面板。判定「是否点在触发器或面板外」的职责归 RebornSelectTrigger：
+ * 收起面板（按 closeOn 时机上报）。判定「是否在触发器或面板外按下 / 点击」的职责归 RebornSelectTrigger：
  * 浮层已传送到 body，本组件根节点不再包含它，自己用 $el.contains 判定会把
  * 「点击面板内的日期」误判成外部点击。
  */
@@ -299,6 +306,7 @@ function onOutsideClose() {
     :size="fieldGroupSize || size"
     :ui="overlayUi"
     :portal="portal"
+    :close-on="closeOn"
     :auto-adjust-overflow="autoAdjustOverflow"
     @close="onOutsideClose"
   >

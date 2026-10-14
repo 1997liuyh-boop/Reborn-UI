@@ -1,17 +1,28 @@
-export { default as RebornTransfer } from './RebornTransfer.vue'
 export type {
-  TransferItem,
+  TransferCheckShape,
+  TransferColor,
   TransferDataRecord,
   TransferFieldNames,
+  TransferItem,
   TransferOperationButtonConfig,
   TransferOperationButtons,
-  TransferSize,
-  TransferCheckShape,
+  TransferVariant,
 } from './reborn-transfer.config'
 export { defaultTransferFieldNames } from './reborn-transfer.config'
+export {
+  transferCheckShapes,
+  transferColors,
+  transferVariants,
+} from './reborn-transfer.config'
+export { default as RebornTransfer } from './RebornTransfer.vue'
 export type {
-  TransferPaginationConfig,
   ResolvedOperationButton,
+  TransferDirection,
+  TransferExtraSlotProps,
+  TransferFooterSlotProps,
+  TransferItemSlotProps,
+  TransferOperationButtonSlotProps,
   TransferOperationSlotProps,
+  TransferPaginationConfig,
+  TransferTitleSlotProps,
 } from './RebornTransfer.vue'
-export { transferSizes, transferCheckShapes } from './reborn-transfer.config'

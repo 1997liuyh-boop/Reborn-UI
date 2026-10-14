@@ -5,7 +5,8 @@
  * - 已注册的 Overview 进入视口后才挂载，避免大量同时渲染
  * - 预览区禁交互，点击整卡仍跳转详情
  */
-import { resolveComponent, type Component } from 'vue'
+import type { Component } from 'vue'
+import { camelize, capitalize, getCurrentInstance } from 'vue'
 
 interface Props {
   /** PascalCase Overview 组件名，如 RebornButtonOverview */
@@ -24,16 +25,19 @@ const visible = ref(false)
 /** null=尚未解析；false=确认无此组件；Component=可挂载 */
 const resolvedDemo = shallowRef<Component | false | null>(null)
 
+/**
+ * 全局组件注册表（nuxt.config 中 components 为 global，Overview 都注册在这里）。
+ * 不用 resolveComponent：它找不到时会在开发环境打印「Failed to resolve component」警告，
+ * 而大多数组件本就没有 Overview、按设计回退 Glyph，总览页会因此刷出一屏无意义的警告。
+ */
+const globalComponents = getCurrentInstance()?.appContext.components ?? {}
+
 function resolveOverview(): Component | false {
-  if (!props.demoName) return false
-  try {
-    const comp = resolveComponent(props.demoName)
-    // resolveComponent 未找到时返回同名字符串
-    return typeof comp === 'string' ? false : (comp as Component)
-  }
-  catch {
-    return false
-  }
+  const name = props.demoName
+  if (!name) return false
+  // 与 Vue 解析组件名的顺序一致：原名 → camelCase → PascalCase
+  const camelName = camelize(name)
+  return globalComponents[name] ?? globalComponents[camelName] ?? globalComponents[capitalize(camelName)] ?? false
 }
 
 function isNearViewport(el: HTMLElement) {

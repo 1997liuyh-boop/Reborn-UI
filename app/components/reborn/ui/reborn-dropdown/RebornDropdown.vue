@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SelectTriggerProps } from '../reborn-select-trigger/RebornSelectTrigger.vue';
 import type {
   DropdownContext,
   DropdownOption,
@@ -24,6 +25,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
   trigger: 'click',
   hideOnSelect: true,
   portal: true,
+  closeOn: 'mousedown',
   autoAdjustOverflow: true,
 });
 
@@ -69,6 +71,12 @@ export interface DropdownProps {
    * @defaultValue true
    */
   portal?: boolean;
+  /**
+   * 外部关闭的时机（透传给 RebornSelectTrigger）：mousedown 在面板外按下、滚轮或页面滚动时收起，
+   * 面板与子菜单内的操作不算外部；click 在面板外完成一次点击后才收起，期间页面滚动时面板跟随触发器
+   * @defaultValue 'mousedown'
+   */
+  closeOn?: SelectTriggerProps['closeOn'];
   /**
    * 下拉框是否自动调整位置：placement 指定的一侧空间不足时翻转到对侧；关闭后严格按 placement 弹出
    * @defaultValue true
@@ -198,7 +206,7 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-/** 触发器外的点击：落在子菜单面板内的不算外部 */
+/** 触发器外的按下或点击（按 closeOn 时机上报）：落在子菜单面板内的不算外部 */
 function onOutsideClose(ev?: Event) {
   const target = ev?.target as Node | null;
   if (target && nestedContains.some(contains => contains(target))) return;
@@ -269,7 +277,8 @@ defineExpose({
 <template>
   <RebornSelectTrigger
     ref="triggerRef"
-    :is-open="popupVisible" :disabled="disabled" :portal="portal" :auto-adjust-overflow="autoAdjustOverflow"
+    :is-open="popupVisible" :disabled="disabled" :portal="portal" :close-on="closeOn"
+    :auto-adjust-overflow="autoAdjustOverflow"
     :side="resolvedPlacement.side" :align="resolvedPlacement.align" :offset="offset" :arrow="showArrow"
     :class="ui.wrapper()" :ui="{
       /* 浮层宽度由菜单内容撑开，不跟随触发器 */

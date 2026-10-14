@@ -40,6 +40,19 @@ export interface CascaderOption {
     [key: string]: any
 }
 
+/**
+ * options 的字段别名配置：后端字段名与默认的 label / value / children 不一致时配置，
+ * 未配置的字段沿用默认名
+ */
+export interface CascaderFieldNames {
+    /** 展示文案字段名，默认 `label` */
+    label?: string
+    /** 选项值字段名，默认 `value` */
+    value?: string
+    /** 子选项字段名，默认 `children` */
+    children?: string
+}
+
 export interface CascaderProps {
     /** 绑定值 */
     modelValue?: (string | number)[] | (string | number)[][]
@@ -53,10 +66,8 @@ export interface CascaderProps {
     showTrigger?: boolean
     /** 是否禁用 */
     disabled?: boolean
-    /** 标签字段 */
-    labelKey?: string
-    /** 值字段 */
-    valueKey?: string
+    /** options 的字段别名配置 */
+    fieldNames?: CascaderFieldNames
     /** 分隔符 */
     textSeparator?: string
     /** 列表高度 (rpx) */
@@ -75,8 +86,6 @@ export interface CascaderProps {
     lazy?: boolean
     /** 加载动态数据的方法 */
     lazyLoad?: (node: CascaderOption, resolve: (children: CascaderOption[]) => void, reject: () => void) => void
-    /** 指定选项的子选项字段 */
-    childrenKey?: string
     /** 查询次级菜单层级；为0时候查询所有 */
     leafLevel?: number
     /** 是否多选 */

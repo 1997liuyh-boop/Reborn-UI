@@ -21,6 +21,7 @@ const datePickerTypes = [
   "dates",
   "datetime",
   "week",
+  "weekrange",
   "datetimerange",
   "daterange",
   "monthrange",

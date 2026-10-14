@@ -12,12 +12,14 @@ export default defineAppConfig({
       dark: "line-md:sunny-outline-to-moon-loop-transition",
     },
     /**
-     * 顶部头部（分类导航已并入主顶栏）：
-     * Arco 气质——实心底 + 细底边，避免过重毛玻璃造成「悬浮感过强」。
+     * 顶部头部（分类导航已并入主顶栏）：参考 Element Plus 的 navbar。
+     * 底色不铺满，而是 4px 网格的网点：每格中心 1px 透明、其余填页面底色，
+     * 再叠轻度模糊与降饱和，滚动时下方内容隐约透出；底色取 --ui-bg，明暗主题自动跟随。
+     * bg-transparent 用来盖掉 UHeader 默认的 bg-default/75，否则网点的透明孔会被它填实。
      */
     header: {
       slots: {
-        root: "bg-white/40 backdrop-blur-md border-b border-default/60",
+        root: "bg-transparent bg-[radial-gradient(transparent_1px,var(--ui-bg)_1px)] bg-size-[4px_4px] backdrop-blur-[4px] backdrop-saturate-50 border-b border-default",
       },
     },
     contentSearch: {

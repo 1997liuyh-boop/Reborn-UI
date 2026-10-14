@@ -1,4 +1,4 @@
-import { createResolver, useNuxt } from "@nuxt/kit";
+import { addVitePlugin, createResolver, useNuxt } from "@nuxt/kit";
 import tailwindcss from "@tailwindcss/vite";
 
 const { resolve } = createResolver(import.meta.url);
@@ -85,6 +85,13 @@ export default defineNuxtConfig({
       if (publicAssistant?.apiPath) {
         publicAssistant.apiPath = "/api/assistant";
       }
+
+      // 关掉 SSR 那个 Vite 实例自带的 WebSocket 服务，否则与其他 Nuxt 项目同时开发时会报
+      // "WebSocket server error: Port 24678 is already in use"。
+      // Nuxt 给 SSR 实例配的是 hmr: false，但 Vite 7 里 hmr: false 不阻止建 ws，只有 server.ws: false 才会，
+      // 于是它照样去绑默认的 24678；而这个 ws 没有任何客户端连接——浏览器热更新由 Nuxt CLI 通过
+      // hmr.server 挂在 dev server 自身端口上。vite.$server 的类型不含 server 字段，所以走 kit 的仅服务端插件。
+      addVitePlugin({ name: "reborn:ssr-no-ws", config: () => ({ server: { ws: false } }) }, { client: false });
     },
   },
 
@@ -220,6 +227,10 @@ export default defineNuxtConfig({
     "/models/**": { headers: { "cache-control": "public, max-age=604800, stale-while-revalidate=86400" } },
   },
   nitro: {
+    // 文档站模块较多，限制并行文件操作，避免 Windows 构建触及文件句柄上限。
+    rollupConfig: {
+      maxParallelFileOps: 256,
+    },
     publicAssets: [
       {
         baseURL: "/uni-render/",

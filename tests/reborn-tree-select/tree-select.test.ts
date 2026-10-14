@@ -96,16 +96,47 @@ it('单选保留数值 0，回显标题、关闭浮层并触发一次 change', a
   assert.ok(flatten(view.root).some(node => node.text === '前端'));
   view.unmount();
 });
-it('多选复用树的严格复选，勾选不收起，标签移除只改当前 key', async () => {
-  const view = mount({ treeData: data, multiple: true, modelValue: ['parent', 0] });
+it('checkStrictly 下各节点独立勾选，勾选不收起，标签移除只改当前 key', async () => {
+  const view = mount({ treeData: data, multiple: true, checkStrictly: true, modelValue: ['parent', 0] });
   await view.open();
   const tree = view.find('Tree');
   assert.equal(tree.props.checkable, true); assert.equal(tree.props.checkStrictly, '');
+  assert.deepEqual(tree.props.checkedKeys, ['parent', 0]);
   tree.props.onCheck({ checked: ['parent', 0, 'other'], halfChecked: [] }); await nextTick();
   assert.deepEqual(view.values[0], ['parent', 0, 'other']);
   assert.equal(view.find('SelectTrigger').props.isOpen, true);
   view.find('Badge').props.onClose({ stopPropagation() {} }); await nextTick();
   assert.deepEqual(view.values[1], [0, 'other']); view.unmount();
+});
+/** 联动用例：两个可勾选子级才能区分全选与半选，禁用子级验证阻断。 */
+const team = [{ key: 'dept', title: '研发', children: [{ key: 'fe', title: '前端' }, { key: 'be', title: '后端' }, { key: 'arch', title: '归档', disabled: true }] }];
+it('多选默认父子联动：部分勾选时父级半选，勾选父级按树序补齐可勾选后代', async () => {
+  const view = mount({ treeData: team, multiple: true, modelValue: ['fe'] });
+  await view.open();
+  assert.deepEqual(view.find('Tree').props.checkedKeys, { checked: ['fe'], halfChecked: ['dept'] });
+  view.find('Tree').props.onCheck({ checked: ['fe', 'dept'], halfChecked: [] }, { checked: true, node: team[0] }); await nextTick();
+  assert.deepEqual(view.values[0], ['fe', 'dept', 'be']);
+  assert.deepEqual(view.find('Tree').props.checkedKeys, { checked: ['fe', 'dept', 'be'], halfChecked: [] });
+  view.unmount();
+});
+it('联动模式下取消子级会摘掉祖先，移除父级标签连带后代', async () => {
+  const view = mount({ treeData: team, multiple: true, modelValue: ['dept'] });
+  assert.deepEqual(flatten(view.root).filter(node => node.type === 'Badge').map(node => node.props.label), ['研发', '前端', '后端']);
+  assert.deepEqual(view.values, [], '程序化赋值只归一展示，不回写绑定值');
+  await view.open();
+  view.find('Tree').props.onCheck({ checked: ['dept', 'fe'], halfChecked: [] }, { checked: false, node: team[0].children[1] }); await nextTick();
+  assert.deepEqual(view.values[0], ['fe']);
+  view.props.modelValue = ['dept']; await nextTick();
+  view.find('Badge').props.onClose({ stopPropagation() {} }); await nextTick();
+  assert.deepEqual(view.values[1], []); view.unmount();
+});
+it('联动模式下搜索时勾选父级，被搜索隐藏的后代一并勾选', async () => {
+  const view = mount({ treeData: team, multiple: true, allowSearch: true, modelValue: [] });
+  await view.open(); view.find('input').props.onInput({ target: { value: '前端' } }); await nextTick();
+  const shown = view.find('Tree').props.treeData[0];
+  assert.deepEqual(shown.children.map((node: { key: string }) => node.key), ['fe']);
+  view.find('Tree').props.onCheck({ checked: ['dept'], halfChecked: [] }, { checked: true, node: shown }); await nextTick();
+  assert.deepEqual(view.values[0], ['dept', 'fe', 'be']); view.unmount();
 });
 it('清空分别回写 null 与空数组，并且触发 clear', async () => {
   for (const multiple of [false, true]) {
@@ -177,8 +208,8 @@ it('搜索保留祖先、展开命中路径并在关闭后恢复原树', async (
   assert.deepEqual(view.find('Tree').props.expandedKeys, []);
   assert.deepEqual(view.find('Tree').props.treeData, data); view.unmount();
 });
-it('搜索使用映射标题且不丢失过滤掉的已选值，无匹配显示空态', async () => {
-  const view = mount({ treeData: [{ id: 'r', name: '根', items: [{ id: 'a', name: 'Alpha' }, { id: 'b', name: 'Beta' }] }], fieldNames: { key: 'id', title: 'name', children: 'items' }, allowSearch: true, multiple: true, modelValue: ['b'] });
+it('独立勾选时搜索使用映射标题且不丢失过滤掉的已选值，无匹配显示空态', async () => {
+  const view = mount({ treeData: [{ id: 'r', name: '根', items: [{ id: 'a', name: 'Alpha' }, { id: 'b', name: 'Beta' }] }], fieldNames: { key: 'id', title: 'name', children: 'items' }, allowSearch: true, multiple: true, checkStrictly: true, modelValue: ['b'] });
   await view.open(); view.find('input').props.onInput({ target: { value: ' ALPHA ' } }); await nextTick();
   assert.equal(view.find('Tree').props.treeData[0].items[0].id, 'a');
   view.find('Tree').props.onCheck({ checked: ['a'], halfChecked: [] }); await nextTick();
@@ -187,6 +218,31 @@ it('搜索使用映射标题且不丢失过滤掉的已选值，无匹配显示�
   assert.equal(view.find('Tree'), undefined);
   assert.ok(flatten(view.root).some(node => node.text === '无匹配结果'));
   view.props.allowSearch = false; await nextTick(); assert.deepEqual(view.find('Tree').props.treeData, view.props.treeData); view.unmount();
+});
+it('fieldNames.key 指定绑定值字段，回显、搜索与内部树共用该字段，未配置的字段沿用默认名', async () => {
+  const regions = [{ code: '33', title: '浙江', children: [{ code: '3301', title: '杭州' }] }];
+  const view = mount({ treeData: regions, fieldNames: { key: 'code' }, allowSearch: true, modelValue: '3301' });
+  assert.ok(flatten(view.root).some(node => node.text === '杭州'));
+  await view.open();
+  assert.deepEqual(view.find('Tree').props.fieldNames, { title: 'title', key: 'code', children: 'children' });
+  view.find('input').props.onInput({ target: { value: '杭州' } }); await nextTick();
+  assert.deepEqual(view.find('Tree').props.expandedKeys, ['33']);
+  view.find('Tree').props.onSelect(['33']); await nextTick();
+  assert.deepEqual(view.values, ['33']); view.unmount();
+});
+it('懒加载由选择器记录已加载 key，收起后重建的树仍拿到记录，重复加载不重复写入', async () => {
+  const requested: unknown[] = [];
+  const updates: unknown[] = [];
+  const view = mount({ treeData: [{ key: 'root', title: '根' }], loadData: async (node: { key: string }) => { requested.push(node.key); },
+    'onUpdate:loadedKeys': (keys: unknown) => updates.push(keys) });
+  await view.open();
+  assert.equal(view.find('Tree').props.loadedKeys, undefined);
+  await view.find('Tree').props.loadData({ key: 'root', title: '根' }); await nextTick();
+  assert.deepEqual(view.find('Tree').props.loadedKeys, ['root']);
+  view.find('SelectTrigger').props.onClose(); await nextTick(); await view.open();
+  assert.deepEqual(view.find('Tree').props.loadedKeys, ['root']);
+  await view.find('Tree').props.loadData({ key: 'root', title: '根' }); await nextTick();
+  assert.deepEqual(requested, ['root', 'root']); assert.deepEqual(updates, [['root']]); view.unmount();
 });
 
 it('树节点没有图标时不渲染占位，有图标与自定义插槽仍正常显示', () => {

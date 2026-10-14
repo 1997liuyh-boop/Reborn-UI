@@ -442,7 +442,8 @@ function scrollColumnToActive(role: TimeRangeRole, unit: TimeUnit) {
   );
   if (scrollTimers.has(key)) return;
   scrollTargets.set(key, target);
-  scrollbar?.setScrollTop(target, { animated: false });
+  // 定位选中项属于程序滚动，静默落位：打开面板时滚动条不闪现，只在悬停或用户滚动时显示
+  scrollbar?.setScrollTop(target, { animated: false, silent: true });
 }
 
 /** 原生滚动、触摸与拖动滚动条统一在停止后提交，再对齐中间组。 */
@@ -623,14 +624,15 @@ defineExpose({ syncColumns, clear, confirm });
                     :aria-hidden="option.index < unitMax[unit] + 1 || option.index >= (unitMax[unit] + 1) * 2"
                     :aria-selected="getState(role)[unit] === option.value"
                     :aria-disabled="disabled || isDisabledValue(role, unit, option.value)"
-                    :class="[
-                      ui.item(),
-                      isDisabledValue(role, unit, option.value)
-                        ? ui.itemDisabled()
-                        : getState(role)[unit] === option.value
-                          ? ui.itemActive()
-                          : ui.itemIdle(),
-                    ]"
+                    :class="
+                      ui.item({
+                        class: isDisabledValue(role, unit, option.value)
+                          ? ui.itemDisabled()
+                          : getState(role)[unit] === option.value
+                            ? ui.itemActive()
+                            : ui.itemIdle(),
+                      })
+                    "
                     @click="setValue(role, unit, option.value)"
                   >
                     {{ pad(option.value, unit === "millisecond" ? 3 : 2) }}

@@ -31,6 +31,19 @@ export interface SelectOption {
 }
 
 /**
+ * options 的字段别名配置：后端字段名与默认的 label / value / disabled 不一致时配置，
+ * 未配置的字段沿用默认名
+ */
+export interface SelectFieldNames {
+  /** 展示文案字段名，默认 `label` */
+  label?: string;
+  /** 选项值字段名，默认 `value` */
+  value?: string;
+  /** 禁用字段名，默认 `disabled` */
+  disabled?: string;
+}
+
+/**
  * 下拉选择属性定义
  */
 export interface SelectProps {
@@ -44,8 +57,10 @@ export interface SelectProps {
   maxCollapseTags?: number;
   /** 多选时最多可选个数，0 为不限制 */
   multipleLimit?: number;
-  /** 数据源选项 */
-  options?: SelectOption[];
+  /** 数据源选项；字段名与默认不一致时配合 fieldNames 使用 */
+  options?: (SelectOption | Record<string, any>)[];
+  /** options 的字段别名配置：按这里给出的字段名去数据里取 label / value / disabled */
+  fieldNames?: SelectFieldNames;
   /** 占位符文本 */
   placeholder?: string;
   /** 是否禁用组件 */
@@ -60,7 +75,7 @@ export interface SelectProps {
    * 选项过滤规则，需配合 allowSearch 使用：
    * - `true`：按选项 label 做不区分大小写的包含匹配（默认）
    * - `false`：关闭本地过滤，列表完全由外部 options 决定，用于远程搜索
-   * - 函数：自定义匹配规则，返回 true 表示保留该选项
+   * - 函数：自定义匹配规则，返回 true 表示保留该选项；拿到的 option 已按 fieldNames 补齐 label / value
    */
   filterOption?: boolean | ((inputValue: string, option: SelectOption) => boolean);
   /**
@@ -92,9 +107,9 @@ export interface SelectProps {
   icon?: string;
   /**
    * 关闭下拉的时机（透传给 RebornSelectTrigger）：
-   * - 'click'：在触发器外完成一次点击后才收起（默认）
-   * - 'mousedown'：外部按下即收——面板外按下左键 / 右键 / 中键立即收起，
-   *   面板外的页面滚动同样收起；面板内部的列表滚动不受影响
+   * - 'mousedown'（默认）：外部一有动静即收——面板外按下左键 / 右键 / 中键、滚轮、触摸立即收起，
+   *   页面滚动同样收起；面板内部的列表滚动、无关容器的滚动不受影响
+   * - 'click'：在触发器外完成一次点击后才收起，期间页面滚动时面板跟随触发器
    */
   closeOn?: SelectTriggerProps["closeOn"];
   /**
@@ -154,7 +169,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   showArrow: true,
   arrowAnimation: true,
   icon: "lucide:chevron-down",
-  closeOn: "click",
+  closeOn: "mousedown",
   portal: true,
   autoAdjustOverflow: true,
 });
@@ -220,14 +235,30 @@ const showClearButton = computed(() => {
 });
 
 /**
+ * options 归一化：按 fieldNames 别名取出 label / value / disabled，
+ * 原始字段随展开保留，option 插槽与 filterOption 仍能拿到业务字段
+ */
+const normalizedOptions = computed<SelectOption[]>(() => {
+  const label = props.fieldNames?.label ?? "label";
+  const value = props.fieldNames?.value ?? "value";
+  const disabled = props.fieldNames?.disabled ?? "disabled";
+  return props.options.map((item) => ({
+    ...item,
+    label: item[label],
+    value: item[value],
+    disabled: item[disabled],
+  }));
+});
+
+/**
  * 当前已选中的选项对象列表。
  * 必须先于 ui 声明：它同时决定 wrapTags 变体（多选标签是否换行铺开）。
  */
 const selectedOptions = computed(() => {
   if (props.multiple && Array.isArray(model.value)) {
-    return props.options.filter((o) => model.value.includes(o.value));
+    return normalizedOptions.value.filter((o) => model.value.includes(o.value));
   }
-  const opt = props.options.find((o) => o.value === model.value);
+  const opt = normalizedOptions.value.find((o) => o.value === model.value);
   return opt ? [opt] : [];
 });
 
@@ -247,15 +278,15 @@ const wrapTags = computed(
  */
 const filteredOptions = computed(() => {
   const keyword = searchValue.value.trim();
-  if (!props.allowSearch || !keyword || props.filterOption === false) return props.options;
+  if (!props.allowSearch || !keyword || props.filterOption === false) return normalizedOptions.value;
 
   if (typeof props.filterOption === "function") {
     const match = props.filterOption;
-    return props.options.filter((option) => match(keyword, option));
+    return normalizedOptions.value.filter((option) => match(keyword, option));
   }
 
   const lower = keyword.toLowerCase();
-  return props.options.filter((option) =>
+  return normalizedOptions.value.filter((option) =>
     String(option.label ?? "").toLowerCase().includes(lower),
   );
 });

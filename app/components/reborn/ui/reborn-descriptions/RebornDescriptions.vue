@@ -45,6 +45,8 @@ export interface DescriptionsItem {
   value?: string | number | null;
   /** 包含列的数量，'filled' 表示铺满当前行剩余部分 */
   span?: DescriptionsSpan;
+  /** 占据的数据行数，默认 1；垂直布局的一组标签与内容算一行 */
+  rowspan?: number;
   /** 单独覆盖本项的冒号显隐，不传时跟随父级 colon */
   colon?: boolean;
   /** 追加到本项标签节点的类名 */
@@ -155,7 +157,8 @@ function resolveResponsive(
 }
 
 const effectiveColumn = computed(() => {
-  return Math.max(1, Math.round(resolveResponsive(props.column, containerWidth.value, 3)));
+  const column = resolveResponsive(props.column, containerWidth.value, 3);
+  return Number.isFinite(column) ? Math.max(1, Math.round(column)) : 3;
 });
 
 // ─── 子组件解析与分行 ────────────────────────────────────────────────
@@ -167,9 +170,12 @@ interface ParsedItem extends DescriptionsItem {
   contentSlotFn?: () => any;
 }
 
-/** 实际落到表格里的一格，colSpan 是分行后确定的真实跨列数 */
+/** 实际落到表格里的一格，记录位置以避开前面跨行项占用的列 */
 interface RowCell extends ParsedItem {
+  colStart: number;
   colSpan: number;
+  rowSpan: number;
+  placeholder?: boolean;
 }
 
 /** 从默认插槽的 VNode 树里挑出 RebornDescriptionsItem，Fragment（v-for / template）需要摊平一层 */
@@ -190,6 +196,7 @@ function extractItems(vnodes: VNode[]): ParsedItem[] {
     result.push({
       label: itemProps.label,
       span: itemProps.span,
+      rowspan: itemProps.rowspan,
       colon: itemProps.colon,
       labelClass: itemProps.labelClass ?? itemProps["label-class"],
       contentClass: itemProps.contentClass ?? itemProps["content-class"],
@@ -209,44 +216,80 @@ const allItems = computed<ParsedItem[]>(() => {
 const rows = computed<RowCell[][]>(() => {
   const column = effectiveColumn.value;
   const result: RowCell[][] = [];
-
+  // 每列记录占用结束的行号，不含结束行；同一轮排布只向前移动。
+  const occupiedUntil = Array.from({ length: column }, () => 0);
+  let rowIndex = 0;
   let row: RowCell[] = [];
-  let used = 0;
+  let cursor = 0;
 
-  /** 未填满的行把末项延伸补齐，否则带边框时会缺格、边线断在半路 */
+  /** 末项补齐连续空列；被跨行项隔开的空洞用空格占位，防止原生表格错位 */
   const flush = () => {
-    if (!row.length) return;
-    const last = row[row.length - 1]!;
-    last.colSpan += column - used;
-    result.push(row);
+    const last = row[row.length - 1];
+    if (last) {
+      let end = last.colStart + last.colSpan;
+      while (end < column && occupiedUntil[end]! <= rowIndex) {
+        occupiedUntil[end] = rowIndex + last.rowSpan;
+        last.colSpan++;
+        end++;
+      }
+    }
+
+    for (let start = 0; start < column;) {
+      if (occupiedUntil[start]! > rowIndex) {
+        start++;
+        continue;
+      }
+      let end = start + 1;
+      while (end < column && occupiedUntil[end]! <= rowIndex) end++;
+      row.push({ colStart: start, colSpan: end - start, rowSpan: 1, placeholder: true });
+      start = end;
+    }
+
+    result.push(row.sort((a, b) => a.colStart - b.colStart));
     row = [];
-    used = 0;
+    rowIndex++;
+    cursor = 0;
   };
 
   for (const item of allItems.value) {
-    if (item.span === "filled") {
-      // 显式铺满当前行剩余列：当前行已满就另起一行独占整行
-      if (used >= column) flush();
-      row.push({ ...item, colSpan: column - used });
-      used = column;
+    const filled = item.span === "filled";
+    const resolvedSpan = resolveResponsive(item.span === "filled" ? undefined : item.span, containerWidth.value, 1);
+    const want = filled ? 1 : Math.min(column, Number.isFinite(resolvedSpan) ? Math.max(1, Math.round(resolvedSpan)) : 1);
+    // 原生 rowspan 上限为 65534；垂直内容需要占据 2 × 数据行数 - 1 个 tr。
+    const maxRowSpan = props.layout === "vertical" ? 32767 : 65534;
+    const rowSpan = typeof item.rowspan === "number" && Number.isFinite(item.rowspan)
+      ? Math.min(maxRowSpan, Math.max(1, Math.floor(item.rowspan)))
+      : 1;
+
+    while (true) {
+      let start = cursor;
+      let placed = false;
+      while (start < column) {
+        if (occupiedUntil[start]! > rowIndex) {
+          start++;
+          continue;
+        }
+        let end = start + 1;
+        while (end < column && occupiedUntil[end]! <= rowIndex) end++;
+        if (end - start >= want) {
+          const colSpan = filled ? end - start : want;
+          row.push({ ...item, colStart: start, colSpan, rowSpan });
+          for (let col = start; col < start + colSpan; col++) occupiedUntil[col] = rowIndex + rowSpan;
+          cursor = start + colSpan;
+          placed = true;
+          break;
+        }
+        start = end;
+      }
+      if (placed) break;
       flush();
-      continue;
     }
-
-    const want = Math.min(
-      Math.max(1, Math.round(resolveResponsive(item.span, containerWidth.value, 1))),
-      column,
-    );
-
-    if (used + want > column) flush();
-
-    row.push({ ...item, colSpan: want });
-    used += want;
-
-    if (used >= column) flush();
+    if (filled || cursor >= column) flush();
   }
 
-  flush();
+  if (row.length) flush();
+  // 即使没有新项，也保留跨行项所需的后续 tr。
+  while (occupiedUntil.some(end => end > rowIndex)) flush();
   return result;
 });
 
@@ -354,17 +397,26 @@ const ui = computed(() => {
             <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
               <template v-for="(cell, cellIndex) in row" :key="cellIndex">
                 <td
-                  :class="cn(ui.cell(), ui.label(), labelFill, cellBorder(rowIndex === rows.length - 1, false), cell.labelClass)"
-                  :style="labelStyle"
-                >
-                  <component :is="renderLabel(cell)" />
-                </td>
-                <td
-                  :colspan="cell.colSpan * 2 - 1"
-                  :class="cn(ui.cell(), ui.content(), cellBorder(rowIndex === rows.length - 1, cellIndex === row.length - 1), cell.contentClass)"
-                >
-                  <component :is="renderContent(cell)" />
-                </td>
+                  v-if="cell.placeholder"
+                  :colspan="cell.colSpan * 2"
+                  :class="cn(ui.cell(), cellBorder(rowIndex + 1 === rows.length, cell.colStart + cell.colSpan === effectiveColumn))"
+                />
+                <template v-else>
+                  <td
+                    :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
+                    :class="cn(ui.cell(), ui.label(), labelFill, cellBorder(rowIndex + cell.rowSpan === rows.length, false), cell.labelClass)"
+                    :style="labelStyle"
+                  >
+                    <component :is="renderLabel(cell)" />
+                  </td>
+                  <td
+                    :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
+                    :colspan="cell.colSpan * 2 - 1"
+                    :class="cn(ui.cell(), ui.content(), cellBorder(rowIndex + cell.rowSpan === rows.length, cell.colStart + cell.colSpan === effectiveColumn), cell.contentClass)"
+                  >
+                    <component :is="renderContent(cell)" />
+                  </td>
+                </template>
               </template>
             </tr>
           </template>
@@ -375,10 +427,11 @@ const ui = computed(() => {
               <td
                 v-for="(cell, cellIndex) in row"
                 :key="cellIndex"
+                :rowspan="cell.rowSpan > 1 ? cell.rowSpan : undefined"
                 :colspan="cell.colSpan"
-                :class="cn(ui.cell(), cellGap(false, rowIndex === rows.length - 1))"
+                :class="cn(ui.cell(), cellGap(false, rowIndex + cell.rowSpan === rows.length))"
               >
-                <div class="flex items-baseline gap-[4px]">
+                <div v-if="!cell.placeholder" class="flex items-baseline gap-[4px]">
                   <span :class="cn(ui.label(), cell.labelClass)" :style="labelStyle">
                     <component :is="renderLabel(cell)" /><span v-if="showColon(cell)" :class="ui.colon()">：</span>
                   </span>
@@ -398,7 +451,7 @@ const ui = computed(() => {
                   v-for="(cell, cellIndex) in row"
                   :key="cellIndex"
                   :colspan="cell.colSpan"
-                  :class="cn(ui.cell(), ui.label(), labelFill, cellBorder(false, cellIndex === row.length - 1), cellGap(true, false), cell.labelClass)"
+                  :class="cn(ui.cell(), ui.label(), labelFill, cellBorder(false, cell.colStart + cell.colSpan === effectiveColumn), cellGap(true, false), cell.labelClass)"
                   :style="labelStyle"
                 >
                   <component :is="renderLabel(cell)" />
@@ -408,8 +461,9 @@ const ui = computed(() => {
                 <td
                   v-for="(cell, cellIndex) in row"
                   :key="cellIndex"
+                  :rowspan="cell.rowSpan > 1 ? cell.rowSpan * 2 - 1 : undefined"
                   :colspan="cell.colSpan"
-                  :class="cn(ui.cell(), ui.content(), cellBorder(rowIndex === rows.length - 1, cellIndex === row.length - 1), cellGap(false, rowIndex === rows.length - 1), cell.contentClass)"
+                  :class="cn(ui.cell(), ui.content(), cellBorder(rowIndex + cell.rowSpan === rows.length, cell.colStart + cell.colSpan === effectiveColumn), cellGap(false, rowIndex + cell.rowSpan === rows.length), cell.contentClass)"
                 >
                   <component :is="renderContent(cell)" />
                 </td>

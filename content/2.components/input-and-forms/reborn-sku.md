@@ -18,12 +18,12 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 
 ### Props
 
-| 属性名       | 类型                  | 默认值 | 描述                                                                             |
-| :----------- | :-------------------- | :----- | :------------------------------------------------------------------------------- |
-| `options`    | `SkuOption[]`         | `[]`   | 属性组配置列表，结构见下方 SkuOption 字段表                                      |
-| `modelValue` | `Record<string, any>` | `{}`   | 双向绑定值，key 为 `SkuOption.key`，value 为选中的 `valueKey` 值（多选时为数组） |
-| `class`      | `any`                 | —      | 追加到根容器的自定义类名                                                         |
-| `ui`         | `SkuUi`               | `{}`   | 分区样式覆盖对象，键位见下方 SkuUi 键位表                                        |
+| 属性名       | 类型                  | 默认值 | 描述                                                                                             |
+| :----------- | :-------------------- | :----- | :----------------------------------------------------------------------------------------------- |
+| `options`    | `SkuOption[]`         | `[]`   | 属性组配置列表，结构见下方 SkuOption 字段表                                                      |
+| `modelValue` | `Record<string, any>` | `{}`   | 双向绑定值，key 为 `SkuOption.key`，value 为选中项按 `fieldNames.value` 取到的值（多选时为数组） |
+| `class`      | `any`                 | —      | 追加到根容器的自定义类名                                                                         |
+| `ui`         | `SkuUi`               | `{}`   | 分区样式覆盖对象，键位见下方 SkuUi 键位表                                                        |
 
 ### Emits
 
@@ -43,16 +43,24 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 
 ### SkuOption 字段
 
-| 字段         | 类型              | 说明                                                              |
-| :----------- | :---------------- | :---------------------------------------------------------------- |
-| `key`        | `string`          | 必填，绑定到 `modelValue` 的 key                                  |
-| `title`      | `string`          | 属性组标题                                                        |
-| `labelKey`   | `string`          | 选项列表中用于显示的字段名，缺省时直接显示选项本身                |
-| `valueKey`   | `string`          | 选项列表中用于取值的字段名，缺省时以整个选项对象为值              |
-| `multiple`   | `boolean`         | 是否支持多选，多选时该组的值为数组                                |
-| `slots`      | `string`          | 自定义插槽名称，指向文档上方 Slots 表中的动态插槽                 |
-| `slotsCover` | `boolean`         | 为 `true` 时该属性组不渲染默认内容，完全由 `slots` 指定的插槽接管 |
-| `children`   | `SkuOptionItem[]` | 属性选项列表                                                      |
+| 字段         | 类型              | 说明                                                                                      |
+| :----------- | :---------------- | :---------------------------------------------------------------------------------------- |
+| `key`        | `string`          | 必填，绑定到 `modelValue` 的 key                                                          |
+| `title`      | `string`          | 属性组标题                                                                                |
+| `fieldNames` | `SkuFieldNames`   | `children` 对象项的字段别名，缺省时读 `label` / `value` 字段，键位见下方 SkuFieldNames 表 |
+| `multiple`   | `boolean`         | 是否支持多选，多选时该组的值为数组                                                        |
+| `slots`      | `string`          | 自定义插槽名称，指向文档上方 Slots 表中的动态插槽                                         |
+| `slotsCover` | `boolean`         | 为 `true` 时该属性组不渲染默认内容，完全由 `slots` 指定的插槽接管                         |
+| `children`   | `SkuOptionItem[]` | 属性选项列表；对象项按 `fieldNames` 取文案与值，字符串 / 数字直接作文案与值               |
+
+### SkuFieldNames
+
+按属性组配置，各组可以不同；省略的键回落到默认字段名。
+
+| 字段    | 类型     | 默认值    | 说明                                    |
+| :------ | :------- | :-------- | :-------------------------------------- |
+| `label` | `string` | `"label"` | 展示文案字段名                          |
+| `value` | `string` | `"value"` | 选项值字段名，取到的值写入 `modelValue` |
 
 ### SkuUi 键位
 
@@ -69,5 +77,6 @@ RebornSku 面向商品详情页等场景，按 `options` 配置渲染「颜色�
 - 仅 web 端提供，uniapp 端无此组件。
 - 多层级联动选择（省市区、分类）请改用 `reborn-cascader`；单组互斥选项请改用 `reborn-radio`。
 - 单选组再次点击已选项会将该组的值置为 `undefined`（取消选中），提交前注意做空值校验。
+- `modelValue` 里存的是按 `fieldNames.value` 取到的字段值，而不是整个选项对象；对象项既没有 `value` 字段也没配置 `fieldNames` 时，每一项都取到 `undefined`，组件无法区分哪一项被选中，这种数据务必配置 `fieldNames`。需要完整选项时，拿值回 `children` 里查找。
 
 ::

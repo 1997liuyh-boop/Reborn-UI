@@ -75,7 +75,7 @@ const defaultState: Record<string, any> = {
   collapseTags: false,
   collapseTagsTooltip: false,
   maxCollapseTags: 1,
-  closeOn: "click",
+  closeOn: "mousedown",
   portal: true,
   shortcuts: false,
   showWeekNumber: false,
@@ -165,10 +165,13 @@ const playgroundShortcuts = computed(() => {
   return [];
 });
 
-/** 演练场控制面板配置 */
+/**
+ * 演练场控制面板配置：按参数的作用对象分组。
+ * DatePicker 由选择框（触发器与浮层）和内部 RebornDatePickerPanel 组成，分开摆放才能看出某个参数改的是哪一部分。
+ */
 const controls: any = [
   {
-    title: "基础属性",
+    title: "共用参数（两者同时生效）",
     children: [
       {
         label: "选择类型（type）",
@@ -191,26 +194,17 @@ const controls: any = [
         defaultValue: "primary",
         props: { options: datePickerColors.map(c => ({ label: c, value: c })) },
       },
+    ],
+  },
+  {
+    title: "选择框参数",
+    children: [
       {
         label: "形态变体",
         key: "variant",
         component: "select" as const,
         defaultValue: "outlined",
         props: { options: datePickerVariants.map(v => ({ label: v, value: v })) },
-      },
-      {
-        label: "面板选中样式（active-type）",
-        key: "activeType",
-        component: "select" as const,
-        defaultValue: "fill",
-        props: {
-          options: [
-            { label: "背景 fill", value: "fill" },
-            { label: "背景正圆 fillRound", value: "fillRound" },
-            { label: "描边加文字 outline", value: "outline" },
-            { label: "仅文字 text", value: "text" },
-          ],
-        },
       },
       {
         label: "占位文本（留空按类型给默认值）",
@@ -220,19 +214,9 @@ const controls: any = [
       },
       { label: "显示箭头", key: "showArrow", component: "checkbox" as const, defaultValue: true },
       { label: "箭头旋转动画", key: "arrowAnimation", component: "checkbox" as const, defaultValue: true },
-    ],
-  },
-  {
-    title: "状态",
-    children: [
       { label: "可清空", key: "clearable", component: "checkbox" as const, defaultValue: true },
       { label: "加载中", key: "loading", component: "checkbox" as const, defaultValue: false },
       { label: "禁用状态", key: "disabled", component: "checkbox" as const, defaultValue: false },
-    ],
-  },
-  {
-    title: "行为",
-    children: [
       { label: "折叠标签（仅多选类型）", key: "collapseTags", component: "checkbox" as const, defaultValue: false },
       {
         label: "折叠标签悬停提示",
@@ -251,7 +235,7 @@ const controls: any = [
         label: "关闭时机（close-on）",
         key: "closeOn",
         component: "select" as const,
-        defaultValue: "click",
+        defaultValue: "mousedown",
         props: {
           options: [
             { label: "外部点击后 click", value: "click" },
@@ -260,6 +244,25 @@ const controls: any = [
         },
       },
       { label: "浮层传送到 body（portal）", key: "portal", component: "checkbox" as const, defaultValue: true },
+    ],
+  },
+  {
+    title: "面板参数（透传给 reborn-date-picker-panel）",
+    children: [
+      {
+        label: "选中样式（active-type）",
+        key: "activeType",
+        component: "select" as const,
+        defaultValue: "fill",
+        props: {
+          options: [
+            { label: "背景 fill", value: "fill" },
+            { label: "背景正圆 fillRound", value: "fillRound" },
+            { label: "描边加文字 outline", value: "outline" },
+            { label: "仅文字 text", value: "text" },
+          ],
+        },
+      },
       {
         label: "显示快捷选项（date / daterange 及带时间的变体）",
         key: "shortcuts",
@@ -294,7 +297,7 @@ const controls: any = [
   },
 ];
 
-/** 演练场右上角展示的等价代码：完整列出当前所有参数（含默认值） */
+/** 演练场右上角展示的等价代码：完整列出当前所有参数（含默认值），顺序与控制面板分组一致 */
 const pickerCode = computed(() => {
   const s = state.value;
   const props: string[] = [
@@ -304,7 +307,6 @@ const pickerCode = computed(() => {
     `size="${s.size}"`,
     `color="${s.color}"`,
     `variant="${s.variant}"`,
-    `active-type="${s.activeType}"`,
   ];
   if (s.placeholder) props.push(`placeholder="${s.placeholder}"`);
   props.push(
@@ -318,6 +320,7 @@ const pickerCode = computed(() => {
     `:max-collapse-tags="${s.maxCollapseTags}"`,
     `close-on="${s.closeOn}"`,
     `:portal="${s.portal}"`,
+    `active-type="${s.activeType}"`,
     playgroundShortcuts.value.length ? ':shortcuts="shortcuts"' : ':shortcuts="[]"',
     `:show-week-number="${s.showWeekNumber}"`,
     `:unlink-panels="${s.unlinkPanels}"`,
@@ -601,7 +604,7 @@ const customRangeUi = {
       :code="pickerCode"
       component-name="RebornDatePicker"
       title="交互演练场"
-      description="调节左侧参数，实时查看触发器与下拉面板在各类型下的表现、绑定值和事件顺序。"
+      description="左侧参数按作用对象分组：共用参数同时作用于选择框与面板，选择框参数只改触发器与浮层，面板参数透传给内部 RebornDatePickerPanel。右侧可查看绑定值与事件顺序。"
     >
       <template #tag>
         <RebornButton

@@ -43,7 +43,7 @@ defineOptions({ inheritAttrs: false });
 export interface DatePickerProps {
   /* ---------------- 面板透传 ---------------- */
 
-  /** 选择器类型，与 RebornDatePickerPanel 相同：date / datetime / week / year / month 及其多选、范围变体 */
+  /** 选择器类型，与 RebornDatePickerPanel 相同：date / datetime / week / year / month 及其多选、范围变体（含周范围 weekrange） */
   type?: DatePickerType;
   /** 可选范围开始时间，早于它的日期不可选 */
   start?: DatePickerPanelProps["start"];
@@ -65,7 +65,7 @@ export interface DatePickerProps {
   valueFormat?: string;
   /** 面板左侧的快捷选项 */
   shortcuts?: DatePickerPanelProps["shortcuts"];
-  /** 日期视图左侧显示 ISO 周数（week 类型不生效） */
+  /** 日期视图左侧显示 ISO 周数（week / weekrange 类型不生效） */
   showWeekNumber?: boolean;
   /** 范围选择时取消两个面板之间的联动，左右面板各自翻页 */
   unlinkPanels?: boolean;
@@ -73,6 +73,11 @@ export interface DatePickerProps {
   singlePanel?: boolean;
   /** 面板底部显示「今天」栏：点击选中当前时间所在的日 / 周 / 月 / 季度 / 年，文案随类型变为今天、此刻、本周、本月、本季度、今年 */
   showToday?: boolean;
+  /**
+   * 未选值时面板打开所展示的日期，只决定面板定位到哪个月 / 年，不写入绑定值；缺省时展示当天。
+   * 范围类型可传数组：第一项定位左面板，开启 unlinkPanels 时第二项定位右面板。字符串按 valueFormat 解析，数字视为时间戳
+   */
+  defaultValue?: DatePickerPanelProps["defaultValue"];
 
   /* ---------------- 触发器（与 RebornSelect 对齐） ---------------- */
 
@@ -112,11 +117,13 @@ export interface DatePickerProps {
   arrowAnimation?: boolean;
   /** 箭头图标名 */
   icon?: string;
+  /** 触发器前缀图标名；同时提供 #prefix 插槽时以插槽为准 */
+  prefixIcon?: string;
   /**
    * 关闭下拉的时机（透传给 RebornSelectTrigger）：
-   * - 'click'：在触发器外完成一次点击后才收起（默认）
-   * - 'mousedown'：外部按下即收——面板外按下左键 / 右键 / 中键立即收起，
-   *   面板外的页面滚动同样收起；面板内部的滚动不受影响
+   * - 'mousedown'（默认）：外部一有动静即收——面板外按下左键 / 右键 / 中键、滚轮、触摸立即收起，
+   *   页面滚动同样收起；面板内部的滚动、无关容器的滚动不受影响
+   * - 'click'：在触发器外完成一次点击后才收起，期间页面滚动时面板跟随触发器
    */
   closeOn?: SelectTriggerProps["closeOn"];
   /**
@@ -169,7 +176,7 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   showArrow: true,
   arrowAnimation: true,
   icon: "lucide:calendar",
-  closeOn: "click",
+  closeOn: "mousedown",
   portal: true,
   autoAdjustOverflow: true,
 });
@@ -204,7 +211,7 @@ interface TriggerSlotProps {
   ui: Record<keyof typeof theme.slots, (opts?: { class?: any }) => string>;
 }
 
-defineSlots<{
+const slots = defineSlots<{
   /** 完全接管触发器内部（连同尾部图标区） */
   cover?: (props: TriggerSlotProps) => any;
   /** 自定义触发器的文本区，尾部图标区保留 */
@@ -223,6 +230,8 @@ defineSlots<{
   "prev-year"?: () => any;
   /** 下一年图标 */
   "next-year"?: () => any;
+  /** 触发器前缀内容（位于文本之前），提供后忽略 prefixIcon */
+  prefix?: () => any;
 }>();
 
 /**
@@ -261,7 +270,7 @@ const isMultiple = computed(() =>
 );
 /** 双面板范围类型：触发器显示开始 / 结束两栏 */
 const isDual = computed(() =>
-  ["daterange", "datetimerange", "monthrange", "quarterrange", "yearrange"].includes(props.type),
+  ["daterange", "datetimerange", "monthrange", "quarterrange", "yearrange", "weekrange"].includes(props.type),
 );
 /** 按周选择：绑定值是这一周的 [周日, 周六] */
 const isWeek = computed(() => props.type === "week");
@@ -290,6 +299,7 @@ const placeholderByType = computed<[string, string, string]>(() => {
   if (t.startsWith("month")) return ["请选择月份", "开始月份", "结束月份"];
   if (t.startsWith("quarter")) return ["请选择季度", "开始季度", "结束季度"];
   if (t === "week") return ["请选择周", "开始日期", "结束日期"];
+  if (t === "weekrange") return ["请选择周", "开始周", "结束周"];
   if (t.startsWith("datetime")) return ["请选择日期时间", "开始时间", "结束时间"];
   return ["请选择日期", "开始日期", "结束日期"];
 });
@@ -396,6 +406,8 @@ const overlayUi = computed(() => ({
   dropdown: cn("w-max min-w-0", splitUi.value.overlay.dropdown),
 }));
 const fieldUi = computed(() => splitUi.value.field as DatePickerFieldUI);
+/** 是否渲染前缀区：#prefix 插槽或 prefixIcon 任一存在 */
+const hasPrefix = computed(() => !!slots.prefix || !!props.prefixIcon);
 const uiOverrides = computed(() => props.ui || {});
 
 /**
@@ -415,6 +427,7 @@ const ui = computed(() => {
     clearable: showClearButton.value,
     disabled: isDisabled.value,
     error: isError.value,
+    prefix: hasPrefix.value,
   });
   const field = fieldUi.value;
   return {
@@ -438,6 +451,10 @@ const ui = computed(() => {
       styles.rangeText({ class: cn(opts?.class, field.rangeText) }),
     rangeSeparator: (opts?: { class?: any }) =>
       styles.rangeSeparator({ class: cn(opts?.class, field.rangeSeparator) }),
+    prefix: (opts?: { class?: any }) =>
+      styles.prefix({ class: cn(opts?.class, field.prefix) }),
+    prefixIcon: (opts?: { class?: any }) =>
+      styles.prefixIcon({ class: cn(opts?.class, field.prefixIcon) }),
     panel: (opts?: { class?: any }) =>
       styles.panel({ class: cn(opts?.class, uiOverrides.value.panel) }),
     dropdownHeader: (opts?: { class?: any }) =>
@@ -615,6 +632,17 @@ defineExpose({
           :ui="ui"
         />
         <template v-else>
+          <span
+            v-if="hasPrefix"
+            :class="ui.prefix()"
+          >
+            <slot name="prefix">
+              <Icon
+                :name="prefixIcon!"
+                :class="ui.prefixIcon()"
+              />
+            </slot>
+          </span>
           <slot
             :display-text="displayText"
             :placeholder="placeholderText"
@@ -751,6 +779,7 @@ defineExpose({
           :unlink-panels="unlinkPanels"
           :single-panel="singlePanel"
           :show-today="showToday"
+          :default-value="defaultValue"
           :size="fieldGroupSize || size"
           :color="color"
           :border="false"

@@ -205,7 +205,7 @@ function loadMore(option, done) {
 | `popupContainer` | `string \| HTMLElement` | - | 弹出框的挂载容器 |
 | `maxTagCount` | `number` | `0` | 多选模式下最多显示的标签数量，`0` 表示不限制 |
 | `formatLabel` | `(options: CascaderOption[]) => string` | - | 格式化展示内容，入参是从根到该项的整条路径 |
-| `triggerProps` | `CascaderTriggerProps` | - | 下拉菜单的触发器属性，透传给 `RebornSelectTrigger` |
+| `triggerProps` | `CascaderTriggerProps` | - | 下拉菜单的触发器属性，透传给 `RebornSelectTrigger`；其中 `closeOn` 未传时为 `'mousedown'`（外部按下、滚轮或页面滚动即收起），传 `'click'` 改为外部点击完成后收起 |
 | `checkStrictly` | `boolean` | `false` | 是否开启严格选择模式 |
 | `loadMore` | `(option: CascaderOption, done: (children?: CascaderOption[]) => void) => void` | - | 数据懒加载函数，传入时开启懒加载 |
 | `loading` | `boolean` | `false` | 是否为加载中状态 |
@@ -285,9 +285,7 @@ function loadMore(option, done) {
 | `placeholder` | `string` | `'请选择'` | 占位提示 |
 | `showTrigger` | `boolean` | `true` | 是否显示触发器 |
 | `disabled` | `boolean` | `false` | 是否禁用 |
-| `labelKey` | `string` | `'label'` | 标签字段 |
-| `valueKey` | `string` | `'value'` | 值字段 |
-| `childrenKey` | `string` | `'children'` | 子选项字段 |
+| `fieldNames` | `CascaderFieldNames` | - | 自定义 `CascaderOption` 中的字段，键位见下方 `CascaderFieldNames` |
 | `textSeparator` | `string` | `' / '` | 触发器文本分隔符 |
 | `height` | `number \| string` | `600` | 列表高度（rpx） |
 | `size` | `CascaderSize` | `'md'` | 尺寸 |
@@ -302,6 +300,16 @@ function loadMore(option, done) {
 | `ellipsis` | `boolean` | `true` | 选项文本是否省略 |
 | `lines` | `number` | `1` | 省略行数 |
 | `ui` | `CascaderUI` | `{}` | 细粒度样式覆盖，键位见「自定义样式（ui）」。 |
+
+#### CascaderFieldNames
+
+UniApp 端只认下面三个键，省略的键回落到默认字段名；Web 端的 `disabled` / `isLeaf` 等键在这里不生效：
+
+| 字段名 | 类型 | 默认值 | 描述 |
+| :--- | :--- | :--- | :--- |
+| `label` | `string` | `'label'` | 文本字段名 |
+| `value` | `string` | `'value'` | 取值字段名 |
+| `children` | `string` | `'children'` | 子选项字段名 |
 
 :::
 
@@ -460,8 +468,11 @@ Web 端还有一个独立入口 `triggerUi`：它承接触发器盒子与浮层�
 | `tagClose` | 标签关闭按钮，默认 `shrink-0 text-gray-5 transition-colors hover:text-gray-8`。 |
 | `tagCloseIcon` | 标签关闭图标，默认 `size-full`。 |
 | `collapseTag` | `max-tag-count` 折叠出的 `+N` 标签的附加样式，默认空。 |
+| `tagSearch` | 多选标签末尾的搜索位，默认 `relative flex max-w-full flex-1 items-center overflow-clip`，高度随 `size` 与标签对齐（`h-4` / `h-5` / `h-6`）。收起时也占着位置，展开只往里放输入框，开合前后触发器高度不变；末行放不下时会整格另起一行（与 Ant Design、Element Plus 的做法一致）。**仅多选且开启搜索时渲染。** |
+| `tagSearchMirror` | 搜索位里的隐形镜像，默认 `invisible whitespace-pre`；按关键词撑出搜索位宽度，关键词超出本行余量时搜索位整格换行。 |
+| `tagSearchInput` | 搜索位里的输入框，默认 `absolute inset-0 size-full min-w-0`，与 `triggerUi.searchInput` 合并后生效。 |
 
-以上 26 键即 `CascaderUI` 的全部键。config 的 `slots` 里另有几项**不经 `ui` 暴露**：触发器盒子 8 键（`trigger` / `triggerText` / `triggerIconWrapper` / `placeholder` / `clearBtn` / `arrow` / `searchInput` / `triggerLoadingIcon`）走 `triggerUi`；`searchIcon`（搜索态替换箭头的图标，默认 `size-full text-gray-6`）组件内未接入任何覆盖入口，只能换 `search-icon` 插槽；`optionActiveIcon` / `dropdownHeader` / `dropdownFooter` 是从 `reborn-select` 整体继承来的键，级联模板里不渲染对应节点，传了也无效。
+以上 29 键即 `CascaderUI` 的全部键。config 的 `slots` 里另有几项**不经 `ui` 暴露**：触发器盒子 8 键（`trigger` / `triggerText` / `triggerIconWrapper` / `placeholder` / `clearBtn` / `arrow` / `searchInput` / `triggerLoadingIcon`）走 `triggerUi`；`searchIcon`（搜索态替换箭头的图标，默认 `size-full text-gray-6`，开启 `allow-clear` 且有值时与箭头一样在悬停触发器时淡出，把位置让给清空按钮）组件内未接入任何覆盖入口，只能换 `search-icon` 插槽——自定义插槽内容不带这条淡出样式，需自行处理悬停时与清空按钮的重叠；`optionActiveIcon` / `dropdownHeader` / `dropdownFooter` 是从 `reborn-select` 整体继承来的键，级联模板里不渲染对应节点，传了也无效。
 
 `RebornCascaderPanel` 的 `ui` 只认面板相关的 15 键：`panel` / `column` / `columnDivider` / `option` / `optionContent` / `optionLabel` / `optionActive` / `optionHighlight` / `optionCheckbox` / `optionArrow` / `optionLoading` / `optionList` / `virtualPhantom` / `virtualWindow` / `empty`。`RebornCascader` 会把自己的 `ui` 整个转交给内部面板，所以这 15 键在两个组件上写法相同。
 
@@ -536,7 +547,7 @@ Web 端不自带私有变量，尺寸与字号全部取自全局令牌，定义�
 | 维度 | Web | UniApp |
 | :--- | :--- | :--- |
 | 形态 | 触发器 + 多列浮层面板，列间 1px 分割线 | 触发器 + 底部弹窗，横向滑动列 |
-| API | 值 / 路径双模式、搜索、虚拟滚动、`field-names` 等完整参数 | 仅路径模式，参数集为 `labelKey` / `valueKey` / `lazy` / `leafLevel` 等旧式命名 |
+| API | 值 / 路径双模式、搜索、虚拟滚动、`field-names` 等完整参数 | 仅路径模式；字段别名同样走 `field-names`（只认 label / value / children），懒加载仍是 `lazy` / `leafLevel` 等旧式命名 |
 | 绑定值 | 默认为选项值，`path-mode` 才是路径 | 恒为路径数组（多选为路径数组的数组） |
 | 懒加载 | `load-more(option, done)` | `lazy` + `lazyLoad(node, resolve, reject)` |
 | 多选确认 | 勾完即写回 `v-model` | 弹窗底部「确认」后才写回 |
@@ -544,7 +555,7 @@ Web 端不自带私有变量，尺寸与字号全部取自全局令牌，定义�
 
 ## 注意事项
 
-- **Web 与 UniApp 的 API 尚未对齐。** Web 端本轮已整体换成上表中的新参数集，UniApp 端仍是旧参数集（`labelKey` / `textSeparator` / `lazy` / `leafLevel` 等）。后果是同一份业务代码不能两端直接复用，跨端页面请分别按各自的表传参。
+- **Web 与 UniApp 的 API 尚未对齐。** Web 端本轮已整体换成上表中的新参数集，UniApp 端除字段别名已统一为 `fieldNames` 外，仍是旧参数集（`textSeparator` / `lazy` / `leafLevel` 等）。后果是同一份业务代码不能两端直接复用，跨端页面请分别按各自的表传参。
 - **值的匹配是严格的。** 绑定值与选项值按「类型 + 值」比对，数字 `1` 匹配不上字符串 `'1'`；对象值只比对 `value-key` 指定的那个属性。匹配不上的值不会消失，而是交给 `fallback` 兜底展示（默认把值本身转成文本）——回显成一串 id 时，先检查两边的值类型是否一致。
 - **多选 + 父子关联时，绑定值里只会出现叶子。** 勾「杭州市」写回的是它名下三个区，而不是 `'hangzhou'`。需要拿到父节点本身，请开 `check-strictly`。
 - **子树里有禁用且未勾选的叶子时，父节点永远停在半选。** 勾选联动只会写未禁用的叶子，这是实情而非 bug：那棵子树确实没被全选。

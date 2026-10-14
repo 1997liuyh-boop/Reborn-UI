@@ -93,6 +93,7 @@ const stringValue = ref("2024-04-03");
 | `dates`         | `string[]` | `["2024-04-03", "2024-04-04"]`             |
 | `daterange`     | `string[]` | `["2024-04-01", "2024-04-05"]`             |
 | `week`          | `string[]` | `["2024-03-31", "2024-04-06"]`             |
+| `weekrange`     | `string[]` | `["2024-03-31", "2024-04-20"]`             |
 | `datetime`      | `string`   | `"2024-04-03 12:00"`                       |
 | `datetimerange` | `string[]` | `["2024-04-03 12:00", "2024-04-05 18:00"]` |
 
@@ -155,6 +156,22 @@ const monthRangeValue = ref([]);
     range-separator="→"
     start-placeholder="入职月份"
     end-placeholder="离职月份"
+  />
+</template>
+```
+
+`weekrange` 以整周为单位选择区间：面板按日期视图展示，点哪一天都会吸附到所在周，起点取那一周的周日、终点取那一周的周六，悬停预览同样按整周高亮。这样绑定值总是覆盖完整的周，后端按日期区间查询时不用再自行补齐首尾。周从周日开始，与日历表头一致。
+
+```vue
+<script setup lang="ts">
+const weekRangeValue = ref([]);
+</script>
+
+<template>
+  <RebornDatePicker
+    v-model="weekRangeValue"
+    type="weekrange"
+    value-format="YYYY-MM-DD"
   />
 </template>
 ```
@@ -300,6 +317,34 @@ const monthValue = ref(null);
 </template>
 ```
 
+### 默认展示日期
+
+未选值时面板默认定位到当天所在的月份。`default-value` 改为定位到指定日期，它只决定面板先显示哪个月 / 哪一年，**不写入绑定值**——适合「多数人会选下个月某天」或「回填历史记录」这类场景，省去用户手动翻页。已有绑定值时面板跟随绑定值定位，`default-value` 不生效。
+
+范围类型可传数组：第一项定位左面板；开启 `unlink-panels` 时第二项定位右面板，联动时右面板恒紧跟左侧，第二项不生效。字符串按 `value-format` 解析，数字视为时间戳。
+
+```vue
+<script setup lang="ts">
+const value = ref(null);
+const rangeValue = ref([]);
+</script>
+
+<template>
+  <RebornDatePicker
+    v-model="value"
+    value-format="YYYY-MM-DD"
+    default-value="2025-10-01"
+  />
+  <RebornDatePicker
+    v-model="rangeValue"
+    type="daterange"
+    value-format="YYYY-MM-DD"
+    unlink-panels
+    :default-value="['2025-01-01', '2025-06-01']"
+  />
+</template>
+```
+
 ### 加载与禁用
 
 `loading` 把尾部图标换成转圈并隐藏清空按钮，只作用于触发器，面板照常可选；`disabled` 后触发器置灰、点击无响应。
@@ -383,6 +428,30 @@ const monthValue = ref(null);
         name="lucide:arrow-right-to-line"
         class="size-4"
       />
+    </template>
+  </RebornDatePicker>
+</template>
+```
+
+### 前缀
+
+`prefix-icon` 在触发器文本前放一个图标；需要文字或多个元素时用 `#prefix` 插槽，两者同时提供以插槽为准。前缀不参与压缩，颜色与尾部图标同一档，插槽里的内容直接继承；有前缀时单值文本与占位紧贴前缀左对齐。与 `default` 插槽不同，前缀不替换文本区，展示文本、多选标签与范围两栏照常渲染；使用 `cover` 插槽时前缀与文本区一起被接管。
+
+```vue
+<template>
+  <RebornDatePicker
+    v-model="value"
+    value-format="YYYY-MM-DD"
+    prefix-icon="lucide:calendar-days"
+    icon="lucide:chevron-down"
+  />
+  <RebornDatePicker
+    v-model="rangeValue"
+    type="daterange"
+    value-format="YYYY-MM-DD"
+  >
+    <template #prefix>
+      <span class="text-xs">入住</span>
     </template>
   </RebornDatePicker>
 </template>
@@ -510,74 +579,81 @@ const formRules = z.object({
 
 ### Props
 
-| 属性名                 | 类型                                                                                                                                                                                                      | 默认值          | 描述                                                                                              |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------- |
-| `modelValue` / v-model | `any`                                                                                                                                                                                                     | `null`          | 绑定值，形态随 `type` 与 `valueFormat` 变化，见「选择类型」。                                     |
-| `type`                 | `'year' \| 'years' \| 'yearrange' \| 'quarter' \| 'quarters' \| 'quarterrange' \| 'month' \| 'months' \| 'monthrange' \| 'date' \| 'dates' \| 'daterange' \| 'week' \| 'datetime' \| 'datetimerange'` | `'date'`        | 选择器类型，决定粒度与单选 / 多选 / 范围。                                                        |
-| `valueFormat`          | `string`                                                                                                                                                                                                  | `""`            | 绑定值的 dayjs 格式；为空时绑定值为 `Date` 对象。                                                 |
-| `format`               | `string`                                                                                                                                                                                                  | `""`            | 触发器展示文本的 dayjs 格式，不影响绑定值；缺省值见「基础用法」。                                 |
-| `start`                | `string`                                                                                                                                                                                                  | `'1970-01-01'`  | 可选日期的最早边界（含）。                                                                        |
-| `end`                  | `string`                                                                                                                                                                                                  | `'2099-12-31'`  | 可选日期的最晚边界（含）。                                                                        |
-| `disabledMethod`       | `(date: Date, unit: 'year' \| 'month' \| 'quarter' \| 'week' \| 'date') => boolean`                                                                                                                      | -               | 逐项判定是否禁用，返回 `true` 即不可选；`unit` 为当前判定粒度。                                   |
-| `disabledHours`        | `(role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                                  | -               | 返回需禁用的小时；仅 `datetime` / `datetimerange` 生效。                                          |
-| `disabledMinutes`      | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                    | -               | 返回需禁用的分钟，入参为当前选中的小时。                                                          |
-| `disabledSeconds`      | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                    | -               | 返回需禁用的秒，入参为当前选中的时、分。                                                          |
-| `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                    | -               | 返回需禁用的毫秒，入参为当前选中的时、分、秒。                                                    |
-| `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                          | `[]`            | 快捷选项，非空时面板左侧出现快捷侧栏。                                                            |
-| `activeType`           | `'fill' \| 'fillRound' \| 'outline' \| 'text'`                                                                                                                                                            | `'fill'`        | 面板选中项的表现形式，透传给面板。                                                                |
-| `showWeekNumber`       | `boolean`                                                                                                                                                                                                 | `false`         | 日期视图左侧显示 ISO 周数；`week` 类型不生效。                                                    |
-| `unlinkPanels`         | `boolean`                                                                                                                                                                                                 | `false`         | 范围类型取消两个面板的联动；`singlePanel` 时无效。                                                |
-| `singlePanel`          | `boolean`                                                                                                                                                                                                 | `false`         | 范围类型只渲染一个面板。                                                                          |
-| `showToday`            | `boolean`                                                                                                                                                                                                 | `false`         | 面板底部显示「今天」栏，点击选中当前时间所在的单位，见「今天栏」。                                |
-| `placeholder`          | `string`                                                                                                                                                                                                  | -               | 单值与多选类型的占位文本；缺省时随类型取「请选择日期」「请选择月份」等。                          |
-| `startPlaceholder`     | `string`                                                                                                                                                                                                  | -               | 范围类型开始栏的占位文本；缺省时随类型取「开始日期」「开始月份」等。                              |
-| `endPlaceholder`       | `string`                                                                                                                                                                                                  | -               | 范围类型结束栏的占位文本；缺省时随类型取「结束日期」「结束月份」等。                              |
-| `rangeSeparator`       | `string`                                                                                                                                                                                                  | `"至"`          | 范围类型起止之间的分隔符。                                                                        |
-| `collapseTags`         | `boolean`                                                                                                                                                                                                 | `false`         | 多选时把超出的标签合并为一段 `+N`。                                                               |
-| `collapseTagsTooltip`  | `boolean`                                                                                                                                                                                                 | `false`         | 悬停 `+N` 时以气泡展示被折叠的日期，需先开启 `collapseTags`。                                     |
-| `maxCollapseTags`      | `number`                                                                                                                                                                                                  | `1`             | 折叠前最多展示的标签个数，仅在 `collapseTags` 开启时生效。                                        |
-| `disabled`             | `boolean`                                                                                                                                                                                                 | `false`         | 是否禁用，可被外层 `RebornForm` 覆盖。                                                            |
-| `clearable`            | `boolean`                                                                                                                                                                                                 | `true`          | 有值时悬停触发器显示清空按钮，与箭头共用尾部位置。                                                |
-| `loading`              | `boolean`                                                                                                                                                                                                 | `false`         | 尾部图标换成加载指示器并隐藏清空按钮。                                                            |
-| `size`                 | `'sm' \| 'md' \| 'lg'`                                                                                                                                                                                    | `'md'`          | 尺寸档位，同时下发给面板；可被外层 `RebornForm` 覆盖。                                            |
-| `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                                                                                                                    | `'primary'`     | 触发器聚焦 / 展开描边色，同时下发给面板决定选中色。                                               |
-| `variant`              | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                                                                                                                                                  | `'outlined'`    | 形态变体，与 `RebornSelect` 同一套形态语言。                                                      |
-| `showArrow`            | `boolean`                                                                                                                                                                                                 | `true`          | 是否显示尾部图标。                                                                                |
-| `arrowAnimation`       | `boolean`                                                                                                                                                                                                 | `true`          | 展开时尾部图标是否旋转 180°。                                                                     |
-| `icon`                 | `string`                                                                                                                                                                                                  | `'lucide:calendar'` | 尾部图标名。                                                                                  |
-| `closeOn`              | `'click' \| 'mousedown'`                                                                                                                                                                                  | `'click'`       | `click` 为外部完成一次点击后收起，`mousedown` 为外部按下即收（滚动亦收）。                        |
-| `portal`               | `boolean`                                                                                                                                                                                                 | `true`          | 浮层是否传送到 `body`；关掉后会随父容器滚动并被 `overflow` 裁剪。                                 |
-| `autoAdjustOverflow`   | `boolean`                                                                                                                                                                                                 | `true`          | 下方空间不足且上方更宽裕时向上展开；关闭后固定向下。                                              |
-| `class`                | `any`                                                                                                                                                                                                     | -               | 追加到触发器外层容器的类名，宽度用它设置。                                                        |
-| `ui`                   | `Partial<Record<'panel' \| 'dropdownHeader' \| 'dropdownFooter' \| 'tagList' \| 'tag' \| 'tagLabel' \| 'tagClose' \| 'tagCloseIcon' \| 'collapseTag', ClassValue>>`                                                                                                                                                                              | -               | 浮层页头页脚与多选标签的样式覆盖，键位见「自定义样式（ui）」。                                    |
-| `triggerUi`            | `SelectTriggerProps["ui"] & DatePickerFieldUI`                                                                                                                                                                              | -               | 触发器盒子与浮层外壳的样式覆盖，键位见「子组件样式入口」。                                        |
-| `panelUi`              | `DatePickerPanelProps["ui"]`                                                                                                                                                                              | -               | 原样透传给 `RebornDatePickerPanel` 的 `ui`。                                                      |
+`RebornDatePicker` 由选择框（`RebornSelectTrigger` 及其下拉浮层）和浮层内的 `RebornDatePickerPanel` 组合而成，描述列开头的标注说明参数作用于哪一部分：〔选择框〕只影响触发器与浮层，〔面板〕原样透传给 `RebornDatePickerPanel`，〔共用〕同时作用于两者。交互演练的控制面板按同一口径分组。
+
+| 属性名                 | 类型                                                                                                                                                                                                  | 默认值              | 描述                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------ |
+| `modelValue` / v-model | `any`                                                                                                                                                                                                 | `null`              | 〔共用〕绑定值，形态随 `type` 与 `valueFormat` 变化，见「选择类型」。                |
+| `type`                 | `'year' \| 'years' \| 'yearrange' \| 'quarter' \| 'quarters' \| 'quarterrange' \| 'month' \| 'months' \| 'monthrange' \| 'date' \| 'dates' \| 'daterange' \| 'week' \| 'weekrange' \| 'datetime' \| 'datetimerange'` | `'date'`            | 〔共用〕选择器类型，决定粒度与单选 / 多选 / 范围。                                   |
+| `valueFormat`          | `string`                                                                                                                                                                                              | `""`                | 〔共用〕绑定值的 dayjs 格式；为空时绑定值为 `Date` 对象。                            |
+| `format`               | `string`                                                                                                                                                                                              | `""`                | 〔选择框〕触发器展示文本的 dayjs 格式，不影响绑定值；缺省值见「基础用法」。          |
+| `start`                | `string`                                                                                                                                                                                              | `'1970-01-01'`      | 〔面板〕可选日期的最早边界（含）。                                                   |
+| `end`                  | `string`                                                                                                                                                                                              | `'2099-12-31'`      | 〔面板〕可选日期的最晚边界（含）。                                                   |
+| `disabledMethod`       | `(date: Date, unit: 'year' \| 'month' \| 'quarter' \| 'week' \| 'date') => boolean`                                                                                                                   | -                   | 〔面板〕逐项判定是否禁用，返回 `true` 即不可选；`unit` 为当前判定粒度。              |
+| `disabledHours`        | `(role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                              | -                   | 〔面板〕返回需禁用的小时；仅 `datetime` / `datetimerange` 生效。                     |
+| `disabledMinutes`      | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                | -                   | 〔面板〕返回需禁用的分钟，入参为当前选中的小时。                                     |
+| `disabledSeconds`      | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                | -                   | 〔面板〕返回需禁用的秒，入参为当前选中的时、分。                                     |
+| `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                | -                   | 〔面板〕返回需禁用的毫秒，入参为当前选中的时、分、秒。                               |
+| `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                      | `[]`                | 〔面板〕快捷选项，非空时面板左侧出现快捷侧栏。                                       |
+| `activeType`           | `'fill' \| 'fillRound' \| 'outline' \| 'text'`                                                                                                                                                        | `'fill'`            | 〔面板〕选中项的表现形式。                                                           |
+| `showWeekNumber`       | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕日期视图左侧显示 ISO 周数；`week` / `weekrange` 类型不生效。                  |
+| `unlinkPanels`         | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕范围类型取消两个面板的联动；`singlePanel` 时无效。                           |
+| `singlePanel`          | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕范围类型只渲染一个面板。                                                     |
+| `showToday`            | `boolean`                                                                                                                                                                                             | `false`             | 〔面板〕面板底部显示「今天」栏，点击选中当前时间所在的单位，见「今天栏」。           |
+| `defaultValue`         | `Date \| string \| number \| (Date \| string \| number)[]` | -                   | 〔面板〕未选值时面板定位到的日期，不写入绑定值；缺省为当天。数组用法见「默认展示日期」。 |
+| `placeholder`          | `string`                                                                                                                                                                                              | -                   | 〔选择框〕单值与多选类型的占位文本；缺省时随类型取「请选择日期」「请选择月份」等。   |
+| `startPlaceholder`     | `string`                                                                                                                                                                                              | -                   | 〔选择框〕范围类型开始栏的占位文本；缺省时随类型取「开始日期」「开始月份」等。       |
+| `endPlaceholder`       | `string`                                                                                                                                                                                              | -                   | 〔选择框〕范围类型结束栏的占位文本；缺省时随类型取「结束日期」「结束月份」等。       |
+| `rangeSeparator`       | `string`                                                                                                                                                                                              | `"至"`              | 〔选择框〕范围类型起止之间的分隔符。                                                 |
+| `collapseTags`         | `boolean`                                                                                                                                                                                             | `false`             | 〔选择框〕多选时把超出的标签合并为一段 `+N`。                                        |
+| `collapseTagsTooltip`  | `boolean`                                                                                                                                                                                             | `false`             | 〔选择框〕悬停 `+N` 时以气泡展示被折叠的日期，需先开启 `collapseTags`。              |
+| `maxCollapseTags`      | `number`                                                                                                                                                                                              | `1`                 | 〔选择框〕折叠前最多展示的标签个数，仅在 `collapseTags` 开启时生效。                 |
+| `disabled`             | `boolean`                                                                                                                                                                                             | `false`             | 〔选择框〕是否禁用，可被外层 `RebornForm` 覆盖。                                     |
+| `clearable`            | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕有值时悬停触发器显示清空按钮，与箭头共用尾部位置。                         |
+| `loading`              | `boolean`                                                                                                                                                                                             | `false`             | 〔选择框〕尾部图标换成加载指示器并隐藏清空按钮。                                     |
+| `size`                 | `'sm' \| 'md' \| 'lg'`                                                                                                                                                                                | `'md'`              | 〔共用〕尺寸档位，同时下发给面板；可被外层 `RebornForm` 覆盖。                       |
+| `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                                                                                                                | `'primary'`         | 〔共用〕触发器聚焦 / 展开描边色，同时下发给面板决定选中色。                          |
+| `variant`              | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                                                                                                                                              | `'outlined'`        | 〔选择框〕形态变体，与 `RebornSelect` 同一套形态语言。                               |
+| `showArrow`            | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕是否显示尾部图标。                                                         |
+| `arrowAnimation`       | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕展开时尾部图标是否旋转 180°。                                              |
+| `icon`                 | `string`                                                                                                                                                                                              | `'lucide:calendar'` | 〔选择框〕尾部图标名。                                                               |
+| `prefixIcon`           | `string`                                                                                                                                                                                              | -                   | 〔选择框〕触发器文本前的前缀图标名；同时提供 `prefix` 插槽时以插槽为准。             |
+| `closeOn`              | `'click' \| 'mousedown'`                                                                                                                                                                              | `'mousedown'`       | 〔选择框〕`mousedown` 为外部按下、滚轮或页面滚动即收，面板内部滚动不算外部；`click` 为外部完成一次点击后收起，期间页面滚动时面板跟随触发器。 |
+| `portal`               | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕浮层是否传送到 `body`；关掉后会随父容器滚动并被 `overflow` 裁剪。          |
+| `autoAdjustOverflow`   | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕下方空间不足且上方更宽裕时向上展开；关闭后固定向下。                       |
+| `class`                | `any`                                                                                                                                                                                                 | -                   | 〔选择框〕追加到触发器外层容器的类名，宽度用它设置。                                 |
+| `ui`                   | `Partial<Record<'panel' \| 'dropdownHeader' \| 'dropdownFooter' \| 'tagList' \| 'tag' \| 'tagLabel' \| 'tagClose' \| 'tagCloseIcon' \| 'collapseTag', ClassValue>>`                                   | -                   | 〔选择框〕浮层页头页脚与多选标签的样式覆盖，键位见「自定义样式（ui）」。             |
+| `triggerUi`            | `SelectTriggerProps["ui"] & DatePickerFieldUI`                                                                                                                                                        | -                   | 〔选择框〕触发器盒子与浮层外壳的样式覆盖，键位见「子组件样式入口」。                 |
+| `panelUi`              | `DatePickerPanelProps["ui"]`                                                                                                                                                                          | -                   | 〔面板〕原样透传给 `RebornDatePickerPanel` 的 `ui`。                                 |
 
 ### Emits
 
-| 事件名              | 回调参数                                                                                   | 描述                                                                                         |
-| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `update:modelValue` | `(value: any)`                                                                             | 绑定值写回时触发（由 `defineModel` 生成），时机与 `change` 相同。                            |
-| `change`            | `(value: any)`                                                                             | 绑定值写回后触发；清空与移除标签同样触发。写回时机见「简介」。                               |
-| `remove-tag`        | `(value: any)`                                                                             | 多选类型点标签上的关闭按钮时触发，参数为被移除的值。                                         |
-| `clear`             | `()`                                                                                       | 点清空按钮或调用 `clear()` 后触发，先于 `change`。                                           |
-| `visible-change`    | `(visible: boolean)`                                                                       | 面板展开或收起时触发。                                                                       |
-| `calendar-change`   | `(value: [Date, Date \| null])`                                                            | 转发自面板：范围类型点选日期或选中数组型快捷选项时触发；只选了起点时终点为 `null`，`week` 类型不触发。           |
-| `panel-change`      | `(date: Date \| [Date, Date], mode: 'month' \| 'year', view: 'year' \| 'month' \| 'date')` | 转发自面板：翻页、切换视图或下钻时触发，参数含义见 `reborn-date-picker-panel`。              |
+标注口径同 Props：〔面板〕事件由 `RebornDatePickerPanel` 触发后原样转发，〔共用〕事件在面板上选值与选择框内清空、移除标签时都会触发。
+
+| 事件名              | 回调参数                                                                                   | 描述                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `update:modelValue` | `(value: any)`                                                                             | 〔共用〕绑定值写回时触发（由 `defineModel` 生成），时机与 `change` 相同。                          |
+| `change`            | `(value: any)`                                                                             | 〔共用〕绑定值写回后触发；清空与移除标签同样触发。写回时机见「简介」。                             |
+| `remove-tag`        | `(value: any)`                                                                             | 〔选择框〕多选类型点标签上的关闭按钮时触发，参数为被移除的值。                                     |
+| `clear`             | `()`                                                                                       | 〔选择框〕点清空按钮或调用 `clear()` 后触发，先于 `change`。                                       |
+| `visible-change`    | `(visible: boolean)`                                                                       | 〔选择框〕面板展开或收起时触发。                                                                   |
+| `calendar-change`   | `(value: [Date, Date \| null])`                                                            | 〔面板〕范围类型点选日期或选中数组型快捷选项时触发；只选了起点时终点为 `null`，`week` 类型不触发，`weekrange` 的起止已吸附到整周。 |
+| `panel-change`      | `(date: Date \| [Date, Date], mode: 'month' \| 'year', view: 'year' \| 'month' \| 'date')` | 〔面板〕翻页、切换视图或下钻时触发，参数含义见 `reborn-date-picker-panel`。                        |
 
 ### Slots
 
-| 插槽名       | 作用域参数                                | 描述                                                        |
-| ------------ | ----------------------------------------- | ----------------------------------------------------------- |
-| `default`    | `{ displayText, placeholder, isOpen, ui }` | 替换触发器的文本区，尾部箭头与清空按钮保留。                |
-| `cover`      | `{ displayText, placeholder, isOpen, ui }` | 接管整个触发器内容，包括尾部图标区。                        |
-| `header`     | -                                         | 面板上方的页头，自带下分隔线。                              |
-| `footer`     | -                                         | 面板下方的页脚，自带上分隔线。                              |
-| `cell`       | `DatePickerCell`                          | 自定义单元格内容，对应面板的 `default` 插槽。               |
-| `prev-month` | -                                         | 日期视图「上个月」按钮的图标。                              |
-| `next-month` | -                                         | 日期视图「下个月」按钮的图标。                              |
-| `prev-year`  | -                                         | 「上一年」按钮的图标。                                      |
-| `next-year`  | -                                         | 「下一年」按钮的图标。                                      |
+| 插槽名       | 作用域参数                                 | 描述                                                   |
+| ------------ | ------------------------------------------ | ------------------------------------------------------ |
+| `default`    | `{ displayText, placeholder, isOpen, ui }` | 〔选择框〕替换触发器的文本区，尾部箭头与清空按钮保留。 |
+| `cover`      | `{ displayText, placeholder, isOpen, ui }` | 〔选择框〕接管整个触发器内容，包括尾部图标区。         |
+| `prefix`     | -                                          | 〔选择框〕触发器文本前的前缀内容，提供后忽略 `prefixIcon`。 |
+| `header`     | -                                          | 〔选择框〕面板上方的页头，自带下分隔线。               |
+| `footer`     | -                                          | 〔选择框〕面板下方的页脚，自带上分隔线。               |
+| `cell`       | `DatePickerCell`                           | 〔面板〕自定义单元格内容，对应面板的 `default` 插槽。  |
+| `prev-month` | -                                          | 〔面板〕日期视图「上个月」按钮的图标。                 |
+| `next-month` | -                                          | 〔面板〕日期视图「下个月」按钮的图标。                 |
+| `prev-year`  | -                                          | 〔面板〕「上一年」按钮的图标。                         |
+| `next-year`  | -                                          | 〔面板〕「下一年」按钮的图标。                         |
 
 `default` / `cover` 的作用域参数：
 
@@ -647,9 +723,9 @@ const formRules = z.object({
 
 下面这些键**不属于 `reborn-date-picker` 自身**——它们改的是内部子组件的样式，通过 `triggerUi` / `panelUi` 透传下去，键位与默认值以对应子组件页为准。
 
-#### `triggerUi`（13 个键，`RebornSelectTrigger`）
+#### `triggerUi`（15 个键，`RebornSelectTrigger`）
 
-`triggerUi` 里两部分键混写，组件内部自动拆分：浮层外壳的 4 个键交给 `RebornSelectTrigger`，其余 9 个键合并进触发器盒子的类名。
+`triggerUi` 里两部分键混写，组件内部自动拆分：浮层外壳的 4 个键交给 `RebornSelectTrigger`，其余 11 个键合并进触发器盒子的类名。
 
 | 名称                 | 归属     | 描述                                                   |
 | -------------------- | -------- | ------------------------------------------------------ |
@@ -666,6 +742,8 @@ const formRules = z.object({
 | `rangeWrapper`       | 触发器   | 范围类型开始 / 结束两栏的容器                          |
 | `rangeText`          | 触发器   | 范围类型的开始 / 结束文本                              |
 | `rangeSeparator`     | 触发器   | 范围类型起止之间的分隔符                               |
+| `prefix`             | 触发器   | 前缀容器，仅提供 `prefix` 插槽或 `prefixIcon` 时渲染   |
+| `prefixIcon`         | 触发器   | `prefixIcon` 渲染的图标，尺寸随 `size` 变化            |
 
 ::warning
 `triggerUi.arrow` 改的是浮层小箭头。触发器尾部日历图标的类名不在 `triggerUi` 里：换图标用 `icon`，隐藏用 `:show-arrow="false"`，关旋转用 `:arrow-animation="false"`；需要改样式时用 `default` / `cover` 插槽自绘。
@@ -685,5 +763,6 @@ const formRules = z.object({
 - **`cell` 插槽要按 `type` 分支**。四种视图共用这一个插槽，只写日期格的内容会让年、月、季度视图也显示成日期样式。
 - **`clear()` 不检查禁用状态**。点击清空按钮在禁用时不可达，但通过实例调用 `clear()` 仍会清空并抛出事件，调用方需自行判断。
 - **校验在写回与外部收起时触发**。写回时跑 `change` 校验，点击外部收起时跑 `blur` 校验；按 Esc 或再次点击触发器收起不触发 `blur`。
+- **`default-value` 不是初始值**。它只决定未选值时面板定位到哪个月，不写入绑定值；需要预填值请直接给 `v-model` 赋值。
 - **`style` 属性不生效**。组件关闭了属性继承且未转发 `$attrs`，宽度等尺寸请用 `class` 设置。
 - **不要写 `dark:` 前缀**。触发器与面板的颜色都来自会随主题切换的灰阶与语义色 token，覆盖样式时直接写 `bg-gray-2`、`text-primary` 即可。

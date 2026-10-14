@@ -20,7 +20,7 @@ const state = ref<Record<string, any>>({
   allowInput: true,
   disabled: false,
   clearable: true,
-  closeOn: "click",
+  closeOn: "mousedown",
   showFooter: true,
 });
 const variants = ["outlined", "filled", "borderless", "underlined"] as const;
@@ -62,7 +62,7 @@ const controls = [
     title: "交互",
     children: [
       {
-        label: "关闭时机", key: "closeOn", component: "select" as const, defaultValue: "click",
+        label: "关闭时机", key: "closeOn", component: "select" as const, defaultValue: "mousedown",
         props: { options: [{ label: "点击完成（click）", value: "click" }, { label: "按下即关闭（mousedown）", value: "mousedown" }] },
       },
       { label: "显示底部操作", key: "showFooter", component: "checkbox" as const, defaultValue: true },
@@ -343,11 +343,11 @@ function onInvalid(value: string) {
 
     <DemoSection title="关闭时机">
       <template #description>
-        <code>closeOn</code> 与 <code>reborn-select</code> 一致：默认 <code>click</code>，也可选 <code>mousedown</code>。
+        <code>closeOn</code> 与 <code>reborn-select</code> 一致：默认 <code>mousedown</code>，也可选 <code>click</code>。
       </template>
       <DemoBlock layout="grid" :columns="2">
+        <RebornTimePicker close-on="mousedown" aria-label="外部按下即关闭" placeholder="mousedown（默认）：外部按下即关闭" />
         <RebornTimePicker close-on="click" aria-label="点击完成后关闭" placeholder="click：外部点击后关闭" />
-        <RebornTimePicker close-on="mousedown" aria-label="外部按下即关闭" placeholder="mousedown：外部按下即关闭" />
       </DemoBlock>
       <DemoNote tone="dimmed">
         mousedown 模式在外部按下任意鼠标键或页面滚动时关闭，内部时间列滚动不关闭；click 模式等待外部点击完成。

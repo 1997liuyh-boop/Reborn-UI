@@ -175,7 +175,7 @@ Web 用独立布尔参数控制形状，配色、边框及禁用样式仍由 `va
 </template>
 ```
 
-旧 `variant="round"` / `variant="circle"` 仍可用，保留原有配色及禁用样式，但不再出现在风格选择器中。新代码使用独立参数；旧 `round` 的禁用文字仍为 `text-white/50`，迁移为 `variant="filled" round` 后则按 Filled 使用 `text-gray-5`。
+旧 `variant="round"` / `variant="circle"` 仍可用，但不再出现在风格选择器中。新代码使用独立参数。Web 端旧 `round` 与 `variant="filled" round` 的禁用文字均为 `text-gray-1`，底色为对应色系第 3 阶；旧 `circle` 使用 `bg-gray-2`、`border-gray-4` 和 `text-gray-5`，迁移为 `variant="filled" circle` 后则采用 Filled 的禁用配色。
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -196,6 +196,17 @@ UniApp 本轮不变，尚无 `round` / `circle` 布尔参数，继续使用旧�
 ::
 
 ### 加载与禁用
+
+Web 端禁用配色由 `variant` 决定，独立的 `round` / `circle` 只改变形状，不改变下表规则。
+
+| `variant` | 禁用底色 | 禁用文字 | 典型用途 |
+| --- | --- | --- | --- |
+| `filled` / 旧 `round` | 对应色系第 3 阶 | `text-gray-1` | 不可用的主要操作 |
+| `outlined` / 旧 `circle` | `bg-gray-2`，边框 `border-gray-4` | `text-gray-5` | 不可用的描边操作 |
+| `text` | 透明 | `text-gray-5` | 不可用的文字操作 |
+| `soft` / `subtle` | 保留各自的浅底样式 | 保留语义色，`neutral` 为 `text-gray-10` | 保留低强调层级的不可用操作 |
+
+上述配色为 Web 端规则，不代表 UniApp 端同步采用这些色阶。
 
 `loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发。加载动画的颜色随风格走：`filled` 及旧 `variant="round"` / `variant="circle"` 下为白色，其余风格跟随 `color`。新形状参数不改变加载动画颜色。
 
@@ -539,7 +550,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ## 注意事项
 
-- **Web 形状独立，旧变体保留兼容**。新参数只改变轮廓，`circle` 优先于 `round`；UniApp 仍使用形状变体。旧 `variant="round"` / `variant="circle"` 与新 `filled + round/circle` 的禁用配色不一定相同，迁移时需确认视觉变化。
+- **Web 形状独立，旧变体保留兼容**。新参数只改变轮廓，`circle` 优先于 `round`；UniApp 仍使用形状变体。Web 端旧 `round` 与 `filled + round` 的禁用配色一致；旧 `circle` 为灰阶底色和灰阶 5 文字，`filled + circle` 则为对应色系第 3 阶底色和灰阶 1 文字，迁移时需确认视觉变化。
 - **`loading` 隐含禁用**。加载中按钮不会派发 `click` / `tap`，无需再额外绑 `disabled`。
 - **普通 `text` 变体不占固定高度**。Web 开启 `circle` 时则按尺寸令牌固定宽高。它用 `!h-auto !px-0` 覆盖了 `size` 的高度与水平内边距，与其他变体并排时基线不齐是预期行为；需要对齐请把它放进同一个 flex 容器并用 `items-center`。
 - **`borderStyle` 只影响有边框的变体**。`filled` / `soft` / `text` 本身不渲染边框，传 `dashed` 不会有视觉变化。

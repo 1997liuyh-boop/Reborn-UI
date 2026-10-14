@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useColorMode } from "@vueuse/core";
 
-const isDark = computed(() => useColorMode().value == "dark");
+// 须在 setup 顶层调用：放进 computed 里会在 setup 之外注册生命周期钩子，触发 Vue 警告
+const colorMode = useColorMode();
+const isDark = computed(() => colorMode.value == "dark");
 const shadowColor = computed(() => (isDark.value ? "white" : "black"));
 </script>
 

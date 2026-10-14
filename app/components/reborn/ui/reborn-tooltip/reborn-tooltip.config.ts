@@ -10,6 +10,9 @@ import { tv } from '~/lib/tv';
  * 厚度恒为 7px（SVG 用 preserveAspectRatio=none 只压交叉轴），连接处依旧无缝。
  * 深浅模式取色走 gray 令牌的对偶：暗色主题下 gray-10 即白色，自然反色为浅底深字。
  * 需要别的底色用 color prop（面板与箭头同步着色）。
+ * 折行用 wrap-anywhere（overflow-wrap: anywhere）而非 break-words：面板是 inline-flex，
+ * 文案是匿名 flex 子项，min-width:auto 取 min-content；break-word 的断点不计入 min-content，
+ * 一长串无空格字符（URL、长文件名、连续符号）会把子项撑出面板，anywhere 才能让它收缩折行。
  */
 export const rebornTooltip = tv({
   slots: {
@@ -17,7 +20,7 @@ export const rebornTooltip = tv({
     trigger: 'inline-flex max-w-full',
     contentWrapper: 'fixed left-0 top-0 z-[9999] pointer-events-none flex',
     content:
-      'relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line break-words bg-gray-10 text-gray-1',
+      'relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line wrap-anywhere bg-gray-10 text-gray-1',
     arrow: 'absolute text-gray-10',
   },
   variants: {

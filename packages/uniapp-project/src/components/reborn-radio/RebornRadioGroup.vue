@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { ButtonProps } from '../reborn-button/RebornButton.vue'
-import type { RadioColor, RadioDirection, RadioOption, RadioSize, RadioType, RadioValue, RadioVariant } from './reborn-radio.config'
+import type { RadioColor, RadioDirection, RadioFieldNames, RadioOption, RadioSize, RadioType, RadioValue, RadioVariant } from './reborn-radio.config'
 import { computed, provide, ref, toRef } from 'vue'
 import { useFormInject } from '@/composables/useFieldGroup'
 import { tv } from '@/lib/tv'
@@ -39,8 +39,10 @@ export interface RadioGroupProps {
   variant?: RadioVariant
   /** 单选框组的尺寸（受 Form / FormItem 尺寸继承） */
   size?: RadioSize
-  /** 选项列表；传入后组件内部渲染选项，可省略默认插槽 */
-  options?: Array<string | number | RadioOption>
+  /** 选项列表；传入后组件内部渲染选项，可省略默认插槽。字段名与默认不一致时配合 fieldNames 使用 */
+  options?: Array<string | number | RadioOption | Record<string, any>>
+  /** options 对象项的字段别名配置：按这里给出的字段名去数据里取 label / value / disabled */
+  fieldNames?: RadioFieldNames
   /** 单选框组的方向 */
   direction?: RadioDirection
   /** 是否禁用 */
@@ -72,12 +74,17 @@ const computedSize = computed<RadioSize>(() => fieldGroupSize.value || props.siz
 
 const computedDisabled = computed(() => fieldGroupDisabled.value || props.disabled)
 
-/** 将 string | number 简写选项归一化为 RadioOption 对象 */
-const normalizedOptions = computed<RadioOption[]>(() =>
-  (props.options ?? []).map(opt =>
-    typeof opt === 'object' && opt !== null ? opt : { label: String(opt), value: opt },
-  ),
-)
+/** 归一化为 RadioOption：简写项以自身作文案与值，对象项按 fieldNames 取字段，原有字段随展开保留 */
+const normalizedOptions = computed<RadioOption[]>(() => {
+  const label = props.fieldNames?.label ?? 'label'
+  const value = props.fieldNames?.value ?? 'value'
+  const disabled = props.fieldNames?.disabled ?? 'disabled'
+  return (props.options ?? []).map(opt =>
+    typeof opt === 'object' && opt !== null
+      ? { ...opt, label: opt[label], value: opt[value], disabled: opt[disabled] }
+      : { label: String(opt), value: opt },
+  )
+})
 
 function updateValue(value: RadioValue, _ev: Event) {
   innerValue.value = value

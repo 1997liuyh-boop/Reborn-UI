@@ -3,9 +3,9 @@ import type { ClassValue } from "clsx";
 import type { CSSProperties } from "vue";
 import type { ItemType, MenuContext, MenuUI } from "./reborn-menu.config";
 import { useEventListener } from "@vueuse/core";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from "vue";
 import { cn } from "~/lib/utils";
-import theme, { MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
+import theme, { getMenuFallbackChar, MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
 // RebornMenuItems 由 Nuxt 全局自动注册，不写静态 import 以避免递归组件的 ESM 循环依赖。
 
 /**
@@ -67,6 +67,7 @@ const emit = defineEmits<{
 }>();
 
 const menuContext = inject<MenuContext>(MENU_INJECTION_KEY);
+const slots = useSlots();
 
 const isActive = computed(() => menuContext?.selectedKeys.value.includes(props.index) ?? false);
 const isOpened = computed(() => menuContext?.openedMenus.value.includes(props.index) ?? false);
@@ -81,6 +82,23 @@ const level = computed(() =>
 const isRootHorizontal = computed(
   () => menuContext?.mode.value === "horizontal" && level.value === "root",
 );
+
+/**
+ * 是否渲染首字兜底（没有 icon 插槽时才会走到这一分支），判定与 RebornMenuItem 一致：
+ * 只有垂直菜单的一级标题会被折叠收起，其余位置标题始终可见。
+ * 不随 collapse 变化，展开态兜底宽度为 0 但留在 DOM 里，折叠切换才有过渡。
+ */
+const showFallback = computed(
+  () => level.value === "root" && (menuContext?.mode.value ?? "vertical") === "vertical",
+);
+
+/**
+ * 首字兜底的文字：取 title 插槽的首字，插槽缺省时标题区显示的是 index，这里也退回 index，
+ * 首字与展开态看到的标题保持同源。在模板里调用的原因见 RebornMenuItem 的 fallbackChar。
+ */
+function fallbackChar() {
+  return getMenuFallbackChar(slots.title?.(), props.index);
+}
 
 /** 折叠模式或水平模式下子菜单强制浮层展开，不可平铺 */
 const effectiveExpandType = computed(() => {
@@ -215,6 +233,13 @@ const subMenuUi = computed(() => {
         opts?.class,
         rootOverrides.menuItemIcon,
         localOverrides.menuItemIcon,
+      ),
+    menuItemIconFallback: (opts?: { class?: any }) =>
+      cn(
+        styles.menuItemIconFallback?.(),
+        opts?.class,
+        rootOverrides.menuItemIconFallback,
+        localOverrides.menuItemIconFallback,
       ),
     menuItemArrow: (opts?: { class?: any; opened?: boolean }) =>
       cn(
@@ -610,6 +635,14 @@ onBeforeUnmount(() => {
           :class="subMenuUi.menuItemIcon()"
         >
           <slot name="icon" />
+        </div>
+        <!-- 首字只是视觉替身，读屏已能读到标题，对辅助技术隐藏 -->
+        <div
+          v-else-if="showFallback"
+          :class="subMenuUi.menuItemIconFallback()"
+          aria-hidden="true"
+        >
+          {{ fallbackChar() }}
         </div>
         <div :class="subMenuUi.menuItemTitle()">
           <slot name="title">{{ index }}</slot>

@@ -64,6 +64,8 @@ const fruit = ref("apple");
 
 `type="button"` 呈现分段按钮风格；`size` 支持 `sm` / `md` / `lg`。`radio` 类型下 `size` 决定圆点直径，`button` 与 `pure-button` 类型下取 `RebornButton` 同款高度令牌，具体数值两端不同，见下方「设计令牌」。
 
+Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容器上的一块滑块绘制，切换时与 `RebornTabs` 胶囊型标签的底板同一套液体形变：先朝新选项拉长（110ms），再收拢到新选项并轻微回弹（150ms）。拉长时前缘先抵达新选项，`filled` 的白字从一开始就有底衬着，不会有一段悬在灰底上看不清；拉伸长度封顶在起止两项宽度之和的 1.1 倍，选项很多时跨越切换也只是一段定长的滑块移过去，不会铺满整排。滑块按选中项自身的 `variant` / `color` 取底色，选中项被禁用时一起半透明；系统开启「减少动态效果」时直接切换。单独使用的 `RebornRadio` 没有组容器，仍由自身绘制选中底色。UniApp 端直接切换，见「两端差异对照」。
+
 ```vue
 <template>
   <RebornRadioGroup
@@ -130,9 +132,11 @@ const fruit = ref("apple");
 </template>
 ```
 
-### 数据驱动：options 与 label 插槽
+### 数据驱动：options、fieldNames 与 label 插槽
 
 `options` 接受 `string | number | RadioOption` 混合数组，对象形式可携带 `disabled`；配合 `label` 插槽可统一定制选项文案。
+
+接口返回的字段名不是 `label` / `value` / `disabled` 时，用 `field-names` 指定从哪个字段取值，不必先把数据 map 一遍。对象项会展开成「原字段 + 补齐的 `label` / `value` / `disabled`」，没参与映射的字段（下例的 `fee`）在 `label` 插槽的 `data` 里照样读得到。
 
 ```vue
 <template>
@@ -149,8 +153,25 @@ const fruit = ref("apple");
       <span class="font-medium">{{ data.label }}</span>
     </template>
   </RebornRadioGroup>
+
+  <!-- 接口原样返回 code / name / closed -->
+  <RebornRadioGroup
+    v-model="shipping"
+    :options="[
+      { code: 'express', name: '快递配送', fee: 8 },
+      { code: 'pickup', name: '门店自提', fee: 0 },
+      { code: 'same-day', name: '同城急送', fee: 20, closed: true },
+    ]"
+    :field-names="{ label: 'name', value: 'code', disabled: 'closed' }"
+  >
+    <template #label="{ data }">
+      {{ data.label }} ¥{{ data.fee }}
+    </template>
+  </RebornRadioGroup>
 </template>
 ```
+
+`string` / `number` 简写项不受 `field-names` 影响，仍以自身作文案与值。
 
 ### 方向与非受控
 
@@ -223,19 +244,20 @@ const fruit = ref("apple");
 
 ### RadioGroup Props
 
-| 属性名                  | 类型                                                                                   | 默认值         | 描述                                                                         |
-| ----------------------- | -------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------- |
-| `modelValue`            | `string \| number \| boolean`                                                          | -              | 绑定值（`v-model`）。                                                        |
-| `defaultValue`          | `string \| number \| boolean`                                                          | `""`           | 默认值（非受控状态，未绑定 `v-model` 时生效）。                              |
-| `type`                  | `"radio" \| "button" \| "pure-button"`                                                 | `"radio"`      | 单选框组的类型。                                                             |
-| `color`                 | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`    | 语义色，作用于选中态。                                                       |
-| `variant`               | `"filled" \| "outlined"`                                                               | `"outlined"`   | 样式变体：filled 实底（语义色背景 + 白色前景）/ outlined 描边。              |
-| `size`                  | `"sm" \| "md" \| "lg"`                                                                 | `"md"`         | 单选框组的尺寸；处于 Form / FormItem 内时以表单下发的尺寸为准。              |
-| `options`               | `Array<string \| number \| RadioOption>`                                               | -              | 选项列表；传入后组件内部渲染，可省略默认插槽。                               |
-| `direction`             | `"horizontal" \| "vertical"`                                                           | `"horizontal"` | 单选框组的方向。                                                             |
-| `disabled`              | `boolean`                                                                              | `false`        | 是否禁用整组。                                                               |
-| `buttonProps`           | `ButtonProps`                                                                          | -              | `pure-button` 类型下统一透传给每个 `RebornButton` 的参数。                   |
-| `class` / `customClass` | `any`                                                                                  | -              | 追加到根节点的自定义类名。**Web 端为 `class`，UniApp 端为 `custom-class`。** |
+| 属性名                  | 类型                                                                                   | 默认值         | 描述                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
+| `modelValue`            | `string \| number \| boolean`                                                          | -              | 绑定值（`v-model`）。                                                                 |
+| `defaultValue`          | `string \| number \| boolean`                                                          | `""`           | 默认值（非受控状态，未绑定 `v-model` 时生效）。                                       |
+| `type`                  | `"radio" \| "button" \| "pure-button"`                                                 | `"radio"`      | 单选框组的类型。                                                                      |
+| `color`                 | `"primary" \| "secondary" \| "success" \| "info" \| "warning" \| "error" \| "neutral"` | `"primary"`    | 语义色，作用于选中态。                                                                |
+| `variant`               | `"filled" \| "outlined"`                                                               | `"outlined"`   | 样式变体：filled 实底（语义色背景 + 白色前景）/ outlined 描边。                       |
+| `size`                  | `"sm" \| "md" \| "lg"`                                                                 | `"md"`         | 单选框组的尺寸；处于 Form / FormItem 内时以表单下发的尺寸为准。                       |
+| `options`               | `Array<string \| number \| RadioOption \| Record<string, any>>`                        | -              | 选项列表；传入后组件内部渲染，可省略默认插槽。字段名与默认不一致时配合 `fieldNames`。 |
+| `fieldNames`            | `RadioFieldNames`                                                                      | -              | `options` 对象项的字段别名，按给出的字段名取 `label` / `value` / `disabled`。         |
+| `direction`             | `"horizontal" \| "vertical"`                                                           | `"horizontal"` | 单选框组的方向。                                                                      |
+| `disabled`              | `boolean`                                                                              | `false`        | 是否禁用整组。                                                                        |
+| `buttonProps`           | `ButtonProps`                                                                          | -              | `pure-button` 类型下统一透传给每个 `RebornButton` 的参数。                            |
+| `class` / `customClass` | `any`                                                                                  | -              | 追加到根节点的自定义类名。**Web 端为 `class`，UniApp 端为 `custom-class`。**          |
 
 ### RadioGroup Emits
 
@@ -254,11 +276,22 @@ const fruit = ref("apple");
 
 ### RadioOption
 
-| 参数名     | 类型               | 默认值  | 描述           |
-| ---------- | ------------------ | ------- | -------------- |
-| `label`    | `string`           | -       | 文案。         |
-| `value`    | `string \| number` | -       | 选项的 value。 |
-| `disabled` | `boolean`          | `false` | 是否禁用。     |
+| 参数名          | 类型               | 默认值  | 描述                                                     |
+| --------------- | ------------------ | ------- | -------------------------------------------------------- |
+| `label`         | `string`           | -       | 文案。                                                   |
+| `value`         | `string \| number` | -       | 选项的 value。                                           |
+| `disabled`      | `boolean`          | `false` | 是否禁用。                                               |
+| `[key: string]` | `any`              | -       | 其他自定义字段，原样保留，`label` 插槽的 `data` 可读到。 |
+
+### RadioFieldNames
+
+省略的键回落到默认字段名，两端一致。
+
+| 参数名     | 类型     | 默认值       | 描述             |
+| ---------- | -------- | ------------ | ---------------- |
+| `label`    | `string` | `"label"`    | 展示文案字段名。 |
+| `value`    | `string` | `"value"`    | 选项值字段名。   |
+| `disabled` | `string` | `"disabled"` | 禁用字段名。     |
 
 ### 自定义样式（ui）
 
@@ -266,7 +299,7 @@ const fruit = ref("apple");
 
 | 键名    | 说明 |
 | ------- | ---- |
-| `root`  | 单个选项的根节点（点击区），默认 `reborn-radio inline-flex items-center transition-colors`，Web 端另有 `cursor-pointer select-none` 与供悬停联动的 `group/radio`。始终渲染，填了 `radio` 插槽也生效。 |
+| `root`  | 单个选项的根节点（点击区），默认 `reborn-radio inline-flex items-center transition-colors`，Web 端另有 `cursor-pointer select-none` 与供悬停联动的 `group/radio`。始终渲染，填了 `radio` 插槽也生效。Web 端 `type="button"` 在组内使用时，选中底色与阴影画在组容器的滑块上，`root` 只保留选中文字色。 |
 | `icon`  | 圆形图标外圈，默认 `relative box-border inline-flex shrink-0 rounded-full border border-solid`，直径随 `size`。仅 `type="radio"` 时可见（`button` 类型下被 `hidden` 隐藏）；`type="pure-button"` 或填了 `radio` 插槽时不渲染，此键失效。 |
 | `dot`   | 外圈内的选中态实心圆点，默认 `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full`，直径随 `size`。渲染与失效条件同 `icon`。 |
 | `label` | 选项文案容器，默认 `transition-colors` 加随 `size` 的字号令牌（UniApp 端另有 `leading-[1.5]`），`radio` 类型下文字为 `text-gray-8`。仅在默认插槽有内容时渲染；`type="pure-button"` 下文案交给 `RebornButton`，填了 `radio` 插槽时也不渲染，两种情况此键都失效。 |
@@ -322,6 +355,7 @@ API 层面两端一致，以下为平台实现层面的差异：
 | `change` 第二参数        | 原生 `Event`                                                    | uni 合成事件对象（H5 下即原生 `Event`）                 |
 | 无障碍属性               | 带 `role="radio"` / `role="radiogroup"` / `aria-checked`        | 不声明（小程序无对应语义）                              |
 | 悬停预示                 | 未选中项有 `group-hover` / `hover` 语义色预示                   | 触屏端无 hover 态，不声明                               |
+| `button` 切换选中        | 组容器的滑块做液体形变：朝新选项拉长后收拢回弹                  | 选中项直接换底色，无滑动                                |
 | `pure-button` 未选中文字 | `gray-9`                                                        | `gray-8`（UniApp 灰阶止于 gray-8）                      |
 | `pure-button` 禁用态     | 需 `bg-gray-2!` 提权压住 `RebornButton` 遗留的 `dark:bg-gray-8` | 直接复用 `RebornButton` 自带禁用灰阶，无需提权          |
 | `radio` 插槽作用域透传   | `v-bind="scope"` 对象展开                                       | 逐项展开（小程序编译器不支持插槽上的对象展开 `v-bind`） |

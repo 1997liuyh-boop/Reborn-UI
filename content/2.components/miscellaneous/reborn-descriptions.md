@@ -1,6 +1,6 @@
 ---
 title: Descriptions 描述列表
-description: 成组展示只读字段的键值对排版件：items 数据驱动或子组件声明式，支持边框底色、水平/垂直布局、按容器宽度响应的列数与跨列，仅 web 端。
+description: 以键值对展示只读信息，支持边框、尺寸、水平或垂直布局、响应式列数及跨行跨列，仅 Web 端。
 category: 数据展示
 platform: web
 tags: [css, tailwind, descriptions, detail]
@@ -15,7 +15,7 @@ Descriptions 把一组「字段名 — 字段值」渲染成一张对齐的表�
 
 数据来源与呈现形态是两条互不干扰的轴。**数据来源**二选一：`items` 传数组（字段来自接口时最省事），或在默认插槽里写 `RebornDescriptionsItem` 子组件（值里要塞图标、状态色、链接时更直观）；两者同时存在时 `items` 优先。**呈现形态**由两个 prop 决定：`bordered` 控制标签是否独占一个带底色的单元格，`layout` 控制标签与内容是同行并排还是上下两行。四种组合各自对应不同的 DOM 结构，而不是同一套结构换皮。
 
-密度与分栏由第三组 API 控制：`size` 决定带边框时的单元格行高（36 / 48 / 56px，无边框形态另有一套固定间距，不受 `size` 影响），`column` 决定一行放几项，`span` 决定单项吃掉几列。`column` 与 `span` 都可以写成按断点取值的对象，**判定基准是组件容器宽度而不是视口宽度**——同一个列表放进侧栏和放进主区域会得到不同列数。
+密度与分栏由第三组 API 控制：`size` 决定带边框时的单元格行高（36 / 48 / 56px，无边框形态另有一套固定间距，不受 `size` 影响），`column` 决定一行放几项，`span` 决定单项吃掉几列，`rowspan` 决定单项占据几行。`column` 与 `span` 都可以写成按断点取值的对象，**判定基准是组件容器宽度而不是视口宽度**——同一个列表放进侧栏和放进主区域会得到不同列数。
 
 ### 何时使用
 
@@ -77,6 +77,7 @@ const orderItems: DescriptionsItem[] = [
 | `label`        | `string`                         | -      | 内容的描述，即标签文字。                            |
 | `value`        | `string \| number \| null`       | -      | 标签对应的内容，`null` / `undefined` 渲染为空。      |
 | `span`         | `number \| 'filled' \| object`   | `1`    | 包含列的数量，写法同下方「跨列与铺满」。            |
+| `rowspan`      | `number`                         | `1`    | 占据的数据行数，支持与 `span` 组合。                 |
 | `colon`        | `boolean`                        | -      | 单独覆盖本项的冒号显隐，不传时跟随父级 `colon`。    |
 | `labelClass`   | `string`                         | -      | 追加到本项标签节点的类名。                          |
 | `contentClass` | `string`                         | -      | 追加到本项内容节点的类名。                          |
@@ -105,7 +106,7 @@ const serviceItems = [
 </template>
 ```
 
-具名插槽的作用域参数为 `{ item }`，即当前项的数据对象，额外带一个已解析好的 `colSpan`（该项实际占用的列数）。
+具名插槽的作用域参数为 `{ item }`，即当前项的数据对象，额外带有解析后的 `colSpan`（实际占列数）、`rowSpan`（实际占数据行数）和 `colStart`（从 0 起算的起始列）。
 
 `RebornDescriptionsItem` 自身可用的属性是 `items` 字段的子集（不含 `value` / `slot` / `labelSlot`，这三者在子组件写法下由插槽内容取代）：
 
@@ -113,6 +114,7 @@ const serviceItems = [
 | -------------- | ------------------------------ | ------ | ------------------------------------------------ |
 | `label`        | `string`                       | -      | 标签文字；富内容改用 `label` 插槽。              |
 | `span`         | `number \| 'filled' \| object` | `1`    | 包含列的数量。                                   |
+| `rowspan`      | `number`                       | `1`    | 占据的数据行数。                                 |
 | `colon`        | `boolean`                      | -      | 单独覆盖本项的冒号显隐。                         |
 | `labelClass`   | `string`                       | -      | 追加到本项标签节点的类名。                       |
 | `contentClass` | `string`                       | -      | 追加到本项内容节点的类名。                       |
@@ -194,7 +196,29 @@ const spanItems = [
 </template>
 ```
 
-需要注意的是，**每一行的末项都会自动延伸补齐剩余列**，否则带边框时会缺格、边线断在半路。这意味着写在最后一项上的 `'filled'` 与不写没有区别；它的真正用途是写在**非末项**上，用来强行把后续内容挤到下一行。
+需要注意的是，**每一行的末项都会自动延伸补齐右侧连续空列**，否则带边框时会缺格、边线断在半路。跨行项已经占用的列不会被覆盖。这意味着写在最后一项上的 `'filled'` 与不写没有区别；它的真正用途是写在**非末项**上，用来强行把后续内容挤到下一行。与 `rowspan` 组合时，`'filled'` 只占当前连续空列，不会越过已被占用的列。
+
+### 单元格跨行
+
+给 item 或 `RebornDescriptionsItem` 设置 `rowspan`，使同一字段跨越多个数据行；后续项会自动避开已经占用的列。
+
+| 属性 | 作用 | 典型用途 |
+| --- | --- | --- |
+| `rowspan` | 占据多行，默认 `1` | 负责人、封面等字段对应右侧多条信息 |
+| `span` | 占据多列，可与 `rowspan` 组合 | 备注、地址等需要更宽空间的字段 |
+
+```vue
+<template>
+  <RebornDescriptions bordered :column="2">
+    <RebornDescriptionsItem label="负责人" :rowspan="2">林清</RebornDescriptionsItem>
+    <RebornDescriptionsItem label="上午">09:00 — 12:00</RebornDescriptionsItem>
+    <RebornDescriptionsItem label="下午">14:00 — 18:00</RebornDescriptionsItem>
+    <RebornDescriptionsItem label="备注" :span="2">工作日可通过团队空间联系。</RebornDescriptionsItem>
+  </RebornDescriptions>
+</template>
+```
+
+水平布局下标签与内容一起跨行；垂直布局下标签保留在起始标签行，内容跨越后续标签行与内容行。请用 `:rowspan="2"` 传数字，其语义始终是两组数据行。小数向下取整，小于 `1`、`NaN`、无穷大等无效值按 `1` 处理；水平最多跨 `65534` 行，垂直最多跨 `32767` 组数据行，以符合原生表格限制。
 
 ### 标题与操作区
 
@@ -306,7 +330,8 @@ gray 色阶是会随主题反转的语义色阶，因此组件里不写任何 `d
 
 - **本版本对旧 API 做了破坏性重写**。`border`、`direction`、`responsive`、`rounded`、`labelBackground`、`contentBackground`、`labelColor`、`contentColor`、`labelBold`、`contentBold`、`labelLineHeight`、`contentLineHeight` 全部移除。对应迁移：`border="bordered"` → `bordered`，`direction` → `layout`，`responsive` → 把 `column` 写成断点对象；配色与字重类的覆盖统一改走 `ui` 或 `class`，组件不再接受 CSS 颜色值字符串。
 - **冒号只在「无边框 + 水平」下渲染**。带边框时标签已经有底色单元格作边界，垂直布局时标签独占一行，此时再加冒号是重复表达，因此 `colon` 会被静默忽略——不是失效，是该形态下本就不该出现。
-- **每一行的末项都会自动延伸补齐剩余列**。不补齐的话带边框时会缺格、边线断在半路。副作用是写在最后一项上的 `span: 'filled'` 没有可观察的效果，它只有写在非末项上才有意义。
+- **每一行的末项都会自动延伸补齐右侧连续空列**。不补齐的话带边框时会缺格、边线断在半路；遇到跨行占用则停止。写在最后一项上的 `span: 'filled'` 没有可观察的效果，它只有写在非末项上才有意义。
+- **跨行与跨列会共同参与排布**。后续项只放进足够宽的连续空列，放不下会换行；由跨行占用隔开的空洞保留为空单元格，不会用后续字段覆盖已有内容。垂直布局的一组标签行与内容行按一个数据行计算。
 - **响应式断点比对的是组件容器宽度，不是视口宽度**。组件用 `ResizeObserver` 观测根元素，并在挂载时主动量一次兜底（`ResizeObserver` 的回调挂在浏览器渲染步骤上，页面不可见时不会派发）。因此同一份 `column` 参数在侧栏和主区域会得到不同列数，这是刻意的；需要固定列数就把 `column` 写成数字。
 - **`labelAlign` / `contentAlign` 在「无边框 + 水平」下几乎不可见**。该形态里标签与内容是同一单元格内的两个 flex 子项，宽度被内容撑满，`text-align` 没有可分配的余量；只有同时设了 `labelWidth` 且它大于标签文字宽度时，`labelAlign` 才会显现。开 `bordered` 或切 `vertical` 后两者都正常生效。
 - **`size` 只在 `bordered` 下生效**。它改的是单元格行高（36 / 48 / 56px）与上下内边距；标题固定 24px / 字重 500、左右内边距固定 16px，都不随 `size` 变化。无边框形态完全不吃这套值：那里没有网格线，层级靠留白撑，行距是固定的 4px（标签与内容之间）与 16px（项与项之间），套上 48px 行高会把这两个间距淹掉。行高是通过 `<td>` 上的 `h-*` 实现的，而表格单元格的 `height` 实际按**最小高度**生效，因此内容换行时该行会照常撑开，测到的高度大于档位值属正常。

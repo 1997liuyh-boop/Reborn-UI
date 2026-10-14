@@ -1,8 +1,8 @@
 {
-  "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回与分页。",
+  "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回、分页、虚拟滚动，以及头部、条目、底部与操作按钮插槽。",
   "whenToUse": [
     "权限、角色、人员分配等从候选集中挑选目标集合的场景。",
-    "候选数据量较大，需要搜索过滤（showSearch）或分页（pagination）。",
+    "候选数据量较大，需要搜索过滤（showSearch）、分页（pagination）或虚拟滚动（virtualScroll，上千条又不想分页时）。",
     "需要撤回上一次移动操作（showUndo + undo 事件）或单向移动（oneWay）。"
   ],
   "whenNotToUse": [
@@ -13,6 +13,15 @@
     "platforms 仅 web 端提供。",
     "v-model 绑定目标列表的 key 数组（string[]），初始值也可用 defaultTargetKeys。",
     "数据源字段名不匹配时用 fieldNames 映射，不必改造数据。",
-    "headerSelect 控制面板头部勾选形态：none / checkbox / menu / both，默认 checkbox。"
+    "headerSelect 控制面板头部勾选形态：none / checkbox / menu / both，默认 both。头部复选框（及 title 插槽的 toggle）只作用于当前页；下拉是 borderless 多选的 RebornSelect，计数文案「选中 N 项」（未勾选时为「N 项」）显示在触发器里，此时复选框不带文案；下拉没有批量操作，逐行列出搜索结果内的全部条目（不受分页限制），点一行切换该条勾选且下拉保持打开，禁用条目不可点；单向模式右侧条目全部呈选中态，只有开启单向模式后移入的条目可以取消选中（即退回左侧）。要一次清空右侧直接把 v-model 置为 []。",
+    "oneWay 下只有开启单向模式后移入右侧的条目可以撤回（行尾「撤回」按钮或在右侧下拉中取消选中）；开启前就在右侧的条目（含 v-model / defaultTargetKeys 初始值）没有撤回按钮、在下拉中置灰，要退回只能直接改 v-model。关掉再开启会以当时右侧的内容重新计算可撤回范围；showUndo 的「撤回上一步」撤销时可撤回范围一并还原。",
+    "不传 filterOption 时搜索按 label 做包含匹配（英文不区分大小写），description 等字段不参与；需要按其他字段搜索时传 (inputValue, item) => boolean，item 是原始数据对象，配置了 fieldNames 时按原始字段名取值。",
+    "variant=\"borderless\" 不渲染面板头部，此时 titles、headerSelect 以及 title / extra 插槽都不生效，只能逐项勾选。",
+    "color 决定复选框勾选色、选中条目底色、头部下拉已选选项颜色以及操作按钮颜色，操作按钮禁用时固定为 neutral；内部复选框已与表单上下文隔离，不触发表单校验、不继承表单尺寸与禁用。",
+    "没有 size 属性：根节点 h-full 撑满父元素高度，父元素高度为 auto 时列表随条目增高不会滚动；条目多时给父元素设高度或传 height（数字按 px）。",
+    "自定义条目用 default 插槽（作用域 item / direction / checked / disabled），只替换文案区域，复选框仍由组件渲染；旧 item 插槽保留，二者同时提供时 default 优先。",
+    "virtualScroll 开启后每行高度固定为 virtualItemHeight 减 4px 行间距：默认 32 只适合只有 label 的条目（行高 28），带 description 的条目要传 54，用插槽改了条目内容时按实际行高加 4 传入，否则相邻行重叠或留白；面板需要确定的高度（传 height 或父元素给高度）；搜索与翻页会把列表滚回顶部；头部下拉同样按虚拟列表渲染。",
+    "operation 插槽替换整个操作按钮，每个按钮调用一次，用作用域里的 action（toRight / toLeft / undo）区分而不是 key；只改按钮内部内容、保留 RebornButton 外壳时用 operation-to-right / operation-to-left / operation-undo。",
+    "ui.searchInput 作为 class 传给 RebornInput，落在带边框的输入外壳上而不是根节点；要调搜索区内边距改 ui.panelSearch。"
   ]
 }

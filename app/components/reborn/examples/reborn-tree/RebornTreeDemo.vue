@@ -714,7 +714,7 @@ function scrollToGroup25() {
 
     <DemoSection title="虚拟滚动与按 key 定位">
       <template #description>
-        设置 <code>height</code> 后成为定高滚动容器并默认启用虚拟滚动，1000+ 节点也只渲染视口内的行；
+        <code>height</code> 是滚动区的最大高度，节点超出后在区内滚动，设置后默认启用虚拟滚动，1000+ 节点也只渲染视口内的行；
         行高由 <code>itemHeight</code>（默认 28px）参与换算，<code>scrollTo</code> 可按 key 定位，
         传 <code>behavior: "smooth"</code> 走 rAF 平滑动画。
       </template>

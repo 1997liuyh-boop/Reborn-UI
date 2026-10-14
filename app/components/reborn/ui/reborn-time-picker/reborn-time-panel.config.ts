@@ -28,6 +28,8 @@ export default {
     // 本组件按设计稿将局部行高令牌设为 150%，不修改全局 14px / 22px 档位；单项为 21px + 8px。
     item: "relative flex h-[29px] w-full shrink-0 cursor-pointer items-center justify-center px-5 py-1 text-base [--text-base--line-height:1.5] text-gray-9 transition-colors hover:bg-gray-2 motion-reduce:transition-none",
     itemActive: "font-normal",
+    // 状态类作为 item 的 class 参数合并，文字色、光标、悬停背景才能覆盖 item 的默认值；
+    // 若与 item 并列输出，两组同类工具类同时生效，按 CSS 先后顺序反而是 item 的取值胜出。
     itemDisabled: "cursor-not-allowed text-gray-5 hover:bg-transparent",
     itemIdle: "font-normal",
     indicator: "pointer-events-none absolute inset-x-0 top-1/2 h-[29px] -translate-y-1/2",

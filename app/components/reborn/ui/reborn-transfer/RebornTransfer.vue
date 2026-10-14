@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import type {
   TransferCheckShape,
+  TransferColor,
   TransferDataRecord,
   TransferFieldNames,
   TransferOperationButtonConfig,
   TransferOperationButtons,
-  TransferSize,
+  TransferVariant,
 } from "./reborn-transfer.config";
-import { computed, h, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import type { SelectOption } from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import RebornCheckbox from "~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue";
+import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
 import RebornPagination from "~/components/reborn/ui/reborn-pagination/RebornPagination.vue";
-import RebornTransition from "~/components/reborn/ui/reborn-transition/RebornTransition.vue";
+import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import RebornScrollbar from "~/components/reborn/ui/scrollbar/RebornScrollbar.vue";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme, { defaultTransferFieldNames } from "./reborn-transfer.config";
@@ -23,16 +29,20 @@ export interface TransferPaginationConfig {
 const props = withDefaults(defineProps<TransferProps>(), {
   dataSource: () => [],
   defaultTargetKeys: () => [],
-  titles: () => ["源列表", "目标列表"] as [string, string],
+  titles: () => [] as unknown as [string, string],
   disabled: false,
   showSearch: false,
-  headerSelect: "checkbox",
+  headerSelect: "both",
   searchPlaceholder: "请输入搜索内容",
-  size: "md",
   checkShape: "rounded",
+  variant: "outlined",
+  color: "primary",
   oneWay: false,
   showUndo: false,
   pagination: false,
+  virtualScroll: false,
+  virtualItemHeight: 32,
+  virtualBuffer: 4,
   fieldNames: () => ({}),
 });
 
@@ -54,9 +64,19 @@ const emit = defineEmits<{
 // ─── 插槽声明 ──────────────────────────────────────────────────────
 
 defineSlots<{
-  /** 自定义列表条目内容，作用域参数为 { item }（原始数据对象，字段名未归一化） */
-  item: (props: { item: TransferDataRecord }) => any;
-  /** 完全自定义按钮内容（替换默认的图标 + 文案结构） */
+  /** 头部左侧的勾选区（默认是全选复选框 + 计数文案），左右面板共用，用 direction 区分 */
+  title?: (props: TransferTitleSlotProps) => any;
+  /** 头部右侧区域（默认是面板标题） */
+  extra?: (props: TransferExtraSlotProps) => any;
+  /** 列表条目内容；渲染在条目复选框的文案位置，复选框本身仍由组件负责 */
+  default?: (props: TransferItemSlotProps) => any;
+  /** 旧版条目插槽，作用域只有 { item }；新代码请用 default 插槽，二者同时提供时 default 优先 */
+  item?: (props: { item: TransferDataRecord }) => any;
+  /** 面板底部区域，渲染在分页栏下方 */
+  footer?: (props: TransferFooterSlotProps) => any;
+  /** 整个替换中间操作按钮；不提供时渲染 RebornButton */
+  operation?: (props: TransferOperationButtonSlotProps) => any;
+  /** 只替换按钮内部内容（默认的图标 + 文案结构），按钮外壳仍是 RebornButton */
   "operation-to-right"?: (props: TransferOperationSlotProps) => any;
   "operation-to-left"?: (props: TransferOperationSlotProps) => any;
   "operation-undo"?: (props: TransferOperationSlotProps) => any;
@@ -64,17 +84,10 @@ defineSlots<{
 
 const b = tv(theme);
 
-/** 勾选图标，复用于头部全选框和条目复选框（避免模板中重复内联 SVG） */
-const CheckMark = () =>
-  h("svg", { class: "size-2.5 text-white", viewBox: "0 0 10 10", fill: "none" }, [
-    h("path", {
-      d: "M1.5 5L4 7.5L8.5 2.5",
-      stroke: "currentColor",
-      "stroke-width": "1.5",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-    }),
-  ]);
+// 内部的 RebornCheckbox 会注入表单上下文：继承表单尺寸与禁用、勾选时触发字段校验、校验失败时描红。
+// 这些勾选只是面板内的临时选择，不是表单值，穿梭框本身也不读表单上下文，因此在这里置空隔断
+provide("rebornForm", null);
+provide("rebornFormItem", null);
 
 /** 撤回操作最大步数（固定值，无需对外暴露） */
 const MAX_UNDO_STEPS = 20;
@@ -99,7 +112,7 @@ export interface TransferProps {
   titles?: [string, string];
   /**
    * 中间操作区三个按钮的自定义配置（图标、文案、样式等）
-   * 如需完全自定义按钮结构，可使用 operation-to-right 等插槽
+   * 整个按钮替换用 operation 插槽，只换按钮内部内容用 operation-to-right 等插槽
    */
   operationButtons?: TransferOperationButtons;
   /** 是否禁用整体穿梭框（包括所有勾选与移动操作） */
@@ -107,19 +120,20 @@ export interface TransferProps {
   /** 是否在两个面板顶部显示搜索框 */
   showSearch?: boolean;
   /**
-   * 面板头部选择控件模式
-   * - 'checkbox'：仅显示全选复选框（默认）
-   * - 'menu'：仅显示下拉扩展菜单（全选所有 / 全选当页 / 反选当页）
-   * - 'both'：同时显示全选复选框与下拉菜单
+   * 面板头部选择控件模式（variant 为 borderless 时不渲染头部，此项不生效）
+   * - 'both'：同时显示全选复选框与下拉菜单（默认）
+   * - 'checkbox'：仅显示全选复选框，计数作为复选框文案
+   * - 'menu'：仅显示下拉菜单（RebornSelect 多选，触发器显示计数文案；逐项列出当前面板搜索结果内的全部条目，跨分页，点击切换勾选）
    * - 'none'：隐藏所有选择控件，仅保留标题与计数
    */
   headerSelect?: "none" | "checkbox" | "menu" | "both";
   /** 搜索框占位符文字 */
   searchPlaceholder?: string;
-  /** 自定义过滤函数，返回 true 表示条目匹配搜索词（item 为原始数据对象） */
+  /**
+   * 自定义搜索方法，返回 true 表示条目匹配搜索词（item 为原始数据对象）
+   * 不传时按 label 字段做不区分大小写的包含匹配
+   */
   filterOption?: (inputValue: string, item: TransferDataRecord) => boolean;
-  /** 组件尺寸 */
-  size?: TransferSize;
   /**
    * 选中框外观
    * - square：方形（直角）
@@ -128,8 +142,17 @@ export interface TransferProps {
    */
   checkShape?: TransferCheckShape;
   /**
+   * 形态变体
+   * - outlined：8px 圆角描边面板，带头部（默认）
+   * - borderless：去掉面板边框与内部分隔线，且不渲染头部（全选、下拉菜单、标题、计数一并隐藏）
+   */
+  variant?: TransferVariant;
+  /** 语义色，决定复选框的勾选色、选中条目的底色、头部下拉的选中项颜色与操作按钮颜色 */
+  color?: TransferColor;
+  /**
    * 单向模式：仅允许从左向右移动，不可移回
-   * 开启后右侧为只读展示，不显示头部全选及条目勾选框
+   * 开启后右侧为只读展示，不显示头部全选及条目勾选框；
+   * 开启单向模式后移入右侧的条目可逐条撤回，开启前就在右侧的条目（含初始值）不可撤回
    */
   oneWay?: boolean;
   /** 是否显示中间撤回按钮（撤销上一次穿梭操作），默认不显示 */
@@ -140,12 +163,24 @@ export interface TransferProps {
    */
   pagination?: boolean | TransferPaginationConfig;
   /**
+   * 是否开启虚拟滚动：列表只渲染可视区域附近的条目，滚动时按位置替换，适合上千条数据
+   * 开启后每行高度固定为 virtualItemHeight 减去 4px 行间距，面板需要确定的高度（传 height 或由父元素给出）
+   */
+  virtualScroll?: boolean;
+  /**
+   * 虚拟滚动的行步长（px），即单行高度加上 4px 行间距
+   * 默认 32 对应只有 label 的条目（行高 28）；带 description 的条目行高 50，应传 54；用插槽改了条目内容时须与实际高度一致
+   */
+  virtualItemHeight?: number;
+  /** 虚拟滚动在可视区上下各多渲染的条数，快速滚动时减少白屏 */
+  virtualBuffer?: number;
+  /**
    * 组件整体宽度
    * 支持数字（px）或 CSS 长度，如 640、'100%'、'50vw'
    */
   width?: string | number;
   /**
-   * 组件整体高度；设置后列表区域在固定高度内滚动（头部、搜索、分页栏固定不滚动）
+   * 组件整体高度；默认不设，由父元素决定（根节点 h-full），列表在面板内用滚动条滚动
    * 支持数字（px）或 CSS 长度，如 320、'20rem'、'50vh'
    */
   height?: string | number;
@@ -153,9 +188,66 @@ export interface TransferProps {
   ui?: any;
 }
 
+/** 面板方向：left 为源列表，right 为目标列表 */
+export type TransferDirection = "left" | "right";
+
+/** title 插槽作用域：头部左侧勾选区 */
+export interface TransferTitleSlotProps {
+  /** 当前面板方向 */
+  direction: TransferDirection;
+  /** 当前面板的条目是否可勾选（单向模式下右侧为 false） */
+  selectable: boolean;
+  /** 当前页可选条目是否已全部勾选 */
+  checked: boolean;
+  /** 当前页可选条目是否部分勾选 */
+  indeterminate: boolean;
+  /** 全选是否不可用（整体禁用或当前页没有可选条目） */
+  disabled: boolean;
+  /** 默认计数文案：未勾选时为「N 项」，有勾选时为「选中 N 项」 */
+  countText: string;
+  /** 搜索结果内已勾选的条目数 */
+  checkedCount: number;
+  /** 搜索结果总条目数 */
+  total: number;
+  /** 切换当前页全选，与默认全选复选框的行为一致 */
+  toggle: () => void;
+}
+
+/** extra 插槽作用域：头部右侧区域 */
+export interface TransferExtraSlotProps {
+  /** 当前面板方向 */
+  direction: TransferDirection;
+  /** titles 中对应面板的标题 */
+  title: string;
+}
+
+/** default 插槽作用域：单个列表条目 */
+export interface TransferItemSlotProps {
+  /** 原始数据对象（字段名未归一化） */
+  item: TransferDataRecord;
+  /** 条目所在面板方向 */
+  direction: TransferDirection;
+  /** 条目是否已勾选（单向模式右侧恒为 false） */
+  checked: boolean;
+  /** 条目是否禁用（整体禁用或条目自身禁用） */
+  disabled: boolean;
+}
+
+/** footer 插槽作用域：面板底部 */
+export interface TransferFooterSlotProps {
+  /** 当前面板方向 */
+  direction: TransferDirection;
+  /** 搜索结果总条目数 */
+  total: number;
+  /** 搜索结果内已勾选的条目数 */
+  checkedCount: number;
+}
+
 /** 单次穿梭操作的历史记录，用于撤回 */
 interface TransferHistoryEntry {
   targetKeysSnapshot: string[];
+  /** 单向模式下「开启后移入」记录的快照，撤回上一步时一并还原 */
+  oneWayMovedKeysSnapshot: string[];
   direction: "right" | "left";
   moveKeys: string[];
 }
@@ -180,6 +272,18 @@ export interface TransferOperationSlotProps {
   disabled: boolean;
 }
 
+/** operation 插槽作用域：整个替换中间操作按钮时使用 */
+export interface TransferOperationButtonSlotProps {
+  /** 按钮对应的操作：toRight 移至右侧、toLeft 移回左侧、undo 撤回上一步 */
+  action: "toRight" | "toLeft" | "undo";
+  /** 合并 operation-buttons 后的按钮配置（图标、文案、提示） */
+  config: ResolvedOperationButton;
+  /** 当前是否不可操作 */
+  disabled: boolean;
+  /** 执行该操作；禁用时调用也不会生效 */
+  onClick: () => void;
+}
+
 /** 中间区单个操作按钮的渲染描述 */
 interface CenterOperationDescriptor {
   key: "toRight" | "toLeft" | "undo";
@@ -188,6 +292,51 @@ interface CenterOperationDescriptor {
   disabled: boolean;
   config: ResolvedOperationButton;
   onClick: () => void;
+}
+
+/** 单侧面板的渲染描述：左右面板共用同一份模板，差异都收在这里 */
+interface PanelDescriptor {
+  direction: TransferDirection;
+  title: string;
+  selectable: boolean;
+  search: string;
+  setSearch: (value: string) => void;
+  filtered: TransferDataRecord[];
+  visible: TransferDataRecord[];
+  enabled: TransferDataRecord[];
+  allChecked: boolean;
+  indeterminate: boolean;
+  countText: string;
+  checkedCount: number;
+  total: number;
+  showHeaderCheckbox: boolean;
+  toggleAll: () => void;
+  toggleItem: (item: TransferDataRecord) => void;
+  isChecked: (item: TransferDataRecord) => boolean;
+  itemClass: (item: TransferDataRecord) => string;
+  onItemClick: (item: TransferDataRecord) => void;
+  menuDisabled: boolean;
+  isMenuItemChecked: (item: TransferDataRecord) => boolean;
+  isMenuItemDisabled: (item: TransferDataRecord) => boolean;
+  toggleMenuItem: (item: TransferDataRecord) => void;
+  currentPage: number;
+  setPage: (page: number) => void;
+}
+
+/** 单侧面板的虚拟滚动窗口：与 PanelDescriptor 分开计算，滚动只重算这一份 */
+interface PanelVirtualWindow {
+  /** 实际渲染的条目：开启虚拟滚动时为可视区间内的切片，否则等于当前页全部条目 */
+  rows: TransferDataRecord[];
+  /** 窗口层的纵向偏移（px） */
+  offset: number;
+  /** 占位层的总高度（px） */
+  totalHeight: number;
+}
+
+/** 单侧头部下拉的选项与选中值：与滚动状态无关，单独缓存，避免滚动时逐帧重建上千个选项 */
+interface PanelMenuState {
+  options: SelectOption[];
+  value: string[];
 }
 
 const defaultOperationButtonPresets = {
@@ -320,14 +469,37 @@ const rightChecked = ref<string[]>([]);
 /** 穿梭操作历史栈（栈顶为最近一次操作） */
 const historyStack = ref<TransferHistoryEntry[]>([]);
 
+/**
+ * 单向模式下开启后移入右侧的 key：只有这些条目可以逐条撤回；
+ * 开启前就在右侧的条目（含 v-model / defaultTargetKeys 给出的初始值）视为已定结果，不可撤回。
+ * 每次开启单向模式时清空
+ */
+const oneWayMovedKeys = ref<string[]>([]);
+
+/**
+ * 各 key 数组的集合形态：成员判断从 includes 的线性查找改为 has，
+ * 数据量上千时（虚拟滚动的典型场景）避免分组、全选、计数退化成平方级遍历
+ */
+const targetKeySet = computed(() => new Set(targetKeys.value));
+const leftCheckedSet = computed(() => new Set(leftChecked.value));
+const rightCheckedSet = computed(() => new Set(rightChecked.value));
+const oneWayMovedKeySet = computed(() => new Set(oneWayMovedKeys.value));
+
+// 外部改写 v-model 时移出右侧的 key 不再算「开启后移入」
+watch(targetKeys, (keys) => {
+  const keySet = new Set(keys);
+  if (oneWayMovedKeys.value.every((k) => keySet.has(k))) return;
+  oneWayMovedKeys.value = oneWayMovedKeys.value.filter((k) => keySet.has(k));
+});
+
 // ─── 数据分组：按 targetKeys 分成左右两列 ──────────────────────────
 
 const leftItems = computed(() =>
-  props.dataSource.filter((item) => !targetKeys.value.includes(getItemKey(item))),
+  props.dataSource.filter((item) => !targetKeySet.value.has(getItemKey(item))),
 );
 
 const rightItems = computed(() =>
-  props.dataSource.filter((item) => targetKeys.value.includes(getItemKey(item))),
+  props.dataSource.filter((item) => targetKeySet.value.has(getItemKey(item))),
 );
 
 // ─── 搜索过滤 ──────────────────────────────────────────────────────
@@ -382,11 +554,14 @@ const visibleRightItems = computed(() => {
   return slicePageItems(filteredRightItems.value, rightCurrentPage.value, paginationPageSize.value);
 });
 
+// 关键词变化后列表换了一批数据，页码与滚动位置都回到开头
 watch(leftSearch, () => {
   leftCurrentPage.value = 1;
+  resetPanelScroll("left");
 });
 watch(rightSearch, () => {
   rightCurrentPage.value = 1;
+  resetPanelScroll("right");
 });
 
 watch(
@@ -415,18 +590,137 @@ watch(
   },
 );
 
+// ─── 虚拟滚动 ──────────────────────────────────────────────────────
+// 占位层按「条数 × 步长」撑出真实滚动条，窗口层只渲染可视区附近的条目并按偏移平移；
+// 滚动距离与可视高度都按左右面板分开记录
+
+/** 首次实测前的可视高度兜底：只影响挂载瞬间多渲染几条，实测后即被替换 */
+const VIRTUAL_FALLBACK_VIEWPORT = 320;
+/** 行间距（px），与 config 中 panelList / virtualWindow 的 gap-1 保持一致 */
+const VIRTUAL_ROW_GAP = 4;
+
+const panelScrollTop = ref<Record<TransferDirection, number>>({ left: 0, right: 0 });
+const panelViewportHeight = ref<Record<TransferDirection, number>>({
+  left: VIRTUAL_FALLBACK_VIEWPORT,
+  right: VIRTUAL_FALLBACK_VIEWPORT,
+});
+
+const scrollbarRefs: Partial<Record<TransferDirection, InstanceType<typeof RebornScrollbar> | null>> =
+  {};
+
+function setScrollbarRef(direction: TransferDirection, el: unknown) {
+  scrollbarRefs[direction] = (el as InstanceType<typeof RebornScrollbar> | null) ?? null;
+}
+
+/** 读取滚动层（RebornScrollbar 的 wrap）的可视高度；面板未挂载或高度为 0 时保留上一次的值 */
+function measureViewport(direction: TransferDirection) {
+  const height = scrollbarRefs[direction]?.wrapRef?.clientHeight ?? 0;
+  if (height > 0 && height !== panelViewportHeight.value[direction]) {
+    panelViewportHeight.value[direction] = height;
+  }
+}
+
+function onPanelScroll(direction: TransferDirection, payload: { scrollTop: number }) {
+  if (!props.virtualScroll) return;
+  panelScrollTop.value[direction] = payload.scrollTop;
+}
+
+/** 列表换了一批数据（搜索、翻页）时，虚拟窗口与真实滚动位置一起回到顶部 */
+function resetPanelScroll(direction: TransferDirection) {
+  if (!props.virtualScroll) return;
+  panelScrollTop.value[direction] = 0;
+  scrollbarRefs[direction]?.setScrollTop(0, { animated: false });
+}
+
+/**
+ * 面板高度会随父元素、搜索框显隐、分页栏出现而变化，滚动事件感知不到，
+ * 所以开启虚拟滚动期间用 ResizeObserver 盯住两侧滚动层
+ */
+let viewportObserver: ResizeObserver | null = null;
+
+function stopViewportObserver() {
+  viewportObserver?.disconnect();
+  viewportObserver = null;
+}
+
+function startViewportObserver() {
+  stopViewportObserver();
+  const directions: TransferDirection[] = ["left", "right"];
+  directions.forEach(measureViewport);
+  if (typeof ResizeObserver === "undefined") return;
+  viewportObserver = new ResizeObserver(() => directions.forEach(measureViewport));
+  for (const direction of directions) {
+    const wrap = scrollbarRefs[direction]?.wrapRef;
+    if (wrap) viewportObserver.observe(wrap);
+  }
+}
+
+onMounted(() => {
+  if (props.virtualScroll) nextTick(startViewportObserver);
+});
+
+watch(
+  () => props.virtualScroll,
+  (enabled) => {
+    if (!enabled) {
+      stopViewportObserver();
+      return;
+    }
+    // 关闭期间不记录滚动距离，开启时以滚动层的实际位置为准
+    for (const direction of ["left", "right"] as const) {
+      panelScrollTop.value[direction] = scrollbarRefs[direction]?.wrapRef?.scrollTop ?? 0;
+    }
+    nextTick(startViewportObserver);
+  },
+);
+
+onBeforeUnmount(stopViewportObserver);
+
+function computeVirtualWindow(
+  items: TransferDataRecord[],
+  direction: TransferDirection,
+): PanelVirtualWindow {
+  if (!props.virtualScroll) return { rows: items, offset: 0, totalHeight: 0 };
+  const h = props.virtualItemHeight;
+  const buffer = props.virtualBuffer;
+  const total = items.length;
+  const viewport = panelViewportHeight.value[direction];
+  // 末行之后没有行间距，总高度扣掉一个间距，与非虚拟时的列表高度一致
+  const totalHeight = total ? total * h - VIRTUAL_ROW_GAP : 0;
+  // 数据变少（移走、筛选）而滚动事件尚未回报新位置时，按最大可滚距离截断，避免窗口落在数据之外渲染成空白
+  const scrollTop = Math.min(panelScrollTop.value[direction], Math.max(0, totalHeight - viewport));
+  const start = Math.max(0, Math.floor(scrollTop / h) - buffer);
+  const end = Math.min(total, start + Math.ceil(viewport / h) + buffer * 2);
+  return { rows: items.slice(start, end), offset: start * h, totalHeight };
+}
+
+/** 两侧实际渲染的条目；关闭虚拟滚动时原样返回当前页条目 */
+const panelWindows = computed<Record<TransferDirection, PanelVirtualWindow>>(() => ({
+  left: computeVirtualWindow(visibleLeftItems.value, "left"),
+  right: computeVirtualWindow(visibleRightItems.value, "right"),
+}));
+
+/** 虚拟模式下单行的固定高度：步长减去行间距 */
+const virtualRowStyle = computed(() =>
+  props.virtualScroll ? { height: `${props.virtualItemHeight - VIRTUAL_ROW_GAP}px` } : undefined,
+);
+
+/** 占位层高度：撑出与完整列表等长的滚动条 */
+function getVirtualPhantomStyle(direction: TransferDirection) {
+  if (!props.virtualScroll) return undefined;
+  return { height: `${panelWindows.value[direction].totalHeight}px` };
+}
+
+/** 窗口层偏移：把当前渲染的切片平移到它在完整列表中的位置 */
+function getVirtualWindowStyle(direction: TransferDirection) {
+  if (!props.virtualScroll) return undefined;
+  return { transform: `translateY(${panelWindows.value[direction].offset}px)` };
+}
+
 // ─── 可操作条目 ────────────────────────────────────────────────────
 
 const enabledLeftItems = computed(() => visibleLeftItems.value.filter((i) => !isItemDisabled(i)));
 const enabledRightItems = computed(() => visibleRightItems.value.filter((i) => !isItemDisabled(i)));
-
-/** 全选所有范围：当前侧全部过滤结果（跨分页，受搜索影响） */
-const enabledLeftScopeItems = computed(() =>
-  filteredLeftItems.value.filter((i) => !isItemDisabled(i)),
-);
-const enabledRightScopeItems = computed(() =>
-  filteredRightItems.value.filter((i) => !isItemDisabled(i)),
-);
 
 const leftMovableKeySet = computed(
   () => new Set(leftItems.value.filter((i) => !isItemDisabled(i)).map((i) => getItemKey(i))),
@@ -448,35 +742,23 @@ function getRightCheckedMovableKeys(): string[] {
 const leftAllChecked = computed(
   () =>
     enabledLeftItems.value.length > 0 &&
-    enabledLeftItems.value.every((i) => leftChecked.value.includes(getItemKey(i))),
+    enabledLeftItems.value.every((i) => leftCheckedSet.value.has(getItemKey(i))),
 );
 const leftIndeterminate = computed(
   () =>
     !leftAllChecked.value &&
-    enabledLeftItems.value.some((i) => leftChecked.value.includes(getItemKey(i))),
+    enabledLeftItems.value.some((i) => leftCheckedSet.value.has(getItemKey(i))),
 );
 
 const rightAllChecked = computed(
   () =>
     enabledRightItems.value.length > 0 &&
-    enabledRightItems.value.every((i) => rightChecked.value.includes(getItemKey(i))),
+    enabledRightItems.value.every((i) => rightCheckedSet.value.has(getItemKey(i))),
 );
 const rightIndeterminate = computed(
   () =>
     !rightAllChecked.value &&
-    enabledRightItems.value.some((i) => rightChecked.value.includes(getItemKey(i))),
-);
-
-const leftAllScopeChecked = computed(
-  () =>
-    enabledLeftScopeItems.value.length > 0 &&
-    enabledLeftScopeItems.value.every((i) => leftChecked.value.includes(getItemKey(i))),
-);
-
-const rightAllScopeChecked = computed(
-  () =>
-    enabledRightScopeItems.value.length > 0 &&
-    enabledRightScopeItems.value.every((i) => rightChecked.value.includes(getItemKey(i))),
+    enabledRightItems.value.some((i) => rightCheckedSet.value.has(getItemKey(i))),
 );
 
 // ─── 全选 / 取消全选操作 ───────────────────────────────────────────
@@ -484,9 +766,8 @@ const rightAllScopeChecked = computed(
 function toggleLeftAll() {
   if (props.disabled || enabledLeftItems.value.length === 0) return;
   if (leftAllChecked.value) {
-    leftChecked.value = leftChecked.value.filter(
-      (k) => !enabledLeftItems.value.some((i) => getItemKey(i) === k),
-    );
+    const enabledKeys = new Set(enabledLeftItems.value.map((i) => getItemKey(i)));
+    leftChecked.value = leftChecked.value.filter((k) => !enabledKeys.has(k));
   } else {
     const newKeys = enabledLeftItems.value.map((i) => getItemKey(i));
     leftChecked.value = [...new Set([...leftChecked.value, ...newKeys])];
@@ -497,9 +778,8 @@ function toggleLeftAll() {
 function toggleRightAll() {
   if (props.disabled || enabledRightItems.value.length === 0) return;
   if (rightAllChecked.value) {
-    rightChecked.value = rightChecked.value.filter(
-      (k) => !enabledRightItems.value.some((i) => getItemKey(i) === k),
-    );
+    const enabledKeys = new Set(enabledRightItems.value.map((i) => getItemKey(i)));
+    rightChecked.value = rightChecked.value.filter((k) => !enabledKeys.has(k));
   } else {
     const newKeys = enabledRightItems.value.map((i) => getItemKey(i));
     rightChecked.value = [...new Set([...rightChecked.value, ...newKeys])];
@@ -507,123 +787,19 @@ function toggleRightAll() {
   emitSelectChange();
 }
 
-// ─── 头部下拉：click 触发 + 点击外部关闭 ──────────────────────────
-
-const leftSelectMenuOpen = ref(false);
-const rightSelectMenuOpen = ref(false);
-
-function closeHeaderSelectMenus() {
-  leftSelectMenuOpen.value = false;
-  rightSelectMenuOpen.value = false;
-}
-
-function toggleLeftSelectMenu() {
-  if (!showHeaderSelectMenu.value || props.disabled) return;
-  const next = !leftSelectMenuOpen.value;
-  closeHeaderSelectMenus();
-  leftSelectMenuOpen.value = next;
-}
-
-function toggleRightSelectMenu() {
-  if (!showHeaderSelectMenu.value || props.disabled) return;
-  const next = !rightSelectMenuOpen.value;
-  closeHeaderSelectMenus();
-  rightSelectMenuOpen.value = next;
-}
-
-onMounted(() => document.addEventListener("click", closeHeaderSelectMenus));
-onBeforeUnmount(() => document.removeEventListener("click", closeHeaderSelectMenus));
-
-// ─── 头部菜单操作 ──────────────────────────────────────────────────
-
-function toggleLeftAllScope() {
-  if (props.disabled || enabledLeftScopeItems.value.length === 0) return;
-  const allKeys = new Set(enabledLeftScopeItems.value.map((i) => getItemKey(i)));
-  if (leftAllScopeChecked.value) {
-    leftChecked.value = leftChecked.value.filter((k) => !allKeys.has(k));
-  } else {
-    leftChecked.value = [...new Set([...leftChecked.value, ...allKeys])];
-  }
-  leftSelectMenuOpen.value = false;
-  emitSelectChange();
-}
-
-function selectLeftPage() {
-  if (props.disabled || enabledLeftItems.value.length === 0) return;
-  const newKeys = enabledLeftItems.value.map((i) => getItemKey(i));
-  leftChecked.value = [...new Set([...leftChecked.value, ...newKeys])];
-  leftSelectMenuOpen.value = false;
-  emitSelectChange();
-}
-
-function invertLeftPage() {
-  if (props.disabled || enabledLeftItems.value.length === 0) return;
-  const pageKeys = new Set(enabledLeftItems.value.map((i) => getItemKey(i)));
-  const next = new Set(leftChecked.value);
-  for (const key of pageKeys) {
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-  }
-  leftChecked.value = [...next];
-  leftSelectMenuOpen.value = false;
-  emitSelectChange();
-}
-
-function toggleRightAllScope() {
-  if (props.disabled || enabledRightScopeItems.value.length === 0) return;
-  const allKeys = new Set(enabledRightScopeItems.value.map((i) => getItemKey(i)));
-  if (rightAllScopeChecked.value) {
-    rightChecked.value = rightChecked.value.filter((k) => !allKeys.has(k));
-  } else {
-    rightChecked.value = [...new Set([...rightChecked.value, ...allKeys])];
-  }
-  rightSelectMenuOpen.value = false;
-  emitSelectChange();
-}
-
-function selectRightPage() {
-  if (props.disabled || enabledRightItems.value.length === 0) return;
-  const newKeys = enabledRightItems.value.map((i) => getItemKey(i));
-  rightChecked.value = [...new Set([...rightChecked.value, ...newKeys])];
-  rightSelectMenuOpen.value = false;
-  emitSelectChange();
-}
-
-function invertRightPage() {
-  if (props.disabled || enabledRightItems.value.length === 0) return;
-  const pageKeys = new Set(enabledRightItems.value.map((i) => getItemKey(i)));
-  const next = new Set(rightChecked.value);
-  for (const key of pageKeys) {
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-  }
-  rightChecked.value = [...next];
-  rightSelectMenuOpen.value = false;
-  emitSelectChange();
-}
-
 // ─── 头部控件显示逻辑 ──────────────────────────────────────────────
 
-const showLeftHeaderSelectControls = computed(
-  () => showHeaderCheckbox.value || showHeaderSelectMenu.value,
-);
+/** borderless 形态不渲染头部，全选、扩展菜单、标题、计数随之隐藏 */
+const hasPanelHeader = computed(() => props.variant !== "borderless");
 
 const showRightHeaderCheckbox = computed(() => showHeaderCheckbox.value && !props.oneWay);
-
-const showRightHeaderSelectControls = computed(
-  () => showRightHeaderCheckbox.value || showHeaderSelectMenu.value,
-);
-
-watch(showHeaderSelectMenu, (visible) => {
-  if (!visible) closeHeaderSelectMenus();
-});
 
 watch(
   () => props.oneWay,
   (isOneWay) => {
     if (!isOneWay) return;
     rightChecked.value = [];
-    closeHeaderSelectMenus();
+    oneWayMovedKeys.value = [];
     emitSelectChange();
   },
 );
@@ -658,6 +834,7 @@ function pushHistory(direction: "right" | "left", moveKeys: string[]) {
   if (!props.showUndo) return;
   historyStack.value.push({
     targetKeysSnapshot: [...targetKeys.value],
+    oneWayMovedKeysSnapshot: [...oneWayMovedKeys.value],
     direction,
     moveKeys: [...moveKeys],
   });
@@ -670,7 +847,9 @@ function moveToRight() {
   if (!validKeys.length || props.disabled) return;
   pushHistory("right", validKeys);
   targetKeys.value = [...targetKeys.value, ...validKeys];
-  leftChecked.value = leftChecked.value.filter((k) => !validKeys.includes(k));
+  if (props.oneWay) oneWayMovedKeys.value = [...oneWayMovedKeys.value, ...validKeys];
+  const validKeySet = new Set(validKeys);
+  leftChecked.value = leftChecked.value.filter((k) => !validKeySet.has(k));
   emit("change", [...targetKeys.value], "right", validKeys);
   emitSelectChange();
 }
@@ -679,78 +858,64 @@ function moveToLeft() {
   const validKeys = getRightCheckedMovableKeys();
   if (!validKeys.length || props.disabled || props.oneWay) return;
   pushHistory("left", validKeys);
-  targetKeys.value = targetKeys.value.filter((k) => !validKeys.includes(k));
-  rightChecked.value = rightChecked.value.filter((k) => !validKeys.includes(k));
+  const validKeySet = new Set(validKeys);
+  targetKeys.value = targetKeys.value.filter((k) => !validKeySet.has(k));
+  rightChecked.value = rightChecked.value.filter((k) => !validKeySet.has(k));
   emit("change", [...targetKeys.value], "left", validKeys);
   emitSelectChange();
 }
 
 function revertRightItemsByKeys(keys: string[]) {
   if (!props.oneWay || props.disabled || !keys.length) return;
-  const moveKeys = keys.filter((k) => rightMovableKeySet.value.has(k));
+  // 只撤回开启单向模式后移入的条目，开启前就在右侧的不动
+  const moveKeys = keys.filter(
+    (k) => rightMovableKeySet.value.has(k) && oneWayMovedKeySet.value.has(k),
+  );
   if (!moveKeys.length) return;
   pushHistory("left", moveKeys);
-  targetKeys.value = targetKeys.value.filter((k) => !moveKeys.includes(k));
-  rightSelectMenuOpen.value = false;
+  const moveKeySet = new Set(moveKeys);
+  targetKeys.value = targetKeys.value.filter((k) => !moveKeySet.has(k));
+  oneWayMovedKeys.value = oneWayMovedKeys.value.filter((k) => !moveKeySet.has(k));
   emit("change", [...targetKeys.value], "left", moveKeys);
   emitSelectChange();
 }
 
-function revertRightPage() {
-  revertRightItemsByKeys(enabledRightItems.value.map((i) => getItemKey(i)));
-}
-
-function revertRightAll() {
-  revertRightItemsByKeys(enabledRightScopeItems.value.map((i) => getItemKey(i)));
+/** 单向模式下该条目是否为开启后移入右侧的（只有这些条目显示撤回按钮） */
+function isOneWayItemMoved(item: TransferDataRecord): boolean {
+  return oneWayMovedKeySet.value.has(getItemKey(item));
 }
 
 function revertOneWayItem(item: TransferDataRecord) {
   if (!props.oneWay || props.disabled || isItemDisabled(item)) return;
-  const key = getItemKey(item);
-  if (!targetKeys.value.includes(key)) return;
-  revertRightItemsByKeys([key]);
+  if (!isOneWayItemMoved(item)) return;
+  revertRightItemsByKeys([getItemKey(item)]);
 }
 
 function isOneWayItemUndoDisabled(item: TransferDataRecord): boolean {
-  return props.disabled || isItemDisabled(item);
-}
-
-const rightHeaderSelectMenuDisabled = computed(() => {
-  if (props.disabled) return true;
-  if (props.oneWay) return rightItems.value.length === 0;
-  return enabledRightScopeItems.value.length === 0;
-});
-
-function undoLast() {
-  if (undoDisabled.value) return;
-  const entry = historyStack.value.pop();
-  if (!entry) return;
-  targetKeys.value = [...entry.targetKeysSnapshot];
-  leftChecked.value = [];
-  rightChecked.value = [];
-  const reverseDirection = entry.direction === "right" ? "left" : "right";
-  emit("change", [...targetKeys.value], reverseDirection, entry.moveKeys);
-  emit("undo", [...targetKeys.value], { direction: entry.direction, moveKeys: entry.moveKeys });
-  emitSelectChange();
+  return props.disabled || isItemDisabled(item) || !isOneWayItemMoved(item);
 }
 
 // ─── 统计文字 ──────────────────────────────────────────────────────
 
+const leftCheckedCount = computed(() => {
+  const filteredKeys = new Set(filteredLeftItems.value.map((i) => getItemKey(i)));
+  return leftChecked.value.filter((k) => filteredKeys.has(k)).length;
+});
+
+const rightCheckedCount = computed(() => {
+  if (props.oneWay) return 0;
+  const filteredKeys = new Set(filteredRightItems.value.map((i) => getItemKey(i)));
+  return rightChecked.value.filter((k) => filteredKeys.has(k)).length;
+});
+
 const leftCountText = computed(() => {
-  const checked = leftChecked.value.filter((k) =>
-    filteredLeftItems.value.some((i) => getItemKey(i) === k),
-  ).length;
   const total = filteredLeftItems.value.length;
-  return checked > 0 ? `${checked} / ${total}` : `${total} 项`;
+  return leftCheckedCount.value > 0 ? `选中 ${leftCheckedCount.value} 项` : `${total} 项`;
 });
 
 const rightCountText = computed(() => {
   const total = filteredRightItems.value.length;
-  if (props.oneWay) return `${total} 项`;
-  const checked = rightChecked.value.filter((k) =>
-    filteredRightItems.value.some((i) => getItemKey(i) === k),
-  ).length;
-  return checked > 0 ? `${checked} / ${total}` : `${total} 项`;
+  return rightCheckedCount.value > 0 ? `选中 ${rightCheckedCount.value} 项` : `${total} 项`;
 });
 
 // ─── 操作按钮禁用状态 ──────────────────────────────────────────────
@@ -764,6 +929,20 @@ const leftBtnDisabled = computed(
 const undoDisabled = computed(
   () => props.disabled || !props.showUndo || historyStack.value.length === 0,
 );
+
+function undoLast() {
+  if (undoDisabled.value) return;
+  const entry = historyStack.value.pop();
+  if (!entry) return;
+  targetKeys.value = [...entry.targetKeysSnapshot];
+  oneWayMovedKeys.value = [...entry.oneWayMovedKeysSnapshot];
+  leftChecked.value = [];
+  rightChecked.value = [];
+  const reverseDirection = entry.direction === "right" ? "left" : "right";
+  emit("change", [...targetKeys.value], reverseDirection, entry.moveKeys);
+  emit("undo", [...targetKeys.value], { direction: entry.direction, moveKeys: entry.moveKeys });
+  emitSelectChange();
+}
 
 const toRightOperationBtn = computed(() =>
   resolveOperationButton("toRight", props.operationButtons?.toRight),
@@ -804,7 +983,7 @@ const centerOperations = computed<CenterOperationDescriptor[]>(() => [
 
 const visibleCenterOperations = computed(() => centerOperations.value.filter((op) => op.visible));
 
-// ─── 固定尺寸与滚动 ──────────────────────────────────────────────────
+// ─── 整体尺寸 ──────────────────────────────────────────────────────
 
 function formatCssSize(value: string | number): string {
   return typeof value === "number" ? `${value}px` : value;
@@ -814,8 +993,6 @@ function isCssSizeSet(value: string | number | undefined | null): value is strin
   return value !== undefined && value !== null && value !== "";
 }
 
-const useFixedListHeight = computed(() => isCssSizeSet(props.height));
-
 const rootStyle = computed(() => {
   const style: Record<string, string> = {};
   if (isCssSizeSet(props.width)) style.width = formatCssSize(props.width);
@@ -823,66 +1000,45 @@ const rootStyle = computed(() => {
   return Object.keys(style).length ? style : undefined;
 });
 
-function getPanelClass() {
-  return cn(ui.value.panel(), useFixedListHeight.value && "h-full min-h-0");
-}
-
-function getPanelBodyClass(...extra: Array<string | false | undefined>) {
-  return cn(
-    ui.value.panelBody(),
-    useFixedListHeight.value && "max-h-none min-h-0 flex-1 overflow-y-auto",
-    ...extra,
-  );
-}
-
-function getPanelContentClass(...extra: Array<string | false | undefined>) {
-  return cn(
-    ui.value.panelContent(),
-    useFixedListHeight.value && "max-h-none min-h-0 flex-1",
-    ...extra,
-  );
-}
-
-function getPanelEmptyClass() {
-  return cn(ui.value.panelEmpty(), useFixedListHeight.value && "min-h-0 flex-1");
-}
-
 // ─── 样式计算 ──────────────────────────────────────────────────────
 
 const ui = computed(() => {
-  const s = b({ size: props.size, checkShape: props.checkShape });
+  const s = b({
+    checkShape: props.checkShape,
+    variant: props.variant,
+    color: props.color,
+  });
   const ov: any = props.ui ?? {};
   const slot =
     <K extends keyof typeof s>(key: K) =>
-    (opts?: { class?: any }) =>
-      s[key]({ class: cn(opts?.class, ov[key]) });
+      (opts?: { class?: any }) =>
+        s[key]({ class: cn(opts?.class, ov[key]) });
   return {
     root: slot("root"),
     panel: slot("panel"),
     panelHeader: slot("panelHeader"),
-    panelTitleArea: slot("panelTitleArea"),
-    panelTitle: slot("panelTitle"),
-    panelCount: slot("panelCount"),
-    panelSearch: slot("panelSearch"),
-    searchWrapper: slot("searchWrapper"),
-    searchIcon: slot("searchIcon"),
-    searchInput: slot("searchInput"),
-    panelContent: slot("panelContent"),
-    panelBody: slot("panelBody"),
-    panelBodyFill: slot("panelBodyFill"),
-    panelBodyRounded: slot("panelBodyRounded"),
-    panelFooter: slot("panelFooter"),
-    panelEmpty: slot("panelEmpty"),
-    item: slot("item"),
-    checkAll: slot("checkAll"),
     headerSelectControls: slot("headerSelectControls"),
     headerSelectMenu: slot("headerSelectMenu"),
     headerSelectTrigger: slot("headerSelectTrigger"),
-    headerSelectIcon: slot("headerSelectIcon"),
     headerSelectDropdown: slot("headerSelectDropdown"),
-    headerSelectDropdownInner: slot("headerSelectDropdownInner"),
     headerSelectItem: slot("headerSelectItem"),
+    panelTitleArea: slot("panelTitleArea"),
+    panelTitle: slot("panelTitle"),
+    panelCount: slot("panelCount"),
+    panelContent: slot("panelContent"),
+    panelSearch: slot("panelSearch"),
+    searchInput: slot("searchInput"),
+    panelBody: slot("panelBody"),
+    panelList: slot("panelList"),
+    virtualPhantom: slot("virtualPhantom"),
+    virtualWindow: slot("virtualWindow"),
+    panelFooter: slot("panelFooter"),
+    panelPagination: slot("panelPagination"),
+    panelEmpty: slot("panelEmpty"),
+    checkAll: slot("checkAll"),
     itemCheck: slot("itemCheck"),
+    item: slot("item"),
+    itemSelected: slot("itemSelected"),
     itemContent: slot("itemContent"),
     itemLabel: slot("itemLabel"),
     itemDesc: slot("itemDesc"),
@@ -890,7 +1046,7 @@ const ui = computed(() => {
     itemUndoIcon: slot("itemUndoIcon"),
     operations: slot("operations"),
     operationBtn: slot("operationBtn"),
-    operationBtnLabeled: slot("operationBtnLabeled"),
+    operationBtnIconOnly: slot("operationBtnIconOnly"),
     operationBtnIcon: slot("operationBtnIcon"),
     operationBtnLabel: slot("operationBtnLabel"),
   };
@@ -899,10 +1055,11 @@ const ui = computed(() => {
 function getItemClass(isSelected: boolean, isDisabled: boolean | undefined) {
   return cn(
     ui.value.item(),
-    isSelected && "bg-primary/8 dark:bg-primary/10",
+    // 选中底色取语义色的 1 级色阶，hover 也锁在同色上，免得选中行悬停时闪回灰底
+    isSelected && ui.value.itemSelected(),
     isDisabled || props.disabled
       ? "opacity-50 cursor-not-allowed"
-      : "hover:bg-gray-2",
+      : !isSelected && "hover:bg-gray-2",
   );
 }
 
@@ -916,7 +1073,7 @@ function getRightItemClass(item: TransferDataRecord) {
         : "hover:bg-gray-2",
     );
   }
-  return getItemClass(rightChecked.value.includes(getItemKey(item)), isItemDisabled(item));
+  return getItemClass(rightCheckedSet.value.has(getItemKey(item)), isItemDisabled(item));
 }
 
 function handleRightItemClick(item: TransferDataRecord) {
@@ -924,605 +1081,256 @@ function handleRightItemClick(item: TransferDataRecord) {
   toggleRightItem(item);
 }
 
-function getOperationBtnClass(isDisabled: boolean, config: ResolvedOperationButton) {
-  return cn(
-    ui.value.operationBtn(),
-    !isIconOnlyOperationBtn(config) && ui.value.operationBtnLabeled(),
-    isDisabled
-      ? "opacity-40 cursor-not-allowed pointer-events-none bg-gray-2 border-gray-3 text-gray-5"
-      : "cursor-pointer bg-gray-1 border-gray-4 text-gray-8 hover:bg-primary/5 hover:border-primary/60 hover:text-primary dark:hover:bg-primary/10 dark:hover:border-primary/50 dark:hover:text-primary",
-  );
+// ─── 头部下拉：交给 RebornSelect 多选 ───────────────────────────────
+// 选项是当前面板搜索结果内的全部条目（不受分页限制），选中值由面板勾选态推导，
+// 回写时只取前后差集逐条切换，勾选状态仍以面板为准
+
+function getMenuOptions(panel: PanelDescriptor): SelectOption[] {
+  return panel.filtered.map((item) => ({
+    label: getItemLabel(item),
+    value: getItemKey(item),
+    disabled: panel.isMenuItemDisabled(item),
+  }));
 }
 
-function getCheckAllClass(isChecked: boolean, isIndeterminate: boolean, isEmpty: boolean) {
-  return cn(
-    ui.value.checkAll(),
-    isChecked || isIndeterminate
-      ? "bg-primary border-primary"
-      : "bg-gray-1 border-gray-4",
-    isEmpty || props.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
-  );
+function getMenuValue(panel: PanelDescriptor): string[] {
+  return panel.filtered.filter((item) => panel.isMenuItemChecked(item)).map(getItemKey);
 }
 
-function getItemCheckClass(isSelected: boolean) {
-  return cn(
-    ui.value.itemCheck(),
-    isSelected
-      ? "bg-primary border-primary"
-      : "bg-gray-1 border-gray-4",
-  );
+function handleMenuChange(panel: PanelDescriptor, value: unknown) {
+  const next = new Set(Array.isArray(value) ? value.map(String) : []);
+  const current = new Set(getMenuValue(panel));
+  for (const item of panel.filtered) {
+    const key = getItemKey(item);
+    if (next.has(key) !== current.has(key)) panel.toggleMenuItem(item);
+  }
 }
+
+// ─── 左右面板描述 ──────────────────────────────────────────────────
+
+const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
+  {
+    direction: "left",
+    title: props.titles[0],
+    selectable: true,
+    search: leftSearch.value,
+    setSearch: (value) => {
+      leftSearch.value = value;
+    },
+    filtered: filteredLeftItems.value,
+    visible: visibleLeftItems.value,
+    enabled: enabledLeftItems.value,
+    allChecked: leftAllChecked.value,
+    indeterminate: leftIndeterminate.value,
+    countText: leftCountText.value,
+    checkedCount: leftCheckedCount.value,
+    total: filteredLeftItems.value.length,
+    showHeaderCheckbox: showHeaderCheckbox.value,
+    toggleAll: toggleLeftAll,
+    toggleItem: toggleLeftItem,
+    isChecked: (item) => leftCheckedSet.value.has(getItemKey(item)),
+    itemClass: (item) =>
+      getItemClass(leftCheckedSet.value.has(getItemKey(item)), isItemDisabled(item)),
+    onItemClick: toggleLeftItem,
+    menuDisabled: props.disabled,
+    isMenuItemChecked: (item) => leftCheckedSet.value.has(getItemKey(item)),
+    isMenuItemDisabled: (item) => props.disabled || isItemDisabled(item),
+    toggleMenuItem: toggleLeftItem,
+    currentPage: leftCurrentPage.value,
+    setPage: (page) => {
+      leftCurrentPage.value = page;
+      resetPanelScroll("left");
+    },
+  },
+  {
+    direction: "right",
+    title: props.titles[1],
+    selectable: !props.oneWay,
+    search: rightSearch.value,
+    setSearch: (value) => {
+      rightSearch.value = value;
+    },
+    filtered: filteredRightItems.value,
+    visible: visibleRightItems.value,
+    enabled: enabledRightItems.value,
+    allChecked: rightAllChecked.value,
+    indeterminate: rightIndeterminate.value,
+    countText: rightCountText.value,
+    checkedCount: rightCheckedCount.value,
+    total: filteredRightItems.value.length,
+    showHeaderCheckbox: showRightHeaderCheckbox.value,
+    toggleAll: toggleRightAll,
+    toggleItem: toggleRightItem,
+    isChecked: (item) => !props.oneWay && rightCheckedSet.value.has(getItemKey(item)),
+    itemClass: getRightItemClass,
+    onItemClick: handleRightItemClick,
+    menuDisabled: props.disabled,
+    // 单向模式右侧没有勾选态：右侧条目一律呈选中，只有开启后移入的可取消（即撤回到左侧）
+    isMenuItemChecked: (item) => props.oneWay || rightCheckedSet.value.has(getItemKey(item)),
+    isMenuItemDisabled: (item) =>
+      props.oneWay ? isOneWayItemUndoDisabled(item) : props.disabled || isItemDisabled(item),
+    toggleMenuItem: (item) => (props.oneWay ? revertOneWayItem(item) : toggleRightItem(item)),
+    currentPage: rightCurrentPage.value,
+    setPage: (page) => {
+      rightCurrentPage.value = page;
+      resetPanelScroll("right");
+    },
+  },
+]);
+
+/**
+ * 两侧头部下拉的选项与选中值：只依赖数据与勾选态，不依赖滚动位置；
+ * 若在模板里直接调用 getMenuOptions，每次滚动重渲染都会重建整批选项
+ */
+const panelMenus = computed(
+  () => panels.value.map((panel) => ({
+    options: getMenuOptions(panel),
+    value: getMenuValue(panel),
+  })) as [PanelMenuState, PanelMenuState],
+);
 </script>
 
 <template>
-  <div
-    :class="cn(ui.root(), props.class)"
-    :style="rootStyle"
-  >
-    <!-- ══════════════════════════════════════════
-         左侧面板（源列表）
-    ══════════════════════════════════════════ -->
-    <div :class="getPanelClass()">
-      <!-- 面板头部：可选全选 / 扩展菜单 + 标题 + 计数 -->
-      <div :class="ui.panelHeader()">
-        <div
-          v-if="showLeftHeaderSelectControls"
-          :class="ui.headerSelectControls()"
-        >
-          <!-- 头部全选复选框 -->
-          <div
-            v-if="showHeaderCheckbox"
-            :class="
-              getCheckAllClass(leftAllChecked, leftIndeterminate, enabledLeftItems.length === 0)
-            "
-            role="checkbox"
-            :aria-checked="leftIndeterminate ? 'mixed' : leftAllChecked"
-            @click="toggleLeftAll"
-          >
-            <CheckMark v-if="leftAllChecked" />
-            <span
-              v-else-if="leftIndeterminate"
-              class="h-px w-2 rounded-full bg-white"
-            />
+  <div :class="cn(ui.root(), props.class)" :style="rootStyle">
+    <template v-for="(panel, index) in panels" :key="panel.direction">
+      <div :class="ui.panel()">
+        <!-- 头部：左侧勾选区（title 插槽）+ 下拉菜单，右侧标题（extra 插槽） -->
+        <div v-if="hasPanelHeader" :class="ui.panelHeader()">
+          <div :class="ui.headerSelectControls()">
+            <slot name="title" :direction="panel.direction" :selectable="panel.selectable" :checked="panel.allChecked"
+              :indeterminate="panel.indeterminate" :disabled="props.disabled || panel.enabled.length === 0"
+              :count-text="panel.countText" :checked-count="panel.checkedCount" :total="panel.total"
+              :toggle="panel.toggleAll">
+              <RebornCheckbox v-if="panel.showHeaderCheckbox" :model-value="panel.allChecked"
+                :indeterminate="panel.indeterminate" :disabled="props.disabled || panel.enabled.length === 0"
+                :color="props.color" size="sm" :label="showHeaderSelectMenu ? undefined : panel.countText"
+                :ui="{ control: ui.checkAll(), label: ui.panelCount() }" class="gap-2" @change="panel.toggleAll" />
+              <span v-else-if="!showHeaderSelectMenu" :class="ui.panelCount()">{{ panel.countText }}</span>
+            </slot>
+
+            <!-- 开启下拉时计数文案显示在触发器里，复选框不再重复显示 -->
+            <!-- 开启虚拟滚动时下拉列表同样虚拟渲染，选项与面板条目一样多 -->
+            <RebornSelect v-if="showHeaderSelectMenu" :model-value="panelMenus[index]!.value"
+              :options="panelMenus[index]!.options" :virtual="props.virtualScroll" multiple collapse-tags
+              variant="borderless" size="sm" :clearable="false" :color="props.color" :disabled="panel.menuDisabled"
+              :class="ui.headerSelectMenu()"
+              :trigger-ui="{ trigger: ui.headerSelectTrigger(), dropdown: ui.headerSelectDropdown() }"
+              :ui="{ option: ui.headerSelectItem() }" @update:model-value="(value) => handleMenuChange(panel, value)">
+              <span :class="ui.panelCount()">{{ panel.countText }}</span>
+            </RebornSelect>
           </div>
 
-          <!-- 全选扩展菜单（click 触发，点击外部自动关闭） -->
-          <div
-            v-if="showHeaderSelectMenu"
-            :class="ui.headerSelectMenu()"
-            @click.stop
-          >
-            <button
-              type="button"
-              :class="
-                cn(
-                  ui.headerSelectTrigger(),
-                  (props.disabled || enabledLeftScopeItems.length === 0) &&
-                    'pointer-events-none opacity-40',
-                )
-              "
-              :disabled="props.disabled || enabledLeftScopeItems.length === 0"
-              aria-haspopup="menu"
-              :aria-expanded="leftSelectMenuOpen"
-              @click="toggleLeftSelectMenu"
-            >
-              <Icon
-                name="lucide:chevron-down"
-                :class="cn(ui.headerSelectIcon(), leftSelectMenuOpen && 'rotate-180')"
-              />
-            </button>
-
-            <RebornTransition
-              :show="leftSelectMenuOpen"
-              name="select-collapse"
-              :duration="{ enter: 160, leave: 100 }"
-              enter-active-class="transition-[height,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] overflow-hidden"
-              leave-active-class="transition-[height,opacity] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden"
-              :custom-class="ui.headerSelectDropdown()"
-            >
-              <div
-                :class="ui.headerSelectDropdownInner()"
-                role="menu"
-              >
-                <button
-                  type="button"
-                  role="menuitem"
-                  :class="ui.headerSelectItem()"
-                  :disabled="props.disabled || enabledLeftScopeItems.length === 0"
-                  @click.stop="toggleLeftAllScope"
-                >
-                  {{ leftAllScopeChecked ? "取消全选" : "全选所有" }}
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  :class="ui.headerSelectItem()"
-                  :disabled="props.disabled || enabledLeftItems.length === 0"
-                  @click.stop="selectLeftPage"
-                >
-                  全选当页
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  :class="ui.headerSelectItem()"
-                  :disabled="props.disabled || enabledLeftItems.length === 0"
-                  @click.stop="invertLeftPage"
-                >
-                  反选当页
-                </button>
-              </div>
-            </RebornTransition>
+          <div :class="ui.panelTitleArea()">
+            <slot name="extra" :direction="panel.direction" :title="panel.title">
+              <span :class="ui.panelTitle()">{{ panel.title }}</span>
+            </slot>
           </div>
         </div>
 
-        <!-- 标题与计数 -->
-        <div :class="ui.panelTitleArea()">
-          <span :class="ui.panelTitle()">{{ titles[0] }}</span>
-          <span :class="ui.panelCount()">{{ leftCountText }}</span>
-        </div>
-      </div>
+        <!-- 内容区：搜索 + 滚动列表 + 底部 -->
+        <div :class="ui.panelContent()">
+          <div v-if="showSearch" :class="ui.panelSearch()">
+            <RebornInput size="sm" variant="outlined" suffix-icon="lucide:search" :separator="false"
+              :model-value="panel.search" :placeholder="searchPlaceholder" :disabled="props.disabled"
+              :class="ui.searchInput()" @update:model-value="(value) => panel.setSearch(String(value ?? ''))" />
+          </div>
 
-      <!-- 搜索框（可选） -->
-      <div
-        v-if="showSearch"
-        :class="ui.panelSearch()"
-      >
-        <div :class="ui.searchWrapper()">
-          <Icon
-            name="lucide:search"
-            :class="ui.searchIcon()"
-          />
-          <input
-            v-model="leftSearch"
-            type="text"
-            :placeholder="searchPlaceholder"
-            :disabled="props.disabled"
-            :class="ui.searchInput()"
-          />
-        </div>
-      </div>
+          <RebornScrollbar :size="4" :ref="(el) => setScrollbarRef(panel.direction, el)" :horizontal="false"
+            :class="ui.panelBody()" :content-class="ui.panelList()"
+            @scroll="(payload) => onPanelScroll(panel.direction, payload)">
+            <!--
+              虚拟滚动：占位层撑出总高度，窗口层按偏移贴到可视区；
+              关闭时两层都是 display: contents，不产生盒子，条目仍直接排在 panelList 的 flex 列里
+            -->
+            <div v-if="panel.filtered.length" :class="props.virtualScroll ? ui.virtualPhantom() : 'contents'"
+              :style="getVirtualPhantomStyle(panel.direction)">
+              <div :class="props.virtualScroll ? ui.virtualWindow() : 'contents'"
+                :style="getVirtualWindowStyle(panel.direction)">
+                <div v-for="item in panelWindows[panel.direction].rows" :key="getItemKey(item)"
+                  :class="panel.itemClass(item)" :style="virtualRowStyle" @click="panel.onItemClick(item)">
+                  <!-- 复选框自身的点击由 change 处理，这里截停冒泡，避免行点击再切换一次 -->
+                  <span v-if="panel.selectable" :class="ui.itemContent()" @click.stop>
+                    <RebornCheckbox :model-value="panel.isChecked(item)"
+                      :disabled="props.disabled || isItemDisabled(item)" :color="props.color" size="sm"
+                      :ui="{ control: ui.itemCheck(), label: 'min-w-0 flex-1' }" class="flex w-full gap-2"
+                      @change="panel.toggleItem(item)">
+                      <slot :item="item" :direction="panel.direction" :checked="panel.isChecked(item)"
+                        :disabled="props.disabled || isItemDisabled(item)">
+                        <slot name="item" :item="item">
+                          <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
+                          <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
+                            {{ getItemDescription(item) }}
+                          </div>
+                        </slot>
+                      </slot>
+                    </RebornCheckbox>
+                  </span>
 
-      <!-- 条目列表（无分页） -->
-      <div
-        v-if="!paginationEnabled"
-        :class="getPanelBodyClass(ui.panelBodyRounded())"
-      >
-        <template v-if="filteredLeftItems.length">
-          <div
-            v-for="item in visibleLeftItems"
-            :key="getItemKey(item)"
-            :class="getItemClass(leftChecked.includes(getItemKey(item)), isItemDisabled(item))"
-            @click="toggleLeftItem(item)"
-          >
-            <span :class="getItemCheckClass(leftChecked.includes(getItemKey(item)))">
-              <CheckMark v-if="leftChecked.includes(getItemKey(item))" />
-            </span>
-            <div :class="ui.itemContent()">
-              <slot
-                name="item"
-                :item="item"
-              >
-                <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
-                <div
-                  v-if="getItemDescription(item)"
-                  :class="ui.itemDesc()"
-                >
-                  {{ getItemDescription(item) }}
+                  <!-- 单向模式：右侧条目不可勾选；开启后移入的条目右侧显示撤回按钮，开启前就在右侧的没有 -->
+                  <template v-else>
+                    <div :class="ui.itemContent()">
+                      <slot :item="item" :direction="panel.direction" :checked="false"
+                        :disabled="props.disabled || isItemDisabled(item)">
+                        <slot name="item" :item="item">
+                          <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
+                          <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
+                            {{ getItemDescription(item) }}
+                          </div>
+                        </slot>
+                      </slot>
+                    </div>
+                    <button v-if="isOneWayItemMoved(item)" type="button" :class="cn(
+                      ui.itemUndoBtn(),
+                      (props.disabled || isItemDisabled(item)) && 'pointer-events-none opacity-40',
+                    )
+                      " title="撤回" :disabled="props.disabled || isItemDisabled(item)" aria-label="撤回到左侧"
+                      @click.stop="revertOneWayItem(item)">
+                      <Icon name="lucide:undo-2" :class="ui.itemUndoIcon()" />
+                    </button>
+                  </template>
                 </div>
-              </slot>
-            </div>
-          </div>
-        </template>
-        <div
-          v-else
-          :class="getPanelEmptyClass()"
-        >
-          <Icon
-            name="lucide:inbox"
-            class="size-8 opacity-40"
-          />
-          <span>{{ leftSearch ? "无匹配结果" : "暂无数据" }}</span>
-        </div>
-      </div>
-
-      <!-- 条目列表 + 底部分页 -->
-      <div
-        v-else
-        :class="getPanelContentClass(ui.panelBodyRounded())"
-      >
-        <div :class="getPanelBodyClass(ui.panelBodyFill())">
-          <template v-if="filteredLeftItems.length">
-            <div
-              v-for="item in visibleLeftItems"
-              :key="getItemKey(item)"
-              :class="getItemClass(leftChecked.includes(getItemKey(item)), isItemDisabled(item))"
-              @click="toggleLeftItem(item)"
-            >
-              <span :class="getItemCheckClass(leftChecked.includes(getItemKey(item)))">
-                <CheckMark v-if="leftChecked.includes(getItemKey(item))" />
-              </span>
-              <div :class="ui.itemContent()">
-                <slot
-                  name="item"
-                  :item="item"
-                >
-                  <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
-                  <div
-                    v-if="getItemDescription(item)"
-                    :class="ui.itemDesc()"
-                  >
-                    {{ getItemDescription(item) }}
-                  </div>
-                </slot>
               </div>
             </div>
-          </template>
-          <div
-            v-else
-            :class="cn(getPanelEmptyClass(), 'min-h-full')"
-          >
-            <Icon
-              name="lucide:inbox"
-              class="size-8 opacity-40"
-            />
-            <span>{{ leftSearch ? "无匹配结果" : "暂无数据" }}</span>
-          </div>
-        </div>
 
-        <div
-          v-if="filteredLeftItems.length"
-          :class="ui.panelFooter()"
-        >
-          <RebornPagination
-            v-model="leftCurrentPage"
-            :total="filteredLeftItems.length"
-            :page-size="paginationPageSize"
-            :disabled="disabled"
-            size="sm"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         中间操作按钮区
-    ══════════════════════════════════════════ -->
-    <div :class="ui.operations()">
-      <button
-        v-for="op in visibleCenterOperations"
-        :key="op.key"
-        type="button"
-        :class="getOperationBtnClass(op.disabled, op.config)"
-        :title="op.config.title"
-        :aria-label="op.config.ariaLabel"
-        @click="op.onClick"
-      >
-        <slot
-          v-if="$slots[op.slotName]"
-          :name="op.slotName"
-          :ui="ui"
-          :config="op.config"
-          :disabled="op.disabled"
-        />
-        <template v-else>
-          <span
-            v-if="op.config.showIcon"
-            :class="ui.operationBtnIcon()"
-          >
-            <Icon
-              :name="op.config.icon"
-              :class="op.config.iconClass"
-            />
-          </span>
-          <span
-            v-if="op.config.label"
-            :class="ui.operationBtnLabel()"
-          >
-            {{ op.config.label }}
-          </span>
-          <span
-            v-if="op.config.showTrailingIcon && op.config.trailingIcon"
-            :class="ui.operationBtnIcon()"
-          >
-            <Icon
-              :name="op.config.trailingIcon"
-              :class="op.config.trailingIconClass"
-            />
-          </span>
-        </template>
-      </button>
-    </div>
-
-    <!-- ══════════════════════════════════════════
-         右侧面板（目标列表）
-    ══════════════════════════════════════════ -->
-    <div :class="getPanelClass()">
-      <!-- 面板头部 -->
-      <div :class="ui.panelHeader()">
-        <div
-          v-if="showRightHeaderSelectControls"
-          :class="ui.headerSelectControls()"
-        >
-          <div
-            v-if="showRightHeaderCheckbox"
-            :class="
-              getCheckAllClass(rightAllChecked, rightIndeterminate, enabledRightItems.length === 0)
-            "
-            role="checkbox"
-            :aria-checked="rightIndeterminate ? 'mixed' : rightAllChecked"
-            @click="toggleRightAll"
-          >
-            <CheckMark v-if="rightAllChecked" />
-            <span
-              v-else-if="rightIndeterminate"
-              class="h-px w-2 rounded-full bg-white"
-            />
-          </div>
-
-          <div
-            v-if="showHeaderSelectMenu"
-            :class="ui.headerSelectMenu()"
-            @click.stop
-          >
-            <button
-              type="button"
-              :class="
-                cn(
-                  ui.headerSelectTrigger(),
-                  rightHeaderSelectMenuDisabled && 'pointer-events-none opacity-40',
-                )
-              "
-              :disabled="rightHeaderSelectMenuDisabled"
-              aria-haspopup="menu"
-              :aria-expanded="rightSelectMenuOpen"
-              @click="toggleRightSelectMenu"
-            >
-              <Icon
-                name="lucide:chevron-down"
-                :class="cn(ui.headerSelectIcon(), rightSelectMenuOpen && 'rotate-180')"
-              />
-            </button>
-
-            <RebornTransition
-              :show="rightSelectMenuOpen"
-              name="select-collapse"
-              :duration="{ enter: 160, leave: 100 }"
-              enter-active-class="transition-[height,opacity] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] overflow-hidden"
-              leave-active-class="transition-[height,opacity] [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] overflow-hidden"
-              :custom-class="ui.headerSelectDropdown()"
-            >
-              <div
-                :class="ui.headerSelectDropdownInner()"
-                role="menu"
-              >
-                <!-- 单向模式：撤回菜单 -->
-                <template v-if="oneWay">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    :class="ui.headerSelectItem()"
-                    :disabled="props.disabled || enabledRightItems.length === 0"
-                    @click.stop="revertRightPage"
-                  >
-                    撤回当页
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    :class="ui.headerSelectItem()"
-                    :disabled="props.disabled || enabledRightScopeItems.length === 0"
-                    @click.stop="revertRightAll"
-                  >
-                    撤回全部
-                  </button>
-                </template>
-                <!-- 双向模式：勾选菜单 -->
-                <template v-else>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    :class="ui.headerSelectItem()"
-                    :disabled="props.disabled || enabledRightScopeItems.length === 0"
-                    @click.stop="toggleRightAllScope"
-                  >
-                    {{ rightAllScopeChecked ? "取消全选" : "全选所有" }}
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    :class="ui.headerSelectItem()"
-                    :disabled="props.disabled || enabledRightItems.length === 0"
-                    @click.stop="selectRightPage"
-                  >
-                    全选当页
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    :class="ui.headerSelectItem()"
-                    :disabled="props.disabled || enabledRightItems.length === 0"
-                    @click.stop="invertRightPage"
-                  >
-                    反选当页
-                  </button>
-                </template>
-              </div>
-            </RebornTransition>
-          </div>
-        </div>
-
-        <!-- 标题与计数 -->
-        <div :class="ui.panelTitleArea()">
-          <span :class="ui.panelTitle()">{{ titles[1] }}</span>
-          <span :class="ui.panelCount()">{{ rightCountText }}</span>
-        </div>
-      </div>
-
-      <!-- 搜索框（可选） -->
-      <div
-        v-if="showSearch"
-        :class="ui.panelSearch()"
-      >
-        <div :class="ui.searchWrapper()">
-          <Icon
-            name="lucide:search"
-            :class="ui.searchIcon()"
-          />
-          <input
-            v-model="rightSearch"
-            type="text"
-            :placeholder="searchPlaceholder"
-            :disabled="props.disabled"
-            :class="ui.searchInput()"
-          />
-        </div>
-      </div>
-
-      <!-- 条目列表（无分页） -->
-      <div
-        v-if="!paginationEnabled"
-        :class="getPanelBodyClass(ui.panelBodyRounded())"
-      >
-        <template v-if="filteredRightItems.length">
-          <div
-            v-for="item in visibleRightItems"
-            :key="getItemKey(item)"
-            :class="getRightItemClass(item)"
-            @click="handleRightItemClick(item)"
-          >
-            <span
-              v-if="!oneWay"
-              :class="getItemCheckClass(rightChecked.includes(getItemKey(item)))"
-            >
-              <CheckMark v-if="rightChecked.includes(getItemKey(item))" />
-            </span>
-            <div :class="ui.itemContent()">
-              <slot
-                name="item"
-                :item="item"
-              >
-                <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
-                <div
-                  v-if="getItemDescription(item)"
-                  :class="ui.itemDesc()"
-                >
-                  {{ getItemDescription(item) }}
-                </div>
-              </slot>
+            <div v-else :class="ui.panelEmpty()">
+              <Icon name="lucide:inbox" class="size-8 opacity-40" />
+              <span>{{ panel.search ? "无匹配结果" : "暂无数据" }}</span>
             </div>
-            <button
-              v-if="oneWay"
-              type="button"
-              :class="
-                cn(
-                  ui.itemUndoBtn(),
-                  isOneWayItemUndoDisabled(item) && 'pointer-events-none opacity-40',
-                )
-              "
-              :title="undoOperationBtn.title"
-              :disabled="isOneWayItemUndoDisabled(item)"
-              aria-label="移回左侧"
-              @click.stop="revertOneWayItem(item)"
-            >
-              <Icon
-                name="lucide:undo-2"
-                :class="ui.itemUndoIcon()"
-              />
-            </button>
-          </div>
-        </template>
-        <div
-          v-else
-          :class="getPanelEmptyClass()"
-        >
-          <Icon
-            name="lucide:inbox"
-            class="size-8 opacity-40"
-          />
-          <span>{{ rightSearch ? "无匹配结果" : "暂无数据" }}</span>
-        </div>
-      </div>
+          </RebornScrollbar>
 
-      <!-- 条目列表 + 底部分页 -->
-      <div
-        v-else
-        :class="getPanelContentClass(ui.panelBodyRounded())"
-      >
-        <div :class="getPanelBodyClass(ui.panelBodyFill())">
-          <template v-if="filteredRightItems.length">
-            <div
-              v-for="item in visibleRightItems"
-              :key="getItemKey(item)"
-              :class="getRightItemClass(item)"
-              @click="handleRightItemClick(item)"
-            >
-              <span
-                v-if="!oneWay"
-                :class="getItemCheckClass(rightChecked.includes(getItemKey(item)))"
-              >
-                <CheckMark v-if="rightChecked.includes(getItemKey(item))" />
-              </span>
-              <div :class="ui.itemContent()">
-                <slot
-                  name="item"
-                  :item="item"
-                >
-                  <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
-                  <div
-                    v-if="getItemDescription(item)"
-                    :class="ui.itemDesc()"
-                  >
-                    {{ getItemDescription(item) }}
-                  </div>
-                </slot>
-              </div>
-              <button
-                v-if="oneWay"
-                type="button"
-                :class="
-                  cn(
-                    ui.itemUndoBtn(),
-                    isOneWayItemUndoDisabled(item) && 'pointer-events-none opacity-40',
-                  )
-                "
-                :title="undoOperationBtn.title"
-                :disabled="isOneWayItemUndoDisabled(item)"
-                aria-label="移回左侧"
-                @click.stop="revertOneWayItem(item)"
-              >
-                <Icon
-                  name="lucide:undo-2"
-                  :class="ui.itemUndoIcon()"
-                />
-              </button>
+          <div v-if="$slots.footer || (paginationEnabled && panel.filtered.length)" :class="ui.panelFooter()">
+            <div v-if="paginationEnabled && panel.filtered.length" :class="ui.panelPagination()">
+              <RebornPagination :model-value="panel.currentPage" :total="panel.filtered.length"
+                :page-size="paginationPageSize" :disabled="disabled" size="sm" @update:model-value="panel.setPage" />
             </div>
-          </template>
-          <div
-            v-else
-            :class="cn(getPanelEmptyClass(), 'min-h-full')"
-          >
-            <Icon
-              name="lucide:inbox"
-              class="size-8 opacity-40"
-            />
-            <span>{{ rightSearch ? "无匹配结果" : "暂无数据" }}</span>
+            <slot name="footer" :direction="panel.direction" :total="panel.total" :checked-count="panel.checkedCount" />
           </div>
         </div>
-
-        <div
-          v-if="filteredRightItems.length"
-          :class="ui.panelFooter()"
-        >
-          <RebornPagination
-            v-model="rightCurrentPage"
-            :total="filteredRightItems.length"
-            :page-size="paginationPageSize"
-            :disabled="disabled"
-            size="sm"
-          />
-        </div>
       </div>
-    </div>
+
+      <!-- 中间操作按钮：插在左右面板之间 -->
+      <div v-if="index === 0" :class="ui.operations()">
+        <template v-for="op in visibleCenterOperations" :key="op.key">
+          <slot name="operation" :action="op.key" :config="op.config" :disabled="op.disabled" :on-click="op.onClick">
+            <!-- 禁用时改用 neutral，避免彩色底的禁用按钮被误认为可点 -->
+            <RebornButton type="button" size="sm" :color="op.disabled ? 'neutral' : props.color" :disabled="op.disabled"
+              :title="op.config.title" :aria-label="op.config.ariaLabel" :class="cn(ui.operationBtn(), isIconOnlyOperationBtn(op.config) && ui.operationBtnIconOnly())
+                " @click="op.onClick">
+              <slot v-if="$slots[op.slotName]" :name="op.slotName" :ui="ui" :config="op.config"
+                :disabled="op.disabled" />
+              <template v-else>
+                <span v-if="op.config.showIcon" :class="ui.operationBtnIcon()">
+                  <Icon :name="op.config.icon" :class="op.config.iconClass" />
+                </span>
+                <span v-if="op.config.label" :class="ui.operationBtnLabel()">{{ op.config.label }}</span>
+                <span v-if="op.config.showTrailingIcon && op.config.trailingIcon" :class="ui.operationBtnIcon()">
+                  <Icon :name="op.config.trailingIcon" :class="op.config.trailingIconClass" />
+                </span>
+              </template>
+            </RebornButton>
+          </slot>
+        </template>
+      </div>
+    </template>
   </div>
 </template>

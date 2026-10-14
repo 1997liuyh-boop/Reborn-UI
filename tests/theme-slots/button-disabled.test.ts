@@ -62,17 +62,19 @@ for (const palette of ['brand', 'orange', 'green', 'red']) {
 
 for (const color of buttonColors) {
   for (const variant of ['filled', 'outlined', 'text']) {
-    it(`${color} ${variant} 禁用文字统一为灰阶 5，暗色模式不另行覆盖`, () => {
+    it(`${color} ${variant} 禁用文字跟随变体，暗色模式不另行覆盖`, () => {
       const classes = button({ color, variant, disabled: true }).base().split(/\s+/);
-      assert.ok(classes.includes('text-gray-5'));
-      assert.ok(!classes.some((value: string) => /^(?:dark:)?text-(?:white|gray-(?:4|6))/.test(value)));
+      const expected = variant === 'filled' ? 'text-gray-1' : 'text-gray-5';
+      assert.ok(classes.includes(expected));
+      assert.ok(!classes.includes(variant === 'filled' ? 'text-gray-5' : 'text-gray-1'));
+      assert.ok(!classes.some((value: string) => /^(?:dark:text-|text-(?:white|gray-(?:4|6)))/.test(value)));
     });
   }
 }
 
 for (const color of buttonColors) {
-  it(`${color} 其余变体保留原有禁用文字样式`, () => {
-    assert.ok(button({ color, variant: 'round', disabled: true }).base().split(/\s+/).includes('text-white/50'));
+  it(`${color} 兼容变体及浅色变体使用各自的禁用文字样式`, () => {
+    assert.ok(button({ color, variant: 'round', disabled: true }).base().split(/\s+/).includes('text-gray-1'));
     assert.ok(button({ color, variant: 'circle', disabled: true }).base().split(/\s+/).includes('text-gray-5'));
     for (const variant of ['soft', 'subtle']) {
       const classes = button({ color, variant, disabled: true }).base().split(/\s+/);

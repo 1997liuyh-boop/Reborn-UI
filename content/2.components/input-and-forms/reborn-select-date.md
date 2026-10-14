@@ -43,6 +43,7 @@ badge: New
 | `showArrow` | `boolean` | `true` | 是否显示右侧箭头图标。 |
 | `arrowAnimation` | `boolean` | `true` | 展开时箭头是否旋转动画。 |
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`。默认开启，浮层按文档坐标锚定触发器，不受祖先 `overflow` / `transform` 裁剪；关闭后浮层留在触发器内，随父容器一起滚动、一起被裁剪。 |
+| `closeOn` | `'click' \| 'mousedown'` | `'mousedown'` | 外部关闭的时机（Web 端，透传给 `RebornSelectTrigger`）。`mousedown` 在面板外按下、滚轮或页面滚动时收起，面板内部的滚动不算外部；`click` 在面板外完成一次点击后才收起，期间页面滚动时面板跟随触发器。 |
 | `autoAdjustOverflow` | `boolean` | `true` | 下拉框是否自动调整位置：下方空间不足且上方更宽裕时向上展开；关闭后固定向下展开。 |
 | `triggerUi` | `Partial<SelectTriggerUI>` | `{}` | 用于覆盖 `RebornSelectTrigger` 内部组件样式的 UI 配置对象。 |
 | `class` | `any` | - | 追加到触发器根元素的自定义类名（Web 端）。 |

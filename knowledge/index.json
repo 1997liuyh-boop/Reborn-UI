@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T09:40:57.912Z",
+  "generatedAt": "2026-10-13T10:31:49.796Z",
   "components": [
     {
       "id": "animate-grid",
@@ -943,7 +943,7 @@
     {
       "id": "reborn-date-picker",
       "title": "DatePicker 日期选择器",
-      "description": "带触发器的表单日期选择器，触发器与 reborn-select 同一套形态、尺寸、配色，下拉内容为 reborn-date-picker-panel，支持 15 种类型，仅 web 端。",
+      "description": "带触发器的表单日期选择器，触发器与 reborn-select 同一套形态、尺寸、配色，下拉内容为 reborn-date-picker-panel，支持 16 种类型，仅 web 端。",
       "category": "form",
       "tags": [
         "calendar",
@@ -971,9 +971,24 @@
       ]
     },
     {
+      "id": "reborn-depth-image",
+      "title": "深度视差图",
+      "description": "按深度图对透明背景图片做跟随指针的 2.5D 视差与补光，WebGL 渲染，失败时退回静态图。",
+      "category": "effect",
+      "tags": [
+        "webgl",
+        "canvas",
+        "parallax",
+        "image"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-descriptions",
       "title": "Descriptions 描述列表",
-      "description": "成组展示只读字段的键值对排版件：items 数据驱动或子组件声明式，支持边框底色、水平/垂直布局、按容器宽度响应的列数与跨列，仅 web 端。",
+      "description": "以键值对展示只读信息，支持边框、尺寸、水平或垂直布局、响应式列数及跨行跨列，仅 Web 端。",
       "category": "misc",
       "tags": [
         "css",
@@ -1611,7 +1626,7 @@
     },
     {
       "id": "reborn-splitter",
-      "title": "分隔面板 Splitter",
+      "title": "Splitter 分隔面板",
       "description": "用于将区域按水平或垂直方向分隔、可拖动调整各面板大小的布局组件。",
       "category": "layout",
       "tags": [
@@ -1681,6 +1696,22 @@
       ]
     },
     {
+      "id": "reborn-table",
+      "title": "Table 表格",
+      "description": "Web 数据表格：支持声明列、固定与分组表头、行选择、排序筛选、远程分页、树形数据及合并合计。",
+      "category": "data-display",
+      "tags": [
+        "vue",
+        "css",
+        "tailwind",
+        "table",
+        "data"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-tabs",
       "title": "Tabs 标签页",
       "description": "双端标签页：RebornTabs + RebornTabPane 组合，key 驱动切换，7 种类型 × 4 种尺寸，支持可编辑、懒加载与滚动定位。",
@@ -1732,7 +1763,7 @@
     },
     {
       "id": "reborn-time-picker",
-      "title": "时间选择器",
+      "title": "TimePicker 时间选择器",
       "description": "Web 单点时间录入：支持时分秒六种组合、手动输入、两种中心选中样式，并保留范围与毫秒选择。",
       "category": "form",
       "tags": [
@@ -1787,8 +1818,8 @@
     },
     {
       "id": "reborn-transfer",
-      "title": "穿梭框",
-      "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回与分页。",
+      "title": "Transfer 穿梭框",
+      "description": "用于在双列列表间移动条目的穿梭框组件，支持搜索过滤、全选、单向模式、撤回、分页、虚拟滚动，以及头部、条目、底部与操作按钮插槽。",
       "category": "misc",
       "tags": [],
       "platforms": [
@@ -1824,7 +1855,7 @@
     {
       "id": "reborn-tree-select",
       "title": "Tree Select 树选择器",
-      "description": "Web 层级选值：沿用 select 的三档尺寸与四种形态，下拉复用 tree，支持单选、独立多选和清空。",
+      "description": "Web 层级选值：沿用 select 的三档尺寸与四种形态，下拉复用 tree，支持单选、父子联动或独立勾选的多选，以及清空。",
       "category": "form",
       "tags": [
         "tree-select",
@@ -1846,6 +1877,21 @@
         "css",
         "tailwind",
         "animation"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-upload",
+      "title": "Upload 上传",
+      "description": "Web 文件上传组件：负责选择文件、发起上传并展示每个文件的进度与结果，提供 text / picture / picture-card 三种列表形态，支持拖拽、选择文件夹、手动上传、自定义请求与分片断点续传，图片与视频均可显示缩略图；参数、钩子与实例方法对齐 Element Plus 的 el-upload。",
+      "category": "form",
+      "tags": [
+        "upload",
+        "file",
+        "form",
+        "web"
       ],
       "platforms": [
         "web"
@@ -1954,8 +2000,8 @@
     },
     {
       "id": "scrollbar",
-      "title": "滚动条 Scrollbar",
-      "description": "浮层式滚动条组件，隐藏原生滚动条并自绘 thumb，悬浮于内容之上不挤压布局；提供 4/6/8 三档尺寸、轨道显形、圆角内缩与带缓动动画的命令式滚动。",
+      "title": "Scrollbar 滚动条",
+      "description": "不挤压布局的浮层滚动条，支持粗细与颜色定制、固定头部避让、双轴动画及静默定位。",
       "category": "layout",
       "tags": [
         "vue",

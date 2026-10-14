@@ -41,6 +41,8 @@ export interface RadioGroupContext {
   buttonProps: Ref<ButtonProps | undefined>;
   /** 表单校验错误态 */
   isError?: Ref<boolean>;
+  /** 分段按钮的选中底色是否已交给组容器的滑块绘制（组容器挂载并量好位置后为 true） */
+  sliderReady?: Ref<boolean>;
   /** 组内选中值更新入口 */
   updateValue: (value: string | number | boolean, ev: Event) => void;
 }
@@ -119,6 +121,7 @@ const ui = computed(() => {
     checked: isChecked.value,
     disabled: computedDisabled.value,
     error: isError.value,
+    slider: !!radioGroup?.sliderReady?.value,
   });
   return {
     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
@@ -148,6 +151,8 @@ function onTap(ev: Event) {
     :aria-checked="isChecked"
     :data-checked="isChecked"
     :data-disabled="computedDisabled"
+    :data-color="computedColor"
+    :data-variant="computedVariant"
     @click="onTap"
   >
     <!-- radio 插槽：完全接管单选框的渲染 -->

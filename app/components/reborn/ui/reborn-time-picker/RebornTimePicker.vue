@@ -24,7 +24,7 @@ const props = withDefaults(defineProps<TimePickerProps>(), {
   panelVariant: "filled",
   allowInput: true,
   icon: "lucide:clock-3",
-  closeOn: "click",
+  closeOn: "mousedown",
   placeholder: "请选择时间",
   startPlaceholder: "开始时间",
   endPlaceholder: "结束时间",
@@ -94,7 +94,7 @@ export interface TimePickerProps {
   allowInput?: boolean;
   /** 尾部图标名称 */
   icon?: string;
-  /** 与选择器一致：click 在外部点击完成后关闭；mousedown 在外部按下或页面滚动时关闭，内部滚动不关闭。 */
+  /** 与选择器一致：mousedown（默认）在外部按下、滚轮或页面滚动时关闭，内部滚动不关闭；click 在外部点击完成后关闭。 */
   closeOn?: SelectTriggerProps["closeOn"];
   /** 面板内部样式覆盖 */
   panelUi?: TimePanelProps["ui"];

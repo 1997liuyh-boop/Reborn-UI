@@ -145,12 +145,12 @@ provide('reborn-dropdown', {
       带下拉菜单的条目。
       浮层只借 RebornSelectTrigger 的定位与外部点击边界，触发器仍是一枚普通面包屑条目：
       不套任何边框 / 底色 / 内边距，样式与不带下拉的条目完全一致，只多一枚箭头。
-      close-on="mousedown"：外部一有动静（按下任意鼠标键、面板外滚动）立即收起。
+      外部关闭沿用 RebornSelectTrigger 的默认 mousedown：外部一有动静（按下任意鼠标键、面板外滚动）立即收起；
+      需要改成 click 时经 dropdown-props 传 closeOn。
     -->
     <RebornSelectTrigger
       v-if="hasDroplist"
       :is-open="isOpen"
-      close-on="mousedown"
       :ui="{ wrapper: 'w-auto', dropdown: 'w-auto!' }"
       v-bind="props.dropdownProps"
       @keydown="onTriggerKeydown"

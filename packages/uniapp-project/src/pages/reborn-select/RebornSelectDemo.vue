@@ -183,6 +183,28 @@ const options3 = ref<SelectOption[]>([
 
 const options4 = ref<SelectOption[]>([])
 
+/** 字段别名：接口原样返回 id / name / cities，交给 fieldNames 映射，每一层都按同一套字段名读取 */
+const regionOptions = [
+  {
+    id: 'fj',
+    name: '福建省',
+    cities: [
+      { id: 'fz', name: '福州市' },
+      { id: 'xm', name: '厦门市' },
+      { id: 'qz', name: '泉州市' },
+    ],
+  },
+  {
+    id: 'zj',
+    name: '浙江省',
+    cities: [
+      { id: 'hz', name: '杭州市' },
+      { id: 'nb', name: '宁波市' },
+    ],
+  },
+]
+const regionValue = ref<string[]>(['zj', 'nb'])
+
 function openSelect2() {
   selectRef2.value?.open((value: any) => {
     const d = options2.value.find(item => item.value == value)
@@ -279,6 +301,22 @@ function openSelect2() {
         </view>
       </view>
     </RebornCard>
+    <!-- 字段别名 -->
+    <RebornCard title="字段别名" overflow-visible>
+      <view class="text-xs text-gray-4">
+        数据是 id / name / cities，用 field-names 指定每一层的 label / value / children 取哪个字段
+      </view>
+      <RebornSelect
+        v-model="regionValue"
+        :options="regionOptions"
+        :column-count="2"
+        :field-names="{ label: 'name', value: 'id', children: 'cities' }"
+      />
+      <view class="text-xs text-gray-4">
+        绑定值：{{ regionValue }}（取自 id 字段）
+      </view>
+    </RebornCard>
+
     <!-- 自定义触发器 -->
     <RebornCard title="自定义触发器" overflow-visible>
       <view class="text-xs text-gray-4">

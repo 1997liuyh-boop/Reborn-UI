@@ -134,7 +134,7 @@ const openKeys = ref<string[]>(["content", "content-category"]);
 
 ### 折叠与文字提示
 
-`collapse` 只对 `mode="vertical"` 生效，折叠后宽度收到 64px、一级菜单项只剩图标，子菜单强制改为浮层展开。`tooltip` 默认开启，悬停一级菜单项时在右侧补回标题；内容缺省取菜单项的默认插槽，只有提示文案要与标题不同时才需要传 `title`。
+`collapse` 只对 `mode="vertical"` 生效，折叠后宽度收到 64px、一级菜单项只剩图标（没有图标的条目以标题首字占位，见「无图标时的折叠」），子菜单强制改为浮层展开。`tooltip` 默认开启，悬停一级菜单项时在右侧补回标题；内容缺省取菜单项的默认插槽，只有提示文案要与标题不同时才需要传 `title`。
 
 ```vue
 <template>
@@ -193,6 +193,7 @@ const isCollapse = ref(false);
 - **对齐与内边距不参与动画**：折叠态沿用展开态的 `px-4` 与 `items-start` 对齐，**不切 `justify-center`**。`justify-content` 不可过渡，在第 0 帧就会把「图标 + 文字」整组钉到行中线上，之后随容器变窄来回摆动。
 - **图标列定宽**：`menuItemIcon` 是一列固定宽度的盒子，展开态 `w-5`（20px）、折叠态 `w-8`（32px = 轨道 `64px` 减去左右各 `16px` 内边距），图形本身（16px 或 20px）由盒子自身的 `justify-center` 居中。折叠完成时图标正好落在轨道正中。这与 Element Plus 给菜单图标定死 24px 列宽是同一套做法；`min-width` 不能替代 `width`——实际宽度取 `max(图形宽, min-width)`，前段纹丝不动、后段才追上，会与同时收缩的间隙错开相位而产生回摆。
 - **间隙同步归零**：`menuItemContent` 的 `gap-2`（8px）在折叠态收到 `gap-0`。图标列 `20 → 32px` 与间隙 `8 → 0px` 共用同一条曲线，两者之和 `28 → 32px` 严格单调，动画全程内容既不溢出 64px 轨道也不留空。
+- **首字兜底常驻 DOM**：展开态为 `w-0 -mr-2 opacity-0`，负外边距正好抵掉它与标题之间那条 `gap-2`，标题位置与不渲染兜底时逐像素相同；折叠态为 `w-8 mr-0 opacity-100`，与图标列同宽同位。负外边距与间隙一起归零，两者之和全程为 0，首字左边缘不随动画摆动。不按折叠态用 `v-if` 挂载，是因为挂载是瞬时的，首字会在第 0 帧直接冒出来。
 
 传 `:collapse-transition="false"` 会一并移除上述所有 `transition`（含图标列宽度与间隙），切换变为瞬时；浮层的展开动画也同时关掉，见「浮层的展开动画」。
 
@@ -200,9 +201,64 @@ const isCollapse = ref(false);
 因为折叠宽度走的是内联样式，给 `RebornMenu` 传 `class="w-full max-w-xs"` 之类的宽度类**不会**影响折叠态尺寸，两者可以共存。
 ::
 
+#### 无图标时的折叠
+
+折叠后区分一级条目靠的是图标。没有 `icon` 插槽的条目若不做处理，折叠后整行只剩一块空白，几行之间分不出谁是谁，子菜单的标题也无处可见。组件为此做了两处兜底：
+
+- **标题首字占位**：垂直菜单的一级 `RebornMenuItem` / `RebornSubMenu` 没有 `icon` 插槽时，折叠态在图标位显示标题首字。首字取默认插槽（`RebornSubMenu` 为 `title` 插槽）里的文本；插槽里只有组件、取不到文字时，`RebornMenuItem` 退回 `title` 属性，`RebornSubMenu` 退回 `index`。配置式 `items` 的 `label` 会填进插槽，同样适用。
+- **英文首字母统一大写**：否则 `dashboard`、`Settings` 这类大小写混写的菜单，在窄轨里会一行大写一行小写。
+- **首字跟随标题的状态**：字号、字重与颜色取标题同一套变体，选中、禁用、危险态同步变色，折叠前后看起来是同一个字。
+- **首字对读屏隐藏**：标题文本仍在 DOM 里，读屏已经能读到，首字加了 `aria-hidden`，避免同一个字被念两遍。
+- **分组标题收成分隔线**：`RebornMenuItemGroup` 的标题在 64px 轨道里放不下，折叠态文字转为透明，改由一条 1px 细线标出分组边界。行高不变，分组之间的间距在折叠前后一致。子菜单浮层里的分组保留标题，浮层的宽度放得下。
+
+有 `icon` 插槽的条目不受影响。首字只是兜底，几个标题首字相同（如「用户管理」「用户权限」）时仍然分不开，这种菜单请补上图标。不想要首字时传 `:ui="{ menuItemIconFallback: 'hidden' }"`，折叠后回到整行空白。
+
+```vue
+<template>
+  <div>
+    <button @click="isCollapse = !isCollapse">
+      {{ isCollapse ? "展开" : "折叠" }}
+    </button>
+
+    <RebornMenu
+      v-model:selected-keys="selectedKeys"
+      mode="vertical"
+      :collapse="isCollapse"
+    >
+      <RebornMenuItemGroup title="工作台">
+        <RebornMenuItem index="dashboard">
+          dashboard
+        </RebornMenuItem>
+        <RebornMenuItem index="orders">
+          订单
+        </RebornMenuItem>
+      </RebornMenuItemGroup>
+
+      <RebornMenuItemGroup title="配置">
+        <RebornSubMenu index="settings">
+          <template #title>
+            Settings
+          </template>
+          <RebornMenuItem index="settings-profile">
+            个人资料
+          </RebornMenuItem>
+        </RebornSubMenu>
+      </RebornMenuItemGroup>
+    </RebornMenu>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+
+const isCollapse = ref(true);
+const selectedKeys = ref<string[]>(["orders"]);
+</script>
+```
+
 #### 折叠态的文字提示
 
-折叠后一级菜单项只剩图标，`tooltip` 默认开启，悬停时在右侧弹出 `RebornTooltip` 补回标题。提示内容优先取 `title`，缺省时取默认插槽，因此大多数菜单**不用额外写任何属性**。
+折叠后一级菜单项只剩图标或首字，`tooltip` 默认开启，悬停时在右侧弹出 `RebornTooltip` 补回标题。提示内容优先取 `title`，缺省时取默认插槽，因此大多数菜单**不用额外写任何属性**。
 
 - **只作用于一级菜单项**：折叠只隐藏一级标题；子菜单在折叠态本就以浮层展开，浮层里的条目标题完整可见，再叠一层提示只会遮挡。
 - **展开态不弹提示**：标题已经完整显示。提示组件在两种状态下都挂着，只切换它的 `disabled`——折叠切换时 DOM 结构不变，标题的淡出过渡才不会因节点重建而丢失。
@@ -768,7 +824,7 @@ interface MenuDividerType {
 
 ### 自定义样式（ui）
 
-`ui` 按内部结构键覆盖对应节点的类名，共 15 个键，与 `reborn-menu.config.ts` 的 `slots` 一一对应。**把 `ui` 传给最外层 `RebornMenu` 即可**，所有键会通过依赖注入下发到 `RebornSubMenu` / `RebornMenuItem` / `RebornMenuItemGroup` / `RebornMenuDivider`；后四者也接受自己的 `ui`，用于只改某一个分支。
+`ui` 按内部结构键覆盖对应节点的类名，共 16 个键，与 `reborn-menu.config.ts` 的 `slots` 一一对应。**把 `ui` 传给最外层 `RebornMenu` 即可**，所有键会通过依赖注入下发到 `RebornSubMenu` / `RebornMenuItem` / `RebornMenuItemGroup` / `RebornMenuDivider`；后四者也接受自己的 `ui`，用于只改某一个分支。
 
 | 键名                   | 对应节点与默认关键类名                                                                                                                                                                                                                                                                                                           |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -778,6 +834,7 @@ interface MenuDividerType {
 | `menuItemContent`      | 菜单项内部的横向排布容器。默认 `flex w-full items-center gap-2 transition-all duration-300 ease-in-out`，折叠态 `gap-2` 收到 `gap-0`；图标与文字的间距改这里。                                                                                                                                                                  |
 | `menuItemTitle`        | 文字节点。默认 `flex-1 truncate transition-all duration-300 ease-in-out`，字号字重灰阶由内部 `level` 变体补上；它在默认插槽 / `title` 插槽的外层，填充插槽后依然生效。折叠态的一级条目上以 `w-0 opacity-0` 收起。                                                                                                               |
 | `menuItemIcon`         | 图标位。**仅填充了 `icon` 插槽时渲染**（配置式节点带 `icon` 字段时由组件代为填充），默认 `flex w-5 shrink-0 items-center justify-center transition-all duration-300 ease-in-out`，折叠态为 `w-8`。定宽一列、图形居中，折叠动画依赖这个定值，改宽度会让折叠后图标偏离轨道中线。                                                  |
+| `menuItemIconFallback` | 无图标时的标题首字，只存在于垂直菜单的一级条目。**有 `icon` 插槽时不渲染**。默认 `-mr-2 flex w-0 shrink-0 items-center justify-center overflow-hidden whitespace-nowrap opacity-0`，展开态宽度为 0、负外边距抵掉 `gap-2`，不占位；折叠态为 `mr-0 w-8 opacity-100`，与图标列同宽。字号字重与颜色跟标题同一套变体。传 `hidden` 可关掉首字（见「无图标时的折叠」）。 |
 | `menuItemExtra`        | 右侧附加内容位，只存在于 `RebornMenuItem`。**仅提供了 `extra` 属性或 `extra` 插槽时渲染**，默认 `ml-auto shrink-0 text-sm text-gray-5`（`text-sm` 在本主题为 12px，比标题低一档），快捷键提示的样式改这里。                                                                                                                     |
 | `menuItemArrow`        | 子菜单的展开箭头，只存在于 `RebornSubMenu`。**根级水平菜单的一级子菜单不渲染**，其余位置（垂直菜单、水平浮层内的次级子菜单）都会渲染。默认 `flex shrink-0 items-center justify-center transition-all duration-300 ease-in-out`，展开态由内部 `opened` 变体旋转；折叠态以 `w-0 opacity-0` 收起；传了成对的自定义展开图标时不旋转。 |
 | `subMenu`              | `RebornSubMenu` 的最外层 `<li>`，默认 `relative`——它是非传送浮层的定位参照物，非必要不要改 `position`。                                                                                                                                                                                                                          |
@@ -785,10 +842,10 @@ interface MenuDividerType {
 | `subMenuContent`       | 子菜单内部的 `<ul>`。默认 `flex flex-col gap-y-1`（条目间隔 4px），平铺展开时追加 `min-w-0`；两种展开形态都会用到。默认不是滚动容器，传入 `max-h-*` 与 `overflow-y-auto` 后组件才接管滚轮（见「页面滚动时的行为」）。                                                                                                            |
 | `menuItemGroup`        | `RebornMenuItemGroup` 的 `<li>`，默认 `flex flex-col`。                                                                                                                                                                                                                                                                          |
 | `menuItemGroupContent` | 分组内部承载子项的 `<ul>`，默认 `flex flex-col gap-y-1`（组内条目间隔 4px）；只想调分组内的疏密改这里，不影响分组标题。                                                                                                                                                                                                          |
-| `menuItemGroupTitle`   | 分组标题容器，默认 `px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-400`。该节点始终渲染，在 `title` 插槽外层，填充插槽后依然生效。                                                                                                                                                                                |
+| `menuItemGroupTitle`   | 分组标题容器，默认 `relative truncate px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-5`，超长标题截断为省略号。该节点始终渲染，在 `title` 插槽外层，填充插槽后依然生效。折叠态文字转 `text-transparent`，由 `before:` 伪元素画出 1px 分隔线（`before:h-px before:bg-gray-2`），改线条颜色写 `before:bg-*`；子菜单浮层里的分组不收成分隔线。                                                                                                                                                                                |
 | `menuDivider`          | `RebornMenuDivider` 的 `<li>`，默认 `my-1 list-none`，线条本身由 `dashed` 变体给出（`false` → `h-px bg-gray-2`，`true` → `h-0 border-t border-dashed border-gray-2 bg-transparent`）。                                                                                                                                           |
 
-传 `:collapse-transition="false"` 时，`root` / `menu` / `menuItemContent` / `menuItemTitle` / `menuItemIcon` / `menuItemExtra` / `menuItemArrow` / `subMenuPopup` 的过渡会被 `transition-none` 覆盖；`menuItem` 的 hover 过渡不受影响。
+传 `:collapse-transition="false"` 时，`root` / `menu` / `menuItemContent` / `menuItemTitle` / `menuItemIcon` / `menuItemIconFallback` / `menuItemExtra` / `menuItemArrow` / `subMenuPopup` / `menuItemGroupTitle`（含分隔线）的过渡会被 `transition-none` 覆盖；`menuItem` 的 hover 过渡不受影响。
 
 ```vue
 <template>
@@ -868,3 +925,5 @@ interface MenuDividerType {
 - **浮层子菜单新增展开 / 收起动画**（见「浮层的展开动画」）：展开 200ms `ease-out`、收起 150ms `ease-in`，`scale` 与 `opacity` 同步变化。此前浮层只有 `v-show` 切 `display`，是硬闪出来的。传 `:collapse-transition="false"` 可连同折叠动画一起关掉；在 `ui.subMenuPopup` 里自定义了 `transition-*` 或 `scale-*` 的话请移除，否则会与这套动画抢优先级。
 - **窄视口下浮层不再被推出左边缘**（见「浮层的落位」）。此前右侧放不下就无条件翻到条目左侧，不做视口钳位：视口容不下「菜单 + 间距 + 浮层」并排时（实测 354px 视口下算得 `left: -116px`），浮层有一截落在视口外，里面的条目点不到。现在两侧都放不下时改为取空间较大的一侧贴视口边缘摆放。左侧放得下时的翻转行为不变。
 - **鼠标停在展开的子菜单上时不再吞掉滚轮**，页面照常滚动（见「页面滚动时的行为」）。此前只要子菜单列表不可滚动就拦下整个滚轮事件，而该列表默认就不可滚动，于是指针一落到任何展开的子菜单上页面就滚不动了——平铺与浮层、`click` 与 `hover` 都是如此，浮层「页面一滚即关」那条路径也跟着走不到。边界拦截本身保留，只在列表确实被改成滚动容器时生效。
+- **折叠态下没有图标的一级条目改为显示标题首字，分组标题改为分隔线**（见「无图标时的折叠」）。此前图标位直接不渲染、分组标题照常输出：折叠后无图标的条目只剩空白行，分组标题在 64px 轨道里只剩 32px 可用宽度，三个字的「工作台」就会折成两行。需要回到空白行可传 `:ui="{ menuItemIconFallback: 'hidden' }"`。
+- **分组标题在展开态不再换行，超长时截断为省略号**。截断写在基础样式里而不是折叠变体里：展开动画第 0 帧变体就已切回展开态，宽度却还是 64px，此时放开换行会让标题先折成多行、把下方条目往下顶。需要换行请在 `ui.menuItemGroupTitle` 里写 `whitespace-normal`。

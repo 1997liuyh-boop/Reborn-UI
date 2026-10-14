@@ -11,7 +11,7 @@ export { colors as datePickerColors, sizes as datePickerSizes, variants as dateP
 /**
  * 触发器盒子可覆盖的样式键，通过 triggerUi 传入。
  * 键名与 RebornSelect 的 SelectFieldUI 一一对应（去掉了日期选择用不到的 searchInput），
- * 另加范围类型专有的 rangeWrapper / rangeText / rangeSeparator。
+ * 另加范围类型专有的 rangeWrapper / rangeText / rangeSeparator，以及前缀区的 prefix / prefixIcon。
  */
 export type DatePickerFieldUI = Partial<{
     trigger: ClassValue;
@@ -24,6 +24,8 @@ export type DatePickerFieldUI = Partial<{
     rangeWrapper: ClassValue;
     rangeText: ClassValue;
     rangeSeparator: ClassValue;
+    prefix: ClassValue;
+    prefixIcon: ClassValue;
 }>;
 
 /**
@@ -72,6 +74,13 @@ export default {
         rangeText: "min-w-0 flex-1 truncate text-center text-gray-9",
         /** 起止之间的分隔符，颜色比正文弱一档 */
         rangeSeparator: "shrink-0 text-gray-5",
+
+        /* ---------------- 前缀区（#prefix 插槽或 prefix-icon） ---------------- */
+
+        /** 前缀容器：不参与压缩，颜色与箭头同一档，插槽里的图标与文字直接继承 */
+        prefix: "flex shrink-0 items-center text-gray-6",
+        /** prefix-icon 渲染的图标，尺寸随 size 变体变化，与尾部箭头一致 */
+        prefixIcon: "shrink-0",
 
         /* ---------------- 下拉浮层 ---------------- */
 
@@ -148,6 +157,7 @@ export default {
             sm: {
                 trigger: "h-input-sm px-input-px-sm text-sm",
                 triggerIconWrapper: "size-3",
+                prefixIcon: "size-3",
                 tagList: "gap-0.5",
                 // 标签比宿主 text-sm（12px）小一档，与 RebornSelect 一致；10px 低于字号令牌下限，只能写字面量
                 tag: "h-4! px-1 text-[10px]",
@@ -156,12 +166,14 @@ export default {
             md: {
                 trigger: "h-input-md px-input-px-md text-base",
                 triggerIconWrapper: "size-4",
+                prefixIcon: "size-4",
                 tag: "h-5! px-1.5 text-sm",
                 tagClose: "size-3",
             },
             lg: {
                 trigger: "h-input-lg px-input-px-lg text-lg",
                 triggerIconWrapper: "size-4",
+                prefixIcon: "size-4",
                 tag: "h-6! px-2 text-base",
                 tagClose: "size-3.5",
             },
@@ -195,6 +207,17 @@ export default {
             true: { arrow: "rotate-180" },
         },
         /**
+         * 带前缀。触发器是 justify-between，单值文本与占位不撑开时会被挤到前缀与尾部图标的正中间，
+         * 因此有前缀时让它们占满剩余宽度、紧贴前缀左对齐；范围与多选的容器本身已是 flex-1，不受影响。
+         */
+        prefix: {
+            true: {
+                triggerText: "min-w-0 flex-1",
+                placeholder: "min-w-0 flex-1",
+            },
+            false: {},
+        },
+        /**
          * 可清空。开启后箭头在悬停时淡出，清空按钮盖上来，两者占据同一块尾部空间，
          * 因此不会出现「有值 / 无值」宽度跳动。
          */
@@ -212,6 +235,7 @@ export default {
                 triggerText: "text-gray-5",
                 rangeText: "text-gray-5",
                 arrow: "text-gray-5",
+                prefix: "text-gray-5",
                 tag: "text-gray-5",
                 tagClose: "pointer-events-none",
             },

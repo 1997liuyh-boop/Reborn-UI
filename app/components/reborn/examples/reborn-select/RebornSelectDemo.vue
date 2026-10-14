@@ -48,7 +48,7 @@ const defaultState: Record<string, any> = {
     disabled: false,
     showArrow: true,
     arrowAnimation: true,
-    closeOn: "click",
+    closeOn: "mousedown",
     portal: true,
     placeholder: "请选择站点",
 };
@@ -118,7 +118,7 @@ const controls: any = [
                 label: "关闭时机",
                 key: "closeOn",
                 component: "select" as const,
-                defaultValue: "click",
+                defaultValue: "mousedown",
                 props: {
                     options: [
                         { label: "click（外部完成点击）", value: "click" },
@@ -148,6 +148,17 @@ const controls: any = [
 const basicValue = ref(null);
 const basicNoClearValue = ref("vue");
 const basicDisabledValue = ref("react");
+
+// --- 字段别名 ---
+
+/** 接口原样返回的数据：字段是 id / name / closed，交给 field-names 映射；sla 不参与映射，option 插槽照样读得到 */
+const regionOptions = [
+    { id: "cn-east", name: "华东节点", sla: "99.95%" },
+    { id: "cn-south", name: "华南节点", sla: "99.9%" },
+    { id: "cn-north", name: "华北节点（维护中）", sla: "—", closed: true },
+];
+const regionValue = ref("cn-east");
+const regionMultipleValue = ref<string[]>(["cn-east", "cn-south"]);
 
 // --- 多选与标签折叠 ---
 
@@ -351,6 +362,54 @@ function onChange(value: any) {
           />
         </DemoItem>
       </DemoBlock>
+    </DemoSection>
+
+    <!-- 2.1 字段别名 -->
+    <DemoSection
+      title="字段别名：field-names"
+      description="后端字段名对不上 label / value / disabled 时，用 field-names 指定各取哪个字段，不必先把数据 map 一遍；其余字段原样保留，option 插槽和过滤函数都读得到。"
+    >
+      <DemoBlock
+        layout="grid"
+        :columns="2"
+        align="start"
+      >
+        <DemoItem
+          label=":field-names=&quot;{ label: 'name', value: 'id', disabled: 'closed' }&quot;"
+          note="华北节点带 closed: true，映射成 disabled 后不可选；v-model 拿到的是 id 字段"
+          mono
+        >
+          <RebornSelect
+            v-model="regionValue"
+            :options="regionOptions"
+            :field-names="{ label: 'name', value: 'id', disabled: 'closed' }"
+            class="w-full"
+          >
+            <template #option="{ option }">
+              <div class="flex w-full items-center justify-between gap-3">
+                <span class="truncate">{{ option.label }}</span>
+                <span class="text-dimmed shrink-0 text-xs">SLA {{ option.sla }}</span>
+              </div>
+            </template>
+          </RebornSelect>
+        </DemoItem>
+
+        <DemoItem
+          label="multiple"
+          note="多选同样按映射后的 value 比较，标签文案取 name 字段"
+        >
+          <RebornSelect
+            v-model="regionMultipleValue"
+            :options="regionOptions"
+            :field-names="{ label: 'name', value: 'id', disabled: 'closed' }"
+            multiple
+            class="w-full"
+          />
+        </DemoItem>
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        单选绑定值：<code>{{ regionValue }}</code>；多选绑定值：<code>{{ regionMultipleValue }}</code>
+      </DemoNote>
     </DemoSection>
 
     <!-- 3. 多选与标签折叠 -->

@@ -74,7 +74,12 @@ for (const [platform, theme] of Object.entries({ web: webTheme, uni: uniTheme })
       : 'packages/uniapp-project/src/components/reborn-switch/RebornSwitch.vue', 'utf8');
     assert.ok(!source.includes('v-if="isChecked &&'));
     assert.ok(!source.includes('v-else-if="!isChecked &&'));
-    assert.ok(source.includes('grid-cols-1'));
+    if (platform === 'web') {
+      assert.ok(source.includes(':class="ui.inlineWrap()"'));
+      assert.ok(tv(webTheme)().inlineWrap().split(/\s+/).includes('grid-cols-1'));
+    } else {
+      assert.ok(source.includes('grid-cols-1'));
+    }
     const on = tv(theme)({ active: true });
     const off = tv(theme)({ active: false });
     assert.ok(on.inlineActive().includes('translate-x-0'));

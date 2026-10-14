@@ -1,10 +1,11 @@
 {
-  "description": "浮层式滚动条组件，隐藏原生滚动条并自绘 thumb，悬浮于内容之上不挤压布局；提供 4/6/8 三档尺寸、轨道显形、圆角内缩与带缓动动画的命令式滚动。",
+  "description": "不挤压布局的浮层滚动条，支持粗细与颜色定制、固定头部避让、双轴动画及静默定位。",
   "whenToUse": [
     "需要为容器提供统一、细窄、不占宽度的滚动条时。",
     "需要 4 / 6 / 8px 多档尺寸，或按品牌色定制 thumb、轨道与悬停颜色的场景。",
     "需要有 / 无滚动条时内容可视宽度完全一致、避免布局抖动的场景。",
-    "需要代码控制滚动位置且要求平滑动画（如目录跳转、卡片轨道翻屏）的场景。",
+    "需要代码控制滚动位置且要求平滑动画（如目录跳转、卡片轨道翻屏）的场景；两轴同步动画使用一次 scrollTo({ top, left }, options)。",
+    "需要纵向轨道只覆盖固定头部下方的表体时，将实测固定区域高度（px）传给 verticalOffset；横向轨道不受影响。",
     "需要随 .dark 自动切换滚动条对比度的深浅色适配场景。"
   ],
   "whenNotToUse": [
@@ -19,6 +20,10 @@
     "overflow: overlay 已在 Chromium 121+ 被移除，computed 回退为 auto，无法实现浮层式滚动条。",
     "容器带 rounded-* 圆角时，根元素的 overflow: hidden 会用圆角弧线裁剪贴边的轨道两端，thumb 滚到顶端 / 末端会被削角。inset 属性默认 'auto'，按容器实际 border-radius 自动推算内缩；传数值可固定内缩，传 0 则完全贴边。",
     "运行时动态改变容器 border-radius 后需在 nextTick() 后调用实例的 refresh() 重算内缩（圆角只改样式不改尺寸，ResizeObserver 不会触发）；仅内容或容器尺寸变化由 ResizeObserver 自动处理。",
-    "setScrollTop / setScrollLeft 默认带 easeInOutCubic 缓动并返回 Promise；用户滚轮、触摸、拖拽 thumb 或点击轨道会自动中止动画（Promise 同样 resolve，await 不会挂起）。需要立即落位时传 { animated: false }。"
+    "setScrollTop / setScrollLeft 默认带 easeInOutCubic 缓动并返回 Promise；用户滚轮、触摸、拖拽 thumb 或点击轨道会自动中止动画（Promise 同样 resolve，await 不会挂起）。需要立即落位时传 { animated: false }。",
+    "命令式滚动同样会派发 scroll 事件，非常驻模式下滚动条会淡入约 hideDelay 毫秒；打开面板时定位选中项这类非用户发起的滚动，应传 { silent: true }，否则面板一出现滚动条就闪现。",
+    "verticalOffset 默认 0，不改变原有几何；负数或非有限值按 0，过大值夹至内缩后的可用高度。它仅从纵向轨道、可视高度与内容高度中扣除固定区域，不改变原生最大滚动距离或替使用方固定头部。禁用固定、隐藏表头时传 0，动态变化自动刷新。",
+    "scrollTo({ top, left }, options) 返回 Promise<void>，默认动画，两轴共用同一 rAF 进度；未指定轴不会写入，目标夹紧至原生合法范围。每次新请求都会取消旧动画，因此连续两个默认动画 setter 仍是后者接管，应改用单次双轴 scrollTo。",
+    "scrollTo 的动画完成或被 stopScroll、用户滚轮/触摸/拖拽/轨道点击、新请求、卸载打断时都会 resolve；resolve 不保证已到目标。传 animated: false、duration: 0 或系统启用 prefers-reduced-motion: reduce 时立即定位，旧 setter 同样遵从减少动态效果偏好。"
   ]
 }

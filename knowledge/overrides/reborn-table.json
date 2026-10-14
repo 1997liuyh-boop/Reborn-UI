@@ -1,0 +1,65 @@
+{
+  "whenToUse": [
+    "按列比较订单、人员或报销记录时，使用 data 与 columns，或通过 RebornTableColumn 声明列。",
+    "长表或宽表需要保留上下文时，使用 height / maxHeight + fixedHeader 固定表头，并为固定列指定 fixed 与 width；文本截断时用 showOverflowTooltip 查看完整内容。",
+    "批量处理或单选记录时，使用 selection / radio 列与 selectedKeys；当前行高亮使用 highlightCurrentRow 与 currentRowKey，跨数据选择在选择列配置 reserveSelection。",
+    "服务端分页查询或层级明细展示时，分别使用 remote + pagination.total + change，或 treeProps + expandedRowKeys；按需加载子行用 lazy + load，金额汇总用 showSummary 与 summaryMethod。"
+  ],
+  "whenNotToUse": [
+    "仅展示单条记录的字段和值时，改用 reborn-descriptions。",
+    "只浏览或选择层级节点而不需要多列比较时，改用 reborn-tree 或 reborn-tree-select。",
+    "UniApp、海量数据虚拟滚动、电子表格式编辑或拖拽列宽需求：此组件不支持，本库暂无对应表格替代，需自行实现或选择专用表格库。"
+  ],
+  "pitfalls": [
+    "仅 Web；RebornTable.vue 与 RebornTableColumn.vue 位于同一 reborn-table 目录。数据使用 data，列使用 prop / label，不提供 dataSource 别名。 不承诺完整兼容 Element API；不支持虚拟滚动、拖拽列宽或电子表格式编辑。",
+    "显式传入 columns 时优先于声明列，包含空数组；两种入口不合并。父列 children 或嵌套声明列表示分组表头，行 children 表示树节点。",
+    "五个具名模型为 selectedKeys=[]、expandedRowKeys=[]、currentRowKey=undefined、currentPage=1、pageSize=10，没有默认 modelValue。selection 列的全选框与行复选框固定水平、垂直居中，左右内边距为 8px；普通列仍由 align/headerAlign 控制对齐。",
+    "单选与当前行是两个独立模型，不会由 Table 自动互相绑定。需要点击 radio、点击行、键盘及外部设置/清空同步时，在调用方仅保存 radioCurrentKey，通过双向 computed 将 selectedKeys 映射为 [] 或 [radioCurrentKey]，并绑定 currentRowKey 和 highlightCurrentRow；隐藏 radio 列只改 columns，保持模型绑定。",
+    "row-class-name 为某一行附加 Tailwind 类名，可按行键返回 bg-warning-2、bg-success-2，其余返回空类名保留默认样式；应保留中文状态文字，不必给所有行着色。Demo 只标记陈晨与周宁。",
+    "rowKey 默认 id。跨数据选择须在 selection 列上设置 reserveSelection，并使用跨页稳定唯一的行键；树节点所有层级也必须键唯一。selection-change 返回行对象，不是键数组。",
+    "序号列开启 pagination 后自动计算页偏移：index 回调接收含页偏移的零基索引，格式化 index + 1 即可，默认序号和数字起点也会偏移；不要重复叠加页偏移，每页 3 条时第二页应从 BX-004 开始。展示序号不是 rowKey。",
+    "remote=true 时不进行本地分页、排序或筛选，也不自动请求接口；调用方监听 change，传入当前页 data 与 pagination.total，并处理 loading 及过期响应。total 减少导致当前页越界时会自动钳制 currentPage，并发出 page-change 与 change（action='paginate'）通知重新请求有效页；只在 change 中请求，避免重复调用。",
+    "sortable='custom' 仅发排序事件；filteredValue 是外部受控筛选值，须在 filter-change 后回写。defaultSort 与 defaultExpandAll 仅初始化；默认展开只在初始 expandedRowKeys 为空时展开已有节点，不递归预取新增懒节点。受控模型的服务端首屏与客户端首次渲染保持一致，后续以模型为准，不因刷新再次强制全展开。",
+    "树数据默认映射 children / hasChildren，indent 默认 16px；按根节点分页。树 checkbox 独立、不级联，全选只处理展开可见且可选的行，折叠不清空已选子行。",
+    "lazy 默认 false；开启后需提供 load 与待加载标记，客户端挂载后才请求，SSR 不请求；已有非空 children 优先，不再加载该节点。load(row, treeNode, resolve) 的 treeNode 含 level/expanded/loading/loaded。",
+    "懒加载成功必须调用 resolve(children)，resolve([]) 将节点变为叶子；仅返回数组或让 Promise<void> 完成不会结束加载。throw / reject 清除加载状态，需折叠再展开重试；折叠后晚到的有效结果仅缓存，不重新展开。",
+    "data 数组替换、节点删除或替换、rowKey 配置或行键变化、子节点数组引用变化、卸载会忽略旧结果；切换 lazy、load 或 treeProps 字段映射也会清除缓存。组件不取消底层请求，需要取消时由调用方处理。",
+    "默认 size=md，lg/md/sm 单行高度为 56/48/36px；文字沿用 text-base font-medium text-gray-9 的 14px / 22px 与 500 字重，不额外覆盖行高。hover 与可选表头背景使用灰阶 2，边框灰阶 3，多行内容可撑高。",
+    "pagination 默认关闭；本地处理顺序为筛选、排序、分页。summaryMethod 接收本地处理后的全部根节点，remote 下仅接收传入数据，不能以当前页之和代替远程总合计。",
+    "spanMethod 返回跨度数组或对象，被覆盖格返回 [0,0]；排序、筛选和分页会改变索引及相邻分组，应按实际显示顺序计算合并。纵向合并块内的展开详情行延后插入到整个合并块末尾，保留同一张表，避免 rowspan 将详情行计入跨度而挤占详情内容。",
+    "表级 cell 和列默认插槽作用域为 row/column/$index/columnIndex，表头为 column/$index；列 slotName 可指定内容插槽，亦支持 cell-列标识 与 header-列标识，列标识优先 columnKey，其次 prop。分组列 default 用于子列。",
+    "formatter 的字符串按文本处理，不注入 HTML。showOverflowTooltip 支持 boolean 或 TableTooltipOptions，表级默认 false，列级 false 可关闭；只有真实溢出时才复用 RebornTooltip，支持鼠标悬停和键盘聚焦，不再使用原生 title。tooltipOptions 与 tooltipFormatter 不会单独开启提示。",
+    "fixedHeader 默认 true，但仅存在 height/maxHeight 时固定表头，false 可禁用。固定表头时纵向轨道从实际表头底部开始，只占表体；关闭固定或 showHeader=false 后恢复整个滚动区高度。固定列应指定 width 并保留不透明背景，Demo 提供十列实际字段且保留左右固定。tableLayout 默认 fixed，auto 按内容分配宽度，长内容可撑宽，因此不保证 ellipsis 或溢出提示。",
+    "TableExpose.scrollTo(options: TableScrollToOptions): Promise<void> 接受 { top?: number; left?: number; behavior?: 'auto' | 'smooth'; duration?: number }。位置单位 px，默认 auto 立即定位，smooth 用同一动画同步两轴，duration 可选且单位 ms，未指定的轴保持原位置。setScrollTop(value) / setScrollLeft(value) 仍立即定位，返回 void；需要两轴平滑复位时用一次 scrollTo({ top: 0, left: 0, behavior: 'smooth' })。",
+    "RebornText 当前没有 defineModel，不能传无效 v-model；单元格用 value 绑定数值，type='amount' 而非 price，并用 currency='¥' 显示货币符号。Demo 金额大于 1000 使用 error，否则 primary；行内 RebornButton size='sm' 的查看、删除使用 click.stop，删除仅影响本示例独立数据。",
+    "自定义金额表头使用 reborn-input-number 目录的 RebornInputNumber，真实 v-model 驱动最小金额筛选；默认回车或失焦提交，清空为 null 并恢复全部数据。Demo 的配置式与声明式表头共用同一筛选模型和结果。",
+    "expand 插槽可嵌套 RebornTable，父行按稳定行键关联各自明细；父表边框、子表边框由两个 RebornSwitch 独立绑定 border，不是额外 Table props。Demo 多选使用两批各八条的独立副本，不改变合并或分页示例的数据。",
+    "当前行高亮使用品牌二阶 bg-brand-2（设计中的 bg-color-2），悬停时保留；勾选行和普通悬停使用 bg-gray-2。hover=true 时悬停纵向合并格会高亮跨度内所有数据行，悬停普通格会高亮当前行及相交合并格，不扩散到其他行或合计。",
+    "表体和展开详情使用上边框分隔行，底线由表格统一绘制；border 的底框向内叠绘，内容撑满时与表格底线重合，短内容或 append 前仍保留分隔线。分组表头和合并格按逻辑列跨度判断右边界，不能用 last-child 替代。",
+    "提示选项按同名字段从低到高合并：table.tooltipOptions < table.showOverflowTooltip 对象 < column.tooltipOptions < column.showOverflowTooltip 对象。仅支持 placement、openDelay、closeDelay、arrow、disabled、color、ui，不是其他表格库 Tooltip 的完整 API。",
+    "提示内容优先级为 tooltip 插槽 > 列 tooltipFormatter > 表 tooltipFormatter > 实际渲染文本。TableTooltipScope 包含 row/column/$index/columnIndex/cellValue/content，cellValue 为原始值，content 为插槽或 formatter 渲染后的显示文本。"
+  ],
+  "related": [
+    "reborn-descriptions",
+    "reborn-tree",
+    "reborn-pagination",
+    "reborn-checkbox",
+    "scrollbar"
+  ],
+  "examples": [
+    {
+      "title": "自定义列模板",
+      "description": "声明列使用 RebornText 的真实 value 与 amount 类型格式化金额，超过 1000 元使用错误色。",
+      "platform": "web",
+      "source": "manual",
+      "code": "<script setup lang=\"ts\">\nimport RebornTable from '~/components/reborn/ui/reborn-table/RebornTable.vue'\nimport RebornTableColumn from '~/components/reborn/ui/reborn-table/RebornTableColumn.vue'\nimport RebornText from '~/components/reborn/ui/reborn-text/RebornText.vue'\nconst data = [{ id: 1, name: '林晓', amount: 1280 }]\n</script>\n<template>\n  <RebornTable :data=\"data\" row-key=\"id\" aria-label=\"报销明细\">\n    <RebornTableColumn prop=\"name\" label=\"姓名\" />\n    <RebornTableColumn prop=\"amount\" label=\"金额\" align=\"right\">\n      <template #default=\"{ row }\"><RebornText :value=\"Number(row.amount)\" type=\"amount\" currency=\"¥\" :color=\"Number(row.amount) > 1000 ? 'error' : 'primary'\" class=\"text-base\" /></template>\n    </RebornTableColumn>\n  </RebornTable>\n</template>"
+    },
+    {
+      "title": "两轴平滑复位",
+      "description": "scrollTo 一次协调两轴；省略 behavior 时立即定位，原有两个定位方法仍立即执行。",
+      "platform": "web",
+      "source": "manual",
+      "code": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport RebornTable from '~/components/reborn/ui/reborn-table/RebornTable.vue'\nimport RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'\nimport type { TableExpose } from '~/components/reborn/ui/reborn-table/table.types'\nconst table = ref<TableExpose>()\nconst data = Array.from({ length: 12 }, (_, id) => ({ id, name: `记录 ${id + 1}`, note: '横向与纵向滚动后复位' }))\nconst columns = [{ prop: 'name', label: '姓名', width: 120 }, { prop: 'note', label: '说明', width: 1200 }]\n</script>\n<template>\n  <RebornButton size=\"sm\" @click=\"table?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })\">回到左上角</RebornButton>\n  <RebornTable ref=\"table\" :data=\"data\" :columns=\"columns\" :height=\"240\" />\n</template>"
+    }
+  ]
+}

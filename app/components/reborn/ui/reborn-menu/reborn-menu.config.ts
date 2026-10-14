@@ -1,8 +1,9 @@
 import type { ClassValue } from "clsx";
-import type { ComputedRef, ModelRef } from "vue";
+import type { ComputedRef, ModelRef, VNodeChild } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 import type { TooltipUI } from "../reborn-tooltip/reborn-tooltip.config";
 import type { Placement } from "~/lib/placement";
+import { Comment as CommentVNode, isVNode, Static as StaticVNode } from "vue";
 import { tv } from "~/lib/tv";
 
 /** 父子组件通信用的 provide/inject 键 */
@@ -134,6 +135,8 @@ export interface MenuUI {
   menuItemTitle?: ClassValue;
   /** 菜单项图标 */
   menuItemIcon?: ClassValue;
+  /** 折叠态下替代缺失图标的标题首字，仅垂直菜单的一级条目在没有 icon 插槽时渲染 */
+  menuItemIconFallback?: ClassValue;
   /** 菜单项右侧额外内容 */
   menuItemExtra?: ClassValue;
   /** 子菜单展开箭头 */
@@ -260,6 +263,33 @@ export interface MenuContext {
 /** 平铺展开时每下沉一层子菜单增加的缩进量（像素） */
 export const MENU_INLINE_INDENT = 16;
 
+/**
+ * 从插槽渲染出的 VNode 里取出纯文本。
+ * 只展开文本节点、Fragment 与原生元素；组件节点直接跳过——组件的文字要等它自己渲染后才存在，
+ * 此刻手里只有 props，硬取会拿到错误的内容。注释节点与静态节点（children 是 HTML 串）同样跳过。
+ */
+function getVNodeText(nodes: VNodeChild): string {
+  if (nodes == null || typeof nodes === "boolean") return "";
+  if (typeof nodes === "string" || typeof nodes === "number") return String(nodes);
+  if (Array.isArray(nodes)) return nodes.map(getVNodeText).join("");
+  if (!isVNode(nodes)) return "";
+  if (nodes.type === CommentVNode || nodes.type === StaticVNode) return "";
+  if (typeof nodes.type === "object" || typeof nodes.type === "function") return "";
+  if (typeof nodes.children === "string") return nodes.children;
+  if (Array.isArray(nodes.children)) return getVNodeText(nodes.children as VNodeChild);
+  return "";
+}
+
+/**
+ * 折叠态无图标时的兜底字符：取标题插槽的首字，插槽里取不到文字时退回 fallback（MenuItem 的 title / SubMenu 的 index）。
+ * Array.from 按码点切分，首字是 emoji 或生僻字时不会被切成半个代理对；英文首字母统一大写，
+ * 否则「dashboard / Settings」这类大小写混排的菜单在窄轨里会一列大写一列小写。
+ */
+export function getMenuFallbackChar(nodes: VNodeChild, fallback?: string): string {
+  const text = getVNodeText(nodes).trim() || fallback?.trim() || "";
+  return (Array.from(text)[0] ?? "").toUpperCase();
+}
+
 const theme = tv({
   slots: {
     root: "relative shadow-sm bg-gray-1 transition-[width] duration-300 ease-in-out",
@@ -281,6 +311,11 @@ const theme = tv({
     // 两条曲线错开会把标题左边缘先往左拽 5px 再推回 9px（实测 398→393→402）。
     menuItemIcon:
       "flex w-5 shrink-0 items-center justify-center transition-all duration-300 ease-in-out",
+    // 无图标条目的首字兜底：展开态常驻 DOM 但不占位——w-0 收掉自身宽度，-mr-2 抵掉它与标题之间
+    // 那条 gap-2，标题左边缘与不渲染兜底时逐像素相同；折叠态由 collapse 变体撑到 w-8 并去掉负边距。
+    // 不用 v-if 按折叠态挂载：挂载是瞬时的，首字会在宽度动画第 0 帧直接冒出来，而宽度与透明度都能过渡。
+    menuItemIconFallback:
+      "-mr-2 flex w-0 shrink-0 items-center justify-center overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-in-out",
     // 尾部附加文本：取规范内的 text-sm(12px)，比标题低一档
     menuItemExtra: "ml-auto shrink-0 text-sm text-gray-5 transition-all duration-300 ease-in-out",
     menuItemArrow:
@@ -293,7 +328,12 @@ const theme = tv({
     menuItemGroup: "flex flex-col",
     // 分组内条目间距 4px，与根级垂直菜单及浮层内容的 gap-y-1 对齐
     menuItemGroupContent: "flex flex-col gap-y-1",
-    menuItemGroupTitle: "px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-5",
+    // before 伪元素是折叠态的分隔线：展开态透明，折叠态文字转透明、线显形，行高不变，
+    // 分组之间的间距因此在折叠前后保持一致。
+    // truncate 写在基础槽而不是折叠变体里：展开动画第 0 帧变体就已切回展开态，宽度却还是 64px，
+    // 若此时才放开换行，标题会先折成两三行把整列往下顶，再随宽度恢复缩回一行。
+    menuItemGroupTitle:
+      "relative truncate px-4 py-2 text-sm font-bold uppercase tracking-wider text-gray-5 transition-colors duration-300 before:absolute before:inset-x-4 before:top-1/2 before:h-px before:bg-gray-2 before:opacity-0 before:transition-opacity before:duration-300",
     menuDivider: "my-1 list-none",
   },
   variants: {
@@ -335,8 +375,12 @@ const theme = tv({
         // 又共用同一条 300ms 曲线，所以动画全程内容既不溢出也不留空，
         // 标题左边缘只有 398→402 这 4px 的单调位移（同向、朝图标那侧），全程没有回摆。
         menuItemIcon: "w-8",
+        // 首字兜底与图标框同宽同位；负边距与间隙同步归零，二者之和全程为 0，首字左边缘不会跟着摆动
+        menuItemIconFallback: "mr-0 w-8 opacity-100",
         // 标题归零后要一并收掉图标与标题之间的 8px 间隙，否则图标会被挤到轨道中线左侧
         menuItemContent: "gap-0",
+        // 窄轨放不下分组标题：文字转透明、改由分隔线表示分组边界
+        menuItemGroupTitle: "text-transparent before:opacity-100",
       },
       false: {},
     },
@@ -346,6 +390,8 @@ const theme = tv({
         // 一级菜单：font-weight 500 / 14px / gray-10
         // 注意：本项目字号阶梯整体下移一档（typography.css），14px 对应 text-base 而非 text-sm
         menuItemTitle: "text-base font-medium text-gray-10",
+        // 首字兜底只出现在一级条目上，字号字重与灰阶跟标题走，折叠前后同一条目看起来是同一个字
+        menuItemIconFallback: "text-base font-medium text-gray-10",
       },
       sub: {
         // 次级菜单：14px / gray-9
@@ -356,6 +402,7 @@ const theme = tv({
       true: {
         // 投影只在有背景块时才成立，已下沉到 active + showActiveBackground 的复合变体
         menuItemTitle: "font-semibold",
+        menuItemIconFallback: "font-semibold",
       },
       false: {},
     },
@@ -380,6 +427,7 @@ const theme = tv({
         // ✅ 修复：改用规范要求的 text-gray-5 + cursor-not-allowed，交互拦截交给各 handler 的 disabled 前置判断。
         menuItem: "cursor-not-allowed text-gray-5",
         menuItemTitle: "text-gray-5",
+        menuItemIconFallback: "text-gray-5",
         menuItemExtra: "text-gray-5",
       },
       false: {},
@@ -389,6 +437,7 @@ const theme = tv({
       true: {
         menuItem: "text-error",
         menuItemTitle: "text-error",
+        menuItemIconFallback: "text-error",
       },
       false: {},
     },
@@ -411,9 +460,11 @@ const theme = tv({
         menuItemContent: "transition-none",
         menuItemTitle: "transition-none",
         menuItemIcon: "transition-none",
+        menuItemIconFallback: "transition-none",
         menuItemExtra: "transition-none",
         menuItemArrow: "transition-none",
         subMenuPopup: "transition-none",
+        menuItemGroupTitle: "transition-none before:transition-none",
       },
     },
     dashed: {
@@ -566,6 +617,7 @@ const theme = tv({
       active: true,
       class: {
         menuItemTitle: "text-inherit",
+        menuItemIconFallback: "text-inherit",
       },
     },
     {
@@ -692,6 +744,7 @@ const theme = tv({
       class: {
         menuItem: "text-gray-5 hover:text-gray-5",
         menuItemTitle: "text-gray-5 group-hover:text-gray-5",
+        menuItemIconFallback: "text-gray-5",
       },
     },
   ],

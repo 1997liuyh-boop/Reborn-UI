@@ -19,6 +19,8 @@ export interface DescriptionsItemProps {
   label?: string;
   /** 包含列的数量，'filled' 表示铺满当前行剩余部分，也可按断点取值 */
   span?: DescriptionsSpan;
+  /** 占据的数据行数，默认 1；垂直布局的一组标签与内容算一行 */
+  rowspan?: number;
   /** 单独覆盖本项的冒号显隐，不传时跟随父级 colon */
   colon?: boolean;
   /** 追加到本项标签节点的类名 */

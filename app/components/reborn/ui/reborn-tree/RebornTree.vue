@@ -13,9 +13,17 @@ import type {
   TreeShowLineConfig,
   TreeUI,
 } from "./reborn-tree.config";
+import type { TreeConductResult } from "./useTree";
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from "vue";
 import { cn } from "~/lib/utils";
 import theme from "./reborn-tree.config";
+import {
+  ancestorKeys,
+  buildTreeEntities,
+  conductCheck as conductTreeCheck,
+  conductUncheck,
+  descendantKeys,
+} from "./useTree";
 
 /**
  * 树组件属性接口（对齐 Ant Design Tree，React 专属项做了 Vue 化改造：
@@ -60,7 +68,10 @@ export interface RebornTreeProps {
   draggable?: boolean | ((node: TreeDataNode) => boolean) | TreeDraggableConfig;
   /** 按需筛选节点：返回 true 的节点标题高亮 */
   filterTreeNode?: (node: TreeDataNode) => boolean;
-  /** 设置虚拟滚动容器高度（像素），设置后内部节点不再支持横向滚动 */
+  /**
+   * 滚动区最大高度（像素）：内容不足时按内容撑开，超出后在区内滚动；
+   * 设置后默认启用虚拟滚动，内部节点不再支持横向滚动
+   */
   height?: number;
   /** 虚拟滚动的行高（像素）。Vue 适配新增：拍平定高渲染需要显式行高做滚动换算 */
   itemHeight?: number;
@@ -193,45 +204,7 @@ const fields = computed(() => ({
  * 把 treeData 构建成携带父子引用与层级信息的实体树。
  * 展开、勾选联动、拍平渲染都只依赖实体，不再反查原始数据
  */
-const entitiesState = computed(() => {
-  const map = new Map<TreeKey, TreeEntity>();
-  const roots: TreeEntity[] = [];
-  /** 按层级分桶，勾选联动自底向上归并时用 */
-  const levels: TreeEntity[][] = [];
-
-  const walk = (
-    nodes: TreeDataNode[],
-    parent: TreeEntity | null,
-    level: number,
-    ancestorIsLast: boolean[],
-  ) => {
-    nodes.forEach((node, index) => {
-      const key = node[fields.value.key] as TreeKey;
-      const entity: TreeEntity = {
-        key,
-        title: String(node[fields.value.title] ?? ""),
-        node,
-        parent,
-        children: [],
-        level,
-        isLastInLevel: index === nodes.length - 1,
-        ancestorIsLast,
-      };
-      map.set(key, entity);
-      (levels[level] ??= []).push(entity);
-      if (parent) parent.children.push(entity);
-      else roots.push(entity);
-
-      const children = node[fields.value.children] as TreeDataNode[] | undefined;
-      if (Array.isArray(children) && children.length > 0) {
-        walk(children, entity, level + 1, [...ancestorIsLast, entity.isLastInLevel]);
-      }
-    });
-  };
-
-  walk(props.treeData, null, 0, []);
-  return { map, roots, levels };
-});
+const entitiesState = computed(() => buildTreeEntities(props.treeData, fields.value));
 
 /** 节点是否整体禁用（树级禁用或节点自带 disabled） */
 function isDisabled(entity: TreeEntity): boolean {
@@ -269,29 +242,6 @@ function isLeaf(entity: TreeEntity): boolean {
   if (entity.node.isLeaf !== undefined) return entity.node.isLeaf;
   if (entity.children.length > 0) return false;
   return props.loadData ? loadedSet.value.has(entity.key) : true;
-}
-
-/** 收集实体的全部后代 key（不含自身） */
-function descendantKeys(entity: TreeEntity): TreeKey[] {
-  const out: TreeKey[] = [];
-  const stack = [...entity.children];
-  while (stack.length) {
-    const cur = stack.pop()!;
-    out.push(cur.key);
-    stack.push(...cur.children);
-  }
-  return out;
-}
-
-/** 收集实体的全部祖先 key（不含自身） */
-function ancestorKeys(entity: TreeEntity): TreeKey[] {
-  const out: TreeKey[] = [];
-  let cur = entity.parent;
-  while (cur) {
-    out.push(cur.key);
-    cur = cur.parent;
-  }
-  return out;
 }
 
 /** 给一批 key 补全各自的祖先 key */
@@ -392,6 +342,8 @@ async function maybeLoadData(entity: TreeEntity) {
     innerLoadedKeys.value = keys;
     loadedKeysModel.value = keys;
     emit("load", keys, { node: entity.node });
+  } catch {
+    // 加载失败时保留未加载状态，允许下次展开重试，并避免未处理的 Promise 拒绝。
   } finally {
     loadingKeys.value.delete(entity.key);
   }
@@ -423,38 +375,8 @@ const innerHalfCheckedKeys = ref<TreeKey[]>([]);
  * 父子联动归一：以给定 key 为种子，向下填满后代、向上归并父级，
  * 并推导半选集合。禁用节点阻断传导。树外的未知 key 原样保留在 checked 中
  */
-function conductCheck(seed: TreeKey[]): { checked: Set<TreeKey>; half: Set<TreeKey> } {
-  const { map, levels } = entitiesState.value;
-  const checked = new Set<TreeKey>(seed);
-  const half = new Set<TreeKey>();
-
-  // 向下：勾选的节点把所有未被禁用的后代一并勾上（禁用子树整体跳过）
-  for (const key of seed) {
-    const entity = map.get(key);
-    if (!entity || isCheckConductBlocked(entity)) continue;
-    const stack = [...entity.children];
-    while (stack.length) {
-      const cur = stack.pop()!;
-      if (isCheckConductBlocked(cur)) continue;
-      checked.add(cur.key);
-      stack.push(...cur.children);
-    }
-  }
-
-  // 向上：自底向上归并，可勾选子级全选即父级全选，部分选中即父级半选
-  for (let level = levels.length - 1; level >= 0; level--) {
-    for (const entity of levels[level] ?? []) {
-      if (entity.children.length === 0 || isCheckConductBlocked(entity)) continue;
-      const conductable = entity.children.filter((c) => !isCheckConductBlocked(c));
-      if (conductable.length === 0) continue;
-      const allChecked = conductable.every((c) => checked.has(c.key));
-      const someChecked = conductable.some((c) => checked.has(c.key) || half.has(c.key));
-      if (allChecked) checked.add(entity.key);
-      else if (someChecked && !checked.has(entity.key)) half.add(entity.key);
-    }
-  }
-
-  return { checked, half };
+function conductCheck(seed: TreeKey[]): TreeConductResult {
+  return conductTreeCheck(seed, entitiesState.value, isCheckConductBlocked);
 }
 
 /** 实际生效的勾选/半选集合：受控值优先，非 checkStrictly 下总是经过联动归一 */
@@ -514,12 +436,7 @@ function handleCheck(entity: TreeEntity, targetChecked: boolean, event: Event) {
     payload = checkedList;
   } else {
     // 取消勾选：先摘掉自身、全部后代与祖先，再重新联动归一
-    // （祖先必须摘：它们不再满足「子级全选」；兄弟子树在归一时会自动把各自父链补回来）
-    const rest = new Set(checkedSet.value);
-    rest.delete(entity.key);
-    descendantKeys(entity).forEach((k) => rest.delete(k));
-    ancestorKeys(entity).forEach((k) => rest.delete(k));
-    const result = conductCheck([...rest]);
+    const result = conductUncheck(checkedSet.value, entity, entitiesState.value, isCheckConductBlocked);
     checkedList = [...result.checked];
     halfList = [...result.half];
     innerCheckedKeys.value = checkedList;
@@ -643,10 +560,20 @@ function handleScroll(event: Event) {
   scrollTop.value = (event.target as HTMLElement).scrollTop;
 }
 
-/** 根容器内联样式：给定 height 即成为滚动容器，且按规格关闭横向滚动 */
+/**
+ * 根容器内联样式：height 作为最大高度（对齐 antd），节点少时按内容撑开、超出后成为滚动容器，
+ * 且按规格关闭横向滚动。
+ * 虚拟滚动下关闭浏览器的滚动锚定：切片随滚动增删行会让锚点行的位置变化，
+ * 浏览器为「保持锚点不动」会反向改写 scrollTop，表现为滚动条下滑后又被拉回
+ */
 const rootStyle = computed(() =>
   props.height !== undefined
-    ? { height: `${props.height}px`, overflowY: "auto" as const, overflowX: "hidden" as const }
+    ? {
+        maxHeight: `${props.height}px`,
+        overflowY: "auto" as const,
+        overflowX: "hidden" as const,
+        overflowAnchor: useVirtual.value ? ("none" as const) : undefined,
+      }
     : undefined,
 );
 
@@ -1023,9 +950,12 @@ defineExpose({
     <!-- 虚拟滚动时由占位层撑出总高度，列表整体位移到切片起点 -->
     <div :style="useVirtual ? { height: `${totalHeight}px`, position: 'relative' } : undefined">
       <!-- 展开/收起的行级过渡由 TransitionGroup 承担：新行走 enter、消失行走 leave、
-           existing 行靠 FLIP 的 move 类平滑让位；动画关闭时切到无 CSS 的过渡名等于即时增删 -->
+           existing 行靠 FLIP 的 move 类平滑让位。
+           动画关闭时必须同时关掉 css：仅换成无样式的过渡名，离场行仍会在 DOM 里多留两帧，
+           虚拟滚动下这些残留行会把可见行整体顶偏；过渡名仍要换掉，否则 move 类会让切片位移带上动画 -->
       <TransitionGroup
         tag="ul" :name="listAnimated ? 'reborn-tree' : 'reborn-tree-none'" :class="ui.list()"
+        :css="listAnimated"
         :style="useVirtual ? { transform: `translateY(${offsetY}px)` } : undefined" role="group"
       >
         <li

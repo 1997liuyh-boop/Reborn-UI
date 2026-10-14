@@ -24,12 +24,14 @@ interface Props {
    * "auto"（默认）按容器实际 border-radius 自动推算；传数值则固定为该值，传 0 关闭内缩。
    */
   inset?: number | "auto";
+  /** 顶部固定内容高度（px），仅从纵向轨道与表体视窗中排除，默认 0 */
+  verticalOffset?: number;
   /**
    * 轨道是否显形。
    * false（默认）为完全透明的悬浮感；true 使用内置浅灰轨道并自动适配暗色；传颜色字符串则用该颜色。
    */
   track?: boolean | string;
-  /** 命令式滚动（setScrollTop / setScrollLeft）的默认动画时长（ms），传 0 关闭动画 */
+  /** 命令式滚动的默认动画时长（ms），传 0 关闭动画 */
   scrollDuration?: number;
   /** 附加到内部滚动层的类名，用于设置内边距等 */
   wrapClass?: string;
@@ -43,6 +45,12 @@ interface ScrollToOptions {
   animated?: boolean;
   /** 本次动画时长（ms），缺省取 scrollDuration */
   duration?: number;
+  /**
+   * 是否静默滚动，默认 false。
+   * 为 true 时本次滚动不会让滚动条淡入（悬停、拖拽照常显示），
+   * 用于打开面板时定位选中项这类非用户发起的滚动，避免滚动条无故闪现。
+   */
+  silent?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -51,6 +59,7 @@ const props = withDefaults(defineProps<Props>(), {
   horizontal: true,
   hideDelay: 800,
   inset: "auto",
+  verticalOffset: 0,
   track: false,
   scrollDuration: 400,
 });
@@ -79,6 +88,8 @@ const horizontalBar = ref<BarState>({ active: false, size: 0, offset: 0 });
 
 /** 轨道两端实际生效的内缩（px）：由 inset 属性指定，或按容器 border-radius 自动推算 */
 const insetValue = ref(0);
+/** 非零顶部偏移只覆盖纵轨；默认继续使用原有 CSS 内缩定位 */
+const verticalTrackStyle = ref<{ top?: string; height?: string }>({});
 
 /** 当前正在拖拽的方向，null 表示未拖拽 */
 const dragging = ref<"y" | "x" | null>(null);
@@ -94,16 +105,24 @@ let resizeObserver: ResizeObserver | null = null;
 let scrollFrame: number | null = null;
 /** 当前动画对应的 Promise resolve，动画结束或被打断时调用 */
 let scrollResolve: (() => void) | null = null;
+/**
+ * 下一次 scroll 事件来自静默滚动。
+ * scroll 事件异步派发且同帧多次写入会合并为一次，因此用标记而非同步判断，
+ * 由 onScroll 消费后清除。
+ */
+let silentPending = false;
 
 /** 拖拽起点：鼠标坐标与起始滚动偏移 */
 let dragStartPos = 0;
 let dragStartScroll = 0;
+/** 拖拽开始时轨道的视口像素 / 布局像素比例，抵消祖先缩放 */
+let dragScale = 1;
 
 /** 尺寸 prop 转为 CSS 变量值；纯数字按 px 处理，其余原样透传（如 "0.5rem"） */
 const sizeValue = computed(() => {
   const raw = props.size;
   if (raw === undefined || raw === null || raw === "") return undefined;
-  return typeof raw === "number" || /^\d+(\.\d+)?$/.test(String(raw)) ? `${raw}px` : String(raw);
+  return typeof raw === "number" || /^\d+(?:\.\d+)?$/.test(String(raw)) ? `${raw}px` : String(raw);
 });
 
 /** 写到根元素上的 CSS 变量；外部通过 :style 传入的同名变量会覆盖这里的值 */
@@ -158,6 +177,19 @@ function measureInset() {
   insetValue.value = Math.ceil(radius - Math.sqrt(Math.max(radius * radius - dx * dx, 0)));
 }
 
+/** 纵向几何统一排除固定头部；过大的偏移最多占满可用轨道 */
+function getVerticalGeometry(wrap: HTMLElement) {
+  const available = Math.max(wrap.clientHeight - insetValue.value * 2, 0);
+  const requested = Number.isFinite(props.verticalOffset) ? props.verticalOffset : 0;
+  const offset = Math.min(Math.max(requested, 0), available);
+  return {
+    offset,
+    trackLength: available - offset,
+    clientHeight: wrap.clientHeight - offset,
+    scrollHeight: wrap.scrollHeight - offset,
+  };
+}
+
 /** 重新测量并计算两个方向 thumb 的长度与位置 */
 function update() {
   const wrap = wrapRef.value;
@@ -166,12 +198,21 @@ function update() {
   const { clientHeight, scrollHeight, scrollTop, clientWidth, scrollWidth, scrollLeft } = wrap;
   // 轨道两端各内缩一次，thumb 的长度与行程都以轨道长度为基准
   const shrink = insetValue.value * 2;
+  const body = getVerticalGeometry(wrap);
+  verticalTrackStyle.value = {
+    top: body.offset > 0 ? `${insetValue.value + body.offset}px` : undefined,
+    // 正常零偏移保留上下内缩定位，极矮视窗则显式归零，避免轨道盒子反向撑开。
+    height: body.offset > 0 || clientHeight < shrink ? `${body.trackLength}px` : undefined,
+  };
 
   // 纵向：容差 1px，规避亚像素导致的误判
   if (scrollHeight > clientHeight + 1) {
-    const trackLength = Math.max(clientHeight - shrink, 0);
+    const trackLength = body.trackLength;
     // 上限夹到轨道长度，避免容器极矮时 minThumbSize 撑破轨道
-    const thumbSize = Math.min(Math.max((clientHeight / scrollHeight) * trackLength, props.minThumbSize), trackLength);
+    const thumbSize = Math.min(
+      Math.max((body.clientHeight / body.scrollHeight) * trackLength, props.minThumbSize),
+      trackLength,
+    );
     const maxScroll = scrollHeight - clientHeight;
     const maxOffset = trackLength - thumbSize;
     vertical.value = {
@@ -212,6 +253,11 @@ function onScroll() {
   update();
   emit("scroll", { scrollTop: wrap.scrollTop, scrollLeft: wrap.scrollLeft });
 
+  // 静默滚动只同步 thumb 位置，不触发淡入
+  if (silentPending) {
+    silentPending = false;
+    return;
+  }
   if (props.always) return;
   scrolling.value = true;
   if (hideTimer) clearTimeout(hideTimer);
@@ -220,13 +266,28 @@ function onScroll() {
   }, props.hideDelay);
 }
 
+/** 将轨道的视口盒子与布局长度关联，点击和拖拽使用相同坐标换算 */
+function getTrackGeometry(wrap: HTMLElement, track: HTMLElement, axis: "y" | "x") {
+  const rect = track.getBoundingClientRect();
+  const length = axis === "y"
+    ? getVerticalGeometry(wrap).trackLength
+    : Math.max(wrap.clientWidth - insetValue.value * 2, 0);
+  const renderedLength = axis === "y" ? rect.height : rect.width;
+  return {
+    length,
+    start: axis === "y" ? rect.top : rect.left,
+    scale: length > 0 ? renderedLength / length : 0,
+  };
+}
+
 /** 按下 thumb 开始拖拽 */
 function onThumbMouseDown(event: MouseEvent, axis: "y" | "x") {
   // 阻止默认行为避免拖拽时选中文本
   event.preventDefault();
   event.stopPropagation();
   const wrap = wrapRef.value;
-  if (!wrap) return;
+  const track = (event.currentTarget as HTMLElement | null)?.parentElement;
+  if (!wrap || !track) return;
 
   // 用户接管滚动，中止未完成的动画
   stopScroll();
@@ -234,6 +295,7 @@ function onThumbMouseDown(event: MouseEvent, axis: "y" | "x") {
   dragging.value = axis;
   dragStartPos = axis === "y" ? event.clientY : event.clientX;
   dragStartScroll = axis === "y" ? wrap.scrollTop : wrap.scrollLeft;
+  dragScale = getTrackGeometry(wrap, track, axis).scale;
 
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragEnd);
@@ -245,21 +307,22 @@ function onThumbMouseDown(event: MouseEvent, axis: "y" | "x") {
 function onDragMove(event: MouseEvent) {
   const wrap = wrapRef.value;
   const axis = dragging.value;
-  if (!wrap || !axis) return;
+  if (!wrap || !axis || dragScale <= 0) return;
 
   // 轨道被两端内缩，行程要按内缩后的轨道长度换算，否则拖拽与 thumb 会脱节
   const shrink = insetValue.value * 2;
 
   if (axis === "y") {
-    const maxOffset = wrap.clientHeight - shrink - vertical.value.size;
+    const maxOffset = getVerticalGeometry(wrap).trackLength - vertical.value.size;
     const maxScroll = wrap.scrollHeight - wrap.clientHeight;
     if (maxOffset <= 0) return;
-    wrap.scrollTop = dragStartScroll + ((event.clientY - dragStartPos) / maxOffset) * maxScroll;
+    const target = dragStartScroll + ((event.clientY - dragStartPos) / dragScale / maxOffset) * maxScroll;
+    wrap.scrollTop = Math.min(Math.max(target, 0), maxScroll);
   } else {
     const maxOffset = wrap.clientWidth - shrink - horizontalBar.value.size;
     const maxScroll = wrap.scrollWidth - wrap.clientWidth;
     if (maxOffset <= 0) return;
-    wrap.scrollLeft = dragStartScroll + ((event.clientX - dragStartPos) / maxOffset) * maxScroll;
+    wrap.scrollLeft = dragStartScroll + ((event.clientX - dragStartPos) / dragScale / maxOffset) * maxScroll;
   }
 }
 
@@ -280,31 +343,20 @@ function onTrackMouseDown(event: MouseEvent, axis: "y" | "x") {
   // 用户接管滚动，中止未完成的动画
   stopScroll();
 
-  // rect 是轨道自身的盒子，已含两端内缩，点击点直接相对轨道起点计算即可
-  const rect = track.getBoundingClientRect();
-  if (axis === "y") {
-    const thumbSize = vertical.value.size;
-    const maxOffset = rect.height - thumbSize;
-    const maxScroll = wrap.scrollHeight - wrap.clientHeight;
-    if (maxOffset <= 0) return;
-    // 让 thumb 中心对齐点击点，并夹紧到合法区间
-    const target = Math.min(Math.max(event.clientY - rect.top - thumbSize / 2, 0), maxOffset);
-    wrap.scrollTop = (target / maxOffset) * maxScroll;
-  } else {
-    const thumbSize = horizontalBar.value.size;
-    const maxOffset = rect.width - thumbSize;
-    const maxScroll = wrap.scrollWidth - wrap.clientWidth;
-    if (maxOffset <= 0) return;
-    const target = Math.min(Math.max(event.clientX - rect.left - thumbSize / 2, 0), maxOffset);
-    wrap.scrollLeft = (target / maxOffset) * maxScroll;
-  }
+  const { length, start, scale } = getTrackGeometry(wrap, track, axis);
+  const thumbSize = axis === "y" ? vertical.value.size : horizontalBar.value.size;
+  const maxOffset = length - thumbSize;
+  if (maxOffset <= 0 || scale <= 0) return;
+  // 鼠标与 rect 都是视口坐标，先还原为布局像素，再对齐滑块中心。
+  const position = ((axis === "y" ? event.clientY : event.clientX) - start) / scale;
+  const target = Math.min(Math.max(position - thumbSize / 2, 0), maxOffset);
+  const maxScroll = axis === "y" ? wrap.scrollHeight - wrap.clientHeight : wrap.scrollWidth - wrap.clientWidth;
+  if (axis === "y") wrap.scrollTop = (target / maxOffset) * maxScroll;
+  else wrap.scrollLeft = (target / maxOffset) * maxScroll;
 }
 
-/**
- * 中止进行中的滚动动画。
- * 用户滚轮、拖拽 thumb、点击轨道时都会调用，避免手势与动画互相打架。
- */
-function stopScroll() {
+/** 程序请求只替换动画，保留已写入位移所对应的待派发静默标记 */
+function cancelScrollAnimation() {
   if (scrollFrame !== null) {
     cancelAnimationFrame(scrollFrame);
     scrollFrame = null;
@@ -312,6 +364,16 @@ function stopScroll() {
   // 动画被打断时也要结束等待，避免调用方的 await 永远挂起
   scrollResolve?.();
   scrollResolve = null;
+}
+
+/**
+ * 中止进行中的滚动动画。
+ * 用户滚轮、拖拽 thumb、点击轨道时都会调用，避免手势与动画互相打架。
+ */
+function stopScroll() {
+  cancelScrollAnimation();
+  // 用户接管滚动时作废静默标记，让随后的滚动正常显示滚动条
+  silentPending = false;
 }
 
 /** 缓动曲线 easeInOutCubic：起步与收尾平缓、中段快，观感最接近原生平滑滚动 */
@@ -324,31 +386,50 @@ function easeInOutCubic(t: number) {
  * 目标值会夹紧到 [0, 最大可滚动距离]；返回的 Promise 在动画结束或被打断时 resolve。
  */
 function scrollAxisTo(axis: "y" | "x", value: number, options?: ScrollToOptions): Promise<void> {
+  return scrollTo(axis === "y" ? { top: value } : { left: value }, options);
+}
+
+/** 同一次请求以一条动画时间线驱动两轴；未指定的轴始终不写入 */
+function scrollTo(position: { top?: number; left?: number }, options?: ScrollToOptions): Promise<void> {
   const wrap = wrapRef.value;
   if (!wrap) return Promise.resolve();
 
-  // 新的滚动请求覆盖上一次未完成的动画
-  stopScroll();
+  // 新程序请求覆盖旧动画，但无位移请求不能抹掉上一笔待派发的 scroll 标记。
+  cancelScrollAnimation();
 
-  const maxScroll = Math.max(
-    axis === "y" ? wrap.scrollHeight - wrap.clientHeight : wrap.scrollWidth - wrap.clientWidth,
-    0,
-  );
-  const to = Math.min(Math.max(value, 0), maxScroll);
-  const from = axis === "y" ? wrap.scrollTop : wrap.scrollLeft;
-  const distance = to - from;
+  const hasTop = position.top !== undefined && !Number.isNaN(position.top);
+  const hasLeft = position.left !== undefined && !Number.isNaN(position.left);
+  const fromTop = wrap.scrollTop;
+  const fromLeft = wrap.scrollLeft;
+  const toTop = hasTop
+    ? Math.min(Math.max(position.top!, 0), Math.max(wrap.scrollHeight - wrap.clientHeight, 0))
+    : fromTop;
+  const toLeft = hasLeft
+    ? Math.min(Math.max(position.left!, 0), Math.max(wrap.scrollWidth - wrap.clientWidth, 0))
+    : fromLeft;
+  const distanceTop = toTop - fromTop;
+  const distanceLeft = toLeft - fromLeft;
   const duration = options?.duration ?? props.scrollDuration;
   const animated = options?.animated ?? true;
+  const silent = options?.silent ?? false;
+  const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  /** 按轴写入滚动偏移 */
-  const apply = (offset: number) => {
-    if (axis === "y") wrap.scrollTop = offset;
-    else wrap.scrollLeft = offset;
+  /** 同一帧内写入请求指定的轴，保留已有静默滚动的异步事件标记 */
+  const apply = (progress: number) => {
+    const beforeTop = wrap.scrollTop;
+    const beforeLeft = wrap.scrollLeft;
+    if (hasTop) wrap.scrollTop = fromTop + distanceTop * progress;
+    if (hasLeft) wrap.scrollLeft = fromLeft + distanceLeft * progress;
+    // 仅实际位移更新标记：无位移保留旧状态，非静默位移则恢复正常淡入。
+    if (wrap.scrollTop !== beforeTop || wrap.scrollLeft !== beforeLeft) silentPending = silent;
   };
 
-  // 关闭动画、时长为 0、已在目标位置或环境无 rAF（如 SSR）时直接落位
-  if (!animated || duration <= 0 || distance === 0 || typeof requestAnimationFrame === "undefined") {
-    apply(to);
+  // 减少动态效果、关闭动画、无位移或环境无 rAF 时直接落位。
+  if (
+    !animated || reducedMotion || !Number.isFinite(duration) || duration <= 0
+    || (distanceTop === 0 && distanceLeft === 0) || typeof requestAnimationFrame === "undefined"
+  ) {
+    apply(1);
     return Promise.resolve();
   }
 
@@ -357,7 +438,7 @@ function scrollAxisTo(axis: "y" | "x", value: number, options?: ScrollToOptions)
     const startTime = performance.now();
     const step = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      apply(from + distance * easeInOutCubic(progress));
+      apply(easeInOutCubic(progress));
       if (progress < 1) {
         scrollFrame = requestAnimationFrame(step);
         return;
@@ -386,6 +467,8 @@ watch(() => props.horizontal, update);
 watch(() => props.size, refresh);
 // 内缩策略切换（auto ↔ 固定值）后立即按新策略重算
 watch(() => props.inset, refresh);
+// 固定头部高度变化或开关切换时同步轨道与 thumb，不等待下一次滚动。
+watch(() => props.verticalOffset, update);
 
 onMounted(() => {
   refresh();
@@ -407,7 +490,7 @@ onBeforeUnmount(() => {
   onDragEnd();
 });
 
-defineExpose({ update, refresh, setScrollTop, setScrollLeft, stopScroll, wrapRef });
+defineExpose({ update, refresh, scrollTo, setScrollTop, setScrollLeft, stopScroll, wrapRef });
 </script>
 
 <template>
@@ -439,6 +522,7 @@ defineExpose({ update, refresh, setScrollTop, setScrollLeft, stopScroll, wrapRef
       v-show="vertical.active"
       class="reborn-scrollbar__bar reborn-scrollbar__bar--vertical"
       :class="{ 'is-visible': barVisible }"
+      :style="verticalTrackStyle"
       @mousedown="onTrackMouseDown($event, 'y')"
     >
       <div

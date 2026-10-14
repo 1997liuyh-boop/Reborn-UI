@@ -2,8 +2,9 @@
 import type { ClassValue } from "clsx";
 import type { SelectTriggerProps } from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import type { SelectFieldUI } from "../reborn-select/reborn-select.config";
-import type { TreeCheckedKeys, TreeDataNode, TreeKey } from "../reborn-tree/reborn-tree.config";
+import type { TreeCheckedKeys, TreeDataNode, TreeEntity, TreeKey } from "../reborn-tree/reborn-tree.config";
 import type { RebornTreeProps } from "../reborn-tree/RebornTree.vue";
+import type { TreeConductResult } from "../reborn-tree/useTree";
 import type { treeSelectColors, treeSelectSizes, TreeSelectUI, TreeSelectValue, treeSelectVariants } from "./reborn-tree-select.config";
 import { computed, nextTick, ref, useId, watch } from "vue";
 import { useFormInject } from "~/composables/useFieldGroup";
@@ -14,15 +15,18 @@ import { splitTriggerUi } from "../reborn-select-trigger/reborn-select-trigger.c
 import RebornSelectTrigger from "../reborn-select-trigger/RebornSelectTrigger.vue";
 import RebornTooltip from "../reborn-tooltip/RebornTooltip.vue";
 import RebornTree from "../reborn-tree/RebornTree.vue";
+import { buildTreeEntities, conductCheck, conductUncheck } from "../reborn-tree/useTree";
 import theme from "./reborn-tree-select.config";
 
 export interface TreeSelectProps {
   /** 层级数据，节点 key 必须在整棵树内唯一 */
   treeData?: TreeDataNode[];
-  /** 自定义标题、唯一标识与子节点字段 */
+  /** 自定义标题、唯一标识与子节点字段；绑定值按 fieldNames.key 指定的字段识别节点，未设置时读取 key */
   fieldNames?: RebornTreeProps["fieldNames"];
-  /** 多选时展示复选框，各节点独立勾选 */
+  /** 多选时展示复选框，默认父子联动勾选 */
   multiple?: boolean;
+  /** 多选时父子勾选互不关联，各节点独立勾选 */
+  checkStrictly?: boolean;
   /** 多选时将超出保留数量的标签折叠为 +N */
   collapseTags?: boolean;
   /** 悬浮展示被折叠的标签，需开启 collapseTags */
@@ -51,9 +55,9 @@ export interface TreeSelectProps {
   showLine?: RebornTreeProps["showLine"];
   /** 展示节点 icon 字段指定的图标 */
   showIcon?: boolean;
-  /** 异步加载子节点，调用方更新 treeData */
+  /** 异步加载子节点，调用方更新 treeData；已加载的节点记录在 loadedKeys 中 */
   loadData?: RebornTreeProps["loadData"];
-  /** 树滚动区高度，单位 px */
+  /** 下拉树的最大高度，单位 px：节点少时面板按内容撑开，超出后在区内滚动 */
   height?: number;
   /** 开启树的定高虚拟滚动 */
   virtual?: boolean;
@@ -61,7 +65,7 @@ export interface TreeSelectProps {
   emptyText?: string;
   /** 浮层传送到 body */
   portal?: boolean;
-  /** 外部点击或按下时收起 */
+  /** 外部按下（默认）或点击时收起，与 RebornSelectTrigger 的默认值保持一致 */
   closeOn?: SelectTriggerProps["closeOn"];
   /** 空间不足时自动向上展开 */
   autoAdjustOverflow?: boolean;
@@ -76,12 +80,12 @@ export interface TreeSelectProps {
 }
 
 const props = withDefaults(defineProps<TreeSelectProps>(), {
-  treeData: () => [], multiple: false, placeholder: "请选择", disabled: false,
+  treeData: () => [], multiple: false, checkStrictly: false, placeholder: "请选择", disabled: false,
   collapseTags: false, collapseTagsTooltip: false, maxCollapseTags: 1, allowSearch: false,
   clearable: false, size: "md", color: "primary", variant: "outlined",
   defaultExpandAll: false, defaultExpandedKeys: () => [], showLine: false,
   showIcon: false, height: 240, virtual: true, emptyText: "暂无数据",
-  portal: true, closeOn: "click", autoAdjustOverflow: true,
+  portal: true, closeOn: "mousedown", autoAdjustOverflow: true,
 });
 
 const emit = defineEmits<{
@@ -98,6 +102,11 @@ const emit = defineEmits<{
 const model = defineModel<TreeSelectValue>({ default: null });
 /** 不传时由树自行维护展开状态。 */
 const expandedKeys = defineModel<TreeKey[]>("expandedKeys");
+/**
+ * 已完成异步加载的节点 key。下拉层收起时会卸载内部树，记录若留在树里会随之清空，
+ * 子级为空的节点再次展开时又会显示箭头并重复请求，所以由选择器自己保存；不传时同样在内部保留。
+ */
+const loadedKeys = defineModel<TreeKey[]>("loadedKeys");
 const { disabled: isDisabled, size: fieldSize, isError, validate } = useFormInject(props);
 const isOpen = ref(false);
 const treeId = useId();
@@ -106,14 +115,18 @@ const searchInput = ref<HTMLInputElement>();
 const isSearching = computed(() => props.allowSearch && isOpen.value);
 const keyword = computed(() => props.allowSearch ? searchValue.value.trim().toLowerCase() : "");
 const searchExpandedKeys = ref<TreeKey[]>([]);
+/** 字段名补齐默认值，搜索、节点索引、父子联动与内部树共用；唯一标识未配置 fieldNames.key 时读取 key。 */
+const fields = computed(() => ({
+  title: props.fieldNames?.title ?? "title",
+  key: props.fieldNames?.key ?? "key",
+  children: props.fieldNames?.children ?? "children",
+}));
 /** 搜索只裁剪展示数据，节点索引与已选值始终基于完整数据。 */
 const filteredTree = computed(() => {
   const keys = new Set<TreeKey>();
   const ancestors: TreeKey[] = [];
   if (!keyword.value) return { data: props.treeData, keys, ancestors };
-  const keyField = props.fieldNames?.key ?? "key";
-  const titleField = props.fieldNames?.title ?? "title";
-  const childrenField = props.fieldNames?.children ?? "children";
+  const { key: keyField, title: titleField, children: childrenField } = fields.value;
   function filter(nodes: TreeDataNode[]): TreeDataNode[] {
     return nodes.flatMap((node) => {
       const source = node[childrenField];
@@ -140,30 +153,46 @@ const trigger = ref<InstanceType<typeof RebornSelectTrigger>>();
 const b = tv(theme);
 const splitUi = computed(() => splitTriggerUi(props.triggerUi));
 const fieldUi = computed(() => splitUi.value.field as SelectFieldUI);
-const selectedKeys = computed<TreeKey[]>(() => {
+/**
+ * 包一层加载函数，在选择器这一侧记录已加载的 key：加载期间收起下拉会卸载内部树，
+ * 树自身的回写会被丢弃，只有这里的记录能保证同一节点不会重复请求。
+ */
+const treeLoadData = computed<RebornTreeProps["loadData"]>(() => {
+  const loadData = props.loadData;
+  if (!loadData) return undefined;
+  return async (node) => {
+    await loadData(node);
+    const key = node[fields.value.key] as TreeKey;
+    const current = loadedKeys.value ?? [];
+    if (!current.includes(key)) loadedKeys.value = [...current, key];
+  };
+});
+/** 基于完整数据建立实体索引：搜索只裁剪展示，联动始终按整棵树推导。 */
+const entities = computed(() => buildTreeEntities(props.treeData, fields.value));
+const isConduct = computed(() => props.multiple && !props.checkStrictly);
+/** 禁用或禁止勾选的节点阻断联动；组件整体禁用只拦截操作，不改变已选值的推导结果。 */
+function isConductBlocked(entity: TreeEntity) {
+  return entity.node.disabled === true || entity.node.disableCheckbox === true;
+}
+const modelKeys = computed<TreeKey[]>(() => {
   if (model.value === null) return [];
   const keys = Array.isArray(model.value) ? model.value : [model.value];
   return props.multiple ? keys : keys.slice(0, 1);
 });
-
-/** 一次遍历建立索引；保留尚未加载的 key，避免异步数据到达前丢失回显。 */
-const nodeMap = computed(() => {
-  const map = new Map<TreeKey, TreeDataNode>();
-  const keyField = props.fieldNames?.key ?? "key";
-  const childrenField = props.fieldNames?.children ?? "children";
-  function visit(nodes: TreeDataNode[]) {
-    for (const node of nodes) {
-      map.set(node[keyField] as TreeKey, node);
-      const children = node[childrenField];
-      if (Array.isArray(children)) visit(children);
-    }
-  }
-  visit(props.treeData);
-  return map;
+/** 联动模式下把绑定值归一为完整的勾选与半选集合；程序化赋值只归一展示，不回写绑定值。 */
+const conducted = computed<TreeConductResult | null>(() =>
+  isConduct.value ? conductCheck(modelKeys.value, entities.value, isConductBlocked) : null);
+const selectedKeys = computed<TreeKey[]>(() => conducted.value ? [...conducted.value.checked] : modelKeys.value);
+/** 内部树固定 checkStrictly，联动结果在这里算好后连同半选一起下发。 */
+const treeCheckedKeys = computed<TreeCheckedKeys>(() => {
+  if (!props.multiple) return [];
+  if (!conducted.value) return selectedKeys.value;
+  return { checked: selectedKeys.value, halfChecked: [...conducted.value.half] };
 });
+/** 找不到节点时以 key 作标签，避免异步数据到达前丢失回显。 */
 const selectedItems = computed(() => selectedKeys.value.map((key) => {
-  const node = nodeMap.value.get(key);
-  return { key, label: String(node?.[props.fieldNames?.title ?? "title"] ?? key),
+  const node = entities.value.map.get(key)?.node;
+  return { key, label: String(node?.[fields.value.title] ?? key),
     disabled: node?.disabled || node?.disableCheckbox };
 }));
 const visibleTags = computed(() => props.collapseTags
@@ -190,10 +219,20 @@ function selectNode(keys: TreeKey[]) {
   updateValue(keys);
   isOpen.value = false;
 }
-function checkNodes(keys: TreeCheckedKeys) {
-  const checked = Array.isArray(keys) ? keys : keys.checked;
-  const hidden = keyword.value ? selectedKeys.value.filter(key => !filteredTree.value.keys.has(key)) : [];
-  updateValue([...new Set([...hidden, ...checked])]);
+function checkNodes(keys: TreeCheckedKeys, info: { checked: boolean; node: TreeDataNode }) {
+  const entity = isConduct.value ? entities.value.map.get(info.node[fields.value.key] as TreeKey) : undefined;
+  if (entity) {
+    // 联动：在完整树上推导，搜索时被隐藏的后代也随父节点一起勾选或取消
+    const result = info.checked
+      ? conductCheck([...selectedKeys.value, entity.key], entities.value, isConductBlocked)
+      : conductUncheck(selectedKeys.value, entity, entities.value, isConductBlocked);
+    updateValue([...result.checked]);
+  } else {
+    // 独立勾选：树只回传当前展示的节点，需并回搜索时被隐藏的已选值
+    const checked = Array.isArray(keys) ? keys : keys.checked;
+    const hidden = keyword.value ? selectedKeys.value.filter(key => !filteredTree.value.keys.has(key)) : [];
+    updateValue([...new Set([...hidden, ...checked])]);
+  }
   if (props.allowSearch) {
     searchValue.value = "";
     nextTick(() => searchInput.value?.focus());
@@ -202,7 +241,11 @@ function checkNodes(keys: TreeCheckedKeys) {
 function removeTag(key: TreeKey, event: MouseEvent) {
   event.stopPropagation();
   if (selectedItems.value.find(item => item.key === key)?.disabled) return;
-  updateValue(selectedKeys.value.filter(value => value !== key));
+  // 联动模式下移除标签等同于在树上取消勾选，后代与祖先随之更新
+  const entity = isConduct.value ? entities.value.map.get(key) : undefined;
+  updateValue(entity
+    ? [...conductUncheck(selectedKeys.value, entity, entities.value, isConductBlocked).checked]
+    : selectedKeys.value.filter(value => value !== key));
 }
 function clear() {
   if (isDisabled.value) return;
@@ -300,11 +343,11 @@ watch(isSearching, async (searching) => {
       <div :class="ui.dropdown({ class: cn('max-h-none overflow-visible', props.ui?.dropdown) })" @keydown="onPanelKeydown">
         <RebornTree
           v-if="filteredTree.data.length" :id="treeId" :key="keyword" v-model:expanded-keys="displayedExpandedKeys"
-          :tree-data="filteredTree.data" :field-names="fieldNames" :selected-keys="multiple ? [] : selectedKeys"
-          :checked-keys="multiple ? selectedKeys : []" :checkable="multiple" check-strictly
+          :tree-data="filteredTree.data" :field-names="fields" :selected-keys="multiple ? [] : selectedKeys"
+          :checked-keys="treeCheckedKeys" :checkable="multiple" check-strictly
           :selectable="!multiple" block-node :disabled="isDisabled" :color="color"
           :default-expand-all="defaultExpandAll" :default-expanded-keys="defaultExpandedKeys"
-          :show-line="showLine" :show-icon="showIcon" :load-data="loadData"
+          :show-line="showLine" :show-icon="showIcon" :load-data="treeLoadData" :loaded-keys="loadedKeys"
           :height="height" :virtual="virtual" :ui="treeUi" @select="selectNode" @check="checkNodes"
         >
           <template v-if="$slots.title" #title="{ node, selected, expanded }">

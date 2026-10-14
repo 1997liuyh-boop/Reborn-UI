@@ -2,11 +2,13 @@
 /**
  * 应用根组件：覆盖 Docus 层的 app.vue
  *
- * 与上游的差异只在导航树：
+ * 与上游的差异：
  * 1. 查询多带出 `platform` / `category` / `series` 字段（queryCollectionNavigation 的 extraFields）；
  * 2. transform 阶段把组件分区从「目录 → 组件」重组为「系列 → 分类 → 组件」（useComponentsCatalog），
- *    侧栏、移动端抽屉、页头 headline 共用；平台开关的裁剪仍在各消费方按档位进行。
- * 其余（i18n 回退、搜索索引、AI 助手面板推移正文）与 Docus 5.6.1 保持一致，升级 Docus 时需对照同步。
+ *    侧栏、移动端抽屉、页头 headline 共用；平台开关的裁剪仍在各消费方按档位进行；
+ * 3. AI 助手面板换成基于 RebornDrawer 的 AppAssistantDrawer。抽屉带遮罩盖在页面上方，
+ *    上游那层「按面板宽度给正文加 margin-right」的推挤随之去掉，否则遮罩下的整站会被挤窄并重排。
+ * 其余（i18n 回退、搜索索引）与 Docus 5.6.1 保持一致，升级 Docus 时需对照同步。
  */
 import type { ContentNavigationItem, DocsCollectionItem, PageCollections } from "@nuxt/content";
 import * as nuxtUiLocales from "@nuxt/ui/locale";
@@ -15,7 +17,7 @@ import * as nuxtUiLocales from "@nuxt/ui/locale";
 const { seo } = useAppConfig() as { seo: { titleTemplate?: string; title?: string; description?: string } };
 const site = useSiteConfig();
 const { locale, locales, isEnabled, switchLocalePath } = useDocusI18n();
-const { isEnabled: isAssistantEnabled, panelWidth: assistantPanelWidth, shouldPushContent } = useAssistant();
+const { isEnabled: isAssistantEnabled } = useAssistant();
 
 const nuxtUiLocale = computed(() => nuxtUiLocales[locale.value as keyof typeof nuxtUiLocales] || nuxtUiLocales.en);
 const lang = computed(() => nuxtUiLocale.value.code);
@@ -84,10 +86,7 @@ provide("navigation", navigation);
   <UApp :locale="nuxtUiLocale">
     <NuxtLoadingIndicator color="var(--ui-primary)" />
 
-    <div
-      class="transition-[margin-right] duration-200 ease-linear will-change-[margin-right]"
-      :style="{ marginRight: shouldPushContent ? `${assistantPanelWidth}px` : '0' }"
-    >
+    <div>
       <AppHeader v-if="$route.meta.header !== false" />
       <NuxtLayout>
         <NuxtPage />
@@ -98,7 +97,7 @@ provide("navigation", navigation);
     <ClientOnly>
       <LazyUContentSearch :files="files" :navigation="navigation" />
       <template v-if="isAssistantEnabled">
-        <LazyAssistantPanel />
+        <LazyAppAssistantDrawer />
         <LazyAssistantFloatingInput />
       </template>
     </ClientOnly>

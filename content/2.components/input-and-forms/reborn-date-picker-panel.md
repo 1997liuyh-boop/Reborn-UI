@@ -58,7 +58,7 @@ const date = ref("");
 
 ### 选择类型
 
-15 种 `type` 按粒度分组，每组都有单选、多选（复数形式）和范围（`range` 后缀）三种。`week` 一次点选即选中整周（周日至周六），绑定值是起止两天。
+16 种 `type` 按粒度分组：年、季度、月、日期四组都有单选、多选（复数形式）和范围（`range` 后缀）三种，周与日期时间只有单选和范围。`week` 一次点选即选中整周（周日至周六），绑定值是起止两天；`weekrange` 依次点选起止两周，起点吸附到所在周的周日、终点吸附到所在周的周六，悬停预览同样按整周高亮。吸附在面板内完成，绑定值直接就是完整周的首尾两天，提交前不必再自行补齐。
 
 | 类型            | 绑定值     | 示例值                                     |
 | --------------- | ---------- | ------------------------------------------ |
@@ -75,6 +75,7 @@ const date = ref("");
 | `dates`         | `string[]` | `["2024-04-03", "2024-04-04"]`             |
 | `daterange`     | `string[]` | `["2024-04-01", "2024-04-05"]`             |
 | `week`          | `string[]` | `["2024-03-31", "2024-04-06"]`             |
+| `weekrange`     | `string[]` | `["2024-03-31", "2024-04-20"]`             |
 | `datetime`      | `string`   | `"2024-04-03 12:00"`                       |
 | `datetimerange` | `string[]` | `["2024-04-03 12:00", "2024-04-05 18:00"]` |
 
@@ -97,7 +98,7 @@ const date = ref("");
 
 ### 范围与双面板
 
-范围类型（`yearrange` / `quarterrange` / `monthrange` / `daterange` / `datetimerange`）默认并排两个面板，两侧联动翻页。下面两个开关改变面板组合：
+范围类型（`yearrange` / `quarterrange` / `monthrange` / `daterange` / `weekrange` / `datetimerange`）默认并排两个面板，两侧联动翻页。下面两个开关改变面板组合：
 
 | 属性           | 效果                                                   | 典型用途                                 |
 | -------------- | ------------------------------------------------------ | ---------------------------------------- |
@@ -124,6 +125,30 @@ const date = ref("");
 联动时一次翻页走过两个面板的跨度：日期视图 2 个月，月 / 季度视图 2 年，年视图 20 年，翻完左右两页都是新内容。`daterange` 从日期视图切到月 / 季度视图时一次只走 1 年，因为两侧此时展示的是相邻月份所在的年份。
 ::
 
+### 默认展示日期
+
+未选值时面板展示当天所在的月份。`defaultValue` 改为展示指定日期所在的月 / 年，例如预约只能从下个月开始，用户打开就不必先翻页。它只决定视图，不写入绑定值，也不显示为选中；绑定值里已有日期时以绑定值为准，`defaultValue` 被忽略。
+
+- 字符串按 `valueFormat` 解析，解析不了时按常规日期格式兜底；数字按时间戳。
+- 范围类型可传数组：第一项定位左面板；传了 `unlinkPanels` 时第二项定位右面板，第二项不晚于左面板时右面板仍紧跟左侧。联动时右面板始终紧跟左侧，第二项不生效。
+- 绑定值被清空后，面板回到 `defaultValue` 所在的视图。
+
+```vue
+<template>
+  <RebornDatePickerPanel
+    v-model="date"
+    value-format="YYYY-MM-DD"
+    default-value="2025-10-01"
+  />
+  <RebornDatePickerPanel
+    v-model="range"
+    type="daterange"
+    unlink-panels
+    :default-value="['2025-01-01', '2025-06-01']"
+  />
+</template>
+```
+
 ### 周数
 
 `showWeekNumber` 在日期视图最左侧加一列 ISO 周数，表头为「周」，每一行的周数按该行的周一计算。加列后网格由 7 列变 8 列，面板最小宽度随之变宽。
@@ -137,7 +162,7 @@ const date = ref("");
 </template>
 ```
 
-`week` 类型本身按周选择，传入 `showWeekNumber` 不生效。
+`week` / `weekrange` 类型本身按周选择，传入 `showWeekNumber` 不生效。
 
 ### 禁用规则
 
@@ -146,7 +171,7 @@ const date = ref("");
 | `unit`    | 何时传入                     | 典型用途                   |
 | --------- | ---------------------------- | -------------------------- |
 | `date`    | 日期视图的每一格             | 排除周末、节假日           |
-| `week`    | `week` 类型的日期格          | 排除已结算的周             |
+| `week`    | `week` / `weekrange` 的日期格 | 排除已结算的周             |
 | `month`   | 月份视图的每一格             | 只开放本年度已过去的月份   |
 | `quarter` | 季度视图的每一格             | 排除未来季度               |
 | `year`    | 年份视图的每一格             | 限定可选年份区间           |
@@ -200,7 +225,7 @@ const shortcuts = [
 `showToday` 在面板底部加一栏，点击选中当前时间所在的单位，文案随类型变为「今天」「本周」「本月」「本季度」「今年」，`datetime` 为「此刻」。点击后视图翻回当前年月，抛出的事件与手动点选这一格相同；文字色跟随 `color`，字号跟随 `size`。
 
 - `datetime` 的日期取今天，时分秒取点击时的时间。
-- 范围类型一次写入完整范围，起止都落在当前单位上，例如 `daterange` 得到 `[今天, 今天]`，依次抛出 `update:modelValue`、`calendar-change` 与 `change`；`datetimerange` 的起止时间取 `00:00:00` 与 `23:59:59`，覆盖一整天。
+- 范围类型一次写入完整范围，起止都落在当前单位上，例如 `daterange` 得到 `[今天, 今天]`，`weekrange` 得到本周的周日与周六，依次抛出 `update:modelValue`、`calendar-change` 与 `change`；`datetimerange` 的起止时间取 `00:00:00` 与 `23:59:59`，覆盖一整天。
 - 多选类型只追加：今天已在选中集合里时点击不做处理，不会把它取消掉。
 - 面板 `disabled`，或今天被 `start` / `end` / `disabledMethod` 排除时，这一栏置灰且点击无效；`datetime` 另外校验此刻的时分秒是否落在 `disabledHours` 等方法返回的禁用项里。
 
@@ -321,20 +346,21 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | 属性名                 | 类型                                                                                                                                                                                                                  | 默认值         | 描述                                                                                                                                                                                                                                                                                                              |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `modelValue`           | `any`                                                                                                                                                                                                                 | `""`           | 绑定值。单值类型为 `Date` 或字符串，多选与范围类型为其数组，取决于 `valueFormat`。                                                                                                                                                                                                                                |
-| `type`                 | `'year' \| 'years' \| 'yearrange' \| 'quarter' \| 'quarters' \| 'quarterrange' \| 'month' \| 'months' \| 'monthrange' \| 'date' \| 'dates' \| 'daterange' \| 'week' \| 'datetime' \| 'datetimerange'`             | `'date'`       | 选择器类型，决定粒度与单选 / 多选 / 范围。各类型的绑定值见「选择类型」。                                                                                                                                                                                                                                          |
+| `type`                 | `'year' \| 'years' \| 'yearrange' \| 'quarter' \| 'quarters' \| 'quarterrange' \| 'month' \| 'months' \| 'monthrange' \| 'date' \| 'dates' \| 'daterange' \| 'week' \| 'weekrange' \| 'datetime' \| 'datetimerange'`             | `'date'`       | 选择器类型，决定粒度与单选 / 多选 / 范围。各类型的绑定值见「选择类型」。                                                                                                                                                                                                                                          |
 | `valueFormat`          | `string`                                                                                                                                                                                                              | `""`           | 绑定值的 dayjs 格式；为空时绑定值为 `Date` 对象。季度类型可用 `Q` 令牌（如 `YYYY-[Q]Q`），面板按同一格式回读。                                                                                                                                                                                                    |
 | `start`                | `string`                                                                                                                                                                                                              | `'1970-01-01'` | 可选日期的最早边界（含）。                                                                                                                                                                                                                                                                                        |
 | `end`                  | `string`                                                                                                                                                                                                              | `'2099-12-31'` | 可选日期的最晚边界（含）。                                                                                                                                                                                                                                                                                        |
-| `disabledMethod`       | `(date: Date, unit: 'year' \| 'month' \| 'quarter' \| 'week' \| 'date') => boolean`                                                                                                                                  | -              | 逐项判定是否禁用，返回 `true` 即该项不可选。`unit` 标识当前判定粒度：日期格传 `date`（`week` 类型传 `week`），年 / 月 / 季度视图分别传 `year` / `month` / `quarter`。被排除的项连成灰底带子（`dayDisabledBand`）、文字取 `dayDisabled` 灰色，悬停显示禁用光标，点击被脚本层拦截。                                |
+| `disabledMethod`       | `(date: Date, unit: 'year' \| 'month' \| 'quarter' \| 'week' \| 'date') => boolean`                                                                                                                                  | -              | 逐项判定是否禁用，返回 `true` 即该项不可选。`unit` 标识当前判定粒度：日期格传 `date`（`week` / `weekrange` 类型传 `week`），年 / 月 / 季度视图分别传 `year` / `month` / `quarter`。被排除的项连成灰底带子（`dayDisabledBand`）、文字取 `dayDisabled` 灰色，悬停显示禁用光标，点击被脚本层拦截。                                |
 | `disabledHours`        | `(role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                                              | -              | 返回需禁用的小时数组；仅 `datetime` / `datetimerange` 生效，范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                             |
 | `disabledMinutes`      | `(hour: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                                | -              | 返回需禁用的分钟数组，入参为当前选中的小时；范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                                             |
 | `disabledSeconds`      | `(hour: number, minute: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                                | -              | 返回需禁用的秒数组，入参为当前选中的时、分；范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                                             |
 | `disabledMilliseconds` | `(hour: number, minute: number, second: number, role?: 'start' \| 'end', comparingValue?: string \| null) => number[]`                                                                                                | -              | 返回需禁用的毫秒数组，入参为当前选中的时、分、秒；范围类型可按 `role` 区分开始 / 结束时间。                                                                                                                                                                                                                       |
 | `shortcuts`            | `{ text: string; value: any }[]`                                                                                                                                                                                      | `[]`           | 快捷选项；非空时渲染左侧快捷侧栏。`value` 为 `Date`、`Date` 数组或返回二者的函数。                                                                                                                                                                                                                                |
-| `showWeekNumber`       | `boolean`                                                                                                                                                                                                             | `false`        | 日期视图左侧显示 ISO 周数；`week` 类型不生效。                                                                                                                                                                                                                                                                    |
+| `showWeekNumber`       | `boolean`                                                                                                                                                                                                             | `false`        | 日期视图左侧显示 ISO 周数；`week` / `weekrange` 类型不生效。                                                                                                                                                                                                                                                                    |
 | `unlinkPanels`         | `boolean`                                                                                                                                                                                                             | `false`        | 范围类型取消两个面板的联动，左右各自翻页，左侧始终早于右侧；`singlePanel` 时无效。                                                                                                                                                                                                                                |
 | `singlePanel`          | `boolean`                                                                                                                                                                                                             | `false`        | 范围类型只渲染一个面板；`datetimerange` 的起止时间一并放在该面板头部。                                                                                                                                                                                                                                            |
 | `showToday`            | `boolean`                                                                                                                                                                                                             | `false`        | 面板底部显示「今天」栏，点击选中当前时间所在的单位，见「今天栏」。                                                                                                                                                                                                                     |
+| `defaultValue`         | `Date \| string \| number \| (Date \| string \| number)[]`                                                                                                                                                            | -              | 未选值时面板展示的日期，不写入绑定值；不传时展示当天。字符串按 `valueFormat` 解析，数字按时间戳；数组时第一项定位左面板，`unlinkPanels` 下第二项定位右面板。见「默认展示日期」。 |
 | `size`                 | `'sm' \| 'md' \| 'lg'`                                                                                                                                                                                                | `'md'`         | 尺寸：日期格分别为 26 / 30 / 34px，字号与图标同步缩放。                                                                                                                                                                                                                                                           |
 | `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                                                                                                                                | `'primary'`    | 选中、范围与今日标识的语义色。                                                                                                                                                                                                                                                                                    |
 | `activeType`           | `'fill' \| 'fillRound' \| 'outline' \| 'text'`                                                                                                                                                                        | `'fill'`       | 选中项的表现形式：`fill` 背景填色（4px 圆角）、`fillRound` 背景填色且为正圆、`outline` 描边加文字、`text` 仅文字变色。未选中格子的悬停圆角也由它给出。                                                                                                                                                            |
@@ -351,7 +377,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | ------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `update:modelValue` | `(value: any)`                                                            | 绑定值变化时触发。范围类型每次点选都会触发，只选了起点时为 `[start, ""]`。                                                                   |
 | `change`            | `(value: any)`                                                            | 选择完成时触发。范围类型在起止都选定后触发；`dates` 类型不触发。                                                                             |
-| `calendar-change`   | `(value: [Date, Date \| null])`                                           | 范围类型点选日期或选中数组型快捷选项时触发；只选了起点时终点为 `null`。`week` 类型不触发。                                                   |
+| `calendar-change`   | `(value: [Date, Date \| null])`                                           | 范围类型点选日期或选中数组型快捷选项时触发；只选了起点时终点为 `null`。`week` 类型不触发，`weekrange` 抛出的起止已吸附到整周。                                                   |
 | `panel-change`      | `(date: Date \| [Date, Date], mode: 'month' \| 'year', view: 'year' \| 'month' \| 'date')` | 翻页、切换视图或下钻时触发。`date` 为面板所示年月的 1 日（年视图为十年页首年），双面板时为 `[左, 右]`；`mode` 在日期视图跨月翻页时为 `month`，其余为 `year`；`view` 为变化后的视图。 |
 | `clear`             | `()`                                                                      | 调用 `clear()` 清空后触发。                                                                                                                  |
 
@@ -418,7 +444,7 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `weekdays`                      | 星期表头容器，默认 `grid grid-cols-7 justify-items-center text-sm text-gray-6 px-[20px] pt-[8px] pb-[12px]`；显示周数时为 8 列。                                                                                                                 |
 | `weekday`                       | 单个星期标签，默认 `size-[30px] flex items-center justify-center`；与日期格同宽同高，两套栅格才逐列对齐。                                                                                                                                        |
-| `weekNumberHeader`              | 周数列的表头「周」，默认 `size-[30px] flex items-center justify-center`。**仅 `showWeekNumber` 且非 `week` 类型时渲染。**                                                                                                                        |
+| `weekNumberHeader`              | 周数列的表头「周」，默认 `size-[30px] flex items-center justify-center`。**仅 `showWeekNumber` 且非 `week` / `weekrange` 类型时渲染。**                                                                                                                        |
 | `weekNumber`                    | 每行最左侧的周数格，默认 `flex h-[30px] w-full items-center justify-center text-sm text-gray-5`。渲染条件同 `weekNumberHeader`。                                                                                                                  |
 | `days`                          | 日期网格容器，默认 `grid grid-cols-7 gap-y-[12px] px-[20px] pb-[16px] min-w-[334px]`；列不加 `gap-x`（会切断范围带子），`min-w` 保证每列 ≥ 42px。显示周数时为 8 列，`min-w` 按尺寸取 344 / 376 / 408px。                                         |
 | `dayCell`                       | 日期格外面的格位，默认 `flex h-[38px] my-[-4px] w-full items-center justify-center`：宽度撑满所在列，**范围底色画在这一层**，相邻两列首尾相接连成带子；负外边距把高度压回 30px，带子因此上下各超出日期格 4px。                                   |
@@ -482,6 +508,8 @@ function onPanelChange(date: Date | [Date, Date], mode: "month" | "year") {
 - **范围选择中途的绑定值只有一端**。点下起点时 `update:modelValue` 就会抛出 `[start, ""]`，`change` 要等终点选定才抛；依赖完整区间的逻辑请监听 `change` 而非 `v-model`。
 - **`dates` 类型不抛 `change`**。多选日期每次点选只更新 `v-model`，没有「选择完成」的时点；需要提交时机请自行加确认按钮。
 - **`week` 类型不抛 `calendar-change`，也不显示周数**。一次点选即选中整周，没有「只选了起点」的中间态；它本身就是按周选择，`showWeekNumber` 对它无效。
+- **`weekrange` 的起止总是整周**。点在周三也会吸附到该周的周日（起点）或周六（终点），绑定值不会出现周中的日期；周从周日开始，与日期视图的列顺序一致。
+- **`defaultValue` 不是初始值**。它只决定未选值时展示哪个月，不写入 `v-model`，也不会被 `change` 抛出；需要预填值请直接给 `v-model` 赋值。
 - **取消联动后左侧必须早于右侧**。`unlinkPanels` 下两侧已相邻时，左侧的「下一页」和右侧的「上一页」置灰不响应（`navBtnDisabled`）；日期视图的跨年按钮要求两侧相隔超过 12 个月才可用。
 - **`singlePanel` 优先于 `unlinkPanels`**。只剩一个面板时不存在联动关系，同时传入时 `unlinkPanels` 无效。
 - **单面板点击补位格会翻页**。点中上下月的日期后，面板翻到该日期所在月份，以便看到选中结果；双面板下点击补位格不翻页，选中结果在日期真正归属的那一侧面板显示。

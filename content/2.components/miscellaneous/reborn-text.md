@@ -1,6 +1,6 @@
 ---
 title: 文本 Text
-description: 双端文本组件：按 type 格式化手机号、姓名、金额、银行卡、邮箱并可脱敏，支持多行省略；Web 另有截断气泡。
+description: 双端文本组件：按 type 格式化手机号、姓名、金额、银行卡、邮箱并可脱敏，支持多行省略；Web 另有头部 / 中间省略与截断气泡。
 category: 通用
 platform: both
 tags: [css, tailwind, text, format, mask, uniapp]
@@ -16,13 +16,14 @@ Text 是承载一段行内文本的展示组件，把常见的「格式化 + 脱
 
 `type` 决定按哪种规则格式化（`default` / `phone` / `name` / `amount` / `card` / `email`），`mask` 决定是否脱敏，两者独立：`mask` 只对 `phone` / `name` / `card` / `email` 生效，`amount` 只做数字格式化。`ellipsis` + `lines` 控制省略，与格式化互不干扰。
 
-其余 API：`color` / `size` 控制外观；`currency` / `currencyPosition` / `precision` / `thousandsIcon` 调整金额；`maskStart` / `maskEnd` / `maskChar` 调整脱敏；`preWrap` 保留空白。Web 端独有 `tooltip`（截断时自动气泡）与作用域插槽 `content`；UniApp 端独有 `selectable` / `space` / `decode`，透传给原生 `text`。
+其余 API：`color` / `size` 控制外观；`currency` / `currencyPosition` / `precision` / `thousandsIcon` 调整金额；`maskStart` / `maskEnd` / `maskChar` 调整脱敏；`preWrap` 保留空白。Web 端独有 `ellipsisPosition`（省略号位置）、`tooltip`（截断时自动气泡）与作用域插槽 `content`；UniApp 端独有 `selectable` / `space` / `decode`，透传给原生 `text`。
 
 ### 何时使用
 
 - 列表、详情页中展示需要脱敏的敏感信息——用 `type="phone"` / `type="card"` 等配合 `mask`。
 - 展示金额且需要统一小数位与千分位——用 `type="amount"` + `precision`（Web 还需传 `currency` / `thousandsIcon`）。
 - 定宽容器里的标题或描述需要截断——用 `ellipsis` + `lines`，Web 端再加 `tooltip` 让用户看到全文。
+- 文件路径、带扩展名的文件名截断后仍要看到结尾——Web 端用 `ellipsisPosition="start"` / `"middle"`。
 - 需要让一段文字带语义色——用 `color`，不必手写 `text-*` 类名。
 
 ### 何时不使用
@@ -157,7 +158,7 @@ Text 是承载一段行内文本的展示组件，把常见的「格式化 + 脱
 
 `ellipsis` 为 `true` 时切换为 `-webkit-box` 布局并按 `lines` 截断（默认 1 行），`lines` 仅在 `ellipsis` 开启时生效。省略依赖宽度约束，需要给组件或父容器设最大宽度。
 
-Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `scrollHeight` / `scrollWidth` 超出可视区域（即确实被截断）时才启用 `RebornTooltip` 并加 `cursor-pointer`，短文本不会弹出气泡。
+Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `scrollHeight` / `scrollWidth` 超出可视区域（即确实被截断）时才启用 `RebornTooltip` 并加 `cursor-pointer`，短文本不会弹出气泡。气泡宽度跟随文本：不再受 Tooltip 默认的 240px 上限限制，全文按文本当前的渲染宽度折行，面板与文本左右对齐；文本窄于 240px 时仍按 240px 折行，避免气泡挤成细长条。
 
 ```vue
 <template>
@@ -172,6 +173,41 @@ Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `
 
 ::warning
 `tooltip` 仅 Web 端可用，UniApp 端没有该 prop，截断后需要自行提供查看全文的入口（如点击弹窗）。
+::
+
+### 省略位置
+
+`ellipsisPosition` 决定省略号出现在哪一端，仅 `ellipsis` 为 `true` 时生效。该 prop 仅 Web 端提供，UniApp 端只有尾部省略。
+
+| `ellipsisPosition` | 保留部分 | 适用场景 | 截断方式 |
+| --- | --- | --- | --- |
+| `'end'`（默认） | 开头 | 标题、描述 | CSS `line-clamp` |
+| `'start'` | 结尾 | 文件路径等末级信息最关键的层级文本 | 逐字测量 |
+| `'middle'` | 开头与结尾 | 带扩展名的文件名、订单号、哈希值 | 逐字测量 |
+
+CSS 只能截断尾部，所以 `start` / `middle` 改为在真实节点上二分测量：取原文的纯文本，找出 `lines` 行内最多能放下的字符数，把带 `…` 的结果写进单独的节点显示。原文节点留在 DOM 里，转为仅读屏可见（`sr-only`），读屏软件仍朗读全文。容器尺寸、原文内容、`lines` / `size` / `preWrap` 变化时自动重算，Web 字体加载完成后也会补算一次；容器宽度为 0（如处在隐藏的标签页里）时暂不计算，显示后再算。
+
+开启 `tooltip` 时，`start` / `middle` 按截断结果判断是否弹出气泡，气泡里展示完整原文。
+
+```vue
+<template>
+  <!-- 保留结尾：…icker/RebornDatePickerPanel.vue -->
+  <RebornText ellipsis ellipsis-position="start" tooltip class="max-w-[260px]">
+    /workspace/reborn-ui/packages/components/date-picker/RebornDatePickerPanel.vue
+  </RebornText>
+  <!-- 保留首尾：2026年第三季度经…细（终版）.xlsx -->
+  <RebornText ellipsis ellipsis-position="middle" tooltip class="max-w-[260px]">
+    2026年第三季度经营数据汇总与各区域销售明细（终版）.xlsx
+  </RebornText>
+  <!-- 多行同样适用 -->
+  <RebornText ellipsis ellipsis-position="middle" :lines="2" class="max-w-xs">
+    超出两行时从中间截断，开头与结尾都保留。
+  </RebornText>
+</template>
+```
+
+::warning
+截断结果要在浏览器里测量后才能得出：服务端渲染的 HTML 和挂载前显示的是 CSS 尾部省略，挂载后才切换为头部 / 中间省略。
 ::
 
 ## API
@@ -200,6 +236,7 @@ Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `
 | `maskChar` | `string` | `'*'` | 脱敏替换字符。 |
 | `ellipsis` | `boolean` | `false` | 是否超出省略。 |
 | `lines` | `number` | `1` | 最大行数，仅 `ellipsis` 为 `true` 时生效。 |
+| `ellipsisPosition` | `'start' | 'middle' | 'end'` | `'end'` | 省略号位置：`end` 保留开头、`start` 保留结尾、`middle` 保留首尾；仅 `ellipsis` 为 `true` 时生效，`start` / `middle` 按纯文本逐字测量截断。 |
 | `tooltip` | `boolean` | `false` | 内容被截断时自动显示 Tooltip 展示全文。 |
 | `preWrap` | `boolean` | `false` | 是否保留空白与换行（`whitespace-pre-wrap`）。 |
 | `class` | `any` | - | 追加到根元素的自定义类名。 |
@@ -300,6 +337,7 @@ Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `
 | 金额货币符号 | 默认 `''`，独立节点，可 `currencyPosition` 后置 | 默认 `'¥'`，拼接在数字前，不可后置 |
 | 金额千分位 | `thousandsIcon` 指定，默认不分隔 | 固定 `,` |
 | 非数字金额 | 原样输出字符串 | 输出 `NaN` |
+| 省略位置 | `ellipsisPosition` 可选头部 / 中间 / 尾部 | 仅尾部 |
 | 截断气泡 | `tooltip` | 不支持 |
 | 插槽作用域 | `{ content }` | 无 |
 | `ui` 键位 | `base` / `currency` | `base` |
@@ -314,5 +352,6 @@ Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `
 - **`maskStart` / `maskEnd` 只影响 `card`**。手机号保留位数写死为前 3 后 4，改这两个参数不会生效。
 - **默认插槽会覆盖格式化结果**。插槽内容替换整块兜底内容（Web 含货币符号节点），需要保留格式化时在 Web 端用作用域参数 `content`。
 - **Web 端不透传未声明的属性**。组件设置了 `inheritAttrs: false` 且未绑定 `$attrs`，`id`、`data-*`、`@click` 等写在组件上不会落到 DOM，需要时包一层元素。
+- **头部 / 中间省略只输出纯文本**。`start` / `middle` 读取插槽的纯文本重新排出截断结果，插槽里的元素结构和 `ui.currency` 给货币符号设的样式都不会出现在截断结果里；需要保留这些结构时用默认的 `end`。
 - **省略需要宽度约束**。`ellipsis` 只负责截断样式，组件本身是行内元素，不设 `max-w-*` 或父容器宽度时不会出现省略号，`tooltip` 也就不会触发。
 - **UniApp 根节点随平台变化**。小程序端渲染 `<view>`、其他端渲染 `<text>`，在 `<text>` 里嵌套非文本组件在 APP 端可能不显示，需要复杂插槽时注意端差异。

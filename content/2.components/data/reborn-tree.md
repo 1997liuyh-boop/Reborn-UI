@@ -237,7 +237,7 @@ function handleDrop({ node, dragNode, dropPosition }) {
 
 ### 虚拟滚动与按 key 定位
 
-设置 `height`（像素）后根节点成为定高滚动容器（横向滚动按规格关闭），并默认启用虚拟滚动：只渲染视口内外各 5 行，千级节点不掉帧。滚动位置按 `itemHeight`（默认 28px）定高换算；`virtual={false}` 关闭虚拟化后退化为普通滚动容器。实例方法 `scrollTo({ key, align, offset, autoExpand, behavior })` 按 key 定位，`autoExpand` 在非受控展开下先自动展开目标的父链，`behavior: "smooth"` 启用平滑滚动动画。
+`height`（像素）是根节点的最大高度：节点少时按内容撑开，超出后在区内滚动（横向滚动按规格关闭）；设置后默认启用虚拟滚动：只渲染视口内外各 5 行，千级节点不掉帧。滚动位置按 `itemHeight`（默认 28px）定高换算；`virtual={false}` 关闭虚拟化后退化为普通滚动容器。实例方法 `scrollTo({ key, align, offset, autoExpand, behavior })` 按 key 定位，`autoExpand` 在非受控展开下先自动展开目标的父链，`behavior: "smooth"` 启用平滑滚动动画。
 
 ```vue
 <script setup lang="ts">
@@ -286,7 +286,7 @@ function locate() {
 | `loadData` | `(node: TreeDataNode) => Promise<unknown>` | - | 异步加载：展开无子级且未加载过的节点时调用，Promise 内由使用方把子级写回 `treeData`。 |
 | `draggable` | `boolean \| ((node: TreeDataNode) => boolean) \| { icon?: boolean; nodeDraggable?: (node: TreeDataNode) => boolean }` | `false` | 节点可拖拽：布尔整树开关 / 函数按节点判定 / 对象写法，`icon: false` 隐藏拖拽手柄图标。 |
 | `allowDrop` | `({ dropNode, dropPosition }) => boolean` | - | 拖拽悬停时判定该位置是否可放置，返回 `false` 则指示不亮起且拒绝 drop。`dropPosition`：-1 前 / 0 内 / 1 后。 |
-| `height` | `number` | - | 滚动容器高度（px）。设置后根节点定高滚动、关闭横向滚动，并默认启用虚拟滚动。 |
+| `height` | `number` | - | 滚动区最大高度（px）。节点少时按内容撑开，超出后在区内滚动；设置后关闭横向滚动，并默认启用虚拟滚动。 |
 | `itemHeight` | `number` | `28` | 虚拟滚动的行高（px），滚动位置与 `scrollTo` 都按它定高换算。Vue 适配新增，antd 无此项。 |
 | `virtual` | `boolean` | `true` | 设为 `false` 关闭虚拟滚动；`height` 仍生效，退化为普通滚动容器。 |
 | `animated` | `boolean` | `true` | 展开/收起的行级过渡动画（antd `motion` 参数的 Vue 化替代）：新行淡入下滑、下方行 FLIP 位移让位。虚拟滚动生效时强制关闭；`prefers-reduced-motion` 下自动归零。 |

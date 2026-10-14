@@ -29,7 +29,7 @@ export interface CheckboxGroupProps {
     /** 选项数据。传入后由组自行渲染子项，默认插槽不再生效 */
     options?: (string | number | CheckboxOption | Record<string, any>)[]
     /** options 的字段别名配置：按这里给出的字段名去数据里取 label / value / disabled / indeterminate */
-    props?: CheckboxFieldNames
+    fieldNames?: CheckboxFieldNames
     /** 复选框的排列方向 */
     direction?: (typeof checkboxDirections)[number]
     /** 是否整组禁用 */
@@ -87,23 +87,23 @@ const currentValue = computed<CheckboxValue[]>(() => model.value ?? innerValue.v
 const limitReached = computed(() => props.max !== undefined && currentValue.value.length >= props.max)
 
 /** options 字段别名，未配置的键回落到默认字段名 */
-const fieldNames = computed(() => ({
-    label: props.props?.label ?? 'label',
-    value: props.props?.value ?? 'value',
-    disabled: props.props?.disabled ?? 'disabled',
-    indeterminate: props.props?.indeterminate ?? 'indeterminate',
+const resolvedFieldNames = computed(() => ({
+    label: props.fieldNames?.label ?? 'label',
+    value: props.fieldNames?.value ?? 'value',
+    disabled: props.fieldNames?.disabled ?? 'disabled',
+    indeterminate: props.fieldNames?.indeterminate ?? 'indeterminate',
 }))
 
 /**
  * options 归一化：字符串/数字写法统一补全为对象；
- * 对象写法按 props 别名取字段，原始字段随展开保留，label 插槽仍能从 data 参数里拿到
+ * 对象写法按 fieldNames 别名取字段，原始字段随展开保留，label 插槽仍能从 data 参数里拿到
  */
 const normalizedOptions = computed<CheckboxOption[]>(() =>
     (props.options ?? []).map((item) => {
         if (typeof item !== 'object' || item === null) {
             return { label: String(item), value: item }
         }
-        const f = fieldNames.value
+        const f = resolvedFieldNames.value
         return {
             ...item,
             label: item[f.label],

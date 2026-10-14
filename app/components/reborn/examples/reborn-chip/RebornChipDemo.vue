@@ -1,18 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { chipColors, chipPositions, chipSizes } from "~/components/reborn/ui/reborn-chip/reborn-chip.config";
+import { computed, ref } from "vue";
+import { chipColors, chipPositions, chipSizes, chipVariants } from "~/components/reborn/ui/reborn-chip/reborn-chip.config";
 import RebornChip from "~/components/reborn/ui/reborn-chip/RebornChip.vue";
-
-/** 演练场状态 */
-const state = ref({
-  color: "primary",
-  size: "md",
-  position: "top-right",
-  text: "9",
-  show: true,
-  inset: false,
-  standalone: false,
-});
 
 /**
  * 角标锚点占位样式：只描边不填充。
@@ -21,37 +10,41 @@ const state = ref({
  */
 const anchorClass = "border-default rounded-lg border border-dashed";
 
-/**
- * 纯圆点档位：这两档圆点只有 10px / 12px 高，装不下最小字号令牌（--text-sm 12px），
- * 组件在这两档不渲染文本节点，传了 text 也不显示。用于在尺寸示例里标注这一行为。
- */
-const dotOnlySizes = ["xs", "sm"];
+/** 渲染文本节点的变体，用于在矩阵里区分「圆点类」与「文字类」 */
+const textVariants: string[] = ["textDot", "textOutline"];
 
-/** 显隐控制演示：组件内部不会改写 show，由外部按钮切换 */
-const hasUnread = ref(true);
+// ─── 交互演练场 ─────────────────────────────────────────────────
+
+/** 演练场默认状态 */
+const defaultState: Record<string, any> = {
+  variant: "textDot",
+  color: "primary",
+  size: "md",
+  text: "9",
+  position: "top-right",
+  inset: false,
+  show: true,
+};
+
+const state = ref<Record<string, any>>({ ...defaultState });
+
+/** 重置演练场配置 */
+function resetState() {
+  state.value = { ...defaultState };
+}
 
 /** 演练场控制面板配置 */
 const controls = [
   {
-    title: "基础配置",
+    title: "基础属性",
     children: [
       {
-        label: "标签文本",
-        key: "text",
-        component: "input" as const,
-        defaultValue: "9",
+        label: "视觉变体",
+        key: "variant",
+        component: "select" as const,
+        defaultValue: "textDot",
+        props: { options: chipVariants.map((v) => ({ label: v, value: v })) },
       },
-      {
-        label: "显示状态",
-        key: "show",
-        component: "checkbox" as const,
-        defaultValue: true,
-      },
-    ],
-  },
-  {
-    title: "样式选项",
-    children: [
       {
         label: "颜色主题",
         key: "color",
@@ -67,23 +60,25 @@ const controls = [
         key: "size",
         component: "select" as const,
         defaultValue: "md",
-        props: {
-          options: chipSizes.map((s) => ({ label: s.toUpperCase(), value: s })),
-        },
+        props: { options: chipSizes.map((s) => ({ label: s.toUpperCase(), value: s })) },
+      },
+      {
+        label: "标签文本（仅 textDot / textOutline 显示）",
+        key: "text",
+        component: "input" as const,
+        defaultValue: "9",
       },
     ],
   },
   {
-    title: "布局位置",
+    title: "布局与状态",
     children: [
       {
         label: "显示位置",
         key: "position",
         component: "select" as const,
         defaultValue: "top-right",
-        props: {
-          options: chipPositions.map((p) => ({ label: p, value: p })),
-        },
+        props: { options: chipPositions.map((p) => ({ label: p, value: p })) },
       },
       {
         label: "内嵌模式",
@@ -92,14 +87,34 @@ const controls = [
         defaultValue: false,
       },
       {
-        label: "独立渲染",
-        key: "standalone",
+        label: "显示状态",
+        key: "show",
         component: "checkbox" as const,
-        defaultValue: false,
+        defaultValue: true,
       },
     ],
   },
 ];
+
+/** 演练场右上角的传参明细：完整列出当前所有参数（含默认值） */
+const chipCode = computed(() => {
+  const s = state.value;
+  const props: string[] = [
+    `variant="${s.variant}"`,
+    `color="${s.color}"`,
+    `size="${s.size}"`,
+    `text="${s.text}"`,
+    `position="${s.position}"`,
+    `:inset="${s.inset}"`,
+    `:show="${s.show}"`,
+  ];
+  return `<RebornChip\n  ${props.join("\n  ")}\n>\n  <Icon name="lucide:bell" />\n</RebornChip>`;
+});
+
+// ─── 场景演示状态 ───────────────────────────────────────────────
+
+/** 显隐控制演示：组件内部不会改写 show，由外部按钮切换 */
+const hasUnread = ref(true);
 </script>
 
 <template>
@@ -107,20 +122,44 @@ const controls = [
     <Playground
       v-model="state"
       :controls="controls"
+      :code="chipCode"
       component-name="RebornChip"
       title="交互演练场"
-      description="调节左侧属性，实时预览角标的颜色、尺寸与吸附位置。尺寸选 xs 或 sm 时角标退化为纯圆点，标签文本不再显示。"
+      description="调节左侧参数，实时查看角标在不同变体、语义色、尺寸与吸附位置下的表现。"
     >
-      <RebornChip v-bind="state">
-        <div :class="anchorClass" class="text-dimmed flex size-24 items-center justify-center">
-          <Icon name="lucide:bell" class="size-8" />
-        </div>
-      </RebornChip>
+      <template #tag>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
+          </template>
+          重置配置
+        </RebornButton>
+      </template>
+
+      <div class="flex flex-col items-center gap-6">
+        <RebornChip
+          :variant="state.variant"
+          :color="state.color"
+          :size="state.size"
+          :text="state.text"
+          :position="state.position"
+          :inset="state.inset"
+          :show="state.show"
+        >
+          <div :class="anchorClass" class="text-dimmed flex size-24 items-center justify-center">
+            <Icon name="lucide:bell" class="size-8" />
+          </div>
+        </RebornChip>
+        <DemoNote v-if="!textVariants.includes(state.variant)" tone="dimmed">
+          {{ state.variant }} 是纯图形角标，最大外径只有 16px，放不下文字，所以标签文本不显示。
+        </DemoNote>
+      </div>
     </Playground>
 
     <DemoSection title="基础用法">
       <template #description>
-        把宿主元素放进默认插槽，角标默认吸附在右上角；<code>text</code> 传数字或短文本显示计数，不传则只渲染纯色圆点。
+        把宿主元素放进默认插槽，角标默认吸附在右上角。不传 <code>variant</code> 时按 <code>text</code> 自动选择：传了文本是
+        <code>textDot</code> 计数角标，不传是 <code>solid</code> 纯圆点。
       </template>
       <DemoBlock layout="row" align="center" class="gap-10">
         <RebornChip text="9">
@@ -143,34 +182,64 @@ const controls = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="颜色：7 种语义色">
+    <DemoSection title="变体：圆点、圆环与文字角标">
       <template #description>
-        <code>color</code> 切换角标背景与描边色，默认 <code>primary</code>；按提醒的紧急程度选色，例如错误与未读用 <code>error</code>。
+        <code>variant</code> 有四种取值：<code>solid</code> 实心圆点、<code>outline</code> 空心圆环只表达「有状态」；
+        <code>textDot</code> 实心、<code>textOutline</code> 描边两种会渲染 <code>text</code>。描边类变体垫了纸面色底，
+        宿主内容不会透过圆环空洞或衬在文字下面。
       </template>
-      <DemoBlock layout="grid" align="center">
-        <div v-for="c in chipColors" :key="c" class="flex flex-col items-center gap-3">
-          <RebornChip :color="c" text="8">
+      <DemoBlock layout="row" align="end" class="gap-10">
+        <div v-for="v in chipVariants" :key="v" class="flex flex-col items-center gap-4">
+          <RebornChip :variant="v" color="error" text="8">
             <div :class="anchorClass" class="size-12" />
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium tracking-wider uppercase">{{ c }}</span>
+          <span class="text-dimmed text-xs font-medium">{{ v }}</span>
         </div>
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="尺寸：五档与纯圆点档">
+    <DemoSection title="颜色：7 种语义色">
       <template #description>
-        <code>size</code> 五档对应 10~18px 的圆点高度。下面五个角标都传了 <code>text="NEW"</code>，但 <code>xs</code>、<code>sm</code> 的圆点装不下最小字号，组件在这两档只渲染圆点、不渲染文本。
+        <code>color</code> 统一取色阶的 6 阶：<code>solid</code> / <code>textDot</code> 用作底色，<code>outline</code> /
+        <code>textOutline</code> 用作描边与文字色，默认 <code>primary</code>。按提醒的紧急程度选色，例如未读与告警用 <code>error</code>。
       </template>
-      <DemoBlock layout="row" align="end" class="gap-10">
-        <div v-for="s in chipSizes" :key="s" class="flex flex-col items-center gap-4">
-          <RebornChip :size="s" color="error" text="NEW">
-            <div :class="anchorClass" class="text-dimmed flex h-12 w-20 items-center justify-center text-[10px] font-bold uppercase">
-              {{ s }}
-            </div>
-          </RebornChip>
-          <span class="text-dimmed text-[10px] font-bold tracking-widest">
-            {{ s.toUpperCase() }}<template v-if="dotOnlySizes.includes(s)"> · 纯圆点</template>
-          </span>
+      <DemoBlock layout="stack">
+        <div class="w-full overflow-x-auto">
+          <div class="grid min-w-max grid-cols-[7rem_repeat(7,4.5rem)] items-center gap-y-8">
+            <span />
+            <span v-for="c in chipColors" :key="c" class="text-dimmed text-center text-xs font-medium">{{ c }}</span>
+            <template v-for="v in chipVariants" :key="v">
+              <span class="text-dimmed text-xs font-medium">{{ v }}</span>
+              <div v-for="c in chipColors" :key="c" class="flex justify-center">
+                <RebornChip :variant="v" :color="c" text="8">
+                  <div :class="anchorClass" class="size-10" />
+                </RebornChip>
+              </div>
+            </template>
+          </div>
+        </div>
+      </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="尺寸：三档">
+      <template #description>
+        <code>size</code> 只有 <code>sm</code> / <code>md</code> / <code>lg</code> 三档，具体像素随变体不同：圆点直径 4 / 5 / 6px，圆环外径 8 / 12 /
+        16px，文字角标高 16 / 20 / 24px、字号比高度小 4px。文字超过一个字符时角标横向撑成胶囊，高度不变。
+      </template>
+      <DemoBlock layout="stack">
+        <div class="w-full overflow-x-auto">
+          <div class="grid min-w-max grid-cols-[7rem_repeat(3,6rem)] items-center gap-y-8">
+            <span />
+            <span v-for="s in chipSizes" :key="s" class="text-dimmed text-center text-xs font-medium">{{ s }}</span>
+            <template v-for="v in chipVariants" :key="v">
+              <span class="text-dimmed text-xs font-medium">{{ v }}</span>
+              <div v-for="s in chipSizes" :key="s" class="flex justify-center">
+                <RebornChip :variant="v" :size="s" color="error" :text="textVariants.includes(v) ? '99+' : undefined">
+                  <div :class="anchorClass" class="size-12" />
+                </RebornChip>
+              </div>
+            </template>
+          </div>
         </div>
       </DemoBlock>
     </DemoSection>
@@ -188,7 +257,7 @@ const controls = [
         </div>
 
         <div v-for="p in chipPositions" :key="`inset-${p}`" class="flex flex-col items-center gap-3">
-          <RebornChip :position="p" color="success" inset>
+          <RebornChip :position="p" color="success" size="lg" inset>
             <div :class="anchorClass" class="size-12" />
           </RebornChip>
           <span class="text-dimmed text-xs font-medium">{{ p }} · inset</span>
@@ -215,30 +284,30 @@ const controls = [
     <DemoSection title="组合场景：在线状态、未读圆点与促销标" description="角标叠在头像、图标按钮与操作按钮上，分别表达在线状态、有未读和活动标记。">
       <DemoBlock layout="row" align="center" class="gap-10">
         <div class="flex flex-col items-center gap-3">
-          <!-- 头像在线状态：inset 让角标嵌入圆形边缘内部 -->
-          <RebornChip color="success" size="lg" inset position="bottom-right">
+          <!-- 头像在线状态：inset 让圆环嵌入圆形边缘内部 -->
+          <RebornChip variant="outline" color="success" size="md" inset position="bottom-right">
             <UAvatar src="https://github.com/benjamincanac.png" size="xl" />
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium">在线状态 · <code>inset</code></span>
+          <span class="text-dimmed text-xs font-medium">在线状态 · <code>outline</code> + <code>inset</code></span>
         </div>
 
         <div class="flex flex-col items-center gap-3">
-          <!-- 未读小红点：text 传空串即为纯圆点 -->
-          <RebornChip color="error" size="sm" text="">
+          <!-- 未读小红点：不传 text 自动取 solid -->
+          <RebornChip color="error" size="lg">
             <RebornButton color="neutral" variant="circle" size="lg">
               <template #leading>
                 <Icon name="lucide:mail" class="size-6" />
               </template>
             </RebornButton>
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium">未读圆点 · <code>text=""</code></span>
+          <span class="text-dimmed text-xs font-medium">未读圆点 · <code>solid</code></span>
         </div>
 
         <div class="flex flex-col items-center gap-3">
-          <RebornChip color="warning" text="SALE" size="md">
+          <RebornChip variant="textOutline" color="warning" text="SALE" size="sm">
             <RebornButton label="立即解锁" color="neutral" variant="filled" />
           </RebornChip>
-          <span class="text-dimmed text-xs font-medium">按钮促销标</span>
+          <span class="text-dimmed text-xs font-medium">按钮促销标 · <code>textOutline</code></span>
         </div>
       </DemoBlock>
     </DemoSection>

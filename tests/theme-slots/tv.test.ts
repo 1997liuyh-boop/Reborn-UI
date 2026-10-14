@@ -9,14 +9,14 @@ const slots = { root: 'flex text-red-500', label: 'font-bold' };
 const themeId = fingerprintThemeSlots(slots);
 const shared = tv({ slots, variants: { active: { true: { root: 'text-blue-500' } } } });
 
-it('模块级共享主题按实际组件名称、键和指纹标记，SSR 结果稳定', async () => {
+it('模块级共享主题使用固定前缀、键和指纹标记，不随使用者变化', async () => {
   const component = (name: string) => defineComponent({ name, setup: () => () => h('div', { class: shared({ active: true }).root() }) });
   const first = component('RebornButton');
   const second = component('RebornProgress');
   const render = () => renderToString(createSSRApp({ render: () => h('main', [h(first), h(second)]) }));
   const html = await render();
-  assert.match(html, new RegExp(`RebornButton-root-${themeId}`));
-  assert.match(html, new RegExp(`RebornProgress-root-${themeId}`));
+  assert.equal((html.match(new RegExp(`Component-root-${themeId}`, 'g')) || []).length, 2);
+  assert.doesNotMatch(html, /RebornButton-root-|RebornProgress-root-/);
   assert.doesNotMatch(html, /rb-tv-/);
   assert.equal(html, await render());
 });
@@ -45,9 +45,15 @@ it('面板选择器匹配完整的键和主题指纹，不依赖主体或子组�
 });
 
 it('组件名可由单文件组件名称推导，非安全字符不会生成额外类名', async () => {
-  const component = defineComponent({ __name: 'RebornBadge', setup: () => () => h('span', { class: shared().label() }) });
+  const component = defineComponent({ __name: 'RebornBadge', setup() {
+    const local = tv({ slots });
+    return () => h('span', { class: local().label() });
+  } });
   const html = await renderToString(createSSRApp(component));
   assert.match(html, new RegExp(`RebornBadge-label-${themeId}`));
-  const named = defineComponent({ name: 'Custom.Button', setup: () => () => h('span', { class: shared().label() }) });
+  const named = defineComponent({ name: 'Custom.Button', setup() {
+    const local = tv({ slots });
+    return () => h('span', { class: local().label() });
+  } });
   assert.match(await renderToString(createSSRApp(named)), new RegExp(`Custom-Button-label-${themeId}`));
 });

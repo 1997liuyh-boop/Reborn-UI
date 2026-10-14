@@ -24,10 +24,13 @@ import { cn } from '~/lib/utils';
 import RebornTransition from '../reborn-transition/RebornTransition.vue';
 import { rebornTooltip } from './reborn-tooltip.config';
 
-defineOptions({ name: 'RebornTooltip' });
+defineOptions({ name: 'RebornTooltip', inheritAttrs: false });
 
 const props = withDefaults(defineProps<RebornTooltipProps>(), {
   content: '',
+  rawContent: false,
+  virtualTriggering: false,
+  virtualRef: null,
   title: undefined,
   placement: 'bottom',
   arrow: true,
@@ -59,6 +62,12 @@ type TooltipTrigger = 'hover' | 'focus' | 'click' | 'contextMenu';
 interface RebornTooltipProps {
   /** 提示内容 */
   content?: string;
+  /** 将文案作为 HTML 渲染；仅传入可信或已净化的内容 */
+  rawContent?: boolean;
+  /** 使用外部元素触发和定位，不渲染默认触发插槽 */
+  virtualTriggering?: boolean;
+  /** 虚拟触发元素；切换时迁移事件和 ARIA 关联 */
+  virtualRef?: HTMLElement | null;
   /** 提示文字。显式传 null 或空字符串可禁用提示；未传时回落到 content */
   title?: string | null;
   /** 出现方向与对齐方式 */
@@ -128,6 +137,8 @@ const isMounted = ref(false);
 
 const wrapperRef = ref<HTMLElement | null>(null);
 const triggerRef = ref<HTMLElement | null>(null);
+/** 普通触发器与外部触发器共用定位和容器逻辑 */
+const anchorRef = computed(() => props.virtualTriggering ? props.virtualRef : triggerRef.value);
 const contentRefComponent = ref<any>(null);
 const contentWrapperRef = computed(() => contentRefComponent.value?.el as HTMLElement | undefined);
 const contentRef = ref<HTMLElement | null>(null);
@@ -214,9 +225,9 @@ const hasContent = computed(() => Boolean(liveText.value) || hasContentSlot.valu
 /** 浮层挂载目标：getPopupContainer 优先，默认 body */
 const popupTarget = computed<HTMLElement | string>(() => {
   if (!isMounted.value) return 'body';
-  if (props.getPopupContainer && triggerRef.value) {
+  if (props.getPopupContainer && anchorRef.value) {
     try {
-      return props.getPopupContainer(triggerRef.value) ?? document.body;
+      return props.getPopupContainer(anchorRef.value) ?? document.body;
     } catch {
       return document.body;
     }
@@ -326,12 +337,12 @@ const syncArrowPosition = (
 /** 同步提示层位置与箭头位置 */
 const updatePosition = (el?: Element) => {
   const currentContent = el ?? contentWrapperRef.value;
-  if (!shouldRender.value || !triggerRef.value || !currentContent) {
+  if (!shouldRender.value || !anchorRef.value || !currentContent) {
     return;
   }
 
   const htmlEl = currentContent as HTMLElement;
-  const triggerRect = triggerRef.value.getBoundingClientRect();
+  const triggerRect = anchorRef.value.getBoundingClientRect();
   // offsetWidth/offsetHeight 不受 CSS transform（如 zoom-in 动画的 scale-90）影响，
   // 避免在 onBeforeEnter 期间测量到缩放后的错误尺寸
   const contentRect: FloatingSize = { width: htmlEl.offsetWidth, height: htmlEl.offsetHeight };
@@ -376,6 +387,7 @@ const syncPosition = () => {
 
 /** 统一的显隐入口：同步 v-model、事件与各类监听 */
 const setOpen = (value: boolean) => {
+  if (value && (props.disabled || !hasContent.value || (props.virtualTriggering && !anchorRef.value?.isConnected))) return;
   if (isVisible.value === value) return;
 
   isVisible.value = value;
@@ -399,7 +411,7 @@ const setOpen = (value: boolean) => {
 
 /** 经延时打开；delay<=0 时立即生效 */
 const requestOpen = (delay: number) => {
-  if (props.disabled || !hasContent.value) {
+  if (props.disabled || !hasContent.value || (props.virtualTriggering && !anchorRef.value?.isConnected)) {
     return;
   }
 
@@ -465,6 +477,7 @@ const handleDocumentPointerDown = (e: MouseEvent) => {
   const target = e.target as Node | null;
   if (!target) return;
   if (wrapperRef.value?.contains(target)) return;
+  if (anchorRef.value?.contains(target)) return;
   if (contentWrapperRef.value?.contains(target)) return;
   requestClose(0);
 };
@@ -524,6 +537,69 @@ function unbindKeyboardEvent() {
   window.removeEventListener('keydown', handleKeydown);
 }
 
+/** 外部触发元素变化时迁移监听；单例切换锚点保持当前显隐状态 */
+watch(
+  [isMounted, () => props.virtualTriggering, () => props.virtualRef],
+  ([mounted, virtual, element], previous, onCleanup) => {
+    if (!mounted) return;
+    clearTimers();
+    if (virtual) {
+      if (!element?.isConnected) {
+        setOpen(false);
+        return;
+      }
+      element.addEventListener('mouseenter', handleMouseEnter);
+      element.addEventListener('mouseleave', handleMouseLeave);
+      element.addEventListener('focusin', handleFocusIn);
+      element.addEventListener('focusout', handleFocusOut);
+      element.addEventListener('click', handleClick);
+      element.addEventListener('contextmenu', handleContextMenu);
+      onCleanup(() => {
+        element.removeEventListener('mouseenter', handleMouseEnter);
+        element.removeEventListener('mouseleave', handleMouseLeave);
+        element.removeEventListener('focusin', handleFocusIn);
+        element.removeEventListener('focusout', handleFocusOut);
+        element.removeEventListener('click', handleClick);
+        element.removeEventListener('contextmenu', handleContextMenu);
+      });
+    }
+    // 同轮失焦再聚焦可能让父级 open 保持 true，需要在锚点变化后重新同步
+    if (openModel.value === true && !isVisible.value) setOpen(true);
+    if (shouldRender.value) nextTick(updatePosition);
+  },
+  { flush: 'post' },
+);
+
+/** 只增删自己的描述 ID，保留触发元素已有的 ARIA 描述 */
+watch(
+  [shouldRender, () => props.virtualTriggering, () => props.virtualRef],
+  ([visible, virtual, element], previous, onCleanup) => {
+    if (!visible || !virtual || !element?.isConnected) return;
+    const hadDescription = element.hasAttribute('aria-describedby');
+    const descriptions = (element.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+    const added = !descriptions.includes(tooltipId);
+    if (added) element.setAttribute('aria-describedby', [...descriptions, tooltipId].join(' '));
+
+    // 模板 ref 置空会触发上方监听，直接移除 DOM 的场景由观察器兜底
+    const observer = new MutationObserver(() => {
+      if (!element.isConnected) {
+        clearTimers();
+        setOpen(false);
+      }
+    });
+    observer.observe(element.ownerDocument.documentElement, { childList: true, subtree: true });
+    onCleanup(() => {
+      observer.disconnect();
+      if (!added) return;
+      const remaining = (element.getAttribute('aria-describedby') || '').split(/\s+/)
+        .filter(id => id && id !== tooltipId).join(' ');
+      if (remaining || hadDescription) element.setAttribute('aria-describedby', remaining);
+      else element.removeAttribute('aria-describedby');
+    });
+  },
+  { flush: 'post' },
+);
+
 watch(
   () => props.disabled,
   (disabled) => {
@@ -542,7 +618,7 @@ watch(liveText, (text) => {
 });
 
 watch(
-  () => [props.placement, props.arrow, liveText.value] as const,
+  () => [props.placement, props.arrow, props.rawContent, liveText.value] as const,
   () => {
     if (shouldRender.value) {
       nextTick(updatePosition);
@@ -605,43 +681,44 @@ onBeforeUnmount(() => {
 
 <template>
   <span
-    ref="wrapperRef" :class="styles.wrapper()" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
+    v-if="!virtualTriggering" ref="wrapperRef" v-bind="$attrs" :class="styles.wrapper()" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
     @focusin="handleFocusIn" @focusout="handleFocusOut" @click="handleClick" @contextmenu="handleContextMenu"
   >
     <span ref="triggerRef" :class="styles.trigger()" :aria-describedby="shouldRender ? tooltipId : undefined">
       <slot />
     </span>
-
-    <Teleport :to="popupTarget" :disabled="!isMounted">
-      <RebornTransition
-        ref="contentRefComponent" :show="shouldRender" name="fade" :destroy="destroyOnHidden"
-        lazy-render :custom-class="styles.contentWrapper()" :custom-style="popupStyle" @before-enter="onBeforeEnter"
-        @enter="onEnter" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
-      >
-        <div
-          :id="tooltipId" ref="contentRef" :class="styles.content()"
-          :style="props.color ? { backgroundColor: props.color, color: '#fff' } : undefined" role="tooltip"
-        >
-          <slot name="content">
-            {{ displayText }}
-          </slot>
-        </div>
-        <!-- 箭头取自设计稿（7×18 圆头曲线，尖端向右为原始方向），fill 走 currentColor 与面板同色 -->
-        <!-- 短面板下 arrowLength 会小于 18，用 preserveAspectRatio="none" 只压交叉轴，保住 7px 厚度不留缝 -->
-        <span
-          v-if="showArrow" :class="styles.arrow()" :style="[arrowStyle, props.color ? { color: props.color } : null]"
-          aria-hidden="true"
-        >
-          <svg
-            class="block" width="7" :height="arrowLength" viewBox="0 0 7 18" preserveAspectRatio="none"
-            fill="currentColor"
-          >
-            <path
-              d="M0,0L0,18C0.322,15.745,1.46,13.687,3.199,12.216L5.647,10.145C6.355,9.546,6.355,8.454,5.647,7.855L3.199,5.784C1.46,4.313,0.322,2.255,0,0Z"
-            />
-          </svg>
-        </span>
-      </RebornTransition>
-    </Teleport>
   </span>
+
+  <Teleport :to="popupTarget" :disabled="!isMounted">
+    <RebornTransition
+      ref="contentRefComponent" :show="shouldRender" name="fade" :destroy="destroyOnHidden"
+      lazy-render :custom-class="styles.contentWrapper()" :custom-style="popupStyle" @before-enter="onBeforeEnter"
+      @enter="onEnter" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
+    >
+      <div
+        :id="tooltipId" ref="contentRef" :class="styles.content()"
+        :style="props.color ? { backgroundColor: props.color, color: '#fff' } : undefined" role="tooltip"
+      >
+        <slot name="content">
+          <span v-if="rawContent" v-html="displayText" />
+          <template v-else>{{ displayText }}</template>
+        </slot>
+      </div>
+      <!-- 箭头取自设计稿（7×18 圆头曲线，尖端向右为原始方向），fill 走 currentColor 与面板同色 -->
+      <!-- 短面板下 arrowLength 会小于 18，用 preserveAspectRatio="none" 只压交叉轴，保住 7px 厚度不留缝 -->
+      <span
+        v-if="showArrow" :class="styles.arrow()" :style="[arrowStyle, props.color ? { color: props.color } : null]"
+        aria-hidden="true"
+      >
+        <svg
+          class="block" width="7" :height="arrowLength" viewBox="0 0 7 18" preserveAspectRatio="none"
+          fill="currentColor"
+        >
+          <path
+            d="M0,0L0,18C0.322,15.745,1.46,13.687,3.199,12.216L5.647,10.145C6.355,9.546,6.355,8.454,5.647,7.855L3.199,5.784C1.46,4.313,0.322,2.255,0,0Z"
+          />
+        </svg>
+      </span>
+    </RebornTransition>
+  </Teleport>
 </template>

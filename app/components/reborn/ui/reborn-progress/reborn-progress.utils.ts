@@ -73,13 +73,21 @@ export function getStepRanges(steps: number, geometry?: ProgressArcGeometry): Pr
   }));
 }
 
+/**
+ * 坐标保留三位小数：服务端 Node 与浏览器的 Math.sin / Math.cos 末位精度可能不同，
+ * 不取整时 SSR 输出的 path 与客户端重算的结果对不上，会触发水合属性不一致警告。
+ */
+export function roundCoord(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
 /** 完整圆拆成两条弧，解决 SVG 单弧首尾相同时不显示的问题；direction 为 -1 时逆时针绘制。 */
 export function getArcPath(geometry: ProgressArcGeometry, from: number, to: number): string {
   if (to <= from) return '';
   const center = geometry.diameter / 2;
   const point = (percent: number) => {
     const angle = (geometry.start + geometry.direction * geometry.sweep * percent / 100) * Math.PI / 180;
-    return `${center + geometry.radius * Math.cos(angle)} ${center + geometry.radius * Math.sin(angle)}`;
+    return `${roundCoord(center + geometry.radius * Math.cos(angle))} ${roundCoord(center + geometry.radius * Math.sin(angle))}`;
   };
   const middle = (from + to) / 2;
   const sweepFlag = geometry.direction === 1 ? 1 : 0;

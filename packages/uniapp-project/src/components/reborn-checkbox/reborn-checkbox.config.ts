@@ -28,7 +28,7 @@ export interface CheckboxOption {
 }
 
 /**
- * 复选框组 options 的字段别名配置（对应组上的 props 属性）：
+ * 复选框组 options 的字段别名配置（对应组上的 fieldNames 属性）：
  * 数据源字段名与组件预期不一致（如接口返回 id / name）时在组上做映射，不必先把数据改造一遍。
  */
 export interface CheckboxFieldNames {

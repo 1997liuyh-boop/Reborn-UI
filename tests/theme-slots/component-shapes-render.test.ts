@@ -60,14 +60,19 @@ it('圆形按钮加载时禁用，并用加载动画替换原图标', async () =
   assert.match(html, /rb-loading/)
 })
 
-it('新形状参数沿用 Filled / Outlined / Text 的禁用灰阶文字', async () => {
+it('独立形状不改变变体禁用色，兼容圆形仍保留灰阶底色', async () => {
   for (const variant of ['filled', 'outlined', 'text']) {
-    const html = await render(Button, { variant, circle: true, disabled: true, label: '加' })
-    assert.match(html, /text-gray-5/)
-    assert.match(html, /cursor-not-allowed/)
+    for (const shape of ['round', 'circle']) {
+      const html = await render(Button, { variant, [shape]: true, disabled: true, label: '加' })
+      assert.match(html, variant === 'filled' ? /text-gray-1/ : /text-gray-5/)
+      assert.match(html, /cursor-not-allowed/)
+    }
   }
   const legacy = await render(Button, { variant: 'round', disabled: true, label: '兼容' })
-  assert.match(legacy, /text-white\/50/)
+  assert.match(legacy, /text-gray-1/)
+  const circle = await render(Button, { variant: 'circle', disabled: true, label: '兼容' })
+  assert.match(circle, /text-gray-5/)
+  assert.match(circle, /bg-gray-2/)
 })
 
 it('圆形 Badge 保留数字零，纯图标不插入空标签', async () => {

@@ -128,7 +128,7 @@ const limitedRoles = ref<string[]>([]);
 /** 手动排布的复选框组：预选中的禁用项保持选中态但不可操作 */
 const checkList = ref<string[]>(["A", "selectedDisabled"]);
 
-/** 字段别名：接口原样返回的 id / name 数据，交给组上的 props 做映射而不必改造数据 */
+/** 字段别名：接口原样返回的 id / name 数据，交给组上的 fieldNames 做映射而不必改造数据 */
 const apiRoleOptions = [
   { id: "admin", name: "管理员" },
   { id: "dev", name: "开发" },
@@ -379,7 +379,7 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
 
     <DemoSection
       title="数据驱动：max、direction 与字段别名"
-      description="options 传入数据后由组自行渲染子项，此时默认插槽不再生效；direction 控制排列方向，max 限制最多选中数量；数据字段名对不上时用 props 配置别名，不必先把数据改造一遍。"
+      description="options 传入数据后由组自行渲染子项，此时默认插槽不再生效；direction 控制排列方向，max 限制最多选中数量；数据字段名对不上时用 fieldNames 配置别名，不必先把数据改造一遍。"
     >
       <DemoBlock
         layout="grid"
@@ -427,13 +427,13 @@ const variantColors = ["primary", "success", "warning", "error"] as const;
 
         <div class="flex flex-col gap-3">
           <span class="text-dimmed text-xs font-medium">
-            <code>:props</code> 字段别名
+            <code>:field-names</code> 字段别名
           </span>
           <!-- 数据源是 id / name，别名映射后组件照常取到值与文本 -->
           <RebornCheckboxGroup
             v-model="apiRoles"
             :options="apiRoleOptions"
-            :props="{ label: 'name', value: 'id' }"
+            :field-names="{ label: 'name', value: 'id' }"
             direction="vertical"
           />
           <DemoNote tone="dimmed">已选：<code>{{ apiRoles.join("、") || "空" }}</code></DemoNote>

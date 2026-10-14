@@ -138,7 +138,7 @@ it("默认底部等宽且此刻为文本、确定为实体按钮", async () => {
 it("关闭时机默认点击并可透传按下模式", async () => {
   for (const closeOn of [undefined, 'click', 'mousedown']) {
     const p = mount(closeOn ? { closeOn } : {}); await open(p);
-    assert.equal(p.container.firstElementChild.getAttribute('data-close-on'), closeOn ?? 'click');
+    assert.equal(p.container.firstElementChild.getAttribute('data-close-on'), closeOn ?? 'mousedown');
   }
 });
 

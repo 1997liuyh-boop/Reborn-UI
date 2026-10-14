@@ -14,16 +14,25 @@ export interface SkuOptionItem {
   [key: string]: any;
 }
 
+/**
+ * 属性组 children 的字段别名配置：后端字段名与默认的 label / value 不一致时配置，
+ * 未配置的字段沿用默认名
+ */
+export interface SkuFieldNames {
+  /** 展示文案字段名，默认 `label` */
+  label?: string;
+  /** 选项值字段名，默认 `value` */
+  value?: string;
+}
+
 /** 属性组定义 */
 export interface SkuOption {
   /** 属性组标题 */
   title?: string;
   /** 绑定到 modelValue 的 key */
   key: string;
-  /** 选项列表中用于显示的字段名 */
-  labelKey?: string;
-  /** 选项列表中用于取值的字段名 */
-  valueKey?: string;
+  /** children 的字段别名配置，按这里给出的字段名去选项里取文案与值 */
+  fieldNames?: SkuFieldNames;
   /** 是否支持多选 */
   multiple?: boolean;
   /** 自定义插槽名称 */
@@ -46,7 +55,7 @@ export interface SkuUi {
 export interface SkuProps {
   /** 属性组配置列表 */
   options?: SkuOption[];
-  /** 双向绑定值，key 为 SkuOption.key，value 为选中的 valueKey 值（多选时为数组） */
+  /** 双向绑定值，key 为 SkuOption.key，value 为选中项按 fieldNames.value 取到的值（多选时为数组） */
   modelValue?: Record<string, any>;
   /** 自定义类名 */
   class?: any;
@@ -87,10 +96,22 @@ function isEqual(a: any, b: any): boolean {
   }
 }
 
+/** 选项的值：按 fieldNames.value 取字段；运行时传入的字符串 / 数字直接作为值 */
+function valueOf(option: SkuOption, item: SkuOptionItem): any {
+  if (typeof item !== "object" || item === null) return item;
+  return item[option.fieldNames?.value ?? "value"];
+}
+
+/** 选项的展示文案：按 fieldNames.label 取字段；运行时传入的字符串 / 数字直接展示 */
+function labelOf(option: SkuOption, item: SkuOptionItem): any {
+  if (typeof item !== "object" || item === null) return item;
+  return item[option.fieldNames?.label ?? "label"];
+}
+
 /** 判断某个选项是否被选中 */
 function isSelected(option: SkuOption, item: SkuOptionItem): boolean {
   const current = props.modelValue?.[option.key];
-  const val = option.valueKey ? item[option.valueKey] : item;
+  const val = valueOf(option, item);
   if (option.multiple && Array.isArray(current)) {
     return current.some(c => isEqual(c, val));
   }
@@ -99,7 +120,7 @@ function isSelected(option: SkuOption, item: SkuOptionItem): boolean {
 
 /** 点击某个属性值 */
 function handleSelect(option: SkuOption, item: SkuOptionItem) {
-  const val = option.valueKey ? item[option.valueKey] : item;
+  const val = valueOf(option, item);
   const current = props.modelValue?.[option.key];
   let next: any;
 
@@ -138,7 +159,7 @@ function handleSelect(option: SkuOption, item: SkuOptionItem) {
             :color="isSelected(option, item) ? 'primary' : 'neutral'" variant="soft" @click="handleSelect(option, item)"
             :class="ui.item" :ui="{ label: isSelected(option, item) ? '' : 'text-gray-7' }">
             <slot name="item" :item="item" :option="option" :selected="isSelected(option, item)">
-              {{ option.labelKey ? item[option.labelKey] : item }}
+              {{ labelOf(option, item) }}
             </slot>
           </RebornBadge>
 

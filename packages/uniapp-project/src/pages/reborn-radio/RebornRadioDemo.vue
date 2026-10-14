@@ -38,6 +38,14 @@ const payOptions = [
   { value: 'card', label: '银行卡' },
 ]
 
+/** 字段别名：接口原样返回 code / name / closed，交给 fieldNames 映射，不必先把数据改造一遍 */
+const shippingOptions = [
+  { code: 'express', name: '快递配送', fee: 8 },
+  { code: 'pickup', name: '门店自提', fee: 0 },
+  { code: 'same-day', name: '同城急送', fee: 20, closed: true },
+]
+const selectedShipping = ref('express')
+
 const plans = [
   { value: 'basic', label: '基础版', desc: '适合个人开发者' },
   { value: 'pro', label: '专业版', desc: '适合小型团队' },
@@ -120,6 +128,19 @@ function onUncontrolledChange(value: string | number | boolean) {
           <text class="font-medium">{{ data.label }}</text>
         </template>
       </RebornRadioGroup>
+      <!-- fieldNames 字段别名：数据是 code / name / closed，fee 不参与映射，照样能在插槽里读到 -->
+      <RebornRadioGroup
+        v-model="selectedShipping" :options="shippingOptions"
+        :field-names="{ label: 'name', value: 'code', disabled: 'closed' }"
+      >
+        <template #label="{ data }">
+          <text>{{ data.label }}</text>
+          <text class="ml-[8rpx] text-24 text-gray-6">¥{{ data.fee }}</text>
+        </template>
+      </RebornRadioGroup>
+      <text class="text-24 text-gray-6">
+        配送方式绑定值：{{ selectedShipping }}（取自 code 字段）
+      </text>
     </RebornCard>
 
     <RebornCard title="方向与非受控" custom-class="space-y-[24rpx]">

@@ -1,0 +1,37 @@
+{
+  "description": "Web 文件上传组件：负责选择文件、发起上传并展示每个文件的进度与结果，提供 text / picture / picture-card 三种列表形态，支持拖拽、选择文件夹、手动上传、自定义请求与分片断点续传，图片与视频均可显示缩略图；参数、钩子与实例方法对齐 Element Plus 的 el-upload。",
+  "whenToUse": [
+    "表单里附带合同、简历等附件——用默认 listType=\"text\"，失败原因悬停失败图标查看。",
+    "上传头像、商品图等需要先看到缩略图的图片——用 listType=\"picture\" 或 \"picture-card\"。",
+    "一次放入一批文件或整个目录——用 drag 开启拖放区，必要时加 directory。",
+    "选好一批文件后统一提交——设 :auto-upload=\"false\"，再调用实例的 submit()。",
+    "上传走 SDK 直传或需要签名——用 http-request 替换默认 XHR，或用 data 异步生成签名字段。",
+    "上传视频、安装包等大文件，需要暂停、断网后续传——用 :chunk 传入分片适配器（init / uploaded / uploadChunk / merge），后端提供分片接口。"
+  ],
+  "whenNotToUse": [
+    "只需要在本地读取所选文件（导入 Excel、读取文本），不发请求——改用原生 <input type=\"file\">。",
+    "需要带动画的整块拖放区、文件不需要逐个展示进度——改用 file-upload。",
+    "小程序或 App 端选择图片——改用 uni.chooseImage 配合 uni.uploadFile，本组件仅 Web 可用。"
+  ],
+  "pitfalls": [
+    "text / picture 非拖拽形态下组件不内置按钮：要在 default 插槽放 <RebornButton color=\"neutral\" variant=\"outlined\">，聚焦与键盘操作由按钮提供；禁用时要给按钮同步 disabled，组件只拦截点击、不改按钮外观。",
+    "picture / picture-card 下上传失败的图片仍显示缩略图（本地预览地址失败时不释放），并以红色描边标出。",
+    "钩子是 prop 不是事件：要写成 :on-success、:before-upload 等，写成 @success 不会被调用；列表变化唯一的事件是 update:fileList。",
+    "超出 limit 时整批丢弃：按「已有数量 + 本次选择数量」判断，超出就触发 on-exceed，这一批一个都不加入，不会截取前几个。",
+    "通过 file-list 回显的历史文件没有 raw，缺省状态补为 success，submit() 会跳过它们。",
+    "before-upload 返回 false 或 reject 时文件直接移出列表，不经过 before-remove，但 on-remove 仍会触发；返回 File / Blob 时改为上传它。",
+    "未开 multiple 时只取第一个文件（拖入多个也一样）；directory 视为多选。",
+    "拖入与选择文件夹时组件会按 accept 再过滤一遍；非 directory 模式下拖入的文件夹会被忽略。",
+    "abort() 让上传中的文件回到 ready 且进度归零，不会移除；要连同列表一起清掉用 clearFiles()。",
+    "自定义 http-request 只有返回带 abort 方法的对象才能被中止；返回 Promise 时其结果自动转交成功 / 失败；同步抛错直接标记失败。",
+    "默认请求只按 HTTP 状态码判断成败：后端用 HTTP 200 加业务码表示失败时，要用 http-request 包一层 ajaxUpload，在其 onSuccess 里判断业务码并转交 onError；放到 :on-success 里判断为时已晚，文件已标记为成功。",
+    "文件名只有传入 on-preview 时才可点击，picture-card 的遮罩也只有此时才出现预览按钮。",
+    "同时提供 trigger 插槽时，default 插槽改为渲染在触发区之后，常用来放「开始上传」按钮。",
+    "chunk 与 http-request 二选一：传入 chunk 后上传全部走分片适配器，http-request 与 action / method / name 不再生效；data、headers、withCredentials 解析后放进适配器各步的参数。",
+    "分片适配器的每个请求都要接上参数里的 signal，否则暂停、中止或删除文件后请求仍在后台跑完。",
+    "组件只在内存里记录本次会话传完的分片；要做到删掉文件再选同一个文件接着传，init 须按文件指纹返回同一个会话，并提供 uploaded 返回服务端已收到的分片序号。",
+    "submit() 不继续已暂停（paused）的文件，要用 resume()；resume() 不再经过 before-upload；abort() 会丢弃分片断点，之后从第一片重来。",
+    "pause() / resume() 只在开启 chunk 时生效；暂停后进度退回到已完整传完的分片处，传到一半的分片继续时整片重传。",
+    "picture / picture-card 下视频缩略图取首帧（静音 video、preload=metadata），浏览器解码不了的格式退回通用文件图标；组件不内置播放器，播放由 on-preview 自行处理。"
+  ]
+}

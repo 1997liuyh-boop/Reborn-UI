@@ -93,6 +93,74 @@ const options = [
 :::
 ::
 
+### 字段别名：field-names
+
+接口返回的字段名对不上 `label` / `value` 时，用 `field-names` 指定从哪个字段取值，不必先把数据 map 一遍。组件内部会把每个选项展开成「原字段 + 补齐的 `label` / `value`」，所以没参与映射的业务字段（下例的 `sla`）在 `option` 插槽里照样读得到，`v-model` 拿到的则是映射后的 `value` 字段。
+
+两端可映射的键不同：Web 端是 `label` / `value` / `disabled`，UniApp 端是 `label` / `value` / `children`（滚轮没有禁用态，但多列级联要下钻子级）。
+
+::tabs{sync="platform"}
+:::tabs-item{label="Web" icon="tabler:world"}
+
+```vue
+<script setup lang="ts">
+const value = ref("cn-east");
+// 接口原样返回 id / name / closed
+const regions = [
+  { id: "cn-east", name: "华东节点", sla: "99.95%" },
+  { id: "cn-south", name: "华南节点", sla: "99.9%" },
+  { id: "cn-north", name: "华北节点（维护中）", sla: "—", closed: true },
+];
+</script>
+
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="regions"
+    :field-names="{ label: 'name', value: 'id', disabled: 'closed' }"
+    class="w-60"
+  >
+    <template #option="{ option }">
+      <div class="flex w-full items-center justify-between gap-3">
+        <span class="truncate">{{ option.label }}</span>
+        <span class="text-dimmed shrink-0 text-xs">SLA {{ option.sla }}</span>
+      </div>
+    </template>
+  </RebornSelect>
+</template>
+```
+
+`filter-option` 传函数时拿到的 `option` 同样是展开后的对象，按 `option.label` 匹配即可。
+
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+```vue
+<script setup lang="ts">
+const value = ref(["zj", "nb"]);
+// 子级字段叫 cities，用 children 键指过去，多列才能逐层下钻
+const regions = [
+  { id: "fj", name: "福建省", cities: [{ id: "fz", name: "福州" }, { id: "xm", name: "厦门" }] },
+  { id: "zj", name: "浙江省", cities: [{ id: "hz", name: "杭州" }, { id: "nb", name: "宁波" }] },
+];
+</script>
+
+<template>
+  <RebornSelect
+    v-model="value"
+    :options="regions"
+    :column-count="2"
+    :field-names="{ label: 'name', value: 'id', children: 'cities' }"
+  />
+</template>
+```
+
+映射对每一层子级都生效，`change` 事件第二个参数里的选项对象也带着原字段。
+
+:::
+::
+
 ### 多选与标签折叠：multiple / collapse-tags
 
 仅 Web 端支持。开启 `multiple` 后 `v-model` 的值变为数组，触发器内渲染 `RebornBadge` 标签。未开启 `collapse-tags` 时标签逐行铺开、触发器高度随之增长；开启后只保留前 `max-collapse-tags` 枚（默认 `1`），其余收成一段 `+N`，再配 `collapse-tags-tooltip` 可悬停查看被折叠的具体选项。
@@ -470,7 +538,8 @@ function pick() {
 | 属性名 | 类型 | 默认值 | 描述 |
 | ---------------------- | ----------------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------- |
 | `modelValue` / v-model | `any` | `null` | 绑定值。单选为选项的 `value`，`multiple` 开启后为 `value` 数组 |
-| `options` | `SelectOption[]` | `[]` | 数据源选项 |
+| `options` | `(SelectOption \| Record<string, any>)[]` | `[]` | 数据源选项。字段名与默认不一致时配合 `fieldNames` |
+| `fieldNames` | `SelectFieldNames` | - | 字段别名，按给出的字段名从选项里取 `label` / `value` / `disabled` |
 | `placeholder` | `string` | `"请选择"` | 占位符文本 |
 | `multiple` | `boolean` | `false` | 多选模式，开启后触发器内渲染标签、绑定值变为数组 |
 | `collapseTags` | `boolean` | `false` | 多选时把超出的标签合并为一段 `+N` |
@@ -491,7 +560,7 @@ function pick() {
 | `showArrow` | `boolean` | `true` | 是否显示下拉箭头 |
 | `arrowAnimation` | `boolean` | `true` | 展开时箭头是否旋转 180° |
 | `icon` | `string` | `"lucide:chevron-down"` | 箭头图标名 |
-| `closeOn` | `"click" \| "mousedown"` | `"click"` | 收起时机。`click` 为触发器外完成一次点击后收起，`mousedown` 为外部按下即收（滚动亦收） |
+| `closeOn` | `"click" \| "mousedown"` | `"mousedown"` | 收起时机。`mousedown` 为面板外按下、滚轮或页面滚动即收，面板内部滚动不算外部；在面板内按下、拖到外部再松手不会误收。`click` 为触发器外完成一次点击后收起，期间页面滚动时面板跟随触发器 |
 | `portal` | `boolean` | `true` | 浮层是否传送到 `body`。关掉后浮层留在触发器内，会随父容器滚动并被 `overflow` 裁剪 |
 | `autoAdjustOverflow` | `boolean` | `true` | 下方空间不足且上方更宽裕时向上展开；关闭后固定向下 |
 | `class` | `any` | `-` | 追加到触发器外层容器的类名 |
@@ -505,7 +574,8 @@ function pick() {
 | 属性名 | 类型 | 默认值 | 描述 |
 | ---------------------- | ----------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------ |
 | `modelValue` / v-model | `SelectValue` | `null` | 绑定值。单列为选项的 `value`，多列为各列 `value` 组成的数组 |
-| `options` | `SelectOption[]` | `[]` | 选项数据。多列级联时靠选项的 `children` 字段逐层下钻 |
+| `options` | `(SelectOption \| Record<string, any>)[]` | `[]` | 选项数据。多列级联时靠选项的 `children` 字段逐层下钻 |
+| `fieldNames` | `SelectFieldNames` | - | 字段别名，按给出的字段名从每一层选项里取 `label` / `value` / `children` |
 | `title` | `string` | `"请选择"` | 底部弹层的标题 |
 | `placeholder` | `string` | `"请选择"` | 触发器的占位符 |
 | `showTrigger` | `boolean` | `true` | 是否渲染内置触发器。关掉后需外部调用 `open()` 唤起弹层 |
@@ -554,6 +624,28 @@ function pick() {
 ::warning
 本端**没有 `disabled` 字段**——滚轮无法跳过单项。需要禁用某个候选值请直接从数据源剔除。
 ::
+:::
+::
+
+### SelectFieldNames
+
+两端同名，可映射的键不同。省略的键回落到默认字段名。
+
+::tabs{sync="platform"}
+:::tabs-item{label="Web" icon="tabler:world"}
+| 字段 | 类型 | 默认值 | 描述 |
+| ---------- | -------- | ------------ | -------------- |
+| `label` | `string` | `'label'` | 展示文案字段名 |
+| `value` | `string` | `'value'` | 选项值字段名 |
+| `disabled` | `string` | `'disabled'` | 禁用字段名 |
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+| 字段 | 类型 | 默认值 | 描述 |
+| ---------- | -------- | ------------ | ---------------------------- |
+| `label` | `string` | `'label'` | 展示文案字段名 |
+| `value` | `string` | `'value'` | 选项值字段名 |
+| `children` | `string` | `'children'` | 下一列选项字段名，逐层生效 |
 :::
 ::
 

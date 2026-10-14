@@ -104,6 +104,9 @@ export type CascaderUI = Partial<{
   tagClose: ClassValue;
   tagCloseIcon: ClassValue;
   collapseTag: ClassValue;
+  tagSearch: ClassValue;
+  tagSearchMirror: ClassValue;
+  tagSearchInput: ClassValue;
 }>;
 
 /** RebornCascaderPanel 可覆盖的样式键：面板部分与 RebornCascader 同名同义 */
@@ -182,17 +185,40 @@ export default {
     prefix: "flex shrink-0 items-center text-gray-6",
     /** 搜索态下替换箭头的搜索图标 */
     searchIcon: "size-full text-gray-6",
+    /**
+     * 多选标签末尾的搜索位。收起时也一直占着这个位置（只是个空壳），展开时才往里放输入框：
+     * 输入框若只在展开时才出现，标签末行余量不够时它会另起一行，触发器随之长高、整页跟着跳一下。
+     * 宽度由内部的隐形镜像按关键词撑开（见 tagSearchMirror），关键词超出本行余量时整格换到下一行；
+     * flex-1 吃掉本行剩余宽度，让点击区域更大。高度按尺寸档位与标签对齐（见 size 变体）。
+     * 裁切用 overflow-clip 而不是 hidden：hidden 会让它变成滚动容器，
+     * flex 项目的自动最小宽度随之归零，镜像撑宽度的机制就失效了。
+     */
+    tagSearch: "relative flex max-w-full flex-1 items-center overflow-clip",
+    /** 搜索位里的隐形镜像：与输入框同字体，按关键词撑出搜索位的最小宽度 */
+    tagSearchMirror: "invisible whitespace-pre",
+    /** 搜索位里的输入框：铺满搜索位，并取消 searchInput 自带的最小宽度（宽度改由镜像决定） */
+    tagSearchInput: "absolute inset-0 size-full min-w-0",
   },
   variants: {
     ...selectVariantMap,
     /**
      * 尺寸档位。触发器与标签沿用 reborn-select 的三档，
      * 级联额外按档位给列宽下限：档位越大，列越宽，避免 lg 下文字贴着分割线。
+     * 多选搜索位的高度与同档标签一致（h-4 / h-5 / h-6）：输入框按行高撑开会比标签高出几像素，
+     * 展开时那一行跟着变高，触发器整体抖一下。
      */
     size: {
-      sm: { ...selectSize.sm, column: "min-w-[140px]" },
-      md: { ...selectSize.md, column: "min-w-[160px]" },
-      lg: { ...selectSize.lg, column: "min-w-[180px]" },
+      sm: { ...selectSize.sm, column: "min-w-[140px]", tagSearch: "h-4" },
+      md: { ...selectSize.md, column: "min-w-[160px]", tagSearch: "h-5" },
+      lg: { ...selectSize.lg, column: "min-w-[180px]", tagSearch: "h-6" },
+    },
+    /**
+     * 可清空。在 reborn-select 的基础上补一条：搜索态下箭头被搜索图标顶替，
+     * 搜索图标也要跟箭头一样在悬停时淡出，否则盖上来的清空按钮会与它叠成一团
+     */
+    clearable: {
+      true: { ...selectVariantMap.clearable.true, searchIcon: "group-hover/field:opacity-0" },
+      false: {},
     },
     /**
      * 面板是否自带外框。RebornCascaderPanel 单独使用时需要一圈描边与阴影，

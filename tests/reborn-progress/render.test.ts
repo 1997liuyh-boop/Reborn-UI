@@ -98,10 +98,18 @@ it('步骤渐变在完整轨道坐标系中保留角度与色标', async () => {
   }
 });
 
-it('步骤轨道可独立滚动，分段圆弧轨道与填充使用一致平端', async () => {
+it('步骤轨道可独立滚动', async () => {
   assert.match(await render({ steps: 12 }), /overflow-x-auto/);
-  const html = await render({ type: 'dashboard', percent: 100, segments: [{ percentage: 50, color: 'red' }, { percentage: 100, color: 'blue' }] });
-  assert.match(html, /<g[^>]*stroke-linecap="butt"/);
+});
+it('连续分段圆弧使用圆端，启用步骤后使用平端', async () => {
+  for (const type of ['circle', 'dashboard']) {
+    for (const steps of [0, 5]) {
+      const html = await render({ type, steps, percent: 100, segments: [{ percentage: 50, color: 'red' }, { percentage: 100, color: 'blue' }] });
+      assert.match(html, new RegExp(`<g[^>]*stroke-linecap="${steps ? 'butt' : 'round'}"`));
+      assert.match(html, /stroke="red"/);
+      assert.match(html, /stroke="blue"/);
+    }
+  }
 });
 it('步骤内嵌文字位于滚动轨道外，不受细轨道高度裁切', async () => {
   for (const size of ['sm', 'md']) {

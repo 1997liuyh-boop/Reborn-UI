@@ -28,8 +28,6 @@ const props = withDefaults(defineProps<CascaderProps>(), {
     placeholder: '请选择',
     showTrigger: true,
     disabled: false,
-    labelKey: 'label',
-    valueKey: 'value',
     textSeparator: ' / ',
     height: 600,
     size: 'md',
@@ -38,7 +36,6 @@ const props = withDefaults(defineProps<CascaderProps>(), {
     customStyle: '',
     ui: () => ({}),
     lazy: false,
-    childrenKey: 'children',
     leafLevel: 0,
     multiple: false,
     checkStrictly: false,
@@ -50,6 +47,11 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: (string | number)[] | (string | number)[][]): void
     (e: 'change', value: (string | number)[] | (string | number)[][]): void
 }>()
+
+// 字段别名：未在 fieldNames 中配置的字段沿用默认名
+const labelField = computed(() => props.fieldNames?.label ?? 'label')
+const valueField = computed(() => props.fieldNames?.value ?? 'value')
+const childrenField = computed(() => props.fieldNames?.children ?? 'children')
 
 // 样式系统
 const b = tv(theme)
@@ -128,8 +130,8 @@ const lists = computed<CascaderOption[][]>(() => {
         if (props.leafLevel > 0 && i + 1 >= props.leafLevel) break
 
         const val = activePath.value[i]
-        const found = data.find(item => item[props.valueKey] === val)
-        const children = found?.[props.childrenKey]
+        const found = data.find(item => item[valueField.value] === val)
+        const children = found?.[childrenField.value]
         if (found && children && children.length > 0) {
             data = children
             result.push(data)
@@ -205,9 +207,9 @@ const labels = computed(() => {
     const result: string[] = []
     for (let i = 0; i < activePath.value.length; i++) {
         const val = activePath.value[i]
-        const found = lists.value[i]?.find(item => item[props.valueKey] === val)
+        const found = lists.value[i]?.find(item => item[valueField.value] === val)
         if (found) {
-            result.push(found[props.labelKey])
+            result.push(found[labelField.value])
         } else {
             break
         }
@@ -217,8 +219,8 @@ const labels = computed(() => {
     const lastIndex = result.length - 1
     const lastVal = activePath.value[lastIndex]
     const lastListData = lists.value[lastIndex]
-    const lastFound = lastListData?.find(item => item[props.valueKey] === lastVal)
-    const children = lastFound?.[props.childrenKey]
+    const lastFound = lastListData?.find(item => item[valueField.value] === lastVal)
+    const children = lastFound?.[childrenField.value]
 
     // 层级限制判断
     const reachedLeafLevel = props.leafLevel > 0 && result.length >= props.leafLevel
@@ -242,10 +244,10 @@ const triggerText = computed(() => {
     let data = internalOptions.value
 
     for (const val of (props.modelValue as (string | number)[])) {
-        const found = data.find(item => item[props.valueKey] === val)
+        const found = data.find(item => item[valueField.value] === val)
         if (found) {
-            texts.push(found[props.labelKey])
-            const children = found[props.childrenKey]
+            texts.push(found[labelField.value])
+            const children = found[childrenField.value]
             if (children) {
                 data = children
             } else {
@@ -269,8 +271,8 @@ const open = async () => {
         try {
             const children = await new Promise<CascaderOption[]>((resolve, reject) => {
                 const rootNode = {
-                    [props.labelKey]: 'root',
-                    [props.valueKey]: 'root',
+                    [labelField.value]: 'root',
+                    [valueField.value]: 'root',
                     isRoot: true
                 } as unknown as CascaderOption
                 props.lazyLoad?.(rootNode, resolve, reject)
@@ -317,8 +319,8 @@ const toggleMultiSelection = (node: CascaderOption, path: (string | number)[], i
 }
 
 const getLeafPaths = (node: CascaderOption, parentPath: (string | number)[] = []): (string | number)[][] => {
-    const currentPath = [...parentPath, node[props.valueKey]]
-    const children = node[props.childrenKey]
+    const currentPath = [...parentPath, node[valueField.value]]
+    const children = node[childrenField.value]
     if (!children || children.length === 0) {
         return [currentPath]
     }
@@ -326,7 +328,7 @@ const getLeafPaths = (node: CascaderOption, parentPath: (string | number)[] = []
 }
 
 const isLeafNode = (item: CascaderOption, listIndex: number) => {
-    const childrenKey = props.childrenKey
+    const childrenKey = childrenField.value
     return item.leaf === true ||
         (!props.lazy && (!item[childrenKey] || item[childrenKey].length === 0)) ||
         (props.leafLevel > 0 && listIndex + 1 >= props.leafLevel)
@@ -334,7 +336,7 @@ const isLeafNode = (item: CascaderOption, listIndex: number) => {
 
 const getItemRenderKey = (item: CascaderOption, listIndex: number) => {
     const prefix = activePath.value.slice(0, listIndex).join('\u001f')
-    return `${listIndex}-${String(item[props.valueKey])}-${prefix}`
+    return `${listIndex}-${String(item[valueField.value])}-${prefix}`
 }
 
 const checkboxControlClass = (checked: boolean) => cn(
@@ -344,8 +346,8 @@ const checkboxControlClass = (checked: boolean) => cn(
 
 const onItemTap = async (item: CascaderOption, listIndex: number, fromCheckbox = false) => {
     if (props.disabled) return
-    const val = item[props.valueKey]
-    const childrenKey = props.childrenKey
+    const val = item[valueField.value]
+    const childrenKey = childrenField.value
     const isLeaf = isLeafNode(item, listIndex)
 
     // 更新当前路径
@@ -428,7 +430,7 @@ const isItemSelected = (item: CascaderOption, listIndex: number) => {
         }
         // 严格模式只认节点自身的路径是否在选中集合里，父子勾选互不影响，也不存在「叶子全选则父选中」的推导
         if (props.checkStrictly) {
-            const ownStr = JSON.stringify([...prefix, item[props.valueKey]])
+            const ownStr = JSON.stringify([...prefix, item[valueField.value]])
             return selectedPaths.value.some(sp => JSON.stringify(sp) === ownStr)
         }
         const leaves = getLeafPaths(item, prefix)
@@ -441,7 +443,7 @@ const isItemSelected = (item: CascaderOption, listIndex: number) => {
             return selectedPaths.value.some(sp => JSON.stringify(sp) === pStr)
         })
     }
-    return activePath.value[listIndex] === item[props.valueKey]
+    return activePath.value[listIndex] === item[valueField.value]
 }
 
 defineExpose({
@@ -496,7 +498,7 @@ defineExpose({
                                     <view v-for="item in listData" :key="getItemRenderKey(item, listIndex)"
                                         :class="[
                                             ui.item(),
-                                            activePath[listIndex] === item[valueKey] ? ui.itemActive() : ''
+                                            activePath[listIndex] === item[valueField] ? ui.itemActive() : ''
                                         ]" @tap="onItemTap(item, listIndex)">
                                         <view :class="ui.itemInner()">
                                             <view v-if="props.multiple" :class="ui.checkbox()"
@@ -507,15 +509,15 @@ defineExpose({
                                                 </view>
                                             </view>
                                             <slot name="item" :item="item" :listIndex="listIndex"
-                                                :active="activePath[listIndex] === item[valueKey]">
+                                                :active="activePath[listIndex] === item[valueField]">
                                                 <RebornText
-                                                    :custom-class="activePath[listIndex] === item[valueKey] ? ui.itemTextActive() : ui.itemText()"
+                                                    :custom-class="activePath[listIndex] === item[valueField] ? ui.itemTextActive() : ui.itemText()"
                                                     :ellipsis="ellipsis" :lines="lines">
-                                                    {{ item[labelKey] }}
+                                                    {{ item[labelField] }}
                                                 </RebornText>
                                             </slot>
                                         </view>
-                                        <view v-if="loadingNodes[String(item[valueKey])]" :class="ui.nodeLoading()">
+                                        <view v-if="loadingNodes[String(item[valueField])]" :class="ui.nodeLoading()">
                                             <RebornLoading type="outline" :color="color" size="32rpx" />
                                         </view>
                                         <view v-else-if="!isLeafNode(item, listIndex)" :class="ui.nodeArrow()" />

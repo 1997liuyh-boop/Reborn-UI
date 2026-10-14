@@ -185,7 +185,7 @@ function onCheckAll(value: boolean) {
 
 `options` 的对象项可带 `disabled` 逐项禁用；`direction="vertical"` 纵向排列；`max` 限制最多可选数量，达到上限后未选中项自动禁用（已选中项仍可取消）。`label` 插槽可统一定制每项文案，作用域 `data` 是原始选项对象。
 
-数据源字段名与组件预期不一致（如接口返回 `id` / `name`）时，用 `props` 配置别名，按给出的字段名去数据里取 `label` / `value` / `disabled` / `indeterminate`，不必先把数据改造一遍；原始字段仍会保留在 `label` 插槽的 `data` 参数里。
+数据源字段名与组件预期不一致（如接口返回 `id` / `name`）时，用 `fieldNames` 配置别名，按给出的字段名去数据里取 `label` / `value` / `disabled` / `indeterminate`，不必先把数据改造一遍；原始字段仍会保留在 `label` 插槽的 `data` 参数里。
 
 ```vue
 <template>
@@ -201,11 +201,11 @@ function onCheckAll(value: boolean) {
     </template>
   </RebornCheckboxGroup>
 
-  <!-- props 字段别名：数据是 id / name，映射后组件照常取到值与文本 -->
+  <!-- fieldNames 字段别名：数据是 id / name，映射后组件照常取到值与文本 -->
   <RebornCheckboxGroup
     v-model="roles"
     :options="[{ id: 'admin', name: '管理员' }, { id: 'dev', name: '开发' }]"
-    :props="{ label: 'name', value: 'id' }"
+    :field-names="{ label: 'name', value: 'id' }"
   />
 </template>
 ```
@@ -353,7 +353,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | `defaultValue` | `(string \| number \| boolean)[]` | `[]` | 非受控模式下的初始选中值数组。 |
 | `max` | `number` | - | 最多可选数量，达到上限后未选中项自动禁用（已选中项仍可取消）。 |
 | `options` | `(string \| number \| CheckboxOption \| Record<string, any>)[]` | - | 选项数据。传入后由组自行渲染子项，默认插槽不再生效。 |
-| `props` | `CheckboxFieldNames` | - | `options` 的字段别名配置，按给出的字段名取 `label` / `value` / `disabled` / `indeterminate`。 |
+| `fieldNames` | `CheckboxFieldNames` | - | `options` 的字段别名配置，按给出的字段名取 `label` / `value` / `disabled` / `indeterminate`。 |
 | `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 子项排列方向。 |
 | `disabled` | `boolean` | `false` | 是否整组禁用。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 统一下发给子项的尺寸。 |
@@ -370,7 +370,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 | `defaultValue` | `(string \| number \| boolean)[]` | `[]` | 非受控模式下的初始选中值数组。 |
 | `max` | `number` | - | 最多可选数量，达到上限后未选中项自动禁用（已选中项仍可取消）。 |
 | `options` | `(string \| number \| CheckboxOption \| Record<string, any>)[]` | - | 选项数据。传入后由组自行渲染子项，默认插槽不再生效。 |
-| `props` | `CheckboxFieldNames` | - | `options` 的字段别名配置，按给出的字段名取 `label` / `value` / `disabled` / `indeterminate`。 |
+| `fieldNames` | `CheckboxFieldNames` | - | `options` 的字段别名配置，按给出的字段名取 `label` / `value` / `disabled` / `indeterminate`。 |
 | `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 子项排列方向。 |
 | `disabled` | `boolean` | `false` | 是否整组禁用。 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 统一下发给子项的尺寸。 |
@@ -409,7 +409,7 @@ UniApp 端不提供 `trueValue` / `falseValue`，布尔模式固定写回 `true`
 
 ### CheckboxFieldNames
 
-组上 `props` 属性的类型，四个键都可省略，省略的键回落到默认字段名：
+组上 `fieldNames` 属性的类型，四个键都可省略，省略的键回落到默认字段名：
 
 | 字段名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |

@@ -37,7 +37,7 @@ const limitedRoles = ref<string[]>([])
 /** 手动排布的复选框组：预选中的禁用项保持选中态但不可操作 */
 const checkList = ref<string[]>(['A', 'selectedDisabled'])
 
-/** 字段别名：接口原样返回的 id / name 数据，交给组上的 props 做映射而不必改造数据 */
+/** 字段别名：接口原样返回的 id / name 数据，交给组上的 fieldNames 做映射而不必改造数据 */
 const apiRoleOptions = [
   { id: 'admin', name: '管理员' },
   { id: 'dev', name: '开发' },
@@ -233,10 +233,10 @@ const variantColors = ['primary', 'success', 'warning', 'error'] as const
             text-sm text-slate-500
             dark:text-slate-200
           ">
-          props 字段别名（数据是 id / name，已选 {{ apiRoles.join('、') || '空' }}）
+          fieldNames 字段别名（数据是 id / name，已选 {{ apiRoles.join('、') || '空' }}）
         </text>
         <RebornCheckboxGroup
-          v-model="apiRoles" :options="apiRoleOptions" :props="{ label: 'name', value: 'id' }"
+          v-model="apiRoles" :options="apiRoleOptions" :field-names="{ label: 'name', value: 'id' }"
         />
       </view>
     </RebornCard>

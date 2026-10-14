@@ -13,6 +13,7 @@ import type {
 } from "./reborn-tabs.config";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, onBeforeUnmount, provide, shallowRef, watch } from "vue";
+import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { cn } from "~/lib/utils";
 import theme, { TABS_INJECTION_KEY } from "./reborn-tabs.config";
 
@@ -434,125 +435,30 @@ function updateIndicator() {
     : { opacity: "1", left: `${rect.left - listRect.left}px`, width: `${rect.width}px` };
 }
 
-/** 底板落点，相对标签列左上角；两个轴向都记，不像指示条只需要主轴 */
-interface SliderRect {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
-/** 液体形变两段的节奏：行程直奔目标，回弹越过目标再弹回 */
-const LIQUID_TRAVEL_DURATION = 110;
-const LIQUID_TRAVEL_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
-const LIQUID_SETTLE_DURATION = 150;
-const LIQUID_SETTLE_EASING = "cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-
-/** 底板要整块盖住选中标签，两个轴向都得写，不像指示条只需要主轴 */
-const sliderStyle = shallowRef<Record<string, string>>({ opacity: "0" });
-/** 上一次提交的落点，作为液体形变的起点；连点时取的是提交值而非飞行中的视觉位置 */
-let sliderRect: SliderRect | undefined;
-/** 液体形变第二段的定时器，下次切换时清掉 */
-let liquidTimer: ReturnType<typeof setTimeout> | undefined;
+/**
+ * 底板的落位与液体形变交给 useLiquidSlider，与 RebornRadioGroup 的分段按钮滑块共用一套节奏。
+ * 底板要整块盖住选中标签，两个轴向都得写，不像指示条只需要主轴
+ */
+const { style: sliderStyle, move: moveSlider, hide: hideSlider } = useLiquidSlider();
 /** 只有真正换标签才跑形变；resize 与 refresh 引发的重量走直接落位 */
 let liquidPending = false;
-
-/** transition-none 只能关掉过渡、关不掉行内 transform 的瞬时生效，所以形变要在 JS 里判定 */
-function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
-/**
- * 把落点写成行内样式。
- * margin 归零是防御：底板是标签列的末位兄弟，若使用方通过 ui.list 给相邻子节点加了负外边距
- * （如早先 card 类型共用边框时的 [&>*+*]:-ml-px），底板同样会命中，行内清零后才会正好落在量到的位置上
- */
-function applySlider(rect: SliderRect, extra?: Record<string, string>) {
-  sliderStyle.value = {
-    opacity: "1",
-    margin: "0",
-    left: `${rect.left}px`,
-    top: `${rect.top}px`,
-    width: `${rect.width}px`,
-    height: `${rect.height}px`,
-    ...extra,
-  };
-}
-
-/**
- * 液体形变。阶段 A 把底板主轴区间拉成起点与终点的并集（前缘先到、后缘留在原地），
- * 阶段 B 收拢到目标矩形并用 back-out 缓动越过目标再弹回。
- * 拉伸不只是装饰：行程中底板同时盖住两个标签，rounded 那身近白的选中文字才不会有一段
- * 悬在页面底色上看不见。交叉轴同时压扁一点，读起来像液体被拉长时的表面张力
- */
-function runLiquid(from: SliderRect, to: SliderRect) {
-  const vertical = isVertical.value;
-  const fromStart = vertical ? from.top : from.left;
-  const fromSize = vertical ? from.height : from.width;
-  const toStart = vertical ? to.top : to.left;
-  const toSize = vertical ? to.height : to.width;
-
-  const unionStart = Math.min(fromStart, toStart);
-  const unionEnd = Math.max(fromStart + fromSize, toStart + toSize);
-  // 压扁幅度随位移增长并封顶，相邻标签之间不会夸张形变
-  const squash = Math.min(0.12, Math.abs(toStart - fromStart) / 900);
-  const stretched: SliderRect = vertical
-    ? { ...to, top: unionStart, height: unionEnd - unionStart }
-    : { ...to, left: unionStart, width: unionEnd - unionStart };
-
-  applySlider(stretched, {
-    transform: vertical ? `scaleX(${1 - squash})` : `scaleY(${1 - squash})`,
-    transitionDuration: `${LIQUID_TRAVEL_DURATION}ms`,
-    transitionTimingFunction: LIQUID_TRAVEL_EASING,
-  });
-
-  liquidTimer = setTimeout(() => {
-    liquidTimer = undefined;
-    applySlider(to, {
-      transform: vertical ? "scaleX(1)" : "scaleY(1)",
-      transitionDuration: `${LIQUID_SETTLE_DURATION}ms`,
-      transitionTimingFunction: LIQUID_SETTLE_EASING,
-    });
-  }, LIQUID_TRAVEL_DURATION);
-}
 
 function updateSlider() {
   const list = listRef.value;
   if (!list || !showSlider.value) return;
   const tab = list.querySelector<HTMLElement>("[data-tab-active=\"true\"]");
   if (!tab) {
-    sliderRect = undefined;
-    sliderStyle.value = { opacity: "0" };
+    hideSlider();
     return;
   }
+  const switching = liquidPending;
+  liquidPending = false;
   const listRect = list.getBoundingClientRect();
   const rect = tab.getBoundingClientRect();
-  const next: SliderRect = {
-    left: rect.left - listRect.left,
-    top: rect.top - listRect.top,
-    width: rect.width,
-    height: rect.height,
-  };
-  const previous = sliderRect;
-  sliderRect = next;
-
-  const liquid = liquidPending;
-  liquidPending = false;
-  if (liquidTimer !== undefined) {
-    clearTimeout(liquidTimer);
-    liquidTimer = undefined;
-  }
-
-  if (liquid && previous && isLiquid.value && !prefersReducedMotion()) {
-    runLiquid(previous, next);
-    return;
-  }
-  // 卡片类型不写行内时长与 transform，节奏交回 tabSlider 槽上的 duration-300，行为与改动前一致
-  applySlider(
-    next,
-    isLiquid.value ? { transform: isVertical.value ? "scaleX(1)" : "scaleY(1)" } : undefined,
+  // 卡片类型不开形变、不写行内时长与 transform，节奏交回 tabSlider 槽上的 duration-300
+  moveSlider(
+    { left: rect.left - listRect.left, top: rect.top - listRect.top, width: rect.width, height: rect.height },
+    { switching, liquid: isLiquid.value, vertical: isVertical.value },
   );
 }
 
@@ -739,7 +645,6 @@ useResizeObserver(listRef, updateOverlays);
 useResizeObserver(wrapperRef, updateOverflowState);
 
 onBeforeUnmount(() => {
-  if (liquidTimer !== undefined) clearTimeout(liquidTimer);
   if (stageTimer !== undefined) clearTimeout(stageTimer);
   tabObserver?.disconnect();
 });

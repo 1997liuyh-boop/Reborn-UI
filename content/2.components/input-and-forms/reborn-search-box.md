@@ -289,8 +289,8 @@ Web 端 `ui` 按 `SearchBoxUi` 的键覆盖对应节点类名，覆盖类经 `cn
 | `inputWrapper` | 输入框区，默认 `flex items-center flex-1 min-w-0 relative`，水平内边距随 `size`（8px / 12px / 12px）。存在外置插槽时额外挂上 `::before` 聚焦描边覆盖层，改圆角或描边需用 `before:` 前缀类。 |
 | `dropdownOuter` | 下拉面板外层，默认 `absolute overflow-hidden transition-[height] drop-shadow-xl`，负责高度过渡。高度、`top`、`pointer-events` 由内联 style 驱动，同名类无效。 |
 | `dropdown` | 下拉面板内容容器，默认 `bg-gray-1 py-4 px-5 flex flex-col gap-6`，下半圆角随 `shape`。`padding-top` 与淡入位移由内联 style 驱动；**即使不传 `dropdown` 插槽也会渲染空容器**，只是 `showDropdown=false` 时不会展开。 |
-| `leadingWrapper` | 外置前置区包裹层，默认 `flex items-center shrink-0`。**仅在传入 `leading` 插槽时渲染**，点击会收起面板并阻止冒泡。 |
-| `trailingWrapper` | 外置后置区包裹层，默认 `flex gap-x-[24px] items-center shrink-0`。**仅在传入 `trailing` 插槽时渲染**。 |
+| `leadingWrapper` | 外置前置区包裹层，默认 `flex items-center shrink-0 overflow-clip`，左侧圆角随 `shape` 取边框内圆角（`rounded-l-full` / `rounded-l-[calc(var(--radius-md)_-_1px)]`），插槽里放带底色的满高元素时不会盖住外框圆角。**仅在传入 `leading` 插槽时渲染**，点击会收起面板并阻止冒泡。 |
+| `trailingWrapper` | 外置后置区包裹层，默认 `flex gap-x-[24px] items-center shrink-0 overflow-clip`，右侧圆角随 `shape` 取边框内圆角（`rounded-r-full` / `rounded-r-[calc(var(--radius-md)_-_1px)]`），作用同上。**仅在传入 `trailing` 插槽时渲染**。 |
 
 `inputUi` 的键见 `reborn-input`，其中 `wrapper` / `icon` / `iconBox` 三键会先叠上搜索框按尺寸给出的覆盖（`px-0!`、图标字号与间距），再合并你传入的值。外层边框的激活态由组件内部 `focus` / `blur` 事件维护而非 CSS `focus-within`，因此点中 `leading` 里的 `RebornSelect` 等可聚焦元素不会点亮描边。组件不内置 `dark:` 前缀样式，深色适配需经 `ui` / `inputUi` 覆盖。
 

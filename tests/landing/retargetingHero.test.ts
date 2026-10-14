@@ -4,6 +4,7 @@ import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { Box3, Group, SkinnedMesh, Vector3 } from "three";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { heroMessage, installCommand, retargetingModels } from "../../app/components/common/landing/retargetingHero.config.ts";
 import { createRetargetOptions, prepareRetargetedActors } from "../../app/lib/three/retargetingScene.ts";
@@ -22,7 +23,8 @@ async function loadRig(path: string) {
   header.writeUInt32LE(20 + padded.length + binary.length, 8);
   header.writeUInt32LE(padded.length, 12);
   const buffer = Buffer.concat([header, padded, binary]);
-  return new GLTFLoader().parseAsync(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), "");
+  // 与页面保持一致，为压缩后的真实模型注册解码器。
+  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), "");
 }
 
 test("首页保留组件库文案、真实安装命令与本地模型", () => {

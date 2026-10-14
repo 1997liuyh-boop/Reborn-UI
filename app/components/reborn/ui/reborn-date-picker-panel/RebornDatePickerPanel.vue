@@ -60,6 +60,9 @@ dayjs.extend(advancedFormat);
 
 const b = tv(theme);
 
+/** defaultValue 的单项：Date、可按 valueFormat 解析的字符串或时间戳 */
+export type DatePickerDefaultValue = Date | string | number;
+
 /**
  * 组件属性定义
  */
@@ -68,7 +71,7 @@ export interface DatePickerPanelProps {
   type?: DatePickerType; // 选择器类型：date, datetime, year, month 等
   start?: string; // 可选范围开始时间
   end?: string; // 可选范围结束时间
-  disabledMethod?: (date: Date, unit: "year" | "month" | "quarter" | "week" | "date") => boolean; // 逐项判定是否禁用，返回 true 即不可选；unit 标识当前判定粒度——日期格传 date（week 类型传 week），年 / 月 / 季度视图分别传 year / month / quarter，同一个方法可按粒度限制任意档位
+  disabledMethod?: (date: Date, unit: "year" | "month" | "quarter" | "week" | "date") => boolean; // 逐项判定是否禁用，返回 true 即不可选；unit 标识当前判定粒度——日期格传 date（week / weekrange 类型传 week），年 / 月 / 季度视图分别传 year / month / quarter，同一个方法可按粒度限制任意档位
   size?: (typeof datePickerPanelSizes)[number]; // 尺寸：sm, md, lg
   overflow?: "hidden" | "visible";
   disabledHours?: (role?: TimeRangeRole, comparingValue?: string | null) => number[]; // 返回需禁用的小时数组；仅含时间的类型（datetime/datetimerange）生效，范围模式可按 role 区分开始/结束面板
@@ -98,10 +101,11 @@ export interface DatePickerPanelProps {
   disabled?: boolean; // 是否禁用
   border?: boolean; // 是否显示边框
   shortcuts?: { text: string; value: any }[]; // 快捷选项
-  showWeekNumber?: boolean; // 日期视图左侧显示 ISO 周数（week 类型本身按周选择，不生效）
+  showWeekNumber?: boolean; // 日期视图左侧显示 ISO 周数（week / weekrange 类型本身按周选择，不生效）
   unlinkPanels?: boolean; // 范围选择时取消两个面板之间的联动，左右面板各自翻页
   singlePanel?: boolean; // 范围选择时只显示一个面板
   showToday?: boolean; // 面板底部显示「今天」按钮：点击选中当前时间所在的日 / 周 / 月 / 季度 / 年，文案随类型变为今天、此刻（datetime）、本周、本月、本季度、今年
+  defaultValue?: DatePickerDefaultValue | DatePickerDefaultValue[]; // 未选值时面板初始展示的日期，不写入绑定值；默认展示当天。数组时第一项定位左面板，取消联动（unlinkPanels）时第二项定位右面板；字符串按 valueFormat 解析，数字按时间戳
   ui?: Partial<{
     // 样式覆盖
     wrapper: ClassValue;
@@ -156,22 +160,29 @@ const isMultiple = computed(() =>
   ["years", "months", "quarters", "dates"].includes(props.type as string),
 ); // 是否为多选模式
 const isRange = computed(() =>
-  ["yearrange", "monthrange", "quarterrange", "daterange", "datetimerange", "week"].includes(
-    props.type as string,
-  ),
+  [
+    "yearrange",
+    "monthrange",
+    "quarterrange",
+    "daterange",
+    "datetimerange",
+    "week",
+    "weekrange",
+  ].includes(props.type as string),
 ); // 是否为范围选择模式
 const isDual = computed(() =>
-  ["yearrange", "monthrange", "quarterrange", "daterange", "datetimerange"].includes(
+  ["yearrange", "monthrange", "quarterrange", "daterange", "datetimerange", "weekrange"].includes(
     props.type as string,
   ),
 ); // 是否显示双面板
+const isWeekUnit = computed(() => ["week", "weekrange"].includes(props.type as string)); // 是否按整周选择
 const isQuarterType = computed(() =>
   ["quarter", "quarters", "quarterrange"].includes(props.type as string),
 ); // 是否为季度类型
 const hasTime = computed(() => ["datetime", "datetimerange"].includes(props.type as string)); // 是否包含时间选择
 const showDual = computed(() => isDual.value && !props.singlePanel); // 实际是否渲染双面板：singlePanel 时范围类型也只出一个面板
 const isUnlinked = computed(() => showDual.value && props.unlinkPanels); // 左右面板是否各自翻页
-const showWeek = computed(() => props.showWeekNumber && props.type !== "week"); // 是否显示周数列
+const showWeek = computed(() => props.showWeekNumber && !isWeekUnit.value); // 是否显示周数列
 
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {
@@ -490,28 +501,6 @@ function formatDate(d: Date | null, role: "start" | "end" = "start"): any {
   return dateObj.format(props.valueFormat);
 }
 
-const hours = Array.from({ length: 24 }, (_, i) => i);
-const minutes = Array.from({ length: 60 }, (_, i) => i);
-
-const hourRef = ref<HTMLElement | null>(null);
-const minuteRef = ref<HTMLElement | null>(null);
-
-/**
- * 滚动时间列表到选中值
- */
-function scrollToSelectedTime() {
-  setTimeout(() => {
-    if (hourRef.value) {
-      const active = hourRef.value.querySelector(".bg-primary") as HTMLElement;
-      if (active) hourRef.value.scrollTop = active.offsetTop - 100;
-    }
-    if (minuteRef.value) {
-      const active = minuteRef.value.querySelector(".bg-primary") as HTMLElement;
-      if (active) minuteRef.value.scrollTop = active.offsetTop - 100;
-    }
-  }, 0);
-}
-
 /**
  * 确认选中的时间
  */
@@ -555,7 +544,7 @@ function getCalendarDays(y: number, m: number): CalDay[] {
     if (endLimit && d > endLimit) isBlocked = true;
     if (
       !isBlocked &&
-      props.disabledMethod?.(new Date(d), props.type === "week" ? "week" : "date")
+      props.disabledMethod?.(new Date(d), isWeekUnit.value ? "week" : "date")
     ) {
       isBlocked = true;
     }
@@ -573,8 +562,13 @@ function getCalendarDays(y: number, m: number): CalDay[] {
     const t = dayKey(d);
     const a = rangeStart.value ? dayKey(rangeStart.value) : null;
     const b = previewEnd.value ? dayKey(previewEnd.value) : null;
-    const lo = a !== null && b !== null ? Math.min(a, b) : a;
-    const hi = a !== null && b !== null ? Math.max(a, b) : null;
+    let lo = a !== null && b !== null ? Math.min(a, b) : a;
+    let hi = a !== null && b !== null ? Math.max(a, b) : null;
+    // 周范围按整周预览：只点了起点时先高亮起点所在周，悬停时两端扩到各自所在周的周日与周六
+    if (props.type === "weekrange" && lo !== null) {
+      hi = weekEndOf(new Date(hi ?? lo)).getTime();
+      lo = weekStartOf(new Date(lo)).getTime();
+    }
     const isRangeStart = lo !== null && t === lo;
     const isRangeEnd = hi !== null && t === hi;
     const isInRange = lo !== null && hi !== null && t >= lo && t <= hi;
@@ -847,6 +841,16 @@ function nextYear(side: PanelSide = "left") {
   movePanel("left", 1, "year");
 }
 
+/** 所在周的周日 00:00（周从周日开始，与日历表头一致） */
+function weekStartOf(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay());
+}
+
+/** 所在周的周六 00:00 */
+function weekEndOf(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay() + 6);
+}
+
 /** 范围类型点选后抛出 calendar-change：只选了起点时终点为 null；week 类型一次点选即成整周，不抛 */
 function emitCalendarChange() {
   if (props.type === "week" || !rangeStart.value) return;
@@ -870,12 +874,8 @@ function selectDay(day: CalDay, panel: "left" | "right" = "left") {
 
   if (props.type === "week") {
     // 周选择模式：选中整周
-    const d = new Date(day.date);
-    const dayOfWeek = d.getDay();
-    const start = new Date(d);
-    start.setDate(d.getDate() - dayOfWeek);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
+    const start = weekStartOf(day.date);
+    const end = weekEndOf(day.date);
     rangeStart.value = start;
     rangeEnd.value = end;
     const val = [formatDate(start), formatDate(end)];
@@ -913,6 +913,12 @@ function selectDay(day: CalDay, panel: "left" | "right" = "left") {
           rangeEnd.value = day.date;
         }
       }
+    }
+
+    // 周范围：起点吸附到所在周的周日，终点吸附到所在周的周六，绑定值始终覆盖完整的周
+    if (props.type === "weekrange") {
+      rangeStart.value = weekStartOf(rangeStart.value);
+      if (rangeEnd.value) rangeEnd.value = weekEndOf(rangeEnd.value);
     }
 
     const val = [
@@ -1222,6 +1228,47 @@ function yearMonthRangeCap(
   return null;
 }
 
+/** defaultValue 的单项转为日期：数字按时间戳，字符串按 valueFormat 解析，不匹配时按常规日期格式兜底 */
+function toDefaultDate(v: unknown): Date | null {
+  if (v === undefined || v === null || v === "") return null;
+  if (typeof v === "number") return Number.isNaN(v) ? null : new Date(v);
+  const d = parseValue(v);
+  if (d) return new Date(d);
+  const fallback = dayjs(v as string);
+  return fallback.isValid() ? fallback.toDate() : null;
+}
+
+/** 按 defaultValue 的第一项定位左面板（单面板即唯一面板）；未传或解析失败时返回 false，视图保持不动 */
+function applyDefaultView(): boolean {
+  const list = Array.isArray(props.defaultValue) ? props.defaultValue : [props.defaultValue];
+  const first = toDefaultDate(list[0]);
+  if (!first) return false;
+  viewYear.value = first.getFullYear();
+  viewMonth.value = first.getMonth();
+  return true;
+}
+
+/**
+ * 取消联动时按 defaultValue 的第二项定位右面板。联动时右面板恒紧跟左侧，第二项不生效；
+ * 第二项不晚于左面板时仍以左侧为准把右面板推到紧邻位置，保证两侧不重叠。
+ */
+function applyDefaultRightView() {
+  if (!isUnlinked.value || !Array.isArray(props.defaultValue)) return;
+  const second = toDefaultDate(props.defaultValue[1]);
+  if (!second) return;
+  rightYear.value = second.getFullYear();
+  rightMonth.value = second.getMonth();
+  rightYearPageStart.value = Math.floor(second.getFullYear() / 10) * 10;
+  ensureOrder("left");
+}
+
+/** 绑定值里是否没有任何日期：null、空串、空数组或 ["", ""] 都算未选 */
+function isValueEmpty() {
+  const v = props.modelValue;
+  if (Array.isArray(v)) return !v.some((item) => parseValue(item));
+  return !parseValue(v);
+}
+
 /**
  * 根据 modelValue 初始化状态
  */
@@ -1269,8 +1316,11 @@ function initFromValue() {
     rangeStart.value = null;
     rangeEnd.value = null;
   }
+  // 绑定值里没有日期时按 defaultValue 定位视图；它只决定面板显示哪个月 / 年，不写入绑定值
+  const useDefault = isValueEmpty() && applyDefaultView();
   viewYearPageStart.value = Math.floor(viewYear.value / 10) * 10;
   syncRightPanel();
+  if (useDefault) applyDefaultRightView();
 }
 
 /** 右面板回到紧跟左面板的位置（联动时的相对关系） */
@@ -1469,7 +1519,7 @@ const monthTypes = ["month", "months", "monthrange"];
 const todayText = computed(() => {
   const type = props.type as string;
   if (type === "datetime") return "此刻";
-  if (type === "week") return "本周";
+  if (isWeekUnit.value) return "本周";
   if (monthTypes.includes(type)) return "本月";
   if (yearTypes.includes(type)) return "今年";
   if (isQuarterType.value) return "本季度";
@@ -1543,6 +1593,11 @@ function selectToday() {
     };
     rangeStart.value = unitStart();
     rangeEnd.value = unitStart();
+    // 周范围起止取本周的周日与周六，与点选时的吸附一致
+    if (type === "weekrange") {
+      rangeStart.value = weekStartOf(now);
+      rangeEnd.value = weekEndOf(now);
+    }
     if (hasTime.value) {
       selectedHour.value = 0;
       selectedMinute.value = 0;
@@ -1756,6 +1811,15 @@ watch(
     syncRightPanel();
   },
 );
+// 父组件内联传数组时每次渲染都是新引用，按解析后的时间戳判断 defaultValue 是否真的变化
+const defaultValueKey = computed(() => {
+  const list = Array.isArray(props.defaultValue) ? props.defaultValue : [props.defaultValue];
+  return list.map((v) => toDefaultDate(v)?.getTime() ?? "").join("|");
+});
+// 已有选中值时视图跟随选中值，defaultValue 变化不打断
+watch(defaultValueKey, () => {
+  if (isValueEmpty()) initFromValue();
+});
 </script>
 
 <template>

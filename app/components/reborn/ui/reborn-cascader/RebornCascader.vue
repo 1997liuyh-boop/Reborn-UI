@@ -614,6 +614,12 @@ const ui = computed(() => {
       styles.tagCloseIcon({ class: cn(opts?.class, uiOverrides.value.tagCloseIcon) }),
     collapseTag: (opts?: { class?: any }) =>
       styles.collapseTag({ class: cn(opts?.class, uiOverrides.value.collapseTag) }),
+    tagSearch: (opts?: { class?: any }) =>
+      styles.tagSearch({ class: cn(opts?.class, uiOverrides.value.tagSearch) }),
+    tagSearchMirror: (opts?: { class?: any }) =>
+      styles.tagSearchMirror({ class: cn(opts?.class, uiOverrides.value.tagSearchMirror) }),
+    tagSearchInput: (opts?: { class?: any }) =>
+      styles.tagSearchInput({ class: cn(opts?.class, uiOverrides.value.tagSearchInput) }),
   };
 });
 
@@ -622,11 +628,15 @@ const panelValue = computed<CascaderValue>(
   () => currentValue.value ?? (props.multiple ? [] : ""),
 );
 
-/** 浮层的挂载容器与展开方式，triggerProps 里的键优先 */
+/**
+ * 浮层的挂载容器与展开方式，triggerProps 里的键优先。
+ * closeOn 默认 mousedown，与 RebornSelectTrigger 的默认值保持一致：
+ * 按下即收起，不必等到松开，拖拽选中文本时也不会因 click 落在外部而误判。
+ */
 const triggerOptions = computed(() => ({
   portal: true,
   autoAdjustOverflow: true,
-  closeOn: "click" as const,
+  closeOn: "mousedown" as const,
   ...(props.triggerProps || {}),
 }));
 
@@ -683,7 +693,11 @@ defineExpose({
             <slot name="label" :data="item.raw">{{ item.label }}</slot>
           </RebornBadge>
 
-          <RebornTooltip v-if="collapsedTags.length" :content="collapsedText">
+          <!--
+            tooltip 的包裹层默认是行内元素，会按行高撑出比 “+N” 标签高一截的盒子，
+            让 “+N” 所在那一行比其他行更高；改成 flex 后包裹层与标签等高
+          -->
+          <RebornTooltip v-if="collapsedTags.length" :content="collapsedText" class="flex shrink-0">
             <RebornBadge
               :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm" :ui="{
                 root: 'min-w-0 shrink-0',
@@ -693,11 +707,19 @@ defineExpose({
             />
           </RebornTooltip>
 
-          <!-- 多选搜索态：输入框跟在标签末尾，随标签换行一起流动 -->
-          <input
-            v-if="isSearching" ref="searchInputRef" type="text" :value="inputValue"
-            :placeholder="searchPlaceholder" :class="ui.searchInput()" @input="onSearchInput"
-          >
+          <!--
+            多选搜索位：跟在标签末尾、随标签换行一起流动。收起时也占住这个位置（空壳），展开时才放入输入框，
+            开合前后标签排布完全一致，触发器高度不跳变
+          -->
+          <span v-if="searchEnabled" :class="ui.tagSearch()">
+            <!-- 隐形镜像：按关键词撑开搜索位宽度，超出本行余量时整格换行；末尾的不换行空格给光标留位 -->
+            <span aria-hidden="true" :class="ui.tagSearchMirror()">{{ isSearching ? inputValue : "" }}&nbsp;</span>
+            <input
+              v-if="isSearching" ref="searchInputRef" type="text" :value="inputValue"
+              :placeholder="searchPlaceholder" :class="ui.searchInput({ class: ui.tagSearchInput() })"
+              @input="onSearchInput"
+            >
+          </span>
         </div>
 
         <!-- 单选搜索态：输入框顶掉展示文本，已选文本降级为 placeholder 继续提示 -->

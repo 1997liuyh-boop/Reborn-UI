@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useColorMode } from "@vueuse/core";
 
+// 须在 setup 顶层调用：放进 computed 里会在 setup 之外注册生命周期钩子，触发 Vue 警告
+const colorMode = useColorMode();
 /** 粒子颜色跟随亮暗模式 */
-const particlesColor = computed(() => (useColorMode().value === "dark" ? "#FFFFFF" : "#000000"));
+const particlesColor = computed(() => (colorMode.value === "dark" ? "#FFFFFF" : "#000000"));
 </script>
 
 <template>

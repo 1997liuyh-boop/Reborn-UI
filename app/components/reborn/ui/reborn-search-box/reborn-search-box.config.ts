@@ -47,7 +47,12 @@ export default {
          * 水平内边距落在输入框区（见 size 变体），圆角由 shape 变体控制。
          * 裁切用 clip-path 而不是 overflow-hidden：overflow 的裁切边界是 padding box（缩在 1px 边框之内），
          * 输入框区的聚焦描边永远盖不到外框线上，看起来会比外置插槽那段外框矮一圈；
-         * clip-path 的 inset(0 round R) 以含边框的 border box 为界，描边外扩 1px 后能与外框线完全重合
+         * clip-path 的 inset(0 round R) 以含边框的 border box 为界，描边外扩 1px 后能与外框线完全重合。
+         * 裁切线再整体外扩 1px（半径同步 +1px 保持同心，见 shape 变体）：边框绘制时会对齐到整像素，
+         * clip-path 却按小数坐标裁切，控件行落在小数像素位置时裁切线会切进上 / 下边框的半个像素，
+         * 表现为激活态上下边框一深一浅、圆角发虚；外扩 1px 后裁切线永远落在边框之外，只裁子元素不碰边框。
+         * 正因为这一层的裁切线在边框外，外置插槽内容贴着行首 / 行尾时会盖住圆角处的边框，
+         * 这部分改由 leadingWrapper / trailingWrapper 自己按边框内圆角裁切（见 shape 变体）
          */
         control: "flex items-stretch flex-1 relative z-20 transition-colors border border-gray-4",
         /**
@@ -63,10 +68,14 @@ export default {
         /** 下拉面板内容区 (承载插槽内容与背景；底色与底色卡片一致；仅下半部分带圆角，上半部分与底色卡片无缝衔接) */
         dropdown: "left-0 w-full bg-gray-1 border border-gray-1 border-t-0 overflow-hidden py-4 px-5 flex flex-col gap-6 transition-[opacity,transform] duration-250 ease-out",
         // --- 外置插槽包裹层 ---
-        /** 外置前置插槽包裹层（在边框内、输入框之外，聚焦时不参与边框高亮；高度由控件行的 items-stretch 撑满整行，内容自身居中） */
-        leadingWrapper: "flex items-center shrink-0",
-        /** 外置后置插槽包裹层（在边框内、输入框之外，聚焦时不参与边框高亮；高度由控件行的 items-stretch 撑满整行，内容自身居中） */
-        trailingWrapper: "flex gap-x-[24px] items-center shrink-0",
+        /**
+         * 外置插槽包裹层（在边框内、输入框之外，聚焦时不参与边框高亮；高度由控件行的 items-stretch 撑满整行，内容自身居中）。
+         * overflow-clip 配合 shape 变体给出的外侧圆角，把插槽内容裁在边框内圆角之内：
+         * 插槽里放满高的色块、按钮时，直角不会戳出圆角盖住边框。
+         * 用 clip 而不是 hidden：不形成滚动容器，聚焦插槽里的元素时不会被浏览器滚动错位
+         */
+        leadingWrapper: "flex items-center shrink-0 overflow-clip",
+        trailingWrapper: "flex gap-x-[24px] items-center shrink-0 overflow-clip",
     },
     variants: {
         /**
@@ -122,16 +131,24 @@ export default {
          * circle 为胶囊；square 不分尺寸、统一取 rounded-md（6px）令牌，
          * 底色卡片的上半部分圆角随之与输入框的上半部分完全对齐。
          * 下拉面板只保留下半部分圆角——其上半部分被底色卡片覆盖、需与卡片无缝衔接，不做圆角。
+         * 外置插槽包裹层只在贴边的一侧（前置在左、后置在右）取边框内圆角，与外框同心：
+         * 包裹层紧贴边框内侧，内圆角 = 外圆角 - 1px 边框宽度。
          */
         shape: {
             circle: {
                 backdropCard: "rounded-full",
-                control: "rounded-full [clip-path:inset(0_round_9999px)]",
+                // 胶囊半径取 9999px 会被自动收到「外扩后高度的一半」，天然与边框同心
+                control: "rounded-full [clip-path:inset(-1px_round_9999px)]",
+                // 同理会被收到「包裹层高度的一半」，即外框半径 - 1px
+                leadingWrapper: "rounded-l-full",
+                trailingWrapper: "rounded-r-full",
                 dropdown: "rounded-b-lg",
             },
             square: {
                 backdropCard: "rounded-md",
-                control: "rounded-md [clip-path:inset(0_round_var(--radius-md))]",
+                control: "rounded-md [clip-path:inset(-1px_round_calc(var(--radius-md)_+_1px))]",
+                leadingWrapper: "rounded-l-[calc(var(--radius-md)_-_1px)]",
+                trailingWrapper: "rounded-r-[calc(var(--radius-md)_-_1px)]",
                 dropdown: "rounded-b-md",
             },
         },

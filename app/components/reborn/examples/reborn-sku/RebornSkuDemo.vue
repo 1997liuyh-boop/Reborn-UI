@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** 选中结果：key 为属性组的 key，value 为选中项的 valueKey 值（多选时为数组） */
+/** 选中结果：key 为属性组的 key，value 为选中项的 value 字段值（多选时为数组） */
 const selected = ref<Record<string, any>>({
   color: "black",
   size: "M",
@@ -11,8 +11,6 @@ const options = [
   {
     title: "颜色",
     key: "color",
-    labelKey: "label",
-    valueKey: "value",
     children: [
       { label: "曜石黑", value: "black" },
       { label: "云雾白", value: "white" },
@@ -22,8 +20,6 @@ const options = [
   {
     title: "尺码",
     key: "size",
-    labelKey: "label",
-    valueKey: "value",
     children: [
       { label: "S", value: "S" },
       { label: "M", value: "M" },
@@ -34,8 +30,6 @@ const options = [
   {
     title: "增值服务（可多选）",
     key: "services",
-    labelKey: "label",
-    valueKey: "value",
     multiple: true,
     children: [
       { label: "延保一年", value: "warranty" },
@@ -51,8 +45,6 @@ const priceOptions = [
   {
     title: "套餐版本",
     key: "plan",
-    labelKey: "label",
-    valueKey: "value",
     children: [
       { label: "基础版", value: "basic", price: 199 },
       { label: "专业版", value: "pro", price: 399 },

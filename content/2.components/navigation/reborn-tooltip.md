@@ -100,6 +100,55 @@ Tooltip 是锚定在触发元素上的深色文字气泡，用来补充说明按
 </template>
 ```
 
+### HTML 字符串
+
+`rawContent` 默认为 `false`，文案按纯文本输出；设为 `true` 时解析最终的 `title` / `content` 字符串，`content` 插槽仍优先。
+
+```vue
+<template>
+  <RebornTooltip raw-content content="<strong>保存成功</strong><br>可以关闭此页面">
+    <RebornButton>HTML 提示</RebornButton>
+  </RebornTooltip>
+</template>
+```
+
+### 虚拟触发
+
+`virtualTriggering` 配合 `virtualRef` 将定位、触发事件和 ARIA 描述关联到外部原生元素，组件不再渲染默认插槽。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+const anchor = ref<HTMLElement | null>(null);
+</script>
+
+<template>
+  <button ref="anchor">外部按钮</button>
+  <RebornTooltip virtual-triggering :virtual-ref="anchor" :trigger="['hover', 'focus']" content="提示与按钮分别声明" />
+</template>
+```
+
+### 单例复用
+
+多个元素可共用一个虚拟 Tooltip：切换 `virtualRef` 与文案后，已打开的提示保持显示并重新定位。置空引用或移除当前元素时关闭，并恢复元素原来的 ARIA 描述。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+const anchor = ref<HTMLElement | null>(null);
+const text = ref('');
+const open = ref(false);
+function show(event: Event, value: string) {
+  if (!(event.currentTarget instanceof HTMLElement)) return;
+  anchor.value = event.currentTarget; text.value = value; open.value = true;
+}
+</script>
+<template>
+  <button v-for="label in ['保存', '预览']" :key="label" @mouseenter="show($event, label)" @focus="show($event, label)">{{ label }}</button>
+  <RebornTooltip v-model:open="open" virtual-triggering :virtual-ref="anchor" :content="text" :trigger="['hover', 'focus']" />
+</template>
+```
+
 ### 触发方式
 
 `trigger` 可传单个值或数组组合：
@@ -173,6 +222,9 @@ const emptyTitle = ref(false);
 | -------------------- | --------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------- |
 | `title`              | `string \| null`                                          | -            | 提示文字。显式传 `null` 或空串可禁用；未传时回落到 `content`。                           |
 | `content`            | `string`                                                  | `''`         | 提示内容，`title` 未传时使用。                                                           |
+| `rawContent` | `boolean` | `false` | 将最终文案解析为 HTML，仅接受可信或已净化的内容；`content` 插槽优先。 |
+| `virtualTriggering` | `boolean` | `false` | 使用外部元素触发和定位，不渲染默认触发插槽。 |
+| `virtualRef` | `HTMLElement \| null` | `null` | 虚拟触发元素，切换时迁移事件与 ARIA 关联，置空或卸载时关闭。 |
 | `placement`          | `TooltipPlacement`                                        | `'bottom'`   | 出现方向与对齐方式，12 种取值见「方位：12 种 placement」。                               |
 | `color`              | `string`                                                  | -            | 自定义背景颜色，面板与箭头同步着色，文字固定为白色。                                     |
 | `arrow`              | `boolean \| { pointAtCenter?: boolean }`                  | `true`       | 箭头显隐；对象形式的 `pointAtCenter` 让箭头指向触发元素中心而非对齐端。                  |
@@ -205,7 +257,7 @@ const emptyTitle = ref(false);
 
 | 插槽名    | 作用域参数 | 描述                                               |
 | --------- | ---------- | -------------------------------------------------- |
-| `default` | -          | 触发提示的元素。                                   |
+| `default` | -          | 触发提示的元素；`virtualTriggering` 为 `true` 时不渲染。                                   |
 | `content` | -          | 自定义提示内容（可承载 HTML 富内容），优先级最高。 |
 
 ### Expose
@@ -221,10 +273,10 @@ const emptyTitle = ref(false);
 
 | 键名             | 说明                                                                                                                                                              |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wrapper`        | 根节点 `<span>`（触发器外层容器），默认无类名，`class` prop 也并到这里；hover / focus / click 等事件都绑定在它身上，整体占位改这里。                              |
-| `trigger`        | 触发元素的外框，默认 `inline-flex max-w-full`，包住 `default` 插槽。                                                                                              |
+| `wrapper`        | 根节点 `<span>`（触发器外层容器），默认无类名，`class` prop 也并到这里；hover / focus / click 等事件都绑定在它身上，整体占位改这里；虚拟触发时不渲染。                              |
+| `trigger`        | 触发元素的外框，默认 `inline-flex max-w-full`，包住 `default` 插槽；虚拟触发时不渲染。                                                                                              |
 | `contentWrapper` | 浮层定位外壳（Teleport 之后的过渡容器），默认 `fixed left-0 top-0 z-[9999] pointer-events-none flex`；层级改这里，传了 `zIndex` 时以内联样式为准。                 |
-| `content`        | 提示面板，默认 `relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line break-words bg-gray-10 text-gray-1`，另按方位追加 `origin-*` 作为动画原点；底色、文字、内边距、圆角、最大宽度改这里。传了 `color` 时底色与文字色由内联样式决定，这里的 `bg-*` / `text-*` 不生效。 |
+| `content`        | 提示面板，默认 `relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line wrap-anywhere bg-gray-10 text-gray-1`，另按方位追加 `origin-*` 作为动画原点；底色、文字、内边距、圆角、最大宽度改这里。传了 `color` 时底色与文字色由内联样式决定，这里的 `bg-*` / `text-*` 不生效。 |
 | `arrow`          | 箭头容器，默认 `absolute text-gray-10`。**仅 `arrow` 不为 `false` 时渲染**；箭头是 `fill="currentColor"` 的 SVG，颜色随 `text-*` 类，改面板底色时要一起改。       |
 
 ```vue
@@ -242,6 +294,9 @@ const emptyTitle = ref(false);
 ```
 
 ## 注意事项
+
+- **HTML 字符串必须可信。** `rawContent` 使用原生 HTML 渲染，不净化传入字符串；外部内容应先净化，普通文案保持默认纯文本模式。
+- **虚拟触发引用必须是原生元素。** `virtualRef` 接收已挂载的 `HTMLElement`；组件实例需先取得其真实 DOM。显示期间切换引用保持单例浮层并更新定位，引用置空或节点卸载会关闭。
 
 - **仅 Web 端可用。** UniApp 端没有同名组件，需要轻量气泡时可用 `reborn-popover` 的 `title` 属性。
 - **箭头是 7×18 的圆头曲线，与面板同色实色填充。** 面板沿箭头排布方向（`top` / `bottom` 看宽度，`left` / `right` 看高度）短到装不下 18px 底边时，箭头底边按可用直边收缩、最短 12px，用来拉开 `start` / `center` / `end` 三档的位置差；厚度恒为 7px，连接处仍然无缝。单行文字的 `left` / `right` 提示会走到这条规则。

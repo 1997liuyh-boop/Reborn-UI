@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
 import { cn } from "~/lib/utils";
 import { tv } from "~/lib/tv";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
@@ -22,10 +22,11 @@ export interface SelectTriggerProps {
   ui?: SelectTriggerUI;
   /**
    * 关闭下拉的时机：
-   * - 'click'：在触发器（含下拉面板）外完成一次点击后才收起（默认）
-   * - 'mousedown'：外部一有动静就收起——在触发器（含下拉面板）外按下任意鼠标键
-   *   （左键 / 右键 / 中键）立即收起，面板外的滚动同样收起；
-   *   面板内部的列表滚动不算外部动静，不会误收。
+   * - 'mousedown'（默认）：外部一有动静就收起——在触发器（含下拉面板）外按下任意鼠标键
+   *   （左键 / 右键 / 中键）、滚动滚轮、触摸按下立即收起；
+   *   带动触发器位移的滚动（页面滚动、触发器所在容器滚动）同样收起。
+   *   面板内部的列表滚动、页面上无关容器的滚动（如轮播图自动播放）不算外部动静，不会误收。
+   * - 'click'：在触发器（含下拉面板）外完成一次点击后才收起，期间页面滚动时面板跟随触发器
    */
   closeOn?: "click" | "mousedown";
   scrollToActive?: (instant?: boolean) => void;
@@ -67,7 +68,7 @@ const props = withDefaults(defineProps<SelectTriggerProps>(), {
   isOpen: false,
   disabled: false,
   size: "md",
-  closeOn: "click",
+  closeOn: "mousedown",
   portal: true,
   container: "body",
   side: "auto",
@@ -325,14 +326,42 @@ function cancelSync() {
 let boundCloseEvent: "click" | "mousedown" | null = null;
 
 /**
+ * mousedown 时机下额外计入的外部动静：
+ * - wheel：页面本身不可滚动时滚轮不会产生 scroll，需单独监听滚轮动作
+ * - touchstart：触屏按下即收，不必等到抬起后模拟出的 mousedown
+ */
+const MOUSEDOWN_EXTRA_EVENTS = ["wheel", "touchstart"] as const;
+
+/** 已登记的嵌套子浮层判定，登记方式见下方 provide */
+const nestedContains = new Set<(node: Node | null) => boolean>();
+
+/**
  * 判断节点是否属于本组件的交互范围。
  * 传送模式下浮层已不是 wrapper 的后代，只判 wrapper 会把「点击选项」误判成外部点击，
  * 单选看不出来（本来就要收起），多选则表现为选一项就立刻收起。
  */
 function containsNode(node: Node | null) {
   if (!node) return false;
-  return !!wrapperRef.value?.contains(node) || !!floatingEl()?.contains(node);
+  if (wrapperRef.value?.contains(node) || floatingEl()?.contains(node)) return true;
+  for (const childContains of nestedContains) {
+    if (childContains(node)) return true;
+  }
+  return false;
 }
+
+/**
+ * 嵌套浮层登记。
+ * 浮层里再套一个触发器时（如日期面板里的时间选择器），子浮层同样传送到 body，
+ * 不是本浮层的 DOM 后代：不登记的话，在子浮层里点一下会被本组件判成外部点击而整个收起。
+ * 子级挂载时把自己的 containsNode 登记到最近的父级，卸载时注销；登记是逐级的，多层嵌套同样成立。
+ */
+type NestedOverlayRegistry = (contains: (node: Node | null) => boolean) => () => void;
+const NESTED_OVERLAY_KEY = "reborn-select-trigger-nested";
+provide<NestedOverlayRegistry>(NESTED_OVERLAY_KEY, (contains) => {
+  nestedContains.add(contains);
+  return () => nestedContains.delete(contains);
+});
+const unregisterFromParent = inject<NestedOverlayRegistry | null>(NESTED_OVERLAY_KEY, null)?.(containsNode);
 
 /** 触发器（含下拉面板）外发生 closeOn 指定的鼠标事件时，请求父组件收起 */
 function onOutsideEvent(event: Event) {
@@ -342,15 +371,31 @@ function onOutsideEvent(event: Event) {
   }
 }
 
+/**
+ * 外部关闭监听挂在捕获阶段：
+ * 1. 外部元素上的 `@click.stop` 之类阻止冒泡不会让判定失效；
+ * 2. 判定先于任何点击处理执行，点中的节点此时一定还在 DOM 中，
+ *    不会因处理函数触发重渲染、节点被移除而误判成外部点击。
+ */
 function bindOutsideListener() {
   unbindOutsideListener();
   boundCloseEvent = props.closeOn === "mousedown" ? "mousedown" : "click";
-  document.addEventListener(boundCloseEvent, onOutsideEvent);
+  document.addEventListener(boundCloseEvent, onOutsideEvent, true);
+  if (boundCloseEvent === "mousedown") {
+    for (const name of MOUSEDOWN_EXTRA_EVENTS) {
+      document.addEventListener(name, onOutsideEvent, { capture: true, passive: true });
+    }
+  }
 }
 
 function unbindOutsideListener() {
+  if (boundCloseEvent === "mousedown") {
+    for (const name of MOUSEDOWN_EXTRA_EVENTS) {
+      document.removeEventListener(name, onOutsideEvent, true);
+    }
+  }
   if (boundCloseEvent) {
-    document.removeEventListener(boundCloseEvent, onOutsideEvent);
+    document.removeEventListener(boundCloseEvent, onOutsideEvent, true);
     boundCloseEvent = null;
   }
 }
@@ -371,6 +416,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", onViewportResize);
   unbindOutsideListener();
   cancelSync();
+  unregisterFromParent?.();
 });
 
 /**
@@ -385,15 +431,27 @@ function onViewportScroll(event: Event) {
 
   // mousedown 时机的语义是「外部只要有动静就立刻收起」，页面滚动同样计入。
   // 但下拉面板内部的列表滚动属于组件自身的交互，必须排除，
-  // 否则用滚轮翻选项会当场把面板关掉。
-  // 原生事件一并上报：浮层里再套了传送到 body 的子浮层（如日期面板的时间列）时，
-  // 父组件要靠 event.target 认出「这是子浮层自己的滚动」而放行。
-  if (props.closeOn === "mousedown" && props.isOpen && !containsNode(event.target as Node)) {
+  // 否则用滚轮翻选项会当场把面板关掉；嵌套子浮层（如日期面板的时间列）已登记进 containsNode，同样放行。
+  // 原生事件一并上报：子浮层未经触发器登记（自行传送到 body）时，
+  // 父组件仍可靠 event.target 认出「这是子浮层自己的滚动」而放行。
+  if (props.closeOn === "mousedown" && props.isOpen && !containsNode(event.target as Node) && movesAnchor(event.target)) {
     emit("close", event);
     return;
   }
 
   scheduleSync();
+}
+
+/**
+ * 滚动是否会带动触发器位移。
+ * scroll 只代表「某个容器滚动了」，未必是用户在浮层外的操作：
+ * 其他组件程序化滚动自身容器（如轮播图自动播放）同样会派发 scroll，不能据此收起。
+ * 页面级滚动的 target 是 document（非 Element），一律视为会带动。
+ */
+function movesAnchor(target: EventTarget | null) {
+  const anchor = wrapperRef.value;
+  if (!anchor || !(target instanceof Element)) return true;
+  return target.contains(anchor);
 }
 
 /** 视口尺寸变化会改变上下余量，此时才允许重新决策展开方向 */

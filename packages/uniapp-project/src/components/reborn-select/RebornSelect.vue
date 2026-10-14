@@ -59,13 +59,25 @@ const model = defineModel<SelectValue>({ default: null })
 
 export type SelectValue = string | number | (string | number)[] | null
 
+/** options 的字段别名映射：数据字段名与默认的 label / value / children 不一致时配置 */
+export interface SelectFieldNames {
+  /** 展示文案字段名，默认 `label` */
+  label?: string
+  /** 选项值字段名，默认 `value` */
+  value?: string
+  /** 下一列选项字段名，默认 `children` */
+  children?: string
+}
+
 export interface SelectProps {
   /** 标题 */
   title?: string
   /** 占位符 */
   placeholder?: string
-  /** 选项数据 */
-  options?: SelectOption[]
+  /** 选项数据；多列时由 children 逐级给出下一列，字段名与默认不一致时配合 fieldNames 使用 */
+  options?: (SelectOption | Record<string, any>)[]
+  /** options 的字段别名配置：按这里给出的字段名去每一层数据里取 label / value / children */
+  fieldNames?: SelectFieldNames
   /** 是否显示触发器 */
   showTrigger?: boolean
   /** 是否禁用 */
@@ -170,9 +182,24 @@ const selectItem = ref<any[]>([])
 const renderKey = ref(0)
 
 
+// 按 fieldNames 把每一层选项统一成 label / value / children，原有字段随展开保留，供 option 插槽与 change 事件读取
+const normalizedOptions = computed<SelectOption[]>(() => {
+  const label = props.fieldNames?.label ?? 'label'
+  const value = props.fieldNames?.value ?? 'value'
+  const children = props.fieldNames?.children ?? 'children'
+  const normalize = (list: Record<string, any>[]): SelectOption[] =>
+    list.map(item => ({
+      ...item,
+      label: item[label],
+      value: item[value],
+      children: Array.isArray(item[children]) ? normalize(item[children]) : undefined,
+    }))
+  return normalize(props.options || [])
+})
+
 // 计算选择器列表数据
 const columns = computed<SelectOption[][]>(() => {
-  let options = props.options || []
+  let options = normalizedOptions.value
   const cols: SelectOption[][] = []
 
   for (let i = 0; i < props.columnCount; i++) {
@@ -340,7 +367,7 @@ onMounted(() => {
   )
 
   watch(
-    () => props.options,
+    normalizedOptions,
     () => {
       updateText()
     },
