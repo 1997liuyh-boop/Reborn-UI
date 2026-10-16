@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-16T03:04:57.546Z",
+  "generatedAt": "2026-10-16T09:36:22.762Z",
   "components": [
     {
       "id": "animate-grid",
@@ -176,7 +176,7 @@
     },
     {
       "id": "color-picker",
-      "title": "取色器",
+      "title": "ColorPicker 取色器",
       "description": "用于弹层中选取颜色的取色器组件，支持 hex/hsl/rgb 等格式与预设色板。",
       "category": "form",
       "tags": [
@@ -1311,6 +1311,21 @@
       ]
     },
     {
+      "id": "reborn-mention",
+      "title": "Mention 提及",
+      "description": "输入前缀唤起等宽候选列表，支持多前缀、远程搜索、退格整体删除与光标行定位。",
+      "category": "form",
+      "tags": [
+        "input",
+        "mention",
+        "autocomplete",
+        "textarea"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-menu",
       "title": "Menu 菜单",
       "description": "用于站点侧边或顶部导航的菜单组件，支持垂直/水平模式、折叠、多级子菜单与配置式数据驱动。",
@@ -1364,6 +1379,21 @@
       ],
       "platforms": [
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-page-header",
+      "title": "PageHeader 页头",
+      "description": "页面顶部的返回区 + 标题 + 内容 + 操作栏，可在上方叠面包屑；路径较浅时代替面包屑提供返回入口。",
+      "category": "navigation",
+      "tags": [
+        "page-header",
+        "header",
+        "navigation",
+        "breadcrumb"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {

@@ -293,11 +293,14 @@ UniApp 端额外提供 `block`：为 `true` 时按钮占满整行（`flex w-full
 - **禁用**：UniApp 端 `Form` 的 `disabled` 会强制禁用组内按钮；Web 端按钮的禁用态只由自身 `disabled` / `loading` 决定。
 
 ```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const form = ref({})
+</script>
+
 <template>
-  <RebornForm
-    size="lg"
-    :disabled="readonly"
-  >
+  <RebornForm :model-value="form" size="lg">
     <!-- 自动变为 lg 尺寸 -->
     <RebornButton form-type="submit">提交</RebornButton>
   </RebornForm>

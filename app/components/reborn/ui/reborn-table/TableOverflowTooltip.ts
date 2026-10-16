@@ -17,8 +17,10 @@ export default defineComponent({
     disabled: Boolean,
   },
   setup(props, { slots }) {
+    const anchor = ref<HTMLElement>();
     const element = ref<HTMLElement>();
     const tooltip = ref<InstanceType<typeof RebornTooltip>>();
+    const activated = ref(false);
     const overflow = ref(false);
     const content = ref('');
     const describedBy = ref<string>();
@@ -38,6 +40,9 @@ export default defineComponent({
     }
     function open() {
       measure();
+      if (disabled.value) return;
+      // 表格可能有数百个溢出单元格，仅在首次交互时创建完整浮层实例。
+      activated.value = true;
       // 同一事件中先更新 disabled，再走 Tooltip 自身的延时与焦点逻辑。
       nextTick(() => { if (!disposed && (hovered || focused) && !disabled.value) tooltip.value?.open(); });
     }
@@ -56,20 +61,24 @@ export default defineComponent({
     onUpdated(measure);
     onBeforeUnmount(() => { disposed = true; observer?.disconnect(); contentObserver?.disconnect(); });
 
-    return () => h(RebornTooltip, {
-      ...props.options, ref: tooltip, disabled: disabled.value, trigger: ['hover', 'focus'],
-      // 块级约束让触发区域跟随单元格宽度；提示面板仍可通过 ui 自定义。
-      ui: { ...props.options.ui, wrapper: cn('block min-w-0 w-full', props.options.ui?.wrapper), trigger: cn('block min-w-0 w-full', props.options.ui?.trigger) },
+    return () => h('span', {
+      ref: anchor, class: cn('block min-w-0 w-full', props.options.ui?.wrapper),
       onMouseenter: () => { hovered = true; open(); },
       onMouseleave: () => { hovered = false; },
       onFocusin: () => { focused = true; open(); },
       onFocusout: () => { focused = false; },
-      // Tooltip 把关联放在外层触发器，实际可聚焦的文本也需要同一描述。
-      onOpen: () => nextTick(() => { if (!disposed) describedBy.value = element.value?.parentElement?.getAttribute('aria-describedby') ?? undefined; }),
-      onClose: () => { describedBy.value = undefined; },
-    }, {
-      default: () => h('span', { ref: element, 'data-table-overflow': '', class: cn('block truncate', props.contentClass), tabindex: !disabled.value ? 0 : undefined, 'aria-describedby': describedBy.value }, slots.default?.()),
-      content: () => slots.content?.(scope.value) ?? props.formatter?.(scope.value) ?? content.value,
-    });
+    }, [
+      // 触发元素始终保留，按需创建浮层不会重挂载插槽或打断键盘焦点。
+      h('span', { class: cn('block min-w-0 w-full max-w-full', props.options.ui?.trigger) }, [
+        h('span', { ref: element, 'data-table-overflow': '', class: cn('block truncate', props.contentClass), tabindex: !disabled.value ? 0 : undefined, 'aria-describedby': describedBy.value }, slots.default?.()),
+      ]),
+      activated.value ? h(RebornTooltip, {
+        ...props.options, ref: tooltip, disabled: disabled.value, trigger: ['hover', 'focus'],
+        virtualTriggering: true, virtualRef: anchor.value,
+        // 虚拟触发器关联在外层，实际可聚焦的文本也需要同一描述。
+        onOpen: () => nextTick(() => { if (!disposed) describedBy.value = anchor.value?.getAttribute('aria-describedby') ?? undefined; }),
+        onClose: () => { describedBy.value = undefined; },
+      }, { content: () => slots.content?.(scope.value) ?? props.formatter?.(scope.value) ?? content.value }) : null,
+    ]);
   },
 });

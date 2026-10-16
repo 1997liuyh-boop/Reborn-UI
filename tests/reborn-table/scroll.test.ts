@@ -1,4 +1,5 @@
 /* eslint test/no-import-node-test: off -- 使用 Node 内置测试运行器 */
+import type { TableColumn } from '../../app/components/reborn/ui/reborn-table/table.types';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdtemp, readFile, rmdir, unlink } from 'node:fs/promises';
@@ -50,8 +51,8 @@ it('真实滚动组件支持立即双轴定位、联合平滑滚动及实际表�
     const Table = (await import(pathToFileURL(output).href)).default;
     const table = ref();
     const props = reactive({
-      height: 240, fixedHeader: true, showHeader: true, data: [{ id: 1, name: '测试行' }],
-      columns: [{ prop: 'name', label: '姓名', fixed: 'left', width: 120 }, { prop: 'id', label: '编号', width: 900 }],
+      height: 240, fixedHeader: true, showHeader: true, showSummary: false, data: [{ id: 1, name: '测试行' }],
+      columns: [{ prop: 'name', label: '姓名', fixed: 'left', width: 120 }, { prop: 'id', label: '编号', width: 800 }, { prop: 'amount', label: '金额', fixed: 'right', width: 100 }] as TableColumn[],
     });
     const app = createApp({ render: () => h(Table, { ...props, ref: table }) });
     app.mount(dom.window.document.querySelector('#app')!);
@@ -64,7 +65,64 @@ it('真实滚动组件支持立即双轴定位、联合平滑滚动及实际表�
     // jsdom 不做布局，仅提供确定的几何；偏移仍由真实 RebornScrollbar 写入。
     Object.defineProperties(wrap, {
       clientHeight: { value: 240 }, scrollHeight: { value: 900 },
-      clientWidth: { value: 400 }, scrollWidth: { value: 1020 },
+      clientWidth: { value: 400, configurable: true }, scrollWidth: { value: 1020 },
+    });
+    await t.test('固定区域只在遮住滚动内容时显示外侧阴影，布局变化后同步清除', async () => {
+      const edges = (side: string) => [...dom.window.document.querySelectorAll<HTMLElement>(`[data-fixed-edge="${side}"]`)];
+      const scroll = async (left: number) => {
+        wrap.scrollLeft = left;
+        wrap.dispatchEvent(new dom.window.Event('scroll'));
+        await nextTick();
+      };
+      const visible = (side: string, expected: boolean) => {
+        assert.equal(edges(side).length, 2, '表头与表体均须保留固定边缘');
+        for (const cell of edges(side)) assert.equal(cell.classList.contains('after:opacity-100'), expected);
+      };
+      await scroll(0);
+      visible('left', false);
+      visible('right', true);
+      await scroll(100);
+      visible('left', true);
+      visible('right', true);
+      await scroll(620);
+      visible('left', true);
+      visible('right', false);
+      Object.defineProperty(wrap, 'clientWidth', { value: 1020, configurable: true });
+      wrap.scrollLeft = 0;
+      table.value.doLayout();
+      frame();
+      await nextTick();
+      visible('left', false);
+      visible('right', false);
+      Object.defineProperty(wrap, 'clientWidth', { value: 400, configurable: true });
+    });
+    await t.test('多列固定及分组表头只在整块区域的内缘绘制阴影', async () => {
+      const original = props.columns;
+      try {
+        props.columns = [
+          { label: '人员', fixed: 'left', children: [{ prop: 'id', width: 60 }, { prop: 'name', width: 120 }] },
+          { prop: 'description', width: 600 },
+          { prop: 'amount', fixed: 'right', width: 120 },
+          { prop: 'actions', fixed: 'right', width: 120 },
+        ];
+        await nextTick();
+        const left = [...dom.window.document.querySelectorAll('[data-fixed-edge="left"]')];
+        const right = [...dom.window.document.querySelectorAll<HTMLElement>('[data-fixed-edge="right"]')];
+        assert.equal(left.length, 3, '左侧父表头、最后一个子表头与表体末列各绘制一次');
+        assert.equal(right.length, 2, '右侧仅第一固定列的表头和表体绘制');
+        assert.ok(left.filter(cell => cell.tagName === 'TD').every(cell => cell.textContent === '测试行'));
+        assert.ok(right.every(cell => cell.style.right === '120px'), '阴影属于靠近内容的金额列，不属于最外侧操作列');
+        props.showSummary = true;
+        await nextTick();
+        const summaryEdges = dom.window.document.querySelectorAll('tfoot [data-fixed-edge]');
+        assert.equal(summaryEdges.length, 2, '合计行沿用左右固定区边缘');
+        assert.equal(summaryEdges[0]!.getAttribute('data-fixed-edge'), 'left');
+        assert.equal(summaryEdges[1]!.getAttribute('data-fixed-edge'), 'right');
+      } finally {
+        props.columns = original;
+        props.showSummary = false;
+        await nextTick();
+      }
     });
     wrap.scrollTop = 150;
     wrap.scrollLeft = 100;

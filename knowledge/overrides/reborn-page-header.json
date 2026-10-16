@@ -1,0 +1,20 @@
+{
+  "whenToUse": [
+    "详情页、编辑页需要返回上一级：title 写当前页面名，@back 里调用 router.back()。",
+    "既要返回又要交代层级路径：#breadcrumb 插槽放 RebornBreadcrumb。",
+    "页面级操作（编辑、删除、发布）固定在标题旁：放进 #extra 插槽。",
+    "标题旁显示状态：在 #title 插槽里把标题文字和 RebornBadge 排在一起。"
+  ],
+  "whenNotToUse": [
+    "只展示层级路径、没有返回动作，改用 reborn-breadcrumb。",
+    "整站共用的顶部导航栏（Logo、菜单），改用 reborn-header 或 reborn-layout。",
+    "弹窗、抽屉自己的标题栏，用 reborn-dialog / reborn-drawer 自带的 title。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用。",
+    "默认四周 1px gray-2 描边（设计稿样式），作为页面顶部时常用 :ui=\"{ root: 'border-x-0 border-t-0' }\" 只留底边。",
+    "组件不做跳转，back 只是通知；不监听 back 时点击返回区没有任何效果。",
+    "返回区（图标 + 标题）整体可点击、可 Tab 聚焦，icon=\"\" 隐藏图标后标题仍会派发 back。",
+    "title 为空且无 #title 插槽时显示「返回」；content 为空且无 #content 插槽时分割线也不渲染。"
+  ]
+}

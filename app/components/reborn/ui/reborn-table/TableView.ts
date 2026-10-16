@@ -10,7 +10,7 @@ import RebornLoading from '../reborn-loading/RebornLoading.vue';
 import RebornPagination from '../reborn-pagination/RebornPagination.vue';
 import RebornRadio from '../reborn-radio/RebornRadio.vue';
 import RebornScrollbar from '../scrollbar/RebornScrollbar.vue';
-import theme from './reborn-table.config';
+import theme, { tableFixedStyles } from './reborn-table.config';
 import { useTableState } from './table.state';
 import { getColumnKey, getColumnWidth, getHeaderRows, getSpan, getValue, toCssSize } from './table.utils';
 import TableFilter from './TableFilter';
@@ -43,6 +43,11 @@ export default defineComponent({
     const scrollbar = ref<InstanceType<typeof RebornScrollbar>>();
     const widths = shallowRef<number[]>([]);
     const headHeights = shallowRef<number[]>([]);
+    const horizontalOverflow = shallowRef({ left: false, right: false });
+    const fixedEdges = computed(() => ({
+      left: state.leaves.value.findLastIndex(column => fixedSide(column) === 'left'),
+      right: state.leaves.value.findIndex(column => fixedSide(column) === 'right'),
+    }));
     const headerRows = computed(() => getHeaderRows(props.columns));
     const ui = computed(() => styles({ size: props.table.size, border: props.table.border, hover: props.table.hover, headerBackground: props.table.headerBackground }));
     const firstDataIndex = computed(() => state.leaves.value.findIndex(column => !column.type || column.type === 'default'));
@@ -81,6 +86,15 @@ export default defineComponent({
     function isCurrentRow(item: TableVisibleRow) {
       return props.table.highlightCurrentRow && props.models.currentRowKey.value === item.key;
     }
+    /** 仅跨过滚动边界时更新状态，避免拖拽每一帧都重渲染整张表。 */
+    function updateHorizontalOverflow() {
+      const wrap = scrollbar.value?.wrapRef;
+      if (!wrap) return;
+      const max = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+      const left = Math.max(0, Math.min(wrap.scrollLeft, max));
+      const next = { left: left > 1, right: max - left > 1 };
+      if (next.left !== horizontalOverflow.value.left || next.right !== horizontalOverflow.value.right) horizontalOverflow.value = next;
+    }
     function measure() {
       const el = tableElement.value;
       if (!el) return;
@@ -90,6 +104,7 @@ export default defineComponent({
       if (nextWidths.some((width, index) => width !== widths.value[index]) || nextWidths.length !== widths.value.length) widths.value = nextWidths;
       if (nextHeights.some((height, index) => height !== headHeights.value[index]) || nextHeights.length !== headHeights.value.length) headHeights.value = nextHeights;
       scrollbar.value?.update();
+      updateHorizontalOverflow();
     }
     function doLayout() {
       if (typeof requestAnimationFrame === 'undefined') return;
@@ -101,12 +116,22 @@ export default defineComponent({
       if (typeof ResizeObserver !== 'undefined' && tableElement.value) {
         observer = new ResizeObserver(doLayout);
         observer.observe(tableElement.value);
+        if (scrollbar.value?.wrapRef) observer.observe(scrollbar.value.wrapRef);
       }
     });
     onUpdated(doLayout);
     onBeforeUnmount(() => { observer?.disconnect(); rowElements.clear(); if (frame !== undefined) cancelAnimationFrame(frame); });
 
     function fixedSide(column: TableColumn) { return column.fixed === true ? 'left' : column.fixed || undefined; }
+    /** 跨列表头和合并格按覆盖范围判断边缘，多列固定时不在区域内部重复画阴影。 */
+    function fixedEdge(column: TableColumn, index: number, span = 1) {
+      const side = fixedSide(column);
+      if (side && fixedEdges.value[side] >= index && fixedEdges.value[side] < index + span) return side;
+    }
+    function fixedClass(column: TableColumn, index: number, span = 1) {
+      const edge = fixedEdge(column, index, span);
+      return edge && [tableFixedStyles.edge, tableFixedStyles[edge], horizontalOverflow.value[edge] ? 'after:opacity-100' : 'after:opacity-0'];
+    }
     function cellStyle(column: TableColumn, index: number, span = 1, headerLevel?: number): CSSProperties {
       const side = fixedSide(column);
       const style: CSSProperties = {};
@@ -184,8 +209,9 @@ export default defineComponent({
       return h('th', {
         key, scope: cell.colSpan > 1 ? 'colgroup' : 'col', colspan: cell.colSpan, rowspan: cell.rowSpan,
         'data-column-key': key,
+        'data-fixed-edge': fixedEdge(column, start, cell.colSpan),
         'aria-sort': column.sortable ? order ?? 'none' : undefined,
-        class: cls('headerCell', [rightBorderClass(start, cell.colSpan), column.type === 'selection' ? 'px-2 text-center' : alignClasses[column.headerAlign ?? column.align ?? 'left'], column.labelClassName]),
+        class: cls('headerCell', [fixedClass(column, start, cell.colSpan), rightBorderClass(start, cell.colSpan), column.type === 'selection' ? 'px-2 text-center' : alignClasses[column.headerAlign ?? column.align ?? 'left'], column.labelClassName]),
         style: cellStyle(column, start, cell.colSpan, level),
       }, [h('div', { class: cls('cellContent', column.type === 'selection' && 'flex items-center justify-center') }, content)]);
     }
@@ -231,8 +257,9 @@ export default defineComponent({
       }, content);
       return h('td', {
         key, rowspan: span.rowspan, colspan: span.colspan,
+        'data-fixed-edge': fixedEdge(column, columnIndex, span.colspan),
         class: cls('cell', [
-          'bg-inherit', rightBorderClass(columnIndex, span.colspan),
+          'bg-inherit', fixedClass(column, columnIndex, span.colspan), rightBorderClass(columnIndex, span.colspan),
           // 合并格属于首行 DOM，但覆盖任一行悬停时都应亮起；当前行的品牌底色优先。
           span.rowspan > 1 && isHovered(item.index, span.rowspan) && !isCurrentRow(item) && 'bg-gray-2',
           column.type === 'selection' ? 'px-2 text-center' : alignClasses[column.align ?? 'left'], column.className, typeof props.table.cellClassName === 'function' ? props.table.cellClassName(scope) : props.table.cellClassName,
@@ -303,6 +330,7 @@ export default defineComponent({
         h(RebornScrollbar, {
           ref: scrollbar, class: cls('scrollbar'), style: { height: toCssSize(props.table.height), maxHeight: toCssSize(props.table.maxHeight) },
           verticalOffset: headerOffset.value,
+          onScroll: updateHorizontalOverflow,
           // 固定列的层级留在内容区内，避免覆盖同级轨道并拦截滚动条拖拽。
           wrapClass: 'isolate max-h-[inherit]', contentClass: 'min-w-full',
         }, () => [
@@ -310,7 +338,7 @@ export default defineComponent({
             h('colgroup', state.leaves.value.map((column, index) => h('col', { key: getColumnKey(column, index), style: { width: `${getColumnWidth(column)}px` } }))),
             props.table.showHeader === false ? null : h('thead', { class: cls('thead') }, headerRows.value.map((row, level) => h('tr', { key: level }, row.map(cell => renderHeader(cell, level))))),
             h('tbody', { class: '[&>tr:first-child>td]:border-t-0' }, state.visibleRows.value.length ? renderBody() : [h('tr', [h('td', { colspan: Math.max(1, state.leaves.value.length), class: cls('empty') }, slots.empty?.() ?? (props.table.loading ? '加载中' : h(RebornEmpty, { description: props.table.emptyText })))])]),
-            props.table.showSummary ? h('tfoot', { class: cls('summary') }, [h('tr', state.leaves.value.map((column, index) => h('td', { key: getColumnKey(column, index), class: cls('cell', ['bg-gray-2', rightBorderClass(index), alignClasses[column.align ?? 'left']]), style: cellStyle(column, index) }, [h('div', { class: cls('cellContent') }, state.summary.value[index] ?? '')])))]) : null,
+            props.table.showSummary ? h('tfoot', { class: cls('summary') }, [h('tr', state.leaves.value.map((column, index) => h('td', { key: getColumnKey(column, index), 'data-fixed-edge': fixedEdge(column, index), class: cls('cell', ['bg-gray-2', fixedClass(column, index), rightBorderClass(index), alignClasses[column.align ?? 'left']]), style: cellStyle(column, index) }, [h('div', { class: cls('cellContent') }, state.summary.value[index] ?? '')])))]) : null,
           ]),
           slots.append?.(),
         ]),

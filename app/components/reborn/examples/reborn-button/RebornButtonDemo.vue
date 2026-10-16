@@ -96,6 +96,8 @@ const buttonCode = computed(() => {
 // ─── 场景演示状态 ───────────────────────────────────────────────
 
 const gap = ref(true)
+/** 仅演示表单尺寸继承，无需定义字段。 */
+const formModel = ref({})
 /** 有边框的视觉风格。 */
 const borderedVariants = ['outlined', 'subtle'] as const
 </script>
@@ -283,7 +285,7 @@ const borderedVariants = ['outlined', 'subtle'] as const
     </DemoSection>
 
     <DemoSection title="与表单组联动">
-      <DemoBlock layout="row"><RebornForm size="lg"><RebornButton size="sm" variant="outlined" circle aria-label="添加"><Icon name="lucide:plus" /></RebornButton></RebornForm></DemoBlock>
+      <DemoBlock layout="row"><RebornForm :model-value="formModel" size="lg"><RebornButton size="sm" variant="outlined" circle aria-label="添加"><Icon name="lucide:plus" /></RebornButton></RebornForm></DemoBlock>
       <DemoNote>表单尺寸覆盖自身 <code>size</code>，圆形按钮也跟随表单高度。</DemoNote>
     </DemoSection>
 

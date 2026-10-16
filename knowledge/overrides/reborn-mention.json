@@ -1,0 +1,21 @@
+{
+  "whenToUse": [
+    "评论、IM 输入框里 @ 成员：options 给成员列表，选中后插入「@值 」。",
+    "同一输入框同时 @ 成员和 # 话题：prefix 传 ['@', '#']，在 search 回调里按第二个参数切换 options。",
+    "成员太多需要远程搜索：:filter-option=\"false\" + search 事件请求接口，请求期间开 loading。",
+    "提及要像整体标签那样删除：开 whole，或用 check-is-whole 自定义判断。"
+  ],
+  "whenNotToUse": [
+    "从固定列表选一个值、不需要自由输入，改用 reborn-select。",
+    "富文本编辑器里把提及渲染成不可编辑的胶囊，本组件只能插入纯文本，需用编辑器自带的提及插件。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用；基于 RebornInput 封装，type / placeholder / size / disabled / rows 等输入框属性与 focus / blur / change 等事件原样透传。",
+    "插入输入框的是选项的 value，下拉框显示的是 label；字段名不同用 props 映射。",
+    "前缀不要求前面是空格，邮箱里的 @ 也会触发；需要限制时用 filterOption 或在 search 里自行判断。",
+    "筛选结果为空且不在 loading 时面板不展开，不会显示「暂无数据」。",
+    "whole 只对 options 里存在的值整体删除，且光标必须紧跟在拆分符之后；check-is-whole 传入后不开 whole 也生效。",
+    "class 落在根容器而不是输入框外壳，改输入框样式用 inputUi；面板样式用 ui 或 popperClass。",
+    "不支持 popper-options（不依赖 popper.js），定位只有 placement / offset / showArrow。"
+  ]
+}

@@ -1,40 +1,39 @@
-<template>
-    <div :class="ui.wrapper()" role="button" :aria-label="label" :aria-hidden="!visible" :tabindex="visible ? 0 : -1"
-        :style="{ bottom: viewBottom, opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none' }"
-        @click.stop="scrollToTarget" @keydown.enter.prevent="scrollToTarget" @keydown.space.prevent="scrollToTarget">
-        <slot>
-            <div :class="[
-                ui.base(),
-                visible ? '-translate-x-3' : 'translate-x-20'
-            ]">
-                <svg v-if="showProgress" :class="ui.progress()" viewBox="0 0 100 100" aria-hidden="true">
-                    <path :class="ui.progressTrack()" :d="progressPath" pathLength="100" />
-                    <path v-if="progressLength > 0" :class="ui.progressBar()" :d="progressPath" pathLength="100" stroke-dasharray="100" :stroke-dashoffset="progressDashOffset" />
-                </svg>
-                <Icon v-if="icon" :name="icon" :class="ui.icon()" />
-                <span v-else :class="ui.icon()">{{ isBottom ? '↓' : '↑' }}</span>
-            </div>
-        </slot>
-    </div>
-</template>
-
 <script setup lang="ts">
-import { computed, onMounted, shallowRef, ref } from "vue";
 import type { ClassValue } from "clsx"
-import { tv } from '@/lib/tv'
-import { cn } from '@/lib/utils'
-import { useResizeObserver, useWindowScroll, useWindowSize } from '@vueuse/core'
-import theme, {
-    BACK_TOP_PROGRESS_PATHS,
+import type {
     backTopColors,
     backTopDirections,
     backTopShapes,
-    backTopSizes,
+    backTopSizes} from "./reborn-back-top.config";
+import { useResizeObserver, useWindowScroll, useWindowSize } from '@vueuse/core'
+import { computed, onMounted, ref, shallowRef } from "vue";
+import { tv } from '@/lib/tv'
+import { cn } from '@/lib/utils'
+import theme, {
+    BACK_TOP_PROGRESS_PATHS
 } from "./reborn-back-top.config";
 
 defineOptions({
     name: "RebornBackTop"
 });
+
+const props = withDefaults(defineProps<BackTopProps>(), {
+    threshold: 300,
+    bottom: 20,
+    duration: 300,
+    isTab: false,
+    safeArea: true,
+    direction: 'top',
+    shape: 'circle',
+    showProgress: false,
+    color: 'primary',
+    size: 'md'
+});
+
+const emit = defineEmits([
+    /** 点击按钮时触发，无参数；组件已先发起滚动（回到顶部或去底部），无需在回调中重复处理 */
+    "click",
+]);
 
 export interface BackTopProps {
     // Web: 也可以传入自定义的 scrollTop，如果不传则自动监听 window
@@ -71,25 +70,7 @@ export interface BackTopProps {
     }
 }
 
-const props = withDefaults(defineProps<BackTopProps>(), {
-    threshold: 300,
-    bottom: 20,
-    duration: 300,
-    isTab: false,
-    safeArea: true,
-    direction: 'top',
-    shape: 'circle',
-    showProgress: false,
-    color: 'primary',
-    size: 'md'
-});
-
 const b = tv(theme)
-
-const emit = defineEmits([
-    /** 点击按钮时触发，无参数；组件已先发起滚动（回到顶部或去底部），无需在回调中重复处理 */
-    "click",
-]);
 
 const isBottom = computed(() => props.direction === 'bottom')
 
@@ -151,6 +132,8 @@ const maxScroll = computed(() => {
 
 /**
  * 是否显示。回到顶部看已滚动的距离，去底部看离底部还剩多少；
+ * 隐藏时给外层加 inert 而不是 aria-hidden：点击会让按钮获得焦点，滚到目标后它随即隐藏，
+ * aria-hidden 落在仍持有焦点的元素上会被浏览器拦截告警；inert 会让浏览器先移走焦点，同时对读屏与 Tab 键隐藏。
  * 挂载前文档高度未测量，maxScroll 兜底为 1，去底部按钮在服务端渲染时保持隐藏，不会闪一下。
  */
 const visible = computed(() => isBottom.value
@@ -203,3 +186,27 @@ function scrollToTarget() {
     emit("click");
 }
 </script>
+
+<template>
+  <div
+    :class="ui.wrapper()" role="button" :aria-label="label" tabindex="0" :inert="!visible"
+    :style="{ bottom: viewBottom, opacity: visible ? 1 : 0, pointerEvents: visible ? 'auto' : 'none' }"
+    @click.stop="scrollToTarget" @keydown.enter.prevent="scrollToTarget" @keydown.space.prevent="scrollToTarget"
+  >
+    <slot>
+      <div
+        :class="[
+          ui.base(),
+          visible ? '-translate-x-3' : 'translate-x-20'
+        ]"
+      >
+        <svg v-if="showProgress" :class="ui.progress()" viewBox="0 0 100 100" aria-hidden="true">
+          <path :class="ui.progressTrack()" :d="progressPath" pathLength="100" />
+          <path v-if="progressLength > 0" :class="ui.progressBar()" :d="progressPath" pathLength="100" stroke-dasharray="100" :stroke-dashoffset="progressDashOffset" />
+        </svg>
+        <Icon v-if="icon" :name="icon" :class="ui.icon()" />
+        <span v-else :class="ui.icon()">{{ isBottom ? '↓' : '↑' }}</span>
+      </div>
+    </slot>
+  </div>
+</template>

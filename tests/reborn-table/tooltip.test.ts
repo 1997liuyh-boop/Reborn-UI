@@ -56,6 +56,8 @@ function mount(options: Record<string, unknown> = {}, slots = {}) {
     showOverflowTooltip: true, tooltipOptions: { openDelay: 0, closeDelay: 0 }, ...options,
   });
   const app = createApp({ render: () => h(Table, props, slots) });
+  let tooltipMounts = 0;
+  app.mixin({ mounted() { if (this.$options.name === 'RebornTooltip') tooltipMounts += 1; } });
   app.mount(container);
   const cell = () => container.querySelector('tbody td')!;
   const trigger = () => cell().querySelector<HTMLElement>('[data-table-overflow]')!;
@@ -73,9 +75,45 @@ function mount(options: Record<string, unknown> = {}, slots = {}) {
     wrapper.dispatchEvent(new dom.window.Event(focus ? 'focusin' : 'mouseenter', { bubbles: focus }));
     await nextTick(); await nextTick(); await nextTick();
   }
-  return { props, cell, trigger, geometry, enter, stop() { app.unmount(); container.remove(); } };
+  return { props, cell, trigger, geometry, enter, get tooltipMounts() { return tooltipMounts; }, stop() { app.unmount(); container.remove(); } };
 }
 const tooltip = () => dom.window.document.querySelector<HTMLElement>('[role="tooltip"]');
+
+it('大量溢出单元格首屏不创建 Tooltip，首次交互后仅创建并复用当前实例', async () => {
+  const t = mount({
+    data: Array.from({ length: 24 }, (_, id) => ({ id, name: `第 ${id} 行长文本` })),
+    columns: Array.from({ length: 8 }, (_, index) => ({ prop: 'name', columnKey: String(index), width: 120 })),
+  });
+  try {
+    assert.equal(t.tooltipMounts, 0, '192 个单元格不应在首屏提前创建 Tooltip');
+    t.geometry(100, 240);
+    await t.enter();
+    assert.equal(t.tooltipMounts, 1, '只创建正在交互的单元格提示');
+    assert.equal(tooltip()?.textContent, '第 0 行长文本');
+    t.trigger().parentElement!.parentElement!.dispatchEvent(new dom.window.Event('mouseleave'));
+    await nextTick();
+    await t.enter();
+    assert.equal(t.tooltipMounts, 1, '再次进入时应复用实例');
+  } finally { t.stop(); }
+});
+
+it('首次键盘聚焦不替换文本节点，并保留 UI 覆盖和 ARIA 关联', async () => {
+  const t = mount({ tooltipOptions: { openDelay: 0, closeDelay: 0, ui: { wrapper: 'custom-wrapper', trigger: 'custom-trigger', content: 'custom-content' } } });
+  try {
+    t.geometry(100, 240);
+    t.props.data = [{ id: 1, name: '键盘聚焦时的长内容' }];
+    await nextTick(); await nextTick(); await nextTick();
+    const element = t.trigger();
+    element.focus();
+    await nextTick(); await nextTick(); await nextTick();
+    assert.equal(t.trigger(), element, '按需创建提示不能重建触发元素');
+    assert.equal(dom.window.document.activeElement, element, '首次打开后焦点仍在文本上');
+    assert.equal(element.getAttribute('aria-describedby'), tooltip()?.id);
+    assert.ok(element.parentElement?.classList.contains('custom-trigger'));
+    assert.ok(element.parentElement?.parentElement?.classList.contains('custom-wrapper'));
+    assert.ok(tooltip()?.classList.contains('custom-content'));
+  } finally { t.stop(); }
+});
 
 it('仅真实溢出时显示 Tooltip，不再附加原生 title；默认提示使用格式化后的文本', async () => {
   const t = mount({ columns: [{ prop: 'name', label: '姓名', formatter: () => '格式化文本' }] });

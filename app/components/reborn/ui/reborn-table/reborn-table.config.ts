@@ -4,6 +4,13 @@ export const tableSizes = ['sm', 'md', 'lg'] as const;
 export const tableAligns = ['left', 'center', 'right'] as const;
 export type { TableUi as TableUI } from './table.types';
 
+/** 固定区只在靠近滚动内容的一侧绘制阴影，伪元素不拦截点击与拖拽。 */
+export const tableFixedStyles = {
+  edge: "after:pointer-events-none after:absolute after:-top-px after:-bottom-px after:w-3 after:content-[''] after:transition-opacity after:duration-150 motion-reduce:after:transition-none",
+  left: 'after:-right-3 after:shadow-[inset_10px_0_10px_-10px_#00000026] dark:after:shadow-[inset_10px_0_10px_-10px_#00000066]',
+  right: 'after:-left-3 after:shadow-[inset_-10px_0_10px_-10px_#00000026] dark:after:shadow-[inset_-10px_0_10px_-10px_#00000066]',
+} as const;
+
 /** 字号和行高完整沿用项目令牌，不为表格单独覆盖。 */
 export default {
   slots: {
