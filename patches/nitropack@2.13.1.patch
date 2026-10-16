@@ -1,0 +1,12 @@
+diff --git a/dist/rollup/index.mjs b/dist/rollup/index.mjs
+--- a/dist/rollup/index.mjs
++++ b/dist/rollup/index.mjs
+@@ -350,7 +350,7 @@ function externals$1(opts) {
+       suffixes: ["", "/index"],
+       extensions: [".mjs", ".cjs", ".js", ".mts", ".cts", ".ts", ".json"]
+     });
+-    return res?.startsWith("file://") ? fileURLToPath(res) : res;
++    return res?.startsWith("file://") ? normalize(fileURLToPath(res)) : res;
+   };
+   const inlineMatchers = (opts.inline || []).map((p) => normalizeMatcher(p)).sort((a, b) => (b.score || 0) - (a.score || 0));
+   const externalMatchers = (opts.external || []).map((p) => normalizeMatcher(p)).sort((a, b) => (b.score || 0) - (a.score || 0));

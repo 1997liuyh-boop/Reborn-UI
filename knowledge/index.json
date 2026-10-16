@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-13T10:31:49.796Z",
+  "generatedAt": "2026-10-16T03:04:57.546Z",
   "components": [
     {
       "id": "animate-grid",
@@ -747,10 +747,16 @@
     },
     {
       "id": "reborn-back-top",
-      "title": "BackTop",
-      "description": "用于长页面滚动超过阈值后显示返回顶部按钮的跨端导航组件。",
+      "title": "BackTop 返回顶部",
+      "description": "双端返回顶部按钮：滚动超过阈值后淡入；Web 端另有去底部、方形与顺/逆时针滚动进度环。",
       "category": "navigation",
-      "tags": [],
+      "tags": [
+        "css",
+        "tailwind",
+        "back-top",
+        "scroll",
+        "uniapp"
+      ],
       "platforms": [
         "web",
         "uniapp"
@@ -775,7 +781,7 @@
     },
     {
       "id": "reborn-breadcrumb",
-      "title": "面包屑",
+      "title": "Breadcrumb 面包屑",
       "description": "用于展示当前页面层级路径并可逐级返回的面包屑导航组件，支持手写条目与 routes 数据驱动两种用法，双端可用。",
       "category": "navigation",
       "tags": [
@@ -819,7 +825,7 @@
     },
     {
       "id": "reborn-carousel",
-      "title": "走马灯 Carousel",
+      "title": "Carousel 走马灯",
       "description": "用于循环展示多个内容项的轮播组件，支持多项显示、卡片模式与纵向布局，仅 web 端。",
       "category": "navigation",
       "tags": [
@@ -936,6 +942,21 @@
       "description": "用于渲染缺口、撕线、邮票等形态优惠券外观的卡券组件，仅 web 端。",
       "category": "misc",
       "tags": [],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-crowd",
+      "title": "人群漫步",
+      "description": "把人物精灵图切格后在 2D 画布上左右随机走过，边走边颠、前后分层，可控人数与速度，用作页脚装饰。",
+      "category": "effect",
+      "tags": [
+        "canvas",
+        "gsap",
+        "animation",
+        "decoration"
+      ],
       "platforms": [
         "web"
       ]
@@ -1924,6 +1945,22 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reui-launch",
+      "title": "Launch 电脑动画",
+      "description": "可设置品牌文字和屏幕动效的复古电脑动画，支持悬停展开、点击固定与紧凑取景，仅 Web 端。",
+      "category": "effect",
+      "tags": [
+        "svg",
+        "animation",
+        "hover",
+        "text",
+        "reui-launch"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {

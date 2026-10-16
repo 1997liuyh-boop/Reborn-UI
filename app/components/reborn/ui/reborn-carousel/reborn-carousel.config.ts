@@ -1,33 +1,35 @@
 const carouselArrowModes = ["hover", "always", "never"] as const;
 const carouselDirections = ["horizontal", "vertical"] as const;
 const carouselIndicatorPositions = ["inside", "outside", "none"] as const;
+const carouselIndicatorDisplayModes = ["hover", "always", "never"] as const;
 const carouselTriggers = ["hover", "click"] as const;
 const carouselTypes = ["default", "card"] as const;
 
 const carouselColors = ["primary", "secondary", "success", "info", "warning", "error", "neutral"] as const;
-const carouselIndicatorTypes = ["line", "dot", "fraction", "button"] as const;
+const carouselIndicatorTypes = ["line", "dot", "progress", "fraction", "button"] as const;
 
 export {
   carouselArrowModes,
+  carouselColors,
   carouselDirections,
+  carouselIndicatorDisplayModes,
   carouselIndicatorPositions,
+  carouselIndicatorTypes,
   carouselTriggers,
   carouselTypes,
-  carouselColors,
-  carouselIndicatorTypes,
 };
 
 export default {
   slots: {
     // 根容器：相对定位，隔离层，全宽
-    root: "group/reborn-carousel relative isolate w-full min-w-0 max-w-full overflow-hidden relative",
-    // 包装容器：全宽，溢出隐藏
-    wrapper: "w-full max-w-full min-w-0 overflow-hidden",
+    root: "group/reborn-carousel relative isolate w-full min-w-0 max-w-full overflow-hidden",
+    // 外层不裁剪 outside 分页的背景投影；轮播内容仍由 root 和 viewport 独立裁剪。
+    wrapper: "group/carousel-shell w-full max-w-full min-w-0 overflow-visible",
     // 视口容器：相对定位，滚动容器，隐藏滚动条
     viewport:
-      "relative w-full min-w-0 max-w-full overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+      "relative w-full min-w-0 max-w-full overflow-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [scroll-behavior:auto!important] focus-visible:outline-2 focus-visible:outline-primary",
     // 轨道容器：弹性布局，全宽
-    track: "flex w-full min-w-full items-stretch",
+    track: "flex w-full min-w-full items-start",
     // 幻灯片：相对定位，最小宽度，过渡动画
     slide: "relative min-w-0 max-w-full shrink-0 transition-all duration-500 will-change-transform",
     // 幻灯片内部容器：相对定位，溢出隐藏，圆角继承
@@ -44,13 +46,19 @@ export default {
     indicatorWrapper: "flex justify-center",
     // 指示器组：弹性布局，间距
     indicators:
-      "flex items-center gap-2 pointer-events-auto",
+      "group/carousel-pagination flex w-max max-w-full shrink-0 items-center gap-2 p-0.5 pointer-events-auto text-gray-9",
     // 指示器：圆形，过渡动画
-    indicator: "rounded-full transition-all duration-300 ease-out",
-    // 激活状态指示器：取灰阶最深档 gray-10，随主题反转（浅色近黑、深色纯白），与原先 slate-900 / dark:white 的效果一致
+    indicator: "cursor-pointer rounded-full p-0 transition-all duration-300 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:cursor-default",
+    // 类型变体决定灰阶外观，悬停与按钮激活色由局部色板变量统一提供。
     indicatorActive: "bg-gray-10",
-    // 未激活状态指示器：取占位档 gray-5 的 60% 半透明
-    indicatorInactive: "bg-gray-5/60",
+    indicatorInactive: "bg-gray-2",
+    // 仅当前页文字自身悬停时着色，总数保留容器悬停时的加粗反馈。
+    indicatorCurrent: "transition-colors hover:text-(--carousel-color)",
+    indicatorTotal: "group-hover/carousel-pagination:font-bold",
+    // 通过 RebornProgress 的 ui 覆盖高度和两端圆角，不改公共进度条组件。
+    progress: "w-full gap-0 text-(--carousel-color)",
+    progressTrack: "h-0.5 rounded-none",
+    progressFill: "rounded-none",
     // 激活状态幻灯片
     slideActive: "",
     // 未激活状态幻灯片
@@ -71,7 +79,7 @@ export default {
       "pointer-events-auto cursor-pointer size-8 rounded-full inline-flex items-center justify-center bg-black/45 backdrop-blur-3xl border border-[#BABCBF] shadow-lg text-white transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30",
     // 缩略图项：相对定位，溢出隐藏，过渡动画
     thumb:
-      "group/thumb relative overflow-hidden transition-all duration-300",
+      "group/thumb relative cursor-pointer overflow-hidden transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
     // 激活状态缩略图：描边取 gray-10，随主题反转；原先写死的 #252626 在深色模式下与底色融为一体
     thumbActive: "border border-gray-10 rounded-xl",
     // 未激活状态缩略图：描边 gray-3 半透明，悬停加深一档到 gray-4；灰阶自身随主题反转，不再写 dark: 前缀
@@ -86,21 +94,46 @@ export default {
     // 缩略图指示器：绝对定位，白色背景
   },
   variants: {
+    // 外部分页也属于轮播区域；隐藏只影响可见性，保留布局且不拦截点击或键盘焦点。
+    indicatorDisplay: {
+      hover: {
+        indicatorWrapper: "invisible opacity-0 transition-opacity duration-200 group-hover/carousel-shell:visible group-hover/carousel-shell:opacity-100 group-focus-within/carousel-shell:visible group-focus-within/carousel-shell:opacity-100 [@media(hover:none)]:visible [@media(hover:none)]:opacity-100 motion-reduce:transition-none",
+      },
+      always: {},
+      never: { indicatorWrapper: "hidden" },
+    },
+    autoHeight: {
+      true: { slide: "h-auto", slideInner: "h-auto" },
+      false: { slideInner: "h-full" },
+    },
+    autoSize: {
+      true: { slide: "w-auto! h-auto! self-center", slideInner: "w-auto! h-auto! inline-block" },
+    },
+    grabCursor: { true: { viewport: "cursor-grab" } },
+    dragging: { true: { viewport: "cursor-grabbing select-none" } },
+    thumbsVertical: {
+      true: { thumbsViewport: "flex-1 overflow-y-auto overflow-x-hidden", thumbsTrack: "flex-col w-full", thumb: "aspect-[4/3] w-full" },
+      false: { thumbsViewport: "overflow-x-auto overflow-y-hidden", thumbsTrack: "flex-row", thumb: "aspect-[4/3] w-20 shrink-0 sm:w-24 md:w-28" },
+    },
     // 指示器位置变体
     indicatorPosition: {
-      // 内部位置：绝对定位在底部，带背景和边框
+      // 内部位置：绝对定位在底部；背景独立控制，避免类型变体覆盖显隐开关。
       inside: {
-        indicators: "rounded-full border border-white/60 bg-gray-1/72 px-3 py-2 shadow-[0_12px_32px_rgba(15,23,42,0.12)] backdrop-blur-md dark:border-white/10 pointer-events-auto",
-        indicatorWrapper: "pointer-events-none absolute inset-x-0 bottom-4 z-20",
+        indicatorWrapper: "pointer-events-none absolute inset-x-0 bottom-2 z-20",
       },
-      // 外部位置：绝对定位在底部居中
+      // 外部位置：在主图下方居中排列，默认间距 8px。
       outside: {
-        indicatorWrapper: "mt-5",
+        indicatorWrapper: "mt-2",
       },
       // 不显示指示器
       none: {
         indicatorWrapper: "hidden",
       },
+    },
+    // 背景开关只作用容器，不改变指示项自身的配色。
+    indicatorBackground: {
+      true: {},
+      false: {},
     },
     // 滚动方向变体
     direction: {
@@ -116,6 +149,7 @@ export default {
         viewport: "overflow-y-auto overflow-x-hidden",
         track: "flex-col",
         slide: "w-full",
+        arrowGroup: "inset-x-auto inset-y-4 left-1/2 top-4 -translate-x-1/2 translate-y-0 flex-col",
         indicatorWrapper: "inset-y-0 inset-x-auto items-center",
         indicators: "flex-col",
       },
@@ -157,56 +191,64 @@ export default {
         arrowGroup: "hidden",
       },
     },
-    // 颜色变体：指示器激活状态的颜色
+    // 统一取对应色板第 6 阶，子项与进度条继承变量，明暗主题均保持相同档位。
     color: {
       primary: {
-        indicatorActive: "bg-primary",
+        indicators: "[--carousel-color:var(--color-brand-6)]",
       },
       secondary: {
-        indicatorActive: "bg-secondary",
+        indicators: "[--carousel-color:var(--color-secondary-6)]",
       },
       success: {
-        indicatorActive: "bg-success",
+        indicators: "[--carousel-color:var(--color-green-6)]",
       },
       info: {
-        indicatorActive: "bg-info",
+        indicators: "[--carousel-color:var(--color-blue-6)]",
       },
       warning: {
-        indicatorActive: "bg-warning",
+        indicators: "[--carousel-color:var(--color-orange-6)]",
       },
       error: {
-        indicatorActive: "bg-error",
+        indicators: "[--carousel-color:var(--color-red-6)]",
       },
       neutral: {
-        indicatorActive: "bg-neutral",
+        indicators: "[--carousel-color:var(--color-gray-6)]",
       },
     },
     // 指示器类型变体
     indicatorType: {
-      // 线型：高度固定，激活状态宽度增加
+      // 线型：所有项尺寸固定，内外位置只切换激活配色。
       line: {
-        indicator: "h-2",
-        indicatorActive: "w-8",
-        indicatorInactive: "w-2",
+        indicators: "rounded-sm",
+        indicator: "h-0.5 w-6 rounded-none",
+        indicatorActive: "enabled:hover:bg-(--carousel-color)",
+        indicatorInactive: "bg-gray-4",
       },
-      // 点型：固定尺寸
+      // 点型：普通项为圆点，激活项横向延长。
       dot: {
-        indicator: "size-2",
-        indicatorActive: "",
-        indicatorInactive: "bg-gray-5",
+        indicators: "rounded-full",
+        indicator: "h-1.5",
+        indicatorActive: "w-2.5 border border-gray-10 bg-transparent enabled:hover:border-(--carousel-color)",
+        indicatorInactive: "w-1.5 bg-gray-10",
       },
-      // 分数型：无边框和阴影
+      // 进度条始终横向铺满，背景开关不影响轨道，不继承浮动分页的留白。
+      progress: {
+        indicatorWrapper: "w-full",
+        indicators: "w-full flex-row gap-0 rounded-none p-0",
+      },
+      // 分数型：文字自然撑开，纵向轮播也不把分数字符拆成一列。
       fraction: {
-        indicators: "border-none shadow-none p-1 dark:bg-transparent gap-1",
+        indicators: "min-w-0 flex-row gap-1 rounded-full px-4 py-1 text-base tabular-nums",
       },
       // 按钮型：圆形按钮，显示数字
       button: {
-        indicators: "border-none shadow-none p-1 dark:bg-transparent gap-2",
+        indicators: "rounded-full px-2 py-1",
         // 指示器是 size-5（20px）的圆点，序号要塞进圆内。
         // 10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
         indicator: "flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer select-none size-5 text-[10px] text-white",
-        indicatorActive: "text-white border-transparent",
-        indicatorInactive: "bg-gray-2 ring-1 ring-gray-5 text-gray-5",
+        indicatorActive: "bg-(--carousel-color) text-white border-transparent",
+        // 描边向内绘制，避免未激活按钮的可见尺寸比激活态多出 2px。
+        indicatorInactive: "bg-gray-2 ring-1 ring-inset ring-gray-5 text-gray-5",
       },
     },
     // 缩略图位置变体
@@ -249,11 +291,25 @@ export default {
       never: {},
     },
   },
+  compoundVariants: [
+    // 阴影不设水平或垂直偏移，让底板四周均匀扩散；关闭背景时一并移除，进度条不使用底板。
+    { indicatorType: ["line", "dot", "fraction", "button"] as (typeof carouselIndicatorTypes)[number][], indicatorBackground: true, class: { indicators: "bg-gray-1/30 backdrop-blur-xl shadow-[0_0_8px_rgb(0_0_0/0.18)] rounded-full" } },
+    // 线段和圆点体积较小，用留白、较实的底色与内描边区分浅色图片，描边不改变布局尺寸。
+    { indicatorType: ["line", "dot"] as (typeof carouselIndicatorTypes)[number][], indicatorBackground: true, class: { indicators: "p-2 bg-gray-1/80 ring-1 ring-inset ring-gray-10/15" } },
+    // 图内线型当前项使用 gray-1，以相反灰阶的底板保证明暗主题下均可辨认。
+    { indicatorPosition: "inside" as const, indicatorType: "line" as const, indicatorBackground: true, class: { indicators: "bg-gray-10/30 ring-gray-1/20" } },
+    { indicatorPosition: "inside" as const, indicatorType: "line" as const, class: { indicatorActive: "bg-gray-1" } },
+    { indicatorPosition: "outside" as const, indicatorType: "line" as const, class: { indicatorActive: "bg-gray-5" } },
+    { indicatorPosition: "inside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "inset-x-0 inset-y-auto top-0 bottom-auto items-stretch" } },
+    { indicatorPosition: "outside" as const, indicatorType: "progress" as const, class: { indicatorWrapper: "static inset-auto mt-0 items-stretch" } },
+  ],
   defaultVariants: {
     direction: "horizontal" as (typeof carouselDirections)[number],
     type: "default" as (typeof carouselTypes)[number],
     arrow: "hover" as (typeof carouselArrowModes)[number],
     color: "primary" as (typeof carouselColors)[number],
     indicatorType: "line" as (typeof carouselIndicatorTypes)[number],
+    indicatorDisplay: "always" as (typeof carouselIndicatorDisplayModes)[number],
+    indicatorBackground: true,
   },
 };

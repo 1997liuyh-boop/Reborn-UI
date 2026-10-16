@@ -4,9 +4,10 @@ import { onClickOutside, useMediaQuery } from "@vueuse/core";
 import { motion } from "motion-v";
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from "vue";
 import AppHeaderLogo from "~/components/app/AppHeaderLogo.vue";
+import ReuiLaunchDoodle from "~/components/reborn/ui/reui-launch/ReuiLaunchDoodle.vue";
 import { prefetchLandingModels } from "~/lib/three/modelAssets";
 import MultipleAnimationScene from "./MultipleAnimationScene.vue";
-import { installCommand } from "./retargetingHero.config";
+import { heroTickerItems, installCommand } from "./retargetingHero.config";
 import RetargetingScene from "./RetargetingScene.vue";
 import { createHeroEntrance, landingNavigation } from "./videoHero.config";
 
@@ -26,11 +27,19 @@ const copyStatus = ref("");
 const animationPaused = computed(() => paused.value || reduced.value || menuOpen.value);
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
+/**
+ * 走马灯轨道：条目重复 6 遍，动画平移 -50%（即 3 遍的宽度）后与起点重合，循环无缝。
+ * 一遍条目在桌面字号下约 966px，平移距离必须大于走马灯自身宽度（104vw），否则循环末尾会露出空白；
+ * 3 遍约 2900px，可覆盖约 2780px 宽的视口。改了条目文案要重新估一遍宽度。
+ */
+const tickerTrack = Array.from({ length: 6 }, () => heroTickerItems).flat();
+
 useHead({
   titleTemplate: "%s", link: [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "anonymous" },
-    { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" },
+    // Anton：水印与走马灯用的窄体粗字，中文回退到系统字体
+    { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600&display=swap" },
   ]
 });
 
@@ -66,7 +75,16 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
 
 <template>
   <main
-    class="relative isolate flex min-h-screen min-h-svh flex-col justify-between overflow-hidden bg-white font-[Inter,Arial,sans-serif] text-black selection:bg-black selection:text-white">
+    class="relative isolate flex h-dvh flex-col overflow-x-hidden overflow-y-auto bg-white font-[Inter,Arial,sans-serif] text-black selection:bg-black selection:text-white">
+    <!--
+      层级（低 → 高）：网格底纹 / 水印 z-0 → 走马灯 z-1 → 主舞台 z-2 → 文案 z-30 → 小舞台 z-40 → 导航 z-50。
+      走马灯压在两块 three.js 画布之下：画布背景透明，人物站在走马灯前面，滚动的文字从人物身后穿过，不会挡住人物。
+    -->
+    <div class="landing-grid pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
+    <div class="landing-watermark pointer-events-none absolute top-6 left-1/2 z-0 hidden select-none md:block" aria-hidden="true">
+      REBORN UI
+    </div>
+
     <motion.nav aria-label="首页导航" v-bind="createHeroEntrance(-16, 0.8, 0, reduced)"
       class="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 p-4 md:px-8 md:py-6">
       <div class="flex min-w-0 items-center gap-3 md:gap-5">
@@ -123,7 +141,7 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
     <motion.div aria-hidden="true" :initial="{ opacity: 0, transform: 'scale(1.05)' }"
       :animate="{ opacity: 1, transform: 'scale(1)' }"
       :transition="{ duration: reduced ? 0 : 1.8, ease: [0.16, 1, 0.3, 1] }"
-      class="pointer-events-none absolute top-32 left-[10%] z-0 h-96 w-full md:top-[6%] md:left-[8%] md:size-full md:[mask-image:linear-gradient(to_right,transparent,black_12%)]">
+      class="pointer-events-none absolute top-16 left-[10%] z-2 h-[min(46dvh,24rem)] w-full md:top-[6%] md:bottom-0 md:left-[8%] md:h-auto md:[mask-image:linear-gradient(to_right,transparent,black_12%)]">
       <RetargetingScene :key="sceneVersion" :paused="animationPaused" :compatibility="compatibility"
         class="absolute inset-0" @status="sceneStatus = $event" @error="sceneError = $event" />
     </motion.div>
@@ -150,38 +168,67 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
       </div>
     </div>
 
-    <!-- 移动端不挂载小舞台，隐藏时一并释放模型和动画循环。 -->
-    <div v-if="hydrated && desktop"
-      class="absolute top-24 left-8 z-40 hidden h-[min(36vh,20rem)] w-[56vw] max-w-200 md:block">
-      <MultipleAnimationScene :paused="animationPaused" />
+    <!-- 舞台占据文案之外的剩余高度，随视口伸缩；移动端不挂载小舞台。 -->
+    <div class="relative z-40 min-h-20 flex-1 md:min-h-24">
+      <div v-if="hydrated && desktop"
+        class="absolute top-24 bottom-0 left-8 hidden w-[56vw] max-w-200 md:block">
+        <MultipleAnimationScene :paused="animationPaused" />
+      </div>
+    </div>
+
+    <!-- 斜向走马灯：参考 cindy.app 的 ticker-wrap，比视口宽 4vw，旋转后两端不露缝 -->
+    <div class="relative z-1 -ml-[2vw] w-[104vw] shrink-0 -rotate-[1.4deg]" aria-hidden="true">
+      <div class="landing-ticker overflow-hidden bg-gray-10 py-3 text-gray-1">
+        <div class="landing-ticker-track flex w-max">
+          <span
+            v-for="(item, i) in tickerTrack"
+            :key="i"
+            class="flex items-center text-[17px] tracking-[0.1em] whitespace-nowrap uppercase md:text-[19px]"
+          >
+            {{ item }}<em class="mx-6.5 text-[10px] not-italic opacity-75">◆</em>
+          </span>
+        </div>
+      </div>
     </div>
 
     <motion.footer v-bind="createHeroEntrance(20, 1, 0.5, reduced)"
-      class="relative z-30 mt-auto flex flex-col gap-6 bg-[linear-gradient(to_top,#ffffff_0%,rgba(255,255,255,0.8)_50%,transparent_100%)] px-4 pt-16 pb-6 md:flex-row md:items-end md:justify-between md:gap-5 md:px-8 md:pt-40 md:pb-8">
-      <div class="min-w-0 pt-64 md:pt-0">
+      class="relative z-30 flex shrink-0 flex-col gap-3 px-4 pt-[clamp(1rem,3dvh,2.5rem)] pb-4 md:flex-row md:items-end md:justify-between md:gap-5 md:px-8 md:pb-6">
+      <div class="w-full max-w-full min-w-0 md:w-[clamp(18rem,38vw,36rem)]">
         <motion.p v-bind="createHeroEntrance(16, 0.8, 0.6, reduced)"
-          class="mb-5 flex items-center gap-2.5 text-[13px] text-black/55">
+          class="mb-2 flex items-center gap-2.5 text-[13px] text-black/55">
           <span class="size-2 shrink-0 rounded-full bg-black" />Reborn UI · 为 Web 与 UniApp 而构建
         </motion.p>
-        <motion.h1 v-bind="createHeroEntrance(20, 0.8, 0.8, reduced)"
-          class="text-[clamp(2rem,8vw,4.5rem)] leading-none font-light tracking-[-0.03em] md:text-[clamp(2.5rem,5.5vw,4.5rem)]">
-          自由构建，<br>不止一端。</motion.h1>
-        <motion.div v-bind="createHeroEntrance(16, 0.8, 1, reduced)">
-          <p class="mt-5 max-w-md text-[13px] leading-relaxed text-black/55">按需安装的 Vue 组件，源码可控，样式自由定制。</p>
-          <div class="mt-6 flex flex-wrap gap-2.5">
-            <NuxtLink to="/components"
-              class="inline-flex min-h-11 items-center justify-center rounded-full bg-black px-6 text-[13px] text-white transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-4">
-              浏览组件</NuxtLink>
-            <NuxtLink to="/getting-started"
-              class="inline-flex min-h-11 items-center justify-center rounded-full border border-black/35 px-6 text-[13px] transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-4">
-              开始使用</NuxtLink>
-          </div>
-          <button type="button"
-            class="mt-3 inline-flex min-h-9 items-center gap-2 text-[11px] text-black/55 transition-colors hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
-            @click="copyInstall"><span aria-hidden="true" class="icon-[lucide--copy] size-3" />{{ installCommand
-            }}</button>
-          <span role="status" class="ml-2 text-[11px] text-black/60">{{ copyStatus }}</span>
+        <!-- 复古电脑字标使用紧凑画布，透明背景与首页网格融为一体。 -->
+        <motion.div v-bind="createHeroEntrance(20, 0.8, 0.7, reduced)" class="mb-2">
+          <ReuiLaunchDoodle
+            text="REUI"
+            screen-text="RE"
+            compact
+            class="w-full rounded-none! bg-transparent! text-black! focus-visible:ring-offset-white!"
+          />
         </motion.div>
+        <!-- R 的左边缘位于画布宽度的 105/820，文案整体随字标按比例缩进。 -->
+        <div class="pl-[calc(100%*105/820)]">
+          <motion.h1 v-bind="createHeroEntrance(20, 0.8, 0.8, reduced)"
+            class="text-[clamp(1.75rem,3.4vw,2.75rem)] leading-tight font-light tracking-[-0.02em] md:whitespace-nowrap">
+            自由构建，不止一端。</motion.h1>
+          <motion.div v-bind="createHeroEntrance(16, 0.8, 1, reduced)">
+            <p class="mt-3 max-w-md text-[13px] leading-relaxed text-black/55">按需安装的 Vue 组件，源码可控，样式自由定制。</p>
+            <div class="mt-3 flex flex-wrap gap-2.5">
+              <NuxtLink to="/components"
+                class="inline-flex min-h-11 items-center justify-center rounded-full bg-black px-6 text-[13px] text-white transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-4">
+                浏览组件</NuxtLink>
+              <NuxtLink to="/getting-started"
+                class="inline-flex min-h-11 items-center justify-center rounded-full border border-black/35 px-6 text-[13px] transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-4">
+                开始使用</NuxtLink>
+            </div>
+            <button type="button"
+              class="mt-2 inline-flex min-h-9 items-center gap-2 text-[11px] text-black/55 transition-colors hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
+              @click="copyInstall"><span aria-hidden="true" class="icon-[lucide--copy] size-3" />{{ installCommand
+              }}</button>
+            <span role="status" class="ml-2 text-[11px] text-black/60">{{ copyStatus }}</span>
+          </motion.div>
+        </div>
       </div>
       <div class="flex shrink-0 flex-wrap gap-2" aria-label="组件库技术栈"><span
           v-for="tag in ['Vue 3', 'TypeScript', 'Tailwind CSS']" :key="tag"
@@ -189,3 +236,69 @@ onBeforeUnmount(() => { clearTimeout(copyTimer); });
     </motion.footer>
   </main>
 </template>
+
+<style scoped>
+/* 网格底纹：参考 cindy.app 的 hero-grid，56px 方格，线色 gray-2；径向遮罩让四周渐隐 */
+.landing-grid {
+  background-image:
+    linear-gradient(var(--color-gray-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-gray-2) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(75% 62% at 50% 42%, #000 25%, transparent 74%);
+}
+
+/*
+ * 水印：参考 cindy.app 的 hero-watermark，只描边不填充，右半渐隐，30 秒左右往返漂移。
+ * 渐隐区间比 cindy 的 48%~82% 往后推：REBORN UI 比 CINDY 长，照搬会把末尾的 UI 整个隐掉
+ */
+.landing-watermark {
+  font-family: Anton, "Arial Narrow", sans-serif;
+  font-size: clamp(120px, 18vw, 300px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--color-gray-3);
+  mask-image: linear-gradient(90deg, #000 58%, transparent 100%);
+  animation: landing-watermark-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes landing-watermark-drift {
+  from {
+    transform: translateX(calc(-50% - 2.5vw));
+  }
+  to {
+    transform: translateX(calc(-50% + 2.5vw));
+  }
+}
+
+.landing-ticker {
+  font-family: Anton, "Arial Narrow", sans-serif;
+}
+
+/* 平移 -50% 正好是一半轨道（三遍条目）的宽度，与起点重合，循环无缝；50 秒走完约 2900px，每秒约 57px */
+.landing-ticker-track {
+  animation: landing-ticker-scroll 50s linear infinite;
+}
+
+.landing-ticker:hover .landing-ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes landing-ticker-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-watermark {
+    animation: none;
+    transform: translateX(-50%);
+  }
+
+  .landing-ticker-track {
+    animation: none;
+  }
+}
+</style>

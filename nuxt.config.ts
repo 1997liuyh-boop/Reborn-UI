@@ -1,5 +1,8 @@
-import { addVitePlugin, createResolver, useNuxt } from "@nuxt/kit";
+import { readFile } from "node:fs/promises";
+import { addTemplate, addVitePlugin, createResolver, updateTemplates, useNuxt } from "@nuxt/kit";
 import tailwindcss from "@tailwindcss/vite";
+import * as vueCompiler from "vue/compiler-sfc";
+import { extractDemoSections } from "./app/utils/extractDemoSections";
 
 const { resolve } = createResolver(import.meta.url);
 
@@ -22,6 +25,37 @@ export default defineNuxtConfig({
 
   // Ensure we use the local config module instead of the one bundled in the Docus layer.
   hooks: {
+    "vite:extendConfig": function (config) {
+      if (!useNuxt().options.dev) return;
+      // Vue 的 500 条引用缓存淘汰后，SSR 修改过的共享 AST 会丢失模板导入；开发时重新解析模板。
+      config.vue ??= {};
+      config.vue.compiler = {
+        ...vueCompiler,
+        compileTemplate(options) {
+          return vueCompiler.compileTemplate({ ...options, ast: undefined });
+        },
+      };
+    },
+
+    "builder:watch": async function (_event, path) {
+      if (path.replaceAll("\\", "/").includes("/reborn/examples/") && path.endsWith(".vue")) {
+        await updateTemplates({ filter: template => template.filename === "demo-heading-meta.ts" });
+      }
+    },
+
+    "components:extend": function (components) {
+      // Loading 已被多个基础组件静态引用，同步全局注册可保留演练场解析并避免重复异步入口。
+      const loading = components.find(component => component.pascalName === "RebornLoading");
+      if (loading) loading.global = "sync";
+
+      // 演示和配置面板只在客户端使用，避免把整套示例编入服务端。
+      for (const component of components) {
+        if (/\/reborn\/(?:examples|configs)\//.test(component.filePath.replaceAll("\\", "/"))) {
+          component.mode = "client";
+        }
+      }
+    },
+
     /**
      * 让本仓库 app/composables 下的同名 composable 稳定胜过 @nuxt/ui 的实现。
      *
@@ -78,6 +112,34 @@ export default defineNuxtConfig({
      */
     "modules:done": function () {
       const nuxt = useNuxt();
+      // 预览路由仅需要名字白名单，模板在扫描组件后读取最终名单，不导入演示模块。
+      addTemplate({
+        filename: "preview-component-names.ts",
+        write: true,
+        getContents: ({ app }) => {
+          const names = app.components
+            .filter(component => /\/reborn\/(?:examples|configs)\//.test(component.filePath.replaceAll("\\", "/")))
+            .map(component => component.pascalName);
+          return `export const previewComponentNames: string[] = ${JSON.stringify(names)};`;
+        },
+      });
+      // 文档首屏裁剪和目录只需要示例标题，在构建时提取，避免服务端加载整份示例源码。
+      addTemplate({
+        filename: "demo-heading-meta.ts",
+        write: true,
+        async getContents({ app }) {
+          const entries = await Promise.all(app.components.flatMap((component) => {
+            const filePath = component.filePath.replaceAll("\\", "/");
+            const key = filePath.split("/reborn/examples/")[1];
+            if (!key || !key.endsWith(".vue")) return [];
+            return [readFile(component.filePath, "utf8").then(raw => [key, {
+              titles: Object.keys(extractDemoSections(raw)),
+              playgroundTitle: raw.match(/<Playground\s[^>]*?\stitle="([^"]*)"/)?.[1] ?? "",
+            }] as const)];
+          }));
+          return `export interface DemoHeadingMeta { titles: string[]; playgroundTitle: string }\nexport const demoHeadingMeta: Record<string, DemoHeadingMeta> = ${JSON.stringify(Object.fromEntries(entries))};`;
+        },
+      });
       const publicAssistant = nuxt.options.runtimeConfig.public.assistant as
         | { enabled?: boolean; apiPath?: string }
         | undefined;
@@ -227,6 +289,10 @@ export default defineNuxtConfig({
     "/models/**": { headers: { "cache-control": "public, max-age=604800, stale-while-revalidate=86400" } },
   },
   nitro: {
+    // Reka 内部文件未对外导出，直接内联，避免 Nitro 逐文件反复猜测无法访问的包子路径。
+    externals: {
+      inline: ["reka-ui"],
+    },
     // 文档站模块较多，限制并行文件操作，避免 Windows 构建触及文件句柄上限。
     rollupConfig: {
       maxParallelFileOps: 256,

@@ -18,6 +18,9 @@ definePageMeta({
   // 首页自带页脚，不渲染 Docus 的全站页脚（app.vue 按 meta.footer 判断）
   footer: false,
   header: false,
+  // 首页是固定白底的设计，锁定亮色：全站默认暗色，暗色下 gray 色阶反转，
+  // 走马灯的 bg-gray-10 会变成白色、网格线 gray-2 会变成深灰，在白底上都不对
+  colorMode: "light",
   middleware: (to) => {
     const isLanding = to.path === "/" || to.path === "//";
     setPageLayout(isLanding ? false : "docs");

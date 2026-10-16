@@ -42,6 +42,7 @@ const props = withDefaults(defineProps<RebornMenuProps>(), {
   expandMutex: false,
   closeOnClickOutside: true,
   menuTrigger: "hover",
+  checkStrictly: false,
   router: false,
   collapseTransition: true,
   tooltip: true,
@@ -66,7 +67,7 @@ const props = withDefaults(defineProps<RebornMenuProps>(), {
 // --- 事件定义 ---
 
 const emit = defineEmits<{
-  /** 菜单项被选中时触发 */
+  /** 菜单项被点击选中时触发；重复点击已选中的项也会触发，但不写回 selectedKeys、router 模式下不重复跳转 */
   (e: "select", index: string, indexPath: string[]): void;
   /** 子菜单展开时触发 */
   (e: "open", index: string, indexPath: string[]): void;
@@ -101,6 +102,12 @@ export interface RebornMenuProps {
   uniqueOpened?: boolean;
   /** 子菜单打开的触发方式 (仅水平模式或折叠时生效) */
   menuTrigger?: MenuTrigger;
+  /**
+   * 父子不强关联：带子菜单的父级自身也可被点击选中（router 模式下随之跳转），与它的子项各自独立。
+   * 只在悬停触发（浮层展开 + menuTrigger="hover"）时生效：那时展开交给悬停，点击标题才能空出来做选中；
+   * 平铺展开或点击触发下，点击标题已用于展开 / 收起，该开关被忽略。单个子菜单可用 selectable 覆盖。
+   */
+  checkStrictly?: boolean;
   /** 是否使用 vue-router 的模式，启用后 index 会作为 path 进行路由跳转 */
   router?: boolean;
   /** 是否开启折叠过渡动画 */
@@ -406,7 +413,12 @@ const rootStyle = computed(() => (props.collapse ? { width: "4rem" } : {}));
  * @param route 显式指定的跳转地址，缺省时回退使用 index
  */
 function handleSelect(index: string, indexPath: string[], route?: RouteLocationRaw) {
-  selectedKeys.value = [...indexPath];
+  // ⚠️ 根因（重复点击已选中的项）：旧实现每次点击都写回一个新数组，内容不变也会派发 update:selectedKeys，
+  // 使用方的 watch 被白白触发。
+  // ✅ 修复：路径没变就不写回。select 事件仍照常派发（见下方），使用方可借它做「点当前项刷新」。
+  if (!isSameKeys(selectedKeys.value, indexPath)) {
+    selectedKeys.value = [...indexPath];
+  }
   clearCloseTimers();
   cancelCloseAll();
   // ⚠️ 根因：旧实现对任何选中都无条件收起全部子菜单，于是点开一层、点其中一条，
@@ -433,10 +445,29 @@ function handleSelect(index: string, indexPath: string[], route?: RouteLocationR
   emit("select", index, indexPath);
 
   // 如果开启了 router 模式，则进行路由跳转
+  // ⚠️ 根因（重复点击当前页的菜单项，页面被拉回顶部）：push 到当前地址时 Vue Router 不会真的导航，
+  // 却会按「重复导航」执行一次 scrollBehavior，没有 hash 时通常回到顶部——读者只是又点了一下当前项，正文就跳走了。
+  // ✅ 修复：目标就是当前页时不再 push。
   const target = route ?? index;
-  if (props.router && target) {
+  if (props.router && target && !isCurrentRoute(target)) {
     void appRouter.push(target);
   }
+}
+
+/** 两组路径是否逐项相同 */
+function isSameKeys(a: readonly string[], b: readonly string[]) {
+  return a.length === b.length && a.every((key, i) => key === b[i]);
+}
+
+/**
+ * 跳转目标是否就是当前页。
+ * 目标不带 hash 时忽略当前地址上的 hash：读者经由页内目录跳到了某个锚点，
+ * 再点同一页的菜单项仍算「点了当前项」，不应把正文拉回顶部；目标自己带 hash 时则按完整地址比较，锚点跳转照常。
+ */
+function isCurrentRoute(target: RouteLocationRaw) {
+  const resolved = appRouter.resolve(target);
+  const withoutHash = (fullPath: string) => (resolved.hash ? fullPath : fullPath.split("#")[0]);
+  return withoutHash(resolved.fullPath) === withoutHash(appRouter.currentRoute.value.fullPath);
 }
 
 /**
@@ -960,6 +991,7 @@ provide(MENU_INJECTION_KEY, {
   mode: computed(() => props.mode),
   collapse: computed(() => props.collapse),
   menuTrigger: effectiveMenuTrigger,
+  checkStrictly: computed(() => props.checkStrictly),
   color: computed(() => props.color),
   showActiveBackground: computed(() => props.showActiveBackground),
   /** 根级条目不缩进，平铺子菜单逐层 +1（见 RebornSubMenu 的再次下发） */

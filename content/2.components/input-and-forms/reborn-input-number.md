@@ -720,11 +720,11 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 
 | 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
 | --- | --- | --- | --- |
-| `wrapper` | 根 `view`；`custom-class` 也合并到这一层 | `group relative inline-flex items-center overflow-hidden text-gray-8`；`size` 追加 `h-[calc(var(--text-size-26/28/32)*2)]` 与对应字号，`variant` 追加背景与描边（如 outlined 为 `bg-white ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`、`square` 追加 `rounded-md` | 始终渲染；`underlined` 形态追加 `rounded-none` |
+| `wrapper` | 根 `view`；`custom-class` 也合并到这一层 | `group relative inline-flex items-center overflow-hidden text-gray-8`；`size` 分别追加 `h-[calc(var(--text-size-26)*2)]` / `h-[calc(var(--text-size-28)*2)]` / `h-[calc(var(--text-size-32)*2)]` 与对应字号，`variant` 追加背景与描边（如 outlined 为 `bg-white ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`、`square` 追加 `rounded-md` | 始终渲染；`underlined` 形态追加 `rounded-none` |
 | `button` | 左右分列布局下的加减按钮 `view`，绑定点击与长按 | `flex h-full items-center justify-center text-gray-8 active:scale-[0.85]`；禁用态为 `data-[disabled=true]:!text-gray-4` 等带 `!` 的类；`size` 追加 `p-1.5` / `p-2` / `p-2` | 未设 `controls-position` 时渲染，本端无法隐藏；覆盖禁用态颜色须同样写 `!` |
 | `stack` | 堆叠布局下的按钮组容器，参与正常布局 | `flex h-full flex-col self-stretch`；`left` 追加 `order-first border-r border-gray-4`，`right` 追加 `border-l border-gray-4` | 仅 `controls-position` 为 `left` / `right` 时渲染，常显 |
 | `stackButton` | 堆叠布局下的单个按钮，上为加、下为减 | `flex min-h-0 flex-1 items-center justify-center text-gray-8 first:border-b first:border-gray-4 active:scale-[0.85]`；`size` 追加 `px-1.5` / `px-2` | 同 `stack` |
-| `input` | 中间的 `input`，类型由 `input-type` 决定 | `min-w-0 flex-1 bg-transparent text-center text-gray-8 outline-none placeholder:text-gray-4`；`size` 追加 `w-[calc(var(--text-size-*)*2.5)]`（lg 为 `*5`） | 始终渲染；文本固定居中 |
+| `input` | 中间的 `input`，类型由 `input-type` 决定 | `min-w-0 flex-1 bg-transparent text-center text-gray-8 outline-none placeholder:text-gray-4`；`size` 分别追加 `w-[calc(var(--text-size-26)*2.5)]` / `w-[calc(var(--text-size-28)*2.5)]` / `w-[calc(var(--text-size-32)*5)]` | 始终渲染；文本固定居中 |
 | `divider` | 分列按钮与输入区之间的竖线，左右各一条 | `h-full w-[1px] bg-gray-4`；`color` 追加 `group-focus-within:bg-*` | 同 `button`；`underlined` 形态追加 `hidden`，校验失败时追加 `bg-error` |
 | `prefix` | 前缀容器，包住 `prefix` 插槽 | `flex shrink-0 items-center text-gray-7`；`size` 追加 `pl-*` | 仅传入 `prefix` 插槽时渲染 |
 | `suffix` | 后缀容器，包住 `suffix` 插槽 | `flex shrink-0 items-center text-gray-7`；`size` 追加 `pr-*` | 仅传入 `suffix` 插槽时渲染 |

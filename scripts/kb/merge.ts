@@ -1,10 +1,12 @@
 import type { DocsExtractResult } from "./extract-docs.js";
+import type { UiKeyInfo, UiKeysResult } from "./extract-ui-keys.js";
 import type { ConstObjEntry, TypeDeclEntry, VueExtractResult } from "./extract-vue.js";
 import type { ComponentKnowledge, EventInfo, ExampleInfo, PropInfo, SlotInfo } from "./schema.js";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { extractDocs } from "./extract-docs.js";
+import { extractUiKeys } from "./extract-ui-keys.js";
 import {
   applyConfigOptions,
   collectConstObjectsFromTsFile,
@@ -302,6 +304,55 @@ function applyOverride(component: ComponentKnowledge, override: Record<string, a
   }
 }
 
+/** 一端的 ui 键位排成一句：多组件目录按组件分组（各组件的 ui 互不通用），插槽兜底节点的键名后加星号 */
+function formatUiKeys(result: UiKeysResult): string {
+  const fmt = (keys: UiKeyInfo[]) => keys.map((k) => (k.slotFallback ? `${k.key}*` : k.key)).join("、");
+  const groups = result.components.filter((c) => c.keys.length > 0);
+  if (groups.length <= 1) return fmt(groups[0]?.keys ?? result.keys);
+  return groups.map((c) => `${c.component} → ${fmt(c.keys)}`).join("；");
+}
+
+/**
+ * 把 ui 的可用键位追加到 ui prop 条目的描述里。
+ *
+ * 为什么要做：MCP 的 get_component 是外部 Agent 了解组件的唯一入口，Agent 被要求「改样式优先走 ui」，
+ * 可很多组件的 ui 类型是 any 或类型别名，从类型里读不出键名；描述又是源码 JSDoc 手写的，
+ * 常常只写了键位的一部分或已过时，多组件目录（如 reborn-layout）更是只写了主组件。
+ * 拿不到准确键名，Agent 只能猜，猜错的键静默无效。
+ *
+ * 键位取自源码对 props.ui 的实际消费点（extract-ui-keys），与文档「自定义样式（ui）」表的漂移守卫是同一份数据。
+ * 带平台标记的条目只写该端；不带标记的通用条目两端都写，两端一致时合成一句。
+ * 原描述保留（里面常有键位之外的说明），追加的键位明确标注「以此为准」，与旧描述冲突时以它为准。
+ */
+function annotateUiKeys(props: PropInfo[], uiKeys: Record<"web" | "uniapp", UiKeysResult>) {
+  const entries = props.filter((p) => p.name === "ui");
+  if (entries.length === 0) return;
+
+  const sides = {
+    web: formatUiKeys(uiKeys.web),
+    uniapp: formatUiKeys(uiKeys.uniapp),
+  };
+  const label = { web: "Web", uniapp: "UniApp" } as const;
+  const hasSlotFallback = (text: string) => text.includes("*");
+
+  for (const entry of entries) {
+    const platforms = entry.platform ? [entry.platform] : (["web", "uniapp"] as const).filter((p) => sides[p]);
+    if (platforms.length === 0) continue;
+
+    const parts =
+      platforms.length === 2 && sides.web === sides.uniapp
+        ? [`两端：${sides.web}`]
+        : platforms.filter((p) => sides[p]).map((p) => `${label[p]}：${sides[p]}`);
+    if (parts.length === 0) continue;
+
+    const notes = [`可用键（从源码抽取，以此为准）——${parts.join("。")}。`];
+    if (platforms.some((p) => hasSlotFallback(sides[p]))) {
+      notes.push("带 * 的键对应插槽兜底节点：填了同名插槽，组件自带的节点被替换，这个键随之失效。");
+    }
+    entry.description = [entry.description.trim(), ...notes].filter(Boolean).join(" ");
+  }
+}
+
 /** 构建单个组件的知识条目 */
 export function buildComponent(id: string): {
   component: ComponentKnowledge;
@@ -317,6 +368,10 @@ export function buildComponent(id: string): {
 
   const warnings: string[] = [...(web.result?.warnings ?? []), ...(uniapp.result?.warnings ?? [])];
   const drifts: string[] = [];
+
+  // ui 键位以源码实际消费点为准：既决定 ui 是否按端拆成两条，也追加进 ui 条目的描述（见 annotateUiKeys）
+  const uiKeys = { web: extractUiKeys(id, "web"), uniapp: extractUiKeys(id, "uniapp") };
+  const sortedKeys = (r: UiKeysResult) => r.keys.map((k) => k.key).sort().join(",");
 
   // 以 uniapp 为主骨架（本库跨端组件的 API 基准），web-only 组件用 web
   const primary = uniapp.result ?? web.result;
@@ -335,8 +390,14 @@ export function buildComponent(id: string): {
         props.push(p);
         continue;
       }
-      // 键位集相同、或无法判定（别名/any）→ 保持一条通用条目，不打平台标记
-      if (!shouldSplitByPlatform(same.type, p.type)) continue;
+      // 键位集相同、或无法判定（别名/any）→ 保持一条通用条目，不打平台标记。
+      // ui 两端都抽得到消费键时直接比键集：ui 的类型常写成 any，按类型文本判断会把两套不同的键并成一条，
+      // 这条只留主骨架（UniApp）的描述，Web 端读到的就是 UniApp 的键
+      const split =
+        p.name === "ui" && uiKeys.web.keys.length > 0 && uiKeys.uniapp.keys.length > 0
+          ? sortedKeys(uiKeys.web) !== sortedKeys(uiKeys.uniapp)
+          : shouldSplitByPlatform(same.type, p.type);
+      if (!split) continue;
       // 键位集确实不同 → 两端 API 有实质差异（典型是 ui 键位两套零重叠），并存两条并标平台
       same.platform = "uniapp";
       props.push({ ...p, platform: "web" });
@@ -353,6 +414,8 @@ export function buildComponent(id: string): {
     docsResult = extractDocs(doc, id);
     enrichWithDocs({ props, events, slots }, docsResult, drifts);
   }
+
+  annotateUiKeys(props, uiKeys);
 
   // 演示代码 → examples（只存路径引用，不内联源码，避免改 demo 就重写整份 JSON）
   const examples: ExampleInfo[] = findDemoFiles(id).map((d) => ({

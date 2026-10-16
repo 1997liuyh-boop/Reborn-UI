@@ -160,6 +160,13 @@ function handleClose(index: string) {
   console.log("close", index);
 }
 
+// ─── 父级可选 ───────────────────────────────────────────────────
+
+/** 「父级可选」两个菜单共用的选中路径：同一份数据下对照垂直浮层与水平两种选中样式 */
+const strictPath = ref<string[]>(["s1"]);
+/** 最近一次 select 事件回显 */
+const strictLastSelect = ref("尚未触发");
+
 // ─── items 配置式数据 ───────────────────────────────────────────
 
 /** 「配置式」示例的选中项 */
@@ -935,6 +942,77 @@ const codeString = computed(
           </RebornMenu>
         </div>
       </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="父级可选：check-strictly">
+      <template #description>
+        <code>check-strictly</code> 让带子菜单的父级自身也能被点击选中，与子项互不牵连；只在悬停触发（浮层展开 + <code>menu-trigger="hover"</code>）时生效，此时展开交给悬停，点击标题才空得出来做选中。单个父级可用 <code>:selectable="false"</code> 退出。
+      </template>
+      <DemoBlock
+        layout="grid"
+        :columns="2"
+        align="start"
+      >
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">垂直 · 浮层展开</span>
+          <RebornMenu
+            v-model:selected-keys="strictPath"
+            check-strictly
+            expand-type="popup"
+            menu-trigger="hover"
+            class="w-full"
+            @select="(index: string) => (strictLastSelect = index)"
+          >
+            <RebornMenuItem index="s1">首页</RebornMenuItem>
+            <RebornSubMenu index="s2">
+              <template #title>系统管理</template>
+              <RebornMenuItem index="s2-1">用户管理</RebornMenuItem>
+              <RebornMenuItem index="s2-2">角色管理</RebornMenuItem>
+            </RebornSubMenu>
+            <RebornSubMenu
+              index="s3"
+              :selectable="false"
+            >
+              <template #title>数据分析（不可选）</template>
+              <RebornMenuItem index="s3-1">日报表</RebornMenuItem>
+              <RebornMenuItem index="s3-2">周报表</RebornMenuItem>
+            </RebornSubMenu>
+          </RebornMenu>
+        </div>
+        <div class="flex flex-col gap-3">
+          <span class="text-dimmed text-xs font-medium">水平 · 与左侧共用选中路径</span>
+          <RebornMenu
+            v-model:selected-keys="strictPath"
+            mode="horizontal"
+            check-strictly
+            class="w-full"
+            @select="(index: string) => (strictLastSelect = index)"
+          >
+            <RebornMenuItem index="s1">首页</RebornMenuItem>
+            <RebornSubMenu index="s2">
+              <template #title>系统管理</template>
+              <RebornMenuItem index="s2-1">用户管理</RebornMenuItem>
+              <RebornMenuItem index="s2-2">角色管理</RebornMenuItem>
+            </RebornSubMenu>
+            <RebornSubMenu
+              index="s3"
+              :selectable="false"
+            >
+              <template #title>数据分析</template>
+              <RebornMenuItem index="s3-1">日报表</RebornMenuItem>
+            </RebornSubMenu>
+          </RebornMenu>
+        </div>
+      </DemoBlock>
+      <DemoNote
+        tone="dimmed"
+        class="font-mono text-xs"
+      >
+        selectedKeys: [{{ strictPath.join(", ") }}]；最近一次 select：{{ strictLastSelect }}
+      </DemoNote>
+      <DemoNote tone="dimmed">
+        点「系统管理」是父级自己被选中，按普通菜单项的选中态渲染（水平模式带底部指示器）；悬停展开后点「用户管理」，父级退回祖先高亮。两种状态的样式不同，一眼能分清选中的是哪一层。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection

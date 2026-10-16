@@ -10,6 +10,7 @@ import type { DocsCollectionItem } from '@nuxt/content'
 import type { ComponentSeries } from '~/composables/useComponentsCatalog'
 import type { ComponentPlatform } from '~/composables/useDocsPlatform'
 import { computed, onBeforeUnmount, ref } from 'vue'
+import ComponentsScrollBackground from './ComponentsScrollBackground.vue'
 
 interface Props {
   routePath?: string
@@ -197,7 +198,8 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
 </script>
 
 <template>
-  <div class="components-overview relative w-full mt-10">
+  <div class="components-overview relative isolate w-full mt-10">
+    <ComponentsScrollBackground />
     <!-- 头图：浅色舞台卡片 + 点阵与光照层，文字区在上层 -->
     <section
       ref="heroRef" aria-labelledby="components-hero-title" class="overview-hero relative isolate overflow-hidden"

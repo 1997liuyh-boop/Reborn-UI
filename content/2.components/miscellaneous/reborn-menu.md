@@ -444,6 +444,37 @@ const openKeys = ref<string[]>(["2"]);
 
 视口安全距离固定 8px，与 `popperOffset` 是两件事：后者只管触发条目与浮层之间的间距，改它不会影响浮层与视口边缘的留白。
 
+### 父级可选：check-strictly
+
+默认情况下父级只负责展开子菜单，自己不会被选中。`check-strictly` 让带子菜单的父级自身也能被点击选中（router 模式下随之跳转），与它的子项互不牵连：选父级时 `selectedKeys` 停在父级这一层，选子项时父级退回祖先高亮。父级本身也有对应页面时用它，例如「系统管理」有概览页、下面又挂着「用户管理」「角色管理」。
+
+| 开关                                  | 作用范围                                       |
+| :------------------------------------ | :--------------------------------------------- |
+| `RebornMenu` 的 `check-strictly`      | 一次让全部父级可选                             |
+| `RebornSubMenu` 的 `selectable`       | 单个父级覆盖根节点设置，`false` 时只展开不选中 |
+| `items` 数据里 `SubMenuType.selectable` | 与上一行等价的配置式写法                       |
+
+**只在悬停触发时生效**，即浮层展开（`expandType="popup"`，或折叠态、水平模式）且 `menuTrigger="hover"`。这时展开由悬停负责，点击标题原本什么都不做，才空得出来做选中；平铺展开与点击触发下，点击标题已经用于展开 / 收起，再兼做选中就分不清用户想做哪一件，因此开关被忽略。
+
+```vue
+<template>
+  <RebornMenu v-model:selected-keys="path" check-strictly expand-type="popup" menu-trigger="hover" router>
+    <RebornSubMenu index="/system">
+      <template #title>系统管理</template>
+      <RebornMenuItem index="/system/user">用户管理</RebornMenuItem>
+      <RebornMenuItem index="/system/role">角色管理</RebornMenuItem>
+    </RebornSubMenu>
+    <!-- 没有对应页面的父级退出：只展开，不选中、不跳转 -->
+    <RebornSubMenu index="report" :selectable="false">
+      <template #title>数据分析</template>
+      <RebornMenuItem index="/report/daily">日报表</RebornMenuItem>
+    </RebornSubMenu>
+  </RebornMenu>
+</template>
+```
+
+父级自己被选中时按普通菜单项的选中态渲染（主题色底，水平模式下带底部指示器）；子项被选中时父级仍是祖先高亮（见「祖先条目的选中态」）。两种状态样式不同，一眼能分清选中的是哪一层。
+
 ### 配置式数据：items
 
 给 `RebornMenu` 传 `items` 数组，组件会递归渲染，不必手写嵌套模板；节点类型与 Ant Design 的 `ItemType` 对齐，靠 `children` 判别子菜单、靠 `type: "group"` / `type: "divider"` 判别分组与分割线，完整类型见 API 的「配置式数据类型」。传了 `items` 时默认插槽会被忽略。
@@ -600,7 +631,7 @@ const items: ItemType[] = [
 
 #### 祖先条目的选中态
 
-子菜单标题只能展开 / 收起，永远不会自己进入 `selectedKeys`。因此一个带子菜单的条目显示为选中态只有一种来源：**它的某个后代被选中**（`selectedKeys` 存的是完整路径，祖先按路径包含关系高亮）。这类「祖先高亮」不与真正被选中的叶子共用一套样式：
+默认情况下子菜单标题只能展开 / 收起，不会自己进入 `selectedKeys`（开启 `checkStrictly` 后父级自己被选中的情形除外，那时按普通菜单项的选中态渲染，见「父级可选：check-strictly」）。因此一个带子菜单的条目显示为祖先选中态只有一种来源：**它的某个后代被选中**（`selectedKeys` 存的是完整路径，祖先按路径包含关系高亮）。这类「祖先高亮」不与真正被选中的叶子共用一套样式：
 
 | 展开方式             | 祖先条目的选中态                             |
 | :------------------- | :------------------------------------------- |
@@ -631,6 +662,7 @@ const items: ItemType[] = [
 | `noIndent`             | `boolean`                                                                              | `false`                    | 平铺展开（`expandType="normal"`）时子菜单是否取消缩进。默认每下沉一层向右缩进 16px；开启后各级条目一律左对齐，改由展开箭头与分组标题区分层级，适合侧栏窄、层级深的场景。浮层展开本就不缩进，该属性对它没有影响 |
 | `expandType`           | `'normal' \| 'popup'`                                                                  | `'popup'`                  | 二级菜单展开方式：平铺展开 / 浮层展开。折叠态与水平模式下强制为 `popup`；浮层展开同一时刻只保留一条展开路径                                                                                                    |
 | `menuTrigger`          | `'hover' \| 'click'`                                                                   | `'hover'`                  | 子菜单的触发方式。只对浮层展开生效；平铺展开（`expandType="normal"`）一律按 `click` 处理                                                                                                                       |
+| `checkStrictly`        | `boolean`                                                                              | `false`                    | 父子不强关联：带子菜单的父级自身也可被点击选中（router 模式下随之跳转）。只在悬停触发（浮层展开 + `menuTrigger="hover"`）时生效，见「父级可选：check-strictly」 |
 | `closeOnClickOutside`  | `boolean`                                                                              | `true`                     | 点击菜单外部时是否关闭已展开的子菜单                                                                                                                                                                           |
 | `showTimeout`          | `number`                                                                               | `300`                      | 浮层子菜单的展开延时（毫秒）                                                                                                                                                                                   |
 | `hideTimeout`          | `number`                                                                               | `300`                      | 浮层子菜单的关闭延时（毫秒）                                                                                                                                                                                   |
@@ -638,7 +670,7 @@ const items: ItemType[] = [
 | `persistent`           | `boolean`                                                                              | `true`                     | 浮层关闭后是否保留其 DOM，为 `false` 时关闭即销毁                                                                                                                                                              |
 | `ellipsis`             | `boolean`                                                                              | `false`                    | 水平模式下宽度不足时，是否把溢出条目折叠进末尾的「更多」子菜单                                                                                                                                                 |
 | `ellipsisIcon`         | `string`                                                                               | `'lucide:more-horizontal'` | 溢出折叠触发器的图标名称                                                                                                                                                                                       |
-| `router`               | `boolean`                                                                              | `false`                    | 是否启用 `vue-router` 模式。启用后点击菜单项会使用 `index` 作为 `path` 进行跳转                                                                                                                                |
+| `router`               | `boolean`                                                                              | `false`                    | 是否启用 `vue-router` 模式。启用后点击菜单项会使用 `index` 作为 `path` 进行跳转；目标就是当前页时不跳转                                                                                                                                |
 | `collapseTransition`   | `boolean`                                                                              | `true`                     | 是否启用菜单动画：折叠过渡、平铺展开的高度过渡、浮层的出现/消失。为 `false` 时三者一并变为瞬时                                                                                                                 |
 | `tooltip`              | `boolean \| MenuTooltipConfig`                                                         | `true`                     | 折叠态下一级菜单项悬停时的文字提示。`false` 关闭（回落为原生 `title`）；传对象则透传给 `RebornTooltip`，见「折叠态的文字提示」                                                                                 |
 | `autoScrollIntoView`   | `boolean`                                                                              | `false`                    | 选中项变化及首次挂载时，是否把选中项滚动到可见区域。选中项藏在未展开的子菜单里时，改为滚到被高亮的祖先子菜单标题                                                                                               |
@@ -665,7 +697,7 @@ const items: ItemType[] = [
 | :-------------------- | :----------------- | :--------------------------------------------- |
 | `update:selectedKeys` | 选中路径变化时触发 | `(indexPath: string[]) => void`                |
 | `update:openKeys`     | 展开集合变化时触发 | `(openKeys: string[]) => void`                 |
-| `select`              | 菜单项被选中时触发 | `(index: string, indexPath: string[]) => void` |
+| `select`              | 菜单项被点击选中时触发；重复点击已选中的项也会触发，但不写回 `selectedKeys`、router 模式下也不重复跳转 | `(index: string, indexPath: string[]) => void` |
 | `open`                | 子菜单展开时触发   | `(index: string, indexPath: string[]) => void` |
 | `close`               | 子菜单收起时触发   | `(index: string, indexPath: string[]) => void` |
 
@@ -690,6 +722,8 @@ const items: ItemType[] = [
 | :------------------ | :-------------- | :------ | :------------------------------------------------------------------ |
 | `index`             | `string`        | -       | 唯一标识，必填                                                      |
 | `items`             | `ItemType[]`    | -       | 配置式子菜单数据，传入后由组件递归渲染并忽略默认插槽                |
+| `selectable`        | `boolean`       | -       | 父级自身是否可被选中，缺省时继承根节点的 `checkStrictly`；只在悬停触发时生效 |
+| `route`             | `RouteLocationRaw` | -    | 父级被选中时的跳转地址，缺省时 router 模式下回退使用 `index`        |
 | `disabled`          | `boolean`       | `false` | 是否禁用                                                            |
 | `popperClass`       | `ClassValue`    | -       | 浮层的自定义类名                                                    |
 | `popperStyle`       | `CSSProperties` | -       | 浮层的自定义内联样式                                                |
@@ -797,6 +831,10 @@ interface SubMenuType {
   icon?: string;
   disabled?: boolean;
   children: ItemType[];
+  /** 父级自身是否可被选中，缺省继承根节点 checkStrictly；只在悬停触发时生效 */
+  selectable?: boolean;
+  /** 父级被选中时的跳转地址，缺省时 router 模式下回退使用 key */
+  route?: RouteLocationRaw;
   popupClassName?: ClassValue;
   popupOffset?: [number, number];
   onTitleClick?: (info: { key: string; domEvent: MouseEvent }) => void;
@@ -869,6 +907,8 @@ interface MenuDividerType {
 - **`collapse` 只对垂直菜单生效**，折叠宽度走内联样式，给 `RebornMenu` 传的宽度类不影响折叠态尺寸。
 - **折叠态与水平模式下 `expandType` 强制为 `popup`**，此时传 `normal`、`noIndent`、`defaultExpandAll` 都不起作用。
 - **`menuTrigger` 只作用于浮层展开**，平铺展开一律按点击处理，原因见「子菜单的展开与收起语义」。
+- **`checkStrictly` / `selectable` 只在悬停触发时生效**：平铺展开或 `menuTrigger="click"` 下点击标题用于展开 / 收起，开关被静默忽略，父级仍不可选。需要「父级既能选中又能点开」时改用浮层展开 + 悬停触发。
+- **重复点击已选中的项只派发 `select`**：路径没变时不写回 `selectedKeys`，`@update:selected-keys` 不会触发；router 模式下目标就是当前页时不再 `push`。push 到当前地址不会真的导航，却会按「重复导航」执行一次 `scrollBehavior`，没有 hash 时正文会被拉回顶部。目标不带 hash 时比较会忽略当前地址上的 hash，经页内目录跳到锚点后再点当前项，阅读位置不变。需要「点当前项刷新」时在 `@select` 里自行处理。
 
 ### Router 模式
 

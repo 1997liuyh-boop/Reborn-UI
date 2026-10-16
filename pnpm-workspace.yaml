@@ -5,6 +5,8 @@ packages:
 # (pnpm v10 忽略 package.json 的 pnpm 字段,补丁配置必须放这里才能在 CI 全新安装时生效)
 patchedDependencies:
   docus: patches/docus.patch
+  # 统一 Windows 文件路径，避免 Nitro 外部依赖解析反复猜测子路径。
+  nitropack@2.13.1: patches/nitropack@2.13.1.patch
 # 同上:overrides 也必须放这里,package.json 的 pnpm.overrides 在 pnpm v10 下不生效
 overrides:
   "@nuxt/content": ^3.11.0

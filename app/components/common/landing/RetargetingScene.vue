@@ -67,7 +67,8 @@ onBeforeUnmount(() => { abort.abort(); controller?.dispose(); });
 </script>
 
 <template>
-  <div aria-hidden="true" class="pointer-events-none overflow-hidden bg-white">
+  <!-- 不铺底色：首页的网格底纹与走马灯在画布之下，要从角色四周透出来 -->
+  <div aria-hidden="true" class="pointer-events-none overflow-hidden">
     <canvas :key="canvasVersion" ref="canvas" :class="ready ? 'opacity-100' : 'opacity-0'" class="relative block size-full transition-opacity duration-1000 motion-reduce:transition-none" />
   </div>
 </template>

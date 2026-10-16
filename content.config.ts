@@ -26,6 +26,8 @@ const createDocsSchema = () =>
     series: z.enum(["reborn", "community"]).optional(),
     // 总览等自带 Hero 的页面：跳过 DocsPage 默认 UPageHeader
     hideHeader: z.boolean().optional(),
+    // 页面最底部（贴着页脚）显示「路人走过」装饰，见 DocsFooterCrowd；目前只有组件总览页开启
+    footerCrowd: z.boolean().optional(),
     // 总览卡片缩略 Demo 组件名（如 RebornButtonOverview）；缺省时由 demoFile 约定推导
     overviewDemo: z.string().optional(),
     links: z

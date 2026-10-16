@@ -71,6 +71,10 @@ function leadingComment(parsed: ParsedScript, node: OxcNode): string {
   }
   if (!best) return "";
   if (!/^\s*$/.test(parsed.source.slice(best.end, node.start))) return "";
+  // 注释前面同一行还有代码，说明它是上一个成员的行尾注释（`foo?: number // 说明`），不属于当前节点；
+  // 不排除的话，没写注释的成员（典型是多行类型的 ui）会顶着上一行成员的说明进入知识库
+  const lineStart = parsed.source.lastIndexOf("\n", best.start - 1) + 1;
+  if (!/^\s*$/.test(parsed.source.slice(lineStart, best.start))) return "";
   const text = best.value
     .split("\n")
     .map((line) => line.replace(/^\s*\*+\s?/, "").trim())

@@ -4,7 +4,8 @@ export interface ComponentCodeArgs {
   type: "ui" | "examples" | "configs" | "uniapp-components" | "uniapp-pages" | "uniapp-root" | "all";
 }
 
-const rawFiles = import.meta.glob<string>([
+// 源码面板仅在客户端挂载后读取，避免 Web 与 UniApp 全量源码进入服务端构建图。
+const rawFiles = import.meta.client ? import.meta.glob<string>([
   // 含 css：部分组件（如 scrollbar）有同目录样式文件，需在源码面板中一并展示
   "~/components/reborn/**/*.{vue,ts,js,css,d.ts}",
   "~/assets/**/*.{css,scss,json,ts,js,vue}",
@@ -18,7 +19,7 @@ const rawFiles = import.meta.glob<string>([
 ], {
   query: "?raw",
   import: "default",
-});
+}) : {};
 
 export function getComponentCode(args: ComponentCodeArgs) {
   let normalizedSuffix = "";
@@ -35,7 +36,7 @@ export function getComponentCode(args: ComponentCodeArgs) {
     // For type "all" or direct path matching
     normalizedSuffix = args.fileName.replaceAll("\\", "/");
     if (!normalizedSuffix.startsWith("/")) {
-      normalizedSuffix = "/" + normalizedSuffix;
+      normalizedSuffix = `/${normalizedSuffix}`;
     }
   }
 

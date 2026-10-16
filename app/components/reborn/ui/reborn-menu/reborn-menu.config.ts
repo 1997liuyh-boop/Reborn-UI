@@ -71,6 +71,10 @@ export interface SubMenuType {
   disabled?: boolean;
   /** 子级菜单数据 */
   children: ItemType[];
+  /** 父级自身是否可被选中，缺省时继承根节点的 checkStrictly；只在悬停触发时生效 */
+  selectable?: boolean;
+  /** 父级被选中时的跳转地址，缺省时 router 模式下回退使用 key */
+  route?: RouteLocationRaw;
   /** 浮层的自定义类名 */
   popupClassName?: ClassValue;
   /** 浮层相对触发元素的偏移量 [x, y] */
@@ -197,6 +201,8 @@ export interface MenuContext {
   collapse: ComputedRef<boolean>;
   /** 子菜单触发方式 */
   menuTrigger: ComputedRef<MenuTrigger>;
+  /** 父子不强关联：父级子菜单自身也可被选中（只在悬停触发时生效） */
+  checkStrictly: ComputedRef<boolean>;
   /** 主题色 */
   color: ComputedRef<MenuColor>;
   /** 选中项是否展示背景块 */
@@ -586,8 +592,9 @@ const theme = tv({
       class: { menuItem: "shadow-sm" },
     },
     // ── 祖先子菜单的选中态：平铺只留文字色，浮层换成中性底 ──
-    // hasSubmenu 为真即「带子菜单的条目」，它的选中态一定是后代被选中带来的祖先高亮：
-    // 子菜单标题自身只能展开 / 收起，永远不会进入 selectedKeys。
+    // hasSubmenu 为真即「带子菜单的条目」，它的选中态是后代被选中带来的祖先高亮。
+    // 例外是 checkStrictly：父级自己被选中时，RebornSubMenu 传 hasSubmenu: false，按叶子项的选中态渲染，
+    // 与「子项被选中、父级只是祖先」区分开。
     // ⚠️ 根因：祖先沿用了叶子那套主题色背景块（bg-brand-2 等），平铺展开时父子条目上下紧邻，
     // 两块同色背景连成一片，看不出真正被选中的是哪一条。
     // ✅ 修复：平铺态的祖先去掉背景与投影，只靠文字色标记层级；浮层态的祖先改用中性的 bg-gray-2，

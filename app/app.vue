@@ -80,6 +80,12 @@ const { data: files } = useLazyAsyncData(
 );
 
 provide("navigation", navigation);
+
+/**
+ * 全局回到顶部：右侧 uniapp 手机面板（2xl 起 fixed 贴右缘、420px 宽、z-30）可见时，
+ * 按钮跟着左移到面板外侧，否则 z-50 的按钮会压在手机模拟器上。
+ */
+const { isPanelVisible } = useUniDemoPanel();
 </script>
 
 <template>
@@ -93,6 +99,34 @@ provide("navigation", navigation);
       </NuxtLayout>
       <AppFooter v-if="$route.meta.footer !== false" />
     </div>
+
+    <!--
+      全局回到顶部 + 去底部，40px 方形按钮、24px 图标，带滚动进度（回到顶部顺时针、去底部逆时针）。
+      上下两个实例各自显隐、位置固定：回到顶部在上，bottom = 180 + 按钮 40 + 间距 8，
+      一个消失时另一个不挪位，指针下的按钮不会突然换成另一个。
+      BackTop 自己的文档页不挂：页内 demo 有同位置的实例，按钮会叠在一起。
+    -->
+    <template v-if="!$route.path.endsWith('/reborn-back-top')">
+      <RebornBackTop
+        :bottom="228"
+        show-progress
+        color="info"
+        size="md"
+        shape="square"
+        icon="lucide:arrow-big-up"
+        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
+      />
+      <RebornBackTop
+        direction="bottom"
+        :bottom="180"
+        show-progress
+        color="info"
+        size="md"
+        shape="square"
+        icon="lucide:arrow-big-down"
+        :ui="{ wrapper: ['z-50', isPanelVisible && '2xl:right-[420px]'], icon: 'size-6' }"
+      />
+    </template>
 
     <ClientOnly>
       <LazyUContentSearch :files="files" :navigation="navigation" />

@@ -11,10 +11,10 @@
  * - 没有目录的页面不提供 #right 槽，正文占满整行。
  */
 
+import type { DemoHeadingMeta } from '#build/demo-heading-meta'
+import { demoHeadingMeta } from '#build/demo-heading-meta'
 import { suggestionContextKey } from '~/components/common/component-viewer/types'
 import { demoUsageContextKey } from '~/components/common/demo/types'
-import { extractDemoSections } from '~/utils/extractDemoSections'
-import { getComponentCode } from '~/utils/getComponentCode'
 import { trimComponentDocBody } from '~/utils/trimComponentDocBody'
 
 /** 页脚文案（i18n 页面传入 t() 结果，默认英文） */
@@ -87,34 +87,16 @@ const viewerAttrs = computed(() => {
     return { demoFile: demoFile ? String(demoFile) : '', componentId: componentId ? String(componentId) : '' }
 })
 
-/** 从 demo 源码里取到的、正文裁剪与目录都要用的信息 */
-interface DemoMeta {
-    /** 所有 DemoSection 的标题 */
-    titles: string[]
-    /** Playground 的标题（title="…" 字面量），没写演练场时为空 */
-    playgroundTitle: string
-}
-
 /**
- * demo 里所有 DemoSection 的标题，以及演练场的标题。
- * 走 useAsyncData 而不是等 ComponentTabs 客户端加载源码：正文裁剪要在 SSR 阶段就定下来，
- * 否则首屏先渲染出「用法」各小节、水合后再消失，会有一次明显跳动。只序列化标题，不带源码。
+ * 构建时只抽取示例分组与演练场标题，服务端和客户端共用同一份轻量元数据。
+ * 正文裁剪在 SSR 阶段即可确定，避免先显示重复「用法」内容，再在水合后移除。
  */
-const { data: demoMeta } = useAsyncData(
-    () => `demo-meta:${viewerAttrs.value?.componentId || 'none'}`,
-    async (): Promise<DemoMeta> => {
-        const empty: DemoMeta = { titles: [], playgroundTitle: '' }
-        const attrs = viewerAttrs.value
-        if (!attrs?.demoFile || !attrs.componentId) return empty
-        const load = getComponentCode({ fileName: attrs.demoFile, id: attrs.componentId, type: 'examples' })
-        if (!load) return empty
-        const raw = await (load as unknown as () => Promise<string>)()
-        // 只认字面量 title="…"，与 DemoSection 标题的抽取口径一致（动态绑定拿不到值）
-        const playgroundTitle = raw.match(/<Playground\s[^>]*?\stitle="([^"]*)"/)?.[1] ?? ''
-        return { titles: Object.keys(extractDemoSections(raw)), playgroundTitle }
-    },
-    { default: (): DemoMeta => ({ titles: [], playgroundTitle: '' }) },
-)
+const demoMeta = computed<DemoHeadingMeta>(() => {
+    const empty: DemoHeadingMeta = { titles: [], playgroundTitle: '' }
+    const attrs = viewerAttrs.value
+    if (!attrs?.demoFile || !attrs.componentId) return empty
+    return demoHeadingMeta[`${attrs.componentId}/${attrs.demoFile}`] ?? empty
+})
 
 /**
  * 按标题把正文 AST 切成「留在正文」与「搬进 suggestion 面板」两份，
@@ -376,6 +358,8 @@ const editLink = computed(() => {
         </div>
       </USeparator>
       <UContentSurround :surround="(surround as any)" />
+      <!-- 页面最底部的装饰人群，由 frontmatter footerCrowd 开启 -->
+      <DocsFooterCrowd v-if="page.footerCrowd" />
     </UPageBody>
 
     <!-- 本页目录（RebornAnchor 滚动跟随 + 社区链接）；槽内只能有这一个根节点，栅格类由 UPage 合并到它身上 -->

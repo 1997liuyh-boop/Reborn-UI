@@ -17,6 +17,8 @@ const instructions = `Reborn-UI 组件库知识库服务。这是一个双端组
 
 选型与写码工作流：search_components 或 list_components 找候选 → get_component 读 props / events / slots 与使用边界（whenToUse / whenNotToUse / pitfalls）→ get_component_example 取示例 → get_install_command 拿安装命令。props / 事件 / 插槽一律以知识库返回为准，不要按同类库的印象推断。
 
+改组件样式（颜色、背景、边框、圆角、尺寸、间距、字体、阴影、hover 态、某个内部部件的外观）依次走：① 已有 prop 取值能表达的直接用 prop（如胶囊按钮用 variant="round"，不写 rounded-full）；② 其余一律用组件的 ui 对象 :ui="{ 键: '类名' }"，最外层元素也用 ui 里的 root / base 键而不是裸 class；③ 只有 ui 里没有对应部件的键时，才退回插槽 + 工具类，并说明该组件没有暴露这个键。可用键看 get_component 返回的 ui 条目描述（「可用键（从源码抽取，以此为准）」，按 Web / UniApp 分端，两端不通用；带 * 的键在填了同名插槽后失效），只能用列出的键，猜的键静默无效。不要用套一层 div/span、:deep()、改组件内部类名的写法改样式——这些绕开了组件的样式接口，组件升级就会失效。
+
 为本组件库编写或修改「组件文档」（content/2.components/**/*.md）与「组件 demo」（app/components/reborn/examples/**、packages/uniapp-project/src/pages/**）时，必须先调 get_authoring_spec 取规范全文再动笔。骨架压缩版：
 
 - 文档：frontmatter（title / description 一句话 ≤60 字 / category / tags）→ ::ComponentViewer{componentId="<id>"} → ## 简介（① 一句话定位 + 双端同名同构 ② 正交维度拆解 ③ 剩余 API 分组概览）→ ### 何时使用（3-5 条，每条点名具体 prop）→ ### 何时不使用（2-3 条，每条给替代组件）→ ## 用法（一节一能力：一句话引子 → 维度表 → 5-15 行可运行 vue 块）→ ## API（### Props / ### Emits / ### Slots / ### Expose / ### 自定义样式（ui）/ ### CSS 变量）→ ## 两端差异对照（仅双端组件）→ ## 注意事项（每条 = 粗体结论句 + 机制 + 后果）。唯一参考范本 content/2.components/button/reborn-button.md。

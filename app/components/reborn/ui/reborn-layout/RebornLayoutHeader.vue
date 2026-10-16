@@ -60,7 +60,7 @@ const ui = computed(() => {
   };
 });
 
-/** 高度经 CSS 变量下发，配合配置里的 h-[var(...)] 生效 */
+/** 高度经 CSS 变量下发，由配置中的高度工具类读取。 */
 const rootStyle = computed(() => ({ [LAYOUT_HEADER_HEIGHT_VAR]: props.height }));
 </script>
 

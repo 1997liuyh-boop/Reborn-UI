@@ -73,7 +73,10 @@ export default defineNuxtModule({
         entries.push({
           tag: toPascalCase(raw.id),
           description: [raw.title, raw.description].filter(Boolean).join(":"),
-          props: (raw.props ?? []).map((p: Record<string, unknown>) => ({
+          // 双端键位不同的 prop（典型是 ui）会按端并存两条，Playground 只补 Web 那条
+          props: (raw.props ?? [])
+            .filter((p: Record<string, unknown>) => p.platform !== "uniapp")
+            .map((p: Record<string, unknown>) => ({
             name: p.name as string,
             type: p.type as string | undefined,
             description: p.description as string | undefined,

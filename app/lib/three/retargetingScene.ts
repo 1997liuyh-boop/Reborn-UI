@@ -9,10 +9,10 @@ import "./webgpuGlobals";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 import { retargetClip } from "three/addons/utils/SkeletonUtils.js";
-import { color, mix, reflector } from "three/tsl";
+import { reflector } from "three/tsl";
 import {
-  AnimationMixer, BoxGeometry, Color, DirectionalLight, Euler, Group,
-  HemisphereLight, Matrix4, Mesh, MeshStandardNodeMaterial, NeutralToneMapping,
+  AnimationMixer, BoxGeometry, DirectionalLight, Euler, Group,
+  HemisphereLight, Matrix4, Mesh, MeshBasicNodeMaterial, NeutralToneMapping,
   PerspectiveCamera, Scene, Skeleton, SkeletonHelper, SkinnedMesh, Texture, WebGPURenderer,
 } from "three/webgpu";
 import { retargetingModels } from "../../components/common/landing/retargetingHero.config";
@@ -188,7 +188,7 @@ export async function createRetargetingScene(
     signal.addEventListener("abort", dispose, { once: true });
     renderer.toneMapping = NeutralToneMapping;
     renderer.onDeviceLost = () => { if (!disposed) fail(); };
-    // 保留角色与反射地板，以白色摄影棚衔接首页留白。
+    // 画布整体透明：首页的网格底纹与走马灯都在画布之下，要从角色四周透出来。
     renderer.setClearColor(0xFFFFFF, 0);
     scene.add(new HemisphereLight(0xFFFFFF, 0xA3A7AD, 3));
     const keyLight = new DirectionalLight(0xFFF9EA, 4);
@@ -223,11 +223,17 @@ export async function createRetargetingScene(
     reflection = reflector({ resolutionScale: 0.5 });
     reflection.target.rotateX(-Math.PI / 2);
     scene.add(reflection.target);
-    const floor = new Mesh(new BoxGeometry(50, 0.001, 50), new MeshStandardNodeMaterial({
-      color: new Color(0xFFFFFF), roughness: 0.4, metalness: 0.15,
+    // 地板只画倒影、本身透明。旧实现是一块不透明的白色反光板，盖住了画布下半截，
+    // 首页的网格底纹与人物身后的走马灯在地平线以下全被遮掉。
+    // 倒影贴图在没有反射内容的地方 alpha 为 0（渲染器清屏 alpha 为 0），乘一个系数作为不透明度。
+    // 系数取 0.04 而不是旧代码的 0.14：旧地板是受光材质，三盏灯过曝后把 14% 的倒影洗到只剩约 2%；
+    // 新地板不受光，照搬 0.14 时倒影明显偏浓，0.04 与改造前的观感接近。
+    const floor = new Mesh(new BoxGeometry(50, 0.001, 50), new MeshBasicNodeMaterial({
+      transparent: true, depthWrite: false,
     }));
     floor.material.toneMapped = false;
-    floor.material.colorNode = mix(color(0xFFFFFF), reflection, 0.14);
+    floor.material.colorNode = reflection.rgb;
+    floor.material.opacityNode = reflection.a.mul(0.04);
     scene.add(floor);
     retryWithWebGL = true;
     stage = "图形渲染失败，请尝试兼容模式或启用浏览器硬件加速。";

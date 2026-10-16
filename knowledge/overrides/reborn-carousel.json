@@ -2,7 +2,7 @@
   "description": "用于循环展示多个内容项的轮播组件，支持多项显示、卡片模式与纵向布局，仅 web 端。",
   "whenToUse": [
     "首页 banner、图片或卡片列表的自动轮播展示。",
-    "需要一屏显示多项（slidesPerview）并按断点响应式调整的横向滑动列表。",
+    "需要一屏显示多项（slidesPerView）并按断点响应式调整的横向滑动列表。",
     "需要缩略图联动（thumbs）、自定义箭头/指示器插槽的轮播场景。"
   ],
   "whenNotToUse": [
@@ -14,6 +14,17 @@
     "仅 web 端可用。",
     "modelValue 可 v-model 双向绑定当前索引；modelValue 为空时才使用 initialSlide。",
     "loop 与 autoplay 默认均为 false，需显式开启；arrow 默认 hover 显示。",
-    "height 默认 \"auto\" 随内容自适应；组件对外暴露 next/prev/goTo 方法可编程控制。"
+    "height 默认 \"auto\" 随内容自适应；组件对外暴露 next/prev/goTo/pause/resume 方法可编程控制。",
+    "推荐 slidesPerView，旧 slidesPerview 继续兼容；同层新拼写优先，断点覆盖基础参数。",
+    "draggable 未传时跟随 grabCursor；pause() 持续暂停直到 resume()，导航不会解除暂停。",
+    "背景开关为 pagination.indicatorBackground，默认 true；line / dot 使用 p-2、bg-gray-1/80 和 ring-1 ring-inset ring-gray-10/15，其中 inside line 改用 bg-gray-10/30 和 ring-gray-1/20 衬托 gray-1 激活项；fraction / button 保留 bg-gray-1/30。四种分页开启背景时均使用 backdrop-blur-xl（24px 毛玻璃）、shadow-[0_0_8px_rgb(0_0_0/0.18)] 与胶囊圆角；阴影横纵偏移均为 0、模糊半径为 8px，均匀环绕四周。false 移除底色、内描边、毛玻璃与阴影，line / dot 留白恢复 p-0.5，不改变指示项配色。progress 不使用底板，自定义 indicators 插槽需自行控制。",
+    "显示模式为 pagination.display：hover / always / never，默认 always，不是顶层参数；hover 在轮播悬停或键盘聚焦时显示，无悬停能力的触屏设备保持可见，隐藏不拦截点击或焦点且保留外部分页占位。",
+    "pagination.display=never 不挂载内置分页或 indicators 插槽；pagination=null、indicatorPosition=none 或内容不足两项也隐藏分页。display 不改变索引、箭头、自动播放或 trigger 的切页方式。自定义 indicators 插槽仍受 display 和 ui.indicatorWrapper 控制。",
+    "pagination.type 支持 line、dot、progress、fraction、button；progress 复用 RebornProgress 显示当前第几张 / 总张数，不是自动播放倒计时，inside 贴顶、outside 紧贴底部，不受背景和 indicatorOffset 影响。",
+    "indicatorOffset 默认 8px，支持 0；横向内部控制底边距离、外部控制顶部间距，纵向控制右侧距离或外部左侧间距，progress 始终贴边。",
+    "wrapper 使用 overflow-visible 保留 outside 分页的背景投影，轮播内容由 root / viewport 独立裁剪；业务祖先若有 overflow-hidden，需预留投影空间或下移裁剪，增加 z-index 无法突破祖先裁剪。",
+    "color 通过 reborn-carousel.config.ts 的 Tailwind 类在 indicators 节点定义局部 --carousel-color，映射为 primary→brand-6、secondary→secondary-6、success→green-6、info→blue-6、warning→orange-6、error→red-6、neutral→gray-6，对应 --color-* 色板变量。line 可点击的激活项悬停时改变填充色，dot 可点击的激活项悬停时改变描边色；未悬停和未激活项仍使用原有灰阶，clickable=false 时不变色。button 激活项直接使用该色，容器仍为 px-2 py-1（左右 8px、上下 4px）；progress 经 currentColor 使用该色填充；fraction 仅当前页文字自身悬停时变色，容器悬停时总数加粗。",
+    "平面单项占满视口时忽略 spaceBetween；多项、card、autoSize 和自动宽度仍保留间距。",
+    "按住鼠标拖拽时不会提前归位克隆片，松手后才吸附、同步索引并完成循环归位。"
   ]
 }

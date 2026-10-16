@@ -1,0 +1,19 @@
+{
+  "whenToUse": [
+    "文档站、官网页脚上方的装饰留白，高度给 13rem~22rem，用 class 写上沿渐隐的 mask-image。",
+    "空状态、404 页的底部装饰，count 降到 10~20 人，画面不抢正文。",
+    "活动页表现热闹氛围，默认全部人物上场，duration 调小让人群走得更快。"
+  ],
+  "whenNotToUse": [
+    "需要传达信息或可交互的插画，改用 reborn-image 放静态图。",
+    "满屏粒子、流星类背景动效，改用 sparkles 或 meteors。",
+    "单个角色跟随指针的立体感，改用 reborn-depth-image。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用；src 必填，精灵图不随 reborn-ui add 分发，需自行放进项目 public/（演示图为 CC0 的 Open Peeps，15 列 × 7 行）。",
+    "精灵图须按 cols × rows 等分、每格一个人物、底边贴格子底边；空格子也会占一个上场名额。",
+    "画布尺寸、count、duration 变化都会清场重排，窗口缩放时人群整体换一批位置是预期行为。",
+    "组件不带遮罩，上沿渐隐写在 class 的 mask-image 上；铺满屏宽不要用 w-screen，100vw 含滚动条会撑出横向滚动条。",
+    "纯装饰：根节点 aria-hidden、pointer-events-none，滚出视口（上下 200px 外）自动暂停，开启减少动态效果时停在一帧静止画面。"
+  ]
+}

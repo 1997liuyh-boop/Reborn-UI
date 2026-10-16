@@ -1,4 +1,7 @@
 import type { ClassValue } from "clsx";
+import type { VNode } from "vue";
+import type theme from "./reborn-carousel.config";
+import type { carouselArrowModes, carouselColors, carouselDirections, carouselIndicatorDisplayModes, carouselIndicatorPositions, carouselIndicatorTypes, carouselTriggers, carouselTypes } from "./reborn-carousel.config";
 
 /**
  * RebornCarousel 类型定义
@@ -6,30 +9,61 @@ import type { ClassValue } from "clsx";
  */
 
 /** 轮播图控制箭头的显示模式：'hover' (悬浮时显示) | 'always' (始终显示) | 'never' (不显示) */
-export type CarouselArrowMode = "hover" | "always" | "never";
+export type CarouselArrowMode = (typeof carouselArrowModes)[number];
 /** 轮播滚动方向：'horizontal' (水平) | 'vertical' (垂直) */
-export type CarouselDirection = "horizontal" | "vertical";
+export type CarouselDirection = (typeof carouselDirections)[number];
 /** 分页指示器的位置：'inside' (轨道内部) | 'outside' (轨道外部) | 'none' (不显示) */
-export type CarouselIndicatorPosition = "inside" | "outside" | "none";
+export type CarouselIndicatorPosition = (typeof carouselIndicatorPositions)[number];
+/** 分页显示模式：悬停或聚焦时显示、始终显示、不渲染；无悬停能力的设备将 hover 降级为始终显示。 */
+export type CarouselIndicatorDisplayMode = (typeof carouselIndicatorDisplayModes)[number];
 /** 缩略图导航面板的位置：'top' (上方) | 'bottom' (下方) | 'left' (左侧) | 'right' (右侧) */
 export type CarouselThumbsPosition = "top" | "bottom" | "left" | "right";
 /** 触发切换幻灯片的手势或操作：'hover' (悬停) | 'click' (点击) */
-export type CarouselTrigger = "hover" | "click";
+export type CarouselTrigger = (typeof carouselTriggers)[number];
 /** 轮播展现风格：'default' (标准平面) | 'card' (立体卡片式) */
-export type CarouselType = "default" | "card";
+export type CarouselType = (typeof carouselTypes)[number];
+/** 主题颜色与样式键由配置单一维护。 */
+export type CarouselColor = (typeof carouselColors)[number];
+export type CarouselSlot = keyof typeof theme.slots;
+export type CarouselUI = Partial<Record<CarouselSlot, ClassValue>>;
+/** 导航插槽的作用域参数，与实例方法保持一致。 */
+export interface CarouselSlots {
+  default?: () => VNode[];
+  prev?: (props: { prev: () => void; disabled: boolean }) => VNode[];
+  next?: (props: { next: () => void; disabled: boolean }) => VNode[];
+  indicators?: (props: { activeIndex: number; count: number; goTo: (index: number) => void }) => VNode[];
+}
+/** 实例控制方法及只读状态。 */
+export interface CarouselExpose {
+  next: () => void;
+  prev: () => void;
+  goTo: (index: number) => void;
+  pause: () => void;
+  resume: () => void;
+  activeIndex: number;
+  isPlaying: boolean;
+}
 
 /** 自动播放参数配置接口 */
 export interface CarouselAutoplay {
   /** 每一帧幻灯片停留的时间 (毫秒) */
   delay?: number;
+  /** 鼠标悬停时暂停，默认 true。 */
+  pauseOnHover?: boolean;
+  /** 键盘焦点进入轮播时暂停，默认 true。 */
+  pauseOnFocus?: boolean;
 }
 
 /** 分页指示器个性化配置接口 */
 export interface CarouselPagination {
+  /** 指示器显示模式，默认 always；与指示器交互触发方式 trigger 相互独立。 */
+  display?: CarouselIndicatorDisplayMode;
   /** 指示器是否支持点击进行切换 */
   clickable?: boolean;
-  /** 指示器类型风格：'line' (线段型) | 'dot' (小圆点) | 'fraction' (数字分式 '1/3') | 'button' (带有数字编码的按钮) */
-  type?: "line" | "dot" | "fraction" | "button";
+  /** line 线段、dot 圆点、progress 当前页比例、fraction 分数文字、button 序号按钮。 */
+  type?: (typeof carouselIndicatorTypes)[number];
+  /** 是否显示指示器容器的 gray-1 半透明背景、毛玻璃与阴影，默认 true；不影响 progress 的轨道。 */
+  indicatorBackground?: boolean;
 }
 
 /** 缩略图面板配置参数接口 */
@@ -54,6 +88,8 @@ export interface CarouselRenderSlide {
 
 /** 响应式媒介断点独立配置接口 */
 export interface RebornCarouselBreakpoint {
+  /** 每屏数量；与旧参数同时传入时优先使用此参数。 */
+  slidesPerView?: number | "auto";
   /** 对应宽度下每屏显示的幻灯片张数，'auto' 代表根据幻灯片元素自身宽度决定 */
   slidesPerview?: number | "auto";
   /** 幻灯片之间的间隔距离 (像素 px) */
@@ -67,7 +103,7 @@ export interface RebornCarouselBreakpoint {
   /** 滚动转场时是否开启边缘动态模糊视觉动效 */
   motionBlur?: boolean;
   /** 整个容器在当前断点下的指定高度值 */
-  height?: string;
+  height?: string | number;
   /** 轮播风格类型 (默认平面或立体卡片) */
   type?: CarouselType;
   /** 滚动过渡方向 (水平或垂直) */
@@ -80,9 +116,11 @@ export interface RebornCarouselBreakpoint {
 
 /** RebornCarousel 组件的主属性定义接口 */
 export interface RebornCarouselProps {
+  /** 每屏数量，默认 1；数字至少为 1，支持小数或 auto。 */
+  slidesPerView?: number | "auto";
   /** 每屏可见的幻灯片数量，或指定为 'auto' 根据内容内在尺寸决定 */
   slidesPerview?: number | "auto";
-  /** 幻灯片之间的横向/纵向间距 (px) */
+  /** 幻灯片之间的横向/纵向间距 (px)，平面单项占满视口时为零。 */
   spaceBetween?: number;
   /** 是否将当前活动的幻灯片居中对齐展示 */
   centeredSlides?: boolean;
@@ -101,7 +139,7 @@ export interface RebornCarouselProps {
   /** 在滑动转场动画期间是否启用动态的高级运动模糊视觉特效 */
   motionBlur?: boolean;
   /** 轮播图主体容器的外观高度 */
-  height?: string;
+  height?: string | number;
   /** 轮播图结构展现风格：'default' 标准平面 | 'card' 3D卡片堆叠 */
   type?: CarouselType;
   /** 转场滚动的主轴轴线方向 (水平或垂直) */
@@ -112,43 +150,20 @@ export interface RebornCarouselProps {
   breakpoints?: Record<number, RebornCarouselBreakpoint>;
   /** 当鼠标悬浮在轮播图区域时，是否展示为可抓取抓紧的手势光标 */
   grabCursor?: boolean;
+  /** 是否允许鼠标拖动；未传时跟随 grabCursor，触屏仍使用原生滚动。 */
+  draggable?: boolean;
+  /** 是否启用方向键及 Home / End 导航，默认 true。 */
+  keyboard?: boolean;
   /** 是否禁止强行将幻灯片等宽拉伸，完全使用其内在元素宽高尺寸 */
   autoSize?: boolean;
-  /** 指示器相对于底边界或右边界的自定义偏移间距 (px) */
+  /** 指示器相对于底边界或右边界的偏移间距 (px)，默认 8；progress 始终贴边，不受此参数影响。 */
   indicatorOffset?: number;
   /** 底部或侧边联动缩略图面板的特定配置 */
   thumbs?: CarouselThumbs | null;
-  /** 预设的主题配色，用于指示器及操作按钮的色彩 */
-  color?: "primary" | "secondary" | "success" | "info" | "warning" | "error" | "neutral";
+  /** 取对应色板第 6 阶，控制线段和圆点激活项悬停色、当前页文字悬停色、按钮激活色与进度条填充色。 */
+  color?: CarouselColor;
   /** 自定义挂载在组件最外层根节点的 CSS 类名 */
-  class?: any;
+  class?: ClassValue;
   /** 组件内置各个细分 UI 元素块的样式类名覆盖集，支持高度定制化 */
-  ui?: Partial<{
-    wrapper: ClassValue;
-    root: ClassValue;
-    viewport: ClassValue;
-    track: ClassValue;
-    slide: ClassValue;
-    slideInner: ClassValue;
-    slideActive: ClassValue;
-    slideInactive: ClassValue;
-    arrowGroup: ClassValue;
-    arrow: ClassValue;
-    indicatorWrapper: ClassValue;
-    indicators: ClassValue;
-    indicator: ClassValue;
-    indicatorActive: ClassValue;
-    indicatorInactive: ClassValue;
-    thumbsShell: ClassValue;
-    thumbsPanel: ClassValue;
-    thumbsViewport: ClassValue;
-    thumbsTrack: ClassValue;
-    thumbsArrowGroup: ClassValue;
-    thumbsArrow: ClassValue;
-    thumb: ClassValue;
-    thumbActive: ClassValue;
-    thumbInactive: ClassValue;
-    thumbPreview: ClassValue;
-    thumbOverlay: ClassValue;
-  }>;
+  ui?: CarouselUI;
 }

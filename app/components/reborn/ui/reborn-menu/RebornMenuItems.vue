@@ -87,6 +87,8 @@ function popperOffsetOf(item: SubMenuType) {
       v-else-if="node.kind === 'submenu'"
       :index="node.data.key"
       :disabled="node.data.disabled"
+      :selectable="node.data.selectable"
+      :route="node.data.route"
       :items="node.data.children"
       :popper-class="node.data.popupClassName"
       :popper-offset="popperOffsetOf(node.data)"

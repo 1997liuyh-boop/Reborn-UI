@@ -1,6 +1,14 @@
 <script lang="ts">
+// 仅用作类型：viewerjs 本体在点击预览时才按需加载
+import type Viewer from "viewerjs";
 import { tv } from "@/lib/tv";
-import theme, { imageMode } from "./reborn-image.config";
+import theme, {
+	defaultPreviewToolbar,
+	imageMode,
+	previewArrowIcons,
+	previewToolbarMeta,
+	previewToolbarTokens
+} from "./reborn-image.config";
 
 /**
  * 主题类名工厂：theme 为静态导入、tv 为纯函数，产物与组件实例无关。
@@ -17,12 +25,31 @@ import type { CSSProperties } from "vue";
 import { useBreakpoints, useEventListener, useIntersectionObserver } from "@vueuse/core";
 import { cn } from "@/lib/utils";
 
+/** 预览菜单的按钮 token */
+type PreviewToolbarToken = (typeof previewToolbarTokens)[number];
+
+/**
+ * viewerjs 1.x 实例上没写进类型声明的内部字段。
+ * 菜单与箭头要挂进它的容器 / 底部区域；翻转要读当前缩放方向（与它自带工具栏的翻转写法一致）。
+ * 升级 viewerjs 大版本时需复核这几个字段。
+ */
+interface ViewerInternals {
+	viewer: HTMLElement; // 预览根容器
+	footer: HTMLElement; // 底部区域：标题 + 工具栏 + 缩略图条
+	navbar: HTMLElement; // 缩略图条
+	imageData: { scaleX?: number; scaleY?: number };
+}
+
 export interface ImageProps {
 	customClass?: ClassValue;
 	src: string; // 图片地址
 	mode?: (typeof imageMode)[number]; // 图片裁剪、缩放的模式
 	preview?: boolean; // 是否显示边框
 	previewList?: string[];
+	// 预览菜单的按钮与顺序：逗号分隔的 token，写法同 RebornPagination 的 layout，未知 token 忽略、传空字符串不显示菜单（仅 Web）
+	previewToolbar?: string;
+	// 多图预览时是否显示底部的缩略图列表，默认不显示；单图时始终不显示（仅 Web）
+	previewNavbar?: boolean;
 	height?: string | number;
 	width?: string | number;
 	showLoading?: boolean; // 是否显示加载状态
@@ -43,12 +70,20 @@ export interface ImageProps {
 		magnifierLens: ClassValue;
 		magnifierView: ClassValue;
 		magnifierViewImage: ClassValue;
+		previewToolbar: ClassValue;
+		previewAction: ClassValue;
+		previewActionIcon: ClassValue;
+		previewActionText: ClassValue;
+		previewArrow: ClassValue;
+		previewArrowIcon: ClassValue;
 	}>;
 }
 
 const props = withDefaults(defineProps<ImageProps>(), {
 	mode: "aspectFill", // 恢复默认值
 	preview: false,
+	previewToolbar: defaultPreviewToolbar,
+	previewNavbar: false,
 	height: 120,
 	width: 120,
 	showLoading: true,
@@ -98,7 +133,15 @@ const ui = computed(() => {
 		inner: (opts?: { class?: any }) => styles.inner({ class: cn(opts?.class, uiOverrides.value.inner) }),
 		magnifierLens: (opts?: { class?: any }) => styles.magnifierLens({ class: cn(opts?.class, uiOverrides.value.magnifierLens) }),
 		magnifierView: (opts?: { class?: any }) => styles.magnifierView({ class: cn(opts?.class, uiOverrides.value.magnifierView) }),
-		magnifierViewImage: (opts?: { class?: any }) => styles.magnifierViewImage({ class: cn(opts?.class, uiOverrides.value.magnifierViewImage) })
+		magnifierViewImage: (opts?: { class?: any }) => styles.magnifierViewImage({ class: cn(opts?.class, uiOverrides.value.magnifierViewImage) }),
+		previewToolbar: (opts?: { class?: any }) => styles.previewToolbar({ class: cn(opts?.class, uiOverrides.value.previewToolbar) }),
+		previewAction: (opts?: { class?: any }) => styles.previewAction({ class: cn(opts?.class, uiOverrides.value.previewAction) }),
+		previewActionIcon: (opts?: { class?: any }) => styles.previewActionIcon({ class: cn(opts?.class, uiOverrides.value.previewActionIcon) }),
+		previewActionText: (opts?: { class?: any }) => styles.previewActionText({ class: cn(opts?.class, uiOverrides.value.previewActionText) }),
+		// 左右箭头只有定位不同，按 arrowSide 变体取各自的类名
+		previewArrow: (side: "prev" | "next", opts?: { class?: any }) =>
+			b({ arrowSide: side }).previewArrow({ class: cn(opts?.class, uiOverrides.value.previewArrow) }),
+		previewArrowIcon: (opts?: { class?: any }) => styles.previewArrowIcon({ class: cn(opts?.class, uiOverrides.value.previewArrowIcon) })
 	};
 });
 
@@ -220,8 +263,109 @@ function onError(e: any) {
 	emit("error", e);
 }
 
-function onPreview() {
-	if (props.preview || (props.magnifier && !isMagnifierActive.value)) {
+/** 解析后的预览菜单 token 列表（忽略未知项），解析规则与 RebornPagination 的 layout 一致 */
+const previewToolbarList = computed(() =>
+	props.previewToolbar
+		.split(",")
+		.map((token) => token.trim())
+		.filter((token): token is PreviewToolbarToken => (previewToolbarTokens as readonly string[]).includes(token))
+);
+
+/** 菜单 token 对应的 viewerjs 操作，与它自带工具栏的点击行为逐一对应 */
+const previewActions: Record<PreviewToolbarToken, (viewer: Viewer) => void> = {
+	// viewerjs 的播放模式：请求浏览器全屏，多图时按间隔自动轮播，点击画面或按 Esc 退出
+	fullscreen: (viewer) => viewer.play(true),
+	zoomIn: (viewer) => viewer.zoom(0.1, true),
+	zoomOut: (viewer) => viewer.zoom(-0.1, true),
+	// 在 1:1 与切换前的缩放比之间来回切换
+	oneToOne: (viewer) => viewer.toggle(),
+	reset: (viewer) => viewer.reset(),
+	// 首尾循环，与 viewerjs 默认的 loop: true 一致
+	prev: (viewer) => viewer.prev(true),
+	next: (viewer) => viewer.next(true),
+	rotateLeft: (viewer) => viewer.rotate(-90),
+	rotateRight: (viewer) => viewer.rotate(90),
+	flipHorizontal: (viewer) => viewer.scaleX(-((viewer as unknown as ViewerInternals).imageData.scaleX ?? 1)),
+	flipVertical: (viewer) => viewer.scaleY(-((viewer as unknown as ViewerInternals).imageData.scaleY ?? 1))
+};
+
+/**
+ * 在 viewerjs 构建完 DOM 后（ready 事件）挂上自绘菜单与两侧箭头。
+ *
+ * 用原生节点而不是 Teleport：viewerjs 在 ready 之后就会量底部区域高度来决定大图的初始尺寸，
+ * 菜单必须同步进入 DOM 才会被计入；Teleport 要等下一次渲染，大图会被算大一截、压到菜单上。
+ * 这些节点随 viewerjs 的根容器一起在 destroy 时移除，不需要单独清理。
+ */
+function mountPreviewControls(viewer: Viewer, total: number) {
+	const internals = viewer as unknown as ViewerInternals;
+	const styles = ui.value;
+
+	/**
+	 * 点击必须截在按钮上，不能冒泡到 viewerjs 的根容器：它的 click 处理对不认识的元素走 default 分支，
+	 * 播放中会直接 stop()——不截的话「全屏」刚进入播放就被同一次点击退出。
+	 */
+	const bindAction = (el: HTMLElement, token: PreviewToolbarToken) => {
+		el.addEventListener("click", (event) => {
+			event.stopPropagation();
+			previewActions[token](viewer);
+		});
+	};
+
+	if (previewToolbarList.value.length) {
+		const toolbar = document.createElement("div");
+		toolbar.className = styles.previewToolbar();
+		toolbar.setAttribute("role", "toolbar");
+		toolbar.setAttribute("aria-label", "图片操作");
+
+		for (const token of previewToolbarList.value) {
+			const meta = previewToolbarMeta[token];
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = styles.previewAction();
+			button.title = meta.label;
+			button.setAttribute("aria-label", meta.label);
+
+			const glyph = document.createElement("span");
+			glyph.setAttribute("aria-hidden", "true");
+			if (meta.icon) {
+				glyph.className = styles.previewActionIcon({ class: meta.icon });
+			} else {
+				glyph.className = styles.previewActionText();
+				glyph.textContent = meta.text ?? "";
+			}
+			button.appendChild(glyph);
+			bindAction(button, token);
+			toolbar.appendChild(button);
+		}
+
+		// 插在缩略图条之前，即 viewerjs 自带工具栏原来的位置
+		internals.footer.insertBefore(toolbar, internals.navbar);
+	}
+
+	// 单图没有可切换的对象，不显示箭头
+	if (total > 1) {
+		for (const side of ["prev", "next"] as const) {
+			const label = side === "prev" ? "上一张" : "下一张";
+			const arrow = document.createElement("button");
+			arrow.type = "button";
+			arrow.className = styles.previewArrow(side);
+			arrow.title = label;
+			arrow.setAttribute("aria-label", label);
+
+			const icon = document.createElement("span");
+			icon.setAttribute("aria-hidden", "true");
+			icon.className = styles.previewArrowIcon({ class: previewArrowIcons[side] });
+			arrow.appendChild(icon);
+
+			bindAction(arrow, side);
+			// 挂在根容器而不是画布上：点画布会关闭预览
+			internals.viewer.appendChild(arrow);
+		}
+	}
+}
+
+function onPreview(force = false) {
+	if (force || props.preview || (props.magnifier && !isMagnifierActive.value)) {
 		let urls = [props.src];
 		if (props.previewList && props.previewList.length > 0) {
 			if (props.previewList.includes(props.src)) {
@@ -241,6 +385,13 @@ function onPreview() {
 				});
 				document.body.appendChild(container);
 				const viewer = new Viewer(container, {
+					// 自带工具栏是白色雪碧图，图标无法跟随主题色，换成 mountPreviewControls 里的自绘菜单
+					toolbar: false,
+					// 缩略图列表只在多图时有意义：单图时列表里只有它自己，开了也不显示
+					navbar: props.previewNavbar && urls.length > 1,
+					ready() {
+						mountPreviewControls(viewer, urls.length);
+					},
 					hidden() {
 						viewer.destroy();
 						document.body.removeChild(container);
@@ -569,6 +720,9 @@ useEventListener(
 
 onBeforeUnmount(cancelTracking);
 
+/** 手动打开预览不依赖 preview 开关，开关只控制图片点击。 */
+defineExpose({ showPreview: () => onPreview(true) });
+
 function onMouseEnter(e: MouseEvent) {
 	if (isMagnifierActive.value && !isLoading.value && !isError.value && imgRef.value) {
 		// 进入时重新测量，避免沿用轮播切换 / 布局变化前的旧基准
@@ -597,7 +751,7 @@ function onMouseLeave() {
 			'data-[lazy=loading]:opacity-0 data-[lazy=loading]:transition-opacity data-[lazy=loading]:duration-300 data-[lazy=loaded]:opacity-100 data-[lazy=loaded]:transition-opacity data-[lazy=loaded]:duration-300 data-[lazy=error]:opacity-100'
 		)
 			" :src="currentSrc" :data-lazy="lazyStatus" :style="imgStyle" :mode="mode" @load="onLoad" @error="onError"
-			@click="onPreview" />
+			@click="onPreview()" />
 
 		<!-- 放大镜透镜 -->
 		<div v-if="isMagnifierActive && showMagnifier && !isLoading && !isError" :class="ui.magnifierLens()" :style="{

@@ -143,7 +143,7 @@ function toCssWidth(value: number | string): string {
   return typeof value === "number" ? `${value}px` : value;
 }
 
-/** 宽度经 CSS 变量下发，配合配置里的 w-[var(...)] 生效；收起时取 collapsedWidth */
+/** 宽度经 CSS 变量下发，由配置中的宽度工具类读取；收起时取 collapsedWidth。 */
 const rootStyle = computed(() => ({
   [LAYOUT_ASIDE_WIDTH_VAR]: isCollapsed.value && props.collapsible
     ? `${props.collapsedWidth}px`

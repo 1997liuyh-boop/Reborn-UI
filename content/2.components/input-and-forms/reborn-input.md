@@ -460,7 +460,7 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 | `suffix` | 后缀容器 | 共用 `iconSection`：`flex cursor-pointer items-center justify-center text-gray-5 hover:opacity-80` | 仅有 `#suffix` 或 `suffixIcon` 时渲染。 |
 | `clear` | 清除按钮 | 取自 `icon` 槽（无基础类名，尺寸档 `text-40`），组件另加 `right-0` | `clearable` 且有值、非禁用、非只读时渲染；与 Web 不同，默认不带 `cursor-pointer` / `text-gray-5`。 |
 | `password` | 明文 / 密文切换按钮 | 共用 `iconSection`，组件另加 `h-full` | 开启 `show-password`（或旧名 `password`）时渲染。 |
-| `separator` | 竖分割线 | `w-px bg-gray-4`，尺寸档追加 `h-[var(--text-size-32/36/40)]`，聚焦时颜色跟随 `color` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
+| `separator` | 竖分割线 | `w-px bg-gray-4`，尺寸档分别追加 `h-[var(--text-size-32)]` / `h-[var(--text-size-36)]` / `h-[var(--text-size-40)]`，聚焦时颜色跟随 `color` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
 | `count` | 字数统计文本 | `pointer-events-none text-22 text-gray-5` | `showWordLimit` 生效时渲染；`outside` 追加 `self-end`。 |
 
 UniApp 端 config 里的 `icon` slot 没有同名 `ui` 键，`prefixIcon` / `suffixIcon` 直接以图标 class 渲染，不经过 `ui`。

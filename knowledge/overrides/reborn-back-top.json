@@ -1,22 +1,23 @@
 {
-  "description": "用于长页面滚动超过阈值后显示返回顶部按钮的跨端导航组件。",
+  "description": "双端返回顶部按钮：滚动超过阈值后淡入；Web 端另有去底部、方形与顺/逆时针滚动进度环。",
   "whenToUse": [
-    "长列表、长文章页面需要一键回到顶部时。",
-    "uniapp TabBar 页面需要按钮自动抬高避开 TabBar（isTab）时。",
-    "需要预设色彩（primary/success 等）与尺寸（sm/md/lg）的回顶按钮。",
-    "需要在回顶按钮上顺带展示阅读/滚动进度时，开启 showProgress（仅 web 端）。"
+    "长文档、长列表需要一键回到顶部时，默认 direction=\"top\"，threshold 按首屏高度调整。",
+    "长页面同时需要直达页尾时，再放一个 direction=\"bottom\" 的实例，bottom 比回到顶部小一个按钮边长加间距（仅 web 端）。",
+    "需要在按钮上顺带展示阅读进度时开启 showProgress：回到顶部顺时针、去底部逆时针（仅 web 端）。",
+    "uniapp TabBar 页面需要按钮自动抬高避开 TabBar 时用 isTab。"
   ],
   "whenNotToUse": [
     "需要可拖拽的悬浮入口，改用 reborn-affix。",
-    "常驻的悬浮操作按钮，改用 reborn-fab。"
+    "常驻的悬浮操作按钮，改用 reborn-fab。",
+    "跳到页面内的某一节而不是页首页尾，改用 reborn-anchor。"
   ],
   "pitfalls": [
-    "web 与 uniapp 双端可用；uniapp 端必须通过 onPageScroll 把 scrollTop 传入组件，否则按钮不会随滚动显示。",
-    "threshold 默认 300px，滚动超过该距离才显示按钮。",
-    "isTab 为 true 时组件自动抬高 50px 避开 TabBar；safeArea 默认开启底部安全区适配。",
-    "自定义按钮外观用默认插槽，细粒度样式覆盖用 ui 对象（wrapper/base/icon/progress/progressTrack/progressBar）。",
-    "showProgress 进度环画在内置按钮内部，传了自定义默认插槽时按钮结构由插槽接管，进度环不会渲染。",
-    "showProgress 与 scrollRange 目前仅 web 端可用；uniapp 端只拿得到 scrollTop、缺少总高来源，需另用 createSelectorQuery 测量，尚未实现。",
-    "用 scrollTop 接管滚动数值时必须一并传 scrollRange，否则进度百分比按错误的总距离换算。"
+    "uniapp 端必须通过 onPageScroll 把 scrollTop 传入组件，否则按钮不会随滚动显示。",
+    "一个实例只负责一个方向；回到顶部 + 去底部要放两个实例，用 bottom 错开至少一个按钮边长加间距，否则会叠在一起。",
+    "direction、shape、icon、size=\"xs\"、showProgress、scrollRange 仅 web 端可用；uniapp 端缺少页面总高来源，去底部与进度环暂未实现。",
+    "去底部按钮要挂载后测出文档高度才知道离页尾多远，服务端渲染时隐藏，水合后才出现；内容不足一屏时始终隐藏。",
+    "用 scrollTop 接管滚动数值时必须一并传 scrollRange，否则进度百分比与去底部的显隐都按错误的总距离计算；点击滚动的仍是 window。",
+    "默认插槽整体替换按钮主体，传了插槽后 color / size / shape / icon / 进度环都不再生效。",
+    "duration 只在 uniapp 端生效；web 端用浏览器的 smooth 平滑滚动，时长由浏览器决定。"
   ]
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
 import type { CSSProperties } from "vue";
+import type { RouteLocationRaw } from "vue-router";
 import type { ItemType, MenuContext, MenuUI } from "./reborn-menu.config";
 import { useEventListener } from "@vueuse/core";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from "vue";
@@ -18,6 +19,10 @@ export interface RebornSubMenuProps {
   disabled?: boolean;
   /** 子菜单数据，传入后由组件递归渲染，无需再手写子条目 */
   items?: ItemType[];
+  /** 父级自身是否可被选中，缺省时继承根节点的 checkStrictly；只在悬停触发时生效 */
+  selectable?: boolean;
+  /** 父级被选中时的跳转地址，缺省时 router 模式下回退使用 index */
+  route?: RouteLocationRaw;
   /** 浮层的自定义类名 */
   popperClass?: ClassValue;
   /** 浮层的自定义内联样式 */
@@ -47,6 +52,9 @@ export interface RebornSubMenuProps {
 const props = withDefaults(defineProps<RebornSubMenuProps>(), {
   disabled: false,
   items: undefined,
+  // 必须显式写 undefined：布尔类型的 prop 未传时会被 Vue 强转成 false，「缺省继承根节点」就判断不出来
+  selectable: undefined,
+  route: undefined,
   popperClass: undefined,
   popperStyle: undefined,
   popperOffset: undefined,
@@ -70,6 +78,26 @@ const menuContext = inject<MenuContext>(MENU_INJECTION_KEY);
 const slots = useSlots();
 
 const isActive = computed(() => menuContext?.selectedKeys.value.includes(props.index) ?? false);
+
+/**
+ * 父级自身能否被选中（checkStrictly / selectable）。
+ * 只在悬停触发时成立：上下文里的 menuTrigger 已是生效值，平铺展开恒为 click，
+ * 那时点击标题要负责展开 / 收起，再兼做选中就无法区分用户想做哪一件。
+ */
+const isSelectable = computed(
+  () =>
+    !props.disabled &&
+    (props.selectable ?? menuContext?.checkStrictly.value ?? false) &&
+    menuContext?.menuTrigger.value === "hover",
+);
+
+/**
+ * 父级自己就是被选中的那一项（而不是因为后代被选中而高亮的祖先）。
+ * 样式上按叶子项渲染（hasSubmenu: false），与祖先高亮区分开。
+ */
+const isSelfSelected = computed(
+  () => isSelectable.value && menuContext?.selectedKeys.value.at(-1) === props.index,
+);
 const isOpened = computed(() => menuContext?.openedMenus.value.includes(props.index) ?? false);
 const indexPath = computed(() => [...(menuContext?.parentIndexPath.value ?? []), props.index]);
 
@@ -149,10 +177,13 @@ const currentExpandIcon = computed(() => {
  */
 const inlineIndentStyle = computed<CSSProperties | undefined>(() => {
   const depth = menuContext?.inlineDepth.value ?? 0;
-  if (depth <= 0 || menuContext?.noIndent.value) return undefined;
+  // 父级自己被选中时与 RebornMenuItem 一致，套用根节点的 activeTextColor（为空则交给主题色）
+  const activeColor = isSelfSelected.value ? menuContext?.activeTextColor.value : "";
+  const colorStyle = activeColor ? { color: activeColor } : {};
+  if (depth <= 0 || menuContext?.noIndent.value) return activeColor ? colorStyle : undefined;
 
   // depth 1 得 32px = 原容器 ml-4(16px) + 条目 px-4(16px)，与改造前观感一致
-  return { paddingLeft: `${MENU_INLINE_INDENT * (depth + 1)}px` };
+  return { ...colorStyle, paddingLeft: `${MENU_INLINE_INDENT * (depth + 1)}px` };
 });
 
 if (menuContext) {
@@ -191,8 +222,9 @@ const subMenuUi = computed(() => {
     opened: isOpened.value,
     active: isActive.value,
     disabled: props.disabled,
-    // 本组件必然带子菜单，据此让水平菜单跳过底部指示器
-    hasSubmenu: true,
+    // 本组件必然带子菜单，据此让水平菜单跳过底部指示器、选中态走祖先配色；
+    // 父级自己被选中时（checkStrictly）按叶子项处理，拿到完整的选中态与指示器
+    hasSubmenu: !isSelfSelected.value,
   });
 
   // 根节点的全局覆盖优先级低于本组件的局部覆盖
@@ -207,7 +239,7 @@ const subMenuUi = computed(() => {
           color: menuContext?.color.value,
           opened: isOpened.value,
           disabled: props.disabled,
-          hasSubmenu: true,
+          hasSubmenu: !isSelfSelected.value,
         }),
         opts?.class,
         rootOverrides.menuItem,
@@ -374,6 +406,12 @@ function handleClick(event: MouseEvent) {
   if (props.disabled) return;
 
   emit("titleClick", event);
+
+  // 父子不强关联：点击标题选中父级自身。悬停触发下标题点击原本什么都不做（展开交给悬停），
+  // 所以这里不会与下方的点击切换冲突——isSelectable 成立时 canToggleByClick 必为假
+  if (isSelectable.value) {
+    menuContext?.handleSelect(props.index, indexPath.value, props.route);
+  }
 
   // ⚠️ 根因：切换只认 menuTrigger === "click"，而平铺态的 handleMouseLeave 又刻意不做移出关闭
   // （鼠标移向子项必经父项之外，倒计时关闭会让刚展开的子菜单当场收回）。
