@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { FloatingPoint } from "~/lib/floating";
+import type { Placement } from "~/lib/placement";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
+import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
 import theme from "./reborn-popover.config";
@@ -15,14 +18,14 @@ const props = withDefaults(defineProps<PopoverProps>(), {
   portal: true,
   arrow: false,
   dismissible: true,
+  closeOnScroll: true,
   modal: false,
   openDelay: 0,
   closeDelay: 120,
-  content: () => ({
-    side: "bottom",
-    align: "center",
-    sideOffset: 8,
-  }),
+  // placement / sideOffset / content 都不给默认值：保持 undefined 才能识别「未传」，按 placement → content → 默认值的顺序回落
+  placement: undefined,
+  sideOffset: undefined,
+  content: undefined,
 });
 
 const emit = defineEmits<{
@@ -30,21 +33,45 @@ const emit = defineEmits<{
   (e: "update:open", v: boolean): void;
 }>();
 
+/** 旧的定位对象写法，等价于 placement + sideOffset，仅为兼容保留 */
 export interface PopoverContentProps {
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
   sideOffset?: number;
 }
 
+/** 气泡方位取值，与 reborn-popconfirm、reborn-tooltip 的 placement 完全一致 */
+export type PopoverPlacement = Placement;
+
 type PopoverSide = NonNullable<PopoverContentProps["side"]>;
 type PopoverAlign = NonNullable<PopoverContentProps["align"]>;
 
 export interface PopoverProps {
+  /** 触发方式：click 点击触发器切换 / hover 悬停打开、移出关闭 */
   mode?: "click" | "hover";
+  /**
+   * 出现方向与对齐方式，「方向-对齐」写法，与 reborn-popconfirm、reborn-tooltip 一致；主轴放不下时自动翻到对侧
+   * @defaultValue 'bottom'
+   */
+  placement?: PopoverPlacement;
+  /**
+   * 气泡与触发器的间距（px）
+   * @defaultValue 8
+   */
+  sideOffset?: number;
+  /**
+   * 旧的定位对象写法（side / align / sideOffset），等价于 placement + sideOffset，仅为兼容保留
+   * @deprecated 请改用 placement / sideOffset
+   */
   content?: PopoverContentProps;
+  /** 是否显示指向触发器的箭头 */
   arrow?: boolean;
+  /** 传送目标：true 传送到 body，字符串为目标选择器，false 原地渲染 */
   portal?: boolean | string;
+  /** 点击外部（含遮罩、iframe 内）是否关闭气泡 */
   dismissible?: boolean;
+  /** 页面或触发器所在容器滚动时是否关闭气泡；关闭后气泡跟随触发器移动 */
+  closeOnScroll?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
   modal?: boolean;
@@ -117,16 +144,29 @@ const onClickTrigger = () => {
   }
 };
 
-const onClickOutside = (event: MouseEvent) => {
-  if (!open.value || !props.dismissible) return;
+/**
+ * 点击外部关闭与滚动关闭交给共享的 useFloatingDismiss：
+ * 捕获阶段判定、嵌套浮层（气泡里的 Select、Popconfirm 等）里的点击不算外部、只有带动触发器位移的滚动才关闭
+ */
+useFloatingDismiss({
+  open: () => open.value,
+  elements: () => [wrapperRef.value, contentRef.value],
+  anchor: () => triggerRef.value,
+  closeOnClickOutside: () => props.dismissible,
+  closeOnScroll: () => props.closeOnScroll,
+  onDismiss: () => {
+    open.value = false;
+  },
+});
 
-  const target = event.target as Node;
-  if (wrapperRef.value?.contains(target) || contentRef.value?.contains(target)) {
-    return;
-  }
-
-  open.value = false;
-};
+/** 解析后的方位：placement 优先，未传时回落到旧的 content 对象，都没有则在下方居中 */
+const placementInfo = computed(() => {
+  const legacy = props.content ?? {};
+  const { side, align } = props.placement
+    ? resolvePlacement(props.placement)
+    : { side: legacy.side ?? "bottom", align: legacy.align ?? "center" };
+  return { side, align, offset: props.sideOffset ?? legacy.sideOffset ?? 8 };
+});
 
 /**
  * 箭头中心距面板端部的最小内缩量，与 reborn-tooltip 取同一口径：
@@ -140,8 +180,8 @@ const style = ref<Record<string, string>>({
   top: "0px",
 });
 
-const resolvedSide = ref<PopoverSide>(props.content?.side || "bottom");
-const resolvedAlign = ref<PopoverAlign>(props.content?.align || "center");
+const resolvedSide = ref<PopoverSide>(placementInfo.value.side);
+const resolvedAlign = ref<PopoverAlign>(placementInfo.value.align);
 
 const arrowPosition = ref({
   x: "50%",
@@ -197,15 +237,15 @@ function calculatePosition(contentElement?: HTMLElement) {
   const rect = triggerRef.value.getBoundingClientRect();
   // 取 offsetWidth / offsetHeight 而非 getBoundingClientRect，入场动画的 scale 不会算进尺寸
   const size = { width: contentBox.offsetWidth, height: contentBox.offsetHeight };
-  const align: PopoverAlign = props.content?.align || "center";
+  const { side: preferredSide, align, offset } = placementInfo.value;
 
   // 翻转与贴边都交给共享的浮层几何，口径与 reborn-tooltip 保持一致
   const { side, position } = resolveFloatingPosition({
     triggerRect: rect,
     size,
-    side: props.content?.side || "bottom",
+    side: preferredSide,
     align,
-    offset: props.content?.sideOffset ?? 8,
+    offset,
   });
 
   resolvedSide.value = side;
@@ -263,18 +303,22 @@ watch(
   { immediate: true },
 );
 
+// 不关闭的滚动（closeOnScroll 关掉、或滚动的是与触发器无关的容器）仍要让气泡跟着触发器重新定位
 onMounted(() => {
-  document.addEventListener("mousedown", onClickOutside);
   window.addEventListener("resize", updatePosition);
   window.addEventListener("scroll", updatePosition, true);
 });
 
 onUnmounted(() => {
-  document.removeEventListener("mousedown", onClickOutside);
   window.removeEventListener("resize", updatePosition);
   window.removeEventListener("scroll", updatePosition, true);
   if (hoverTimer) clearTimeout(hoverTimer);
   if (resizeObserver) resizeObserver.disconnect();
+});
+
+// 方位在打开期间改变（如演练场切换 placement）时立即重新定位
+watch(placementInfo, () => {
+  if (open.value) updatePosition();
 });
 
 watch(open, (value) => {
@@ -287,14 +331,15 @@ watch(open, (value) => {
 
 const arrowStyle = computed(() => {
   const side = resolvedSide.value;
-  const offsetScale = "-6px";
+  // 12px 方块旋转 45° 后中心压在面板 1px 描边的中线上，箭头的两条描边与面板描边无缝相接
+  // 保留朝内的半块背景覆盖面板描边，裁成三角形会在箭头底边留下分割线
+  const offsetScale = "-6.5px";
 
   if (side === "bottom") {
     return {
       top: offsetScale,
       left: arrowPosition.value.x,
       transform: "translateX(-50%) rotate(45deg)",
-      clipPath: "polygon(0 0, 100% 0, 0 100%)",
       borderBottomWidth: "0",
       borderRightWidth: "0",
     };
@@ -305,7 +350,6 @@ const arrowStyle = computed(() => {
       bottom: offsetScale,
       left: arrowPosition.value.x,
       transform: "translateX(-50%) rotate(45deg)",
-      clipPath: "polygon(100% 100%, 100% 0, 0 100%)",
       borderTopWidth: "0",
       borderLeftWidth: "0",
     };
@@ -316,7 +360,6 @@ const arrowStyle = computed(() => {
       right: offsetScale,
       top: arrowPosition.value.y,
       transform: "translateY(-50%) rotate(45deg)",
-      clipPath: "polygon(100% 0, 0 0, 100% 100%)",
       borderBottomWidth: "0",
       borderLeftWidth: "0",
     };
@@ -326,7 +369,6 @@ const arrowStyle = computed(() => {
     left: offsetScale,
     top: arrowPosition.value.y,
     transform: "translateY(-50%) rotate(45deg)",
-    clipPath: "polygon(0 100%, 0 0, 100% 100%)",
     borderTopWidth: "0",
     borderRightWidth: "0",
   };
@@ -383,7 +425,7 @@ defineExpose({
 
           <div
             v-if="props.mode === 'hover'" :class="ui.bridge()"
-            :style="{ margin: `-${props.content.sideOffset ?? 8}px` }"
+            :style="{ margin: `-${placementInfo.offset}px` }"
           />
 
           <div v-if="arrow" :class="ui.arrow()" :style="arrowStyle" />

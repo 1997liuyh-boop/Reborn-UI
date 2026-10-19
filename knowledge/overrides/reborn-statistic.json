@@ -1,0 +1,21 @@
+{
+  "whenToUse": [
+    "仪表盘展示金额、人数或订单量：用 value 和 title 提供数值与指标名称。",
+    "固定小数位或地区分组：用 precision、decimalSeparator、groupSeparator。",
+    "换算万、百分比或业务文本：用 formatter 返回最终显示内容。",
+    "从零连续计数到目标或衔接数值变化：animated 默认开启，duration 默认 1500 毫秒。"
+  ],
+  "whenNotToUse": [
+    "需要持续倒计时，改用 reborn-countdown。",
+    "需要编辑数值，改用 reborn-input-number。",
+    "需要图形化进度，改用 reborn-progress。"
+  ],
+  "pitfalls": [
+    "formatter 优先于精度和分隔符，返回内容按文本渲染，并关闭计数动画。",
+    "系统开启减少动态效果或 duration 小于等于 0 时立即显示目标；displayValue 在动画期间为当前中间值。",
+    "服务端和水合首帧直接展示目标；客户端挂载后从零计数，重新播放可更新组件 key。",
+    "precision 仅影响展示，限制在 0–20；不会改动 value。",
+    "valueStyle 作用于包含前后缀的整个数字区；独立样式用 ui 或具名插槽。",
+    "仅 Web 实现，没有 UniApp 同名组件。"
+  ]
+}

@@ -353,7 +353,8 @@ function onOutsideClose() {
               @click.stop
             >
               <RebornPopover
-                :content="{ side: 'bottom', align: 'center', sideOffset: 12 }"
+                placement="bottom"
+                :side-offset="12"
                 arrow
               >
                 <div class="flex items-center gap-1">

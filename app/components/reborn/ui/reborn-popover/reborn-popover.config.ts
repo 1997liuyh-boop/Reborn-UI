@@ -28,8 +28,14 @@ export default {
         wrapper: "relative inline-block",
         trigger: "inline-flex max-w-full",
         contentWrapper: "fixed top-0 left-0 z-[9999]",
-        content: "relative bg-gray-1 border border-gray-1 shadow-xl rounded-lg p-[12px]",
-        arrow: "absolute size-3 border border-gray-1 bg-gray-1",
+        /**
+         * 描边用 gray-3 而不是与底色相同的 gray-1：同色描边在白底页面上等于没有，
+         * shadow-lg 提供较轻的浮起感，朝上的箭头与面板上沿由描边补足轮廓。
+         * 与 RebornSelect 下拉框、RebornMention 面板同一套 gray-1 底 + gray-3 描边
+         */
+        content: "relative bg-gray-1 border border-gray-3 shadow-lg rounded-lg p-[12px]",
+        /** 箭头与面板同底色同描边，只露出朝外的两条边，与面板描边连成一条轮廓 */
+        arrow: "absolute size-3 border border-gray-3 bg-gray-1",
         bridge: "absolute inset-0 z-[-1]",
         mask: "fixed inset-0 bg-black/30 z-[9998]",
     },

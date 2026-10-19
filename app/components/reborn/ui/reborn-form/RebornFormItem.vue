@@ -117,7 +117,6 @@ defineExpose({
             <!-- 错误信息 (自带动画) -->
             <Transition name="form-error">
                 <div v-if="error" :class="ui.error()">
-                    <Icon name="lucide:circle-alert" class="size-3 shrink-0" />
                     {{ error }}
                 </div>
             </Transition>

@@ -111,9 +111,17 @@ const popover = usePopover()
 
 const showPopover = ref<boolean>(props.open || props.defaultOpen)
 
-const side = computed(() => props.content?.side || 'bottom')
-const align = computed(() => props.content?.align || 'center')
-const sideOffset = computed(() => props.content?.sideOffset || 0)
+/** 解析后的方位：placement 优先，未传时回落到旧的 content 对象，都没有则在下方居中 */
+const placementParts = computed(() => {
+    if (props.placement) {
+        const [placementSide, placementAlign] = props.placement.split('-')
+        return { side: placementSide, align: placementAlign || 'center' }
+    }
+    return { side: props.content?.side || 'bottom', align: props.content?.align || 'center' }
+})
+const side = computed(() => placementParts.value.side)
+const align = computed(() => placementParts.value.align)
+const sideOffset = computed(() => props.sideOffset ?? props.content?.sideOffset ?? 0)
 
 watch(
     () => props.title,

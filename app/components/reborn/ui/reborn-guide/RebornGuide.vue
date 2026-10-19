@@ -1,759 +1,559 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
+import type { Component, CSSProperties } from "vue";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
-import type { Placement } from "~/lib/placement";
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { cn } from "~/lib/utils";
+import type { Placement, PlacementSide } from "~/lib/placement";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from "vue";
+import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
+import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
-import theme from "./reborn-guide.config";
+import { cn } from "~/lib/utils";
+import RebornButton from "../reborn-button/RebornButton.vue";
+import theme, { guideMotionStyles } from "./reborn-guide.config";
 
-// ==================== 类型定义 ====================
-
-/** popup 模式下的 12 种定位，取值与 reborn-tooltip 的 placement 一致 */
-type GuidePopupPlacement = Placement;
-
-/** dialog 模式下的 2 种定位 */
-type GuideDialogPlacement = "top" | "center";
-
-/** 引导步骤定义 */
+/** 子步骤按父步骤在前的深度优先顺序展开 */
 export interface GuideStep {
-  /** 高亮的节点。字符串为 CSS 选择器，函数返回元素 */
-  element: string | (() => Element | null);
-  /** 当前步骤提示框的内容 */
-  body?: string;
-  /** 用户自定义引导弹框内容的插槽名 */
-  content?: string;
-  /** 用户自定义高亮框内容的插槽名 */
-  highlightContent?: string;
-  /** 高亮框的内边距 */
-  highlightPadding?: number;
-  /** 引导框的类型 */
-  mode?: "popup" | "dialog";
-  /** 当前步骤的下一步按钮配置 */
-  nextButtonProps?: ButtonProps;
-  /** 当前步骤的上一步按钮配置 */
-  prevButtonProps?: ButtonProps;
-  /** 当前步骤的跳过按钮配置 */
-  skipButtonProps?: ButtonProps;
-  /** 相对 placement 的偏移量 */
-  offset?: [number | string, number | string];
-  /** 引导框相对高亮元素出现的位置 */
-  placement?: GuidePopupPlacement | GuideDialogPlacement;
-  /** 透传全部属性到 Popup 组件（mode=popup 时有效） */
-  popupProps?: Record<string, any>;
-  /** 是否出现遮罩层 */
-  showOverlay?: boolean;
-  /** 覆盖引导框的类名 */
-  stepOverlayClass?: string;
-  /** 当前步骤的标题 */
+  /** 高亮节点；子步骤省略时继承父步骤的目标 */
+  element?: string | (() => Element | null);
   title?: string;
-}
-
-/** Guide 组件 Props */
-export interface RebornGuideProps {
-  /** 当前步骤（支持 v-model） */
-  current?: number;
-  /** 非受控当前步骤 */
-  defaultCurrent?: number;
-  /** 引导步骤数组 */
-  steps: GuideStep[];
-  /** 引导框类型 */
-  mode?: "popup" | "dialog";
-  /** 是否隐藏计数器 */
-  hideCounter?: boolean;
-  /** 是否隐藏上一步按钮 */
-  hidePrev?: boolean;
-  /** 是否隐藏跳过按钮 */
-  hideSkip?: boolean;
-  /** 完成按钮属性 */
-  finishButtonProps?: ButtonProps;
-  /** 下一步按钮属性 */
-  nextButtonProps?: ButtonProps;
-  /** 上一步按钮属性 */
-  prevButtonProps?: ButtonProps;
-  /** 跳过按钮属性 */
-  skipButtonProps?: ButtonProps;
-  /** 是否出现遮罩层 */
-  showOverlay?: boolean;
-  /** 高亮框内边距 */
+  body?: string;
+  /** 可选封面图及替代文本 */
+  cover?: string;
+  coverAlt?: string;
+  /** 正文插槽名，保留默认标题、关闭按钮与底部操作 */
+  content?: string;
+  /** 整步内容组件，接收步骤信息与导航方法 */
+  component?: Component;
+  componentProps?: Record<string, unknown>;
+  children?: GuideStep[];
+  /** children 的兼容别名，同时提供时优先使用 children */
+  chidren?: GuideStep[];
+  highlightContent?: string;
+  /** 高亮框内边距，不改变面板与目标边缘的定位 */
   highlightPadding?: number;
-  /** 提示框层级 */
-  zIndex?: number;
-  /** 自定义类名 */
-  class?: any;
-  /** UI 局部重写 */
-  ui?: Partial<{
-    overlay: ClassValue;
-    highlightMask: ClassValue;
-    guideBox: ClassValue;
-    guideArrow: ClassValue;
-    guideHeader: ClassValue;
-    guideTitle: ClassValue;
-    guideBody: ClassValue;
-    guideFooter: ClassValue;
-    counter: ClassValue;
-    buttonGroup: ClassValue;
-    dialogOverlay: ClassValue;
-    dialogBox: ClassValue;
-  }>;
+  mode?: "popup" | "dialog";
+  nextButtonProps?: ButtonProps;
+  prevButtonProps?: ButtonProps;
+  skipButtonProps?: ButtonProps;
+  finishButtonProps?: ButtonProps;
+  /** 面板在水平、垂直方向上的额外偏移 */
+  offset?: [number | string, number | string];
+  placement?: Placement | "center";
+  /** 保留字段，当前没有接入 Popup 属性透传 */
+  popupProps?: Record<string, unknown>;
+  showOverlay?: boolean;
+  stepOverlayClass?: string;
 }
 
-// ==================== Props & Emits ====================
+export interface RebornGuideProps {
+  /** 扁平步骤索引，从 0 开始，-1 关闭 */
+  current?: number;
+  defaultCurrent?: number;
+  steps: GuideStep[];
+  mode?: "popup" | "dialog";
+  indicator?: "counter" | "dots";
+  hideCounter?: boolean;
+  hidePrev?: boolean;
+  hideSkip?: boolean;
+  finishButtonProps?: ButtonProps;
+  nextButtonProps?: ButtonProps;
+  prevButtonProps?: ButtonProps;
+  skipButtonProps?: ButtonProps;
+  showOverlay?: boolean;
+  highlightPadding?: number;
+  zIndex?: number;
+  class?: ClassValue;
+  ui?: Partial<Record<
+    | "overlay" | "highlightMask" | "guideBox" | "guideArrow"
+    | "guideHeader" | "guideTitle" | "guideBody" | "guideFooter"
+    | "counter" | "buttonGroup" | "dialogOverlay" | "dialogBox"
+    | "closeRow" | "closeButton" | "cover" | "indicators" | "indicatorDot",
+    ClassValue
+  >>;
+}
+
+interface GuideEventContext { e: MouseEvent; current: number; total: number }
 
 const props = withDefaults(defineProps<RebornGuideProps>(), {
   current: undefined,
   defaultCurrent: -1,
   mode: "popup",
+  indicator: "counter",
   hideCounter: false,
   hidePrev: false,
-  hideSkip: false,
-  finishButtonProps: () => ({}),
-  nextButtonProps: () => ({}),
-  prevButtonProps: () => ({}),
-  skipButtonProps: () => ({}),
+  hideSkip: true,
   showOverlay: true,
-  highlightPadding: 8,
+  highlightPadding: 4,
   zIndex: 999999,
-  class: undefined,
-  ui: () => ({}),
 });
-
-/** 当前步骤（受控/非受控） */
-const currentStep = defineModel<number>("current", {
-  default: -1,
-});
-
 const emit = defineEmits<{
   (e: "change", current: number, context?: { e: MouseEvent; total: number }): void;
-  (e: "finish", context: { e: MouseEvent; current: number; total: number }): void;
-  (e: "next-step-click", context: { e: MouseEvent; next: number; current: number; total: number }): void;
-  (e: "prev-step-click", context: { e: MouseEvent; prev: number; current: number; total: number }): void;
-  (e: "skip", context: { e: MouseEvent; current: number; total: number }): void;
+  (e: "finish", context: GuideEventContext): void;
+  (e: "next-step-click", context: GuideEventContext & { next: number }): void;
+  (e: "prev-step-click", context: GuideEventContext & { prev: number }): void;
+  (e: "skip", context: GuideEventContext): void;
+  (e: "close", context: GuideEventContext): void;
 }>();
-
-// ==================== 状态 ====================
-
-/** 指引框是否可见（用于过渡动画） */
-const visible = ref(false);
-/** 高亮目标元素的视口矩形 */
-const targetRect = ref<DOMRect | null>(null);
-/** 指引框 DOM 元素引用 */
-const guideBoxRef = ref<HTMLElement | null>(null);
-/** 指引框宽度 */
-const guideBoxWidth = ref(260);
-/** 指引框高度 */
-const guideBoxHeight = ref(0);
-/** rAF 标识 */
-const rafId = ref(0);
-
-// ==================== 计算属性 ====================
-
-/** 当前激活的步骤 */
-const activeStep = computed<GuideStep | null>(() => {
-  if (currentStep.value < 0 || currentStep.value >= props.steps.length) return null;
-  return props.steps[currentStep.value] ?? null;
+const model = defineModel<number>("current");
+const localCurrent = ref(props.defaultCurrent);
+const currentStep = computed({
+  get: () => model.value ?? localCurrent.value,
+  set: (value: number) => {
+    localCurrent.value = value;
+    model.value = value;
+  },
 });
 
-/** 实际模式（步骤级优先） */
-const actualMode = computed(() => activeStep.value?.mode ?? props.mode);
-
-/** 是否显示遮罩 */
-const actualShowOverlay = computed(() => {
-  if (activeStep.value?.showOverlay !== undefined) return activeStep.value.showOverlay;
-  return props.showOverlay;
+const flatSteps = computed(() => {
+  const result: GuideStep[] = [];
+  function append(steps: GuideStep[], parentElement?: GuideStep["element"]) {
+    for (const step of steps) {
+      const element = step.element ?? parentElement;
+      result.push({ ...step, element });
+      append(step.children ?? step.chidren ?? [], element);
+    }
+  }
+  append(props.steps);
+  return result;
 });
+const total = computed(() => flatSteps.value.length);
+const requestedStep = computed(() => flatSteps.value[currentStep.value] ?? null);
+/** 显示快照在旧内容淡出后更新，避免新文案先出现在旧目标旁。 */
+const displayed = shallowRef<{
+  step: GuideStep;
+  index: number;
+  steps: GuideStep[];
+  mode: "popup" | "dialog";
+} | null>(null);
+const activeStep = computed(() => displayed.value?.step ?? null);
+const displayedCurrent = computed(() => displayed.value?.index ?? -1);
+const displayedSteps = computed(() => displayed.value?.steps ?? []);
+const displayedTotal = computed(() => displayedSteps.value.length);
+const actualMode = computed(() => displayed.value?.mode ?? props.mode);
+const actualShowOverlay = computed(() => activeStep.value?.showOverlay ?? props.showOverlay);
+const isLastStep = computed(() => displayedCurrent.value === displayedTotal.value - 1);
+const stepComponent = computed(() => activeStep.value?.component ? toRaw(activeStep.value.component) : undefined);
+const mounted = ref(false);
+const ready = ref(false);
+const motionPhase = ref<"prepare" | "leave" | "enter">("prepare");
+const motionDirection = ref(1);
+const motionClass = computed(() => cn(
+  guideMotionStyles[motionPhase.value],
+  motionPhase.value === "prepare" && (motionDirection.value > 0 ? guideMotionStyles.nextFrom : guideMotionStyles.prevFrom),
+  motionPhase.value === "leave" && (motionDirection.value > 0 ? guideMotionStyles.nextTo : guideMotionStyles.prevTo),
+  guideMotionStyles.reduced,
+));
+const layerRef = ref<HTMLElement>();
+const guideBoxRef = ref<HTMLElement>();
+const targetElement = shallowRef<Element | null>(null);
+const targetRect = shallowRef<DOMRect | null>(null);
+const guideBoxStyle = ref<CSSProperties>({});
+const guideArrowStyle = ref<CSSProperties>({});
+let positionFrame = 0;
+let revealFrame = 0;
+let revision = 0;
+let resizeObserver: ResizeObserver | undefined;
+let cancelTransition: (() => void) | undefined;
 
-/** 是否为最后一步 */
-const isLastStep = computed(() => currentStep.value >= props.steps.length - 1);
-
-// ==================== 合并按钮属性（步骤级 > 组件级 > 默认值） ====================
-
-const mergedNextProps = computed<ButtonProps>(() => ({
-  label: "下一步",
-  color: "primary" as const,
-  ...props.nextButtonProps,
-  ...(activeStep.value?.nextButtonProps ?? {}),
-}));
-
-const mergedPrevProps = computed<ButtonProps>(() => ({
-  label: "上一步",
-  variant: "outlined" as const,
-  ...props.prevButtonProps,
-  ...(activeStep.value?.prevButtonProps ?? {}),
-}));
-
-const mergedSkipProps = computed<ButtonProps>(() => ({
-  label: "跳过",
-  variant: "subtle" as const,
-  ...props.skipButtonProps,
-  ...(activeStep.value?.skipButtonProps ?? {}),
-}));
-
-const mergedFinishProps = computed<ButtonProps>(() => ({
-  label: "完成",
-  color: "primary" as const,
-  ...props.finishButtonProps,
-}));
-
-// ==================== 元素查询 ====================
-
-function resolveElement(target: string | (() => Element | null)): Element | null {
-  if (typeof target === "function") return target();
-  return document.querySelector(target);
-}
-
-function queryTargetRect(): DOMRect | null {
-  const step = activeStep.value;
-  if (!step) return null;
-  const el = resolveElement(step.element);
-  if (!el || typeof (el as any).getBoundingClientRect !== "function") return null;
-  return (el as HTMLElement).getBoundingClientRect();
-}
-
-// ==================== 位置计算 ====================
-
-/** 解析 offset 为数值数组 */
-function parseOffset(step: GuideStep): [number, number] {
-  const raw = step.offset ?? [0, 0];
-  return [
-    typeof raw[0] === "string" ? parseFloat(raw[0]) || 0 : raw[0],
-    typeof raw[1] === "string" ? parseFloat(raw[1]) || 0 : raw[1],
-  ];
-}
-
-/** 计算高亮框样式 */
-function calcHighlightStyle(): Record<string, string> {
+const highlightStyle = computed<CSSProperties>(() => {
   const rect = targetRect.value;
   if (!rect) return { display: "none" };
-
   const padding = activeStep.value?.highlightPadding ?? props.highlightPadding;
-
   return {
-    left: `${rect.left - padding}px`,
-    top: `${rect.top - padding}px`,
-    width: `${rect.width + padding * 2}px`,
-    height: `${rect.height + padding * 2}px`,
-  };
-}
-
-/**
- * 计算指引框位置
- * 根据 placement 和目标元素矩形计算指引框的 { left, top }
- * 返回的坐标是 fixed 定位相对于视口的位置
- */
-function calcGuideBoxPosition(): { left: number; top: number; arrowSide: string } {
-  const rect = targetRect.value;
-  if (!rect) return { left: 0, top: 0, arrowSide: "bottom" };
-
-  const placement = (activeStep.value?.placement ?? "bottom") as GuidePopupPlacement;
-  const [ox, oy] = parseOffset(activeStep.value!);
-  const gap = 12;
-  const boxW = guideBoxWidth.value;
-  const boxH = guideBoxHeight.value || 120;
-
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const margin = 8;
-
-  let left = 0;
-  let top = 0;
-  let arrowSide = "bottom";
-
-  // 根据 12 种 placement 计算基准位置
-  switch (placement) {
-    case "top":
-      left = rect.left + rect.width / 2 - boxW / 2 + ox;
-      top = rect.top - boxH - gap + oy;
-      arrowSide = "bottom";
-      break;
-    case "bottom":
-      left = rect.left + rect.width / 2 - boxW / 2 + ox;
-      top = rect.bottom + gap + oy;
-      arrowSide = "top";
-      break;
-    case "left":
-      left = rect.left - boxW - gap + ox;
-      top = rect.top + rect.height / 2 - boxH / 2 + oy;
-      arrowSide = "right";
-      break;
-    case "right":
-      left = rect.right + gap + ox;
-      top = rect.top + rect.height / 2 - boxH / 2 + oy;
-      arrowSide = "left";
-      break;
-    case "top-start":
-      left = rect.left + ox;
-      top = rect.top - boxH - gap + oy;
-      arrowSide = "bottom";
-      break;
-    case "top-end":
-      left = rect.right - boxW + ox;
-      top = rect.top - boxH - gap + oy;
-      arrowSide = "bottom";
-      break;
-    case "bottom-start":
-      left = rect.left + ox;
-      top = rect.bottom + gap + oy;
-      arrowSide = "top";
-      break;
-    case "bottom-end":
-      left = rect.right - boxW + ox;
-      top = rect.bottom + gap + oy;
-      arrowSide = "top";
-      break;
-    case "left-start":
-      left = rect.left - boxW - gap + ox;
-      top = rect.top + oy;
-      arrowSide = "right";
-      break;
-    case "left-end":
-      left = rect.left - boxW - gap + ox;
-      top = rect.bottom - boxH + oy;
-      arrowSide = "right";
-      break;
-    case "right-start":
-      left = rect.right + gap + ox;
-      top = rect.top + oy;
-      arrowSide = "left";
-      break;
-    case "right-end":
-      left = rect.right + gap + ox;
-      top = rect.bottom - boxH + oy;
-      arrowSide = "left";
-      break;
-  }
-
-  // viewport 钳制
-  left = Math.max(margin, Math.min(left, vw - boxW - margin));
-  top = Math.max(margin, Math.min(top, vh - boxH - margin));
-
-  return { left, top, arrowSide };
-}
-
-/**
- * 计算箭头样式
- * 箭头是一个旋转 45° 的正方形，一半在指引框内，一半在外形成三角形
- */
-function calcArrowStyle(guideBoxPos: { left: number; top: number; arrowSide: string }): Record<string, string> {
-  const rect = targetRect.value!;
-  const { left: boxLeft, top: boxTop, arrowSide } = guideBoxPos;
-  const boxW = guideBoxWidth.value;
-  const boxH = guideBoxHeight.value || 120;
-  const half = 6; // w-3=12px 的一半
-
-  let style: Record<string, string> = {
-    left: "auto",
-    top: "auto",
-    right: "auto",
-    bottom: "auto",
-  };
-
-  const targetCenterX = rect.left + rect.width / 2;
-  const targetCenterY = rect.top + rect.height / 2;
-
-  switch (arrowSide) {
-    case "top": {
-      // 箭头在指引框顶部 (指向指引框上方的目标)
-      const ax = targetCenterX - boxLeft;
-      style.left = `${Math.max(12, Math.min(ax - half, boxW - 24))}px`;
-      style.top = `${-half}px`;
-      style.borderTopWidth = "1px";
-      style.borderLeftWidth = "1px";
-      break;
-    }
-    case "bottom": {
-      // 箭头在指引框底部 (指向指引框下方的目标)
-      const ax = targetCenterX - boxLeft;
-      style.left = `${Math.max(12, Math.min(ax - half, boxW - 24))}px`;
-      style.bottom = `${-half}px`;
-      style.borderBottomWidth = "1px";
-      style.borderRightWidth = "1px";
-      break;
-    }
-    case "left": {
-      // 箭头在指引框左侧 (指向指引框左侧的目标)
-      const ay = targetCenterY - boxTop;
-      style.top = `${Math.max(12, Math.min(ay - half, boxH - 24))}px`;
-      style.left = `${-half}px`;
-      style.borderLeftWidth = "1px";
-      style.borderBottomWidth = "1px";
-      break;
-    }
-    case "right": {
-      // 箭头在指引框右侧 (指向指引框右侧的目标)
-      const ay = targetCenterY - boxTop;
-      style.top = `${Math.max(12, Math.min(ay - half, boxH - 24))}px`;
-      style.right = `${-half}px`;
-      style.borderTopWidth = "1px";
-      style.borderRightWidth = "1px";
-      break;
-    }
-  }
-
-  return style;
-}
-
-/** 高亮框内联样式 */
-const highlightStyle = computed(() => calcHighlightStyle());
-
-/** 临时存储计算后的 guide box 位置 */
-const guideBoxPos = ref({ left: 0, top: 0, arrowSide: "bottom" as string });
-
-/** 指引框内联样式 */
-const guideBoxStyle = computed(() => {
-  if (!targetRect.value) return { display: "none" };
-  const pos = guideBoxPos.value;
-  return {
-    left: `${pos.left}px`,
-    top: `${pos.top}px`,
-    zIndex: props.zIndex + 2,
+    left: `${rect.left - padding}px`, top: `${rect.top - padding}px`,
+    width: `${rect.width + padding * 2}px`, height: `${rect.height + padding * 2}px`,
   };
 });
-
-/** 箭头内联样式 */
-const guideArrowStyle = computed(() => {
-  if (!targetRect.value) return { display: "none" };
-  return calcArrowStyle(guideBoxPos.value);
-});
-
-/** 遮罩内联样式 */
-const overlayStyle = computed(() => ({
-  zIndex: props.zIndex,
+const mergedNextProps = computed<ButtonProps>(() => ({
+  label: "下一步", color: "primary", variant: "filled", size: "sm",
+  ...props.nextButtonProps, ...activeStep.value?.nextButtonProps,
 }));
+const mergedPrevProps = computed<ButtonProps>(() => ({
+  label: "上一步", color: "neutral", variant: "outlined", size: "sm",
+  ...props.prevButtonProps, ...activeStep.value?.prevButtonProps,
+}));
+const mergedSkipProps = computed<ButtonProps>(() => ({
+  label: "跳过", color: "neutral", variant: "text", size: "sm",
+  ...props.skipButtonProps, ...activeStep.value?.skipButtonProps,
+}));
+const mergedFinishProps = computed<ButtonProps>(() => ({
+  label: "完成", color: "primary", variant: "filled", size: "sm",
+  ...props.finishButtonProps, ...activeStep.value?.nextButtonProps, ...activeStep.value?.finishButtonProps,
+}));
+function eventContext(event?: MouseEvent, index = currentStep.value, count = total.value): GuideEventContext {
+  return { e: event ?? new MouseEvent("click"), current: index, total: count };
+}
+function onNext(event?: MouseEvent, index = currentStep.value, count = total.value) {
+  if (!requestedStep.value) return;
+  if (index >= count - 1) return onFinish(event, index, count);
+  const next = index + 1;
+  emit("next-step-click", { ...eventContext(event, index, count), next }); // eslint-disable-line vue/custom-event-name-casing -- 保留既有事件名称
+  currentStep.value = next;
+}
+function onPrev(event?: MouseEvent, index = currentStep.value, count = total.value) {
+  if (!requestedStep.value || index <= 0) return;
+  const prev = index - 1;
+  emit("prev-step-click", { ...eventContext(event, index, count), prev }); // eslint-disable-line vue/custom-event-name-casing -- 保留既有事件名称
+  currentStep.value = prev;
+}
+function onFinish(event?: MouseEvent, index = currentStep.value, count = total.value) {
+  if (!requestedStep.value) return;
+  emit("finish", eventContext(event, index, count));
+  currentStep.value = -1;
+}
+function onSkip(event?: MouseEvent, index = currentStep.value, count = total.value) {
+  if (!requestedStep.value) return;
+  emit("skip", eventContext(event, index, count));
+  currentStep.value = -1;
+}
+function onClose(event?: MouseEvent, index = currentStep.value, count = total.value) {
+  if (!requestedStep.value) return;
+  emit("close", eventContext(event, index, count));
+  currentStep.value = -1;
+}
+const stepContext = computed(() => {
+  const index = displayedCurrent.value;
+  const count = displayedTotal.value;
+  return {
+    step: activeStep.value, current: index + 1, total: count,
+    next: (event?: MouseEvent) => onNext(event, index, count),
+    prev: (event?: MouseEvent) => onPrev(event, index, count),
+    finish: (event?: MouseEvent) => onFinish(event, index, count),
+    close: (event?: MouseEvent) => onClose(event, index, count),
+  };
+});
+const componentBindings = computed(() => ({ ...activeStep.value?.componentProps, ...stepContext.value }));
 
-// ==================== 步骤切换逻辑 ====================
-
-/** 测量指引框尺寸 */
-function measureGuideBox() {
-  if (guideBoxRef.value) {
-    const r = guideBoxRef.value.getBoundingClientRect();
-    guideBoxWidth.value = r.width || 260;
-    guideBoxHeight.value = r.height || 120;
+/** 背景不可交互；保存原始状态，关闭或卸载后完整恢复 */
+let releasePage: (() => void) | undefined;
+function blockScroll(event: Event) {
+  event.preventDefault();
+}
+function keepFocus(event: FocusEvent) {
+  if (layerRef.value && !layerRef.value.contains(event.target as Node)) {
+    guideBoxRef.value?.focus({ preventScroll: true });
   }
 }
-
-/** 同步位置：查询元素 + 计算位置 */
+function onKeydown(event: KeyboardEvent) {
+  const panel = guideBoxRef.value;
+  if (!panel) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    onClose();
+    return;
+  }
+  if (event.key === "Tab") {
+    const controls = Array.from(panel.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )).filter(element => element.getClientRects().length > 0 && !element.closest("[inert]"));
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (!first || (event.shiftKey && (document.activeElement === first || document.activeElement === panel))) {
+      event.preventDefault();
+      (last ?? panel).focus({ preventScroll: true });
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+    }
+    return;
+  }
+  const element = event.target;
+  const editable = element instanceof HTMLElement
+    && (element.isContentEditable || /^(?:INPUT|TEXTAREA|SELECT)$/.test(element.tagName));
+  const buttonSpace = event.key === " " && element instanceof HTMLElement && element.closest("button");
+  if (!editable && !buttonSpace && [" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End"].includes(event.key)) event.preventDefault();
+}
+function lockPage() {
+  if (releasePage || !layerRef.value) return;
+  const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const inertElements = Array.from(document.body.children)
+    .filter((element): element is HTMLElement => element instanceof HTMLElement && element !== layerRef.value)
+    .map(element => ({ element, inert: element.inert }));
+  // 只锁根滚动容器，避免 body 的 overflow 改变两侧 sticky 内容的定位参照。
+  const scrollRoot = document.scrollingElement instanceof HTMLElement ? document.scrollingElement : document.documentElement;
+  const styles = [scrollRoot].map(element => ({
+    element, overflow: element.style.getPropertyValue("overflow"), priority: element.style.getPropertyPriority("overflow"),
+  }));
+  for (const { element } of inertElements) element.inert = true;
+  for (const { element } of styles) element.style.setProperty("overflow", "hidden", "important");
+  window.addEventListener("wheel", blockScroll, { passive: false, capture: true });
+  window.addEventListener("touchmove", blockScroll, { passive: false, capture: true });
+  window.addEventListener("keydown", onKeydown, true);
+  document.addEventListener("focusin", keepFocus, true);
+  releasePage = () => {
+    window.removeEventListener("wheel", blockScroll, true);
+    window.removeEventListener("touchmove", blockScroll, true);
+    window.removeEventListener("keydown", onKeydown, true);
+    document.removeEventListener("focusin", keepFocus, true);
+    for (const { element, inert } of inertElements) element.inert = inert;
+    for (const { element, overflow, priority } of styles) {
+      if (overflow) element.style.setProperty("overflow", overflow, priority);
+      else element.style.removeProperty("overflow");
+    }
+    if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    releasePage = undefined;
+  };
+}
+function resolveElement(target?: GuideStep["element"]): Element | null {
+  if (!target) return null;
+  // 无效选择器和已卸载的目标均按缺失目标处理
+  try {
+    const element = typeof target === "function" ? target() : document.querySelector(target);
+    return element?.isConnected ? element : null;
+  } catch {
+    return null;
+  }
+}
+/** 自动居中不继承页面的平滑滚动，防止锁定后仍有滚动动画 */
+function centerTarget(element: Element) {
+  const ancestors: { element: HTMLElement; value: string; priority: string }[] = [];
+  let parent = element.parentElement;
+  while (parent) {
+    ancestors.push({ element: parent, value: parent.style.getPropertyValue("scroll-behavior"), priority: parent.style.getPropertyPriority("scroll-behavior") });
+    parent.style.setProperty("scroll-behavior", "auto", "important");
+    parent = parent.parentElement;
+  }
+  element.scrollIntoView({ behavior: "instant", block: "center", inline: "center" });
+  for (const { element: ancestor, value, priority } of ancestors) {
+    if (value) ancestor.style.setProperty("scroll-behavior", value, priority);
+    else ancestor.style.removeProperty("scroll-behavior");
+  }
+}
+/** 使用共享浮层几何：仅交叉轴贴边，不把面板推回目标内部 */
 function syncPosition() {
-  if (currentStep.value < 0) return;
-
-  const rect = queryTargetRect();
-  if (rect) {
-    targetRect.value = rect;
-    guideBoxPos.value = calcGuideBoxPosition();
-  } else {
-    // 元素未找到时，使用屏幕中央作为回退
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    targetRect.value = null;
-    guideBoxPos.value = {
-      left: vw / 2 - guideBoxWidth.value / 2,
-      top: vh / 2 - (guideBoxHeight.value || 120) / 2,
-      arrowSide: "none",
+  const panel = guideBoxRef.value;
+  if (!panel || !activeStep.value) return;
+  const rect = targetElement.value?.isConnected ? targetElement.value.getBoundingClientRect() : null;
+  targetRect.value = rect;
+  const size = { width: panel.offsetWidth, height: panel.offsetHeight };
+  if (actualMode.value === "dialog" || !rect) {
+    guideBoxStyle.value = {
+      left: `${Math.max(16, (window.innerWidth - size.width) / 2)}px`,
+      top: `${actualMode.value === "dialog" && activeStep.value.placement === "top" ? 32 : Math.max(16, (window.innerHeight - size.height) / 2)}px`,
     };
+    guideArrowStyle.value = { display: "none" };
+    return;
   }
+  const placement = activeStep.value.placement;
+  const { side: preferredSide, align } = resolvePlacement(placement === "center" || !placement ? "bottom" : placement);
+  // 12px 方块的半对角线正好连接面板边缘与目标真实边框
+  const arrowDepth = 6 * Math.SQRT2;
+  const { position, side } = resolveFloatingPosition({ triggerRect: rect, size, side: preferredSide, align, offset: arrowDepth });
+  const [offsetX, offsetY] = activeStep.value.offset ?? [0, 0];
+  position.left += Number.parseFloat(String(offsetX)) || 0;
+  position.top += Number.parseFloat(String(offsetY)) || 0;
+  guideBoxStyle.value = { left: `${position.left}px`, top: `${position.top}px` };
+  const vertical = side === "top" || side === "bottom";
+  const center = getArrowCenter({
+    panelStart: vertical ? position.left : position.top,
+    panelExtent: vertical ? size.width : size.height,
+    triggerStart: vertical ? rect.left : rect.top,
+    triggerExtent: vertical ? rect.width : rect.height,
+    align, inset: 17, pointAtCenter: true,
+  });
+  const edge: Record<PlacementSide, string> = { top: "bottom", bottom: "top", left: "right", right: "left" };
+  guideArrowStyle.value = {
+    [edge[side]]: "-6px",
+    [vertical ? "left" : "top"]: `${center}px`,
+    transform: `${vertical ? "translateX(-50%)" : "translateY(-50%)"} rotate(45deg)`,
+  };
+}
+function schedulePosition() {
+  // 初次定位与显示由切步流程负责，滚动事件不能取消显示帧。
+  if (!ready.value || !activeStep.value) return;
+  cancelAnimationFrame(positionFrame);
+  positionFrame = requestAnimationFrame(() => {
+    syncPosition();
+    positionFrame = 0;
+  });
 }
 
-/** 当前步骤变化时的处理 */
-watch(currentStep, async (newVal, oldVal) => {
-  if (newVal < 0) {
-    visible.value = false;
+/** 等待实际透明度过渡；中断、关闭与无动画样式都能及时结束等待。 */
+function waitForOpacity(panel: HTMLElement, opacity: number): Promise<void> {
+  const style = getComputedStyle(panel);
+  if (Math.abs(Number.parseFloat(style.opacity) - opacity) < 0.001) return Promise.resolve();
+  const durations = style.transitionDuration.split(",").map(value => Number.parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000));
+  const delay = Math.max(...style.transitionDelay.split(",").map(value => Number.parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000)));
+  return new Promise((resolve) => {
+    let timer: ReturnType<typeof setTimeout>;
+    function finish() {
+      clearTimeout(timer);
+      panel.removeEventListener("transitionend", onEnd);
+      if (cancelTransition === finish) cancelTransition = undefined;
+      resolve();
+    }
+    function onEnd(event: TransitionEvent) {
+      if (event.target === panel && event.propertyName === "opacity") finish();
+    }
+    // 不依赖 transitionend 必然触发，样式被覆盖或节点移除时仍有兜底。
+    timer = setTimeout(finish, Math.max(...durations) + delay + 34);
+    cancelTransition = finish;
+    panel.addEventListener("transitionend", onEnd);
+  });
+}
+
+watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
+  const request = ++revision;
+  cancelTransition?.();
+  resizeObserver?.disconnect();
+  if (!mounted.value) return;
+  cancelAnimationFrame(positionFrame);
+  cancelAnimationFrame(revealFrame);
+  if (!requestedStep.value) {
+    ready.value = false;
+    displayed.value = null;
+    motionPhase.value = "prepare";
+    targetElement.value = null;
     targetRect.value = null;
+    releasePage?.();
     return;
   }
 
-  // 隐藏 → 查询新元素 → 测量 → 显示
-  visible.value = false;
-  await nextTick();
-
-  syncPosition();
-
-  await nextTick();
-  requestAnimationFrame(() => {
-    measureGuideBox();
-    guideBoxPos.value = calcGuideBoxPosition();
-    visible.value = true;
-  });
-
-  if (oldVal !== undefined && oldVal >= 0) {
-    emit("change", newVal, {
-      e: new MouseEvent("click") as unknown as MouseEvent,
-      total: props.steps.length,
-    });
+  motionDirection.value = currentStep.value < displayedCurrent.value ? -1 : 1;
+  if (ready.value && guideBoxRef.value) {
+    motionPhase.value = "leave";
+    await nextTick();
+    if (request !== revision) return;
+    await waitForOpacity(guideBoxRef.value, 0);
+    if (request !== revision) return;
   }
+
+  // 不可见时一次替换内容与定位；切步期间不解除滚动与焦点保护。
+  ready.value = false;
+  motionPhase.value = "prepare";
+  displayed.value = {
+    step: requestedStep.value,
+    index: currentStep.value,
+    steps: flatSteps.value,
+    mode: requestedStep.value.mode ?? props.mode,
+  };
+  await nextTick();
+  if (request !== revision || !mounted.value) return;
+  lockPage();
+  targetElement.value = resolveElement(displayed.value.step.element);
+  if (targetElement.value) centerTarget(targetElement.value);
+  syncPosition();
+  ready.value = true;
+  await nextTick();
+  if (request !== revision || !mounted.value) return;
+  // 先提交无过渡的透明起点，再启用入场过渡，避免合并成直接显示。
+  guideBoxRef.value?.getBoundingClientRect();
+  revealFrame = requestAnimationFrame(async () => {
+    if (request !== revision) return;
+    motionPhase.value = "enter";
+    revealFrame = 0;
+    await nextTick();
+    if (request !== revision) return;
+    guideBoxRef.value?.focus({ preventScroll: true });
+    if (guideBoxRef.value) resizeObserver?.observe(guideBoxRef.value);
+    if (targetElement.value) resizeObserver?.observe(targetElement.value);
+    if (guideBoxRef.value) await waitForOpacity(guideBoxRef.value, 1);
+  });
 }, { immediate: true });
-
-// ==================== 滚动/缩放监听 ====================
-
-function onResizeOrScroll() {
-  cancelAnimationFrame(rafId.value);
-  rafId.value = requestAnimationFrame(() => {
-    syncPosition();
-    if (visible.value) {
-      measureGuideBox();
-      guideBoxPos.value = calcGuideBoxPosition();
-    }
-  });
-}
-
+watch(currentStep, (value, previous) => {
+  if (value >= 0 && previous >= 0 && value !== previous) emit("change", value, { e: new MouseEvent("click"), total: total.value });
+});
 onMounted(() => {
-  window.addEventListener("resize", onResizeOrScroll);
-  window.addEventListener("scroll", onResizeOrScroll, { capture: true });
+  resizeObserver = new ResizeObserver(schedulePosition);
+  mounted.value = true;
+  window.addEventListener("resize", schedulePosition);
+  window.addEventListener("scroll", schedulePosition, true);
 });
-
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResizeOrScroll);
-  window.removeEventListener("scroll", onResizeOrScroll, { capture: true });
-  cancelAnimationFrame(rafId.value);
+  revision++;
+  cancelTransition?.();
+  cancelAnimationFrame(positionFrame);
+  cancelAnimationFrame(revealFrame);
+  resizeObserver?.disconnect();
+  window.removeEventListener("resize", schedulePosition);
+  window.removeEventListener("scroll", schedulePosition, true);
+  releasePage?.();
 });
 
-// ==================== 按钮处理 ====================
-
-function onNext(e: MouseEvent) {
-  const next = currentStep.value + 1;
-  emit("next-step-click", {
-    e,
-    next,
-    current: currentStep.value,
-    total: props.steps.length,
-  });
-  currentStep.value = next;
-}
-
-function onPrev(e: MouseEvent) {
-  const prev = currentStep.value - 1;
-  emit("prev-step-click", {
-    e,
-    prev,
-    current: currentStep.value,
-    total: props.steps.length,
-  });
-  currentStep.value = prev;
-}
-
-function onFinish(e: MouseEvent) {
-  emit("finish", {
-    e,
-    current: currentStep.value,
-    total: props.steps.length,
-  });
-  currentStep.value = -1;
-}
-
-function onSkip(e: MouseEvent) {
-  emit("skip", { e, current: currentStep.value, total: props.steps.length });
-  currentStep.value = -1;
-}
-
-// ==================== 指引框出现后的尺寸测量 ====================
-
-function onGuideBoxEnter() {
-  requestAnimationFrame(() => {
-    measureGuideBox();
-    guideBoxPos.value = calcGuideBoxPosition();
-  });
-}
-
-// ==================== UI 计算 ====================
-
-const b = tv(theme);
-const overrides = computed(() => props.ui ?? {});
-
+const styles = tv(theme);
 const ui = computed(() => {
-  const styles = b({ mode: actualMode.value as "popup" | "dialog" });
-
+  const slots = styles({ mode: actualMode.value });
+  const slot = (key: keyof typeof theme.slots) => (options?: { class?: ClassValue }) =>
+    cn(slots[key](), options?.class, props.ui?.[key]);
   return {
-    overlay: (opts?: { class?: any }) =>
-      cn(styles.overlay(), opts?.class, overrides.value.overlay),
-    highlightMask: (opts?: { class?: any }) =>
-      cn(styles.highlightMask(), opts?.class, overrides.value.highlightMask),
-    guideBox: (opts?: { class?: any }) =>
-      cn(styles.guideBox(), opts?.class, props.class, overrides.value.guideBox),
-    guideArrow: (opts?: { class?: any }) =>
-      cn(styles.guideArrow(), opts?.class, overrides.value.guideArrow),
-    guideHeader: (opts?: { class?: any }) =>
-      cn(styles.guideHeader(), opts?.class, overrides.value.guideHeader),
-    guideTitle: (opts?: { class?: any }) =>
-      cn(styles.guideTitle(), opts?.class, overrides.value.guideTitle),
-    guideBody: (opts?: { class?: any }) =>
-      cn(styles.guideBody(), opts?.class, overrides.value.guideBody),
-    guideFooter: (opts?: { class?: any }) =>
-      cn(styles.guideFooter(), opts?.class, overrides.value.guideFooter),
-    counter: (opts?: { class?: any }) =>
-      cn(styles.counter(), opts?.class, overrides.value.counter),
-    buttonGroup: (opts?: { class?: any }) =>
-      cn(styles.buttonGroup(), opts?.class, overrides.value.buttonGroup),
-    dialogOverlay: (opts?: { class?: any }) =>
-      cn(styles.dialogOverlay(), opts?.class, overrides.value.dialogOverlay),
-    dialogBox: (opts?: { class?: any }) =>
-      cn(styles.dialogBox(), opts?.class, props.class, overrides.value.dialogBox),
+    overlay: slot("overlay"), highlightMask: slot("highlightMask"),
+    guideBox: slot("guideBox"), guideArrow: slot("guideArrow"),
+    guideHeader: slot("guideHeader"), guideTitle: slot("guideTitle"),
+    guideBody: slot("guideBody"), guideFooter: slot("guideFooter"),
+    counter: slot("counter"), buttonGroup: slot("buttonGroup"),
+    dialogOverlay: slot("dialogOverlay"), dialogBox: slot("dialogBox"),
+    closeRow: slot("closeRow"), closeButton: slot("closeButton"),
+    cover: slot("cover"), indicators: slot("indicators"), indicatorDot: slot("indicatorDot"),
   };
 });
-
-// ==================== 暴露方法 ====================
-
-defineExpose({
-  /** 进入下一步 */
-  next: () => {
-    if (currentStep.value < props.steps.length - 1) {
-      currentStep.value = currentStep.value + 1;
-    }
-  },
-  /** 退回上一步 */
-  prev: () => {
-    if (currentStep.value > 0) {
-      currentStep.value = currentStep.value - 1;
-    }
-  },
-  /** 完成引导 */
-  finish: () => {
-    currentStep.value = -1;
-  },
-  /** 跳过引导 */
-  skip: () => {
-    currentStep.value = -1;
-  },
-});
+defineExpose({ next: onNext, prev: onPrev, finish: onFinish, skip: onSkip, close: onClose });
 </script>
 
 <template>
   <Teleport to="body">
-    <template v-if="activeStep">
-      <!-- ========== Dialog 模式 ========== -->
-      <template v-if="actualMode === 'dialog'">
-        <div
-          :class="ui.dialogOverlay({ class: activeStep.stepOverlayClass })"
-          :style="overlayStyle"
-        >
-          <div :class="ui.dialogBox()">
-            <!-- 头部 -->
-            <div v-if="activeStep.title" :class="ui.guideHeader()">
-              <h3 :class="ui.guideTitle()">{{ activeStep.title }}</h3>
-            </div>
-
-            <!-- 正文 -->
-            <div :class="ui.guideBody()">
-              <slot v-if="activeStep.content" :name="activeStep.content" />
-              <p v-else>{{ activeStep.body }}</p>
-            </div>
-
-            <!-- 底部 -->
-            <div :class="ui.guideFooter()">
-              <slot name="counter" :current="currentStep + 1" :total="steps.length">
-                <span v-if="!hideCounter" :class="ui.counter()">{{ currentStep + 1 }} / {{ steps.length }}</span>
-              </slot>
-              <div :class="ui.buttonGroup()">
-                <RebornButton
-                  v-if="!hideSkip && !isLastStep"
-                  v-bind="mergedSkipProps"
-                  @click="onSkip"
-                />
-                <RebornButton
-                  v-if="!hidePrev && currentStep > 0"
-                  v-bind="mergedPrevProps"
-                  @click="onPrev"
-                />
-                <RebornButton
-                  v-if="isLastStep"
-                  v-bind="mergedFinishProps"
-                  @click="onFinish"
-                />
-                <RebornButton
-                  v-else
-                  v-bind="mergedNextProps"
-                  @click="onNext"
-                />
-              </div>
+    <div
+      v-if="mounted && activeStep"
+      ref="layerRef"
+      :class="actualMode === 'dialog' ? ui.dialogOverlay() : ui.overlay()"
+      :style="{ zIndex, backgroundColor: actualShowOverlay && (actualMode === 'dialog' || !targetRect) ? 'rgba(0, 0, 0, 0.5)' : undefined }"
+    >
+      <!-- 透明遮挡层始终存在，关闭遮罩只影响颜色，不放开背景交互 -->
+      <div
+        v-if="actualMode === 'popup' && targetRect"
+        :class="ui.highlightMask({ class: activeStep.stepOverlayClass })"
+        :style="{ ...highlightStyle, boxShadow: actualShowOverlay ? '0 0 0 9999px rgba(0, 0, 0, 0.5)' : undefined }"
+      >
+        <slot v-if="activeStep.highlightContent" :name="activeStep.highlightContent" v-bind="stepContext" />
+      </div>
+      <div
+        ref="guideBoxRef"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="activeStep.title || '功能引导'"
+        tabindex="-1"
+        :class="[actualMode === 'dialog' ? ui.dialogBox({ class: props.class }) : ui.guideBox({ class: props.class }), motionClass]"
+        :style="{ ...guideBoxStyle, visibility: ready ? 'visible' : 'hidden' }"
+      >
+        <div v-if="actualMode === 'popup' && targetRect" :class="ui.guideArrow()" :style="guideArrowStyle" />
+        <component :is="stepComponent" v-if="stepComponent" :key="displayedCurrent" v-bind="componentBindings" />
+        <template v-else>
+          <div :class="ui.closeRow()">
+            <button type="button" aria-label="关闭引导" :class="ui.closeButton()" @click="stepContext.close">
+              <svg class="size-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <img v-if="activeStep.cover" :src="activeStep.cover" :alt="activeStep.coverAlt || ''" :class="ui.cover()">
+          <div v-if="activeStep.title" :class="ui.guideHeader()">
+            <h3 :class="ui.guideTitle()">{{ activeStep.title }}</h3>
+          </div>
+          <div v-if="activeStep.content || activeStep.body" :class="ui.guideBody()">
+            <slot v-if="activeStep.content" :name="activeStep.content" v-bind="stepContext" />
+            <p v-else>{{ activeStep.body }}</p>
+          </div>
+          <div :class="ui.guideFooter()">
+            <slot name="counter" v-bind="stepContext">
+              <template v-if="!hideCounter">
+                <span v-if="indicator === 'counter'" :class="ui.counter()">{{ displayedCurrent + 1 }}/{{ displayedTotal }}</span>
+                <div v-else :class="ui.indicators()" :aria-label="`第 ${displayedCurrent + 1} 步，共 ${displayedTotal} 步`">
+                  <span
+                    v-for="(_, index) in displayedSteps" :key="index"
+                    :class="ui.indicatorDot({ class: index === displayedCurrent ? 'h-1.5 w-2.5 bg-primary' : 'size-1.5 bg-gray-4' })"
+                    :aria-current="index === displayedCurrent ? 'step' : undefined"
+                  />
+                </div>
+              </template>
+            </slot>
+            <div :class="ui.buttonGroup()">
+              <RebornButton v-if="!hideSkip && !isLastStep" type="button" v-bind="mergedSkipProps" @click="onSkip($event, displayedCurrent, displayedTotal)" />
+              <RebornButton v-if="!hidePrev && displayedCurrent > 0" type="button" v-bind="mergedPrevProps" @click="stepContext.prev" />
+              <RebornButton v-if="isLastStep" type="button" v-bind="mergedFinishProps" @click="stepContext.finish" />
+              <RebornButton v-else type="button" v-bind="mergedNextProps" @click="stepContext.next" />
             </div>
           </div>
-        </div>
-      </template>
-
-      <!-- ========== Popup 模式 ========== -->
-      <template v-else>
-        <!-- 遮罩层 + 高亮挖洞 -->
-        <div
-          v-if="actualShowOverlay"
-          :class="ui.overlay()"
-          :style="overlayStyle"
-        >
-          <div
-            :class="ui.highlightMask({ class: activeStep.stepOverlayClass })"
-            :style="{ ...highlightStyle, boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)', zIndex: props.zIndex + 1 }"
-          >
-            <slot v-if="activeStep.highlightContent" :name="activeStep.highlightContent" />
-          </div>
-        </div>
-
-        <!-- 指引框 -->
-        <Transition name="fade-guide">
-          <div
-            v-if="visible"
-            ref="guideBoxRef"
-            :class="ui.guideBox()"
-            :style="guideBoxStyle"
-            @vue:mounted="onGuideBoxEnter"
-          >
-            <!-- 箭头 -->
-            <div
-              v-if="targetRect && guideBoxPos.arrowSide !== 'none'"
-              :class="ui.guideArrow()"
-              :style="guideArrowStyle"
-            />
-
-            <!-- 头部 -->
-            <div v-if="activeStep.title" :class="ui.guideHeader()">
-              <h3 :class="ui.guideTitle()">{{ activeStep.title }}</h3>
-            </div>
-
-            <!-- 正文 -->
-            <div :class="ui.guideBody()">
-              <slot v-if="activeStep.content" :name="activeStep.content" />
-              <p v-else>{{ activeStep.body }}</p>
-            </div>
-
-            <!-- 底部 -->
-            <div :class="ui.guideFooter()">
-              <slot name="counter" :current="currentStep + 1" :total="steps.length">
-                <span v-if="!hideCounter" :class="ui.counter()">{{ currentStep + 1 }} / {{ steps.length }}</span>
-              </slot>
-              <div :class="ui.buttonGroup()">
-                <RebornButton
-                  v-if="!hideSkip && !isLastStep"
-                  v-bind="mergedSkipProps"
-                  @click="onSkip"
-                />
-                <RebornButton
-                  v-if="!hidePrev && currentStep > 0"
-                  v-bind="mergedPrevProps"
-                  @click="onPrev"
-                />
-                <RebornButton
-                  v-if="isLastStep"
-                  v-bind="mergedFinishProps"
-                  @click="onFinish"
-                />
-                <RebornButton
-                  v-else
-                  v-bind="mergedNextProps"
-                  @click="onNext"
-                />
-              </div>
-            </div>
-          </div>
-        </Transition>
-      </template>
-    </template>
+        </template>
+      </div>
+    </div>
   </Teleport>
 </template>
-
-<style scoped>
-.fade-guide-enter-active,
-.fade-guide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.fade-guide-enter-from,
-.fade-guide-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

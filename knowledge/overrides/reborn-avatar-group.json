@@ -1,0 +1,24 @@
+{
+  "whenToUse": [
+    "项目卡片展示团队成员：将 RebornAvatar 放入默认插槽。",
+    "人数较多时用 collapseAvatars 和 maxCollapseAvatars 控制直接展示数量。",
+    "用 collapseAvatarsTooltip 查看隐藏头像，支持悬停和键盘聚焦。",
+    "用 size、shape 提供组默认值，并允许单个头像显式覆盖。",
+    "用 gap 自定义重叠距离，默认 8px，0 表示不重叠。"
+  ],
+  "whenNotToUse": [
+    "单个用户头像改用 reborn-avatar。",
+    "包含姓名、权限和操作的完整成员列表改用 reborn-table。",
+    "搜索和选择成员改用 reborn-select。"
+  ],
+  "pitfalls": [
+    "collapseAvatarsTooltip 仅在 collapseAvatars 开启且有隐藏头像时生效。",
+    "maxCollapseAvatars 表示普通头像数量，不包含计数头像；至少保留一个，小数向下取整，无效值回退到一个。",
+    "gap 以 px 为单位且表示重叠量，普通头像与计数头像共用；负数按 0，非有限值回退到 8，浮层内部间距不受影响。",
+    "默认插槽应直接放 RebornAvatar；展开片段并忽略注释、文本，额外 DOM 包装视为一个项。",
+    "隐藏头像仅在浮层展开时挂载，关闭浮层后销毁。",
+    "popperStyle 只覆盖面板内容，浮层定位坐标由 Tooltip 管理。",
+    "effect 内置 light 和 dark，其他字符串写入 data-effect，配合 ui.tooltip 或 popperClass 提供样式。",
+    "仅 Web 实现，没有 UniApp 同名组件。"
+  ]
+}

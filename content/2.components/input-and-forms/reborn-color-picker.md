@@ -10,13 +10,13 @@ platform: both
 
 ## 简介
 
-ColorPicker 由「色块触发器 + Popover 选色面板」组成：点击色块弹出面板，面板内提供饱和度/明度选区、色相与透明度滑杆、格式化输入框和主题预设色板，选定的颜色以字符串写回 `v-model`。Web 与 UniApp 双端可用；UniApp 端还支持通过 `defaultFormat` 控制输出格式、通过 `content` 配置弹出方向。
+ColorPicker 由「色块触发器 + Popover 选色面板」组成：点击色块弹出面板，面板内提供饱和度/明度选区、色相与透明度滑杆、格式化输入框和主题预设色板，选定的颜色以字符串写回 `v-model`。Web 与 UniApp 双端可用；两端都用 `placement` / `sideOffset` 配置弹出方向与间距（与 `reborn-popover` 一致），UniApp 端还支持通过 `defaultFormat` 控制输出格式。
 
 适用场景：
 
 - 主题色、标签颜色等需要用户自选颜色的设置项。
 - 表单中需要采集颜色值（字符串）并双向绑定的场景。
-- 需要控制弹出方向与偏移（`content` 的 `side`/`align`/`sideOffset`）的取色入口。
+- 需要控制弹出方向与偏移的取色入口：用 `placement`（如 `top-start`）与 `sideOffset`。
 
 不适用场景：
 
@@ -75,12 +75,12 @@ const colorRgba = ref("rgba(244, 63, 94, 0.50)");
 
 ### 弹出配置与自定义触发器
 
-UniApp 端通过 `content` 调整弹出方向与偏移（默认 `{ side: 'right', align: 'center', sideOffset: 8 }`），`:arrow="false"` 可隐藏弹层箭头；Web 端可用默认插槽替换触发器。
+`placement` 调整弹出方向与对齐，`sideOffset` 调整间距，两端写法一致；默认值两端不同：Web 端 `'bottom'`，UniApp 端 `'right'`，间距都是 8px。UniApp 端 `:arrow="false"` 可隐藏弹层箭头；Web 端可用默认插槽替换触发器。
 
 ```vue
 <template>
-  <!-- UniApp：向上弹出并隐藏箭头 -->
-  <RebornColorPicker v-model="color" :content="{ side: 'top', sideOffset: 12 }" :arrow="false" />
+  <!-- 向上弹出、起点对齐（两端通用）；UniApp 端另可隐藏箭头 -->
+  <RebornColorPicker v-model="color" placement="top-start" :side-offset="12" />
 
   <!-- Web：自定义触发器 -->
   <RebornColorPicker v-model="color">
@@ -100,7 +100,9 @@ UniApp 端通过 `content` 调整弹出方向与偏移（默认 `{ side: 'right'
 | `size`          | `'sm' \| 'md' \| 'lg'`   | `'md'`                                            | 色块触发器尺寸（Web 端额外支持 `'xs'`）                                                         |
 | `defaultFormat` | `'hex' \| 'rgb' \| 'rgba'` | `undefined`                                     | 初始颜色输出格式；未设置时根据 `modelValue` 自动识别，用户仍可在面板中切换。仅 UniApp 端        |
 | `format`        | `'hex' \| 'rgb' \| 'rgba'` | `undefined`                                     | `defaultFormat` 的别名，同样指定输出格式；两者同时传入时 `defaultFormat` 优先。仅 UniApp 端     |
-| `content`       | `object`                 | `{ side: 'right', align: 'center', sideOffset: 8 }` | Popover 弹出配置（`side`/`align`/`sideOffset`）。仅 UniApp 端                                 |
+| `placement`     | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | Web `'bottom'` / UniApp `'right'` | 面板弹出方向与对齐方式，与 `reborn-popover` 一致；UniApp 端未传时回落到 `content`                 |
+| `sideOffset`    | `number`                 | `8`                                               | 面板与色块触发器的间距（px）                                                                    |
+| `content`       | `object`                 | `{ side: 'right', align: 'center', sideOffset: 8 }` | 已废弃：旧的弹出配置（`side`/`align`/`sideOffset`），等价于 `placement` + `sideOffset`。仅 UniApp 端 |
 | `arrow`         | `boolean`                | `true`                                            | 是否显示弹层箭头。仅 UniApp 端                                                                  |
 | `ui`            | `object`                 | `{}`                                              | UI 配置覆盖对象，见下方「自定义样式（ui）」                                                     |
 | `class`         | `any`                    | `-`                                               | 追加到选色面板根节点的自定义类名（面板组件 `RebornColorPickerPanel` 的属性）                    |
@@ -172,7 +174,7 @@ UniApp 端通过 `content` 调整弹出方向与偏移（默认 `{ side: 'right'
 
 - Web 与 UniApp 双端可用；`modelValue` 为颜色字符串，默认 `'#000000'`。
 - UniApp 端输出格式由 `defaultFormat` / `format` 控制；未指定时按传入色值自动识别（如传入 `rgba(...)` 字符串则回写 `rgba` 格式）。
-- UniApp 端弹出位置默认 `side: 'right'`，取色器贴近屏幕边缘时需通过 `content` 调整（如 `{ side: 'top' }`）。
+- UniApp 端弹出位置默认 `right`，取色器贴近屏幕边缘时用 `placement` 调整（如 `placement="top"`）；旧的 `content` 写法仍然可用，同时传入时以 `placement` 为准。
 - 面板内部以 HSVA 保存颜色以避免格式转换的精度丢失；与当前颜色一致的回写会被跳过，减少重复渲染。
 - 默认插槽替换触发器仅 Web 端支持，UniApp 端触发器为固定的色块按钮。
 - 在小程序等容器内使用时，父级容器需允许溢出（如示例中卡片开启 `overflowVisible`），否则弹层会被裁剪。

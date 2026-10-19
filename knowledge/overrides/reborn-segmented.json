@@ -1,0 +1,22 @@
+{
+  "whenToUse": [
+    "列表 / 看板 / 日历这类视图切换：对象选项带 icon，size=\"lg\"。",
+    "图表统计周期（日 / 周 / 月）等 2~5 个短选项的筛选：options 直接传字符串数组。",
+    "表单里少量互斥选项、希望一眼看到全部取值：放进 RebornFormItem，选中即触发 change 校验。",
+    "卡片、面板顶部撑满一行的切换：开 block，各选项等分宽度。"
+  ],
+  "whenNotToUse": [
+    "切换整块内容面板、需要标签页语义，改用 reborn-tabs。",
+    "选项多于 5~6 个或文案较长，改用 reborn-select。",
+    "需要语义色或实底选中态的分段按钮，改用 reborn-radio 的 type=\"button\"。"
+  ],
+  "pitfalls": [
+    "仅 web 端可用；UniApp 端用 reborn-radio 的 type=\"button\"。",
+    "v-model 与选项值按 === 比较，数字 1 与字符串 '1' 不互相选中；值不在选项里时没有选中项、选中块隐藏。",
+    "点击已选中项不派发 change，也不触发表单校验。",
+    "icon 字段固定读 icon，不受 props 字段映射影响；用了默认插槽后 icon 与 label 都不再渲染。",
+    "尺寸为 sm / md / lg（选项高 20 / 28 / 36px），处于 RebornForm 内时被表单尺寸覆盖。",
+    "选项不换行，横排放不下会撑出父元素；只有 block 等分宽度时文案才截断。",
+    "没有 color 属性，默认选中态白底（bg-gray-1）+ gray-10 文字；改配色用 :ui，如 { slider: 'bg-primary', item: 'data-[checked=true]:text-white' }，ui.item 作用于所有选项，只改选中项要加 data-[checked=true]: 前缀。"
+  ]
+}

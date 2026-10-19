@@ -1,0 +1,20 @@
+{
+  "whenToUse": [
+    "活动开始或任务截止前显示剩余时长：value 传入毫秒时间戳或 Dayjs 对象。",
+    "显示天数或毫秒：用 format 组合 DD、HH、mm、ss、SSS，文字放入方括号。",
+    "到零后更新业务界面：监听 finish，change 的参数为剩余毫秒数。"
+  ],
+  "whenNotToUse": [
+    "展示静态数值指标，改用 reborn-statistic。",
+    "用户选择目标日期，改用 reborn-date-picker。",
+    "显示任务百分比，改用 reborn-progress。"
+  ],
+  "pitfalls": [
+    "value 是目标时间戳，不能直接传秒数；开始 60 秒倒计时应传 Date.now() + 60000。",
+    "默认 HH:mm:ss 累计小时；显示 DD 后才将小时限制在一天内。",
+    "每次刷新按绝对时间校准，change 不保证严格固定的调用间隔。",
+    "服务端和水合首帧显示零，客户端挂载后开始计时与派发事件。",
+    "有效的过期目标立即 finish；缺失或无效目标不 finish；更换 value 可重启。",
+    "仅 Web 实现，展示结构依赖 reborn-statistic。"
+  ]
+}

@@ -126,6 +126,28 @@ async function onConfirm() {
 
 组件在触发 `confirm` 后等待一个 tick 再读取 `loading`，所以 `loading.value = true` 必须在 `confirm` 回调里同步设置，不能放到 `await` 之后，否则气泡会先关闭。取消按钮与点击外部不受 `loading` 影响，加载中也能关闭气泡。
 
+### 点击外部与滚动关闭
+
+除了点按钮，气泡还会在两种情况下自动收起，都默认开启：
+
+| 属性 | 默认值 | 打开时的行为 | 关闭后的行为 |
+| --- | --- | --- | --- |
+| `dismissible` | `true` | 在触发器与气泡以外按下鼠标、触摸或点进 iframe 即关闭 | 只能点按钮、再次点击触发器或调用 `close()` 关闭 |
+| `closeOnScroll` | `true` | 页面或触发器所在容器滚动时关闭 | 气泡跟随触发器重新定位 |
+
+```vue
+<template>
+  <RebornPopconfirm title="滚动时气泡跟随按钮" :close-on-scroll="false">
+    <RebornButton size="sm" variant="outlined">滚动时跟随</RebornButton>
+  </RebornPopconfirm>
+  <RebornPopconfirm title="必须点按钮才能关闭" :dismissible="false" :close-on-scroll="false">
+    <RebornButton size="sm" variant="outlined" color="neutral">只能点按钮关闭</RebornButton>
+  </RebornPopconfirm>
+</template>
+```
+
+两项判定与 `reborn-popover` 共用：只有会让气泡和按钮错位的滚动才关闭；Popconfirm 放在 Popover 里时，在确认框里点按钮不会关掉外层气泡，在外层气泡里点击则只关闭确认框。
+
 ### 自定义内容：标题与按钮区插槽
 
 `title` / `description` 插槽优先于同名属性；`footer` 插槽整体接管按钮区，作用域参数提供 `confirm` / `cancel` 回调，调用后同样会触发对应事件，并按 `loading` 规则关闭气泡。
@@ -173,7 +195,8 @@ async function onConfirm() {
 | `content`      | `PopoverContentProps`                                 | -           | 已废弃：旧的定位对象写法（`side` / `align` / `sideOffset`），等价于 `placement` + `sideOffset`，仅为兼容保留 |
 | `arrow`        | `boolean`                                             | `true`      | 是否显示指向触发器的箭头                                                                                      |
 | `portal`       | `boolean \| string`                                   | `true`      | 传送目标，`true` 传送到 body，字符串为目标选择器，`false` 表示原地渲染                                       |
-| `dismissible`  | `boolean`                                             | `true`      | 点击气泡外部是否关闭                                                                                          |
+| `dismissible`  | `boolean`                                             | `true`      | 在触发器与气泡以外按下（含 iframe 内）时是否关闭；嵌套浮层内的点击不算外部                                    |
+| `closeOnScroll` | `boolean`                                            | `true`      | 页面或触发器所在容器滚动时是否关闭；关闭后气泡跟随触发器重新定位                                              |
 | `open`         | `boolean`                                             | -           | 受控显隐，对应 `v-model:open`；不传时由组件内部维护                                                           |
 | `defaultOpen`  | `boolean`                                             | `false`     | 非受控模式的初始显隐                                                                                          |
 | `class`        | `ClassValue`                                          | -           | 追加到触发器外层容器（底层 Popover 的 `wrapper` 节点）的类名                                                 |
@@ -232,9 +255,9 @@ async function onConfirm() {
 
 ## 注意事项
 
-- 触发方式固定为点击，不支持悬停触发；再次点击触发器会收起气泡。点击气泡内部不会关闭，只有按钮、点击外部（`dismissible` 为 `true` 时）、`v-model:open` 或 `close()` 能关闭。
+- 触发方式固定为点击，不支持悬停触发；再次点击触发器会收起气泡。点击气泡内部不会关闭，只有按钮、点击外部（`dismissible` 为 `true` 时）、滚动（`closeOnScroll` 为 `true` 时）、`v-model:open` 或 `close()` 能关闭。
 - 点击外部关闭只会更新 `open`，不会触发 `cancel`；需要区分「主动取消」与「点外面收起」时，只在 `cancel` 里处理取消逻辑。
-- `loading` 只拦截确认按钮的自动关闭：加载中点击取消或点击外部仍会关闭气泡，异步请求需要自行处理中途关闭的情况，必要时把 `dismissible` 设为 `false`。
+- `loading` 只拦截确认按钮的自动关闭：加载中点击取消、点击外部或滚动页面仍会关闭气泡，异步请求需要自行处理中途关闭的情况，必要时把 `dismissible` 与 `closeOnScroll` 设为 `false`。
 - 组件在 `confirm` 事件后等待一个 tick 再读取 `loading`，因此 `loading` 必须在 `confirm` 回调里同步置为 `true`；放到 `await` 之后读到的仍是旧值，气泡会先关闭。
 - `open` 的默认值是 `undefined` 而非 `false`：未绑定 `v-model:open` 时由底层气泡自行维护显隐，`defaultOpen` 才会生效；绑定后以外部值为准。
 - 用 `footer` 插槽接管按钮区后，内置的按钮文案、配色、`hideCancel` 与加载态都不再渲染，需要在插槽里自己实现。

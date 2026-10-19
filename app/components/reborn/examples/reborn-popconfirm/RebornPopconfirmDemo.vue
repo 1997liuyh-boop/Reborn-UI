@@ -41,6 +41,8 @@ const defaultState = {
   sideOffset: 8,
   arrow: true,
   hideCancel: false,
+  dismissible: true,
+  closeOnScroll: true,
 };
 const state = ref({ ...defaultState });
 
@@ -63,12 +65,16 @@ const controls: PlaygroundControlGroup[] = [
     { label: '显示箭头', key: 'arrow', component: 'checkbox', defaultValue: true },
     { label: '隐藏取消按钮', key: 'hideCancel', component: 'checkbox', defaultValue: false },
   ] },
+  { title: '关闭方式', children: [
+    { label: '点击外部关闭 dismissible', key: 'dismissible', component: 'checkbox', defaultValue: true },
+    { label: '滚动关闭 closeOnScroll', key: 'closeOnScroll', component: 'checkbox', defaultValue: true },
+  ] },
 ];
 
 /** 完整参数代码，可复制到真实页面。 */
 const popconfirmCode = computed(() => {
   const s = state.value;
-  return `<RebornPopconfirm\n  title="${s.title}"\n  description="${s.description}"\n  confirm-text="${s.confirmText}"\n  cancel-text="${s.cancelText}"\n  placement="${s.placement}"\n  :side-offset="${s.sideOffset}"\n  :arrow="${s.arrow}"\n  :hide-cancel="${s.hideCancel}"\n  @confirm="onConfirm"\n  @cancel="onCancel"\n>\n  <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>\n</RebornPopconfirm>`;
+  return `<RebornPopconfirm\n  title="${s.title}"\n  description="${s.description}"\n  confirm-text="${s.confirmText}"\n  cancel-text="${s.cancelText}"\n  placement="${s.placement}"\n  :side-offset="${s.sideOffset}"\n  :arrow="${s.arrow}"\n  :hide-cancel="${s.hideCancel}"\n  :dismissible="${s.dismissible}"\n  :close-on-scroll="${s.closeOnScroll}"\n  @confirm="onConfirm"\n  @cancel="onCancel"\n>\n  <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>\n</RebornPopconfirm>`;
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
@@ -107,6 +113,7 @@ function onAsyncConfirm() {
         <RebornPopconfirm
           :title="state.title" :description="state.description || undefined" :confirm-text="state.confirmText" :cancel-text="state.cancelText"
           :placement="state.placement" :side-offset="state.sideOffset" :arrow="state.arrow" :hide-cancel="state.hideCancel"
+          :dismissible="state.dismissible" :close-on-scroll="state.closeOnScroll"
           @confirm="lastAction = '点击了确认'" @cancel="lastAction = '点击了取消'"
         >
           <RebornButton size="sm" variant="outlined" color="neutral">删除</RebornButton>
@@ -159,6 +166,26 @@ function onAsyncConfirm() {
         </RebornPopconfirm>
         <DemoNote tone="dimmed">{{ lastAction }}</DemoNote>
       </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="点击外部与滚动关闭">
+      <template #description>
+        默认点击气泡外部或滚动页面就收起（<code>dismissible</code>、<code>closeOnScroll</code> 都为 true）；关掉 <code>closeOnScroll</code> 后气泡跟着触发器移动；关掉 <code>dismissible</code> 后只能点按钮、再次点击触发器或调用 <code>close()</code> 关闭。
+      </template>
+      <DemoBlock layout="row" class="gap-6 py-10">
+        <RebornPopconfirm title="点外部或滚动页面试试" @confirm="lastAction = '默认：确认'">
+          <RebornButton size="sm">默认</RebornButton>
+        </RebornPopconfirm>
+        <RebornPopconfirm title="滚动时气泡跟随按钮" :close-on-scroll="false" @confirm="lastAction = '滚动跟随：确认'">
+          <RebornButton size="sm" variant="outlined">滚动时跟随</RebornButton>
+        </RebornPopconfirm>
+        <RebornPopconfirm title="必须点按钮才能关闭" :dismissible="false" :close-on-scroll="false" @confirm="lastAction = '必须确认：确认'">
+          <RebornButton size="sm" variant="outlined" color="neutral">只能点按钮关闭</RebornButton>
+        </RebornPopconfirm>
+      </DemoBlock>
+      <DemoNote tone="dimmed">
+        只有带动触发器位移的滚动才会收起：滚动的是与按钮无关的容器（如页面里的另一块列表）时气泡保持打开。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection title="自定义内容：标题与按钮区插槽" description="title / description 插槽替换文字内容，footer 插槽接管按钮区并拿到 confirm / cancel 回调。">

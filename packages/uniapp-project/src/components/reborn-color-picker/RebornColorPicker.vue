@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { PopoverPlacement } from '../reborn-popover/types'
 export default {
     name: 'reborn-color-picker',
     options: {
@@ -25,7 +26,11 @@ const props = defineProps({
     defaultFormat: { type: String as PropType<ColorFormat | undefined>, default: undefined },
     /** defaultFormat 的别名，同样指定颜色输出格式；两者同时传入时 defaultFormat 优先 */
     format: { type: String as PropType<ColorFormat | undefined>, default: undefined },
-    /** Popover content config */
+    /** 面板出现的方向与对齐方式，与 Web 端及 reborn-popover 的 placement 一致；未传时回落到 content，都没有则为 right */
+    placement: { type: String as PropType<PopoverPlacement>, default: undefined },
+    /** 面板与触发器之间的间距（px），未传时回落到 content.sideOffset，都没有则为 8 */
+    sideOffset: { type: Number, default: undefined },
+    /** 旧的定位对象写法（side / align / sideOffset），等价于 placement + sideOffset；已废弃，请改用 placement / sideOffset */
     content: { type: Object as PropType<any>, default: () => ({ side: 'right', align: 'center', sideOffset: 8 }) },
     /** Whether to show arrow */
     arrow: { type: Boolean, default: true },
@@ -104,7 +109,7 @@ function togglePicker() {
 </script>
 
 <template>
-    <RebornPopover v-model="showPicker" :content="content" :arrow="arrow" :disabled="disabled">
+    <RebornPopover v-model="showPicker" :placement="placement" :side-offset="sideOffset" :content="content" :arrow="arrow" :disabled="disabled">
         <view :class="uiClasses.root">
             <view :class="uiClasses.base" :style="{ backgroundColor: colorValue }" @tap="togglePicker">
                 <view class="i-lucide-chevron-down text-white transition-transform duration-200"

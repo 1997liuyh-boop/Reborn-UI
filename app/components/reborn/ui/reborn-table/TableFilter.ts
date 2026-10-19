@@ -29,7 +29,7 @@ export default defineComponent({
     }
     return () => h(RebornPopover, {
       open: open.value, 'onUpdate:open': changeOpen, portal: true,
-      content: { side: 'bottom', align: 'start', sideOffset: 4 },
+      placement: 'bottom-start', sideOffset: 4,
       ui: { content: 'p-3' },
     }, {
       default: () => h('button', {

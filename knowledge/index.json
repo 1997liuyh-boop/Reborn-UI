@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-16T09:36:22.762Z",
+  "generatedAt": "2026-10-19T09:12:41.361Z",
   "components": [
     {
       "id": "animate-grid",
@@ -746,6 +746,37 @@
       ]
     },
     {
+      "id": "reborn-avatar",
+      "title": "Avatar 头像",
+      "description": "展示图片、图标或文字头像，支持三档固定尺寸、自定义像素尺寸、图片失败回退和头像组继承。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "avatar",
+        "image"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-avatar-group",
+      "title": "AvatarGroup 头像组",
+      "description": "重叠展示成员头像，支持尺寸形状继承、数量折叠、隐藏头像浮层与结构化样式覆盖。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "avatar",
+        "avatar-group",
+        "tooltip"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-back-top",
       "title": "BackTop 返回顶部",
       "description": "双端返回顶部按钮：滚动超过阈值后淡入；Web 端另有去底部、方形与顺/逆时针滚动进度环。",
@@ -932,6 +963,22 @@
       "description": "用于在目标区域右键、点击、悬浮或划词后弹出操作面板的上下文菜单组件，仅 web 端。",
       "category": "navigation",
       "tags": [],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-countdown",
+      "title": "Countdown 倒计时",
+      "description": "基于目标时间的倒计时，支持天数与毫秒格式、标题及前后缀插槽，回传剩余毫秒并在结束时通知。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "countdown",
+        "statistic",
+        "dayjs"
+      ],
       "platforms": [
         "web"
       ]
@@ -1160,7 +1207,7 @@
     {
       "id": "reborn-guide",
       "title": "引导 Guide",
-      "description": "用于按步骤高亮页面元素并弹出说明的新手引导组件，仅 web 端。",
+      "description": "Web 分步引导：自动居中并锁定目标，支持父子步骤、数字或点状进度、封面与整步组件替换。",
       "category": "basic",
       "tags": [
         "css",
@@ -1579,6 +1626,21 @@
       ]
     },
     {
+      "id": "reborn-segmented",
+      "title": "Segmented 分段控制器",
+      "description": "一组互斥选项排成一条、选中块滑动切换的分段控制器，三档尺寸，可带图标、撑满宽度或竖排，参与表单校验。",
+      "category": "form",
+      "tags": [
+        "segmented",
+        "radio",
+        "tabs",
+        "form"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
       "id": "reborn-select",
       "title": "Select 下拉选择",
       "description": "用于从选项列表中单选或多选的双端下拉选择组件，uniapp 端为弹层滚动选择。",
@@ -1685,6 +1747,22 @@
         "tailwind",
         "splitter",
         "layout"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-statistic",
+      "title": "Statistic 统计",
+      "description": "数字指标展示：支持连续计数动画、精度、分隔符、自定义格式化，以及标题和前后缀插槽。",
+      "category": "data-display",
+      "tags": [
+        "css",
+        "tailwind",
+        "statistic",
+        "number",
+        "animation"
       ],
       "platforms": [
         "web"

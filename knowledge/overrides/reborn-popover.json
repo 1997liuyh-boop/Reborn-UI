@@ -13,7 +13,9 @@
   "pitfalls": [
     "web、uniapp 双端可用。",
     "portal 默认 true，浮层 Teleport 到 body 或指定节点。",
-    "定位由 content 对象配置（side/align/sideOffset，默认 bottom/center/8）。",
-    "modal 默认 false 无遮罩；hover 模式关闭延迟默认 120ms。"
+    "定位用 placement（「方向-对齐」12 种，默认 bottom，与 reborn-popconfirm / reborn-tooltip 一致）+ sideOffset（Web 默认 8，UniApp 默认 0）；旧的 content 对象（side/align/sideOffset）已废弃但仍可用，同时传入时以 placement / sideOffset 为准。",
+    "modal 默认 false 无遮罩；hover 模式关闭延迟默认 120ms。",
+    "Web 端 dismissible（点击外部，含 iframe 内点击）与 closeOnScroll（滚动关闭）默认都开启；closeOnScroll 只在页面或触发器所在容器滚动时关闭，设为 false 后气泡跟随触发器移动。UniApp 端没有 closeOnScroll。",
+    "气泡里嵌套 RebornSelect、RebornPopconfirm 等浮层时，内层传送到 body 但会向外层登记，在内层点选不会关掉外层；与 Select 等下拉类组件共用同一套判定。"
   ]
 }

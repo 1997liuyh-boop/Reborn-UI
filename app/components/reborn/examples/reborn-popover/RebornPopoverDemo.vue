@@ -1,58 +1,42 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import type { Placement } from "~/lib/placement";
+import { computed, ref } from "vue";
+import RebornPopconfirm from "~/components/reborn/ui/reborn-popconfirm/RebornPopconfirm.vue";
 import RebornPopover from "~/components/reborn/ui/reborn-popover/RebornPopover.vue";
+import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import { placements } from "~/lib/placement";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
-const state = ref({
-  side: "bottom" as "top" | "bottom" | "left" | "right",
-  align: "center" as "start" | "center" | "end",
-  mode: "click" as "click" | "hover",
+/** 演练场默认状态：除 arrow / sideOffset 外与组件默认值一致 */
+const defaultState: Record<string, any> = {
+  placement: "bottom",
+  sideOffset: 12,
+  mode: "click",
   arrow: true,
   modal: false,
   dismissible: true,
-  sideOffset: 12,
-});
+  closeOnScroll: true,
+};
+
+const state = ref<Record<string, any>>({ ...defaultState });
+
+/** 演练场气泡的显隐，回显在预览区 */
+const playgroundOpen = ref(false);
+
+/** 重置演练场配置 */
+function resetState() {
+  state.value = { ...defaultState };
+}
 
 /** 演练场控制面板配置 */
-const controls = [
+const controls: any = [
   {
-    title: "位置与对齐",
+    title: "位置",
     children: [
-      {
-        label: "显示方位",
-        key: "side",
-        component: "select" as const,
-        defaultValue: "bottom",
-        props: {
-          options: [
-            { label: "Top (顶部)", value: "top" },
-            { label: "Bottom (底部)", value: "bottom" },
-            { label: "Left (左侧)", value: "left" },
-            { label: "Right (右侧)", value: "right" },
-          ],
-        },
-      },
-      {
-        label: "对齐方式",
-        key: "align",
-        component: "select" as const,
-        defaultValue: "center",
-        props: {
-          options: [
-            { label: "Start (对齐起点)", value: "start" },
-            { label: "Center (居中)", value: "center" },
-            { label: "End (对齐终点)", value: "end" },
-          ],
-        },
-      },
-      {
-        label: "偏移距离",
-        key: "sideOffset",
-        component: "slider" as const,
-        defaultValue: 12,
-        props: { min: 0, max: 40, step: 1 },
-      },
+      { label: "方位 placement", key: "placement", component: "select" as const, defaultValue: "bottom", props: { options: placements.map(p => ({ label: p, value: p })) } },
+      { label: "间距 sideOffset（px）", key: "sideOffset", component: "slider" as const, defaultValue: 12, props: { min: 0, max: 40, step: 1 } },
+      { label: "显示箭头", key: "arrow", component: "checkbox" as const, defaultValue: true },
     ],
   },
   {
@@ -63,24 +47,55 @@ const controls = [
         key: "mode",
         component: "select" as const,
         defaultValue: "click",
-        props: {
-          options: [
-            { label: "Click (点击)", value: "click" },
-            { label: "Hover (悬停)", value: "hover" },
-          ],
-        },
+        props: { options: [{ label: "点击 click", value: "click" }, { label: "悬停 hover", value: "hover" }] },
       },
-      { label: "显示箭头", key: "arrow", component: "checkbox" as const, defaultValue: true },
-    ],
-  },
-  {
-    title: "高级配置",
-    children: [
-      { label: "模态模式 (Modal)", key: "modal", component: "checkbox" as const, defaultValue: false },
-      { label: "点击外部关闭", key: "dismissible", component: "checkbox" as const, defaultValue: true },
+      { label: "点击外部关闭 dismissible", key: "dismissible", component: "checkbox" as const, defaultValue: true },
+      { label: "滚动关闭 closeOnScroll", key: "closeOnScroll", component: "checkbox" as const, defaultValue: true },
+      { label: "遮罩 modal", key: "modal", component: "checkbox" as const, defaultValue: false },
     ],
   },
 ];
+
+/** 演练场右上角展示的等价代码：完整列出当前全部参数 */
+const popoverCode = computed(() => {
+  const s = state.value;
+  return [
+    "<RebornPopover",
+    `  placement="${s.placement}"`,
+    `  :side-offset="${s.sideOffset}"`,
+    `  mode="${s.mode}"`,
+    `  :arrow="${s.arrow}"`,
+    `  :dismissible="${s.dismissible}"`,
+    `  :close-on-scroll="${s.closeOnScroll}"`,
+    `  :modal="${s.modal}"`,
+    ">",
+    "  <RebornButton label=\"点击触发\" />",
+    "  <template #content>…</template>",
+    "</RebornPopover>",
+  ].join("\n");
+});
+
+// ─── 方位、对齐与箭头 ───────────────────────────────────────────
+
+/** 十二个方位按「上 / 左 / 右 / 下」四组排开，每组依次是 start / 居中 / end */
+const placementGroups: Record<"top" | "left" | "right" | "bottom", Placement[]> = {
+  top: ["top-start", "top", "top-end"],
+  left: ["left-start", "left", "left-end"],
+  right: ["right-start", "right", "right-end"],
+  bottom: ["bottom-start", "bottom", "bottom-end"],
+};
+
+// ─── 点击外部、滚动与遮罩 ───────────────────────────────────────
+
+/** 嵌套浮层示例里的下拉框选值 */
+const nestedSelect = ref("week");
+const nestedOptions = [
+  { label: "本周", value: "week" },
+  { label: "本月", value: "month" },
+  { label: "本年", value: "year" },
+];
+/** 嵌套 Popconfirm 的确认次数 */
+const nestedConfirmCount = ref(0);
 
 // ─── 受控与手动关闭 ─────────────────────────────────────────────
 
@@ -118,65 +133,46 @@ const actions = [
 <template>
   <div class="flex w-full min-w-0 flex-col">
     <Playground
-      v-model="state"
-      :controls="controls"
-      component-name="RebornPopover"
-      title="交互演练场"
-      description="调节方位、对齐与触发方式，实时观察浮层的定位与出入场动画。"
+      v-model="state" :controls="controls" :code="popoverCode" component-name="RebornPopover"
+      title="交互演练场" description="调节方位、间距与关闭方式，点击按钮后再滚动页面或点击外部，查看气泡的定位与收起时机。"
     >
-      <RebornPopover
-        :mode="state.mode"
-        :content="{ side: state.side, align: state.align, sideOffset: state.sideOffset }"
-        :arrow="state.arrow"
-        :modal="state.modal"
-        :dismissible="state.dismissible"
-      >
-        <RebornButton
-          size="lg"
-          :variant="state.mode === 'hover' ? 'soft' : 'filled'"
-          :label="state.mode === 'hover' ? '悬浮体验' : '点击触发'"
-          class="min-w-[140px]"
-        />
+      <template #tag>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading>
+            <Icon name="lucide:rotate-ccw" size="12" />
+          </template>
+          重置配置
+        </RebornButton>
+      </template>
 
-        <!-- 浮层自带表面样式（bg + border + rounded），内容区不再叠盒子 -->
-        <template #content>
-          <div class="w-64 space-y-3">
-            <div class="text-primary flex items-center gap-2 font-bold">
-              <Icon
-                name="lucide:settings-2"
-                class="size-5"
-              />
-              <span>实时配置预览</span>
+      <div class="flex w-full flex-col items-center gap-4 py-16">
+        <RebornPopover
+          v-model:open="playgroundOpen" :mode="state.mode" :placement="state.placement" :side-offset="state.sideOffset"
+          :arrow="state.arrow" :modal="state.modal" :dismissible="state.dismissible"
+          :close-on-scroll="state.closeOnScroll"
+        >
+          <RebornButton
+            size="lg" :variant="state.mode === 'hover' ? 'soft' : 'filled'"
+            :label="state.mode === 'hover' ? '悬停触发' : '点击触发'" class="min-w-[140px]"
+          />
+
+          <!-- 浮层自带表面样式（底色 + 描边 + 圆角），内容区不再叠盒子 -->
+          <template #content>
+            <div class="w-60 space-y-2">
+              <div class="text-gray-10 flex items-center gap-2 font-medium">
+                <Icon name="lucide:settings-2" class="text-primary size-5" />
+                <span>实时配置预览</span>
+              </div>
+              <p class="text-gray-8 text-sm">
+                placement：<code>{{ state.placement }}</code>，间距 {{ state.sideOffset }}px
+              </p>
             </div>
-            <p class="text-muted text-sm leading-relaxed">
-              当前定位：<code>{{ state.side }} - {{ state.align }}</code>
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <RebornBadge
-                v-if="state.arrow"
-                label="Arrow"
-                size="xs"
-                variant="soft"
-                color="info"
-              />
-              <RebornBadge
-                v-if="state.modal"
-                label="Modal"
-                size="xs"
-                variant="soft"
-                color="warning"
-              />
-              <RebornBadge
-                v-if="!state.dismissible"
-                label="Locked"
-                size="xs"
-                variant="soft"
-                color="error"
-              />
-            </div>
-          </div>
-        </template>
-      </RebornPopover>
+          </template>
+        </RebornPopover>
+        <DemoNote tone="dimmed" class="font-mono text-xs">
+          open：{{ playgroundOpen }}
+        </DemoNote>
+      </div>
     </Playground>
 
     <DemoSection title="基础用法">
@@ -194,33 +190,53 @@ const actions = [
     </DemoSection>
 
     <DemoSection title="方位、对齐与箭头">
-      <template #description><code>content.side</code> 决定弹出方向，<code>content.align</code> 决定交叉轴对齐，<code>content.sideOffset</code> 是与触发器的间距；<code>arrow</code> 打开箭头后，<code>start</code> / <code>end</code> 的箭头停在气泡两端内缩处，<code>center</code> 才指向触发器中心。</template>
-      <DemoBlock>
-        <RebornPopover
-          v-for="side in (['top', 'bottom', 'left', 'right'] as const)"
-          :key="side"
-          :content="{ side, align: 'center', sideOffset: 8 }"
-          arrow
-        >
-          <RebornButton variant="outlined" :label="side" />
-          <template #content>
-            <span class="text-sm">side: {{ side }}</span>
-          </template>
-        </RebornPopover>
+      <template #description>
+        <code>placement</code> 是「方向-对齐」写法：<code>top</code> / <code>bottom</code> / <code>left</code> / <code>right</code> 决定弹出方向，后缀 <code>-start</code> / <code>-end</code> 决定与触发器的起点或终点对齐，不带后缀为居中。下面每个按钮都开了 <code>arrow</code>：居中时箭头指向触发器中心，<code>start</code> / <code>end</code> 时箭头停在气泡对应一端的内缩处。
+      </template>
+      <DemoBlock layout="stack" align="center">
+        <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-6 gap-y-3 py-6">
+          <!-- 上方一行：top-start / top / top-end -->
+          <div class="col-span-3 flex justify-center gap-3">
+            <RebornPopover v-for="item in placementGroups.top" :key="item" :placement="item" arrow>
+              <RebornButton variant="outlined" class="w-28" :label="item" />
+              <template #content>
+                <span class="text-sm">placement="{{ item }}"</span>
+              </template>
+            </RebornPopover>
+          </div>
+          <!-- 左侧一列 -->
+          <div class="flex flex-col gap-3">
+            <RebornPopover v-for="item in placementGroups.left" :key="item" :placement="item" arrow>
+              <RebornButton variant="outlined" class="w-28" :label="item" />
+              <template #content>
+                <span class="text-sm">placement="{{ item }}"</span>
+              </template>
+            </RebornPopover>
+          </div>
+          <div class="w-48" />
+          <!-- 右侧一列 -->
+          <div class="flex flex-col gap-3">
+            <RebornPopover v-for="item in placementGroups.right" :key="item" :placement="item" arrow>
+              <RebornButton variant="outlined" class="w-28" :label="item" />
+              <template #content>
+                <span class="text-sm">placement="{{ item }}"</span>
+              </template>
+            </RebornPopover>
+          </div>
+          <!-- 下方一行：bottom-start / bottom / bottom-end -->
+          <div class="col-span-3 flex justify-center gap-3">
+            <RebornPopover v-for="item in placementGroups.bottom" :key="item" :placement="item" arrow>
+              <RebornButton variant="outlined" class="w-28" :label="item" />
+              <template #content>
+                <span class="text-sm">placement="{{ item }}"</span>
+              </template>
+            </RebornPopover>
+          </div>
+        </div>
       </DemoBlock>
-      <DemoBlock>
-        <RebornPopover
-          v-for="align in (['start', 'center', 'end'] as const)"
-          :key="align"
-          :content="{ side: 'bottom', align, sideOffset: 8 }"
-          arrow
-        >
-          <RebornButton variant="soft" :label="`bottom-${align}`" />
-          <template #content>
-            <p class="w-48 text-sm">align: {{ align }}，注意箭头落点的差别。</p>
-          </template>
-        </RebornPopover>
-      </DemoBlock>
+      <DemoNote tone="dimmed">
+        主轴放不下时会自动翻到对侧（如靠近视口底部的 bottom 翻成 top），箭头随之换到另一边；间距用 <code>sideOffset</code> 调整，默认 8px。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection title="悬停触发与显隐延迟">
@@ -246,7 +262,7 @@ const actions = [
         <RebornPopover
           ref="popoverRef"
           v-model:open="controlledOpen"
-          :content="{ side: 'top' }"
+          placement="top"
         >
           <RebornButton :label="controlledOpen ? '已打开' : '点击打开'" />
           <template #content>
@@ -268,22 +284,53 @@ const actions = [
       </DemoBlock>
     </DemoSection>
 
-    <DemoSection title="遮罩与点击外部关闭">
-      <template #description><code>modal</code> 打开时在页面上铺一层半透明遮罩，点击遮罩按 <code>dismissible</code> 决定是否关闭；<code>dismissible</code> 为 false 时点击外部不再关闭，只能再次点击触发器或调用 <code>close()</code>。</template>
+    <DemoSection title="点击外部、滚动与遮罩">
+      <template #description>
+        默认点击外部或滚动页面就收起（<code>dismissible</code>、<code>closeOnScroll</code> 都为 true）；关掉 <code>closeOnScroll</code> 后气泡跟着触发器移动，关掉 <code>dismissible</code> 后只能再次点击触发器或调用 <code>close()</code>；<code>modal</code> 铺一层遮罩，点击遮罩同样按 <code>dismissible</code> 决定。
+      </template>
       <DemoBlock>
+        <RebornPopover arrow>
+          <RebornButton label="默认：点外部 / 滚动即收起" />
+          <template #content>
+            <p class="w-52 text-sm">打开后滚动页面或点击空白处，气泡都会收起。</p>
+          </template>
+        </RebornPopover>
+        <RebornPopover arrow :close-on-scroll="false">
+          <RebornButton variant="outlined" label="滚动时跟随" />
+          <template #content>
+            <p class="w-52 text-sm">:close-on-scroll="false"：滚动页面时气泡跟着按钮移动，点击外部仍会收起。</p>
+          </template>
+        </RebornPopover>
+        <RebornPopover arrow :dismissible="false" :close-on-scroll="false">
+          <RebornButton variant="outlined" label="只能点触发器关闭" />
+          <template #content>
+            <p class="w-52 text-sm">点击外部、滚动都不会收起，再次点击按钮才关闭。</p>
+          </template>
+        </RebornPopover>
         <RebornPopover modal>
-          <RebornButton label="带遮罩" />
+          <RebornButton variant="soft" label="带遮罩" />
           <template #content>
             <p class="w-48 text-sm">点击遮罩关闭。</p>
           </template>
         </RebornPopover>
-        <RebornPopover :dismissible="false">
-          <RebornButton variant="outlined" label="点击外部不关闭" />
+      </DemoBlock>
+      <DemoBlock>
+        <RebornPopover arrow placement="bottom-start">
+          <RebornButton variant="soft" color="neutral" label="气泡里嵌套下拉框与确认框" />
           <template #content>
-            <p class="w-48 text-sm">再次点击触发器才会关闭。</p>
+            <div class="flex w-64 flex-col gap-3">
+              <RebornSelect v-model="nestedSelect" :options="nestedOptions" />
+              <RebornPopconfirm title="确定重置统计吗？" @confirm="nestedConfirmCount++">
+                <RebornButton size="sm" variant="outlined" color="error" label="重置统计" />
+              </RebornPopconfirm>
+              <p class="text-gray-6 text-sm">已重置 {{ nestedConfirmCount }} 次</p>
+            </div>
           </template>
         </RebornPopover>
       </DemoBlock>
+      <DemoNote tone="dimmed">
+        下拉框的选项面板与确认框都传送到了 body，不是气泡的 DOM 后代；它们会向外层气泡登记自己，在里面点选不会被当成「点击外部」把外层关掉。
+      </DemoNote>
     </DemoSection>
 
     <DemoSection title="复合内容：资料卡、调色盘与操作菜单">
@@ -293,7 +340,8 @@ const actions = [
         <div class="flex flex-col items-center gap-4">
           <span class="text-dimmed text-xs font-medium">个人资料卡 · 点击头像</span>
           <RebornPopover
-            :content="{ side: 'top', align: 'center', sideOffset: 16 }"
+            placement="top"
+            :side-offset="16"
             arrow
           >
             <img
@@ -346,7 +394,8 @@ const actions = [
         <div class="flex flex-col items-center gap-4">
           <span class="text-dimmed text-xs font-medium">轻量调色盘 · 点击色块</span>
           <RebornPopover
-            :content="{ side: 'bottom', align: 'center', sideOffset: 12 }"
+            placement="bottom"
+            :side-offset="12"
             arrow
           >
             <div
@@ -393,7 +442,8 @@ const actions = [
         <div class="flex flex-col items-center gap-4">
           <span class="text-dimmed text-xs font-medium">操作菜单 · <code>mode="hover"</code></span>
           <RebornPopover
-            :content="{ side: 'right', align: 'start', sideOffset: 12 }"
+            placement="right-start"
+            :side-offset="12"
             arrow
             mode="hover"
           >

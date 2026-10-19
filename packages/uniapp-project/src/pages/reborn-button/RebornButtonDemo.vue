@@ -211,7 +211,7 @@ function copyContent(text: string) {
           <RebornText :size="28" color="neutral">
             自定义主题色
           </RebornText>
-          <RebornColorPicker v-model="customButtonColor" :content="{ side: 'top', align: 'start', sideOffset: 8 }" />
+          <RebornColorPicker v-model="customButtonColor" placement="top-start" :side-offset="8" />
           <RebornText color="neutral" :size="24" class="text-24">
             {{ customButtonColor }}
           </RebornText>

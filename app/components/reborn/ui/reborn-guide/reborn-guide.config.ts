@@ -1,55 +1,45 @@
 import { placements } from "~/lib/placement";
 
 const modes = ["popup", "dialog"] as const;
+export { modes as guideModes, placements as guidePlacements };
 
-export { placements as guidePlacements, modes as guideModes };
+/** 只过渡透明度与完整 transform；减少动态时保留短淡化，不产生位移。 */
+export const guideMotionStyles = {
+  prepare: "transition-none opacity-0",
+  leave: "transition-[opacity,transform] motion-safe:duration-(--duration-instant) ease-out opacity-0",
+  enter: "transition-[opacity,transform] motion-safe:duration-(--duration-fast) ease-out opacity-100 [transform:translateY(0)]",
+  nextFrom: "[transform:translateY(4px)]",
+  nextTo: "[transform:translateY(-4px)]",
+  prevFrom: "[transform:translateY(-4px)]",
+  prevTo: "[transform:translateY(4px)]",
+  // 全局减少动态把时长令牌压到近零，这里保留 75ms 的可读淡化。
+  reduced: "motion-reduce:transition-opacity motion-reduce:duration-75 motion-reduce:[transform:none]",
+};
 
-/*
- * 层级不在类名里声明：遮罩与指引框的 z-index 由 RebornGuide.vue 的 overlayStyle / guideBoxStyle
- * 按 props.zIndex 以内联样式注入（遮罩 = zIndex、高亮 = +1、指引框 = +2），使用方改 zIndex 即可整体抬升。
- * 原先的 z-[--guide-z] 在 Tailwind v4 下会编译成非法的 z-index: --guide-z，且变量从未定义，已移除。
- * 面板底色统一取纸面色 gray-1，灰阶随主题反转，不再写 dark: 前缀。
- */
+// 阴影按设计值设置；背景与文字使用随主题变化的语义令牌。
+const panel = "fixed flex flex-col gap-2 rounded-lg bg-gray-1 p-4 text-left outline-none shadow-[0_2px_12px_0_rgba(0,0,0,0.15)]";
+
 export default {
   slots: {
-    /** popup 模式：全屏遮罩容器 */
-    overlay: "fixed inset-0",
-    /** 挖洞高亮元素（box-shadow 技术） */
-    highlightMask:
-      "absolute rounded-lg transition-all duration-300 ease-out pointer-events-none",
-    /** 指引框容器 */
-    guideBox:
-      "fixed bg-gray-1 rounded-3xl shadow-xl border border-gray-2 min-w-[260px] max-w-[360px]",
-    /** 指引框箭头 */
-    guideArrow: "absolute size-3 rotate-45 bg-gray-1 border-gray-2",
-    /** 指引框头部 */
-    guideHeader: "flex items-center justify-between px-5 pt-5 pb-2",
-    /** 指引框标题 */
-    guideTitle: "text-base font-semibold text-gray-9",
-    /** 指引框正文。行高用 text-sm 令牌自带的 20px，不再叠 leading-relaxed（原先 19.5px） */
-    guideBody: "px-5 py-2 text-sm text-gray-6",
-    /** 指引框底部 */
-    guideFooter: "flex items-center justify-between px-5 pb-5 pt-3 gap-2",
-    /** 计数器。字号取七级令牌 text-sm（12px），与原先的原生 text-xs 同字号，行高 16px → 20px */
-    counter: "text-sm text-gray-4",
-    /** 按钮组 */
-    buttonGroup: "flex items-center gap-2",
-    /** 跳过链接 */
-    skipLink: "text-sm text-gray-4 hover:text-gray-6 cursor-pointer transition-colors",
-    /** dialog 模式：遮罩 */
-    dialogOverlay:
-      "fixed inset-0 bg-black/60 flex items-center justify-center p-4",
-    /** dialog 模式：对话框 */
-    dialogBox:
-      "bg-gray-1 rounded-3xl shadow-xl w-full max-w-[480px]",
+    overlay: "fixed inset-0 touch-none",
+    highlightMask: "absolute pointer-events-none rounded-lg",
+    guideBox: `${panel} w-[360px] max-w-[calc(100vw-32px)]`,
+    guideArrow: "absolute size-3 bg-gray-1 pointer-events-none",
+    guideHeader: "relative text-left",
+    guideTitle: "text-base font-medium text-gray-10",
+    guideBody: "relative text-base text-gray-8",
+    guideFooter: "relative flex items-center justify-between gap-2",
+    counter: "shrink-0 text-base text-gray-8",
+    buttonGroup: "ml-auto flex items-center gap-2",
+    dialogOverlay: "fixed inset-0 touch-none",
+    dialogBox: `${panel} w-[480px] max-w-[calc(100vw-32px)]`,
+    closeRow: "relative flex justify-end",
+    closeButton: "flex size-5 cursor-pointer items-center justify-center rounded-sm text-gray-8 hover:text-gray-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+    // 外层 gap-2 加 mb-2，使封面与后面的标题相隔 16px。
+    cover: "relative mb-2 block w-full rounded-lg object-cover",
+    indicators: "flex flex-wrap items-center gap-2",
+    indicatorDot: "shrink-0 rounded-full",
   },
-  variants: {
-    mode: {
-      popup: {},
-      dialog: {},
-    },
-  },
-  defaultVariants: {
-    mode: "popup" as (typeof modes)[number],
-  },
+  variants: { mode: { popup: {}, dialog: {} } },
+  defaultVariants: { mode: "popup" as (typeof modes)[number] },
 };

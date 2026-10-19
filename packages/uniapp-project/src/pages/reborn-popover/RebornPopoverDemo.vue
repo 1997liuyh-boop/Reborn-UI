@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 import RebornPopover from '@/components/reborn-popover/RebornPopover.vue'
@@ -25,6 +25,10 @@ const alignOptions = [
 
 const activeSide = ref<any>('bottom')
 const activeAlign = ref<any>('center')
+/** 方向与对齐拼成 placement：居中对齐只写方向，其余写成「方向-对齐」 */
+const activePlacement = computed<any>(() =>
+    activeAlign.value === 'center' ? activeSide.value : `${activeSide.value}-${activeAlign.value}`
+)
 
 function manualClose() {
     if (popoverRef.value) {
@@ -37,7 +41,7 @@ function manualClose() {
     <RebornPage title="Popover" description="弹出气泡组件，用于点击元素弹出相关操作或附加内容" :ui="{ body: 'space-y-4 p-4 pb-20' }">
 
 
-        <RebornCard title="12 个方向动态演示" description="通过 side 和 align 组合定位" :overflowVisible="true">
+        <RebornCard title="12 个方向动态演示" description="placement 由方向与对齐组合而成，如 bottom-start" :overflowVisible="true">
             <view class="flex flex-col space-y-6 py-4">
                 <view class="flex justify-between space-x-2 px-2">
                     <view class="flex-1">
@@ -53,7 +57,7 @@ function manualClose() {
                 <view
                     class="h-[400rpx] flex items-center justify-center border border-dashed border-gray-200 mt-6 rounded relative overflow-visible">
                     <RebornPopover v-model:open="showPopover2" :arrow="true"
-                        :content="{ side: activeSide, align: activeAlign, sideOffset: 12 }">
+                        :placement="activePlacement" :side-offset="12">
 
                         <RebornButton size="md">点我弹出</RebornButton>
                         <template #content>
@@ -70,7 +74,7 @@ function manualClose() {
         <RebornCard title="受控模式与手动关闭" description="绑定 v-model:open 并在内部手动调用方法。" :overflowVisible="true">
             <view class="flex flex-col items-center justify-center p-4 space-y-4">
                 <view class="text-sm">当前状态: {{ isControlledOpen ? '打开' : '关闭' }}</view>
-                <RebornPopover ref="popoverRef" v-model:open="isControlledOpen" :content="{ side: 'top' }"
+                <RebornPopover ref="popoverRef" v-model:open="isControlledOpen" placement="top"
                     :arrow="true">
                     <RebornButton :color="isControlledOpen ? 'error' : 'primary'">受控组件触发器</RebornButton>
                     <template #content>

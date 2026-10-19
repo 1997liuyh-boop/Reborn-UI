@@ -5,7 +5,6 @@ import type { PopoverContentProps, PopoverProps } from '../reborn-popover/Reborn
 import type { PopconfirmUi } from './reborn-popconfirm.config';
 import type { Placement } from '~/lib/placement';
 import { computed, nextTick, ref } from 'vue';
-import { resolvePlacement } from '~/lib/placement';
 import { tv } from '~/lib/tv';
 import RebornButton from '../reborn-button/RebornButton.vue';
 import RebornPopover from '../reborn-popover/RebornPopover.vue';
@@ -15,7 +14,7 @@ defineOptions({ name: 'RebornPopconfirm' });
 
 const props = withDefaults(defineProps<PopconfirmProps>(), {
   confirmText: '确定', cancelText: '取消', confirmColor: 'primary', cancelColor: 'neutral',
-  hideCancel: false, loading: false, arrow: true, portal: true, dismissible: true, defaultOpen: false,
+  hideCancel: false, loading: false, arrow: true, portal: true, dismissible: true, closeOnScroll: true, defaultOpen: false,
   // placement 不给默认值，保持 undefined 才能识别「未传」并回落到旧的 content 写法。
   placement: undefined, sideOffset: undefined, content: undefined,
 });
@@ -71,8 +70,10 @@ export interface PopconfirmProps {
   arrow?: boolean;
   /** 传送目标，false 表示原地渲染。 */
   portal?: boolean | string;
-  /** 点击外部是否关闭气泡。 */
+  /** 点击外部（含 iframe 内）是否关闭气泡。 */
   dismissible?: boolean;
+  /** 页面或触发器所在容器滚动时是否关闭气泡；关闭后气泡跟随触发器移动。 */
+  closeOnScroll?: boolean;
   /** 非受控模式的初始显隐。 */
   defaultOpen?: boolean;
   /** 追加到触发器外层容器的类名。 */
@@ -88,17 +89,18 @@ const b = tv(theme);
 const styles = b();
 
 /**
- * 底层气泡的定位对象：placement 拆成 side / align 后交给 Popover，
- * 未传 placement 时回落到旧的 content 对象写法，两者都没有则默认在触发器上方居中。
+ * 交给底层气泡的方位：placement 原样透传（Popover 已改用同一套 placement），
+ * 未传时回落到旧的 content 对象写法拼回「方向-对齐」，两者都没有则默认在触发器上方居中。
  */
-const popoverContent = computed<PopoverContentProps>(() => {
+const popoverPlacement = computed<Placement>(() => {
+  if (props.placement) return props.placement;
   const legacy = props.content ?? {};
-  const { side, align } = props.placement
-    ? resolvePlacement(props.placement)
-    : { side: legacy.side ?? 'top', align: legacy.align ?? 'center' };
-
-  return { side, align, sideOffset: props.sideOffset ?? legacy.sideOffset ?? 8 };
+  const side = legacy.side ?? 'top';
+  const align = legacy.align ?? 'center';
+  return (align === 'center' ? side : `${side}-${align}`) as Placement;
 });
+
+const popoverSideOffset = computed(() => props.sideOffset ?? props.content?.sideOffset ?? 8);
 
 /** 内容内边距固定 12px 写进底层气泡，不依赖 Popover 默认值；调用方覆盖仍然生效。 */
 const popoverUi = computed(() => ({
@@ -135,8 +137,9 @@ defineExpose({
 
 <template>
   <RebornPopover
-    ref="popoverRef" mode="click" :open="open" :default-open="defaultOpen" :content="popoverContent" :arrow="arrow"
-    :portal="portal" :dismissible="dismissible" :class="props.class" :ui="popoverUi"
+    ref="popoverRef" mode="click" :open="open" :default-open="defaultOpen" :placement="popoverPlacement"
+    :side-offset="popoverSideOffset" :arrow="arrow" :portal="portal" :dismissible="dismissible"
+    :close-on-scroll="closeOnScroll" :class="props.class" :ui="popoverUi"
     @update:open="open = $event"
   >
     <template #default="{ open: isOpen }">

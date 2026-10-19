@@ -262,7 +262,7 @@ const ui = computed(() => tv(config)({ direction: props.direction, surface: prop
 
                 <!-- 左上角：传参明细 Popover -->
                 <div v-if="activeCode" :class="ui.popoverWrapper()">
-                    <RebornPopover :content="{ side: 'bottom', align: 'start', sideOffset: 8 }">
+                    <RebornPopover placement="bottom-start">
                         <button type="button" :class="ui.popoverBtn()">
                             <Icon name="lucide:code-xml" :class="ui.popoverIcon()" />
                             <span>传参明细</span>

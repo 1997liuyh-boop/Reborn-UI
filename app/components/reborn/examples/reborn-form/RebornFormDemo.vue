@@ -1,8 +1,21 @@
 <script setup lang="ts">
+import type {FormData} from "./reborn-form-demo.config";
+import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components";
+import { computed, reactive, ref } from "vue";
+import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
+import RebornCheckboxGroup from "~/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue";
+import { formLabelPositions } from "~/components/reborn/ui/reborn-form/reborn-form.config";
 import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
 import RebornFormItem from "~/components/reborn/ui/reborn-form/RebornFormItem.vue";
-import { formLabelPositions } from "~/components/reborn/ui/reborn-form/reborn-form.config";
-import { createRules, genderOptions, initialForm, interestOptions, type FormData } from "./reborn-form-demo.config";
+import RebornInputNumber from "~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue";
+import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
+import RebornSelectDate from "~/components/reborn/ui/reborn-select-date/RebornSelectDate.vue";
+import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
+import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
+import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
+import RebornTextarea from "~/components/reborn/ui/reborn-textarea/RebornTextarea.vue";
+import { createRules,  genderOptions, initialForm, interestOptions } from "./reborn-form-demo.config";
+import RebornFormLinkageDemo from "./RebornFormLinkageDemo.vue";
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -157,14 +170,18 @@ function scrollToBio() {
 
 <template>
   <div class="flex w-full min-w-0 flex-col">
-    <Playground v-model="state" :controls="controls" :code="formCode" component-name="RebornForm" title="交互演练场"
-      description="校验规则由 Zod 描述；trigger 决定是输入即校验还是仅在提交时校验，label-width 仅在标签左右布局时生效。">
+    <Playground
+      v-model="state" :controls="controls" :code="formCode" component-name="RebornForm" title="交互演练场"
+      description="校验规则由 Zod 描述；trigger 决定是输入即校验还是仅在提交时校验，label-width 仅在标签左右布局时生效。"
+    >
       <div class="py-2 w-150">
-        <RebornForm ref="formRef" :model-value="form" :rules="rules" :label-width="state.labelWidth"
+        <RebornForm
+          ref="formRef" :model-value="form" :rules="rules" :label-width="state.labelWidth"
           :label-position="state.labelPosition" :size="state.size" :trigger="formTrigger"
           :hide-required-asterisk="state.hideRequiredAsterisk"
           :require-asterisk-position="state.requireAsteriskPosition" :status-icon="state.statusIcon"
-          :inline-message="state.inlineMessage" :disabled="state.disabled">
+          :inline-message="state.inlineMessage" :disabled="state.disabled"
+        >
           <RebornFormItem prop="username" label="用户名" required>
             <RebornInput v-model="form.username" placeholder="请输入用户名" />
           </RebornFormItem>
@@ -183,8 +200,10 @@ function scrollToBio() {
           </RebornFormItem>
 
           <RebornFormItem prop="dateRange" label="入职时间" required>
-            <RebornSelectDate v-model="form.dateRange" type="daterange" rangeable placeholder="起始日期 - 结束日期"
-              value-format="YYYY-MM-DD" />
+            <RebornSelectDate
+              v-model="form.dateRange" type="daterange" rangeable placeholder="起始日期 - 结束日期"
+              value-format="YYYY-MM-DD"
+            />
           </RebornFormItem>
 
           <RebornFormItem prop="isAgree" label="是否同意" required>
@@ -241,8 +260,10 @@ function scrollToBio() {
               </div>
             </template>
 
-            <div v-for="(contact, index) in form.contacts" :key="index"
-              class="border-default rounded-xl mb-4 flex flex-col border p-4">
+            <div
+              v-for="(contact, index) in form.contacts" :key="index"
+              class="border-default rounded-xl mb-4 flex flex-col border p-4"
+            >
               <div class="border-default mb-4 flex items-center justify-between border-b pb-3">
                 <span class="text-default text-sm font-medium">#{{ index + 1 }} 联系人信息</span>
                 <RebornButton variant="text" color="neutral" size="sm" @click="form.contacts.splice(index, 1)">
@@ -289,10 +310,20 @@ function scrollToBio() {
       </div>
     </Playground>
 
+    <DemoSection title="完整表单联动" class="relative z-10">
+      <template #description>
+        多种控件共享同一份表单数据；举办方式与通知开关同步调整字段、<code>rules</code> 和必填完成度。
+      </template>
+      <DemoBlock layout="stack">
+        <RebornFormLinkageDemo />
+      </DemoBlock>
+    </DemoSection>
+
     <DemoSection title="实时数据" description="v-model 绑定的对象随输入同步更新，可直接观察 Zod 预处理后的取值类型。">
       <pre
-        class="border-default rounded-lg text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed">
-    {{ JSON.stringify(form, null, 2) }}</pre>
+        class="border-default rounded-lg text-muted max-h-96 overflow-auto border p-4 font-mono text-xs leading-relaxed"
+      >
+      {{ JSON.stringify(form, null, 2) }}</pre>
     </DemoSection>
   </div>
 </template>

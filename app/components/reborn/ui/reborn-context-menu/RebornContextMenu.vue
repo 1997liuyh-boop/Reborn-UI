@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
+import type { Placement } from "~/lib/placement";
 import { computed, inject, onMounted, onUnmounted, provide, ref, useSlots, watch } from "vue";
+import { resolvePlacement as splitPlacement } from "~/lib/placement";
 import { cn } from "~/lib/utils";
 import theme, {
   contextMenuColors,
@@ -50,6 +52,7 @@ export interface RebornContextMenuSelectContext {
 export type RebornContextMenuItemGroup = RebornContextMenuItem[];
 export type RebornContextMenuItems = RebornContextMenuItem[] | RebornContextMenuItem[][];
 
+/** 旧的定位对象写法，等价于 placement + sideOffset，仅为兼容保留 */
 export interface RebornContextMenuContentProps {
   side?: ContextMenuSide;
   align?: ContextMenuAlign;
@@ -61,7 +64,20 @@ export interface RebornContextMenuProps {
   size?: ContextMenuSize;
   /** 触发方式；selection 为划词触发：在触发区内选中文字后，菜单在选区上方弹出 */
   trigger?: ContextMenuTrigger;
-  /** 弹出方向与对齐；未传时右键 / 点击 / 悬浮为 bottom-start，划词为 top-center，子菜单为 right-start */
+  /**
+   * 弹出方向与对齐，「方向-对齐」写法，与 reborn-popover、reborn-popconfirm 一致；
+   * 未传时右键 / 点击 / 悬浮为 bottom-start，划词为 top（选区上方居中），子菜单为 right-start
+   */
+  placement?: Placement;
+  /**
+   * 菜单与锚点的间距（px）
+   * @defaultValue 8
+   */
+  sideOffset?: number;
+  /**
+   * 旧的定位对象写法（side / align / sideOffset），等价于 placement + sideOffset，仅为兼容保留
+   * @deprecated 请改用 placement / sideOffset
+   */
   content?: RebornContextMenuContentProps;
   open?: boolean;
   defaultOpen?: boolean;
@@ -128,6 +144,8 @@ const props = withDefaults(defineProps<RebornContextMenuProps>(), {
   size: "md",
   trigger: "contextmenu",
   // 方向 / 对齐按触发方式取默认值（见 resolvePlacement），这里不预填以便区分「用户显式传入」
+  placement: undefined,
+  sideOffset: undefined,
   content: () => ({}),
   portal: true,
   dismissible: true,
@@ -219,10 +237,12 @@ const selectionText = ref("");
 function resolvePlacement() {
   const defaultSide: ContextMenuSide = props.nested ? "right" : props.trigger === "selection" ? "top" : "bottom";
   const defaultAlign: ContextMenuAlign = props.trigger === "selection" ? "center" : "start";
+  // placement 优先，未传时回落到旧的 content 对象，都没有再按触发方式取默认值
+  const explicit = props.placement ? splitPlacement(props.placement) : undefined;
   return {
-    side: props.content.side ?? defaultSide,
-    align: props.content.align ?? defaultAlign,
-    offset: props.content.sideOffset ?? 8,
+    side: explicit?.side ?? props.content.side ?? defaultSide,
+    align: explicit?.align ?? props.content.align ?? defaultAlign,
+    offset: props.sideOffset ?? props.content.sideOffset ?? 8,
   };
 }
 
@@ -798,7 +818,8 @@ defineExpose({
                   :disabled="isItemDisabled(item)"
                   :portal="props.portal"
                   :dismissible="props.dismissible"
-                  :content="{ side: 'right', align: 'start', sideOffset: 6 }"
+                  placement="right-start"
+                  :side-offset="6"
                   @select="handleNestedSelect"
                 >
                   <template #default>

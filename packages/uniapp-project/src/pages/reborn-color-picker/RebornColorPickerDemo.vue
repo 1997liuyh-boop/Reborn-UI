@@ -41,7 +41,7 @@ const colorRgba = ref('rgba(244, 63, 94, 0.50)')
         <RebornCard title="Popover 配置" overflowVisible>
             <view class="flex flex-col space-y-4">
                 <view class="flex items-center space-x-4">
-                    <RebornColorPicker v-model="color2" :content="{ side: 'right', sideOffset: 12 }" />
+                    <RebornColorPicker v-model="color2" placement="right" :side-offset="12" />
                     <text class="text-sm font-medium">右侧弹出 (Right Side)</text>
                 </view>
                 <view class="flex items-center space-x-4">

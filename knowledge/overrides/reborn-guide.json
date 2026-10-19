@@ -1,19 +1,25 @@
 {
-  "description": "用于按步骤高亮页面元素并弹出说明的新手引导组件，仅 web 端。",
+  "description": "Web 分步引导：自动居中并锁定目标，支持父子步骤、数字或点状进度、封面与整步组件替换。",
   "whenToUse": [
-    "新功能上线或用户首次进入页面时的分步操作指引。",
-    "需要遮罩高亮目标元素并配上一步/下一步/跳过按钮的引导流程。",
-    "需要 v-model:current 受控步骤、监听 finish/skip 事件上报引导完成情况的场景。"
+    "首次进入页面介绍操作入口：用 steps 指定目标，把 current 从 -1 设为 0 启动。",
+    "同一功能需要分层说明：用 children 定义子步骤，省略 element 时继承父目标。",
+    "简短流程需要紧凑的步骤进度：用 indicator='dots'；精确进度使用默认 counter。",
+    "需要图文说明或独立步骤交互：用 cover 添加封面，或用 component 替换整个面板内容。"
   ],
   "whenNotToUse": [
-    "uniapp 端不可用（仅 web）。",
-    "单个元素的悬浮提示说明，改用 reborn-tooltip 或 reborn-popover。"
+    "单个元素的悬浮提示，改用 reborn-tooltip；点击展开说明，改用 reborn-popover。",
+    "需要用户实际点击高亮目标才能继续，改用 reborn-popover 配合业务状态。",
+    "UniApp 页面不可使用，需自行结合页面状态与平台滚动 API 实现。"
   ],
   "pitfalls": [
-    "仅 web 端可用。",
-    "defaultCurrent 默认 -1 表示未开始，启动引导需将 current 设为步骤索引。",
-    "mode 支持 popup（贴靠高亮元素）与 dialog 两种展示形态。",
-    "zIndex 默认 999999，注意与其他弹层的层级关系；highlightPadding 控制高亮框内边距（默认 8）。",
-    "步骤对象的 content / highlightContent 字段声明的是动态插槽名：提供同名 <template #名称> 即可自定义该步骤的弹框正文（替代 body）或高亮框内容。"
+    "仅 Web 端可用；启动引导时目标应已挂载，未找到目标则回退到屏幕中央并隐藏箭头。",
+    "引导期间锁定页面与滚动容器的滚动并拦截目标交互；showOverlay=false 只隐藏可见遮罩。",
+    "每一步自动将目标尽量居中，页面边界和固定定位可能限制实际居中位置。",
+    "children 与 chidren 都支持子步骤，children 优先；按父后子的深度优先顺序展开，子步骤只继承 element。",
+    "current 与事件步骤索引从 0 开始；插槽和自定义组件的 current 从 1 开始，总数包含所有父子步骤。",
+    "content 是正文插槽名称；component 替换整个面板内容，需要自定义组件通过注入的导航方法提供关闭或完成操作。",
+    "Vue 组件对象进入响应式步骤数据前建议使用 markRaw；componentProps 用于业务数据，步骤信息与导航方法由引导注入。",
+    "highlightPadding 默认 4px；hideSkip 默认 true；按钮默认 sm，步骤级配置覆盖组件级配置。",
+    "popupProps 是尚未接线的兼容保留字段，调整浮层请使用 placement、offset 与 ui。"
   ]
 }

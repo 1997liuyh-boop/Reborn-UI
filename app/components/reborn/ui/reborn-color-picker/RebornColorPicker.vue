@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Placement } from '~/lib/placement'
 import { computed } from 'vue'
 import theme from './reborn-color-picker.config'
 import { tv } from '~/lib/tv'
@@ -10,6 +11,10 @@ interface Props {
     modelValue?: string
     disabled?: boolean
     size?: 'xs' | 'sm' | 'md' | 'lg',
+    /** 面板出现的方向与对齐方式，与 reborn-popover 的 placement 一致；主轴放不下时自动翻到对侧 */
+    placement?: Placement
+    /** 面板与触发器的间距（px） */
+    sideOffset?: number
     ui?: {
         root?: string
         base?: string
@@ -23,6 +28,8 @@ const props = withDefaults(defineProps<Props>(), {
     modelValue: '#000000',
     disabled: false,
     size: 'md',
+    placement: 'bottom',
+    sideOffset: 8,
 })
 
 const emit = defineEmits<{
@@ -54,7 +61,7 @@ const ui = computed(() => {
 </script>
 
 <template>
-    <RebornPopover v-model:open="open" :disabled="disabled" arrow>
+    <RebornPopover v-model:open="open" :disabled="disabled" :placement="placement" :side-offset="sideOffset" arrow>
         <!-- 触发器插槽 -->
         <slot>
             <div :class="ui.root()">

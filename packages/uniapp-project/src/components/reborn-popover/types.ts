@@ -1,5 +1,13 @@
 import type { ExtractPropTypes, PropType } from 'vue'
 
+/** 气泡方位：「方向-对齐」写法，与 Web 端及 reborn-popconfirm、reborn-tooltip 的 placement 完全一致 */
+export type PopoverPlacement =
+    | 'top' | 'top-start' | 'top-end'
+    | 'bottom' | 'bottom-start' | 'bottom-end'
+    | 'left' | 'left-start' | 'left-end'
+    | 'right' | 'right-start' | 'right-end'
+
+/** 旧的定位对象写法，等价于 placement + sideOffset，仅为兼容保留 */
 export interface PopoverContentProps {
     /** Popover 相对于触发器的显示位置 */
     side?: 'top' | 'right' | 'bottom' | 'left'
@@ -10,7 +18,17 @@ export interface PopoverContentProps {
 }
 
 export const popoverProps = {
-    /** 内容位置与偏移配置 */
+    /** 出现方向与对齐方式，未传时回落到 content，都没有则为 bottom */
+    placement: {
+        type: String as PropType<PopoverPlacement>,
+        default: undefined
+    },
+    /** 气泡与触发器之间的间距（px），未传时回落到 content.sideOffset，都没有则为 0 */
+    sideOffset: {
+        type: Number,
+        default: undefined
+    },
+    /** 旧的定位对象写法（side / align / sideOffset），等价于 placement + sideOffset；已废弃，请改用 placement / sideOffset */
     content: {
         type: Object as PropType<PopoverContentProps>,
         default: () => ({ side: 'bottom', align: 'center', sideOffset: 0 })

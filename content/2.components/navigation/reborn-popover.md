@@ -14,9 +14,9 @@ badge: New
 
 Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端同名，但 API 并不完全一致（见「两端差异对照」）。默认插槽放触发器，`content` 插槽放气泡内容，气泡里放什么完全由使用方决定。
 
-定位由 `content` 属性对象的三个字段独立组合：`side` 决定主轴方向，`align` 决定交叉轴对齐，`sideOffset` 决定与触发器的间距；`arrow` 只负责是否画箭头，箭头落点再跟随 `align` 变化。
+定位由 `placement` 与 `sideOffset` 两个属性决定：`placement` 是「方向-对齐」写法（`top` / `bottom-start` 等 12 种），方向决定气泡出现在触发器哪一侧，后缀决定与触发器的起点、终点还是中线对齐，取值与 `reborn-popconfirm`、`reborn-tooltip` 完全一致；`sideOffset` 决定与触发器的间距。`arrow` 只负责是否画箭头，箭头落点再跟随对齐方式变化。旧的 `content` 对象写法仍然可用，但已废弃。
 
-其余 API 按用途分组：触发方式看 `mode`（仅 Web）与 `openDelay` / `closeDelay`；显隐控制看 `v-model:open`、`defaultOpen` 与暴露的 `close()`（UniApp 另有 `open()`）；关闭策略看 `dismissible` 与 `modal`（遮罩仅 Web）。UniApp 端额外提供 `title` + `displayMode="menu"` 的轻量菜单模式。
+其余 API 按用途分组：触发方式看 `mode`（仅 Web）与 `openDelay` / `closeDelay`；显隐控制看 `v-model:open`、`defaultOpen` 与暴露的 `close()`（UniApp 另有 `open()`）；关闭策略看 `dismissible`（点击外部）、`closeOnScroll`（滚动关闭，仅 Web）与 `modal`（遮罩仅 Web）。UniApp 端额外提供 `title` + `displayMode="menu"` 的轻量菜单模式。
 
 ### 何时使用
 
@@ -51,19 +51,22 @@ Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端
 
 ### 方位、对齐与箭头
 
-`content` 属性是一个对象，三个字段相互独立：
+`placement` 由方向与对齐两段组成，不带后缀为居中；`sideOffset` 是与触发器的间距：
 
-| 字段         | 取值                                     | 默认值                     | 典型用途                                   |
-| ------------ | ---------------------------------------- | -------------------------- | ------------------------------------------ |
-| `side`       | `'top'` / `'bottom'` / `'left'` / `'right'` | `'bottom'`                 | 触发器靠近视口底部时改 `top`               |
-| `align`      | `'start'` / `'center'` / `'end'`         | `'center'`                 | 气泡比触发器宽时，用 `start` 与左边缘对齐 |
-| `sideOffset` | `number`（px）                           | Web `8` / UniApp `0`       | 需要给箭头或阴影留出更多间距时加大         |
+| 写法 | 气泡位置 | 典型用途 |
+| --- | --- | --- |
+| `'bottom'`（默认） | 触发器下方，居中 | 大多数按钮、图标 |
+| `'top'` / `'left'` / `'right'` | 触发器上方 / 左侧 / 右侧，居中 | 触发器靠近视口底部，或贴在页面左右边缘 |
+| `'bottom-start'` / `'top-start'` | 与触发器左边缘对齐 | 气泡比触发器宽，希望左边对齐 |
+| `'bottom-end'` / `'top-end'` | 与触发器右边缘对齐 | 页面右上角的头像、设置按钮 |
+| `'left-start'` / `'right-start'` | 与触发器上边缘对齐 | 侧栏里的操作按钮、悬停菜单 |
+| `'left-end'` / `'right-end'` | 与触发器下边缘对齐 | 列表最后一行的操作按钮 |
 
-`arrow` 打开箭头后，Web 端 `start` / `end` 的箭头停在气泡两端内缩 17px 处，只有 `center` 才指向触发器中心；这样箭头不会压到气泡圆角上。
+`sideOffset` 默认 Web `8` / UniApp `0`（px）。主轴放不下时自动翻到对侧，箭头随之换边。`arrow` 打开箭头后，Web 端 `-start` / `-end` 的箭头停在气泡两端内缩 17px 处，只有居中才指向触发器中心；这样箭头不会压到气泡圆角上。
 
 ```vue
 <template>
-  <RebornPopover :content="{ side: 'top', align: 'start', sideOffset: 12 }" arrow>
+  <RebornPopover placement="top-start" :side-offset="12" arrow>
     <RebornButton label="顶部弹出" />
     <template #content>
       <p class="w-56 text-sm">锚定在按钮上方、起点对齐的气泡内容。</p>
@@ -71,6 +74,10 @@ Popover 是锚定在触发元素上的小型气泡浮层，Web 与 UniApp 两端
   </RebornPopover>
 </template>
 ```
+
+::tip
+旧的 `content` 对象写法（`{ side, align, sideOffset }`）仍然可用，等价于 `placement` + `sideOffset`。同时传入时以 `placement` / `sideOffset` 为准；新代码请改用 `placement`。
+::
 
 ### 悬停触发与显隐延迟
 
@@ -100,7 +107,7 @@ const popoverRef = ref<{ close: () => void } | null>(null);
 </script>
 
 <template>
-  <RebornPopover ref="popoverRef" v-model:open="show" :content="{ side: 'top' }">
+  <RebornPopover ref="popoverRef" v-model:open="show" placement="top">
     <RebornButton :label="show ? '已打开' : '点击打开'" />
     <template #content>
       <RebornButton size="sm" label="完成" @click="popoverRef?.close()" />
@@ -109,28 +116,38 @@ const popoverRef = ref<{ close: () => void } | null>(null);
 </template>
 ```
 
-### 遮罩与点击外部关闭
+### 点击外部、滚动与遮罩
 
-`dismissible`（默认 `true`）决定点击触发器与气泡以外的区域时是否关闭；设为 `false` 后只能再次点击触发器或调用 `close()` 关闭。Web 端 `modal` 会在气泡打开时铺一层半透明遮罩，点击遮罩同样受 `dismissible` 控制。
+三个开关各管一种关闭时机，都默认开启（遮罩除外）：
 
-| 组合                          | 点击外部 / 遮罩 | 典型用途                                 |
-| ----------------------------- | --------------- | ---------------------------------------- |
-| 默认                          | 关闭            | 大多数补充信息浮层                       |
-| `modal`                       | 关闭            | 需要把注意力聚焦到气泡上（仅 Web）       |
-| `:dismissible="false"`        | 不关闭          | 气泡里有未保存的输入，防止误触丢失       |
+| 属性 | 默认值 | 打开时的行为 | 关闭后的行为 |
+| --- | --- | --- | --- |
+| `dismissible` | `true` | 在触发器与气泡以外按下鼠标、触摸或点进 iframe 即关闭 | 只能再次点击触发器或调用 `close()` 关闭 |
+| `closeOnScroll` | `true` | 页面或触发器所在容器滚动时关闭（仅 Web） | 气泡跟随触发器重新定位 |
+| `modal` | `false` | 铺一层半透明遮罩，点击遮罩按 `dismissible` 决定（仅 Web） | 无遮罩 |
 
 ```vue
 <template>
+  <RebornPopover arrow :close-on-scroll="false">
+    <RebornButton label="滚动时跟随" />
+    <template #content>滚动页面时气泡跟着按钮移动，点击外部仍会关闭。</template>
+  </RebornPopover>
+  <RebornPopover :dismissible="false" :close-on-scroll="false">
+    <RebornButton variant="outlined" label="只能点触发器关闭" />
+    <template #content>再次点击触发器才会关闭。</template>
+  </RebornPopover>
   <RebornPopover modal>
     <RebornButton label="带遮罩" />
     <template #content>点击遮罩关闭。</template>
   </RebornPopover>
-  <RebornPopover :dismissible="false">
-    <RebornButton variant="outlined" label="点击外部不关闭" />
-    <template #content>再次点击触发器才会关闭。</template>
-  </RebornPopover>
 </template>
 ```
+
+滚动关闭只看「会不会让气泡和触发器错位」：气泡内部的列表滚动、与触发器无关的容器滚动（如页面另一处的轮播图自动播放）都不会关闭。气泡里嵌套的下拉框、确认框等浮层虽然传送到了 `body`，也会向外层气泡登记自己，在里面点选不算「点击外部」。
+
+::tip
+Web 端的点击外部与滚动关闭和 `reborn-select` 等下拉类组件共用同一套判定，两边互相登记：气泡里放 `RebornSelect`、`RebornPopconfirm`，或下拉面板里放 Popover，点内层都不会关掉外层。
+::
 
 ### 复合内容：资料卡、调色盘与操作菜单
 
@@ -145,7 +162,7 @@ const selected = ref(colors[0]);
 </script>
 
 <template>
-  <RebornPopover :content="{ side: 'bottom', sideOffset: 12 }" arrow>
+  <RebornPopover :side-offset="12" arrow>
     <RebornButton variant="outlined" :label="selected" />
     <template #content>
       <div class="grid grid-cols-4 gap-2">
@@ -185,10 +202,13 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | 属性名        | 类型                                                                                                           | 默认值                                            | 描述                                                                         |
 | ------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `mode`        | `'click' \| 'hover'`                                                                                           | `'click'`                                         | 触发方式。                                                                   |
-| `content`     | `{ side?: 'top' \| 'bottom' \| 'left' \| 'right'; align?: 'start' \| 'center' \| 'end'; sideOffset?: number }` | `{ side: 'bottom', align: 'center', sideOffset: 8 }` | 弹出方位、交叉轴对齐与间距（px）。                                           |
+| `placement`   | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | `'bottom'` | 出现方向与对齐方式，与 `reborn-popconfirm`、`reborn-tooltip` 一致；主轴放不下时翻到对侧。 |
+| `sideOffset`  | `number`                                                                                                       | `8`                                               | 气泡与触发器的间距（px）。                                                   |
+| `content`     | `{ side?: 'top' \| 'bottom' \| 'left' \| 'right'; align?: 'start' \| 'center' \| 'end'; sideOffset?: number }` | -                                                 | 已废弃：旧的定位对象写法，等价于 `placement` + `sideOffset`；两者同时传入时以新属性为准。 |
 | `arrow`       | `boolean`                                                                                                      | `false`                                           | 是否显示指向触发器的箭头。                                                   |
 | `portal`      | `boolean \| string`                                                                                            | `true`                                            | 是否用 Teleport 挂载到 `body`；传字符串时作为挂载目标选择器。                |
-| `dismissible` | `boolean`                                                                                                      | `true`                                            | 点击触发器与气泡以外的区域（含遮罩）时是否关闭。                             |
+| `dismissible` | `boolean`                                                                                                      | `true`                                            | 在触发器与气泡以外按下（含遮罩、iframe 内）时是否关闭；嵌套浮层内的点击不算外部。 |
+| `closeOnScroll` | `boolean`                                                                                                    | `true`                                            | 页面或触发器所在容器滚动时是否关闭；关闭后气泡跟随触发器重新定位。           |
 | `open`        | `boolean`                                                                                                      | -                                                 | 受控显隐，对应 `v-model:open`。                                              |
 | `defaultOpen` | `boolean`                                                                                                      | `false`                                           | 非受控模式下的初始显隐。                                                     |
 | `modal`       | `boolean`                                                                                                      | `false`                                           | 打开时是否铺半透明遮罩。                                                     |
@@ -205,7 +225,9 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 
 | 属性名           | 类型                                                                                                           | 默认值                                | 描述                                                                                   |
 | ---------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
-| `content`        | `{ side?: 'top' \| 'bottom' \| 'left' \| 'right'; align?: 'start' \| 'center' \| 'end'; sideOffset?: number }` | `{ side: 'bottom', align: 'center', sideOffset: 0 }` | 弹出方位、交叉轴对齐与间距。                                                   |
+| `placement`      | `'top' \| 'top-start' \| 'top-end' \| 'bottom' \| 'bottom-start' \| 'bottom-end' \| 'left' \| 'left-start' \| 'left-end' \| 'right' \| 'right-start' \| 'right-end'` | `'bottom'` | 出现方向与对齐方式，与 Web 端一致；未传时回落到 `content`。 |
+| `sideOffset`     | `number`                                                                                                       | `0`                                   | 气泡与触发器的间距（px）；未传时回落到 `content.sideOffset`。                          |
+| `content`        | `{ side?: 'top' \| 'bottom' \| 'left' \| 'right'; align?: 'start' \| 'center' \| 'end'; sideOffset?: number }` | `{ side: 'bottom', align: 'center', sideOffset: 0 }` | 已废弃：旧的定位对象写法，等价于 `placement` + `sideOffset`。 |
 | `arrow`          | `boolean`                                                                                                      | `true`                                | 是否显示箭头。                                                                         |
 | `portal`         | `boolean \| string`                                                                                            | `false`                               | 为与 Web 保持 API 一致而保留，组件内未使用。                                           |
 | `dismissible`    | `boolean`                                                                                                      | `true`                                | 打开时是否铺一层透明遮罩，点击外部即关闭。                                             |
@@ -312,8 +334,8 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | `wrapper`        | 最外层包裹节点，默认 `relative inline-block`，`class` prop 也并到这里；整体在行内流中的占位、外边距改这里。                             |
 | `trigger`        | 触发器包裹层，默认 `inline-flex max-w-full`，包住 `default` 插槽，点击与悬停事件绑定在它身上。                                         |
 | `contentWrapper` | 气泡定位层（Teleport 之后的过渡容器），默认 `fixed top-0 left-0 z-[9999]`，坐标由定位计算写入内联样式；层级改这里。                     |
-| `content`        | 气泡主体，默认 `relative bg-gray-1 border border-gray-1 shadow-xl rounded-lg p-[12px]`，另按 `side` 追加 `origin-*` 作为缩放原点；底色、圆角、内边距、阴影改这里。 |
-| `arrow`          | 箭头，默认 `absolute w-3 h-3 border border-gray-1 bg-gray-1`。**仅 `arrow` 为真时渲染**；改底色要与 `content` 一起改，否则箭头与面板颜色不一致。 |
+| `content`        | 气泡主体，默认 `relative bg-gray-1 border border-gray-3 shadow-lg rounded-lg p-[12px]`，另按实际方向追加 `origin-*` 作为缩放原点；底色、描边、圆角、内边距、阴影改这里。 |
+| `arrow`          | 箭头，默认 `absolute size-3 border border-gray-3 bg-gray-1`，只露出朝外的两条边并与面板描边相接。**仅 `arrow` 为真时渲染**；改底色、描边色要与 `content` 一起改，否则箭头与面板颜色不一致。 |
 | `bridge`         | 触发器与气泡之间的透明桥接层，默认 `absolute inset-0 z-[-1]`。**仅 `mode="hover"` 时渲染**，一般不需要覆盖。                           |
 | `mask`           | 遮罩层，默认 `fixed inset-0 bg-black/30 z-[9998]`。**仅 `modal` 为真且气泡打开时渲染**；遮罩深浅改这里。                                |
 
@@ -360,7 +382,9 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 | 触发方式         | `mode` 支持 `click` / `hover`                               | 无 `mode`，只能点击触发                                       |
 | 显隐延迟         | `openDelay` / `closeDelay` 在 hover 模式生效                | 仅保留属性，不生效                                            |
 | 遮罩             | `modal` 渲染半透明遮罩                                      | 仅保留属性，不渲染                                            |
-| 点击外部关闭     | 监听 document `mousedown` 判断                              | `dismissible` 为真时铺一层透明全屏遮罩拦截点击                |
+| 方位写法         | `placement` + `sideOffset`（`content` 已废弃）               | 同左，`content` 同样已废弃                                    |
+| 点击外部关闭     | 捕获阶段监听 `pointerdown`，嵌套浮层与 iframe 内点击均按规则判定 | `dismissible` 为真时铺一层透明全屏遮罩拦截点击                |
+| 滚动关闭         | `closeOnScroll`，默认开启                                   | 无                                                            |
 | 挂载位置         | 默认 Teleport 到 `body`                                     | 渲染在原位置，`portal` 不生效                                 |
 | `arrow` 默认值   | `false`                                                     | `true`                                                        |
 | `sideOffset` 默认 | `8`                                                        | `0`                                                           |
@@ -377,6 +401,9 @@ UniApp 端不传 `content` 插槽时，可以用 `title` + `displayMode` 直接�
 ## 注意事项
 
 - **Web 端定位与 `reborn-tooltip`、`reborn-popconfirm` 共用同一套实现。** 主轴放不下时翻到对侧（对侧同样放不下则保持原方向），交叉轴挪回视口内；窗口缩放、滚动或气泡尺寸变化时会重新定位，所以气泡内容动态变高也不会错位。
+- **滚动关闭只针对会造成错位的滚动。** `closeOnScroll` 只在页面或包含触发器的容器滚动时关闭；气泡里的长列表滚动、无关容器的滚动不会关闭。需要气泡在滚动时一直可见，就设为 `false`，气泡会跟着触发器移动。
+- **嵌套浮层不会互相误关。** 气泡里的 `RebornSelect` 面板、`RebornPopconfirm` 等传送到 `body` 后不是气泡的 DOM 后代，但会逐级登记到外层气泡，在里面点选不算点击外部；反过来在外层气泡里点击，只会关闭内层。
+- **在 iframe 里点击同样算点击外部。** iframe 的点击不会派发到页面文档，组件改用「窗口失焦且焦点落在 iframe 上」来判定，所以文档站右侧的手机预览、嵌入的视频等区域也能正常关闭气泡。
 - **Web 端默认 Teleport 到 `body`。** 气泡不受父容器 `overflow: hidden` 裁剪；但如果把 `portal` 设为 `false`，气泡会渲染在原位置，父级带 `transform` 时 fixed 定位会以该父级为参照而错位。
 - **hover 模式的关闭靠 `closeDelay` 和桥接层共同兜底。** 把 `closeDelay` 调成 `0` 后，鼠标只要在触发器与气泡之间的缝隙外稍有偏离就会立刻关闭。
 - **UniApp 端多个 Popover 自动互斥。** 打开一个会关闭其他已打开的实例，不需要自己维护「当前打开的是哪个」。

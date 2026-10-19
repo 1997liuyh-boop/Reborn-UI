@@ -117,6 +117,42 @@ function reset() {
 
 嵌套列表字段使用连字符路径作为 `prop`（如 `contacts-0-name`），配合 `rules` 中对应的 `z.array(z.object({ ... }))` 即可校验动态列表项。
 
+### 完整表单联动
+
+Web 演示中的「活动报名设置」把输入框、数字输入框、单选、复选、开关、多行文本、提及、评分、下拉选择、滑块、日期、时间、颜色选择与进度条组合在同一张表单内。控件通过 `v-model` 共享数据，`rules` 与条件字段同步变化，进度条通过 `percent` 显示当前必填项的完成度。
+
+| 联动 | 行为 | 典型用途 |
+| --- | --- | --- |
+| 活动类型、举办方式 → 人数 | 动态收紧 `max`，数字输入框与滑块同步更新 | 限额报名 |
+| 举办方式 → 会议链接或活动场地 | 切换字段时清除不再适用的值及错误 | 条件表单 |
+| 城市 → 场地选项 | 更换 `options`，清除失效的场地选择 | 级联选择 |
+| 通知开关 → 邮箱 | 同步调整 `disabled`、必填星号与邮箱规则 | 按需收集信息 |
+| 必填字段 → 进度条 | 复用校验规则，条件字段仅在启用时计入 | 填写完成度反馈 |
+| 提及、评分、颜色 → 活动预览 | 实时回显协作者、期待程度与标识颜色 | 录入结果预览 |
+| 提交、重置 → 结果回显 | `validate()` 通过后展示本地快照，`resetFields()` 恢复初始值 | 校验与恢复 |
+
+```vue
+<script setup lang="ts">
+import { computed, reactive } from 'vue';
+import { z } from 'zod';
+const form = reactive({ notifications: false, email: '' });
+const rules = computed(() => z.object({
+  notifications: z.boolean(),
+  email: form.notifications ? z.string().email('请填写有效邮箱') : z.string(),
+}));
+</script>
+<template>
+  <RebornForm :model-value="form" :rules="rules" trigger="change">
+    <RebornFormItem prop="notifications" label="通知"><RebornSwitch v-model="form.notifications" /></RebornFormItem>
+    <RebornFormItem prop="email" label="邮箱" :required="form.notifications"><RebornInput v-model="form.email" :disabled="!form.notifications" /></RebornFormItem>
+  </RebornForm>
+</template>
+```
+
+::tip
+禁用字段不会自动退出校验，必须同步放宽对应规则。评分与时间选择器当前不自动触发字段校验，示例在 `change` 后等待 `nextTick()`，再调用 `validateField`；所有已注册字段仍参与提交时的全量校验。
+::
+
 ## API
 
 ### Form Props
