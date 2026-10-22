@@ -115,9 +115,9 @@ export default {
         },
         // 标签字号走 7 级字号令牌（sm 12px / md 14px / lg 16px），行高由令牌自带。
         size: {
-            sm: { icon: "size-[12px]", dot: "size-[6px]", label: "text-sm" },
-            md: { icon: "size-[14px]", dot: "size-[7px]", label: "text-base" },
-            lg: { icon: "size-[16px]", dot: "size-[8px]", label: "text-lg" },
+            sm: { icon: "size-3", dot: "size-1.5", label: "text-sm" },
+            md: { icon: "size-3.5", dot: "size-radio-dot-md", label: "text-base" },
+            lg: { icon: "size-4", dot: "size-2", label: "text-lg" },
         },
         color: {
             primary: {},
@@ -138,7 +138,9 @@ export default {
             false: {},
         },
         disabled: {
-            true: { root: "pointer-events-none cursor-not-allowed opacity-50" },
+            // 不能再加 pointer-events-none：它会让光标直接穿透到下层，禁止光标永远显示不出来；
+            // 点击由 onTap 的禁用判断拦住，悬停变色由各 hover 复合变体的 disabled: false 排除
+            true: { root: "cursor-not-allowed opacity-50" },
             false: {},
         },
         error: {
@@ -175,13 +177,13 @@ export default {
 
         // 圆点风格 · 未选中：灰色空心圆，悬停时外圈预示语义色
         { type: "radio", checked: false, class: { icon: "border-gray-4", dot: "hidden" } },
-        { type: "radio", checked: false, color: "primary", class: { icon: "group-hover/radio:border-primary" } },
-        { type: "radio", checked: false, color: "secondary", class: { icon: "group-hover/radio:border-secondary" } },
-        { type: "radio", checked: false, color: "success", class: { icon: "group-hover/radio:border-success" } },
-        { type: "radio", checked: false, color: "info", class: { icon: "group-hover/radio:border-info" } },
-        { type: "radio", checked: false, color: "warning", class: { icon: "group-hover/radio:border-warning" } },
-        { type: "radio", checked: false, color: "error", class: { icon: "group-hover/radio:border-error" } },
-        { type: "radio", checked: false, color: "neutral", class: { icon: "group-hover/radio:border-neutral" } },
+        { type: "radio", checked: false, disabled: false, color: "primary", class: { icon: "group-hover/radio:border-primary" } },
+        { type: "radio", checked: false, disabled: false, color: "secondary", class: { icon: "group-hover/radio:border-secondary" } },
+        { type: "radio", checked: false, disabled: false, color: "success", class: { icon: "group-hover/radio:border-success" } },
+        { type: "radio", checked: false, disabled: false, color: "info", class: { icon: "group-hover/radio:border-info" } },
+        { type: "radio", checked: false, disabled: false, color: "warning", class: { icon: "group-hover/radio:border-warning" } },
+        { type: "radio", checked: false, disabled: false, color: "error", class: { icon: "group-hover/radio:border-error" } },
+        { type: "radio", checked: false, disabled: false, color: "neutral", class: { icon: "group-hover/radio:border-neutral" } },
 
         // 分段按钮风格 · 选中：加粗为两种变体共用
         { type: "button", checked: true, class: { label: "font-medium" } },
@@ -221,18 +223,18 @@ export default {
 
         // 分段按钮风格 · 未选中：灰字，悬停预示语义色
         { type: "button", checked: false, class: { root: "text-gray-6" } },
-        { type: "button", checked: false, color: "primary", class: { root: "hover:text-primary" } },
-        { type: "button", checked: false, color: "secondary", class: { root: "hover:text-secondary" } },
-        { type: "button", checked: false, color: "success", class: { root: "hover:text-success" } },
-        { type: "button", checked: false, color: "info", class: { root: "hover:text-info" } },
-        { type: "button", checked: false, color: "warning", class: { root: "hover:text-warning" } },
-        { type: "button", checked: false, color: "error", class: { root: "hover:text-error" } },
-        { type: "button", checked: false, color: "neutral", class: { root: "hover:text-neutral" } },
+        { type: "button", checked: false, disabled: false, color: "primary", class: { root: "hover:text-primary" } },
+        { type: "button", checked: false, disabled: false, color: "secondary", class: { root: "hover:text-secondary" } },
+        { type: "button", checked: false, disabled: false, color: "success", class: { root: "hover:text-success" } },
+        { type: "button", checked: false, disabled: false, color: "info", class: { root: "hover:text-info" } },
+        { type: "button", checked: false, disabled: false, color: "warning", class: { root: "hover:text-warning" } },
+        { type: "button", checked: false, disabled: false, color: "error", class: { root: "hover:text-error" } },
+        { type: "button", checked: false, disabled: false, color: "neutral", class: { root: "hover:text-neutral" } },
 
         // 分段按钮风格尺寸：高度取 RebornButton 同款令牌（24/32/40px），与 pure-button 对齐
-        { type: "button", size: "sm", class: { root: "h-button-sm px-[8px]" } },
-        { type: "button", size: "md", class: { root: "h-button-md px-[12px]" } },
-        { type: "button", size: "lg", class: { root: "h-button-lg px-[16px]" } },
+        { type: "button", size: "sm", class: { root: "h-6 px-[8px]" } },
+        { type: "button", size: "md", class: { root: "h-8 px-[12px]" } },
+        { type: "button", size: "lg", class: { root: "h-10 px-[16px]" } },
 
         // 实体按钮拼接风格 · 禁用：视觉交给 RebornButton 的 bg-gray-2/text-gray-5 精确呈现，
         // 压掉根节点的整体半透明，避免二次淡化

@@ -24,15 +24,15 @@ export default {
       "relative min-w-0 flex-1 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary",
     arrowButton:
       "flex h-5 w-full cursor-pointer items-center justify-center text-gray-6 hover:bg-gray-2 disabled:cursor-not-allowed disabled:opacity-40",
-    list: "h-[174px] w-full",
+    list: "h-time-picker-panel-list-height w-full",
     // 本组件按设计稿将局部行高令牌设为 150%，不修改全局 14px / 22px 档位；单项为 21px + 8px。
-    item: "relative flex h-[29px] w-full shrink-0 cursor-pointer items-center justify-center px-5 py-1 text-base [--text-base--line-height:1.5] text-gray-9 transition-colors hover:bg-gray-2 motion-reduce:transition-none",
+    item: "relative flex h-time-picker-panel-item w-full shrink-0 cursor-pointer items-center justify-center px-5 py-1 text-base [--text-base--line-height:1.5] text-gray-9 transition-colors hover:bg-gray-2 motion-reduce:transition-none",
     itemActive: "font-normal",
     // 状态类作为 item 的 class 参数合并，文字色、光标、悬停背景才能覆盖 item 的默认值；
     // 若与 item 并列输出，两组同类工具类同时生效，按 CSS 先后顺序反而是 item 的取值胜出。
     itemDisabled: "cursor-not-allowed text-gray-5 hover:bg-transparent",
     itemIdle: "font-normal",
-    indicator: "pointer-events-none absolute inset-x-0 top-1/2 h-[29px] -translate-y-1/2",
+    indicator: "pointer-events-none absolute inset-x-0 top-1/2 h-time-picker-panel-item -translate-y-1/2",
     // 保留旧的覆盖键，但默认不使用渐变遮罩，避免改变指定的文字色。
     mask: "pointer-events-none absolute inset-0",
     footer: "flex items-center justify-center gap-2 border-t border-gray-2 px-1 py-2",
@@ -61,7 +61,8 @@ export default {
       },
     },
     arrowControl: { false: { arrowButton: "hidden" } },
-    disabled: { true: { wrapper: "pointer-events-none opacity-50" } },
+    // 只屏蔽子元素的指针，外壳接住指针显示禁止光标；各交互处理函数已按 disabled 拦截
+    disabled: { true: { wrapper: "cursor-not-allowed opacity-50 [&_*]:pointer-events-none" } },
   },
   defaultVariants: { size: "md", color: "primary", variant: "filled" } as const,
 };

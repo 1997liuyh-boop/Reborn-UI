@@ -7,6 +7,7 @@ import type {
   MessageSemanticDOM,
 } from './reborn-toast.config';
 import { computed } from 'vue';
+import { useMotionList } from '@/composables/useMotionList';
 import {
   closeMessage,
   MESSAGE_TYPE_ICON,
@@ -41,10 +42,13 @@ function edgeStyle(placement: MessagePlacement): CSSProperties {
   return isBottom(placement) ? { bottom: edge.value } : { top: edge.value };
 }
 
-/** 上下两侧入场方向相反，过渡名按侧边区分 */
-function transitionName(placement: MessagePlacement) {
-  return isBottom(placement) ? 'reborn-message-bottom' : 'reborn-message-top';
-}
+/** 各栈保留自己的入场方向，增删补位统一由 Motion 承担。 */
+const listMotion = useMotionList({
+  duration: 0.24,
+  enter: element => ({ opacity: [0, 1], translate: [`0px ${element.dataset.placement?.startsWith('bottom') ? 16 : -16}px`, '0px 0px'] }),
+  leave: element => ({ opacity: 0, translate: `0px ${element.dataset.placement?.startsWith('bottom') ? 8 : -8}px` }),
+});
+const vMotionList = listMotion.directive;
 
 /** 取单条消息的样式构建器 */
 const themeOf = (item: MessageInstance) => messageTheme({ variant: item.variant, color: item.color });
@@ -96,12 +100,15 @@ function handleMouseLeave(item: MessageInstance) {
 <template>
   <TransitionGroup
     v-for="stack in stacks" :key="stack.placement"
-    tag="div" :name="transitionName(stack.placement)"
+    v-motion-list tag="div" :css="false"
     :class="messageTheme({ placement: stack.placement }).wrapper()" :style="edgeStyle(stack.placement)"
-    :dir="messageState.rtl ? 'rtl' : undefined"
+    :dir="messageState.rtl ? 'rtl' : undefined" @enter="listMotion.enter"
+    @leave="listMotion.leave" @enter-cancelled="listMotion.cancel"
+    @leave-cancelled="listMotion.cancel"
   >
     <div
       v-for="item in stack.items" :key="item.id"
+      :data-placement="stack.placement"
       :class="[themeOf(item).root(), item.className, semanticClass(item, 'root')]"
       :style="[item.style ?? {}, semanticStyle(item, 'root') ?? {}]"
       role="alert"
@@ -148,55 +155,3 @@ function handleMouseLeave(item: MessageInstance) {
     </div>
   </TransitionGroup>
 </template>
-
-<style scoped>
-/*
- * 入场走关键帧而不是「-enter-from 类 + 过渡」：入场偏移只存在于动画内部，
- * 页面在后台（rAF 挂起、双帧回调不执行）时元素直接落在最终位置，不会卡在半途
- */
-.reborn-message-top-enter-active {
-  animation: reborn-message-in-top 0.24s ease;
-}
-
-.reborn-message-bottom-enter-active {
-  animation: reborn-message-in-bottom 0.24s ease;
-}
-
-@keyframes reborn-message-in-top {
-  from {
-    opacity: 0;
-    transform: translateY(-16px) scale(0.96);
-  }
-}
-
-@keyframes reborn-message-in-bottom {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.96);
-  }
-}
-
-/* 离场与同栈内的位置收拢仍走过渡 */
-.reborn-message-top-leave-active,
-.reborn-message-top-move,
-.reborn-message-bottom-leave-active,
-.reborn-message-bottom-move {
-  transition: opacity 0.24s ease, transform 0.24s ease;
-}
-
-.reborn-message-top-leave-to {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.96);
-}
-
-.reborn-message-bottom-leave-to {
-  opacity: 0;
-  transform: translateY(8px) scale(0.96);
-}
-
-/* 离场元素脱离文档流，让同栈内其余消息的 move 过渡平滑收拢 */
-.reborn-message-top-leave-active,
-.reborn-message-bottom-leave-active {
-  position: absolute;
-}
-</style>

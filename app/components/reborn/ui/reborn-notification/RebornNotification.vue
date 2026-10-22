@@ -7,6 +7,7 @@ import type {
   NotificationProgressOptions,
 } from './reborn-notification.config';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useMotionList } from '@/composables/useMotionList';
 import { cn } from '~/lib/utils';
 import {
   closeNotification,
@@ -107,10 +108,13 @@ function wrapperStyle(placement: NotificationPlacement): CSSProperties {
   return style;
 }
 
-/** 左右两侧入场方向不同，过渡名按物理侧边区分（end 贴右、start 贴左） */
-function transitionName(placement: NotificationPlacement) {
-  return placement.endsWith('end') ? 'reborn-notification-right' : 'reborn-notification-left';
-}
+/** 进出方向跟随所在侧，栈内成员的补位由 Motion 连续跟随。 */
+const listMotion = useMotionList({
+  duration: 0.28,
+  enter: element => ({ opacity: [0, 1], translate: [`${element.dataset.placement?.endsWith('end') ? 24 : -24}px 0px`, '0px 0px'] }),
+  leave: element => ({ opacity: 0, translate: `${element.dataset.placement?.endsWith('end') ? 24 : -24}px 0px` }),
+});
+const vMotionList = listMotion.directive;
 
 /** VNode（或返回 VNode 的函数）走 component :is 渲染 */
 function asComponent(node?: NotificationNode) {
@@ -188,12 +192,15 @@ function handleMouseLeave(item: NotificationInstance) {
 <template>
   <TransitionGroup
     v-for="stack in stacks" :key="stack.placement"
-    tag="div" :name="transitionName(stack.placement)"
-    :class="cn(notificationTheme({ placement: stack.placement }).wrapper(), stack.items[0]?.ui?.wrapper)"
-    :style="wrapperStyle(stack.placement)"
+    v-motion-list tag="div" :css="false"
+    :class="cn(notificationTheme({ placement: stack.placement }).wrapper(), stack.items[0]?.ui?.wrapper)" :style="wrapperStyle(stack.placement)"
+    @enter="listMotion.enter" @leave="listMotion.leave"
+    @enter-cancelled="listMotion.cancel"
+    @leave-cancelled="listMotion.cancel"
   >
     <div
       v-for="item in stack.items" :key="item.id"
+      :data-placement="stack.placement"
       :class="cn(themeOf(item).root(), item.customClass, item.ui?.root)"
       :style="item.style"
       role="alert" aria-live="polite"
@@ -279,58 +286,5 @@ function handleMouseLeave(item: NotificationInstance) {
 @keyframes reborn-notification-stripes {
   from { background-position: 0 0; }
   to { background-position: 1.25em 0; }
-}
-</style>
-
-<style scoped>
-/*
- * 入场走关键帧而不是「-enter-from 类 + 过渡」：入场偏移只存在于动画内部，
- * 页面在后台（rAF 挂起、双帧回调不执行）时元素直接落在最终位置，
- * 不会卡在 translateX(±24px) 上看着像贴边距算错
- */
-.reborn-notification-right-enter-active {
-  animation: reborn-notification-slide-in-right 0.28s ease;
-}
-
-.reborn-notification-left-enter-active {
-  animation: reborn-notification-slide-in-left 0.28s ease;
-}
-
-@keyframes reborn-notification-slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-}
-
-@keyframes reborn-notification-slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-24px);
-  }
-}
-
-/* 离场与同栈内的位置收拢仍走过渡 */
-.reborn-notification-right-leave-active,
-.reborn-notification-right-move,
-.reborn-notification-left-leave-active,
-.reborn-notification-left-move {
-  transition: opacity 0.28s ease, transform 0.28s ease;
-}
-
-.reborn-notification-right-leave-to {
-  opacity: 0;
-  transform: translateX(24px);
-}
-
-.reborn-notification-left-leave-to {
-  opacity: 0;
-  transform: translateX(-24px);
-}
-
-/* 离场元素脱离文档流，让同栈内其余通知的 move 过渡平滑收拢 */
-.reborn-notification-right-leave-active,
-.reborn-notification-left-leave-active {
-  position: absolute;
 }
 </style>

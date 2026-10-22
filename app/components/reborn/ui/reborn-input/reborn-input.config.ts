@@ -65,8 +65,8 @@ export default {
   },
   variants: {
     /**
-     * 尺寸档位，全部取自 app/assets/theme/typography.css 的设计令牌：
-     * 高度 --height-input-*、水平内边距 --spacing-input-px-*、分割线高度 --spacing-input-sep-*。
+     * 尺寸直接使用 Tailwind 刻度：高度 h-6 / h-8 / h-10，
+     * 水平内边距 px-2.5 / px-3 / px-4，分隔线高度 h-3 / h-3.5 / h-4。
      * 字号遵循全局 size 锚点：sm 12px（text-sm）/ md 14px（text-base）/ lg 16px（text-lg）。
      * text-* 令牌自带「字号 + 8px」的行高，全部档位都不叠加 leading-*，否则会把令牌行高覆盖掉；
      * 多行模式同样走令牌行高（md 档 14px 字号对应 22px），不再单开比例档。
@@ -75,31 +75,31 @@ export default {
      */
     size: {
       sm: {
-        group: "h-input-sm",
-        wrapper: "px-input-px-sm text-sm",
+        group: "h-6",
+        wrapper: "px-2.5 text-sm",
         input: "text-sm",
         prepend: "text-sm",
         append: "text-sm",
         icon: "text-sm",
-        separator: "h-input-sep-sm",
+        separator: "h-3",
       },
       md: {
-        group: "h-input-md",
-        wrapper: "px-input-px-md text-base",
+        group: "h-8",
+        wrapper: "px-3 text-base",
         input: "text-base",
         prepend: "text-base",
         append: "text-base",
         icon: "text-base",
-        separator: "h-input-sep-md",
+        separator: "h-3.5",
       },
       lg: {
-        group: "h-input-lg",
-        wrapper: "px-input-px-lg text-lg",
+        group: "h-10",
+        wrapper: "px-4 text-lg",
         input: "text-lg",
         prepend: "text-lg",
         append: "text-lg",
         icon: "text-lg",
-        separator: "h-input-sep-lg",
+        separator: "h-4",
       },
     },
     /**
@@ -117,8 +117,7 @@ export default {
         wrapper:
           "bg-gray-2 border-1 border-transparent focus-within:bg-gray-1 data-[disabled=true]:bg-gray-2 data-[disabled=true]:border-gray-4",
       },
-      // borderless / underlined 横向内边距归零：px-input-px-* 已在 lib/utils.ts 的
-      // twMergeConfig 注册进 px 冲突组，后写的 px-0 可正常清除 size 层的令牌类
+      // 无边框与下划线形态清空水平内边距，原生 px-* 按后写顺序正常合并。
       borderless: {
         wrapper: "bg-transparent border-0 focus-within:border-0 px-0",
         input: "px-[2px]"
@@ -139,6 +138,8 @@ export default {
         prepend: "cursor-not-allowed text-gray-5",
         append: "cursor-not-allowed text-gray-5",
         wrapper: "cursor-not-allowed text-gray-5",
+        // 后缀图标、密码切换默认是 cursor-pointer，禁用时一并换成禁止光标
+        iconSection: "cursor-not-allowed",
       }
     },
     /**
@@ -190,8 +191,7 @@ export default {
     },
     /**
      * 多行（textarea）模式：高度由内容决定，字数统计悬浮在右下角。
-     * group 的 h-auto 必须用 ! 提权：tailwind-merge 不认识自定义的 h-input-* 属于
-     * height 冲突组，不加 ! 时两个类会共存并由 CSS 源序决定胜负，导致高度被钉死在单行。
+     * h-auto! 覆盖单行尺寸档位的固定高度，沿用多行模式的样式优先级。
      */
     multiline: {
       true: {
@@ -231,9 +231,9 @@ export default {
     },
   },
   compoundVariants: [
-    { resizeWithCount: true, size: "sm", class: { input: "px-input-px-sm" } },
-    { resizeWithCount: true, size: "md", class: { input: "px-input-px-md" } },
-    { resizeWithCount: true, size: "lg", class: { input: "px-input-px-lg" } },
+    { resizeWithCount: true, size: "sm", class: { input: "px-2.5" } },
+    { resizeWithCount: true, size: "md", class: { input: "px-3" } },
+    { resizeWithCount: true, size: "lg", class: { input: "px-4" } },
     // 下划线形态保留原有的窄文本边距，不套用描边输入框的尺寸内边距。
     { resizeWithCount: true, variant: "underlined", class: { input: "px-0.5" } },
     // square 外形的圆角按尺寸取令牌：sm 4px / md 6px / lg 8px

@@ -1065,15 +1065,24 @@ function getItemClass(isSelected: boolean, isDisabled: boolean | undefined) {
 
 function getRightItemClass(item: TransferDataRecord) {
   if (props.oneWay) {
+    // 单向模式的右侧行本身不可点（只有撤回按钮可点）：正常时默认光标，禁用时禁止光标
     return cn(
       ui.value.item(),
-      "cursor-default",
       isItemDisabled(item) || props.disabled
-        ? "opacity-50"
-        : "hover:bg-gray-2",
+        ? "opacity-50 cursor-not-allowed"
+        : "cursor-default hover:bg-gray-2",
     );
   }
   return getItemClass(rightCheckedSet.value.has(getItemKey(item)), isItemDisabled(item));
+}
+
+// 撤回按钮禁用时不用 pointer-events-none：会让禁止光标穿透消失；原生 disabled 已拦住点击
+function getUndoBtnClass(item: TransferDataRecord) {
+  return cn(
+    ui.value.itemUndoBtn(),
+    (props.disabled || isItemDisabled(item))
+    && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-gray-5 active:scale-100",
+  );
 }
 
 function handleRightItemClick(item: TransferDataRecord) {
@@ -1279,11 +1288,7 @@ const panelMenus = computed(
                         </slot>
                       </slot>
                     </div>
-                    <button v-if="isOneWayItemMoved(item)" type="button" :class="cn(
-                      ui.itemUndoBtn(),
-                      (props.disabled || isItemDisabled(item)) && 'pointer-events-none opacity-40',
-                    )
-                      " title="撤回" :disabled="props.disabled || isItemDisabled(item)" aria-label="撤回到左侧"
+                    <button v-if="isOneWayItemMoved(item)" type="button" :class="getUndoBtnClass(item)" title="撤回" :disabled="props.disabled || isItemDisabled(item)" aria-label="撤回到左侧"
                       @click.stop="revertOneWayItem(item)">
                       <Icon name="lucide:undo-2" :class="ui.itemUndoIcon()" />
                     </button>

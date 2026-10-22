@@ -320,7 +320,7 @@ const editLink = computed(() => {
         <span v-if="titleParts.zh" class="ml-2 font-normal text-gray-7">{{ titleParts.zh }}</span>
       </template>
 
-      <!-- 技术栈徽章：间距写在 ui.base 上而非 class —— RebornBadge 把 class 同时并进 root 与 base，写 class 会得到双份内边距；高度由 h-badge-md 固定，不需要 py -->
+      <!-- 技术栈徽章：间距写在 ui.base 上而非 class —— RebornBadge 把 class 同时并进 root 与 base，写 class 会得到双份内边距；高度由 h-6 固定，不需要 py -->
       <div v-if="page.tags?.length" class="mt-4 flex flex-wrap items-center gap-2">
         <RebornBadge
           v-for="tag in page.tags" :key="page.path + tag" :label="tag" variant="soft"

@@ -11,7 +11,7 @@ import { JSDOM } from 'jsdom';
 
 // 使用真实组件、传送、过渡与全局滚动锁，只替代图标显示。
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost' });
-for (const key of ['window', 'document', 'Element', 'HTMLElement', 'SVGElement', 'Node', 'Event', 'MouseEvent', 'KeyboardEvent', 'FocusEvent', 'getComputedStyle']) {
+for (const key of ['window', 'document', 'Element', 'HTMLElement', 'SVGElement', 'Node', 'NodeList', 'Event', 'MouseEvent', 'KeyboardEvent', 'FocusEvent', 'getComputedStyle']) {
   Object.defineProperty(globalThis, key, { configurable: true, value: dom.window[key] });
 }
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 1);
@@ -23,6 +23,20 @@ const result = await build({
   bundle: true, write: false, format: 'cjs', platform: 'node', packages: 'external',
   alias: { '~': path.resolve('app'), '@': path.resolve('app') },
   plugins: [{ name: 'vue-test', setup(builder) {
+    // 交互测试模拟动画完成时机；真实插值和中断连续性由浏览器测试验证。
+    builder.onLoad({ filter: /lib[\\/]motion\.ts$/ }, () => ({ contents: `
+      const runs = new WeakMap();
+      export function runMotion(element, frames, options = {}) {
+        runs.get(element)?.stop();
+        let resolve; const finished = new Promise(done => resolve = done);
+        const timer = setTimeout(() => {
+          for (const [key, value] of Object.entries(frames)) element.style[key] = Array.isArray(value) ? value.at(-1) : value;
+          if (runs.get(element) === handle) runs.delete(element);
+          resolve();
+        }, (options.duration ?? 0) * 1000);
+        const handle = { finished, stop() { clearTimeout(timer); resolve(); } }; runs.set(element, handle); return handle;
+      }
+    `, loader: 'js' }));
     builder.onLoad({ filter: /\.vue$/ }, args => {
       const { descriptor } = parse(readFileSync(args.path, 'utf8'), { filename: args.path });
       const compiled = compileScript(descriptor, { id: args.path, inlineTemplate: true, fs: {
@@ -147,11 +161,12 @@ it('打开抽屉仅锁页面根滚动区域，不改变 body 的溢出样式', a
 });
 
 
-it('进退场结束后仍只对位移过渡，不给拖拽宽高附加动画', async () => {
+it('进退场结束后不给拖拽宽高附加 CSS 过渡', async () => {
   reset(); const p = mount({ duration: 30, resizable: true });
   for (let count = 0; count < 2; count++) {
     await p.open();
-    assert.ok(p.panel().classList.contains('transition-transform'), '过渡属性必须常驻，不能在入场后回退为 all');
+    assert.equal(p.panel().classList.contains('transition-transform'), false, '位移由 Motion 驱动，不叠加 CSS 过渡');
+    assert.equal(p.panel().style.transitionDuration, '', '不向尺寸拖拽遗留 CSS 动画时长');
     await p.close();
   }
 });

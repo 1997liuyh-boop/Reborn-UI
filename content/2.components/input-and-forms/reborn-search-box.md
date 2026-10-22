@@ -309,12 +309,12 @@ Web 端 `ui` 按 `SearchBoxUi` 的键覆盖对应节点类名，覆盖类经 `cn
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-搜索框自身只定义输入框区的水平内边距，高度、字号、图标尺寸全部沿用内部 `RebornInput` 的令牌：
+搜索框自身只定义输入框区的水平内边距，高度沿用内部 `RebornInput` 的原生尺寸刻度，字号与图标通过输入框样式覆盖。下表尺寸 px 值为默认根字号 16px 时的参考值，原生尺寸刻度随 Tailwind `--spacing` 缩放：
 
 | 项目               | sm                     | md         | lg         | 说明                                                        |
 | :----------------- | :--------------------- | :--------- | :--------- | :---------------------------------------------------------- |
 | 输入框区水平内边距 | `8px`                  | `12px`     | `12px`     | 兼作输入框与外置插槽之间的间距，可用 `ui.inputWrapper` 覆盖 |
-| 控件行高度         | `24px`                 | `32px`     | `40px`     | 取 `RebornInput` 的 `--height-input-sm/md/lg`               |
+| 控件行高度         | `h-6`（24px）          | `h-8`（32px） | `h-10`（40px） | 由内部 `RebornInput` 承担                              |
 | 内置图标字号       | `text-xl`              | `text-2xl` | `text-2xl` | 转发给输入框的图标覆盖                                      |
 | 内置图标间距       | `4px`                  | `6px`      | `6px`      | 输入框 `iconBox` 的 gap 覆盖                                |
 | `square` 圆角      | `rounded-md`（6px） | 同 sm      | 同 sm      | 不分尺寸，与 `RebornInput` 的 square 对齐                   |
@@ -363,7 +363,7 @@ Web 端 `ui` 按 `SearchBoxUi` 的键覆盖对应节点类名，覆盖类经 `cn
 | 清空历史          | `clearHistory()`（`dropdown` 作用域）+ `removeHistory` 回调                            | 无入口（`removeHistory` 不会被调用）                           |
 | 内置装饰          | 无                                                                                     | 放大镜图片、原/译切换、分隔线、站点选择器 + `RebornPopup` 弹层 |
 | 渲染节点          | `div`                                                                                  | `view` / `text`                                                |
-| 尺寸单位          | px                                                                                     | rpx                                                            |
+| 尺寸单位          | Tailwind 原生尺寸刻度，字号与圆角为固定 px                                               | rpx                                                            |
 
 ## 注意事项
 

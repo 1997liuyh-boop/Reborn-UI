@@ -30,8 +30,8 @@ export interface TableColumn {
   label?: string;
   /** 独立列标识，筛选和具名插槽优先使用它。 */
   columnKey?: string;
-  /** 列类别；selection 为多选，radio 为单选。 */
-  type?: 'default' | 'selection' | 'radio' | 'index' | 'expand';
+  /** 列类别；selection 为多选，radio 为单选，drag 渲染行拖拽排序手柄。 */
+  type?: 'default' | 'selection' | 'radio' | 'index' | 'expand' | 'drag';
   /** 列宽，数字或 px 字符串。 */
   width?: number | string;
   /** 未指定宽度时的最小列宽。 */
@@ -173,6 +173,23 @@ export interface TableModels {
   pageSize: Ref<number>;
 }
 export interface TableChange { action: 'sort' | 'filter' | 'paginate'; page: number; pageSize: number; sort: TableSort; filters: TableFilters }
+/** 拖拽排序结束时的结果；索引都相对同级数组（根行为 data，子行为父行的 children）。 */
+export interface TableRowDragEnd {
+  /** 被拖动的行。 */
+  row: TableRow;
+  /** 落点参照行。 */
+  targetRow: TableRow;
+  /** 放在参照行之前还是之后。 */
+  position: 'before' | 'after';
+  /** 移动前在同级数组中的索引。 */
+  oldIndex: number;
+  /** 移动后在同级数组中的索引。 */
+  newIndex: number;
+  /** 父行，根级行为 undefined。 */
+  parent?: TableRow;
+  /** 应用本次移动后的新根数组：沿途父行浅拷贝并替换子数组，原数组与行对象都不改动，直接回写给 data 即可。 */
+  data: TableRow[];
+}
 export interface TableEmits {
   'selection-change': [rows: TableRow[]];
   'select': [selection: TableRow[], row: TableRow];
@@ -187,6 +204,7 @@ export interface TableEmits {
   'page-change': [page: number];
   'page-size-change': [size: number];
   'change': [state: TableChange];
+  'row-drag-end': [payload: TableRowDragEnd];
 }
 export type TableNotify = <K extends keyof TableEmits>(event: K, ...args: TableEmits[K]) => void;
 export interface TableScrollToOptions {

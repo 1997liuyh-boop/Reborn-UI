@@ -32,7 +32,8 @@ export const rebornNoticeBar = tv({
     },
     disabled: {
       true: {
-        root: 'opacity-50 pointer-events-none cursor-not-allowed',
+        // 只屏蔽子元素的指针：根节点若也 pointer-events-none，禁止光标永远显示不出来；根节点的点击在 handleClick 里按禁用拦截
+        root: 'opacity-50 cursor-not-allowed *:pointer-events-none',
       },
     },
   },

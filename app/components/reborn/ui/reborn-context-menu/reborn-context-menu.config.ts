@@ -18,7 +18,7 @@ export default tv({
     wrapper: "relative",
     trigger: "",
     contentWrapper: "fixed left-0 top-0 z-[10000] origin-top",
-    content: "relative min-w-[160px] rounded-lg bg-gray-1 p-[6px] shadow-[0_2px_16px_0_rgba(1,27,70,0.1)]",
+    content: "relative min-w-40 rounded-lg bg-gray-1 p-[6px] shadow-[0_2px_16px_0_rgba(1,27,70,0.1)]",
     group: "flex flex-col gap-[2px]",
     separator: "my-[4px] h-px bg-gray-3",
     item:
@@ -54,7 +54,8 @@ export default tv({
     },
     disabled: {
       true: {
-        item: "pointer-events-none opacity-50",
+        // 不加 pointer-events-none：它会让禁止光标显示不出来；点击由原生 disabled 拦下，悬停底色由末尾的复合变体取消
+        item: "cursor-not-allowed opacity-50",
       },
       false: {},
     },
@@ -97,6 +98,8 @@ export default tv({
         item: "text-error hover:bg-error/10",
       },
     },
+    // 排在最后：禁用项不响应悬停，盖过上面各语义色的 hover 底色
+    { disabled: true, class: { item: "hover:bg-transparent" } },
   ],
   defaultVariants: {
     size: "md" as (typeof contextMenuSizes)[number],

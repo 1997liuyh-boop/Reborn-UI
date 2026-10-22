@@ -560,6 +560,7 @@ const ui = computed(() => {
     clearable: showClearButton.value,
     disabled: isDisabled.value,
     error: isError.value || props.error,
+    loading: props.loading,
   });
   const field = fieldUi.value;
 

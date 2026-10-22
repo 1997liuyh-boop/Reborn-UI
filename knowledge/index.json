@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T09:12:41.361Z",
+  "generatedAt": "2026-10-21T03:49:17.714Z",
   "components": [
     {
       "id": "animate-grid",
@@ -838,6 +838,22 @@
       "platforms": [
         "web",
         "uniapp"
+      ]
+    },
+    {
+      "id": "reborn-calendar",
+      "title": "Calendar 日历",
+      "description": "按月或按年展示事项的日历：支持公农历、直角边框、日期格插槽、时区与字符串绑定值。",
+      "category": "data-display",
+      "tags": [
+        "calendar",
+        "date",
+        "schedule",
+        "event",
+        "lunar"
+      ],
+      "platforms": [
+        "web"
       ]
     },
     {
@@ -1763,6 +1779,22 @@
         "statistic",
         "number",
         "animation"
+      ],
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "id": "reborn-steps",
+      "title": "Steps 步骤条",
+      "description": "Web 流程步骤条：横纵排列、四向内容位置与三档尺寸，支持进度圆环、单步状态和内容插槽。",
+      "category": "navigation",
+      "tags": [
+        "vue",
+        "tailwind",
+        "steps",
+        "workflow",
+        "navigation"
       ],
       "platforms": [
         "web"

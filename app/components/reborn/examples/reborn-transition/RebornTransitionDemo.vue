@@ -1,8 +1,6 @@
 <script lang="ts" setup>
-import {
-  transitionStyles,
-  type TransitionName,
-} from "~/components/reborn/ui/reborn-transition/reborn-transition.config";
+import type { TransitionName } from "~/components/reborn/ui/reborn-transition/reborn-transition.config";
+import { transitionStyles } from "~/components/reborn/ui/reborn-transition/reborn-transition.config";
 
 /** 内置动画名称，直接取自组件配置，避免手工维护列表 */
 const transitionNames = Object.keys(transitionStyles) as TransitionName[];
@@ -138,8 +136,10 @@ onUnmounted(() => {
 
     <DemoSection
       title="自定义动画类"
-      description="不使用内置 name，改为传入 enter-class / enter-active-class / enter-to-class 等六个类名，可完全接管动画曲线；duration 传对象即可让进出场时长不同。"
     >
+      <template #description>
+        通过 <code>enter-from-class</code> / <code>enter-active-class</code> / <code>enter-to-class</code> 与对应离场类定义起止样式和曲线，<code>duration</code> 对象分别设置进出场时长。
+      </template>
       <DemoBlock layout="stack">
         <RebornButton
           size="sm"
@@ -167,10 +167,10 @@ onUnmounted(() => {
           <RebornTransition
             :show="customShow"
             :duration="{ enter: 700, leave: 1000 }"
-            enter-class="custom-enter"
+            enter-from-class="custom-enter"
             enter-active-class="custom-enter-active"
             enter-to-class="custom-enter-to"
-            leave-class="custom-leave"
+            leave-from-class="custom-leave"
             leave-active-class="custom-leave-active"
             leave-to-class="custom-leave-to"
             class="absolute"

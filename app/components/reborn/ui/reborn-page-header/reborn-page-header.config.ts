@@ -22,7 +22,7 @@ export const pageHeaderTheme = tv({
     /** 标题：20px 中粗 */
     title: "text-xl font-medium whitespace-nowrap text-gray-10",
     /** 标题与内容之间的竖分割线，仅有内容时渲染 */
-    divider: "h-[26px] w-px shrink-0 bg-gray-2",
+    divider: "h-6.5 w-px shrink-0 bg-gray-2",
     /** 内容：16px 常规，过长时截断 */
     content: "min-w-0 truncate text-lg text-gray-8",
     /** 扩展区（#extra 插槽）：右侧操作按钮 */

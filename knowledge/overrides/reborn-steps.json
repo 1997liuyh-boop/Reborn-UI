@@ -1,0 +1,32 @@
+{
+  "whenToUse": [
+    "注册、下单、审批等有序流程：通过 v-model:active 标出当前阶段，并用外部按钮推进。",
+    "流程需要展示已完成、处理中或失败阶段：设置 processStatus / finishStatus，必要时用单步 status 覆盖。",
+    "页面空间与信息量不同：用 width 控制整体宽度，direction 与 space 调整排列，placement 选择标题和描述相对节点的上、下、左、右位置，simple 控制描述显示。",
+    "需要区分阶段类型：使用 type=default/dot 定制节点，lineType=solid/dashed/arrow 定制连接，单步 icon 与 color 表达业务含义。",
+    "耗时任务需要阶段内进度：为 RebornStep 单独设置 progress，或用父级 overallProgress 将整体百分比等分折算为完成步骤和当前步骤圆环。"
+  ],
+  "whenNotToUse": [
+    "按时间先后回顾日志、消息或操作记录，改用 reborn-timeline。",
+    "需要点击标题切换内容面板，改用 reborn-tabs。",
+    "需要遮罩聚焦页面元素并逐步讲解，改用 reborn-guide。"
+  ],
+  "pitfalls": [
+    "仅 Web 端实现；RebornStep 必须放在 RebornSteps 的默认插槽中使用。",
+    "active 是从 0 开始的当前下标；等于步骤数量时，全部步骤使用 finishStatus。",
+    "RebornStep.progress 和 RebornSteps.overallProgress 的范围为 0～100，超范围限制到边界，非有限值按 0 处理；不传时不显示进度圆环。",
+    "overallProgress 优先于 active 决定展示下标；当前 RebornStep 显式设置 progress 时优先使用单步圆环百分比。整体进度不回写 active，也不额外触发 change，100% 时全部步骤完成。",
+    "圆环只显示在当前且状态为 process 的节点周围；progress 达到 100% 不会推进步骤，仍需业务更新 active。",
+    "步骤本身没有点击切换能力，使用外部按钮或业务状态更新 active。",
+    "单步 status 优先于父级按 active 推导的状态；错误和成功状态的语义色优先于 color。",
+    "箭头使用 lineType=arrow；type 仅选择 default 或 dot 节点。dashed 使用原生 CSS 虚线，短段分布由浏览器决定。",
+    "实线和虚线的完成覆盖层沿流程方向延展、回退时收回；箭头使用颜色过渡，约 200ms，系统减少动态效果时关闭过渡。",
+    "simple 会隐藏 description，包括描述插槽；不适合必须展示辅助说明的流程。",
+    "placement 只控制标题与描述相对节点的位置，不改变 direction 的横纵排列；单步 placement 优先于父级 placement，均未指定时，横向 alignCenter=true 回退为 bottom，其余默认为 right。横向 top/bottom 默认沿每步起点左对齐，alignCenter=true 时节点与文字居中；纵向不受 alignCenter 影响，top/bottom 的连接线避开文案并连接内容组边缘。",
+    "四向布局使用条件选择器共享节点轴；覆盖其网格位置、外边距或连接器定位时使用 Tailwind 重要修饰符，例如 ui.content='mt-6!'。",
+    "width 控制整体宽度，默认 100%；space 控制单步布局长度，默认横向由所有步骤共同分配可用宽度，末项不按标题宽度收缩。两者的数字值按 px 解释，字符串可传百分比等 CSS 长度。",
+    "change 仅在 active 真正变化时派发，不会在初始化时触发。",
+    "icon 插槽优先于 icon 参数，title / description 插槽分别替换对应的字符串内容；四个插槽均提供 index、status、current 和 progress。仅图标节点可使用 ui.marker 的 bg-transparent 配合可见的图标颜色，标题可使用 RebornText color=neutral。",
+    "connector 插槽替换连接器内部内容，并提供 completed、direction、lineType；默认外层与 ui.connector 保留，线条和过渡需自行绘制，末步不调用该插槽。"
+  ]
+}

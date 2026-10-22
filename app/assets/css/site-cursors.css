@@ -1,0 +1,116 @@
+/*
+ * 文档站专属光标
+ *
+ * 只作用于本站：这份样式只被站点入口 reborn-ui.css 引入，图片在 app/assets/cursors。
+ * CLI 只分发组件源码、lib 与 composables，用户拷贝的主题文件（base.css / typography.css）里也没有这些规则，
+ * 所以用户项目里的组件仍是浏览器的标准光标。
+ *
+ * 两层做法：
+ * 1. 组件只写语义光标类（cursor-not-allowed / cursor-help …）。这里用同名 @utility 在本站把它们换成图片，
+ *    Tailwind 会把自定义版本排在内置版本之后，disabled: / hover: / data-[…]: 等变体一并生效，组件源码不用改。
+ * 2. 没写光标类的地方（页面空白处、正文文字、输入框）由下面 @layer base 的默认规则兜底。
+ *
+ * @utility 里每个工具类只写一条 image-set() 声明：Tailwind 按声明条数排序，多写一条 url() 兜底会让它排到内置同名
+ * 工具类之前，反被内置版盖掉。不支持 image-set 的浏览器整条忽略，回到内置的系统光标；末尾关键字是图片加载失败时的兜底。
+ * @layer base 里的默认规则不受排序影响，仍先给 url() 再给 image-set()。
+ * 热点坐标是 32px 图上的点：箭头取尖端，手形取指尖，I 形取竖笔中心，其余取中心。
+ * 没有提供图片的光标（wait、grabbing、ew-resize / ns-resize 等其余 resize）保持系统样式。
+ */
+
+@utility cursor-default {
+  cursor: image-set(url("../cursors/default.png") 1x, url("../cursors/default@2x.png") 2x) 3 1, default;
+}
+
+@utility cursor-text {
+  cursor: image-set(url("../cursors/text.png") 1x, url("../cursors/text@2x.png") 2x) 12 16, text;
+}
+
+@utility cursor-help {
+  cursor: image-set(url("../cursors/help.png") 1x, url("../cursors/help@2x.png") 2x) 2 1, help;
+}
+
+@utility cursor-crosshair {
+  cursor: image-set(url("../cursors/crosshair.png") 1x, url("../cursors/crosshair@2x.png") 2x) 16 16, crosshair;
+}
+
+@utility cursor-not-allowed {
+  cursor: image-set(url("../cursors/not-allowed.png") 1x, url("../cursors/not-allowed@2x.png") 2x) 16 16, not-allowed;
+}
+
+@utility cursor-grab {
+  cursor: image-set(url("../cursors/grab.png") 1x, url("../cursors/grab@2x.png") 2x) 16 16, grab;
+}
+
+@utility cursor-pointer {
+  cursor: image-set(url("../cursors/pointer.png") 1x, url("../cursors/pointer@2x.png") 2x) 4 1, pointer;
+}
+
+@utility cursor-col-resize {
+  cursor: image-set(url("../cursors/col-resize.png") 1x, url("../cursors/col-resize@2x.png") 2x) 16 16, col-resize;
+}
+
+@utility cursor-row-resize {
+  cursor: image-set(url("../cursors/row-resize.png") 1x, url("../cursors/row-resize@2x.png") 2x) 16 16, row-resize;
+}
+
+@layer base {
+  /* 页面默认：箭头图 */
+  html {
+    cursor: url("../cursors/default.png") 3 1, default;
+    cursor: image-set(url("../cursors/default.png") 1x, url("../cursors/default@2x.png") 2x) 3 1, default;
+  }
+
+  /*
+   * 正文文字：文本光标。根节点一旦设了图片光标，浏览器就不再按「指针在文字上」自动切成 I 形，
+   * 只能按元素补回来；这里只列承载正文的元素，不碰 span / div，免得按钮、标签里的文字也变成 I 形
+   */
+  :where(p, li, dt, dd, blockquote, figcaption, caption, td, th, pre, code, kbd, samp, h1, h2, h3, h4, h5, h6) {
+    cursor: url("../cursors/text.png") 12 16, text;
+    cursor: image-set(url("../cursors/text.png") 1x, url("../cursors/text@2x.png") 2x) 12 16, text;
+  }
+
+  /* 原生按钮类控件：箭头图（要手形的组件自己写 cursor-pointer） */
+  :where(button, select, summary, input:is([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="image"])) {
+    cursor: url("../cursors/default.png") 3 1, default;
+    cursor: image-set(url("../cursors/default.png") 1x, url("../cursors/default@2x.png") 2x) 3 1, default;
+  }
+
+  /* 链接：手形图。浏览器的链接手形来自 UA 样式，作者样式不论权重都排在它后面，:where 也盖得住 */
+  :where(a[href]) {
+    cursor: url("../cursors/pointer.png") 4 1, pointer;
+    cursor: image-set(url("../cursors/pointer.png") 1x, url("../cursors/pointer@2x.png") 2x) 4 1, pointer;
+  }
+
+  /*
+   * 交互元素与自己写了光标类的元素：子孙一律沿用它的光标。
+   * 否则链接里的 code、可点击卡片里的段落会被上面的正文规则改成 I 形
+   */
+  :where(a, button, select, summary, label, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="option"], [role="checkbox"], [role="radio"], [role="switch"], [class*="cursor-"]) :where(*) {
+    cursor: inherit;
+  }
+
+  /* 可输入的区域：文本光标，排在继承规则之后，输入框嵌在可点击容器里也保持 I 形 */
+  :where(textarea, [contenteditable]:not([contenteditable="false"]), input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="image"], [type="hidden"])) {
+    cursor: url("../cursors/text.png") 12 16, text;
+    cursor: image-set(url("../cursors/text.png") 1x, url("../cursors/text@2x.png") 2x) 12 16, text;
+  }
+
+  /*
+   * 拖拽期间脚本写在 body 上的行内全局光标（分隔面板拖动时的 col-resize / row-resize）：
+   * 换成对应的图，并让所有子孙沿用它，否则拖过正文、按钮时会被上面的规则改回 I 形或箭头。
+   * 行内样式只有 !important 盖得过；拖拽结束脚本清掉行内样式，这几条随之失效
+   */
+  body[style*="col-resize"] {
+    cursor: url("../cursors/col-resize.png") 16 16, col-resize !important;
+    cursor: image-set(url("../cursors/col-resize.png") 1x, url("../cursors/col-resize@2x.png") 2x) 16 16, col-resize !important;
+  }
+
+  body[style*="row-resize"] {
+    cursor: url("../cursors/row-resize.png") 16 16, row-resize !important;
+    cursor: image-set(url("../cursors/row-resize.png") 1x, url("../cursors/row-resize@2x.png") 2x) 16 16, row-resize !important;
+  }
+
+  :where(body[style*="cursor:"]) :where(*) {
+    cursor: inherit !important;
+  }
+}

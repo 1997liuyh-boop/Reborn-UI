@@ -112,7 +112,7 @@ Modal.destroyAll();
 
 ### 长内容：scrollable 正文滚动
 
-开启 `scrollable` 后正文区加上 `overflow-y-auto`，内容超出时只滚正文，标题区和按钮区保持在面板内。未开启时组件会拦截根节点上的滚轮事件，内容过长会被面板截断，所以长文本务必开启此项。
+开启 `scrollable` 后正文区交给浮层滚动条（`RebornScrollbar`）滚动，内容超出时只滚正文，标题区和按钮区保持在面板内。滚动条悬浮在面板右侧留白里，不占正文宽度，只在悬停正文或滚动时淡入、停止后隐藏，不会像原生滚动条那样在 Windows 上常驻。未开启时组件会拦截根节点上的滚轮事件，内容过长会被面板截断，所以长文本务必开启此项。
 
 ```vue
 <template>
@@ -226,7 +226,7 @@ await delayedDialog.open();
 | `close-icon`              | `string`                                   | `'lucide:x'` | 自定义关闭按钮图标名。                                                                                                                       |
 | `header-aria-level`       | `string`                                   | `'2'`        | 标题的 `aria-level` 属性。                                                                                                                   |
 | `transition`              | `DialogTransition`                         | `'scale'`    | 面板过渡动画：`scale` 缩放 / `slide` 滑动 / `fade` 淡入淡出 / `bounce` 弹跳；也接受任意 RebornTransition 过渡名或属性对象（`name` / `duration` 等）。 |
-| `scrollable`              | `boolean`                                  | `false`      | 正文区域是否独立滚动（页头页脚固定，扩展属性）；关闭时根节点会拦截滚轮事件。                                                                 |
+| `scrollable`              | `boolean`                                  | `false`      | 正文区域是否独立滚动（页头页脚固定，扩展属性），滚动条为浮层式、悬停或滚动时显示；关闭时根节点会拦截滚轮事件。                               |
 | `cancelBtn`               | `string \| false \| ButtonProps`           | `'取消'`     | 取消按钮配置，传 `false` 时隐藏（扩展属性）；默认 `neutral` + `outlined`。                                                                   |
 | `confirmBtn`              | `string \| false \| ButtonProps`           | `'确认'`     | 确认按钮配置，传 `false` 时隐藏（扩展属性）；默认 `filled`。                                                                                 |
 | `z-index`                 | `number`                                   | `2400`       | Dialog 根层级；嵌套时不会自动递增。                                                                                                          |
@@ -289,7 +289,7 @@ await delayedDialog.open();
 
 ### 自定义样式（ui）
 
-`ui` 按 `reborn-dialog.config.ts` 的 `slots` 覆盖对应节点的类名，共 13 个键：
+`ui` 按 `reborn-dialog.config.ts` 的 `slots` 覆盖对应节点的类名，共 15 个键：
 
 | 键名            | 描述                                                                                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -304,7 +304,9 @@ await delayedDialog.open();
 | `title`         | 标题节点（`role="heading"`，层级由 `header-aria-level` 指定），默认 `text-lg font-medium text-gray-10`。**仅在传了 `title` 且未填充 `header` 插槽时渲染**。                                                                       |
 | `description`   | 描述 `<p>`，默认 `text-base text-gray-8`。**仅在传了 `describe`（或 `description`）且未填充 `header` 插槽时渲染**。                                                                                                               |
 | `close`         | 右上角关闭图标，默认 `size-[18px] shrink-0 cursor-pointer text-gray-5`。**仅 `show-close` 为真且标题区渲染时出现**，图标名走 `close-icon` prop；`center` 时改为 `absolute top-[20px] right-[24px]`。                              |
-| `body`          | 内容区，承载 `default` 插槽，默认无类名（`overflow-visible`），`scrollable` 时改为 `overflow-y-auto`。**未传 default 插槽时不渲染**。                                                                                             |
+| `body`          | 内容区，承载 `default` 插槽，默认无类名（`overflow-visible`）；`scrollable` 时改为 `flex min-h-0 flex-col overflow-visible`，滚动交给内部的浮层滚动条。**未传 default 插槽时不渲染**。 |
+| `scrollbar`     | 浮层滚动条根节点（`RebornScrollbar`）。**仅 `scrollable` 时渲染**，默认 `-mr-[16px] flex min-h-0 flex-1 flex-col`：向右伸进面板内边距，让滚动条落在留白里；面板右内边距小于 16px 时需同步调整这里与 `scrollbarWrap`。 |
+| `scrollbarWrap` | 浮层滚动条内部的滚动层（`wrap-class`）。**仅 `scrollable` 时渲染**，默认 `h-auto min-h-0 flex-1 pr-[16px]`，右内边距补回 `scrollbar` 伸出的 16px，正文宽度不变。 |
 | `footer`        | 底部条（无分隔线），默认 `flex items-center justify-end gap-3` 按钮靠右。**仅底部有内容时渲染**（填充了 `footer` 插槽或至少启用了一个默认按钮）；`center` 时按钮居中。                                                           |
 
 ```vue

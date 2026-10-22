@@ -16,7 +16,7 @@ Table 用于按列比较结构化数据，当前仅提供 Web 实现，没有同
 
 `data` 决定行数据，`columns` 或默认插槽中的声明列决定列结构；两种列入口不合并，显式传入 `columns` 时优先使用它。`size` 决定行高，`border`、`stripe`、`headerBackground` 与 `hover` 独立控制边界、交替底色、表头与悬停背景。
 
-行选择、当前行、展开、页码与每页条数分别通过具名 `v-model` 控制；列配置负责排序、筛选、固定与分组，`remote` 将数据处理交给调用方。`spanMethod` / `summaryMethod` 负责合并与合计，`lazy` / `load` 支持按需获取树子行，`showOverflowTooltip` 与提示插槽处理截断内容；作用域插槽负责单元格、详情、空态、加载与页脚，公开实例方法用于清除状态和调整滚动位置。
+行选择、当前行、展开、页码与每页条数分别通过具名 `v-model` 控制；列配置负责排序、筛选、固定与分组，`type: 'drag'` 列提供行拖拽排序（结果经 `row-drag-end` 交回调用方），`remote` 将数据处理交给调用方。`spanMethod` / `summaryMethod` 负责合并与合计，`lazy` / `load` 支持按需获取树子行，`showOverflowTooltip` 与提示插槽处理截断内容；作用域插槽负责单元格、详情、空态、加载与页脚，公开实例方法用于清除状态和调整滚动位置。
 
 ### 何时使用
 
@@ -25,12 +25,13 @@ Table 用于按列比较结构化数据，当前仅提供 Web 实现，没有同
 - 需要批量操作或单选记录 —— 用列 `type="selection"` / `type="radio"` + `selectedKeys`；点击行高亮则用 `highlightCurrentRow` + `currentRowKey`。
 - 数据由接口分页查询 —— 用 `remote` + `pagination.total`，监听 `change` 统一发起排序、筛选和分页请求。
 - 有部门层级、明细展开或金额汇总 —— 用 `treeProps` / `expandedRowKeys`、`showSummary` 与 `summaryMethod`。
+- 需要用户手动调整记录顺序（优先级、展示顺序）—— 加一列 `type: 'drag'`，在 `row-drag-end` 里回写 `data`。
 
 ### 何时不使用
 
 - 仅展示一条记录的字段和值 —— 改用 `reborn-descriptions`。
 - 仅浏览或选择层级节点，不需要多列对比 —— 改用 `reborn-tree` 或 `reborn-tree-select`。
-- 需要海量数据虚拟滚动、电子表格式编辑、拖拽列宽或 UniApp 表格 —— 本库此组件暂无对应能力，需自行实现或选择支持这些能力的表格库。
+- 需要海量数据虚拟滚动、电子表格式编辑、拖拽列宽、跨表 / 跨层级拖拽或 UniApp 表格 —— 本库此组件暂无对应能力，需自行实现或选择支持这些能力的表格库。
 
 ## 用法
 
@@ -464,6 +465,40 @@ async function request(query: TableChange) {
 `remote` 不在本地分页、排序或筛选，也不会自动请求接口。调用方必须回填当前页、总数与加载状态；只监听一次 `change` 即可，不要再用三个专项事件重复请求。
 ::
 
+### 拖拽排序
+
+加一列 `type: 'drag'` 即在每行渲染拖拽手柄。表格不改动 `data`：松手后派发 `row-drag-end`，回调里的 `data` 已是移动后的新数组，回写即完成排序。
+
+| 操作 | 方式 | 典型用途 |
+| --- | --- | --- |
+| 按住手柄拖动 | 指针越过同级行的中线即换位，主题色指示线标出落点；拖到滚动区上下边缘自动滚动，`Esc` 取消 | 鼠标、触屏调整顺序 |
+| 聚焦手柄按 `↑` / `↓` | 与上一个 / 下一个同级行交换位置，焦点留在手柄上 | 键盘操作、无障碍 |
+| 树形数据 | 只能在同一父行的子行之间移动，展开的子行跟随父行一起移动 | 调整同级分类顺序 |
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import RebornTable from '~/components/reborn/ui/reborn-table/RebornTable.vue'
+import type { TableColumn, TableRow, TableRowDragEnd } from '~/components/reborn/ui/reborn-table/table.types'
+const data = ref<TableRow[]>([{ id: 1, name: '林晓' }, { id: 2, name: '陈晨' }, { id: 3, name: '周宁' }])
+const columns: TableColumn[] = [{ type: 'drag', width: 48 }, { prop: 'name', label: '姓名' }]
+function onRowDragEnd(payload: TableRowDragEnd) {
+  data.value = payload.data
+}
+</script>
+<template>
+  <RebornTable :data="data" :columns="columns" @row-drag-end="onRowDragEnd" />
+</template>
+```
+
+::tip
+回调还带 `row`、`targetRow`、`position`（`'before'` / `'after'`）、`oldIndex`、`newIndex` 与 `parent`，需要把新顺序提交给接口时直接取用；索引都相对同级数组，根行是 `data`，子行是父行的 `children`。
+::
+
+::warning
+有生效的排序时手柄禁用，因为拖完的顺序会被排序立刻打回；加载中、懒加载得到的子行（不在 `data` 里）以及没有同级行可交换的行同样不可拖动。
+::
+
 ### 筛选
 
 `filters` 提供候选值，`filterMethod` 定义本地筛选规则：同列取或、不同列取且；列标识优先 `columnKey`，其次 `prop`。
@@ -858,13 +893,16 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 
 ## API
 
-类型来自 `app/components/reborn/ui/reborn-table/table.types.ts`。`TableKey = string | number`，`TableRow = Record<string, unknown>`，`TableOrder = 'ascending' | 'descending' | null`；`TableCellScope = { row, column, $index, columnIndex }`。以下分开列出主表与声明列，不能把列属性传给主表。
+表格由两个组件组成，属性各管各的，互不通用：
 
-### Props
+- **`RebornTable`（主表）**：数据、外观、状态模型、分页、树形、合计，以及全部事件与实例方法。属性写在 `<RebornTable>` 上。
+- **`RebornTableColumn` / `TableColumn`（列）**：单列的字段、宽度、固定、排序、筛选与模板。同一份配置有两种写法：作为 `columns` 数组的一项，或写成 `<RebornTableColumn>` 的属性。
 
-**RebornTable 主表**
+列属性（如 `fixed`、`sortable`、`width`）写到 `RebornTable` 上不会生效。两边同名的只有 `showOverflowTooltip`、`tooltipOptions`、`tooltipFormatter`：主表上的是全表默认值，列上的覆盖它。表格里出现的 `TableKey`、`TableRow` 等类型见文末「类型定义」。
 
-主表属性以 `TableProps` 为准，另有五个具名模型。
+### Props（RebornTable）
+
+主表属性以 `TableProps` 为准；最后五行是具名 `v-model`。
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
@@ -910,16 +948,16 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 | `currentPage` | `number` | `1` | `v-model:current-page`，从 1 开始的页码。 |
 | `pageSize` | `number` | `10` | `v-model:page-size`，每页根节点条数。 |
 
-**RebornTableColumn 声明列 / TableColumn 配置**
+### Props（RebornTableColumn / TableColumn）
 
-下面是列契约的全部字段。默认值列中的「未传」表示没有显式值，行为由表格解释。
+列配置的全部字段；写在 `<RebornTableColumn>` 上时用 kebab-case（如 `min-width`）。默认值列的「未传」表示没有显式值，行为由表格解释。
 
 | 属性名 | 类型 | 默认值 | 描述 |
 | --- | --- | --- | --- |
 | `prop` | `string` | 未传 | 字段路径，例如 `user.name`。 |
 | `label` | `string` | 未传 | 表头文字。 |
 | `columnKey` | `string` | 未传 | 独立列标识；筛选、清除筛选及具名插槽优先使用它。 |
-| `type` | `'default' \| 'selection' \| 'radio' \| 'index' \| 'expand'` | 未传，按普通列处理 | 普通、多选、单选、序号或展开列。 |
+| `type` | `'default' \| 'selection' \| 'radio' \| 'index' \| 'expand' \| 'drag'` | 未传，按普通列处理 | 普通、多选、单选、序号、展开或拖拽排序手柄列。 |
 | `width` | `number \| string` | 未传 | 列宽，数字或 px 字符串，固定列建议明确指定。 |
 | `minWidth` | `number \| string` | 未传 | 未指定宽度时的最小列宽。 |
 | `fixed` | `boolean \| 'left' \| 'right'` | 未传，不固定 | `true` 等价于 `'left'`。 |
@@ -947,9 +985,9 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 | `cellRender` | `(scope: TableCellScope) => VNodeChild` | 未传 | 内部字段，用于解析声明列默认插槽，不需要手动传入。 |
 | `headerRender` | `(scope: { column: TableColumn; $index: number }) => VNodeChild` | 未传 | 内部字段，用于解析声明列表头插槽，不需要手动传入。 |
 
-### Emits
+### Emits（RebornTable）
 
-以下事件由主表发出；声明列没有独立的业务事件。
+事件都由主表发出，声明列没有业务事件。
 
 | 事件名 | 回调参数 | 描述 |
 | --- | --- | --- |
@@ -971,10 +1009,9 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 | `page-change` | `(page: number)` | 页码变化；也包含远程总数减少后自动钳制到有效页码。 |
 | `page-size-change` | `(size: number)` | 每页条数变化。 |
 | `change` | `(state: TableChange)` | 排序、筛选或分页变化的统一通知：`{ action, page, pageSize, sort, filters }`；远程页码自动钳制也以 `'paginate'` 通知重新请求。 |
+| `row-drag-end` | `(payload: TableRowDragEnd)` | 拖拽或方向键移动行之后触发；`payload.data` 是移动后的新根数组，回写给 `data` 即完成排序。落回原位不触发。 |
 
-### Slots
-
-**RebornTable 主表**
+### Slots（RebornTable）
 
 | 插槽名 | 作用域参数 | 描述 |
 | --- | --- | --- |
@@ -990,16 +1027,16 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 
 另支持由列配置生成的动态名字：`column.slotName`、`cell-列标识`、`header-列标识`；作用域分别与 `cell`、`cell`、`header` 一致。列标识优先使用 `columnKey`，其次 `prop`，建议业务列显式提供其中一个。
 
-**RebornTableColumn 声明列**
+### Slots（RebornTableColumn）
 
 | 插槽名 | 作用域参数 | 描述 |
 | --- | --- | --- |
 | `default` | `{ row, column, $index, columnIndex }`，分组列声明子列时无行作用域 | 普通列自定义单元格；分组列用来嵌套 `RebornTableColumn`。 |
 | `header` | `{ column, $index }` | 自定义该列的表头内容。 |
 
-### Expose
+### Expose（RebornTable）
 
-在 `RebornTable` 上绑定模板引用；类型为 `TableExpose`，声明列无业务实例方法。
+在 `RebornTable` 上绑定模板引用，类型为 `TableExpose`；声明列没有实例方法。
 
 | 方法名 | 签名 | 描述 |
 | --- | --- | --- |
@@ -1016,6 +1053,19 @@ const columns: TableColumn[] = [{ prop: 'note', label: '说明', width: 180, for
 | `scrollTo` | `(options: { top?: number; left?: number; behavior?: 'auto' \| 'smooth'; duration?: number }) => Promise<void>` | 参数类型为 `TableScrollToOptions`；位置单位 px，默认 `auto` 立即定位，`smooth` 联合平滑滚动两轴；可选 `duration` 单位 ms，未指定的轴保持原位置。 |
 | `setScrollTop` | `(value: number) => void` | 立即设置纵向滚动位置，单位 px；可与横向定位连续调用。 |
 | `setScrollLeft` | `(value: number) => void` | 立即设置横向滚动位置，单位 px；可与纵向定位连续调用。 |
+
+### 类型定义
+
+全部类型从 `app/components/reborn/ui/reborn-table/table.types.ts` 导出，`reborn-table/index.ts` 已整体转出。
+
+| 类型 | 定义 | 用在哪里 |
+| --- | --- | --- |
+| `TableKey` | `string \| number` | `rowKey` 的返回值；`selectedKeys`、`expandedRowKeys`、`currentRowKey` |
+| `TableRow` | `Record<string, unknown>` | `data` 的每一项，以及回调、插槽里的 `row` |
+| `TableOrder` | `'ascending' \| 'descending' \| null` | `sort()`、列的 `sortOrders`、`TableSort.order` |
+| `TableSort` | `{ prop: string; order: TableOrder }` | `defaultSort`、`sort-change` |
+| `TableCellScope` | `{ row, column, $index, columnIndex }` | `cell` 插槽、列默认插槽、`spanMethod`、`cellClassName` |
+| `TableRowDragEnd` | `{ row, targetRow, position, oldIndex, newIndex, parent?, data }` | `row-drag-end`；`position` 为 `'before' \| 'after'`，索引相对同级数组 |
 
 ### 自定义样式（ui）
 
@@ -1053,6 +1103,7 @@ import RebornTable from '~/components/reborn/ui/reborn-table/RebornTable.vue'
 ## 注意事项
 
 - **仅提供 Web 版本，也不承诺完整兼容其他表格库**。没有 UniApp 同名组件或完整 Element API；虚拟滚动、拖拽列宽和电子表格编辑不在本组件契约内。
+- **拖拽排序只交回结果，不改 `data`**。`row-drag-end` 的 `data` 是新数组：根级移动只换数组，行对象原样保留；树形移动会浅拷贝被移动行的各级祖先并换上新的 `children`，祖先行因此是新对象，按对象身份保存行的地方要改用 `rowKey` 关联。不回写 `data` 时界面保持原顺序。
 - **列入口不混合**。显式 `columns` 优先于声明列，包括空数组；只使用 `data`、`prop` 和 `label`，不提供 `dataSource` 等别名。
 - **跨数据选择与树结构必须使用稳定键**。选择列的 `reserveSelection` 才会保留跨数据选择，索引键会在换页后指向不同记录；所有树节点的键也必须全局唯一。
 - **远程模式不会代替请求接口**。`remote` 跳过本地分页、排序、筛选，调用方必须处理 `change` 并回填数据和总数；应取消或忽略过期响应。

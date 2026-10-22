@@ -1,5 +1,5 @@
 import type { RegistryComponent } from "../types.js";
-import { extractNpmDependenciesFromText } from "./imports.js";
+import { extractSharedNpmDependencies } from "./shared-dependencies.js";
 
 export interface ResolvedDependencies {
     components: string[]; // 需要一并安装的前置组件（按发现顺序）
@@ -63,7 +63,7 @@ export function resolveDependencies(params: {
             }
 
             // npm 依赖（按平台文件重新抽取，比 registry 的全平台并集更精确）
-            for (const dep of extractNpmDependenciesFromText(f.content)) {
+            for (const dep of extractSharedNpmDependencies(f.content, platform)) {
                 npmDeps.add(dep);
             }
         }

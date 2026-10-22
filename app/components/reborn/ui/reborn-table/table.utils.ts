@@ -203,3 +203,45 @@ export function toCssSize(value?: number | string): string | undefined {
   if (!text) return undefined;
   return numericSize.test(text) ? `${text}px` : text;
 }
+
+/** 行在源数据树中的位置：所在同级数组、索引与父行（根级没有父行）。 */
+export interface TableRowLocation { siblings: TableRow[]; index: number; parent?: TableRow }
+
+/** 按对象身份定位源数据里的每一行；懒加载得到的子行不在 data 中，因而查不到。 */
+export function locateRows(data: TableRow[], children = 'children'): Map<TableRow, TableRowLocation> {
+  const located = new Map<TableRow, TableRowLocation>();
+  const visit = (siblings: TableRow[], parent?: TableRow) => siblings.forEach((row, index) => {
+    // 同一对象出现两次时以首次为准，避免环状数据无限递归。
+    if (!row || typeof row !== 'object' || located.has(row)) return;
+    located.set(row, { siblings, index, parent });
+    const nested = getChildren(row, children);
+    if (nested.length) visit(nested, row);
+  });
+  visit(data);
+  return located;
+}
+
+/**
+ * 把 source 移到同级 target 的前面或后面，返回新的根数组与新旧索引。
+ * 不改动原数组和行对象：同级数组复制一份，沿途父行浅拷贝后换上新子数组。
+ * 不同级、找不到行或位置不变时返回 undefined。
+ */
+export function moveRow(data: TableRow[], source: TableRow, target: TableRow, position: 'before' | 'after', children = 'children') {
+  const located = locateRows(data, children);
+  const from = located.get(source);
+  const to = located.get(target);
+  if (!from || !to || source === target || from.parent !== to.parent) return;
+  const siblings = from.siblings.slice();
+  siblings.splice(from.index, 1);
+  const newIndex = siblings.indexOf(target) + (position === 'after' ? 1 : 0);
+  if (newIndex === from.index) return;
+  siblings.splice(newIndex, 0, source);
+  let replaced = siblings;
+  for (let node = from.parent; node; node = located.get(node)?.parent) {
+    const location = located.get(node)!;
+    const copy = location.siblings.slice();
+    copy[location.index] = { ...node, [children]: replaced };
+    replaced = copy;
+  }
+  return { data: replaced, oldIndex: from.index, newIndex, parent: from.parent };
+}

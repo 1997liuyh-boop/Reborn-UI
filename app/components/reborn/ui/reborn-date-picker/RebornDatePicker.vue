@@ -426,6 +426,7 @@ const ui = computed(() => {
     open: isOpen.value && props.arrowAnimation,
     clearable: showClearButton.value,
     disabled: isDisabled.value,
+    loading: props.loading,
     error: isError.value,
     prefix: hasPrefix.value,
   });

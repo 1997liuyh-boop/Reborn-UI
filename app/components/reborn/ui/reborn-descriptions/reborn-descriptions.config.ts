@@ -95,9 +95,9 @@ const config = {
     // 行高用 h-*：表格单元格的 height 实际按最小高度生效，内容换行时照常撑开。
     // 无边框时不吃这套值——那一形态没有网格线，靠留白分层，行距由组件按行位置给固定值
     // （标签与内容之间 4px、项与项之间 16px），套上 48px 行高会把这两个间距淹掉。
-    { bordered: true, size: "sm", class: { cell: "h-[36px] py-[6px]" } },
-    { bordered: true, size: "md", class: { cell: "h-[48px] py-[8px]" } },
-    { bordered: true, size: "lg", class: { cell: "h-[56px] py-[10px]" } },
+    { bordered: true, size: "sm", class: { cell: "h-9 py-[6px]" } },
+    { bordered: true, size: "md", class: { cell: "h-12 py-[8px]" } },
+    { bordered: true, size: "lg", class: { cell: "h-14 py-[10px]" } },
   ],
   defaultVariants: {
     size: "md" as DescriptionsSize,

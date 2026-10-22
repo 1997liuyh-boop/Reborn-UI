@@ -5,6 +5,7 @@ import type { RouteLocationRaw } from "vue-router";
 import type { ItemType, MenuContext, MenuUI } from "./reborn-menu.config";
 import { useEventListener } from "@vueuse/core";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useSlots, watch } from "vue";
+import { motionPresets, runMotion, stopMotion } from "@/lib/motion";
 import { cn } from "~/lib/utils";
 import theme, { getMenuFallbackChar, MENU_INJECTION_KEY, MENU_INLINE_INDENT } from "./reborn-menu.config";
 // RebornMenuItems 由 Nuxt 全局自动注册，不写静态 import 以避免递归组件的 ESM 循环依赖。
@@ -320,46 +321,85 @@ const popupOrigin = ref("left top");
  */
 const popupTransitionEnabled = computed(() => menuContext?.collapseTransition.value !== false);
 
-/**
- * ⚠️ 根因：浮层此前只有 v-show，切的是 display，而 display 不可过渡，
- * 所以展开是硬闪出来的；reborn-menu.config.ts 里 expandType.popup 又是一个空对象，
- * 没有补上任何过渡类，「浮层展开动画」实际上从来没有存在过。
- * ✅ 修复：用 Transition 承载动画，过渡类写在这里而不是配置文件里——
- * 配置里 expandType 声明在 collapseTransition 之后，twMerge 会让 expandType.popup
- * 盖掉 collapseTransition 为 false 时的 transition-none，关动画的开关就失效了。
- *
- * 只列 opacity、transform、scale 三项，不用 transition-all：
- * top / left 是每次展开由 JS 重算的，一旦参与过渡，换位置时浮层会从上一个落点滑过来。
- * transform 和 scale 都列上，是为了同时覆盖 Tailwind 两种缩放产物。
- * 收起时加 pointer-events-none，避免正在淡出的浮层继续吃掉点击。
- */
+const popupVersions = new WeakMap<Element, number>();
+const popupFrames = new WeakMap<Element, { opacity: number; scale: string }>();
+/** 定位层只做透明度过渡；缩放放到内容层，避免覆盖浮层计算出的坐标。 */
+function animatePopup(element: Element, done: () => void, entering: boolean) {
+  const version = (popupVersions.get(element) ?? 0) + 1;
+  popupVersions.set(element, version);
+  const duration = popupTransitionEnabled.value ? (entering ? 0.2 : 0.15) : 0;
+  const content = element.firstElementChild;
+  const frame = popupFrames.get(element);
+  popupFrames.delete(element);
+  const opacity = frame?.opacity ?? (element instanceof HTMLElement && element.style.opacity ? Number(getComputedStyle(element).opacity) : entering ? 0 : 1);
+  if (content instanceof HTMLElement) {
+    const scale = frame?.scale ?? (content.style.scale ? getComputedStyle(content).scale : entering ? '0.96' : '1');
+    runMotion(content, { scale: [scale, entering ? '1' : '0.96'] }, { ...motionPresets.base, duration });
+  }
+  const animation = runMotion(element, { opacity: [opacity, entering ? 1 : 0] }, { ...motionPresets.base, duration });
+  void animation.finished.then(() => {
+    if (popupVersions.get(element) === version) done();
+  });
+}
+function cancelPopup(element: Element) {
+  // Vue 更新定位样式前保存中断画面，下一段动画不受 style patch 的影响。
+  popupFrames.set(element, {
+    opacity: Number(getComputedStyle(element).opacity),
+    scale: element.firstElementChild ? getComputedStyle(element.firstElementChild).scale : '1',
+  });
+  popupVersions.set(element, (popupVersions.get(element) ?? 0) + 1);
+  stopMotion(element);
+  stopMotion(element.firstElementChild);
+}
 const popupTransitionProps = {
-  enterActiveClass: "transition-[opacity,transform,scale] duration-200 ease-out",
-  enterFromClass: "scale-95 opacity-0",
-  enterToClass: "scale-100 opacity-100",
-  leaveActiveClass: "pointer-events-none transition-[opacity,transform,scale] duration-150 ease-in",
-  leaveFromClass: "scale-100 opacity-100",
-  leaveToClass: "scale-95 opacity-0",
+  onEnter: (element: Element, done: () => void) => animatePopup(element, done, true),
+  onLeave: (element: Element, done: () => void) => animatePopup(element, done, false),
+  onEnterCancelled: cancelPopup,
+  onLeaveCancelled: cancelPopup,
 } as const;
 
 /**
  * 平铺展开是否已落定（完全展开且高度动画结束）。
- * 高度动画靠 grid-template-rows 从 0fr 到 1fr，收起与过渡期间必须 overflow-hidden 才能裁掉未露出的部分；
+ * 高度由 Motion 插值，收起与过渡期间必须 overflow-hidden 才能裁掉未露出的部分；
  * 但展开后一直裁着，会把首尾子条目的选中投影切掉一半。所以只在落定后放开裁剪，
  * 一旦开始收起就立刻恢复，收起动画照常被裁住。
  */
 const inlineSettled = ref(isOpened.value);
-
-watch(isOpened, (val) => {
-  // 关掉过渡时不会有 transitionend，展开即落定
-  inlineSettled.value = val && !popupTransitionEnabled.value;
+const inlineRef = ref<HTMLElement | null>(null);
+const inlineAnimating = ref(false);
+let inlineVersion = 0;
+/** 展开与收起都从当前可见高度出发，落定后放开裁剪，保留条目投影。 */
+watch([isOpened, popupTransitionEnabled, effectiveExpandType], async ([opened]) => {
+  const element = inlineRef.value;
+  const version = ++inlineVersion;
+  inlineSettled.value = false;
+  if (!element || effectiveExpandType.value !== 'normal') {
+    stopMotion(element);
+    inlineAnimating.value = false;
+    inlineSettled.value = opened;
+    return;
+  }
+  const previousHeight = element.getBoundingClientRect().height;
+  stopMotion(element);
+  inlineAnimating.value = true;
+  await nextTick();
+  if (version !== inlineVersion) return;
+  if (inlineRef.value !== element) {
+    inlineAnimating.value = false;
+    inlineSettled.value = opened;
+    return;
+  }
+  const target = opened ? element.firstElementChild?.scrollHeight ?? 0 : 0;
+  const animation = runMotion(element, { height: [`${previousHeight}px`, `${target}px`] }, {
+    ...motionPresets.slow,
+    duration: popupTransitionEnabled.value ? 0.3 : 0,
+  });
+  await animation.finished;
+  if (version !== inlineVersion) return;
+  element.style.removeProperty('height');
+  inlineAnimating.value = false;
+  inlineSettled.value = opened;
 });
-
-/** 平铺容器的高度动画结束：仍处于展开态才算落定，避免收起途中的事件误放开裁剪 */
-function handleInlineTransitionEnd(event: TransitionEvent) {
-  if (event.propertyName !== "grid-template-rows") return;
-  if (isOpened.value) inlineSettled.value = true;
-}
 
 /** 浮层非持久化时，用于控制关闭后销毁 DOM */
 const popupMounted = ref(false);
@@ -644,6 +684,9 @@ useEventListener(
 );
 
 onBeforeUnmount(() => {
+  inlineVersion++;
+  stopMotion(inlineRef.value);
+  if (popupRef.value) cancelPopup(popupRef.value);
   clearOwnCloseTimer();
   clearOpenTimer();
   if (popupRef.value) {
@@ -704,7 +747,7 @@ onBeforeUnmount(() => {
     >
       <Transition
         v-bind="popupTransitionProps"
-        :css="popupTransitionEnabled"
+        :css="false"
       >
         <div
           v-if="shouldRenderPopup"
@@ -743,7 +786,7 @@ onBeforeUnmount(() => {
     <Transition
       v-else-if="effectiveExpandType === 'popup'"
       v-bind="popupTransitionProps"
-      :css="popupTransitionEnabled"
+      :css="false"
     >
       <div
         v-show="isOpened"
@@ -773,17 +816,17 @@ onBeforeUnmount(() => {
       </div>
     </Transition>
 
-    <!-- 平铺展开：CSS Grid 高度动画 -->
+    <!-- 平铺展开：Motion 控制高度，栅格保留空闲状态的显隐 -->
     <div
       v-else
+      ref="inlineRef"
       :class="subMenuUi.subMenuPopup({ class: inlineSettled ? 'overflow-visible' : undefined })"
       :style="{
-        gridTemplateRows: isOpened ? '1fr' : '0fr',
+        gridTemplateRows: isOpened || inlineAnimating ? '1fr' : '0fr',
         backgroundColor: menuContext?.backgroundColor.value,
         color: menuContext?.textColor.value,
         ...props.popperStyle,
       }"
-      @transitionend.self="handleInlineTransitionEnd"
     >
       <div class="min-h-0">
         <ul

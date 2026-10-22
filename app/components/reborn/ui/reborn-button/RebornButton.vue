@@ -98,7 +98,9 @@ const ui = computed(() => {
         base: (opts?: { class?: any }) => styles.base({
             class: cn(
                 opts?.class,
-                props.loading ? 'opacity-80' : '',
+                // 加载中按钮带着原生 disabled，disabled:cursor-not-allowed 会盖过普通的 cursor-wait，
+                // 所以同时写 disabled: 变体，经 cn 合并后顶替掉禁止光标，加载态以等待光标为准
+                props.loading ? 'opacity-80 cursor-wait disabled:cursor-wait' : '',
                 uiOverrides.value.base
             )
         }),

@@ -278,7 +278,9 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 | `title` | text-lg text-gray-10，即 16px 标题 |
 | `close` | size-5，即 20px 关闭按钮 |
 | `extra` | 头部右侧额外操作区域 |
-| `body` | p-6，即 24px 内边距，内容超出可滚动 |
+| `body` | 滚动层里的内容节点：min-h-full p-6，即 24px 内边距、内容不足时铺满可视区域；内边距随内容一起滚动 |
+| `scrollbar` | 浮层滚动条根节点（RebornScrollbar），占满页头页脚之间的高度；滚动条悬停或滚动时显示、停止后隐藏 |
+| `scrollbarWrap` | 浮层滚动条内部的滚动层 |
 | `footer` | px-6 py-4，即横向 24px、纵向 16px |
 | `resizer` | 内侧边缘的 4px 调整条 |
 
@@ -289,6 +291,7 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 - **程序控制可以绕过关闭拦截。** 直接将 `v-model` 设为 false 不执行 beforeClose；需要拦截请调用插槽或实例的 `close()`。
 - **首次打开前不渲染内容。** 默认关闭后保留子树和内部调整尺寸；destroyOnClose 只销毁内容，外部绑定状态不会自动清空。
 - **定位容器必须明确尺寸。** 自定义挂载使用 absolute，应给目标 relative 与高度；缺失节点或非法选择器回退到 body。局部挂载不会自动突破祖先的层叠上下文。
+- **正文由浮层滚动条滚动。** 原生滚动条在 Windows 等平台会常驻显示，正文改用 RebornScrollbar；`ui.body` 作用在滚动层里的内容节点上，高度随内容增长。需要正文固定为可视高度、由内部列表自行滚动（如聊天消息贴底）时，给 body 加 `h-full overflow-hidden`。
 - **穿透不等于解锁滚动。** modal=false 且 modalPenetrable=true 才允许穿透；要滚动背景还需 lockScroll=false。
 - **旧 Web Popup 已迁移。** 将组件与目录改为 reborn-drawer，position 改 direction，showHeader 改 withHeader，handleClose() 改 close()；ui.closeBtn 改 ui.close。旧 header 只替换标题的场景改用 title 插槽。center 改用 reborn-dialog；旧别名、安全区与手势 API 不属于 Web Drawer。
 - **自动层级与焦点管理针对 Drawer 实例。** 自定义容器仍受 CSS 层叠规则影响；其他类型的全局浮层不在 Drawer 栈中，嵌套交互需单独验证。

@@ -53,7 +53,7 @@ const config = {
     /** 尺寸配置：sm 18px / md 24px / lg 32px（h-badge-* 令牌），水平内边距统一 6px */
     size: {
       sm: {
-        base: 'h-badge-sm px-1.5 text-sm gap-1',
+        base: 'h-4.5 px-1.5 text-sm gap-1',
         label: 'leading-none',
         // 前后图标与字号同尺寸（本项目 text-sm = 12px、text-base = 14px，见 assets/theme/typography.css）
         leadingIcon: 'size-3',
@@ -61,14 +61,14 @@ const config = {
         closeIcon: 'size-3'
       },
       md: {
-        base: 'h-badge-md px-1.5 text-sm gap-1',
+        base: 'h-6 px-1.5 text-sm gap-1',
         label: 'leading-none',
         leadingIcon: 'size-3',
         trailingIcon: 'size-3',
         closeIcon: 'size-3.5'
       },
       lg: {
-        base: 'h-badge-lg px-1.5 text-base gap-1',
+        base: 'h-8 px-1.5 text-base gap-1',
         label: 'leading-none',
         leadingIcon: 'size-3.5',
         trailingIcon: 'size-3.5',
@@ -155,9 +155,9 @@ const config = {
     { variant: 'outlined' as any, unchecked: true, class: 'border-gray-2 text-gray-6' },
     { variant: 'filled' as any, unchecked: true, class: 'bg-gray-2 text-gray-6' },
     // 仅基底固定等宽高，外层过渡容器与图标保持原有布局。
-    { circle: true, size: 'sm' as (typeof badgeSizes)[number], class: { base: 'h-(--height-badge-sm)! w-(--height-badge-sm)!' } },
-    { circle: true, size: 'md' as (typeof badgeSizes)[number], class: { base: 'h-(--height-badge-md)! w-(--height-badge-md)!' } },
-    { circle: true, size: 'lg' as (typeof badgeSizes)[number], class: { base: 'h-(--height-badge-lg)! w-(--height-badge-lg)!' } }
+    { circle: true, size: 'sm' as (typeof badgeSizes)[number], class: { base: 'h-4.5! w-4.5!' } },
+    { circle: true, size: 'md' as (typeof badgeSizes)[number], class: { base: 'h-6! w-6!' } },
+    { circle: true, size: 'lg' as (typeof badgeSizes)[number], class: { base: 'h-8! w-8!' } }
   ],
   /** 默认变体值 */
   defaultVariants: {

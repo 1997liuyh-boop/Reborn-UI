@@ -1,10 +1,11 @@
-import path from "node:path";
-import fs from "node:fs/promises";
-import fssync from "node:fs";
-import { Command } from "commander";
 import type { RegistryComponent, RegistryFile } from "../types.js";
+import fssync from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { Command } from "commander";
 import { listFilesRecursive, sha1, writeJsonFile } from "../utils/fs.js";
-import { extractNpmDependenciesFromText } from "../utils/imports.js";
+import { extractSharedNpmDependencies } from "../utils/shared-dependencies.js";
+import { transformToUniapp } from "../utils/transformers.js";
 
 /**
  * 读取要嵌入 registry 的源码文本，并把 CRLF 归一为 LF。
@@ -27,8 +28,6 @@ function isAllowedFile(filePath: string) {
     ".svg",
   ].includes(ext);
 }
-
-import { transformToUniapp } from "../utils/transformers.js";
 
 function findWorkspaceRoot(startDir: string) {
   let current = path.resolve(startDir);
@@ -96,22 +95,20 @@ export function buildCommand() {
       // 默认静默降级（在无 knowledge/ 的环境单独跑 CLI build）；
       // --strict-kb 下缺失或损坏一律失败 —— registry 已不入库，发布时全靠这一步现生成，
       // 静默降级会让 npm 上出现一份没有标题和描述的 registry，且事后无人察觉。
-      type KbIndexEntry = {
+      interface KbIndexEntry {
         id: string;
         title?: string;
         description?: string;
         category?: string;
         tags?: string[];
-      };
+      }
       const kbMeta = new Map<string, KbIndexEntry>();
       const kbIndexPath = path.join(rootDir, opts.kbIndex);
       const kbFail = (reason: string) => {
         if (opts.strictKb) {
-          // eslint-disable-next-line no-console
           console.error(`${reason}：${kbIndexPath}\n请先在仓库根运行 pnpm kb:build`);
           process.exit(1);
         }
-        // eslint-disable-next-line no-console
         console.warn(`${reason}，跳过元数据注入：${kbIndexPath}`);
       };
 
@@ -193,7 +190,7 @@ export function buildCommand() {
 
           // 只从代码文件里抽依赖
           if (ext === ".ts" || ext === ".js" || ext === ".vue") {
-            for (const dep of extractNpmDependenciesFromText(content)) {
+            for (const dep of extractSharedNpmDependencies(content, "web")) {
               depSet.add(dep);
             }
           }
@@ -220,7 +217,7 @@ export function buildCommand() {
 
               // 抽取依赖
               if (ext === ".ts" || ext === ".js" || ext === ".vue") {
-                for (const dep of extractNpmDependenciesFromText(content)) {
+                for (const dep of extractSharedNpmDependencies(content, "uniapp")) {
                   depSet.add(dep);
                 }
               }
@@ -295,7 +292,6 @@ export function buildCommand() {
       await writeOut(outPath);
       for (const p of alsoOutPaths) await writeOut(p);
 
-      // eslint-disable-next-line no-console
       console.log(
         `registry 已生成：${path.relative(process.cwd(), outPath)}（${components.length} 个组件）`,
       );

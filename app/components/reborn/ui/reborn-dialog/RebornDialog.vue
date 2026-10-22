@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
 import { computed, nextTick, onBeforeUnmount, ref, useId, useSlots, watch } from "vue";
+import { runMotion, stopMotion } from "@/lib/motion";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
+import RebornScrollbar from "../scrollbar/RebornScrollbar.vue";
 import theme from "./reborn-dialog.config";
 
 /**
@@ -54,6 +56,10 @@ export interface RebornDialogUi {
   close?: string;
   /** 主体类名 */
   body?: string;
+  /** 浮层滚动条根节点类名（仅 scrollable 时渲染） */
+  scrollbar?: string;
+  /** 浮层滚动条内部滚动层类名（仅 scrollable 时渲染） */
+  scrollbarWrap?: string;
   /** 底部容器类名 */
   footer?: string;
 }
@@ -112,7 +118,7 @@ export interface RebornDialogProps {
   headerAriaLevel?: string;
   /** 面板过渡动画：scale 缩放 / slide 滑动 / fade 淡入淡出 / bounce 弹跳，或 RebornTransition 过渡名 / 属性对象 */
   transition?: DialogTransition;
-  /** 内容是否独立滚动（扩展属性：页头页脚固定，正文滚动） */
+  /** 内容是否独立滚动（扩展属性：页头页脚固定，正文滚动；滚动条为浮层式，悬停或滚动时显示、停止后隐藏） */
   scrollable?: boolean;
   /** 取消按钮配置：字符串为标签、false 隐藏、对象透传按钮属性 */
   cancelBtn?: DialogActionButton;
@@ -197,6 +203,7 @@ const active = ref(false);
 const visible = ref(false);
 const triggerRef = ref<HTMLElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
+const backdropRef = ref<HTMLElement | null>(null);
 const previousFocus = ref<HTMLElement | null>(null);
 
 const titleId = `reborn-dialog-title-${useId().replace(/[^\w-]/g, "")}`;
@@ -207,6 +214,8 @@ const dragOffset = ref({ x: 0, y: 0 });
 let openTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
 let bodyLockTimer: ReturnType<typeof setTimeout> | null = null;
+let openFrame = 0;
+let openRevision = 0;
 const initialPaddingState = { right: "", overflow: "" };
 
 const mergedOpen = computed(() => Boolean(model.value));
@@ -309,19 +318,15 @@ const rootStyle = computed(() => ({
   zIndex: `${props.zIndex}`,
 }));
 
-/** 入场缓动曲线：快出缓收，无过冲（过冲曲线会先放大过头再缩回，观感像动画播放了两次） */
-const EASE_IN_BEZIER = "cubic-bezier(0.22, 1, 0.36, 1)";
-/** 离场缓动曲线：标准 material 曲线 */
-const EASE_OUT_BEZIER = "cubic-bezier(0.4, 0, 0.2, 1)";
-/** 入场缓动的 Tailwind 任意值类（Tailwind 只认字面量，不能由上面的常量拼出来，改动时两处要同步） */
+/** 激活类保留曲线入口，Motion 从计算样式读取，兼容自定义动画类。 */
 const EASE_IN_CURVE = "[transition-timing-function:cubic-bezier(0.22,1,0.36,1)]";
-/** 离场缓动的 Tailwind 任意值类（同上） */
+/** 离场曲线同样通过 Tailwind 类声明。 */
 const EASE_OUT_CURVE = "[transition-timing-function:cubic-bezier(0.4,0,0.2,1)]";
 
 /**
  * 语义化过渡预设：scale 缩放 / slide 滑动（自上方滑入）/ fade 淡入淡出 / bounce 弹跳。
  * 全部使用显式自定义类与标准缓动，不复用共享过渡名，避免曲线过冲与时长错配；
- * bounce 入场走关键帧动画（reborn-dialog-bounce，见 theme/base.css），离场用普通缩放淡出
+ * bounce 入场由 Motion 的回弹缓动执行，离场使用普通缩放淡出。
  */
 const DIALOG_TRANSITION_PRESETS: Record<string, Record<string, any>> = {
   scale: {
@@ -353,9 +358,8 @@ const DIALOG_TRANSITION_PRESETS: Record<string, Record<string, any>> = {
   },
   bounce: {
     duration: { enter: 500, leave: 200 },
-    // 起始形变全部交给关键帧的 both 填充，enter-from 只压透明度，避免与关键帧起点（scale 0.7）不一致产生跳帧
-    enterFromClass: "opacity-0",
-    enterActiveClass: "animate-[reborn-dialog-bounce_500ms_cubic-bezier(0.34,1.56,0.64,1)_both]",
+    enterFromClass: "opacity-0 scale-75",
+    enterActiveClass: "[transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]",
     enterToClass: "opacity-100 scale-100",
     leaveFromClass: "opacity-100 scale-100",
     leaveActiveClass: `transition-[opacity,scale] ${EASE_OUT_CURVE}`,
@@ -372,15 +376,7 @@ const panelTransitionProps = computed(() => {
   return DIALOG_TRANSITION_PRESETS[key] ?? { name: key, duration: 250 };
 });
 
-/**
- * 遮罩淡入淡出时长：按预设逐个给定，对齐的是面板「视觉上站定」的时刻，而不是面板动画的总时长。
- *
- * 关键在于 animation-timing-function 是**逐关键帧段**生效的：bounce 的 0%→45% 这一段
- * 占 500ms 中的 225ms，用的却是过冲曲线 cubic-bezier(0.34,1.56,0.64,1)，其 y 值会越过 1，
- * 而 opacity 会被钳到 1 —— 面板大约在 90ms 就已经完全实体化，后面 400ms 只是缩放回弹。
- * 遮罩若还按面板总时长（500ms，哪怕封顶到 300ms）淡入，就会在弹窗已经站定之后继续变暗，
- * 这正是「遮罩比弹窗慢」的观感来源。所以 bounce 的遮罩必须又短又快。
- */
+/** bounce 的透明度先达到 1，缩放继续回弹；遮罩用较短时长匹配面板的显现速度。 */
 const BACKDROP_DURATION_PRESETS: Record<string, { enter: number; leave: number }> = {
   scale: { enter: 250, leave: 200 },
   slide: { enter: 260, leave: 220 },
@@ -400,18 +396,15 @@ const backdropDuration = computed(() => {
   return { enter: Math.min(enter, 300), leave };
 });
 
-/**
- * 遮罩过渡的内联样式（时长与缓动都写在元素上，方向随 visible 切换）。
- *
- * 遮罩刻意不走 <Transition>：Vue 的过渡要等 nextFrame（双 rAF，约两帧）才切到 enter-to
- * 才开始插值，而面板 bounce 的关键帧动画在 enter-active 类挂上的那一刻（beforeEnter）
- * 就已经跑起来了，白白让遮罩晚出发两帧 —— 这就是「显示顺序」上的落后。
- * 改成遮罩节点常驻 DOM、只靠 visible 翻透明度后，类名变更与面板动画在同一帧生效，起跑线才真正对齐。
- */
-const backdropStyle = computed(() => ({
-  transitionDuration: `${visible.value ? backdropDuration.value.enter : backdropDuration.value.leave}ms`,
-  transitionTimingFunction: visible.value ? EASE_IN_BEZIER : EASE_OUT_BEZIER,
-}));
+// 遮罩与面板同帧启动；反向切换从当前透明度继续，不累积过期动画。
+watch([visible, backdropRef], ([show, element], previous, onCleanup) => {
+  if (!element) return;
+  runMotion(element, { opacity: [Number(getComputedStyle(element).opacity), show ? 1 : 0] }, {
+    duration: (show ? backdropDuration.value.enter : backdropDuration.value.leave) / 1000,
+    ease: show ? [0.22, 1, 0.36, 1] : [0.4, 0, 0.2, 1],
+  });
+  onCleanup(() => stopMotion(element));
+}, { flush: "post" });
 
 const ui = computed(() => {
   const styles = b({
@@ -443,11 +436,18 @@ const ui = computed(() => {
       styles.description({ class: cn(opts?.class, props.ui?.description) }),
     close: (opts?: { class?: any }) => styles.close({ class: cn(opts?.class, props.ui?.close) }),
     body: (opts?: { class?: any }) => styles.body({ class: cn(opts?.class, props.ui?.body) }),
+    scrollbar: (opts?: { class?: any }) =>
+      styles.scrollbar({ class: cn(opts?.class, props.ui?.scrollbar) }),
+    scrollbarWrap: (opts?: { class?: any }) =>
+      styles.scrollbarWrap({ class: cn(opts?.class, props.ui?.scrollbarWrap) }),
     footer: (opts?: { class?: any }) => styles.footer({ class: cn(opts?.class, props.ui?.footer) }),
   };
 });
 
 function clearTimers() {
+  openRevision++;
+  if (openFrame) cancelAnimationFrame(openFrame);
+  openFrame = 0;
   if (openTimer) {
     clearTimeout(openTimer);
     openTimer = null;
@@ -484,6 +484,7 @@ function openDialog() {
 
 function doOpen() {
   clearTimers();
+  const request = openRevision;
   dragOffset.value = { x: 0, y: 0 };
   mounted.value = true;
   active.value = true;
@@ -492,9 +493,11 @@ function doOpen() {
   // 隔一帧再起动画：让 Teleport 挂载与滚动锁引发的整页重排先落定，
   // 避免昂贵的首次布局挤进动画首帧造成开场卡停
   nextTick(() => {
+    if (request !== openRevision || !mergedOpen.value) return;
     if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => {
-        visible.value = true;
+      openFrame = requestAnimationFrame(() => {
+        openFrame = 0;
+        if (request === openRevision && mergedOpen.value) visible.value = true;
       });
     } else {
       visible.value = true;
@@ -505,6 +508,10 @@ function doOpen() {
 function doClose() {
   clearTimers();
   emit("beforeClose");
+  if (!visible.value) {
+    onClosed();
+    return;
+  }
   visible.value = false;
 }
 
@@ -559,6 +566,7 @@ function onConfirmClick() {
 
 function onOpened() {
   nextTick(() => {
+    if (!visible.value || !mergedOpen.value) return;
     panelRef.value?.focus();
     emit("openAutoFocus");
     emit("opened");
@@ -773,6 +781,7 @@ watch(
 
 onBeforeUnmount(() => {
   clearTimers();
+  stopMotion(backdropRef.value);
 
   if (bodyLockTimer) {
     clearTimeout(bodyLockTimer);
@@ -808,10 +817,10 @@ defineExpose({
       v-if="mounted" v-show="active" :class="ui.root()" :style="rootStyle"
       @wheel="(e) => !props.scrollable && !penetrable && e.preventDefault()"
     >
-      <!-- 遮罩常驻 DOM，只翻透明度，保证与面板动画同帧起跑（缘由见 backdropStyle 注释） -->
+      <!-- 遮罩常驻 DOM，由 Motion 与面板同步驱动。 -->
       <div
-        v-if="props.modal || !penetrable" :class="ui.backdrop({ class: visible ? 'opacity-100' : 'opacity-0' })"
-        :style="backdropStyle" @click="onBackdropClick" @touchmove.prevent
+        v-if="props.modal || !penetrable" ref="backdropRef" :class="ui.backdrop()"
+        style="opacity: 0" @click="onBackdropClick" @touchmove.prevent
       />
 
       <!-- 定位壳静态不动画（避免整屏图层参与缩放）；点击面板外空白等同点击遮罩 -->
@@ -846,7 +855,11 @@ defineExpose({
 
             <!-- 未提供 default 插槽时不渲染正文区，避免面板 gap 产生空段间距 -->
             <div v-if="$slots.default" :class="ui.body()">
-              <slot :open="mergedOpen" :close="handleClose" />
+              <!-- scrollable：正文交给浮层滚动条，原生滚动条在部分平台会常驻显示 -->
+              <RebornScrollbar v-if="props.scrollable" :class="ui.scrollbar()" :wrap-class="ui.scrollbarWrap()">
+                <slot :open="mergedOpen" :close="handleClose" />
+              </RebornScrollbar>
+              <slot v-else :open="mergedOpen" :close="handleClose" />
             </div>
 
             <div v-if="footerVisible" :class="ui.footer()">

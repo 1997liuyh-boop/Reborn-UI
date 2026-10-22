@@ -4,7 +4,7 @@ import { normalizeOpenAICompatibleBaseUrl } from "../utils/aiProviderUrl";
 // 覆盖 AI SDK 的默认模型解析器:
 // Docus AI 助手内部以字符串模型 ID 调用 streamText,默认解析到 Vercel AI Gateway;
 // 设置 globalThis.AI_SDK_DEFAULT_PROVIDER 后,字符串模型 ID 会改由此处的
-// OpenAI 兼容提供商解析(当前指向 rebornid 自建网关,模型 deepseek-v4-pro)。
+// OpenAI 兼容提供商解析(当前指向 rebornid 自建网关,模型 deepseek-flash)。
 export default defineNitroPlugin(() => {
   const { aiProvider } = useRuntimeConfig();
 

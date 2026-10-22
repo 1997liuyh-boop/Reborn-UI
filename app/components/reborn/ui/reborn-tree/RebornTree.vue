@@ -15,6 +15,7 @@ import type {
 } from "./reborn-tree.config";
 import type { TreeConductResult } from "./useTree";
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from "vue";
+import { useMotionList } from '@/composables/useMotionList';
 import { cn } from "~/lib/utils";
 import theme from "./reborn-tree.config";
 import {
@@ -527,6 +528,9 @@ const useVirtual = computed(() => props.virtual && props.height !== undefined);
 
 /** 列表是否启用行级过渡：虚拟滚动下切片随滚动增删行，过渡会退化成滚动闪烁，强制关闭 */
 const listAnimated = computed(() => props.animated && !useVirtual.value);
+/** 虚拟切片不保留离场行，避免节点残留挤偏滚动位置。 */
+const listMotion = useMotionList({ enabled: () => listAnimated.value });
+const vMotionList = listMotion.directive;
 
 /** 滚动容器引用 */
 const scrollRef = ref<HTMLElement | null>(null);
@@ -949,14 +953,12 @@ defineExpose({
   >
     <!-- 虚拟滚动时由占位层撑出总高度，列表整体位移到切片起点 -->
     <div :style="useVirtual ? { height: `${totalHeight}px`, position: 'relative' } : undefined">
-      <!-- 展开/收起的行级过渡由 TransitionGroup 承担：新行走 enter、消失行走 leave、
-           existing 行靠 FLIP 的 move 类平滑让位。
-           动画关闭时必须同时关掉 css：仅换成无样式的过渡名，离场行仍会在 DOM 里多留两帧，
-           虚拟滚动下这些残留行会把可见行整体顶偏；过渡名仍要换掉，否则 move 类会让切片位移带上动画 -->
+      <!-- Motion 只驱动普通列表的进出与补位；虚拟列表同步完成钩子，不留下离场占位。 -->
       <TransitionGroup
-        tag="ul" :name="listAnimated ? 'reborn-tree' : 'reborn-tree-none'" :class="ui.list()"
-        :css="listAnimated"
+        v-motion-list tag="ul" :class="ui.list()" :css="false"
         :style="useVirtual ? { transform: `translateY(${offsetY}px)` } : undefined" role="group"
+        @enter="listMotion.enter" @leave="listMotion.leave"
+        @enter-cancelled="listMotion.cancel" @leave-cancelled="listMotion.cancel"
       >
         <li
           v-for="entity in renderNodes" :key="entity.key"
@@ -977,7 +979,7 @@ defineExpose({
 
           <!-- 展开/折叠开关：叶子节点占位保持对齐，showLine 下叶子渲染 leaf 图标 -->
           <span
-            :class="ui.switcher({ disabled: isDisabled(entity), leaf: isLeaf(entity) })"
+            :class="ui.switcher({ disabled: isDisabled(entity), leaf: isLeaf(entity), class: loadingKeys.has(entity.key) ? 'cursor-wait hover:bg-transparent' : undefined })"
             @click="toggleExpand(entity)"
           >
             <!-- switcherIcon 插槽整体替换展开/折叠图标；叶子（含 showLine 的 leaf 图标）与加载态由作用域的 leaf / loading 区分 -->
@@ -1075,41 +1077,3 @@ defineExpose({
     </div>
   </div>
 </template>
-
-<style scoped>
-/* 展开/收起的行级过渡：新行淡入下滑，下方行由 move 类做 FLIP 位移让位 */
-.reborn-tree-enter-active {
-  transition:
-    opacity 200ms ease,
-    transform 200ms ease;
-}
-
-.reborn-tree-move {
-  transition: transform 200ms ease;
-}
-
-/* 离场行脱离文档流，让下方行的位移立即开始；绝对定位会让宽度收缩，需锁回整行宽 */
-.reborn-tree-leave-active {
-  position: absolute;
-  width: 100%;
-  transition: opacity 150ms ease;
-}
-
-.reborn-tree-enter-from,
-.reborn-tree-leave-to {
-  opacity: 0;
-}
-
-.reborn-tree-enter-from {
-  transform: translateY(-6px);
-}
-
-/* 系统开启「减少动态效果」时整组过渡归零 */
-@media (prefers-reduced-motion: reduce) {
-  .reborn-tree-enter-active,
-  .reborn-tree-leave-active,
-  .reborn-tree-move {
-    transition: none;
-  }
-}
-</style>

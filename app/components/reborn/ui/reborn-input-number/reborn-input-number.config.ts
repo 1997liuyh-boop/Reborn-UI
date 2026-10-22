@@ -26,7 +26,7 @@ export default {
      */
     wrapper:
       "group/number relative flex w-full items-center box-border overflow-hidden text-gray-8 transition-colors data-[disabled=true]:cursor-not-allowed data-[disabled=true]:text-gray-5",
-    /** 左右分列布局下的增减按钮：宽高均取 --height-input-*，保持正方形 */
+    /** 左右分列布局下的增减按钮：宽度与控件高度使用同档刻度，保持正方形 */
     button:
       "flex h-full shrink-0 items-center justify-center border-none bg-transparent p-0 text-gray-6 transition-colors disabled:cursor-not-allowed disabled:text-gray-5",
     /**
@@ -58,35 +58,35 @@ export default {
   },
   variants: {
     /**
-     * 尺寸档位，全部取自 app/assets/theme/typography.css 的设计令牌：
-     * 高度 --height-input-*、水平内边距 --spacing-input-px-*、图标 --size-input-icon-*。
+     * 尺寸直接使用 Tailwind 刻度：高度 h-6 / h-8 / h-10，
+     * 水平内边距 px-2.5 / px-3 / px-4，图标 size-2.5 / size-3 / size-4。
      * 字号：sm / md 均为 14px（text-base）、lg 为 16px（text-lg）。
-     * 分列按钮宽度与输入框高度取同一 token，保证按钮始终为正方形。
+     * 分列按钮宽度与输入框高度取同一刻度，堆叠按钮宽度由局部变量同步计算。
      */
     size: {
       sm: {
-        wrapper: "h-input-sm text-base [--stack-w:var(--height-input-sm)]",
-        input: "px-input-px-sm text-base",
-        button: "w-(--height-input-sm)",
-        prefix: "ps-input-px-sm",
-        suffix: "pe-input-px-sm",
-        icon: "size-(--size-input-icon-sm)",
+        wrapper: "h-6 text-base [--stack-w:--spacing(6)]",
+        input: "px-2.5 text-base",
+        button: "w-6",
+        prefix: "ps-2.5",
+        suffix: "pe-2.5",
+        icon: "size-2.5",
       },
       md: {
-        wrapper: "h-input-md text-base [--stack-w:var(--height-input-md)]",
-        input: "px-input-px-md text-base",
-        button: "w-(--height-input-md)",
-        prefix: "ps-input-px-md",
-        suffix: "pe-input-px-md",
-        icon: "size-(--size-input-icon-md)",
+        wrapper: "h-8 text-base [--stack-w:--spacing(8)]",
+        input: "px-3 text-base",
+        button: "w-8",
+        prefix: "ps-3",
+        suffix: "pe-3",
+        icon: "size-3",
       },
       lg: {
-        wrapper: "h-input-lg text-lg [--stack-w:var(--height-input-lg)]",
-        input: "px-input-px-lg text-lg",
-        button: "w-(--height-input-lg)",
-        prefix: "ps-input-px-lg",
-        suffix: "pe-input-px-lg",
-        icon: "size-(--size-input-icon-lg)",
+        wrapper: "h-10 text-lg [--stack-w:--spacing(10)]",
+        input: "px-4 text-lg",
+        button: "w-10",
+        prefix: "ps-4",
+        suffix: "pe-4",
+        icon: "size-4",
       },
     },
     /**

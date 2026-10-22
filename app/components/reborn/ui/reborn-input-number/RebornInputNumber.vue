@@ -81,7 +81,7 @@ export interface InputNumberProps {
    * 当 precision 小于 step 的小数位时，按 step 的小数位生效，否则步进结果会被截断。
    */
   precision?: number;
-  /** 尺寸档位，对应主题令牌 --height-input-*（sm 24px / md 32px / lg 40px） */
+  /** 尺寸档位，对应 Tailwind 高度 h-6 / h-8 / h-10 */
   size?: (typeof inputNumberSizes)[number];
   /** 原生 readonly 语义：只读，既不能键入也不能通过按钮增减 */
   readonly?: boolean;

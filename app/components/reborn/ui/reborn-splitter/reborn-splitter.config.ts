@@ -18,12 +18,12 @@ export default {
       horizontal: {
         root: 'flex-row',
         panel: 'flex-row h-full',
-        bar: 'w-[2px] h-full cursor-col-resize',
+        bar: 'w-0.5 h-full cursor-col-resize',
       },
       vertical: {
         root: 'flex-col',
         panel: 'flex-col w-full',
-        bar: 'h-[2px] w-full cursor-row-resize',
+        bar: 'h-0.5 w-full cursor-row-resize',
       }
     },
     isDragging: {

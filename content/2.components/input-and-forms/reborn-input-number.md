@@ -65,7 +65,7 @@ const count = ref(5);
 :::tabs-item{label="Web" icon="tabler:world"}
 `shape="square"` 按尺寸取 `rounded-sm` / `rounded-md` / `rounded-lg`，**默认值为 `square`**。
 
-`size` 支持 `sm` / `md` / `lg` 三档，尺寸全部取自 `app/assets/theme/typography.css` 的设计令牌：高度 24 / 32 / 40px，水平内边距 10 / 12 / 16px，加减图标 10 / 12 / 16px；字号 sm 与 md 同为 14px、lg 为 16px。`color` 影响聚焦环、光标与按钮悬停色。
+`size` 支持 `sm` / `md` / `lg` 三档，高度取 `h-6` / `h-8` / `h-10`，水平内边距取 `px-2.5` / `px-3` / `px-4`，加减图标取 `size-2.5` / `size-3` / `size-4`。默认根字号为 16px 时，分别对应高度 24 / 32 / 40px、内边距与图标尺寸 10 / 12 / 16px，并随 Tailwind `--spacing` 缩放；字号仍取 `app/assets/theme/typography.css`，sm 与 md 同为 14px、lg 为 16px。`color` 影响聚焦环、光标与按钮悬停色。
 
 ```vue
 <template>
@@ -688,15 +688,15 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 
 | 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
 | --- | --- | --- | --- |
-| `wrapper` | 根容器 `div`，点击时把焦点交给输入框；`class` 也合并到这一层 | `group/number relative flex w-full items-center overflow-hidden text-gray-8`；`size` 追加 `h-input-sm/md/lg` 与 `--stack-w`，`variant` 追加背景与描边（如 outlined 为 `bg-gray-1 ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`，`square` 按尺寸追加 `rounded-sm/md/lg` | 始终渲染；`underlined` 形态带 `rounded-none!`，覆盖圆角须写 `!` |
-| `button` | 左右分列布局下的加减按钮（原生 `button`） | `flex h-full shrink-0 items-center justify-center bg-transparent p-0 text-gray-6 disabled:text-gray-5`；`size` 追加 `w-(--height-input-*)`，`color` 追加 `hover:text-*` | 仅按钮显示（`controls` 为 `true` 且未开 `hide-button`）且未设 `controls-position` 时渲染 |
+| `wrapper` | 根容器 `div`，点击时把焦点交给输入框；`class` 也合并到这一层 | `group/number relative flex w-full items-center overflow-hidden text-gray-8`；`size` 追加 `h-6` / `h-8` / `h-10` 与 `--stack-w`，`variant` 追加背景与描边（如 outlined 为 `bg-gray-1 ring-1 ring-gray-4`），`shape="circle"` 追加 `rounded-full`，`square` 按尺寸追加 `rounded-sm/md/lg` | 始终渲染；`underlined` 形态带 `rounded-none!`，覆盖圆角须写 `!` |
+| `button` | 左右分列布局下的加减按钮（原生 `button`） | `flex h-full shrink-0 items-center justify-center bg-transparent p-0 text-gray-6 disabled:text-gray-5`；`size` 追加 `w-6` / `w-8` / `w-10`，`color` 追加 `hover:text-*` | 仅按钮显示（`controls` 为 `true` 且未开 `hide-button`）且未设 `controls-position` 时渲染 |
 | `stack` | 堆叠布局下的按钮组容器，绝对定位在输入区一侧 | `absolute inset-y-0 flex w-(--stack-w) flex-col bg-inherit opacity-0 group-hover/number:opacity-100 group-focus-within/number:opacity-100`；`left` 追加 `start-0 -translate-x-full border-e`，`right` 追加 `end-0 translate-x-full border-s` | 仅按钮显示且 `controls-position` 为 `left` / `right` 时渲染 |
 | `stackButton` | 堆叠布局下的单个按钮，上为加、下为减 | `flex min-h-0 flex-1 items-center justify-center text-gray-6 first:border-b first:border-gray-4 enabled:hover:grow-[1.5]` | 同 `stack` |
-| `input` | 中间的原生输入框（`type="text"`） | `h-full min-w-0 flex-1 bg-transparent text-gray-9 outline-none placeholder:text-gray-5`；`size` 追加 `px-input-px-*`，`align` 追加 `text-left/center/right`，`color` 追加 `caret-*`；堆叠布局悬停 / 聚焦时追加对应侧 `ps-(--stack-w)` / `pe-(--stack-w)` | 始终渲染 |
+| `input` | 中间的原生输入框（`type="text"`） | `h-full min-w-0 flex-1 bg-transparent text-gray-9 outline-none placeholder:text-gray-5`；`size` 追加 `px-2.5` / `px-3` / `px-4`，`align` 追加 `text-left/center/right`，`color` 追加 `caret-*`；堆叠布局悬停 / 聚焦时追加对应侧 `ps-(--stack-w)` / `pe-(--stack-w)` | 始终渲染 |
 | `divider` | 分列按钮与输入区之间的竖线，左右各一条 | `h-full w-px shrink-0 bg-gray-3` | 同 `button`；`underlined` 形态追加 `hidden` |
-| `prefix` | 前缀容器，包住 `prefix` 插槽 | `flex shrink-0 items-center pe-0 text-gray-6`；`size` 追加 `ps-input-px-*` | 仅传入 `prefix` 插槽时渲染 |
-| `suffix` | 后缀容器，包住 `suffix` 插槽 | `flex shrink-0 items-center ps-0 text-gray-6`；`size` 追加 `pe-input-px-*` | 仅传入 `suffix` 插槽时渲染 |
-| `icon` | 加减图标（默认 `lucide:minus` / `lucide:plus`，堆叠时为 chevron） | `shrink-0`；`size` 追加 `size-(--size-input-icon-*)` | 随按钮渲染；同时作为 `iconClass` 下发给 `minus` / `plus` 插槽，插槽内不绑定 `iconClass` 时对自定义图标失效 |
+| `prefix` | 前缀容器，包住 `prefix` 插槽 | `flex shrink-0 items-center pe-0 text-gray-6`；`size` 追加 `ps-2.5` / `ps-3` / `ps-4` | 仅传入 `prefix` 插槽时渲染 |
+| `suffix` | 后缀容器，包住 `suffix` 插槽 | `flex shrink-0 items-center ps-0 text-gray-6`；`size` 追加 `pe-2.5` / `pe-3` / `pe-4` | 仅传入 `suffix` 插槽时渲染 |
+| `icon` | 加减图标（默认 `lucide:minus` / `lucide:plus`，堆叠时为 chevron） | `shrink-0`；`size` 追加 `size-2.5` / `size-3` / `size-4` | 随按钮渲染；同时作为 `iconClass` 下发给 `minus` / `plus` 插槽，插槽内不绑定 `iconClass` 时对自定义图标失效 |
 
 ```vue
 <template>
@@ -750,21 +750,21 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 
 ### 设计令牌
 
-两端的尺寸都走设计令牌，但**令牌体系不同**：Web 端有独立的输入框高度 / 内边距 / 图标令牌（px），UniApp 端直接从字号令牌派生高度（rpx）。
+Web 的高度、内边距和图标使用 Tailwind 原生尺寸刻度，字号保留全局设计令牌；UniApp 直接从字号令牌派生高度（rpx）。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-定义于 `app/assets/theme/typography.css`：
+尺寸使用 `app/assets/css/reborn-ui.css` 引入的 Tailwind `--spacing`（默认 `0.25rem`），字号定义于 `app/assets/theme/typography.css`：
 
-| 令牌                        | sm     | md     | lg     | 用途                                         |
+| 项目                        | sm     | md     | lg     | 用途                                         |
 | :-------------------------- | :----- | :----- | :----- | :------------------------------------------- |
-| `--height-input-*`          | `24px` | `32px` | `40px` | 输入框高度（分列按钮宽度取同值，保证正方形） |
-| `--spacing-input-px-*`      | `10px` | `12px` | `16px` | 输入区水平内边距                             |
-| `--size-input-icon-*`       | `10px` | `12px` | `16px` | 加减图标尺寸                                 |
+| 高度 / 分列按钮宽度         | `h-6` / `w-6` | `h-8` / `w-8` | `h-10` / `w-10` | 宽高取相同刻度，保证按钮正方形 |
+| 输入区水平内边距            | `px-2.5` | `px-3` | `px-4` | 默认根字号下为 10 / 12 / 16px |
+| 加减图标尺寸                | `size-2.5` | `size-3` | `size-4` | 默认根字号下为 10 / 12 / 16px |
 | `--text-base` / `--text-lg` | `14px` | `14px` | `16px` | 输入文字字号（sm 与 md 同为 14px）           |
 
-另有一个组件内部变量 `--stack-w`：由 `size` 变体写入，值等于当前档位的 `--height-input-*`，用于确定堆叠按钮组的宽度以及输入框滑入时让出的内边距。
+默认根字号为 16px 时，三档高度为 24 / 32 / 40px。组件内部变量 `--stack-w` 由 `size` 写为 `--spacing(6)` / `--spacing(8)` / `--spacing(10)`，编译后为对应的 `calc(var(--spacing) * N)`，用于同步堆叠按钮组宽度与输入框滑入时让出的内边距。
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -811,7 +811,7 @@ UniApp 无原生 DOM 元素可取，因此不提供 `inputRef`。
 | `inputRef`                    | 暴露原生 input 元素                                                 | 不提供                                       |
 | 旧插槽名                      | `decrement` / `increment`                                           | `decrease-icon` / `increase-icon`            |
 | 图标写法                      | `<Icon name="lucide:*">`                                            | `<view class="i-lucide-*">`                  |
-| 尺寸令牌                      | `--height-input-*` 等独立 px 令牌                                   | 由 `--text-size-*` 派生 rpx                  |
+| 尺寸来源                      | Tailwind 原生尺寸刻度，字号保留固定 px 令牌                        | 由 `--text-size-*` 派生 rpx                  |
 | 错误态描边                    | `ring-red-5`                                                        | `ring-error`                                 |
 | 分割线                        | 固定 `gray-3`，不随 `color` 变化                                    | 聚焦时染成 `color` 主题色                    |
 | 深色模式                      | `base.css` 的 `.dark` 自动翻转灰阶                                  | 无 `.dark` 块，逐条写死 `dark:` 变体         |

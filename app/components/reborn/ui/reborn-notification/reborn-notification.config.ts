@@ -270,17 +270,17 @@ export const notificationTheme = tv({
      * 定位容器：贴屏幕四角之一，纵向排列；容器不拦截指针事件，交由面板接管。
      * 四个方向的贴边值都由行内样式给出（见容器组件的 wrapperStyle），这里不写 left / right / top / bottom
      */
-    wrapper: 'fixed flex w-[360px] max-w-[calc(100vw-32px)] flex-col gap-[16px] pointer-events-none',
+    wrapper: 'fixed flex w-90 max-w-[calc(100vw-32px)] flex-col gap-[16px] pointer-events-none',
     /** 通知面板：三段结构由 gap-[20px] 分隔 */
     root:
       'reborn-notification pointer-events-auto relative flex w-full flex-col gap-[20px] overflow-hidden rounded-lg border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-9 shadow-[0_12px_32px_rgba(15,23,42,0.16)]',
     /** 侧边飘带：3px 竖条通栏，压在面板内边距上，不挤占内容宽度 */
-    ribbon: 'pointer-events-none absolute inset-y-0 w-[3px]',
+    ribbon: 'pointer-events-none absolute inset-y-0 w-notification-ribbon-width',
     /** 头部：图标 / 文字区 / 关闭图标三列，顶部对齐，图标与文字间距 12px */
     header: 'flex items-start gap-[12px]',
     iconWrapper: 'flex shrink-0 items-center justify-center',
     /** 提示图标：固定 24px */
-    icon: 'size-[24px]',
+    icon: 'size-6',
     /** 头部文字区：标题与正文之间间隔 8px */
     headerContent: 'flex min-w-0 flex-1 flex-col gap-[8px]',
     /** 标题：text-lg 令牌（16px/24px）/ 500 字重 / gray-10（令牌语义为「title 标题」） */
@@ -289,7 +289,7 @@ export const notificationTheme = tv({
     message: 'text-base break-words text-gray-8',
     /** 关闭图标：固定 18px，不随父级字号浮动 */
     close:
-      'inline-flex size-[18px] shrink-0 cursor-pointer items-center justify-center text-gray-5 transition-colors hover:text-gray-7',
+      'inline-flex size-4.5 shrink-0 cursor-pointer items-center justify-center text-gray-5 transition-colors hover:text-gray-7',
     /** 独立正文段（message 为 VNode 时启用）：与 message 同为 text-base 令牌 */
     body: 'text-base text-gray-8',
     /** 底部操作区：按钮靠右对齐 */

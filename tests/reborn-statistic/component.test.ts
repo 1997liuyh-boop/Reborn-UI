@@ -19,6 +19,11 @@ for (const key of ['window', 'document', 'Element', 'HTMLElement', 'SVGElement',
   previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
   Object.defineProperty(globalThis, key, { value: dom.window[key], configurable: true });
 }
+// Motion 在模块初始化时保存帧调度函数，转发到每个用例当前的浏览器帧环境。
+previous.set('requestAnimationFrame', Object.getOwnPropertyDescriptor(globalThis, 'requestAnimationFrame'));
+Object.defineProperty(globalThis, 'requestAnimationFrame', {
+  configurable: true, value: (callback: FrameRequestCallback) => window.requestAnimationFrame?.(callback),
+});
 const { createApp, createSSRApp, h, nextTick, reactive, ref } = await import('vue');
 const { renderToString } = await import('@vue/server-renderer');
 const folder = await mkdtemp(resolve('tests/reborn-statistic/.runtime-'));
@@ -79,7 +84,15 @@ function enableMotion(t: TestContext) {
   Object.defineProperty(window, 'requestAnimationFrame', { configurable: true, value: schedule });
   Object.defineProperty(globalThis, 'requestAnimationFrame', { configurable: true, value: schedule });
   Object.defineProperty(window, 'cancelAnimationFrame', { configurable: true, value: (id: number) => frames.delete(id) });
+  function advance(milliseconds: number) {
+    now += milliseconds;
+    const scheduled = Array.from(frames.values());
+    frames.clear();
+    for (const callback of scheduled) callback(now);
+  }
   t.after(() => {
+    // Motion 多个组件共用一轮帧，停止后还会冲刷一次渲染队列，跨用例前清空。
+    for (let index = 0; index < 5 && frames.size; index++) advance(0);
     for (const { target, key, descriptor } of descriptors) {
       if (descriptor) Object.defineProperty(target, key, descriptor);
       else Reflect.deleteProperty(target, key);
@@ -87,12 +100,7 @@ function enableMotion(t: TestContext) {
   });
   return {
     media,
-    advance(milliseconds: number) {
-      now += milliseconds;
-      const scheduled = Array.from(frames.values());
-      frames.clear();
-      for (const callback of scheduled) callback(now);
-    },
+    advance,
     pending: () => frames.size,
   };
 }
@@ -107,6 +115,7 @@ it('与 Total Transactions 一样在 1500 毫秒内从零连续计数到目标',
     assert.equal(view.instance.value.displayValue, '86,000');
     motion.advance(750); await nextTick();
     assert.equal(view.root.textContent, '172,000');
+    motion.advance(0);
     assert.equal(motion.pending(), 0);
   } finally { view.stop(); }
 });
@@ -128,6 +137,7 @@ it('连续更新从当前数值衔接，支持负数与小数，卸载取消后�
     view.props.value = 300; await nextTick();
     assert.equal(motion.pending(), 1);
   } finally { view.stop(); }
+  motion.advance(0);
   assert.equal(motion.pending(), 0);
 });
 
@@ -145,6 +155,7 @@ it('减少动态效果、动画开关、零时长和自定义格式化均立即�
     assert.equal(view.root.textContent, '1,500');
     view.props.animated = false; await nextTick();
     assert.equal(view.root.textContent, '2,000');
+    advance(0);
     assert.equal(pending(), 0);
     view.props.animated = true; await nextTick();
     view.props.duration = 0; await nextTick();

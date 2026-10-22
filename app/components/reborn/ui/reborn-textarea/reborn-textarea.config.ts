@@ -31,7 +31,8 @@ const config = {
         },
         disabled: {
             true: {
-                root: "bg-gray-3 text-gray-5",
+                // 外框有 8px 内边距，那一圈也要显示禁止光标
+                root: "bg-gray-3 text-gray-5 cursor-not-allowed",
                 inner: "cursor-not-allowed",
             },
         },

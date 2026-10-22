@@ -4,9 +4,22 @@ import { readFileSync } from "node:fs";
 import { it } from "node:test";
 import theme from "../../app/components/reborn/ui/reborn-time-picker/reborn-time-panel.config";
 
+const typography = readFileSync("app/assets/theme/typography.css", "utf8");
+
+function readPixelSize(name: string) {
+  const match = typography.match(new RegExp(`--spacing-${name}:\\s*(\\d+)px;`));
+  assert.ok(match, `缺少像素尺寸令牌 ${name}`);
+  return Number(match[1]);
+}
+
 it("滚动窗口为六行高，完整五项并在上下各显示半项", () => {
-  assert.match(theme.slots.list, /h-\[174px\]/);
-  assert.match(theme.slots.item, /h-\[29px\]/);
+  assert.match(theme.slots.list, /\bh-time-picker-panel-list-height\b/);
+  assert.match(theme.slots.item, /\bh-time-picker-panel-item\b/);
+  const listHeight = readPixelSize("time-picker-panel-list-height");
+  const itemHeight = readPixelSize("time-picker-panel-item");
+  assert.equal(listHeight, 174);
+  assert.equal(itemHeight, 29);
+  assert.equal(listHeight / itemHeight, 6);
   assert.match(theme.slots.item, /text-base/);
   assert.match(theme.slots.item, /px-5 py-1/);
 });

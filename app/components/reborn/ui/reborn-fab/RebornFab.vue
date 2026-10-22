@@ -206,6 +206,7 @@ const uiClasses = computed(() => {
     active: isActive.value,
     variant: props.variant,
     direction: fabDirection.value,
+    disabled: props.disabled,
   });
   return {
     root: (opts?: any) =>

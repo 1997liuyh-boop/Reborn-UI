@@ -10,7 +10,7 @@ export default {
         list: "flex flex-row relative gap-1",
         item: "flex flex-row items-center justify-center duration-100 border border-solid border-gray-3 rounded-lg bg-gray-1",
         value: "text-inherit font-medium",
-        cursor: "absolute w-[1px] h-[60%]",
+        cursor: "absolute w-px h-[60%]",
     },
     variants: {
         // 字号取七级排版令牌。sm 原先写 Tailwind 原生 text-xs，与 md 的 text-sm 同为 12px，
@@ -52,7 +52,10 @@ export default {
         },
         disabled: {
             true: {
-                root: "opacity-50 pointer-events-none",
+                // pointer-events-none 只放在覆盖全组的透明输入层上：放在根节点会继承到所有子元素，禁止光标显示不出来；
+                // 指针落到各格子上，格子继承根节点的禁止光标，点击只会聚焦一个原生 disabled 的输入框，不产生输入
+                root: "opacity-50 cursor-not-allowed",
+                inner: "pointer-events-none",
                 item: "bg-gray-2",
             },
         },

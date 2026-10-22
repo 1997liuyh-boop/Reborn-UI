@@ -2,6 +2,7 @@
 import type { ClassValue } from 'tailwind-variants';
 import type { CSSProperties } from 'vue';
 import type { StatisticUI } from './reborn-statistic.config';
+import { animate } from 'motion-v';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { cn } from '~/lib/utils';
 import { statisticTheme } from './reborn-statistic.config';
@@ -52,7 +53,8 @@ const reducedMotion = ref(false);
 const targetValue = computed(() => Number.isFinite(props.value) ? props.value : 0);
 const currentValue = ref(targetValue.value);
 let media: MediaQueryList | undefined;
-let frame: number | undefined;
+let playback: ReturnType<typeof animate> | undefined;
+let generation = 0;
 /** 无效时长直接展示目标，不创建后续帧。 */
 const animationDuration = computed(() => Number.isFinite(props.duration) ? Math.max(0, props.duration) : 0);
 const canAnimate = computed(() => props.animated && !props.formatter && Number.isFinite(props.value)
@@ -62,10 +64,11 @@ const displayValue = computed(() => props.formatter
   ? props.formatter(props.value)
   : formatStatistic(currentValue.value, props.precision, props.decimalSeparator, props.groupSeparator));
 
-/** 新目标或组件卸载时取消旧帧，避免旧动画覆盖最新结果。 */
+/** 新目标或组件卸载时停止旧动画，避免旧回调覆盖最新结果。 */
 function stopAnimation() {
-  if (frame !== undefined) window.cancelAnimationFrame(frame);
-  frame = undefined;
+  generation++;
+  playback?.stop();
+  playback = undefined;
 }
 
 /** 与参考示例一致使用线性计数，更新目标时从当前可见数值继续。 */
@@ -77,15 +80,20 @@ function animateValue(from = currentValue.value) {
     return;
   }
   currentValue.value = from;
-  const startedAt = performance.now();
-  const duration = animationDuration.value;
-  const tick = (now: number) => {
-    const progress = Math.min(1, Math.max(0, (now - startedAt) / duration));
-    // 先相减可能让正负极值溢出，按权重相加可保持中间值有限。
-    currentValue.value = progress === 1 ? target : from * (1 - progress) + target * progress;
-    frame = progress < 1 ? window.requestAnimationFrame(tick) : undefined;
-  };
-  frame = window.requestAnimationFrame(tick);
+  const token = generation;
+  playback = animate(0, 1, {
+    type: 'tween', duration: animationDuration.value / 1000, ease: 'linear',
+    onUpdate: progress => {
+      if (token !== generation) return;
+      // 先相减可能让正负极值溢出，按权重相加可保持中间值有限。
+      currentValue.value = progress === 1 ? target : from * (1 - progress) + target * progress;
+    },
+    onComplete: () => {
+      if (token !== generation) return;
+      currentValue.value = target;
+      playback = undefined;
+    },
+  });
 }
 
 /** 页面打开期间改变系统偏好时，立即停止计数并显示目标。 */

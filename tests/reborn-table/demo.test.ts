@@ -265,3 +265,30 @@ it('固定列演示提供十列真实内容，同时保留左右固定', () => {
     } finally { t.stop(); }
   }
 });
+
+it('拖拽排序：手柄方向键移动行并回写 data，排序生效时手柄禁用', async () => {
+  const t = mount('拖拽排序');
+  try {
+    const label = '可拖拽排序的报销明细';
+    const handles = () => flatten(table(t.root, label)).filter(node => node.props['data-table-drag-handle'] !== undefined);
+    assert.equal(handles().length, 5);
+    assert.deepEqual(keys(table(t.root, label)), [101, 102, 103, 104, 105]);
+    await dispatch(handles()[0]!, 'onKeydown', { key: 'ArrowDown' });
+    assert.deepEqual(keys(table(t.root, label)), [102, 101, 103, 104, 105], '回写 data 后林晓下移一位');
+    assert.match(content(t.root), /林晓 从第 1 位移到第 2 位/);
+    await dispatch(handles()[4]!, 'onKeydown', { key: 'ArrowUp' });
+    assert.deepEqual(keys(table(t.root, label)), [102, 101, 103, 105, 104]);
+    // 首行再上移没有目标，不派发事件
+    await dispatch(handles()[0]!, 'onKeydown', { key: 'ArrowUp' });
+    assert.deepEqual(keys(table(t.root, label)), [102, 101, 103, 105, 104]);
+    assert.ok(handles().every(node => node.props.disabled === false));
+    await dispatch(find(table(t.root, label), node => node.props['aria-label'] === '排序报销金额', '缺少金额排序按钮'));
+    assert.ok(handles().every(node => node.props.disabled === true), '排序视图下禁用拖拽');
+    // 手柄点击不冒泡到行，避免触发行点击与当前行切换
+    let bubbled = false;
+    const handle = handles()[0]!;
+    handle.parent!.props.onClick = () => { bubbled = true; };
+    await dispatch(handle);
+    assert.equal(bubbled, false);
+  } finally { t.stop(); }
+});

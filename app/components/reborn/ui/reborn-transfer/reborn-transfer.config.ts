@@ -123,8 +123,7 @@ const config = {
     headerSelectMenu: 'w-auto shrink-0',
     /**
      * 下拉触发器：传给 RebornSelect 的 triggerUi.trigger。
-     * sm 档自带 h-input-sm（24px），twMerge 识别不出这个自定义高度与 h-auto 同组，
-     * 两个类会同时保留，所以这里用 h-auto! 强制按内容高度，避免撑高面板头部；禁用态去掉灰底
+     * 覆盖 sm 档的 h-6，以内容高度展示头部计数；h-auto! 沿用头部触发器的优先级。
      */
     headerSelectTrigger: 'h-auto! w-auto gap-1 bg-transparent text-gray-7',
     /** 下拉浮层：传给 RebornSelect 的 triggerUi.dropdown，浮层挂到 body；触发器只有计数文字宽，这里给出最小宽度 */

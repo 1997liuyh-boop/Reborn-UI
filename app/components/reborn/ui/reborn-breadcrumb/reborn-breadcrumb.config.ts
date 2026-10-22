@@ -82,7 +82,7 @@ export default {
      * 颜色只用灰阶 token（base.css 的 .dark 会整条翻转），不可写 dark: 前缀。
      */
     droplistItem:
-      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-sm px-[6px] py-[4px] text-base text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+      "flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-sm px-[6px] py-[4px] text-base text-gray-7 transition-colors hover:bg-gray-2 hover:text-primary data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent data-[disabled=true]:hover:text-gray-7",
     /** 菜单项分隔线，与浮层描边同一阶 */
     droplistDivider: "my-[4px] border-t border-gray-3",
   },

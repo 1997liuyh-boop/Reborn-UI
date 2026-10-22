@@ -254,26 +254,86 @@
  * 属性选择器不加 :root 前缀，色块按钮自己挂 data-theme-color 就能预览对应主色（所见即所得）。
  * 权重：[data-theme-color] 与 :root / .dark 同为 (0,1,0)，靠源码次序压住浅色默认值；
  * 暗色组用 .dark[...] / .dark [...] 提到 (0,2,0)，稳压同块的浅色规则。
+ *
+ * 非品牌蓝时整条 brand-1~10 色阶一起改指所选色系：组件里大量直接写 bg-brand-1、text-brand-6、
+ * --color-brand-6 等，只换 --color-primary 的话这些地方会停在蓝色。
+ * 改指用 var() 而不是写死色值：它按所在元素当时的 orange-* 等取值，暗色下 .dark 已把这些
+ * 色板换成暗色值，brand-* 跟着取到暗色值，所以明暗不用各写一份。
+ *
+ * 品牌蓝反过来要显式写回原色值：自定义属性按「已解析的值」继承，页面选了橙色后，
+ * <html> 上的 brand-* 已经是橙色，挂 data-theme-color="brand" 的子元素（如主题选择器里的品牌蓝色块）
+ * 继承到的也是橙色，只写 primary: var(--color-brand-6) 会跟着变橙。没有别的变量保留原始蓝，
+ * 只能把色值抄一份：下面两块必须与上方 @theme 浅色板、.dark 暗色板里的 brand-1~10 保持一致。
  */
 [data-theme-color="brand"] {
+  --color-brand-1: #ebf5ff;
+  --color-brand-2: #bedefe;
+  --color-brand-3: #96c6fd;
+  --color-brand-4: #6eacfc;
+  --color-brand-5: #5095fb;
+  --color-brand-6: #1b6dfa;
+  --color-brand-7: #1150d0;
+  --color-brand-8: #0937a5;
+  --color-brand-9: #032277;
+  --color-brand-10: #00124d;
   --color-primary: var(--color-brand-6);
   --color-primary-3: var(--color-brand-3);
 }
 [data-theme-color="orange"] {
+  --color-brand-1: var(--color-orange-1);
+  --color-brand-2: var(--color-orange-2);
+  --color-brand-3: var(--color-orange-3);
+  --color-brand-4: var(--color-orange-4);
+  --color-brand-5: var(--color-orange-5);
+  --color-brand-6: var(--color-orange-6);
+  --color-brand-7: var(--color-orange-7);
+  --color-brand-8: var(--color-orange-8);
+  --color-brand-9: var(--color-orange-9);
+  --color-brand-10: var(--color-orange-10);
   --color-primary: var(--color-orange-6);
   --color-primary-3: var(--color-orange-3);
 }
 [data-theme-color="green"] {
+  --color-brand-1: var(--color-green-1);
+  --color-brand-2: var(--color-green-2);
+  --color-brand-3: var(--color-green-3);
+  --color-brand-4: var(--color-green-4);
+  --color-brand-5: var(--color-green-5);
+  --color-brand-6: var(--color-green-6);
+  --color-brand-7: var(--color-green-7);
+  --color-brand-8: var(--color-green-8);
+  --color-brand-9: var(--color-green-9);
+  --color-brand-10: var(--color-green-10);
   --color-primary: var(--color-green-6);
   --color-primary-3: var(--color-green-3);
 }
 [data-theme-color="red"] {
+  --color-brand-1: var(--color-red-1);
+  --color-brand-2: var(--color-red-2);
+  --color-brand-3: var(--color-red-3);
+  --color-brand-4: var(--color-red-4);
+  --color-brand-5: var(--color-red-5);
+  --color-brand-6: var(--color-red-6);
+  --color-brand-7: var(--color-red-7);
+  --color-brand-8: var(--color-red-8);
+  --color-brand-9: var(--color-red-9);
+  --color-brand-10: var(--color-red-10);
   --color-primary: var(--color-red-6);
   --color-primary-3: var(--color-red-3);
 }
 
 .dark[data-theme-color="brand"],
 .dark [data-theme-color="brand"] {
+  --color-brand-1: #00124d;
+  --color-brand-2: #022178;
+  --color-brand-3: #0d3aa3;
+  --color-brand-4: #1d58cf;
+  --color-brand-5: #317bfa;
+  --color-brand-6: #418cfb;
+  --color-brand-7: #6caafc;
+  --color-brand-8: #97c7fd;
+  --color-brand-9: #c3e1fe;
+  --color-brand-10: #eff7ff;
   --color-primary: var(--color-brand-5);
   --color-primary-3: var(--color-brand-3);
 }

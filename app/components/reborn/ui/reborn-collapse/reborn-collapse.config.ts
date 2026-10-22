@@ -1,8 +1,8 @@
 export default {
     slots: {
         root: '',
-        /** 外层：grid 0fr↔1fr 高度动画。contain:layout style 隔离栅格内部重排，消除抖动 */
-        trigger: 'grid transition-[grid-template-rows] duration-300 ease-out',
+        /** 空闲时由栅格决定显隐，运动中的高度交给 Motion。 */
+        trigger: 'grid',
         /**
          * 内层：overflow-hidden + min-h-0 确保内容随栅格轨道裁切。
          * position="top"：flex-col justify-end 将面板底部锚定在触发条边缘，收起时从顶部朝触发条裁切。
@@ -32,12 +32,12 @@ export default {
             true: {
                 root: 'relative',
                 trigger: 'block overflow-hidden pointer-events-none transition-none',
-                content: 'transition-transform duration-300 ease-out pointer-events-auto'
+                content: 'pointer-events-auto'
             },
             false: {}
         },
         animating: {
-            true: { trigger: 'reborn-collapse__animating [contain:layout_style]' },
+            true: { trigger: 'reborn-collapse__animating [contain:layout_style] overflow-hidden grid-rows-[1fr]' },
             false: {}
         }
     },

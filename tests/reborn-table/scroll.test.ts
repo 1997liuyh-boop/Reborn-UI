@@ -96,6 +96,33 @@ it('真实滚动组件支持立即双轴定位、联合平滑滚动及实际表�
       visible('right', false);
       Object.defineProperty(wrap, 'clientWidth', { value: 400, configurable: true });
     });
+    await t.test('滚动条随滚动重绘时不重建表格内容，跨过固定列边界才重绘一次', async () => {
+      // cellClassName 每渲染一个数据格调用一次，用它统计表格内容的渲染次数。
+      let renders = 0;
+      props.cellClassName = () => { renders++; return ''; };
+      await nextTick();
+      const scroll = async (top: number, left: number) => {
+        wrap.scrollTop = top;
+        wrap.scrollLeft = left;
+        wrap.dispatchEvent(new dom.window.Event('scroll'));
+        await nextTick();
+      };
+      try {
+        await scroll(0, 100);
+        const baseline = renders;
+        // 纵向与横向都在固定列阴影边界内移动：滑块重绘，表格不动
+        for (const [top, left] of [[40, 120], [80, 160], [120, 200], [160, 240]]) await scroll(top!, left!);
+        const thumb = dom.window.document.querySelector<HTMLElement>('.reborn-scrollbar__bar--vertical .reborn-scrollbar__thumb')!;
+        assert.match(thumb.style.transform, /translateY\((?!0px)/, '滚动条本身仍在跟随滚动');
+        assert.equal(renders, baseline, '滚动不应重建任何单元格');
+        // 回到最左侧，左固定列阴影需要熄灭，此时表格内容只重绘一次
+        await scroll(160, 0);
+        assert.equal(renders, baseline + 3, '跨过边界只重绘一次（单行三列）');
+      } finally {
+        props.cellClassName = undefined as unknown as () => string;
+        await scroll(0, 0);
+      }
+    });
     await t.test('多列固定及分组表头只在整块区域的内缘绘制阴影', async () => {
       const original = props.columns;
       try {

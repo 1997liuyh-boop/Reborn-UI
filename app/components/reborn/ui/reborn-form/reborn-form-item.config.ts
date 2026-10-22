@@ -18,7 +18,7 @@ export default {
     },
     variants: {
         /**
-         * 标签与内容区共用同一控件高度令牌（--height-input-*，与 Input / FieldTrigger 同源）做最小高度，
+         * 标签与内容区共用 min-h-6 / min-h-8 / min-h-10，与输入控件的高度刻度一致，
          * 配合根节点 items-start：两者的第一行恒等高，标签始终与内容的第一行互相垂直居中——
          * 标准控件恰为令牌高度，矮于令牌的控件由内容区的 justify-center 抬到同一中线；
          * 出现错误信息时 wrapper 变高，但标签不会随「控件 + 错误」整体居中。
@@ -28,19 +28,19 @@ export default {
          */
         size: {
             sm: {
-                label: 'min-h-input-sm',
+                label: 'min-h-6',
                 content:
-                    'min-h-input-sm [&_.reborn-checkbox-group>*]:min-h-input-sm [&_.reborn-radio-group>*]:min-h-input-sm',
+                    'min-h-6 [&_.reborn-checkbox-group>*]:min-h-6 [&_.reborn-radio-group>*]:min-h-6',
             },
             md: {
-                label: 'min-h-input-md',
+                label: 'min-h-8',
                 content:
-                    'min-h-input-md [&_.reborn-checkbox-group>*]:min-h-input-md [&_.reborn-radio-group>*]:min-h-input-md',
+                    'min-h-8 [&_.reborn-checkbox-group>*]:min-h-8 [&_.reborn-radio-group>*]:min-h-8',
             },
             lg: {
-                label: 'min-h-input-lg',
+                label: 'min-h-10',
                 content:
-                    'min-h-input-lg [&_.reborn-checkbox-group>*]:min-h-input-lg [&_.reborn-radio-group>*]:min-h-input-lg',
+                    'min-h-10 [&_.reborn-checkbox-group>*]:min-h-10 [&_.reborn-radio-group>*]:min-h-10',
             },
         },
         error: {

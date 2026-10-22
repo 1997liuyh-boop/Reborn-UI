@@ -51,9 +51,15 @@ for (const [platform, theme] of Object.entries({ web: webTheme, uni: uniTheme })
   it(`${platform}：按压向内拉伸，禁用和减弱动效时不拉伸`, () => {
     assert.ok(theme.slots.wrapper.includes('group/switch'));
     const press = platform === 'web' ? ':active' : '.re-switch-pressed';
-    for (const [size, diameter] of [['sm', 12], ['md', 20], ['lg', 28]] as const) {
+    for (const [size, diameter, step] of [['sm', 12, 4], ['md', 20, 6], ['lg', 28, 8]] as const) {
       const thumb = theme.variants.size[size].thumb;
-      assert.ok(thumb.includes(`[--re-switch-thumb-size:${diameter}px]`));
+      if (platform === 'web') {
+        assert.ok(theme.variants.size[size].track.includes(`[--re-switch-thumb-size:calc(--spacing(${step})-4px)]`));
+        assert.ok(thumb.includes('h-(--re-switch-thumb-size)'));
+        assert.ok(!thumb.includes('[--re-switch-thumb-size:'));
+      } else {
+        assert.ok(thumb.includes(`[--re-switch-thumb-size:${diameter}px]`));
+      }
       for (const active of [false, true]) {
         const classes = tv(theme)({ size, active }).thumb();
         const edge = active ? "left" : "right";

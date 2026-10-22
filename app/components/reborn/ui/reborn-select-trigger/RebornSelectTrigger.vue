@@ -481,7 +481,8 @@ const ui = computed(() => {
     size: props.size,
     placement: resolvedSide.value,
     align: props.align,
-    portal: props.portal
+    portal: props.portal,
+    disabled: props.disabled,
   });
 
   return {

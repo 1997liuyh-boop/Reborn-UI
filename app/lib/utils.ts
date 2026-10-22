@@ -4,6 +4,10 @@ import { extendTailwindMerge } from "tailwind-merge";
 
 export const twMergeConfig = {
   extend: {
+    theme: {
+      // 组件尺寸令牌统一纳入间距体系，沿用宽高、size 和间距的原生冲突规则。
+      spacing: [(value: string) => /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(value)],
+    },
     classGroups: {
       "font-size": [
         {
@@ -13,13 +17,6 @@ export const twMergeConfig = {
             (value: string) => value.startsWith("body-"),
             (value: string) => value.startsWith("title-"),
           ],
-        },
-      ],
-      // 自定义水平内边距令牌（typography.css 的 --spacing-input-px-*）纳入 px 冲突组：
-      // 否则 px-input-px-md 与后写的 px-0 会共存，由 CSS 源序决定胜负而非类名顺序
-      px: [
-        {
-          px: [(value: string) => value.startsWith("input-px-")],
         },
       ],
     },

@@ -1,6 +1,5 @@
+/* Web 基础字号与特殊尺寸；常规宽高、间距直接使用 Tailwind 刻度。 */
 @theme {
-  /* --- 字体大小 (Text Sizes) --- */
-
   /*
    * Web / PC 端基础字号阶梯（7 级），覆盖 Tailwind 原生 --text-* 默认值。
    * 组件 size 锚点：sm → 12px，default → text-base 14px，lg → 16px。
@@ -32,57 +31,16 @@
    * 仅文档站与落地页可继续使用；reborn 组件一律从上面 7 级中取。
    */
 
-  /* --- 结构化高度 (Structural Heights) --- */
+  /* --- reborn-chip 标记：中档实心点为 5px，保留非通用刻度尺寸 --- */
+  --spacing-chip-solid-md: 5px;
 
-  /* 按钮高度 (Button) —— 三档，水平内边距统一 12px */
-  --height-button-sm: 24px;
-  --height-button-md: 32px;
-  --height-button-lg: 40px;
+  /* --- reborn-notification 通知：侧边强调色条固定为 3px --- */
+  --spacing-notification-ribbon-width: 3px;
 
-  /* 输入框高度 (Input) */
-  --height-input-sm: 24px;
-  --height-input-md: 32px;
-  --height-input-lg: 40px;
+  /* --- reborn-radio 单选框：中档选中圆点为 7px，保留非通用刻度尺寸 --- */
+  --spacing-radio-dot-md: 7px;
 
-  /* 徽章高度 (Badge) —— sm/md 配 12px 字号，lg 配 14px 字号 */
-  --height-badge-sm: 18px;
-  --height-badge-md: 24px;
-  --height-badge-lg: 32px;
-
-  /* 分页高度 (Pagination) —— 页码 / 翻页按钮 / 省略号共用 */
-  --height-pagination-sm: 24px;
-  --height-pagination-md: 32px;
-  --height-pagination-lg: 40px;
-
-  /* 分页页码最小宽：与高度同值，保证单数字页码为正方形 */
-  --min-width-pagination-sm: var(--height-pagination-sm);
-  --min-width-pagination-md: var(--height-pagination-md);
-  --min-width-pagination-lg: var(--height-pagination-lg);
-
-  /* 分页跳转输入宽：高度的 2 倍，容纳两位页码 */
-  --width-pagination-input-sm: calc(var(--height-pagination-sm) * 3);
-  --width-pagination-input-md: calc(var(--height-pagination-md) * 3);
-  --width-pagination-input-lg: calc(var(--height-pagination-lg) * 3);
-
-  /* 分页跳转输入最小宽：与输入宽同值，避免在 flex 布局中被压缩 */
-  --min-width-pagination-input-sm: var(--width-pagination-input-sm);
-  --min-width-pagination-input-md: var(--width-pagination-input-md);
-  --min-width-pagination-input-lg: var(--width-pagination-input-lg);
-
-  /* --- 间距与对齐 (Spacing) --- */
-
-  /* 输入框水平内边距 (Padding X) */
-  --spacing-input-px-sm: 10px;
-  --spacing-input-px-md: 12px;
-  --spacing-input-px-lg: 16px;
-
-  /* 输入框分隔间距 (Separator) */
-  --spacing-input-sep-sm: 12px;
-  --spacing-input-sep-md: 14px;
-  --spacing-input-sep-lg: 16px;
-
-  /* 图标尺寸 (Icons) */
-  --size-input-icon-sm: 10px;
-  --size-input-icon-md: 12px;
-  --size-input-icon-lg: 16px;
+  /* --- reborn-time-picker 时间选择器：29px 行高与六行窗口共用固定几何关系 --- */
+  --spacing-time-picker-panel-item: 29px;
+  --spacing-time-picker-panel-list-height: 174px;
 }

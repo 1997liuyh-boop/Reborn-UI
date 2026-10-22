@@ -3,15 +3,17 @@
     "按列比较订单、人员或报销记录时，使用 data 与 columns，或通过 RebornTableColumn 声明列。",
     "长表或宽表需要保留上下文时，使用 height / maxHeight + fixedHeader 固定表头，并为固定列指定 fixed 与 width；文本截断时用 showOverflowTooltip 查看完整内容。",
     "批量处理或单选记录时，使用 selection / radio 列与 selectedKeys；当前行高亮使用 highlightCurrentRow 与 currentRowKey，跨数据选择在选择列配置 reserveSelection。",
-    "服务端分页查询或层级明细展示时，分别使用 remote + pagination.total + change，或 treeProps + expandedRowKeys；按需加载子行用 lazy + load，金额汇总用 showSummary 与 summaryMethod。"
+    "服务端分页查询或层级明细展示时，分别使用 remote + pagination.total + change，或 treeProps + expandedRowKeys；按需加载子行用 lazy + load，金额汇总用 showSummary 与 summaryMethod。",
+    "需要用户手动调整记录顺序时，加一列 type: 'drag' 渲染拖拽手柄，在 row-drag-end 里把 payload.data 回写给 data。"
   ],
   "whenNotToUse": [
     "仅展示单条记录的字段和值时，改用 reborn-descriptions。",
     "只浏览或选择层级节点而不需要多列比较时，改用 reborn-tree 或 reborn-tree-select。",
-    "UniApp、海量数据虚拟滚动、电子表格式编辑或拖拽列宽需求：此组件不支持，本库暂无对应表格替代，需自行实现或选择专用表格库。"
+    "UniApp、海量数据虚拟滚动、电子表格式编辑、拖拽列宽或跨表 / 跨层级拖拽需求：此组件不支持，本库暂无对应表格替代，需自行实现或选择专用表格库。"
   ],
   "pitfalls": [
     "仅 Web；RebornTable.vue 与 RebornTableColumn.vue 位于同一 reborn-table 目录。数据使用 data，列使用 prop / label，不提供 dataSource 别名。 不承诺完整兼容 Element API；不支持虚拟滚动、拖拽列宽或电子表格式编辑。",
+    "RebornTable 与 RebornTableColumn 的属性不通用：fixed、sortable、width、filters 等列字段只能写在 columns 数组项或 <RebornTableColumn> 上，写到 RebornTable 不生效；两边同名的只有 showOverflowTooltip、tooltipOptions、tooltipFormatter，主表上是全表默认值，列上覆盖它。事件与实例方法都只在 RebornTable 上。",
     "显式传入 columns 时优先于声明列，包含空数组；两种入口不合并。父列 children 或嵌套声明列表示分组表头，行 children 表示树节点。",
     "五个具名模型为 selectedKeys=[]、expandedRowKeys=[]、currentRowKey=undefined、currentPage=1、pageSize=10，没有默认 modelValue。selection 列的全选框与行复选框固定水平、垂直居中，左右内边距为 8px；普通列仍由 align/headerAlign 控制对齐。",
     "单选与当前行是两个独立模型，不会由 Table 自动互相绑定。需要点击 radio、点击行、键盘及外部设置/清空同步时，在调用方仅保存 radioCurrentKey，通过双向 computed 将 selectedKeys 映射为 [] 或 [radioCurrentKey]，并绑定 currentRowKey 和 highlightCurrentRow；隐藏 radio 列只改 columns，保持模型绑定。",
@@ -37,7 +39,8 @@
     "当前行高亮使用品牌二阶 bg-brand-2（设计中的 bg-color-2），悬停时保留；勾选行和普通悬停使用 bg-gray-2。hover=true 时悬停纵向合并格会高亮跨度内所有数据行，悬停普通格会高亮当前行及相交合并格，不扩散到其他行或合计。",
     "表体和展开详情使用上边框分隔行，底线由表格统一绘制；border 的底框向内叠绘，内容撑满时与表格底线重合，短内容或 append 前仍保留分隔线。分组表头和合并格按逻辑列跨度判断右边界，不能用 last-child 替代。",
     "提示选项按同名字段从低到高合并：table.tooltipOptions < table.showOverflowTooltip 对象 < column.tooltipOptions < column.showOverflowTooltip 对象。仅支持 placement、openDelay、closeDelay、arrow、disabled、color、ui，不是其他表格库 Tooltip 的完整 API。",
-    "提示内容优先级为 tooltip 插槽 > 列 tooltipFormatter > 表 tooltipFormatter > 实际渲染文本。TableTooltipScope 包含 row/column/$index/columnIndex/cellValue/content，cellValue 为原始值，content 为插槽或 formatter 渲染后的显示文本。"
+    "提示内容优先级为 tooltip 插槽 > 列 tooltipFormatter > 表 tooltipFormatter > 实际渲染文本。TableTooltipScope 包含 row/column/$index/columnIndex/cellValue/content，cellValue 为原始值，content 为插槽或 formatter 渲染后的显示文本。",
+    "拖拽排序由列 type: 'drag' 开启：按住手柄拖动（指针越过同级行中线换位，贴近滚动区上下边缘自动滚动，Esc 取消）或聚焦手柄按上下方向键。表格不改 data，只派发 row-drag-end({ row, targetRow, position, oldIndex, newIndex, parent, data })，必须回写 payload.data 才会生效。只能在同一父行的子行之间移动；有生效排序、loading、懒加载子行（不在 data 中）或没有同级行时手柄禁用。树形移动会浅拷贝被移动行的祖先并换上新 children，祖先行对象引用会变。"
   ],
   "related": [
     "reborn-descriptions",

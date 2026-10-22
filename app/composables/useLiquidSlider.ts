@@ -1,11 +1,13 @@
-import { onBeforeUnmount, shallowRef } from "vue";
+import { animate } from "motion-v";
+import { onBeforeUnmount, onMounted, shallowRef } from "vue";
+import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 
 /**
  * 选中滑块（底板）的落位与液体形变
  *
- * RebornTabs 的卡片 / 胶囊底板与 RebornRadioGroup 的分段按钮滑块共用：
+ * Tabs、Radio 与 Segmented 共用 Motion 的调度和落位：
  * 调用方负责量出选中项相对容器的矩形，这里负责把它写成行内样式，
- * 并在真正切换时跑液体形变，两个组件的切换手感因此保持一致。
+ * 并在真正切换时跑液体形变，三个组件的切换手感因此保持一致。
  */
 
 /** 滑块落点，相对容器左上角；两个轴向都记，滑块要整块盖住选中项 */
@@ -25,16 +27,11 @@ export interface SliderMoveOptions {
   vertical: boolean;
   /**
    * 非形变的落位是否直接到位（行内 0ms）。
-   * tabs 交回类名上的过渡；radio 直接到位，否则字体加载、换行时滑块会慢慢飘过去
+   * radio 在字体加载、换行后的重新测量直接到位，不让滑块慢慢飘过去。
    */
   instant?: boolean;
 }
 
-/** 液体形变两段的节奏：行程直奔目标，回弹越过目标再弹回 */
-const LIQUID_TRAVEL_DURATION = 110;
-const LIQUID_TRAVEL_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
-const LIQUID_SETTLE_DURATION = 150;
-const LIQUID_SETTLE_EASING = "cubic-bezier(0.175, 0.885, 0.32, 1.275)";
 /**
  * 拉伸长度上限，按起止两项主轴尺寸之和的倍数计。
  * 相邻切换的并集只是「两项 + 一个间距」，1.1 倍足够容纳，效果不变；
@@ -42,30 +39,25 @@ const LIQUID_SETTLE_EASING = "cubic-bezier(0.175, 0.885, 0.32, 1.275)";
  */
 const LIQUID_MAX_STRETCH = 1.1;
 
-/** transition-none 只能关掉过渡、关不掉行内 transform 的瞬时生效，所以形变要在 JS 里判定 */
-function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
 export function useLiquidSlider() {
   /** 滑块的行内样式；量到之前先隐藏 */
   const style = shallowRef<Record<string, string>>({ opacity: "0" });
-  /** 上一次提交的落点，作为液体形变的起点；连点时取的是提交值而非飞行中的视觉位置 */
-  let committed: SliderRect | undefined;
+  /** 每帧记录实际显示的矩形；连续切换从途中位置接续，不跳回上一次提交的终点。 */
+  let current: SliderRect | undefined;
+  let currentScale = 1;
   /** 形变所处阶段：travel 拉伸行程中、settle 回弹中、idle 空闲 */
   let phase: "idle" | "travel" | "settle" = "idle";
   /** 形变的最终落点；行程途中的重量只改写它，由回弹阶段统一落位 */
   let target: SliderRect | undefined;
-  let travelTimer: ReturnType<typeof setTimeout> | undefined;
-  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  let vertical = false;
+  let media: MediaQueryList | undefined;
+  let playback: ReturnType<typeof animate> | undefined;
+  let generation = 0;
 
-  function clearTimers() {
-    if (travelTimer !== undefined) clearTimeout(travelTimer);
-    if (settleTimer !== undefined) clearTimeout(settleTimer);
-    travelTimer = undefined;
-    settleTimer = undefined;
+  function stopAnimation() {
+    generation++;
+    playback?.stop();
+    playback = undefined;
     phase = "idle";
   }
 
@@ -73,10 +65,12 @@ export function useLiquidSlider() {
    * 把落点写成行内样式。
    * margin 归零是防御：滑块是容器的子节点，若使用方给相邻子节点加了负外边距
    * （如早先 tabs card 类型共用边框时的 [&>*+*]:-ml-px），滑块同样会命中，行内清零后才会正好落在量到的位置上；
-   * min-height 归零同理：表单项会给 radio 组内所有子节点加 min-h-input-*，高度要以量到的选中项为准。
+   * min-height 归零同理：表单项会给 radio 组内所有子节点加 min-h-6 / min-h-8 / min-h-10，高度要以量到的选中项为准。
    * 不写 opacity：显示时交回类名（radio 选中项禁用时由类名给出半透明）
    */
-  function apply(rect: SliderRect, extra?: Record<string, string>) {
+  function apply(rect: SliderRect, vertical: boolean, scale = 1) {
+    current = rect;
+    currentScale = scale;
     style.value = {
       margin: "0",
       minHeight: "0px",
@@ -84,27 +78,49 @@ export function useLiquidSlider() {
       top: `${rect.top}px`,
       width: `${rect.width}px`,
       height: `${rect.height}px`,
-      ...extra,
+      // Motion 每帧提供最终值，关闭类名过渡，避免第二层 CSS 插值拖慢跟随。
+      transitionDuration: "0ms",
+      transform: vertical ? `scaleX(${scale})` : `scaleY(${scale})`,
     };
   }
 
-  function settleStyle(vertical: boolean) {
-    return {
-      transform: vertical ? "scaleX(1)" : "scaleY(1)",
-      transitionDuration: `${LIQUID_SETTLE_DURATION}ms`,
-      transitionTimingFunction: LIQUID_SETTLE_EASING,
-    };
+  /** 数值进度由 Motion 驱动；矩形与交叉轴压缩同步插值。 */
+  function animateTo(to: SliderRect, vertical: boolean, scale: number, spring: boolean, complete?: () => void) {
+    const from = current ?? to;
+    const fromScale = currentScale;
+    playback?.stop();
+    const token = ++generation;
+    playback = animate(0, 1, {
+      ...(spring
+        ? motionPresets.spring
+        : { type: "tween", duration: 0.11, ease: [0.215, 0.61, 0.355, 1] }),
+      onUpdate: progress => {
+        if (token !== generation) return;
+        apply({
+          left: from.left + (to.left - from.left) * progress,
+          top: from.top + (to.top - from.top) * progress,
+          width: Math.max(0, from.width + (to.width - from.width) * progress),
+          height: Math.max(0, from.height + (to.height - from.height) * progress),
+        }, vertical, fromScale + (scale - fromScale) * progress);
+      },
+      onComplete: () => {
+        if (token !== generation) return;
+        playback = undefined;
+        apply(to, vertical, scale);
+        complete?.();
+      },
+    });
   }
 
   /**
    * 液体形变。阶段 A 把滑块朝目标拉长：前缘直达目标，后缘留在起点、最多落后到长度上限
    * （相邻切换即起点与终点的并集，跨很多项时是一段定长的液滴）；
-   * 阶段 B 收拢到目标矩形并用 back-out 缓动越过目标再弹回。
+   * 阶段 B 收拢到目标矩形，由弹簧自然结束回弹。
    * 拉伸不只是装饰：前缘先到，选中项的反色文字（如 filled 的白字）一开始就有底衬着，
    * 不会有一段悬在容器底色上看不见。交叉轴同时压扁一点，读起来像液体被拉长时的表面张力
    */
   function runLiquid(from: SliderRect, to: SliderRect, vertical: boolean) {
-    clearTimers();
+    stopAnimation();
     const fromStart = vertical ? from.top : from.left;
     const fromSize = vertical ? from.height : from.width;
     const toStart = vertical ? to.top : to.left;
@@ -128,27 +144,32 @@ export function useLiquidSlider() {
 
     phase = "travel";
     target = to;
-    apply(stretched, {
-      transform: vertical ? `scaleX(${1 - squash})` : `scaleY(${1 - squash})`,
-      transitionDuration: `${LIQUID_TRAVEL_DURATION}ms`,
-      transitionTimingFunction: LIQUID_TRAVEL_EASING,
-    });
-
-    travelTimer = setTimeout(() => {
-      travelTimer = undefined;
+    animateTo(stretched, vertical, 1 - squash, false, () => {
       phase = "settle";
-      apply(target ?? to, settleStyle(vertical));
-      settleTimer = setTimeout(() => {
-        settleTimer = undefined;
-        phase = "idle";
-      }, LIQUID_SETTLE_DURATION);
-    }, LIQUID_TRAVEL_DURATION);
+      animateTo(target ?? to, vertical, 1, true, () => { phase = "idle"; });
+    });
   }
 
   /** 移动到新的落点；是否形变、是否直接到位由 options 决定 */
   function move(next: SliderRect, options: SliderMoveOptions) {
-    const previous = committed;
-    committed = next;
+    const previous = current;
+    const previousTarget = target;
+    const sameAxis = vertical === options.vertical;
+    target = next;
+    vertical = options.vertical;
+
+    if (prefersReducedMotion()) {
+      stopAnimation();
+      apply(next, vertical);
+      return;
+    }
+
+    // 切换后的字体或容器重量不能打断卡片弹簧；终点没变就继续，改变时从当前画面重定向。
+    if (!options.switching && !options.liquid && playback && sameAxis) {
+      if (previousTarget && Object.keys(next).every(key => next[key as keyof SliderRect] === previousTarget[key as keyof SliderRect])) return;
+      animateTo(next, vertical, 1, true);
+      return;
+    }
 
     if (options.switching && options.liquid && previous && !prefersReducedMotion()) {
       runLiquid(previous, next, options.vertical);
@@ -162,25 +183,43 @@ export function useLiquidSlider() {
       return;
     }
     if (options.liquid && phase === "settle") {
-      apply(next, settleStyle(options.vertical));
+      target = next;
+      animateTo(next, options.vertical, 1, true, () => { phase = "idle"; });
       return;
     }
 
-    clearTimers();
-    apply(next, {
-      ...(options.liquid ? { transform: options.vertical ? "scaleX(1)" : "scaleY(1)" } : {}),
-      ...(options.instant ? { transitionDuration: "0ms" } : {}),
-    });
+    stopAnimation();
+    if (options.switching && previous && !options.instant && !prefersReducedMotion()) {
+      animateTo(next, options.vertical, 1, true);
+    } else {
+      apply(next, options.vertical);
+    }
   }
 
   /** 没有选中项时隐藏滑块，并丢掉起点，下次出现时直接落位而不是从旧位置滑过来 */
   function hide() {
-    clearTimers();
-    committed = undefined;
-    style.value = { opacity: "0" };
+    stopAnimation();
+    current = undefined;
+    target = undefined;
+    currentScale = 1;
+    style.value = { opacity: "0", transitionDuration: "0ms" };
   }
 
-  onBeforeUnmount(clearTimers);
+  /** 动画中切换系统偏好时也立即落位，避免已经启动的弹簧继续播放。 */
+  function syncMotionPreference() {
+    if (!media?.matches || !target) return;
+    stopAnimation();
+    apply(target, vertical);
+  }
+
+  onMounted(() => {
+    media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    media?.addEventListener("change", syncMotionPreference);
+  });
+  onBeforeUnmount(() => {
+    stopAnimation();
+    media?.removeEventListener("change", syncMotionPreference);
+  });
 
   return { style, move, hide };
 }

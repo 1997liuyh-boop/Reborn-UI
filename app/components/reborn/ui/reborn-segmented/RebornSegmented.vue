@@ -212,7 +212,8 @@ const ui = computed(() => {
   };
   const o = props.ui;
   return {
-    root: () => segmentedTheme(base).root({ class: cn(o.root, props.class) }),
+    // 整组禁用时外框的内边距一圈也显示禁止光标，不只选项本身
+    root: () => segmentedTheme(base).root({ class: cn(computedDisabled.value && "cursor-not-allowed", o.root, props.class) }),
     slider: () => segmentedTheme(base).slider({ class: o.slider }),
     // 选中块就位前由选中项自己画底色，ui.slider 也一并挂上，否则覆盖了选中块颜色时首屏会先闪一下默认的白底
     item: (option: NormalizedOption) =>

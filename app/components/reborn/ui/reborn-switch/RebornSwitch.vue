@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
 import type { switchColors, switchSizes, switchTypes } from "./reborn-switch.config";
-import { computed, ref, useAttrs, watch } from "vue";
+import { animate } from "motion-v";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, watch } from "vue";
+import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme from "./reborn-switch.config";
@@ -68,6 +70,66 @@ export interface SwitchProps {
 
 const attrs = useAttrs();
 const inputRef = ref<HTMLInputElement>();
+const thumbRef = ref<HTMLElement>();
+let thumbRun = 0;
+let thumbPlayback: ReturnType<typeof animate> | undefined;
+let motionMedia: MediaQueryList | undefined;
+
+function stopThumb() {
+  thumbRun++;
+  thumbPlayback?.stop();
+  thumbPlayback = undefined;
+}
+
+function clearThumb() {
+  if (!thumbRef.value) return;
+  thumbRef.value.style.left = "";
+  thumbRef.value.style.right = "";
+  thumbRef.value.style.transitionDuration = "";
+}
+
+function syncMotionPreference() {
+  if (!motionMedia?.matches || !thumbRef.value) return;
+  stopThumb();
+  clearThumb();
+}
+
+/** 只接管切换的左右边界，结束后还给类名，保留按压拉伸与自定义轨道尺寸。 */
+async function animateThumb() {
+  const thumb = thumbRef.value;
+  if (!thumb) return;
+  const before = getComputedStyle(thumb);
+  const from = { left: Number.parseFloat(before.left), right: Number.parseFloat(before.right) };
+  stopThumb();
+  const run = thumbRun;
+  thumb.style.transitionDuration = "0ms";
+  await nextTick();
+  if (run !== thumbRun) return;
+  thumb.style.left = "";
+  thumb.style.right = "";
+  const after = getComputedStyle(thumb);
+  const to = { left: Number.parseFloat(after.left), right: Number.parseFloat(after.right) };
+  if (prefersReducedMotion() || ![from.left, from.right, to.left, to.right].every(Number.isFinite)) {
+    clearThumb();
+    return;
+  }
+  // 先恢复当前边界，数值动画直接写 DOM，不留下停止后又排队覆盖清理的渲染任务。
+  thumb.style.left = `${from.left}px`;
+  thumb.style.right = `${from.right}px`;
+  thumbPlayback = animate(0, 1, {
+    ...motionPresets.spring,
+    onUpdate: progress => {
+      if (run !== thumbRun) return;
+      thumb.style.left = `${from.left + (to.left - from.left) * progress}px`;
+      thumb.style.right = `${from.right + (to.right - from.right) * progress}px`;
+    },
+    onComplete: () => {
+      if (run !== thumbRun) return;
+      thumbPlayback = undefined;
+      clearThumb();
+    },
+  });
+}
 
 const localValue = ref(props.defaultValue ?? props.inactiveValue);
 const {
@@ -80,6 +142,16 @@ const {
 const isChecked = computed(() => {
   const val = props.modelValue !== undefined ? props.modelValue : localValue.value;
   return val === props.activeValue;
+});
+
+watch(isChecked, animateThumb, { flush: "pre" });
+onMounted(() => {
+  motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  motionMedia?.addEventListener("change", syncMotionPreference);
+});
+onBeforeUnmount(() => {
+  stopThumb();
+  motionMedia?.removeEventListener("change", syncMotionPreference);
 });
 
 const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
@@ -95,6 +167,7 @@ const ui = computed(() => {
     active: isChecked.value,
     error: isError.value,
     disabled: isDisabled.value || props.loading,
+    loading: props.loading,
   });
 
   return {
@@ -217,7 +290,7 @@ defineExpose({
         </span>
       </span>
 
-      <span :class="ui.thumb()">
+      <span ref="thumbRef" :class="ui.thumb()">
         <slot name="thumb" :checked="isChecked" :loading="props.loading">
           <Icon v-if="props.loading" name="lucide:loader-2" class="size-full p-0.5 animate-spin text-gray-5" />
           <!-- 滑块内按状态显示的内容：开态渲染 #active、关态渲染 #inactive -->

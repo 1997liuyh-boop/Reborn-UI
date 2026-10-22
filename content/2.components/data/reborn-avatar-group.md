@@ -127,7 +127,7 @@ AvatarGroup 将多个 `RebornAvatar` 以重叠方式排列，适合展示团队�
   <RebornAvatarGroup
     :gap="12" collapse-avatars collapse-avatars-tooltip
     :ui="{ root: 'p-3 rounded-xl bg-primary/5' }"
-    collapse-class="bg-primary/10 text-primary"
+    collapse-class="bg-brand-1 text-primary"
     :collapse-style="{ fontWeight: 700 }"
     popper-class="border-primary/30 shadow-xl" popper-style="padding: 16px"
   >

@@ -43,7 +43,7 @@ Badge 用于展示条目的状态、数量或分类标识，Web 与 UniApp 两�
 | `soft` | 2 阶 / 无 / 6 阶 | 轻量分类 |
 | `subtle` | 2 阶 / 4 阶 / 6 阶 | 需要边界的状态标签 |
 
-Web 的 neutral 非实心文字使用 gray-9。`size` 三档高度为 18 / 24 / 32px，字号为 12 / 12 / 14px，水平内边距 6px；UniApp 尺寸按双倍 rpx 取值。
+Web 的 neutral 非实心文字使用 gray-9。`size` 三档高度为 `h-4.5` / `h-6` / `h-8`，水平内边距为 `px-1.5`，默认根字号下对应 18 / 24 / 32px 高、6px 内边距，随 Tailwind `--spacing` 缩放；字号仍为固定 12 / 12 / 14px。UniApp 尺寸按独立的 rpx 令牌取值。
 
 ```vue
 <template>
@@ -240,13 +240,13 @@ const confirmClose = () => window.confirm('确认关闭标签？')
 
 ### CSS 变量
 
-Web 高度令牌定义在 `app/assets/theme/typography.css`，圆形的宽高复用同一令牌。
+Web 不再定义徽章专属高度变量。尺寸使用 `app/assets/css/reborn-ui.css` 引入的 Tailwind `--spacing`，默认 `0.25rem`；圆形宽高取相同刻度。
 
-| 变量 | Web 值 | 作用 |
-| --- | --- | --- |
-| `--height-badge-sm` | 18px | 小尺寸高度与圆形宽度 |
-| `--height-badge-md` | 24px | 中尺寸高度与圆形宽度 |
-| `--height-badge-lg` | 32px | 大尺寸高度与圆形宽度 |
+| `size` | 高度 | 圆形宽度 | 默认根字号 16px 时 |
+| --- | --- | --- | --- |
+| `sm` | `h-4.5` | `w-4.5` | 18px |
+| `md` | `h-6` | `w-6` | 24px |
+| `lg` | `h-8` | `w-8` | 32px |
 
 UniApp 的高度与圆角令牌独立定义在 `packages/uniapp-project/src/styles/theme.css`，使用 rpx，不跟随本次 Web 形状参数调整。
 
@@ -256,7 +256,7 @@ UniApp 的高度与圆角令牌独立定义在 `packages/uniapp-project/src/styl
 | --- | --- | --- |
 | 形状 | `square` / `round` / `circle` | `square` / `round`，暂无 `circle` |
 | 图标 | 插槽 | `icon` 或插槽 |
-| 高度 | 18 / 24 / 32px | 36 / 48 / 64rpx |
+| 高度 | `h-4.5` / `h-6` / `h-8`（默认根字号下 18 / 24 / 32px） | 36 / 48 / 64rpx |
 | 关闭前确认 | `beforeClose` | 不支持 |
 | 关闭图标默认值 | `i-lucide-x` | `i-mdi-close-circle` |
 | 自定义容器 | `as` 与 `class` | `customClass` |
@@ -264,7 +264,7 @@ UniApp 的高度与圆角令牌独立定义在 `packages/uniapp-project/src/styl
 
 ## 注意事项
 
-- **圆形有固定容量**。Web `circle` 按尺寸令牌固定宽高，长文本可能被裁切；需要长文本或关闭按钮时使用普通形状或 `round`，不要通过圆形容纳多项内容。
+- **圆形有固定容量**。Web `circle` 按 `size` 对应的原生刻度固定宽高，长文本可能被裁切；需要长文本或关闭按钮时使用普通形状或 `round`，不要通过圆形容纳多项内容。
 - **形状不决定配色**。`round` 和 `circle` 只改变轮廓，选中与禁用仍遵循原有风格规则；两者同时启用时 `circle` 优先。
 - **两端 API 不完全相同**。`circle` 与 `beforeClose` 仅 Web 支持，不能直接传给 UniApp 组件期待相同行为。
 - **禁用会阻止交互**。`disabled` 屏蔽选中切换及关闭，`check` 未选中态退为灰阶，不会保留彩色背景。

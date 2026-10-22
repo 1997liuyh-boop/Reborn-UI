@@ -140,15 +140,28 @@ function messageText(message: UIMessage) {
     .join("\n");
 }
 
-/** 接口错误体是 JSON 时取其中的 message，否则原样显示 */
+/** 含中文即视为服务端已换好的提示 */
+const CJK_PATTERN = /[\u4E00-\u9FFF]/;
+
+/**
+ * 面板上的错误文案。接口错误体是 JSON 时先取其中的 message；
+ * 服务端的模型错误已换成中文，原样显示。剩下的英文都是浏览器或 AI SDK 在客户端产生的
+ * （断网、服务没有响应等），用户读不懂，统一换成中文。
+ */
 const errorText = computed(() => {
-  const message = chat.error?.message;
-  if (!message) return "";
+  const raw = chat.error?.message;
+  if (!raw) return "";
+  let message = raw;
   try {
-    return JSON.parse(message)?.message || message;
+    message = JSON.parse(raw)?.message || raw;
   } catch {
-    return message;
+    // 不是 JSON，按原文处理
   }
+  if (CJK_PATTERN.test(message)) return message;
+  if (/failed to fetch|networkerror|load failed|network/i.test(message)) {
+    return "无法连接服务器，请检查网络后重试。";
+  }
+  return "服务暂时出现问题，请稍后重试。";
 });
 
 // ============ 滚动 ============
@@ -453,7 +466,7 @@ onMounted(fetchAuthUser);
     :ui="{
       root: '@container',
       header: 'h-14 gap-2 border-b border-gray-3 px-4 py-0',
-      body: 'relative flex overflow-hidden p-0',
+      body: 'relative flex h-full overflow-hidden p-0',
       footer: 'border-t border-gray-3 px-4 py-3',
     }"
     @opened="scrollToBottom"

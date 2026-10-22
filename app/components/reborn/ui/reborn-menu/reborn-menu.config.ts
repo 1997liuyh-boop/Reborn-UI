@@ -349,7 +349,7 @@ const theme = tv({
         menu: "flex-row items-center gap-x-4 px-2 py-1",
         menuItem: "h-10 px-4",
         subMenuPopup: "left-full top-0 ml-2",
-        subMenuContent: "min-w-[200px]",
+        subMenuContent: "min-w-50",
       },
       vertical: {
         // w-full 是折叠动画的另一个端点：宽度从 auto 收到 w-16 无法插值，必须两端都是确定值
@@ -357,7 +357,7 @@ const theme = tv({
         menu: "w-full flex-col gap-y-1",
         menuItem: "w-full px-4 py-3",
         subMenuPopup: "left-full top-0 ml-2",
-        subMenuContent: "min-w-[200px]",
+        subMenuContent: "min-w-50",
       },
     },
     collapse: {
@@ -489,7 +489,7 @@ const theme = tv({
         // ✅ 修复：rounded-none 摘掉圆角；overflow-hidden 只在收起与动画期间保留，
         // 展开落定后由 RebornSubMenu 换成 overflow-visible，投影因此完整显示。
         subMenuPopup:
-          "relative z-auto left-auto top-auto ml-0 mt-0 rounded-none border-0 shadow-none p-0 bg-transparent overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out grid",
+          "relative z-auto left-auto top-auto ml-0 mt-0 rounded-none border-0 shadow-none p-0 bg-transparent overflow-hidden grid",
         // ⚠️ 根因：缩进原先写在容器 ul 上（ml-4），整列条目被一起右推，
         // 悬浮态与选中态的背景块跟着缩进，行首露出 16px 空白，背景铺不满整行。
         // ✅ 修复：容器不再缩进，缩进改由条目自身的 paddingLeft 承担（见 MENU_INLINE_INDENT），

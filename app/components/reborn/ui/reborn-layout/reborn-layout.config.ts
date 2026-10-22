@@ -66,9 +66,9 @@ export default {
     /** 内容滚动区：滚动行为从侧边栏根节点下放到这里，收起到 0 宽时内容随之隐藏 */
     asideContent: "min-h-0 min-w-0 flex-1 overflow-auto",
     /** 底部折叠触发器：48px 高通栏，箭头居中 */
-    trigger: "flex h-[48px] shrink-0 cursor-pointer select-none items-center justify-center border-t border-gray-2 text-gray-8 transition-colors hover:text-gray-10",
+    trigger: "flex h-12 shrink-0 cursor-pointer select-none items-center justify-center border-t border-gray-2 text-gray-8 transition-colors hover:text-gray-10",
     /** 零宽特殊触发器：贴在侧边栏外缘的 36×42 按钮，具体贴左还是贴右由组件按 reverseArrow 决定 */
-    zeroTrigger: "absolute top-[64px] z-[1] flex h-[42px] w-[36px] cursor-pointer items-center justify-center bg-gray-9 text-gray-1 transition-colors hover:bg-gray-8",
+    zeroTrigger: "absolute top-[64px] z-[1] flex h-10.5 w-9 cursor-pointer items-center justify-center bg-gray-9 text-gray-1 transition-colors hover:bg-gray-8",
     /** 主区域独立滚动，长内容不会把整页撑高 */
     main: "box-border block min-w-0 flex-1 basis-auto overflow-auto p-5",
     footer: "box-border shrink-0 px-5 h-(--reborn-layout-footer-height)",

@@ -44,7 +44,7 @@ export default {
     // 百分比文字：字号走令牌，但行高保留 leading-none。
     // root 是 inline-flex items-center，谁高谁撑高整条进度条；令牌自带的 22px 行高会让 line 型平白长高 8px。
     text: 'shrink-0 whitespace-nowrap text-center tabular-nums text-default text-base leading-none',
-    icon: 'block size-[18px] shrink-0 text-primary',
+    icon: 'block size-4.5 shrink-0 text-primary',
   },
   variants: {
     type: {
@@ -58,9 +58,9 @@ export default {
       error: { root: 'text-error', icon: 'text-error' },
     },
     size: {
-      sm: { step: 'h-[6px]' },
-      md: { step: 'h-[8px]' },
-      lg: { step: 'h-[16px]' },
+      sm: { step: 'h-1.5' },
+      md: { step: 'h-2' },
+      lg: { step: 'h-4' },
     },
     stepped: {
       true: { step: 'shrink-0 flex-none rounded-none', fill: 'rounded-none' },
@@ -76,14 +76,14 @@ export default {
     },
   },
   compoundVariants: [
-    { type: 'line' as const, stepped: true, size: 'sm' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-[2px]' } },
+    { type: 'line' as const, stepped: true, size: 'sm' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-0.5' } },
     // 中号和大号节点带 2px 圆角，小号节点仅 2px 宽保持直角。
-    { type: 'line' as const, stepped: true, size: 'md' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-[32px] rounded-[2px]' } },
-    { type: 'line' as const, stepped: true, size: 'lg' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-[32px] rounded-[2px]' } },
+    { type: 'line' as const, stepped: true, size: 'md' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-8 rounded-[2px]' } },
+    { type: 'line' as const, stepped: true, size: 'lg' as const, class: { root: 'w-fit max-w-full', track: 'overflow-x-auto', step: 'w-8 rounded-[2px]' } },
     // 环形中心文字按直径分档：48/76/114px 对应 14/16/24px 字号，均取自 7 级字号令牌。
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'sm' as const, class: { root: 'size-[48px]', text: 'text-base', icon: 'size-[18px]' } },
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'md' as const, class: { root: 'size-[76px]', text: 'text-lg', icon: 'size-[20px]' } },
-    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'lg' as const, class: { root: 'size-[114px]', text: 'text-2xl', icon: 'size-[28px]' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'sm' as const, class: { root: 'size-12', text: 'text-base', icon: 'size-4.5' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'md' as const, class: { root: 'size-19', text: 'text-lg', icon: 'size-5' } },
+    { type: ['circle', 'dashboard'] as ('circle' | 'dashboard')[], size: 'lg' as const, class: { root: 'size-28.5', text: 'text-2xl', icon: 'size-7' } },
     // 内嵌文字不改变设计高度；极细进度条允许字形溢出，避免文字被裁掉。
     // 10px 低于 7 级字号令牌的下限（--text-sm 12px），无对应档位，只能写字面量。
     { type: 'line' as const, textInside: true, class: { text: 'pointer-events-none absolute inset-y-0 left-0 flex min-w-max items-center justify-end px-[4px] text-[10px] text-white' } },

@@ -192,6 +192,10 @@ export default defineNuxtConfig({
    */
   icon: {
     mode: "svg",
+    // Docus 默认直连远程图标；SSR 超时会输出 16px 占位，客户端缓存的 24px 图标导致水合不一致。
+    // 使用已安装的本地图标集，让服务端与客户端通过同一数据源渲染。
+    provider: "server",
+    serverBundle: "local",
   },
 
   css: ["~/assets/css/reborn-ui.css"],
@@ -219,7 +223,7 @@ export default defineNuxtConfig({
   // Docus AI 助手配置:模型 ID 经 server/plugins/ai-provider.ts 注册的
   // OpenAI 兼容提供商解析(端点由 NUXT_AI_PROVIDER_* 环境变量指定),不依赖 Vercel AI Gateway
   assistant: {
-    model: "deepseek-v4-pro",
+    model: "deepseek-flash",
   },
 
   runtimeConfig: {

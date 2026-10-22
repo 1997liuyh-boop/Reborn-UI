@@ -1895,11 +1895,7 @@ watch(defaultValueKey, () => {
             <div :class="ui.header()">
               <div :class="ui.navGroup()">
                 <span
-                  :class="[
-                    ui.navBtn(),
-                    p.hidePrev ? ui.navBtnHidden() : '',
-                    p.disablePrev ? ui.navBtnDisabled() : '',
-                  ]"
+                  :class="ui.navBtn({ class: [p.hidePrev ? ui.navBtnHidden() : '', p.disablePrev ? ui.navBtnDisabled() : ''] })"
                   @click.stop="prevPage(p.side)"
                 >
                   <slot name="prev-year">
@@ -1915,11 +1911,7 @@ watch(defaultValueKey, () => {
               </div>
               <div :class="ui.navGroup()">
                 <span
-                  :class="[
-                    ui.navBtn(),
-                    p.hideNext ? ui.navBtnHidden() : '',
-                    p.disableNext ? ui.navBtnDisabled() : '',
-                  ]"
+                  :class="ui.navBtn({ class: [p.hideNext ? ui.navBtnHidden() : '', p.disableNext ? ui.navBtnDisabled() : ''] })"
                   @click.stop="nextPage(p.side)"
                 >
                   <slot name="next-year">
@@ -1975,11 +1967,7 @@ watch(defaultValueKey, () => {
             <div :class="ui.header()">
               <div :class="ui.navGroup()">
                 <span
-                  :class="[
-                    ui.navBtn(),
-                    p.hidePrev ? ui.navBtnHidden() : '',
-                    p.disablePrev ? ui.navBtnDisabled() : '',
-                  ]"
+                  :class="ui.navBtn({ class: [p.hidePrev ? ui.navBtnHidden() : '', p.disablePrev ? ui.navBtnDisabled() : ''] })"
                   @click.stop="prevPage(p.side)"
                 >
                   <slot name="prev-year">
@@ -1998,11 +1986,7 @@ watch(defaultValueKey, () => {
               </div>
               <div :class="ui.navGroup()">
                 <span
-                  :class="[
-                    ui.navBtn(),
-                    p.hideNext ? ui.navBtnHidden() : '',
-                    p.disableNext ? ui.navBtnDisabled() : '',
-                  ]"
+                  :class="ui.navBtn({ class: [p.hideNext ? ui.navBtnHidden() : '', p.disableNext ? ui.navBtnDisabled() : ''] })"
                   @click.stop="nextPage(p.side)"
                 >
                   <slot name="next-year">
@@ -2059,11 +2043,7 @@ watch(defaultValueKey, () => {
             <div :class="ui.header()">
               <div :class="ui.navGroup()">
                 <span
-                  :class="[
-                    ui.navBtn(),
-                    p.hidePrev ? ui.navBtnHidden() : '',
-                    p.disablePrev ? ui.navBtnDisabled() : '',
-                  ]"
+                  :class="ui.navBtn({ class: [p.hidePrev ? ui.navBtnHidden() : '', p.disablePrev ? ui.navBtnDisabled() : ''] })"
                   @click.stop="prevPage(p.side)"
                 >
                   <slot name="prev-year">
@@ -2082,11 +2062,7 @@ watch(defaultValueKey, () => {
               </div>
               <div :class="ui.navGroup()">
                 <span
-                  :class="[
-                    ui.navBtn(),
-                    p.hideNext ? ui.navBtnHidden() : '',
-                    p.disableNext ? ui.navBtnDisabled() : '',
-                  ]"
+                  :class="ui.navBtn({ class: [p.hideNext ? ui.navBtnHidden() : '', p.disableNext ? ui.navBtnDisabled() : ''] })"
                   @click.stop="nextPage(p.side)"
                 >
                   <slot name="next-year">
@@ -2143,7 +2119,7 @@ watch(defaultValueKey, () => {
             <div :class="ui.header()">
               <div :class="[ui.navGroup(), p.hidePrev ? ui.navBtnHidden() : '']">
                 <span
-                  :class="[ui.navBtn(), p.disablePrevYear ? ui.navBtnDisabled() : '']"
+                  :class="ui.navBtn({ class: [p.disablePrevYear ? ui.navBtnDisabled() : ''] })"
                   @click.stop="prevYear(p.side)"
                 >
                   <slot name="prev-year">
@@ -2154,7 +2130,7 @@ watch(defaultValueKey, () => {
                   </slot>
                 </span>
                 <span
-                  :class="[ui.navBtn(), p.disablePrev ? ui.navBtnDisabled() : '']"
+                  :class="ui.navBtn({ class: [p.disablePrev ? ui.navBtnDisabled() : ''] })"
                   @click.stop="prevPage(p.side)"
                 >
                   <slot name="prev-month">
@@ -2177,7 +2153,7 @@ watch(defaultValueKey, () => {
               </div>
               <div :class="[ui.navGroup(), p.hideNext ? ui.navBtnHidden() : '']">
                 <span
-                  :class="[ui.navBtn(), p.disableNext ? ui.navBtnDisabled() : '']"
+                  :class="ui.navBtn({ class: [p.disableNext ? ui.navBtnDisabled() : ''] })"
                   @click.stop="nextPage(p.side)"
                 >
                   <slot name="next-month">
@@ -2188,7 +2164,7 @@ watch(defaultValueKey, () => {
                   </slot>
                 </span>
                 <span
-                  :class="[ui.navBtn(), p.disableNextYear ? ui.navBtnDisabled() : '']"
+                  :class="ui.navBtn({ class: [p.disableNextYear ? ui.navBtnDisabled() : ''] })"
                   @click.stop="nextYear(p.side)"
                 >
                   <slot name="next-year">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ClassValue } from "clsx";
 import type { Placement } from "~/lib/placement";
-import { computed, inject, onMounted, onUnmounted, provide, ref, useSlots, watch } from "vue";
+import { computed, getCurrentInstance, inject, onDeactivated, onMounted, onUnmounted, provide, ref, useSlots, watch } from "vue";
 import { resolvePlacement as splitPlacement } from "~/lib/placement";
 import { cn } from "~/lib/utils";
 import theme, {
@@ -165,6 +165,7 @@ const emit = defineEmits<{
 }>();
 
 const slots = useSlots();
+const appProperties = getCurrentInstance()?.appContext.config.globalProperties;
 const groupedItems = computed(() => normalizeItems(props.items));
 const hasCustomContent = computed(() => !!slots.content);
 
@@ -251,6 +252,7 @@ const resolvedSide = ref<ContextMenuSide>(resolvePlacement().side);
 let hoverCount = 0;
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let reopenTimer: ReturnType<typeof setTimeout> | null = null;
+let selectionTimer: ReturnType<typeof setTimeout> | null = null;
 let frame: number | null = null;
 let resizeObserver: ResizeObserver | null = null;
 
@@ -426,6 +428,27 @@ function clearHoverTimer() {
   hoverTimer = null;
 }
 
+function clearSelectionTimer() {
+  if (!selectionTimer) return;
+  clearTimeout(selectionTimer);
+  selectionTimer = null;
+}
+
+/** 路由复用或缓存停用不会卸载菜单，关闭浮层时也取消可能再次打开它的延迟任务。 */
+function dismissPageMenu() {
+  clearHoverTimer();
+  clearReopenTimer();
+  clearSelectionTimer();
+  hoverCount = 0;
+  selectionRect.value = null;
+  selectionText.value = "";
+  if (open.value) updateOpen(false);
+}
+
+// 可选读取 Vue Router 提供的响应式路由；普通 Vue 页面无需安装路由也能使用菜单。
+watch(() => appProperties?.$route?.fullPath, dismissPageMenu);
+onDeactivated(dismissPageMenu);
+
 function onMouseEnter() {
   if (props.trigger !== "hover" || props.disabled) return;
 
@@ -478,7 +501,9 @@ function onSelectionEnd() {
   if (props.trigger !== "selection" || props.disabled || props.nested) return;
 
   // 松开鼠标的瞬间选区尚未最终确定，延后一拍再读
-  setTimeout(() => {
+  clearSelectionTimer();
+  selectionTimer = setTimeout(() => {
+    selectionTimer = null;
     const selection = window.getSelection();
     const text = selection?.toString().trim() ?? "";
     const anchor = selection?.anchorNode ?? null;
@@ -578,16 +603,18 @@ const onEnter = (element: Element) => {
   calculatePosition(element as HTMLElement);
 };
 
+let scrollLocked = false;
+function syncScrollLock(value: boolean) {
+  if (props.nested || scrollLocked === value) return;
+  scrollLocked = value;
+  if (value) lockDocumentScroll();
+  else unlockDocumentScroll();
+}
+
 watch(open, (value) => {
   if (typeof window === "undefined") return;
 
-  if (!props.nested) {
-    if (value) {
-      lockDocumentScroll();
-    } else {
-      unlockDocumentScroll();
-    }
-  }
+  syncScrollLock(value);
 
   if (!value) return;
 
@@ -646,9 +673,8 @@ onUnmounted(() => {
     clearActiveRootMenu(rootController.rootId);
   }
 
-  if (open.value && !props.nested) {
-    unlockDocumentScroll();
-  }
+  // 缓存组件销毁时可能先停用并关闭，不能依赖已停止的 watch 释放滚动锁。
+  syncScrollLock(false);
 
   document.removeEventListener("mousedown", onClickOutside);
   document.removeEventListener("click", onDocumentClick);
@@ -660,6 +686,7 @@ onUnmounted(() => {
   window.removeEventListener("scroll", schedulePositionUpdate, true);
   clearHoverTimer();
   clearReopenTimer();
+  clearSelectionTimer();
   if (resizeObserver) resizeObserver.disconnect();
   if (frame) window.cancelAnimationFrame(frame);
 });

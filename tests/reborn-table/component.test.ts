@@ -43,11 +43,11 @@ async function render(props: Record<string, unknown> = {}, slots = {}) {
   return renderToString(app);
 }
 
-it('真实依赖 SSR 输出语义表格，三档高度和令牌一致且转义 HTML', async () => {
+it('真实依赖 SSR 输出语义表格，三档高度使用原生刻度且转义 HTML', async () => {
   for (const [size, height] of [['sm', 36], ['md', 48], ['lg', 56]]) {
     const html = await render({ size, data: [{ name: '<script>危险</script>', amount: 0 }] });
     assert.match(html, /<table[^>]+aria-label="数据表格"/);
-    assert.ok(html.includes(`h-[${height}px]`));
+    assert.ok(html.includes(`h-${Number(height) / 4}`));
     assert.match(html, /text-base font-medium text-gray-9/);
     assert.doesNotMatch(html, /leading-|line-height:/);
     assert.match(html, /&lt;script&gt;危险&lt;\/script&gt;/);

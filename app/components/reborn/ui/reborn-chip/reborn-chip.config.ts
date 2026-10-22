@@ -84,23 +84,23 @@ export default {
     { variant: ['outline', 'textOutline'], color: 'neutral' as const, class: { base: 'border-gray-6', label: 'text-gray-6' } },
 
     // solid：纯圆点
-    { variant: 'solid' as const, size: 'sm' as const, class: { base: 'size-[4px]' } },
-    { variant: 'solid' as const, size: 'md' as const, class: { base: 'size-[5px]' } },
-    { variant: 'solid' as const, size: 'lg' as const, class: { base: 'size-[6px]' } },
+    { variant: 'solid' as const, size: 'sm' as const, class: { base: 'size-1' } },
+    { variant: 'solid' as const, size: 'md' as const, class: { base: 'size-chip-solid-md' } },
+    { variant: 'solid' as const, size: 'lg' as const, class: { base: 'size-1.5' } },
 
     // outline：size 为内径（box-content），描边宽为内径的一半
-    { variant: 'outline' as const, size: 'sm' as const, class: { base: 'size-[4px] border-2' } },
-    { variant: 'outline' as const, size: 'md' as const, class: { base: 'size-[6px] border-3' } },
-    { variant: 'outline' as const, size: 'lg' as const, class: { base: 'size-[8px] border-4' } },
+    { variant: 'outline' as const, size: 'sm' as const, class: { base: 'size-1 border-2' } },
+    { variant: 'outline' as const, size: 'md' as const, class: { base: 'size-1.5 border-3' } },
+    { variant: 'outline' as const, size: 'lg' as const, class: { base: 'size-2 border-4' } },
 
     /*
      * 文字类：min-w 与高度相同，单个字符时是正圆，多字符时横向撑成胶囊，px-1 防止文字贴到圆弧上。
      * 字号用 12 / 16 / 20px 令牌（text-sm / text-lg / text-xl），它们各自带 20 / 24 / 28px 行高，
      * 比圆点还高，所以 leading-none 必须写在字号之后：tailwind-merge 会让后出现的字号类删掉前面的行高类。
      */
-    { variant: ['textDot', 'textOutline'], size: 'sm' as const, class: { base: 'h-[16px] min-w-[16px] px-1', label: 'text-sm leading-none' } },
-    { variant: ['textDot', 'textOutline'], size: 'md' as const, class: { base: 'h-[20px] min-w-[20px] px-1', label: 'text-lg leading-none' } },
-    { variant: ['textDot', 'textOutline'], size: 'lg' as const, class: { base: 'h-[24px] min-w-[24px] px-1', label: 'text-xl leading-none' } },
+    { variant: ['textDot', 'textOutline'], size: 'sm' as const, class: { base: 'h-4 min-w-4 px-1', label: 'text-sm leading-none' } },
+    { variant: ['textDot', 'textOutline'], size: 'md' as const, class: { base: 'h-5 min-w-5 px-1', label: 'text-lg leading-none' } },
+    { variant: ['textDot', 'textOutline'], size: 'lg' as const, class: { base: 'h-6 min-w-6 px-1', label: 'text-xl leading-none' } },
 
     {
       inset: false,

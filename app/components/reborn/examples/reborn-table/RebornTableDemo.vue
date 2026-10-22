@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlaygroundControlGroup } from '~/components/common/play-ground/Playground.vue'
-import type { TableChange, TableColumn, TableExpose, TableKey, TableProps, TableRow, TableSize } from '~/components/reborn/ui/reborn-table/table.types'
+import type { TableChange, TableColumn, TableExpose, TableKey, TableProps, TableRow, TableRowDragEnd, TableSize } from '~/components/reborn/ui/reborn-table/table.types'
 import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from '#components'
 import { computed, h, ref, watch } from 'vue'
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
@@ -242,6 +242,21 @@ const sortableColumns: TableColumn[] = [
 ]
 const sortTable = ref<TableExpose>()
 const sortEvent = ref('点击金额表头切换排序方向')
+/** 拖拽排序使用独立副本，回写顺序不影响其他示例共用的数据。 */
+const dragRows = ref<TableRow[]>(rows.slice(0, 5).map(row => ({ ...row })))
+/** 首列放手柄；金额列可排序，用来演示排序生效时手柄禁用。 */
+const dragColumns: TableColumn[] = [
+  { type: 'drag', width: 48 },
+  { prop: 'name', label: '姓名', minWidth: 120 },
+  { prop: 'department', label: '部门', minWidth: 100 },
+  { prop: 'amount', label: '报销金额', minWidth: 140, align: 'right', sortable: true },
+]
+const dragEvent = ref('按住手柄拖动，或聚焦手柄后按上下方向键移动')
+/** 表格不改动 data，回调里的 data 已是移动后的新数组，直接回写。 */
+function onRowDragEnd(payload: TableRowDragEnd) {
+  dragRows.value = payload.data
+  dragEvent.value = `row-drag-end：${payload.row.name} 从第 ${payload.oldIndex + 1} 位移到第 ${payload.newIndex + 1} 位（${payload.position === 'before' ? '放在' : '放到'}${payload.targetRow.name}${payload.position === 'before' ? '之前' : '之后'}）`
+}
 /** 本地分页仅传完整数据，由组件截取当前页。 */
 const localPage = ref(1)
 const localPageSize = ref(3)
@@ -587,6 +602,15 @@ const tooltipColumns: TableColumn[] = [
         />
         <DemoNote tone="dimmed" class="break-all font-mono text-xs" aria-live="polite">已完成请求：{{ remoteCount }}；返回 {{ remoteRows.length }} 行，共 {{ remoteTotal }} 行；参数：{{ JSON.stringify(remoteQuery) }}</DemoNote>
       </DemoBlock>
+    </DemoSection>
+
+    <DemoSection title="拖拽排序">
+      <template #description>列 <code>type: 'drag'</code> 渲染拖拽手柄；松手后派发 <code>row-drag-end</code>，回调的 <code>data</code> 是移动后的新数组，回写给 <code>data</code> 即完成排序。</template>
+      <DemoBlock layout="stack" class="gap-4">
+        <RebornTable :data="dragRows" :columns="dragColumns" aria-label="可拖拽排序的报销明细" @row-drag-end="onRowDragEnd" />
+        <DemoNote tone="dimmed" aria-live="polite">{{ dragEvent }}</DemoNote>
+      </DemoBlock>
+      <DemoNote>点击金额表头排序后手柄会禁用：排序视图下拖完的顺序会立刻被排序打回；继续点表头，排序方向循环回到「不排序」后即可继续拖动。</DemoNote>
     </DemoSection>
 
     <DemoSection title="筛选">

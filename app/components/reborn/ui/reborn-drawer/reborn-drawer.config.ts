@@ -11,6 +11,10 @@ export interface DrawerUI {
   close?: ClassValue;
   extra?: ClassValue;
   body?: ClassValue;
+  /** 浮层滚动条根节点（RebornScrollbar） */
+  scrollbar?: ClassValue;
+  /** 浮层滚动条内部的滚动层 */
+  scrollbarWrap?: ClassValue;
   footer?: ClassValue;
   resizer?: ClassValue;
 }
@@ -19,14 +23,23 @@ export default {
   slots: {
     wrapper: 'pointer-events-none inset-0 overflow-hidden',
     backdrop: 'pointer-events-auto absolute inset-0',
-    // 位移过渡常驻，防止入场类移除后宽高被默认 all 过渡拖慢。
-    root: 'transition-transform pointer-events-auto absolute flex max-h-full max-w-full flex-col bg-white text-base text-gray-9 shadow-xl outline-none dark:bg-gray-1',
+    // 位移交给 Motion，尺寸拖动保持即时响应。
+    root: 'pointer-events-auto absolute flex max-h-full max-w-full flex-col bg-white text-base text-gray-9 shadow-xl outline-none dark:bg-gray-1',
     header: 'flex shrink-0 items-center justify-between gap-4 px-6 py-4',
     heading: 'flex min-w-0 items-center gap-3',
     title: 'min-w-0 break-words text-lg text-gray-10',
     close: 'flex size-5 shrink-0 cursor-pointer items-center justify-center text-gray-6 transition-colors hover:text-gray-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
     extra: 'flex shrink-0 items-center gap-2',
-    body: 'min-h-0 flex-1 overflow-auto p-6',
+    /**
+     * 正文不用原生 overflow-auto：Windows 等平台的原生滚动条在内容溢出时常驻显示，
+     * 改由 RebornScrollbar 承担滚动，悬停或滚动时淡入、停止后隐藏。
+     * scrollbar → scrollbarWrap 逐层 flex-1 + min-h-0 占满页头页脚之间的高度；
+     * body 是滚动层里的内容节点，内边距随内容一起滚动，min-h-full 保证内容不足时仍铺满可视区域。
+     * 需要正文固定为可视高度、由内部元素自行滚动的布局，给 body 加 h-full 与 overflow-hidden
+     */
+    body: 'min-h-full p-6',
+    scrollbar: 'flex min-h-0 flex-1 flex-col',
+    scrollbarWrap: 'h-auto min-h-0 flex-1',
     footer: 'shrink-0 px-6 py-4',
     resizer: 'absolute z-10 touch-none select-none focus-visible:bg-primary/20 focus-visible:outline-none',
   },

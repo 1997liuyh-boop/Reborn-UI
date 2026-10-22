@@ -78,22 +78,15 @@ const mobileOpen = ref(false);
     <lg 的负外边距与半透明底、毛玻璃照抄 UContentToc 的移动端折叠条，lg+ 全部收回。
   -->
   <nav
-    class="bg-default/75 sticky top-(--ui-header-height) z-10 -mx-4 max-h-[calc(100vh-var(--ui-header-height))] overflow-y-auto px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none"
-  >
+    class="bg-default/75 sticky top-(--ui-header-height) z-10 -mx-4 max-h-[calc(100vh-var(--ui-header-height))] overflow-y-auto px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none scrollbar-hide">
     <div class="border-default flex flex-col border-b border-dashed pt-4 pb-2.5 sm:pt-6 sm:pb-4.5 lg:border-0 lg:py-8">
       <!-- <lg：标题行是折叠开关 -->
-      <button
-        type="button"
+      <button type="button"
         class="-mt-1.5 flex w-full cursor-pointer items-center gap-1.5 py-1.5 text-sm font-semibold text-gray-9 lg:hidden"
-        :aria-expanded="mobileOpen"
-        @click="mobileOpen = !mobileOpen"
-      >
+        :aria-expanded="mobileOpen" @click="mobileOpen = !mobileOpen">
         <span class="truncate">{{ title }}</span>
-        <UIcon
-          name="i-lucide-chevron-down"
-          class="ms-auto size-5 shrink-0 transition-transform duration-200"
-          :class="mobileOpen ? 'rotate-180' : undefined"
-        />
+        <UIcon name="i-lucide-chevron-down" class="ms-auto size-5 shrink-0 transition-transform duration-200"
+          :class="mobileOpen ? 'rotate-180' : undefined" />
       </button>
 
       <!-- lg+：只是一行小标题 -->
@@ -102,17 +95,8 @@ const mobileOpen = ref(false);
       </p>
 
       <div :class="mobileOpen ? 'block pt-2 lg:pt-0' : 'hidden lg:block'">
-        <RebornAnchor
-          :items="items"
-          type="default"
-          direction="vertical"
-          color="primary"
-          marker="bar"
-          :offset="DOC_OFFSET"
-          :bound="ACTIVE_BOUND"
-          :duration="300"
-          :select-scroll-top="false"
-        />
+        <RebornAnchor :items="items" type="default" direction="vertical" color="primary" marker="bar"
+          :offset="DOC_OFFSET" :bound="ACTIVE_BOUND" :duration="300" :select-scroll-top="false" />
       </div>
 
       <!-- 社区链接（仅 lg+ 展示，组件自带断点） -->

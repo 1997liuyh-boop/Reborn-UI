@@ -745,7 +745,7 @@ type SelectValue = string | number | (string | number)[] | null;
 | `optionList` | 非虚拟模式下的选项行容器 | `space-y-[4px]` | 非加载态时渲染；开启 `virtual` 时与 `virtualWindow` 叠在同一节点上 |
 | `virtualPhantom` | 虚拟列表占位层，高度由行内样式按「总条数 × 步长」写入 | `relative w-full` | 节点始终存在，仅 `virtual` 开启时挂上该类 |
 | `virtualWindow` | 虚拟列表窗口层，即 `optionList` 节点，靠行内 `translateY` 滑到当前区间 | `absolute inset-x-0 top-0` | 仅 `virtual` 开启时挂上该类 |
-| `option` | 单个选项行 | `flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors`，禁用态 `opacity-50` 且不可点 | 每个选项都渲染；未选中时的文字色由 `color` 变体给出 |
+| `option` | 单个选项行 | `flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors`，禁用态 `opacity-50`、禁止光标且不可点 | 每个选项都渲染；未选中时的文字色由 `color` 变体给出 |
 | `optionActive` | 选中态选项，叠加在 `option` 上 | 默认空，底色与文字色由 `color` 变体给出（如 primary 为 `bg-brand-1 text-primary`） | 仅选项被选中时生效 |
 | `optionHighlight` | 键盘 / 鼠标高亮态选项，叠加在 `option` 上 | `bg-gray-2` | 仅高亮且未被选中时生效 |
 | `optionContent` | 选项内部的横向布局容器 | `flex w-full items-center gap-1` | 使用 `option` 插槽后不渲染 |

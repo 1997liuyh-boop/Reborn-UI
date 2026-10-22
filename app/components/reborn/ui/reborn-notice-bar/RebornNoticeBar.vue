@@ -201,6 +201,8 @@ const replay = () => {
 
 /** 点击事件 */
 const handleClick = () => {
+  // 禁用时根节点仍接收指针（用来显示禁止光标），点击在这里拦下，与禁用前「点不到」的行为一致
+  if (props.disabled) return;
   emit('click');
 };
 

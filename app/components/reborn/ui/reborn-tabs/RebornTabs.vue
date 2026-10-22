@@ -12,7 +12,9 @@ import type {
   TabsUI,
 } from "./reborn-tabs.config";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, onBeforeUnmount, provide, shallowRef, watch } from "vue";
+import { animate } from "motion-v";
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, shallowRef, watch } from "vue";
+import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 import { useLiquidSlider } from "~/composables/useLiquidSlider";
 import { cn } from "~/lib/utils";
 import theme, { TABS_INJECTION_KEY } from "./reborn-tabs.config";
@@ -285,16 +287,13 @@ const sliderClass = computed(() =>
   }),
 );
 
-/** 高度过渡时长，与 stage 槽上的 transition-[height] duration-[280ms] 对齐 */
-const STAGE_TRANSITION_DURATION = 280;
-
 /** stage 的行内高度，切换期间锁住，过渡结束释放回 auto */
 const stageHeight = shallowRef<string>();
 /** 只在锁定期间给 stage 挂 overflow-hidden，静息态不裁剪面板内的下拉与浮层 */
 const stageLocked = shallowRef(false);
-const stageStyle = computed(() => (stageHeight.value ? { height: stageHeight.value } : undefined));
-let stageTimer: ReturnType<typeof setTimeout> | undefined;
-/** 高度锁的代次。释放锁时自增，此前排队的 rAF 回调据此作废，不会把已释放的高度重新锁上 */
+const stageStyle = computed(() => ({ height: stageHeight.value, transitionDuration: "0ms" }));
+let stagePlayback: ReturnType<typeof animate> | undefined;
+/** 高度锁的代次，连续切换时旧测量与完成回调不再接管新高度。 */
 let stageRun = 0;
 
 const ui = computed(() => ({
@@ -418,21 +417,78 @@ function handleDragEnd() {
 
 /** 指示器位置由测量标题得到，写成行内样式避免为每个位置生成一套类名 */
 const indicatorStyle = shallowRef<Record<string, string>>({ opacity: "0" });
+let indicatorCurrent: { start: number; size: number; vertical: boolean } | undefined;
+let indicatorTarget: typeof indicatorCurrent;
+let indicatorPlayback: ReturnType<typeof animate> | undefined;
+let indicatorRun = 0;
+let indicatorPending = false;
+let motionMedia: MediaQueryList | undefined;
+
+function applyIndicator(next: NonNullable<typeof indicatorCurrent>) {
+  indicatorCurrent = next;
+  indicatorStyle.value = next.vertical
+    ? { opacity: "1", top: `${next.start}px`, height: `${next.size}px`, transitionDuration: "0ms" }
+    : { opacity: "1", left: `${next.start}px`, width: `${next.size}px`, transitionDuration: "0ms" };
+}
 
 function updateIndicator() {
   const list = listRef.value;
-  if (!list || !showIndicator.value) return;
+  if (!list || !showIndicator.value) {
+    indicatorRun++;
+    indicatorPlayback?.stop();
+    indicatorPlayback = undefined;
+    indicatorCurrent = undefined;
+    indicatorTarget = undefined;
+    return;
+  }
   const tab = list.querySelector<HTMLElement>("[data-tab-active=\"true\"]");
   const title = tab?.querySelector<HTMLElement>("[data-tab-title]") ?? tab;
   if (!title) {
-    indicatorStyle.value = { opacity: "0" };
+    indicatorRun++;
+    indicatorPlayback?.stop();
+    indicatorPlayback = undefined;
+    indicatorCurrent = undefined;
+    indicatorTarget = undefined;
+    indicatorStyle.value = { opacity: "0", transitionDuration: "0ms" };
     return;
   }
   const listRect = list.getBoundingClientRect();
   const rect = title.getBoundingClientRect();
-  indicatorStyle.value = isVertical.value
-    ? { opacity: "1", top: `${rect.top - listRect.top}px`, height: `${rect.height}px` }
-    : { opacity: "1", left: `${rect.left - listRect.left}px`, width: `${rect.width}px` };
+  const next = {
+    start: isVertical.value ? rect.top - listRect.top : rect.left - listRect.left,
+    size: isVertical.value ? rect.height : rect.width,
+    vertical: isVertical.value,
+  };
+  const from = indicatorCurrent;
+  const switching = indicatorPending;
+  indicatorPending = false;
+  indicatorTarget = next;
+  // 重复测量同一终点不重新启动弹簧，ResizeObserver 因文字加粗触发时也能继续衔接。
+  if (!switching && indicatorPlayback && from?.vertical === next.vertical) return;
+  indicatorPlayback?.stop();
+  indicatorPlayback = undefined;
+  const run = ++indicatorRun;
+  if (!switching || !from || from.vertical !== next.vertical || prefersReducedMotion()) {
+    applyIndicator(next);
+    return;
+  }
+  indicatorPlayback = animate(0, 1, {
+    ...motionPresets.spring,
+    onUpdate: progress => {
+      if (run !== indicatorRun) return;
+      const target = indicatorTarget ?? next;
+      applyIndicator({
+        ...target,
+        start: from.start + (target.start - from.start) * progress,
+        size: from.size + (target.size - from.size) * progress,
+      });
+    },
+    onComplete: () => {
+      if (run !== indicatorRun) return;
+      indicatorPlayback = undefined;
+      applyIndicator(indicatorTarget ?? next);
+    },
+  });
 }
 
 /**
@@ -455,7 +511,7 @@ function updateSlider() {
   liquidPending = false;
   const listRect = list.getBoundingClientRect();
   const rect = tab.getBoundingClientRect();
-  // 卡片类型不开形变、不写行内时长与 transform，节奏交回 tabSlider 槽上的 duration-300
+  // 卡片类型只做弹簧滑动，胶囊类型额外使用液体形变，均由 Motion 统一调度。
   moveSlider(
     { left: rect.left - listRect.left, top: rect.top - listRect.top, width: rect.width, height: rect.height },
     { switching, liquid: isLiquid.value, vertical: isVertical.value },
@@ -565,10 +621,8 @@ const canFluidHeight = computed(
 
 /** 释放高度锁：回到 auto，此刻两值相等所以无跳变，之后内容自己长高也不会再被裁 */
 function releaseStage() {
-  if (stageTimer !== undefined) {
-    clearTimeout(stageTimer);
-    stageTimer = undefined;
-  }
+  stagePlayback?.stop();
+  stagePlayback = undefined;
   stageRun += 1;
   stageHeight.value = undefined;
   stageLocked.value = false;
@@ -580,37 +634,30 @@ function releaseStage() {
  */
 async function lockStageHeight() {
   const stage = stageRef.value;
-  if (!canFluidHeight.value || !stage) return;
+  if (!canFluidHeight.value || !stage || prefersReducedMotion()) return;
+  const from = stage.offsetHeight;
   releaseStage();
   const run = stageRun;
 
-  const from = stage.offsetHeight;
   stageHeight.value = `${from}px`;
   stageLocked.value = true;
 
   // 先让出行内高度量出新内容的自然高度，再写回起点。这几步都是微任务，浏览器不绘制，不会闪
   await nextTick();
+  if (run !== stageRun) return;
   stageHeight.value = undefined;
   await nextTick();
+  if (run !== stageRun) return;
   const to = stage.offsetHeight;
   if (to === from) {
     releaseStage();
     return;
   }
   stageHeight.value = `${from}px`;
-  await nextTick();
-  // 兜底：标签页切到后台时 rAF 会被冻结，下面的双帧回调可能迟迟不执行。定时器不受冻结影响，
-  // 保证裁剪与行内高度一定会释放，不会把内容长期锁在起点高度上。与 uniapp 端的兜底时长一致
-  stageTimer = setTimeout(releaseStage, STAGE_TRANSITION_DURATION * 2);
-  // 双帧：Vue 的响应式冲刷是微任务，单帧里写回的起点高度还没被绘制就被终点覆盖，过渡不会发生
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      // 兜底已经释放过，或者已被下一次切换接管，这次回调作废，否则会把高度重新锁上
-      if (run !== stageRun) return;
-      stageHeight.value = `${to}px`;
-      if (stageTimer !== undefined) clearTimeout(stageTimer);
-      stageTimer = setTimeout(releaseStage, STAGE_TRANSITION_DURATION);
-    });
+  stagePlayback = animate(from, to, {
+    ...motionPresets.slow,
+    onUpdate: value => { if (run === stageRun) stageHeight.value = `${value}px`; },
+    onComplete: () => { if (run === stageRun) releaseStage(); },
   });
 }
 
@@ -622,6 +669,7 @@ watch(
   currentKey,
   (_key, previous) => {
     liquidPending = true;
+    indicatorPending = true;
     // 首次确定选中项时没有可用的起点高度，跳过这一次高度过渡
     if (previous !== undefined) void lockStageHeight();
   },
@@ -644,8 +692,27 @@ useResizeObserver(listRef, updateOverlays);
 // 容器一侧的尺寸变化（窗口缩放、父级布局变动）不会触发标签列的观察者，溢出判定要单独盯滚动容器
 useResizeObserver(wrapperRef, updateOverflowState);
 
+watch(canFluidHeight, enabled => { if (!enabled) releaseStage(); });
+
+/** 系统关闭动态效果时，正在播放的指示器与内容高度立即落到终点。 */
+function syncMotionPreference() {
+  if (!motionMedia?.matches) return;
+  indicatorRun++;
+  indicatorPlayback?.stop();
+  indicatorPlayback = undefined;
+  if (indicatorTarget) applyIndicator(indicatorTarget);
+  releaseStage();
+}
+
+onMounted(() => {
+  motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  motionMedia?.addEventListener("change", syncMotionPreference);
+});
 onBeforeUnmount(() => {
-  if (stageTimer !== undefined) clearTimeout(stageTimer);
+  releaseStage();
+  indicatorRun++;
+  indicatorPlayback?.stop();
+  motionMedia?.removeEventListener("change", syncMotionPreference);
   tabObserver?.disconnect();
 });
 

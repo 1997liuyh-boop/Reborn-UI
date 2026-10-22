@@ -64,7 +64,7 @@ async function buildFixture() {
       sourcefile: 'guide-fixture.ts', loader: 'ts', resolveDir: resolve('.'),
     },
     bundle: true, platform: 'browser', format: 'esm', write: false,
-    alias: { '~': resolve('app') }, define: { 'import.meta.client': 'true' },
+    alias: { '~': resolve('app'), '@': resolve('app') }, define: { 'import.meta.client': 'true' },
     plugins: [{ name: 'guide-test', setup(builder) {
       builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
         const { descriptor } = parse(await readFile(path, 'utf8'), { filename: path });

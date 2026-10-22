@@ -4,7 +4,9 @@ import type { CSSProperties, VNode } from 'vue';
 import type { AvatarShape, AvatarSize } from '../reborn-avatar/reborn-avatar.config';
 import type { AvatarGroupEffect, AvatarGroupUI } from './reborn-avatar-group.config';
 import type { Placement } from '~/lib/placement';
-import { cloneVNode, computed, h, provide } from 'vue';
+import { cloneVNode, computed, h, provide, TransitionGroup, withDirectives } from 'vue';
+import { useMotionList } from '@/composables/useMotionList';
+import { runMotion, stopMotion } from '@/lib/motion';
 import { cn } from '~/lib/utils';
 import { avatarGroupKey } from '../reborn-avatar/reborn-avatar.context';
 import RebornAvatar from '../reborn-avatar/RebornAvatar.vue';
@@ -70,6 +72,16 @@ const styles = computed(() => avatarGroupTheme({
   effect: props.effect === 'dark' ? 'dark' : 'light',
   interactive: props.collapseAvatarsTooltip,
 }));
+const listMotion = useMotionList();
+
+/** 将插槽节点交给同一列表实例，增删成员时保留头像身份与提示层。 */
+function animatedItems(items: VNode[]) {
+  return withDirectives(h(TransitionGroup, {
+    tag: 'span', class: 'relative inline-flex items-center', css: false,
+    onEnter: listMotion.enter, onLeave: listMotion.leave,
+    onEnterCancelled: listMotion.cancel, onLeaveCancelled: listMotion.cancel,
+  }, { default: () => items }), [[listMotion.directive]]);
+}
 
 /** 在渲染期间读取插槽，确保父级增删头像和折叠参数变化都能实时更新。 */
 const AvatarContent = () => {
@@ -81,7 +93,7 @@ const AvatarContent = () => {
     key: avatar.key ?? index,
     class: styles.value.item({ class: props.ui.item }),
   }, [avatar]));
-  if (!hidden.length) return items;
+  if (!hidden.length) return animatedItems(items);
 
   const counter = () => h(RebornAvatar, {
     class: cn(props.ui.collapse, props.collapseClass),
@@ -112,8 +124,18 @@ const AvatarContent = () => {
         }, hidden.map(avatar => cloneVNode(avatar))),
       })
     : collapse();
-  items.push(h('span', { key: 'collapse', class: styles.value.item({ class: props.ui.item }) }, [content]));
-  return items;
+  items.push(h('span', {
+    key: 'collapse', class: styles.value.item({ class: props.ui.item }), 'data-count': hidden.length,
+    onVnodeUpdated(vnode, previous) {
+      if (vnode.props?.['data-count'] !== previous.props?.['data-count'] && vnode.el instanceof HTMLElement) {
+        runMotion(vnode.el, { opacity: [0.6, 1] }, { duration: 0.15 });
+      }
+    },
+    onVnodeBeforeUnmount(vnode) {
+      if (vnode.el instanceof HTMLElement) stopMotion(vnode.el);
+    },
+  }, [content]));
+  return animatedItems(items);
 };
 </script>
 

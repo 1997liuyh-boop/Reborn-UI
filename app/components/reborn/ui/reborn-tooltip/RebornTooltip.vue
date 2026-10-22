@@ -222,6 +222,12 @@ const shouldRender = computed(
 /** 是否有内容可显示；title 为 null 或空串时视为禁用 */
 const hasContent = computed(() => Boolean(liveText.value) || hasContentSlot.value);
 
+/**
+ * 悬停能看到提示时，触发区显示帮助光标。点击、右键触发的浮层语义是「操作」而非「说明」，不加；
+ * 插槽里自带光标的交互元素（按钮、链接）保持它们自己的光标
+ */
+const helpCursor = computed(() => hasTrigger('hover') && !props.disabled && hasContent.value);
+
 /** 浮层挂载目标：getPopupContainer 优先，默认 body */
 const popupTarget = computed<HTMLElement | string>(() => {
   if (!isMounted.value) return 'body';
@@ -684,7 +690,7 @@ onBeforeUnmount(() => {
     v-if="!virtualTriggering" ref="wrapperRef" v-bind="$attrs" :class="styles.wrapper()" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave"
     @focusin="handleFocusIn" @focusout="handleFocusOut" @click="handleClick" @contextmenu="handleContextMenu"
   >
-    <span ref="triggerRef" :class="styles.trigger()" :aria-describedby="shouldRender ? tooltipId : undefined">
+    <span ref="triggerRef" :class="styles.trigger({ class: helpCursor && 'cursor-help' })" :aria-describedby="shouldRender ? tooltipId : undefined">
       <slot />
     </span>
   </span>

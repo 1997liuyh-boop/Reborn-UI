@@ -153,7 +153,7 @@ const theme = tv({
       // 空心圆的「洞」用 after 挖：再套一层实体元素会把标记的测量基准变成两个节点
       hollow: {
         marker:
-          "rounded-full after:absolute after:top-1/2 after:left-1/2 after:size-[2px] after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-gray-1 after:content-['']",
+          "rounded-full after:absolute after:top-1/2 after:left-1/2 after:size-0.5 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-gray-1 after:content-['']",
       },
       // none 由组件直接不渲染标记节点，这里不需要样式
       none: {},
@@ -169,14 +169,14 @@ const theme = tv({
       type: "default",
       direction: "vertical",
       class: {
-        list: "before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:rounded-full before:bg-gray-2 before:content-['']",
+        list: "before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:rounded-full before:bg-gray-2 before:content-['']",
       },
     },
     {
       type: "default",
       direction: "horizontal",
       class: {
-        list: "before:absolute before:inset-x-0 before:bottom-0 before:h-[2px] before:rounded-full before:bg-gray-2 before:content-['']",
+        list: "before:absolute before:inset-x-0 before:bottom-0 before:h-0.5 before:rounded-full before:bg-gray-2 before:content-['']",
       },
     },
     // 纵向标记：三种形态都是固定尺寸，组件只写中线位置，靠 -translate-y-1/2 自己居中
@@ -184,24 +184,24 @@ const theme = tv({
     {
       direction: "vertical",
       marker: "bar",
-      class: { marker: "left-0 h-[22px] w-[2px] -translate-y-1/2" },
+      class: { marker: "left-0 h-5.5 w-0.5 -translate-y-1/2" },
     },
     // 圆点比 2px 的轨道宽，左移 2px 才能骑在轨道中线上
     {
       direction: "vertical",
       marker: "dot",
-      class: { marker: "left-[-2px] size-[6px] -translate-y-1/2" },
+      class: { marker: "left-[-2px] size-1.5 -translate-y-1/2" },
     },
     {
       direction: "vertical",
       marker: "hollow",
-      class: { marker: "left-[-2px] size-[6px] -translate-y-1/2" },
+      class: { marker: "left-[-2px] size-1.5 -translate-y-1/2" },
     },
     // 横向标记只有贴底的滑块一种形态，宽度由组件按链接宽度写入
     {
       direction: "horizontal",
       marker: "bar",
-      class: { marker: "bottom-0 h-[2px]" },
+      class: { marker: "bottom-0 h-0.5" },
     },
     // 选中链接的文字色：variants 里的 active.false 已经写了 text-gray-8，
     // 同为文字色的强调色只有下沉到组合里才能盖过它（compoundVariants 在 variants 之后合并）

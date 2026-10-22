@@ -512,7 +512,8 @@ defineExpose({
               <!-- 选中态优先于高亮态：两者都是 bg-*，同时挂上只能靠 CSS 顺序定胜负 -->
               <div
                 v-for="row in column.rows" :key="row.node.key" :class="[
-                  ui.option({ active: row.checked }),
+                  // 正在懒加载子级的节点显示等待光标，经 option 的 cn 合并顶替 cursor-pointer
+                  ui.option({ active: row.checked, class: loadingKeys.has(row.node.key) ? 'cursor-wait' : undefined }),
                   row.checked ? ui.optionActive() : '',
                   !row.checked && isHighlighted(row.node) ? ui.optionHighlight() : '',
                 ]" :style="column.virtual ? { height: `${itemHeight - 4}px` } : undefined"

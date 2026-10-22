@@ -62,35 +62,35 @@ export default {
   },
   variants: {
     /*
-     * 尺寸全部走主题令牌（typography.css）：
-     * 按钮 / 省略号为方形控件，高度 h-pagination-*、最小宽 min-w-pagination-*（令牌里与高度同值）；
+     * 尺寸直接使用 Tailwind 刻度：
+     * 按钮 / 省略号共用 h-6 / h-8 / h-10 与对应的 min-w-6 / min-w-8 / min-w-10；
      * 跳转 / 总数 / 简洁模式文字与控件同字号（sm、md 为 text-sm 12px，lg 为 text-base 14px）；
-     * 跳转输入框宽度 w-pagination-input-*，令牌里按控件高度倍数派生。
+     * 跳转输入框宽度为 w-18 / w-24 / w-30，保持控件高度的三倍。
      */
     size: {
       sm: {
-        button: "h-pagination-sm min-w-pagination-sm text-sm",
-        ellipsis: "h-pagination-sm min-w-pagination-sm text-sm",
+        button: "h-6 min-w-6 text-sm",
+        ellipsis: "h-6 min-w-6 text-sm",
         jumper: "text-sm",
         total: "text-sm",
         simple: "text-sm",
-        input: "w-pagination-input-sm",
+        input: "w-18",
       },
       md: {
-        button: "h-pagination-md min-w-pagination-md text-sm",
-        ellipsis: "h-pagination-md min-w-pagination-md text-sm",
+        button: "h-8 min-w-8 text-sm",
+        ellipsis: "h-8 min-w-8 text-sm",
         jumper: "text-sm",
         total: "text-sm",
         simple: "text-sm",
-        input: "w-pagination-input-md",
+        input: "w-24",
       },
       lg: {
-        button: "h-pagination-lg min-w-pagination-lg text-base",
-        ellipsis: "h-pagination-lg min-w-pagination-lg text-base",
+        button: "h-10 min-w-10 text-base",
+        ellipsis: "h-10 min-w-10 text-base",
         jumper: "text-base",
         total: "text-base",
         simple: "text-base",
-        input: "w-pagination-input-lg",
+        input: "w-30",
       },
     },
     active: {
@@ -103,8 +103,9 @@ export default {
     },
     disabled: {
       true: {
-        button: "opacity-50 cursor-not-allowed pointer-events-none",
-        ellipsis: "opacity-50 cursor-not-allowed pointer-events-none",
+        // 不加 pointer-events-none，否则禁止光标显示不出来：按钮由原生 disabled 拦点击，省略号在 handleEllipsisJump 里拦
+        button: "opacity-50 cursor-not-allowed",
+        ellipsis: "opacity-50 cursor-not-allowed",
       },
       false: {},
     },

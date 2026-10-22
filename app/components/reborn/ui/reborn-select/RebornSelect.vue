@@ -229,7 +229,8 @@ const isSearching = computed(() => props.allowSearch && isOpen.value);
  * 加载中时不出清空按钮：它与转圈图标共用尾部那一格，同时出现会互相遮挡。
  */
 const showClearButton = computed(() => {
-  if (props.loading) return false;
+  // 禁用（含表单级禁用）时不出清空按钮：悬停会露出一个点不动的 ×
+  if (props.loading || isDisabled.value) return false;
   const isEmpty = model.value === null || model.value === undefined || model.value === "";
   return props.clearable && (props.multiple ? model.value?.length > 0 : !isEmpty);
 });
@@ -376,6 +377,7 @@ const ui = computed(() => {
     clearable: showClearButton.value,
     disabled: isDisabled.value,
     error: isError.value,
+    loading: props.loading,
   });
   const field = fieldUi.value;
   return {
@@ -773,9 +775,10 @@ function scrollToActive(instant = false) {
                   closeIcon: ui.tagCloseIcon(),
                 }" @close="removeTag(item.value, $event)" />
 
+              <!-- 徽标根节点自带手型；这里不可点、只有气泡，换成帮助光标 -->
               <RebornTooltip v-if="collapsedTags.length && collapseTagsTooltip" :content="collapsedText">
                 <RebornBadge :label="`+${collapsedTags.length}`" color="neutral" variant="subtle" size="sm" :ui="{
-                  root: 'min-w-0 shrink-0',
+                  root: 'min-w-0 shrink-0 cursor-help',
                   base: ui.tag({ class: ui.collapseTag() }),
                   label: ui.tagLabel(),
                 }" />

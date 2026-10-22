@@ -126,7 +126,8 @@ const ui = computed(() => {
       <span :class="ui.line()" aria-hidden="true" />
       <div :class="ui.dotWrapper()">
         <!-- 实心圆：带图标时放大为底圆，图标（含 icon 插槽内容）以白色居中 -->
-        <span :class="ui.dot({ class: presetColor })" :style="customColorStyle">
+        <!-- 加载中的节点在圆点上显示等待光标 -->
+        <span :class="ui.dot({ class: [presetColor, props.loading && 'cursor-wait'] })" :style="customColorStyle">
           <template v-if="hasIcon">
             <slot name="icon">
               <Icon v-if="props.loading" name="lucide:loader-circle" :class="ui.icon({ class: 'animate-spin' })" />

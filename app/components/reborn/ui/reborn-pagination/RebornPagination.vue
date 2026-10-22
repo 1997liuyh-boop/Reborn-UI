@@ -242,6 +242,7 @@ function jumpTo(page: number) {
 
 /** 点击省略号：向对应方向跳 pagerCount - 2 页 */
 function handleEllipsisJump(direction: "prev" | "next") {
+  if (props.disabled) return;
   const step = pagerCount.value - 2;
   jumpTo(direction === "prev" ? currentPage.value - step : currentPage.value + step);
 }

@@ -514,7 +514,7 @@ function beforeChange() {
 :::tabs-item{label="Web" icon="tabler:world"}
 | 键名 | 对应节点 | 默认关键类名 | 失效 / 渲染条件 |
 | --- | --- | --- | --- |
-| `wrapper` | 根节点 `<label>` | `group/switch relative inline-flex items-center gap-3 cursor-pointer select-none` | 始终渲染；`class` 属性与它合并；`relative` 是 sr-only 隐藏 input 的包含块，覆盖时请保留，否则内滚动布局下 input 会锚到 `<html>` 把整页撑高 |
+| `wrapper` | 根节点 `<label>` | `group/switch relative inline-flex items-center gap-3 cursor-pointer select-none`；禁用时加 `cursor-not-allowed`，加载中加 `cursor-wait` | 始终渲染；`class` 属性与它合并；`relative` 是 sr-only 隐藏 input 的包含块，覆盖时请保留，否则内滚动布局下 input 会锚到 `<html>` 把整页撑高 |
 | `input` | 隐藏的原生 checkbox | `peer sr-only` | 始终渲染；轨道的焦点环、禁用光标依赖 `peer`，覆盖时勿去掉 |
 | `track` | 轨道（两态共用） | `relative inline-flex items-center rounded-full transition-colors ring-1 ring-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 …` | 始终渲染；加载时 `cursor-wait opacity-80`，表单校验失败时 `ring-red-5`，`line` 型改为 `h-[8/12/16px] overflow-visible` |
 | `activeTrack` | 开态轨道背景 | `bg-<color>` | 仅开态合并进轨道；禁用或加载时为 `bg-gray-2` |

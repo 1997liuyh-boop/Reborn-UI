@@ -8,8 +8,9 @@
             </svg>
             <svg class="absolute inset-0 size-full" :class="ui.indicator()" :style="ringIndicatorStyle"
                 viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- 两种类型共用长弧时仅底圈不同，难以辨认；outline 改用四分之一短弧。 -->
                 <path
-                    d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 9.27455 20.9097 6.80375 19.1414 5"
+                    :d="props.type === 'outline' ? 'M12 2a10 10 0 0 1 10 10' : 'M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 9.27455 20.9097 6.80375 19.1414 5'"
                     stroke="currentColor" stroke-width="3" stroke-linecap="round" />
             </svg>
         </div>

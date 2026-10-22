@@ -38,6 +38,11 @@ export default {
         divider: ''
     },
     variants: {
+        /** 禁用：触发按钮显示禁止光标，并去掉按下缩放的反馈（交互已在各处理函数里按 disabled 拦截） */
+        disabled: {
+            true: { trigger: 'cursor-not-allowed active:scale-100' },
+            false: {},
+        },
         /** 变体类型定义 */
         variant: {
             float: {

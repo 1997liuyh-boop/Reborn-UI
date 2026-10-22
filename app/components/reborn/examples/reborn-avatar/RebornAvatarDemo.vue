@@ -7,7 +7,7 @@ import { avatarFits, avatarShapes, avatarSizes } from '~/components/reborn/ui/re
 import RebornAvatar from '~/components/reborn/ui/reborn-avatar/RebornAvatar.vue';
 import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue';
 import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue';
-import { avatarPeople } from './avatar-demo.data';
+import { avatarFitImages, avatarPeople } from './avatar-demo.data';
 
 // ─── 交互演练场 ─────────────────────────────────────────────────
 
@@ -56,6 +56,15 @@ const avatarCode = computed(() => {
 });
 
 // ─── 场景演示状态 ───────────────────────────────────────────────
+
+/** 同时对比大图与小图，区分缩小适配和不放大原图的行为。 */
+const fitDescriptions: Record<AvatarFit, string> = {
+  fill: '拉伸铺满',
+  contain: '等比完整显示',
+  cover: '等比铺满裁剪',
+  none: '保持原始尺寸',
+  'scale-down': '只缩小，不放大',
+};
 
 /** 组件型图标示例，与字符串图标使用相同的样式入口。 */
 const ProfileIcon = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.8 }, [
@@ -120,12 +129,23 @@ function toggleErrorImage() {
       </DemoBlock>
     </DemoSection>
     <DemoSection title="图片适应">
-      <template #description><code>fit</code> 直接控制图片的 <code>object-fit</code>；放大外框后可对比原图和裁剪范围。</template>
-      <DemoBlock layout="row" class="gap-5">
-        <div v-for="fit in avatarFits" :key="fit" class="flex flex-col items-center gap-2">
-          <RebornAvatar :fit="fit" :size="72" shape="square" :src="avatarPeople[2]!.src" alt="周宁" :ui="{ root: 'w-[96px]' }" /><span class="text-sm text-gray-7">{{ fit }}</span>
+      <template #description><code>fit</code> 控制图片的 <code>object-fit</code>；将大图、小图分别放入 96×72px 外框，对比拉伸、留白与裁剪。</template>
+      <DemoBlock layout="stack" class="gap-8">
+        <div v-for="image in avatarFitImages" :key="image.label" class="flex flex-col gap-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <span class="text-sm text-gray-7">{{ image.label }}原图 · {{ image.width }}×{{ image.height }}px</span>
+            <img :src="image.src" :width="image.width" :height="image.height" :alt="`${image.label}原图`" class="block max-w-none">
+          </div>
+          <div class="flex flex-wrap gap-5">
+            <div v-for="fit in avatarFits" :key="fit" class="flex w-24 flex-col items-center gap-2">
+              <RebornAvatar :fit="fit" :size="72" shape="square" :src="image.src" :alt="`${image.label}：${fitDescriptions[fit]}`" :ui="{ root: 'w-24' }" />
+              <span class="text-sm text-gray-10">{{ fit }}</span>
+              <span class="text-center text-sm text-gray-7">{{ fitDescriptions[fit] }}</span>
+            </div>
+          </div>
         </div>
       </DemoBlock>
+      <DemoNote tone="dimmed" class="mt-4"><code>scale-down</code> 在大图上与 <code>contain</code> 相同；在小图上保持原始尺寸，不会放大。</DemoNote>
     </DemoSection>
     <DemoSection title="回退行为">
       <template #description>图片加载失败时先显示 <code>icon</code>，未设置图标则显示默认插槽；更换 <code>src</code> 后自动重试。</template>

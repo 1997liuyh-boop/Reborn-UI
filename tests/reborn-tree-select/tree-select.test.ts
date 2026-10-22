@@ -16,7 +16,7 @@ after(async () => { await unlink(output); await unlink(treeOutput); await rmdir(
 await build({
   entryPoints: [resolve('app/components/reborn/ui/reborn-tree-select/RebornTreeSelect.vue')],
   outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external',
-  alias: { '~': resolve('app') },
+  alias: { '~': resolve('app'), '@': resolve('app') },
   plugins: [{ name: 'vue-test', setup(builder) {
     builder.onLoad({ filter: /Reborn(Tree|SelectTrigger|Badge|Tooltip)\.vue$/ }, ({ path }) => {
       const name = path.match(/Reborn(\w+)\.vue$/)![1];
@@ -74,7 +74,7 @@ function mount(initial: Record<string, unknown> = {}, form?: Record<string, unkn
 // 直接编译真实 Tree，验证图标容器而非替身契约。
 await build({
   entryPoints: [resolve('app/components/reborn/ui/reborn-tree/RebornTree.vue')],
-  outfile: treeOutput, bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+  outfile: treeOutput, bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
   plugins: [{ name: 'real-tree', setup(builder) {
     builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
       const { descriptor } = parse(await readFile(path, 'utf8'), { filename: path });

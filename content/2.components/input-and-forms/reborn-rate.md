@@ -32,7 +32,7 @@ Rate 用一排图标表示分值，可以录入评分，配合 `readonly` 也可
 
 ### 基础用法
 
-`v-model` 绑定分值，`allow-half` 允许半星，`show-value` 在末尾显示当前分数。`readonly` 只禁止修改，外观不变；`disabled` 在此基础上给根节点加 `opacity-50 pointer-events-none`，用来表示「当前不可评分」。
+`v-model` 绑定分值，`allow-half` 允许半星，`show-value` 在末尾显示当前分数。`readonly` 只禁止修改，外观不变；`disabled` 在此基础上给根节点加 `opacity-50 cursor-not-allowed`、星与分数不再接收指针（`*:pointer-events-none`），用来表示「当前不可评分」。
 
 ```vue
 <template>
@@ -249,7 +249,7 @@ UniApp 端的半星实现不同：选中层宽度收成一半并隐藏溢出。�
 | `clearable`     | `boolean`                                                                              | `false`                | 再次点击当前分值时是否清零；`trigger="hover"` 时无效。                                                                                                                                               |
 | `showValue`     | `boolean`                                                                              | `false`                | 是否显示当前分数（已提交的值，不受悬停预览影响）；传了 `formatText` 时显示其返回值。                                                                                                                 |
 | `formatText`    | `(value: number) => string`                                                            | -                      | 分数区域的自定义文案：接收已提交的分值，返回要显示的文字，传入后无需 `showValue`；不传时没有默认文案。内容更复杂时用 `value` 插槽。                                                                  |
-| `disabled`      | `boolean`                                                                              | `false`                | 是否禁用：屏蔽交互，并给根节点加 `opacity-50 pointer-events-none`。                                                                                                                                  |
+| `disabled`      | `boolean`                                                                              | `false`                | 是否禁用：屏蔽交互，并给根节点加 `opacity-50 cursor-not-allowed *:pointer-events-none`。                                                                                                                            |
 | `readonly`      | `boolean`                                                                              | `false`                | 是否只读：屏蔽交互，外观不变，光标恢复默认。                                                                                                                                                         |
 | `trigger`       | `"click" \| "hover"`                                                                   | `"click"`              | 切换分数的触发方式：`click` 悬停只预览、点击才提交；`hover` 悬停即改分（触控设备上等同 `click`）。                                                                                                   |
 | `size`          | `"sm" \| "md" \| "lg"`                                                                 | `"md"`                 | 尺寸，图标为 16 / 20 / 28px。                                                                                                                                                                        |
@@ -343,7 +343,7 @@ UniApp 端的半星实现不同：选中层宽度收成一半并隐藏溢出。�
 
 | 键名         | 对应节点                                   | 默认关键类名                                                                                     | 失效 / 渲染条件                                                                                                                                                                                                  |
 | ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wrapper`    | 根节点，横向排列所有星与分数               | `inline-flex flex-row items-center gap-1`；禁用时加 `opacity-50 pointer-events-none`             | 始终渲染。`class` 先并入、`ui.wrapper` 后并入，冲突时 `ui.wrapper` 胜出。4px 星距来自 `gap-1`。                                                                                                                  |
+| `wrapper`    | 根节点，横向排列所有星与分数               | `inline-flex flex-row items-center gap-1`；禁用时加 `opacity-50 cursor-not-allowed *:pointer-events-none` | 始终渲染。`class` 先并入、`ui.wrapper` 后并入，冲突时 `ui.wrapper` 胜出。4px 星距来自 `gap-1`。                                                                                                                  |
 | `star`       | 单颗星的定位容器，未选中层与选中层都叠在里面 | `relative cursor-pointer transition-all duration-200 ease-out`；只读时为 `cursor-default`        | 始终渲染，共 `count` 个。                                                                                                                                                                                        |
 | `icon`       | 未选中图标层                               | `transition-colors duration-200 ease-out dark:text-gray-2`，加尺寸类 `size-4` / `size-5` / `size-7` | 始终渲染；整颗点亮时加 `invisible`（保留占位）。模板另挂固定的 `opacity-30`，不经过 `cn` 合并，只有传 `voidColor` 才会去掉，想在 `ui` 里改透明度需写 `!opacity-*`。填充 `icon` 插槽只替换层内内容，这个键仍然生效。 |
 | `iconActive` | 选中图标层，绝对定位盖在未选中层上         | `transition-colors duration-200 ease-out`，加尺寸类与语义色 `text-<color>`                       | 只在该星点亮（含半星）时渲染；半星用 `clip-path` 只露出左半边。命中 `colors` 分段时，颜色写在内联样式上，`ui.iconActive` 里的 `text-*` 会被盖过。                                                                |

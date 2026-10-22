@@ -13,6 +13,8 @@ import {
   getSpan,
   getSummary,
   getValue,
+  locateRows,
+  moveRow,
   processRows,
   toCssSize,
 } from '../../app/components/reborn/ui/reborn-table/table.utils';
@@ -423,5 +425,57 @@ describe('toCssSize', () => {
     assert.doesNotThrow(() => execFileSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], {
       cwd: new URL('../../', import.meta.url), timeout: 5000, stdio: 'pipe',
     }));
+  });
+});
+
+describe('moveRow', () => {
+  const names = (rows: TableRow[]) => rows.map(row => row.name);
+
+  it('根级前移后移得到新数组，原数组与行对象保持不变', () => {
+    const data = freeze([{ id: 1, name: 'A' }, { id: 2, name: 'B' }, { id: 3, name: 'C' }, { id: 4, name: 'D' }]);
+    const down = moveRow(data, data[0]!, data[2]!, 'after')!;
+    assert.deepEqual(names(down.data), ['B', 'C', 'A', 'D']);
+    assert.deepEqual([down.oldIndex, down.newIndex, down.parent], [0, 2, undefined]);
+    assert.ok(down.data.every(row => data.includes(row)), '根级移动不复制行对象');
+    const up = moveRow(data, data[3]!, data[1]!, 'before')!;
+    assert.deepEqual(names(up.data), ['A', 'D', 'B', 'C']);
+    assert.deepEqual([up.oldIndex, up.newIndex], [3, 1]);
+    assert.deepEqual(names(data), ['A', 'B', 'C', 'D']);
+  });
+
+  it('落回原位、拖到自身、跨层级或找不到行时不产生结果', () => {
+    const child = { id: 11, name: 'A1' };
+    const data = freeze([{ id: 1, name: 'A', children: [child] }, { id: 2, name: 'B' }, { id: 3, name: 'C' }]);
+    assert.equal(moveRow(data, data[0]!, data[1]!, 'before'), undefined, '已在 B 之前');
+    assert.equal(moveRow(data, data[1]!, data[0]!, 'after'), undefined, '已在 A 之后');
+    assert.equal(moveRow(data, data[1]!, data[1]!, 'after'), undefined);
+    assert.equal(moveRow(data, child, data[1]!, 'before'), undefined, '子行不能移到根级');
+    assert.equal(moveRow(data, { id: 9 }, data[1]!, 'before'), undefined, '懒加载等不在 data 中的行');
+  });
+
+  it('树形数据在同级子行间移动，只浅拷贝沿途祖先并换上新子数组', () => {
+    const leaves = [{ id: 111, name: 'x' }, { id: 112, name: 'y' }, { id: 113, name: 'z' }];
+    const branch = { id: 11, name: 'A1', items: leaves };
+    const sibling = { id: 12, name: 'A2' };
+    const data = freeze([{ id: 1, name: 'A', items: [branch, sibling] }, { id: 2, name: 'B' }]);
+    const result = moveRow(data, leaves[2]!, leaves[0]!, 'before', 'items')!;
+    assert.deepEqual([result.oldIndex, result.newIndex, result.parent], [2, 0, branch]);
+    const root = result.data[0]!;
+    const nextBranch = (root.items as TableRow[])[0]!;
+    assert.deepEqual(names(nextBranch.items as TableRow[]), ['z', 'x', 'y']);
+    assert.notEqual(root, data[0], '祖先换成新对象');
+    assert.notEqual(nextBranch, branch);
+    assert.equal((root.items as TableRow[])[1], sibling, '无关的同级行保持原引用');
+    assert.equal(result.data[1], data[1]);
+    assert.ok((nextBranch.items as TableRow[]).every(row => leaves.includes(row)), '叶子行对象不复制');
+    assert.deepEqual(names(branch.items), ['x', 'y', 'z'], '原树不变');
+  });
+
+  it('定位只认对象身份，重复引用不会无限递归', () => {
+    const shared: TableRow = { id: 1, name: 'A' };
+    shared.children = [shared];
+    const located = locateRows([shared, { id: 2, name: 'B' }]);
+    assert.equal(located.size, 2);
+    assert.deepEqual(located.get(shared), { siblings: located.get(shared)!.siblings, index: 0, parent: undefined });
   });
 });

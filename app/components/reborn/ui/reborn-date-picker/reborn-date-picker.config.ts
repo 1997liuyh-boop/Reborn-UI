@@ -117,7 +117,7 @@ export default {
     variants: {
         /**
          * 多选形态。触发器内装的是标签而不是纯文本，水平内边距收敛为 4px。
-         * 必须带 ! 提权，原因与 RebornSelect 相同：tailwind-merge 不认识 px-input-px-* 与之冲突。
+         * ! 沿用多选形态的优先级，覆盖单选尺寸档位的水平内边距。
          * 本变体声明在 variant 之前，保证 borderless / underlined 的 px-0! 仍能压过它。
          */
         multiple: {
@@ -150,12 +150,12 @@ export default {
             },
         },
         /**
-         * 尺寸档位，与 RebornSelect 相同：高度取 --height-input-*、水平内边距取 --spacing-input-px-*，
+         * 尺寸与 RebornSelect 共用刻度：高度 h-6 / h-8 / h-10，水平内边距 px-2.5 / px-3 / px-4，
          * 字号 sm → text-sm、md → text-base、lg → text-lg；标签始终比宿主字号小一档。
          */
         size: {
             sm: {
-                trigger: "h-input-sm px-input-px-sm text-sm",
+                trigger: "h-6 px-2.5 text-sm",
                 triggerIconWrapper: "size-3",
                 prefixIcon: "size-3",
                 tagList: "gap-0.5",
@@ -164,14 +164,14 @@ export default {
                 tagClose: "size-2.5",
             },
             md: {
-                trigger: "h-input-md px-input-px-md text-base",
+                trigger: "h-8 px-3 text-base",
                 triggerIconWrapper: "size-4",
                 prefixIcon: "size-4",
                 tag: "h-5! px-1.5 text-sm",
                 tagClose: "size-3",
             },
             lg: {
-                trigger: "h-input-lg px-input-px-lg text-lg",
+                trigger: "h-10 px-4 text-lg",
                 triggerIconWrapper: "size-4",
                 prefixIcon: "size-4",
                 tag: "h-6! px-2 text-base",
@@ -181,7 +181,7 @@ export default {
         /**
          * 多选标签换行。多选且未开启 collapse-tags 时开启：
          * 标签逐行铺开、全部可见，触发器高度随之增长。
-         * h-auto! 提权的原因同 RebornSelect：tailwind-merge 不认识 h-input-* 属于 height 冲突组。
+         * h-auto! 覆盖单行固定高度，沿用多选换行时的样式优先级。
          */
         wrapTags: {
             true: {
@@ -240,6 +240,11 @@ export default {
                 tagClose: "pointer-events-none",
             },
         },
+        /** 加载中：触发框显示等待光标；排在 disabled 之后，加载同时禁用时以等待为准 */
+        loading: {
+            true: { trigger: "cursor-wait" },
+            false: {},
+        },
         error: {
             true: {
                 trigger: "border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
@@ -258,17 +263,17 @@ export default {
         {
             wrapTags: true,
             size: "sm",
-            class: { trigger: "min-h-input-sm py-[3px]" },
+            class: { trigger: "min-h-6 py-[3px]" },
         },
         {
             wrapTags: true,
             size: "md",
-            class: { trigger: "min-h-input-md py-[5px]" },
+            class: { trigger: "min-h-8 py-[5px]" },
         },
         {
             wrapTags: true,
             size: "lg",
-            class: { trigger: "min-h-input-lg py-[7px]" },
+            class: { trigger: "min-h-10 py-[7px]" },
         },
     ] as any,
     defaultVariants: {

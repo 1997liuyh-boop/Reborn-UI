@@ -196,11 +196,8 @@ watch(
   <div
     ref="sliderRef"
     class="h-[400px] w-[400px] overflow-hidden"
-    :class="[props.class]"
-    :style="{
-      position: 'relative',
-      cursor: props.slideMode === 'drag' ? 'grab' : 'col-resize',
-    }"
+    :class="[props.slideMode === 'drag' ? 'cursor-grab' : 'cursor-col-resize', props.class]"
+    :style="{ position: 'relative' }"
     @mousemove="handleMouseMove"
     @mouseleave="mouseLeaveHandler"
     @mouseenter="mouseEnterHandler"

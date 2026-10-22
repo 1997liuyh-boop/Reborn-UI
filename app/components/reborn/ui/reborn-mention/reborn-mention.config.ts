@@ -23,13 +23,14 @@ export const mentionTheme = tv({
     /** 键盘或鼠标当前指向的选项，Enter 选中的就是它 */
     optionActive: "bg-gray-2 text-gray-10",
     /** 禁用选项：不可点、键盘导航跳过 */
-    optionDisabled: "pointer-events-none cursor-not-allowed text-gray-5",
+    // 不加 pointer-events-none，否则禁止光标显示不出来：点击在 handleSelect 里拦，悬停在模板里跳过
+    optionDisabled: "cursor-not-allowed text-gray-5",
     /** 选项文本（未使用 #label 插槽时渲染） */
     optionLabel: "truncate",
     /** 页脚（#footer 插槽） */
     footer: "shrink-0 border-t border-gray-3 px-[10px] py-[6px] text-sm text-gray-6",
     /** 加载中占位（未使用 #loading 插槽时渲染），与 RebornSelect 同一套排版 */
-    loading: "flex items-center justify-center gap-2 py-6 text-base text-gray-5",
+    loading: "flex cursor-wait items-center justify-center gap-2 py-6 text-base text-gray-5",
     /** 加载中的转圈图标 */
     loadingIcon: "size-4 shrink-0 animate-spin",
     /**

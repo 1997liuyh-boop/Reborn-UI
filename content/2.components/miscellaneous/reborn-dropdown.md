@@ -302,7 +302,7 @@ function onVisibleChange(v: boolean) {
 | `panel` | 浮层内的内容排版容器，同时承载面板的悬停监听 | `px-[4px] py-[6px]` | 展开时渲染 |
 | `header` | 页头容器 | `border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6` | 仅提供 `header` 插槽时渲染 |
 | `list` | 选项列表容器（`role="menu"`），`options` 或 `content` 插槽的内容放在这里 | `max-h-60 overflow-y-auto scrollbar-hide space-y-[4px]` | 展开时渲染；最大高度与行距改这里 |
-| `item` | 单个选项，以及子菜单的入口行 | `rounded-sm px-[6px] py-[4px] text-base text-gray-6 hover:bg-gray-2`，禁用态 `data-[disabled=true]:opacity-50 pointer-events-none` | 每个 `RebornDoption` / `RebornDsubmenu` 渲染一个 |
+| `item` | 单个选项，以及子菜单的入口行 | `rounded-sm px-[6px] py-[4px] text-base text-gray-6 hover:bg-gray-2`，禁用态 `data-[disabled=true]:opacity-50`、禁止光标且无悬停底色 | 每个 `RebornDoption` / `RebornDsubmenu` 渲染一个 |
 | `itemIcon` | 选项左侧图标容器 | `flex size-4 shrink-0 items-center justify-center` | 仅提供 `icon` 插槽或 `options[].icon` 时渲染 |
 | `itemLabel` | 选项文字节点 | `flex-1 truncate` | 始终随选项渲染 |
 | `submenuIcon` | 子菜单入口行右侧的展开箭头 | `ml-auto size-4 shrink-0 text-gray-5` | 仅 `RebornDsubmenu` 入口行渲染 |

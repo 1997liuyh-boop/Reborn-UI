@@ -38,7 +38,7 @@ await build({
     contents: `export {default as Avatar} from '~/components/reborn/ui/reborn-avatar/RebornAvatar.vue';export {default as Group} from '~/components/reborn/ui/reborn-avatar-group/RebornAvatarGroup.vue';export {default as GroupFixture} from './tests/reborn-avatar/AvatarGroupFixture.vue';`,
     resolveDir: resolve('.'), loader: 'ts',
   },
-  outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+  outfile: output, bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
   plugins: [{ name: 'avatar-test', setup(builder) {
     builder.onResolve({ filter: /^#components$/ }, () => ({ path: 'icons', namespace: 'avatar-test' }));
     builder.onLoad({ filter: /.*/, namespace: 'avatar-test' }, () => ({ contents: `import {h} from 'vue';export const Icon=(p)=>h('svg',{'data-icon':p.name});`, loader: 'js', resolveDir: resolve('.') }));
@@ -126,12 +126,12 @@ it('默认尺寸与形状正确，数值尺寸有兜底，图片适应与 ui 可
   const view = await mount(Avatar, { src: '/a.png' });
   try {
     const root = view.root.firstElementChild as HTMLElement;
-    assert.ok(root.classList.contains('size-[32px]'));
+    assert.ok(root.classList.contains('size-8'));
     assert.ok(root.classList.contains('rounded-full'));
     view.props.size = 'sm'; await nextTick();
-    assert.ok(root.classList.contains('size-[24px]'));
+    assert.ok(root.classList.contains('size-6'));
     view.props.size = 'lg'; await nextTick();
-    assert.ok(root.classList.contains('size-[40px]'));
+    assert.ok(root.classList.contains('size-10'));
     Object.assign(view.props, { size: 56, shape: 'square', fit: 'contain', ui: { root: 'rounded-xl', image: 'grayscale' } }); await nextTick();
     assert.equal(root.style.getPropertyValue('--rb-avatar-size'), '56px');
     assert.ok(root.classList.contains('rounded-xl'));
@@ -151,15 +151,15 @@ it('头像组尺寸与形状响应式继承，子项显式配置优先', async (
   try {
     const first = view.root.querySelector('[data-member="a"]')!;
     const second = view.root.querySelector('[data-member="b"]')!;
-    assert.ok(first.classList.contains('size-[40px]'));
+    assert.ok(first.classList.contains('size-10'));
     assert.ok(first.classList.contains('rounded-md'));
     assert.ok(first.classList.contains('ring-2'));
-    assert.ok(second.classList.contains('size-[24px]'));
+    assert.ok(second.classList.contains('size-6'));
     assert.ok(second.classList.contains('rounded-full'));
     Object.assign(view.props, { size: 64, shape: 'circle' }); await nextTick();
     assert.equal((first as HTMLElement).style.getPropertyValue('--rb-avatar-size'), '64px');
     assert.ok(first.classList.contains('rounded-full'));
-    assert.ok(second.classList.contains('size-[24px]'));
+    assert.ok(second.classList.contains('size-6'));
     assert.deepEqual(view.warnings, []);
   } finally { view.stop(); }
 });
@@ -213,7 +213,7 @@ it('聚焦计数头像展示全部隐藏头像，主题与自定义样式生效�
     assert.equal(view.root.querySelectorAll('.item-test').length, 2);
     const counter = view.root.querySelector<HTMLElement>('.counter-test')!;
     assert.ok(counter.classList.contains('bg-primary/10'));
-    assert.ok(counter.classList.contains('size-[40px]'));
+    assert.ok(counter.classList.contains('size-10'));
     assert.equal(counter.style.color, 'red');
     const button = view.root.querySelector<HTMLButtonElement>('button')!;
     assert.equal(button.getAttribute('aria-label'), '另外 3 位成员');
@@ -225,7 +225,7 @@ it('聚焦计数头像展示全部隐藏头像，主题与自定义样式生效�
     assert.ok(popup.classList.contains('bg-gray-10'));
     assert.ok(popup.classList.contains('border-primary/30'));
     assert.equal(popup.style.padding, '20px');
-    assert.equal(popup.querySelectorAll('.size-\\[40px\\]').length, 3);
+    assert.equal(popup.querySelectorAll('.size-10').length, 3);
     view.props.popperStyle = 'padding: 12px'; await nextTick();
     assert.equal(popup.style.padding, '12px');
     view.props.effect = 'light'; await nextTick();
@@ -244,7 +244,7 @@ it('头像与折叠头像组可服务端渲染，不提前挂载隐藏头像', a
   const html = await renderToString(createSSRApp({ render: () => h(Group, { size: 'sm', collapseAvatars: true, collapseAvatarsTooltip: true }, {
     default: () => [h(Avatar, { src: '/a.png', alt: '林舟' }), h(Avatar, { src: '/b.png', alt: '陈雨' })],
   }) }));
-  assert.match(html, /size-\[24px\]/);
+  assert.match(html, /size-6/);
   assert.match(html, /src="\/a.png"/);
   assert.doesNotMatch(html, /src="\/b.png"/);
   assert.match(html, /\+1/);

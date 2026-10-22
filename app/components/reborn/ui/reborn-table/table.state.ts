@@ -75,8 +75,12 @@ export function useTableState(props: Readonly<TableProps>, columns: ComputedRef<
   watch(() => models.expandedRowKeys.value, () => { initialExpansion.value = undefined; });
   if (getCurrentInstance()) onMounted(() => { initialExpansion.value = undefined; });
 
+  /** 筛选与懒树会克隆行，拖拽等需要回到 data 的操作先换回源对象。 */
+  function originOf(row: TableRow): TableRow {
+    return processing.value.origins.get(row) ?? row;
+  }
   function keyOf(row: TableRow): TableKey {
-    const original = processing.value.origins.get(row) ?? row;
+    const original = originOf(row);
     return sourceIdentity.value.get(original)?.key ?? getRowKey(row, 0, props.rowKey ?? 'id');
   }
   function canSelect(row: TableRow, index: number) {
@@ -181,5 +185,5 @@ export function useTableState(props: Readonly<TableProps>, columns: ComputedRef<
     notify('page-size-change', next);
     publish('paginate', { page: 1, pageSize: next });
   }
-  return { leaves, filters, sorting, sourceRows, processed, visibleRows, loadingKeys, page, pageSize, total, paginationOptions, selectedSet, expandedSet, summary, allSelected, indeterminate, selectableRows, keyOf, canSelect, getSelectionRows, clearSelection, toggleRowSelection, toggleAllSelection, setCurrentRow, toggleRowExpansion, sort, sortColumn, clearSort, setFilter, clearFilter, setPage, setPageSize };
+  return { leaves, filters, sorting, sourceRows, processed, visibleRows, loadingKeys, page, pageSize, total, paginationOptions, selectedSet, expandedSet, summary, allSelected, indeterminate, selectableRows, originOf, keyOf, canSelect, getSelectionRows, clearSelection, toggleRowSelection, toggleAllSelection, setCurrentRow, toggleRowExpansion, sort, sortColumn, clearSort, setFilter, clearFilter, setPage, setPageSize };
 }

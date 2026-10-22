@@ -4,12 +4,13 @@ import type { Component, CSSProperties } from "vue";
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
 import type { Placement, PlacementSide } from "~/lib/placement";
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from "vue";
+import { prefersReducedMotion, runMotion, stopMotion } from "@/lib/motion";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
 import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
-import theme, { guideMotionStyles } from "./reborn-guide.config";
+import theme from "./reborn-guide.config";
 
 /** 子步骤按父步骤在前的深度优先顺序展开 */
 export interface GuideStep {
@@ -135,22 +136,15 @@ const isLastStep = computed(() => displayedCurrent.value === displayedTotal.valu
 const stepComponent = computed(() => activeStep.value?.component ? toRaw(activeStep.value.component) : undefined);
 const mounted = ref(false);
 const ready = ref(false);
-const motionPhase = ref<"prepare" | "leave" | "enter">("prepare");
 const motionDirection = ref(1);
-const motionClass = computed(() => cn(
-  guideMotionStyles[motionPhase.value],
-  motionPhase.value === "prepare" && (motionDirection.value > 0 ? guideMotionStyles.nextFrom : guideMotionStyles.prevFrom),
-  motionPhase.value === "leave" && (motionDirection.value > 0 ? guideMotionStyles.nextTo : guideMotionStyles.prevTo),
-  guideMotionStyles.reduced,
-));
 const layerRef = ref<HTMLElement>();
 const guideBoxRef = ref<HTMLElement>();
+const highlightRef = ref<HTMLElement>();
 const targetElement = shallowRef<Element | null>(null);
 const targetRect = shallowRef<DOMRect | null>(null);
 const guideBoxStyle = ref<CSSProperties>({});
 const guideArrowStyle = ref<CSSProperties>({});
 let positionFrame = 0;
-let revealFrame = 0;
 let revision = 0;
 let resizeObserver: ResizeObserver | undefined;
 let cancelTransition: (() => void) | undefined;
@@ -164,6 +158,31 @@ const highlightStyle = computed<CSSProperties>(() => {
     width: `${rect.width + padding * 2}px`, height: `${rect.height + padding * 2}px`,
   };
 });
+let previousHighlight: CSSProperties | undefined;
+let previousHighlightElement: HTMLElement | undefined;
+let highlightAnimation: ReturnType<typeof runMotion> | undefined;
+watch([highlightStyle, highlightRef], ([style, element]) => {
+  if (!element) {
+    highlightAnimation?.stop();
+    previousHighlight = undefined;
+    previousHighlightElement = undefined;
+    return;
+  }
+  if (previousHighlight && previousHighlightElement === element) {
+    // 动画途中再次定位时读取当前画面，避免高亮框跳回上一个目标。
+    const from = highlightAnimation ? getComputedStyle(element) : previousHighlight;
+    const animation = runMotion(element, {
+      left: [String(from.left), String(style.left)],
+      top: [String(from.top), String(style.top)],
+      width: [String(from.width), String(style.width)],
+      height: [String(from.height), String(style.height)],
+    }, { duration: 0.25, ease: [0.22, 1, 0.36, 1] });
+    highlightAnimation = animation;
+    void animation.finished.then(() => { if (highlightAnimation === animation) highlightAnimation = undefined; });
+  }
+  previousHighlight = style;
+  previousHighlightElement = element;
+}, { flush: "post" });
 const mergedNextProps = computed<ButtonProps>(() => ({
   label: "下一步", color: "primary", variant: "filled", size: "sm",
   ...props.nextButtonProps, ...activeStep.value?.nextButtonProps,
@@ -368,28 +387,18 @@ function schedulePosition() {
   });
 }
 
-/** 等待实际透明度过渡；中断、关闭与无动画样式都能及时结束等待。 */
-function waitForOpacity(panel: HTMLElement, opacity: number): Promise<void> {
-  const style = getComputedStyle(panel);
-  if (Math.abs(Number.parseFloat(style.opacity) - opacity) < 0.001) return Promise.resolve();
-  const durations = style.transitionDuration.split(",").map(value => Number.parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000));
-  const delay = Math.max(...style.transitionDelay.split(",").map(value => Number.parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000)));
-  return new Promise((resolve) => {
-    let timer: ReturnType<typeof setTimeout>;
-    function finish() {
-      clearTimeout(timer);
-      panel.removeEventListener("transitionend", onEnd);
-      if (cancelTransition === finish) cancelTransition = undefined;
-      resolve();
-    }
-    function onEnd(event: TransitionEvent) {
-      if (event.target === panel && event.propertyName === "opacity") finish();
-    }
-    // 不依赖 transitionend 必然触发，样式被覆盖或节点移除时仍有兜底。
-    timer = setTimeout(finish, Math.max(...durations) + delay + 34);
-    cancelTransition = finish;
-    panel.addEventListener("transitionend", onEnd);
+/** Motion 的完成信号可取消，不再依赖强制重排或 transitionend。 */
+async function animatePanel(panel: HTMLElement, entering: boolean): Promise<void> {
+  const offset = prefersReducedMotion() ? 0 : motionDirection.value * 4;
+  const animation = runMotion(panel, entering
+    ? { opacity: [0, 1], transform: [`translateY(${offset}px)`, "translateY(0px)"] }
+    : { opacity: 0, transform: `translateY(${-offset}px)` }, {
+    duration: entering ? 0.2 : 0.12,
+    ease: [0.22, 1, 0.36, 1],
   });
+  cancelTransition = animation.stop;
+  await animation.finished;
+  if (cancelTransition === animation.stop) cancelTransition = undefined;
 }
 
 watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
@@ -398,11 +407,11 @@ watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
   resizeObserver?.disconnect();
   if (!mounted.value) return;
   cancelAnimationFrame(positionFrame);
-  cancelAnimationFrame(revealFrame);
   if (!requestedStep.value) {
     ready.value = false;
     displayed.value = null;
-    motionPhase.value = "prepare";
+    stopMotion(guideBoxRef.value);
+    stopMotion(highlightRef.value);
     targetElement.value = null;
     targetRect.value = null;
     releasePage?.();
@@ -411,16 +420,12 @@ watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
 
   motionDirection.value = currentStep.value < displayedCurrent.value ? -1 : 1;
   if (ready.value && guideBoxRef.value) {
-    motionPhase.value = "leave";
-    await nextTick();
-    if (request !== revision) return;
-    await waitForOpacity(guideBoxRef.value, 0);
+    await animatePanel(guideBoxRef.value, false);
     if (request !== revision) return;
   }
 
   // 不可见时一次替换内容与定位；切步期间不解除滚动与焦点保护。
   ready.value = false;
-  motionPhase.value = "prepare";
   displayed.value = {
     step: requestedStep.value,
     index: currentStep.value,
@@ -433,22 +438,14 @@ watch([currentStep, flatSteps, () => props.mode, mounted], async () => {
   targetElement.value = resolveElement(displayed.value.step.element);
   if (targetElement.value) centerTarget(targetElement.value);
   syncPosition();
+  if (guideBoxRef.value) guideBoxRef.value.style.opacity = "0";
   ready.value = true;
   await nextTick();
   if (request !== revision || !mounted.value) return;
-  // 先提交无过渡的透明起点，再启用入场过渡，避免合并成直接显示。
-  guideBoxRef.value?.getBoundingClientRect();
-  revealFrame = requestAnimationFrame(async () => {
-    if (request !== revision) return;
-    motionPhase.value = "enter";
-    revealFrame = 0;
-    await nextTick();
-    if (request !== revision) return;
-    guideBoxRef.value?.focus({ preventScroll: true });
-    if (guideBoxRef.value) resizeObserver?.observe(guideBoxRef.value);
-    if (targetElement.value) resizeObserver?.observe(targetElement.value);
-    if (guideBoxRef.value) await waitForOpacity(guideBoxRef.value, 1);
-  });
+  guideBoxRef.value?.focus({ preventScroll: true });
+  if (guideBoxRef.value) resizeObserver?.observe(guideBoxRef.value);
+  if (targetElement.value) resizeObserver?.observe(targetElement.value);
+  if (guideBoxRef.value) await animatePanel(guideBoxRef.value, true);
 }, { immediate: true });
 watch(currentStep, (value, previous) => {
   if (value >= 0 && previous >= 0 && value !== previous) emit("change", value, { e: new MouseEvent("click"), total: total.value });
@@ -463,7 +460,7 @@ onBeforeUnmount(() => {
   revision++;
   cancelTransition?.();
   cancelAnimationFrame(positionFrame);
-  cancelAnimationFrame(revealFrame);
+  stopMotion(highlightRef.value);
   resizeObserver?.disconnect();
   window.removeEventListener("resize", schedulePosition);
   window.removeEventListener("scroll", schedulePosition, true);
@@ -500,6 +497,7 @@ defineExpose({ next: onNext, prev: onPrev, finish: onFinish, skip: onSkip, close
       <!-- 透明遮挡层始终存在，关闭遮罩只影响颜色，不放开背景交互 -->
       <div
         v-if="actualMode === 'popup' && targetRect"
+        ref="highlightRef"
         :class="ui.highlightMask({ class: activeStep.stepOverlayClass })"
         :style="{ ...highlightStyle, boxShadow: actualShowOverlay ? '0 0 0 9999px rgba(0, 0, 0, 0.5)' : undefined }"
       >
@@ -511,7 +509,7 @@ defineExpose({ next: onNext, prev: onPrev, finish: onFinish, skip: onSkip, close
         aria-modal="true"
         :aria-label="activeStep.title || '功能引导'"
         tabindex="-1"
-        :class="[actualMode === 'dialog' ? ui.dialogBox({ class: props.class }) : ui.guideBox({ class: props.class }), motionClass]"
+        :class="actualMode === 'dialog' ? ui.dialogBox({ class: props.class }) : ui.guideBox({ class: props.class })"
         :style="{ ...guideBoxStyle, visibility: ready ? 'visible' : 'hidden' }"
       >
         <div v-if="actualMode === 'popup' && targetRect" :class="ui.guideArrow()" :style="guideArrowStyle" />

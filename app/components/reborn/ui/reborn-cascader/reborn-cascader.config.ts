@@ -163,7 +163,7 @@ export default {
      * 列宽给下限而不是定值：标签长短不一时列会自行变宽，而不是把文字截断。
      */
     column:
-      "flex max-h-60 min-w-[160px] max-w-[280px] shrink-0 flex-col overflow-y-auto px-[4px] py-[6px] scrollbar-hide",
+      "flex max-h-60 min-w-40 max-w-70 shrink-0 flex-col overflow-y-auto px-[4px] py-[6px] scrollbar-hide",
     /** 列分割线：1px 宽的 gray-2 竖线，取代「每列一张卡片」的分块做法 */
     columnDivider: "w-px shrink-0 self-stretch bg-gray-2",
     /**
@@ -208,9 +208,9 @@ export default {
      * 展开时那一行跟着变高，触发器整体抖一下。
      */
     size: {
-      sm: { ...selectSize.sm, column: "min-w-[140px]", tagSearch: "h-4" },
-      md: { ...selectSize.md, column: "min-w-[160px]", tagSearch: "h-5" },
-      lg: { ...selectSize.lg, column: "min-w-[180px]", tagSearch: "h-6" },
+      sm: { ...selectSize.sm, column: "min-w-35", tagSearch: "h-4" },
+      md: { ...selectSize.md, column: "min-w-40", tagSearch: "h-5" },
+      lg: { ...selectSize.lg, column: "min-w-45", tagSearch: "h-6" },
     },
     /**
      * 可清空。在 reborn-select 的基础上补一条：搜索态下箭头被搜索图标顶替，

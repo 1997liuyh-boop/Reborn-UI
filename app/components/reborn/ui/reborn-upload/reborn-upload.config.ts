@@ -150,29 +150,29 @@ export default {
     // item 只用于 text / picture 的列表行（picture-card 用 card），整行显示手型指针。
     item: 'relative cursor-pointer text-default',
     itemIcon: 'flex shrink-0 items-center justify-center',
-    itemThumb: 'size-[40px] shrink-0 rounded-[2px] object-cover',
+    itemThumb: 'size-10 shrink-0 rounded-[2px] object-cover',
     // 名称容器只收缩不伸展：错误图标、暂停提示要紧跟在名称后面，操作按钮组再用 ml-auto 推到最右。
     itemName: 'min-w-0 shrink grow-0',
     itemStatus: 'flex shrink-0 items-center text-red-6 outline-none',
     itemActions: 'ml-auto flex shrink-0 items-center gap-[4px]',
     // 暂停 / 继续 / 重试按钮常驻显示，不像删除按钮那样在 text 形态下悬停才出现。
-    itemControl: 'flex size-[24px] shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
-    itemAction: 'flex size-[24px] shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color,opacity] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
+    itemControl: 'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
+    itemAction: 'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-gray-8 transition-[color,background-color,opacity] outline-none hover:bg-gray-2 focus-visible:ring-2 focus-visible:ring-primary',
     progress: '',
-    card: 'group relative flex size-[104px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-4 bg-gray-2',
-    cardImage: 'size-[88px] rounded-[2px] object-cover',
+    card: 'group relative flex size-26 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-4 bg-gray-2',
+    cardImage: 'size-22 rounded-[2px] object-cover',
     cardStatus: 'flex w-full flex-col items-center justify-center gap-[8px] px-[12px] text-sm text-gray-6',
     // 遮罩只盖住中间的图片区域：与 cardImage 同为 88px 并同样居中，不盖卡片边框内的留白；
     // 指针落在图片上才出现（遮罩自身 hover），键盘聚焦卡片内按钮时也出现。
-    cardMask: 'absolute inset-0 m-auto flex size-[88px] items-center justify-center gap-[8px] rounded-[2px] bg-[rgba(25,30,39,0.5)] text-white opacity-0 transition-opacity hover:opacity-100 group-focus-within:opacity-100',
-    cardAction: 'flex size-[16px] cursor-pointer items-center justify-center rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-white',
+    cardMask: 'absolute inset-0 m-auto flex size-22 items-center justify-center gap-[8px] rounded-[2px] bg-[rgba(25,30,39,0.5)] text-white opacity-0 transition-opacity hover:opacity-100 group-focus-within:opacity-100',
+    cardAction: 'flex size-4 cursor-pointer items-center justify-center rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-white',
   },
   variants: {
     listType: {
       'text': {
         list: 'mt-[12px] flex flex-col gap-[4px]',
-        item: 'group/item flex h-[32px] items-center gap-[8px]',
-        itemIcon: 'size-[16px]',
+        item: 'group/item flex h-8 items-center gap-[8px]',
+        itemIcon: 'size-4',
         // 删除按钮平时隐藏，悬停整行或键盘聚焦时出现；失败的行例外，见下方组合变体。
         itemAction: 'opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100',
         // 进度条贴行底，左端让出 16px 图标与 8px 间距，与文件名左侧对齐（同 picture 形态）；
@@ -182,7 +182,7 @@ export default {
       'picture': {
         list: 'mt-[12px] flex flex-col gap-[8px]',
         item: 'flex items-center gap-[8px] rounded-sm border border-gray-4 p-[8px]',
-        itemIcon: 'size-[40px] rounded-[2px] bg-gray-2',
+        itemIcon: 'size-10 rounded-[2px] bg-gray-2',
         // 进度条压在名称下方：左侧让出 40px 图标与 8px 间距，右侧让出删除按钮；
         // 进度条自带 w-full，绝对定位下会让 right 失效，须用 w-auto 改由左右偏移决定宽度。
         progress: 'absolute bottom-[10px] left-[56px] right-[40px] w-auto',
@@ -191,7 +191,7 @@ export default {
       'picture-card': {
         root: 'flex flex-wrap gap-[16px]',
         list: 'contents',
-        trigger: 'flex size-[104px] shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-4 bg-gray-2 text-gray-6 transition-colors',
+        trigger: 'flex size-26 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-4 bg-gray-2 text-gray-6 transition-colors',
         tip: 'basis-full -mt-[8px]',
         progress: 'w-full',
       },
@@ -216,8 +216,10 @@ export default {
     dragover: {
       true: { dragger: 'border-primary bg-brand-1', trigger: 'border-primary' },
     },
+    // 禁用时子元素不接收指针：否则触发区里的图标、自定义按钮会露出各自的光标，盖掉外层的禁用光标。
+    // 点击与拖放仍落在触发区本身，由 openPicker / onDrop 里的禁用判断拦下。
     disabled: {
-      true: { trigger: 'cursor-not-allowed', dragger: 'cursor-not-allowed text-gray-5' },
+      true: { trigger: 'cursor-not-allowed [&_*]:pointer-events-none', dragger: 'cursor-not-allowed text-gray-5', item: 'cursor-not-allowed' },
       false: { trigger: 'cursor-pointer' },
     },
   },
@@ -236,6 +238,8 @@ export default {
     // 图片列表的进度条右侧再让出一个 24px 按钮与 4px 间距。
     { listType: 'picture', chunk: true, class: { progress: 'right-[68px]' } },
     { listType: ['text', 'picture'], disabled: false, class: { trigger: 'focus-visible:ring-2 focus-visible:ring-primary rounded-sm' } },
+    // 上传中的行与卡片显示等待光标；放在最后，禁用态下也优先于行上的禁用光标。
+    { status: 'uploading', class: { item: 'cursor-wait', card: 'cursor-wait' } },
   ],
   defaultVariants: {
     listType: 'text',

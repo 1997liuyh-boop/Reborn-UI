@@ -84,7 +84,7 @@ const groupCode = computed(() => {
         </div>
         <RebornAvatarGroup shape="square" :size="48">
           <RebornAvatar v-for="person in avatarPeople.slice(0, 3)" :key="person.name" :src="person.src" :alt="person.name" />
-          <RebornAvatar size="lg" shape="circle" :ui="{ root: 'bg-primary/10 text-primary' }" alt="单独覆盖形状">RE</RebornAvatar>
+          <RebornAvatar size="lg" shape="circle" :ui="{ root: 'bg-brand-1 text-primary' }" alt="单独覆盖形状">RE</RebornAvatar>
         </RebornAvatarGroup>
       </DemoBlock>
     </DemoSection>
@@ -120,7 +120,7 @@ const groupCode = computed(() => {
         <RebornAvatarGroup
           size="lg" :gap="12" collapse-avatars collapse-avatars-tooltip :max-collapse-avatars="3"
           :ui="{ root: 'p-3 rounded-xl bg-primary/5', tooltip: 'border-primary/30' }"
-          collapse-class="bg-primary/10 text-primary" :collapse-style="{ fontWeight: 700 }" popper-class="shadow-xl" popper-style="padding: 16px" placement="bottom"
+          collapse-class="bg-brand-1 text-primary" :collapse-style="{ fontWeight: 700 }" popper-class="shadow-xl" popper-style="padding: 16px" placement="bottom"
         >
           <RebornAvatar v-for="person in avatarPeople" :key="person.name" :src="person.src" :alt="person.name" />
         </RebornAvatarGroup>

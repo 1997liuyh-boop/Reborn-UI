@@ -212,10 +212,6 @@ const isFilled = computed(() => `${inputValue.value ?? ""}`.length > 0);
 /** 是否启用密码掩码（新旧属性任一开启即生效） */
 const isPasswordMode = computed(() => props.showPassword || props.password);
 
-const showClear = computed(() => {
-  return props.clearable && !isMultiline.value && !props.disabled && !props.readonly && `${inputValue.value}` !== "";
-});
-
 // ─── 字数统计 ───────────────────────────────────────────────────
 
 /** 当前字数：优先用 countGraphemes 自定义计数 */
@@ -248,6 +244,11 @@ const {
 
 const size = toRef(props, "size");
 const isDisabled = computed(() => fieldGroupDisabled.value || props.disabled);
+
+const showClear = computed(() => {
+  // 用含表单级禁用的 isDisabled：处于禁用表单里时不该出现可点的清空按钮
+  return props.clearable && !isMultiline.value && !isDisabled.value && !props.readonly && `${inputValue.value}` !== "";
+});
 
 const uiOverrides = computed(() => props.ui || {});
 const ui = computed(() => {

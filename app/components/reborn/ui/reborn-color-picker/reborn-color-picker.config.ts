@@ -20,13 +20,13 @@ export default {
         },
         size: {
             sm: {
-                root: "size-(--height-button-sm)",
+                root: "size-6",
             },
             md: {
-                root: "size-(--height-button-md)",
+                root: "size-8",
             },
             lg: {
-                root: "size-(--height-button-lg)",
+                root: "size-10",
             },
         },
     },

@@ -158,7 +158,7 @@ Text 是承载一段行内文本的展示组件，把常见的「格式化 + 脱
 
 `ellipsis` 为 `true` 时切换为 `-webkit-box` 布局并按 `lines` 截断（默认 1 行），`lines` 仅在 `ellipsis` 开启时生效。省略依赖宽度约束，需要给组件或父容器设最大宽度。
 
-Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `scrollHeight` / `scrollWidth` 超出可视区域（即确实被截断）时才启用 `RebornTooltip` 并加 `cursor-pointer`，短文本不会弹出气泡。气泡宽度跟随文本：不再受 Tooltip 默认的 240px 上限限制，全文按文本当前的渲染宽度折行，面板与文本左右对齐；文本窄于 240px 时仍按 240px 折行，避免气泡挤成细长条。
+Web 端再开 `tooltip` 时，组件用 `ResizeObserver` 监听尺寸，只有 `scrollHeight` / `scrollWidth` 超出可视区域（即确实被截断）时才启用 `RebornTooltip` 并加 `cursor-help`（文字本身不可点，用帮助光标提示可悬停看全文），短文本不会弹出气泡。气泡宽度跟随文本：不再受 Tooltip 默认的 240px 上限限制，全文按文本当前的渲染宽度折行，面板与文本左右对齐；文本窄于 240px 时仍按 240px 折行，避免气泡挤成细长条。
 
 ```vue
 <template>

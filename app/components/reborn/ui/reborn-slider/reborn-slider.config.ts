@@ -33,9 +33,9 @@ export default {
          * 轨道节点统一样式（间断点与刻度点共用）：5px 圆点、gray-1 底、1.5px 边框，
          * 边框色由 color 变体取对应色板的第 3 阶。
          */
-        stopDot: "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-[8px] rounded-full bg-gray-1 border-[1.5px] pointer-events-none",
+        stopDot: "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-2 rounded-full bg-gray-1 border-[1.5px] pointer-events-none",
         /** 轨道上的刻度点（marks），压在进度条之上、滑块之下 */
-        markDot: "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-[8px] rounded-full bg-gray-1 border-[1.5px] pointer-events-none",
+        markDot: "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-2 rounded-full bg-gray-1 border-[1.5px] pointer-events-none",
         /** 刻度文字（marks 的 label），可点击跳转到对应刻度；单个标记的 style 以内联样式叠加 */
         markLabel: "absolute top-full mt-[8px] -translate-x-1/2 text-sm text-gray-6 whitespace-nowrap cursor-pointer select-none",
         /** 滑轨两侧的业务含义图标（#prefix / #suffix 插槽或 prefix-icon / suffix-icon 属性） */
@@ -45,7 +45,7 @@ export default {
          * 末尾数值：与 suffix 一样离交互带 8px，拖拽时溢出交互带的 3px 色晕才不会贴到数字上。
          * 只写 text-gray-8：灰阶令牌在暗色主题下自动翻转，原先的 dark:text-gray-1 在暗色下等于深底深字，数字看不见
          */
-        value: "text-center w-[50px] text-gray-8 ml-[8px]",
+        value: "text-center w-12.5 text-gray-8 ml-[8px]",
     },
     variants: {
         size: {
@@ -146,13 +146,13 @@ export default {
     },
     compoundVariants: [
         // 激活滑块：lg 16px（中心圆 10px）/ md 14px（8px）/ sm 12px（8px）
-        { size: "lg", active: true, class: { thumb: "size-[16px]", thumbDot: "size-[10px]" } },
-        { size: "md", active: true, class: { thumb: "size-[14px]", thumbDot: "size-[8px]" } },
-        { size: "sm", active: true, class: { thumb: "size-[12px]", thumbDot: "size-[8px]" } },
+        { size: "lg", active: true, class: { thumb: "size-4", thumbDot: "size-2.5" } },
+        { size: "md", active: true, class: { thumb: "size-3.5", thumbDot: "size-2" } },
+        { size: "sm", active: true, class: { thumb: "size-3", thumbDot: "size-2" } },
         // 未激活滑块：无色环且小一号，sm 档不再缩小
-        { size: "lg", active: false, class: { thumb: "size-[14px]", thumbDot: "size-[8px]" } },
-        { size: "md", active: false, class: { thumb: "size-[12px]", thumbDot: "size-[8px]" } },
-        { size: "sm", active: false, class: { thumb: "size-[12px]", thumbDot: "size-[8px]" } },
+        { size: "lg", active: false, class: { thumb: "size-3.5", thumbDot: "size-2" } },
+        { size: "md", active: false, class: { thumb: "size-3", thumbDot: "size-2" } },
+        { size: "sm", active: false, class: { thumb: "size-3", thumbDot: "size-2" } },
         // 刻度文字在滑轨下方（垂直模式在右侧），wrapper 留出对应空间
         { hasMarks: true, vertical: false, class: { wrapper: "pb-[26px]" } },
         { hasMarks: true, vertical: true, class: { wrapper: "pr-[36px]" } },

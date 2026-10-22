@@ -367,9 +367,10 @@ watch(() => [content.value, props.lines, props.size, props.ellipsis, props.toolt
 
 <template>
   <!-- 面板默认 max-w-60 写死 240px，这里放开上限、去掉内边距，由下方内容节点按文本宽度约束 -->
+  <!-- 截断后悬停可看全文：用帮助光标提示这里有气泡，文字本身不可点，不用手型 -->
   <RebornTooltip v-if="props.tooltip" :disabled="!isEllipsisActive" placement="top" :ui="{ content: 'max-w-none p-0' }">
     <span
-      ref="textRef" :class="cn(ui.base({ class: props.class }), { 'cursor-pointer': isEllipsisActive })"
+      ref="textRef" :class="cn(ui.base({ class: props.class }), { 'cursor-help': isEllipsisActive })"
       :style="textStyle"
     >
       <span ref="sourceRef" :class="{ 'sr-only': clampReady }">

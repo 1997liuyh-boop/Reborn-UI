@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TabKey, TabPaneMeta, TabsContext } from "./reborn-tabs.config";
+import { animate } from "motion-v";
 import {
   computed,
   getCurrentInstance,
@@ -10,8 +11,10 @@ import {
   shallowReactive,
   shallowRef,
   useSlots,
+  watch,
   watchEffect,
 } from "vue";
+import { motionPresets, prefersReducedMotion } from "@/lib/motion";
 import { TABS_INJECTION_KEY } from "./reborn-tabs.config";
 
 defineOptions({
@@ -78,43 +81,96 @@ const shouldRender = computed(() => {
   return true;
 });
 
-/**
- * 内容过渡。离场面板绝对定位后与入场面板重叠，切换时内容高度不会先塌陷再撑开（高度改由 stage 那层过渡）。
- * 透明度之外再叠 scale、translate 与模糊，新旧内容就有一段互相渗透的观感，而不是硬生生换一张图。
- * 过渡属性表写 scale,translate 而不是 transform：本仓库是 Tailwind v4，scale-* 与 translate-*
- * 编译成独立的 scale / translate 属性，写 transform 一个都过渡不到。
- * 模糊的终态写 blur-[0px] 而不是 blur-none：后者产出空的 --tw-blur，合成出来的 filter 取不到合法值，
- * 浏览器会跳变而不是插值
- */
-const transitionProps = computed(() =>
-  ctx.animation.value
-    ? {
-        enterActiveClass:
-          "transition-[opacity,scale,translate,filter] duration-[260ms] ease-out motion-reduce:transition-none",
-        enterFromClass: "opacity-0 scale-[0.98] translate-y-1 blur-[3px]",
-        enterToClass: "opacity-100 scale-100 translate-y-0 blur-[0px]",
-        leaveActiveClass:
-          "absolute inset-0 transition-[opacity,scale,translate,filter] duration-200 ease-in motion-reduce:transition-none",
-        leaveFromClass: "opacity-100 scale-100 translate-y-0 blur-[0px]",
-        leaveToClass: "opacity-0 scale-[1.01] -translate-y-1 blur-[3px]",
-      }
-    : { css: false },
-);
+/** 离场面板脱离文档流，与入场面板重叠；父级单独平滑调整内容高度。 */
+const leaving = ref(false);
+let transitionRun = 0;
+let finishTransition: (() => void) | undefined;
+let motionMedia: MediaQueryList | undefined;
+let playback: ReturnType<typeof animate> | undefined;
+let visual: { opacity: number; y: number; scale: number } | undefined;
+
+/** 中断时保留当前画面，反向切换沿用中间值，不闪回完整透明度。 */
+function cancelMotion() {
+  transitionRun++;
+  finishTransition = undefined;
+  playback?.stop();
+  playback = undefined;
+}
+
+function clearMotion(element: Element) {
+  cancelMotion();
+  const node = element as HTMLElement;
+  node.style.opacity = "";
+  node.style.transform = "";
+  visual = undefined;
+  leaving.value = false;
+}
+
+function transitionPane(element: Element, done: () => void, enter: boolean) {
+  cancelMotion();
+  const run = transitionRun;
+  const finish = () => {
+    if (run !== transitionRun) return;
+    done();
+    clearMotion(element);
+  };
+  finishTransition = finish;
+  leaving.value = !enter;
+  if (!ctx?.animation.value || prefersReducedMotion()) {
+    finish();
+    return;
+  }
+  const from = visual ?? (enter ? { opacity: 0, y: 4, scale: 0.98 } : { opacity: 1, y: 0, scale: 1 });
+  const to = enter ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: -4, scale: 1.01 };
+  const node = element as HTMLElement;
+  const paint = (progress: number) => {
+    if (run !== transitionRun) return;
+    visual = {
+      opacity: from.opacity + (to.opacity - from.opacity) * progress,
+      y: from.y + (to.y - from.y) * progress,
+      scale: from.scale + (to.scale - from.scale) * progress,
+    };
+    node.style.opacity = `${visual.opacity}`;
+    node.style.transform = `translateY(${visual.y}px) scale(${visual.scale})`;
+  };
+  paint(0);
+  playback = animate(0, 1, {
+    ...(enter ? motionPresets.base : motionPresets.fast), onUpdate: paint, onComplete: finish,
+  });
+}
+
+function enterPane(element: Element, done: () => void) {
+  transitionPane(element, done, true);
+}
+
+function leavePane(element: Element, done: () => void) {
+  transitionPane(element, done, false);
+}
+
+function syncMotionPreference() {
+  if (motionMedia?.matches) finishTransition?.();
+}
+
+watch(() => ctx.animation.value, enabled => { if (!enabled) finishTransition?.(); });
 
 onMounted(() => {
+  motionMedia = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  motionMedia?.addEventListener("change", syncMotionPreference);
   meta.el = el.value;
   // setup 顺序在标签被插入到中间时会失真，挂载后由父级按 DOM 先后重排
   ctx.sortPanes();
 });
 
 onBeforeUnmount(() => {
+  if (el.value) clearMotion(el.value);
+  motionMedia?.removeEventListener("change", syncMotionPreference);
   ctx.removePane(meta);
 });
 </script>
 
 <template>
-  <Transition v-bind="transitionProps">
-    <div v-show="isActive" ref="el" role="tabpanel" :class="paneClass">
+  <Transition :css="false" @enter="enterPane" @leave="leavePane" @enter-cancelled="cancelMotion" @leave-cancelled="cancelMotion">
+    <div v-show="isActive" ref="el" role="tabpanel" :class="[paneClass, leaving && 'absolute inset-0']">
       <slot v-if="shouldRender" />
     </div>
   </Transition>

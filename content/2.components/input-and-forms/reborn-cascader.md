@@ -535,12 +535,12 @@ Web 端还有一个独立入口 `triggerUi`：它承接触发器盒子与浮层�
 
 ### CSS 变量
 
-Web 端不自带私有变量，尺寸与字号全部取自全局令牌，定义在 `app/assets/theme/typography.css`：
+Web 端不自带私有尺寸变量，触发器使用 Tailwind 原生刻度；字号仍取 `app/assets/theme/typography.css` 的全局令牌。尺寸刻度由 `app/assets/css/reborn-ui.css` 引入的 Tailwind `--spacing` 提供，默认 `0.25rem`：
 
-| 变量 | 取值 | 用途 |
+| 项目 | 类名 | 默认根字号 16px 时 |
 | :--- | :--- | :--- |
-| `--height-input-sm` / `-md` / `-lg` | `24px` / `32px` / `40px` | 触发器高度三档 |
-| `--spacing-input-px-sm` / `-md` / `-lg` | `10px` / `12px` / `16px` | 触发器水平内边距三档 |
+| 触发器高度三档 | `h-6` / `h-8` / `h-10` | `24px` / `32px` / `40px` |
+| 触发器水平内边距三档 | `px-2.5` / `px-3` / `px-4` | `10px` / `12px` / `16px` |
 
 ## 两端差异对照
 

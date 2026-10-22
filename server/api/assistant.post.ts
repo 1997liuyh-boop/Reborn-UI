@@ -115,7 +115,9 @@ export default defineEventHandler(async (event) => {
         },
       });
 
-      writer.merge(result.toUIMessageStream());
+      // 模型调用失败(网关 503、重试耗尽等)的错误由这条流自己带给面板,不经过下面 createUIMessageStream
+      // 的 onError;不传 onError 时面板拿到的是 AI SDK 的英文原文,所以两处都换成中文提示
+      writer.merge(result.toUIMessageStream({ onError: reportStreamError }));
 
       // 兜底:步数耗尽或模型只调工具不落文本时,上游会静默结束。这里补一条可读回复,
       // 保证「提问必有回应」——这正是用户反馈的「多次询问后 AI 没有回复」的表层症状。
@@ -134,16 +136,18 @@ export default defineEventHandler(async (event) => {
         );
       }
     },
-    onError: (error: unknown) => {
-      // 上游未传 onError,错误内容被 AI SDK 默认屏蔽。这里透出可读原因并留服务端日志。
-      console.error("[assistant] 对话流出错:", error);
-      const detail = error instanceof Error ? error.message : String(error);
-      return `AI 助手出错了：${detail}`;
-    },
+    // 上游未传 onError,错误内容被 AI SDK 默认屏蔽。这里透出可读原因并留服务端日志。
+    onError: reportStreamError,
   });
 
   return createUIMessageStreamResponse({ stream });
 });
+
+/** 对话流出错:原始错误写服务端日志,返回给面板的是中文提示 */
+function reportStreamError(error: unknown): string {
+  console.error("[assistant] 对话流出错:", error);
+  return toFriendlyAiError(error);
+}
 
 /**
  * 文档检索工具:直接查 @nuxt/content 集合 + 取 /raw 原始 markdown。

@@ -116,7 +116,7 @@ export default {
         item: "col-span-3 grid-cols-subgrid",
         axis: "col-start-2 row-start-1 flex-col items-center pt-1",
         /** 高度取内容首行行高（text-base 为 22px），圆点在其中垂直居中；最小宽度与图标底圆一致，有无图标时内容缩进相同 */
-        dotWrapper: "h-[22px] min-w-5",
+        dotWrapper: "h-5.5 min-w-5",
         line: "inset-y-0 left-1/2 w-px -translate-x-1/2",
         body: "row-start-1 pb-5 pt-1",
         opposite: "row-start-1 pb-5 pt-1",

@@ -6,9 +6,9 @@ export default {
     root: "fixed inset-0",
     /**
      * 遮罩层：只用半透明底色，不做 backdrop-blur——全屏背景模糊在动画期间每帧重算，是弹窗掉帧的主因。
-     * 淡入淡出由组件直接翻 opacity 驱动（不走 <Transition>），时长与缓动以内联样式给出
+     * 淡入淡出由 Motion 驱动，与面板同时开始。
      */
-    backdrop: "absolute inset-0 bg-black/45 transition-opacity transform-gpu will-change-[opacity]",
+    backdrop: "absolute inset-0 bg-black/45 transform-gpu will-change-[opacity]",
     /** 面板定位壳：负责水平居中与垂直落点（居中 / top 边距两种形态）；自身不参与动画，点击空白区域等同点击遮罩 */
     shell: "absolute inset-0 flex justify-center px-4 sm:px-6",
     /**
@@ -18,7 +18,7 @@ export default {
     panelWrapper: "flex w-full justify-center pointer-events-none",
     /** 弹窗面板：统一内边距 py-20/px-24，header / body / footer 三段之间由 gap-20 分隔 */
     panel:
-      "pointer-events-auto relative flex w-full max-w-[560px] flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
+      "pointer-events-auto relative flex w-full max-w-140 flex-col gap-[20px] overflow-hidden rounded-xl border border-black/5 bg-gray-1 py-[20px] px-[24px] text-gray-10 shadow-[0_32px_90px_rgba(15,23,42,0.22)] focus:outline-none",
     /** 头部：无分隔线，内边距交由面板统一承担 */
     header: "flex items-start justify-between gap-4",
     /** 头部文字区：标题与描述之间间隔 8px */
@@ -28,8 +28,12 @@ export default {
     /** 描述：text-base（14px / 22px 行高）、gray-8 */
     description: "text-base text-gray-8",
     /** 关闭图标：固定 18px，不随父级字号浮动 */
-    close: "size-[18px] shrink-0 cursor-pointer text-gray-5 transition-colors hover:text-gray-7",
+    close: "size-4.5 shrink-0 cursor-pointer text-gray-5 transition-colors hover:text-gray-7",
     body: "",
+    /** 浮层滚动条根节点（RebornScrollbar），仅 scrollable 时渲染，类名见 scrollable 变体 */
+    scrollbar: "",
+    /** 浮层滚动条内部的滚动层（RebornScrollbar 的 wrap-class），仅 scrollable 时渲染 */
+    scrollbarWrap: "",
     /** 底部：无分隔线，按钮靠右对齐 */
     footer: "flex items-center justify-end gap-3",
   },
@@ -55,11 +59,20 @@ export default {
       },
       false: {},
     },
-    /** 正文是否独立滚动（页头页脚固定） */
+    /**
+     * 正文是否独立滚动（页头页脚固定）。
+     * 不用原生 overflow-y-auto：Windows 等平台的原生滚动条在内容溢出时常驻显示，
+     * 改由正文里的 RebornScrollbar 承担滚动，悬停或滚动时淡入、停止后隐藏。
+     * body → scrollbar → scrollbarWrap 逐层 flex-1 + min-h-0，收缩到面板最高高度内再滚动；
+     * scrollbar 向右伸进面板 16px 的内边距、scrollbarWrap 再补回 16px，滚动条落在留白里不压住正文，
+     * 因此 body 必须保持 overflow-visible，否则伸出去的滚动条会被裁掉
+     */
     scrollable: {
       true: {
         panel: "max-h-[min(86vh,760px)]",
-        body: "overflow-y-auto",
+        body: "flex min-h-0 flex-col overflow-visible",
+        scrollbar: "-mr-[16px] flex min-h-0 flex-1 flex-col",
+        scrollbarWrap: "h-auto min-h-0 flex-1 pr-[16px]",
       },
       false: {
         body: "overflow-visible",
@@ -115,7 +128,6 @@ export default {
       scrollable: true as const,
       class: {
         panel: "h-screen",
-        body: "overflow-y-auto",
       },
     },
     // 非居中形态下限制面板最大高度，避免 top 边距 + 长内容溢出视口

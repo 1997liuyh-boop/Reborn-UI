@@ -101,14 +101,14 @@ Web 端的 `cal*` 系列键会被转发给内部的 `RebornDatePickerPanel`（`c
 | `dropdown`       | 日历浮层的根容器，默认 `w-[var(--rb-trigger-width,100%)]`（跟随触发器宽度）；想让浮层比触发器宽就在这里写死宽度。与 `triggerUi.dropdown` 会一起合并。                      |
 | `content`        | 浮层内部包裹日历面板的容器，默认 `w-full`；面板内边距改这里（面板自身的 `wrapper` 已被强制为 `p-0`）。                                                                     |
 | `calHeader`      | 日历顶部导航行，默认 `flex items-center justify-between mb-2`。                                                                                                            |
-| `calNavBtn`      | 日历左右翻页按钮，默认 `p-1 rounded-md hover:bg-gray-2 dark:hover:bg-gray-7 transition-colors cursor-pointer text-gray-6 dark:text-gray-3`。                               |
-| `calTitle`       | 日历中间的年月标题（点击切换年/月视图），默认 `text-sm font-medium text-gray-8 dark:text-gray-1 cursor-pointer hover:text-primary transition-colors`。                      |
-| `calWeekdays`    | 星期表头容器，默认 `grid grid-cols-7 gap-0 text-center text-xs text-gray-4 dark:text-gray-5`。                                                                             |
+| `calNavBtn`      | 日历左右翻页按钮，默认 `p-1 rounded-md hover:bg-gray-2 transition-colors cursor-pointer text-gray-6`。                               |
+| `calTitle`       | 日历中间的年月标题（点击切换年/月视图），默认 `text-sm font-medium text-gray-8 cursor-pointer hover:text-primary transition-colors`。                      |
+| `calWeekdays`    | 星期表头容器，默认 `grid grid-cols-7 gap-0 text-center text-sm text-gray-4 dark:text-gray-5`。                                                                             |
 | `calDays`        | 日期网格容器，默认 `grid grid-cols-7 gap-0.5`；格子间距改这里。                                                                                                            |
-| `calDay`         | 单个日期格，默认 `flex items-center justify-center rounded-md text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7`。 |
+| `calDay`         | 单个日期格，默认 `flex items-center justify-center rounded-md text-sm transition-colors text-gray-7 dark:text-gray-2`；手型光标与悬停底色沿用面板 `day` 自带的，这里不再覆盖，禁用格的禁止光标才不会被盖掉。 |
 | `calDayActive`   | 选中日期的附加样式，默认由 `color` 变体给出（`primary` 时为 `bg-primary text-white hover:bg-primary/90`）。**不是独立节点**——选中时被合并进 `calDay` 所在节点。             |
 | `calDayToday`    | 今日的标识样式，默认 `font-bold`。同样是合并进 `calDay`。                                                                                                                  |
-| `calDayDisabled` | 超出 `start` / `end` 范围的日期，默认 `text-gray-4 dark:text-gray-5 opacity-40 pointer-events-none`。同样是合并进 `calDay`。                                                |
+| `calDayDisabled` | 超出 `start` / `end` 范围的日期，默认 `text-gray-4 dark:text-gray-5 opacity-40`，禁止光标与去掉悬停底色由面板 `dayDisabled` 给出，点击由面板拦下。同样是合并进 `calDay`。                                                |
 
 > 触发器盒子本身（边框、文本、清空按钮、箭头）不在这张表里，改它请用 `triggerUi`，见下一节。
 

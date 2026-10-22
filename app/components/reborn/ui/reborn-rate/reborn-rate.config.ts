@@ -78,7 +78,8 @@ export default {
         },
         disabled: {
             true: {
-                wrapper: "opacity-50 pointer-events-none",
+                // 只屏蔽子元素（星星、分数）的指针，外壳自己接住指针才能显示禁止光标；外壳的 mousemove 已按禁用判断放行
+                wrapper: "opacity-50 cursor-not-allowed *:pointer-events-none",
             },
         },
         readonly: {

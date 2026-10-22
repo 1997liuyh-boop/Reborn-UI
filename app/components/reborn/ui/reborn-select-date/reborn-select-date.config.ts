@@ -18,10 +18,13 @@ export default {
         // 换令牌后只有行高从 16px 回到 20px
         calWeekdays: "grid grid-cols-7 gap-0 text-center text-sm text-gray-4 dark:text-gray-5",
         calDays: "grid grid-cols-7 gap-0.5",
+        // 光标与悬停底色交给面板自身的 day / dayDisabled：这里的覆盖经 cn 排在面板禁用类之后，
+        // 写 cursor-pointer、hover:bg-* 会盖掉禁用格的 cursor-not-allowed 与 hover:bg-transparent；
+        // 禁用格也不能 pointer-events-none，否则光标无从显示。点击由面板 selectDay 里的禁用判断拦下。
         calDay:
-            "flex items-center justify-center rounded-md text-sm cursor-pointer transition-colors text-gray-7 dark:text-gray-2 hover:bg-gray-2 dark:hover:bg-gray-7",
+            "flex items-center justify-center rounded-md text-sm transition-colors text-gray-7 dark:text-gray-2",
         calDayActive: "",
-        calDayDisabled: "text-gray-4 dark:text-gray-5 opacity-40 pointer-events-none",
+        calDayDisabled: "text-gray-4 dark:text-gray-5 opacity-40",
         calDayToday: "font-bold",
     },
     variants: {
@@ -81,7 +84,7 @@ export default {
         },
         rangeable: {
             true: {
-                dropdown: "min-w-[600px]",
+                dropdown: "min-w-150",
             },
         },
     },

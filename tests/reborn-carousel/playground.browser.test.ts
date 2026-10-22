@@ -24,7 +24,7 @@ async function buildPlayground(contents = demoEntry) {
       sourcefile: 'playground.ts', loader: 'ts', resolveDir: resolve('.'),
     },
     bundle: true, platform: 'browser', format: 'esm', write: false,
-    alias: { '~': resolve('app') }, define: { 'import.meta.client': 'true' },
+    alias: { '~': resolve('app'), '@': resolve('app') }, define: { 'import.meta.client': 'true' },
     plugins: [{ name: 'carousel-playground-test', setup(builder) {
       builder.onResolve({ filter: /^#components$/ }, () => ({ path: 'components', namespace: 'fixture' }));
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({

@@ -18,10 +18,10 @@ export const avatarTheme = tv({
   },
   variants: {
     size: {
-      sm: { root: 'size-[24px] text-sm' },
-      md: { root: 'size-[32px] text-base' },
-      lg: { root: 'size-[40px] text-lg' },
-      custom: { root: 'size-[var(--rb-avatar-size)] text-base' },
+      sm: { root: 'size-6 text-sm' },
+      md: { root: 'size-8 text-base' },
+      lg: { root: 'size-10 text-lg' },
+      custom: { root: 'size-(--rb-avatar-size) text-base' },
     },
     shape: {
       circle: { root: 'rounded-full' },

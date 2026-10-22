@@ -25,16 +25,17 @@ export default {
     cellContent: 'min-w-0 py-1',
     expand: 'border-t border-gray-3 bg-gray-1 px-4 py-3',
     empty: 'px-4 py-10 text-center text-gray-6',
-    loading: 'absolute inset-0 z-40 flex items-center justify-center gap-2 bg-gray-1/80 text-gray-6',
+    // 遮罩盖住整个表体，等待光标同时压过下面所有被加载态禁用的控件
+    loading: 'absolute inset-0 z-40 flex cursor-wait items-center justify-center gap-2 bg-gray-1/80 text-gray-6',
     summary: 'bg-gray-2',
     footer: 'px-4 py-3',
     pagination: 'flex justify-end py-3',
   } satisfies Record<keyof Required<TableUi>, string>,
   variants: {
     size: {
-      sm: { cell: 'h-[36px]', headerCell: 'h-[36px]' },
-      md: { cell: 'h-[48px]', headerCell: 'h-[48px]' },
-      lg: { cell: 'h-[56px]', headerCell: 'h-[56px]' },
+      sm: { cell: 'h-9', headerCell: 'h-9' },
+      md: { cell: 'h-12', headerCell: 'h-12' },
+      lg: { cell: 'h-14', headerCell: 'h-14' },
     },
     border: { true: {
       // 底框向内叠绘，内容撑满时与表格底线重合；短内容或 append 前仍保留表格底线。

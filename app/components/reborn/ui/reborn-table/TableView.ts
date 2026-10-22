@@ -11,6 +11,7 @@ import RebornPagination from '../reborn-pagination/RebornPagination.vue';
 import RebornRadio from '../reborn-radio/RebornRadio.vue';
 import RebornScrollbar from '../scrollbar/RebornScrollbar.vue';
 import theme, { tableFixedStyles } from './reborn-table.config';
+import { useTableDrag } from './table.drag';
 import { useTableState } from './table.state';
 import { getColumnKey, getColumnWidth, getHeaderRows, getSpan, getValue, toCssSize } from './table.utils';
 import TableFilter from './TableFilter';
@@ -26,6 +27,30 @@ function chevron(direction: 'up' | 'down' | 'right', active = false) {
     h('path', { d: direction === 'up' ? 'm4 10 4-4 4 4' : direction === 'down' ? 'm4 6 4 4 4-4' : 'm6 4 4 4-4 4' }),
   ]);
 }
+
+/** 拖拽手柄的六点图标，同样内联绘制。 */
+function grip() {
+  return h('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'currentColor', 'aria-hidden': 'true' },
+    [5, 8, 11].flatMap(y => [h('circle', { cx: 6, cy: y, r: 1.2 }), h('circle', { cx: 10, cy: y, r: 1.2 })]));
+}
+
+/**
+ * 滚动条每次滚动都会更新滑块并重绘自身，插槽函数随之重新执行。
+ * 表格内容放进独立组件：props 恒为同一个渲染函数，滚动条重绘时跳过它，
+ * 只有表格自己读到的状态变化才重绘，横向拖动不再每帧重建整张表。
+ */
+const TableScrollContent = defineComponent({
+  name: 'RebornTableScrollContent',
+  props: {
+    render: { type: Function as PropType<() => VNodeChild>, required: true },
+    /** 内容自身重绘后回调，用于重新测量列宽与表头高度。 */
+    afterRender: { type: Function as PropType<() => void>, required: true },
+  },
+  setup(props) {
+    onUpdated(() => props.afterRender());
+    return () => props.render();
+  },
+});
 
 /** 公开属性由 RebornTable 声明；本层只负责渲染、布局测量和 DOM 生命周期。 */
 export default defineComponent({
@@ -53,22 +78,51 @@ export default defineComponent({
     const firstDataIndex = computed(() => state.leaves.value.findIndex(column => !column.type || column.type === 'default'));
     const hasTree = computed(() => state.sourceRows.value.some(row => row.hasChildren));
     const cellSpans = computed(() => state.visibleRows.value.map(item => state.leaves.value.map((column, columnIndex) => getSpan(props.table.spanMethod?.({ row: item.row, column, $index: item.index, columnIndex })))));
-    const hoveredCell = shallowRef<{ key: TableKey; columnIndex: number }>();
-    const hoveredRange = computed(() => {
-      if (!props.table.hover || !hoveredCell.value) return;
-      const start = state.visibleRows.value.findIndex(item => item.key === hoveredCell.value!.key);
-      if (start < 0) return;
-      const span = cellSpans.value[start]?.[hoveredCell.value.columnIndex];
-      return { start, end: start + (span?.rowspan ?? 1) };
-    });
+    /** 只有存在纵向合并格时才需要脚本接管悬停；否则交给行自身的 hover: 类，指针划过单元格不触发重绘。 */
+    const hasRowMerge = computed(() => cellSpans.value.some(row => row.some(span => span.rowspan > 1)));
+    /** 悬停的行范围，记作「起始行:结束行」，空串表示无悬停。 */
+    const hoverState = shallowRef('');
+    /**
+     * 渲染只读这个计算属性：它返回字符串，离开一格又进入同一行的另一格时值不变，
+     * 计算属性不通知更新，整张表不必重绘。
+     */
+    const hoveredRange = computed(() => props.table.hover ? hoverState.value : '');
     // 只在行序或跨度改变时清除位置；相同行键的数据刷新不应丢失仍在格内的悬停。
-    watch(() => JSON.stringify([state.visibleRows.value.map(item => item.key), cellSpans.value]), () => { hoveredCell.value = undefined; });
+    watch(() => JSON.stringify([state.visibleRows.value.map(item => item.key), cellSpans.value]), () => { hoverState.value = ''; });
     const fixedHeader = computed(() => props.table.fixedHeader !== false && (props.table.height !== undefined || props.table.maxHeight !== undefined));
     const baseHeight = computed(() => ({ sm: 36, md: 48, lg: 56 })[props.table.size ?? 'md']);
     // 多级表头按实际行高累加；SSR 和首次测量前使用尺寸档位，关闭固定时不占轨道。
     const headerOffset = computed(() => fixedHeader.value && props.table.showHeader !== false
       ? headerRows.value.reduce((sum, _row, index) => sum + (headHeights.value[index] || baseHeight.value), 0)
       : 0);
+    /**
+     * 固定列的 sticky 偏移一次算好：左侧是左固定列宽度的前缀和，右侧是右固定列宽度的后缀和。
+     * 单元格按下标直接取值，不再每格遍历全部列。
+     */
+    const fixedOffsets = computed(() => {
+      const leaves = state.leaves.value;
+      const left = Array.from<number>({ length: leaves.length + 1 }).fill(0);
+      const right = Array.from<number>({ length: leaves.length + 1 }).fill(0);
+      const width = (index: number) => widths.value[index] || getColumnWidth(leaves[index]!);
+      for (let i = 0; i < leaves.length; i++) left[i + 1] = left[i]! + (fixedSide(leaves[i]!) === 'left' ? width(i) : 0);
+      for (let i = leaves.length - 1; i >= 0; i--) right[i] = right[i + 1]! + (fixedSide(leaves[i]!) === 'right' ? width(i) : 0);
+      return { left, right };
+    });
+    /** 各级表头的吸顶位置：上方各级表头高度的累加。 */
+    const headerTops = computed(() => headerRows.value.reduce<number[]>((tops, _row, index) => [...tops, tops[index]! + (headHeights.value[index] || baseHeight.value)], [0]));
+    /** 拖拽指示线的定位容器与线本身；线的位置由拖拽逻辑直接写样式。 */
+    const frameElement = ref<HTMLElement>();
+    const indicatorElement = ref<HTMLElement>();
+    const drag = useTableDrag({
+      props: props.table, notify: props.notify, rowElements,
+      visibleRows: () => state.visibleRows.value,
+      sorted: () => !!state.sorting.value.order,
+      originOf: state.originOf,
+      wrap: () => scrollbar.value?.wrapRef,
+      frame: () => frameElement.value,
+      indicator: () => indicatorElement.value,
+      headerOffset: () => headerOffset.value,
+    });
     let observer: ResizeObserver | undefined;
     let frame: number | undefined;
 
@@ -81,7 +135,18 @@ export default defineComponent({
     }
     function isHovered(start: number, span = 1) {
       const range = hoveredRange.value;
-      return !!range && start < range.end && start + span > range.start;
+      if (!range) return false;
+      const [from, to] = range.split(':').map(Number) as [number, number];
+      return start < to && start + span > from;
+    }
+    /** 进入单元格时记录它覆盖的行范围；范围没变就不写，避免同一行内横向移动时重绘。 */
+    function hoverCell(position: number, columnIndex: number) {
+      if (!props.table.hover || !hasRowMerge.value) return;
+      const next = `${position}:${position + (cellSpans.value[position]?.[columnIndex]?.rowspan ?? 1)}`;
+      if (hoverState.value !== next) hoverState.value = next;
+    }
+    function leaveCell() {
+      if (hoverState.value) hoverState.value = '';
     }
     function isCurrentRow(item: TableVisibleRow) {
       return props.table.highlightCurrentRow && props.models.currentRowKey.value === item.key;
@@ -136,18 +201,15 @@ export default defineComponent({
       const side = fixedSide(column);
       const style: CSSProperties = {};
       if (side) {
-        let offset = 0;
-        for (let i = 0; i < state.leaves.value.length; i++) {
-          const leaf = state.leaves.value[i]!;
-          if (fixedSide(leaf) === side && (side === 'left' ? i < index : i >= index + span)) offset += widths.value[i] || getColumnWidth(leaf);
-        }
-        style[side] = `${offset}px`;
+        // 左固定累加左侧的左固定列，右固定累加跨度之后的右固定列。
+        const offsets = fixedOffsets.value;
+        style[side] = `${side === 'left' ? offsets.left[index] : offsets.right[Math.min(index + span, offsets.right.length - 1)]}px`;
         style.position = 'sticky';
         style.zIndex = headerLevel === undefined ? 10 : 30;
       }
       if (headerLevel !== undefined && fixedHeader.value) {
         style.position = 'sticky';
-        style.top = `${Array.from({ length: headerLevel }, (_, i) => headHeights.value[i] || baseHeight.value).reduce((sum, value) => sum + value, 0)}px`;
+        style.top = `${headerTops.value[headerLevel] ?? 0}px`;
         style.zIndex = side ? 30 : 20;
       }
       return style;
@@ -158,7 +220,8 @@ export default defineComponent({
       return h('button', {
         type: 'button', disabled: props.table.loading, 'aria-expanded': expanded, 'aria-busy': loading,
         'aria-label': `${expanded ? '收起' : '展开'}第 ${item.index + 1} 行`,
-        class: 'inline-flex size-6 shrink-0 items-center justify-center rounded-sm hover:bg-gray-3 focus-visible:outline-2 focus-visible:outline-primary',
+        // 懒加载子行期间显示等待光标；整表加载时按钮被禁用，同样是等待（加载遮罩也盖在上面）
+        class: ['inline-flex size-6 shrink-0 items-center justify-center rounded-sm hover:bg-gray-3 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait', loading ? 'cursor-wait' : 'cursor-pointer'],
         onClick: (event: MouseEvent) => { event.stopPropagation(); state.toggleRowExpansion(item.row); },
       }, [loading ? h(RebornLoading, { size: 12, type: 'ring', 'aria-hidden': true }) : chevron(expanded ? 'down' : 'right')]);
     }
@@ -179,6 +242,23 @@ export default defineComponent({
           rowElements.get(next.key)?.querySelector<HTMLElement>('[role="radio"]')?.focus();
         });
       }
+    }
+    /** 拖拽手柄：按住拖动或用上下方向键移动；点击不冒泡，不会触发行点击与当前行切换。 */
+    function dragHandle(item: TableVisibleRow) {
+      const enabled = drag.canDrag(item);
+      return h('button', {
+        type: 'button', 'data-table-drag-handle': '', disabled: !enabled,
+        'aria-label': `拖动排序第 ${item.index + 1} 行，可用上下方向键移动`,
+        // touch-none 让触屏按住手柄时不触发页面滚动，指针事件才能完整收到
+        class: 'inline-flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-gray-6 hover:bg-gray-3 hover:text-gray-9 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:text-gray-4 disabled:hover:bg-transparent',
+        onPointerdown: (event: PointerEvent) => drag.start(event, item),
+        onKeydown: (event: KeyboardEvent) => drag.keydown(event, item),
+        onClick: (event: MouseEvent) => event.stopPropagation(),
+      }, [grip()]);
+    }
+    /** 选择列与拖拽列只放一个控件，表头和单元格都水平垂直居中、收窄内边距。 */
+    function isCentered(column: TableColumn) {
+      return column.type === 'selection' || column.type === 'drag';
     }
     function renderHeader(cell: TableHeaderCell, level: number) {
       const { column, start } = cell;
@@ -211,9 +291,9 @@ export default defineComponent({
         'data-column-key': key,
         'data-fixed-edge': fixedEdge(column, start, cell.colSpan),
         'aria-sort': column.sortable ? order ?? 'none' : undefined,
-        class: cls('headerCell', [fixedClass(column, start, cell.colSpan), rightBorderClass(start, cell.colSpan), column.type === 'selection' ? 'px-2 text-center' : alignClasses[column.headerAlign ?? column.align ?? 'left'], column.labelClassName]),
+        class: cls('headerCell', [fixedClass(column, start, cell.colSpan), rightBorderClass(start, cell.colSpan), isCentered(column) ? 'px-2 text-center' : alignClasses[column.headerAlign ?? column.align ?? 'left'], column.labelClassName]),
         style: cellStyle(column, start, cell.colSpan, level),
-      }, [h('div', { class: cls('cellContent', column.type === 'selection' && 'flex items-center justify-center') }, content)]);
+      }, [h('div', { class: cls('cellContent', isCentered(column) && 'flex items-center justify-center') }, content)]);
     }
     function renderCell(item: TableVisibleRow, column: TableColumn, columnIndex: number) {
       const key = getColumnKey(column, columnIndex);
@@ -238,6 +318,7 @@ export default defineComponent({
         const offset = props.table.pagination ? (state.page.value - 1) * state.pageSize.value : 0;
         content = typeof column.index === 'function' ? column.index(item.index + offset) : item.index + offset + (column.index ?? 1);
       } else if (column.type === 'expand') content = expandableButton(item);
+      else if (column.type === 'drag') content = dragHandle(item);
       else content = column.cellRender?.(scope) ?? slots[column.slotName ?? `cell-${key}`]?.(scope) ?? slots.cell?.(scope) ?? column.formatter?.(item.row, column, value, item.index) ?? (value == null ? '' : String(value));
       const tree = columnIndex === firstDataIndex.value && (item.level > 0 || hasTree.value);
       const overflowTooltip = column.showOverflowTooltip ?? props.table.showOverflowTooltip;
@@ -253,7 +334,7 @@ export default defineComponent({
         contentClass: cls('cellContent'),
       }, { default: () => content, ...(slots.tooltip ? { content: slots.tooltip } : {}) }) : h('div', {
         // 复选框脱离文字基线布局，与表头共用双向居中；不改变普通列的文字对齐。
-        class: cls('cellContent', ['break-words', column.type === 'selection' && 'flex items-center justify-center']),
+        class: cls('cellContent', ['break-words', isCentered(column) && 'flex items-center justify-center']),
       }, content);
       return h('td', {
         key, rowspan: span.rowspan, colspan: span.colspan,
@@ -262,11 +343,11 @@ export default defineComponent({
           'bg-inherit', fixedClass(column, columnIndex, span.colspan), rightBorderClass(columnIndex, span.colspan),
           // 合并格属于首行 DOM，但覆盖任一行悬停时都应亮起；当前行的品牌底色优先。
           span.rowspan > 1 && isHovered(item.index, span.rowspan) && !isCurrentRow(item) && 'bg-gray-2',
-          column.type === 'selection' ? 'px-2 text-center' : alignClasses[column.align ?? 'left'], column.className, typeof props.table.cellClassName === 'function' ? props.table.cellClassName(scope) : props.table.cellClassName,
+          isCentered(column) ? 'px-2 text-center' : alignClasses[column.align ?? 'left'], column.className, typeof props.table.cellClassName === 'function' ? props.table.cellClassName(scope) : props.table.cellClassName,
         ]),
         style: cellStyle(column, columnIndex, span.colspan),
-        onMouseenter: () => { hoveredCell.value = { key: item.key, columnIndex }; },
-        onMouseleave: () => { hoveredCell.value = undefined; },
+        onMouseenter: () => hoverCell(item.index, columnIndex),
+        onMouseleave: leaveCell,
         onClick: (event: MouseEvent) => {
           if (props.table.loading) return;
           props.notify('cell-click', item.row, column, event.currentTarget as HTMLElement, event);
@@ -282,20 +363,25 @@ export default defineComponent({
     function renderRow(item: TableVisibleRow, position: number) {
       const selected = state.selectedSet.value.has(item.key);
       const current = isCurrentRow(item);
+      const dragging = drag.draggingKey.value === item.key;
       const row = h('tr', {
         ref: (node: Element | ComponentPublicInstance | null) => { if (node) rowElements.set(item.key, node as HTMLTableRowElement); else rowElements.delete(item.key); },
         key: `${typeof item.key}:${item.key}`, 'data-row-key': item.key, 'data-selected': selected || undefined,
+        'data-dragging': dragging || undefined,
         class: cls('row', [
           ((props.table.stripe && position % 2 === 1) || selected || isHovered(position)) && 'bg-gray-2',
           // 表格默认语义色为品牌色，color-2 对应品牌二阶；悬停不能盖掉当前行高亮。
           current && 'bg-brand-2 hover:bg-brand-2',
+          // 拖动中的行淡出，落点由指示线标出
+          dragging && 'opacity-50',
           typeof props.table.rowClassName === 'function' ? props.table.rowClassName({ row: item.row, rowIndex: item.index }) : props.table.rowClassName,
         ]),
       }, state.leaves.value.map((column, index) => renderCell(item, column, index)));
       const expandColumn = state.leaves.value.find(column => column.type === 'expand');
       if (!expandColumn || !state.expandedSet.value.has(item.key)) return [row];
       const scope = { row: item.row, column: expandColumn, $index: item.index, columnIndex: state.leaves.value.indexOf(expandColumn) };
-      return [row, h('tr', { key: `expand-${typeof item.key}:${item.key}` }, [h('td', { colspan: Math.max(1, state.leaves.value.length), class: cls('expand') }, [slots.expand?.(scope) ?? expandColumn.cellRender?.(scope)])])];
+      // data-table-expand 供拖拽计算落点块的底边：展开详情跟随所属行一起移动。
+      return [row, h('tr', { key: `expand-${typeof item.key}:${item.key}`, 'data-table-expand': '', onMouseenter: leaveCell }, [h('td', { colspan: Math.max(1, state.leaves.value.length), class: cls('expand') }, [slots.expand?.(scope) ?? expandColumn.cellRender?.(scope)])])];
     }
     function renderBody() {
       const result: VNodeChild[] = [];
@@ -325,23 +411,29 @@ export default defineComponent({
       setScrollTop: (value: number) => scrollbar.value?.setScrollTop(value, { animated: false }),
       setScrollLeft: (value: number) => scrollbar.value?.setScrollLeft(value, { animated: false }),
     });
+    /** 滚动区内的全部内容；由 TableScrollContent 渲染，依赖只记在它自己身上。 */
+    function renderScrollContent(): VNodeChild {
+      return [
+        h('table', { ref: tableElement, class: cls('table', props.table.tableLayout === 'auto' && 'table-auto'), 'aria-label': props.table.ariaLabel, style: { minWidth: `${state.leaves.value.reduce((sum, column) => sum + getColumnWidth(column), 0)}px` } }, [
+          h('colgroup', state.leaves.value.map((column, index) => h('col', { key: getColumnKey(column, index), style: { width: `${getColumnWidth(column)}px` } }))),
+          props.table.showHeader === false ? null : h('thead', { class: cls('thead') }, headerRows.value.map((row, level) => h('tr', { key: level }, row.map(cell => renderHeader(cell, level))))),
+          h('tbody', { class: '[&>tr:first-child>td]:border-t-0' }, state.visibleRows.value.length ? renderBody() : [h('tr', [h('td', { colspan: Math.max(1, state.leaves.value.length), class: cls('empty') }, slots.empty?.() ?? (props.table.loading ? '加载中' : h(RebornEmpty, { description: props.table.emptyText })))])]),
+          props.table.showSummary ? h('tfoot', { class: cls('summary') }, [h('tr', state.leaves.value.map((column, index) => h('td', { key: getColumnKey(column, index), 'data-fixed-edge': fixedEdge(column, index), class: cls('cell', ['bg-gray-2', fixedClass(column, index), rightBorderClass(index), alignClasses[column.align ?? 'left']]), style: cellStyle(column, index) }, [h('div', { class: cls('cellContent') }, state.summary.value[index] ?? '')])))]) : null,
+        ]),
+        slots.append?.(),
+      ];
+    }
     return () => h('div', { ...attrs, class: cls('root', [props.table.class, attrs.class as ClassValue]), 'data-reborn-table': '', 'data-size': props.table.size, 'aria-busy': props.table.loading }, [
-      h('div', { class: 'relative' }, [
+      h('div', { ref: frameElement, class: 'relative' }, [
         h(RebornScrollbar, {
           ref: scrollbar, class: cls('scrollbar'), style: { height: toCssSize(props.table.height), maxHeight: toCssSize(props.table.maxHeight) },
           verticalOffset: headerOffset.value,
           onScroll: updateHorizontalOverflow,
           // 固定列的层级留在内容区内，避免覆盖同级轨道并拦截滚动条拖拽。
           wrapClass: 'isolate max-h-[inherit]', contentClass: 'min-w-full',
-        }, () => [
-          h('table', { ref: tableElement, class: cls('table', props.table.tableLayout === 'auto' && 'table-auto'), 'aria-label': props.table.ariaLabel, style: { minWidth: `${state.leaves.value.reduce((sum, column) => sum + getColumnWidth(column), 0)}px` } }, [
-            h('colgroup', state.leaves.value.map((column, index) => h('col', { key: getColumnKey(column, index), style: { width: `${getColumnWidth(column)}px` } }))),
-            props.table.showHeader === false ? null : h('thead', { class: cls('thead') }, headerRows.value.map((row, level) => h('tr', { key: level }, row.map(cell => renderHeader(cell, level))))),
-            h('tbody', { class: '[&>tr:first-child>td]:border-t-0' }, state.visibleRows.value.length ? renderBody() : [h('tr', [h('td', { colspan: Math.max(1, state.leaves.value.length), class: cls('empty') }, slots.empty?.() ?? (props.table.loading ? '加载中' : h(RebornEmpty, { description: props.table.emptyText })))])]),
-            props.table.showSummary ? h('tfoot', { class: cls('summary') }, [h('tr', state.leaves.value.map((column, index) => h('td', { key: getColumnKey(column, index), 'data-fixed-edge': fixedEdge(column, index), class: cls('cell', ['bg-gray-2', fixedClass(column, index), rightBorderClass(index), alignClasses[column.align ?? 'left']]), style: cellStyle(column, index) }, [h('div', { class: cls('cellContent') }, state.summary.value[index] ?? '')])))]) : null,
-          ]),
-          slots.append?.(),
-        ]),
+        }, () => [h(TableScrollContent, { render: renderScrollContent, afterRender: doLayout })]),
+        // 拖拽落点指示线：横跨可视宽度，位置由拖拽逻辑直接写入，平时隐藏
+        h('div', { ref: indicatorElement, 'aria-hidden': 'true', class: 'pointer-events-none absolute inset-x-0 z-20 hidden h-0.5 -translate-y-1/2 bg-primary' }),
         props.table.loading ? h('div', { class: cls('loading'), role: 'status', 'aria-live': 'polite' }, slots.loading?.() ?? [h(RebornLoading, { size: 20, type: 'ring' }), h('span', '加载中')]) : null,
       ]),
       slots.footer ? h('div', { class: cls('footer') }, slots.footer({ data: state.processed.value, selection: state.getSelectionRows() })) : null,

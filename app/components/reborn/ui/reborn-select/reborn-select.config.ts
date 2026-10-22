@@ -57,7 +57,7 @@ export default {
          * min-w 给一个下限，避免多选标签占满一行后输入区被挤成 0 宽而无法点击。
          */
         searchInput:
-            "min-w-[40px] flex-1 cursor-text bg-transparent text-gray-9 outline-none [font:inherit] placeholder:text-gray-5",
+            "min-w-10 flex-1 cursor-text bg-transparent text-gray-9 outline-none [font:inherit] placeholder:text-gray-5",
         /**
          * 触发器加载中指示器（RebornLoading）：占满尾部图标格子，替代箭头。
          * 转圈动画由 RebornLoading 自带，这里不必再挂 animate-spin；
@@ -75,7 +75,7 @@ export default {
          * 写 dark: 前缀会二次翻转，深色模式下反而更暗。
          */
         option:
-            "flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
+            "flex cursor-pointer items-center rounded-sm px-[6px] py-[4px] text-base transition-colors data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent",
         optionContent: "flex w-full items-center gap-1",
         optionLabel: "truncate",
         optionActive: "",
@@ -139,8 +139,7 @@ export default {
         /**
          * 多选形态。触发器内装的是标签而不是纯文本，标签自带描边与内边距，
          * 沿用 size 档位的 10/12/16px 会让左右留白明显偏大，故收敛为 4px。
-         * 必须带 ! 提权：tailwind-merge 不认识自定义的 px-input-px-* 属于 padding-x 冲突组，
-         * 不提权就会与 size 档位的值同时留在类名里，最终由 CSS 顺序决定胜负。
+         * 保留 ! 的优先级，确保多选形态覆盖单选尺寸档位的水平内边距。
          * 本变体声明在 variant 之前，保证 borderless / underlined 的 px-0! 仍能压过它
          * （二者同属 tailwind-merge 认得的 px 冲突组，后写的胜出）。
          */
@@ -171,16 +170,12 @@ export default {
             },
             underlined: {
                 // 压平圆角、抹掉水平内边距，让下划线与文字左右边缘齐平。
-                // 两处 ! 都是历史遗留：圆角原先是自定义的 rounded-ui-*，水平内边距是
-                // px-input-px-*，当时都不在 tailwind-merge 的冲突组里，会与 size 档位的值
-                // 共存并由 CSS 顺序决定胜负。现在圆角已改回原生 rounded-*，px-input-px-*
-                // 也已注册进 app/lib/utils.ts 的 px 冲突组，两者都能正常合并；
-                // ! 保留只为不动既有覆盖顺序。
+                // 圆角与内边距均使用原生工具类，! 沿用形态变体的样式优先级。
                 trigger: "rounded-none! border-0 border-b border-gray-4 bg-transparent px-0!",
             },
         },
         /**
-         * 尺寸档位。触发器高度取自 --height-input-*、水平内边距取自 --spacing-input-px-*。
+         * 尺寸使用 Tailwind 刻度：高度 h-6 / h-8 / h-10，水平内边距 px-2.5 / px-3 / px-4。
          * 字号走 7 级字号令牌：sm → text-sm（12px）、md → text-base（14px）、lg → text-lg（16px），
          * 行高用令牌自带的 20/22/24px，不再写 leading-[1.5]：触发器是定高盒子 + items-center 单行居中，
          * 行高只决定文本盒高度、不决定字形位置，18/21/24 与 20/22/24 的差别在视觉上不可见。
@@ -189,20 +184,20 @@ export default {
          */
         size: {
             sm: {
-                trigger: "h-input-sm px-input-px-sm text-sm",
+                trigger: "h-6 px-2.5 text-sm",
                 triggerIconWrapper: "size-3",
                 tagList: "gap-0.5",
                 tag: "h-4! px-1 text-[10px]",
                 tagClose: "size-2.5",
             },
             md: {
-                trigger: "h-input-md px-input-px-md text-base",
+                trigger: "h-8 px-3 text-base",
                 triggerIconWrapper: "size-4",
                 tag: "h-5! px-1.5 text-sm",
                 tagClose: "size-3",
             },
             lg: {
-                trigger: "h-input-lg px-input-px-lg text-lg",
+                trigger: "h-10 px-4 text-lg",
                 triggerIconWrapper: "size-4",
                 tag: "h-6! px-2 text-base",
                 tagClose: "size-3.5",
@@ -211,8 +206,7 @@ export default {
         /**
          * 多选标签换行。多选且未开启 collapse-tags 时开启：
          * 标签不再单行裁剪，而是逐行铺开、全部可见，触发器高度随之增长。
-         * 高度必须用 h-auto! 提权：tailwind-merge 不认识 h-input-* 属于 height 冲突组，
-         * 不提权 size 档位的固定高度会把内容压在单行里。
+         * h-auto! 覆盖单行尺寸档位的固定高度，保留多选换行时的样式优先级。
          * 最小高度与纵向内边距按档位在 compoundVariants 中给出，
          * 保证「只有一行标签」时与固定高度档位严格等高，不产生 1px 抖动。
          */
@@ -292,6 +286,14 @@ export default {
                 trigger: "border-red-5 group-focus:border-red-5 data-[state=open]:border-red-5",
             },
         },
+        /**
+         * 加载中：触发框与下拉里的加载占位显示等待光标。排在 disabled 之后，加载同时禁用时以等待为准；
+         * 标签、可搜索时的输入框自带光标，它们在加载中仍可操作，保持原样
+         */
+        loading: {
+            true: { trigger: "cursor-wait", loading: "cursor-wait" },
+            false: {},
+        },
     },
     compoundVariants: [
         // borderless 形态本身没有描边宽度，出错时需要补一圈，否则错误态完全不可见
@@ -302,23 +304,22 @@ export default {
          * 标签换行态的每档最小高度与纵向内边距。
          * 内边距按 (档位高度 - 标签高度) / 2 - 1px 描边 反推，
          * 因此单行时的实际高度与固定高度档位完全一致（sm 24 / md 32 / lg 40）。
-         * min-h 走 var() 而不是 min-h-input-*：设计令牌挂在 --height-* 命名空间下，
-         * Tailwind 只据此生成 h-* 工具类，min-h-* 需要 --min-height-* 才会生成。
+         * 最小高度与固定高度使用同档刻度 min-h-6 / min-h-8 / min-h-10。
          */
         {
             wrapTags: true,
             size: "sm",
-            class: { trigger: "min-h-input-sm py-[3px]" },
+            class: { trigger: "min-h-6 py-[3px]" },
         },
         {
             wrapTags: true,
             size: "md",
-            class: { trigger: "min-h-input-md py-[5px]" },
+            class: { trigger: "min-h-8 py-[5px]" },
         },
         {
             wrapTags: true,
             size: "lg",
-            class: { trigger: "min-h-input-lg py-[7px]" },
+            class: { trigger: "min-h-10 py-[7px]" },
         },
     ] as any,
     defaultVariants: {

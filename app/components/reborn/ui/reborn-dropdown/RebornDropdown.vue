@@ -287,7 +287,7 @@ defineExpose({
     @keydown="onKeydown" @close="onOutsideClose"
   >
     <template #trigger>
-      <div :class="ui.trigger()" @click="onTriggerClick" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+      <div :class="ui.trigger({ class: disabled && 'cursor-not-allowed' })" @click="onTriggerClick" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
         <!-- 下发显隐状态与控制方法，供 manual 触发方式（或任意触发方式下的局部控件）使用 -->
         <slot :visible="popupVisible" :open="open" :close="close" :toggle="toggle" />
       </div>

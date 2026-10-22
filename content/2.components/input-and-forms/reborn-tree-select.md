@@ -351,13 +351,13 @@ async function loadData(node: TreeDataNode) {
 
 ### CSS 变量
 
-复用选择器与树的语义 token，不增加私有 CSS 变量。灰阶与主题色定义在 `app/assets/theme/base.css`；尺寸变量定义在 `app/assets/theme/typography.css`。
+复用选择器与树的语义 token，不增加私有 CSS 变量。灰阶与主题色定义在 `app/assets/theme/base.css`，字号定义在 `app/assets/theme/typography.css`；选择框高度使用 `app/assets/css/reborn-ui.css` 引入的 Tailwind 原生尺寸刻度，随 `--spacing`（默认 `0.25rem`）缩放。
 
-| 变量                | 默认值 | 用途           |
-| ------------------- | ------ | -------------- |
-| `--height-input-sm` | `24px` | 小号选择框高度 |
-| `--height-input-md` | `32px` | 中号选择框高度 |
-| `--height-input-lg` | `40px` | 大号选择框高度 |
+| `size` | 高度类名 | 默认根字号 16px 时 |
+| --- | --- | --- |
+| `sm` | `h-6` | `24px` |
+| `md` | `h-8` | `32px` |
+| `lg` | `h-10` | `40px` |
 
 ## 注意事项
 

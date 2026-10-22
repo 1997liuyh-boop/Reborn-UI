@@ -475,7 +475,7 @@ const uploadRef = useTemplateRef("uploadRef");
 | `dragger`    | 拖拽区，仅 `drag` 且非 `picture-card` 时渲染                                   |
 | `tip`        | 提示文字容器，仅提供 `tip` 插槽时渲染                                          |
 | `list`       | 文件列表容器，距上传区 12px；行间距 `text` 4px、`picture` 8px；`picture-card` 下为 `contents`，不占盒子 |
-| `item`       | `text` / `picture` 的单条列表项，悬停为手型指针；成功为主色、失败为红色；`picture` 下带 `gray-4` 描边，失败时换红色描边 |
+| `item`       | `text` / `picture` 的单条列表项，悬停为手型指针（禁用时为禁止光标，上传中为等待光标）；成功为主色、失败为红色；`picture` 下带 `gray-4` 描边，失败时换红色描边 |
 | `itemIcon`   | 文件图标与上传中图标的容器；`text` 下 16px，`picture` 下 40px 灰底             |
 | `itemThumb`  | `picture` 下已有地址的图片缩略图，视频为首帧，40px                             |
 | `itemName`   | 文件名容器；传入 `onPreview` 时可点击                                          |

@@ -55,11 +55,16 @@ const pageStyle = computed(() =>
  * 平台档位首屏固定为 web，水合后才恢复用户选择，服务端与客户端首帧一致。
  */
 const { isPanelVisible } = useUniDemoPanel();
+
+/** 乐谱背景只铺在单个组件的文档页（/components/xxx），组件总览 /components 不显示 */
+const isComponentDoc = computed(() => /^\/components\/.+/.test(route.path));
 </script>
 
 <template>
   <UMain class="relative -mt-16 pt-16">
     <div class="bg-gray-1 absolute inset-0 z-[-1]" />
+    <!-- 乐谱背景：须紧跟在底色层之后，同为 z-[-1] 时靠 DOM 顺序叠在底色之上 -->
+    <DocsScoreBackground v-if="isComponentDoc" />
     <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
     <UContainer>
       <div class="min-w-0 transition-[padding] duration-200" :class="isPanelVisible ? '2xl:pr-[420px]' : undefined">

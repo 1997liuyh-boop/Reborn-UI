@@ -43,23 +43,23 @@ export default {
     // 按压只向轨道内侧加宽，松开后恢复；禁用、加载和减弱动效时不拉伸。
     size: {
       sm: {
-        track: "h-[16px] w-[28px]",
-        thumb: "[--re-switch-thumb-size:12px] h-(--re-switch-thumb-size)",
+        track: "h-4 w-7 [--re-switch-thumb-size:calc(--spacing(4)-4px)]",
+        thumb: "h-(--re-switch-thumb-size)",
         // 点内文本：外侧 = 2px 边距 + 间隙，滑块侧 = 2px 边距 + 滑块直径 + 间隙；两侧间隙相等（sm/md/lg 为 4/5/6px），文案才在留出的区域内居中
-        inlineActive: "pl-[6px] pr-[18px]",
-        inlineInactive: "pl-[18px] pr-[6px]",
+        inlineActive: "pl-[6px] pr-[calc(var(--re-switch-thumb-size)+6px)]",
+        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+6px)] pr-[6px]",
       },
       md: {
-        track: "h-[24px] w-[44px]",
-        thumb: "[--re-switch-thumb-size:20px] h-(--re-switch-thumb-size)",
-        inlineActive: "pl-[7px] pr-[27px]",
-        inlineInactive: "pl-[27px] pr-[7px]",
+        track: "h-6 w-11 [--re-switch-thumb-size:calc(--spacing(6)-4px)]",
+        thumb: "h-(--re-switch-thumb-size)",
+        inlineActive: "pl-[7px] pr-[calc(var(--re-switch-thumb-size)+7px)]",
+        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+7px)] pr-[7px]",
       },
       lg: {
-        track: "h-[32px] w-[60px]",
-        thumb: "[--re-switch-thumb-size:28px] h-(--re-switch-thumb-size)",
-        inlineActive: "pl-[8px] pr-[36px]",
-        inlineInactive: "pl-[36px] pr-[8px]",
+        track: "h-8 w-15 [--re-switch-thumb-size:calc(--spacing(8)-4px)]",
+        thumb: "h-(--re-switch-thumb-size)",
+        inlineActive: "pl-[8px] pr-[calc(var(--re-switch-thumb-size)+8px)]",
+        inlineInactive: "pl-[calc(var(--re-switch-thumb-size)+8px)] pr-[8px]",
       },
     },
     /**
@@ -134,7 +134,13 @@ export default {
       },
     },
     disabled: {
-      true: { inactiveTrack: "bg-gray-2", activeTrack: "bg-gray-2" },
+      // 外壳一并换成禁止光标：否则两侧文字标签与间隙仍是手形
+      true: { wrapper: "cursor-not-allowed", inactiveTrack: "bg-gray-2", activeTrack: "bg-gray-2" },
+    },
+    /** 加载中：外壳显示等待光标；排在 disabled 之后，加载同时禁用时以等待为准 */
+    loading: {
+      true: { wrapper: "cursor-wait" },
+      false: {},
     },
     error: {
       true: {
@@ -144,13 +150,13 @@ export default {
   },
   compoundVariants: [
     // autoWidth：固定宽降级为最小宽，轨道随点内文本撑开
-    { autoWidth: true, size: "sm" as (typeof size)[number], class: { track: "w-auto min-w-[28px]" } },
-    { autoWidth: true, size: "md" as (typeof size)[number], class: { track: "w-auto min-w-[44px]" } },
-    { autoWidth: true, size: "lg" as (typeof size)[number], class: { track: "w-auto min-w-[60px]" } },
+    { autoWidth: true, size: "sm" as (typeof size)[number], class: { track: "w-auto min-w-7" } },
+    { autoWidth: true, size: "md" as (typeof size)[number], class: { track: "w-auto min-w-11" } },
+    { autoWidth: true, size: "lg" as (typeof size)[number], class: { track: "w-auto min-w-15" } },
     // line 型轨道高度：约为滑块直径的一半，宽度与位移沿用 size 档
-    { type: "line" as (typeof type)[number], size: "sm" as (typeof size)[number], class: { track: "h-[8px]" } },
-    { type: "line" as (typeof type)[number], size: "md" as (typeof size)[number], class: { track: "h-[12px]" } },
-    { type: "line" as (typeof type)[number], size: "lg" as (typeof size)[number], class: { track: "h-[16px]" } },
+    { type: "line" as (typeof type)[number], size: "sm" as (typeof size)[number], class: { track: "h-2" } },
+    { type: "line" as (typeof type)[number], size: "md" as (typeof size)[number], class: { track: "h-3" } },
+    { type: "line" as (typeof type)[number], size: "lg" as (typeof size)[number], class: { track: "h-4" } },
     // inline-prompt 文本字号随尺寸收缩（sm 轨道仅 16px 高）。
     // 8px / 10px 低于 7 级字号令牌的下限（--text-sm 12px），只能写字面量；lg 档 12px 用 text-sm。
     // 行高由基础槽的 leading-none 统一接管，令牌自带的 20px 行高在这里会撑破轨道。

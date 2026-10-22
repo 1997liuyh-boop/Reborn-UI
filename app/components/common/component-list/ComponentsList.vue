@@ -3,13 +3,15 @@
  * 组件总览
  * - 头图：浅色舞台卡片，点阵、漂移光晕与跟随鼠标的聚光 / 描边 / 标题着色，参考 prodclub.xyz 的资源头图；
  *   中部是 3D 自行车（OverviewBike），指针靠近解体、离开合体，上下移动调整俯仰
- * - 两大区（Reborn 组件 / 社区移植）+ 区内按分类分块 + 卡片网格；卡片悬停时边框与底色跟随鼠标泛光
+ * - 两大区（Reborn 组件 / 社区移植）+ 区内按分类分块 + 卡片网格（xl 起一行 4 张）；
+ *   缩略预览在上、名称与平台在下；卡片悬停时缩略预览向下铺满整张卡片，描边跟随鼠标泛光
  * - 系列与分类规则来自 useComponentsCatalog，与侧栏同源；组件在分类内按 slug 字母序，与侧栏一致
  */
 import type { DocsCollectionItem } from '@nuxt/content'
 import type { ComponentSeries } from '~/composables/useComponentsCatalog'
 import type { ComponentPlatform } from '~/composables/useDocsPlatform'
 import { computed, onBeforeUnmount, ref } from 'vue'
+import RebornBadge from '~/components/reborn/ui/reborn-badge/RebornBadge.vue'
 import ComponentsScrollBackground from './ComponentsScrollBackground.vue'
 
 interface Props {
@@ -97,7 +99,24 @@ interface OverviewItem {
   /** 总览缩略组件名，如 RebornButtonOverview；不存在时由子组件回退 Glyph */
   demoName?: string
   badge?: string
+  /** 缩略预览右上角的标记图标，由 badge 映射而来；无对应图标的 badge 不显示 */
+  badgeIcon?: BadgeIcon
   tags?: string[]
+}
+
+interface BadgeIcon {
+  icon: string
+  /** 图标本身没有文字，读屏靠它说明含义 */
+  label: string
+}
+
+/**
+ * frontmatter badge → 缩略预览右上角的标记图标（键为小写）。
+ * lsicon 图标集没有 update 图标，Update 取语义最近的 refresh-filled（循环箭头），与 New 同为实心风格。
+ */
+const BADGE_ICONS: Record<string, BadgeIcon> = {
+  new: { icon: 'lsicon:badge-new-filled', label: '新组件' },
+  update: { icon: 'lsicon:refresh-filled', label: '近期更新' },
 }
 
 /** 分类内的排序键：slug（componentId）字母序，与侧栏一致 */
@@ -122,6 +141,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
         englishName: englishNameFromPath(item.path),
         demoName: overviewNameFromItem(item),
         badge: meta.badge,
+        badgeIcon: meta.badge ? BADGE_ICONS[meta.badge.toLowerCase()] : undefined,
         tags: meta.tags,
       }
     })
@@ -140,11 +160,11 @@ const seriesSummary = computed(() =>
   seriesSections.value.map(section => `${section.title} ${section.count}`).join(' · '),
 )
 
-/** 卡片平台标签文案 */
-const PLATFORM_TEXT: Record<ComponentPlatform, string> = {
-  web: 'Web',
-  uniapp: 'UniApp',
-  both: 'Web · UniApp',
+/** 卡片平台徽标：Web 用主色、UniApp 用成功色，双端通用的两枚都列 */
+const PLATFORM_BADGES: Record<ComponentPlatform, { label: string, color: 'primary' | 'success' }[]> = {
+  web: [{ label: 'WEB', color: 'primary' }],
+  uniapp: [{ label: 'UNIAPP', color: 'success' }],
+  both: [{ label: 'WEB', color: 'primary' }, { label: 'UNIAPP', color: 'success' }],
 }
 
 /** 标题已含英文名（如「Badge 徽章」）时不再重复追加 */
@@ -322,38 +342,41 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
               </span>
             </div>
 
-            <div class="overview-grid grid gap-4" @pointermove.passive="onCardMove">
+            <!-- 窄屏逐级减列；xl（1280）起固定一行 4 张：再多列时缩略预览会窄到放不下 Overview 内容 -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" @pointermove.passive="onCardMove">
               <NuxtLink
                 v-for="item in section.items" :key="item.id" :to="item.path"
-                class="overview-card group relative isolate flex h-full min-w-0 flex-col rounded-xl p-[18px]"
+                class="overview-card group relative isolate flex h-full min-w-0 flex-col rounded-lg p-3"
               >
                 <!-- 悬停泛光：底色一层 + 描边一层，位置取 --mx / --my -->
                 <span aria-hidden="true" class="card-light card-light-fill" />
                 <span aria-hidden="true" class="card-light card-light-rim" />
 
-                <!-- 标题行：中文名 + 英文名，右侧徽标 -->
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex min-w-0 items-baseline gap-2">
-                    <span class="text-highlighted truncate text-base font-medium">{{ item.title }}</span>
-                    <span v-if="showEnglishName(item)" class="text-dimmed truncate text-sm">{{ item.englishName }}</span>
-                  </div>
-                  <span
-                    v-if="item.badge" class="card-pill shrink-0 font-medium"
-                    :class="item.badge.toLowerCase() === 'new' ? 'card-pill-success' : 'card-pill-warning'"
-                  >{{ item.badge }}</span>
+                <!-- 占位：在文档流里撑出缩略预览原本的高度，预览本体绝对定位、悬停时向下铺满整张卡片 -->
+                <div class="min-h-[180px] flex-1 sm:min-h-[220px]" />
+
+                <!-- 标题行（24px）与平台行（20px）都定高：缩略预览的底边按这两行算死，见样式里的 --ov-preview-bottom -->
+                <div class="mt-3 flex h-6 min-w-0 items-baseline gap-2">
+                  <span class="truncate text-base text-gray-10">{{ item.title }}</span>
+                  <span v-if="showEnglishName(item)" class="text-dimmed truncate text-sm">{{ item.englishName }}</span>
                 </div>
 
-                <!-- 平台标签 -->
-                <div class="mt-2.5 flex min-w-0 items-center gap-1.5">
-                  <span class="card-pill">
-                    <span class="text-muted">平台</span>
-                    <span class="text-default font-medium">{{ PLATFORM_TEXT[item.platform] }}</span>
-                  </span>
+                <!-- 平台：每个可用端一枚描边胶囊 -->
+                <div class="mt-2 flex h-5 min-w-0 items-center gap-1.5 text-sm text-gray-5">
+                  <span class="shrink-0">平台：</span>
+                  <RebornBadge
+                    v-for="badge in PLATFORM_BADGES[item.platform]" :key="badge.label"
+                    :label="badge.label" :color="badge.color" variant="outlined" size="sm" round
+                  />
                 </div>
 
                 <!-- Overview 缩略预览（视口懒加载；未补齐时回退几何示意） -->
-                <div class="overview-card-preview relative mt-4 flex-1 overflow-hidden rounded-lg">
+                <div class="overview-card-preview absolute overflow-hidden rounded-lg">
                   <ComponentOverviewDemo :demo-name="item.demoName" :category="item.category" />
+                  <Icon
+                    v-if="item.badgeIcon" :name="item.badgeIcon.icon" :aria-label="item.badgeIcon.label"
+                    class="absolute top-3 right-3 z-10 size-8 text-red-5"
+                  />
                 </div>
               </NuxtLink>
             </div>
@@ -372,7 +395,6 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
  */
 .components-overview {
   --ov-card: var(--ui-bg);
-  --ov-line: color-mix(in oklab, var(--ui-text-highlighted) 7%, transparent);
   --ov-line-strong: color-mix(in oklab, var(--ui-text-highlighted) 16%, transparent);
   --ov-shadow: 0 1px 1px #10201608, 0 2px 6px -2px #1020160d;
   --ov-shadow-raised: 0 1px 2px #0000000d;
@@ -388,9 +410,6 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   --ov-dot-lit: color-mix(in oklab, var(--color-primary) 90%, transparent);
   --ov-rim: color-mix(in oklab, var(--color-primary) 85%, transparent);
   --ov-top-line: rgb(255 255 255 / 0.7);
-  /* 胶囊文字：浅色下 green-6 / orange-6 对白底对比度不足（约 1.6:1），取更深的阶 */
-  --ov-success: color-mix(in oklab, var(--color-green-8) 82%, black);
-  --ov-warning: var(--color-orange-8);
   --ov-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* 回弹曲线：按下缩小后弹回；不支持 linear() 的浏览器整条 transition 失效，退回前一条声明 */
   --ov-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.061 22.1%, 1.072 24.3%, 1.066 27.4%, 1.036 32.8%, 1.009 39.6%, 0.996 46.9%, 0.993 53.8%, 0.998 69.8%, 1);
@@ -412,8 +431,6 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   --ov-dot-lit: color-mix(in oklab, color-mix(in oklab, var(--color-primary) 80%, #fff) 95%, transparent);
   --ov-rim: color-mix(in oklab, var(--color-primary) 90%, transparent);
   --ov-top-line: rgb(255 255 255 / 0.08);
-  --ov-success: var(--color-success);
-  --ov-warning: var(--color-warning);
 }
 
 /* ─── 头图 ─── */
@@ -771,26 +788,25 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
 }
 
 /* ─── 卡片网格 ─── */
-.overview-grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-}
-
 .overview-card {
-  border: 1px solid var(--ov-line);
+  /*
+   * 缩略预览的底边距：卡片内边距 12 + 平台行 20 + 间距 8 + 标题行 24 + 间距 12。
+   * 两行都在模板里定高，所以这里能写死；改了任一行的高度或间距要同步这个值。
+   */
+  --ov-preview-bottom: 76px;
+  /* 描边取会随明暗反转的 gray-4：浅色下即 #C9CDD4，暗色下自动换成暗色板的同阶灰 */
+  border: 1px solid var(--color-gray-4);
   background-color: var(--ov-card);
   box-shadow: var(--ov-shadow);
   transition:
-    border-color 0.14s var(--ov-ease),
     box-shadow 0.18s var(--ov-ease),
     scale 0.6s var(--ov-ease);
   transition:
-    border-color 0.14s var(--ov-ease),
     box-shadow 0.18s var(--ov-ease),
     scale 0.6s var(--ov-spring);
 }
 
 .overview-card:hover {
-  border-color: var(--ov-line-strong);
   box-shadow: var(--ov-shadow-raised);
 }
 
@@ -805,35 +821,40 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   outline-offset: 2px;
 }
 
-/* 卡片内的小胶囊：平台、徽标 */
-.card-pill {
-  display: inline-flex;
-  height: 1.25rem;
-  align-items: center;
-  gap: 0.25rem;
-  border-radius: 9999px;
-  padding-inline: 0.5rem;
-  font-size: 11px;
-  white-space: nowrap;
-  box-shadow: inset 0 0 0 1px var(--ui-border);
-}
-
-.card-pill-success {
-  padding-inline: 7px;
-  color: var(--ov-success);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ov-success) 28%, transparent);
-}
-
-.card-pill-warning {
-  padding-inline: 7px;
-  color: var(--ov-warning);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ov-warning) 28%, transparent);
-}
-
-/* 预览框：内嵌浅底，与卡片本体分层 */
+/*
+ * 预览框：内嵌浅底，与卡片本体分层。
+ * 平时绝对定位在卡片内边距之内，上、左、右贴边，底边停在标题与平台两行之上；悬停时四边都收到 0，
+ * 去掉内边距、盖住下面两行，贴着卡片描边铺满整张卡片。
+ * 底色先铺一层不透明的卡片色再叠浅底，盖住标题时文字不会透出来。
+ */
 .overview-card-preview {
-  background-color: var(--ov-well);
+  inset: 12px 12px var(--ov-preview-bottom);
+  background-color: var(--ov-card);
+  background-image: linear-gradient(var(--ov-well), var(--ov-well));
   box-shadow: inset 0 0 0 1px var(--ov-well-line);
+  transition:
+    inset 0.32s var(--ov-ease),
+    border-radius 0.32s var(--ov-ease),
+    box-shadow 0.32s var(--ov-ease);
+}
+
+/*
+ * 铺满态：圆角取卡片 8px 减去 1px 描边，与卡片内沿严丝合缝；
+ * 内描边去掉，否则贴着卡片描边会叠出两道线。
+ * 只在精确指针设备上展开：触屏点一下就跳转详情，没有悬停可言；键盘聚焦到卡片时同样展开。
+ */
+@media (hover: hover) and (pointer: fine) {
+  .overview-card:hover .overview-card-preview {
+    inset: 0;
+    border-radius: 7px;
+    box-shadow: none;
+  }
+}
+
+.overview-card:focus-visible .overview-card-preview {
+  inset: 0;
+  border-radius: 7px;
+  box-shadow: none;
 }
 
 /* 悬停泛光：只在精确指针设备上出现 */
@@ -886,7 +907,8 @@ onBeforeUnmount(() => cancelAnimationFrame(heroFrame))
   }
 
   .card-light,
-  .overview-card {
+  .overview-card,
+  .overview-card-preview {
     transition: none;
   }
 

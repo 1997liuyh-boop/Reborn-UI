@@ -48,13 +48,13 @@ export default {
      */
     size: {
       sm: {
-        base: "h-button-sm text-sm gap-1.5 px-3 rounded-sm",
+        base: "h-6 text-sm gap-1.5 px-3 rounded-sm",
       },
       md: {
-        base: "h-button-md text-base px-3 rounded-md",
+        base: "h-8 text-base px-3 rounded-md",
       },
       lg: {
-        base: "h-button-lg text-lg px-3 rounded-lg",
+        base: "h-10 text-lg px-3 rounded-lg",
       },
     },
     variant: {
@@ -446,9 +446,9 @@ export default {
       class: "text-gray-5",
     },
     // 形状尺寸最后应用，circle 与 round 同时开启时采用圆形。
-    { circle: true, size: "sm" as (typeof size)[number], class: "h-(--height-button-sm)! w-(--height-button-sm)!" },
-    { circle: true, size: "md" as (typeof size)[number], class: "h-(--height-button-md)! w-(--height-button-md)!" },
-    { circle: true, size: "lg" as (typeof size)[number], class: "h-(--height-button-lg)! w-(--height-button-lg)!" },
+    { circle: true, size: "sm" as (typeof size)[number], class: "h-6! w-6!" },
+    { circle: true, size: "md" as (typeof size)[number], class: "h-8! w-8!" },
+    { circle: true, size: "lg" as (typeof size)[number], class: "h-10! w-10!" },
   ],
   defaultVariants: {
     color: "primary" as (typeof color)[number],

@@ -26,6 +26,7 @@ import {
   unref,
   watch,
 } from "vue";
+import { motionPresets, runMotion, stopMotion } from "@/lib/motion";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornProgress from "../reborn-progress/RebornProgress.vue";
@@ -211,6 +212,7 @@ function isNavigationLocked() {
 
 /** 自动高度 (height="auto") 模式下，组件当前依据活动项动态计算的像素高度 */
 const currentSlideHeight = ref(0);
+let heightGeneration = 0;
 /** 主图区域在视口中的物理宽高，用于联动计算并对齐缩略图面板 */
 const mainRootSize = ref({ width: 0, height: 0 });
 /** 针对主图最外层根节点的尺寸变化观察器 */
@@ -474,9 +476,14 @@ const rootStyle = computed(() => {
   const isAuto = effectiveHeight.value === "auto";
   return {
     height: isAuto ? (currentSlideHeight.value ? `${currentSlideHeight.value}px` : "auto") : effectiveHeight.value,
-    transition: isAuto ? "height 300ms cubic-bezier(0.4, 0, 0.2, 1)" : undefined,
   };
 });
+
+/** 固定高度接管时立即结束自动高度动画，避免旧动画继续覆盖外部配置。 */
+watch(effectiveHeight, () => {
+  heightGeneration++;
+  stopMotion(mainRootRef.value);
+}, { flush: 'sync' });
 
 /** 视口容器的核心滚动样式控制 */
 const viewportStyle = computed<CSSProperties>(() => ({
@@ -578,7 +585,7 @@ const CarouselIndicators = defineComponent({
 /**
  * 动态高度自适应计算：
  * 在自动高度配置下，提取当前幻灯片真实的 scrollHeight 并更新，
- * 触发根容器带 transition 的柔和高度平滑形变，避免高度突变影响内容排版。
+ * Motion 从当前可见高度续接，连续切页不会回退到上一次目标高度。
  */
 function updateAutoHeight() {
   if (effectiveHeight.value !== "auto" || !import.meta.client) {
@@ -592,7 +599,17 @@ function updateAutoHeight() {
     // 读取内部首个子元素的实际滚动高度
     const slideInner = slide.firstElementChild as HTMLElement;
     if (slideInner) {
-      currentSlideHeight.value = slideInner.scrollHeight;
+      const nextHeight = slideInner.scrollHeight;
+      if (nextHeight === currentSlideHeight.value) return;
+      const root = mainRootRef.value;
+      const previousHeight = root?.getBoundingClientRect().height ?? 0;
+      const generation = ++heightGeneration;
+      stopMotion(root);
+      currentSlideHeight.value = nextHeight;
+      if (root && previousHeight > 0 && nextHeight > 0) nextTick(() => {
+        if (isDisposed || generation !== heightGeneration || effectiveHeight.value !== 'auto') return;
+        runMotion(root, { height: [`${previousHeight}px`, `${nextHeight}px`] }, motionPresets.slow);
+      });
     }
   }
 }
@@ -1675,6 +1692,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  heightGeneration++;
+  stopMotion(mainRootRef.value);
   isDisposed = true;
   abortLoopTransition();
   /** 彻底清理所有异步资源：定时器、动画帧、事件监听器和观察者 */

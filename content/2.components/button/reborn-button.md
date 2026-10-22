@@ -107,7 +107,7 @@ Web 端可用 `borderStyle="dashed"` 把边框改为虚线，仅对渲染了边�
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-三档，高度固定 px，水平内边距统一 12px；非形状变体（`filled` / `outlined` / `soft` / `subtle`）的直角圆角随尺寸取设计令牌：
+三档高度使用 `h-6` / `h-8` / `h-10`，水平内边距统一 `px-3`。默认根字号为 16px 时分别为 24 / 32 / 40px 高、12px 水平内边距，均随 Tailwind `--spacing` 缩放；字号与圆角仍取固定 px 设计令牌：
 
 | `size`       | 高度 | 字号                | 直角圆角             |
 | ------------ | ---- | ------------------- | -------------------- |
@@ -208,7 +208,7 @@ Web 端禁用配色由 `variant` 决定，独立的 `round` / `circle` 只改变
 
 上述配色为 Web 端规则，不代表 UniApp 端同步采用这些色阶。
 
-`loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发。加载动画的颜色随风格走：`filled` 及旧 `variant="round"` / `variant="circle"` 下为白色，其余风格跟随 `color`。新形状参数不改变加载动画颜色。
+`loading` 为 `true` 时按钮**同时被禁用**，`click` / `tap` 不再触发；Web 端悬停显示等待光标（`cursor-wait`），而不是禁用时的禁止光标。加载动画的颜色随风格走：`filled` 及旧 `variant="round"` / `variant="circle"` 下为白色，其余风格跟随 `color`。新形状参数不改变加载动画颜色。
 
 - Web 端动画尺寸为 `1.25em`，跟随当前字号自动缩放。
 - UniApp 端动画尺寸按 `size` 取固定值（22 / 24 / 26 / 26 / 28 / 30 / 32）。
@@ -355,7 +355,7 @@ function onError(e: any) {
 | `variant`     | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'`        | `'filled'`  | 视觉风格；`round` / `circle` 取值仅为兼容旧写法。 |
 | `round` | `boolean` | `false` | 胶囊形状，不改变视觉风格。 |
 | `circle` | `boolean` | `false` | 固定等宽高的圆形，优先于 `round`。 |
-| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 尺寸，三档固定 px；处于表单组内时被组尺寸覆盖。                 |
+| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 尺寸，高度取 `h-6` / `h-8` / `h-10`；处于表单组内时被组尺寸覆盖。 |
 | `loading`     | `boolean`                                                                              | `false`     | 是否加载中；显示加载动画并同时禁用点击。                        |
 | `disabled`    | `boolean`                                                                              | `false`     | 是否禁用。                                                      |
 | `gap`         | `boolean`                                                                              | `false`     | 紧邻上一个按钮时自动添加 8px 左边距。                           |
@@ -502,18 +502,18 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 ### CSS 变量
 
-两端各自维护一套独立的高度令牌，互不影响。
+Web 使用 Tailwind 原生尺寸刻度，UniApp 保留独立的 rpx 高度令牌，互不影响。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-定义在 `app/assets/theme/typography.css`，固定 px：
+不再定义按钮专属高度变量。原生尺寸刻度由 `app/assets/css/reborn-ui.css` 引入的 Tailwind `--spacing` 提供，默认 `0.25rem`；字号仍定义在 `app/assets/theme/typography.css`。
 
-| 变量名               | 对应 `size` | 值     |
-| -------------------- | ----------- | ------ |
-| `--height-button-sm` | `sm`        | `24px` |
-| `--height-button-md` | `md`        | `32px` |
-| `--height-button-lg` | `lg`        | `40px` |
+| `size` | 高度 | 圆形宽度 | 默认根字号 16px 时 |
+| --- | --- | --- | --- |
+| `sm` | `h-6` | `w-6` | `24px` |
+| `md` | `h-8` | `w-8` | `32px` |
+| `lg` | `h-10` | `w-10` | `40px` |
 
 :::
 
@@ -539,10 +539,10 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 | 维度         | Web                                                                                       | UniApp                                               |
 | ------------ | ----------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | 自定义类名   | `class`                                                                                   | `customClass`                                        |
-| 尺寸档位     | `sm` / `md` / `lg`（3 档，px）                                                            | `xs` ~ `2xl`（7 档，rpx）                            |
+| 尺寸档位     | `sm` / `md` / `lg`（3 档，Tailwind 原生尺寸刻度）                                         | `xs` ~ `2xl`（7 档，rpx）                            |
 | 形状 | 独立 `round` / `circle` 布尔参数；旧变体兼容 | 仍为 `variant="round"` / `variant="circle"` |
 | 直角圆角     | 随 `size` 取令牌 4 / 6 / 8px                                                              | 随 `size` 取令牌 4 / 6 / 8rpx                        |
-| 水平内边距   | 统一 12px                                                                                 | 随 `size` 递进 12 / 16 / 24rpx                       |
+| 水平内边距   | 统一 `px-3`（默认根字号下 12px）                                                          | 随 `size` 递进 12 / 16 / 24rpx                       |
 | 边框线型     | 支持 `borderStyle`                                                                        | 不支持，固定实线                                     |
 | 块级布局     | 用 `class` 自行控制                                                                       | `block` prop                                         |
 | `ui` 键位    | `base` / `label` / `leadingIcon` / `leadingAvatar` / `leadingAvatarSize` / `trailingIcon` | `base` / `inner` / `label` / `loading`               |
@@ -555,7 +555,7 @@ Web 端只有这一个事件，开放能力相关回调是 UniApp 端独有的�
 
 - **Web 形状独立，旧变体保留兼容**。新参数只改变轮廓，`circle` 优先于 `round`；UniApp 仍使用形状变体。Web 端旧 `round` 与 `filled + round` 的禁用配色一致；旧 `circle` 为灰阶底色和灰阶 5 文字，`filled + circle` 则为对应色系第 3 阶底色和灰阶 1 文字，迁移时需确认视觉变化。
 - **`loading` 隐含禁用**。加载中按钮不会派发 `click` / `tap`，无需再额外绑 `disabled`。
-- **普通 `text` 变体不占固定高度**。Web 开启 `circle` 时则按尺寸令牌固定宽高。它用 `!h-auto !px-0` 覆盖了 `size` 的高度与水平内边距，与其他变体并排时基线不齐是预期行为；需要对齐请把它放进同一个 flex 容器并用 `items-center`。
+- **普通 `text` 变体不占固定高度**。Web 开启 `circle` 时则按 `size` 对应的原生刻度固定宽高。它用 `!h-auto !px-0` 覆盖了 `size` 的高度与水平内边距，与其他变体并排时基线不齐是预期行为；需要对齐请把它放进同一个 flex 容器并用 `items-center`。
 - **`borderStyle` 只影响有边框的变体**。`filled` / `soft` / `text` 本身不渲染边框，传 `dashed` 不会有视觉变化。
 - **开放能力仅小程序生效**。`openType` 系列 props 与 `getphonenumber`、`contact` 等事件在 H5 / APP 端无效，具体能力的平台支持范围以对应小程序平台文档为准。
 - **UniApp 的点击层是独立元素**。原生 `button` 以透明层叠在根节点上（`ui.inner`），如果自定义样式改动了根节点的层叠上下文或 `overflow`，可能影响点击命中，请一并检查。

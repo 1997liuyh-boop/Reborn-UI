@@ -134,6 +134,16 @@ pnpm kb:check          # 提交前自检：schema / 集合一致性 / overrides 
 
 存量的 146 处 px 字面量（其中约 136 处能落到刻度）**本轮不做批量迁移**：逐处替换要全站回归，成本不划算。真要收口，正确做法是比照圆角在 `@theme` 里覆盖 `--spacing` 为 px——改一处全仓生效，`gap-2` 与 `gap-[8px]` 当场同值、同行为，比把字面量逐个改写成刻度类名可靠得多。
 
+### Web 组件尺寸
+
+Web 组件 config 的常规宽高优先使用 Tailwind 原生刻度，例如 24 / 32 / 40px 对应 `h-6` / `h-8` / `h-10`，10 / 12 / 16px 图标对应 `size-2.5` / `size-3` / `size-4`。这里只把默认根字号下的 px 值作为参考，常规尺寸随 Tailwind `--spacing` 缩放，不再为相同刻度额外定义组件尺寸变量。
+
+- 只有原生刻度难以清楚表达的非常规尺寸或需维护几何关系的尺寸才使用命名令牌，定义在 `app/assets/theme/typography.css`：`--spacing-<组件>-<部件>[-<档位>]`；不按数值相等跨组件借用令牌。
+- 迁移到原生刻度时删除多余的 `--height-*`、`--width-*`、`--min-width-*`、`--size-input-icon-*` 及其别名；字号和圆角继续遵循各自的固定 px 令牌规范。
+- `0`、`auto`、`full`、百分比、视口尺寸、随字号变化的 `em` 和几何计算保留原写法；运行时尺寸使用 `h-(--变量)` 等，带 fallback 的变量保留方括号写法。
+- 保留的命名尺寸必须通过 `cn`、`tv` 的原生宽高冲突组，确保外部尺寸覆盖生效。
+- 本规则仅适用于 Web；UniApp 继续遵循其独立的 rpx 令牌体系。
+
 ## 组件文档规范
 
 编写或修改 `content/2.components/**/*.md` 前，**必读 `docs/authoring/component-doc.md`**（规范正文唯一真源），或技能 `component-doc`（Claude 端 `.claude/skills/component-doc/SKILL.md`，Codex 端 `.codex/skills/component-doc/SKILL.md`，两份为镜像，改动须同步）。唯一参考范本是 `content/2.components/button/reborn-button.md`。

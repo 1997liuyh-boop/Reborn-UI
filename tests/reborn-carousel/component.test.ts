@@ -19,7 +19,7 @@ for (const [index, output] of files.entries()) {
   const fixtureScript = compileScript(parse(fixture, { filename: 'fixture.vue' }).descriptor, { id: 'fixture', inlineTemplate: true }).content;
   await build({
     ...(index === 2 ? { stdin: { contents: fixtureScript, loader: 'ts' as const, resolveDir: resolve('.'), sourcefile: 'fixture.ts' } } : { entryPoints: [resolve('app/components/reborn/ui/reborn-carousel/RebornCarousel.vue')] }), outfile: output,
-    bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app') },
+    bundle: true, format: 'esm', platform: 'node', packages: 'external', alias: { '~': resolve('app'), '@': resolve('app') },
     define: { 'import.meta.client': String(index !== 1) },
     plugins: [{ name: 'carousel-test', setup(builder) {
       builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {

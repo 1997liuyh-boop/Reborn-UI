@@ -59,6 +59,14 @@ export default {
     },
     variants: {
         /**
+         * 禁用：外壳显示禁止光标。field-trigger 这类内层触发框禁用时整体 pointer-events-none，
+         * 指针穿透下来落在外壳上，由这里给出禁止光标；点击仍由内层与各组件的禁用判断拦住
+         */
+        disabled: {
+            true: { wrapper: "cursor-not-allowed" },
+            false: {},
+        },
+        /**
          * 浮层的定位参照系，两者互斥：
          * - true：传送至 body，按文档坐标定位（left/top 由组件内联下发），
          *   因此不受任何祖先 overflow / transform 裁剪；层级对齐 RebornPopover、RebornTooltip 的 9999。

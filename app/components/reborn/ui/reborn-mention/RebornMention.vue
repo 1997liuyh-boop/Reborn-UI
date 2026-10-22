@@ -488,7 +488,7 @@ defineExpose({
             <div
               v-for="(item, index) in filteredOptions" :key="`${index}-${getValue(item)}`" :data-index="index" role="option"
               :aria-selected="index === hoveringIndex" :aria-disabled="isDisabled(item)"
-              :class="ui.option(index === hoveringIndex, isDisabled(item))" @mouseenter="hoveringIndex = index"
+              :class="ui.option(index === hoveringIndex, isDisabled(item))" @mouseenter="!isDisabled(item) && (hoveringIndex = index)"
               @click="handleSelect(item)"
             >
               <slot name="label" :item="item" :index="index">

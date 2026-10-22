@@ -3,11 +3,13 @@
 import type { CSSProperties } from 'vue';
 import type { DrawerDirection, DrawerUI } from './reborn-drawer.config';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import { runMotion } from '@/lib/motion';
 import { useGlobalScrollLock } from '~/composables/useGlobalScrollLock';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
+import RebornScrollbar from '../scrollbar/RebornScrollbar.vue';
 import { isTopDrawer, normalizeDrawerSize, registerDrawer, unregisterDrawer } from './drawer.utils';
-import theme, { drawerOffsets } from './reborn-drawer.config';
+import theme from './reborn-drawer.config';
 
 defineOptions({ inheritAttrs: false });
 const props = withDefaults(defineProps<RebornDrawerProps>(), {
@@ -104,13 +106,61 @@ const horizontal = computed(() => props.direction === 'left' || props.direction 
 const penetrable = computed(() => !props.modal && props.modalPenetrable);
 const b = tv(theme);
 const ui = computed(() => b({ direction: props.direction, viewport: viewport.value, modal: props.modal }));
-const offset = computed(() => drawerOffsets[props.direction]);
 const reducedMotion = ref(false);
 const duration = computed(() => reducedMotion.value ? 0 : Math.max(0, props.duration));
 const panelStyle = computed<CSSProperties>(() => ({
   [horizontal.value ? 'width' : 'height']: normalizeDrawerSize(resizedSize.value ?? props.size),
-  transitionDuration: `${duration.value}ms`,
 }));
+const motionRuns = new Map<HTMLElement, { stop?: () => void; cancelled: boolean }>();
+const motionStarts = new Map<HTMLElement, string>();
+/** 面板位移仅由 Motion 管理，调整抽屉尺寸时不会触发额外宽高过渡。 */
+function closedTransform() {
+  const values = { left: 'translateX(-100%)', right: 'translateX(100%)', top: 'translateY(-100%)', bottom: 'translateY(100%)' };
+  return values[props.direction];
+}
+function prepareMotion(element: Element, backdrop = false) {
+  if (!(element instanceof HTMLElement)) return;
+  const previous = motionRuns.get(element);
+  const current = previous ? getComputedStyle(element)[backdrop ? 'opacity' : 'transform'] : undefined;
+  previous?.stop?.();
+  if (current !== undefined) {
+    if (backdrop) element.style.opacity = current;
+    else element.style.transform = current;
+  } else {
+    if (backdrop) element.style.opacity = '0';
+    else element.style.transform = closedTransform();
+  }
+  // 父容器的 v-show 尚未更新时，百分比位移的 computed 值会退化为 none。
+  motionStarts.set(element, backdrop ? element.style.opacity : element.style.transform);
+}
+function playMotion(element: Element, done: () => void, entering: boolean, backdrop = false) {
+  if (!(element instanceof HTMLElement)) { done(); return; }
+  const run = { cancelled: false, stop: undefined as (() => void) | undefined };
+  motionRuns.set(element, run);
+  const from = motionStarts.get(element) ?? getComputedStyle(element)[backdrop ? 'opacity' : 'transform'];
+  motionStarts.delete(element);
+  // 显式提供起点，重复打开时不使用动画库为同一节点缓存的旧终点。
+  const animation = runMotion(element, backdrop
+    ? { opacity: [Number(from), entering ? 1 : 0] }
+    : { transform: [from, entering ? 'translate(0px, 0px)' : closedTransform()] },
+  { duration: duration.value / 1000, ease: entering ? [0.22, 1, 0.36, 1] : [0.4, 0, 0.2, 1] });
+  run.stop = animation.stop;
+  void animation.finished.then(() => {
+    if (motionRuns.get(element) !== run || run.cancelled) return;
+    motionRuns.delete(element);
+    done();
+  });
+}
+function cancelMotion(element: Element) {
+  if (!(element instanceof HTMLElement)) return;
+  const run = motionRuns.get(element);
+  if (run) run.cancelled = true;
+}
+onBeforeUnmount(() => {
+  for (const run of motionRuns.values()) { run.cancelled = true; run.stop?.(); }
+  motionRuns.clear();
+  motionStarts.clear();
+});
 const lock = useGlobalScrollLock();
 let timer: ReturnType<typeof setTimeout> | undefined;
 let previousFocus: HTMLElement | null = null;
@@ -187,7 +237,11 @@ function requestClose() {
   try { props.beforeClose(done); }
   catch (error) { awaitingClose = false; throw error; }
 }
-function onOpened() { if (visible.value) emit('opened'); }
+async function onOpened() {
+  // 零时长或减少动态时同样先完成焦点转移，再通知入场结束。
+  await nextTick();
+  if (visible.value && !disposed) emit('opened');
+}
 function onClosed() {
   if (visible.value || !active.value) return;
   const top = isTopDrawer(id);
@@ -302,10 +356,10 @@ defineExpose({ close: requestClose, panel });
 <template>
   <Teleport v-if="mounted && rendered" :to="target || 'body'" :disabled="!target">
     <div v-show="active" ref="wrapper" :class="ui.wrapper({ class: cn(props.ui.wrapper) })" :style="{ zIndex: layer }" :data-drawer-direction="direction">
-      <Transition enter-active-class="transition-opacity ease-out" leave-active-class="transition-opacity ease-in" enter-from-class="opacity-0" leave-to-class="opacity-0" :duration="duration" appear>
-        <div v-show="visible && !penetrable" data-drawer-backdrop :class="ui.backdrop({ class: cn(props.ui.backdrop, penetrable && 'pointer-events-none') })" :style="{ transitionDuration: `${duration}ms` }" aria-hidden="true" @click.self="onBackdropClick" />
+      <Transition :css="false" appear @before-enter="el => prepareMotion(el, true)" @enter="(el, done) => playMotion(el, done, true, true)" @leave="(el, done) => playMotion(el, done, false, true)" @enter-cancelled="cancelMotion" @leave-cancelled="cancelMotion">
+        <div v-show="visible && !penetrable" data-drawer-backdrop :class="ui.backdrop({ class: cn(props.ui.backdrop, penetrable && 'pointer-events-none') })" aria-hidden="true" @click.self="onBackdropClick" />
       </Transition>
-      <Transition enter-active-class="ease-out" leave-active-class="ease-in" :enter-from-class="offset" :leave-to-class="offset" :duration="duration" appear @after-enter="onOpened" @after-leave="onClosed">
+      <Transition :css="false" appear @before-enter="el => prepareMotion(el)" @enter="(el, done) => playMotion(el, done, true)" @leave="(el, done) => playMotion(el, done, false)" @enter-cancelled="cancelMotion" @leave-cancelled="cancelMotion" @after-enter="onOpened" @after-leave="onClosed">
         <section v-show="visible" v-bind="$attrs" ref="panel" role="dialog" tabindex="-1" :aria-modal="penetrable ? undefined : true" :aria-label="title || ariaLabel" :aria-labelledby="withHeader && !$slots.header && (title || $slots.title) ? titleId : undefined" :class="ui.root({ class: cn(props.ui.root) })" :style="panelStyle">
           <div v-if="resizable" role="separator" tabindex="0" aria-label="调整抽屉大小" :aria-orientation="horizontal ? 'vertical' : 'horizontal'" :aria-valuenow="resizedSize" :class="ui.resizer({ class: cn(props.ui.resizer) })" @pointerdown="startResize" @keydown="resizeByKey" />
           <header v-if="withHeader" :class="ui.header({ class: cn(props.ui.header) })">
@@ -319,7 +373,10 @@ defineExpose({ close: requestClose, panel });
               <div v-if="$slots.extra" :class="ui.extra({ class: cn(props.ui.extra) })"><slot name="extra" :close="requestClose" /></div>
             </slot>
           </header>
-          <div :class="ui.body({ class: cn(props.ui.body) })"><slot :close="requestClose" /></div>
+          <!-- 正文交给浮层滚动条，原生滚动条在部分平台会常驻显示；body 落在滚动层内的内容节点上 -->
+          <RebornScrollbar :class="ui.scrollbar({ class: cn(props.ui.scrollbar) })" :wrap-class="ui.scrollbarWrap({ class: cn(props.ui.scrollbarWrap) })" :content-class="ui.body({ class: cn(props.ui.body) })">
+            <slot :close="requestClose" />
+          </RebornScrollbar>
           <footer v-if="$slots.footer" :class="ui.footer({ class: cn(props.ui.footer) })"><slot name="footer" :close="requestClose" /></footer>
         </section>
       </Transition>

@@ -430,10 +430,10 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 | 键名 | 对应节点 | 默认关键类名 | 渲染 / 失效条件 |
 | --- | --- | --- | --- |
 | `root` | 最外层容器 | `flex w-full min-w-0 flex-col gap-1` | 始终渲染；`outside` 位置的字数统计也在这一层。 |
-| `group` | 输入组（prepend + 输入框 + append） | `flex w-full min-w-0 grow items-stretch`，尺寸档追加 `h-input-sm/md/lg` | 始终渲染；多行模式高度改为 `h-auto!`。 |
+| `group` | 输入组（prepend + 输入框 + append） | `flex w-full min-w-0 grow items-stretch`，尺寸档追加 `h-6` / `h-8` / `h-10` | 始终渲染；多行模式高度改为 `h-auto!`。 |
 | `prepend` | 前置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border border-gray-4 border-r-0` | 仅传了 `#prepend` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
 | `append` | 后置连体块 | `flex shrink-0 items-center bg-gray-2 text-gray-8 border-gray-4 border-l-0` | 仅传了 `#append` 且单行时渲染；默认无内边距；禁用时追加 `cursor-not-allowed text-gray-5`。 |
-| `wrapper` | 输入框主体容器 | `group/input relative inline-flex w-full min-w-0 items-center overflow-hidden text-gray-9`，另按尺寸加 `px-input-px-*`、按 `variant` 加背景与边框 | 始终渲染；`class` prop 也合并到这里；有前 / 后置块时对应一侧圆角被压平。 |
+| `wrapper` | 输入框主体容器 | `group/input relative inline-flex w-full min-w-0 items-center overflow-hidden text-gray-9`，另按尺寸加 `px-2.5` / `px-3` / `px-4`、按 `variant` 加背景与边框 | 始终渲染；`class` prop 也合并到这里；有前 / 后置块时对应一侧圆角被压平。 |
 | `input` | 原生 input / textarea 元素 | `h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-gray-5`，聚焦光标色跟随 `color` | 始终渲染；多行模式改为 `h-auto resize-none`。 |
 | `prefix` | 前缀容器 | `inline-flex shrink-0 items-center text-gray-6`，组件另加 `mr-1` | 仅有 `#prefix` 或 `prefixIcon` 且单行时渲染。 |
 | `iconBox` | 尾部功能区（清除 / 密码 / 字数 / 后缀） | `inline-flex shrink-0 items-center gap-2` | 仅单行渲染，`type="textarea"` 时整块不存在。 |
@@ -441,7 +441,7 @@ UniApp 端只暴露这四项：没有原生元素引用（小程序无 DOM），
 | `suffix` | 后缀容器 | 共用 `iconSection`：`flex cursor-pointer items-center justify-center text-gray-5 hover:opacity-80` | 仅有 `#suffix` 或 `suffixIcon` 且单行时渲染。 |
 | `clear` | 清除按钮 | 共用 `iconSection`（同上） | `clearable` 且有值、非禁用、非只读、单行时渲染。 |
 | `password` | 明文 / 密文切换按钮 | 共用 `iconSection`（同上） | 开启 `show-password`（或旧名 `password`）且单行时渲染。 |
-| `separator` | 竖分割线 | `w-px shrink-0 bg-gray-4`，尺寸档追加 `h-input-sep-*`，聚焦时 `group-focus-within/input:bg-<color>` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
+| `separator` | 竖分割线 | `w-px shrink-0 bg-gray-4`，尺寸档追加 `h-3` / `h-3.5` / `h-4`，聚焦时 `group-focus-within/input:bg-<color>` | `separator` 为 `true`，且清除按钮与密码开关 / 后缀相邻时渲染。 |
 | `count` | 字数统计文本 | `pointer-events-none text-sm text-gray-5 tabular-nums` | `showWordLimit` 生效时渲染；多行 `inside` 追加 `absolute bottom-1 right-2`，`outside` 追加 `self-end`。 |
 :::
 
@@ -486,29 +486,21 @@ UniApp 端 config 里的 `icon` slot 没有同名 `ui` 键，`prefixIcon` / `suf
 
 ### CSS 变量
 
-两端各自维护一套独立的尺寸令牌，互不影响。
+Web 使用 Tailwind 原生尺寸刻度，UniApp 保留独立的 rpx 高度令牌，互不影响。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
-定义在 `app/assets/theme/typography.css`，固定 px：
+不再定义输入框专属的高度、内边距与分割线高度变量。原生尺寸刻度由 `app/assets/css/reborn-ui.css` 引入的 Tailwind `--spacing` 提供，默认 `0.25rem`；字号仍定义在 `app/assets/theme/typography.css`。
 
-| 变量名 | 对应 `size` | 值 |
-| --- | --- | --- |
-| `--height-input-sm` | `sm` | `24px` |
-| `--height-input-md` | `md` | `32px` |
-| `--height-input-lg` | `lg` | `40px` |
-| `--spacing-input-px-sm` | `sm` | `10px` |
-| `--spacing-input-px-md` | `md` | `12px` |
-| `--spacing-input-px-lg` | `lg` | `16px` |
-| `--spacing-input-sep-sm` | `sm` | `12px` |
-| `--spacing-input-sep-md` | `md` | `14px` |
-| `--spacing-input-sep-lg` | `lg` | `16px` |
-| `--size-input-icon-sm` | `sm` | `10px` |
-| `--size-input-icon-md` | `md` | `12px` |
-| `--size-input-icon-lg` | `lg` | `16px` |
+| 项目 | sm | md | lg |
+| --- | --- | --- | --- |
+| 高度 | `h-6` | `h-8` | `h-10` |
+| 水平内边距 | `px-2.5` | `px-3` | `px-4` |
+| 分割线高度 | `h-3` | `h-3.5` | `h-4` |
+| 内置图标字号 | `text-sm`（12px） | `text-base`（14px） | `text-lg`（16px） |
 
-Web 端把高度、水平内边距、分割线高度、图标尺寸都拆成了独立令牌。
+默认根字号为 16px 时，三档高度为 24 / 32 / 40px，水平内边距为 10 / 12 / 16px，分割线高度为 12 / 14 / 16px；这些尺寸随 `--spacing` 缩放，字号保持固定 px。
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}

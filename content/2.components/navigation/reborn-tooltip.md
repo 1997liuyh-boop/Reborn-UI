@@ -274,7 +274,7 @@ const emptyTitle = ref(false);
 | 键名             | 说明                                                                                                                                                              |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `wrapper`        | 根节点 `<span>`（触发器外层容器），默认无类名，`class` prop 也并到这里；hover / focus / click 等事件都绑定在它身上，整体占位改这里；虚拟触发时不渲染。                              |
-| `trigger`        | 触发元素的外框，默认 `inline-flex max-w-full`，包住 `default` 插槽；虚拟触发时不渲染。                                                                                              |
+| `trigger`        | 触发元素的外框，默认 `inline-flex max-w-full`，包住 `default` 插槽；含悬停触发、未禁用且有内容时追加 `cursor-help`，插槽里按钮之类的可点元素仍显示自己的手型；虚拟触发时不渲染。                                                                                              |
 | `contentWrapper` | 浮层定位外壳（Teleport 之后的过渡容器），默认 `fixed left-0 top-0 z-[9999] pointer-events-none flex`；层级改这里，传了 `zIndex` 时以内联样式为准。                 |
 | `content`        | 提示面板，默认 `relative inline-flex max-w-60 items-center p-2 text-base rounded-lg whitespace-pre-line wrap-anywhere bg-gray-10 text-gray-1`，另按方位追加 `origin-*` 作为动画原点；底色、文字、内边距、圆角、最大宽度改这里。传了 `color` 时底色与文字色由内联样式决定，这里的 `bg-*` / `text-*` 不生效。 |
 | `arrow`          | 箭头容器，默认 `absolute text-gray-10`。**仅 `arrow` 不为 `false` 时渲染**；箭头是 `fill="currentColor"` 的 SVG，颜色随 `text-*` 类，改面板底色时要一起改。       |

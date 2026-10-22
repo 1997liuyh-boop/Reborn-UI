@@ -62,7 +62,7 @@ const fruit = ref("apple");
 
 ### 类型与尺寸
 
-`type="button"` 呈现分段按钮风格；`size` 支持 `sm` / `md` / `lg`。`radio` 类型下 `size` 决定圆点直径，`button` 与 `pure-button` 类型下取 `RebornButton` 同款高度令牌，具体数值两端不同，见下方「设计令牌」。
+`type="button"` 呈现分段按钮风格；`size` 支持 `sm` / `md` / `lg`。`radio` 类型下 `size` 决定圆点直径，`button` 与 `pure-button` 类型下取 `RebornButton` 同款高度：Web 使用 `h-6` / `h-8` / `h-10`，UniApp 使用独立 rpx 令牌，见下方「设计令牌」。
 
 Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容器上的一块滑块绘制，切换时与 `RebornTabs` 胶囊型标签的底板同一套液体形变：先朝新选项拉长（110ms），再收拢到新选项并轻微回弹（150ms）。拉长时前缘先抵达新选项，`filled` 的白字从一开始就有底衬着，不会有一段悬在灰底上看不清；拉伸长度封顶在起止两项宽度之和的 1.1 倍，选项很多时跨越切换也只是一段定长的滑块移过去，不会铺满整排。滑块按选中项自身的 `variant` / `color` 取底色，选中项被禁用时一起半透明；系统开启「减少动态效果」时直接切换。单独使用的 `RebornRadio` 没有组容器，仍由自身绘制选中底色。UniApp 端直接切换，见「两端差异对照」。
 
@@ -299,7 +299,7 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 | 键名    | 说明 |
 | ------- | ---- |
-| `root`  | 单个选项的根节点（点击区），默认 `reborn-radio inline-flex items-center transition-colors`，Web 端另有 `cursor-pointer select-none` 与供悬停联动的 `group/radio`。始终渲染，填了 `radio` 插槽也生效。Web 端 `type="button"` 在组内使用时，选中底色与阴影画在组容器的滑块上，`root` 只保留选中文字色。 |
+| `root`  | 单个选项的根节点（点击区），默认 `reborn-radio inline-flex items-center transition-colors`，Web 端另有 `cursor-pointer select-none` 与供悬停联动的 `group/radio`，禁用时换成 `cursor-not-allowed opacity-50` 且不再有悬停变色。始终渲染，填了 `radio` 插槽也生效。Web 端 `type="button"` 在组内使用时，选中底色与阴影画在组容器的滑块上，`root` 只保留选中文字色。 |
 | `icon`  | 圆形图标外圈，默认 `relative box-border inline-flex shrink-0 rounded-full border border-solid`，直径随 `size`。仅 `type="radio"` 时可见（`button` 类型下被 `hidden` 隐藏）；`type="pure-button"` 或填了 `radio` 插槽时不渲染，此键失效。 |
 | `dot`   | 外圈内的选中态实心圆点，默认 `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full`，直径随 `size`。渲染与失效条件同 `icon`。 |
 | `label` | 选项文案容器，默认 `transition-colors` 加随 `size` 的字号令牌（UniApp 端另有 `leading-[1.5]`），`radio` 类型下文字为 `text-gray-8`。仅在默认插槽有内容时渲染；`type="pure-button"` 下文案交给 `RebornButton`，填了 `radio` 插槽时也不渲染，两种情况此键都失效。 |
@@ -319,17 +319,17 @@ Web 端在 `RebornRadioGroup` 内使用分段按钮时，选中底色由组容�
 
 ### 设计令牌
 
-API 通用，但尺寸取值两端不同：Web 端为 px，UniApp 端为 rpx。
+API 通用，但尺寸体系两端不同：Web 常规尺寸使用 Tailwind 原生刻度、字号保留固定 px；UniApp 尺寸使用 rpx。下表 Web 的尺寸 px 值为默认根字号 16px 时的参考值。
 
 ::tabs{sync="platform"}
 
 :::tabs-item{label="Web" icon="tabler:world"}
 | 项目 | sm | md | lg | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-| 圆点外圈直径 | `12px` | `14px` | `16px` | `radio` 类型的图标外圈 |
-| 选中圆点直径 | `6px` | `7px` | `8px` | `radio` 类型的中心实心圆点 |
+| 圆点外圈直径 | `size-3`（12px） | `size-3.5`（14px） | `size-4`（16px） | `radio` 类型的图标外圈 |
+| 选中圆点直径 | `size-1.5`（6px） | `size-radio-dot-md`（固定 7px） | `size-2`（8px） | 中档非常规值保留命名令牌 `--spacing-radio-dot-md`，定义在 `app/assets/theme/typography.css` |
 | 标签字号 | `12px` | `14px` | `16px` | 选项文案 |
-| 按钮高度 | `24px` | `32px` | `40px` | `button` / `pure-button` 类型，取 `--height-button-*` |
+| 按钮高度 | `h-6`（24px） | `h-8`（32px） | `h-10`（40px） | `button` / `pure-button` 类型，随 Tailwind `--spacing` 缩放 |
 :::
 
 :::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
@@ -359,7 +359,7 @@ API 层面两端一致，以下为平台实现层面的差异：
 | `pure-button` 未选中文字 | `gray-9`                                                        | `gray-8`（UniApp 灰阶止于 gray-8）                      |
 | `pure-button` 禁用态     | 需 `bg-gray-2!` 提权压住 `RebornButton` 遗留的 `dark:bg-gray-8` | 直接复用 `RebornButton` 自带禁用灰阶，无需提权          |
 | `radio` 插槽作用域透传   | `v-bind="scope"` 对象展开                                       | 逐项展开（小程序编译器不支持插槽上的对象展开 `v-bind`） |
-| 尺寸单位                 | px                                                              | rpx                                                     |
+| 尺寸单位                 | Tailwind 原生尺寸刻度，字号为固定 px                              | rpx                                                     |
 
 ## 注意事项
 

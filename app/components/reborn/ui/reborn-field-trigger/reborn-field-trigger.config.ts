@@ -30,7 +30,7 @@ export default {
          * 圆角固定 6px（rounded-md），不随尺寸变化，与 Input 的 md 档保持一致的视觉语言。
          * 背景与边框不在此声明，全部交给 variant 形态变体，避免相互覆盖。
          * 行高不写 leading-：字号由 size 档的 text-sm / text-base / text-lg 给，
-         * 令牌自带「字号 + 8px」的行高；且盒子是固定高 h-input-* 加 items-center，
+         * 令牌自带「字号 + 8px」的行高；盒子使用 h-6 / h-8 / h-10 加 items-center，
          * 行盒不参与撑高，叠比例档只会覆盖掉令牌行高而看不出任何差别。
          */
         trigger:
@@ -89,20 +89,20 @@ export default {
         },
         /**
          * 尺寸档位，取自 typography.css 的设计令牌：
-         * 高度 --height-input-*、水平内边距 --spacing-input-px-*。
+         * 高度 h-6 / h-8 / h-10，水平内边距 px-2.5 / px-3 / px-4。
          * 字号：sm 12px（text-sm）、md 14px（text-base）、lg 16px（text-lg）。
          */
         size: {
             sm: {
-                trigger: "h-input-sm px-input-px-sm text-sm",
+                trigger: "h-6 px-2.5 text-sm",
                 triggerIconWrapper: "size-3",
             },
             md: {
-                trigger: "h-input-md px-input-px-md text-base",
+                trigger: "h-8 px-3 text-base",
                 triggerIconWrapper: "size-4",
             },
             lg: {
-                trigger: "h-input-lg px-input-px-lg text-lg",
+                trigger: "h-10 px-4 text-lg",
                 triggerIconWrapper: "size-4",
             },
         },

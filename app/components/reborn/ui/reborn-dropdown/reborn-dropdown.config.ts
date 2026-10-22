@@ -72,7 +72,7 @@ export const dropdownTheme = tv({
     // 页眉 / 页脚比选项弱一档：text-sm（12px / 20px 行高）
     header: 'shrink-0 border-b border-gray-3 px-[10px] py-[6px] text-sm text-gray-6',
     list: 'max-h-60 overflow-y-auto scrollbar-hide space-y-[4px]',
-    item: 'flex w-full cursor-pointer select-none items-center gap-1 rounded-sm px-[6px] py-[4px] text-base text-gray-6 transition-colors hover:bg-gray-2 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent',
+    item: 'flex w-full cursor-pointer select-none items-center gap-1 rounded-sm px-[6px] py-[4px] text-base text-gray-6 transition-colors hover:bg-gray-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50 data-[disabled=true]:hover:bg-transparent',
     itemIcon: 'flex size-4 shrink-0 items-center justify-center',
     itemLabel: 'flex-1 truncate',
     // 子菜单入口右侧的展开指示箭头

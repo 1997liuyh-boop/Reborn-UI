@@ -15,6 +15,7 @@ for (const [name, theme, variants, sizes] of [
   ['button', buttonTheme, buttonVariants, buttonSizes],
   ['badge', badgeTheme, badgeVariants, badgeSizes],
 ] as const) {
+  const steps = name === 'button' ? { sm: 6, md: 8, lg: 10 } : { sm: 4.5, md: 6, lg: 8 }
   const styles = tv(theme)
   for (const variant of variants) {
     it(`${name  } 的 ${  variant  } 形状独立于配色及禁用态`, () => {
@@ -32,8 +33,8 @@ for (const [name, theme, variants, sizes] of [
     for (const size of sizes) {
       it(`${name  } 的 ${  variant  } 圆形 ${  size  } 固定宽高且优先于其他形状`, () => {
         const classes = styles({ variant, size, circle: true, round: true, square: true } as any).base().split(/\s+/)
-        assert.ok(classes.includes(`w-(--height-${  name  }-${  size  })!`))
-        assert.ok(classes.includes(`h-(--height-${  name  }-${  size  })!`))
+        assert.ok(classes.includes(`w-${steps[size]}!`))
+        assert.ok(classes.includes(`h-${steps[size]}!`))
         assert.ok(classes.includes('p-0!'))
         assert.ok(!classes.includes('h-auto!'))
       })
