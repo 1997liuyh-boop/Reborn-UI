@@ -2,11 +2,15 @@ import type { MaybeRefOrGetter } from "vue";
 import { inject, onBeforeUnmount, provide, toValue, watch } from "vue";
 
 /**
- * 浮层的「点击外部关闭」与「滚动关闭」
+ * 浮层的外部关闭判定：在外部按下、带动触发器位移的滚动、焦点移进 iframe，三种情况调用 onDismiss
  *
- * RebornPopover / RebornPopconfirm / RebornContextMenu 共用。判定口径取自 RebornSelectTrigger：
- * 监听挂在捕获阶段，外部元素的 @click.stop 拦不住，点中的节点也一定还在 DOM 里；
- * 嵌套浮层逐级登记，子浮层传送到 body 后不是父浮层的 DOM 后代，在子浮层里点击不会把父浮层关掉。
+ * 目前只有 RebornPopover 直接调用，RebornPopconfirm 基于 RebornPopover 实现而间接复用；
+ * RebornContextMenu 仍自行监听 mousedown，未接入本 hook。
+ * - 按下判定挂在 document 的 pointerdown 捕获阶段：外部元素的 @click.stop 拦不住，判定时点中的节点也一定还在 DOM 里
+ * - 滚动只在页面或触发器所在容器滚动时关闭，浮层内部、嵌套子浮层、与触发器无关的容器滚动都放行
+ * - 全局监听只在展开期间挂载，收起或组件卸载时移除
+ * - 嵌套浮层逐级登记：与 RebornSelectTrigger 共用注入键，子浮层传送到 body 后不是父浮层的 DOM 后代，
+ *   在子浮层里点击、滚动都不算父浮层的外部
  */
 
 /** 嵌套浮层登记函数：子级把自己的判定函数交给父级，返回注销函数 */

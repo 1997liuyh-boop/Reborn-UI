@@ -112,7 +112,7 @@ const loadingConfig = reactive<LoadingDirectiveOptions>({
 
 - `type` 可选值（与 `RebornLoading` 一致）：`'outline' | 'ring' | 'spinner' | 'bars-scale' | 'blocks-shuffle' | 'blocks-wave' | 'gooey-balls'`。
 - `color` 支持预设色名（`primary | secondary | success | info | warning | error | neutral`）或任意 CSS 颜色值；加载文字颜色跟随图标颜色。
-- `background` 为任意 CSS 颜色，用于覆盖默认的半透明背景（`bg-white/80 dark:bg-gray-9/80`）。
+- `background` 为任意 CSS 颜色，用于覆盖默认的半透明背景 `bg-gray-1/80`。gray 色阶随主题反转（浅色为白、深色近黑），因此默认背景不需要单独的 `dark:` 写法。
 
 ## 全屏加载
 
@@ -206,6 +206,8 @@ function loadPanel() {
 
 与 Element Plus 语义一致：**全屏遮罩为单例**。已存在未关闭的全屏实例时，再次调用 `useLoading()`（全屏模式）会直接返回同一个实例，**新传入的 options 不会生效**——如需更新展示内容请使用 `patch()` / `setText()`。
 
+调用 `close()` 的同时单例就被释放：旧遮罩继续淡出并自行卸载，淡出期间再次调用会创建新实例，新传入的 options 正常生效。
+
 ### 其他行为说明
 
 - **SSR 安全**：服务端调用 `useLoading` 返回空实现实例（`close / setText / patch` 均为无操作），调用方无需判空；`v-loading` 指令在服务端零输出，全部 DOM 操作仅在客户端执行。
@@ -232,7 +234,7 @@ function loadPanel() {
 | `type` | `LoadingType` | `'ring'` | 加载图标类型，与 `RebornLoading` 一致。 | Web |
 | `color` | `string` | `'primary'` | 图标与文字颜色：预设色名或任意 CSS 颜色。 | Web |
 | `size` | `string \| number` | `'24px'` | 图标尺寸。 | Web |
-| `background` | `string` | - | 遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-white/80 dark:bg-gray-9/80`）。 | Web |
+| `background` | `string` | - | 遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-gray-1/80`）。 | Web |
 | `customClass` | `ClassValue` | - | 遮罩根节点附加类名。 | Web |
 | `lock` | `boolean` | `false` | 锁定滚动，等价于 `.lock` 修饰符。 | Web |
 | `fullscreen` | `boolean` | `false` | 全屏遮罩，等价于 `.fullscreen` 修饰符。 | Web |
@@ -283,7 +285,7 @@ loading.close()
 | `type` | `LoadingType` | `'ring'` | 加载图标类型。 | Web |
 | `color` | `string` | `'primary'` | 图标与文字颜色：预设色名或任意 CSS 颜色。 | Web |
 | `size` | `string \| number` | `'24px'` | 图标尺寸。 | Web |
-| `background` | `string` | - | 遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-white/80 dark:bg-gray-9/80`）。 | Web |
+| `background` | `string` | - | 遮罩背景色（任意 CSS 颜色，覆盖默认 `bg-gray-1/80`）。 | Web |
 | `customClass` | `ClassValue` | - | 遮罩根节点附加类名。 | Web |
 | `zIndex` | `number` | 局部 `2000` / 全屏 `3000` | 遮罩层级。 | Web |
 

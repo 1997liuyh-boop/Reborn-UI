@@ -1,5 +1,6 @@
 import type { Ref } from 'vue';
 import { useScrollLock } from '@vueuse/core';
+import { effectScope } from 'vue';
 
 /**
  * 全局滚动锁（引用计数）
@@ -31,7 +32,12 @@ export function useGlobalScrollLock() {
     if (!isHtmlLocked) {
       // 根因：额外给 body 设置 overflow:hidden 会改变 sticky 的参照容器，导致侧栏上移。
       // 只锁浏览器实际的页面滚动元素；未提供 scrollingElement 时回退到根元素。
-      isHtmlLocked = useScrollLock(document.scrollingElement ?? document.documentElement);
+      // ⚠️ 根因：useScrollLock 会把解锁挂到当时活跃的作用域上，首次上锁若发生在某个组件的 setup
+      // 或生命周期钩子里，该组件卸载时会连带解锁页面，哪怕其他持锁方的计数仍大于 0
+      // ✅ 修复：在独立（detached）作用域里创建，解锁只由计数归零触发，与任何组件的生命周期无关
+      isHtmlLocked = effectScope(true).run(() =>
+        useScrollLock(document.scrollingElement ?? document.documentElement),
+      ) ?? null;
     }
 
     if (!lockedByMe) {

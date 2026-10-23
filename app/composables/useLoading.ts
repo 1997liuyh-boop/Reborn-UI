@@ -384,8 +384,14 @@ export function createLoading(options: LoadingOptions = {}): LoadingHandle {
   };
 }
 
+/** 全屏单例记录：内部句柄与交给调用方的实例成对保存 */
+interface FullscreenSingleton {
+  handle: LoadingHandle;
+  instance: LoadingInstance;
+}
+
 // 全屏单例：与 Element Plus 一致，全屏遮罩重复调用返回同一个实例
-let fullscreenHandle: LoadingHandle | null = null;
+let fullscreenSingleton: FullscreenSingleton | null = null;
 
 /** 收敛为对外实例（隐藏 setVisible / destroy 等内部能力） */
 function toInstance(handle: LoadingHandle): LoadingInstance {
@@ -412,11 +418,26 @@ export function useLoading(options: LoadingOptions = {}): LoadingInstance {
   const fullscreen = options.fullscreen ?? !options.target;
 
   // 全屏单例：已有未关闭的全屏实例时直接复用
-  if (fullscreen && fullscreenHandle && !fullscreenHandle.closed) {
-    return toInstance(fullscreenHandle);
+  if (fullscreen && fullscreenSingleton && !fullscreenSingleton.handle.closed) {
+    return fullscreenSingleton.instance;
   }
 
   const handle = createLoading(options);
-  if (fullscreen) fullscreenHandle = handle;
-  return toInstance(handle);
+  if (!fullscreen) return toInstance(handle);
+
+  // ⚠️ 根因：close() 后实例要等约 200ms 淡出才销毁，期间 closed 仍为 false；
+  // 此时再调用全屏 useLoading() 会拿到这个正在关闭的实例，淡出结束后遮罩随之消失
+  // ✅ 修复：close() 时立即让出单例位置，旧实例继续淡出并自行销毁，下一次调用创建新实例
+  const singleton: FullscreenSingleton = {
+    handle,
+    instance: {
+      ...toInstance(handle),
+      close: () => {
+        if (fullscreenSingleton === singleton) fullscreenSingleton = null;
+        handle.close();
+      },
+    },
+  };
+  fullscreenSingleton = singleton;
+  return singleton.instance;
 }

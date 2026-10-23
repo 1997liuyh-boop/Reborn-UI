@@ -67,9 +67,14 @@ interface OverlayState<T extends Component = Component> {
 // 全局 overlay 状态管理
 const overlayStates = new Map<symbol, OverlayState>();
 
-/** 将确认按钮配置规整为带 loading 的对象（string / 对象 / false 均安全处理） */
+/**
+ * 将确认按钮配置规整为带 loading 的对象（string / 对象 / 未传 / false 均安全处理）
+ * ⚠️ 根因：未传 confirmBtn 时原样返回 undefined，组件回退到自己的默认按钮，loading 注入不进去
+ * ✅ 修复：未传时注入只含 loading 的对象，按钮文案等其余配置仍由组件默认值补齐
+ */
 function withLoading(btn: any, loading: boolean) {
-  if (btn === false || btn == null) return btn;
+  if (btn === false) return btn;
+  if (btn == null) return { loading };
   if (typeof btn === 'string') return { label: btn, loading };
   return { ...btn, loading };
 }

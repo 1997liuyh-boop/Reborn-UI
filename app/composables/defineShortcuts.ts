@@ -79,7 +79,7 @@ const chainedShortcutRegex = /^[^-]+.*-.*[^-]+$/
 /** 匹配组合快捷键格式：至少两段由 `_` 连接，如 `meta_k` */
 const combinedShortcutRegex = /^[^_]+.*_.*[^_]+$/
 /** 需要单独匹配 Shift 状态的特殊键（这些键在按住 Shift 时仍应正确识别） */
-const shiftableKeys = ['arrowleft', 'arrowright', 'arrowup', 'arrowright', 'tab', 'escape', 'enter', 'backspace']
+const shiftableKeys = ['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'tab', 'escape', 'enter', 'backspace']
 
 // ─── 工具函数 ───
 
