@@ -138,7 +138,7 @@ const scopeAttrs = computed(() => ({ [DEMO_SCOPE_ATTR]: props.title || 'demo' })
       <!-- 底栏：左侧示例代码名称（展开源码后显示），右侧动作组 -->
       <footer :class="ui.footer()">
         <span v-if="open && source" :class="ui.codeName()" :title="codeLabel">
-          <UIcon name="i-vscode-icons-file-type-vue" :class="ui.codeIcon()" />
+          <UIcon name="lucide:file-code" :class="ui.codeIcon()" />
           <span class="truncate">{{ codeLabel }}</span>
         </span>
 

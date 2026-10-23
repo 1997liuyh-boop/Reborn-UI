@@ -4,6 +4,7 @@ import type { CSSProperties } from 'vue';
 import type { DrawerDirection, DrawerUI } from './reborn-drawer.config';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
 import { runMotion } from '@/lib/motion';
+import { provideFloatingHost } from '~/composables/useFloatingHost';
 import { useGlobalScrollLock } from '~/composables/useGlobalScrollLock';
 import { tv } from '~/lib/tv';
 import { cn } from '~/lib/utils';
@@ -95,6 +96,8 @@ const wrapper = ref<HTMLElement>();
 const mounted = ref(false);
 const rendered = ref(false);
 const visible = ref(false);
+// 关闭时一并收起内部展开的下拉、气泡卡片与文字提示；抽屉内容不卸载，它们收不到别的通知，会留在页面上
+provideFloatingHost(() => visible.value);
 const active = ref(false);
 const resizedSize = ref<number>();
 const layer = ref(props.zIndex);

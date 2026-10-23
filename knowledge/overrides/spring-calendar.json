@@ -6,7 +6,7 @@
     "需要通过 update:activeIndex 感知选中日期变化的场景。"
   ],
   "whenNotToUse": [
-    "表单中选择日期值，改用 reborn-select-date 或 reborn-date-picker-panel。",
+    "表单中选择日期值，改用 reborn-date-picker 或 reborn-date-picker-panel。",
     "需要完整月视图日历时不适用，本组件仅按 calendarData 数组渲染给定的日期条目。"
   ],
   "pitfalls": [

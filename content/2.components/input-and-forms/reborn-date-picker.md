@@ -1,24 +1,24 @@
 ---
 title: DatePicker 日期选择器
-description: 表单日期选择器：触发器与 Select 同形态、尺寸、配色，下拉为日期面板，支持 15 种类型，仅 Web。
+description: 双端日期选择器：Web 下拉日期面板支持 16 种类型，UniApp 底部弹出滚轮选年月日时分秒与范围。
 category: 表单与输入
-platform: web
-tags: [calendar, date, picker, select]
+platform: both
+tags: [calendar, date, picker, select, uniapp]
 badge: New
 ---
 
-::warning
-仅 Web 端提供。UniApp 端改用 `reborn-select-date`。
+::ComponentViewer{demoFile="RebornDatePickerDemo.vue" config="RebornDatePickerConfig" componentId="reborn-date-picker" dependencies="dayjs" :componentFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts"]' :uniappFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts", "types.ts", "RebornButton.vue", "reborn-button.config.ts", "RebornPickerView.vue", "reborn-picker-view.config.ts", "RebornPopup.vue", "reborn-popup.config.ts", "RebornSelectTrigger.vue", "reborn-select-trigger.config.ts"]'}
 ::
 
-::ComponentViewer{demoFile="RebornDatePickerDemo.vue" config="RebornDatePickerConfig" componentId="reborn-date-picker" dependencies="dayjs" :componentFiles='["RebornDatePicker.vue", "reborn-date-picker.config.ts"]'}
-::
-
-> 源码面板只列 date-picker 自身目录下的文件。触发器 `RebornSelectTrigger` 与下拉内容 `RebornDatePickerPanel` 是独立组件，源码分别见 `reborn-select-trigger`、`reborn-date-picker-panel` 组件页。
+> Web 端源码面板只列 date-picker 自身目录下的文件。触发器 `RebornSelectTrigger` 与下拉内容 `RebornDatePickerPanel` 是独立组件，源码分别见 `reborn-select-trigger`、`reborn-date-picker-panel` 组件页。
 
 ## 简介
 
-DatePicker 由两部分拼成：触发器沿用 `RebornSelectTrigger`，下拉内容就是 `RebornDatePickerPanel`。面板的类型、可选范围、禁用方法、快捷选项、周数、双面板与「今天」栏参数原样透传，参数名和含义与面板页一致，这些参数学一次就能两边通用。
+DatePicker 两端同名，交互按端适配：Web 端是「触发器 + 下拉日期面板」，适合鼠标点选与跨月浏览；UniApp 端是「触发器 + 底部弹出层 + 滚轮」，适合手指拨动。两端共用 `v-model`、`format`、`valueFormat`、`start` / `end`、`placeholder`、`size`、`color`、`clearable`、`disabled` 这组参数和 `change` 事件，表单字段换端时这部分写法不用改。
+
+粒度与范围的写法两端不同：Web 端的 `type` 一个参数同时决定粒度（年、季度、月、周、日、日期时间）和单选 / 多选 / 范围；UniApp 端的 `type` 只决定滚轮精确到哪一列（年 → 秒），范围要另开 `rangeable`，起止值绑定在 `v-model:values` 上。两端各自的取值见「两端差异对照」。
+
+Web 端由两部分拼成：触发器沿用 `RebornSelectTrigger`，下拉内容就是 `RebornDatePickerPanel`。面板的类型、可选范围、禁用方法、快捷选项、周数、双面板与「今天」栏参数原样透传，参数名和含义与面板页一致，这些参数学一次就能两边通用。
 
 触发器的类名逐条照搬 `reborn-select.config.ts`：`variant`、`size`、`color`、多选标签换行、禁用与错误态都相同。同一表单里 Select 与 DatePicker 并排时，高度、描边、字号和聚焦色一致。
 
@@ -31,14 +31,19 @@ DatePicker 由两部分拼成：触发器沿用 `RebornSelectTrigger`，下拉�
 - 选一段区间，用 `daterange` 等范围类型；起止相隔较远时开启 `unlinkPanels`。
 - 一次勾选多个日期，用 `dates` / `months` 等多选类型，标签过多时开启 `collapseTags`。
 - 需要接入 `RebornForm` 校验，出错时触发器描边变红。
+- UniApp 端选日期或时间：`type` 决定滚轮精确到年、月、日还是时分秒，`rangeable` 选起止区间并附带「近 7 天」等快捷项。
 
 ### 何时不使用
 
 - 日期面板要常驻页面、不需要触发器 —— 改用 `reborn-date-picker-panel`。
 - 只选时分秒，不涉及日期 —— 改用 `reborn-time-picker`。
-- UniApp 端的日期选择 —— 改用 `reborn-select-date`。
+- UniApp 端要把滚轮常驻在页面里、或滚轮内容不是日期 —— 改用 `reborn-picker-view`。
 
 ## 用法
+
+::warning
+除「滚轮粒度与范围（UniApp）」一节外，本节示例均为 Web 端写法。UniApp 端没有日期面板，面板类参数（多选、快捷侧栏、周数、双面板、今天栏、单元格插槽等）不生效，两端参数对照见「两端差异对照」。
+::
 
 ### 基础用法
 
@@ -175,6 +180,41 @@ const weekRangeValue = ref([]);
   />
 </template>
 ```
+
+### 滚轮粒度与范围（UniApp）
+
+UniApp 端点击触发器从底部弹出滚轮，`type` 决定滚轮显示到哪一列：按「年、月、日、时、分、秒」的顺序截取前几列，表头文字取 `headers` 的对应项。`format` 与 `valueFormat` 缺省时都按 `type` 取下表的默认格式，两者分开传时触发器文本和绑定值可以用不同格式。
+
+| `type`   | 滚轮列           | 默认 `format` / `valueFormat` | 典型用途           |
+| -------- | ---------------- | ----------------------------- | ------------------ |
+| `year`   | 年               | `YYYY`                        | 入学年份、年度报表 |
+| `month`  | 年、月           | `YYYY-MM`                     | 账单月份           |
+| `date`   | 年、月、日       | `YYYY-MM-DD`                  | 生日、预约日期     |
+| `hour`   | 年、月、日、时   | `YYYY-MM-DD HH:mm:ss`         | 按整点预约         |
+| `minute` | 年月日、时、分   | `YYYY-MM-DD HH:mm:ss`         | 会议开始时间       |
+| `second` | 年月日、时、分、秒 | `YYYY-MM-DD HH:mm:ss`       | 需要精确到秒的记录（默认值） |
+
+开启 `rangeable` 后，滚轮上方出现「开始 / 结束」两张卡片，点哪张就在滚轮里编辑哪一端；起止值绑定在 `v-model:values` 上，确认时抛出 `range-change`。`showShortcuts` 默认开启，没传 `shortcuts` 时内置「今天、近7天、近30天、近90天、近一年」五项，传入后整组替换。
+
+```vue
+<script setup lang="ts">
+const birthday = ref("");
+const range = ref<string[]>([]);
+const shortcuts = [
+  { label: "本周", value: ["2026-10-19", "2026-10-25"] },
+  { label: "本月", value: ["2026-10-01", "2026-10-31"] },
+];
+</script>
+
+<template>
+  <RebornDatePicker v-model="birthday" type="date" format="YYYY 年 M 月 D 日" placeholder="请选择出生日期" />
+  <RebornDatePicker v-model:values="range" type="date" rangeable :shortcuts="shortcuts" />
+</template>
+```
+
+::warning
+仅 UniApp 端：`rangeable`、`values`、`headers`、`title`、确认 / 取消按钮相关参数与 `range-change` 事件只在 UniApp 端存在。Web 端选范围用 `type="daterange"` 等范围类型，起止值直接是 `v-model` 的数组。
+::
 
 ### 多选与标签折叠
 
@@ -579,6 +619,12 @@ const formRules = z.object({
 
 ### Props
 
+两端只有一部分参数同名同义（见「简介」），整体形态不同，按端分表。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
+
 `RebornDatePicker` 由选择框（`RebornSelectTrigger` 及其下拉浮层）和浮层内的 `RebornDatePickerPanel` 组合而成，描述列开头的标注说明参数作用于哪一部分：〔选择框〕只影响触发器与浮层，〔面板〕原样透传给 `RebornDatePickerPanel`，〔共用〕同时作用于两者。交互演练的控制面板按同一口径分组。
 
 | 属性名                 | 类型                                                                                                                                                                                                  | 默认值              | 描述                                                                                 |
@@ -615,7 +661,7 @@ const formRules = z.object({
 | `color`                | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`                                                                                                                | `'primary'`         | 〔共用〕触发器聚焦 / 展开描边色，同时下发给面板决定选中色。                          |
 | `variant`              | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                                                                                                                                              | `'outlined'`        | 〔选择框〕形态变体，与 `RebornSelect` 同一套形态语言。                               |
 | `showArrow`            | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕是否显示尾部图标。                                                         |
-| `arrowAnimation`       | `boolean`                                                                                                                                                                                             | `true`              | 〔选择框〕展开时尾部图标是否旋转 180°。                                              |
+| `arrowAnimation`       | `boolean`                                                                                                                                                                                             | `false`             | 〔选择框〕展开时尾部图标是否旋转 180°，默认保持日历图标方向不变。                      |
 | `icon`                 | `string`                                                                                                                                                                                              | `'lucide:calendar'` | 〔选择框〕尾部图标名。                                                               |
 | `prefixIcon`           | `string`                                                                                                                                                                                              | -                   | 〔选择框〕触发器文本前的前缀图标名；同时提供 `prefix` 插槽时以插槽为准。             |
 | `closeOn`              | `'click' \| 'mousedown'`                                                                                                                                                                              | `'mousedown'`       | 〔选择框〕`mousedown` 为外部按下、滚轮或页面滚动即收，面板内部滚动不算外部；`click` 为外部完成一次点击后收起，期间页面滚动时面板跟随触发器。 |
@@ -626,7 +672,53 @@ const formRules = z.object({
 | `triggerUi`            | `SelectTriggerProps["ui"] & DatePickerFieldUI`                                                                                                                                                        | -                   | 〔选择框〕触发器盒子与浮层外壳的样式覆盖，键位见「子组件样式入口」。                 |
 | `panelUi`              | `DatePickerPanelProps["ui"]`                                                                                                                                                                          | -                   | 〔面板〕原样透传给 `RebornDatePickerPanel` 的 `ui`。                                 |
 
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 属性名             | 类型                                                                     | 默认值                              | 描述                                                                                         |
+| ------------------ | ------------------------------------------------------------------------ | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `modelValue` / v-model | `string`                                                             | `''`                                | 单值模式的绑定值，格式由 `valueFormat` 决定；`rangeable` 开启时不使用。                      |
+| `values` / v-model:values | `string[]`                                                        | `[]`                                | 范围模式的绑定值 `[开始, 结束]`，仅 `rangeable` 开启时使用。                                 |
+| `type`             | `'year' \| 'month' \| 'date' \| 'hour' \| 'minute' \| 'second'`           | `'second'`                          | 滚轮精确到哪一列，按「年、月、日、时、分、秒」截取前几列。                                   |
+| `rangeable`        | `boolean`                                                                | `false`                             | 开启起止区间选择，弹出层顶部出现「开始 / 结束」卡片与快捷项。                                |
+| `format`           | `string`                                                                 | `''`                                | 触发器展示文本的 dayjs 格式，不影响绑定值；为空时按 `type` 取默认格式。                      |
+| `valueFormat`      | `string`                                                                 | `''`                                | 绑定值的 dayjs 格式；为空时按 `type` 取默认格式，绑定值始终是字符串。                        |
+| `start`            | `string`                                                                 | `'1970-01-01 00:00:00'`             | 滚轮可选的最早时间（含）。                                                                   |
+| `end`              | `string`                                                                 | `'2099-12-31 23:59:59'`             | 滚轮可选的最晚时间（含）。                                                                   |
+| `title`            | `string`                                                                 | `'请选择'`                          | 底部弹出层的标题。                                                                           |
+| `headers`          | `string[]`                                                               | `['年', '月', '日', '时', '分', '秒']` | 各滚轮列的表头文字，按列顺序取前几项。                                                    |
+| `placeholder`      | `string`                                                                 | `'请选择'`                          | 触发器未选值时的占位文本，单值与范围模式共用。                                                                   |
+| `startPlaceholder` | `string`                                                                 | `'开始日期'`                        | 范围模式「开始」卡片未选值时的占位文本，不用于触发器。                                                   |
+| `endPlaceholder`   | `string`                                                                 | `'结束日期'`                        | 范围模式「结束」卡片未选值时的占位文本，不用于触发器。                                                   |
+| `rangeSeparator`   | `string`                                                                 | `'至'`                              | 范围模式触发器文本里起止之间的分隔符，两侧各补一个空格。                                    |
+| `showShortcuts`    | `boolean`                                                                | `true`                              | 范围模式是否显示快捷项。                                                                     |
+| `shortcuts`        | `{ label: string; value: string[] }[]`                                   | `[]`                                | 快捷项列表；为空时使用内置的「今天、近7天、近30天、近90天、近一年」。                        |
+| `showTrigger`      | `boolean`                                                                | `true`                              | 是否渲染内置触发器；关闭后通过 `open()` 自行唤起弹出层。                                     |
+| `showConfirm`      | `boolean`                                                                | `true`                              | 是否显示底部「确定」按钮。                                                                   |
+| `confirmText`      | `string`                                                                 | `'确定'`                            | 「确定」按钮文字。                                                                           |
+| `showCancel`       | `boolean`                                                                | `true`                              | 是否显示底部「取消」按钮。                                                                   |
+| `cancelText`       | `string`                                                                 | `'取消'`                            | 「取消」按钮文字。                                                                           |
+| `disabled`         | `boolean`                                                                | `false`                             | 是否禁用，可被外层 `RebornForm` 覆盖；禁用时 `open()` 无效。                                 |
+| `clearable`        | `boolean`                                                                | `true`                              | 有值时触发器显示清空按钮。                                                                   |
+| `size`             | `'sm' \| 'md' \| 'lg'`                                                   | `'md'`                              | 触发器尺寸档位。                                                                             |
+| `color`            | `'primary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'`  | `'primary'`                         | 触发器聚焦色、滚轮指示与范围卡片的高亮色。                                                   |
+| `triggerUi`        | `Partial<TriggerUiShape>`                                                | `{}`                                | 触发器 `RebornSelectTrigger` 的样式覆盖，键位见「子组件样式入口」。                          |
+| `popupUi`          | `Partial<PopupUiShape>`                                                  | `{}`                                | 底部弹出层 `RebornPopup` 的样式覆盖，键位见「子组件样式入口」。                              |
+| `pickerUi`         | `Partial<PickerUiShape>`                                                 | `{}`                                | 滚轮 `RebornPickerView` 的样式覆盖，键位见「子组件样式入口」。                               |
+| `ui`               | `Partial<DatePickerUiShape>`                                             | `{}`                                | 弹出层内范围区、快捷项、底部按钮的样式覆盖，键位见「自定义样式（ui）」。                     |
+
+:::
+
+::
+
 ### Emits
+
+两端都有 `update:modelValue` 与 `change`，含义一致：绑定值写回时触发，清空同样触发。其余事件按端分表。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
 
 标注口径同 Props：〔面板〕事件由 `RebornDatePickerPanel` 触发后原样转发，〔共用〕事件在面板上选值与选择框内清空、移除标签时都会触发。
 
@@ -640,7 +732,26 @@ const formRules = z.object({
 | `calendar-change`   | `(value: [Date, Date \| null])`                                                            | 〔面板〕范围类型点选日期或选中数组型快捷选项时触发；只选了起点时终点为 `null`，`week` 类型不触发，`weekrange` 的起止已吸附到整周。 |
 | `panel-change`      | `(date: Date \| [Date, Date], mode: 'month' \| 'year', view: 'year' \| 'month' \| 'date')` | 〔面板〕翻页、切换视图或下钻时触发，参数含义见 `reborn-date-picker-panel`。                        |
 
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 事件名              | 回调参数              | 描述                                                                     |
+| ------------------- | --------------------- | ------------------------------------------------------------------------ |
+| `update:modelValue` | `(value: string)`     | 单值模式点「确定」或清空时触发，清空时为 `''`。                          |
+| `change`            | `(value: string)`     | 与 `update:modelValue` 同时触发，参数相同。                              |
+| `update:values`     | `(value: string[])`   | 范围模式点「确定」或清空时触发，清空时为 `[]`。                          |
+| `range-change`      | `(value: string[])`   | 与 `update:values` 同时触发，参数相同。                                  |
+
+:::
+
+::
+
 ### Slots
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
 
 | 插槽名       | 作用域参数                                 | 描述                                                   |
 | ------------ | ------------------------------------------ | ------------------------------------------------------ |
@@ -677,13 +788,55 @@ const formRules = z.object({
 | `isToday`  | `boolean`                                  | 是否为今天 / 本月 / 本季度 / 今年。                              |
 | `outside`  | `boolean`                                  | 是否为补位格：日期视图的上下月、年份视图当前十年页之外的年份。   |
 
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 插槽名 | 作用域参数 | 描述                                                       |
+| ------ | ---------- | ---------------------------------------------------------- |
+| `tag`  | -          | 替换触发器里的展示内容，用于把已选日期渲染成标签等自定义样式。 |
+
+:::
+
+::
+
 ### Expose
+
+两端都暴露 `clear()`，含义一致：清空绑定值并触发事件。UniApp 端因为是弹出层交互，额外暴露了开关与设值方法。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
 
 | 方法名  | 签名         | 描述                                                                  |
 | ------- | ------------ | --------------------------------------------------------------------- |
 | `clear` | `() => void` | 清空为 `null`（单值）或 `[]`（多选与范围），依次抛出 `clear`、`change`。 |
 
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+| 方法名      | 签名                                                     | 描述                                                                                     |
+| ----------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `open`      | `(cb?: ((value: string \| string[]) => void) \| null) => void` | 打开底部弹出层，禁用时无效；传入的回调在点「确定」时收到选中值。                    |
+| `close`     | `() => void`                                             | 关闭弹出层，不触发确认。                                                                 |
+| `clear`     | `() => void`                                             | 清空为 `''`（单值）或 `[]`（范围），并抛出对应的更新与变更事件。                         |
+| `confirm`   | `() => void`                                             | 以当前滚轮选中值执行确认；范围不完整或开始晚于结束时提示并中断，否则写回后关闭弹出层。   |
+| `setValue`  | `(val: string) => void`                                  | 设置单值模式的滚轮位置，空值时回到当前时间；只改内部状态，不触发事件。                   |
+| `setValues` | `(val: string[]) => void`                                | 设置范围模式的起止值；只改内部状态，不触发事件。                                         |
+| `setRange`  | `(index: number) => void`                                | 切换范围模式正在编辑的一端：`0` 为开始，`1` 为结束。                                     |
+
+:::
+
+::
+
 ### 自定义样式（ui）
+
+两端形态不同，`ui` 键位完全不同，不要跨端照抄：Web 端改下拉浮层里的页头页脚与多选标签，UniApp 端改底部弹出层里的范围区、快捷项与按钮。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
 
 `ui` 管浮层里的页头页脚、面板容器与多选标签，9 个键逐字来自 `reborn-date-picker.config.ts` 的 `slots` 中非触发器部分。触发器盒子与浮层外壳走 `triggerUi`，面板内部走 `panelUi`。每个键都以 `cn(内置类, ui.键)` 合并，调用方的类排在最后，冲突时胜出。
 
@@ -719,9 +872,58 @@ const formRules = z.object({
 </template>
 ```
 
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+16 个键逐字来自 `packages/uniapp-project/src/components/reborn-date-picker/reborn-date-picker.config.ts` 的 `slots`，以「内置类 + `ui.键`」合并，调用方的类排在后面。
+
+| 键名               | 对应节点                         | 默认关键类名                                                                 | 渲染 / 失效条件                                   |
+| ------------------ | -------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------- |
+| `wrapper`          | 无                               | `w-full`                                                                     | 预留键，当前没有接到任何节点，写入不生效          |
+| `popupOp`          | 无                               | `flex flex-row items-center justify-center gap-2 p-3`                        | 预留键，当前没有接到任何节点，写入不生效          |
+| `rangeBox`         | 滚轮上方的范围区                 | `px-3 pb-5 pt-2`                                                             | 仅 `rangeable` 开启时渲染                         |
+| `shortcuts`        | 快捷项容器                       | `mb-4 flex flex-row flex-wrap items-center gap-2`                            | 仅 `rangeable` 且 `showShortcuts` 开启时渲染      |
+| `shortcutItem`     | 单个快捷项                       | `flex items-center gap-1 rounded-md border border-solid px-2 py-1 text-xs`   | 选中态的描边与文字色由 `color` 给出，写入的类叠加在两种状态上 |
+| `rangeValues`      | 「开始 ~ 结束」两张卡片的横向容器 | `flex flex-row items-center justify-center`                                 | 同 `rangeBox`                                     |
+| `rangeStart`       | 开始卡片                         | `flex-1 rounded-xl border border-solid p-2 text-center`                      | 正在编辑时的高亮描边由 `color` 给出               |
+| `rangeEnd`         | 结束卡片                         | 同 `rangeStart`                                                              | 同 `rangeStart`                                   |
+| `rangeValueText`   | 卡片里已有值时的文字             | `text-center block w-full`                                                   | 作为 `RebornText` 的 `ui.base` 下发；与 `rangePlaceholder` 二选一 |
+| `rangePlaceholder` | 卡片里尚无值时的占位文字         | `text-surface-400 block w-full text-center`                                  | 同上                                              |
+| `separator`        | 两张卡片之间的分隔符             | `text-gray-5 mx-3 text-sm`                                                   | 同 `rangeBox`                                     |
+| `footer`           | 底部按钮栏                       | `flex flex-row items-center justify-center gap-2 px-3 pt-3 pb-[calc(0.75rem+var(--window-bottom))]` | 底部安全区已含在 `var(--window-bottom)` 里，改内边距时要保留 |
+| `cancel`           | 「取消」按钮外层                 | `flex-1`                                                                     | 始终渲染；`showCancel` 关闭时只去掉里面的按钮，外层仍占一份宽 |
+| `cancelButton`     | 「取消」按钮本体                 | `w-full`                                                                     | 作为 `RebornButton` 的 `ui.base` 下发；仅 `showCancel` 开启时渲染 |
+| `confirm`          | 「确定」按钮外层                 | `flex-1`                                                                     | 始终渲染；`showConfirm` 关闭时只去掉里面的按钮，外层仍占一份宽 |
+| `confirmButton`    | 「确定」按钮本体                 | `w-full`                                                                     | 作为 `RebornButton` 的 `ui.base` 下发；仅 `showConfirm` 开启时渲染 |
+
+```vue
+<template>
+  <!-- 范围卡片改小圆角，「确定」按钮占两份宽 -->
+  <RebornDatePicker
+    v-model:values="range"
+    type="date"
+    rangeable
+    :ui="{
+      rangeStart: 'rounded-lg',
+      rangeEnd: 'rounded-lg',
+      cancel: 'flex-none w-[200rpx]',
+    }"
+  />
+</template>
+```
+
+:::
+
+::
+
 ### 子组件样式入口
 
-下面这些键**不属于 `reborn-date-picker` 自身**——它们改的是内部子组件的样式，通过 `triggerUi` / `panelUi` 透传下去，键位与默认值以对应子组件页为准。
+下面这些键**不属于 `reborn-date-picker` 自身**——它们改的是内部子组件的样式，通过 `triggerUi` / `panelUi`（Web）或 `triggerUi` / `popupUi` / `pickerUi`（UniApp）透传下去，键位与默认值以对应子组件页为准。
+
+::tabs{sync="platform"}
+
+:::tabs-item{label="Web" icon="tabler:world"}
 
 #### `triggerUi`（15 个键，`RebornSelectTrigger`）
 
@@ -753,6 +955,37 @@ const formRules = z.object({
 
 `panelUi` 原样作为面板的 `ui` 传入，键位与默认类名见 `reborn-date-picker-panel` 的「自定义样式（ui）」。面板的 `border`、`width`、`overflow`、`disabled`、`class` 由组件固定或不下发，无法通过 `panelUi` 改变其行为。
 
+:::
+
+:::tabs-item{label="UniApp" icon="tabler:brand-wechat"}
+
+三个对象分别原样作为子组件的 `ui` 传入，键名来自组件源码里的 `TriggerUiShape`、`PopupUiShape`、`PickerUiShape`。
+
+| 参数        | 子组件                | 可用键                                                                                         |
+| ----------- | --------------------- | ---------------------------------------------------------------------------------------------- |
+| `triggerUi` | `RebornSelectTrigger` | `wrapper`、`content`、`text`、`placeholder`、`iconWrapper`、`clearIcon`、`arrowIcon`            |
+| `popupUi`   | `RebornPopup`         | `wrapper`、`mask`、`popup`、`inner`、`draw`、`header`、`title`、`container`                     |
+| `pickerUi`  | `RebornPickerView`    | `wrapper`、`header`、`headerText`、`pickerContainer`、`item`、`itemText`、`indicator`           |
+
+:::
+
+::
+
+## 两端差异对照
+
+| 维度         | Web                                                                    | UniApp                                                                    |
+| ------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| 交互形态     | 触发器下方展开日期面板，鼠标点选                                       | 触发器唤起底部弹出层，手指拨动滚轮后点「确定」                            |
+| `type` 取值  | 16 种：年 / 季度 / 月 / 周 / 日 / 日期时间，各有单选、多选或范围变体    | 6 种：`year` → `second`，只决定滚轮显示到哪一列                           |
+| 范围选择     | `type="daterange"` 等范围类型，起止值是 `v-model` 的数组               | `rangeable` 开关，起止值绑定在 `v-model:values`，确认时抛 `range-change`  |
+| 多选         | `dates` / `months` 等多选类型，支持标签折叠                            | 不支持                                                                    |
+| 绑定值形态   | 不传 `valueFormat` 时是 `Date` 对象                                    | 始终是字符串，`valueFormat` 缺省按 `type` 取默认格式                      |
+| 写回时机     | 选定即写回（带时间的类型值完整时写回）                                 | 只在点「确定」或清空时写回，拨动滚轮不写回                                |
+| 快捷项       | `shortcuts: { text, value }[]`，面板左侧侧栏，空数组时不显示           | `shortcuts: { label, value }[]`，仅范围模式，空数组时用内置五项           |
+| `color` 取值 | 7 种，含 `secondary`                                                   | 6 种，不含 `secondary`                                                    |
+| 形态变体     | `variant` 四种，与 `RebornSelect` 一致                                 | 无 `variant`                                                              |
+| 样式覆盖入口 | `ui` + `triggerUi` + `panelUi`                                         | `ui` + `triggerUi` + `popupUi` + `pickerUi`                               |
+
 ## 注意事项
 
 - **写回时机随类型不同**。单值与范围类型选定即写回并收起；多选类型每点一项写回、面板不收；`datetime` / `datetimerange` 在值完整时写回，但要点击外部才收起。
@@ -766,3 +999,8 @@ const formRules = z.object({
 - **`default-value` 不是初始值**。它只决定未选值时面板定位到哪个月，不写入绑定值；需要预填值请直接给 `v-model` 赋值。
 - **`style` 属性不生效**。组件关闭了属性继承且未转发 `$attrs`，宽度等尺寸请用 `class` 设置。
 - **不要写 `dark:` 前缀**。触发器与面板的颜色都来自会随主题切换的灰阶与语义色 token，覆盖样式时直接写 `bg-gray-2`、`text-primary` 即可。
+- **UniApp 端由 `reborn-select-date` 改名而来**。组件名改为 `RebornDatePicker`，路径改为 `components/reborn-date-picker/RebornDatePicker.vue`，`labelFormat` 改名为 `format`（与 Web 端同名同义）；其余参数、事件与 Expose 不变。旧名不再保留，升级时需替换导入路径与 `label-format` 写法，否则组件解析失败、展示格式回落为按 `type` 的默认值。
+- **两端的 `type` 不能共用同一个值**。Web 的 `type` 同时决定粒度与单选 / 多选 / 范围，UniApp 的 `type` 只决定滚轮列数；`date`、`month`、`year` 两端都有且含义接近，`daterange`、`dates` 等只在 Web 有效，`hour`、`minute`、`second` 只在 UniApp 有效，跨端共用代码时要按端分别传值。
+- **UniApp 端的范围值不在 `v-model` 上**。开启 `rangeable` 后起止值写进 `v-model:values` 并抛 `range-change`，`modelValue` 与 `change` 不再更新；表单规则要校验 `values` 字段。
+- **UniApp 端只在点「确定」时写回**。拨动滚轮、切换开始 / 结束卡片、点快捷项都只改弹出层内的状态，点「取消」或遮罩关闭会丢弃；需要即时联动时在 `open()` 的回调或 `change` / `range-change` 里处理。
+- **UniApp 端 `ui.wrapper` 与 `ui.popupOp` 是预留键**。它们在 `reborn-date-picker.config.ts` 里有默认类名，但模板里没有接到任何节点，写入不生效；改弹出层外壳请用 `popupUi`，改触发器宽度请包一层容器。

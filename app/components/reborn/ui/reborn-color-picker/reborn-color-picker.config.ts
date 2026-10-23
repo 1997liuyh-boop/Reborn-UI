@@ -18,6 +18,12 @@ export default {
                 icon: "rotate-180",
             },
         },
+        /** 所在表单项校验失败：外圈描边改为错误色，与输入框、选择器的错误态一致 */
+        error: {
+            true: {
+                root: "ring-red-5",
+            },
+        },
         size: {
             sm: {
                 root: "size-6",

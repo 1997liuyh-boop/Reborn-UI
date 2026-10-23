@@ -140,9 +140,9 @@
       }
     },
     {
-      "path": "pages/reborn-select-date/RebornSelectDateDemo",
+      "path": "pages/reborn-date-picker/RebornDatePickerDemo",
       "style": {
-        "navigationBarTitleText": "Select Date"
+        "navigationBarTitleText": "Date Picker"
       }
     },
     {

@@ -13,12 +13,12 @@ tags: [css, tailwind, animation]
 ## API
 
 | 属性名             | 类型      | 默认值 | 描述                           |
-| ------------------ | --------- | ------ | ------------------------------ | -------- |
+| ------------------ | --------- | ------ | ------------------------------ |
 | `text`             | `string`  | `""`   | 要显示的文本内容               |
 | `typeSpeed`        | `number`  | `50`   | 打字速度（毫秒/字符）          |
 | `deleteSpeed`      | `number`  | `30`   | 删除速度（毫秒/字符）          |
 | `pauseDuration`    | `number`  | `500`  | 删除后到打字的延迟时间（毫秒） |
-| `cursor`           | `string`  | `"     | "`                             | 光标字符 |
+| `cursor`           | `string`  | `"\|"` | 光标字符                       |
 | `showCursor`       | `boolean` | `true` | 是否显示光标                   |
 | `cursorBlinkSpeed` | `number`  | `530`  | 光标闪烁速度（毫秒）           |
 | `resetOnChange`    | `boolean` | `true` | 是否在文本变化时重置           |

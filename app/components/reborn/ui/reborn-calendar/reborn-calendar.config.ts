@@ -22,13 +22,13 @@ export type CalendarTitleAlign = (typeof titleAligns)[number];
  * primary 还会跟随站点的主题色切换；浅底（第 1 阶）没有语义令牌，直接取色板，映射与 RebornDatePickerPanel 一致。
  * 描边只给顶边上色（border-t-*）：边框模式下单元格还有左边线，整圈上色会把相邻格的分隔线也染掉
  */
-const tones: Record<CalendarColor, { solid: string; soft: string; text: string; border: string; ring: string }> = {
-  primary: { solid: "bg-primary", soft: "bg-brand-1", text: "text-primary", border: "border-t-primary", ring: "ring-primary" },
-  secondary: { solid: "bg-secondary", soft: "bg-secondary-1", text: "text-secondary", border: "border-t-secondary", ring: "ring-secondary" },
-  success: { solid: "bg-success", soft: "bg-green-1", text: "text-success", border: "border-t-success", ring: "ring-success" },
-  info: { solid: "bg-info", soft: "bg-blue-1", text: "text-info", border: "border-t-info", ring: "ring-info" },
-  warning: { solid: "bg-warning", soft: "bg-orange-1", text: "text-warning", border: "border-t-warning", ring: "ring-warning" },
-  error: { solid: "bg-error", soft: "bg-red-1", text: "text-error", border: "border-t-error", ring: "ring-error" },
+const tones: Record<CalendarColor, { solid: string; soft: string; text: string; border: string; ring: string; hover: string; hoverText: string }> = {
+  primary: { solid: "bg-primary", soft: "bg-brand-1", text: "text-primary", border: "border-t-primary", ring: "ring-primary", hover: "hover:bg-brand-1 hover:border-t-primary", hoverText: "group-hover/cell:text-primary" },
+  secondary: { solid: "bg-secondary", soft: "bg-secondary-1", text: "text-secondary", border: "border-t-secondary", ring: "ring-secondary", hover: "hover:bg-secondary-1 hover:border-t-secondary", hoverText: "group-hover/cell:text-secondary" },
+  success: { solid: "bg-success", soft: "bg-green-1", text: "text-success", border: "border-t-success", ring: "ring-success", hover: "hover:bg-green-1 hover:border-t-success", hoverText: "group-hover/cell:text-success" },
+  info: { solid: "bg-info", soft: "bg-blue-1", text: "text-info", border: "border-t-info", ring: "ring-info", hover: "hover:bg-blue-1 hover:border-t-info", hoverText: "group-hover/cell:text-info" },
+  warning: { solid: "bg-warning", soft: "bg-orange-1", text: "text-warning", border: "border-t-warning", ring: "ring-warning", hover: "hover:bg-orange-1 hover:border-t-warning", hoverText: "group-hover/cell:text-warning" },
+  error: { solid: "bg-error", soft: "bg-red-1", text: "text-error", border: "border-t-error", ring: "ring-error", hover: "hover:bg-red-1 hover:border-t-error", hoverText: "group-hover/cell:text-error" },
 };
 
 /**
@@ -65,8 +65,8 @@ export const calendarTheme = tv({
     row: "grid gap-x-2",
     /** 表头星期；文字套一层与日期胶囊等宽的盒子，靠左 / 居中 / 靠右时都与下方日期对齐 */
     weekday: "flex h-7 items-center px-1 text-base text-gray-5",
-    /** 单元格：日期标题 + 事项区 */
-    cell: "relative min-w-0 cursor-pointer border-t border-gray-4 p-1 transition-colors",
+    /** 单元格：日期标题 + 事项区；group/cell 让悬停时日期文字也跟着变色 */
+    cell: "group/cell relative min-w-0 cursor-pointer border-t border-gray-4 p-1 transition-colors",
     /** 日期标题：普通模式一行，农历模式通过变体改为上下两行 */
     cellHeader: "flex h-6 min-w-0 items-center",
     /**
@@ -152,6 +152,11 @@ export const calendarTheme = tv({
       // 有事项：浅底 + 深色顶边 + 深色日期
       { color: color as CalendarColor, hasEvents: true, class: { cell: `${tone.soft} ${tone.border}` } },
       { color: color as CalendarColor, hasEvents: true, inMonth: true, selected: false, class: { date: tone.text } },
+      // 悬停与选中复用「有事项」的外观：任意格子悬停时浅底 + 深色顶边，本月未选中的日期文字同时变深色；
+      // 选中格常驻同样的浅底与顶边，日期本身仍是下面的实底胶囊
+      { color: color as CalendarColor, class: { cell: tone.hover } },
+      { color: color as CalendarColor, inMonth: true, selected: false, class: { date: tone.hoverText } },
+      { color: color as CalendarColor, selected: true, class: { cell: `${tone.soft} ${tone.border}` } },
       { color: color as CalendarColor, today: true, class: { date: tone.ring } },
       { color: color as CalendarColor, festival: true, class: { lunar: tone.text } },
       // 选中排在最后：实底盖过描边与文字色

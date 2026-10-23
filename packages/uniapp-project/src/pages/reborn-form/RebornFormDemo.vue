@@ -5,12 +5,12 @@ import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
 
 import RebornCheckbox from '@/components/reborn-checkbox/RebornCheckbox.vue'
+import RebornDatePicker from '@/components/reborn-date-picker/RebornDatePicker.vue'
 import RebornForm from '@/components/reborn-form/RebornForm.vue'
 import RebornFormItem from '@/components/reborn-form/RebornFormItem.vue'
 import RebornInputNumber from '@/components/reborn-input-number/RebornInputNumber.vue'
 import RebornInput from '@/components/reborn-input/RebornInput.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
-import RebornSelectDate from '@/components/reborn-select-date/RebornSelectDate.vue'
 import RebornSelect from '@/components/reborn-select/RebornSelect.vue'
 import RebornSlider from '@/components/reborn-slider/RebornSlider.vue'
 import RebornSwitch from '@/components/reborn-switch/RebornSwitch.vue'
@@ -44,6 +44,8 @@ interface Contact {
 const formRef = ref()
 const immediateValidate = ref(true)
 const formTrigger = computed<'none' | Array<'blur' | 'change'>>(() => immediateValidate.value ? ['change', 'blur'] : 'none')
+/** 关闭后表单项不再渲染错误文字，控件的错误描边仍在，用来对照 show-message 的效果 */
+const showMessage = ref(true)
 
 const form = ref<FormData>({
   username: '乐一番',
@@ -174,6 +176,13 @@ function scrollToBio() {
 <template>
   <RebornPage title="Form 表单" description="表单组件用于数据录入与校验，支持多种校验规则、错误提示、禁用状态等功能。">
     <RebornCard title="表单验证">
+      <!-- 与下方「实时校验」同属开关区，分隔线由下方那一行的 border-b 统一给出 -->
+      <view class="mb-4 flex items-center justify-between">
+        <text class="text-sm text-gray-6">
+          显示错误信息（关闭后只保留控件的错误描边）
+        </text>
+        <RebornSwitch v-model="showMessage" />
+      </view>
       <view class="
           mb-4 flex items-center justify-between border-b border-gray-100 pb-4
           dark:border-gray-800
@@ -188,7 +197,7 @@ function scrollToBio() {
       </view>
 
       <RebornForm ref="formRef" :model-value="form" :rules="rules" label-width="160rpx" label-position="left" size="sm"
-        :trigger="formTrigger">
+        :trigger="formTrigger" :show-message="showMessage">
         <RebornFormItem prop="username" label="用户名" required>
           <RebornInput v-model="form.username" placeholder="请输入用户名" />
         </RebornFormItem>
@@ -207,11 +216,11 @@ function scrollToBio() {
         </RebornFormItem>
 
         <RebornFormItem prop="birthday" label="出生年月" required>
-          <RebornSelectDate v-model="form.birthday" type="date" placeholder="请选择出生年月" />
+          <RebornDatePicker v-model="form.birthday" type="date" placeholder="请选择出生年月" />
         </RebornFormItem>
 
         <RebornFormItem prop="dateRange" label="入职时间" required>
-          <RebornSelectDate v-model:values="form.dateRange" type="date" rangeable />
+          <RebornDatePicker v-model:values="form.dateRange" type="date" rangeable />
         </RebornFormItem>
 
         <RebornFormItem prop="isAgree" label="是否同意" required>

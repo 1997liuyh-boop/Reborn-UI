@@ -11,6 +11,7 @@ import type {
   RateTrigger,
 } from "./reborn-rate.config";
 import { computed, ref, watch } from "vue";
+import { useFormInject } from "~/composables/useFieldGroup";
 
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
@@ -106,7 +107,11 @@ export interface RateProps {
   class?: any;
 }
 
-const isInteractive = computed(() => !props.disabled && !props.readonly);
+/** 接入表单：尺寸、禁用跟随所在表单（控件显式传入的 size 优先），打分后按表单的 trigger 配置触发字段校验 */
+const { size: formSize, disabled: formDisabled, validate } = useFormInject(props);
+const isDisabled = computed(() => !!formDisabled.value || props.disabled);
+
+const isInteractive = computed(() => !isDisabled.value && !props.readonly);
 
 // ui 样式系统
 const uiOverrides = computed(() => props.ui || {});
@@ -114,9 +119,9 @@ const b = tv(theme);
 
 const ui = computed(() => {
   const styles = b({
-    size: props.size as any,
+    size: (formSize.value || props.size) as any,
     color: props.color,
-    disabled: props.disabled,
+    disabled: isDisabled.value,
     readonly: props.readonly,
   });
 
@@ -355,6 +360,7 @@ function updateValue(newValue: number) {
     currentValue.value = newValue;
     emit("update:modelValue", newValue);
     emit("change", newValue);
+    validate("change");
   }
 }
 

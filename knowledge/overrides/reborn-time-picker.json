@@ -10,7 +10,7 @@
   "whenNotToUse": [
     "选择日期或日期加时间，改用 reborn-date-picker。",
     "选择上午、下午等文案时段，改用 reborn-select。",
-    "UniApp 项目改用 reborn-select-date，本组件仅支持 Web。"
+    "UniApp 项目改用 reborn-date-picker（type 设为 minute 或 second），本组件仅支持 Web。"
   ],
   "pitfalls": [
     "打开空值面板不会自动写值；点击或滚动选择会即时提交，确定只结束选择。",

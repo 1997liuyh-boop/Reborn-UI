@@ -20,7 +20,7 @@ TreeSelect 把层级节点选择收进表单输入框，仅支持 Web，UniApp �
 
 `color` 决定选择框与树的语义色，`variant` 决定描边、填充、无边框或下划线形态，`size` 决定选择框尺寸；三者直接复用 `reborn-select` 的主题。下拉内容由 `reborn-tree` 渲染，不另写一套树节点。
 
-`multiple` 开启复选并默认父子联动，`checkStrictly` 改为逐节点独立勾选，`clearable` 提供清空，`collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` 控制标签折叠，`allowSearch` 按标题搜索；`closeOn` 与 `portal` 控制浮层行为；`fieldNames` 适配标题、唯一标识与子节点字段（绑定值按 `fieldNames.key` 识别节点），`loadData` 支持异步补充子节点并由 `loadedKeys` 记录已加载节点，`height` 与 `virtual` 控制树滚动区，`title` / `empty` 插槽定制内容。
+`multiple` 开启复选并默认父子联动，`checkStrictly` 改为逐节点独立勾选，`clearable` 提供清空，`collapseTags` / `collapseTagsTooltip` / `maxCollapseTags` 控制标签折叠，`allowSearch` 按标题搜索；`closeOn` 与 `portal` 控制浮层行为；`fieldNames` 适配标题、唯一标识与子节点字段（绑定值按 `fieldNames.key` 识别节点），`loadData` 支持异步补充子节点并由 `loadedKeys` 记录已加载节点，`height` 与 `virtual` 控制树滚动区，`item` / `empty` 插槽定制内容。
 
 ### 何时使用
 
@@ -215,14 +215,18 @@ const strictValues = ref<(string | number)[]>(["team"]);
 
 ### 节点与空态插槽
 
-`title` 插槽只修改下拉树的节点标题，选择框仍按数据中的标题字段回显；`empty` 覆盖空数据提示。
+`item` 插槽自定义下拉树的节点内容，接收原始 `node`、选中态 `selected` 与展开态 `expanded`，可组合图标、标题及附加说明；它只替换节点标题区，展开箭头、勾选框与点击选中仍由树处理。选择框仍按数据中的标题字段回显。`empty` 覆盖空数据提示。
 
 ```vue
 <template>
   <RebornTreeSelect :tree-data="treeData">
-    <template #title="{ node }"
-      ><strong>{{ node.title }}</strong></template
-    >
+    <template #item="{ node, selected, expanded }">
+      <span class="flex items-center gap-2">
+        <Icon :name="expanded ? 'lucide:folder-open' : 'lucide:folder'" />
+        <span>{{ node.title }}</span>
+        <Icon v-if="selected" name="lucide:check" />
+      </span>
+    </template>
     <template #empty>暂无可选团队</template>
   </RebornTreeSelect>
 </template>
@@ -284,7 +288,7 @@ async function loadData(node: TreeDataNode) {
 | `placeholder`         | `string`                                                                               | `请选择`   | 〔选择框〕空值提示与默认无障碍名称                                               |
 | `disabled`            | `boolean`                                                                              | `false`    | 〔共用〕禁用选择框与树的全部操作，继承表单禁用状态                               |
 | `clearable`           | `boolean`                                                                              | `false`    | 〔选择框〕悬停显示清空按钮                                                       |
-| `size`                | `'sm' \| 'md' \| 'lg'`                                                                 | `md`       | 〔选择框〕尺寸档位；处于表单组内时被组尺寸覆盖                                   |
+| `size`                | `'sm' \| 'md' \| 'lg'`                                                                 | `md`       | 〔选择框〕尺寸档位；显式设置时优先于所在表单的 `size`，未设置时跟随表单                                   |
 | `color`               | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `primary`  | 〔共用〕语义色，同时决定选择框描边与树的选中色                                   |
 | `variant`             | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'`                               | `outlined` | 〔选择框〕形态变体                                                               |
 | `defaultExpandAll`    | `boolean`                                                                              | `false`    | 〔树〕默认展开全部节点                                                           |
@@ -322,7 +326,7 @@ async function loadData(node: TreeDataNode) {
 
 | 插槽名  | 作用域参数                                                     | 描述                                                    |
 | ------- | -------------------------------------------------------------- | ------------------------------------------------------- |
-| `title` | `{ node: TreeDataNode, selected: boolean, expanded: boolean }` | 〔树〕自定义节点标题；多选走勾选态，selected 不代表勾选 |
+| `item` | `{ node: TreeDataNode, selected: boolean, expanded: boolean }` | 〔树〕自定义节点内容，替换树的节点标题区；多选的 selected 不代表勾选 |
 | `empty` | -                                                              | 〔选择框〕自定义空数据文案                              |
 
 ### Expose
@@ -366,7 +370,8 @@ async function loadData(node: TreeDataNode) {
 - **联动模式的绑定值包含全部勾选节点**。父级全选时父级 key 与各子级 key 同时回写；搜索时勾选父级，被搜索隐藏的后代也会一并勾选。程序赋值只按联动规则归一显示（补齐后代、推导半选），不会回写 `v-model`，用户下一次勾选或移除标签时才写回归一后的完整集合。需要原样取值时开启 `checkStrictly`。
 - **节点 key 必须全树唯一且类型稳定**。数字 `0` 与字符串 `'0'` 是不同值；异步数据尚未到达时暂用 key 回显，数据更新后自动显示标题。
 - **禁用节点不能通过标签单独移除**。节点 `disabled` 或 `disableCheckbox` 会关闭标签删除；组件未禁用时，清空按钮仍可重置整个字段。
-- **虚拟滚动依赖树的固定行高**。标题插槽避免多行内容，否则滚动切片会错位；需要可变高度时关闭 `virtual` 并谨慎覆盖 `treeUi`。
+- **`title` 插槽已移除，改用 `item`**。两者作用域参数相同（`node` / `selected` / `expanded`），旧写法把 `#title` 改成 `#item` 即可；继续写 `#title` 不会报错，但内容不再渲染，节点会回落为数据里的默认标题。
+- **虚拟滚动依赖树的固定行高**。`item` 插槽避免多行内容，否则滚动切片会错位；需要可变高度时关闭 `virtual` 并谨慎覆盖 `treeUi`。
 - **异步加载不代改数据**。`loadData` 中需由调用方把子节点写入响应式 `treeData`，叶子节点标记 `isLeaf`。下拉收起时内部树会卸载，已加载记录因此保存在选择器上；替换整棵 `treeData` 重新拉取时，要同时清空 `v-model:loaded-keys`，否则旧记录会让节点按已加载处理、不再请求。
 - **唯一标识字段需要显式指定**。`v-model` 默认按 `key` 查找节点，数据以 `code`、`id` 等字段作唯一标识时必须传 `fieldNames.key`，否则绑定值匹配不到节点，只能按原值回显。
 - **选择框样式直接复用 select**。标签、描边与浮层跟随公共主题；仅修改树内容样式时使用 `treeUi`，不要覆盖触发器。

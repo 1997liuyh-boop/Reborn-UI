@@ -16,6 +16,7 @@ import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
 import RebornPagination from "~/components/reborn/ui/reborn-pagination/RebornPagination.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornScrollbar from "~/components/reborn/ui/scrollbar/RebornScrollbar.vue";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import theme, { defaultTransferFieldNames } from "./reborn-transfer.config";
@@ -84,8 +85,15 @@ defineSlots<{
 
 const b = tv(theme);
 
+/**
+ * 穿梭框自身接入表单：禁用跟随所在表单，字段校验失败时两侧面板描边标红，穿梭（含撤回）后按表单的 trigger 配置触发字段校验。
+ * inject 读取的是父组件提供的上下文，不受下面置空的影响
+ */
+const { disabled: formDisabled, isError, validate } = useFormInject(props);
+const isDisabled = computed(() => !!formDisabled.value || isDisabled.value);
+
 // 内部的 RebornCheckbox 会注入表单上下文：继承表单尺寸与禁用、勾选时触发字段校验、校验失败时描红。
-// 这些勾选只是面板内的临时选择，不是表单值，穿梭框本身也不读表单上下文，因此在这里置空隔断
+// 这些勾选只是面板内的临时选择，不是表单值，因此对子组件置空隔断，表单交互只由穿梭框自身承担
 provide("rebornForm", null);
 provide("rebornFormItem", null);
 
@@ -764,7 +772,7 @@ const rightIndeterminate = computed(
 // ─── 全选 / 取消全选操作 ───────────────────────────────────────────
 
 function toggleLeftAll() {
-  if (props.disabled || enabledLeftItems.value.length === 0) return;
+  if (isDisabled.value || enabledLeftItems.value.length === 0) return;
   if (leftAllChecked.value) {
     const enabledKeys = new Set(enabledLeftItems.value.map((i) => getItemKey(i)));
     leftChecked.value = leftChecked.value.filter((k) => !enabledKeys.has(k));
@@ -776,7 +784,7 @@ function toggleLeftAll() {
 }
 
 function toggleRightAll() {
-  if (props.disabled || enabledRightItems.value.length === 0) return;
+  if (isDisabled.value || enabledRightItems.value.length === 0) return;
   if (rightAllChecked.value) {
     const enabledKeys = new Set(enabledRightItems.value.map((i) => getItemKey(i)));
     rightChecked.value = rightChecked.value.filter((k) => !enabledKeys.has(k));
@@ -807,7 +815,7 @@ watch(
 // ─── 单项勾选 ──────────────────────────────────────────────────────
 
 function toggleLeftItem(item: TransferDataRecord) {
-  if (isItemDisabled(item) || props.disabled) return;
+  if (isItemDisabled(item) || isDisabled.value) return;
   const key = getItemKey(item);
   const idx = leftChecked.value.indexOf(key);
   if (idx > -1) leftChecked.value.splice(idx, 1);
@@ -816,7 +824,7 @@ function toggleLeftItem(item: TransferDataRecord) {
 }
 
 function toggleRightItem(item: TransferDataRecord) {
-  if (isItemDisabled(item) || props.disabled) return;
+  if (isItemDisabled(item) || isDisabled.value) return;
   const key = getItemKey(item);
   const idx = rightChecked.value.indexOf(key);
   if (idx > -1) rightChecked.value.splice(idx, 1);
@@ -844,29 +852,31 @@ function pushHistory(direction: "right" | "left", moveKeys: string[]) {
 
 function moveToRight() {
   const validKeys = getLeftCheckedMovableKeys();
-  if (!validKeys.length || props.disabled) return;
+  if (!validKeys.length || isDisabled.value) return;
   pushHistory("right", validKeys);
   targetKeys.value = [...targetKeys.value, ...validKeys];
   if (props.oneWay) oneWayMovedKeys.value = [...oneWayMovedKeys.value, ...validKeys];
   const validKeySet = new Set(validKeys);
   leftChecked.value = leftChecked.value.filter((k) => !validKeySet.has(k));
   emit("change", [...targetKeys.value], "right", validKeys);
+  validate("change");
   emitSelectChange();
 }
 
 function moveToLeft() {
   const validKeys = getRightCheckedMovableKeys();
-  if (!validKeys.length || props.disabled || props.oneWay) return;
+  if (!validKeys.length || isDisabled.value || props.oneWay) return;
   pushHistory("left", validKeys);
   const validKeySet = new Set(validKeys);
   targetKeys.value = targetKeys.value.filter((k) => !validKeySet.has(k));
   rightChecked.value = rightChecked.value.filter((k) => !validKeySet.has(k));
   emit("change", [...targetKeys.value], "left", validKeys);
+  validate("change");
   emitSelectChange();
 }
 
 function revertRightItemsByKeys(keys: string[]) {
-  if (!props.oneWay || props.disabled || !keys.length) return;
+  if (!props.oneWay || isDisabled.value || !keys.length) return;
   // 只撤回开启单向模式后移入的条目，开启前就在右侧的不动
   const moveKeys = keys.filter(
     (k) => rightMovableKeySet.value.has(k) && oneWayMovedKeySet.value.has(k),
@@ -877,6 +887,7 @@ function revertRightItemsByKeys(keys: string[]) {
   targetKeys.value = targetKeys.value.filter((k) => !moveKeySet.has(k));
   oneWayMovedKeys.value = oneWayMovedKeys.value.filter((k) => !moveKeySet.has(k));
   emit("change", [...targetKeys.value], "left", moveKeys);
+  validate("change");
   emitSelectChange();
 }
 
@@ -886,13 +897,13 @@ function isOneWayItemMoved(item: TransferDataRecord): boolean {
 }
 
 function revertOneWayItem(item: TransferDataRecord) {
-  if (!props.oneWay || props.disabled || isItemDisabled(item)) return;
+  if (!props.oneWay || isDisabled.value || isItemDisabled(item)) return;
   if (!isOneWayItemMoved(item)) return;
   revertRightItemsByKeys([getItemKey(item)]);
 }
 
 function isOneWayItemUndoDisabled(item: TransferDataRecord): boolean {
-  return props.disabled || isItemDisabled(item) || !isOneWayItemMoved(item);
+  return isDisabled.value || isItemDisabled(item) || !isOneWayItemMoved(item);
 }
 
 // ─── 统计文字 ──────────────────────────────────────────────────────
@@ -920,14 +931,14 @@ const rightCountText = computed(() => {
 
 // ─── 操作按钮禁用状态 ──────────────────────────────────────────────
 
-const rightBtnDisabled = computed(() => props.disabled || getLeftCheckedMovableKeys().length === 0);
+const rightBtnDisabled = computed(() => isDisabled.value || getLeftCheckedMovableKeys().length === 0);
 
 const leftBtnDisabled = computed(
-  () => props.disabled || props.oneWay || getRightCheckedMovableKeys().length === 0,
+  () => isDisabled.value || props.oneWay || getRightCheckedMovableKeys().length === 0,
 );
 
 const undoDisabled = computed(
-  () => props.disabled || !props.showUndo || historyStack.value.length === 0,
+  () => isDisabled.value || !props.showUndo || historyStack.value.length === 0,
 );
 
 function undoLast() {
@@ -940,6 +951,7 @@ function undoLast() {
   rightChecked.value = [];
   const reverseDirection = entry.direction === "right" ? "left" : "right";
   emit("change", [...targetKeys.value], reverseDirection, entry.moveKeys);
+  validate("change");
   emit("undo", [...targetKeys.value], { direction: entry.direction, moveKeys: entry.moveKeys });
   emitSelectChange();
 }
@@ -1007,6 +1019,7 @@ const ui = computed(() => {
     checkShape: props.checkShape,
     variant: props.variant,
     color: props.color,
+    error: isError.value,
   });
   const ov: any = props.ui ?? {};
   const slot =
@@ -1057,7 +1070,7 @@ function getItemClass(isSelected: boolean, isDisabled: boolean | undefined) {
     ui.value.item(),
     // 选中底色取语义色的 1 级色阶，hover 也锁在同色上，免得选中行悬停时闪回灰底
     isSelected && ui.value.itemSelected(),
-    isDisabled || props.disabled
+    isDisabled || isDisabled.value
       ? "opacity-50 cursor-not-allowed"
       : !isSelected && "hover:bg-gray-2",
   );
@@ -1068,7 +1081,7 @@ function getRightItemClass(item: TransferDataRecord) {
     // 单向模式的右侧行本身不可点（只有撤回按钮可点）：正常时默认光标，禁用时禁止光标
     return cn(
       ui.value.item(),
-      isItemDisabled(item) || props.disabled
+      isItemDisabled(item) || isDisabled.value
         ? "opacity-50 cursor-not-allowed"
         : "cursor-default hover:bg-gray-2",
     );
@@ -1080,7 +1093,7 @@ function getRightItemClass(item: TransferDataRecord) {
 function getUndoBtnClass(item: TransferDataRecord) {
   return cn(
     ui.value.itemUndoBtn(),
-    (props.disabled || isItemDisabled(item))
+    (isDisabled.value || isItemDisabled(item))
     && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-gray-5 active:scale-100",
   );
 }
@@ -1141,9 +1154,9 @@ const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
     itemClass: (item) =>
       getItemClass(leftCheckedSet.value.has(getItemKey(item)), isItemDisabled(item)),
     onItemClick: toggleLeftItem,
-    menuDisabled: props.disabled,
+    menuDisabled: isDisabled.value,
     isMenuItemChecked: (item) => leftCheckedSet.value.has(getItemKey(item)),
-    isMenuItemDisabled: (item) => props.disabled || isItemDisabled(item),
+    isMenuItemDisabled: (item) => isDisabled.value || isItemDisabled(item),
     toggleMenuItem: toggleLeftItem,
     currentPage: leftCurrentPage.value,
     setPage: (page) => {
@@ -1173,11 +1186,11 @@ const panels = computed<[PanelDescriptor, PanelDescriptor]>(() => [
     isChecked: (item) => !props.oneWay && rightCheckedSet.value.has(getItemKey(item)),
     itemClass: getRightItemClass,
     onItemClick: handleRightItemClick,
-    menuDisabled: props.disabled,
+    menuDisabled: isDisabled.value,
     // 单向模式右侧没有勾选态：右侧条目一律呈选中，只有开启后移入的可取消（即撤回到左侧）
     isMenuItemChecked: (item) => props.oneWay || rightCheckedSet.value.has(getItemKey(item)),
     isMenuItemDisabled: (item) =>
-      props.oneWay ? isOneWayItemUndoDisabled(item) : props.disabled || isItemDisabled(item),
+      props.oneWay ? isOneWayItemUndoDisabled(item) : isDisabled.value || isItemDisabled(item),
     toggleMenuItem: (item) => (props.oneWay ? revertOneWayItem(item) : toggleRightItem(item)),
     currentPage: rightCurrentPage.value,
     setPage: (page) => {
@@ -1207,11 +1220,11 @@ const panelMenus = computed(
         <div v-if="hasPanelHeader" :class="ui.panelHeader()">
           <div :class="ui.headerSelectControls()">
             <slot name="title" :direction="panel.direction" :selectable="panel.selectable" :checked="panel.allChecked"
-              :indeterminate="panel.indeterminate" :disabled="props.disabled || panel.enabled.length === 0"
+              :indeterminate="panel.indeterminate" :disabled="isDisabled || panel.enabled.length === 0"
               :count-text="panel.countText" :checked-count="panel.checkedCount" :total="panel.total"
               :toggle="panel.toggleAll">
               <RebornCheckbox v-if="panel.showHeaderCheckbox" :model-value="panel.allChecked"
-                :indeterminate="panel.indeterminate" :disabled="props.disabled || panel.enabled.length === 0"
+                :indeterminate="panel.indeterminate" :disabled="isDisabled || panel.enabled.length === 0"
                 :color="props.color" size="sm" :label="showHeaderSelectMenu ? undefined : panel.countText"
                 :ui="{ control: ui.checkAll(), label: ui.panelCount() }" class="gap-2" @change="panel.toggleAll" />
               <span v-else-if="!showHeaderSelectMenu" :class="ui.panelCount()">{{ panel.countText }}</span>
@@ -1240,7 +1253,7 @@ const panelMenus = computed(
         <div :class="ui.panelContent()">
           <div v-if="showSearch" :class="ui.panelSearch()">
             <RebornInput size="sm" variant="outlined" suffix-icon="lucide:search" :separator="false"
-              :model-value="panel.search" :placeholder="searchPlaceholder" :disabled="props.disabled"
+              :model-value="panel.search" :placeholder="searchPlaceholder" :disabled="isDisabled"
               :class="ui.searchInput()" @update:model-value="(value) => panel.setSearch(String(value ?? ''))" />
           </div>
 
@@ -1260,11 +1273,11 @@ const panelMenus = computed(
                   <!-- 复选框自身的点击由 change 处理，这里截停冒泡，避免行点击再切换一次 -->
                   <span v-if="panel.selectable" :class="ui.itemContent()" @click.stop>
                     <RebornCheckbox :model-value="panel.isChecked(item)"
-                      :disabled="props.disabled || isItemDisabled(item)" :color="props.color" size="sm"
+                      :disabled="isDisabled || isItemDisabled(item)" :color="props.color" size="sm"
                       :ui="{ control: ui.itemCheck(), label: 'min-w-0 flex-1' }" class="flex w-full gap-2"
                       @change="panel.toggleItem(item)">
                       <slot :item="item" :direction="panel.direction" :checked="panel.isChecked(item)"
-                        :disabled="props.disabled || isItemDisabled(item)">
+                        :disabled="isDisabled || isItemDisabled(item)">
                         <slot name="item" :item="item">
                           <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
                           <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
@@ -1279,7 +1292,7 @@ const panelMenus = computed(
                   <template v-else>
                     <div :class="ui.itemContent()">
                       <slot :item="item" :direction="panel.direction" :checked="false"
-                        :disabled="props.disabled || isItemDisabled(item)">
+                        :disabled="isDisabled || isItemDisabled(item)">
                         <slot name="item" :item="item">
                           <div :class="ui.itemLabel()">{{ getItemLabel(item) }}</div>
                           <div v-if="getItemDescription(item)" :class="ui.itemDesc()">
@@ -1288,7 +1301,7 @@ const panelMenus = computed(
                         </slot>
                       </slot>
                     </div>
-                    <button v-if="isOneWayItemMoved(item)" type="button" :class="getUndoBtnClass(item)" title="撤回" :disabled="props.disabled || isItemDisabled(item)" aria-label="撤回到左侧"
+                    <button v-if="isOneWayItemMoved(item)" type="button" :class="getUndoBtnClass(item)" title="撤回" :disabled="isDisabled || isItemDisabled(item)" aria-label="撤回到左侧"
                       @click.stop="revertOneWayItem(item)">
                       <Icon name="lucide:undo-2" :class="ui.itemUndoIcon()" />
                     </button>
@@ -1306,7 +1319,7 @@ const panelMenus = computed(
           <div v-if="$slots.footer || (paginationEnabled && panel.filtered.length)" :class="ui.panelFooter()">
             <div v-if="paginationEnabled && panel.filtered.length" :class="ui.panelPagination()">
               <RebornPagination :model-value="panel.currentPage" :total="panel.filtered.length"
-                :page-size="paginationPageSize" :disabled="disabled" size="sm" @update:model-value="panel.setPage" />
+                :page-size="paginationPageSize" :disabled="isDisabled" size="sm" @update:model-value="panel.setPage" />
             </div>
             <slot name="footer" :direction="panel.direction" :total="panel.total" :checked-count="panel.checkedCount" />
           </div>

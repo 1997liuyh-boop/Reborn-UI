@@ -33,7 +33,7 @@ export function useFieldGroup() {
   const errors = ref<Record<string, string>>({})
   /** 已注册的字段名集合（用于快速判断字段是否存在） */
   const fields = ref(new Set<string>([]))
-  /** 已注册的 FormItem 实例列表（包含 uid、prop、getBoundingClientRect 等） */
+  /** 已注册的 FormItem 实例列表（包含 uid、prop、getBoundingClientRect、getElement 等）；按注册先后排列，不代表页面上的先后 */
   const fieldInstances = ref<any[]>([])
 
   /**
@@ -52,11 +52,14 @@ export function useFieldGroup() {
    * 由 FormItem 在 `onUnmounted` 或 `prop` 变更时调用。
    */
   const removeField = (field: any) => {
-    const index = fieldInstances.value.indexOf(field)
+    // 调用方每次传的是新对象，按 uid + prop 找回注册时的那一条，不能用 indexOf 比对引用
+    const index = fieldInstances.value.findIndex(item => item.uid === field.uid && item.prop === field.prop)
     if (index > -1) {
       fieldInstances.value.splice(index, 1)
     }
-    if (field.prop) {
+    // 同一路径可能已被另一个表单项接管：动态列表删掉中间项时，后面的项下标前移、先改用这个路径注册，
+    // 被删项随后卸载再注销同名路径。还有实例在用时保留，否则接管的项会被漏掉、不再参与校验
+    if (field.prop && !fieldInstances.value.some(item => item.prop === field.prop)) {
       fields.value.delete(field.prop)
     }
   }
@@ -241,6 +244,15 @@ export function useFieldGroupItem(props: UseFieldGroupItemProps) {
   }
 
   /**
+   * 获取当前 FormItem 的根节点。
+   * 表单据此按文档顺序挑出「第一个」错误项，并交给原生 scrollIntoView 定位。
+   */
+  const getElement = (): Element | null => {
+    const el = instance?.proxy?.$el
+    return el instanceof Element ? el : null
+  }
+
+  /**
    * 根据触发时机决定是否执行校验。
    *
    * 优先级：FormItem 自身 `trigger` > Form 全局 `trigger`。
@@ -285,7 +297,7 @@ export function useFieldGroupItem(props: UseFieldGroupItemProps) {
         form.removeField({ uid: instance?.uid, prop: oldProp })
       }
       if (newProp) {
-        form.addField({ uid: instance?.uid, prop: newProp, getBoundingClientRect })
+        form.addField({ uid: instance?.uid, prop: newProp, getBoundingClientRect, getElement })
       }
     }
   })
@@ -293,7 +305,7 @@ export function useFieldGroupItem(props: UseFieldGroupItemProps) {
   /** 组件挂载时向表单注册当前字段 */
   onMounted(() => {
     if (form && props.prop) {
-      form.addField({ uid: instance?.uid, prop: props.prop, getBoundingClientRect })
+      form.addField({ uid: instance?.uid, prop: props.prop, getBoundingClientRect, getElement })
     }
   })
 
@@ -340,9 +352,18 @@ export function useFormInject(props: any = {}) {
   const formItem = inject<any>('rebornFormItem', null)
 
   /**
-   * 组件尺寸：FormItem > Form > 自身 props，三级回退。
+   * 使用方是否在控件上显式写了 size（如 <RebornSwitch size="lg">）。
+   * props.size 带着各组件自己的默认值，分不出「显式传入」和「默认值」，只能看原始 vnode 上有没有传
+   */
+  const instance = getCurrentInstance()
+  const hasExplicitSize = () => instance?.vnode.props?.size != null
+
+  /**
+   * 组件尺寸：显式传入的 size > FormItem > Form > 自身默认值（与 Element Plus 一致）。
+   * 表单的 size 只是表单内控件的默认尺寸，单个控件写了 size 时以控件为准。
    */
   const size = computed(() => {
+    if (hasExplicitSize()) return props.size
     return formItem?.size?.value || form?.props?.size || props.size
   })
 

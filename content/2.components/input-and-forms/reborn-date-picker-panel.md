@@ -1,6 +1,6 @@
 ---
 title: DatePickerPanel 日期选择面板
-description: 内嵌日期面板：15 种类型覆盖年 / 季 / 月 / 周 / 日 / 时间，支持多选、范围、双面板联动与周数，仅 Web。
+description: 内嵌日期面板：16 种类型覆盖年 / 季 / 月 / 周 / 日 / 时间，支持多选、范围、双面板联动与周数，仅 Web。
 category: 表单与输入
 platform: web
 tags: [calendar, date, select, panel]
@@ -8,7 +8,7 @@ badge: New
 ---
 
 ::warning
-仅 Web 端提供。UniApp 端改用 `reborn-select-date`。
+仅 Web 端提供。UniApp 端改用 `reborn-date-picker`（底部弹出滚轮）。
 ::
 
 ::ComponentViewer{demoFile="RebornDatePickerPanelDemo.vue" config="RebornDatePickerPanelConfig" componentId="reborn-date-picker-panel" dependencies="dayjs" :componentFiles='["RebornDatePickerPanel.vue", "reborn-date-picker-panel.config.ts"]'}
@@ -34,7 +34,7 @@ DatePickerPanel 是直接铺在页面里的日期面板，没有输入框和弹�
 
 - 表单里的日期字段，需要输入框展示已选值并在点击时展开 —— 改用 `reborn-date-picker`。
 - 只选时分秒、不涉及日期 —— 改用 `reborn-time-picker`。
-- UniApp 端或需要滚轮式选择 —— 改用 `reborn-select-date`。
+- UniApp 端或需要滚轮式选择 —— 改用 `reborn-date-picker`，它的 UniApp 端是底部弹出滚轮。
 
 ## 用法
 

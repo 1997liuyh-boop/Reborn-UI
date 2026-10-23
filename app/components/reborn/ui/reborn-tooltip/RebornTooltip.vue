@@ -13,6 +13,7 @@ import {
   useId,
   useSlots, watch
 } from 'vue';
+import { useFloatingHost } from '~/composables/useFloatingHost';
 import {
   FLOATING_PANEL_RADIUS,
   FLOATING_TRIGGER_GAP,
@@ -414,6 +415,9 @@ const setOpen = (value: boolean) => {
   }
   emit('openChange', value);
 };
+
+// 所在弹窗或抽屉关闭时一并收起，并取消尚未到点的显隐定时器
+useFloatingHost({ open: () => isVisible.value, onHidden: () => { clearTimers(); setOpen(false); } });
 
 /** 经延时打开；delay<=0 时立即生效 */
 const requestOpen = (delay: number) => {

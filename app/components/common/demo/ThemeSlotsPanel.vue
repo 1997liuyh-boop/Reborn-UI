@@ -176,7 +176,7 @@ onBeforeUnmount(clearHighlight)
         </p>
       </div>
       <UButton
-        icon="tabler:x" color="neutral" variant="ghost" size="xs"
+        icon="lucide:x" color="neutral" variant="ghost" size="xs"
         title="收起" aria-label="收起 Theme slots" @click="open = false"
       />
     </header>
@@ -213,7 +213,7 @@ onBeforeUnmount(clearHighlight)
             </UBadge>
             <span class="flex-1" />
             <UButton
-              icon="tabler:copy" color="neutral" variant="ghost" size="xs"
+              icon="lucide:copy" color="neutral" variant="ghost" size="xs"
               class="opacity-0 transition-opacity group-hover:opacity-100"
               :title="`复制 ${slot.key} 的类名`" :aria-label="`复制 ${slot.key} 的类名`"
               @click.stop="copySlot(slot.key, slot.classes)"

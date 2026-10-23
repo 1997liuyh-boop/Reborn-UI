@@ -295,3 +295,4 @@ async function beforeClose(done: (cancel?: boolean) => void) {
 - **穿透不等于解锁滚动。** modal=false 且 modalPenetrable=true 才允许穿透；要滚动背景还需 lockScroll=false。
 - **旧 Web Popup 已迁移。** 将组件与目录改为 reborn-drawer，position 改 direction，showHeader 改 withHeader，handleClose() 改 close()；ui.closeBtn 改 ui.close。旧 header 只替换标题的场景改用 title 插槽。center 改用 reborn-dialog；旧别名、安全区与手势 API 不属于 Web Drawer。
 - **自动层级与焦点管理针对 Drawer 实例。** 自定义容器仍受 CSS 层叠规则影响；其他类型的全局浮层不在 Drawer 栈中，嵌套交互需单独验证。
+- **关闭时一并收起内部浮层。** 抽屉里展开着的下拉类组件（Select、Cascader、DatePicker、TimePicker、TreeSelect、Dropdown）、Popover / Popconfirm / ColorPicker 与 Tooltip 会在抽屉开始关闭的同时收起，不会留在页面上；重开抽屉时也是收起状态。

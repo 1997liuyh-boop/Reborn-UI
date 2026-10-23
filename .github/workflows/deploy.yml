@@ -49,9 +49,11 @@ jobs:
         run: pnpm kb:bootstrap
 
       - name: 构建应用（uniapp H5 + Nuxt）
-        # 构建 3000+ 模块内存开销大，默认 4GB 堆上限会 OOM；运行器 7GB 内存，6144MB 为安全值
+        # 构建模块量大，默认 4GB 堆上限会 OOM。公开仓库的 ubuntu-latest 运行器是 4 核 16GB，
+        # 堆上限给 12GB、留 4GB 给系统与 esbuild 等原生进程。
+        # 2026-10-22 补齐 134 个总览缩略图并新增日历、步骤条后，6GB 在 Nitro 服务端打包阶段 OOM（退出码 134）。
         env:
-          NODE_OPTIONS: --max-old-space-size=6144
+          NODE_OPTIONS: --max-old-space-size=12288
           # Docus AI 助手的构建期开关：构建时存在即启用助手 UI（非密钥，真实模型凭证在运行时注入）
           AI_GATEWAY_API_KEY: enabled
         run: pnpm run build

@@ -7,7 +7,7 @@ tags: [uniapp, picker, picker-view, form]
 ---
 
 ::warning
-仅 UniApp 端组件。需要「触发器 + 弹层」的完整下拉选择请使用 `reborn-select`，日期选择请使用 `reborn-select-date`。
+仅 UniApp 端组件。需要「触发器 + 弹层」的完整下拉选择请使用 `reborn-select`，日期选择请使用 `reborn-date-picker`。
 ::
 ::ComponentViewer{demoFile="RebornPickerViewDemo.vue" config="RebornPickerViewConfig" componentId="reborn-picker-view" :componentFiles='[]' :uniappFiles='["RebornPickerView.vue", "reborn-picker-view.config.ts", "index.ts"]' dependencies="clsx, lodash-es"}
 ::
@@ -25,7 +25,7 @@ PickerView 是基于 uni-app `picker-view` 封装的滚动选择视图：不带�
 不适用场景：
 
 - 需要触发器加弹层的完整下拉选择，改用 `reborn-select`。
-- 日期选择，改用 `reborn-select-date`。
+- 日期选择，改用 `reborn-date-picker`。
 
 ## 用法
 

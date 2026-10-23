@@ -350,8 +350,9 @@ watch(isSearching, async (searching) => {
           :show-line="showLine" :show-icon="showIcon" :load-data="treeLoadData" :loaded-keys="loadedKeys"
           :height="height" :virtual="virtual" :ui="treeUi" @select="selectNode" @check="checkNodes"
         >
-          <template v-if="$slots.title" #title="{ node, selected, expanded }">
-            <slot name="title" :node="node" :selected="selected" :expanded="expanded" />
+          <!-- item 只替换树的节点标题区；展开与选择仍由树处理。未提供时不传插槽，树按 fieldNames.title 渲染默认标题。 -->
+          <template v-if="$slots.item" #title="{ node, selected, expanded }">
+            <slot name="item" :node="node" :selected="selected" :expanded="expanded" />
           </template>
         </RebornTree>
         <div v-else :id="treeId" :class="ui.empty({ class: cn(props.ui?.empty) })">

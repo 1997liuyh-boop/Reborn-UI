@@ -54,11 +54,17 @@ before(async () => {
   });
   const compiler = await compile(`@import 'tailwindcss';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';@import './app/assets/theme/motion.css';`, { base: resolve('.'), onDependency() {} });
   const scanner = new Scanner({ sources: [{ base: resolve('app/components/reborn/ui/reborn-steps'), pattern: '**/*', negated: false }] });
-  const css = compiler.build([...scanner.scan(), 'size-12', 'text-2xl', 'h-1', 'fixture-root']);
+  const candidates = [...scanner.scan(), 'size-12', 'text-2xl', 'h-1', 'fixture-root'];
+  const css = compiler.build(candidates);
+  // 演示站只重置盒模型，未引入 preflight；使用相同环境验证组件不会依赖全局边框重置。
+  const withoutPreflight = await compile(`@import 'tailwindcss/theme.css';@import './app/assets/theme/typography.css';@import './app/assets/theme/base.css';@import './app/assets/theme/motion.css';@import 'tailwindcss/utilities.css';*{box-sizing:border-box}`, { base: resolve('.'), onDependency() {} });
+  const cssWithoutPreflight = withoutPreflight.build(candidates);
   const script = result.outputFiles[0]!.text;
   server = createServer((request, response) => {
-    response.setHeader('Content-Type', request.url === '/app.js' ? 'text/javascript' : request.url === '/style.css' ? 'text/css' : 'text/html');
-    response.end(request.url === '/app.js' ? script : request.url === '/style.css' ? css : '<!doctype html><html><head><link rel="stylesheet" href="/style.css"></head><body style="margin:24px"><div id="app"></div><script type="module" src="/app.js"></script></body></html>');
+    const stylesheet = request.url === '/style.css' ? css : request.url === '/without-preflight.css' ? cssWithoutPreflight : undefined;
+    const stylesheetPath = request.url === '/without-preflight' ? '/without-preflight.css' : '/style.css';
+    response.setHeader('Content-Type', request.url === '/app.js' ? 'text/javascript' : stylesheet ? 'text/css' : 'text/html');
+    response.end(request.url === '/app.js' ? script : stylesheet ?? `<!doctype html><html><head><link rel="stylesheet" href="${stylesheetPath}"></head><body style="margin:24px"><div id="app"></div><script type="module" src="/app.js"></script></body></html>`);
   });
   await new Promise<void>(done => server.listen(0, '127.0.0.1', done));
   const address = server.address();
@@ -72,13 +78,13 @@ after(async () => {
   if (server) await new Promise<void>((done, reject) => server.close(error => error ? reject(error) : done()));
 });
 
-async function withSteps(run: (page: Page) => Promise<void>) {
+async function withSteps(run: (page: Page) => Promise<void>, preflight = true) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.setDefaultTimeout(10000);
   try {
-    await page.goto(url);
+    await page.goto(preflight ? url : `${url}/without-preflight`);
     await page.locator('li[data-step-index="2"]').waitFor();
     await run(page);
     assert.deepEqual(errors, [], '真实组件不应抛出运行时异常');
@@ -658,6 +664,36 @@ it('原生虚线在横竖方向保持 2px 粗细，箭头通过 lineType 与圆�
       }
     }
   });
+});
+
+it('未引入 preflight 时，横竖虚线的底轨和填充层都只绘制一侧边框', { skip: !browserAvailable }, async () => {
+  await withSteps(async (page) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const direction of ['horizontal', 'vertical']) {
+      for (const active of [0, 1, 3]) {
+        await configure(page, { lineType: 'dashed', direction, active, members: [
+          { key: 'a', title: '创建订单' },
+          { key: 'b', title: '确认付款' },
+          { key: 'c', title: '安排配送' },
+        ] });
+        const lines = await page.locator('.fixture-line').evaluateAll(elements => elements.map((element) => {
+          const style = getComputedStyle(element);
+          const bounds = element.getBoundingClientRect();
+          return {
+            borders: [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth].map(Number.parseFloat),
+            width: bounds.width, height: bounds.height, x: bounds.x, y: bounds.y,
+          };
+        }));
+        for (const line of lines) {
+          assert.deepEqual(line.borders, direction === 'horizontal' ? [2, 0, 0, 0] : [0, 0, 0, 2], `${direction} active=${active} 仅绘制单条虚线`);
+          near(direction === 'horizontal' ? line.height : line.width, 2, '虚线轨道保持 2px 粗细');
+        }
+        for (let index = 0; index < lines.length; index += 2) {
+          assert.deepEqual(lines[index + 1], lines[index], '填充层与底轨完全重合');
+        }
+      }
+    }
+  }, false);
 });
 
 it('实线与虚线切换步骤时沿连接方向填充，真实中间帧、结束帧及回退均正确', { skip: !browserAvailable }, async () => {

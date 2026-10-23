@@ -7,10 +7,88 @@ navigation: false
 ## 2026 年 10 月
 
 ::reborn-timeline{:ui='{"content":"[&>ul]:my-0"}'}
+:::reborn-timeline-item{timestamp="2026-10-23" color="error" placement="top"}
+
+- 破坏 **DatePicker**（UniApp）：`reborn-select-date` 改名为 `reborn-date-picker`，组件名改为 `RebornDatePicker`，导入路径改为 `components/reborn-date-picker/RebornDatePicker.vue`，类型 `SelectDateShortcut` 改名为 `DatePickerShortcut`；`labelFormat` 改名为 `format`，与 Web 端同名同义，其余参数与事件不变。
+- 破坏 **SelectDate**（Web）：删除 `RebornSelectDate`，日期选择统一使用 `RebornDatePicker`；DatePicker 文档合并为双端，新增两端差异对照。
+- 破坏 **TreeSelect**（Web）：移除 `title` 插槽，统一用 `item`，两者作用域参数相同（`node` / `selected` / `expanded`）。继续写 `#title` 不报错，但内容不再渲染，节点回落为数据里的标题。
+- 调整 **Form**（双端）：`size` 默认值改为 `md`（Web 原为 `sm`，UniApp 原为空）。控件上显式写的 `size` 优先于所在表单与表单项，未写时才跟随表单，与 Element Plus 一致；此前表单尺寸会覆盖控件自己的设置。
+- 修复 **FormItem**（双端）：错误信息出现或消失时不再推动下方表单项。`inlineMessage` 为 `false` 时错误浮在控件下方、占用表单项的下间距；为 `true` 时排在控件右侧同一行，单行截断，Web 端悬停可看全文。此前 `inlineMessage` 声明了但没有生效。
+- 修复 **Form**（双端）：动态列表删掉中间项时，后面的项前移改用同一路径注册，被删项卸载时不再把这条路径一起注销，接管的表单项照常参与校验。
+- 修复 **Form**（Web）：`scrollToField` 改用原生 `scrollIntoView`，表单放在弹窗、抽屉或独立滚动容器里也能定位；校验失败后按页面上的先后定位第一个出错字段，此前按注册先后，动态新增或 `v-if` 后显示的字段会排错。
+- 调整 **Rate**、**TimePicker**、**ColorPicker**、**Upload**、**Transfer**、**Mention**（Web）：接入表单校验，值变化后按表单的 `trigger` 触发字段校验。TimePicker、ColorPicker、Upload、Transfer 校验失败时显示错误描边；Rate、TimePicker、ColorPicker 的尺寸与禁用跟随表单，Upload、Transfer 的禁用跟随表单。ColorPicker 面板里的输入框不再继承外层表单项的错误态。
+- 修复 **Dialog**、**Drawer**（Web）：关闭时一并收起内部展开的下拉、Popover 与 Tooltip。此前内容不卸载的弹窗、抽屉关闭后，传送到 body 的浮层会留在页面上，按 Esc 关闭时最明显。
+- 修复 **Popover**（Web）：路由变化或所在页面被 keep-alive 停用时关闭气泡，并取消待执行的悬停任务；没有安装 Vue Router 的应用照常使用。
+- 修复 **SelectTrigger**（Web）：向上展开的面板改用 `bottom` 贴住触发器，展开与收起动画期间不再与触发器错开。
+- 修复 **Transition**（Web）：组件卸载时不再中止正在播放的离场动画。此前下拉刚开始收起、所在弹窗随即销毁时，节点会一直留在页面上。
+- 调整 **DatePicker**（Web）：`arrowAnimation` 默认改为 `false`，展开时日历图标不再旋转。
+- 调整 **Calendar**（Web）：悬停任意日期以及选中的日期，显示与有事项日期相同的浅底与顶边。
+- 修复 **Steps**（Web）：`lineType="dashed"` 的连接线先清零四边宽度，未引入 Tailwind preflight 时不再出现浏览器默认的 3px 边框。
+- 文档：组合式函数一节新增 `useLoading`、`useGlobalScrollLock` 两页，其余各页按源码校对；该节页面加入像素拼图背景。
+
+:::
+
+:::reborn-timeline-item{timestamp="2026-10-22" color="error" placement="top"}
+
+- 新增 **Calendar** 日历（Web）：按月或按年展示事项，支持公历与农历、直角边框、`date-cell` 插槽自定义日期格、`timezone` 时区与 `valueFormat` 字符串绑定值。
+- 新增 **Steps** 步骤条（Web）：横向与纵向排列，内容可放在四个方向，三档尺寸，支持进度圆环、单步状态，以及 `icon` / `title` / `description` / `connector` 插槽。
+- 新增 **Table**（Web）：`type: 'drag'` 列提供行拖拽排序。按住手柄拖动或聚焦手柄按 `↑` / `↓` 移动，拖到滚动区边缘自动滚动，树形数据只在同级之间移动。表格不改动 `data`，松手后派发 `row-drag-end`，回调里的 `data` 是移动后的新数组，回写即完成排序。
+- 破坏 **尺寸令牌**（Web）：删除按钮、输入框、徽章、分页等组件的专属尺寸变量，包括 `--height-button-*`、`--height-input-*`、`--spacing-input-px-*`、`--height-badge-*`、`--height-pagination-*`，改用 Tailwind 原生刻度（如 `h-6` / `h-8` / `h-10`、`px-2.5` / `px-3` / `px-4`），随 `--spacing` 缩放。默认根字号 16px 时尺寸不变；业务代码引用了这些变量或 `h-input-*` 一类类名的，需要换成原生类。Radio 中档圆点没有对应的原生刻度，保留 `--spacing-radio-dot-md`。
+- 调整 **动效**（Web）：引入 `motion-v`，Dialog 的 bounce 入场、Notification 的栈内补位、Collapse 与 SubMenu 的高度展开、Switch、Draggable、Guide、Statistic 等改由 Motion 插值；动画途中再次切换时从当前画面续接，不再跳回上一次的目标。
+- 调整 **Dialog**、**Drawer**（Web）：可滚动的正文改用浮层滚动条 `RebornScrollbar`，悬停或滚动时显示，不占正文宽度；`ui` 新增 `scrollbar`、`scrollbarWrap`。
+- 调整 **光标**（Web）：禁用态统一显示禁止光标，加载中显示等待光标（Button、Switch、Upload），Tooltip 触发器与 Text 的截断提示显示帮助光标。Rate 禁用时不再给根节点加 `pointer-events-none`，改为 `cursor-not-allowed` 并只屏蔽子元素交互，禁止光标才显示得出来。
+- 文档：组件总览卡片改为一行 4 张、缩略预览在上、悬停时预览铺满整张卡片，New / Update 改用图标标记，平台改用 Badge；补齐全部 159 个组件的总览缩略图；单个组件的文档页加入《欢乐颂》乐谱滚动背景。
+- 文档：切换主题色时 `brand-1` ~ `brand-10` 整条色阶随之切换；AI 助手模型改为 deepseek-flash，调用失败时显示中文提示。
+
+:::
+
+:::reborn-timeline-item{timestamp="2026-10-19" color="success" placement="top"}
+
+- 新增 **Avatar** 头像、**AvatarGroup** 头像组（Web）：头像支持图片、图标与文字，三档固定尺寸或自定义像素尺寸，图片加载失败时回退；头像组重叠展示成员，尺寸与形状由组下发，超出数量折叠，隐藏的头像在浮层中列出。
+- 新增 **Statistic** 统计（Web）：数字指标展示，支持连续计数动画、精度、分隔符、自定义格式化，以及标题和前后缀插槽。
+- 新增 **Countdown** 倒计时（Web）：基于目标时间倒计时，支持天数与毫秒格式，回传剩余毫秒并在结束时通知。
+- 新增 **Segmented** 分段控制器（Web）：一组互斥选项排成一条，选中块滑动切换，三档尺寸，可带图标、撑满宽度或竖排，参与表单校验。
+- 调整 **Guide**（Web）：重写引导流程，自动把目标滚到居中并锁定；步骤支持 `children` 父子嵌套、`cover` 封面与 `component` 整块替换面板，新增 `indicator`（数字 / 点状）、`close` 事件与 `close()` 方法。默认值随之变化：`hideSkip` 由 `false` 改为 `true`，默认不显示跳过按钮；`highlightPadding` 由 `8` 改为 `4`；在最后一步调用 `next()` 会完成引导，此前不动作。
+- 调整 **Popover**（双端）、**ContextMenu**、**ColorPicker**（Web）：定位改用 `placement`（「方向-对齐」写法，共 12 种，与 Tooltip、Popconfirm 一致）加 `sideOffset`。旧的 `content` 对象（`side` / `align` / `sideOffset`）标记为废弃，仍可使用，与新属性同时传入时以新属性为准。ColorPicker 的 `placement` 两端写法一致，默认值 Web 为 `bottom`、UniApp 为 `right`。
+- 调整 **Popover**、**Popconfirm**（Web）：新增 `closeOnScroll`，默认 `true`，页面或触发器所在容器滚动时关闭，关掉后气泡跟随触发器重新定位；`dismissible` 把 iframe 内的点击也算作外部，嵌套浮层里的点击不算。Popconfirm 放在 Popover 里时，点确认框的按钮不会关掉外层气泡。
+- 文档 **Form**：新增「完整表单联动」示例，在一张活动报名表里演示人数上限收紧、条件字段切换、级联选项、按开关增减必填规则、填写进度与提交重置。
+
+:::
+
+:::reborn-timeline-item{timestamp="2026-10-16" color="success" placement="top"}
+
+- 新增 **Mention** 提及（Web）：输入前缀唤起候选列表，支持多前缀、远程搜索（`loading`）、`whole` 退格整体删除与面板随光标行定位；面板默认与输入框等宽。
+- 新增 **PageHeader** 页头（Web）：返回区、标题、内容与扩展操作排成一行，可在上方放面包屑；返回区可用键盘触发 `back`。路径较浅时可代替面包屑提供返回入口。
+- 新增 **Crowd** 人群漫步（Web）：把人物精灵图切格后在 2D 画布上左右随机走过，可控人数与速度，用作页脚装饰。
+- 新增 **Launch** 电脑动画（Web）：可设置品牌文字和屏幕动效的复古电脑动画，支持悬停展开、点击固定与紧凑取景。
+- 调整 **BackTop**（Web）：新增 `direction="bottom"` 去底部（进度环逆时针）、`shape="square"` 圆角方形（进度框随形状）、`icon` 自定义图标与 `xs`（24px）尺寸，键盘与读屏均可操作。
+- 调整 **Carousel**（Web）：重写滚动实现，`loop` 改用相邻克隆片衔接首尾。新增 `slidesPerView`（旧拼写 `slidesPerview` 继续兼容）、`draggable` 鼠标拖动与 `keyboard` 方向键 / Home / End；`pagination` 新增 `progress` 类型、`display` 显示时机与 `indicatorBackground` 背景开关；`autoplay` 支持 `pauseOnHover` / `pauseOnFocus`；`height` 可传数字；`indicatorOffset` 默认值改为 `8`。`change` 改为真实索引变化时立即触发，不再等动画结束，外部改 `v-model` 不触发；`prev` / `next` 插槽新增 `disabled`。
+- 调整 **Image**（Web）：预览新增 `previewToolbar`，按书写顺序配置菜单按钮（含旋转、翻转与全屏轮播）；多图时遮罩两侧出现切换箭头，底部缩略图栏改由 `previewNavbar` 开启、默认隐藏；新增 `showPreview()`；`mode` 在 Web 端映射为 `object-fit` / `object-position`。根节点去掉默认的 `rounded-xl`，需要圆角写在 `ui.root`。
+- 调整 **Menu**（Web）：新增 `checkStrictly`，悬停触发的浮层菜单里带子菜单的父级也能被选中，单个父级可用 SubMenu 的 `selectable` 退出。
+- 修复 **Menu**（Web）：重复点击已选中的项仍派发 `select`，但不再写回 `selectedKeys`；router 模式下目标就是当前页时不重复跳转。
+- 调整 **Table**（Web）：固定列阴影只画在靠近滚动内容的一侧，阴影伪元素不拦截点击与拖拽；溢出提示改为首次交互时才创建浮层实例，溢出单元格多时减少渲染开销。
+- 文档：站点新增全局回到顶部与去底部按钮，顶栏阅读进度改为海浪与小船，首页加入水印、斜向走马灯与网格背景，组件总览页底部改用 Crowd。
+- 工程：知识库条目写入 `ui` 键位，AI 助手与 MCP 优先引导用 `ui` 修改样式。
+
+:::
+
+:::reborn-timeline-item{timestamp="2026-10-14" color="error" placement="top"}
+
+- 新增 **DepthImage** 深度视差图（Web）：按深度图对透明背景图片做跟随指针的 2.5D 视差与补光，WebGL 渲染，失败时退回静态图。
+- 破坏 **Chip**（双端）：新增 `variant`，可选 `solid`（实心圆点）、`outline`（空心圆环）、`textDot`（实心底白字）、`textOutline`（描边加同色文字），不传时有 `text` 取 `textDot`、否则取 `solid`。`size` 收为 `sm` / `md` / `lg` 三档（Web 原为 `xs` ~ `xl`，UniApp 原为 `3xs` ~ `3xl`），各档尺寸按变体重新定义；`text` 只在两种文字变体下渲染，原先用 `xs` / `sm` 做纯圆点的地方改用 `variant="solid"`。
+- 调整 **Text**（Web）：新增 `ellipsisPosition`（`end` / `start` / `middle`），省略时可保留结尾或首尾，适合文件路径、带扩展名的文件名与订单号。
+- 调整 **Tooltip**（Web）：新增 `rawContent`，把文案按 HTML 渲染，只接受可信或已净化的内容；新增 `virtualTriggering` 与 `virtualRef`，由外部元素触发和定位；长单词改用 `wrap-anywhere` 换行。
+- 调整 **Descriptions**（Web）：新增 `rowspan`，单项可跨多个数据行，并可与 `span` 组合。
+- 调整 **Menu**（Web）：垂直菜单折叠后，没有图标的一级条目以标题首字占位；分组标题过长时截断为省略号。
+- 调整 **DatePicker**、**DatePickerPanel**（Web）：新增 `weekrange` 周范围类型；DatePickerPanel 新增 `defaultValue`，未选值时面板停在指定日期所在的月或年。
+
+:::
+
 :::reborn-timeline-item{timestamp="2026-10-13" color="success" placement="top"}
 
 本批次对应 `reborn-ui@0.1.84` 与 `reborn-ui-registry@0.1.1`。
 
+- 新增 **Upload** 上传（Web）：`text` / `picture` / `picture-card` 三种列表形态，支持拖拽、选择文件夹、手动上传、自定义请求与分片断点续传，图片与视频都能显示缩略图，参数与钩子对齐 Element Plus。
 - 修复 **Upload**（Web）：等待 `beforeUpload` 时也可通过 `abort()` 取消，重新提交后旧钩子结果不再影响新任务；组件卸载时中止请求并屏蔽迟到的进度、成功与失败回调。
 - 新增 **Table**（Web）：提供 `RebornTable` 与 `RebornTableColumn`，支持数据驱动列和声明式列、固定列与多级表头、单选和多选、排序筛选、远程分页、展开行、树形数据与懒加载、合并单元格及表尾合计。`size` 提供 `lg` / `md` / `sm` 三档，行高分别为 56 / 48 / 36px；文字沿用项目字号令牌，边框使用 `gray-3`。
 - 调整 **Table**（Web）：设置 `height` / `maxHeight` 后默认固定表头，`fixedHeader=false` 可关闭固定；不设置高度时表头随内容滚动。支持 `tableLayout` 切换 `fixed` / `auto`，溢出提示复用 `RebornTooltip`，可通过表级或列级选项、格式化回调和插槽自定义。

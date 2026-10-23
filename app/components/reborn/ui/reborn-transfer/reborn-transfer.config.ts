@@ -219,6 +219,11 @@ const config = {
         panelFooter: 'border-t-0',
       },
     },
+    /** 所在表单项校验失败：两侧面板外框改为错误色（borderless 没有外框，不显示） */
+    error: {
+      true: { panel: 'border-red-5' },
+      false: {},
+    },
     /**
      * 选中条目取对应色阶 1 档填充，并把 hover 钉在同一色上，避免悬停时跳回灰底。
      * 头部下拉的选中项颜色由 RebornSelect 自己的 color 决定，这里不重复下发。

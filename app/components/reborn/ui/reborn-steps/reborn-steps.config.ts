@@ -106,7 +106,8 @@ export const stepsTheme = tv({
     type: { default: {}, dot: {} },
     lineType: {
       solid: {},
-      dashed: { line: 'rounded-none border-current border-dashed bg-transparent' },
+      // 先清零四边宽度，再按方向绘制一侧，避免未引入 preflight 时出现浏览器默认的 3px 边框。
+      dashed: { line: 'rounded-none border-0 border-current border-dashed bg-transparent' },
       arrow: {},
     },
     completed: { true: { arrow: 'text-(--step-color)' }, false: {} },

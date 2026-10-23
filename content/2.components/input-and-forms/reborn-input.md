@@ -241,7 +241,7 @@ const keyword = ref("");
 | `modelValue` | `string \| number` | - | 输入框绑定值（`v-model`）。 |
 | `defaultValue` | `string \| number` | - | 非受控模式下的初始值，未绑定 `modelValue` 时生效。 |
 | `type` | `string` | `'text'` | 原生 input type（自由字符串）；传 `'textarea'` 渲染多行文本域。 |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸，影响高度、内边距与字号（sm/md 14px、lg 16px）；在表单组内被组尺寸覆盖。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 尺寸，影响高度、内边距与字号（sm/md 14px、lg 16px）；显式设置时优先于所在表单的 `size`，未设置时跟随表单。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 聚焦时描边 / 下划线 / 分割线的高亮颜色。 |
 | `variant` | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'` | `'outlined'` | 形态变体；`underlined` 强制压平圆角，此时 `shape` 不再生效。 |
 | `shape` | `'circle' \| 'square'` | `'square'` | 外形：`square` 按尺寸取圆角令牌（4 / 6 / 8px），`circle` 为胶囊。 |
@@ -294,7 +294,7 @@ Web 端额外支持 `v-model` 修饰符：`.trim` 失焦后去除首尾空格、
 | `modelValue` | `string \| number` | - | 输入框绑定值（`v-model`）。 |
 | `defaultValue` | `string \| number` | - | 非受控模式下的初始值，未绑定 `modelValue` 时生效。 |
 | `type` | `InputType` | `'text'` | 原生键盘类型：`text` / `number` / `idcard` / `digit` / `tel` / `safe-password` / `nickname` / `none` / `decimal` / `numeric` / `search` / `email` / `url`；另可传 `'textarea'` 渲染多行文本域。 |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'sm'` | 尺寸，影响高度与字号（按 `rpx` 令牌递进）；在表单组内被组尺寸覆盖。 |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'sm'` | 尺寸，影响高度与字号（按 `rpx` 令牌递进）；显式设置时优先于所在表单的 `size`，未设置时跟随表单。 |
 | `color` | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 聚焦时描边 / 下划线 / 分割线的高亮颜色。 |
 | `variant` | `'outlined' \| 'filled' \| 'borderless' \| 'underlined'` | `'filled'` | 形态变体；`underlined` 强制压平圆角，此时 `shape` 不再生效。 |
 | `shape` | `'circle' \| 'square'` | `'square'` | 外形：`square` 按尺寸取圆角令牌（4 / 6 / 8rpx），`circle` 为胶囊。 |

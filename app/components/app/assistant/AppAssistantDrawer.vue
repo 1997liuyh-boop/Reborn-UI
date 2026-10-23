@@ -14,6 +14,7 @@ import type { AssistantConversation } from "./AppAssistantHistory.vue";
 import { Chat } from "@ai-sdk/vue";
 import { until, useResizeObserver } from "@vueuse/core";
 import { DefaultChatTransport } from "ai";
+import { withBase } from "ufo";
 import { defineAsyncComponent } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornDrawer from "~/components/reborn/ui/reborn-drawer/RebornDrawer.vue";
@@ -39,6 +40,11 @@ const INPUT_MAX = 1000;
 const { isOpen, isExpanded, isMobile, toggleExpanded, messages, pendingMessage, clearPending, faqQuestions }
   = useAssistant();
 const config = useRuntimeConfig();
+
+/** 聊天区的装饰背景：「正在思考」表情图的像素风版本，62×64 的透明 PNG，页面上按像素块放大（来源与生成方式见 public/images/assistant/README.md） */
+const backgroundImage = withBase("/images/assistant/thinking-pixel.png", config.app.baseURL);
+/** AI 回答的头像 */
+const assistantAvatar = withBase("/images/assistant/avatar.webp", config.app.baseURL);
 
 const input = ref("");
 /** 窄屏下左侧历史栏是否以浮层展开；宽屏时历史栏常驻，不读这个值 */
@@ -553,7 +559,20 @@ onMounted(fetchAuthUser);
       />
     </aside>
 
-    <section class="relative flex min-w-0 flex-1 flex-col" aria-label="聊天消息" :aria-busy="!!loadingConversationId">
+    <section class="relative isolate flex min-w-0 flex-1 flex-col" aria-label="聊天消息" :aria-busy="!!loadingConversationId">
+      <!--
+        装饰背景：像素风表情图，贴聊天区底部居中，透明度 0.1，不拦截指针。
+        素材只有 62×64，靠 image-rendering: pixelated 放大成一格一格的像素块，不做平滑插值。
+        section 带 isolate 自成层叠上下文，-z-10 只把图压在本区的消息之下，不会掉到抽屉底色后面。
+      -->
+      <img
+        :src="backgroundImage"
+        alt=""
+        aria-hidden="true"
+        draggable="false"
+        decoding="async"
+        class="pointer-events-none absolute bottom-0 left-1/2 -z-10 w-[min(100%,30rem)] -translate-x-1/2 opacity-10 select-none [image-rendering:pixelated]"
+      >
       <div
         v-if="loadingConversationId"
         class="absolute inset-0 z-[1] flex items-center justify-center gap-2 bg-gray-1/70 text-sm text-gray-6"
@@ -569,6 +588,7 @@ onMounted(fetchAuthUser);
               :key="message.id"
               :role="message.role === 'user' ? 'user' : 'assistant'"
               :name="message.role === 'user' ? (authUser?.name ?? '我') : ASSISTANT_NAME"
+              :avatar="message.role === 'user' ? undefined : assistantAvatar"
               :time="messageTime(message)"
             >
               <p v-if="message.role === 'user'" class="whitespace-pre-wrap">{{ messageText(message) }}</p>
@@ -601,7 +621,7 @@ onMounted(fetchAuthUser);
               </div>
             </AppAssistantMessage>
 
-            <AppAssistantMessage v-if="waitingFirstChunk" role="assistant" :name="ASSISTANT_NAME">
+            <AppAssistantMessage v-if="waitingFirstChunk" role="assistant" :name="ASSISTANT_NAME" :avatar="assistantAvatar">
               <AssistantLoading :tool-calls="[]" is-loading />
             </AppAssistantMessage>
 

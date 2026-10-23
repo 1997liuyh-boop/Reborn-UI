@@ -18,7 +18,7 @@ badge: New
 
 Calendar 把一个月的日期铺成周日开头的七列网格，每个日期格分上下两段：上面是日期（默认靠右），下面是 65px 高的事项区。`v-model`、`range`、`controller-type`、`formatter`、`date-cell` / `header` 插槽与 `selectDate` 等实例方法沿用 Element Plus `el-calendar` 的命名，仅 Web 端实现。
 
-数据驱动方式是 `events` + `v-model`：`events` 是 `{ date, title, color? }` 数组，按 `date` 落到对应的日期格，年视图里按月汇总；`v-model` 是选中日期，视图始终停在选中日期所在的月份——翻页、改年月下拉、点「今天」都是在挪选中日期，视图随之跟过去。`color` 决定有事项日期的浅底、顶边与日期文字，并传给工具栏的年月下拉与月 / 年切换；事项自己的 `color` 只改它的圆点，两者互不影响。
+数据驱动方式是 `events` + `v-model`：`events` 是 `{ date, title, color? }` 数组，按 `date` 落到对应的日期格，年视图里按月汇总；`v-model` 是选中日期，视图始终停在选中日期所在的月份——翻页、改年月下拉、点「今天」都是在挪选中日期，视图随之跟过去。`color` 决定有事项日期的浅底、顶边与日期文字——悬停任意日期、以及选中的日期也显示同样的浅底与顶边——并传给工具栏的年月下拉与月 / 年切换；事项自己的 `color` 只改它的圆点，两者互不影响。
 
 其余 API 分五组：视图由 `v-model:mode`（月 / 年）与 `range`（只显示一段日期）控制；外观由 `title-align`（标题对齐）、`border`（直角边框）与 `lunar`（农历）控制；工具栏由 `controller-type`（年月下拉 / 翻页按钮）与 `formatter`（下拉文案）控制；日期换算由 `timezone`（时区）与 `value-format`（字符串绑定值）控制；`panel-change` 通知换月换年。`date-cell` 与 `header` 两个插槽分别替换日期格内容与整个工具栏，编辑入口和弹窗可在业务层自由组合。
 
@@ -334,7 +334,7 @@ const calendar = ref()
 | body | 日历主体，默认 `mt-6`（与工具栏间隔 24px）。 |
 | row | 表头行与每一行单元格，默认 `grid gap-x-2`，月视图 7 列、年视图 4 列；边框模式下 `gap-x-0`。 |
 | weekday | 表头星期，默认 `h-7 text-base text-gray-5`，对齐随 `titleAlign`。 |
-| cell | 单元格，默认 `border-t border-gray-4 p-1`；有事项时叠加语义色浅底与顶边，边框模式下补左分隔线。 |
+| cell | 单元格，默认 `border-t border-gray-4 p-1`；有事项、悬停与选中时叠加语义色浅底与顶边，边框模式下补左分隔线。 |
 | cellHeader | 日期标题容器，公历在上、农历在下，对齐随 `titleAlign`。**仅在不使用 `date-cell` 插槽时渲染**，下同。 |
 | date | 日期标题按钮，默认 `text-base text-gray-9` 的圆角胶囊；补位日期 `text-gray-5`。 |
 | lunar | 公历日期下方的农历文字，默认 `text-sm text-gray-6`，小于公历的 `text-base`；节日与节气用语义色，未开启 `lunar` 时不渲染。 |

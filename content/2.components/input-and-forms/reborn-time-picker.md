@@ -30,7 +30,7 @@ badge: Update
 
 - 需要同时选择日历日期 —— 改用 `reborn-date-picker`。
 - 选项是固定文案时段而非真实时刻，例如「上午 / 下午」—— 改用 `reborn-select`。
-- UniApp 端的日期或时间选择 —— 改用 `reborn-select-date`。
+- UniApp 端的日期或时间选择 —— 改用 `reborn-date-picker`，用 `type` 控制滚轮精确到时、分或秒。
 
 ## 用法
 
@@ -423,4 +423,4 @@ const disabledMinutes = (hour: number) => (hour === 12 ? [0, 1, 2] : []);
 - **时间不是跨日时长。** 小时为 0–23、分秒为 0–59；范围自动排序，不用于表达跨午夜的倒序区间。
 - **单点输入与范围模式不同。** `allowInput` 仅对默认单点触发器生效；`isRange=true` 或自定义触发器时通过面板选择。
 - **浮层默认脱离父容器。** `portal=true` 传送到 body；关闭后可能被父级 overflow 裁剪。默认 `closeOn='mousedown'` 下页面滚动会收起浮层，需要边滚动边对照时改用 `close-on="click"`。
-- **仅 Web 实现。** 本次不变更 UniApp 组件；`reborn-select-date` 是另一个组件，并非此组件的同构实现。
+- **仅 Web 实现。** UniApp 端没有同构的时间选择器；`reborn-date-picker` 的 UniApp 端可用 `type="minute"` / `"second"` 选到时分秒，但滚轮始终带年月日列。

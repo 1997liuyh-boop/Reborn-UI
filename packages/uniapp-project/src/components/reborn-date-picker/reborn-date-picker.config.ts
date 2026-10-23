@@ -1,5 +1,5 @@
-export const selectDateSizes = ['sm', 'md', 'lg'] as const
-export const selectDateColors = ['primary', 'success', 'info', 'warning', 'error', 'neutral'] as const
+export const datePickerSizes = ['sm', 'md', 'lg'] as const
+export const datePickerColors = ['primary', 'success', 'info', 'warning', 'error', 'neutral'] as const
 
 export default {
   slots: {

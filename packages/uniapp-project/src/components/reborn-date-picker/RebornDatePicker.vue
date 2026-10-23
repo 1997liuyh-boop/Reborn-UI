@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ClassValue } from 'clsx'
 import type { SelectOption } from '../reborn-picker-view/RebornPickerView.vue'
-import type { selectDateColors, selectDateSizes } from './reborn-select-date.config'
-import type { SelectDateShortcut } from './types'
+import type { datePickerColors, datePickerSizes } from './reborn-date-picker.config'
+import type { DatePickerShortcut } from './types'
 import { isEmpty, isNull } from 'lodash-es'
 import { computed, nextTick, ref, watch } from 'vue'
 
@@ -15,13 +15,13 @@ import RebornPickerView from '../reborn-picker-view/RebornPickerView.vue'
 import RebornPopup from '../reborn-popup/RebornPopup.vue'
 import RebornSelectTrigger from '../reborn-select-trigger/RebornSelectTrigger.vue'
 import RebornText from '../reborn-text/RebornText.vue'
-import theme from './reborn-select-date.config'
+import theme from './reborn-date-picker.config'
 
 defineOptions({
-  name: 'RebornSelectDate',
+  name: 'RebornDatePicker',
 })
 
-export type SelectDateType = 'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'
+export type DatePickerType = 'year' | 'month' | 'date' | 'hour' | 'minute' | 'second'
 
 export interface TriggerUiShape {
   wrapper?: ClassValue
@@ -54,7 +54,7 @@ export interface PickerUiShape {
   indicator?: ClassValue
 }
 
-export interface SelectDateUiShape {
+export interface DatePickerUiShape {
   wrapper?: ClassValue
   popupOp?: ClassValue
   rangeBox?: ClassValue
@@ -73,7 +73,7 @@ export interface SelectDateUiShape {
   confirmButton?: ClassValue
 }
 
-export interface SelectDateProps {
+export interface DatePickerProps {
   modelValue?: string
   values?: string[]
   title?: string
@@ -85,31 +85,31 @@ export interface SelectDateProps {
   showConfirm?: boolean
   cancelText?: string
   showCancel?: boolean
-  labelFormat?: string
+  format?: string
   valueFormat?: string
   start?: string
   end?: string
-  type?: SelectDateType
+  type?: DatePickerType
   rangeable?: boolean
   startPlaceholder?: string
   endPlaceholder?: string
   rangeSeparator?: string
   showShortcuts?: boolean
-  shortcuts?: SelectDateShortcut[]
+  shortcuts?: DatePickerShortcut[]
   clearable?: boolean
-  size?: typeof selectDateSizes[number]
-  color?: typeof selectDateColors[number]
+  size?: typeof datePickerSizes[number]
+  color?: typeof datePickerColors[number]
   triggerUi?: Partial<TriggerUiShape>
   /** 底部弹出层（RebornPopup）样式覆盖对象，可重写遮罩、面板、头部、标题等区域 */
   popupUi?: Partial<PopupUiShape>
   /** 滚轮选择器（RebornPickerView）样式覆盖对象，可重写表头、选项、指示器等区域 */
   pickerUi?: Partial<PickerUiShape>
   /** 组件自身样式覆盖对象，可重写范围选择区、快捷选项、底部按钮等区域 */
-  ui?: Partial<SelectDateUiShape>
+  ui?: Partial<DatePickerUiShape>
 }
 
 const props = withDefaults(
-  defineProps<SelectDateProps>(),
+  defineProps<DatePickerProps>(),
   {
     modelValue: '',
     values: () => [],
@@ -122,7 +122,7 @@ const props = withDefaults(
     showConfirm: true,
     cancelText: '取消',
     showCancel: true,
-    labelFormat: '',
+    format: '',
     valueFormat: '',
     start: '1970-01-01 00:00:00',
     end: '2099-12-31 23:59:59',
@@ -198,11 +198,12 @@ const formatType = computed(() => {
   }
 })
 
-const labelFormat = computed(() => {
-  if (isNull(props.labelFormat) || isEmpty(props.labelFormat)) {
+/** 触发器展示文本实际使用的格式：未传 format 时按 type 取默认格式 */
+const displayFormat = computed(() => {
+  if (isNull(props.format) || isEmpty(props.format)) {
     return formatType.value
   }
-  return props.labelFormat
+  return props.format
 })
 
 const valueFormat = computed(() => {
@@ -214,7 +215,7 @@ const valueFormat = computed(() => {
 
 const shortcutsIndex = ref<number>(-1)
 
-const shortcuts = computed<SelectDateShortcut[]>(() => {
+const shortcuts = computed<DatePickerShortcut[]>(() => {
   if (!isEmpty(props.shortcuts)) {
     return props.shortcuts
   }
@@ -409,14 +410,14 @@ function updateText() {
   if (props.rangeable) {
     text.value = values.value
       .filter(e => e)
-      .map(e => dayUts(e).format(labelFormat.value))
+      .map(e => dayUts(e).format(displayFormat.value))
       .join(` ${props.rangeSeparator} `)
   }
   else {
     if (!props.modelValue) {
       text.value = ''
     }
-    else { text.value = dayUts(toDate()).format(labelFormat.value) }
+    else { text.value = dayUts(toDate()).format(displayFormat.value) }
   }
 }
 
@@ -556,7 +557,7 @@ function confirm() {
   updateText()
   // 非范围模式：确认后用当前选中值更新展示（props 未同步时避免文案被清空）
   if (!props.rangeable && !isEmpty(value.value)) {
-    text.value = dayUts(toDate()).format(labelFormat.value)
+    text.value = dayUts(toDate()).format(displayFormat.value)
   }
   close()
 }
@@ -582,7 +583,7 @@ watch(
 )
 
 watch(
-  computed(() => props.labelFormat),
+  computed(() => props.format),
   () => {
     updateText()
   },

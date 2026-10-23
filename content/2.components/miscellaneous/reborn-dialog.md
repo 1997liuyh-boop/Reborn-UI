@@ -337,4 +337,5 @@ await delayedDialog.open();
 - **嵌套弹窗不会自动递增 `z-index`**。各层都是 2400，靠挂载先后决定上下；挂到不同容器时需要手动给内层更大的 `zIndex`。
 - **长内容必须开 `scrollable`**。未开启时根节点会 `preventDefault` 滚轮事件（`modalPenetrable` 生效时除外），面板本身 `overflow-hidden`，超长内容既滚不动也看不全。
 - `destroy-on-close=false`（默认）时首开后内容 DOM 常驻，重开即复用；开启后每次关闭都会销毁内容。
+- **关闭时一并收起内部浮层**。面板里展开着的下拉类组件（Select、Cascader、DatePicker、TimePicker、TreeSelect、Dropdown）、Popover / Popconfirm / ColorPicker 与 Tooltip 会在弹窗开始关闭的同时收起；内容常驻时它们不会再留在页面上，重开弹窗也是收起状态。
 - 打开时焦点移入面板，关闭后归还给打开前的焦点元素（例如 trigger 按钮）。

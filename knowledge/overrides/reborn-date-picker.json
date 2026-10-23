@@ -1,24 +1,28 @@
 {
-  "description": "带触发器的表单日期选择器，触发器与 reborn-select 同一套形态、尺寸、配色，下拉内容为 reborn-date-picker-panel，支持 16 种类型，仅 web 端。",
+  "description": "双端日期选择器：web 下拉日期面板支持 16 种类型，uniapp 底部弹出滚轮选年月日时分秒与范围。",
   "whenToUse": [
     "表单中的日期字段，需要与 reborn-select、reborn-input 保持同一套 variant 与 size。",
     "按年、季度、月、周、日或日期时间选择（type），或选择区间（daterange、weekrange 等范围类型，起止相隔远时配 unlinkPanels）；weekrange 的起止自动吸附到整周的周日与周六。",
     "一次勾选多个日期（dates/months/quarters/years），标签过多时用 collapseTags 折叠为 +N。",
     "需要接入 RebornForm 校验：写回触发 change 校验，点击外部收起触发 blur 校验。",
     "触发器左侧需要固定图标或文字（如「入住」），用 prefixIcon 或 #prefix 插槽，插槽优先。",
-    "未选值时希望面板打开在指定月份（如只能预约下个月），用 defaultValue 定位视图。"
+    "未选值时希望面板打开在指定月份（如只能预约下个月），用 defaultValue 定位视图。",
+    "UniApp 端选日期或时间：type 决定滚轮精确到 year/month/date/hour/minute/second，rangeable 开启起止区间（值绑定在 v-model:values），内置「今天、近7天」等快捷项。"
   ],
   "whenNotToUse": [
     "日期面板常驻页面、不需要触发器，改用 reborn-date-picker-panel。",
     "只选时分秒，改用 reborn-time-picker。",
-    "UniApp 端日期选择，改用 reborn-select-date。"
+    "UniApp 端滚轮要常驻页面或内容不是日期，改用 reborn-picker-view。"
   ],
   "pitfalls": [
-    "仅 web 端可用；面板参数（type、valueFormat、start/end、disabledMethod、shortcuts、showWeekNumber、unlinkPanels、singlePanel、showToday、defaultValue）原样透传给 reborn-date-picker-panel。",
+    "web 端的面板参数（type、valueFormat、start/end、disabledMethod、shortcuts、showWeekNumber、unlinkPanels、singlePanel、showToday、defaultValue）原样透传给 reborn-date-picker-panel；uniapp 端没有日期面板，这些面板类参数中只有 type、valueFormat、start/end、shortcuts 同名存在且含义不同。",
     "写回时机随类型不同：单值与范围选定即写回并收起，多选每点一项写回且不收起，datetime/datetimerange 值完整时写回但不自动收起；范围只选了起点就收起会被丢弃。",
     "清空后单值为 null、多选与范围为 []，不是空字符串；不传 valueFormat 时绑定值为 Date / Date[]。",
     "样式分三条通道：triggerUi 管触发器盒子与浮层外壳（triggerUi.arrow 是浮层小箭头，不是尾部日历图标），panelUi 原样透传给面板，ui 管页头页脚与多选标签。",
     "style 属性不生效（关闭了属性继承），宽度用 class 设置；clear() 通过实例调用时不检查 disabled。",
-    "defaultValue 不是初始值：只决定未选值时面板展示哪个月，不写入 v-model；绑定值已有日期时被忽略，需要预填值请直接给 v-model 赋值。"
+    "defaultValue 不是初始值：只决定未选值时面板展示哪个月，不写入 v-model；绑定值已有日期时被忽略，需要预填值请直接给 v-model 赋值。",
+    "两端 type 取值不通用：daterange、dates 等只在 web 有效，hour/minute/second 只在 uniapp 有效；uniapp 端选范围要开 rangeable 并用 v-model:values 绑定、监听 range-change，不是 v-model 数组。",
+    "uniapp 端只在点「确定」或清空时写回，拨滚轮、点快捷项不写回；绑定值始终是字符串，清空为空字符串（单值）或 []（范围）。",
+    "uniapp 端由 reborn-select-date 改名而来：导入路径改为 components/reborn-date-picker/RebornDatePicker.vue，labelFormat 改名为 format；ui.wrapper 与 ui.popupOp 是预留键，写入不生效。"
   ]
 }

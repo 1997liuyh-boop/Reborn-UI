@@ -8,6 +8,7 @@ import type { TimePanelProps } from "./RebornTimePanel.vue";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { computed, nextTick, ref, useAttrs, useId, watch } from "vue";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornFieldTrigger from "../reborn-field-trigger/RebornFieldTrigger.vue";
@@ -148,6 +149,14 @@ export interface TimePickerProps {
 /** 绑定值 */
 const modelValue = defineModel<string | string[]>({ default: "" });
 
+/**
+ * 接入表单：尺寸、禁用跟随所在表单（控件显式传入的 size 优先），
+ * 字段校验失败时触发器标红，值变化与失焦时按表单的 trigger 配置触发字段校验
+ */
+const { size: formSize, disabled: formDisabled, isError, validate } = useFormInject(props);
+const isDisabled = computed(() => !!formDisabled.value || props.disabled);
+const mergedSize = computed(() => formSize.value || props.size);
+
 /** 下拉是否展开 */
 const isOpen = ref(false);
 const panelId = useId();
@@ -165,10 +174,10 @@ const inputInvalid = ref(false);
  */
 const styles = computed(() =>
   b({
-    size: props.size,
+    size: mergedSize.value,
     color: props.color,
     open: isOpen.value,
-    disabled: props.disabled,
+    disabled: isDisabled.value,
     isRange: props.isRange,
   }),
 );
@@ -248,38 +257,40 @@ watch(
 );
 watch(isOpen, (value) => emit("visibleChange", value));
 watch(
-  () => props.disabled,
+  () => isDisabled.value,
   (value) => {
     if (value) isOpen.value = false;
   },
 );
 
 function openPanel() {
-  if (!props.disabled) isOpen.value = true;
+  if (!isDisabled.value) isOpen.value = true;
 }
 
 function toggle() {
-  if (props.disabled) return;
+  if (isDisabled.value) return;
   isOpen.value = !isOpen.value;
 }
 
 function clear() {
-  if (props.disabled) return;
+  if (isDisabled.value) return;
   modelValue.value = props.isRange ? [] : "";
   inputValue.value = "";
   inputInvalid.value = false;
   emit("change", modelValue.value);
+  validate("change");
   emit("clear");
 }
 
 function handlePanelChange(value: string | string[]) {
-  if (props.disabled) return;
+  if (isDisabled.value) return;
   modelValue.value = value;
   emit("change", value);
+  validate("change");
 }
 
 function handleConfirm(value: string | string[]) {
-  if (props.disabled) return;
+  if (isDisabled.value) return;
   isOpen.value = false;
   emit("confirm", value);
   nextTick(() => inputRef.value?.focus());
@@ -287,7 +298,7 @@ function handleConfirm(value: string | string[]) {
 
 /** 手动输入与面板共用格式和禁用规则，不把非法值写入表单。 */
 function commitInput() {
-  if (props.disabled || props.isRange || !props.allowInput) return true;
+  if (isDisabled.value || props.isRange || !props.allowInput) return true;
   const value = inputValue.value.trim();
   if (!value) {
     if (hasValue.value) clear();
@@ -321,6 +332,7 @@ function commitInput() {
 function onBlur(event: FocusEvent) {
   commitInput();
   emit("blur", event);
+  validate("blur");
 }
 
 function cancelInput() {
@@ -330,7 +342,7 @@ function cancelInput() {
 }
 
 function onInputKeydown(event: KeyboardEvent) {
-  if (props.disabled) return;
+  if (isDisabled.value) return;
   if (event.key === "Enter") {
     event.preventDefault();
     if (commitInput()) {
@@ -371,8 +383,8 @@ function onOutsideClose() {
   <RebornSelectTrigger
     :class="ui.wrapper({ class: props.class })"
     :is-open="isOpen"
-    :disabled="disabled"
-    :size="size"
+    :disabled="isDisabled"
+    :size="mergedSize"
     :ui="overlayUi"
     :portal="portal"
     :close-on="closeOn"
@@ -384,14 +396,14 @@ function onOutsideClose() {
     <template #trigger>
       <RebornFieldTrigger
         :is-open="isOpen"
-        :disabled="disabled"
-        :clearable="clearable && hasValue && !disabled"
-        :size="size"
+        :disabled="isDisabled"
+        :clearable="clearable && hasValue && !isDisabled"
+        :size="mergedSize"
         :color="color"
         :variant="variant"
         :icon="icon"
         :ui="fieldUi"
-        :error="inputInvalid"
+        :error="inputInvalid || isError"
         :bordered="bordered"
         :show-arrow="showArrow"
         :arrow-animation="arrowAnimation"
@@ -442,7 +454,7 @@ function onOutsideClose() {
               role="combobox"
               :class="cn(styles.input(), props.ui?.input)"
               :placeholder="placeholder"
-              :disabled="disabled"
+              :disabled="isDisabled"
               :readonly="!allowInput"
               :aria-label="inputLabel"
               :aria-expanded="isOpen"
@@ -475,8 +487,8 @@ function onOutsideClose() {
         :show-footer="showFooter"
         :variant="panelVariant"
         :ui="panelUi"
-        :disabled="disabled"
-        :size="size"
+        :disabled="isDisabled"
+        :size="mergedSize"
         :color="color"
         :disabled-hours="disabledHours"
         :disabled-minutes="disabledMinutes"

@@ -22,11 +22,14 @@ export function useFieldGroup() {
   }
 
   const removeField = (field: any) => {
-    const index = fieldInstances.value.indexOf(field)
+    // 调用方每次传的是新对象，按 uid + prop 找回注册时的那一条，不能用 indexOf 比对引用
+    const index = fieldInstances.value.findIndex(item => item.uid === field.uid && item.prop === field.prop)
     if (index > -1) {
       fieldInstances.value.splice(index, 1)
     }
-    if (field.prop) {
+    // 同一路径可能已被另一个表单项接管：动态列表删掉中间项时，后面的项下标前移、先改用这个路径注册，
+    // 被删项随后卸载再注销同名路径。还有实例在用时保留，否则接管的项会被漏掉、不再参与校验
+    if (field.prop && !fieldInstances.value.some(item => item.prop === field.prop)) {
       fields.value.delete(field.prop)
     }
   }
@@ -185,7 +188,11 @@ export function useFormInject(props: any) {
   const form = inject<any>('rebornForm', null)
   const formItem = inject<any>('rebornFormItem', null)
 
+  // 使用方在控件上显式写了 size 时以控件为准（与 Web 端、Element Plus 一致）；
+  // props.size 带着组件默认值，分不出是否显式传入，只能看原始 vnode 上有没有传
+  const instance = getCurrentInstance()
   const size = computed(() => {
+    if (instance?.vnode.props?.size != null) return props.size
     return form?.props?.size || props.size
   })
 

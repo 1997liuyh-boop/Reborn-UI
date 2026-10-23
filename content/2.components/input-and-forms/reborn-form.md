@@ -165,13 +165,13 @@ const rules = computed(() => z.object({
 | `labelWidth`              | `string \| number`                                          | Web `"140px"` / UniApp `"140rpx"` | 标签宽度。                                                                                    |
 | `hideRequiredAsterisk`    | `boolean`                                                   | `false`                           | 是否隐藏必填字段的红色星号。                                                                  |
 | `requireAsteriskPosition` | `"left" \| "right"`                                         | Web `"right"` / UniApp `"left"`   | 必填星号的位置。                                                                              |
-| `showMessage`             | `boolean`                                                   | `true`                            | 是否显示校验错误信息。                                                                        |
-| `inlineMessage`           | `boolean`                                                   | `false`                           | 是否以行内形式显示校验信息。                                                                  |
+| `showMessage`             | `boolean`                                                   | `true`                            | 是否显示校验错误文字。只在明确传 `false` 时隐藏，且只隐藏文字：校验照常进行、`validate` 照常返回错误，控件的错误描边仍会出现（与 Element Plus 一致），适合改用汇总提示或 toast 告知错误的紧凑表单。 |
+| `inlineMessage`           | `boolean`                                                   | `false`                           | 错误信息的摆放方式。`false` 时浮在控件下方、占用表单项的下间距；`true` 时排在控件右侧同一行，单行截断、悬停看全文，控件让出宽度。两种模式下错误本身都不占表单项高度。 |
 | `statusIcon`              | `boolean`                                                   | `false`                           | 是否在输入框中显示校验结果反馈图标。                                                          |
 | `validateOnRuleChange`    | `boolean`                                                   | `true`                            | 是否在 `rules` 属性改变后立即触发一次验证。                                                   |
 | `disabled`                | `boolean`                                                   | `false`                           | 是否禁用该表单内的所有组件。                                                                  |
 | `scrollToError`           | `boolean`                                                   | `true`                            | 校验失败时，是否自动滚动到第一个错误字段。                                                    |
-| `size`                    | `"" \| "sm" \| "md" \| "lg"`                                | Web `"sm"` / UniApp `""`          | 统一控制表单内组件的尺寸。                                                                    |
+| `size`                    | `"" \| "sm" \| "md" \| "lg"`                                | `"md"`                            | 表单内控件的默认尺寸；控件显式设置 `size` 时以控件为准（与 Element Plus 一致）。                                                                    |
 | `trigger`                 | `"blur" \| "change" \| "none" \| Array<"blur" \| "change">` | `"none"`                          | 自动校验时机；`"none"` 表示仅手动调用 `validate` 时校验。                                     |
 | `class`                   | `string`                                                    | `""`                              | **仅 Web**。追加到根 `form` 元素的自定义类名。                                                |
 | `customClass`             | `string`                                                    | `""`                              | **仅 UniApp**。追加到根节点的自定义类名。                                                     |
@@ -185,7 +185,7 @@ const rules = computed(() => z.object({
 | `validateField`    | `(prop: string) => Promise<string \| null>` <br> 校验单个字段（支持 `contacts-0-name` 形式的嵌套路径），返回错误信息，通过时为 `null`。                                                                         |
 | `resetFields`      | `() => void` <br> 将所有字段重置为初始值快照（挂载时自动记录）并清除全部校验结果。                                                                                                                              |
 | `clearValidate`    | `(props?: string \| string[]) => void` <br> 清除校验错误提示；不传清除全部字段，传字段名或数组仅清除对应字段（不重置值）。                                                                                      |
-| `scrollToField`    | `(prop: string) => void` <br> 滚动页面使指定字段进入视口居中位置。                                                                                                                                              |
+| `scrollToField`    | `(prop: string) => void` <br> 平滑滚动指定字段所在的各层滚动容器（含页面），使该字段在可视区域内居中。                                                                                                          |
 | `setInitialValues` | `(values: any) => void` <br> 重设 `resetFields` 使用的初始值快照（深拷贝存储）；异步回填数据后应调用一次。                                                                                                      |
 | `fields`           | `Set<string>` <br> 已注册字段名（`prop`）的集合，只读。                                                                                                                                                         |
 | `getField`         | `(prop: string) => FormItem 实例 \| undefined` <br> **仅 UniApp**。按 `prop` 获取已注册的表单项实例。                                                                                                           |
@@ -239,9 +239,9 @@ const rules = computed(() => z.object({
 | --------- | ---------------------- |
 | `root`    | 根元素。               |
 | `label`   | 标签文本。             |
-| `wrapper` | 内容和错误的包裹容器。 |
+| `wrapper` | 内容和错误的包裹容器；`inlineMessage` 为 `false` 时带 `relative`，为 `true` 时为横向 flex。 |
 | `content` | 表单域内容容器。       |
-| `error`   | 错误信息。             |
+| `error`   | 错误信息；`inlineMessage` 为 `false` 时为 `absolute top-full`，为 `true` 时为单行截断、最多占一半宽度。 |
 
 ## 注意事项
 
@@ -249,7 +249,9 @@ const rules = computed(() => z.object({
 - 校验规则基于 zod：`rules` 须传 `z.ZodObject`（而非 Element 风格的规则数组）；`required` 属性只控制星号展示，真正的必填校验写在 schema 里。
 - 表单项须使用配套的 `RebornFormItem` 且置于 `RebornForm` 内；使用 `validate` / `resetFields` / `scrollToField` 时表单项的 `prop` 必填。
 - `trigger` 默认 `"none"` 不自动校验，需设为 `"blur"` / `"change"`（或数组）或手动调用 `validate`。
-- 双端默认值有差异：`labelWidth` web 为 `"140px"`、uniapp 为 `"140rpx"`；`requireAsteriskPosition` web 为 `"right"`、uniapp 为 `"left"`；`size` web 为 `"sm"`、uniapp 为 `""`。
+- 双端默认值有差异：`labelWidth` web 为 `"140px"`、uniapp 为 `"140rpx"`；`requireAsteriskPosition` web 为 `"right"`、uniapp 为 `"left"`。`size` 两端默认都是 `"md"`。
 - `resetFields` 恢复的是「挂载时记录的初始值快照」：异步请求回填数据后应调用 `setInitialValues` 更新快照，否则重置会回到空值。
 - 嵌套/动态列表字段的 `prop` 使用连字符路径（如 `contacts-0-name`）。
+- **错误信息不推动下方内容**。默认模式下错误绝对定位在控件下方的间距里（2px + 14px 行高），出现、消失时其余表单项不移动；错误文字过长折行时会压到下一项上，建议控制在一行内。Web 端最后一项的间距被 `last:mb-0` 清零，该项的错误会伸出表单底部；UniApp 端每项都保留 `mb-4`，不受影响。
+- **行内模式会挤窄控件**。`inlineMessage` 为 `true` 时错误占用控件右侧的宽度，勾选框组、单选组这类会换行的控件在窄屏上可能因此多出一行、整体变高；手机端或窄表单建议保持默认模式。
 - `validate` 返回的 Promise 不会 reject，失败信息通过返回值 `false` 与 callback 的 `errors` 参数获取。

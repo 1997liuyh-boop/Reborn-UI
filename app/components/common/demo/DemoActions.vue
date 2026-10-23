@@ -104,7 +104,7 @@ function askAi() {
   <div :class="ui.root()">
     <UTooltip v-if="hasCode" :text="open ? '收起代码' : '展开代码'">
       <UButton
-        icon="tabler:chevron-down" size="xs" :color="open ? 'primary' : 'neutral'"
+        icon="lucide:chevron-down" size="xs" :color="open ? 'primary' : 'neutral'"
         :variant="open ? 'soft' : 'ghost'" :aria-label="open ? '收起代码' : '展开代码'"
         :ui="{ leadingIcon: ui.chevron() }" @click="open = !open"
       />
@@ -112,28 +112,28 @@ function askAi() {
 
     <UTooltip v-if="hasCode" :text="copied ? '已复制' : '复制代码'">
       <UButton
-        :icon="copied ? 'tabler:check' : 'tabler:copy'" size="xs" :color="copied ? 'success' : 'neutral'"
+        :icon="copied ? 'lucide:check' : 'lucide:copy'" size="xs" :color="copied ? 'success' : 'neutral'"
         variant="ghost" aria-label="复制代码" @click="copyCode"
       />
     </UTooltip>
 
     <UTooltip v-if="previewPath" text="预览（新标签页）">
       <UButton
-        icon="mage:preview" size="xs" color="neutral" variant="ghost" aria-label="预览" :to="previewPath"
+        icon="lucide:eye" size="xs" color="neutral" variant="ghost" aria-label="预览" :to="previewPath"
         target="_blank"
       />
     </UTooltip>
 
     <UTooltip v-if="hasCode" text="在 Playground 运行">
       <UButton
-        icon="cib:codesandbox" size="xs" color="neutral" variant="ghost" aria-label="Playground"
+        icon="lucide:box" size="xs" color="neutral" variant="ghost" aria-label="Playground"
         @click="openPlayground"
       />
     </UTooltip>
 
     <UTooltip v-if="hasThemeSlots" :text="themeOpen ? '收起 Theme slots' : 'Theme slots（可覆盖的样式节点）'">
       <UButton
-        icon="ix:theme-filled"
+        icon="lucide:palette"
         size="xs" :color="themeOpen ? 'primary' : 'neutral'" :variant="themeOpen ? 'soft' : 'ghost'"
         :aria-label="themeOpen ? '收起 Theme slots' : '展开 Theme slots'"
         @click="themeOpen = !themeOpen"
@@ -142,7 +142,7 @@ function askAi() {
 
     <UTooltip v-if="canAsk" text="询问 AI">
       <UButton
-        icon="ri:ai-generate-2" size="xs" color="neutral" variant="ghost" aria-label="询问 AI"
+        icon="lucide:sparkles" size="xs" color="neutral" variant="ghost" aria-label="询问 AI"
         @click="askAi"
       />
     </UTooltip>

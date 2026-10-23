@@ -118,7 +118,8 @@ const slots = defineSlots<{
 const fileList = defineModel<UploadUserFile[]>('fileList', { default: () => [] });
 
 const b = tv(theme);
-const { disabled: fieldGroupDisabled } = useFormInject(props);
+// 接入表单：禁用跟随所在表单；字段校验失败时上传入口描边标红，文件列表增删、上传成败后按表单的 trigger 配置触发字段校验
+const { disabled: fieldGroupDisabled, isError, validate } = useFormInject(props);
 const isDisabled = computed(() => fieldGroupDisabled.value === true || props.disabled);
 // 选择文件夹必然是多个文件，directory 下不再截取第一个。
 const isMultiple = computed(() => props.multiple || props.directory);
@@ -150,6 +151,7 @@ watch(fileList, (list) => {
 function commit(next: UploadFile[]) {
   uploadFiles.value = next;
   fileList.value = next;
+  validate('change');
 }
 
 function getFile(uid: number) {
@@ -222,6 +224,8 @@ function handleSuccess(response: unknown, uid: number) {
   file.errorMessage = undefined;
   props.onSuccess?.(response, file, uploadFiles.value);
   props.onChange?.(file, uploadFiles.value);
+  // 文件状态变了（如校验规则要求全部上传成功），同样重新校验
+  validate('change');
 }
 
 function handleError(error: Error, uid: number) {
@@ -232,6 +236,7 @@ function handleError(error: Error, uid: number) {
   file.errorMessage = error.message || '上传失败';
   props.onError?.(error, file, uploadFiles.value);
   props.onChange?.(file, uploadFiles.value);
+  validate('change');
 }
 
 async function doUpload(rawFile: UploadRawFile) {
@@ -630,6 +635,7 @@ const variants = computed(() => ({
   chunk: !!props.chunk,
   dragover: dragover.value,
   disabled: isDisabled.value,
+  error: isError.value,
 }));
 const styles = computed(() => b(variants.value));
 // 列表项、卡片的样式随文件状态变化，按状态预先算好五份，渲染时按需取用。

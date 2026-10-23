@@ -5,6 +5,7 @@ import RebornButton from '~/components/reborn/ui/reborn-button/RebornButton.vue'
 import RebornCheckbox from '~/components/reborn/ui/reborn-checkbox/RebornCheckbox.vue';
 import RebornCheckboxGroup from '~/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue';
 import RebornColorPicker from '~/components/reborn/ui/reborn-color-picker/RebornColorPicker.vue';
+import RebornDatePicker from '~/components/reborn/ui/reborn-date-picker/RebornDatePicker.vue';
 import RebornForm from '~/components/reborn/ui/reborn-form/RebornForm.vue';
 import RebornFormItem from '~/components/reborn/ui/reborn-form/RebornFormItem.vue';
 import RebornInputNumber from '~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue';
@@ -13,7 +14,6 @@ import RebornMention from '~/components/reborn/ui/reborn-mention/RebornMention.v
 import RebornProgress from '~/components/reborn/ui/reborn-progress/RebornProgress.vue';
 import RebornRadioGroup from '~/components/reborn/ui/reborn-radio/RebornRadioGroup.vue';
 import RebornRate from '~/components/reborn/ui/reborn-rate/RebornRate.vue';
-import RebornSelectDate from '~/components/reborn/ui/reborn-select-date/RebornSelectDate.vue';
 import RebornSelect from '~/components/reborn/ui/reborn-select/RebornSelect.vue';
 import RebornSlider from '~/components/reborn/ui/reborn-slider/RebornSlider.vue';
 import RebornSwitch from '~/components/reborn/ui/reborn-switch/RebornSwitch.vue';
@@ -229,7 +229,7 @@ async function reset() {
         </template>
 
         <RebornFormItem prop="date" label="活动日期" required>
-          <RebornSelectDate v-model="form.date" type="date" value-format="YYYY-MM-DD" placeholder="请选择活动日期" />
+          <RebornDatePicker v-model="form.date" type="date" value-format="YYYY-MM-DD" placeholder="请选择活动日期" />
         </RebornFormItem>
         <RebornFormItem prop="time" label="开始时间" required>
           <RebornTimePicker v-model="form.time" format="HH:mm" placeholder="请选择开始时间" @change="validateField('time')" />

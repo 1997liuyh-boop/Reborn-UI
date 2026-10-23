@@ -4,12 +4,12 @@ import { DemoBlock, DemoNote, DemoSection, Icon, Playground } from "#components"
 import { computed, reactive, ref } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornCheckboxGroup from "~/components/reborn/ui/reborn-checkbox/RebornCheckboxGroup.vue";
+import RebornDatePicker from "~/components/reborn/ui/reborn-date-picker/RebornDatePicker.vue";
 import { formLabelPositions } from "~/components/reborn/ui/reborn-form/reborn-form.config";
 import RebornForm from "~/components/reborn/ui/reborn-form/RebornForm.vue";
 import RebornFormItem from "~/components/reborn/ui/reborn-form/RebornFormItem.vue";
 import RebornInputNumber from "~/components/reborn/ui/reborn-input-number/RebornInputNumber.vue";
 import RebornInput from "~/components/reborn/ui/reborn-input/RebornInput.vue";
-import RebornSelectDate from "~/components/reborn/ui/reborn-select-date/RebornSelectDate.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
 import RebornSlider from "~/components/reborn/ui/reborn-slider/RebornSlider.vue";
 import RebornSwitch from "~/components/reborn/ui/reborn-switch/RebornSwitch.vue";
@@ -24,11 +24,12 @@ const formRef = ref<InstanceType<typeof RebornForm> | null>(null);
 const state = ref<Record<string, any>>({
   labelPosition: "right",
   labelWidth: "80px",
-  size: "sm",
+  size: "md",
   immediateValidate: true,
   hideRequiredAsterisk: false,
   requireAsteriskPosition: "right",
   statusIcon: false,
+  showMessage: true,
   inlineMessage: false,
   disabled: false,
 });
@@ -55,7 +56,7 @@ const controls = [
         label: "尺寸规格",
         key: "size",
         component: "select" as const,
-        defaultValue: "sm",
+        defaultValue: "md",
         props: {
           options: [
             { label: "SM", value: "sm" },
@@ -94,6 +95,7 @@ const controls = [
         },
       },
       { label: "状态图标", key: "statusIcon", component: "checkbox" as const, defaultValue: false },
+      { label: "显示错误信息", key: "showMessage", component: "checkbox" as const, defaultValue: true },
       { label: "行内错误提示", key: "inlineMessage", component: "checkbox" as const, defaultValue: false },
       { label: "整体禁用", key: "disabled", component: "checkbox" as const, defaultValue: false },
     ],
@@ -107,12 +109,13 @@ const formCode = computed(() => {
 
   if (s.labelPosition !== "left") props.push(`label-position="${s.labelPosition}"`);
   if (s.labelWidth !== "140px") props.push(`label-width="${s.labelWidth}"`);
-  if (s.size !== "sm") props.push(`size="${s.size}"`);
+  if (s.size !== "md") props.push(`size="${s.size}"`);
   props.push(`:trigger="${s.immediateValidate ? "['change', 'blur']" : "'none'"}"`);
   if (s.hideRequiredAsterisk) props.push("hide-required-asterisk");
   if (s.requireAsteriskPosition !== "right")
     props.push(`require-asterisk-position="${s.requireAsteriskPosition}"`);
   if (s.statusIcon) props.push("status-icon");
+  if (!s.showMessage) props.push(':show-message="false"');
   if (s.inlineMessage) props.push("inline-message");
   if (s.disabled) props.push("disabled");
 
@@ -180,7 +183,7 @@ function scrollToBio() {
           :label-position="state.labelPosition" :size="state.size" :trigger="formTrigger"
           :hide-required-asterisk="state.hideRequiredAsterisk"
           :require-asterisk-position="state.requireAsteriskPosition" :status-icon="state.statusIcon"
-          :inline-message="state.inlineMessage" :disabled="state.disabled"
+          :show-message="state.showMessage" :inline-message="state.inlineMessage" :disabled="state.disabled"
         >
           <RebornFormItem prop="username" label="用户名" required>
             <RebornInput v-model="form.username" placeholder="请输入用户名" />
@@ -196,12 +199,12 @@ function scrollToBio() {
           </RebornFormItem>
 
           <RebornFormItem prop="birthday" label="出生年月" required>
-            <RebornSelectDate v-model="form.birthday" type="date" placeholder="请选择出生年月" />
+            <RebornDatePicker v-model="form.birthday" type="date" value-format="YYYY-MM-DD" placeholder="请选择出生年月" />
           </RebornFormItem>
 
           <RebornFormItem prop="dateRange" label="入职时间" required>
-            <RebornSelectDate
-              v-model="form.dateRange" type="daterange" rangeable placeholder="起始日期 - 结束日期"
+            <RebornDatePicker
+              v-model="form.dateRange" type="daterange" start-placeholder="起始日期" end-placeholder="结束日期"
               value-format="YYYY-MM-DD"
             />
           </RebornFormItem>

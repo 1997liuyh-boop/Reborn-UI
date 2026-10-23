@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { SelectDateShortcut } from '@/components/reborn-select-date/types'
+import type { DatePickerShortcut } from '@/components/reborn-date-picker/types'
 import { ref } from 'vue'
 import RebornButton from '@/components/reborn-button/RebornButton.vue'
 import RebornCard from '@/components/reborn-card/RebornCard.vue'
+import { datePickerColors, datePickerSizes } from '@/components/reborn-date-picker/reborn-date-picker.config'
+import RebornDatePicker from '@/components/reborn-date-picker/RebornDatePicker.vue'
 import RebornPage from '@/components/reborn-page/RebornPage.vue'
 import RebornText from '@/components/reborn-text/RebornText.vue'
 import RebornRadio from '@/components/reborn-radio/RebornRadio.vue'
 import RebornRadioGroup from '@/components/reborn-radio/RebornRadioGroup.vue'
-import RebornSelectDate from '@/components/reborn-select-date/RebornSelectDate.vue'
-import { selectDateColors, selectDateSizes } from '@/components/reborn-select-date/reborn-select-date.config'
 
 // 1. 基础用法
 const date1 = ref('')
@@ -18,12 +18,12 @@ const date2 = ref('')
 
 // 3. 自定义触发器
 const date3 = ref('')
-const selectDateRef3 = ref<InstanceType<typeof RebornSelectDate> | null>(null)
-const currentSize = ref<typeof selectDateSizes[number]>(selectDateSizes[0])
-const currentColor = ref<typeof selectDateColors[number]>(selectDateColors[0])
+const datePickerRef3 = ref<InstanceType<typeof RebornDatePicker> | null>(null)
+const currentSize = ref<typeof datePickerSizes[number]>(datePickerSizes[0])
+const currentColor = ref<typeof datePickerColors[number]>(datePickerColors[0])
 
-function openSelectDate3() {
-    selectDateRef3.value?.open((value: any) => {
+function openDatePicker3() {
+    datePickerRef3.value?.open((value: any) => {
         uni.showToast({ title: `选择了: ${value}`, icon: 'none' })
     })
 }
@@ -33,7 +33,7 @@ const rangeValues = ref<string[]>([])
 
 // 5. 自定义快捷选项
 const rangeValues2 = ref<string[]>([])
-const customShortcuts: SelectDateShortcut[] = [
+const customShortcuts: DatePickerShortcut[] = [
     { label: '今天', value: ['2026-02-27', '2026-02-27'] },
     { label: '本周', value: ['2026-02-23', '2026-02-27'] },
     { label: '本月', value: ['2026-02-01', '2026-02-28'] },
@@ -60,26 +60,26 @@ const typeOptions = [
             <RebornText color="neutral">
                 基础用法
             </RebornText>
-            <RebornSelectDate v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor"
+            <RebornDatePicker v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor"
                 :size="currentSize" />
             <RebornText color="neutral">
                 插槽
             </RebornText>
-            <RebornSelectDate v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor"
+            <RebornDatePicker v-model="dateFormat" :type="currentType" placeholder="选择日期" :color="currentColor"
                 :size="currentSize">
                 <template #tag>
                     <RebornText color="neutral">
                         插槽： {{ dateFormat }}
                     </RebornText>
                 </template>
-            </RebornSelectDate>
+            </RebornDatePicker>
         </RebornCard>
         <RebornCard title="配置">
             <RebornText color="neutral">
                 尺寸：
             </RebornText>
             <RebornRadioGroup v-model="currentSize">
-                <RebornRadio v-for="s in selectDateSizes" :key="s" :value="s">
+                <RebornRadio v-for="s in datePickerSizes" :key="s" :value="s">
                     {{ s }}
                 </RebornRadio>
             </RebornRadioGroup>
@@ -87,7 +87,7 @@ const typeOptions = [
                 按钮颜色：
             </RebornText>
             <RebornRadioGroup v-model="currentColor">
-                <RebornRadio v-for="item in selectDateColors" :key="item" :value="item">
+                <RebornRadio v-for="item in datePickerColors" :key="item" :value="item">
                     <!-- radio 插槽完全接管渲染，做成纯色板选择 -->
                     <template #radio="{ checked }">
                         <view class="relative flex size-[40rpx]">
@@ -115,7 +115,7 @@ const typeOptions = [
             <view class="text-xs text-gray-4">
                 通过 start 和 end 属性限制可选日期范围。
             </view>
-            <RebornSelectDate v-model="date2" type="date" start="2025-01-01" end="2026-12-31" :color="currentColor"
+            <RebornDatePicker v-model="date2" type="date" start="2025-01-01" end="2026-12-31" :color="currentColor"
                 placeholder="选择日期 (2025~2026)" />
             <view class="text-xs text-surface-500">
                 当前值：{{ date2 || '未选择' }}
@@ -126,10 +126,10 @@ const typeOptions = [
             <view class="text-xs text-gray-4">
                 通过 show-trigger 隐藏默认触发器，使用 ref 调用 open 方法打开。
             </view>
-            <RebornButton variant="outlined" color="primary" @tap="openSelectDate3">
+            <RebornButton variant="outlined" color="primary" @tap="openDatePicker3">
                 打开日期选择器
             </RebornButton>
-            <RebornSelectDate ref="selectDateRef3" v-model="date3" type="date" :show-trigger="false"
+            <RebornDatePicker ref="datePickerRef3" v-model="date3" type="date" :show-trigger="false"
                 :color="currentColor" />
             <view class="text-xs text-surface-500">
                 当前值：{{ date3 || '未选择' }}
@@ -141,7 +141,7 @@ const typeOptions = [
             <view class="text-xs text-gray-4">
                 通过 rangeable 开启范围选择模式，使用 v-model:values 绑定范围值。
             </view>
-            <RebornSelectDate v-model:values="rangeValues" type="date" :rangeable="true" start-placeholder="开始日期"
+            <RebornDatePicker v-model:values="rangeValues" type="date" :rangeable="true" start-placeholder="开始日期"
                 :color="currentColor" end-placeholder="结束日期" />
             <view class="text-xs text-surface-500">
                 当前范围：{{ rangeValues.length > 0 && rangeValues[0] ? `${rangeValues[0]} 至 ${rangeValues[1]}` : '未选择' }}
@@ -153,7 +153,7 @@ const typeOptions = [
             <view class="text-xs text-gray-4">
                 通过 shortcuts 属性自定义快捷选项，需配合 rangeable 使用。
             </view>
-            <RebornSelectDate v-model:values="rangeValues2" type="date" :rangeable="true" :shortcuts="customShortcuts"
+            <RebornDatePicker v-model:values="rangeValues2" type="date" :rangeable="true" :shortcuts="customShortcuts"
                 :color="currentColor" :show-shortcuts="true" />
             <view class="text-xs text-surface-500">
                 当前范围：{{ rangeValues2.length > 0 && rangeValues2[0] ? `${rangeValues2[0]} 至 ${rangeValues2[1]}` : '未选择'

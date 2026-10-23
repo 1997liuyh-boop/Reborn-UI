@@ -58,6 +58,9 @@ const { isPanelVisible } = useUniDemoPanel();
 
 /** 乐谱背景只铺在单个组件的文档页（/components/xxx），组件总览 /components 不显示 */
 const isComponentDoc = computed(() => /^\/components\/.+/.test(route.path));
+
+/** 像素拼图背景铺在「组合式函数」一节：列表页 /composables 与各 hook 子页 */
+const isComposablesDoc = computed(() => /^\/composables(?:\/|$)/.test(route.path));
 </script>
 
 <template>
@@ -65,6 +68,7 @@ const isComponentDoc = computed(() => /^\/components\/.+/.test(route.path));
     <div class="bg-gray-1 absolute inset-0 z-[-1]" />
     <!-- 乐谱背景：须紧跟在底色层之后，同为 z-[-1] 时靠 DOM 顺序叠在底色之上 -->
     <DocsScoreBackground v-if="isComponentDoc" />
+    <DocsPixelBackground v-if="isComposablesDoc" />
     <!-- 分类导航已并入主顶栏右侧（对齐 Arco header），不再渲染二级 AppHeaderNav -->
     <UContainer>
       <div class="min-w-0 transition-[padding] duration-200" :class="isPanelVisible ? '2xl:pr-[420px]' : undefined">

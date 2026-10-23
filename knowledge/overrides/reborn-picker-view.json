@@ -7,7 +7,7 @@
   ],
   "whenNotToUse": [
     "需要触发器加弹层的完整下拉选择改用 reborn-select。",
-    "日期选择改用 reborn-select-date。"
+    "日期选择改用 reborn-date-picker。"
   ],
   "pitfalls": [
     "仅 uniapp 端可用。",

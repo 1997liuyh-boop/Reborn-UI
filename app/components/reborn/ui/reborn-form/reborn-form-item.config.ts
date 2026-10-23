@@ -14,7 +14,8 @@ export default {
          * 比令牌高的内容（多行文本、卡片列表）高度自然撑开、从顶部排起，标签便与第一行对齐
          */
         content: 'relative w-full flex-1 flex flex-col justify-center',
-        error: 'text-sm text-red-5 mt-1.5 animate-in slide-in-from-top-1 fade-in duration-300',
+        // 定位与间距随 inlineMessage 变体给出：两种模式下错误出现与消失都不改变表单项高度
+        error: 'text-sm text-red-5 animate-in slide-in-from-top-1 fade-in duration-300',
     },
     variants: {
         /**
@@ -48,6 +49,24 @@ export default {
                 root: 're-form-item--error',
             },
         },
+        /**
+         * 错误信息的摆放方式（取自 RebornForm 的 inlineMessage）。两种都不占文档流里的高度，
+         * 出现、消失时下方表单项不会被推动：
+         * - false：绝对定位在控件下方，落在表单项的下外边距里（2px + 14px 行高 = 16px，
+         *   不超过无标签项的 16px 间距）；与 Element Plus 默认一致。
+         * - true：与控件同一行、排在控件右侧，单行截断；控件让出宽度，表单项高度不变。
+         */
+        inlineMessage: {
+            false: {
+                wrapper: 'relative',
+                error: 'absolute top-full left-0 pt-0.5 leading-[14px]',
+            },
+            true: {
+                wrapper: 'flex items-start gap-2',
+                content: 'min-w-0',
+                error: 'max-w-[50%] shrink-0 truncate',
+            },
+        },
         labelPosition: {
             left: {
                 root: 'flex-row',
@@ -73,11 +92,21 @@ export default {
             },
         },
     },
+    /**
+     * 行内错误的行高与控件行等高（24 / 32 / 40px），单行文字因此与控件第一行垂直居中；
+     * 多行控件（如文本域）时错误对齐的是第一行，不随整体高度居中
+     */
+    compoundVariants: [
+        { inlineMessage: true, size: 'sm', class: { error: 'leading-6' } },
+        { inlineMessage: true, size: 'md', class: { error: 'leading-8' } },
+        { inlineMessage: true, size: 'lg', class: { error: 'leading-10' } },
+    ],
     defaultVariants: {
         size: 'sm',
         error: false,
         labelPosition: 'left',
         hasLabel: true,
+        inlineMessage: false,
     },
 } as const
 

@@ -433,7 +433,8 @@ const ui = computed(() => {
     body: () => theme.body({ class: o.body }),
     row: () => cached("row", () => theme.row({ class: o.row })),
     weekday: () => cached("weekday", () => theme.weekday({ class: o.weekday })),
-    cell: (hasEvents: boolean) => cached(`cell:${hasEvents}`, () => theme.cell({ hasEvents, class: o.cell })),
+    cell: (hasEvents: boolean, selected: boolean) =>
+      cached(`cell:${hasEvents}${selected}`, () => theme.cell({ hasEvents, selected, class: o.cell })),
     cellHeader: () => cached("cellHeader", () => theme.cellHeader({ class: o.cellHeader })),
     date: (state: CellStyleState) =>
       cached(`date:${state.hasEvents}${state.inMonth}${state.today}${state.selected}`, () => theme.date({ ...state, class: o.date })),
@@ -510,7 +511,7 @@ defineExpose({
       <div v-for="(quarter, index) in quarters" :key="index" role="row" :class="ui.row()">
         <div
           v-for="cell in quarter" :key="cell.key" role="gridcell" :aria-selected="cell.isSelected"
-          :class="ui.cell(cell.events.length > 0)" @click="pickMonth(cell.month)"
+          :class="ui.cell(cell.events.length > 0, cell.isSelected)" @click="pickMonth(cell.month)"
         >
           <div :class="ui.cellHeader()">
             <button
@@ -543,7 +544,7 @@ defineExpose({
       <div v-for="week in weeks" :key="week[0]!.day" role="row" :class="ui.row()">
         <div
           v-for="cell in week" :key="cell.day" role="gridcell" :aria-selected="cell.isSelected"
-          :data-type="cell.type" :class="ui.cell(cell.events.length > 0)" @click="commit(cell.date)"
+          :data-type="cell.type" :class="ui.cell(cell.events.length > 0, cell.isSelected)" @click="commit(cell.date)"
         >
           <slot name="date-cell" :data="toCellData(cell)" :events="cell.events">
             <div :class="ui.cellHeader()">

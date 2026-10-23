@@ -39,9 +39,9 @@ jobs:
         run: pnpm kb:bootstrap
 
       - name: Build
-        # 构建模块量大，默认 4GB 堆上限会 OOM，与 deploy.yml 保持一致
+        # 构建模块量大，默认 4GB 堆上限会 OOM，与 deploy.yml 保持一致（12GB，理由见 deploy.yml）
         env:
-          NODE_OPTIONS: --max-old-space-size=6144
+          NODE_OPTIONS: --max-old-space-size=12288
         run: pnpm run build
 
       - name: Package build output

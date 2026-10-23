@@ -2,6 +2,7 @@
 import type { ButtonProps } from "../reborn-button/RebornButton.vue";
 import { computed, nextTick, onBeforeUnmount, ref, useId, useSlots, watch } from "vue";
 import { runMotion, stopMotion } from "@/lib/motion";
+import { provideFloatingHost } from "~/composables/useFloatingHost";
 import { tv } from "~/lib/tv";
 import { cn } from "~/lib/utils";
 import RebornButton from "../reborn-button/RebornButton.vue";
@@ -201,6 +202,8 @@ const mounted = ref(false);
 const active = ref(false);
 /** 面板与遮罩的过渡显隐 */
 const visible = ref(false);
+// 关闭时一并收起内部展开的下拉、气泡卡片与文字提示；不销毁内容时它们收不到别的通知，会留在页面上
+provideFloatingHost(() => visible.value);
 const triggerRef = ref<HTMLElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
 const backdropRef = ref<HTMLElement | null>(null);

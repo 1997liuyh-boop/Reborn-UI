@@ -7,7 +7,7 @@
   ],
   "whenNotToUse": [
     "触发器不是输入框形态（例如 reborn-dropdown 的按钮 / 按钮组）时，直接在自己的模板里渲染即可。",
-    "业务中直接做数据选择时，改用成品组件 reborn-select、reborn-select-date 或 reborn-time-picker。"
+    "业务中直接做数据选择时，改用成品组件 reborn-select、reborn-date-picker 或 reborn-time-picker。"
   ],
   "pitfalls": [
     "仅 web 端存在，这是内部基础组件，无独立文档页与演示示例；uniapp 端触发器仍内置在 reborn-select-trigger 中。",

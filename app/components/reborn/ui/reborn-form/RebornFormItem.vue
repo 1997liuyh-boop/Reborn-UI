@@ -33,20 +33,18 @@ const props = withDefaults(defineProps<FormItemProps>(), {
     requireAsteriskPosition: 'right',
 })
 
-// 使用 Composable 处理状态
+// 使用 Composable 处理状态。
+// 直接传响应式 props，不能拷成普通对象：拷贝只取到初始值，之后修改 label-position / label-width / trigger
+// 不会生效；prop 也不会更新，动态增删表单项后下标前移的项仍按旧路径注册，校验落到错误的字段上
 const {
+    form,
     error,
     labelPosition,
     labelWidth,
     size,
     getBoundingClientRect,
     validate,
-} = useFieldGroupItem({
-    prop: props.prop,
-    labelPosition: props.labelPosition,
-    labelWidth: props.labelWidth,
-    trigger: props.trigger,
-})
+} = useFieldGroupItem(props)
 
 // 提供给子组件 (Input 等) 的上下文
 provide('rebornFormItem', {
@@ -69,12 +67,22 @@ const slots = useSlots()
 // 是否有标签，决定表单项之间的间距（有标签 24px / 无标签 16px）
 const hasLabel = computed(() => !!(props.label || slots.label))
 
+/** 错误信息排在控件右侧（true）还是浮在控件下方（false），由父级 RebornForm 的 inlineMessage 决定 */
+const inlineMessage = computed(() => form?.props?.inlineMessage === true)
+
+/**
+ * 是否渲染错误文字，由父级 RebornForm 的 showMessage 决定；只在明确为 false 时隐藏，未放在表单内时照常显示。
+ * 只隐藏文字：上面注入的 isError 不受它影响，子控件的错误描边照常出现（与 Element Plus 一致）
+ */
+const showMessage = computed(() => form?.props?.showMessage !== false)
+
 const ui = computed(() => {
     const styles = b({
         error: !!error.value,
         labelPosition: labelPosition.value as any,
         size: size.value as any,
         hasLabel: hasLabel.value,
+        inlineMessage: inlineMessage.value,
     })
     return {
         root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, props.class, uiOverrides.value.root) }),
@@ -114,9 +122,10 @@ defineExpose({
                 <slot />
             </div>
 
-            <!-- 错误信息 (自带动画) -->
+            <!-- 错误信息 (自带动画)；showMessage 为 false 时不渲染，控件的错误描边不受影响 -->
             <Transition name="form-error">
-                <div v-if="error" :class="ui.error()">
+                <!-- title：行内模式单行截断时，悬停可看到完整的错误信息 -->
+                <div v-if="showMessage && error" :class="ui.error()" :title="error">
                     {{ error }}
                 </div>
             </Transition>

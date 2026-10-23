@@ -7,7 +7,7 @@
     "按周汇总的区间用 type=\"weekrange\"：起点吸附到所在周的周日、终点吸附到所在周的周六，绑定值直接是完整周的首尾两天。"
   ],
   "whenNotToUse": [
-    "需要带触发器的表单日期字段，web 端改用 reborn-date-picker，uniapp 端改用 reborn-select-date。",
+    "需要带触发器的表单日期字段，web 端改用 reborn-date-picker，uniapp 端改用 reborn-date-picker（底部弹出滚轮）。",
     "仅选择时间，改用 reborn-time-picker。"
   ],
   "pitfalls": [

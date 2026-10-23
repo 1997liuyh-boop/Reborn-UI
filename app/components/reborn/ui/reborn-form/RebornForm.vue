@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<FormProps>(), {
     inlineMessage: false,
     statusIcon: false,
     validateOnRuleChange: true,
-    size: 'sm',
+    size: 'md',
     disabled: false,
     scrollToError: true,
     trigger: 'none',
@@ -116,18 +116,31 @@ async function validateField(prop: string): Promise<string | null> {
 }
 
 /**
- * 滚动到指定字段
+ * 滚动到指定字段，使其在可视区域内垂直居中。
+ * 用原生 scrollIntoView 而不是 window.scrollTo：表单常放在独立滚动的容器里（布局主区域、弹窗、抽屉），
+ * 这时 window 根本不可滚动，只滚 window 会毫无反应；scrollIntoView 会逐级滚动元素的各层祖先滚动容器
  */
 function scrollToField(prop: string) {
     const field = fieldInstances.value.find(f => f.prop === prop)
-    if (field && field.getBoundingClientRect) {
-        field.getBoundingClientRect((res: DOMRect) => {
-            if (res) {
-                const top = window.scrollY + res.top - (window.innerHeight / 2)
-                window.scrollTo({ top, behavior: 'smooth' })
-            }
-        })
+    field?.getElement?.()?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+/**
+ * 在出错字段中按文档顺序取第一个。
+ * fieldInstances 是注册先后：动态新增、v-if 后显示、切换 prop 的表单项都会排到末尾，
+ * 直接取下标 0 可能定位到页面靠后的字段，所以按节点在文档中的位置重新比较
+ */
+function firstErrorField(): string | undefined {
+    let first: { prop: string, el: Element } | undefined
+    for (const f of fieldInstances.value) {
+        if (errors.value[f.prop] === undefined) continue
+        const el: Element | null | undefined = f.getElement?.()
+        if (!el) continue
+        if (!first || (el.compareDocumentPosition(first.el) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+            first = { prop: f.prop, el }
+        }
     }
+    return first?.prop
 }
 
 /**
@@ -141,10 +154,8 @@ function validate(callback?: (valid: boolean, errors: FormValidateError[]) => vo
         const currentErrors = await getErrors()
 
         if (currentErrors.length > 0 && props.scrollToError) {
-            const errorInstances = fieldInstances.value.filter(f => errors.value[f.prop] !== undefined)
-            if (errorInstances.length > 0) {
-                scrollToField(errorInstances[0].prop)
-            }
+            const prop = firstErrorField()
+            if (prop) scrollToField(prop)
         }
 
         const isValid = currentErrors.length === 0
@@ -201,7 +212,7 @@ defineExpose({
     clearValidate,
     /** `() => void` 将所有字段重置为初始值快照（挂载时自动记录）并清除全部校验结果 */
     resetFields,
-    /** `(prop: string) => void` 平滑滚动页面，使指定字段进入视口居中位置 */
+    /** `(prop: string) => void` 平滑滚动指定字段所在的各层滚动容器（含页面），使该字段在可视区域内居中 */
     scrollToField,
     /** `(values: any) => void` 重设 resetFields 使用的初始值快照（深拷贝存储，挂载时已自动记录一次） */
     setInitialValues,

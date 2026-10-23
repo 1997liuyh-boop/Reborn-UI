@@ -19,7 +19,7 @@ export interface ButtonProps {
     round?: boolean
     /** 固定等宽高的圆形，优先于 round；配合纯图标使用。 */
     circle?: boolean
-    /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；处于表单组内时被组尺寸覆盖 */
+    /** 尺寸，sm/md/lg 共 3 档，高度依次 24/32/40px，水平内边距统一 12px，默认 md；显式设置时优先于所在表单的 size，未设置时跟随表单 */
     size?: typeof buttonSizes[number]
     /** 边框线型：solid 实线 / dashed 虚线，默认 solid；边框宽度固定 1px，对有边框的变体（outlined / subtle）生效 */
     borderStyle?: typeof buttonBorderStyles[number]

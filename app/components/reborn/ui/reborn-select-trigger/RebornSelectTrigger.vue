@@ -1,12 +1,35 @@
 <script setup lang="ts">
+import type { SelectTriggerAlign, SelectTriggerSide, selectTriggerSizes, SelectTriggerUI } from "./reborn-select-trigger.config";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
-import { cn } from "~/lib/utils";
+import { useFloatingHost } from "~/composables/useFloatingHost";
 import { tv } from "~/lib/tv";
+import { cn } from "~/lib/utils";
 import RebornTransition from "../reborn-transition/RebornTransition.vue";
-import theme, { selectTriggerSizes } from "./reborn-select-trigger.config";
-import type { SelectTriggerAlign, SelectTriggerSide, SelectTriggerUI } from "./reborn-select-trigger.config";
+import theme from "./reborn-select-trigger.config";
 
 defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<SelectTriggerProps>(), {
+  isOpen: false,
+  disabled: false,
+  size: "md",
+  closeOn: "mousedown",
+  portal: true,
+  container: "body",
+  side: "auto",
+  align: "start",
+  offset: 4,
+  arrow: false,
+  autoAdjustOverflow: true,
+});
+
+const emit = defineEmits<{
+  (e: "keydown", event: KeyboardEvent): void;
+  (e: "enter"): void;
+  (e: "afterEnter"): void;
+  /** 在触发器外发生了 closeOn 指定的鼠标事件，请求父组件收起下拉；附带原始事件供父组件二次判定 */
+  (e: "close", event?: Event): void;
+}>();
 
 export interface SelectTriggerProps {
   /** 浮层是否展开 */
@@ -63,28 +86,6 @@ export interface SelectTriggerProps {
    */
   autoAdjustOverflow?: boolean;
 }
-
-const props = withDefaults(defineProps<SelectTriggerProps>(), {
-  isOpen: false,
-  disabled: false,
-  size: "md",
-  closeOn: "mousedown",
-  portal: true,
-  container: "body",
-  side: "auto",
-  align: "start",
-  offset: 4,
-  arrow: false,
-  autoAdjustOverflow: true,
-});
-
-const emit = defineEmits<{
-  (e: "keydown", event: KeyboardEvent): void;
-  (e: "enter"): void;
-  (e: "afterEnter"): void;
-  /** 在触发器外发生了 closeOn 指定的鼠标事件，请求父组件收起下拉；附带原始事件供父组件二次判定 */
-  (e: "close", event?: Event): void;
-}>();
 
 const isOpening = ref(false);
 const transitionRef = ref<any>(null);
@@ -152,9 +153,9 @@ function lockPlacement() {
  * 两个定位选择都是为了「零测量」，让浏览器在同一帧内自行代入几何量：
  * 1. absolute + 文档坐标（而非 fixed + 视口坐标）：页面滚动时浮层与触发器处于同一
  *    坐标系，浏览器自然同步，不靠 scroll 回调补位；
- * 2. 向上 / 向左 / 居中 / 末端对齐一律用百分比 translate（而非 top 减去浮层尺寸）：
- *    尺寸每帧由浏览器代入，展开动画期间（height 0 → auto）浮层始终贴住触发器，
- *    不会出现「动画结束才回正」。
+ * 2. 向上展开用 bottom 固定靠近触发器的底边，其余对齐仍用百分比 translate：
+ *    高度动画会把 transform 中的百分比采样成固定像素，不能靠 translateY(-100%) 保持底边；
+ *    bottom 由定位容器高度减去文档坐标得到，无需测量浮层尺寸，展开与收起都紧贴触发器。
  */
 function syncFloating() {
   const anchor = wrapperRef.value;
@@ -194,7 +195,6 @@ function syncFloating() {
     }
     if (side === "top") {
       top = rect.top - gap;
-      translateY = "-100%";
     }
   } else {
     top = rect.top;
@@ -217,9 +217,9 @@ function syncFloating() {
 
   style.setProperty("--rb-trigger-width", `${rect.width}px`);
   style.left = `${left + scrollX}px`;
-  style.top = `${top + scrollY}px`;
+  style.top = side === "top" ? "auto" : `${top + scrollY}px`;
   style.right = "auto";
-  style.bottom = "auto";
+  style.bottom = side === "top" ? `calc(100% - ${top + scrollY}px)` : "auto";
   style.marginTop = "0px";
   style.marginBottom = "0px";
   style.maxWidth = `${Math.max(0, maxWidth)}px`;
@@ -362,6 +362,9 @@ provide<NestedOverlayRegistry>(NESTED_OVERLAY_KEY, (contains) => {
   return () => nestedContains.delete(contains);
 });
 const unregisterFromParent = inject<NestedOverlayRegistry | null>(NESTED_OVERLAY_KEY, null)?.(containsNode);
+
+// 所在弹窗或抽屉关闭时，与点击外部一样请求父组件收起（不带原始事件）
+useFloatingHost({ open: () => props.isOpen, onHidden: () => emit("close") });
 
 /** 触发器（含下拉面板）外发生 closeOn 指定的鼠标事件时，请求父组件收起 */
 function onOutsideEvent(event: Event) {
@@ -548,13 +551,15 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="wrapperRef" :class="ui.wrapper({ class: props.class })" :tabindex="disabled ? -1 : 0"
-    @keydown="emit('keydown', $event)">
+  <div
+    ref="wrapperRef" :class="ui.wrapper({ class: props.class })" :tabindex="disabled ? -1 : 0"
+    @keydown="emit('keydown', $event)"
+  >
     <!--
       触发器的结构与样式全部交由调用方决定（表单类组件可直接放 RebornFieldTrigger），
       本组件只负责提供定位锚点、聚焦分组（group）与外部点击边界。
     -->
-    <slot name="trigger" :isOpen="isOpen" />
+    <slot name="trigger" :is-open="isOpen" />
 
     <!--
       浮层只渲染一份：Teleport 的 disabled 已经覆盖了「留在原地」的场景。
@@ -569,9 +574,11 @@ defineExpose({
       表现就是「点了下一个选择器却没反应、要点第二次才展开」，故非展开态一律 pointer-events-none。
     -->
     <Teleport :to="container" :disabled="!portal">
-      <RebornTransition ref="transitionRef" :show="isOpen" :duration="{ enter: 300, leave: 200 }"
-        @before-enter="onBeforeEnter" @enter="onEnter" @after-enter="onAfterEnter" @after-leave="onAfterLeave"
-        :custom-class="ui.dropdown({ class: isOpen ? undefined : 'pointer-events-none' })" name="select-collapse">
+      <RebornTransition
+        ref="transitionRef" :show="isOpen" :duration="{ enter: 300, leave: 200 }"
+        :custom-class="ui.dropdown({ class: isOpen ? undefined : 'pointer-events-none' })" name="select-collapse" @before-enter="onBeforeEnter" @enter="onEnter"
+        @after-enter="onAfterEnter" @after-leave="onAfterLeave"
+      >
         <div ref="dropdownInnerRef" :class="ui.dropdownInner()">
           <slot name="content" />
         </div>

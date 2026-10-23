@@ -155,10 +155,88 @@ function parseScriptBlocks(script: string): ScriptBlock[] {
     return blocks;
 }
 
-/** 收集一段文本里出现的全部标识符（宽松匹配，多收无害——只是多带一条声明） */
+/** 收集脚本依赖，跳过字符串、注释与属性名；模板字符串只扫描插值表达式。 */
 function collectIdentifiers(text: string): Set<string> {
     const ids = new Set<string>();
-    for (const m of text.matchAll(/[A-Z_$][\w$]*/gi)) ids.add(m[0]);
+    let index = 0;
+
+    /** 跳过带转义的字符串；模板插值递归交给代码扫描。 */
+    function skipString(quote: string): void {
+        index++;
+        while (index < text.length) {
+            const ch = text[index++];
+            if (ch === "\\") index++;
+            else if (ch === quote) return;
+            else if (quote === "`" && ch === "$" && text[index] === "{") {
+                index++;
+                scanCode(true);
+            }
+        }
+    }
+
+    /** 正则字符组内的斜杠不结束字面量，引号与花括号也不参与代码扫描。 */
+    function skipRegex(): void {
+        let inClass = false;
+        index++;
+        while (index < text.length) {
+            const ch = text[index++];
+            if (ch === "\\") index++;
+            else if (ch === "[") inClass = true;
+            else if (ch === "]") inClass = false;
+            else if (ch === "/" && !inClass) {
+                while (index < text.length && /[a-z]/i.test(text[index]!)) index++;
+                return;
+            }
+        }
+    }
+
+    /** 花括号递归配对，保证嵌套对象与模板插值都能正确结束。 */
+    function scanCode(untilBrace = false): void {
+        let previous = "";
+        while (index < text.length) {
+            const ch = text[index]!;
+            if (/\s/.test(ch)) { index++; continue; }
+            if (ch === "/" && text[index + 1] === "/") {
+                index = text.indexOf("\n", index + 2);
+                if (index < 0) index = text.length;
+                continue;
+            }
+            if (ch === "/" && text[index + 1] === "*") {
+                const end = text.indexOf("*/", index + 2);
+                index = end < 0 ? text.length : end + 2;
+                continue;
+            }
+            if (ch === "/" && (!previous || "=(:,[!&|?;>+-*%~^".includes(previous) || ["return", "throw", "case", "yield"].includes(previous))) {
+                skipRegex();
+                previous = "/";
+                continue;
+            }
+            if (ch === "'" || ch === '"' || ch === "`") {
+                skipString(ch);
+            }
+            else if (ch === "{") {
+                index++;
+                scanCode(true);
+            }
+            else if (ch === "}" && untilBrace) {
+                index++;
+                return;
+            }
+            else if (/[A-Z_$]/i.test(ch)) {
+                const start = index++;
+                while (index < text.length && /[\w$]/.test(text[index]!)) index++;
+                const name = text.slice(start, index);
+                const isKey = (previous === "" || previous === ",") && /^\s*:/.test(text.slice(index));
+                if (previous !== "." && !isKey) ids.add(name);
+                previous = name;
+                continue;
+            }
+            else index++;
+            previous = ch;
+        }
+    }
+
+    scanCode();
     return ids;
 }
 

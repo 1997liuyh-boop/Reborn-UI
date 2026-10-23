@@ -249,8 +249,16 @@ function onAfterLeaveInternal(el: Element) {
   if (!props.show) emit('afterLeave', el);
 }
 onBeforeUnmount(() => {
-  for (const [element, run] of runs) { run.cancelled = true; run.stop?.(); restore(element, run); }
-  runs.clear();
+  for (const [element, run] of runs) {
+    // 退场中的节点已经脱离组件树，Vue 只在退场回调 done 里移除它；卸载时若连它一起停掉，
+    // done 永远不会被调用，节点就会一直留在页面上（例如下拉刚开始收起，所在的弹窗随即销毁）。
+    // 因此退场动画照常播完，由 play 的完成回调恢复样式并调用 done；入场中的节点随组件一起移除，直接停止。
+    if (!run.entering) continue;
+    run.cancelled = true;
+    run.stop?.();
+    restore(element, run);
+    runs.delete(element);
+  }
 });
 
 const renderReady = ref(!props.lazyRender);

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { FloatingPoint } from "~/lib/floating";
 import type { Placement } from "~/lib/placement";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, getCurrentInstance, onDeactivated, onMounted, onUnmounted, ref, watch } from "vue";
 import { useFloatingDismiss } from "~/composables/useFloatingDismiss";
+import { useFloatingHost } from "~/composables/useFloatingHost";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
 import { resolvePlacement } from "~/lib/placement";
 import { tv } from "~/lib/tv";
@@ -91,6 +92,7 @@ export interface PopoverProps {
   }>;
 }
 
+const appProperties = getCurrentInstance()?.appContext.config.globalProperties;
 const internalOpen = ref(props.defaultOpen ?? props.open ?? false);
 
 watch(
@@ -115,6 +117,18 @@ const contentRef = computed(() => contentRefComponent.value?.el as HTMLElement |
 
 let hoverCount = 0;
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** 路由复用和缓存停用不会卸载气泡，离开页面时也要取消可能重新打开它的悬停任务。 */
+function dismissPagePopover() {
+  if (hoverTimer) clearTimeout(hoverTimer);
+  hoverTimer = null;
+  hoverCount = 0;
+  if (open.value) open.value = false;
+}
+
+// 可选读取 Vue Router 的响应式路由，普通 Vue 应用无需安装路由也能使用气泡。
+watch(() => appProperties?.$route?.fullPath, dismissPagePopover);
+onDeactivated(dismissPagePopover);
 
 const onMouseEnter = () => {
   if (props.mode !== "hover") return;
@@ -158,6 +172,8 @@ useFloatingDismiss({
     open.value = false;
   },
 });
+// 所在弹窗或抽屉关闭时一并收起：气泡卡片不响应 Esc，按 Esc 关掉不销毁内容的弹窗后它会留在页面上
+useFloatingHost({ open: () => open.value, onHidden: () => { open.value = false; } });
 
 /** 解析后的方位：placement 优先，未传时回落到旧的 content 对象，都没有则在下方居中 */
 const placementInfo = computed(() => {

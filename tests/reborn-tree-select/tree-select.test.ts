@@ -1,4 +1,5 @@
 /* eslint test/no-import-node-test: off -- 使用 Node 内置测试运行器 */
+import type { Slots } from 'vue';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rmdir, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -23,7 +24,7 @@ await build({
       return { contents: `import { defineComponent, h } from 'vue';
         export default defineComponent({ name: '${name}', inheritAttrs: false,
           setup(_, {attrs, slots}) { return () => h('${name}', Object.fromEntries(Object.entries(attrs).map(([key, value]) => [key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()), value])),
-            ${name === 'SelectTrigger' ? "[slots.trigger?.(), ...(attrs['is-open'] ? [slots.content?.()] : [])]" : "slots.default?.()"}); }
+            ${name === 'SelectTrigger' ? "[slots.trigger?.(), ...(attrs['is-open'] ? [slots.content?.()] : [])]" : name === 'Tree' ? "slots.title?.({node: attrs['tree-data'][0], selected: true, expanded: false})" : "slots.default?.()"}); }
         });`, loader: 'js' };
     });
     builder.onLoad({ filter: /\.vue$/ }, async ({ path }) => {
@@ -51,7 +52,7 @@ const renderer = createRenderer<Element, Element>({
   remove(node) { if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1); },
 });
 function flatten(node: Element): Element[] { return [node, ...node.children.flatMap(flatten)]; }
-function mount(initial: Record<string, unknown> = {}, form?: Record<string, unknown>) {
+function mount(initial: Record<string, unknown> = {}, form?: Record<string, unknown>, slots?: Slots) {
   const props = reactive({ ...initial });
   const values: unknown[] = [];
   const changes: unknown[] = [];
@@ -62,7 +63,7 @@ function mount(initial: Record<string, unknown> = {}, form?: Record<string, unkn
     return () => h(TreeSelect, { ...props,
       'onUpdate:modelValue': (value: unknown) => { values.push(value); props.modelValue = value; },
       onChange: (value: unknown) => changes.push(value), onClear: () => clears++,
-    });
+    }, slots);
   } }));
   app.component('Icon', { render: () => h('i') });
   app.mount(root);
@@ -85,6 +86,28 @@ await build({
 const Tree = (await import(pathToFileURL(treeOutput).href)).default;
 
 const data = [{ key: 'parent', title: '研发', children: [{ key: 0, title: '前端' }, { key: 'locked', title: '归档', disabled: true }] }];
+
+it('item 插槽收到节点与状态，同时提供 title 时优先使用 item', async () => {
+  let received: unknown;
+  const view = mount({ treeData: data }, undefined, {
+    item: (scope) => { received = scope; return [h('strong', scope.node.title)]; },
+    title: () => [h('em', '旧标题')],
+  });
+  await view.open();
+  assert.deepEqual(received, { node: data[0], selected: true, expanded: false });
+  assert.equal(view.find('strong').text, '研发');
+  assert.equal(view.find('em'), undefined);
+  view.unmount();
+});
+
+it('未使用 item 时保留 title 插槽及其作用域', async () => {
+  const view = mount({ treeData: data }, undefined, {
+    title: ({ node, selected, expanded }) => [h('strong', `${node.title}/${selected}/${expanded}`)],
+  });
+  await view.open();
+  assert.equal(view.find('strong').text, '研发/true/false');
+  view.unmount();
+});
 
 it('单选保留数值 0，回显标题、关闭浮层并触发一次 change', async () => {
   const view = mount({ treeData: data });

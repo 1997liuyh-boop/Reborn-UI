@@ -2,7 +2,7 @@
 /**
  * AI 助手抽屉里的单条聊天消息
  *
- * 只负责「谁 · 什么时候 + 气泡」这层排版：AI 回答靠左，用户提问靠右。
+ * 只负责「头像 · 谁 · 什么时候 + 气泡」这层排版：AI 回答靠左，用户提问靠右。
  * 气泡内容由默认插槽给出，AI 回答里的 Markdown、工具调用进度都在父组件渲染。
  */
 
@@ -13,10 +13,13 @@ interface AppAssistantMessageProps {
   name: string;
   /** 已格式化的发送时间；旧记录没有存时间时为空串，此时只显示名称 */
   time?: string;
+  /** 头像地址，显示在名称前；不传不渲染（目前只有 AI 回答传入） */
+  avatar?: string;
 }
 
 const props = withDefaults(defineProps<AppAssistantMessageProps>(), {
   time: "",
+  avatar: undefined,
 });
 
 defineSlots<{
@@ -30,6 +33,15 @@ const isUser = computed(() => props.role === "user");
 <template>
   <div class="flex min-w-0 flex-col gap-1.5" :class="isUser ? 'items-end' : 'items-start'">
     <div class="flex items-center gap-2 text-xs text-gray-6">
+      <!-- 头像是透明底立绘的头部截图，垫一层浅灰圆底，明暗主题下都有清楚的边界 -->
+      <img
+        v-if="avatar"
+        :src="avatar"
+        alt=""
+        aria-hidden="true"
+        draggable="false"
+        class="size-7 shrink-0 rounded-full bg-gray-2 object-cover ring-1 ring-gray-3"
+      >
       <span class="font-medium text-gray-8">{{ name }}</span>
       <time v-if="time">{{ time }}</time>
     </div>

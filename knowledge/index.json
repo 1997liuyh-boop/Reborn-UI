@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T03:49:17.714Z",
+  "generatedAt": "2026-10-22T03:23:03.903Z",
   "components": [
     {
       "id": "animate-grid",
@@ -1027,16 +1027,18 @@
     {
       "id": "reborn-date-picker",
       "title": "DatePicker 日期选择器",
-      "description": "带触发器的表单日期选择器，触发器与 reborn-select 同一套形态、尺寸、配色，下拉内容为 reborn-date-picker-panel，支持 16 种类型，仅 web 端。",
+      "description": "双端日期选择器：web 下拉日期面板支持 16 种类型，uniapp 底部弹出滚轮选年月日时分秒与范围。",
       "category": "form",
       "tags": [
         "calendar",
         "date",
         "picker",
-        "select"
+        "select",
+        "uniapp"
       ],
       "platforms": [
-        "web"
+        "web",
+        "uniapp"
       ]
     },
     {
@@ -1668,17 +1670,6 @@
         "dropdown",
         "uniapp"
       ],
-      "platforms": [
-        "web",
-        "uniapp"
-      ]
-    },
-    {
-      "id": "reborn-select-date",
-      "title": "日期选择",
-      "description": "用于通过弹出面板选择日期时间的选择器组件，支持年月日时分秒多粒度与范围选择。",
-      "category": "form",
-      "tags": [],
       "platforms": [
         "web",
         "uniapp"

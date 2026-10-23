@@ -355,7 +355,7 @@ function onError(e: any) {
 | `variant`     | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'`        | `'filled'`  | 视觉风格；`round` / `circle` 取值仅为兼容旧写法。 |
 | `round` | `boolean` | `false` | 胶囊形状，不改变视觉风格。 |
 | `circle` | `boolean` | `false` | 固定等宽高的圆形，优先于 `round`。 |
-| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 尺寸，高度取 `h-6` / `h-8` / `h-10`；处于表单组内时被组尺寸覆盖。 |
+| `size`        | `'sm' \| 'md' \| 'lg'`                                                                 | `'md'`      | 尺寸，高度取 `h-6` / `h-8` / `h-10`；显式设置时优先于所在表单的 `size`，未设置时跟随表单。 |
 | `loading`     | `boolean`                                                                              | `false`     | 是否加载中；显示加载动画并同时禁用点击。                        |
 | `disabled`    | `boolean`                                                                              | `false`     | 是否禁用。                                                      |
 | `gap`         | `boolean`                                                                              | `false`     | 紧邻上一个按钮时自动添加 8px 左边距。                           |
@@ -374,7 +374,7 @@ function onError(e: any) {
 | `label`                   | `string`                                                                               | -           | 按钮文本；提供默认插槽时被插槽内容覆盖。                                                                             |
 | `color`                   | `'primary' \| 'secondary' \| 'success' \| 'info' \| 'warning' \| 'error' \| 'neutral'` | `'primary'` | 语义色。                                                                                                             |
 | `variant`                 | `'filled' \| 'outlined' \| 'soft' \| 'subtle' \| 'text' \| 'round' \| 'circle'`        | `'filled'`  | 视觉变体，含义见「颜色与变体」；`round` / `circle` 为形状变体。                                                      |
-| `size`                    | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'`                           | `'md'`      | 尺寸，七档 `rpx` 随屏宽缩放；处于表单组内时被组尺寸覆盖。                                                            |
+| `size`                    | `'xs' \| 'sm' \| 'default' \| 'md' \| 'lg' \| 'xl' \| '2xl'`                           | `'md'`      | 尺寸，七档 `rpx` 随屏宽缩放；显式设置时优先于所在表单的 `size`，未设置时跟随表单。                                                            |
 | `loading`                 | `boolean`                                                                              | `false`     | 是否加载中；显示加载动画并同时禁用点击。                                                                             |
 | `disabled`                | `boolean`                                                                              | `false`     | 是否禁用。                                                                                                           |
 | `gap`                     | `boolean`                                                                              | `false`     | 紧邻上一个按钮时自动添加 8px 左边距。                                                                                |

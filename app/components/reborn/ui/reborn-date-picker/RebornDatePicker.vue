@@ -113,7 +113,7 @@ export interface DatePickerProps {
   class?: any;
   /** 是否显示箭头 */
   showArrow?: boolean;
-  /** 展开时箭头是否旋转 */
+  /** 展开时尾部图标是否旋转，默认关闭以保持日历图标方向不变 */
   arrowAnimation?: boolean;
   /** 箭头图标名 */
   icon?: string;
@@ -174,7 +174,7 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   color: "primary",
   variant: "outlined",
   showArrow: true,
-  arrowAnimation: true,
+  arrowAnimation: false,
   icon: "lucide:calendar",
   closeOn: "mousedown",
   portal: true,

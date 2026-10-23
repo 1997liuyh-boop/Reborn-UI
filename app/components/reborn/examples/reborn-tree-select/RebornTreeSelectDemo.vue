@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TreeSelectValue } from "~/components/reborn/ui/reborn-tree-select/reborn-tree-select.config";
 import type { TreeSelectProps } from "~/components/reborn/ui/reborn-tree-select/RebornTreeSelect.vue";
+import { DemoBlock, DemoItem, DemoNote, DemoSection, Icon, Playground } from "#components";
 import { computed, ref } from "vue";
 import RebornButton from "~/components/reborn/ui/reborn-button/RebornButton.vue";
 import RebornSelect from "~/components/reborn/ui/reborn-select/RebornSelect.vue";
@@ -13,12 +14,12 @@ const treeData = [
     key: "product", title: "产品研发", icon: "lucide:folder", children: [
       { key: "design", title: "设计系统", icon: "lucide:palette" },
       { key: "web", title: "前端开发", icon: "lucide:code" },
-      { key: "legacy", title: "历史项目（禁用）", disabled: true },
+      { key: "legacy", title: "历史项目（禁用）", icon: "lucide:archive", disabled: true },
     ]
   },
   {
     key: "operation", title: "业务运营", icon: "lucide:folder", children: [
-      { key: "content", title: "内容运营", icon: "lucide:zodiac-taurus" }, { key: "support", title: "客户支持", icon: "lucide:users-round" },
+      { key: "content", title: "内容运营", icon: "lucide:newspaper" }, { key: "support", title: "客户支持", icon: "lucide:users-round" },
     ]
   },
 ];
@@ -80,6 +81,8 @@ const single = ref<TreeSelectValue>("web");
 const multiple = ref<TreeSelectValue>(["design", "content"]);
 /** 严格模式初值只勾父级，对照子级不受牵连。 */
 const strictMultiple = ref<TreeSelectValue>(["product"]);
+/** 自定义节点示例独立维护选中值，展示插槽的 selected 状态。 */
+const customItem = ref<TreeSelectValue>("design");
 const selectValue = ref("web");
 const variants = { outlined: "描边", filled: "填充", borderless: "无边框", underlined: "下划线" };
 </script>
@@ -91,7 +94,10 @@ const variants = { outlined: "描边", filled: "填充", borderless: "无边框"
       description="左侧参数按作用对象分组：共用参数同时作用于选择框与树，选择框参数只改触发器与浮层，树参数作用于浮层内的 RebornTree。"
     >
       <template #tag>
-        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">重置配置</RebornButton>
+        <RebornButton size="sm" variant="soft" color="neutral" @click="resetState">
+          <template #leading><Icon name="lucide:rotate-ccw" class="size-3" /></template>
+          重置配置
+        </RebornButton>
       </template>
       <div class="flex w-full max-w-md flex-col gap-4 pb-40">
         <RebornTreeSelect v-model="value" v-bind="state" :tree-data="treeData" placeholder="请选择所属团队" />
@@ -186,17 +192,24 @@ const variants = { outlined: "描边", filled: "填充", borderless: "无边框"
       </DemoBlock>
     </DemoSection>
     <DemoSection title="节点与空态插槽">
-      <template #description><code>title</code> 插槽自定义树标题，<code>empty</code> 插槽替换空数据提示。</template>
+      <template #description><code>item</code> 插槽根据 <code>node</code>、<code>selected</code> 与 <code>expanded</code> 自定义节点内容，<code>empty</code> 替换空数据提示。</template>
       <DemoBlock layout="stack">
-        <RebornTreeSelect :tree-data="treeData" show-line show-icon default-expand-all class="w-full max-w-sm">
-          <template #title="{ node }">
-            <span class="flex items-center gap-2">{{ node.title }}<span
-              v-if="node.children"
-              class="text-xs text-gray-5"
-            >团队</span></span>
-          </template>
-        </RebornTreeSelect>
-        <RebornTreeSelect class="w-full max-w-sm"><template #empty>暂无可选团队，请先创建团队</template></RebornTreeSelect>
+        <DemoItem label="自定义节点（item）" class="w-full max-w-sm">
+          <RebornTreeSelect v-model="customItem" :tree-data="treeData" default-expand-all clearable class="w-full">
+            <template #item="{ node, selected, expanded }">
+              <span class="flex min-w-0 items-center gap-2">
+                <Icon :name="node.children ? (expanded ? 'lucide:folder-open' : 'lucide:folder') : node.icon || 'lucide:file'" class="size-4 shrink-0" />
+                <span class="truncate">{{ node.title }}</span>
+                <span v-if="node.children" class="text-sm text-gray-5">{{ node.children.length }} 个小组</span>
+                <Icon v-if="selected" name="lucide:check" class="ml-auto size-4 shrink-0" />
+              </span>
+            </template>
+          </RebornTreeSelect>
+          <template #note>当前值：{{ JSON.stringify(customItem) }}；收起“产品研发”可查看文件夹图标变化。</template>
+        </DemoItem>
+        <DemoItem label="自定义空态（empty）" class="w-full max-w-sm">
+          <RebornTreeSelect class="w-full"><template #empty>暂无可选团队，请先创建团队</template></RebornTreeSelect>
+        </DemoItem>
       </DemoBlock>
     </DemoSection>
   </div>

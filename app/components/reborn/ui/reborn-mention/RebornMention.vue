@@ -5,6 +5,7 @@ import type { mentionPlacements, MentionUI } from "./reborn-mention.config";
 import type { MentionContext } from "./reborn-mention.utils";
 import { useEventListener, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, ref, useAttrs, useSlots, watch } from "vue";
+import { useFormInject } from "~/composables/useFieldGroup";
 import { getArrowCenter, resolveFloatingPosition } from "~/lib/floating";
 import { cn } from "~/lib/utils";
 import RebornInput from "../reborn-input/RebornInput.vue";
@@ -122,6 +123,11 @@ const emit = defineEmits<{
 
 /** 输入框的值 */
 const model = defineModel<string>({ default: "" });
+/**
+ * 键入、失焦与错误态由内部 RebornInput 接入表单；选中候选、整体删除是本组件直接改写的值，
+ * 不经过输入框的 input 事件，需要自己按表单的 trigger 配置触发字段校验
+ */
+const { validate } = useFormInject();
 
 const attrs = useAttrs();
 const rootStyle = computed(() => attrs.style as StyleValue);
@@ -236,6 +242,7 @@ function syncContext() {
 function commitValue(value: string, selection: number) {
   model.value = value;
   emit("input", value);
+  validate("change");
   nextTick(() => {
     const el = getInputEl();
     if (!el)

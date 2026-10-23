@@ -37,19 +37,17 @@ export interface FormItemProps {
   }>
 }
 
+// 直接传响应式 props，不能拷成普通对象：拷贝只取到初始值，之后修改 label-position / label-width / trigger
+// 不会生效；prop 也不会更新，动态增删表单项后下标前移的项仍按旧路径注册，校验落到错误的字段上
 const {
+  form,
   error,
   labelPosition,
   labelWidth,
   size,
   getBoundingClientRect,
   validate,
-} = useFieldGroupItem({
-  prop: props.prop,
-  labelPosition: props.labelPosition,
-  labelWidth: props.labelWidth,
-  trigger: props.trigger,
-})
+} = useFieldGroupItem(props)
 
 provide('rebornFormItem', {
   isError: computed(() => !!error.value),
@@ -66,11 +64,21 @@ const labelStyle = computed(() => {
 const b = tv(theme)
 const uiOverrides = computed(() => props.ui || {})
 
+/** 错误信息排在控件右侧（true）还是浮在控件下方（false），由父级 RebornForm 的 inlineMessage 决定 */
+const inlineMessage = computed(() => form?.props?.inlineMessage === true)
+
+/**
+ * 是否渲染错误文字，由父级 RebornForm 的 showMessage 决定；只在明确为 false 时隐藏，未放在表单内时照常显示。
+ * 只隐藏文字：上面注入的 isError 不受它影响，子控件的错误描边照常出现（与 Web 端、Element Plus 一致）
+ */
+const showMessage = computed(() => form?.props?.showMessage !== false)
+
 const ui = computed(() => {
   const styles = b({
     error: !!error.value,
     labelPosition: labelPosition.value as any, // Cast to match config variants
     size: size.value as any,
+    inlineMessage: inlineMessage.value,
   })
   return {
     root: (opts?: { class?: any }) => styles.root({ class: cn(opts?.class, uiOverrides.value.root) }),
@@ -116,7 +124,8 @@ defineExpose({
         <slot />
       </view>
 
-      <view v-if="error" :class="ui.error()">
+      <!-- showMessage 为 false 时不渲染错误文字，控件的错误描边不受影响 -->
+      <view v-if="showMessage && error" :class="ui.error()">
         {{ error }}
       </view>
     </view>

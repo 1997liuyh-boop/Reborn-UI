@@ -213,6 +213,10 @@ export default {
       true: {},
       false: {},
     },
+    // 所在表单项校验失败：拖拽区与照片墙入口的虚线描边改为错误色；排在 dragover 之前，拖入文件时仍显示主色高亮。
+    error: {
+      true: { dragger: 'border-red-5', trigger: 'border-red-5' },
+    },
     dragover: {
       true: { dragger: 'border-primary bg-brand-1', trigger: 'border-primary' },
     },
@@ -247,5 +251,6 @@ export default {
     chunk: false,
     dragover: false,
     disabled: false,
+    error: false,
   },
 };

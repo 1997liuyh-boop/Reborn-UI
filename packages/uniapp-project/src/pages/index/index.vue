@@ -33,7 +33,7 @@ const menuItems = [
       { label: '复选框', icon: 'i-lucide-check-square', path: '/pages/reborn-checkbox/RebornCheckboxDemo' },
       { label: '选择器视图', icon: 'i-lucide-list-checks', path: '/pages/reborn-picker-view/RebornPickerViewDemo' },
       { label: '选择器', icon: 'i-lucide-list', path: '/pages/reborn-select/RebornSelectDemo' },
-      { label: '日期选择器', icon: 'i-lucide-calendar', path: '/pages/reborn-select-date/RebornSelectDateDemo' },
+      { label: '日期选择器', icon: 'i-lucide-calendar', path: '/pages/reborn-date-picker/RebornDatePickerDemo' },
       { label: '滑块', icon: 'i-lucide-sliders-horizontal', path: '/pages/reborn-slider/RebornSliderDemo' },
       {
         label: '评分',
