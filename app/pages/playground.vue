@@ -170,19 +170,19 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="bg-default text-default flex h-screen flex-col overflow-hidden">
+  <div class="bg-default text-default flex h-dvh flex-col overflow-hidden">
     <!-- 顶栏:与 /preview 同风格的极简工具条 -->
     <header
-      class="border-default bg-default/80 flex shrink-0 items-center justify-between gap-4 border-b px-4 py-2 backdrop-blur"
+      class="border-default bg-default/80 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-2 backdrop-blur"
     >
-      <div class="flex items-center gap-2">
+      <div class="flex min-w-0 items-center gap-2">
         <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" size="sm" @click="goBack">
           返回文档
         </UButton>
         <span class="text-highlighted hidden font-semibold sm:inline">Playground</span>
         <span class="text-muted hidden text-xs sm:inline">在线编辑并实时运行 Reborn UI 演示代码</span>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex shrink-0 flex-wrap items-center gap-1.5">
         <UButton icon="i-lucide-play" size="sm" variant="solid" @click="run">
           运行
         </UButton>
@@ -211,7 +211,7 @@ onUnmounted(() => {
     <!-- 主体:左编辑器 / 右预览,窄屏纵向堆叠 -->
     <main class="grid min-h-0 flex-1 grid-rows-2 md:grid-cols-2 md:grid-rows-1">
       <!-- 编辑器 -->
-      <section class="border-default flex min-h-0 flex-col border-b md:border-b-0 md:border-r">
+      <section class="border-default flex min-h-0 min-w-0 flex-col border-b md:border-b-0 md:border-r">
         <div class="border-default text-muted flex items-center gap-2 border-b px-4 py-1.5 text-xs">
           <UIcon name="i-lucide-code-xml" class="size-3.5" />
           <span>demo.vue —— 组件已全局注册,无需 import;输入 &lt; 触发组件与属性提示</span>
@@ -227,7 +227,7 @@ onUnmounted(() => {
       </section>
 
       <!-- 预览 -->
-      <section class="relative flex min-h-0 flex-col">
+      <section class="relative flex min-h-0 min-w-0 flex-col">
         <div class="border-default text-muted flex items-center gap-2 border-b px-4 py-1.5 text-xs">
           <UIcon name="i-lucide-eye" class="size-3.5" />
           <span>实时预览</span>
@@ -235,7 +235,7 @@ onUnmounted(() => {
             <UIcon name="i-lucide-loader-circle" class="size-3 animate-spin" />编译中
           </span>
         </div>
-        <div class="min-h-0 flex-1 overflow-auto p-6">
+        <div data-playground-preview class="min-h-0 flex-1 overflow-auto p-6">
           <ClientOnly>
             <PlaygroundErrorBoundary v-if="compiled" :key="renderKey" @error="onRuntimeError">
               <component :is="compiled" />

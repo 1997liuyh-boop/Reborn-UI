@@ -10,7 +10,7 @@ import typographyTheme from "~/assets/theme/typography.css?raw";
  * 在本仓库零命中,渐变示例就只渲染出半截甚至完全失效,正是「示例效果欠佳」的根因。
  *
  * 做法:注入一段 `style[type="text/tailwindcss"]` 作为编译根,再加载 @tailwindcss/browser。
- * 它会扫描整个文档的 class 并持续监听 DOM 变化,把缺失的工具类实时补出来。
+ * 它会扫描文档的 class 并持续监听 DOM 变化，产物只作用于预览区域。
  *
  * 两处刻意的选择:
  * 1. 编译根只 import theme 与 utilities,**不含 preflight**。站点 CSS 已经带了一份 preflight,
@@ -36,7 +36,8 @@ export function ensureRuntimeTailwind(): Promise<void> {
       style.textContent = [
         "@layer theme, base, components, utilities;",
         '@import "tailwindcss/theme.css" layer(theme);',
-        '@import "tailwindcss/utilities.css" layer(utilities);',
+        // 站点的 bg-default 等自定义工具类与组件色值同名，不能在预览之外重新生成。
+        '@layer utilities { [data-playground-preview] { @tailwind utilities; } }',
         typographyTheme,
         baseTheme,
       ].join("\n");

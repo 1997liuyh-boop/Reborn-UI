@@ -9,6 +9,7 @@
  * 不影响文档页。
  */
 
+import * as toastModule from "../components/reborn/ui/reborn-toast";
 import { registerPlaygroundModules } from "./playgroundCode";
 
 /** 收集全部组件 config 模块（eager：注册表需要同步可用） */
@@ -26,12 +27,19 @@ export function installPlaygroundModules(): void {
     installed = true;
 
     const mods: Record<string, Record<string, unknown>> = {};
-    for (const [path, mod] of Object.entries(configModules)) {
+    const modules = {
+        ...configModules,
+        "../components/reborn/ui/reborn-toast/index.ts": toastModule,
+    };
+    for (const [path, mod] of Object.entries(modules)) {
         // glob key 形如 ../components/reborn/ui/reborn-radio/reborn-radio.config.ts
         const rel = path.replace(/^(?:\.\.\/)+/, "");
-        mods[`~/${rel}`] = mod;
-        mods[`~~/app/${rel}`] = mod;
-        mods[`@/${rel}`] = mod;
+        // 组件服务支持目录导入与显式 index 导入，保留 message 等运行时导出。
+        for (const specifier of new Set([rel, rel.replace(/\/index\.ts$/, "")])) {
+            mods[`~/${specifier}`] = mod;
+            mods[`~~/app/${specifier}`] = mod;
+            mods[`@/${specifier}`] = mod;
+        }
     }
     registerPlaygroundModules(mods);
 }
